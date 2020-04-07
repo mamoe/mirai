@@ -260,7 +260,10 @@ typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  *
  * @see subscribeFriendMessages
  */
-@Suppress("unused", "DSL_SCOPE_VIOLATION_WARNING")
+@Suppress(
+    "unused", "DSL_SCOPE_VIOLATION_WARNING", "INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS",
+    "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
+)
 @MessageDsl
 open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     val stub: RR,
@@ -282,87 +285,88 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     ) constructor(
         val filter: M.(String) -> Boolean
     ) {
-        /**
-         * 进行逻辑 `or`.
-         */
+        /** 进行逻辑 `or`. */
         infix fun or(another: ListeningFilter): ListeningFilter =
             newListeningFilter { filter.invoke(this, it) || another.filter.invoke(this, it) }
 
-        /**
-         * 进行逻辑 `and`.
-         */
+        /** 进行逻辑 `and`. */
         infix fun and(another: ListeningFilter): ListeningFilter =
             newListeningFilter { filter.invoke(this, it) && another.filter.invoke(this, it) }
 
-        /**
-         * 进行逻辑 `xor`.
-         */
+        /** 进行逻辑 `xor`. */
         infix fun xor(another: ListeningFilter): ListeningFilter =
             newListeningFilter { filter.invoke(this, it) xor another.filter.invoke(this, it) }
 
-        /**
-         * 进行逻辑 `nand`, 即 `not and`.
-         */
+        /** 进行逻辑 `nand`, 即 `not and`. */
         infix fun nand(another: ListeningFilter): ListeningFilter =
             newListeningFilter { !filter.invoke(this, it) || !another.filter.invoke(this, it) }
 
-        /**
-         * 进行逻辑 `not`
-         */
-        fun not(): ListeningFilter =
-            newListeningFilter { !filter.invoke(this, it) }
+        /** 进行逻辑 `not` */
+        fun not(): ListeningFilter = newListeningFilter { !filter.invoke(this, it) }
 
-        /**
-         * 启动事件监听.
-         */
+        /** 启动事件监听. */
         // do not inline due to kotlin (1.3.61) bug: java.lang.IllegalAccessError
         operator fun invoke(onEvent: MessageListener<M, R>): Ret {
             return content(filter, onEvent)
         }
     }
 
+    /** 启动这个监听器, 在满足条件时回复原消息 */
     @SinceMirai("0.29.0")
+    @MessageDsl
     open infix fun ListeningFilter.reply(toReply: String): Ret {
         return content(filter) { reply(toReply);this@MessageSubscribersBuilder.stub }
     }
 
+    /** 启动这个监听器, 在满足条件时回复原消息 */
     @SinceMirai("0.29.0")
+    @MessageDsl
     open infix fun ListeningFilter.reply(message: Message): Ret {
         return content(filter) { reply(message);this@MessageSubscribersBuilder.stub }
     }
 
+    /** 启动这个监听器, 在满足条件时回复原消息 */
     @JvmName("reply3")
-    @Suppress("INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
     @SinceMirai("0.33.0")
+    @MessageDsl
     open infix fun ListeningFilter.`->`(toReply: String): Ret {
         return this.reply(toReply)
     }
 
+    /** 启动这个监听器, 在满足条件时回复原消息 */
     @JvmName("reply3")
-    @Suppress("INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
     @SinceMirai("0.33.0")
+    @MessageDsl
     open infix fun ListeningFilter.`->`(message: Message): Ret {
         return this.reply(message)
     }
 
+    /** 启动这个监听器, 在满足条件时回复原消息 */
     @SinceMirai("0.29.0")
+    @MessageDsl
     open infix fun ListeningFilter.reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
             this@MessageSubscribersBuilder.executeAndReply(this, replier)
         }
     }
 
+    /** 启动这个监听器, 在满足条件时引用回复原消息 */
     @SinceMirai("0.29.0")
+    @MessageDsl
     open infix fun ListeningFilter.quoteReply(toReply: String): Ret {
         return content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
     }
 
+    /** 启动这个监听器, 在满足条件时引用回复原消息 */
     @SinceMirai("0.29.0")
-    open infix fun ListeningFilter.quoteReply(message: Message): Ret {
-        return content(filter) { quoteReply(message);this@MessageSubscribersBuilder.stub }
+    @MessageDsl
+    open infix fun ListeningFilter.quoteReply(toReply: Message): Ret {
+        return content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
     }
 
+    /** 启动这个监听器, 在满足条件时执行 [replier] 并引用回复原消息 */
     @SinceMirai("0.29.0")
+    @MessageDsl
     open infix fun ListeningFilter.quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret {
         return content(filter) {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
@@ -371,15 +375,11 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     }
 
 
-    /**
-     * 无任何触发条件.
-     */
+    /** 无任何触发条件, 每次收到消息都执行 [onEvent] */
     @MessageDsl
     open fun always(onEvent: MessageListener<M, RR>): Ret = subscriber({ true }, onEvent)
 
-    /**
-     * 如果消息内容 `==` [equals]
-     */
+    /** 如果消息内容 `==` [equals] */
     @MessageDsl
     fun case(
         equals: String,
@@ -394,14 +394,11 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         }
     }
 
-    /**
-     * 如果消息内容 `==` [equals]
-     */
+    /** 如果消息内容 `==` [equals] */
     @MessageDsl
     @JvmName("case1")
     @JsName("case1")
     @SinceMirai("0.29.0")
-    @Suppress("INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
     infix fun String.`->`(block: MessageListener<M, R>): Ret {
         return case(this, onEvent = block)
     }
@@ -424,12 +421,9 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         })
     }
 
-    /**
-     * 如果消息内容包含 [sub]
-     */
+    /** 如果消息内容包含 [sub] */
     @MessageDsl
-    fun contains(sub: String): ListeningFilter =
-        content { sub in it }
+    fun contains(sub: String): ListeningFilter = content { sub in it }
 
     /**
      * 如果消息内容包含 [sub] 中的任意一个元素
@@ -453,16 +447,11 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         }
     }
 
-    /**
-     * 如果消息内容包含 [sub]
-     */
+    /** 如果消息内容包含 [sub] */
     @MessageDsl
-    fun containsAny(vararg sub: String): ListeningFilter =
-        content { sub.any { item -> item in it } }
+    fun containsAny(vararg sub: String): ListeningFilter = content { sub.any { item -> item in it } }
 
-    /**
-     * 如果消息内容包含 [sub] 中的任意一个元素
-     */
+    /** 如果消息内容包含 [sub] 中的任意一个元素 */
     @MessageDsl
     fun containsAny(
         vararg sub: String,
@@ -486,12 +475,9 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         }
     }
 
-    /**
-     * 如果消息内容包含 [sub]
-     */
+    /** 如果消息内容包含 [sub] */
     @MessageDsl
-    fun containsAll(vararg sub: String): ListeningFilter =
-        content { sub.all { item -> item in it } }
+    fun containsAll(vararg sub: String): ListeningFilter = content { sub.all { item -> item in it } }
 
     /**
      * 如果消息内容包含 [sub] 中的任意一个元素
@@ -505,35 +491,22 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     ): Ret {
         return if (trim) {
             val list = sub.map { it.trim() }
-            content({
-                list.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
-            }, {
-                onEvent(this, this.message.contentToString().trim())
-            })
+            content({ list.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } },
+                { onEvent(this, this.message.contentToString().trim()) })
         } else {
-            content({
-                sub.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
-            }, {
-                onEvent(this, this.message.contentToString())
-            })
+            content({ sub.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } },
+                { onEvent(this, this.message.contentToString()) })
         }
     }
 
-    /**
-     * 如果消息的前缀是 [prefix]
-     */
+    /** 如果消息的前缀是 [prefix] */
     @MessageDsl
-    fun startsWith(
-        prefix: String,
-        trim: Boolean = true
-    ): ListeningFilter {
+    fun startsWith(prefix: String, trim: Boolean = true): ListeningFilter {
         val toCheck = if (trim) prefix.trim() else prefix
         return content { (if (trim) it.trim() else it).startsWith(toCheck) }
     }
 
-    /**
-     * 如果消息的前缀是 [prefix]
-     */
+    /** 如果消息的前缀是 [prefix] */
     @MessageDsl
     fun startsWith(
         prefix: String,
@@ -555,16 +528,11 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         }
     }
 
-    /**
-     * 如果消息的结尾是 [suffix]
-     */
+    /** 如果消息的结尾是 [suffix] */
     @MessageDsl
-    fun endsWith(suffix: String): ListeningFilter =
-        content { it.endsWith(suffix) }
+    fun endsWith(suffix: String): ListeningFilter = content { it.endsWith(suffix) }
 
-    /**
-     * 如果消息的结尾是 [suffix]
-     */
+    /** 如果消息的结尾是 [suffix] */
     @MessageDsl
     fun endsWith(
         suffix: String,
@@ -586,200 +554,123 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         }
     }
 
-    /**
-     * 如果是这个人发的消息. 消息目前只会是群消息
-     */
+    /** 如果是这个人发的消息. 消息目前只会是群消息 */
     @MessageDsl
-    fun sentBy(name: String): ListeningFilter =
-        content { this is GroupMessage && this.senderName == name }
+    fun sentBy(name: String): ListeningFilter = content { this is GroupMessage && this.senderName == name }
 
-    /**
-     * 如果是这个人发的消息. 消息目前只会是群消息
-     */
+    /** 如果是这个人发的消息. 消息目前只会是群消息 */
     @MessageDsl
     fun sentBy(name: String, onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.senderName == name }, onEvent)
+        content({ (this as? GroupMessage)?.senderName == name }, onEvent)
 
-    /**
-     * 如果是这个人发的消息. 消息可以是好友消息也可以是群消息
-     */
+    /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
-    fun sentBy(qq: Long): ListeningFilter =
-        content { sender.id == qq }
+    fun sentBy(qq: Long): ListeningFilter = content { sender.id == qq }
 
-    /**
-     * 如果是这个人发的消息. 消息可以是好友消息也可以是群消息
-     */
+    /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
-    fun sentBy(qq: Long, onEvent: MessageListener<M, R>): Ret =
-        content({ this.sender.id == qq }, onEvent)
+    fun sentBy(qq: Long, onEvent: MessageListener<M, R>): Ret = content({ this.sender.id == qq }, onEvent)
 
-    /**
-     * 如果是好友发来的消息
-     */
+    /** 如果是好友发来的消息 */
     @MessageDsl
     fun sentByFriend(onEvent: MessageListener<FriendMessage, R>): Ret =
         content({ this is FriendMessage }) {
             onEvent(this as FriendMessage, it)
         }
 
-    /**
-     * 如果是好友发来的消息
-     */
+    /** 如果是好友发来的消息 */
     @MessageDsl
     fun sentByFriend(): ListeningFilter = newListeningFilter { this is FriendMessage }
 
-    /**
-     * 如果是管理员或群主发的消息
-     */
+    /** 如果是管理员或群主发的消息 */
     @MessageDsl
     fun sentByOperator(): ListeningFilter =
         content { this is GroupMessage && sender.permission.isOperator() }
 
-    /**
-     * 如果是管理员或群主发的消息
-     */
+    /** 如果是管理员或群主发的消息 */
     @MessageDsl
     fun sentByOperator(onEvent: MessageListener<M, R>): Ret =
         content({ this is GroupMessage && this.sender.isOperator() }, onEvent)
 
-    /**
-     * 如果是管理员发的消息
-     */
+    /** 如果是管理员发的消息 */
     @MessageDsl
     fun sentByAdministrator(): ListeningFilter =
         content { this is GroupMessage && sender.permission.isAdministrator() }
 
-    /**
-     * 如果是管理员发的消息
-     */
+    /** 如果是管理员发的消息 */
     @MessageDsl
     fun sentByAdministrator(onEvent: MessageListener<M, R>): Ret =
         content({ this is GroupMessage && this.sender.isAdministrator() }, onEvent)
 
-    /**
-     * 如果是群主发的消息
-     */
+    /** 如果是群主发的消息 */
     @MessageDsl
     fun sentByOwner(): ListeningFilter =
         content { this is GroupMessage && sender.isOwner() }
 
-    /**
-     * 如果是群主发的消息
-     */
+    /** 如果是群主发的消息 */
     @MessageDsl
     fun sentByOwner(onEvent: MessageListener<M, R>): Ret =
         content({ this is GroupMessage && this.sender.isOwner() }, onEvent)
 
-    /**
-     * 如果是来自这个群的消息
-     */
+    /** 如果是来自这个群的消息 */
     @MessageDsl
     fun sentFrom(groupId: Long): ListeningFilter =
         content { this is GroupMessage && group.id == groupId }
 
-    /**
-     * 如果是来自这个群的消息, 就执行 [onEvent]
-     */
+    /** 如果是来自这个群的消息, 就执行 [onEvent] */
     @MessageDsl
     fun sentFrom(groupId: Long, onEvent: MessageListener<GroupMessage, R>): Ret =
-        content({ this is GroupMessage && this.group.id == groupId }) {
-            onEvent(this as GroupMessage, it)
-        }
+        content({ this is GroupMessage && this.group.id == groupId }) { onEvent(this as GroupMessage, it) }
 
-    /**
-     * 如果消息内容包含 [N] 类型的 [Message]
-     */
+    /** 如果消息内容包含 [N] 类型的 [Message] */
     @MessageDsl
-    inline fun <reified N : Message> has(): ListeningFilter =
-        content { message.any { it is N } }
+    inline fun <reified N : Message> has(): ListeningFilter = content { message.any { it is N } }
 
-    /**
-     * 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent]
-     */
+    /** 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent] */
     @MessageDsl
     @SinceMirai("0.30.0")
     inline fun <reified N : Message> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
         content({ message.any { it is N } }, { onEvent.invoke(this, message.firstIsInstance()) })
 
-    /**
-     * 如果 [mapper] 返回值非空, 就执行 [onEvent]
-     */
+    /** 如果 [mapper] 返回值非空, 就执行 [onEvent] */
     @MessageDsl
     @SinceMirai("0.30.0")
-    open fun <N : Any> mapping(
-        mapper: M.(String) -> N?,
-        onEvent: @MessageDsl suspend M.(N) -> R
-    ): Ret = always {
-        onEvent.invoke(
-            this,
-            mapper.invoke(this, message.contentToString()) ?: return@always this@MessageSubscribersBuilder.stub
-        )
-    }
+    open fun <N : Any> mapping(mapper: M.(String) -> N?, onEvent: @MessageDsl suspend M.(N) -> R): Ret =
+        always { onEvent.invoke(this, mapper(this, message.contentToString()) ?: return@always stub) }
 
-    /**
-     * 如果 [filter] 返回 `true`
-     */
+    /** 如果 [filter] 返回 `true` */
     @MessageDsl
-    fun content(filter: M.(String) -> Boolean): ListeningFilter =
-        newListeningFilter(filter)
+    fun content(filter: M.(String) -> Boolean): ListeningFilter = newListeningFilter(filter)
 
-    /**
-     * 如果 [filter] 返回 `true` 就执行 `onEvent`
-     */
+    /** 如果 [filter] 返回 `true` 就执行 `onEvent`*/
     @MessageDsl
-    fun content(
-        filter: M.(String) -> Boolean,
-        onEvent: MessageListener<M, RR>
-    ): Ret =
+    fun content(filter: M.(String) -> Boolean, onEvent: MessageListener<M, RR>): Ret =
         subscriber(filter) { onEvent(this, it) }
 
-    /**
-     * 如果消息内容可由正则表达式匹配([Regex.matchEntire])
-     */
+    /** 如果消息内容可由正则表达式匹配([Regex.matchEntire]) */
     @MessageDsl
-    fun matching(regex: Regex): ListeningFilter =
-        content { regex.matchEntire(it) != null }
+    fun matching(regex: Regex): ListeningFilter = content { regex.matchEntire(it) != null }
 
 
-    /**
-     * 如果消息内容可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent`
-     */
+    /** 如果消息内容可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent` */
     @MessageDsl
     fun matching(regex: Regex, onEvent: @MessageDsl suspend M.(MatchResult) -> Unit): Ret =
-        always {
-            val find = regex.matchEntire(it) ?: return@always this@MessageSubscribersBuilder.stub
-            this@MessageSubscribersBuilder.executeAndReply(this) {
-                onEvent.invoke(this, find)
-            }
-        }
+        always { executeAndReply(this) { onEvent.invoke(this, regex.matchEntire(it) ?: return@always stub) } }
 
-    /**
-     * 如果消息内容可由正则表达式查找([Regex.find])
-     */
+    /** 如果消息内容可由正则表达式查找([Regex.find]) */
     @MessageDsl
-    fun finding(regex: Regex): ListeningFilter =
-        content { regex.find(it) != null }
+    fun finding(regex: Regex): ListeningFilter = content { regex.find(it) != null }
 
-    /**
-     * 如果消息内容可由正则表达式查找([Regex.find]), 就执行 `onEvent`
-     */
+    /** 如果消息内容可由正则表达式查找([Regex.find]), 就执行 `onEvent` */
     @MessageDsl
     fun finding(regex: Regex, onEvent: @MessageDsl suspend M.(MatchResult) -> Unit): Ret =
-        always {
-            val find = regex.find(it) ?: return@always this@MessageSubscribersBuilder.stub
-            this@MessageSubscribersBuilder.executeAndReply(this) {
-                onEvent.invoke(this, find)
-            }
-        }
+        always { executeAndReply(this) { onEvent.invoke(this, regex.find(it) ?: return@always stub) } }
 
 
-    /**
-     * 若消息内容包含 [this] 则回复 [reply]
-     */
+    /** 若消息内容包含 [this] 则回复 [reply] */
     @MessageDsl
     open infix fun String.containsReply(reply: String): Ret =
-        content({ this@containsReply in it }, { reply(reply); this@MessageSubscribersBuilder.stub })
+        content({ this@containsReply in it }, { reply(reply); stub })
 
     /**
      * 若消息内容包含 [this] 则执行 [replier] 并将其返回值回复给发信对象.
@@ -790,9 +681,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
      */
     @MessageDsl
     open infix fun String.containsReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret =
-        content({ this@containsReply in it }, {
-            this@MessageSubscribersBuilder.executeAndReply(this, replier)
-        })
+        content({ this@containsReply in it }, { executeAndReply(this, replier) })
 
     /**
      * 若消息内容可由正则表达式匹配([Regex.matchEntire]), 则执行 [replier] 并将其返回值回复给发信对象.
@@ -803,12 +692,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
      */
     @MessageDsl
     open infix fun Regex.matchingReply(replier: @MessageDsl suspend M.(MatchResult) -> Any?): Ret =
-        always {
-            val find = this@matchingReply.matchEntire(it) ?: return@always this@MessageSubscribersBuilder.stub
-            this@MessageSubscribersBuilder.executeAndReply(this) {
-                replier.invoke(this, find)
-            }
-        }
+        always { executeAndReply(this) { replier.invoke(this, matchEntire(it) ?: return@always stub) } }
 
     /**
      * 若消息内容可由正则表达式查找([Regex.find]), 则执行 [replier] 并将其返回值回复给发信对象.
@@ -819,12 +703,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
      */
     @MessageDsl
     open infix fun Regex.findingReply(replier: @MessageDsl suspend M.(MatchResult) -> Any?): Ret =
-        always {
-            val find = this@findingReply.find(it) ?: return@always this@MessageSubscribersBuilder.stub
-            this@MessageSubscribersBuilder.executeAndReply(this) {
-                replier.invoke(this, find)
-            }
-        }
+        always { executeAndReply(this) { replier.invoke(this, this@findingReply.find(it) ?: return@always stub) } }
 
     /**
      * 不考虑空格, 若消息内容以 [this] 开始则执行 [replier] 并将其返回值回复给发信对象.
@@ -843,9 +722,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     open infix fun String.startsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trimStart()
         return content({ it.trim().startsWith(toCheck) }, {
-            this@MessageSubscribersBuilder.executeAndReply(this) {
-                replier(this, it.trim().removePrefix(toCheck))
-            }
+            executeAndReply(this) { replier(this, it.trim().removePrefix(toCheck)) }
         })
     }
 
@@ -866,32 +743,31 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     open infix fun String.endsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trimEnd()
         return content({ it.trim().endsWith(toCheck) }, {
-            this@MessageSubscribersBuilder.executeAndReply(this) {
-                replier(this, it.trim().removeSuffix(toCheck))
-            }
+            executeAndReply(this) { replier(this, it.trim().removeSuffix(toCheck)) }
         })
     }
 
+    /** 当发送的消息内容为 [this] 就回复 [reply] */
     @MessageDsl
     open infix fun String.reply(reply: String): Ret {
         val toCheck = this.trim()
         return content({ it.trim() == toCheck }, { reply(reply);this@MessageSubscribersBuilder.stub })
     }
 
+    /** 当发送的消息内容为 [this] 就回复 [reply] */
     @MessageDsl
     open infix fun String.reply(reply: Message): Ret {
         val toCheck = this.trim()
         return content({ it.trim() == toCheck }, { reply(reply);this@MessageSubscribersBuilder.stub })
     }
 
+    /** 当发送的消息内容为 [this] 就执行并回复 [replier] 的返回值 */
     @MessageDsl
     open infix fun String.reply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trim()
         return content({ it.trim() == toCheck }, {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            this@MessageSubscribersBuilder.executeAndReply(this) {
-                replier(this, it.trim())
-            }
+            executeAndReply(this) { replier(this, it.trim()) }
         })
     }
 
@@ -900,9 +776,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     internal suspend inline fun executeAndReply(m: M, replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(m, m.message.contentToString())) {
             is Message -> m.reply(message)
-            is Unit -> {
-
-            }
+            is Unit -> Unit
             else -> m.reply(message.toString())
         }
         return stub
@@ -913,19 +787,12 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     internal suspend inline fun executeAndQuoteReply(m: M, replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(m, m.message.contentToString())) {
             is Message -> m.quoteReply(message)
-            is Unit -> {
-
-            }
+            is Unit -> Unit
             else -> m.quoteReply(message.toString())
         }
         return stub
     }
-/* 易产生迷惑感
- fun replyCase(equals: String, trim: Boolean = true, replier: MessageReplier<T>) = case(equals, trim) { reply(replier(this)) }
- fun replyContains(value: String, replier: MessageReplier<T>) = content({ value in it }) { replier(this) }
- fun replyStartsWith(value: String, replier: MessageReplier<T>) = content({ it.startsWith(value) }) { replier(this) }
- fun replyEndsWith(value: String, replier: MessageReplier<T>) = content({ it.endsWith(value) }) { replier(this) }
-*/
+
 }
 
 /**
