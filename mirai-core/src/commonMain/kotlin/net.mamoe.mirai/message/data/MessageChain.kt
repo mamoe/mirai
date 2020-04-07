@@ -172,7 +172,7 @@ fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 inline fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
-    firstOrNull(key) ?: throw NoSuchElementException("Message type $key not found in chain $this")
+    firstOrNull(key) ?: throw NoSuchElementException("Message type ${key.typeName} not found in chain $this")
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
