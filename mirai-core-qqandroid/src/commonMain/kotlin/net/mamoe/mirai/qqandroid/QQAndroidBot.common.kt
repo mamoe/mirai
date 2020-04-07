@@ -479,16 +479,7 @@ internal abstract class QQAndroidBotBase constructor(
 
             return group.sendMessage(
                 RichMessage.longMessage(
-                    brief = message.joinToString(limit = 27) {
-                        when (it) {
-                            is PlainText -> it.stringValue
-                            is At -> it.display
-                            is AtAll -> it.display
-                            is Image -> "[图片]"
-                            is Face -> "[表情]"
-                            else -> ""
-                        }
-                    },
+                    brief = message.joinToString(limit = 27) { it.contentToString() },
                     resId = resId,
                     timeSeconds = time
                 )
