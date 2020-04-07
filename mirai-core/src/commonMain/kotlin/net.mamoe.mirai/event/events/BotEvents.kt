@@ -24,6 +24,7 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 
 
 @Suppress("unused")
@@ -471,3 +472,35 @@ data class MemberUnmuteEvent(
 // endregion
 
 // endregion
+
+// region 好友、群认证
+
+@SinceMirai("0.35.0")
+data class NewFriendEvent(
+    override val bot: Bot,
+    val seq: Long, // 事件唯一识别
+    val additional: String,
+    val id: Long,
+    val groupName: String,
+    val nick: String
+) : BotEvent, Packet {
+    suspend fun accept() = bot.acceptNewFriend(this)
+    suspend fun reject(blackList: Boolean = false) = bot.rejectNewFriend(this, blackList)
+}
+
+@SinceMirai("0.35.0")
+data class NewGroupEvent(
+    override val bot: Bot,
+    val seq: Long, // 事件唯一识别
+    val additional: String,
+    val id: Long,
+    val groupId: Long,
+    val groupName: String,
+    val nick: String
+) : BotEvent, Packet {
+    suspend fun accept() = bot.acceptNewGroup(this)
+    suspend fun reject(blackList: Boolean = false) = bot.rejectNewGroup(this, blackList)
+    suspend fun ignore(blackList: Boolean = false) = bot.ignoreNewGroup(this, blackList)
+}
+
+// endregion 好友、群认证

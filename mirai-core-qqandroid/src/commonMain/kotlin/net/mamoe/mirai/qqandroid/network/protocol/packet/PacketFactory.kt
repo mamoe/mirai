@@ -15,6 +15,7 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.MultiMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
@@ -28,16 +29,12 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.qqandroid.network.readUShortLVByteArray
 import net.mamoe.mirai.qqandroid.utils.*
-import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
-import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.qqandroid.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import net.mamoe.mirai.qqandroid.utils.io.withUse
-import net.mamoe.mirai.qqandroid.utils.toReadPacket
-import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmName
 
@@ -150,7 +147,10 @@ internal object KnownPacketFactories {
         TroopManagement.Kick,
         Heartbeat.Alive,
         PbMessageSvc.PbMsgWithDraw,
-        MultiMsg.ApplyUp
+        MultiMsg.ApplyUp,
+        NewContact.SystemMsgNewFriend,
+        NewContact.SystemMsgNewGroup,
+        NewContact.Del
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(

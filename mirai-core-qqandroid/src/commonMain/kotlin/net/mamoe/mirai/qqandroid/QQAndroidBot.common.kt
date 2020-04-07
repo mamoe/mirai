@@ -32,6 +32,8 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.MessageRecallEvent
+import net.mamoe.mirai.event.events.NewFriendEvent
+import net.mamoe.mirai.event.events.NewGroupEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
@@ -73,7 +75,61 @@ internal class QQAndroidBot constructor(
     context: Context,
     account: BotAccount,
     configuration: BotConfiguration
-) : QQAndroidBotBase(context, account, configuration)
+) : QQAndroidBotBase(context, account, configuration) {
+
+    override suspend fun acceptNewFriend(event: NewFriendEvent) {
+        network.run {
+            NewContact.SystemMsgNewFriend.Action(
+                bot.client,
+                event,
+                accept = true
+            ).sendWithoutExpect()
+        }
+    }
+
+    override suspend fun rejectNewFriend(event: NewFriendEvent, blackList: Boolean) {
+        network.run {
+            NewContact.SystemMsgNewFriend.Action(
+                bot.client,
+                event,
+                accept = false,
+                blackList = blackList
+            ).sendWithoutExpect()
+        }
+    }
+
+    override suspend fun acceptNewGroup(event: NewGroupEvent) {
+        network.run {
+            NewContact.SystemMsgNewGroup.Action(
+                bot.client,
+                event,
+                accept = true
+            ).sendWithoutExpect()
+        }
+    }
+
+    override suspend fun rejectNewGroup(event: NewGroupEvent, blackList: Boolean) {
+        network.run {
+            NewContact.SystemMsgNewGroup.Action(
+                bot.client,
+                event,
+                accept = false,
+                blackList = blackList
+            ).sendWithoutExpect()
+        }
+    }
+
+    override suspend fun ignoreNewGroup(event: NewGroupEvent, blackList: Boolean) {
+        network.run {
+            NewContact.SystemMsgNewGroup.Action(
+                bot.client,
+                event,
+                accept = null,
+                blackList = blackList
+            ).sendWithoutExpect()
+        }
+    }
+}
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal abstract class QQAndroidBotBase constructor(

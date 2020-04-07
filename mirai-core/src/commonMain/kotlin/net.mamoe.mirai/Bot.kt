@@ -18,6 +18,8 @@ import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
+import net.mamoe.mirai.event.events.NewFriendEvent
+import net.mamoe.mirai.event.events.NewGroupEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.BotNetworkHandler
@@ -197,6 +199,55 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     @JvmSynthetic
     @MiraiExperimentalAPI("未支持")
     abstract suspend fun addFriend(id: Long, message: String? = null, remark: String? = null): AddFriendResult
+
+
+    /**
+     * 通过好友验证
+     *
+     * @param event 好友验证的事件对象
+     */
+    @SinceMirai("0.35.0")
+    @JvmSynthetic
+    abstract suspend fun acceptNewFriend(event: NewFriendEvent)
+
+    /**
+     * 拒绝好友验证
+     *
+     * @param event 好友验证的事件对象
+     * @param blackList 拒绝后是否拉入黑名单
+     */
+    @SinceMirai("0.35.0")
+    @JvmSynthetic
+    abstract suspend fun rejectNewFriend(event: NewFriendEvent, blackList: Boolean = false)
+
+    /**
+     * 通过加群验证（需管理员权限）
+     *
+     * @param event 加群验证的事件对象
+     */
+    @SinceMirai("0.35.0")
+    @JvmSynthetic
+    abstract suspend fun acceptNewGroup(event: NewGroupEvent)
+
+    /**
+     * 拒绝加群验证（需管理员权限）
+     *
+     * @param event 加群验证的事件对象
+     * @param blackList 拒绝后是否拉入黑名单
+     */
+    @SinceMirai("0.35.0")
+    @JvmSynthetic
+    abstract suspend fun rejectNewGroup(event: NewGroupEvent, blackList: Boolean = false)
+
+    /**
+     * 忽略加群验证（需管理员权限）
+     *
+     * @param event 加群验证的事件对象
+     * @param blackList 忽略后是否拉入黑名单
+     */
+    @SinceMirai("0.35.0")
+    @JvmSynthetic
+    abstract suspend fun ignoreNewGroup(event: NewGroupEvent, blackList: Boolean = false)
 
     // endregion
 

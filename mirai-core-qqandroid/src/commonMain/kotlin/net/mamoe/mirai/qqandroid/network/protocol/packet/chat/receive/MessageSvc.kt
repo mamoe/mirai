@@ -46,6 +46,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
@@ -234,6 +235,24 @@ internal class MessageSvc {
                                     }
                                 } else return@mapNotNull null
                             }
+                        }
+                        84 -> { // 群验证
+                            bot.network.run {
+                                NewContact.SystemMsgNewGroup(bot.client).sendWithoutExpect()
+
+                                // 处理后要向服务器提交已阅，否则登陆时会重复收到事件
+                                NewContact.Del(bot.client, msg.msgHead).sendWithoutExpect()
+                            }
+                             return@mapNotNull null
+                        }
+                        187 -> { // 好友验证
+                            bot.network.run {
+                                NewContact.SystemMsgNewFriend(bot.client).sendWithoutExpect()
+
+                                // 处理后要向服务器提交已阅，否则登陆时会重复收到事件
+                                NewContact.Del(bot.client, msg.msgHead).sendWithoutExpect()
+                            }
+                            return@mapNotNull null
                         }
                         else -> return@mapNotNull null
                     }
