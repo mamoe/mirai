@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.command
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.message.data.Message
 
@@ -70,7 +71,7 @@ object ConsoleCommandSender : AbstractCommandSender() {
 }
 
 /**
- * 联系人指令执行者. 代表由一个 QQ 用户执行指令
+ * 联系人指令执行者. 代表由一个 QQ 用户私聊执行指令
  */
 @Suppress("MemberVisibilityCanBePrivate")
 open class ContactCommandSender(val contact: Contact) : AbstractCommandSender() {
@@ -82,3 +83,11 @@ open class ContactCommandSender(val contact: Contact) : AbstractCommandSender() 
         contact.sendMessage(message)
     }
 }
+
+/**
+ * 联系人指令执行者. 代表由一个 QQ 用户 在群里执行指令
+ */
+open class GroupContactCommandSender(
+    val realSender: Member,
+    subject: Contact
+):ContactCommandSender(subject)

@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.utils.removeManager
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.getFriendOrNull
+import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.utils.SimpleLogger
 import java.util.*
 
@@ -140,7 +141,11 @@ object DefaultCommands {
                     bot.subscribeMessages {
                         startsWith("/") { message ->
                             if (bot.checkManager(this.sender.id)) {
-                                val sender = ContactCommandSender(this.subject)
+                                val sender = if(this is GroupMessage) {
+                                    GroupContactCommandSender(this.sender,this.subject)
+                                }else{
+                                    ContactCommandSender(this.subject)
+                                }
                                 CommandManager.runCommand(
                                     sender, message
                                 )
@@ -191,8 +196,8 @@ object DefaultCommands {
             description = "聊天功能演示"
             onCommand {
                 if (it.size < 2) {
-                    MiraiConsole.logger("say [好友qq号或者群号] [文本消息]     //将默认使用第一个BOT")
-                    MiraiConsole.logger("say [bot号] [好友qq号或者群号] [文本消息]")
+                    MiraiConsole.logger("say [好友qq号或者群号] [测试消息]     //将默认使用第一个BOT")
+                    MiraiConsole.logger("say [bot号] [好友qq号或者群号] [测试消息]")
                     return@onCommand false
                 }
                 val bot: Bot? = if (it.size == 2) {
@@ -230,7 +235,7 @@ object DefaultCommands {
             onCommand {
                 PluginManager.getAllPluginDescriptions().let { descriptions ->
                     descriptions.forEach {
-                        appendMessage("\t" + it.name + " v" + it.version + " by" + it.author + " " + it.info)
+                        appendMessage("\t" + it.name + " v" + it.version + " by " + it.author + " " + it.info)
                     }
                     appendMessage("加载了" + descriptions.size + "个插件")
                     true

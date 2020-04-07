@@ -58,9 +58,8 @@ object PluginManager {
      * 他的优先级取决于依赖,
      * 在这个队列中, 被依赖的插件会在依赖的插件之前
      */
-    private val pluginsSequence: MutableList<PluginBase> = mutableListOf()
-
-
+    internal val pluginsSequence: MutableList<PluginBase> = mutableListOf()
+    
     /**
      * 广播Command方法
      */

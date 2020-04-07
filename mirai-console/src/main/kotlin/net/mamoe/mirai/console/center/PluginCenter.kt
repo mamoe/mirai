@@ -1,5 +1,7 @@
 package net.mamoe.mirai.console.center
 
+import java.io.File
+
 interface PluginCenter {
 
     companion object {
@@ -46,9 +48,9 @@ interface PluginCenter {
     suspend fun findPlugin(name:String):PluginInfo?
 
 
-    suspend fun <T:Any> T.downloadPlugin(name:String, progressListener:T.(Float) -> Unit)
+    suspend fun <T:Any> T.downloadPlugin(name:String, progressListener:T.(Float) -> Unit): File
 
-    suspend fun downloadPlugin(name:String, progressListener:PluginCenter.(Float) -> Unit) = downloadPlugin<PluginCenter>(name,progressListener)
+    suspend fun downloadPlugin(name:String, progressListener:PluginCenter.(Float) -> Unit): File = downloadPlugin<PluginCenter>(name,progressListener)
 
     /**
      * 刷新
@@ -58,3 +60,8 @@ interface PluginCenter {
     val name:String
 }
 
+internal fun handleReplacement(
+
+){
+
+}

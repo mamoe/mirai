@@ -102,8 +102,9 @@ internal object CuiPluginCenter: PluginCenter{
         plugins = results.get("result").asJsonArray//先不解析
     }
 
-    override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit){
+    override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit):File{
         val info = findPlugin(name) ?: error("Plugin Not Found")
+        val targetFile = File(PluginManager.pluginsPath, "$name-" + info.version + ".jar")
         withContext(Dispatchers.IO) {
             tryNTimes {
                 val con =
@@ -111,7 +112,6 @@ internal object CuiPluginCenter: PluginCenter{
                 val input = con.inputStream
                 val size = con.contentLength
                 var totalDownload = 0F
-                val targetFile = File(PluginManager.pluginsPath, "$name-" + info.version + ".jar")
                 val outputStream = FileOutputStream(targetFile)
                 var len: Int
                 val buff = ByteArray(1024)
@@ -122,6 +122,7 @@ internal object CuiPluginCenter: PluginCenter{
                 }
             }
         }
+        return targetFile
     }
 
     override val name: String
