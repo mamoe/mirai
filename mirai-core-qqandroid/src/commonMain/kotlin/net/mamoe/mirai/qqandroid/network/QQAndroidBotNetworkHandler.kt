@@ -449,15 +449,18 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
             when (packet) {
-                is GroupMessage -> bot.logger.verbose(
+                is Packet.NoLog -> {
+                    // nothing to do
+                }
+                is GroupMessage -> bot.logger.verbose {
                     "[${packet.group.name}(${packet.group.id})] ${packet.senderName}(${packet.sender.id}) -> ${packet.message.toString()
                         .singleLine()}"
-                )
-                is FriendMessage -> bot.logger.verbose(
+                }
+                is FriendMessage -> bot.logger.verbose {
                     "${packet.sender.nick}(${packet.sender.id}) -> ${packet.message.toString().singleLine()}"
-                )
-                is Event -> bot.logger.verbose("Event: ${packet.toString().singleLine()}")
-                else -> logger.verbose("Event: ${packet.toString().singleLine()}")
+                }
+                is Event -> bot.logger.verbose { "Event: ${packet.toString().singleLine()}" }
+                else -> logger.verbose { "Event: ${packet.toString().singleLine()}" }
             }
         }
 
