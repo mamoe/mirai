@@ -15,21 +15,21 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 @Serializable
-class Oidb0x8a0 : ProtoBuf {
+internal class Oidb0x8a0 : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val optUint64GroupCode: Long = 0L,
-        @ProtoId(2) val msgKickResult: List<Oidb0x8a0.KickResult>? = null
+        @ProtoId(2) val msgKickResult: List<KickResult>? = null
     ) : ProtoBuf
 
     @Serializable
-    class KickResult(
+    internal class KickResult(
         @ProtoId(1) val optUint32Result: Int = 0,
         @ProtoId(2) val optUint64MemberUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class KickMemberInfo(
+    internal class KickMemberInfo(
         @ProtoId(1) val optUint32Operate: Int = 0,
         @ProtoId(2) val optUint64MemberUin: Long = 0L,
         @ProtoId(3) val optUint32Flag: Int = 0,
@@ -37,9 +37,9 @@ class Oidb0x8a0 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val optUint64GroupCode: Long = 0L,
-        @ProtoId(2) val msgKickList: List<Oidb0x8a0.KickMemberInfo>? = null,
+        @ProtoId(2) val msgKickList: List<KickMemberInfo>? = null,
         @ProtoId(3) val kickList: List<Long>? = null,
         @ProtoId(4) val kickFlag: Int = 0,
         @ProtoId(5) val kickMsg: ByteArray = EMPTY_BYTE_ARRAY
@@ -48,20 +48,20 @@ class Oidb0x8a0 : ProtoBuf {
 
 
 @Serializable
-class Oidb0x8fc : ProtoBuf {
+internal class Oidb0x8fc : ProtoBuf {
     @Serializable
-    class CardNameElem(
+    internal class CardNameElem(
         @ProtoId(1) val enumCardType: Int /* enum */ = 1,
         @ProtoId(2) val value: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class CommCardNameBuf(
+    internal class CommCardNameBuf(
         @ProtoId(1) val richCardName: List<RichCardNameElem>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val groupCode: Long = 0L,
         @ProtoId(2) val showFlag: Int = 0,
         @ProtoId(3) val memLevelInfo: List<MemberInfo>? = null,
@@ -74,7 +74,7 @@ class Oidb0x8fc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MemberInfo(
+    internal class MemberInfo(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val point: Int = 0,
         @ProtoId(3) val activeDay: Int = 0,
@@ -95,54 +95,54 @@ class Oidb0x8fc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RichCardNameElem(
+    internal class RichCardNameElem(
         @ProtoId(1) val ctrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val text: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val groupCode: Long = 0L,
         @ProtoId(2) val errInfo: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class ClientInfo(
+    internal class ClientInfo(
         @ProtoId(1) val implat: Int = 0,
         @ProtoId(2) val ingClientver: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class LevelName(
+    internal class LevelName(
         @ProtoId(1) val level: Int = 0,
         @ProtoId(2) val name: String = ""
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0x88d : ProtoBuf {
+internal class Oidb0x88d : ProtoBuf {
     @Serializable
-    class GroupExInfoOnly(
+    internal class GroupExInfoOnly(
         @ProtoId(1) val tribeId: Int = 0,
         @ProtoId(2) val moneyForAddGroup: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqGroupInfo(
+    internal class ReqGroupInfo(
         @ProtoId(1) val groupCode: Long = 0L,
         @ProtoId(2) val stgroupinfo: GroupInfo? = null,
         @ProtoId(3) val lastGetGroupNameTime: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspGroupInfo(
+    internal class RspGroupInfo(
         @ProtoId(1) val groupCode: Long = 0L,
         @ProtoId(2) val result: Int = 0,
         @ProtoId(3) val stgroupinfo: GroupInfo? = null
     ) : ProtoBuf
 
     @Serializable
-    class GroupGeoInfo(
+    internal class GroupGeoInfo(
         @ProtoId(1) val owneruin: Long = 0L,
         @ProtoId(2) val settime: Int = 0,
         @ProtoId(3) val cityid: Int = 0,
@@ -153,7 +153,7 @@ class Oidb0x88d : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TagRecord(
+    internal class TagRecord(
         @ProtoId(1) val fromUin: Long = 0L,
         @ProtoId(2) val groupCode: Long = 0L,
         @ProtoId(3) val tagId: ByteArray = EMPTY_BYTE_ARRAY,
@@ -165,7 +165,7 @@ class Oidb0x88d : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class GroupInfo(
+    internal class GroupInfo(
         @ProtoId(1) val groupOwner: Long? = null,
         @ProtoId(2) val groupCreateTime: Int? = null,
         @ProtoId(3) val groupFlag: Int? = null,
@@ -270,7 +270,7 @@ class Oidb0x88d : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class GroupHeadPortraitInfo(
+    internal class GroupHeadPortraitInfo(
         @ProtoId(1) val uint32PicId: Int = 0,
         @ProtoId(2) val leftX: Int = 0,
         @ProtoId(3) val leftY: Int = 0,
@@ -279,20 +279,20 @@ class Oidb0x88d : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val stzrspgroupinfo: List<RspGroupInfo>? = null,
         @ProtoId(2) val errorinfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val appid: Int = 0,
         @ProtoId(2) val stzreqgroupinfo: List<ReqGroupInfo>? = null,
         @ProtoId(3) val pcClientVersion: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class GroupHeadPortrait(
+    internal class GroupHeadPortrait(
         @ProtoId(1) val picCnt: Int = 0,
         @ProtoId(2) val msgInfo: List<GroupHeadPortraitInfo>? = null,
         @ProtoId(3) val defaultId: Int = 0,
@@ -302,15 +302,15 @@ class Oidb0x88d : ProtoBuf {
 }
 
 @Serializable
-class Oidb0x89a : ProtoBuf {
+internal class Oidb0x89a : ProtoBuf {
     @Serializable
-    class GroupNewGuidelinesInfo(
+    internal class GroupNewGuidelinesInfo(
         @ProtoId(1) val boolEnabled: Boolean = false,
         @ProtoId(2) val ingContent: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class Groupinfo(
+    internal class Groupinfo(
         @ProtoId(1) val groupExtAdmNum: Int? = null,
         @ProtoId(2) val flag: Int? = null,
         @ProtoId(3) val ingGroupName: ByteArray? = null,
@@ -352,19 +352,19 @@ class Oidb0x89a : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val groupCode: Long = 0L,
         @ProtoId(2) val errorinfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class GroupExInfoOnly(
+    internal class GroupExInfoOnly(
         @ProtoId(1) val tribeId: Int = 0,
         @ProtoId(2) val moneyForAddGroup: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class GroupGeoInfo(
+    internal class GroupGeoInfo(
         @ProtoId(1) val cityId: Int = 0,
         @ProtoId(2) val longtitude: Long = 0L,
         @ProtoId(3) val latitude: Long = 0L,
@@ -373,7 +373,7 @@ class Oidb0x89a : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val groupCode: Long = 0L,
         @ProtoId(2) val stGroupInfo: Groupinfo? = null,
         @ProtoId(3) val originalOperatorUin: Long = 0L,
@@ -382,15 +382,15 @@ class Oidb0x89a : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x7cb : ProtoBuf {
+internal class Cmd0x7cb : ProtoBuf {
     @Serializable
-    class ConfigItem(
+    internal class ConfigItem(
         @ProtoId(1) val id: Int = 0,
         @ProtoId(2) val config: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val timeStamp: Int = 0,
         @ProtoId(2) val timeGap: Int = 0,
         @ProtoId(3) val commentConfigs: List<CommentConfig>? = null,
@@ -407,24 +407,24 @@ class Cmd0x7cb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class CommentConfig(
+    internal class CommentConfig(
         @ProtoId(1) val appointSubject: Int = 0,
         @ProtoId(2) val msgConfigs: List<ConfigItem>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val timeStamp: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class DateRequest(
+    internal class DateRequest(
         @ProtoId(1) val time: Int = 0,
         @ProtoId(2) val errMsg: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class TopicConfig(
+    internal class TopicConfig(
         @ProtoId(1) val topicId: Int = 0,
         @ProtoId(2) val topicName: String = "",
         @ProtoId(3) val deadline: Int = 0,
@@ -433,9 +433,9 @@ class Cmd0x7cb : ProtoBuf {
 }
 
 @Serializable
-class Oidb0x87a : ProtoBuf {
+internal class Oidb0x87a : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val country: String = "",
         @ProtoId(2) val telephone: String = "",
         @ProtoId(3) val resendInterval: Int = 0,
@@ -443,7 +443,7 @@ class Oidb0x87a : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val country: String = "",
         @ProtoId(2) val telephone: String = "",
         @ProtoId(3) val guid: ByteArray = EMPTY_BYTE_ARRAY,
@@ -452,15 +452,15 @@ class Oidb0x87a : ProtoBuf {
 }
 
 @Serializable
-class GroupAppPb : ProtoBuf {
+internal class GroupAppPb : ProtoBuf {
     @Serializable
-    class ClientInfo(
+    internal class ClientInfo(
         @ProtoId(1) val platform: Int = 0,
         @ProtoId(2) val version: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val fullList: AppList? = null,
         @ProtoId(2) val groupGrayList: AppList? = null,
         @ProtoId(3) val redPointList: AppList? = null,
@@ -468,13 +468,13 @@ class GroupAppPb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class AppList(
+    internal class AppList(
         @ProtoId(1) val hash: String = "",
         @ProtoId(2) val infos: List<AppInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class AppInfo(
+    internal class AppInfo(
         @ProtoId(1) val appid: Int = 0,
         @ProtoId(2) val icon: String = "",
         @ProtoId(3) val name: String = "",
@@ -485,7 +485,7 @@ class GroupAppPb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val client: ClientInfo? = null,
         @ProtoId(2) val groupId: Long = 0L,
         @ProtoId(3) val groupType: Int = 0,
@@ -495,27 +495,27 @@ class GroupAppPb : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xc34 : ProtoBuf {
+internal class Oidb0xc34 : ProtoBuf {
     @Serializable
-    class RspBody : ProtoBuf
+    internal class RspBody : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L
     ) : ProtoBuf
 }
 
 @Serializable
-class Cmd0x5fd : ProtoBuf {
+internal class Cmd0x5fd : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgComment: AppointDefine.DateComment? = null,
         @ProtoId(2) val maxFetchCount: Int = 0,
         @ProtoId(3) val lastCommentId: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgComment: List<AppointDefine.DateComment>? = null,
         @ProtoId(2) val errorTips: String = "",
         @ProtoId(3) val clearCacheFlag: Int = 0,
@@ -525,9 +525,9 @@ class Cmd0x5fd : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xbcb : ProtoBuf {
+internal class Oidb0xbcb : ProtoBuf {
     @Serializable
-    class CheckUrlReqItem(
+    internal class CheckUrlReqItem(
         @ProtoId(1) val url: String = "",
         @ProtoId(2) val refer: String = "",
         @ProtoId(3) val plateform: String = "",
@@ -541,25 +541,25 @@ class Oidb0xbcb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class CheckUrlRsp(
+    internal class CheckUrlRsp(
         @ProtoId(1) val results: List<UrlCheckResult>? = null,
         @ProtoId(2) val nextReqDuration: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(9) val notUseCache: Int = 0,
         @ProtoId(10) val checkUrlReq: CheckUrlReq? = null
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val wording: String = "",
         @ProtoId(10) val checkUrlRsp: CheckUrlRsp? = null
     ) : ProtoBuf
 
     @Serializable
-    class CheckUrlReq(
+    internal class CheckUrlReq(
         @ProtoId(1) val url: List<String> = listOf(),
         @ProtoId(2) val refer: String = "",
         @ProtoId(3) val plateform: String = "",
@@ -574,7 +574,7 @@ class Oidb0xbcb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class UrlCheckResult(
+    internal class UrlCheckResult(
         @ProtoId(1) val url: String = "",
         @ProtoId(2) val result: Int = 0,
         @ProtoId(3) val jumpResult: Int = 0,
@@ -588,24 +588,24 @@ class Oidb0xbcb : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xbfe : ProtoBuf {
+internal class Oidb0xbfe : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val receiveStatus: Int = 0,
         @ProtoId(2) val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val flag: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0xbe8 : ProtoBuf {
+internal class Oidb0xbe8 : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val enumOpCode: Int /* enum */ = 1,
         @ProtoId(3) val rspOfPopupFlag: Int = 0,
@@ -613,13 +613,13 @@ class Oidb0xbe8 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PopupResult(
+    internal class PopupResult(
         @ProtoId(1) val popupResult: Int = 0,
         @ProtoId(2) val popupFieldid: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val enumOpCode: Int /* enum */ = 1,
         @ProtoId(3) val reqOfPopupFlag: Int = 0,
@@ -630,16 +630,16 @@ class Oidb0xbe8 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x7de : ProtoBuf {
+internal class Cmd0x7de : ProtoBuf {
     @Serializable
-    class UserProfile(
+    internal class UserProfile(
         @ProtoId(1) val msgPublisherInfo: AppointDefine.PublisherInfo? = null,
         @ProtoId(2) val msgAppointsInfo: AppointDefine.AppointInfo? = null,
         @ProtoId(3) val msgVistorInfo: List<AppointDefine.StrangerInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgHead: BusiRespHead? = null,
         @ProtoId(2) val msgUserList: List<UserProfile>? = null,
         @ProtoId(3) val ended: Int = 0,
@@ -647,7 +647,7 @@ class Cmd0x7de : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class BusiRespHead(
+    internal class BusiRespHead(
         @ProtoId(1) val int32Version: Int = 1,
         @ProtoId(2) val int32Seq: Int = 0,
         @ProtoId(3) val int32ReplyCode: Int = 0,
@@ -655,7 +655,7 @@ class Cmd0x7de : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgHead: BusiReqHead? = null,
         @ProtoId(2) val msgLbsInfo: AppointDefine.LBSInfo? = null,
         @ProtoId(3) val time: Int = 0,
@@ -669,16 +669,16 @@ class Cmd0x7de : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class BusiReqHead(
+    internal class BusiReqHead(
         @ProtoId(1) val int32Version: Int = 1,
         @ProtoId(2) val int32Seq: Int = 0
     ) : ProtoBuf
 }
 
 @Serializable
-class Cmd0x7a8 : ProtoBuf {
+internal class Cmd0x7a8 : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val reqUin: Long = 0L,
         @ProtoId(11) val onlyObtained: Int = 0,
         @ProtoId(12) val readReport: Int = 0,
@@ -691,7 +691,7 @@ class Cmd0x7a8 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val nick: String = "",
         @ProtoId(2) val metalRank: Int = 0,
         @ProtoId(3) val friCount: Int = 0,
@@ -706,7 +706,7 @@ class Cmd0x7a8 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MedalNews(
+    internal class MedalNews(
         @ProtoId(1) val friUin: Long = 0L,
         @ProtoId(2) val friNick: String = "",
         @ProtoId(3) val msgMedal: Common.MedalInfo? = null
@@ -715,9 +715,9 @@ class Cmd0x7a8 : ProtoBuf {
 
 
 @Serializable
-class Cmd0x5fe : ProtoBuf {
+internal class Cmd0x5fe : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgAppointId: AppointDefine.AppointID? = null,
         @ProtoId(2) val commentId: String = "",
         @ProtoId(3) val fetchOldCount: Int = 0,
@@ -725,7 +725,7 @@ class Cmd0x5fe : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgComment: List<AppointDefine.DateComment>? = null,
         @ProtoId(2) val errorTips: String = "",
         @ProtoId(3) val fetchOldOver: Int = 0,
@@ -734,18 +734,18 @@ class Cmd0x5fe : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xc35 : ProtoBuf {
+internal class Oidb0xc35 : ProtoBuf {
     @Serializable
-    class RspBody : ProtoBuf
+    internal class RspBody : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val msgExposeInfo: List<ExposeItem>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ExposeItem(
+    internal class ExposeItem(
         @ProtoId(1) val friend: Long = 0L,
         @ProtoId(2) val pageId: Int = 0,
         @ProtoId(3) val entranceId: Int = 0,
@@ -758,15 +758,15 @@ class Oidb0xc35 : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xc0d : ProtoBuf {
+internal class Oidb0xc0d : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val completedTaskStamp: Long = 0L,
         @ProtoId(2) val errMsg: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val taskType: Int = 0,
         @ProtoId(3) val taskPoint: Int = 0
@@ -774,9 +774,9 @@ class Oidb0xc0d : ProtoBuf {
 }
 
 @Serializable
-class OidbSso : ProtoBuf {
+internal class OidbSso : ProtoBuf {
     @Serializable
-    class OIDBSSOPkg(
+    internal class OIDBSSOPkg(
         @ProtoId(1) val command: Int = 0,
         @ProtoId(2) val serviceType: Int = 0,
         @ProtoId(3) val result: Int = 0,
@@ -787,31 +787,31 @@ class OidbSso : ProtoBuf {
 }
 
 @Serializable
-class Cmd0xc83 : ProtoBuf {
+internal class Cmd0xc83 : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(101) val fromUin: Long = 0L,
         @ProtoId(102) val toUin: Long = 0L,
         @ProtoId(103) val op: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(101) val result: Int = 0,
         @ProtoId(102) val retryInterval: Int = 0
     ) : ProtoBuf
 }
 
 @Serializable
-class Cmd0xccb : ProtoBuf {
+internal class Cmd0xccb : ProtoBuf {
     @Serializable
-    class GroupMsgInfo(
+    internal class GroupMsgInfo(
         @ProtoId(1) val msgSeq: Int = 0,
         @ProtoId(2) val roamFlag: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val type: Int = 0,
         @ProtoId(2) val destUin: Long = 0L,
         @ProtoId(3) val groupCode: Long = 0L,
@@ -820,7 +820,7 @@ class Cmd0xccb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val type: Int = 0,
         @ProtoId(2) val destUin: Long = 0L,
         @ProtoId(3) val groupCode: Long = 0L,
@@ -830,7 +830,7 @@ class Cmd0xccb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class C2cMsgInfo(
+    internal class C2cMsgInfo(
         @ProtoId(1) val msgSeq: Int = 0,
         @ProtoId(2) val msgTime: Int = 0,
         @ProtoId(3) val msgRandom: Int = 0,
@@ -839,22 +839,22 @@ class Cmd0xccb : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xd84 : ProtoBuf {
+internal class Oidb0xd84 : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val xmitinfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val xmitinfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0x5e1 : ProtoBuf {
+internal class Oidb0x5e1 : ProtoBuf {
     @Serializable
-    class UdcUinData(
+    internal class UdcUinData(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(4) val openid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(20002) val nick: ByteArray = EMPTY_BYTE_ARRAY,
@@ -900,13 +900,13 @@ class Oidb0x5e1 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(11) val msgUinData: List<UdcUinData>? = null,
         @ProtoId(12) val uint64UnfinishedUins: List<Long>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uint64Uins: List<Long>? = null,
         @ProtoId(2) val startTime: Int = 0,
         @ProtoId(3) val maxPackageSize: Int = 0,
@@ -956,22 +956,22 @@ class Oidb0x5e1 : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xc90 : ProtoBuf {
+internal class Oidb0xc90 : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val communityBid: List<Long>? = null,
         @ProtoId(2) val page: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class CommunityWebInfo(
+    internal class CommunityWebInfo(
         @ProtoId(1) val communityInfoItem: List<CommunityConfigInfo>? = null,
         @ProtoId(2) val page: Int = 0,
         @ProtoId(3) val end: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val communityInfoItem: List<CommunityConfigInfo>? = null,
         @ProtoId(2) val jumpConcernCommunityUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val communityTitleWording: ByteArray = EMPTY_BYTE_ARRAY,
@@ -981,7 +981,7 @@ class Oidb0xc90 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class CommunityConfigInfo(
+    internal class CommunityConfigInfo(
         @ProtoId(1) val jumpHomePageUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val name: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val picUrl: ByteArray = EMPTY_BYTE_ARRAY,
@@ -992,15 +992,15 @@ class Oidb0xc90 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0xd8a : ProtoBuf {
+internal class Cmd0xd8a : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val retcode: Int = 0,
         @ProtoId(2) val res: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val cmd: Int = 0,
         @ProtoId(3) val body: String = "",
@@ -1008,23 +1008,23 @@ class Cmd0xd8a : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ClientInfo(
+    internal class ClientInfo(
         @ProtoId(1) val implat: Int = 0,
         @ProtoId(2) val ingClientver: String = ""
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0xb6f : ProtoBuf {
+internal class Oidb0xb6f : ProtoBuf {
     @Serializable
-    class ReportFreqRspBody(
+    internal class ReportFreqRspBody(
         @ProtoId(1) val identity: Identity? = null,
         @ProtoId(4) val remainTimes: Long = 0L,
         @ProtoId(5) val expireTime: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class Identity(
+    internal class Identity(
         @ProtoId(1) val apiName: String = "",
         @ProtoId(2) val appid: Int = 0,
         @ProtoId(3) val apptype: Int = 0,
@@ -1034,7 +1034,7 @@ class Oidb0xb6f : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ThresholdInfo(
+    internal class ThresholdInfo(
         @ProtoId(1) val thresholdPerMinute: Long = 0L,
         @ProtoId(2) val thresholdPerDay: Long = 0L,
         @ProtoId(3) val thresholdPerHour: Long = 0L,
@@ -1042,33 +1042,33 @@ class Oidb0xb6f : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val reportFreqRsp: ReportFreqRspBody? = null
     ) : ProtoBuf
 
     @Serializable
-    class ReportFreqReqBody(
+    internal class ReportFreqReqBody(
         @ProtoId(1) val identity: Identity? = null,
         @ProtoId(2) val invokeTimes: Long = 1L
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val reportFreqReq: ReportFreqReqBody? = null
     ) : ProtoBuf
 }
 
 @Serializable
-class Cmd0x7dc : ProtoBuf {
+internal class Cmd0x7dc : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val seq: Int = 0,
         @ProtoId(2) val wording: String = "",
         @ProtoId(3) val msgAppointInfo: List<AppointDefine.AppointInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val seq: Int = 0,
         @ProtoId(2) val msgAppointment: AppointDefine.AppointContent? = null,
         @ProtoId(3) val msgLbsInfo: AppointDefine.LBSInfo? = null,
@@ -1077,15 +1077,15 @@ class Cmd0x7dc : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x7cd : ProtoBuf {
+internal class Cmd0x7cd : ProtoBuf {
     @Serializable
-    class AppointBrife(
+    internal class AppointBrife(
         @ProtoId(1) val msgPublisherInfo: AppointDefine.PublisherInfo? = null,
         @ProtoId(2) val msgAppointsInfo: AppointDefine.AppointInfo? = null
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val stamp: Int = 0,
         @ProtoId(2) val over: Int = 0,
         @ProtoId(3) val next: Int = 0,
@@ -1093,7 +1093,7 @@ class Cmd0x7cd : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val stamp: Int = 0,
         @ProtoId(2) val start: Int = 0,
         @ProtoId(3) val want: Int = 0,
@@ -1105,9 +1105,9 @@ class Cmd0x7cd : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xc0c : ProtoBuf {
+internal class Oidb0xc0c : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val isTaskCompleted: Int = 0,
         @ProtoId(2) val taskPoint: Int = 0,
         @ProtoId(3) val guideWording: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1119,13 +1119,13 @@ class Oidb0xc0c : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class VideoSrcType(
+    internal class VideoSrcType(
         @ProtoId(1) val sourceType: Int = 0,
         @ProtoId(2) val videoFromType: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val taskType: Int = 0,
         @ProtoId(3) val rowkey: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1135,9 +1135,9 @@ class Oidb0xc0c : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x5fb : ProtoBuf {
+internal class Cmd0x5fb : ProtoBuf {
     @Serializable
-    class ReqInfo(
+    internal class ReqInfo(
         @ProtoId(3) val time: Int = 0,
         @ProtoId(4) val subject: Int = 0,
         @ProtoId(5) val gender: Int = 0,
@@ -1149,14 +1149,14 @@ class Cmd0x5fb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgHead: BusiReqHead? = null,
         @ProtoId(2) val msgLbsInfo: AppointDefine.LBSInfo? = null,
         @ProtoId(3) val reqInfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class BusiRespHead(
+    internal class BusiRespHead(
         @ProtoId(1) val int32Version: Int = 1,
         @ProtoId(2) val int32Seq: Int = 0,
         @ProtoId(3) val int32ReplyCode: Int = 0,
@@ -1164,7 +1164,7 @@ class Cmd0x5fb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class UserProfile(
+    internal class UserProfile(
         @ProtoId(1) val int64Id: Long = 0L,
         @ProtoId(2) val int32IdType: Int = 0,
         @ProtoId(3) val url: String = "",
@@ -1177,29 +1177,29 @@ class Cmd0x5fb : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class BusiReqHead(
+    internal class BusiReqHead(
         @ProtoId(1) val int32Version: Int = 1,
         @ProtoId(2) val int32Seq: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgHead: BusiRespHead? = null,
         @ProtoId(2) val msgUserList: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0xb61 : ProtoBuf {
+internal class Oidb0xb61 : ProtoBuf {
     @Serializable
-    class GetAppinfoReq(
+    internal class GetAppinfoReq(
         @ProtoId(1) val appid: Int = 0,
         @ProtoId(2) val appType: Int = 0,
         @ProtoId(3) val platform: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class GetPkgUrlReq(
+    internal class GetPkgUrlReq(
         @ProtoId(1) val appid: Int = 0,
         @ProtoId(2) val appType: Int = 0,
         @ProtoId(3) val appVersion: Int = 0,
@@ -1209,7 +1209,7 @@ class Oidb0xb61 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val wording: String = "",
         @ProtoId(2) val nextReqDuration: Int = 0,
         @ProtoId(10) val getAppinfoRsp: GetAppinfoRsp? = null,
@@ -1217,40 +1217,40 @@ class Oidb0xb61 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(10) val getAppinfoReq: GetAppinfoReq? = null,
         @ProtoId(11) val getMqqappUrlReq: GetPkgUrlReq? = null
     ) : ProtoBuf
 
     @Serializable
-    class GetAppinfoRsp(
+    internal class GetAppinfoRsp(
         @ProtoId(1) val appinfo: Qqconnect.Appinfo? = null
     ) : ProtoBuf
 
     @Serializable
-    class GetPkgUrlRsp(
+    internal class GetPkgUrlRsp(
         @ProtoId(1) val appVersion: Int = 0,
         @ProtoId(2) val pkgUrl: String = ""
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0xb60 : ProtoBuf {
+internal class Oidb0xb60 : ProtoBuf {
     @Serializable
-    class GetPrivilegeReq(
+    internal class GetPrivilegeReq(
         @ProtoId(1) val appid: Int = 0,
         @ProtoId(2) val appType: Int = 3
     ) : ProtoBuf
 
     @Serializable
-    class CheckUrlReq(
+    internal class CheckUrlReq(
         @ProtoId(1) val appid: Int = 0,
         @ProtoId(2) val appType: Int = 0,
         @ProtoId(3) val url: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class ClientInfo(
+    internal class ClientInfo(
         @ProtoId(1) val platform: Int = 0,
         @ProtoId(2) val sdkVersion: String = "",
         @ProtoId(3) val androidPackageName: String = "",
@@ -1260,27 +1260,27 @@ class Oidb0xb60 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val wording: String = "",
         @ProtoId(10) val getPrivilegeRsp: GetPrivilegeRsp? = null,
         @ProtoId(11) val checkUrlRsp: CheckUrlRsp? = null
     ) : ProtoBuf
 
     @Serializable
-    class CheckUrlRsp(
+    internal class CheckUrlRsp(
         @ProtoId(1) val isAuthed: Boolean = false,
         @ProtoId(2) val nextReqDuration: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val clientInfo: ClientInfo? = null,
         @ProtoId(10) val getPrivilegeReq: GetPrivilegeReq? = null,
         @ProtoId(11) val checkUrlReq: CheckUrlReq? = null
     ) : ProtoBuf
 
     @Serializable
-    class GetPrivilegeRsp(
+    internal class GetPrivilegeRsp(
         @ProtoId(1) val apiGroups: List<Int>? = null,
         @ProtoId(2) val nextReqDuration: Int = 0,
         @ProtoId(3) val apiNames: List<String> = listOf()
@@ -1288,9 +1288,9 @@ class Oidb0xb60 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x5fc : ProtoBuf {
+internal class Cmd0x5fc : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val lastEventId: Long = 0L,
         @ProtoId(2) val readEventId: Long = 0L,
         @ProtoId(3) val fetchCount: Int = 0,
@@ -1303,7 +1303,7 @@ class Cmd0x5fc : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgEventList: List<AppointDefine.DateEvent>? = null,
         @ProtoId(2) val actAppointIds: List<AppointDefine.AppointID>? = null,
         @ProtoId(3) val maxEventId: Long = 0L,
@@ -1315,22 +1315,22 @@ class Cmd0x5fc : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xc33 : ProtoBuf {
+internal class Oidb0xc33 : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val result: Int = 0,
         @ProtoId(2) val nextGap: Int = 0,
         @ProtoId(3) val newUser: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody : ProtoBuf
+    internal class ReqBody : ProtoBuf
 }
 
 @Serializable
-class Oidb0xc0b : ProtoBuf {
+internal class Oidb0xc0b : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val isOpenCoinEntry: Int = 0,
         @ProtoId(2) val canGetCoinCount: Int = 0,
         @ProtoId(3) val coinIconUrl: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1342,34 +1342,34 @@ class Oidb0xc0b : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class KanDianCoinRemind(
+    internal class KanDianCoinRemind(
         @ProtoId(1) val wording: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class KanDianTaskRemind(
+    internal class KanDianTaskRemind(
         @ProtoId(1) val wording: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val taskType: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class KanDianCMSActivityInfo(
+    internal class KanDianCMSActivityInfo(
         @ProtoId(1) val activityId: Long = 0L,
         @ProtoId(2) val wording: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val pictureUrl: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L
     ) : ProtoBuf
 }
 
 @Serializable
-class Cmd0xc85 : ProtoBuf {
+internal class Cmd0xc85 : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(101) val fromUin: Long = 0L,
         @ProtoId(102) val toUin: Long = 0L,
         @ProtoId(103) val op: Int = 0,
@@ -1377,7 +1377,7 @@ class Cmd0xc85 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class InteractionDetailInfo(
+    internal class InteractionDetailInfo(
         @ProtoId(101) val continuousRecordDays: Int = 0,
         @ProtoId(102) val sendDayTime: Int = 0,
         @ProtoId(103) val recvDayTime: Int = 0,
@@ -1386,7 +1386,7 @@ class Cmd0xc85 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(101) val result: Int = 0,
         @ProtoId(102) val recentInteractionTime: Int = 0,
         @ProtoId(103) val interactionDetailInfo: InteractionDetailInfo? = null
@@ -1394,9 +1394,9 @@ class Cmd0xc85 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x7ce : ProtoBuf {
+internal class Cmd0x7ce : ProtoBuf {
     @Serializable
-    class AppintDetail(
+    internal class AppintDetail(
         @ProtoId(1) val msgPublisherInfo: AppointDefine.PublisherInfo? = null,
         @ProtoId(2) val msgAppointsInfo: AppointDefine.AppointInfo? = null,
         @ProtoId(3) val score: Int = 0,
@@ -1420,14 +1420,14 @@ class Cmd0x7ce : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgAppointsInfo: List<AppintDetail>? = null,
         @ProtoId(2) val secureFlag: Int = 0,
         @ProtoId(3) val secureTips: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val appointIds: List<AppointDefine.AppointID>? = null,
         @ProtoId(2) val joinStart: Int = 0,
         @ProtoId(3) val joinWant: Int = 0,
@@ -1441,9 +1441,9 @@ class Cmd0x7ce : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x7db : ProtoBuf {
+internal class Cmd0x7db : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val wording: String = "",
         @ProtoId(2) val msgAppointInfo: AppointDefine.AppointInfo? = null,
         @ProtoId(3) val sigC2C: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1451,7 +1451,7 @@ class Cmd0x7db : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgAppointId: AppointDefine.AppointID? = null,
         @ProtoId(2) val appointAction: Int = 0,
         @ProtoId(3) val overwrite: Int = 0,
@@ -1460,68 +1460,68 @@ class Cmd0x7db : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xc6c : ProtoBuf {
+internal class Oidb0xc6c : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val msgGroupInfo: List<GroupInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class GroupInfo(
+    internal class GroupInfo(
         @ProtoId(1) val groupUin: Long = 0L,
         @ProtoId(2) val groupCode: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class RspBody : ProtoBuf
+    internal class RspBody : ProtoBuf
 }
 
 @Serializable
-class Oidb0xc05 : ProtoBuf {
+internal class Oidb0xc05 : ProtoBuf {
     @Serializable
-    class GetAuthAppListReq(
+    internal class GetAuthAppListReq(
         @ProtoId(1) val start: Int = 0,
         @ProtoId(2) val limit: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val wording: String = "",
         @ProtoId(10) val getCreateAppListRsp: GetCreateAppListRsp? = null,
         @ProtoId(11) val getAuthAppListRsp: GetAuthAppListRsp? = null
     ) : ProtoBuf
 
     @Serializable
-    class GetCreateAppListRsp(
+    internal class GetCreateAppListRsp(
         @ProtoId(1) val totalCount: Int = 0,
         @ProtoId(2) val appinfos: List<Qqconnect.Appinfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class GetAuthAppListRsp(
+    internal class GetAuthAppListRsp(
         @ProtoId(1) val totalCount: Int = 0,
         @ProtoId(2) val appinfos: List<Qqconnect.Appinfo>? = null,
         @ProtoId(3) val curIndex: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(10) val getCreateAppListReq: GetCreateAppListReq? = null,
         @ProtoId(11) val getAuthAppListReq: GetAuthAppListReq? = null
     ) : ProtoBuf
 
     @Serializable
-    class GetCreateAppListReq(
+    internal class GetCreateAppListReq(
         @ProtoId(1) val start: Int = 0,
         @ProtoId(2) val limit: Int = 0
     ) : ProtoBuf
 }
 
 @Serializable
-class Cmd0x7da : ProtoBuf {
+internal class Cmd0x7da : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgAppointIds: List<AppointDefine.AppointID>? = null,
         @ProtoId(2) val appointOperation: Int = 0,
         @ProtoId(3) val operationReason: Int = 0,
@@ -1529,7 +1529,7 @@ class Cmd0x7da : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val wording: String = "",
         @ProtoId(2) val msgAppointInfo: List<AppointDefine.AppointInfo>? = null,
         @ProtoId(3) val operationReason: Int = 0
@@ -1537,22 +1537,22 @@ class Cmd0x7da : ProtoBuf {
 }
 
 @Serializable
-class Qqconnect : ProtoBuf {
+internal class Qqconnect : ProtoBuf {
     @Serializable
-    class MobileAppInfo(
+    internal class MobileAppInfo(
         @ProtoId(11) val androidAppInfo: List<AndroidAppInfo>? = null,
         @ProtoId(12) val iosAppInfo: List<IOSAppInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class TemplateMsgConfig(
+    internal class TemplateMsgConfig(
         @ProtoId(1) val serviceMsgUin: Long = 0L,
         @ProtoId(2) val publicMsgUin: Long = 0L,
         @ProtoId(3) val campMsgUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class Appinfo(
+    internal class Appinfo(
         @ProtoId(1) val appid: Int = 0,
         @ProtoId(2) val appType: Int = 0,
         @ProtoId(3) val platform: Int = 0,
@@ -1584,7 +1584,7 @@ class Qqconnect : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ConnectClientInfo(
+    internal class ConnectClientInfo(
         @ProtoId(1) val platform: Int = 0,
         @ProtoId(2) val sdkVersion: String = "",
         @ProtoId(3) val systemName: String = "",
@@ -1598,7 +1598,7 @@ class Qqconnect : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TencentDocsAppinfo(
+    internal class TencentDocsAppinfo(
         @ProtoId(1) val openTypes: String = "",
         @ProtoId(2) val opts: String = "",
         @ProtoId(3) val ejs: String = "",
@@ -1610,7 +1610,7 @@ class Qqconnect : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class WebAppInfo(
+    internal class WebAppInfo(
         @ProtoId(1) val websiteUrl: String = "",
         @ProtoId(2) val provider: String = "",
         @ProtoId(3) val icp: String = "",
@@ -1618,14 +1618,14 @@ class Qqconnect : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class IOSAppInfo(
+    internal class IOSAppInfo(
         @ProtoId(1) val bundleId: String = "",
         @ProtoId(2) val urlScheme: String = "",
         @ProtoId(3) val storeId: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class MsgUinInfo(
+    internal class MsgUinInfo(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val msgType: Int = 0,
         @ProtoId(3) val appid: Int = 0,
@@ -1638,7 +1638,7 @@ class Qqconnect : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MiniAppInfo(
+    internal class MiniAppInfo(
         @ProtoId(1) val superUin: Long = 0L,
         @ProtoId(11) val ownerType: Int = 0,
         @ProtoId(12) val ownerName: String = "",
@@ -1648,7 +1648,7 @@ class Qqconnect : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class AndroidAppInfo(
+    internal class AndroidAppInfo(
         @ProtoId(1) val packName: String = "",
         @ProtoId(2) val packSign: String = "",
         @ProtoId(3) val apkDownUrl: String = ""
@@ -1656,24 +1656,24 @@ class Qqconnect : ProtoBuf {
 }
 
 @Serializable
-class Sync : ProtoBuf {
+internal class Sync : ProtoBuf {
     @Serializable
-    class SyncAppointmentReq(
+    internal class SyncAppointmentReq(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val msgAppointment: AppointDefine.AppointContent? = null,
         @ProtoId(3) val msgGpsInfo: AppointDefine.GPS? = null
     ) : ProtoBuf
 
     @Serializable
-    class SyncAppointmentRsp(
+    internal class SyncAppointmentRsp(
         @ProtoId(1) val result: Int = 0
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0xc26 : ProtoBuf {
+internal class Oidb0xc26 : ProtoBuf {
     @Serializable
-    class RgoupLabel(
+    internal class RgoupLabel(
         @ProtoId(1) val name: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val enumType: Int /* enum */ = 1,
         @ProtoId(3) val textColor: RgroupColor? = null,
@@ -1683,13 +1683,13 @@ class Oidb0xc26 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class AddFriendSource(
+    internal class AddFriendSource(
         @ProtoId(1) val source: Int = 0,
         @ProtoId(2) val subSource: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class Label(
+    internal class Label(
         @ProtoId(1) val name: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val textColor: Color? = null,
         @ProtoId(3) val edgingColor: Color? = null,
@@ -1697,13 +1697,13 @@ class Oidb0xc26 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class EntryDelay(
+    internal class EntryDelay(
         @ProtoId(1) val emEntry: Int /* enum */ = 1,
         @ProtoId(2) val delay: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgPersons: List<MayKnowPerson>? = null,
         @ProtoId(2) val entryInuse: List<Int> = listOf(),
         @ProtoId(3) val entryClose: List<Int> = listOf(),
@@ -1721,7 +1721,7 @@ class Oidb0xc26 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TabInfo(
+    internal class TabInfo(
         @ProtoId(1) val tabId: Int = 0,
         @ProtoId(2) val recommendCount: Int = 0,
         @ProtoId(3) val tableName: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1732,7 +1732,7 @@ class Oidb0xc26 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MayKnowPerson(
+    internal class MayKnowPerson(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val msgIosSource: AddFriendSource? = null,
         @ProtoId(3) val msgAndroidSource: AddFriendSource? = null,
@@ -1757,13 +1757,13 @@ class Oidb0xc26 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RecommendInfo(
+    internal class RecommendInfo(
         @ProtoId(1) val woring: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val msgGroups: List<RgroupInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class RgroupInfo(
+    internal class RgroupInfo(
         @ProtoId(1) val groupCode: Long = 0L,
         @ProtoId(2) val ownerUin: Long = 0L,
         @ProtoId(3) val groupName: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1782,7 +1782,7 @@ class Oidb0xc26 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val filterUins: List<Long>? = null,
         @ProtoId(2) val phoneBook: Int = 0,
         @ProtoId(3) val expectedUins: List<Long>? = null,
@@ -1794,14 +1794,14 @@ class Oidb0xc26 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RgroupColor(
+    internal class RgroupColor(
         @ProtoId(1) val r: Int = 0,
         @ProtoId(2) val g: Int = 0,
         @ProtoId(3) val b: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class Color(
+    internal class Color(
         @ProtoId(1) val r: Int = 0,
         @ProtoId(2) val g: Int = 0,
         @ProtoId(3) val b: Int = 0
@@ -1809,9 +1809,9 @@ class Oidb0xc26 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0xac6 : ProtoBuf {
+internal class Cmd0xac6 : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val results: List<OperateResult>? = null,
         @ProtoId(4) val metalCount: Int = 0,
         @ProtoId(5) val metalTotal: Int = 0,
@@ -1821,19 +1821,19 @@ class Cmd0xac6 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val medals: List<MedalReport>? = null,
         @ProtoId(2) val clean: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class MedalReport(
+    internal class MedalReport(
         @ProtoId(1) val id: Int = 0,
         @ProtoId(2) val level: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class OperateResult(
+    internal class OperateResult(
         @ProtoId(1) val id: Int = 0,
         @ProtoId(2) val int32Result: Int = 0,
         @ProtoId(3) val errmsg: String = ""
@@ -1841,19 +1841,19 @@ class Cmd0xac6 : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xd32 : ProtoBuf {
+internal class Oidb0xd32 : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val openid: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val xmitinfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class XmitInfo(
+    internal class XmitInfo(
         @ProtoId(1) val signature: String = "",
         @ProtoId(2) val appid: String = "",
         @ProtoId(3) val groupid: String = "",
@@ -1863,9 +1863,9 @@ class Oidb0xd32 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x7cf : ProtoBuf {
+internal class Cmd0x7cf : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val stamp: Int = 0,
         @ProtoId(2) val start: Int = 0,
         @ProtoId(3) val want: Int = 0,
@@ -1876,7 +1876,7 @@ class Cmd0x7cf : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val stamp: Int = 0,
         @ProtoId(2) val over: Int = 0,
         @ProtoId(3) val next: Int = 0,
@@ -1886,20 +1886,20 @@ class Cmd0x7cf : ProtoBuf {
 }
 
 @Serializable
-class Cmd0xac7 : ProtoBuf {
+internal class Cmd0xac7 : ProtoBuf {
     @Serializable
-    class DeviceInfo(
+    internal class DeviceInfo(
         @ProtoId(1) val din: Long = 0L,
         @ProtoId(2) val name: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val extd: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val cmd: Int = 0,
         @ProtoId(2) val din: Long = 0L,
         @ProtoId(3) val extd: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1907,12 +1907,12 @@ class Cmd0xac7 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReceiveMessageDevices(
+    internal class ReceiveMessageDevices(
         @ProtoId(1) val devices: List<DeviceInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class BinderSig(
+    internal class BinderSig(
         @ProtoId(1) val type: Int = 0,
         @ProtoId(2) val uin: Long = 0L,
         @ProtoId(3) val sig: ByteArray = EMPTY_BYTE_ARRAY
@@ -1920,16 +1920,16 @@ class Cmd0xac7 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x5fa : ProtoBuf {
+internal class Cmd0x5fa : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgStrangerInfo: List<AppointDefine.StrangerInfo>? = null,
         @ProtoId(2) val reachStart: Int = 0,
         @ProtoId(3) val reachEnd: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val appointIds: AppointDefine.AppointID? = null,
         @ProtoId(2) val referIdx: Int = 0,
         @ProtoId(3) val getReferRec: Int = 0,
@@ -1939,9 +1939,9 @@ class Cmd0x5fa : ProtoBuf {
 }
 
 @Serializable
-class FavoriteCKVData : ProtoBuf {
+internal class FavoriteCKVData : ProtoBuf {
     @Serializable
-    class PicInfo(
+    internal class PicInfo(
         @ProtoId(1) val uri: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val md5: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val sha1: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1956,7 +1956,7 @@ class FavoriteCKVData : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class KandianFavoriteItem(
+    internal class KandianFavoriteItem(
         @ProtoId(1) val msgFavoriteExtInfo: KandianFavoriteBizData? = null,
         @ProtoId(2) val bytesCid: List<ByteArray>? = null,
         @ProtoId(3) val type: Int = 0,
@@ -1970,7 +1970,7 @@ class FavoriteCKVData : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class LinkSummary(
+    internal class LinkSummary(
         @ProtoId(1) val uri: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val title: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val publisher: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1981,25 +1981,25 @@ class FavoriteCKVData : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class UserFavoriteList(
+    internal class UserFavoriteList(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val modifyTs: Long = 0L,
         @ProtoId(100) val msgFavoriteItems: List<FavoriteItem>? = null
     ) : ProtoBuf
 
     @Serializable
-    class FavoriteSummary(
+    internal class FavoriteSummary(
         @ProtoId(2) val msgLinkSummary: LinkSummary? = null
     ) : ProtoBuf
 
     @Serializable
-    class FavoriteItem(
+    internal class FavoriteItem(
         @ProtoId(1) val favoriteSource: Int = 0,
         @ProtoId(100) val msgKandianFavoriteItem: KandianFavoriteItem? = null
     ) : ProtoBuf
 
     @Serializable
-    class Author(
+    internal class Author(
         @ProtoId(1) val type: Int = 0,
         @ProtoId(2) val numId: Long = 0L,
         @ProtoId(3) val strId: ByteArray = EMPTY_BYTE_ARRAY,
@@ -2008,7 +2008,7 @@ class FavoriteCKVData : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class KandianFavoriteBizData(
+    internal class KandianFavoriteBizData(
         @ProtoId(1) val rowkey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val type: Int = 0,
         @ProtoId(3) val videoDuration: Int = 0,
@@ -2022,57 +2022,57 @@ class FavoriteCKVData : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x5ff : ProtoBuf {
+internal class Cmd0x5ff : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val errorTips: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgAppointId: AppointDefine.AppointID? = null,
         @ProtoId(2) val commentId: String = ""
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0xccd : ProtoBuf {
+internal class Oidb0xccd : ProtoBuf {
     @Serializable
-    class Result(
+    internal class Result(
         @ProtoId(1) val appid: Int = 0,
         @ProtoId(2) val errcode: Int = 0,
         @ProtoId(3) val errmsg: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val int64Uin: Long = 0L,
         @ProtoId(2) val appids: List<Int>? = null,
         @ProtoId(3) val platform: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val errcode: Int = 0,
         @ProtoId(2) val results: List<Result>? = null
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0xc36 : ProtoBuf {
+internal class Oidb0xc36 : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uint64Uins: List<Long>? = null
     ) : ProtoBuf
 
     @Serializable
-    class RspBody : ProtoBuf
+    internal class RspBody : ProtoBuf
 }
 
 @Serializable
-class Oidb0x87c : ProtoBuf {
+internal class Oidb0x87c : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val country: String = "",
         @ProtoId(2) val telephone: String = "",
         @ProtoId(3) val smsCode: String = "",
@@ -2081,7 +2081,7 @@ class Oidb0x87c : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val country: String = "",
         @ProtoId(2) val telephone: String = "",
         @ProtoId(3) val keyType: Int = 0,
@@ -2091,16 +2091,16 @@ class Oidb0x87c : ProtoBuf {
 }
 
 @Serializable
-class Cmd0xbf2 : ProtoBuf {
+internal class Cmd0xbf2 : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val phoneAddrBook: List<PhoneAddrBook>? = null,
         @ProtoId(2) val end: Int = 0,
         @ProtoId(3) val nextIndex: Long = 0
     ) : ProtoBuf
 
     @Serializable
-    class PhoneAddrBook(
+    internal class PhoneAddrBook(
         @ProtoId(1) val phone: String = "",
         @ProtoId(2) val nick: String = "",
         @ProtoId(3) val headUrl: String = "",
@@ -2108,7 +2108,7 @@ class Cmd0xbf2 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val startIndex: Long = 0L,
         @ProtoId(3) val num: Long = 0L
@@ -2116,9 +2116,9 @@ class Cmd0xbf2 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x6cd : ProtoBuf {
+internal class Cmd0x6cd : ProtoBuf {
     @Serializable
-    class RedpointInfo(
+    internal class RedpointInfo(
         @ProtoId(1) val taskid: Int = 0,
         @ProtoId(2) val curSeq: Long = 0L,
         @ProtoId(3) val pullSeq: Long = 0L,
@@ -2136,19 +2136,19 @@ class Cmd0x6cd : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PullRedpointReq(
+    internal class PullRedpointReq(
         @ProtoId(1) val taskid: Int = 0,
         @ProtoId(2) val lastPullSeq: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgRedpoint: List<RedpointInfo>? = null,
         @ProtoId(2) val unfinishedRedpoint: List<PullRedpointReq>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val lastPullRedpoint: List<PullRedpointReq>? = null,
         @ProtoId(2) val unfinishedRedpoint: List<PullRedpointReq>? = null,
         @ProtoId(3) val msgPullSingleTask: PullRedpointReq? = null,
@@ -2156,14 +2156,14 @@ class Cmd0x6cd : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MessageRec(
+    internal class MessageRec(
         @ProtoId(1) val seq: Long = 0L,
         @ProtoId(2) val time: Int = 0,
         @ProtoId(3) val content: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class RepointExtraInfo(
+    internal class RepointExtraInfo(
         @ProtoId(1) val count: Int = 0,
         @ProtoId(2) val iconUrl: String = "",
         @ProtoId(3) val tips: String = "",
@@ -2172,17 +2172,17 @@ class Cmd0x6cd : ProtoBuf {
 }
 
 @Serializable
-class Oidb0xd55 : ProtoBuf {
+internal class Oidb0xd55 : ProtoBuf {
     @Serializable
-    class CheckUserRsp(
+    internal class CheckUserRsp(
         @ProtoId(1) val openidUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class CheckMiniAppRsp : ProtoBuf
+    internal class CheckMiniAppRsp : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val appid: Long = 0L,
         @ProtoId(2) val appType: Int = 0,
         @ProtoId(3) val srcId: Int = 0,
@@ -2193,12 +2193,12 @@ class Oidb0xd55 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class CheckAppSignReq(
+    internal class CheckAppSignReq(
         @ProtoId(1) val clientInfo: Qqconnect.ConnectClientInfo? = null
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val wording: String = "",
         @ProtoId(11) val checkAppSignRsp: CheckAppSignRsp? = null,
         @ProtoId(12) val checkUserRsp: CheckUserRsp? = null,
@@ -2206,19 +2206,19 @@ class Oidb0xd55 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class CheckUserReq(
+    internal class CheckUserReq(
         @ProtoId(1) val openid: String = "",
         @ProtoId(2) val needCheckSameUser: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class CheckMiniAppReq(
+    internal class CheckMiniAppReq(
         @ProtoId(1) val miniAppAppid: Long = 0L,
         @ProtoId(2) val needCheckBind: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class CheckAppSignRsp(
+    internal class CheckAppSignRsp(
         @ProtoId(1) val iosAppToken: String = "",
         @ProtoId(2) val iosUniversalLink: String = "",
         @ProtoId(11) val optimizeSwitch: Int = 0
@@ -2226,9 +2226,9 @@ class Oidb0xd55 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x8b4 : ProtoBuf {
+internal class Cmd0x8b4 : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val gc: Long = 0L,
         @ProtoId(2) val guin: Long = 0L,
         @ProtoId(3) val flag: Int = 0,
@@ -2239,7 +2239,7 @@ class Cmd0x8b4 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class GroupInfo(
+    internal class GroupInfo(
         @ProtoId(1) val gc: Long = 0L,
         @ProtoId(2) val groupName: String = "",
         @ProtoId(3) val faceUrl: String = "",
@@ -2250,7 +2250,7 @@ class Cmd0x8b4 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TagInfo(
+    internal class TagInfo(
         @ProtoId(1) val dstUin: Long = 0L,
         @ProtoId(2) val start: Int = 0,
         @ProtoId(3) val cnt: Int = 0,
@@ -2259,7 +2259,7 @@ class Cmd0x8b4 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val result: Int = 0,
         @ProtoId(2) val flag: Int = 0,
         @ProtoId(21) val tag: ByteArray = EMPTY_BYTE_ARRAY,
@@ -2269,14 +2269,14 @@ class Cmd0x8b4 : ProtoBuf {
 }
 
 @Serializable
-class Cmd0x682 : ProtoBuf {
+internal class Cmd0x682 : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgChatinfo: List<ChatInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class ChatInfo(
+    internal class ChatInfo(
         @ProtoId(1) val touin: Long = 0L,
         @ProtoId(2) val chatflag: Int = 0,
         @ProtoId(3) val goldflag: Int = 0,
@@ -2289,21 +2289,21 @@ class Cmd0x682 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val uint64Touinlist: List<Long>? = null
     ) : ProtoBuf
 }
 
 @Serializable
-class Cmd0x6f5 : ProtoBuf {
+internal class Cmd0x6f5 : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val qqVersion: String = "",
         @ProtoId(2) val qqPlatform: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class TaskInfo(
+    internal class TaskInfo(
         @ProtoId(1) val taskId: Int = 0,
         @ProtoId(2) val appid: Int = 0,
         @ProtoId(3) val passthroughLevel: Int = 0,
@@ -2313,21 +2313,21 @@ class Cmd0x6f5 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val configVersion: String = "",
         @ProtoId(2) val taskInfo: List<TaskInfo>? = null
     ) : ProtoBuf
 }
 
 @Serializable
-class Oidb0xb7e : ProtoBuf {
+internal class Oidb0xb7e : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val topItem: List<DiandianTopConfig>? = null
     ) : ProtoBuf
 
     @Serializable
-    class DiandianTopConfig(
+    internal class DiandianTopConfig(
         @ProtoId(1) val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val title: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val subTitle: ByteArray = EMPTY_BYTE_ARRAY,
@@ -2338,23 +2338,23 @@ class Oidb0xb7e : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody : ProtoBuf
+    internal class ReqBody : ProtoBuf
 }
 
 @Serializable
-class Oidb0xc2f : ProtoBuf {
+internal class Oidb0xc2f : ProtoBuf {
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val msgGetFollowUserRecommendListRsp: GetFollowUserRecommendListRsp? = null
     ) : ProtoBuf
 
     @Serializable
-    class GetFollowUserRecommendListReq(
+    internal class GetFollowUserRecommendListReq(
         @ProtoId(1) val followedUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class RecommendAccountInfo(
+    internal class RecommendAccountInfo(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val accountType: Int = 0,
         @ProtoId(3) val nickName: ByteArray = EMPTY_BYTE_ARRAY,
@@ -2365,28 +2365,28 @@ class Oidb0xc2f : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class GetFollowUserRecommendListRsp(
+    internal class GetFollowUserRecommendListRsp(
         @ProtoId(1) val msgRecommendList: List<RecommendAccountInfo>? = null,
         @ProtoId(2) val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgGetFollowUserRecommendListReq: GetFollowUserRecommendListReq? = null
     ) : ProtoBuf
 }
 
 @Serializable
-class Cmd0x7ca : ProtoBuf {
+internal class Cmd0x7ca : ProtoBuf {
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgAppointId: AppointDefine.AppointID? = null,
         @ProtoId(2) val tinyid: Long = 0L,
         @ProtoId(3) val opType: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+    internal class RspBody(
         @ProtoId(1) val sigC2C: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val peerUin: Long = 0L,
         @ProtoId(3) val errorWording: String = "",
@@ -2395,14 +2395,14 @@ class Cmd0x7ca : ProtoBuf {
 }
 
 @Serializable
-class Cmd0xd40 : ProtoBuf {
+internal class Cmd0xd40 : ProtoBuf {
     @Serializable
-    class DeviceInfo(
+    internal class DeviceInfo(
         @ProtoId(1) val os: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val dev: DeviceInfo? = null,
         @ProtoId(2) val src: Int = 0,
         @ProtoId(3) val event: Int = 0,
@@ -2410,23 +2410,23 @@ class Cmd0xd40 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody : ProtoBuf
+    internal class RspBody : ProtoBuf
 }
 
 @Serializable
-class Cmd0x6ce : ProtoBuf {
+internal class Cmd0x6ce : ProtoBuf {
     @Serializable
-    class RspBody : ProtoBuf
+    internal class RspBody : ProtoBuf
 
     @Serializable
-    class ReadRedpointReq(
+    internal class ReadRedpointReq(
         @ProtoId(1) val taskid: Int = 0,
         @ProtoId(2) val readSeq: Long = 0L,
         @ProtoId(3) val appid: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val msgReadReq: List<ReadRedpointReq>? = null
     ) : ProtoBuf
 }
