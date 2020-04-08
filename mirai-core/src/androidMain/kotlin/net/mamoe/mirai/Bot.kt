@@ -6,8 +6,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
-import net.mamoe.mirai.event.events.NewFriendEvent
-import net.mamoe.mirai.event.events.NewGroupEvent
+import net.mamoe.mirai.event.events.MemberJoinRequestEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
@@ -208,7 +208,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * @param event 好友验证的事件对象
      */
     @JvmSynthetic
-    actual abstract suspend fun acceptNewFriend(event: NewFriendEvent)
+    actual abstract suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent)
 
     /**
      * 拒绝好友验证
@@ -217,7 +217,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * @param blackList 拒绝后是否拉入黑名单
      */
     @JvmSynthetic
-    actual abstract suspend fun rejectNewFriend(event: NewFriendEvent, blackList: Boolean)
+    actual abstract suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean)
 
     /**
      * 通过加群验证（需管理员权限）
@@ -225,7 +225,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * @param event 加群验证的事件对象
      */
     @JvmSynthetic
-    actual abstract suspend fun acceptNewGroup(event: NewGroupEvent)
+    actual abstract suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent)
 
     /**
      * 拒绝加群验证（需管理员权限）
@@ -234,7 +234,7 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * @param blackList 拒绝后是否拉入黑名单
      */
     @JvmSynthetic
-    actual abstract suspend fun rejectNewGroup(event: NewGroupEvent, blackList: Boolean)
+    actual abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean)
 
     /**
      * 忽略加群验证（需管理员权限）
@@ -243,5 +243,5 @@ actual abstract class Bot actual constructor() : CoroutineScope, LowLevelBotAPIA
      * @param blackList 忽略后是否拉入黑名单
      */
     @JvmSynthetic
-    actual abstract suspend fun ignoreNewGroup(event: NewGroupEvent, blackList: Boolean)
+    actual abstract suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean)
 }

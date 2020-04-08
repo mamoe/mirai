@@ -12,6 +12,8 @@
 
 package net.mamoe.mirai.event.events
 
+import kotlinx.atomicfu.AtomicBoolean
+import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
@@ -482,63 +484,112 @@ data class MemberUnmuteEvent(
 
 // region 好友、群认证
 
+/**
+ * 一个账号请求添加机器人为好友的事件
+ */
 @SinceMirai("0.35.0")
-data class NewFriendEvent(
+data class NewFriendRequestEvent(
     override val bot: Bot,
-    val seq: Long, // 事件唯一识别
-    val additional: String,
-    val id: Long,
-    val groupName: String,
+    /**
+     * 事件唯一识别号
+     */
+    val eventId: Long,
+    /**
+     * 入群申请消息
+     */
+    val message: String,
+    /**
+     * 请求人 [QQ.id]
+     */
+    val fromId: Long,
+    /**
+     * 来自群 [Group.id], 其他途径时为 0
+     */
+    val fromGroupId: Long,
+    /**
+     * 群名片或好友昵称
+     */
     val nick: String
 ) : BotEvent, Packet {
-    @JvmSynthetic
-    suspend fun accept() = bot.acceptNewFriend(this)
+    internal val responded: AtomicBoolean = atomic(false)
+
+    /**
+     * @return 申请人来自的群. 当申请人来自其他途径申请时为 `null`
+     */
+    val fromGroup: Group? = if (fromGroupId == 0L) null else bot.getGroup(fromGroupId)
 
     @JvmSynthetic
-    suspend fun reject(blackList: Boolean = false) = bot.rejectNewFriend(this, blackList)
+    suspend fun accept() = bot.acceptNewFriendRequest(this)
+
+    @JvmSynthetic
+    suspend fun reject(blackList: Boolean = false) = bot.rejectNewFriendRequest(this, blackList)
 
 
     @JavaFriendlyAPI
     @JvmName("accept")
-    fun ` __ accept blocking for java __`() = runBlocking { bot.acceptNewFriend(this@NewFriendEvent) }
+    fun ` __ accept blocking for java __`() = runBlocking { accept() }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("reject")
     fun ` __ reject blocking for java __`(blackList: Boolean = false) =
-        runBlocking { bot.rejectNewFriend(this@NewFriendEvent, blackList) }
+        runBlocking { reject(blackList) }
 }
 
+/**
+ * 机器人被邀请加入群
+ */
 @SinceMirai("0.35.0")
-data class NewGroupEvent(
+data class MemberJoinRequestEvent(
     override val bot: Bot,
-    val seq: Long, // 事件唯一识别
-    val additional: String,
-    val id: Long,
+    /**
+     * 事件唯一识别号
+     */
+    val eventId: Long,
+    /**
+     * 入群申请消息
+     */
+    val message: String,
+    /**
+     * 申请入群的账号的 id
+     */
+    val fromId: Long,
     val groupId: Long,
     val groupName: String,
-    val nick: String
+    /**
+     * 申请人昵称
+     */
+    val fromNick: String
 ) : BotEvent, Packet {
-    suspend fun accept() = bot.acceptNewGroup(this)
-    suspend fun reject(blackList: Boolean = false) = bot.rejectNewGroup(this, blackList)
-    suspend fun ignore(blackList: Boolean = false) = bot.ignoreNewGroup(this, blackList)
+    val group: Group = this.bot.getGroup(groupId)
+
+    internal val responded: AtomicBoolean = atomic(false)
+
+    @JvmSynthetic
+    suspend fun accept() = bot.acceptMemberJoinRequest(this)
+
+    @JvmSynthetic
+    suspend fun reject(blackList: Boolean = false) = bot.rejectMemberJoinRequest(this, blackList)
+
+    @JvmSynthetic
+    suspend fun ignore(blackList: Boolean = false) = bot.ignoreMemberJoinRequest(this, blackList)
 
 
     @JavaFriendlyAPI
     @JvmName("accept")
-    fun ` __ accept blocking for java __`() = runBlocking { bot.acceptNewGroup(this@NewGroupEvent) }
+    fun ` __ accept blocking for java __`() = runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("reject")
     fun ` __ reject blocking for java __`(blackList: Boolean = false) =
-        runBlocking { bot.rejectNewGroup(this@NewGroupEvent, blackList) }
+        runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("ignore")
     fun ` __ ignore blocking for java __`(blackList: Boolean = false) =
-        runBlocking { bot.ignoreNewGroup(this@NewGroupEvent, blackList) }
+        runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
 // endregion 好友、群认证

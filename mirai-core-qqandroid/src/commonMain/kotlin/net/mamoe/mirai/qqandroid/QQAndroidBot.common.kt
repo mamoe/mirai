@@ -31,9 +31,9 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
-import net.mamoe.mirai.event.events.NewFriendEvent
-import net.mamoe.mirai.event.events.NewGroupEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
@@ -70,6 +70,7 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     return this as QQAndroidBot
 }
 
+@Suppress("INVISIBLE_MEMBER")
 @OptIn(MiraiInternalAPI::class)
 internal class QQAndroidBot constructor(
     context: Context,
@@ -77,7 +78,11 @@ internal class QQAndroidBot constructor(
     configuration: BotConfiguration
 ) : QQAndroidBotBase(context, account, configuration) {
 
-    override suspend fun acceptNewFriend(event: NewFriendEvent) {
+    override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
+        check(event.responded.compareAndSet(expect = false, update = true)) {
+            "the request $this has already been responded"
+        }
+
         network.run {
             NewContact.SystemMsgNewFriend.Action(
                 bot.client,
@@ -87,7 +92,11 @@ internal class QQAndroidBot constructor(
         }
     }
 
-    override suspend fun rejectNewFriend(event: NewFriendEvent, blackList: Boolean) {
+    override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
+        check(event.responded.compareAndSet(expect = false, update = true)) {
+            "the request $this has already been responded"
+        }
+
         network.run {
             NewContact.SystemMsgNewFriend.Action(
                 bot.client,
@@ -98,17 +107,30 @@ internal class QQAndroidBot constructor(
         }
     }
 
-    override suspend fun acceptNewGroup(event: NewGroupEvent) {
+    @OptIn(LowLevelAPI::class)
+    override suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent) {
+        check(event.responded.compareAndSet(expect = false, update = true)) {
+            "the request $this has already been responded"
+        }
+
         network.run {
             NewContact.SystemMsgNewGroup.Action(
                 bot.client,
                 event,
                 accept = true
             ).sendWithoutExpect()
+            bot.friends.delegate.addLast(bot._lowLevelNewQQ(object : FriendInfo {
+                override val uin: Long get() = event.fromId
+                override val nick: String get() = event.fromNick
+            }))
         }
     }
 
-    override suspend fun rejectNewGroup(event: NewGroupEvent, blackList: Boolean) {
+    @OptIn(LowLevelAPI::class)
+    override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
+        check(event.responded.compareAndSet(expect = false, update = true)) {
+            "the request $this has already been responded"
+        }
         network.run {
             NewContact.SystemMsgNewGroup.Action(
                 bot.client,
@@ -116,10 +138,22 @@ internal class QQAndroidBot constructor(
                 accept = false,
                 blackList = blackList
             ).sendWithoutExpect()
+            event.group.members.delegate.addLast(event.group.newMember(object : MemberInfo {
+                override val nameCard: String get() = ""
+                override val permission: MemberPermission get() = MemberPermission.MEMBER
+                override val specialTitle: String get() = ""
+                override val muteTimestamp: Int get() = 0
+                override val uin: Long get() = event.fromId
+                override val nick: String get() = event.fromNick
+            }))
         }
     }
 
-    override suspend fun ignoreNewGroup(event: NewGroupEvent, blackList: Boolean) {
+    override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
+
+        check(event.responded.compareAndSet(expect = false, update = true)) {
+            "the request $this has already been responded"
+        }
         network.run {
             NewContact.SystemMsgNewGroup.Action(
                 bot.client,

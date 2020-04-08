@@ -2,8 +2,8 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
-import net.mamoe.mirai.event.events.NewFriendEvent
-import net.mamoe.mirai.event.events.NewGroupEvent
+import net.mamoe.mirai.event.events.MemberJoinRequestEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
@@ -17,7 +17,7 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 internal class NewContact {
 
     internal object SystemMsgNewFriend :
-        OutgoingPacketFactory<NewFriendEvent?>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
+        OutgoingPacketFactory<NewFriendRequestEvent?>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -41,17 +41,17 @@ internal class NewContact {
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): NewFriendEvent? {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): NewFriendRequestEvent? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = friendmsgs?.firstOrNull()
                 return if (struct == null) null else {
                     struct.msg?.run {
-                        NewFriendEvent(
+                        NewFriendRequestEvent(
                             bot,
                             struct.msgSeq,
                             msgAdditional,
                             struct.reqUin,
-                            groupName,
+                            groupCode,
                             reqUinNick
                         )
                     }
@@ -63,7 +63,7 @@ internal class NewContact {
 
             operator fun invoke(
                 client: QQAndroidClient,
-                event: NewFriendEvent,
+                event: NewFriendRequestEvent,
                 accept: Boolean,
                 blackList: Boolean = false
             ) =
@@ -78,8 +78,8 @@ internal class NewContact {
                                 remark = "",
                                 blacklist = !accept && blackList
                             ),
-                            msgSeq = event.seq,
-                            reqUin = event.id,
+                            msgSeq = event.eventId,
+                            reqUin = event.fromId,
                             srcId = 6,
                             subSrcId = 7,
                             subType = 1
@@ -93,7 +93,7 @@ internal class NewContact {
 
 
     internal object SystemMsgNewGroup :
-        OutgoingPacketFactory<NewGroupEvent?>("ProfileService.Pb.ReqSystemMsgNew.Group") {
+        OutgoingPacketFactory<MemberJoinRequestEvent?>("ProfileService.Pb.ReqSystemMsgNew.Group") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -129,13 +129,13 @@ internal class NewContact {
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): NewGroupEvent? {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MemberJoinRequestEvent? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = groupmsgs?.firstOrNull()
 
                 return if (struct == null) null else {
                     struct.msg?.run {
-                        NewGroupEvent(
+                        MemberJoinRequestEvent(
                             bot,
                             struct.msgSeq,
                             msgAdditional,
@@ -153,7 +153,7 @@ internal class NewContact {
 
             operator fun invoke(
                 client: QQAndroidClient,
-                event: NewGroupEvent,
+                event: MemberJoinRequestEvent,
                 accept: Boolean?,
                 blackList: Boolean = false
             ) =
@@ -174,8 +174,8 @@ internal class NewContact {
                             ),
                             groupMsgType = 1,
                             language = 1000,
-                            msgSeq = event.seq,
-                            reqUin = event.id,
+                            msgSeq = event.eventId,
+                            reqUin = event.fromId,
                             srcId = 3,
                             subSrcId = 31,
                             subType = 1
