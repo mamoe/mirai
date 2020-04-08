@@ -36,6 +36,8 @@ runCatching {
     } else {
         project.ext.set("isAndroidSDKAvailable", false)
     }
+}.exceptionOrNull()?.run {
+    project.ext.set("isAndroidSDKAvailable", false)
 }
 
 allprojects {
