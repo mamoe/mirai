@@ -20,12 +20,9 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
-import net.mamoe.mirai.qqandroid.utils.encodeToString
-import net.mamoe.mirai.qqandroid.utils.hexToBytes
+import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
@@ -297,12 +294,25 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                 when (it.richMsg.serviceId) {
                     1 -> message.add(JsonMessage(content))
                     60 -> message.add(XmlMessage(content))
-                    35 -> message.add(
-                        LongMessage(
-                            content,
-                            this.firstIsInstance<ImMsgBody.GeneralFlags>().longTextResid
-                        )
-                    )
+                    35 -> {
+                        val resId = this.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()?.longTextResid ?: null.also {
+                            @Suppress("DEPRECATION")
+                            MiraiLogger.error(
+                                "cannot find longTextResid. isGroup=${groupIdOrZero == 0L} elems=" +
+                                        "\n${this._miraiContentToString()}. Please report this to mirai maintainer. " +
+                                        "\n------------------------------" +
+                                        "\n请完整截图或复制此日志并报告给 mirai 维护者以帮助解决问题"
+                            )
+                        }
+
+                        if (resId != null) {
+                            message.add(
+                                LongMessage(
+                                    content, resId
+                                )
+                            )
+                        }
+                    }
                     else -> {
                         @Suppress("DEPRECATION")
                         MiraiLogger.debug {
