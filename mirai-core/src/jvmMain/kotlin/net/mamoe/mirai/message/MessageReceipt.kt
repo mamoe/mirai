@@ -28,6 +28,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
  *
  * @see Group.sendMessage 发送群消息, 返回回执（此对象）
  * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
+ * @see Member.sendMessage 发送临时消息, 返回回执（此对象）
  *
  * @see MessageReceipt.sourceId 源 id
  * @see MessageReceipt.sourceTime 源时间
@@ -45,7 +46,7 @@ actual constructor(
     }
 
     /**
-     * 发送目标, 为 [Group] 或 [QQ]
+     * 发送目标, 为 [Group] 或 [QQ] 或 [Member]
      */
     actual val target: C by target.unsafeWeakRef()
 

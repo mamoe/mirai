@@ -75,11 +75,11 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<OnlineMes
 
     /**
      * 发送目标.
-     * 当 [OnlineMessageSource.Outgoing] 时为发信 [目标好友][QQ.id] 或 [群][Group.id]
+     * 当 [OnlineMessageSource.Outgoing] 时为发信 [目标好友][QQ.id] 或 [群][Group.id] 或 [临时消息][Member.id]
      * 当 [OnlineMessageSource.Incoming] 时为 [机器人][Bot.id]
-     * 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][QQ.id] 或 [群][Group.id] (取决于 [OfflineMessageSource.kind])
+     * 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][QQ.id] 或 [群][Group.id] 或 [临时消息][Member.id] (取决于 [OfflineMessageSource.kind])
      */
-    abstract val targetId: Long // groupCode / friendUin
+    abstract val targetId: Long // groupCode / friendUin / memberUin
 
     /**
      * 原消息内容.
@@ -127,10 +127,10 @@ sealed class OnlineMessageSource : MessageSource() {
     abstract val target: Any
 
     /**
-     * 消息主体. 群消息时为 [Group]. 好友消息时为 [QQ].
+     * 消息主体. 群消息时为 [Group]. 好友消息时为 [QQ], 临时消息为 [Member]
      * 不论是机器人接收的消息还是发送的消息, 此属性都指向机器人能进行回复的目标.
      */
-    abstract val subject: Contact // Group or QQ
+    abstract val subject: Contact
 
     /**
      * 由 [机器人主动发送消息][Contact.sendMessage] 产生的 [MessageSource]
@@ -154,6 +154,15 @@ sealed class OnlineMessageSource : MessageSource() {
             abstract override val target: QQ
             final override val subject: QQ get() = target
             //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.id})"
+        }
+
+        abstract class ToTemp : Outgoing() {
+            companion object Key : Message.Key<ToTemp> {
+                override val typeName: String get() = "OnlineMessageSource.Outgoing.ToTemp"
+            }
+
+            abstract override val target: Member
+            final override val subject: Member get() = target
         }
 
         abstract class ToGroup : Outgoing() {
@@ -193,6 +202,16 @@ sealed class OnlineMessageSource : MessageSource() {
             // final override fun toString(): String = "OnlineMessageSource.FromFriend(from=${sender.id})"
         }
 
+        abstract class FromTemp : Incoming() {
+            companion object Key : Message.Key<FromTemp> {
+                override val typeName: String
+                    get() = "OnlineMessageSource.Incoming.FromTemp"
+            }
+
+            abstract override val sender: Member
+            final override val subject: Member get() = sender
+        }
+
         abstract class FromGroup : Incoming() {
             companion object Key : Message.Key<FromGroup> {
                 override val typeName: String
@@ -215,10 +234,17 @@ inline fun MessageSource.isAboutGroup(): Boolean {
     }
 }
 
+inline fun MessageSource.isAboutTemp(): Boolean {
+    return when(this) {
+        is OnlineMessageSource -> subject is Member
+        is OfflineMessageSource -> kind == OfflineMessageSource.Kind.TEMP
+    }
+}
+
 // inline for future removal
 inline fun MessageSource.isAboutFriend(): Boolean {
     return when (this) {
-        is OnlineMessageSource -> subject !is Group
+        is OnlineMessageSource -> subject !is Group && subject !is Member
         is OfflineMessageSource -> kind == OfflineMessageSource.Kind.FRIEND
     }
 }
@@ -267,7 +293,8 @@ abstract class OfflineMessageSource : MessageSource() {
 
     enum class Kind {
         GROUP,
-        FRIEND
+        FRIEND,
+        TEMP
     }
 
     /**

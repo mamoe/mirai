@@ -46,6 +46,7 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
@@ -327,6 +328,22 @@ internal abstract class QQAndroidBotBase constructor(
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
+            is MessageSourceFromTempImpl,
+            is MessageSourceToTempImpl
+            -> network.run {
+                check(source.fromId == this@QQAndroidBotBase.id) {
+                    "can only recall a message sent by bot"
+                }
+                source as MessageSourceToTempImpl
+                PbMessageSvc.PbMsgWithDraw.createForTempMessage(
+                    bot.client,
+                    source.target.group.id,
+                    source.targetId,
+                    source.sequenceId,
+                    source.id,
+                    source.time
+                ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+            }
             is OfflineMessageSource -> network.run {
                 when (source.kind) {
                     OfflineMessageSource.Kind.FRIEND -> {
@@ -336,6 +353,19 @@ internal abstract class QQAndroidBotBase constructor(
                         PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
                             bot.client,
                             source.targetId,
+                            source.sequenceId,
+                            source.id,
+                            source.time
+                        ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
+                    }
+                    OfflineMessageSource.Kind.TEMP -> {
+                        check(source.fromId == this@QQAndroidBotBase.id) {
+                            "can only recall a message sent by bot"
+                        }
+                        PbMessageSvc.PbMsgWithDraw.createForTempMessage(
+                            bot.client,
+                            source.targetId, // groupUin
+                            source.targetId, // memberUin
                             source.sequenceId,
                             source.id,
                             source.time

@@ -19,6 +19,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.MemberInfo
@@ -27,14 +28,13 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.TempMessage
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
+import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsQQImpl
-import net.mamoe.mirai.qqandroid.message.MessageSourceToFriendImpl
-import net.mamoe.mirai.qqandroid.message.MessageSourceToGroupImpl
-import net.mamoe.mirai.qqandroid.message.toMessageChain
-import net.mamoe.mirai.qqandroid.message.toRichTextElems
+import net.mamoe.mirai.qqandroid.message.*
 import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -236,16 +236,38 @@ internal class MessageSvc {
                                 } else return@mapNotNull null
                             }
                         }
-                        84 -> { // 群验证
+                        141 -> {
+                            val tmpHead = msg.msgHead.c2cTmpMsgHead ?: return@mapNotNull null
+                            val member = bot.getGroupByUinOrNull(tmpHead.groupUin)?.getOrNull(msg.msgHead.fromUin)
+                                ?: return@mapNotNull null
+
+                            member.checkIsMemberImpl()
+
+                            if (msg.msgHead.fromUin == bot.id || !bot.firstLoginSucceed) {
+                                return@mapNotNull null
+                            }
+
+                            member.lastMessageSequence.loop { instant ->
+                                if (msg.msgHead.msgSeq > instant) {
+                                    if (member.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
+                                        return@mapNotNull TempMessage(
+                                            member,
+                                            msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, isTemp = true)
+                                        )
+                                    }
+                                } else return@mapNotNull null
+                            }
+                        }
+                        84 -> { // 请求入群验证
                             bot.network.run {
                                 NewContact.SystemMsgNewGroup(bot.client).sendWithoutExpect()
 
                                 // 处理后要向服务器提交已阅，否则登陆时会重复收到事件
                                 NewContact.Del(bot.client, msg.msgHead).sendWithoutExpect()
                             }
-                             return@mapNotNull null
+                            return@mapNotNull null
                         }
-                        187 -> { // 好友验证
+                        187 -> { // 请求加好友验证
                             bot.network.run {
                                 NewContact.SystemMsgNewFriend(bot.client).sendWithoutExpect()
 
@@ -355,6 +377,53 @@ internal class MessageSvc {
                     msgRand = source.id,
                     syncCookie = SyncCookie(time = source.time.toULong().toLong()).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
+                )
+            )
+        }
+
+
+        inline fun createToTemp(
+            client: QQAndroidClient,
+            member: Member,
+            message: MessageChain,
+            sourceCallback: (MessageSourceToTempImpl) -> Unit
+        ): OutgoingPacket {
+            val source = MessageSourceToTempImpl(
+                id = Random.nextInt().absoluteValue,
+                sender = client.bot,
+                target = member,
+                time = currentTimeSeconds.toInt(),
+                sequenceId = client.atomicNextMessageSequenceId(),
+                originalMessage = message
+            )
+            sourceCallback(source)
+            return createToTemp(client, member.group.id, member.id, message, source)
+        }
+
+        /**
+         * 发送临时消息
+         */
+        private fun createToTemp(
+            client: QQAndroidClient,
+            groupUin: Long,
+            toUin: Long,
+            message: MessageChain,
+            source: MessageSourceToTempImpl
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
+                    routingHead = MsgSvc.RoutingHead(
+                        grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
+                    ),
+                    contentHead = MsgComm.ContentHead(pkgNum = 1),
+                    msgBody = ImMsgBody.MsgBody(
+                        richText = ImMsgBody.RichText(
+                            elems = message.toRichTextElems(forGroup = false, withGeneralFlags = true)
+                        )
+                    ),
+                    msgSeq = source.sequenceId,
+                    msgRand = source.id,
+                    syncCookie = SyncCookie(time = source.time.toULong().toLong()).toByteArray(SyncCookie.serializer())
                 )
             )
         }

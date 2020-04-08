@@ -110,6 +110,71 @@ internal class MessageSourceFromFriendImpl(
     }
 }
 
+internal class MessageSourceFromTempImpl(
+    override val bot: Bot,
+    private val msg: MsgComm.Msg
+) : OnlineMessageSource.Incoming.FromTemp(), MessageSourceImpl {
+    override val sequenceId: Int get() = msg.msgHead.msgSeq
+    private val isRecalled: AtomicBoolean = atomic(false)
+    override var isRecalledOrPlanned: Boolean
+        get() = isRecalled.value
+        set(value) {
+            isRecalled.value = value
+        }
+    override val id: Int get() = msg.msgBody.richText.attr!!.random
+    override val time: Int get() = msg.msgHead.msgTime
+    override val originalMessage: MessageChain by lazy {
+        msg.toMessageChain(
+            bot,
+            groupIdOrZero = 0,
+            onlineSource = false
+        )
+    }
+    override val target: Bot get() = bot
+    override val sender: Member get() = with(msg.msgHead) {
+        bot.getGroup(c2cTmpMsgHead!!.groupUin)[fromUin]
+    }
+
+    private val elems by lazy {
+        msg.msgBody.richText.elems.toMutableList().also {
+            if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
+        }
+    }
+
+    internal fun toJceDataImplForTemp(): ImMsgBody.SourceMsg {
+        return ImMsgBody.SourceMsg(
+            origSeqs = listOf(msg.msgHead.msgSeq),
+            senderUin = msg.msgHead.fromUin,
+            toUin = msg.msgHead.toUin,
+            flag = 1,
+            elems = msg.msgBody.richText.elems,
+            type = 0,
+            time = msg.msgHead.msgTime,
+            pbReserve = SourceMsg.ResvAttr(
+                origUids = id.toULong().toLong()
+            ).toByteArray(SourceMsg.ResvAttr.serializer()),
+            srcMsg = MsgComm.Msg(
+                msgHead = MsgComm.MsgHead(
+                    fromUin = msg.msgHead.fromUin, // qq
+                    toUin = msg.msgHead.toUin, // group
+                    msgType = msg.msgHead.msgType, // 82?
+                    c2cCmd = msg.msgHead.c2cCmd,
+                    msgSeq = msg.msgHead.msgSeq,
+                    msgTime = msg.msgHead.msgTime,
+                    msgUid = id.toULong().toLong(), // ok
+                    // groupInfo = MsgComm.GroupInfo(groupCode = msg.msgHead.groupInfo.groupCode),
+                    isSrcMsg = true
+                ),
+                msgBody = ImMsgBody.MsgBody(
+                    richText = ImMsgBody.RichText(
+                        elems = elems
+                    )
+                )
+            ).toByteArray(MsgComm.Msg.serializer())
+        )
+    }
+}
+
 internal class MessageSourceFromGroupImpl(
     override val bot: Bot,
     private val msg: MsgComm.Msg
@@ -168,7 +233,11 @@ internal class OfflineMessageSourceImplByMsg( // from other sources' originalMes
     override val targetId: Long
         get() = delegate.msgHead.groupInfo?.groupCode ?: delegate.msgHead.toUin
     override val originalMessage: MessageChain by lazy {
-        delegate.toMessageChain(bot, delegate.msgHead.groupInfo?.groupCode ?: 0, false)
+        delegate.toMessageChain(bot,
+            groupIdOrZero = delegate.msgHead.groupInfo?.groupCode ?: 0,
+            onlineSource = false,
+            isTemp = delegate.msgHead.c2cTmpMsgHead != null
+        )
     }
     override val sequenceId: Int
         get() = delegate.msgHead.msgSeq
@@ -283,7 +352,63 @@ internal class MessageSourceToFriendImpl(
             ).toByteArray(MsgComm.Msg.serializer())
         )
     }
+}
 
+internal class MessageSourceToTempImpl(
+    override val sequenceId: Int,
+    override val id: Int,
+    override val time: Int,
+    override val originalMessage: MessageChain,
+    override val sender: Bot,
+    override val target: Member
+) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceImpl {
+    override val bot: Bot
+        get() = sender
+    private val isRecalled: AtomicBoolean = atomic(false)
+    override var isRecalledOrPlanned: Boolean
+        get() = isRecalled.value
+        set(value) {
+            isRecalled.value = value
+        }
+    private val elems by lazy {
+        originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
+    }
+
+    fun toJceDataImplForTemp(): ImMsgBody.SourceMsg {
+        val messageUid: Long = sequenceId.toLong().shl(32) or id.toLong().and(0xffFFffFF)
+        return ImMsgBody.SourceMsg(
+            origSeqs = listOf(sequenceId),
+            senderUin = fromId,
+            toUin = targetId,
+            flag = 1,
+            elems = elems,
+            type = 0,
+            time = time,
+            pbReserve = SourceMsg.ResvAttr(
+                origUids = messageUid
+            ).toByteArray(SourceMsg.ResvAttr.serializer()),
+            srcMsg = MsgComm.Msg(
+                msgHead = MsgComm.MsgHead(
+                    fromUin = fromId, // qq
+                    toUin = targetId, // group
+                    msgType = 9, // 82?
+                    c2cCmd = 11,
+                    msgSeq = sequenceId,
+                    msgTime = time,
+                    msgUid = messageUid, // ok
+                    // groupInfo = MsgComm.GroupInfo(groupCode = delegate.msgHead.groupInfo.groupCode),
+                    isSrcMsg = true
+                ),
+                msgBody = ImMsgBody.MsgBody(
+                    richText = ImMsgBody.RichText(
+                        elems = elems.toMutableList().also {
+                            if (it.last().elemFlags2 == null) it.add(ImMsgBody.Elem(elemFlags2 = ImMsgBody.ElemFlags2()))
+                        }
+                    )
+                )
+            ).toByteArray(MsgComm.Msg.serializer())
+        )
+    }
 }
 
 internal class MessageSourceToGroupImpl(

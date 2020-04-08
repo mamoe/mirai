@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.qqandroid.contact
 
+import kotlinx.atomicfu.AtomicInt
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
@@ -25,10 +27,15 @@ import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineFriendImage
+import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.utils.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 
@@ -41,6 +48,8 @@ internal class MemberImpl constructor(
     memberInfo: MemberInfo
 ) : Member() {
     override val group: GroupImpl by group.unsafeWeakRef()
+
+    val lastMessageSequence: AtomicInt = atomic(-1)
 
     // region QQ delegate
     override val id: Long = qq.id
@@ -61,7 +70,23 @@ internal class MemberImpl constructor(
     override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
         return sendMessageImpl(message).also {
             logMessageSent(message)
-        } as MessageReceipt<Member>
+        }
+    }
+
+    private suspend fun sendMessageImpl(message: Message): MessageReceipt<Member> {
+        lateinit var source: MessageSourceToTempImpl
+        bot.network.run {
+            check(
+                MessageSvc.PbSendMsg.createToTemp(
+                    bot.client,
+                    this@MemberImpl,
+                    message.asMessageChain()
+                ) {
+                    source = it
+                }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+            ) { "send message failed" }
+        }
+        return MessageReceipt(source, this, null)
     }
 
     @JvmSynthetic
@@ -203,6 +228,15 @@ internal class MemberImpl constructor(
     override fun toString(): String {
         return "Member($id)"
     }
+}
+
+@OptIn(ExperimentalContracts::class)
+internal fun Member.checkIsMemberImpl(): MemberImpl {
+    contract {
+        returns() implies (this@checkIsMemberImpl is MemberImpl)
+    }
+    check(this is MemberImpl) { "A Member instance is not instance of MemberImpl. Don't interlace two protocol implementations together!" }
+    return this
 }
 
 @OptIn(LowLevelAPI::class)

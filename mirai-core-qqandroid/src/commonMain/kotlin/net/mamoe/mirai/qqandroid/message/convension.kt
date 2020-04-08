@@ -42,8 +42,10 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             is OfflineMessageSourceImplBySourceMsg -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
             is MessageSourceToFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
             is MessageSourceToGroupImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForGroup()))
+            is MessageSourceToTempImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForTemp()))
             is MessageSourceFromFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
             is MessageSourceFromGroupImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForGroup()))
+            is MessageSourceFromTempImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForTemp()))
             else -> error("unsupported MessageSource implementation: ${source::class.simpleName}")
         }
     }
@@ -176,15 +178,15 @@ private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".h
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal fun MsgComm.Msg.toMessageChain(bot: Bot, groupIdOrZero: Long, onlineSource: Boolean): MessageChain {
+internal fun MsgComm.Msg.toMessageChain(bot: Bot, groupIdOrZero: Long, onlineSource: Boolean, isTemp: Boolean = false): MessageChain {
     val elements = this.msgBody.richText.elems
 
     return buildMessageChain(elements.size + 1) {
         if (onlineSource) {
-            if (groupIdOrZero != 0L) {
-                +MessageSourceFromGroupImpl(bot, this@toMessageChain)
-            } else {
-                +MessageSourceFromFriendImpl(bot, this@toMessageChain)
+            when {
+                isTemp -> +MessageSourceFromTempImpl(bot, this@toMessageChain)
+                groupIdOrZero != 0L -> +MessageSourceFromGroupImpl(bot, this@toMessageChain)
+                else -> +MessageSourceFromFriendImpl(bot, this@toMessageChain)
             }
         } else {
             +OfflineMessageSourceImplByMsg(this@toMessageChain, bot)

@@ -20,6 +20,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
@@ -67,6 +68,38 @@ internal class PbMessageSvc {
                             userdef = MsgRevokeUserDef.MsgInfoUserDef(
                                 longMessageFlag = 0
                             ).toByteArray(MsgRevokeUserDef.MsgInfoUserDef.serializer())
+                        )
+                    )
+                )
+            )
+        }
+
+        fun createForTempMessage(
+            client: QQAndroidClient,
+            groupUin: Long,
+            toUin: Long,
+            messageSequenceId: Int, // 56639
+            messageRandom: Int, // 921878719
+            time: Int
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                MsgSvc.PbMsgWithDrawReq.serializer(),
+                MsgSvc.PbMsgWithDrawReq(
+                    c2cWithDraw = listOf(
+                        MsgSvc.PbC2CMsgWithDrawReq(
+                            subCmd = 1,
+                            msgInfo = listOf(
+                                MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
+                                    fromUin = client.bot.id,
+                                    toUin = toUin,
+                                    msgSeq = messageSequenceId,
+                                    msgUid = 1000000000000000000L or messageRandom.toULong().toLong(),
+                                    msgTime = time.toLong(),
+                                    routingHead = MsgSvc.RoutingHead(
+                                        grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
+                                    )
+                                )
+                            )
                         )
                     )
                 )
