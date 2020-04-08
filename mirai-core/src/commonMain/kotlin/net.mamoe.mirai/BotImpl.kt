@@ -150,8 +150,8 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         suspend fun doInit() {
             tryNTimesOrException(2) {
                 if (it != 0) {
-                    delay(3000)
                     logger.warning("Init failed. Retrying in 3s...")
+                    delay(3000)
                 }
                 _network.init()
             }?.let {

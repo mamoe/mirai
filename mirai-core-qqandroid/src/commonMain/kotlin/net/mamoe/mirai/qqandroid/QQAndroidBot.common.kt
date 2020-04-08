@@ -206,7 +206,7 @@ internal abstract class QQAndroidBotBase constructor(
         TroopManagement.GetGroupInfo(
             client = bot.client,
             groupCode = groupCode
-        ).sendAndExpect<GroupInfoImpl>(retry = 2)
+        ).sendAndExpect<GroupInfoImpl>(retry = 3)
     }
 
     @OptIn(LowLevelAPI::class)
@@ -224,7 +224,7 @@ internal abstract class QQAndroidBotBase constructor(
                     targetGroupUin = groupUin,
                     targetGroupCode = groupCode,
                     nextUin = nextUin
-                ).sendAndExpect<FriendList.GetTroopMemberList.Response>(timeoutMillis = 3000)
+                ).sendAndExpect<FriendList.GetTroopMemberList.Response>(retry = 3)
                 sequence += data.members.asSequence().map { troopMemberInfo ->
                     MemberInfoImpl(troopMemberInfo, ownerId)
                 }

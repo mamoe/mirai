@@ -201,7 +201,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             _pendingEnabled.value = true
         }
 
-        coroutineScope {
+        supervisorScope {
             launch {
                 lateinit var loadFriends: suspend () -> Unit
                 // 不要用 fun, 不要 join declaration, 不要用 val, 编译失败警告
@@ -262,56 +262,60 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 try {
                     logger.info("开始加载群组列表与群成员列表")
                     val troopListData = FriendList.GetTroopListSimplify(bot.client)
-                        .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
+                        .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 3)
 
-                    troopListData.groups.forEach { troopNum ->
-                        // 别用 fun, 别 val, 编译失败警告
-                        lateinit var loadGroup: suspend () -> Unit
+                    troopListData.groups.chunked(100).forEach { chunk ->
+                        coroutineScope {
+                            chunk.forEach { troopNum ->
+                                // 别用 fun, 别 val, 编译失败警告
+                                lateinit var loadGroup: suspend () -> Unit
 
-                        loadGroup = suspend {
-                            retryCatching(3) {
-                                bot.groups.delegate.addLast(
-                                    @Suppress("DuplicatedCode")
-                                    (GroupImpl(
-                                        bot = bot,
-                                        coroutineContext = bot.coroutineContext,
-                                        id = troopNum.groupCode,
-                                        groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
-                                            this as GroupInfoImpl
+                                loadGroup = suspend {
+                                    retryCatching(3) {
+                                        bot.groups.delegate.addLast(
+                                            @Suppress("DuplicatedCode")
+                                            (GroupImpl(
+                                                bot = bot,
+                                                coroutineContext = bot.coroutineContext,
+                                                id = troopNum.groupCode,
+                                                groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
+                                                    this as GroupInfoImpl
 
-                                            if (this.delegate.groupName == null) {
-                                                this.delegate.groupName = troopNum.groupName
-                                            }
+                                                    if (this.delegate.groupName == null) {
+                                                        this.delegate.groupName = troopNum.groupName
+                                                    }
 
-                                            if (this.delegate.groupMemo == null) {
-                                                this.delegate.groupMemo = troopNum.groupMemo
-                                            }
+                                                    if (this.delegate.groupMemo == null) {
+                                                        this.delegate.groupMemo = troopNum.groupMemo
+                                                    }
 
-                                            if (this.delegate.groupUin == null) {
-                                                this.delegate.groupUin = troopNum.groupUin
-                                            }
+                                                    if (this.delegate.groupUin == null) {
+                                                        this.delegate.groupUin = troopNum.groupUin
+                                                    }
 
-                                            this.delegate.groupCode = troopNum.groupCode
-                                        },
-                                        members = bot._lowLevelQueryGroupMemberList(
-                                            troopNum.groupUin,
-                                            troopNum.groupCode,
-                                            troopNum.dwGroupOwnerUin
+                                                    this.delegate.groupCode = troopNum.groupCode
+                                                },
+                                                members = bot._lowLevelQueryGroupMemberList(
+                                                    troopNum.groupUin,
+                                                    troopNum.groupCode,
+                                                    troopNum.dwGroupOwnerUin
+                                                )
+                                            ))
                                         )
-                                    ))
-                                )
-                            }.exceptionOrNull()?.let {
-                                logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }
-                                logger.error(it)
-                                this@QQAndroidBotNetworkHandler.launch {
-                                    delay(10_000)
+                                    }.exceptionOrNull()?.let {
+                                        logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }
+                                        logger.error(it)
+                                        this@QQAndroidBotNetworkHandler.launch {
+                                            delay(10_000)
+                                            loadGroup()
+                                        }
+                                    }
+                                    Unit // 别删, 编译失败警告
+                                }
+                                launch {
                                     loadGroup()
                                 }
                             }
-                            Unit // 别删, 编译失败警告
-                        }
-                        launch {
-                            loadGroup()
                         }
                     }
                     logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
@@ -322,17 +326,18 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
 
-        withTimeoutOrNull(5000) {
-            lateinit var listener: Listener<PacketReceivedEvent>
-            listener = this.subscribeAlways {
-                if (it.packet is MessageSvc.PbGetMsg.GetMsgSuccess) {
-                    listener.complete()
+        supervisorScope {
+            withTimeoutOrNull(30000) {
+                lateinit var listener: Listener<PacketReceivedEvent>
+                listener = this.subscribeAlways {
+                    if (it.packet is MessageSvc.PbGetMsg.GetMsgSuccess) {
+                        listener.complete()
+                    }
                 }
-            }
 
-            MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
-        } ?: error("timeout syncing friend message history")
-
+                MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
+            } ?: error("timeout syncing friend message history")
+        }
         bot.firstLoginSucceed = true
 
         _pendingEnabled.value = false

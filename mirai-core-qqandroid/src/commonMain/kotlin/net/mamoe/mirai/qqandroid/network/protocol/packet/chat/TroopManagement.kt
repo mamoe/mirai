@@ -33,7 +33,7 @@ import net.mamoe.mirai.data.GroupInfo as MiraiGroupInfo
 @OptIn(LowLevelAPI::class)
 internal class GroupInfoImpl(
     internal val delegate: Oidb0x88d.GroupInfo
-) : MiraiGroupInfo, Packet {
+) : MiraiGroupInfo, Packet, Packet.NoLog {
     override val uin: Long get() = delegate.groupUin ?: error("cannot find groupUin")
     override val owner: Long get() = delegate.groupOwner ?: error("cannot find groupOwner")
     override val groupCode: Long get() = Group.calculateGroupCodeByGroupUin(uin)

@@ -35,11 +35,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgType0x210
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.onlinePush0x210.OnlinePush0x210Factory
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.readString
-import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jceRequestSBuffer
@@ -310,7 +307,14 @@ internal class OnlinePush {
                                     }
                                     0x10 -> {
                                         val dataBytes = this.readBytes(26)
-                                        val message = this.readString(this.readByte().toInt())
+                                        val size = this.readByte().toInt() // orthodox, don't `readUByte`
+                                        if (size < 0) {
+                                            error(
+                                                "negative array size: $size, remaining bytes=${this.readBytes()
+                                                    .toUHexString()}"
+                                            )
+                                        }
+                                        val message = this.readString(size)
                                         // println(dataBytes.toUHexString())
 
                                         if (dataBytes[0].toInt() != 59) {
