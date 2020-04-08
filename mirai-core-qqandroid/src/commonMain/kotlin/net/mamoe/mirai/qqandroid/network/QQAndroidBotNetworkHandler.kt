@@ -15,7 +15,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.event.*
@@ -236,15 +235,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                         data.friendList.forEach {
                             // atomic add
                             bot.friends.delegate.addLast(
-                                QQImpl(
-                                    bot,
-                                    bot.coroutineContext,
-                                    it.friendUin,
-                                    FriendInfoImpl(it)
-                                )
-                            ).also {
-                                currentFriendCount++
-                            }
+                                QQImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
+                            ).also { currentFriendCount++ }
                         }
                         logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
                         if (currentFriendCount >= totalFriendCount) {
@@ -264,8 +256,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     val troopListData = FriendList.GetTroopListSimplify(bot.client)
                         .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 3)
 
-                    troopListData.groups.chunked(100).forEach { chunk ->
-                        coroutineScope {
+                    troopListData.groups.chunked(50).forEach { chunk ->
+                        supervisorScope {
                             chunk.forEach { troopNum ->
                                 // 别用 fun, 别 val, 编译失败警告
                                 lateinit var loadGroup: suspend () -> Unit
@@ -326,7 +318,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             }
         }
 
-        supervisorScope {
+        runCatching {
             withTimeoutOrNull(30000) {
                 lateinit var listener: Listener<PacketReceivedEvent>
                 listener = this.subscribeAlways {
@@ -337,6 +329,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
                 MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
             } ?: error("timeout syncing friend message history")
+        }.exceptionOrNull()?.let {
+            logger.error("exception while loading syncing friend message history: ${it.message}")
+            logger.error(it)
         }
         bot.firstLoginSucceed = true
 
@@ -404,7 +399,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun parsePacketAsync(input: Input): Job {
+    fun parsePacketAsync(input: ByteReadPacket): Job {
         return this.launch(
             start = CoroutineStart.ATOMIC
         ) {
@@ -423,12 +418,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      *
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
-    suspend fun parsePacket(input: Input) {
+    suspend fun parsePacket(input: ByteReadPacket) {
         generifiedParsePacket<Packet>(input)
     }
 
     // with generic type, less mistakes
-    private suspend fun <P : Packet?> generifiedParsePacket(input: Input) {
+    private suspend fun <P : Packet?> generifiedParsePacket(input: ByteReadPacket) {
         KnownPacketFactories.parseIncomingPacket(
             bot,
             input

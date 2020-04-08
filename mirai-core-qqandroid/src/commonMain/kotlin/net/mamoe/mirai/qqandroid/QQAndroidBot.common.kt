@@ -186,7 +186,8 @@ internal abstract class QQAndroidBotBase constructor(
 
     // internally visible only
     fun getGroupByUin(uin: Long): Group {
-        return getGroupByUinOrNull(uin) ?: throw NoSuchElementException("Group $uin not found")
+        return getGroupByUinOrNull(uin)
+            ?: throw NoSuchElementException("Group ${Group.calculateGroupCodeByGroupUin(uin)} not found")
     }
 
     fun getGroupByUinOrNull(uin: Long): Group? {

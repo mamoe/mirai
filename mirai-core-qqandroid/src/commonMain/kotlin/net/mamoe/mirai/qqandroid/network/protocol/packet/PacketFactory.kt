@@ -10,7 +10,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
 import kotlinx.io.core.*
-import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -174,7 +173,11 @@ internal object KnownPacketFactories {
     // do not inline. Exceptions thrown will not be reported correctly
     @OptIn(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
-    suspend fun <T : Packet?> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) =
+    suspend fun <T : Packet?> parseIncomingPacket(
+        bot: QQAndroidBot,
+        rawInput: ByteReadPacket,
+        consumer: PacketConsumer<T>
+    ) =
         with(rawInput) {
             // login
             val flag1 = readInt()
@@ -190,7 +193,7 @@ internal object KnownPacketFactories {
 
             readString(readInt() - 4)// uinAccount
 
-            ByteArrayPool.useInstance { data ->
+            ByteArrayPool.useInstance(this.remaining.toInt()) { data ->
                 val size = this.readAvailable(data)
 
                 kotlin.runCatching {
@@ -377,7 +380,7 @@ internal object KnownPacketFactories {
             }
             0 -> {
                 val data = if (bot.client.loginState == 0) {
-                    ByteArrayPool.useInstance { byteArrayBuffer ->
+                    ByteArrayPool.useInstance(this.remaining.toInt()) { byteArrayBuffer ->
                         val size = (this.remaining - 1).toInt()
                         this.readFully(byteArrayBuffer, 0, size)
 

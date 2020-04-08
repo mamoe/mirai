@@ -13,11 +13,12 @@
 
 package net.mamoe.mirai.qqandroid.utils.io
 
-import kotlinx.io.OutputStream
 import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.*
-import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -25,16 +26,12 @@ import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
-import kotlinx.serialization.InternalSerializationApi
-import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
-import net.mamoe.mirai.qqandroid.utils.toReadPacket
-import net.mamoe.mirai.qqandroid.utils.toUHexString
 
 @MiraiInternalAPI
 internal inline fun <R> ByteReadPacket.useBytes(
     n: Int = remaining.toInt(),//not that safe but adequate
     block: (data: ByteArray, length: Int) -> R
-): R = ByteArrayPool.useInstance {
+): R = ByteArrayPool.useInstance(n) {
     this.readFully(it, 0, n)
     block(it, n)
 }
