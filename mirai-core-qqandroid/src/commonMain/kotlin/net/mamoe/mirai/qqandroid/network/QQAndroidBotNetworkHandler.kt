@@ -185,6 +185,42 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
         LockFreeLinkedList()
 
+    /**
+     * Don't use concurrently
+     */
+    suspend fun reloadFriendList() {
+        // 不要用 fun, 不要 join declaration, 不要用 val, 编译失败警告
+        logger.info("开始加载好友信息")
+        var currentFriendCount = 0
+        var totalFriendCount: Short
+        while (true) {
+            val data = FriendList.GetFriendGroupList(
+                bot.client, currentFriendCount, 150, 0, 0
+            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
+
+            // self info
+            data.selfInfo?.run {
+                bot.selfInfo = this
+//                            bot.remark = remark ?: ""
+//                            bot.sex = sex
+            }
+
+            totalFriendCount = data.totalFriendCount
+            data.friendList.forEach {
+                // atomic
+                bot.friends.delegate.addLast(
+                    QQImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
+                ).also { currentFriendCount++ }
+            }
+            logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
+            if (currentFriendCount >= totalFriendCount) {
+                break
+            }
+            // delay(200)
+        }
+        logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
+    }
+
     @OptIn(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init" }
@@ -201,54 +237,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         supervisorScope {
-            launch {
-                lateinit var loadFriends: suspend () -> Unit
-                // 不要用 fun, 不要 join declaration, 不要用 val, 编译失败警告
-                loadFriends = suspend loadFriends@{
-                    logger.info("开始加载好友信息")
-                    var currentFriendCount = 0
-                    var totalFriendCount: Short
-                    while (true) {
-                        val data = runCatching {
-                            FriendList.GetFriendGroupList(
-                                bot.client,
-                                currentFriendCount,
-                                150,
-                                0,
-                                0
-                            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
-                        }.getOrElse {
-                            logger.error("无法加载好友列表", it)
-                            this@QQAndroidBotNetworkHandler.launch { delay(10.secondsToMillis); loadFriends() }
-                            logger.error("稍后重试加载好友列表")
-                            return@loadFriends
-                        }
-
-                        // self info
-                        data.selfInfo?.run {
-                            bot.selfInfo = this
-//                            bot.remark = remark ?: ""
-//                            bot.sex = sex
-                        }
-
-                        totalFriendCount = data.totalFriendCount
-                        data.friendList.forEach {
-                            // atomic add
-                            bot.friends.delegate.addLast(
-                                QQImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
-                            ).also { currentFriendCount++ }
-                        }
-                        logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
-                        if (currentFriendCount >= totalFriendCount) {
-                            break
-                        }
-                        // delay(200)
-                    }
-                    logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
-                }
-
-                loadFriends()
-            }
+            this.launch { reloadFriendList() }
 
             launch {
                 try {
@@ -591,7 +580,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     /**
      * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
      */
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 1): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 2): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry >= 0) { "retry must >= 0" }
 
