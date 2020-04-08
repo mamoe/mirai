@@ -7,11 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "FunctionName")
+@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractCancellableEvent
 import net.mamoe.mirai.event.BroadcastControllable
@@ -24,7 +26,12 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
+import net.mamoe.mirai.utils.internal.runBlocking
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 
 @Suppress("unused")
@@ -484,8 +491,22 @@ data class NewFriendEvent(
     val groupName: String,
     val nick: String
 ) : BotEvent, Packet {
+    @JvmSynthetic
     suspend fun accept() = bot.acceptNewFriend(this)
+
+    @JvmSynthetic
     suspend fun reject(blackList: Boolean = false) = bot.rejectNewFriend(this, blackList)
+
+
+    @JavaFriendlyAPI
+    @JvmName("accept")
+    fun ` __ accept blocking for java __`() = runBlocking { bot.acceptNewFriend(this@NewFriendEvent) }
+
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @JvmName("reject")
+    fun ` __ reject blocking for java __`(blackList: Boolean = false) =
+        runBlocking { bot.rejectNewFriend(this@NewFriendEvent, blackList) }
 }
 
 @SinceMirai("0.35.0")
@@ -501,6 +522,23 @@ data class NewGroupEvent(
     suspend fun accept() = bot.acceptNewGroup(this)
     suspend fun reject(blackList: Boolean = false) = bot.rejectNewGroup(this, blackList)
     suspend fun ignore(blackList: Boolean = false) = bot.ignoreNewGroup(this, blackList)
+
+
+    @JavaFriendlyAPI
+    @JvmName("accept")
+    fun ` __ accept blocking for java __`() = runBlocking { bot.acceptNewGroup(this@NewGroupEvent) }
+
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @JvmName("reject")
+    fun ` __ reject blocking for java __`(blackList: Boolean = false) =
+        runBlocking { bot.rejectNewGroup(this@NewGroupEvent, blackList) }
+
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @JvmName("ignore")
+    fun ` __ ignore blocking for java __`(blackList: Boolean = false) =
+        runBlocking { bot.ignoreNewGroup(this@NewGroupEvent, blackList) }
 }
 
 // endregion 好友、群认证
