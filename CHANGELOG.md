@@ -2,6 +2,18 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.35.0`  2020/4/8
+- 新增处理加好友请求: `NewFriendRequestEvent`
+- 新增处理加群请求: `MemberJoinRequestEvent`
+- 现在 `MessageSource.originalMessage` 也可以获取到 `MessageSource`
+- 支持机器人加入了大量群时的群列表获取
+- 优化 init 过程
+- 添加更清晰的错误日志
+- 修复撤回自己发送的消息时的权限判定
+- 修复 `botAsMember.nameCard` 修改时需要管理员权限的问题
+- 修复 `MessageSource.key`
+- 修复其他一些小问题
+
 ## `0.34.0`  2020/4/6
 
 - 修复长消息判定.
