@@ -48,7 +48,7 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
             if(!pluginLoaders.containsKey(pluginName)){
                 pluginLoaders[pluginName] = PluginClassLoader(pluginName,jarFile, this, parentClassLoader)
             }
-            return Class.forName(mainClass,true,pluginLoaders[pluginName])
+            return pluginLoaders[pluginName]!!.loadClass(mainClass)
         }catch (e : ClassNotFoundException){
             throw ClassNotFoundException("PluginsClassLoader(${pluginName}) can't load this pluginMainClass:${mainClass}",e)
         }catch (e : Throwable){
