@@ -16,7 +16,7 @@ import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 @Serializable
-class SyncCookie(
+internal class SyncCookie(
     @ProtoId(1) val time1: Long? = null, // 1580277992
     @ProtoId(2) val time: Long, // 1580277992
     @ProtoId(3) val unknown1: Long = Random.nextLong().absoluteValue,// 678328038
@@ -33,7 +33,7 @@ private val const2_: Long = Random.nextLong().absoluteValue
 /*
 
 @Serializable
-class SyncCookie(
+internal class SyncCookie(
     @SerialId(1) val time1: Long? = null, // 1580277992
     @SerialId(2) val time: Long, // 1580277992
     @SerialId(3) val unknown1: Long = 678328038,// 678328038

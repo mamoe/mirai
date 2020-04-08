@@ -16,7 +16,7 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 internal class Generalflags : ProtoBuf {
     @Serializable
-    class ResvAttr(
+internal class ResvAttr(
         @ProtoId(1) val globalGroupLevel: Int = 0,
         @ProtoId(2) val nearbyCharmLevel: Int = 0,
         @ProtoId(3) val redbagMsgSenderUin: Long = 0L,
@@ -85,7 +85,7 @@ internal class Generalflags : ProtoBuf {
 @Serializable
 internal class ResvAttrForGiftMsg : ProtoBuf {
     @Serializable
-    class ActivityGiftInfo(
+internal class ActivityGiftInfo(
         @ProtoId(1) val isActivityGift: Int = 0,
         @ProtoId(2) val textColor: String = "",
         @ProtoId(3) val text: String = "",
@@ -93,12 +93,12 @@ internal class ResvAttrForGiftMsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class InteractGift(
+internal class InteractGift(
         @ProtoId(1) val interactId: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ResvAttr(
+internal class ResvAttr(
         @ProtoId(1) val int32SendScore: Int = 0,
         @ProtoId(2) val int32RecvScore: Int = 0,
         @ProtoId(3) val charmHeroism: ByteArray = EMPTY_BYTE_ARRAY,
@@ -113,7 +113,7 @@ internal class ResvAttrForGiftMsg : ProtoBuf {
 @Serializable
 internal class SourceMsg : ProtoBuf {
     @Serializable
-    class ResvAttr(
+internal class ResvAttr(
         @ProtoId(1) val richMsg2: ByteArray? = null,
         @ProtoId(2) val oriMsgtype: Int? = null,
         @ProtoId(3) val origUids: Long? = null // 原来是 list
@@ -123,7 +123,7 @@ internal class SourceMsg : ProtoBuf {
 @Serializable
 internal class VideoFile : ProtoBuf {
     @Serializable
-    class ResvAttr(
+internal class ResvAttr(
         @ProtoId(1) val hotvideoIcon: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val hotvideoTitle: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val hotvideoUrl: ByteArray = EMPTY_BYTE_ARRAY,

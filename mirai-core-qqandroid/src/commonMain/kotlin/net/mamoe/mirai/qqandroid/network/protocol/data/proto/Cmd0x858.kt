@@ -19,9 +19,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 @Serializable
-class Oidb0x858 : ProtoBuf {
+internal class Oidb0x858 : ProtoBuf {
     @Serializable
-    class GoldMsgTipsElem(
+internal class GoldMsgTipsElem(
         @ProtoId(1) val type: Int = 0,
         @ProtoId(2) val billno: String = "",
         @ProtoId(3) val result: Int = 0,
@@ -34,7 +34,7 @@ class Oidb0x858 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MessageRecallReminder(
+internal class MessageRecallReminder(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val nickname: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val recalledMsgList: List<MessageMeta> = listOf(),
@@ -42,7 +42,7 @@ class Oidb0x858 : ProtoBuf {
         @ProtoId(5) val userdef: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf {
         @Serializable
-        class MessageMeta(
+internal class MessageMeta(
             @ProtoId(1) val seq: Int = 0,
             @ProtoId(2) val time: Int = 0,
             @ProtoId(3) val msgRandom: Int = 0
@@ -50,7 +50,7 @@ class Oidb0x858 : ProtoBuf {
     }
 
     @Serializable
-    class NotifyMsgBody(
+internal class NotifyMsgBody(
         @ProtoId(1) val optEnumType: Int /* enum */ = 5,
         @ProtoId(2) val optUint64MsgTime: Long = 0L,
         @ProtoId(3) val optUint64MsgExpires: Long = 0L,
@@ -64,14 +64,14 @@ class Oidb0x858 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class NotifyObjmsgUpdate(
+internal class NotifyObjmsgUpdate(
         @ProtoId(1) val objmsgId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val updateType: Int = 0,
         @ProtoId(3) val extMsg: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class RedGrayTipsInfo(
+internal class RedGrayTipsInfo(
         @ProtoId(1) val optUint32ShowLastest: Int = 0,
         @ProtoId(2) val senderUin: Long = 0L,
         @ProtoId(3) val receiverUin: Long = 0L,

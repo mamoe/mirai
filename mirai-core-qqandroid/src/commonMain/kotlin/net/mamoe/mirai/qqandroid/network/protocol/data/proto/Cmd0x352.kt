@@ -17,7 +17,7 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 @Serializable
 internal class Cmd0x352 : ProtoBuf {
     @Serializable
-    class DelImgReq(
+internal class DelImgReq(
         @ProtoId(1) val srcUin: Long = 0L,
         @ProtoId(2) val dstUin: Long = 0L,
         @ProtoId(3) val reqTerm: Int = 0,
@@ -30,14 +30,14 @@ internal class Cmd0x352 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class DelImgRsp(
+internal class DelImgRsp(
         @ProtoId(1) val result: Int = 0,
         @ProtoId(2) val failMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val fileResid: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class GetImgUrlReq(
+internal class GetImgUrlReq(
         @ProtoId(1) val srcUin: Long = 0L,
         @ProtoId(2) val dstUin: Long = 0L,
         @ProtoId(3) val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
@@ -55,7 +55,7 @@ internal class Cmd0x352 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class GetImgUrlRsp(
+internal class GetImgUrlRsp(
         @ProtoId(1) val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val clientIp: Int = 0,
         @ProtoId(3) val result: Int = 0,
@@ -78,7 +78,7 @@ internal class Cmd0x352 : ProtoBuf {
 
     @Suppress("ArrayInDataClass")
     @Serializable
-    class ImgInfo(
+internal class ImgInfo(
         @ProtoId(1) val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val fileType: Int = 0,
         @ProtoId(3) val fileSize: Long = 0L,
@@ -89,13 +89,13 @@ internal class Cmd0x352 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class IPv6Info(
+internal class IPv6Info(
         @ProtoId(1) val ip6: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val port: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+internal class ReqBody(
         @ProtoId(1) val subcmd: Int = 0, //2是GetImgUrlReq 1是UploadImgReq
         @ProtoId(2) val msgTryupImgReq: List<TryUpImgReq>? = null,// optional
         @ProtoId(3) val msgGetimgUrlReq: List<GetImgUrlReq>? = null,// optional
@@ -104,7 +104,7 @@ internal class Cmd0x352 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+internal class RspBody(
         @ProtoId(1) val subcmd: Int = 0,
         @ProtoId(2) val msgTryupImgRsp: List<TryUpImgRsp>? = null,
         @ProtoId(3) val msgGetimgUrlRsp: List<GetImgUrlRsp>? = null,
@@ -151,7 +151,7 @@ internal class Cmd0x352 : ProtoBuf {
     ) : ImgReq
 
     @Serializable
-    class TryUpImgRsp(
+internal class TryUpImgRsp(
         @ProtoId(1) val fileId: Long = 0L,
         @ProtoId(2) val clientIp: Int = 0,
         @ProtoId(3) val result: Int = 0,
@@ -179,7 +179,7 @@ internal class Cmd0x352 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TryUpInfo4Busi(
+internal class TryUpInfo4Busi(
         @ProtoId(1) val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val downDomain: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val thumbDownUrl: ByteArray = EMPTY_BYTE_ARRAY,

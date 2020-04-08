@@ -15,13 +15,13 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 class MsgRevokeUserDef : ProtoBuf {
     @Serializable
-    class MsgInfoUserDef(
+internal class MsgInfoUserDef(
         @ProtoId(1) val longMessageFlag: Int = 0,
         @ProtoId(2) val longMsgInfo: List<MsgInfoDef>? = null,
         @ProtoId(3) val fileUuid: List<String> = listOf()
     ) : ProtoBuf {
         @Serializable
-        class MsgInfoDef(
+internal class MsgInfoDef(
             @ProtoId(1) val msgSeq: Int = 0,
             @ProtoId(2) val longMsgId: Int = 0,
             @ProtoId(3) val longMsgNum: Int = 0,
@@ -30,7 +30,7 @@ class MsgRevokeUserDef : ProtoBuf {
     }
 
     @Serializable
-    class UinTypeUserDef(
+internal class UinTypeUserDef(
         @ProtoId(1) val fromUinType: Int = 0,
         @ProtoId(2) val fromGroupCode: Long = 0L,
         @ProtoId(3) val fileUuid: List<String> = listOf()

@@ -27,15 +27,15 @@ internal class MsgOnlinePush {
 }
 
 @Serializable
-class OnlinePushTrans : ProtoBuf {
+internal class OnlinePushTrans : ProtoBuf {
     @Serializable
-    class ExtGroupKeyInfo(
+internal class ExtGroupKeyInfo(
         @ProtoId(1) val curMaxSeq: Int = 0,
         @ProtoId(2) val curTime: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class PbMsgInfo(
+internal class PbMsgInfo(
         @ProtoId(1) val fromUin: Long = 0L,
         @ProtoId(2) val toUin: Long = 0L,
         @ProtoId(3) val msgType: Int = 0,

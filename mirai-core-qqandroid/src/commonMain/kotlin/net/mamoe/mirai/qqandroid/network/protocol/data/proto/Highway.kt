@@ -19,19 +19,19 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 @Serializable
 internal class BdhExtinfo : ProtoBuf {
     @Serializable
-    class CommFileExtReq(
+internal class CommFileExtReq(
         @ProtoId(1) val actionType: Int = 0,
         @ProtoId(2) val uuid: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class CommFileExtRsp(
+internal class CommFileExtRsp(
         @ProtoId(1) val int32Retcode: Int = 0,
         @ProtoId(2) val downloadUrl: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PicInfo(
+internal class PicInfo(
         @ProtoId(1) val idx: Int = 0,
         @ProtoId(2) val size: Int = 0,
         @ProtoId(3) val binMd5: ByteArray = EMPTY_BYTE_ARRAY,
@@ -39,7 +39,7 @@ internal class BdhExtinfo : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class QQVoiceExtReq(
+internal class QQVoiceExtReq(
         @ProtoId(1) val qid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val fmt: Int = 0,
         @ProtoId(3) val rate: Int = 0,
@@ -49,21 +49,21 @@ internal class BdhExtinfo : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class QQVoiceExtRsp(
+internal class QQVoiceExtRsp(
         @ProtoId(1) val qid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val int32Retcode: Int = 0,
         @ProtoId(3) val msgResult: List<QQVoiceResult>? = null
     ) : ProtoBuf
 
     @Serializable
-    class QQVoiceResult(
+internal class QQVoiceResult(
         @ProtoId(1) val text: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val pinyin: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val source: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ShortVideoReqExtInfo(
+internal class ShortVideoReqExtInfo(
         @ProtoId(1) val cmd: Int = 0,
         @ProtoId(2) val sessionId: Long = 0L,
         @ProtoId(3) val msgThumbinfo: PicInfo? = null,
@@ -73,7 +73,7 @@ internal class BdhExtinfo : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ShortVideoRspExtInfo(
+internal class ShortVideoRspExtInfo(
         @ProtoId(1) val cmd: Int = 0,
         @ProtoId(2) val sessionId: Long = 0L,
         @ProtoId(3) val int32Retcode: Int = 0,
@@ -85,7 +85,7 @@ internal class BdhExtinfo : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ShortVideoSureReqInfo(
+internal class ShortVideoSureReqInfo(
         @ProtoId(1) val fromuin: Long = 0L,
         @ProtoId(2) val chatType: Int = 0,
         @ProtoId(3) val touin: Long = 0L,
@@ -99,7 +99,7 @@ internal class BdhExtinfo : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ShortVideoSureRspInfo(
+internal class ShortVideoSureRspInfo(
         @ProtoId(1) val fileid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val ukey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val msgVideoinfo: VideoInfo? = null,
@@ -107,10 +107,10 @@ internal class BdhExtinfo : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class StoryVideoExtReq : ProtoBuf
+internal class StoryVideoExtReq : ProtoBuf
 
     @Serializable
-    class StoryVideoExtRsp(
+internal class StoryVideoExtRsp(
         @ProtoId(1) val int32Retcode: Int = 0,
         @ProtoId(2) val msg: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val cdnUrl: ByteArray = EMPTY_BYTE_ARRAY,
@@ -119,14 +119,14 @@ internal class BdhExtinfo : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class UploadPicExtInfo(
+internal class UploadPicExtInfo(
         @ProtoId(1) val fileResid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val downloadUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val thumbDownloadUrl: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class VideoInfo(
+internal class VideoInfo(
         @ProtoId(1) val idx: Int = 0,
         @ProtoId(2) val size: Int = 0,
         @ProtoId(3) val binMd5: ByteArray = EMPTY_BYTE_ARRAY,
@@ -142,13 +142,13 @@ internal class BdhExtinfo : ProtoBuf {
 @Serializable
 internal class CSDataHighwayHead : ProtoBuf {
     @Serializable
-    class C2CCommonExtendinfo(
+internal class C2CCommonExtendinfo(
         @ProtoId(1) val infoId: Int = 0,
         @ProtoId(2) val msgFilterExtendinfo: FilterExtendinfo? = null
     ) : ProtoBuf
 
     @Serializable
-    class DataHighwayHead(
+internal class DataHighwayHead(
         @ProtoId(1) val version: Int = 0,
         @ProtoId(2) val uin: String = "", // yes
         @ProtoId(3) val command: String = "",
@@ -162,25 +162,25 @@ internal class CSDataHighwayHead : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class DataHole(
+internal class DataHole(
         @ProtoId(1) val begin: Long = 0L,
         @ProtoId(2) val end: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class FilterExtendinfo(
+internal class FilterExtendinfo(
         @ProtoId(1) val filterFlag: Int = 0,
         @ProtoId(2) val msgImageFilterRequest: ImageFilterRequest? = null
     ) : ProtoBuf
 
     @Serializable
-    class FilterStyle(
+internal class FilterStyle(
         @ProtoId(1) val styleId: Int = 0,
         @ProtoId(2) val styleName: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class ImageFilterRequest(
+internal class ImageFilterRequest(
         @ProtoId(1) val sessionId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val clientIp: Int = 0,
         @ProtoId(3) val uin: Long = 0L,
@@ -191,26 +191,26 @@ internal class CSDataHighwayHead : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ImageFilterResponse(
+internal class ImageFilterResponse(
         @ProtoId(1) val retCode: Int = 0,
         @ProtoId(2) val imageData: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val costTime: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class LoginSigHead(
+internal class LoginSigHead(
         @ProtoId(1) val loginsigType: Int = 0,
         @ProtoId(2) val loginsig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class NewServiceTicket(
+internal class NewServiceTicket(
         @ProtoId(1) val signature: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val ukey: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PicInfoExt(
+internal class PicInfoExt(
         @ProtoId(1) val picWidth: Int = 0,
         @ProtoId(2) val picHeight: Int = 0,
         @ProtoId(3) val picFlag: Int = 0,
@@ -223,7 +223,7 @@ internal class CSDataHighwayHead : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PicRspExtInfo(
+internal class PicRspExtInfo(
         @ProtoId(1) val skey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val clientIp: Int = 0,
         @ProtoId(3) val upOffset: Long = 0L,
@@ -231,14 +231,14 @@ internal class CSDataHighwayHead : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class QueryHoleRsp(
+internal class QueryHoleRsp(
         @ProtoId(1) val result: Int = 0,
         @ProtoId(2) val dataHole: List<DataHole>? = null,
         @ProtoId(3) val boolCompFlag: Boolean = false
     ) : ProtoBuf
 
     @Serializable
-    class ReqDataHighwayHead(
+internal class ReqDataHighwayHead(
         @ProtoId(1) val msgBasehead: DataHighwayHead? = null,
         @ProtoId(2) val msgSeghead: SegHead? = null,
         @ProtoId(3) val reqExtendinfo: ByteArray = EMPTY_BYTE_ARRAY,
@@ -247,12 +247,12 @@ internal class CSDataHighwayHead : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+internal class RspBody(
         @ProtoId(1) val msgQueryHoleRsp: QueryHoleRsp? = null
     ) : ProtoBuf
 
     @Serializable
-    class RspDataHighwayHead(
+internal class RspDataHighwayHead(
         @ProtoId(1) val msgBasehead: DataHighwayHead? = null,
         @ProtoId(2) val msgSeghead: SegHead? = null,
         @ProtoId(3) val errorCode: Int = 0,
@@ -266,7 +266,7 @@ internal class CSDataHighwayHead : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class SegHead(
+internal class SegHead(
         @ProtoId(1) val serviceid: Int = 0,
         @ProtoId(2) val filesize: Long = 0L,
         @ProtoId(3) val dataoffset: Long = 0L,
@@ -285,13 +285,13 @@ internal class CSDataHighwayHead : ProtoBuf {
 @Serializable
 internal class HwConfigPersistentPB : ProtoBuf {
     @Serializable
-    class HwConfigItemPB(
+internal class HwConfigItemPB(
         @ProtoId(1) val ingKey: String = "",
         @ProtoId(2) val endPointList: List<HwEndPointPB>? = null
     ) : ProtoBuf
 
     @Serializable
-    class HwConfigPB(
+internal class HwConfigPB(
         @ProtoId(1) val configItemList: List<HwConfigItemPB>? = null,
         @ProtoId(2) val netSegConfList: List<HwNetSegConfPB>? = null,
         @ProtoId(3) val shortVideoNetConf: List<HwNetSegConfPB>? = null,
@@ -299,14 +299,14 @@ internal class HwConfigPersistentPB : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class HwEndPointPB(
+internal class HwEndPointPB(
         @ProtoId(1) val ingHost: String = "",
         @ProtoId(2) val int32Port: Int = 0,
         @ProtoId(3) val int64Timestampe: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class HwNetSegConfPB(
+internal class HwNetSegConfPB(
         @ProtoId(1) val int64NetType: Long = 0L,
         @ProtoId(2) val int64SegSize: Long = 0L,
         @ProtoId(3) val int64SegNum: Long = 0L,
@@ -317,7 +317,7 @@ internal class HwConfigPersistentPB : ProtoBuf {
 @Serializable
 internal class HwSessionInfoPersistentPB : ProtoBuf {
     @Serializable
-    class HwSessionInfoPB(
+internal class HwSessionInfoPB(
         @ProtoId(1) val httpconnSigSession: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val sessionKey: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
@@ -326,17 +326,17 @@ internal class HwSessionInfoPersistentPB : ProtoBuf {
 @Serializable
 internal class Subcmd0x501 : ProtoBuf {
     @Serializable
-    class ReqBody(
+internal class ReqBody(
         @ProtoId(1281) val msgSubcmd0x501ReqBody: SubCmd0x501ReqBody? = null
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+internal class RspBody(
         @ProtoId(1281) val msgSubcmd0x501RspBody: SubCmd0x501Rspbody? = null
     ) : ProtoBuf
 
     @Serializable
-    class SubCmd0x501ReqBody(
+internal class SubCmd0x501ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val idcId: Int = 0,
         @ProtoId(3) val appid: Int = 0,
@@ -352,7 +352,7 @@ internal class Subcmd0x501 : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class SubCmd0x501Rspbody(
+internal class SubCmd0x501Rspbody(
         @ProtoId(1) val httpconnSigSession: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val sessionKey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val msgHttpconnAddrs: List<SrvAddrs>? = null,
@@ -366,14 +366,14 @@ internal class Subcmd0x501 : ProtoBuf {
         @ProtoId(11) val msgPtvConf: PTVConf? = null
     ) : ProtoBuf {
         @Serializable
-        class DownloadEncryptConf(
+internal class DownloadEncryptConf(
             @ProtoId(1) val boolEnableEncryptRequest: Boolean = false,
             @ProtoId(2) val boolEnableEncryptedPic: Boolean = false,
             @ProtoId(3) val ctrlFlag: Int = 0
         ) : ProtoBuf
 
         @Serializable
-        class DynTimeOutConf(
+internal class DynTimeOutConf(
             @ProtoId(1) val tbase2g: Int = 0,
             @ProtoId(2) val tbase3g: Int = 0,
             @ProtoId(3) val tbase4g: Int = 0,
@@ -396,7 +396,7 @@ internal class Subcmd0x501 : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class Ip6Addr(
+internal class Ip6Addr(
             @ProtoId(1) val type: Int = 0,
             @ProtoId(2) val ip6: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoId(3) val port: Int = 0,
@@ -405,7 +405,7 @@ internal class Subcmd0x501 : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class IpAddr(
+internal class IpAddr(
             @ProtoId(1) val type: Int = 0,
             @ProtoType(ProtoNumberType.FIXED) @ProtoId(2) val ip: Int = 0,
             @ProtoId(3) val port: Int = 0,
@@ -414,13 +414,13 @@ internal class Subcmd0x501 : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class IpLearnConf(
+internal class IpLearnConf(
             @ProtoId(1) val refreshCachedIp: Int = 0,
             @ProtoId(2) val enableIpLearn: Int = 0
         ) : ProtoBuf
 
         @Serializable
-        class NetSegConf(
+internal class NetSegConf(
             @ProtoId(1) val netType: Int = 0,
             @ProtoId(2) val segsize: Int = 0,
             @ProtoId(3) val segnum: Int = 0,
@@ -428,7 +428,7 @@ internal class Subcmd0x501 : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class OpenUpConf(
+internal class OpenUpConf(
             @ProtoId(1) val boolEnableOpenup: Boolean = false,
             @ProtoId(2) val preSendSegnum: Int = 0,
             @ProtoId(3) val preSendSegnum3g: Int = 0,
@@ -437,14 +437,14 @@ internal class Subcmd0x501 : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class PTVConf(
+internal class PTVConf(
             @ProtoId(1) val channelType: Int = 0,
             @ProtoId(2) val msgNetsegconf: List<NetSegConf>? = null,
             @ProtoId(3) val boolOpenHardwareCodec: Boolean = false
         ) : ProtoBuf
 
         @Serializable
-        class ShortVideoConf(
+internal class ShortVideoConf(
             @ProtoId(1) val channelType: Int = 0,
             @ProtoId(2) val msgNetsegconf: List<NetSegConf>? = null,
             @ProtoId(3) val boolOpenHardwareCodec: Boolean = false,
@@ -452,7 +452,7 @@ internal class Subcmd0x501 : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class SrvAddrs(
+internal class SrvAddrs(
             @ProtoId(1) val serviceType: Int = 0,
             @ProtoId(2) val msgAddrs: List<IpAddr>? = null,
             @ProtoId(3) val fragmentSize: Int = 0,

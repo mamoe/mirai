@@ -15,9 +15,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 @Serializable
-class Common : ProtoBuf {
+internal class Common : ProtoBuf {
     @Serializable
-    class BindInfo(
+internal class BindInfo(
         @ProtoId(1) val friUin: Long = 0L,
         @ProtoId(2) val friNick: String = "",
         @ProtoId(3) val time: Long = 0L,
@@ -25,7 +25,7 @@ class Common : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MedalInfo(
+internal class MedalInfo(
         @ProtoId(1) val id: Int = 0,
         @ProtoId(2) val type: Int = 0,
         @ProtoId(4) val seq: Long = 0,
@@ -62,7 +62,7 @@ class Common : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MedalTaskInfo(
+internal class MedalTaskInfo(
         @ProtoId(1) val taskid: Int = 0,
         @ProtoId(32) val int32TaskValue: Int = 0,
         @ProtoId(33) val tarValue: Int = 0,
@@ -72,9 +72,9 @@ class Common : ProtoBuf {
 }
 
 @Serializable
-class AppointDefine : ProtoBuf {
+internal class AppointDefine : ProtoBuf {
     @Serializable
-    class ADFeedContent(
+internal class ADFeedContent(
         @ProtoId(1) val msgUserInfo: AppointDefine.UserInfo? = null,
         @ProtoId(2) val strPicUrl: List<String> = listOf(),
         @ProtoId(3) val msgText: AppointDefine.RichText? = null,
@@ -87,12 +87,12 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RichText(
+internal class RichText(
         @ProtoId(1) val msgElems: List<AppointDefine.Elem>? = null
     ) : ProtoBuf
 
     @Serializable
-    class RankEvent(
+internal class RankEvent(
         @ProtoId(1) val listtype: Int = 0,
         @ProtoId(2) val notifytype: Int = 0,
         @ProtoId(3) val eventtime: Int = 0,
@@ -101,13 +101,13 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class Wifi(
+internal class Wifi(
         @ProtoId(1) val mac: Long = 0L,
         @ProtoId(2) val int32Rssi: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class InterestItem(
+internal class InterestItem(
         @ProtoId(1) val tagId: Long = 0L,
         @ProtoId(2) val tagName: String = "",
         @ProtoId(3) val tagIconUrl: String = "",
@@ -123,13 +123,13 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ShopID(
+internal class ShopID(
         @ProtoId(1) val shopid: String = "",
         @ProtoId(2) val sp: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class FeedComment(
+internal class FeedComment(
         @ProtoId(1) val commentId: String = "",
         @ProtoId(2) val feedId: String = "",
         @ProtoId(3) val msgPublisherInfo: AppointDefine.StrangerInfo? = null,
@@ -141,14 +141,14 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ADFeed(
+internal class ADFeed(
         @ProtoId(1) val taskId: Int = 0,
         @ProtoId(2) val style: Int = 0,
         @ProtoId(3) val content: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class Cell(
+internal class Cell(
         @ProtoId(1) val int32Mcc: Int = -1,
         @ProtoId(2) val int32Mnc: Int = -1,
         @ProtoId(3) val int32Lac: Int = -1,
@@ -157,27 +157,27 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RecentVistorEvent(
+internal class RecentVistorEvent(
         @ProtoId(1) val eventtype: Int = 0,
         @ProtoId(2) val eventTinyid: Long = 0L,
         @ProtoId(3) val unreadCount: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class OrganizerInfo(
+internal class OrganizerInfo(
         @ProtoId(1) val hostName: String = "",
         @ProtoId(2) val hostUrl: String = "",
         @ProtoId(3) val hostCover: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class InterestTag(
+internal class InterestTag(
         @ProtoId(1) val tagType: Int = 0,
         @ProtoId(2) val msgTagList: List<AppointDefine.InterestItem>? = null
     ) : ProtoBuf
 
     @Serializable
-    class AppointInfoEx(
+internal class AppointInfoEx(
         @ProtoId(1) val feedsPicUrl: String = "",
         @ProtoId(2) val feedsUrl: String = "",
         @ProtoId(3) val detailTitle: String = "",
@@ -189,7 +189,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class DateComment(
+internal class DateComment(
         @ProtoId(1) val commentId: String = "",
         @ProtoId(2) val msgAppointId: AppointDefine.AppointID? = null,
         @ProtoId(3) val msgPublisherInfo: AppointDefine.StrangerInfo? = null,
@@ -200,7 +200,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class AppointContent(
+internal class AppointContent(
         @ProtoId(1) val appointSubject: Int = 0,
         @ProtoId(2) val payType: Int = 0,
         @ProtoId(3) val appointDate: Int = 0,
@@ -211,7 +211,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class FeedInfo(
+internal class FeedInfo(
         @ProtoId(1) val feedType: Long = 0L,
         @ProtoId(2) val feedId: String = "",
         @ProtoId(3) val msgFeedContent: AppointDefine.FeedContent? = null,
@@ -229,12 +229,12 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class HotTopicList(
+internal class HotTopicList(
         @ProtoId(1) val topicList: List<AppointDefine.HotTopic>? = null
     ) : ProtoBuf
 
     @Serializable
-    class FeedContent(
+internal class FeedContent(
         @ProtoId(1) val strPicUrl: List<String> = listOf(),
         @ProtoId(2) val msgText: AppointDefine.RichText? = null,
         @ProtoId(3) val hrefUrl: String = "",
@@ -252,7 +252,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class TravelInfo(
+internal class TravelInfo(
         @ProtoId(1) val msgDepartLocale: AppointDefine.LocaleInfo? = null,
         @ProtoId(2) val msgDestination: AppointDefine.LocaleInfo? = null,
         @ProtoId(3) val vehicle: Int = 0,
@@ -262,13 +262,13 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RecentFreshFeed(
+internal class RecentFreshFeed(
         @ProtoId(1) val freshFeedInfo: List<AppointDefine.FreshFeedInfo>? = null,
         @ProtoId(2) val uid: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class GPS(
+internal class GPS(
         @ProtoId(1) val int32Lat: Int = 900000000,
         @ProtoId(2) val int32Lon: Int = 900000000,
         @ProtoId(3) val int32Alt: Int = -10000000,
@@ -276,12 +276,12 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class AppointID(
+internal class AppointID(
         @ProtoId(1) val requestId: String = ""
     ) : ProtoBuf
 
     @Serializable
-    class LocaleInfo(
+internal class LocaleInfo(
         @ProtoId(1) val name: String = "",
         @ProtoId(2) val country: String = "",
         @ProtoId(3) val province: String = "",
@@ -293,14 +293,14 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class LBSInfo(
+internal class LBSInfo(
         @ProtoId(1) val msgGps: AppointDefine.GPS? = null,
         @ProtoId(2) val msgWifis: List<AppointDefine.Wifi>? = null,
         @ProtoId(3) val msgCells: List<AppointDefine.Cell>? = null
     ) : ProtoBuf
 
     @Serializable
-    class FeedEvent(
+internal class FeedEvent(
         @ProtoId(1) val eventId: Long = 0L,
         @ProtoId(2) val time: Int = 0,
         @ProtoId(3) val eventtype: Int = 0,
@@ -312,7 +312,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class FeedsCookie(
+internal class FeedsCookie(
         @ProtoId(1) val strList: List<String> = listOf(),
         @ProtoId(2) val pose: Int = 0,
         @ProtoId(3) val cookie: ByteArray = EMPTY_BYTE_ARRAY,
@@ -320,7 +320,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class NearbyTopic(
+internal class NearbyTopic(
         @ProtoId(1) val topicId: Long = 0L,
         @ProtoId(2) val topic: String = "",
         @ProtoId(3) val foreword: String = "",
@@ -342,7 +342,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class NearbyEvent(
+internal class NearbyEvent(
         @ProtoId(1) val eventtype: Int = 0,
         @ProtoId(2) val msgRankevent: AppointDefine.RankEvent? = null,
         @ProtoId(3) val eventUin: Long = 0L,
@@ -350,14 +350,14 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class Feed(
+internal class Feed(
         @ProtoId(1) val msgUserInfo: AppointDefine.PublisherInfo? = null,
         @ProtoId(2) val msgFeedInfo: AppointDefine.FeedInfo? = null,
         @ProtoId(3) val ownerFlag: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ActivityInfo(
+internal class ActivityInfo(
         @ProtoId(2) val name: String = "",
         @ProtoId(3) val cover: String = "",
         @ProtoId(4) val url: String = "",
@@ -372,7 +372,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class HotEntry(
+internal class HotEntry(
         @ProtoId(1) val openFlag: Int = 0,
         @ProtoId(2) val restTime: Int = 0,
         @ProtoId(3) val foreword: String = "",
@@ -380,7 +380,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class UserFeed(
+internal class UserFeed(
         @ProtoId(1) val msgUserInfo: AppointDefine.PublisherInfo? = null,
         @ProtoId(2) val msgFeedInfo: AppointDefine.FeedInfo? = null,
         @ProtoId(3) val ownerFlag: Int = 0,
@@ -388,24 +388,24 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class Elem(
+internal class Elem(
         @ProtoId(1) val content: String = "",
         @ProtoId(2) val msgFaceInfo: AppointDefine.Face? = null
     ) : ProtoBuf
 
     @Serializable
-    class HotFreshFeedList(
+internal class HotFreshFeedList(
         @ProtoId(1) val msgFeeds: List<AppointDefine.HotUserFeed>? = null,
         @ProtoId(2) val updateTime: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RptInterestTag(
+internal class RptInterestTag(
         @ProtoId(1) val interestTags: List<AppointDefine.InterestTag>? = null
     ) : ProtoBuf
 
     @Serializable
-    class AddressInfo(
+internal class AddressInfo(
         @ProtoId(1) val companyZone: String = "",
         @ProtoId(2) val companyName: String = "",
         @ProtoId(3) val companyAddr: String = "",
@@ -415,7 +415,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class PublisherInfo(
+internal class PublisherInfo(
         @ProtoId(1) val tinyid: Long = 0L,
         @ProtoId(2) val nickname: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val age: Int = 0,
@@ -441,7 +441,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class HotUserFeed(
+internal class HotUserFeed(
         @ProtoId(1) val feedId: String = "",
         @ProtoId(2) val praiseCount: Int = 0,
         @ProtoId(3) val publishUid: Long = 0L,
@@ -449,7 +449,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class FreshFeedInfo(
+internal class FreshFeedInfo(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val time: Int = 0,
         @ProtoId(3) val feedId: String = "",
@@ -457,7 +457,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class CommonLabel(
+internal class CommonLabel(
         @ProtoId(1) val lableId: Int = 0,
         @ProtoId(2) val lableMsgPre: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val lableMsgLast: ByteArray = EMPTY_BYTE_ARRAY,
@@ -466,12 +466,12 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class Face(
+internal class Face(
         @ProtoId(1) val index: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class StrangerInfo(
+internal class StrangerInfo(
         @ProtoId(1) val tinyid: Long = 0L,
         @ProtoId(2) val nickname: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val age: Int = 0,
@@ -490,7 +490,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class HotTopic(
+internal class HotTopic(
         @ProtoId(1) val id: Long = 0L,
         @ProtoId(2) val title: String = "",
         @ProtoId(3) val topicType: Long = 0L,
@@ -503,7 +503,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class DateEvent(
+internal class DateEvent(
         @ProtoId(1) val eventId: Long = 0L,
         @ProtoId(2) val time: Int = 0,
         @ProtoId(3) val type: Int = 0,
@@ -516,7 +516,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class AppointInfo(
+internal class AppointInfo(
         @ProtoId(1) val msgAppointId: AppointDefine.AppointID? = null,
         @ProtoId(2) val msgAppointment: AppointDefine.AppointContent? = null,
         @ProtoId(3) val appointStatus: Int = 0,
@@ -533,7 +533,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class UserInfo(
+internal class UserInfo(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val nickname: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val age: Int = 0,
@@ -542,7 +542,7 @@ class AppointDefine : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReplyInfo(
+internal class ReplyInfo(
         @ProtoId(1) val commentId: String = "",
         @ProtoId(2) val msgStrangerInfo: AppointDefine.StrangerInfo? = null
     ) : ProtoBuf

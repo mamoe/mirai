@@ -8,19 +8,19 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 @Serializable
 internal class MultiMsg : ProtoBuf {
     @Serializable
-    class ExternMsg(
+internal class ExternMsg(
         @ProtoId(1) val channelType: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class MultiMsgApplyDownReq(
+internal class MultiMsgApplyDownReq(
         @ProtoId(1) val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val msgType: Int = 0,
         @ProtoId(3) val srcUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-    class MultiMsgApplyDownRsp(
+internal class MultiMsgApplyDownRsp(
         @ProtoId(1) val result: Int = 0,
         @ProtoId(2) val thumbDownPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val msgKey: ByteArray = EMPTY_BYTE_ARRAY,
@@ -33,7 +33,7 @@ internal class MultiMsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MultiMsgApplyUpReq(
+internal class MultiMsgApplyUpReq(
         @ProtoId(1) val dstUin: Long = 0L,
         @ProtoId(2) val msgSize: Long = 0L,
         @ProtoId(3) val msgMd5: ByteArray = EMPTY_BYTE_ARRAY,
@@ -42,7 +42,7 @@ internal class MultiMsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MultiMsgApplyUpRsp(
+internal class MultiMsgApplyUpRsp(
         @ProtoId(1) val result: Int = 0,
         @ProtoId(2) val msgResid: String = "",
         @ProtoId(3) val msgUkey: ByteArray = EMPTY_BYTE_ARRAY,
@@ -59,7 +59,7 @@ internal class MultiMsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+internal class ReqBody(
         @ProtoId(1) val subcmd: Int = 0,
         @ProtoId(2) val termType: Int = 0,
         @ProtoId(3) val platformType: Int = 0,
@@ -72,7 +72,7 @@ internal class MultiMsg : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+internal class RspBody(
         @ProtoId(1) val subcmd: Int = 0,
         @ProtoId(2) val multimsgApplyupRsp: List<MultiMsg.MultiMsgApplyUpRsp>? = null,
         @ProtoId(3) val multimsgApplydownRsp: List<MultiMsg.MultiMsgApplyDownRsp>? = null

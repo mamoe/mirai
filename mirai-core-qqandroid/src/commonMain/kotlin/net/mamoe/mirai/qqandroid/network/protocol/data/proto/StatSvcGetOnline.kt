@@ -15,19 +15,19 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 class StatSvcGetOnline {
     @Serializable
-    class Instance(
+internal class Instance(
         @ProtoId(1) val instanceId: Int = 0,
         @ProtoId(2) val clientType: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+internal class ReqBody(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val appid: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+internal class RspBody(
         @ProtoId(1) val errorCode: Int = 0,
         @ProtoId(2) val errorMsg: String = "",
         @ProtoId(3) val uin: Long = 0L,

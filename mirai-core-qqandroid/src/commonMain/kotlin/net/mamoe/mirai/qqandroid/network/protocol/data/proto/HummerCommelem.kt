@@ -16,7 +16,7 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 internal class HummerCommelem : ProtoBuf {
     @Serializable
-    class MsgElemInfoServtype1(
+internal class MsgElemInfoServtype1(
         @ProtoId(1) val rewardId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val senderUin: Long = 0L,
         @ProtoId(3) val picType: Int = 0,
@@ -32,7 +32,7 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype11(
+internal class MsgElemInfoServtype11(
         @ProtoId(1) val resID: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val resMD5: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val reserveInfo1: ByteArray = EMPTY_BYTE_ARRAY,
@@ -44,19 +44,19 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype13(
+internal class MsgElemInfoServtype13(
         @ProtoId(1) val sysHeadId: Int = 0,
         @ProtoId(2) val headFlag: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype14(
+internal class MsgElemInfoServtype14(
         @ProtoId(1) val id: Int = 0,
         @ProtoId(2) val reserveInfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype15(
+internal class MsgElemInfoServtype15(
         @ProtoId(1) val vid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val cover: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val title: ByteArray = EMPTY_BYTE_ARRAY,
@@ -68,7 +68,7 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype16(
+internal class MsgElemInfoServtype16(
         @ProtoId(1) val uid: Long = 0L,
         @ProtoId(2) val unionID: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val storyID: ByteArray = EMPTY_BYTE_ARRAY,
@@ -84,7 +84,7 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype18(
+internal class MsgElemInfoServtype18(
         @ProtoId(1) val currentAmount: Long = 0L,
         @ProtoId(2) val totalAmount: Long = 0L,
         @ProtoId(3) val listid: ByteArray = EMPTY_BYTE_ARRAY,
@@ -93,12 +93,12 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype19(
+internal class MsgElemInfoServtype19(
         @ProtoId(1) val data: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype2(
+internal class MsgElemInfoServtype2(
         @ProtoId(1) val pokeType: Int = 0,
         @ProtoId(2) val pokeSummary: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val doubleHit: Int = 0,
@@ -112,12 +112,12 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype20(
+internal class MsgElemInfoServtype20(
         @ProtoId(1) val data: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype21(
+internal class MsgElemInfoServtype21(
         @ProtoId(1) val topicId: Int = 0,
         @ProtoId(2) val confessorUin: Long = 0L,
         @ProtoId(3) val confessorNick: ByteArray = EMPTY_BYTE_ARRAY,
@@ -130,7 +130,7 @@ internal class HummerCommelem : ProtoBuf {
         @ProtoId(10) val groupConfessCtx: HummerCommelem.MsgElemInfoServtype21.GroupConfessContext? = null
     ) : ProtoBuf {
         @Serializable
-        class C2CConfessContext(
+internal class C2CConfessContext(
             @ProtoId(1) val confessorUin: Long = 0L,
             @ProtoId(2) val confessToUin: Long = 0L,
             @ProtoId(3) val sendUin: Long = 0L,
@@ -146,7 +146,7 @@ internal class HummerCommelem : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class GroupConfessContext(
+internal class GroupConfessContext(
             @ProtoId(1) val confessorUin: Long = 0L,
             @ProtoId(2) val confessToUin: Long = 0L,
             @ProtoId(3) val sendUin: Long = 0L,
@@ -160,7 +160,7 @@ internal class HummerCommelem : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class GroupConfessItem(
+internal class GroupConfessItem(
             @ProtoId(1) val topicId: Int = 0,
             @ProtoId(2) val confessToUin: Long = 0L,
             @ProtoId(3) val confessToNick: ByteArray = EMPTY_BYTE_ARRAY,
@@ -169,7 +169,7 @@ internal class HummerCommelem : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class GroupConfessMsg(
+internal class GroupConfessMsg(
             @ProtoId(1) val confessTime: Long = 0L,
             @ProtoId(2) val confessorUin: Long = 0L,
             @ProtoId(3) val confessorSex: Int = 0,
@@ -180,7 +180,7 @@ internal class HummerCommelem : ProtoBuf {
     }
 
     @Serializable
-    class MsgElemInfoServtype23(
+internal class MsgElemInfoServtype23(
         @ProtoId(1) val faceType: Int = 0,
         @ProtoId(2) val faceBubbleCount: Int = 0,
         @ProtoId(3) val faceSummary: ByteArray = EMPTY_BYTE_ARRAY,
@@ -189,12 +189,12 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype24(
+internal class MsgElemInfoServtype24(
         @ProtoId(1) val limitChatEnter: HummerCommelem.MsgElemInfoServtype24.LimitChatEnter? = null,
         @ProtoId(2) val limitChatExit: HummerCommelem.MsgElemInfoServtype24.LimitChatExit? = null
     ) : ProtoBuf {
         @Serializable
-        class LimitChatEnter(
+internal class LimitChatEnter(
             @ProtoId(1) val tipsWording: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoId(2) val leftChatTime: Int = 0,
             @ProtoId(3) val matchTs: Long = 0L,
@@ -205,42 +205,42 @@ internal class HummerCommelem : ProtoBuf {
         ) : ProtoBuf
 
         @Serializable
-        class LimitChatExit(
+internal class LimitChatExit(
             @ProtoId(1) val exitMethod: Int = 0,
             @ProtoId(2) val matchTs: Long = 0L
         ) : ProtoBuf
     }
 
     @Serializable
-    class MsgElemInfoServtype27(
+internal class MsgElemInfoServtype27(
         @ProtoId(1) val videoFile: ImMsgBody.VideoFile? = null
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype29(
+internal class MsgElemInfoServtype29(
         @ProtoId(1) val luckybagMsg: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype3(
+internal class MsgElemInfoServtype3(
         @ProtoId(1) val flashTroopPic: ImMsgBody.CustomFace? = null,
         @ProtoId(2) val flashC2cPic: ImMsgBody.NotOnlineImage? = null
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype31(
+internal class MsgElemInfoServtype31(
         @ProtoId(1) val text: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val ext: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype4(
+internal class MsgElemInfoServtype4(
         @ProtoId(1) val imsgType: Int = 0,
         @ProtoId(4) val stStoryAioObjMsg: HummerCommelem.StoryAioObjMsg? = null
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype5(
+internal class MsgElemInfoServtype5(
         @ProtoId(1) val vid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val cover: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val title: ByteArray = EMPTY_BYTE_ARRAY,
@@ -251,12 +251,12 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype8(
+internal class MsgElemInfoServtype8(
         @ProtoId(1) val wifiDeliverGiftMsg: ImMsgBody.DeliverGiftMsg? = null
     ) : ProtoBuf
 
     @Serializable
-    class MsgElemInfoServtype9(
+internal class MsgElemInfoServtype9(
         @ProtoId(1) val anchorStatus: Int = 0,
         @ProtoId(2) val jumpSchema: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val anchorNickname: String = "",
@@ -265,7 +265,7 @@ internal class HummerCommelem : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class StoryAioObjMsg(
+internal class StoryAioObjMsg(
         @ProtoId(1) val uiUrl: String = "",
         @ProtoId(2) val jmpUrl: String = ""
     ) : ProtoBuf

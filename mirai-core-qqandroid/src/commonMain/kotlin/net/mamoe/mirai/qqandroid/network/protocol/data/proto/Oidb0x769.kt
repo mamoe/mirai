@@ -15,7 +15,7 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 class Oidb0x769 {
     @Serializable
-    class RequestBody(
+internal class RequestBody(
         @ProtoId(1) val rpt_config_list: List<ConfigSeq>
        // @SerialId(2) val msg_device_info: DeviceInfo,
        // @SerialId(3) val str_info: String = "",
@@ -26,19 +26,19 @@ class Oidb0x769 {
     ) : ProtoBuf
 
     @Serializable
-    class QueryUinPackageUsageReq(
+internal class QueryUinPackageUsageReq(
         @ProtoId(1) val type: Int,
         @ProtoId(2) val uinFileSize: Long = 0
     ): ProtoBuf
 
     @Serializable
-    class ConfigSeq(
+internal class ConfigSeq(
         @ProtoId(1) val type: Int, // uint
         @ProtoId(2) val version: Int // uint
     ): ProtoBuf
 
     @Serializable
-    class DeviceInfo(
+internal class DeviceInfo(
         @ProtoId(1) val brand: String,
         @ProtoId(2) val model: String
         //@SerialId(3) val os: OS,
@@ -50,7 +50,7 @@ class Oidb0x769 {
     ): ProtoBuf
 
     @Serializable
-    class OS(
+internal class OS(
         @ProtoId(1) val type: Int = 1,
         @ProtoId(2) val version: String,
         @ProtoId(3) val sdk: String,
@@ -59,27 +59,27 @@ class Oidb0x769 {
     ): ProtoBuf
 
     @Serializable
-    class Camera(
+internal class Camera(
         @ProtoId(1) val primary: Long,
         @ProtoId(2) val secondary: Long,
         @ProtoId(3) val flag: Boolean
     ): ProtoBuf
 
     @Serializable
-    class CPU(
+internal class CPU(
         @ProtoId(1) val model: String,
         @ProtoId(2) val frequency: Int,
         @ProtoId(3) val cores: Int
     ): ProtoBuf
 
     @Serializable
-    class Memory(
+internal class Memory(
         @ProtoId(1) val total: Int,
         @ProtoId(2) val process: Int
     ): ProtoBuf
 
     @Serializable
-    class Screen(
+internal class Screen(
         @ProtoId(1) val model: String,
         @ProtoId(2) val width: Int,
         @ProtoId(3) val height: Int,
@@ -88,7 +88,7 @@ class Oidb0x769 {
     ): ProtoBuf
 
     @Serializable
-    class Storage(
+internal class Storage(
         @ProtoId(1) val builtin: Int,
         @ProtoId(2) val external: Int
     ): ProtoBuf

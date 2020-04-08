@@ -19,7 +19,7 @@ internal class Oidb0x8a0 : ProtoBuf {
     @Serializable
     internal class RspBody(
         @ProtoId(1) val optUint64GroupCode: Long = 0L,
-        @ProtoId(2) val msgKickResult: List<KickResult>? = null
+        @ProtoId(2) val msgKickResult: List<Oidb0x8a0.KickResult>? = null
     ) : ProtoBuf
 
     @Serializable
@@ -39,7 +39,7 @@ internal class Oidb0x8a0 : ProtoBuf {
     @Serializable
     internal class ReqBody(
         @ProtoId(1) val optUint64GroupCode: Long = 0L,
-        @ProtoId(2) val msgKickList: List<KickMemberInfo>? = null,
+        @ProtoId(2) val msgKickList: List<Oidb0x8a0.KickMemberInfo>? = null,
         @ProtoId(3) val kickList: List<Long>? = null,
         @ProtoId(4) val kickFlag: Int = 0,
         @ProtoId(5) val kickMsg: ByteArray = EMPTY_BYTE_ARRAY

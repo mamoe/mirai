@@ -7,18 +7,18 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 internal class MsgTransmit : ProtoBuf {
     @Serializable
-    class PbMultiMsgItem(
+internal class PbMultiMsgItem(
         @ProtoId(1) val fileName: String = "",
         @ProtoId(2) val buffer: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-    class PbMultiMsgNew(
+internal class PbMultiMsgNew(
         @ProtoId(1) val msg: List<MsgComm.Msg>? = null
     ) : ProtoBuf
 
     @Serializable
-    class PbMultiMsgTransmit(
+internal class PbMultiMsgTransmit(
         @ProtoId(1) val msg: List<MsgComm.Msg>? = null,
         @ProtoId(2) val pbItemList: List<MsgTransmit.PbMultiMsgItem>? = null
     ) : ProtoBuf

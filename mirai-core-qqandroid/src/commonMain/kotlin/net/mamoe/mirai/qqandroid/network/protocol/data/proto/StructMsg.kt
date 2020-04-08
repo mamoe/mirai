@@ -1,8 +1,8 @@
 package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
-import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
-import kotlinx.serialization.protobuf.ProtoId
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoId
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 @Serializable

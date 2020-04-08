@@ -15,9 +15,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 @Serializable
-class GroupLabel : ProtoBuf {
+internal class GroupLabel : ProtoBuf {
     @Serializable
-    class Label(
+internal class Label(
         @ProtoId(1) val name: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val enumType: Int /* enum */ = 1,
         @ProtoId(3) val textColor: GroupLabel.Color? = null,
@@ -27,32 +27,32 @@ class GroupLabel : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
+internal class RspBody(
         @ProtoId(1) val error: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val groupInfo: List<GroupLabel.GroupInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class SourceId(
+internal class SourceId(
         @ProtoId(1) val sourceId: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class GroupInfo(
+internal class GroupInfo(
         @ProtoId(1) val int32Result: Int = 0,
         @ProtoId(2) val groupCode: Long = 0L,
         @ProtoId(3) val groupLabel: List<GroupLabel.Label>? = null
     ) : ProtoBuf
 
     @Serializable
-    class Color(
+internal class Color(
         @ProtoId(1) val r: Int = 0,
         @ProtoId(2) val g: Int = 0,
         @ProtoId(3) val b: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
+internal class ReqBody(
         @ProtoId(1) val sourceId: GroupLabel.SourceId? = null,
         @ProtoId(2) val uinInfo: GroupLabel.UinInfo? = null,
         @ProtoId(3) val numberLabel: Int = 5,
@@ -61,7 +61,7 @@ class GroupLabel : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    class UinInfo(
+internal class UinInfo(
         @ProtoId(1) val int64Longitude: Long = 0L,
         @ProtoId(2) val int64Latitude: Long = 0L
     ) : ProtoBuf
