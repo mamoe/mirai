@@ -283,7 +283,7 @@ object DefaultCommands {
 
         registerConsoleCommands {
             name = "install"
-            description = "Install plugin from PC"
+            description = "Install plugin from PluginCenter"
             usage = "/install [plugin-name] to install plugin or /install [page-num] to show list "
             onCommand {
 
@@ -292,6 +292,7 @@ object DefaultCommands {
                 suspend fun showPage(num:Int){
                     sendMessage("正在连接" + center.name)
                     val list = PluginCenter.Default.fetchPlugin(num)
+                    appendMessage("\n")
                     list.values.forEach {
                         appendMessage("=>" + it.name + " ;作者: " + it.author + " ;介绍: " + it.description)
                     }
