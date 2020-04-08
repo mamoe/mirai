@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.encodeToString
+import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 import java.io.InputStream
@@ -58,7 +59,7 @@ object PluginManager {
      * 他的优先级取决于依赖,
      * 在这个队列中, 被依赖的插件会在依赖的插件之前
      */
-    private val pluginsSequence: MutableList<PluginBase> = mutableListOf()
+    private val pluginsSequence: LockFreeLinkedList<PluginBase> = LockFreeLinkedList()
 
 
     /**
@@ -230,7 +231,7 @@ object PluginManager {
             nameToPluginBaseMap[description.name] = plugin
             pluginDescriptions[description.name] = description
             plugin.pluginName = description.name
-            pluginsSequence.add(plugin)//按照实际加载顺序加入队列
+            pluginsSequence.addLast(plugin)//按照实际加载顺序加入队列
             return true
         }
 
