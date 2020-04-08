@@ -89,7 +89,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoId(2) val followingFriendSeq: Long = 0L,
         @ProtoId(3) val followingGroupSeq: Long = 0L,
         @ProtoId(4) val checktype: Int /* enum */ = 1,
-        @ProtoId(5) val flag: Structmsg.FlagInfo? = null,
+        @ProtoId(5) val flag: FlagInfo? = null,
         @ProtoId(6) val language: Int = 0,
         @ProtoId(7) val version: Int = 0,
         @ProtoId(8) val friendMsgTypeFlag: Long = 0L
@@ -113,7 +113,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoId(5) val srcId: Int = 0,
         @ProtoId(6) val subSrcId: Int = 0,
         @ProtoId(7) val groupMsgType: Int = 0,
-        @ProtoId(8) val actionInfo: Structmsg.SystemMsgActionInfo? = null,
+        @ProtoId(8) val actionInfo: SystemMsgActionInfo? = null,
         @ProtoId(9) val language: Int = 0
     ) : ProtoBuf
 
@@ -124,7 +124,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoId(3) val latestGroupSeq: Long = 0L,
         @ProtoId(4) val version: Int = 0,
         @ProtoId(5) val checktype: Int /* enum */ = 1,
-        @ProtoId(6) val flag: Structmsg.FlagInfo? = null,
+        @ProtoId(6) val flag: FlagInfo? = null,
         @ProtoId(7) val language: Int = 0,
         @ProtoId(8) val isGetFrdRibbon: Boolean = true,
         @ProtoId(9) val isGetGrpRibbon: Boolean = true,
@@ -147,8 +147,8 @@ internal class Structmsg : ProtoBuf {
 
     @Serializable
     internal class RspNextSystemMsg(
-        @ProtoId(1) val head: Structmsg.RspHead? = null,
-        @ProtoId(2) val msgs: List<Structmsg.StructMsg>? = null,
+        @ProtoId(1) val head: RspHead? = null,
+        @ProtoId(2) val msgs: List<StructMsg>? = null,
         @ProtoId(3) val followingFriendSeq: Long = 0L,
         @ProtoId(4) val followingGroupSeq: Long = 0L,
         @ProtoId(5) val checktype: Int /* enum */ = 1,
@@ -159,8 +159,8 @@ internal class Structmsg : ProtoBuf {
 
     @Serializable
     internal class RspSystemMsg(
-        @ProtoId(1) val head: Structmsg.RspHead? = null,
-        @ProtoId(2) val msgs: List<Structmsg.StructMsg>? = null,
+        @ProtoId(1) val head: RspHead? = null,
+        @ProtoId(2) val msgs: List<StructMsg>? = null,
         @ProtoId(3) val unreadCount: Int = 0,
         @ProtoId(4) val latestFriendSeq: Long = 0L,
         @ProtoId(5) val latestGroupSeq: Long = 0L,
@@ -171,7 +171,7 @@ internal class Structmsg : ProtoBuf {
 
     @Serializable
     internal class RspSystemMsgAction(
-        @ProtoId(1) val head: Structmsg.RspHead? = null,
+        @ProtoId(1) val head: RspHead? = null,
         @ProtoId(2) val msgDetail: String = "",
         @ProtoId(3) val type: Int = 0,
         @ProtoId(5) val msgInvalidDecided: String = "",
@@ -180,17 +180,17 @@ internal class Structmsg : ProtoBuf {
 
     @Serializable
     internal class RspSystemMsgNew(
-        @ProtoId(1) val head: Structmsg.RspHead? = null,
+        @ProtoId(1) val head: RspHead? = null,
         @ProtoId(2) val unreadFriendCount: Int = 0,
         @ProtoId(3) val unreadGroupCount: Int = 0,
         @ProtoId(4) val latestFriendSeq: Long = 0L,
         @ProtoId(5) val latestGroupSeq: Long = 0L,
         @ProtoId(6) val followingFriendSeq: Long = 0L,
         @ProtoId(7) val followingGroupSeq: Long = 0L,
-        @ProtoId(9) val friendmsgs: List<Structmsg.StructMsg>? = null,
-        @ProtoId(10) val groupmsgs: List<Structmsg.StructMsg>? = null,
-        @ProtoId(11) val msgRibbonFriend: Structmsg.StructMsg? = null,
-        @ProtoId(12) val msgRibbonGroup: Structmsg.StructMsg? = null,
+        @ProtoId(9) val friendmsgs: List<StructMsg>? = null,
+        @ProtoId(10) val groupmsgs: List<StructMsg>? = null,
+        @ProtoId(11) val msgRibbonFriend: StructMsg? = null,
+        @ProtoId(12) val msgRibbonGroup: StructMsg? = null,
         @ProtoId(13) val msgDisplay: String = "",
         @ProtoId(14) val grpMsgDisplay: String = "",
         @ProtoId(15) val over: Int = 0,
@@ -202,7 +202,7 @@ internal class Structmsg : ProtoBuf {
 
     @Serializable
     internal class RspSystemMsgRead(
-        @ProtoId(1) val head: Structmsg.RspHead? = null,
+        @ProtoId(1) val head: RspHead? = null,
         @ProtoId(2) val type: Int = 0,
         @ProtoId(3) val checktype: Int /* enum */ = 1
     ) : ProtoBuf
@@ -215,7 +215,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoId(4) val msgTime: Long = 0L,
         @ProtoId(5) val reqUin: Long = 0L,
         @ProtoId(6) val unreadFlag: Int = 0,
-        @ProtoId(50) val msg: Structmsg.SystemMsg? = null
+        @ProtoId(50) val msg: SystemMsg? = null
     ) : ProtoBuf
 
     @Serializable
@@ -228,13 +228,13 @@ internal class Structmsg : ProtoBuf {
         @ProtoId(6) val msgDecided: String = "",
         @ProtoId(7) val srcId: Int = 0,
         @ProtoId(8) val subSrcId: Int = 0,
-        @ProtoId(9) val actions: List<Structmsg.SystemMsgAction>? = null,
+        @ProtoId(9) val actions: List<SystemMsgAction>? = null,
         @ProtoId(10) val groupCode: Long = 0L,
         @ProtoId(11) val actionUin: Long = 0L,
         @ProtoId(12) val groupMsgType: Int = 0,
         @ProtoId(13) val groupInviterRole: Int = 0,
-        @ProtoId(14) val friendInfo: Structmsg.FriendInfo? = null,
-        @ProtoId(15) val groupInfo: Structmsg.GroupInfo? = null,
+        @ProtoId(14) val friendInfo: FriendInfo? = null,
+        @ProtoId(15) val groupInfo: GroupInfo? = null,
         @ProtoId(16) val actorUin: Long = 0L,
         @ProtoId(17) val msgActorDescribe: String = "",
         @ProtoId(18) val msgAdditionalList: String = "",
@@ -243,8 +243,8 @@ internal class Structmsg : ProtoBuf {
         @ProtoId(21) val cloneUin: Long = 0L,
         @ProtoId(22) val discussUin: Long = 0L,
         @ProtoId(23) val eimGroupId: Long = 0L,
-        @ProtoId(24) val msgInviteExtinfo: Structmsg.MsgInviteExt? = null,
-        @ProtoId(25) val msgPayGroupExtinfo: Structmsg.MsgPayGroupExt? = null,
+        @ProtoId(24) val msgInviteExtinfo: MsgInviteExt? = null,
+        @ProtoId(25) val msgPayGroupExtinfo: MsgPayGroupExt? = null,
         @ProtoId(26) val sourceFlag: Int = 0,
         @ProtoId(27) val gameNick: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(28) val gameMsg: ByteArray = EMPTY_BYTE_ARRAY,
@@ -279,7 +279,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoId(1) val name: String = "",
         @ProtoId(2) val result: String = "",
         @ProtoId(3) val action: Int = 0,
-        @ProtoId(4) val actionInfo: Structmsg.SystemMsgActionInfo? = null,
+        @ProtoId(4) val actionInfo: SystemMsgActionInfo? = null,
         @ProtoId(5) val detailName: String = ""
     ) : ProtoBuf
 
@@ -292,7 +292,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoId(51) val groupId: Int = 0,
         @ProtoId(52) val remark: String = "",
         @ProtoId(53) val blacklist: Boolean = false,
-        @ProtoId(54) val addFrdSNInfo: Structmsg.AddFrdSNInfo? = null
+        @ProtoId(54) val addFrdSNInfo: AddFrdSNInfo? = null
     ) : ProtoBuf
 }
 
