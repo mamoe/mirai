@@ -12,8 +12,6 @@
 
 package net.mamoe.mirai.event.events
 
-import kotlinx.atomicfu.AtomicBoolean
-import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
@@ -22,6 +20,7 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
+import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -31,6 +30,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
@@ -511,7 +511,8 @@ data class NewFriendRequestEvent(
      */
     val fromNick: String
 ) : BotEvent, Packet {
-    internal val responded: AtomicBoolean = atomic(false)
+    @JvmField
+    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     /**
      * @return 申请人来自的群. 当申请人来自其他途径申请时为 `null`
@@ -563,7 +564,8 @@ data class MemberJoinRequestEvent(
 ) : BotEvent, Packet {
     val group: Group = this.bot.getGroup(groupId)
 
-    internal val responded: AtomicBoolean = atomic(false)
+    @JvmField
+    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     @JvmSynthetic
     suspend fun accept() = bot.acceptMemberJoinRequest(this)

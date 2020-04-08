@@ -119,6 +119,7 @@ suspend inline fun <reified T : ContactMessage, R> T.selectMessages(
  *
  * @see MessageSelectBuilderUnit 查看上层 API
  */
+@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
 @SinceMirai("0.29.0")
 abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi internal constructor(
     ownerMessagePacket: M,
@@ -148,24 +149,16 @@ abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi interna
 
     @JvmName("reply3")
     @Suppress(
-        "INAPPLICABLE_JVM_NAME",
-        "unused",
-        "UNCHECKED_CAST",
-        "INVALID_CHARACTERS",
-        "NAME_CONTAINS_ILLEGAL_CHARS",
-        "FunctionName"
+        "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
+        "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
     )
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override infix fun MessageSelectionTimeoutChecker.`->`(message: String): Nothing = error("prohibited")
 
     @JvmName("reply3")
     @Suppress(
-        "INAPPLICABLE_JVM_NAME",
-        "unused",
-        "UNCHECKED_CAST",
-        "INVALID_CHARACTERS",
-        "NAME_CONTAINS_ILLEGAL_CHARS",
-        "FunctionName"
+        "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
+        "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
     )
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override infix fun MessageSelectionTimeoutChecker.`->`(message: Message): Nothing = error("prohibited")
@@ -232,7 +225,7 @@ abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi interna
     override fun ListeningFilter.quoteReply(toReply: String) = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.quoteReply(message: Message) = error("prohibited")
+    override fun ListeningFilter.quoteReply(toReply: Message) = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override fun ListeningFilter.quoteReply(replier: suspend M.(String) -> Any?) = error("prohibited")
@@ -351,12 +344,8 @@ abstract class MessageSelectBuilderUnit<M : ContactMessage, R> @PublishedApi int
 
     @JvmName("reply3")
     @Suppress(
-        "INAPPLICABLE_JVM_NAME",
-        "unused",
-        "UNCHECKED_CAST",
-        "INVALID_CHARACTERS",
-        "NAME_CONTAINS_ILLEGAL_CHARS",
-        "FunctionName"
+        "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
+        "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
     )
     open infix fun MessageSelectionTimeoutChecker.`->`(message: Message) {
         return this.reply(message)
@@ -364,12 +353,8 @@ abstract class MessageSelectBuilderUnit<M : ContactMessage, R> @PublishedApi int
 
     @JvmName("reply3")
     @Suppress(
-        "INAPPLICABLE_JVM_NAME",
-        "unused",
-        "UNCHECKED_CAST",
-        "INVALID_CHARACTERS",
-        "NAME_CONTAINS_ILLEGAL_CHARS",
-        "FunctionName"
+        "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
+        "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
     )
     open infix fun MessageSelectionTimeoutChecker.`->`(message: String) {
         return this.reply(message)
