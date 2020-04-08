@@ -16,7 +16,11 @@ internal expect fun Throwable.addSuppressedMirai(e: Throwable)
 
 @MiraiInternalAPI
 @Suppress("DuplicatedCode")
-internal inline fun <R> tryNTimesOrException(repeat: Int, block: (Int) -> R): Throwable? {
+internal inline fun <R> tryNTimesOrException(
+    repeat: Int,
+    onRetry: (Throwable?) -> Unit = {},
+    block: (Int) -> R
+): Throwable? {
     var lastException: Throwable? = null
 
     repeat(repeat) {
@@ -28,6 +32,7 @@ internal inline fun <R> tryNTimesOrException(repeat: Int, block: (Int) -> R): Th
                 lastException = e
             } else lastException!!.addSuppressedMirai(e)
         }
+        onRetry(lastException)
     }
 
     return lastException!!

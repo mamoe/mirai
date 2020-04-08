@@ -148,7 +148,12 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
 
         suspend fun doInit() {
-            tryNTimesOrException(2) {
+            tryNTimesOrException(2, onRetry = {
+                if (!isActive) {
+                    logger.error("Cannot init due to fatal error")
+                    logger.error(it)
+                }
+            }) {
                 if (it != 0) {
                     logger.warning("Init failed. Retrying in 3s...")
                     delay(3000)
@@ -156,7 +161,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                 _network.init()
             }?.let {
                 network.logger.error(it)
-                logger.error("cannot init. some features may be affected")
+                logger.error("Cannot init. some features may be affected")
             }
         }
 
