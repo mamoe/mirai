@@ -78,6 +78,7 @@ internal class QQAndroidBot constructor(
     configuration: BotConfiguration
 ) : QQAndroidBotBase(context, account, configuration) {
 
+    @OptIn(LowLevelAPI::class)
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
         check(event.responded.compareAndSet(expect = false, update = true)) {
             "the request $this has already been responded"
@@ -89,6 +90,10 @@ internal class QQAndroidBot constructor(
                 event,
                 accept = true
             ).sendWithoutExpect()
+            bot.friends.delegate.addLast(bot._lowLevelNewQQ(object : FriendInfo {
+                override val uin: Long get() = event.fromId
+                override val nick: String get() = event.fromNick
+            }))
         }
     }
 
@@ -119,7 +124,11 @@ internal class QQAndroidBot constructor(
                 event,
                 accept = true
             ).sendWithoutExpect()
-            bot.friends.delegate.addLast(bot._lowLevelNewQQ(object : FriendInfo {
+            event.group.members.delegate.addLast(event.group.newMember(object : MemberInfo {
+                override val nameCard: String get() = ""
+                override val permission: MemberPermission get() = MemberPermission.MEMBER
+                override val specialTitle: String get() = ""
+                override val muteTimestamp: Int get() = 0
                 override val uin: Long get() = event.fromId
                 override val nick: String get() = event.fromNick
             }))
@@ -138,14 +147,6 @@ internal class QQAndroidBot constructor(
                 accept = false,
                 blackList = blackList
             ).sendWithoutExpect()
-            event.group.members.delegate.addLast(event.group.newMember(object : MemberInfo {
-                override val nameCard: String get() = ""
-                override val permission: MemberPermission get() = MemberPermission.MEMBER
-                override val specialTitle: String get() = ""
-                override val muteTimestamp: Int get() = 0
-                override val uin: Long get() = event.fromId
-                override val nick: String get() = event.fromNick
-            }))
         }
     }
 

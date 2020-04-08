@@ -509,7 +509,7 @@ data class NewFriendRequestEvent(
     /**
      * 群名片或好友昵称
      */
-    val nick: String
+    val fromNick: String
 ) : BotEvent, Packet {
     internal val responded: AtomicBoolean = atomic(false)
 
