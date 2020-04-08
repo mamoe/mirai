@@ -70,7 +70,7 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     return this as QQAndroidBot
 }
 
-@Suppress("INVISIBLE_MEMBER")
+@Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument")
 @OptIn(MiraiInternalAPI::class)
 internal class QQAndroidBot constructor(
     context: Context,
@@ -80,7 +80,7 @@ internal class QQAndroidBot constructor(
 
     @OptIn(LowLevelAPI::class)
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
@@ -98,7 +98,7 @@ internal class QQAndroidBot constructor(
     }
 
     override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
@@ -114,7 +114,7 @@ internal class QQAndroidBot constructor(
 
     @OptIn(LowLevelAPI::class)
     override suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent) {
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
@@ -137,7 +137,7 @@ internal class QQAndroidBot constructor(
 
     @OptIn(LowLevelAPI::class)
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
         network.run {
@@ -152,7 +152,7 @@ internal class QQAndroidBot constructor(
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
 
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
         network.run {
