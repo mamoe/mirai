@@ -550,9 +550,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     class TimeoutException(override val message: String?) : Exception()
 
     /**
-     * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
+     * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 2): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry >= 0) { "retry must >= 0" }
 
