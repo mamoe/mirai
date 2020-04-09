@@ -23,6 +23,7 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
@@ -116,7 +117,8 @@ internal class MessageSvc {
         }
 
         @OptIn(MiraiInternalAPI::class)
-        open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate) {
+        open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate), Event,
+            Packet.NoLog {
             override fun toString(): String = "MessageSvc.PbGetMsg.GetMsgSuccess(messages=<Iterable>))"
         }
 
