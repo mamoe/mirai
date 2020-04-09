@@ -13,15 +13,24 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
+/**
+ * 好友消息
+ */
 class FriendMessage(
     sender: QQ,
     override val message: MessageChain
 ) : ContactMessage(), BroadcastControllable {
+    init {
+        val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
+    }
+
     override val sender: QQ by sender.unsafeWeakRef()
     override val bot: Bot get() = sender.bot
     override val subject: QQ get() = sender

@@ -15,6 +15,7 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.utils.getValue
@@ -30,6 +31,11 @@ class GroupMessage(
     sender: Member,
     override val message: MessageChain
 ) : ContactMessage(), Event {
+    init {
+        val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
+    }
+
     override val sender: Member by sender.unsafeWeakRef()
     val group: Group get() = sender.group
     override val bot: Bot get() = sender.bot
