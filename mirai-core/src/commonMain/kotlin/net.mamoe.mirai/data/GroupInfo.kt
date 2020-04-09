@@ -63,7 +63,7 @@ interface GroupInfo {
     /**
      * 机器人被禁言还剩时间, 秒.
      */
-    val botMuteRemaining: Int
+    val botMuteTimestamp: Int
 
     /*
     /**

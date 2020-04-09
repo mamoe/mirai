@@ -44,7 +44,7 @@ internal class GroupInfoImpl(
     override val autoApprove get() = delegate.groupFlagext3?.and(0x00100000) == 0
     override val confessTalk get() = delegate.groupFlagext3?.and(0x00002000) == 0
     override val muteAll: Boolean get() = delegate.shutupTimestamp != 0
-    override val botMuteRemaining: Int get() = delegate.shutupTimestampMe ?: 0
+    override val botMuteTimestamp: Int get() = delegate.shutupTimestampMe ?: 0
 }
 
 internal class TroopManagement {
