@@ -48,24 +48,25 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 @OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
-expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
+abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI() {
     companion object {
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
         @JvmStatic
         val instances: List<WeakRef<Bot>>
+            get() = BotImpl.instances.toList()
 
         /**
          * 遍历每一个 [Bot] 实例
          */
-        inline fun forEachInstance(block: (Bot) -> Unit)
+        inline fun forEachInstance(block: (Bot) -> Unit) = BotImpl.forEachInstance(block)
 
         /**
          * 获取一个 [Bot] 实例, 找不到则 [NoSuchElementException]
          */
         @JvmStatic
-        fun getInstance(qq: Long): Bot
+        fun getInstance(qq: Long): Bot = BotImpl.getInstance(qq = qq)
     }
 
     /**
@@ -105,52 +106,39 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     abstract val selfQQ: QQ
 
     /**
-     * 机器人的好友列表. 它将与服务器同步更新
+     * 机器人的好友列表. 与服务器同步更新
      */
     abstract val friends: ContactList<QQ>
 
     /**
-     * 获取一个好友对象. 若没有这个好友, 则会抛出异常 [NoSuchElementException]
+     * 获取一个好友对象.
+     * @throws [NoSuchElementException] 当不存在这个好友时抛出
      */
-    fun getFriend(id: Long): QQ
+    fun getFriend(id: Long): QQ = friends.firstOrNull { it.id == id } ?: throw NoSuchElementException("group $id")
 
     /**
-     * 机器人加入的群列表.
+     * 机器人加入的群列表. 与服务器同步更新
      */
     abstract val groups: ContactList<Group>
 
     /**
      * 获取一个机器人加入的群.
-     *
-     * @throws NoSuchElementException 当不存在这个群时
+     * @throws NoSuchElementException 当不存在这个群时抛出
      */
-    fun getGroup(id: Long): Group
+    fun getGroup(id: Long): Group = groups.firstOrNull { it.id == id } ?: throw NoSuchElementException("group $id")
 
     // endregion
 
     // region network
 
     /**
-     * 网络模块
-     */
-    abstract val network: BotNetworkHandler
-
-    /**
-     * 挂起协程直到 [Bot] 下线.
-     */
-    @JvmSynthetic
-    suspend inline fun join()
-
-    /**
      * 登录, 或重新登录.
-     * 这个函数总是关闭一切现有网路任务, 然后重新登录并重新缓存好友列表和群列表.
+     * 这个函数总是关闭一切现有网路任务 (但不会关闭其他任务), 然后重新登录并重新缓存好友列表和群列表.
      *
      * 一般情况下不需要重新登录. Mirai 能够自动处理掉线情况.
      *
-     * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.relogin]
-     *
-     * @throws LoginFailedException
-     * @see alsoLogin
+     * @throws LoginFailedException 正常登录失败时抛出
+     * @see alsoLogin `.apply { login() }` 捷径
      */
     @JvmSynthetic
     abstract suspend fun login()
@@ -264,8 +252,25 @@ expect abstract class Bot() : CoroutineScope, LowLevelBotAPIAccessor {
     abstract fun close(cause: Throwable? = null)
 
     @OptIn(LowLevelAPI::class, MiraiExperimentalAPI::class)
-    final override fun toString(): String
+    final override fun toString(): String = "Bot($id)"
+
+    /**
+     * 网络模块.
+     * 此为内部 API: 它可能在任意时刻被改动.
+     */
+    @MiraiInternalAPI
+    abstract val network: BotNetworkHandler
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
+    suspend inline fun Bot.join() = this.coroutineContext[Job]!!.join()
 }
+
+/**
+ * 挂起协程直到 [Bot] 下线.
+ */
+@JvmSynthetic
+suspend inline fun Bot.join() = this.coroutineContext[Job]!!.join()
 
 /**
  * 撤回这条消息.

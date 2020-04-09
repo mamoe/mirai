@@ -356,7 +356,7 @@ data class GroupAllowMemberInviteEvent(
 data class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet
 
 /**
- * 成员离开群的事件
+ * 成员离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除
  */
 sealed class MemberLeaveEvent : GroupMemberEvent {
     /**
@@ -365,7 +365,7 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
     data class Kick(
         override val member: Member,
         /**
-         * 操作人. 为 null 则是机器人操作
+         * 操作人. 为 null 则是机器人操作.
          */
         override val operator: Member?
     ) : MemberLeaveEvent(), Packet, GroupOperableEvent {

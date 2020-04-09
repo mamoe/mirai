@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INAPPLICABLE_JVM_NAME")
+@file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
 @file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 
 package net.mamoe.mirai.qqandroid.contact

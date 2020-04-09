@@ -16,14 +16,17 @@ import kotlin.jvm.JvmName
 
 
 /**
- * 只读联系人列表, lock-free 实现
+ * 只读联系人列表, 无锁链表实现
  *
  * @see ContactList.asSequence
  */
 @OptIn(MiraiInternalAPI::class)
 @Suppress("unused")
-class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedList<C>) : Iterable<C> {
-    operator fun get(id: Long): C = delegate.asSequence().first { it.id == id }
+class ContactList<C : Contact>(@MiraiInternalAPI("Implementation may change in future release") val delegate: LockFreeLinkedList<C>) :
+    Iterable<C> {
+    operator fun get(id: Long): C =
+        delegate.asSequence().firstOrNull { it.id == id } ?: throw NoSuchElementException("Contact id $id")
+
     fun getOrNull(id: Long): C? = delegate.getOrNull(id)
 
     val size: Int get() = delegate.size
