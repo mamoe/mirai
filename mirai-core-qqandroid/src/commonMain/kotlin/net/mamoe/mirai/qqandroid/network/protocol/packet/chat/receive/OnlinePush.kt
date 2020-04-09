@@ -15,6 +15,7 @@ import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -28,16 +29,21 @@ import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x8fc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
+import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.readString
+import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jceRequestSBuffer
@@ -79,12 +85,26 @@ internal class OnlinePush {
             }
 
             val group = bot.getGroup(pbPushMsg.msg.msgHead.groupInfo!!.groupCode)
+            val sender = group[pbPushMsg.msg.msgHead.fromUin] as MemberImpl
+            val name = extraInfo?.groupCard?.run {
+                try {
+                    loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName!!.first { it.text.isNotEmpty() }
+                        .text.encodeToString()
+                } catch (e: Exception) {
+                   encodeToString()
+                }
+            } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard // 没有 extraInfo 就从 head 里取
 
-            // println(pbPushMsg.msg.msgBody.richText.contentToString())
             val flags = extraInfo?.flags ?: 0
             return GroupMessage(
-                senderName = pbPushMsg.msg.msgHead.groupInfo.groupCard,
-                sender = group[pbPushMsg.msg.msgHead.fromUin],
+                senderName = name.also {
+                    if (it != sender.nameCard) {
+                        val origin = sender._nameCard
+                        sender._nameCard = name
+                        MemberCardChangeEvent(origin, name, sender, sender).broadcast() // 不知道operator
+                    }
+                },
+                sender = sender,
                 message = pbPushMsg.msg.toMessageChain(bot, groupIdOrZero = group.id, onlineSource = true),
                 permission = when {
                     flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
