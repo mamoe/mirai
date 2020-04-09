@@ -146,14 +146,17 @@ internal class TroopManagement {
 
     internal object Kick : OutgoingPacketFactory<Kick.Response>("OidbSvc.0x8a0_0") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val ret = this.readBytes()
+                .loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x8a0.RspBody.serializer()).msgKickResult!![0].optUint32Result
             return Response(
-                this.readBytes()
-                    .loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x8a0.RspBody.serializer()).msgKickResult!![0].optUint32Result == 1
+                ret == 0,
+                ret
             )
         }
 
         class Response(
-            val success: Boolean
+            val success: Boolean,
+            val ret: Int
         ) : Packet {
             override fun toString(): String = "TroopManagement.Kick.Response($success)"
         }

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.qqandroid.contact
 
@@ -206,7 +206,7 @@ internal class MemberImpl constructor(
                 message = message
             ).sendAndExpect()
 
-            check(response.success) { "kick failed: $message" }
+            check(response.success) { "kick failed: ${response.ret}" }
 
             MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
