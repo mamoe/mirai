@@ -196,9 +196,13 @@ internal class MemberImpl constructor(
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
     }
 
+    @OptIn(MiraiInternalAPI::class)
     @JvmSynthetic
     override suspend fun kick(message: String) {
         checkBotPermissionHigherThanThis()
+        check(group.members.getOrNull(this.id) != null) {
+            "Member ${this.id} had already been kicked from group ${group.id}"
+        }
         bot.network.run {
             val response: TroopManagement.Kick.Response = TroopManagement.Kick(
                 client = bot.client,
@@ -208,6 +212,7 @@ internal class MemberImpl constructor(
 
             check(response.success) { "kick failed: ${response.ret}" }
 
+            group.members.delegate.removeIf { it.id == this@MemberImpl.id }
             MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
     }
