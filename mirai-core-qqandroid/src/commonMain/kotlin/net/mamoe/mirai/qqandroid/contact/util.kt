@@ -28,6 +28,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
+@OptIn(MiraiInternalAPI::class)
 internal suspend fun QQ.sendMessageImpl(message: Message): MessageReceipt<QQ> {
     val event = MessageSendEvent.FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
     if (event.isCancelled) {

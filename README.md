@@ -51,6 +51,7 @@ Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他�
 - （社区）`JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) mirai 的 Node.js SDK
 - （社区）`Go`: [gomirai](https://github.com/Logiase/gomirai) 基于 mirai-api-http 的 GoLang SDK
 - （社区）`Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk)
+- （社区）`Lua`: [lua-mirai](https://github.com/only52607/lua-mirai)
 - （官方）其他任意语言：使用由 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 提供的 http 接口进行接入
 
 #### 使用 mirai 为第三方依赖库引入项目

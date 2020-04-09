@@ -255,6 +255,10 @@ internal class OfflineMessageSourceImplBySourceMsg( // from others' quotation
     override val bot: Bot,
     groupIdOrZero: Long
 ) : OfflineMessageSource(), MessageSourceImpl {
+    init {
+        println(delegate._miraiContentToString())
+    }
+
     override val kind: Kind get() = if (delegate.srcMsg == null) Kind.GROUP else Kind.FRIEND
 
     private val isRecalled: AtomicBoolean = atomic(false)
@@ -276,7 +280,7 @@ internal class OfflineMessageSourceImplBySourceMsg( // from others' quotation
 
     override val id: Int
         get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids?.toInt()
-            ?: error("在读取 OfflineMessageSourceImplBySourceMsg.id 时找不到 origUids, delegate=${delegate._miraiContentToString()}")
+            ?: 0
 
     // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
     override val fromId: Long get() = delegate.senderUin

@@ -30,6 +30,7 @@ import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.contact.singleLine
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
@@ -189,8 +190,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * Don't use concurrently
      */
     suspend fun reloadFriendList() {
-        // 不要用 fun, 不要 join declaration, 不要用 val, 编译失败警告
-        logger.info("开始加载好友信息")
+        logger.info { "开始加载好友信息" }
         var currentFriendCount = 0
         var totalFriendCount: Short
         while (true) {
@@ -221,6 +221,58 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
     }
 
+    suspend fun StTroopNum.reloadGroup() {
+        retryCatching(3) {
+            bot.groups.delegate.addLast(
+                @Suppress("DuplicatedCode")
+                GroupImpl(
+                    bot = bot,
+                    coroutineContext = bot.coroutineContext,
+                    id = groupCode,
+                    groupInfo = bot._lowLevelQueryGroupInfo(groupCode).apply {
+                        this as GroupInfoImpl
+
+                        if (this.delegate.groupName == null) {
+                            this.delegate.groupName = groupName
+                        }
+
+                        if (this.delegate.groupMemo == null) {
+                            this.delegate.groupMemo = groupMemo
+                        }
+
+                        if (this.delegate.groupUin == null) {
+                            this.delegate.groupUin = groupUin
+                        }
+
+                        this.delegate.groupCode = this@reloadGroup.groupCode
+                    },
+                    members = bot._lowLevelQueryGroupMemberList(
+                        groupUin,
+                        groupCode,
+                        dwGroupOwnerUin
+                    )
+                )
+            )
+        }.getOrThrow()
+    }
+
+    suspend fun reloadGroupList() {
+        logger.info { "开始加载群组列表与群成员列表" }
+        val troopListData = FriendList.GetTroopListSimplify(bot.client)
+            .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 3)
+
+        troopListData.groups.chunked(50).forEach { chunk ->
+            coroutineScope {
+                chunk.forEach {
+                    launch {
+                        retryCatching(3) { it.reloadGroup() }.getOrThrow()
+                    }
+                }
+            }
+        }
+        logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
+    }
+
     @OptIn(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init" }
@@ -236,92 +288,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             _pendingEnabled.value = true
         }
 
-        supervisorScope {
-            this.launch { reloadFriendList() }
-
-            launch {
-                try {
-                    logger.info("开始加载群组列表与群成员列表")
-                    val troopListData = FriendList.GetTroopListSimplify(bot.client)
-                        .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 3)
-
-                    troopListData.groups.chunked(50).forEach { chunk ->
-                        supervisorScope {
-                            chunk.forEach { troopNum ->
-                                // 别用 fun, 别 val, 编译失败警告
-                                lateinit var loadGroup: suspend () -> Unit
-
-                                loadGroup = suspend {
-                                    retryCatching(3) {
-                                        bot.groups.delegate.addLast(
-                                            @Suppress("DuplicatedCode")
-                                            (GroupImpl(
-                                                bot = bot,
-                                                coroutineContext = bot.coroutineContext,
-                                                id = troopNum.groupCode,
-                                                groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
-                                                    this as GroupInfoImpl
-
-                                                    if (this.delegate.groupName == null) {
-                                                        this.delegate.groupName = troopNum.groupName
-                                                    }
-
-                                                    if (this.delegate.groupMemo == null) {
-                                                        this.delegate.groupMemo = troopNum.groupMemo
-                                                    }
-
-                                                    if (this.delegate.groupUin == null) {
-                                                        this.delegate.groupUin = troopNum.groupUin
-                                                    }
-
-                                                    this.delegate.groupCode = troopNum.groupCode
-                                                },
-                                                members = bot._lowLevelQueryGroupMemberList(
-                                                    troopNum.groupUin,
-                                                    troopNum.groupCode,
-                                                    troopNum.dwGroupOwnerUin
-                                                )
-                                            ))
-                                        )
-                                    }.exceptionOrNull()?.let {
-                                        logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }
-                                        logger.error(it)
-                                        this@QQAndroidBotNetworkHandler.launch {
-                                            delay(10_000)
-                                            loadGroup()
-                                        }
-                                    }
-                                    Unit // 别删, 编译失败警告
-                                }
-                                launch {
-                                    loadGroup()
-                                }
-                            }
-                        }
-                    }
-                    logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
-                } catch (e: Exception) {
-                    logger.error { "加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表" }
-                    logger.error(e)
-                }
-            }
+        coroutineScope {
+            launch { reloadFriendList() }
+            launch { reloadGroupList() }
         }
 
-        runCatching {
-            withTimeoutOrNull(30000) {
-                lateinit var listener: Listener<PacketReceivedEvent>
-                listener = this.subscribeAlways {
-                    if (it.packet is MessageSvc.PbGetMsg.GetMsgSuccess) {
-                        listener.complete()
-                    }
-                }
+        withTimeoutOrNull(30000) {
+            launch { subscribingGet<MessageSvc.PbGetMsg.GetMsgSuccess, Unit> { Unit } }
+            MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
+        } ?: error("timeout syncing friend message history")
 
-                MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
-            } ?: error("timeout syncing friend message history")
-        }.exceptionOrNull()?.let {
-            logger.error("exception while loading syncing friend message history: ${it.message}")
-            logger.error(it)
-        }
         bot.firstLoginSucceed = true
 
         _pendingEnabled.value = false
@@ -568,19 +544,15 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         check(bot.isActive) { "bot is dead therefore can't send any packet" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
         logger.verbose("Send: ${this.commandName}")
-        withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
-            PacketLogger.debug { "Channel sending: $commandName" }
-            channel.send(delegate)
-            PacketLogger.debug { "Channel send done: $commandName" }
-        }
+        channel.send(delegate)
     }
 
     class TimeoutException(override val message: String?) : Exception()
 
     /**
-     * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
+     * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 2): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry >= 0) { "retry must >= 0" }
 
@@ -588,19 +560,13 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
 
         suspend fun doSendAndReceive(handler: PacketListener, data: Any, length: Int): E {
-            withTimeoutOrNull(3000) {
-                withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
-                    PacketLogger.debug { "Channel sending: $commandName" }
-                    when (data) {
-                        is ByteArray -> channel.send(data, 0, length)
-                        is ByteReadPacket -> channel.send(data)
-                        else -> error("Internal error: unexpected data type: ${data::class.simpleName}")
-                    }
-                    PacketLogger.debug { "Channel send done: $commandName" }
-                }
-            } ?: throw TimeoutException("timeout sending packet $commandName")
+            when (data) {
+                is ByteArray -> channel.send(data, 0, length)
+                is ByteReadPacket -> channel.send(data)
+                else -> error("Internal error: unexpected data type: ${data::class.simpleName}")
+            }
 
-            logger.verbose("Send done: $commandName")
+            logger.verbose { "Send done: $commandName" }
 
             @Suppress("UNCHECKED_CAST")
             return withTimeoutOrNull(timeoutMillis) {

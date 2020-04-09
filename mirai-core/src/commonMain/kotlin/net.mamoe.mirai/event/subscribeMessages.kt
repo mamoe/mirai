@@ -23,6 +23,7 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.TempMessage
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.firstIsInstance
 import net.mamoe.mirai.utils.SinceMirai
@@ -115,6 +116,31 @@ fun <R> CoroutineScope.subscribeFriendMessages(
     }.run(listeners)
 }
 
+typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessage, Listener<TempMessage>, Unit, Unit>
+
+/**
+ * 订阅来自所有 [Bot] 的所有临时会话消息事件
+ *
+ * @see CoroutineScope.incoming 打开一个指定事件的接收通道
+ */
+@OptIn(ExperimentalContracts::class)
+fun <R> CoroutineScope.subscribeTempMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: TempMessageSubscribersBuilder.() -> R
+): R {
+    contract {
+        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
+    }
+    return TempMessageSubscribersBuilder(Unit) { filter, listener ->
+        subscribeAlways(coroutineContext, concurrencyKind) {
+            val toString = this.message.contentToString()
+            if (filter(this, toString))
+                listener(this, toString)
+        }
+    }.run(listeners)
+}
+
 /**
  * 订阅来自这个 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  *
@@ -178,6 +204,31 @@ fun <R> Bot.subscribeFriendMessages(
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return FriendMessageSubscribersBuilder(Unit) { filter, listener ->
+        this.subscribeAlways(coroutineContext, concurrencyKind) {
+            val toString = this.message.contentToString()
+            if (filter(this, toString))
+                listener(this, toString)
+        }
+    }.run(listeners)
+}
+
+
+/**
+ * 订阅来自这个 [Bot] 的所有临时会话消息事件.
+ *
+ * @see CoroutineScope.incoming 打开一个指定事件的接收通道
+ */
+@SinceMirai("0.35.0")
+@OptIn(ExperimentalContracts::class)
+fun <R> Bot.subscribeTempMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: TempMessageSubscribersBuilder.() -> R
+): R {
+    contract {
+        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
+    }
+    return TempMessageSubscribersBuilder(Unit) { filter, listener ->
         this.subscribeAlways(coroutineContext, concurrencyKind) {
             val toString = this.message.contentToString()
             if (filter(this, toString))
@@ -581,6 +632,10 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     /** 如果是好友发来的消息 */
     @MessageDsl
     fun sentByFriend(): ListeningFilter = newListeningFilter { this is FriendMessage }
+
+    /** 如果是好友发来的消息 */
+    @MessageDsl
+    fun sentByTemp(): ListeningFilter = newListeningFilter { this is TempMessage }
 
     /** 如果是管理员或群主发的消息 */
     @MessageDsl

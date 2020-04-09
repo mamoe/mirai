@@ -56,6 +56,8 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<OnlineMes
 
     /**
      * 消息 id.
+     * 当 [OnlineMessageSource] 时为随机数.
+     * 当 [OfflineMessageSource] 时可能为 0, 取决于服务器是否提供这个值.
      */
     abstract val id: Int // random
 
@@ -235,7 +237,7 @@ inline fun MessageSource.isAboutGroup(): Boolean {
 }
 
 inline fun MessageSource.isAboutTemp(): Boolean {
-    return when(this) {
+    return when (this) {
         is OnlineMessageSource -> subject is Member
         is OfflineMessageSource -> kind == OfflineMessageSource.Kind.TEMP
     }
@@ -301,6 +303,12 @@ abstract class OfflineMessageSource : MessageSource() {
      * 消息种类
      */
     abstract val kind: Kind
+
+    /**
+     * 消息 id.
+     * 服务器不一定提供 id. 因此此值可能为 0
+     */
+    abstract override val id: Int
 
     // final override fun toString(): String = "OfflineMessageSource(sender=$senderId, target=$targetId)"
 }

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INAPPLICABLE_JVM_NAME")
+@file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
 @file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 
 package net.mamoe.mirai.qqandroid.contact
@@ -93,7 +93,7 @@ internal class GroupImpl(
     @OptIn(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
-    var _botMuteTimestamp: Int = groupInfo.botMuteRemaining
+    var _botMuteTimestamp: Int = groupInfo.botMuteTimestamp
 
     override val botMuteRemaining: Int =
         if (_botMuteTimestamp == 0 || _botMuteTimestamp == 0xFFFFFFFF.toInt()) {
