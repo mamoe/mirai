@@ -128,6 +128,7 @@ object PluginManager {
                                 val res = it.inputStream.use { input ->
                                     input.readBytes().encodeToString()
                                 }
+
                                 // 关闭jarFile，解决热更新插件问题
                                 (it as JarURLConnection).jarFile.close()
                                 res

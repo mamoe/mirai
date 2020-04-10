@@ -28,7 +28,6 @@ interface CommandSender {
     suspend fun sendMessage(messageChain: Message)
 
     suspend fun sendMessage(message: String)
-
     /**
      * 写入要发送的内容 所有内容最后会被以一条发出
      */
