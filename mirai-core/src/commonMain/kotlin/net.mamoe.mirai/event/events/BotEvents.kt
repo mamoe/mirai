@@ -210,10 +210,10 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
 // region 群
 
 /**
- * 机器人被踢出群. 在事件广播前 [Bot.groups] 就已删除这个群.
+ * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
  */
 @SinceMirai("0.36.0")
-data class BotKickEvent(
+data class BotLeaveEvent(
     val group: Group
 ) : BotEvent, Packet {
     override val bot: Bot get() = group.bot
