@@ -410,13 +410,14 @@ internal class OnlinePush {
 
                     }
                 }
-                println(msg._miraiContentToString())
+                bot.network.logger.debug { msg._miraiContentToString() }
                 return@lambda528 emptySequence()
             },
             0x27L to lambda528 { bot ->
                 fun Submsgtype0x27.SubMsgType0x27.ModFriendRemark.transform(bot: QQAndroidBot): Sequence<Packet> {
                     return this.msgFrdRmk?.asSequence()?.mapNotNull {
                         val friend = bot.getFriendOrNull(it.fuin) ?: return@mapNotNull null
+                        // TODO: 2020/4/10 ADD REMARK QUERY
                         FriendRemarkChangeEvent(bot, friend, it.rmkName)
                     } ?: emptySequence()
                 }
@@ -424,7 +425,9 @@ internal class OnlinePush {
                 fun Submsgtype0x27.SubMsgType0x27.DelFriend.transform(bot: QQAndroidBot): Sequence<Packet> {
                     return this.uint64Uins?.asSequence()?.mapNotNull {
                         val friend = bot.getFriendOrNull(it) ?: return@mapNotNull null
-                        FriendDeleteEvent(friend)
+                        if (bot.friends.delegate.remove(friend)) {
+                            FriendDeleteEvent(friend)
+                        } else null
                     } ?: emptySequence()
                 }
 
