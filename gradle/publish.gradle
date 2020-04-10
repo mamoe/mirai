@@ -3,6 +3,12 @@ import upload.Bintray
 // 部分源码来自 kotlinx.coroutines
 // Source code from kotlinx.coroutines
 
+
+if (!Bintray.isBintrayAvailable(project)) {
+    println("bintray isn't available. NO PUBLICATIONS WILL BE SET")
+    return
+}
+
 def pomConfig = {
     licenses {
         license {

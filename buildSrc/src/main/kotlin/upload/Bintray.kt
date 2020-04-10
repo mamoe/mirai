@@ -15,6 +15,14 @@ import java.io.File
 object Bintray {
 
     @JvmStatic
+    fun isBintrayAvailable(project: Project): Boolean {
+        return kotlin.runCatching {
+            getUser(project)
+            getKey(project)
+        }.isSuccess
+    }
+
+    @JvmStatic
     fun getUser(project: Project): String {
         kotlin.runCatching {
             @Suppress("UNUSED_VARIABLE", "LocalVariableName")
