@@ -147,7 +147,7 @@ internal class MsgType0x210SubMsgType0xa(
     @JceId(5) val uType: Long? = null,
     @JceId(6) val uServerIp: Long? = null,
     @JceId(7) val uServerPort: Long? = null,
-    @JceId(8) val vUrlNotify: String? = null,
+    @JceId(8) val vUrlNotify: ByteArray? = null,
     @JceId(9) val vTokenKey: ByteArray? = null,
     @JceId(10) val uFileLen: Long? = null,
     @JceId(11) val fileName: String? = null,
