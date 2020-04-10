@@ -36,6 +36,7 @@ import javax.imageio.ImageIO
 /**
  * 读取 [BufferedImage] 的属性, 然后构造 [ExternalImage]
  */
+@JvmOverloads
 @Throws(IOException::class)
 fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
     val digest = MessageDigest.getInstance("md5")
