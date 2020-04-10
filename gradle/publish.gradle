@@ -4,8 +4,10 @@ import upload.Bintray
 // Source code from kotlinx.coroutines
 
 task ensureBintrayAvailable() {
-    if (!Bintray.isBintrayAvailable(project)) {
-        throw new IllegalStateException("bintray isn't available. ")
+    doLast {
+        if (!Bintray.isBintrayAvailable(project)) {
+            throw new IllegalStateException("bintray isn't available. ")
+        }
     }
 }
 
