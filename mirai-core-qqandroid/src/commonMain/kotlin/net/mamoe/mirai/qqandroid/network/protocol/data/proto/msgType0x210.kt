@@ -9,13 +9,12 @@
 
 @file:Suppress("unused", "SpellCheckingInspection")
 
-package net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210
+package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoId
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.AppointDefine
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
@@ -28,8 +27,7 @@ internal class SubMsgType0x43 : ProtoBuf {
 }
 
 internal class Submsgtype0x101 {
-    @Serializable
-    class SubMsgType0x27 : ProtoBuf {
+    internal class SubMsgType0x27 : ProtoBuf {
         @Serializable
         internal class ClientReport(
             @ProtoId(1) val serviceId: Int = 0,
@@ -57,8 +55,7 @@ internal class Submsgtype0x101 {
 
 
 internal class Submsgtype0x102 {
-    @Serializable
-    class Submsgtype0x102 : ProtoBuf {
+    internal class Submsgtype0x102 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val adId: String = ""
@@ -68,8 +65,7 @@ internal class Submsgtype0x102 {
 
 
 internal class Submsgtype0x103 {
-    @Serializable
-    class Submsgtype0x103 : ProtoBuf {
+    internal class Submsgtype0x103 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val from: Long = 0L,
@@ -83,8 +79,7 @@ internal class Submsgtype0x103 {
 
 
 internal class Submsgtype0x104 {
-    @Serializable
-    class Submsgtype0x104 : ProtoBuf {
+    internal class Submsgtype0x104 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val from: Long = 0L,
@@ -97,8 +92,7 @@ internal class Submsgtype0x104 {
 
 
 internal class Submsgtype0x108 {
-    @Serializable
-    class SubMsgType0x108 : ProtoBuf {
+    internal class SubMsgType0x108 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val type: Int = 0,
@@ -111,8 +105,7 @@ internal class Submsgtype0x108 {
 
 
 internal class Submsgtype0x10f {
-    @Serializable
-    class Submsgtype0x10f : ProtoBuf {
+    internal class Submsgtype0x10f : ProtoBuf {
         @Serializable
         internal class KanDianCoinSettingWording(
             @ProtoId(1) val wording: ByteArray = EMPTY_BYTE_ARRAY,
@@ -133,8 +126,7 @@ internal class Submsgtype0x10f {
 
 
 internal class Submsgtype0x111 {
-    @Serializable
-    class SubMsgType0x111 : ProtoBuf {
+    internal class SubMsgType0x111 : ProtoBuf {
         @Serializable
         internal class AddFriendSource(
             @ProtoId(1) val source: Int = 0,
@@ -174,8 +166,7 @@ internal class Submsgtype0x111 {
 
 
 internal class Submsgtype0x113 {
-    @Serializable
-    class SubMsgType0x113 : ProtoBuf {
+    internal class SubMsgType0x113 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val int32AppId: Int = 0,
@@ -187,8 +178,7 @@ internal class Submsgtype0x113 {
 
 
 internal class Submsgtype0x115 {
-    @Serializable
-    class SubMsgType0x115 : ProtoBuf {
+    internal class SubMsgType0x115 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val fromUin: Long = 0L,
@@ -211,8 +201,7 @@ internal class Submsgtype0x115 {
 
 
 internal class Submsgtype0x116 {
-    @Serializable
-    class Submsgtype0x116 : ProtoBuf {
+    internal class Submsgtype0x116 : ProtoBuf {
         @Serializable
         internal class MemberInfo(
             @ProtoId(1) val memberUin: Long = 0L,
@@ -235,8 +224,7 @@ internal class Submsgtype0x116 {
 
 
 internal class Submsgtype0x117 {
-    @Serializable
-    class Submsgtype0x117 : ProtoBuf {
+    internal class Submsgtype0x117 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val uin: Long = 0L,
@@ -247,8 +235,7 @@ internal class Submsgtype0x117 {
 
 
 internal class Submsgtype0x118 {
-    @Serializable
-    class Submsgtype0x118 : ProtoBuf {
+    internal class Submsgtype0x118 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val pushType: Int = 0,
@@ -277,8 +264,7 @@ internal class Submsgtype0x118 {
 
 
 internal class Submsgtype0x119 {
-    @Serializable
-    class SubMsgType0x119 : ProtoBuf {
+    internal class SubMsgType0x119 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val writerUin: Long = 0L,
@@ -292,8 +278,7 @@ internal class Submsgtype0x119 {
 
 
 internal class Submsgtype0x11a {
-    @Serializable
-    class Submsgtype0x11a : ProtoBuf {
+    internal class Submsgtype0x11a : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val enumResult: Int /* enum */ = 0,
@@ -316,8 +301,7 @@ internal class Submsgtype0x11a {
 
 
 internal class Submsgtype0x11b {
-    @Serializable
-    class Submsgtype0x11b : ProtoBuf {
+    internal class Submsgtype0x11b : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val qrSig: ByteArray = EMPTY_BYTE_ARRAY,
@@ -338,8 +322,7 @@ internal class Submsgtype0x11c {
 
 
 internal class Submsgtype0x11e {
-    @Serializable
-    class SubMsgType0x11e : ProtoBuf {
+    internal class SubMsgType0x11e : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val type: Int = 0,
@@ -350,8 +333,7 @@ internal class Submsgtype0x11e {
 
 
 internal class Submsgtype0x11f {
-    @Serializable
-    class SubMsgType0x11f : ProtoBuf {
+    internal class SubMsgType0x11f : ProtoBuf {
         @Serializable
         internal class MediaUserInfo(
             @ProtoId(1) val toUin: Long = 0L,
@@ -386,8 +368,7 @@ internal class Submsgtype0x11f {
 
 
 internal class Submsgtype0x120 {
-    @Serializable
-    class SubMsgType0x120 : ProtoBuf {
+    internal class SubMsgType0x120 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val srcAppId: Int = 0,
@@ -403,16 +384,14 @@ internal class Submsgtype0x120 {
 
 
 internal class Submsgtype0x122 {
-    @Serializable
-    class GrayTipsResv : ProtoBuf {
+    internal class GrayTipsResv : ProtoBuf {
         @Serializable
         internal class ResvAttr(
             @ProtoId(1) val friendBannedFlag: Int = 0
         ) : ProtoBuf
     }
 
-    @Serializable
-    class Submsgtype0x122 : ProtoBuf {
+    internal class Submsgtype0x122 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val busiType: Long = 0L,
@@ -437,8 +416,7 @@ internal class Submsgtype0x122 {
 
 
 internal class Submsgtype0x123 {
-    @Serializable
-    class Submsgtype0x123 : ProtoBuf {
+    internal class Submsgtype0x123 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val busiType: Long = 0L,
@@ -461,8 +439,7 @@ internal class Submsgtype0x123 {
 
 
 internal class Submsgtype0x125 {
-    @Serializable
-    class Submsgtype0x125 : ProtoBuf {
+    internal class Submsgtype0x125 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgType: Int = 0,
@@ -479,8 +456,7 @@ internal class Submsgtype0x125 {
 
 
 internal class Submsgtype0x126 {
-    @Serializable
-    class Submsgtype0x126 : ProtoBuf {
+    internal class Submsgtype0x126 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgSeq: Long = 0L,
@@ -493,8 +469,7 @@ internal class Submsgtype0x126 {
 
 
 internal class Submsgtype0x127 {
-    @Serializable
-    class Submsgtype0x127 : ProtoBuf {
+    internal class Submsgtype0x127 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val seq: Long = 0L,
@@ -509,8 +484,7 @@ internal class Submsgtype0x127 {
 
 
 internal class Submsgtype0x128 {
-    @Serializable
-    class Submsgtype0x128 : ProtoBuf {
+    internal class Submsgtype0x128 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val sig: ByteArray = EMPTY_BYTE_ARRAY,
@@ -526,8 +500,7 @@ internal class Submsgtype0x128 {
 
 
 internal class Submsgtype0x129 {
-    @Serializable
-    class Submsgtype0x129 : ProtoBuf {
+    internal class Submsgtype0x129 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val seq: Long = 0L,
@@ -542,8 +515,7 @@ internal class Submsgtype0x129 {
 
 
 internal class Submsgtype0x1a {
-    @Serializable
-    class SubMsgType0x1a : ProtoBuf {
+    internal class SubMsgType0x1a : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
@@ -562,8 +534,7 @@ internal class Submsgtype0x1a {
 
 
 internal class Submsgtype0x26 {
-    @Serializable
-    class Submsgtype0x26 : ProtoBuf {
+    internal class Submsgtype0x26 : ProtoBuf {
         @Serializable
         internal class AppID(
             @ProtoId(1) val appId: Long = 0L
@@ -649,8 +620,7 @@ internal class Submsgtype0x26 {
 
 
 internal class Submsgtype0x27 {
-    @Serializable
-    class SubMsgType0x27 : ProtoBuf {
+    internal class SubMsgType0x27 : ProtoBuf {
         @Serializable
         internal class AddGroup(
             @ProtoId(1) val groupid: Int = 0,
@@ -1040,8 +1010,7 @@ internal class Submsgtype0x27 {
 
 
 internal class Submsgtype0x28 {
-    @Serializable
-    class SubMsgType0x28 : ProtoBuf {
+    internal class SubMsgType0x28 : ProtoBuf {
         @Serializable
         internal class FollowList(
             @ProtoId(1) val puin: Long = 0L,
@@ -1078,8 +1047,7 @@ internal class Submsgtype0x28 {
 
 
 internal class Submsgtype0x30 {
-    @Serializable
-    class SubMsgType0x30 : ProtoBuf {
+    internal class SubMsgType0x30 : ProtoBuf {
         @Serializable
         internal class BlockListNotify(
             @ProtoId(1) val msgBlockUinInfo: List<BlockUinInfo>? = null,
@@ -1103,8 +1071,7 @@ internal class Submsgtype0x30 {
 
 
 internal class Submsgtype0x31 {
-    @Serializable
-    class Submsgtype0x31 : ProtoBuf {
+    internal class Submsgtype0x31 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val flag: Int = 0,
@@ -1117,8 +1084,7 @@ internal class Submsgtype0x31 {
 
 
 internal class Submsgtype0x35 {
-    @Serializable
-    class Submsgtype0x35 : ProtoBuf {
+    internal class Submsgtype0x35 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val bubbleTimestamp: Int = 0
@@ -1128,8 +1094,7 @@ internal class Submsgtype0x35 {
 
 
 internal class Submsgtype0x3b {
-    @Serializable
-    class Submsgtype0x3b : ProtoBuf {
+    internal class Submsgtype0x3b : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val subCmd: Int = 0,
@@ -1143,8 +1108,7 @@ internal class Submsgtype0x3b {
 
 
 internal class Submsgtype0x3d {
-    @Serializable
-    class SttResultPush : ProtoBuf {
+    internal class SttResultPush : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val subCmd: Int = 0,
@@ -1172,8 +1136,7 @@ internal class Submsgtype0x3d {
 
 
 internal class Submsgtype0x3e {
-    @Serializable
-    class Submsgtype0x3e : ProtoBuf {
+    internal class Submsgtype0x3e : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val subcmd: Int = 0,
@@ -1187,8 +1150,7 @@ internal class Submsgtype0x3e {
 
 
 internal class Submsgtype0x3f {
-    @Serializable
-    class SubMsgType0x3f : ProtoBuf {
+    internal class SubMsgType0x3f : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgPubunikey: List<PubUniKey>? = null
@@ -1204,8 +1166,7 @@ internal class Submsgtype0x3f {
 
 
 internal class Submsgtype0x40 {
-    @Serializable
-    class SubMsgType0x40 : ProtoBuf {
+    internal class SubMsgType0x40 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val vUuid: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1220,8 +1181,7 @@ internal class Submsgtype0x40 {
 
 
 internal class Submsgtype0x41 {
-    @Serializable
-    class MsgType0x210SubMsgType0x41 : ProtoBuf {
+    internal class MsgType0x210SubMsgType0x41 : ProtoBuf {
         @Serializable
         internal class GameRsultMsg(
             @ProtoId(1) val gameName: String = "",
@@ -1245,8 +1205,7 @@ internal class Submsgtype0x41 {
 
 
 internal class Submsgtype0x42 {
-    @Serializable
-    class Submsgtype0x42 : ProtoBuf {
+    internal class Submsgtype0x42 : ProtoBuf {
         @Serializable
         internal class GameStatusSync(
             @ProtoId(1) val gameAppid: Int = 0,
@@ -1257,8 +1216,7 @@ internal class Submsgtype0x42 {
 
 
 internal class Submsgtype0x44 {
-    @Serializable
-    class Submsgtype0x44 : ProtoBuf {
+    internal class Submsgtype0x44 : ProtoBuf {
         @Serializable
         internal class ClearCountMsg(
             @ProtoId(1) val uin: Long = 0L,
@@ -1361,8 +1319,7 @@ internal class Submsgtype0x4b {
         @ProtoId(10) val uint64User: List<Long>? = null
     ) : ProtoBuf
 
-    @Serializable
-    class Submsgtype0x4b : ProtoBuf {
+    internal class Submsgtype0x4b : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val albumid: String = "",
@@ -1381,8 +1338,7 @@ internal class Submsgtype0x4b {
 
 
 internal class Submsgtype0x4e {
-    @Serializable
-    class Submsgtype0x4e : ProtoBuf {
+    internal class Submsgtype0x4e : ProtoBuf {
         @Serializable
         internal class GroupBulletin(
             @ProtoId(1) val msgContent: List<Content>? = null
@@ -1407,8 +1363,7 @@ internal class Submsgtype0x4e {
 
 
 internal class Submsgtype0x54 {
-    @Serializable
-    class Submsgtype0x54 : ProtoBuf {
+    internal class Submsgtype0x54 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val peerType: Int /* enum */ = 1,
@@ -1425,8 +1380,7 @@ internal class Submsgtype0x54 {
 
 
 internal class Submsgtype0x60 {
-    @Serializable
-    class SubMsgType0x60 : ProtoBuf {
+    internal class SubMsgType0x60 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val pushcmd: Int = 0,
@@ -1439,8 +1393,7 @@ internal class Submsgtype0x60 {
 
 
 internal class Submsgtype0x63 {
-    @Serializable
-    class Submsgtype0x63 : ProtoBuf {
+    internal class Submsgtype0x63 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val roomid: Long = 0L,
@@ -1453,8 +1406,7 @@ internal class Submsgtype0x63 {
 
 
 internal class Submsgtype0x65 {
-    @Serializable
-    class SubMsgType0x65 : ProtoBuf {
+    internal class SubMsgType0x65 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val cmd: Int = 0,
@@ -1472,8 +1424,7 @@ internal class Submsgtype0x65 {
 
 
 internal class Submsgtype0x66 {
-    @Serializable
-    class Submsgtype0x66 : ProtoBuf {
+    internal class Submsgtype0x66 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val type: Int = 0,
@@ -1487,8 +1438,7 @@ internal class Submsgtype0x66 {
 
 
 internal class Submsgtype0x67 {
-    @Serializable
-    class Submsgtype0x67 : ProtoBuf {
+    internal class Submsgtype0x67 : ProtoBuf {
         @Serializable
         internal class GroupInfo(
             @ProtoId(1) val groupCode: Long = 0L,
@@ -1526,8 +1476,7 @@ internal class Submsgtype0x69 {
 
 
 internal class Submsgtype0x6b {
-    @Serializable
-    class SubMsgType0x6b : ProtoBuf {
+    internal class SubMsgType0x6b : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val toUin: Long = 0L,
@@ -1540,8 +1489,7 @@ internal class Submsgtype0x6b {
 
 
 internal class Submsgtype0x6f {
-    @Serializable
-    class SubMsgType0x6f : ProtoBuf {
+    internal class SubMsgType0x6f : ProtoBuf {
         @Serializable
         internal class AddFriendSource(
             @ProtoId(1) val source: Int = 0,
@@ -1733,8 +1681,7 @@ internal class Submsgtype0x6f {
 
 
 internal class Submsgtype0x71 {
-    @Serializable
-    class Submsgtype0x71 : ProtoBuf {
+    internal class Submsgtype0x71 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgAppInfo: List<ReportAppInfo>? = null,
@@ -1790,8 +1737,7 @@ internal class Submsgtype0x71 {
 
 
 internal class Submsgtype0x72 {
-    @Serializable
-    class SubMsgType0x72 : ProtoBuf {
+    internal class SubMsgType0x72 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val subCmd: Int = 0,
@@ -1805,8 +1751,7 @@ internal class Submsgtype0x72 {
 
 
 internal class Submsgtype0x76 {
-    @Serializable
-    class SubMsgType0x76 : ProtoBuf {
+    internal class SubMsgType0x76 : ProtoBuf {
         @Serializable
         internal class BirthdayNotify(
             @ProtoId(1) val msgOneFriend: List<OneBirthdayFriend>? = null,
@@ -1880,8 +1825,7 @@ internal class Submsgtype0x76 {
 
 
 internal class Submsgtype0x78 {
-    @Serializable
-    class Submsgtype0x78 : ProtoBuf {
+    internal class Submsgtype0x78 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val type: Int = 0,
@@ -1892,8 +1836,7 @@ internal class Submsgtype0x78 {
 
 
 internal class Submsgtype0x7a {
-    @Serializable
-    class Submsgtype0x7a : ProtoBuf {
+    internal class Submsgtype0x7a : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val content: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1909,8 +1852,7 @@ internal class Submsgtype0x7a {
 
 
 internal class Submsgtype0x7c {
-    @Serializable
-    class Submsgtype0x7c : ProtoBuf {
+    internal class Submsgtype0x7c : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val uin: Long = 0L,
@@ -1924,8 +1866,7 @@ internal class Submsgtype0x7c {
 
 
 internal class Submsgtype0x7e {
-    @Serializable
-    class Submsgtype0x7e : ProtoBuf {
+    internal class Submsgtype0x7e : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val notice: String = "",
@@ -1948,8 +1889,7 @@ internal class Submsgtype0x7e {
 
 
 internal class Submsgtype0x83 {
-    @Serializable
-    class SubMsgType0x83 : ProtoBuf {
+    internal class SubMsgType0x83 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgParams: List<MsgParams>? = null,
@@ -1966,15 +1906,13 @@ internal class Submsgtype0x83 {
             @ProtoId(5) val data: ByteArray = EMPTY_BYTE_ARRAY
         ) : ProtoBuf
 
-        @Serializable
-        class MsgRep : ProtoBuf
+        internal class MsgRep : ProtoBuf
     }
 }
 
 
 internal class Submsgtype0x85 {
-    @Serializable
-    class SubMsgType0x85 : ProtoBuf {
+    internal class SubMsgType0x85 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val showLastest: Int = 0,
@@ -1996,8 +1934,7 @@ internal class Submsgtype0x85 {
 
 
 internal class Submsgtype0x86 {
-    @Serializable
-    class SubMsgType0x86 : ProtoBuf {
+    internal class SubMsgType0x86 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val notifyFlag: Int = 0,
@@ -2008,8 +1945,7 @@ internal class Submsgtype0x86 {
 
 
 internal class Submsgtype0x87 {
-    @Serializable
-    class SubMsgType0x87 : ProtoBuf {
+    internal class SubMsgType0x87 : ProtoBuf {
         @Serializable
         internal class CloneInfo(
             @ProtoId(1) val uin: Long = 0L,
@@ -2047,8 +1983,7 @@ internal class Submsgtype0x87 {
 
 
 internal class Submsgtype0x89 {
-    @Serializable
-    class Submsgtype0x89 : ProtoBuf {
+    internal class Submsgtype0x89 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val uiUin: Long = 0L,
@@ -2078,8 +2013,7 @@ internal class Submsgtype0x89 {
 
 
 internal class Submsgtype0x8d {
-    @Serializable
-    class SubMsgType0x8d : ProtoBuf {
+    internal class SubMsgType0x8d : ProtoBuf {
         @Serializable
         internal class ChannelNotify(
             @ProtoId(1) val channelId: Long = 0L,
@@ -2162,8 +2096,7 @@ internal class Submsgtype0x8d {
 
 
 internal class Submsgtype0x8f {
-    @Serializable
-    class Submsgtype0x8f : ProtoBuf {
+    internal class Submsgtype0x8f : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgSourceId: SourceID? = null,
@@ -2184,8 +2117,7 @@ internal class Submsgtype0x8f {
 
 
 internal class Submsgtype0x90 {
-    @Serializable
-    class SubMsgType0x90 : ProtoBuf {
+    internal class SubMsgType0x90 : ProtoBuf {
         @Serializable
         internal class DpNotifyMsgBdoy(
             @ProtoId(1) val pid: Int = 0,
@@ -2226,8 +2158,7 @@ internal class Submsgtype0x90 {
 
 
 internal class Submsgtype0x92 {
-    @Serializable
-    class SubMsgType0x92 : ProtoBuf {
+    internal class SubMsgType0x92 : ProtoBuf {
         @Serializable
         internal class CrmS2CMsgHead(
             @ProtoId(1) val crmSubCmd: Int = 0,
@@ -2257,8 +2188,7 @@ internal class Submsgtype0x92 {
 
 
 internal class Submsgtype0x93 {
-    @Serializable
-    class Submsgtype0x93 : ProtoBuf {
+    internal class Submsgtype0x93 : ProtoBuf {
         @Serializable
         internal class LiteMailIndexInfo(
             @ProtoId(1) val feedsId: ByteArray = EMPTY_BYTE_ARRAY,
@@ -2303,8 +2233,7 @@ internal class Submsgtype0x93 {
 
 
 internal class Submsgtype0x94 {
-    @Serializable
-    class Submsgtype0x94 : ProtoBuf {
+    internal class Submsgtype0x94 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val taskId: Int = 0,
@@ -2332,8 +2261,7 @@ internal class Submsgtype0x94 {
 
 
 internal class Submsgtype0x96 {
-    @Serializable
-    class Submsgtype0x96 : ProtoBuf {
+    internal class Submsgtype0x96 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val pushMsg: String = "",
@@ -2344,8 +2272,7 @@ internal class Submsgtype0x96 {
 
 
 internal class Submsgtype0x97 {
-    @Serializable
-    class Submsgtype0x97 : ProtoBuf {
+    internal class Submsgtype0x97 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val businessUin: String = "",
@@ -2356,8 +2283,7 @@ internal class Submsgtype0x97 {
 
 
 internal class Submsgtype0x98 {
-    @Serializable
-    class Submsgtype0x98 : ProtoBuf {
+    internal class Submsgtype0x98 : ProtoBuf {
         @Serializable
         internal class ModBlock(
             @ProtoId(1) val op: Int = 0
@@ -2374,8 +2300,7 @@ internal class Submsgtype0x98 {
 
 
 internal class Submsgtype0x9b {
-    @Serializable
-    class SubMsgType0x9b : ProtoBuf {
+    internal class SubMsgType0x9b : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val appId: Long = 0L,
@@ -2395,8 +2320,7 @@ internal class Submsgtype0x9b {
 
 
 internal class Submsgtype0x9d {
-    @Serializable
-    class SubMsgType0x9d : ProtoBuf {
+    internal class SubMsgType0x9d : ProtoBuf {
         @Serializable
         internal class ModuleUpdateNotify(
             @ProtoId(1) val moduleId: Int = 0,
@@ -2414,8 +2338,7 @@ internal class Submsgtype0x9d {
 
 
 internal class Submsgtype0x9e {
-    @Serializable
-    class SubmsgType0x9e : ProtoBuf {
+    internal class SubmsgType0x9e : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val type: Int = 0,
@@ -2443,8 +2366,7 @@ internal class Submsgtype0x9f {
 
 
 internal class Submsgtype0xa0 {
-    @Serializable
-    class Submsgtype0xa0 : ProtoBuf {
+    internal class Submsgtype0xa0 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val isMassBlessOpen: Int = 0
@@ -2454,8 +2376,7 @@ internal class Submsgtype0xa0 {
 
 
 internal class Submsgtype0xa1 {
-    @Serializable
-    class Submsgtype0xa1 : ProtoBuf {
+    internal class Submsgtype0xa1 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val subCmd: Int = 0,
@@ -2482,8 +2403,7 @@ internal class Submsgtype0xa2 {
 
 
 internal class Submsgtype0xa4 {
-    @Serializable
-    class Submsgtype0xa4 : ProtoBuf {
+    internal class Submsgtype0xa4 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val title: ByteArray = EMPTY_BYTE_ARRAY,
@@ -2495,8 +2415,7 @@ internal class Submsgtype0xa4 {
 
 
 internal class Submsgtype0xa8 {
-    @Serializable
-    class SubMsgType0xa8 : ProtoBuf {
+    internal class SubMsgType0xa8 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val actionType: Int = 0,
@@ -2509,8 +2428,7 @@ internal class Submsgtype0xa8 {
 
 
 internal class Submsgtype0xaa {
-    @Serializable
-    class SubMsgType0xaa : ProtoBuf {
+    internal class SubMsgType0xaa : ProtoBuf {
         @Serializable
         internal class GameTeamMsgBody(
             @ProtoId(1) val gameTeamCmd: Int = 0,
@@ -2640,8 +2558,7 @@ internal class Submsgtype0xaa {
 
 
 internal class Submsgtype0xab {
-    @Serializable
-    class SubMsgType0xab : ProtoBuf {
+    internal class SubMsgType0xab : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val uin: Long = 0L,
@@ -2654,8 +2571,7 @@ internal class Submsgtype0xab {
 
 
 internal class Submsgtype0xae {
-    @Serializable
-    class SubMsgType0xae : ProtoBuf {
+    internal class SubMsgType0xae : ProtoBuf {
         @Serializable
         internal class AddFriendSource(
             @ProtoId(1) val source: Int = 0,
@@ -2703,8 +2619,7 @@ internal class Submsgtype0xae {
 
 
 internal class Submsgtype0xb1 {
-    @Serializable
-    class Submsgtype0xb1 : ProtoBuf {
+    internal class Submsgtype0xb1 : ProtoBuf {
         @Serializable
         internal class DealInviteInfo(
             @ProtoId(1) val uin: Long = 0L,
@@ -2764,8 +2679,7 @@ internal class Submsgtype0xb3 {
 
 
 internal class Submsgtype0xb5 {
-    @Serializable
-    class SubMsgType0xb5 : ProtoBuf {
+    internal class SubMsgType0xb5 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val grayTipContent: ByteArray = EMPTY_BYTE_ARRAY,
@@ -2792,8 +2706,7 @@ internal class Submsgtype0xb5 {
 
 
 internal class Submsgtype0xbe {
-    @Serializable
-    class SubMsgType0xbe : ProtoBuf {
+    internal class SubMsgType0xbe : ProtoBuf {
         @Serializable
         internal class Medal(
             @ProtoId(1) val id: Int = 0,
@@ -2817,8 +2730,7 @@ internal class Submsgtype0xbe {
 
 
 internal class Submsgtype0xc1 {
-    @Serializable
-    class Submsgtype0xc1 : ProtoBuf {
+    internal class Submsgtype0xc1 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val groupid: Long = 0L,
@@ -2830,8 +2742,7 @@ internal class Submsgtype0xc1 {
 
 
 internal class Submsgtype0xc3 {
-    @Serializable
-    class Submsgtype0xc3 : ProtoBuf {
+    internal class Submsgtype0xc3 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val type: Int = 0,
@@ -2843,8 +2754,7 @@ internal class Submsgtype0xc3 {
 
 
 internal class Submsgtype0xc5 {
-    @Serializable
-    class Submsgtype0xc5 : ProtoBuf {
+    internal class Submsgtype0xc5 : ProtoBuf {
         @Serializable
         internal class BBInfo(
             @ProtoId(1) val bbUin: Long = 0L,
@@ -2929,8 +2839,7 @@ internal class Submsgtype0xc5 {
 
 
 internal class Submsgtype0xc6 {
-    @Serializable
-    class SubMsgType0xc6 : ProtoBuf {
+    internal class SubMsgType0xc6 : ProtoBuf {
         @Serializable
         internal class AccountExceptionAlertBody(
             @ProtoId(1) val title: String = "",
@@ -2952,8 +2861,7 @@ internal class Submsgtype0xc6 {
 
 
 internal class Submsgtype0xc7 {
-    @Serializable
-    class Submsgtype0xc7 : ProtoBuf {
+    internal class Submsgtype0xc7 : ProtoBuf {
         @Serializable
         internal class ForwardBody(
             @ProtoId(1) val notifyType: Int = 0,
@@ -3066,9 +2974,7 @@ internal class Submsgtype0xc7 {
     }
 }
 
-
 internal class Mutualmark {
-    @Serializable
     class Mutualmark : ProtoBuf {
         @Serializable
         internal class MutualmarkInfo(
@@ -3098,7 +3004,6 @@ internal class Mutualmark {
 
 
 internal class Submsgtype0xc9 {
-    @Serializable
     class Submsgtype0xc9 : ProtoBuf {
         @Serializable
         internal class BusinessMsg(
@@ -3121,7 +3026,6 @@ internal class Submsgtype0xc9 {
 
 
 internal class Submsgtype0xca {
-    @Serializable
     class Submsgtype0xca : ProtoBuf {
         @Serializable
         internal class MsgBody(
@@ -3147,8 +3051,7 @@ internal class Submsgtype0xca {
 
 
 internal class Submsgtype0xcb {
-    @Serializable
-    class SubMsgType0xcb : ProtoBuf {
+    internal class SubMsgType0xcb : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val anchorStatus: Int = 0,
@@ -3166,8 +3069,7 @@ internal class Submsgtype0xcb {
 
 
 internal class Submsgtype0xcc {
-    @Serializable
-    class SubMsgType0xcc : ProtoBuf {
+    internal class SubMsgType0xcc : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgType: Int = 0,
@@ -3184,8 +3086,7 @@ internal class Submsgtype0xcc {
 
 
 internal class Submsgtype0xce {
-    @Serializable
-    class Submsgtype0xce : ProtoBuf {
+    internal class Submsgtype0xce : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val int64StartTime: Long = 0L,
@@ -3197,8 +3098,7 @@ internal class Submsgtype0xce {
 
 
 internal class Submsgtype0xcf {
-    @Serializable
-    class Submsgtype0xcf : ProtoBuf {
+    internal class Submsgtype0xcf : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val rsptype: Int = 0,
@@ -3209,8 +3109,7 @@ internal class Submsgtype0xcf {
 
 
 internal class Submsgtype0xd0 {
-    @Serializable
-    class SubMsgType0xd0 : ProtoBuf {
+    internal class SubMsgType0xd0 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgType: Int = 0,
@@ -3230,8 +3129,7 @@ internal class Submsgtype0xd0 {
 
 
 internal class Submsgtype0xd7 {
-    @Serializable
-    class SubMsgType0xd7 : ProtoBuf {
+    internal class SubMsgType0xd7 : ProtoBuf {
         @Serializable
         internal class Content(
             @ProtoId(1) val fromUser: ByteArray = EMPTY_BYTE_ARRAY,
@@ -3253,8 +3151,7 @@ internal class Submsgtype0xd7 {
 
 
 internal class Submsgtype0xda {
-    @Serializable
-    class SubMsgType0xda : ProtoBuf {
+    internal class SubMsgType0xda : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgType: Int = 0,
@@ -3279,8 +3176,7 @@ internal class Submsgtype0xda {
 
 
 internal class Submsgtype0xdb {
-    @Serializable
-    class Submsgtype0xdb : ProtoBuf {
+    internal class Submsgtype0xdb : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val rsptype: Int = 0,
@@ -3291,8 +3187,7 @@ internal class Submsgtype0xdb {
 
 
 internal class Submsgtype0xdc {
-    @Serializable
-    class Submsgtype0xdc : ProtoBuf {
+    internal class Submsgtype0xdc : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgList: List<MsgContent>? = null,
@@ -3324,8 +3219,7 @@ internal class Submsgtype0xdc {
 
 
 internal class Submsgtype0xdd {
-    @Serializable
-    class Submsgtype0xdd : ProtoBuf {
+    internal class Submsgtype0xdd : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgType: Int = 0,
@@ -3402,8 +3296,7 @@ internal class Submsgtype0xdd {
 
 
 internal class Submsgtype0xde {
-    @Serializable
-    class Submsgtype0xde : ProtoBuf {
+    internal class Submsgtype0xde : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val msgType: Int = 0,
@@ -3417,8 +3310,7 @@ internal class Submsgtype0xde {
 
 
 internal class Submsgtype0xdf {
-    @Serializable
-    class Submsgtype0xdf : ProtoBuf {
+    internal class Submsgtype0xdf : ProtoBuf {
         @Serializable
         internal class MsgBody(
             // @ProtoId(1) val msgGameState: ApolloGameStatus.STCMGameMessage? = null,
@@ -3429,8 +3321,7 @@ internal class Submsgtype0xdf {
 
 
 internal class Submsgtype0xe0 {
-    @Serializable
-    class Submsgtype0xe0 : ProtoBuf {
+    internal class Submsgtype0xe0 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val pushExt: ByteArray = EMPTY_BYTE_ARRAY
@@ -3440,8 +3331,7 @@ internal class Submsgtype0xe0 {
 
 
 internal class Submsgtype0xe1 {
-    @Serializable
-    class Submsgtype0xe1 : ProtoBuf {
+    internal class Submsgtype0xe1 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val pushExt: ByteArray = EMPTY_BYTE_ARRAY
@@ -3451,8 +3341,7 @@ internal class Submsgtype0xe1 {
 
 
 internal class Submsgtype0xe4 {
-    @Serializable
-    class Submsgtype0xe4 : ProtoBuf {
+    internal class Submsgtype0xe4 : ProtoBuf {
         @Serializable
         internal class GeoInfo(
             @ProtoId(1) val latitude: Long = 0L,
@@ -3513,8 +3402,7 @@ internal class Submsgtype0xe4 {
 
 
 internal class Submsgtype0xe5 {
-    @Serializable
-    class Submsgtype0xe5 : ProtoBuf {
+    internal class Submsgtype0xe5 : ProtoBuf {
         @Serializable
         internal class CrmS2CMsgHead(
             @ProtoId(1) val crmSubCmd: Int = 0,
@@ -3632,8 +3520,7 @@ internal class Submsgtype0xe5 {
 
 
 internal class Submsgtype0xe8 {
-    @Serializable
-    class Submsgtype0xe8 : ProtoBuf {
+    internal class Submsgtype0xe8 : ProtoBuf {
         @Serializable
         internal class MsgBody/*(
              @ProtoId(1) val msgItem: ApolloPushMsgInfo.STPushMsgElem? = null
@@ -3643,8 +3530,7 @@ internal class Submsgtype0xe8 {
 
 
 internal class Submsgtype0xe9 {
-    @Serializable
-    class SubMsgType0xe9 : ProtoBuf {
+    internal class SubMsgType0xe9 : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val businessType: Int = 0,
@@ -3655,8 +3541,7 @@ internal class Submsgtype0xe9 {
 
 
 internal class Submsgtype0xea {
-    @Serializable
-    class Submsgtype0xea : ProtoBuf {
+    internal class Submsgtype0xea : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val title: ByteArray = EMPTY_BYTE_ARRAY,
@@ -3667,8 +3552,7 @@ internal class Submsgtype0xea {
 
 
 internal class Submsgtype0xee {
-    @Serializable
-    class Submsgtype0xee : ProtoBuf {
+    internal class Submsgtype0xee : ProtoBuf {
         @Serializable
         internal class AccountInfo(
             @ProtoId(1) val id: Long = 0L,
@@ -3772,8 +3656,7 @@ internal class Submsgtype0xee {
 
 
 internal class Submsgtype0xf9 {
-    @Serializable
-    class Submsgtype0xf9 : ProtoBuf {
+    internal class Submsgtype0xf9 : ProtoBuf {
         @Serializable
         internal class AdInfo(
             @ProtoId(1) val fromUin: Long = 0L,
@@ -3848,8 +3731,7 @@ internal class Submsgtype0xf9 {
 
 
 internal class Submsgtype0xfd {
-    @Serializable
-    class Submsgtype0xfd : ProtoBuf {
+    internal class Submsgtype0xfd : ProtoBuf {
         @Serializable
         internal class AdInfo(
             @ProtoId(1) val fromUin: Long = 0L,
@@ -3866,8 +3748,7 @@ internal class Submsgtype0xfd {
 
 
 internal class Submsgtype0xfe {
-    @Serializable
-    class Submsgtype0xfe : ProtoBuf {
+    internal class Submsgtype0xfe : ProtoBuf {
         @Serializable
         internal class MsgBody(
             @ProtoId(1) val wording: ByteArray = EMPTY_BYTE_ARRAY,

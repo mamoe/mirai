@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("SpellCheckingInspection")
+
 package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
@@ -28,7 +30,7 @@ internal class Vec0xd50 : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoId(1) val msgUpdateData: List<Vec0xd50.ExtSnsFrdData>? = null,
+        @ProtoId(1) val msgUpdateData: List<ExtSnsFrdData>? = null,
         @ProtoId(11) val over: Int = 0,
         @ProtoId(12) val nextStart: Int = 0,
         @ProtoId(13) val uint64UnfinishedUins: List<Long>? = null
@@ -66,7 +68,7 @@ internal class Vec0xd6b : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoId(11) val msgMutualmarkData: List<Vec0xd6b.MutualMarkData>? = null,
+        @ProtoId(11) val msgMutualmarkData: List<MutualMarkData>? = null,
         @ProtoId(12) val uint64UnfinishedUins: List<Long>? = null
     ) : ProtoBuf
 
@@ -74,35 +76,6 @@ internal class Vec0xd6b : ProtoBuf {
     internal class MutualMarkData(
         @ProtoId(1) val frdUin: Long = 0L,
         @ProtoId(2) val result: Int = 0
-        // @SerialId(11) val mutualmarkInfo: List<net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210.Mutualmark.MutualMark>? = null
+        // @SerialId(11) val mutualmarkInfo: List<net.mamoe.mirai.qqandroid.network.protocol.data.proto.Mutualmark.MutualMark>? = null
     ) : ProtoBuf
 }
-
-@Serializable
-internal class Mutualmark : ProtoBuf {
-    @Serializable
-    internal class MutualmarkInfo(
-        @ProtoId(1) val lastActionTime: Long = 0L,
-        @ProtoId(2) val level: Int = 0,
-        @ProtoId(3) val lastChangeTime: Long = 0L,
-        @ProtoId(4) val continueDays: Int = 0,
-        @ProtoId(5) val wildcardWording: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val notifyTime: Long = 0L,
-        @ProtoId(7) val iconStatus: Long = 0L,
-        @ProtoId(8) val iconStatusEndTime: Long = 0L,
-        @ProtoId(9) val closeFlag: Int = 0,
-        @ProtoId(10) val resourceInfo: ByteArray = EMPTY_BYTE_ARRAY
-    ) : ProtoBuf
-
-    @Serializable
-    internal class ResourceInfo17(
-        @ProtoId(1) val dynamicUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val staticUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val cartoonUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val cartoonMd5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val playCartoon: Int = 0,
-        @ProtoId(6) val word: ByteArray = EMPTY_BYTE_ARRAY
-    ) : ProtoBuf
-}
-
-

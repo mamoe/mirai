@@ -35,9 +35,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210.Submsgtype0x27
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210.Submsgtype0x44
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210.Submsgtype0xb3
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
