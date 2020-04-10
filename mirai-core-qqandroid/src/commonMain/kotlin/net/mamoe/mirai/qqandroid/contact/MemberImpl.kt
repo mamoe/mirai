@@ -49,6 +49,7 @@ internal class MemberImpl constructor(
 ) : Member() {
     override val group: GroupImpl by group.unsafeWeakRef()
 
+    @Suppress("unused") // false positive
     val lastMessageSequence: AtomicInt = atomic(-1)
 
     // region QQ delegate

@@ -47,7 +47,7 @@ internal class OnlinePushTrans : ProtoBuf {
         @ProtoId(9) val nickName: String = "",
         @ProtoId(10) val msgData: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(11) val svrIp: Int = 0,
-        @ProtoId(12) val extGroupKeyInfo: OnlinePushTrans.ExtGroupKeyInfo? = null,
+        @ProtoId(12) val extGroupKeyInfo: ExtGroupKeyInfo? = null,
         @ProtoId(17) val generalFlag: Int = 0
     ) : ProtoBuf
 }

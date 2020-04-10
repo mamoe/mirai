@@ -113,9 +113,9 @@ internal class OnlinePush {
         IncomingPacketFactory<Packet?>("OnlinePush.PbPushTransMsg", "OnlinePush.RespPush") {
 
         @OptIn(MiraiInternalAPI::class)
-        @ExperimentalUnsignedTypes
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
             val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
+
             content.msgData.read<Unit> {
                 when (content.msgType) {
                     44 -> {
@@ -128,21 +128,33 @@ internal class OnlinePush {
                         }
 
                         val group = bot.getGroupByUin(content.fromUin) as GroupImpl
-                        if (var5 == 0L && this.remaining == 1L) {//管理员变更
-                            val newPermission =
-                                if (this.readByte()
-                                        .toInt() == 1
-                                ) MemberPermission.ADMINISTRATOR else MemberPermission.MEMBER
+                        if (group.lastMemberPermissionChangeSequences.remove(content.msgSeq)) {
+                            return null
+                        }
 
-                            return if (target == bot.id) {
-                                BotGroupPermissionChangeEvent(
+                        if (var5 == 0L && this.remaining == 1L) {//管理员变更
+                            group.lastMemberPermissionChangeSequences.addLast(content.msgSeq)
+                            val newPermission =
+                                if (this.readByte().toInt() == 1) MemberPermission.ADMINISTRATOR
+                                else MemberPermission.MEMBER
+
+                            if (target == bot.id) {
+                                if (group.botPermission == newPermission) {
+                                    return null
+                                }
+
+                                return BotGroupPermissionChangeEvent(
                                     group,
                                     group.botPermission.also { group.botPermission = newPermission },
                                     newPermission
                                 )
                             } else {
                                 val member = group[target] as MemberImpl
-                                MemberPermissionChangeEvent(
+                                if (member.permission == newPermission) {
+                                    return null
+                                }
+
+                                return MemberPermissionChangeEvent(
                                     member,
                                     member.permission.also { member.permission = newPermission },
                                     newPermission
@@ -173,21 +185,17 @@ internal class OnlinePush {
                         val groupUin = content.fromUin
 
                         when (type) {
-                            0x82 -> { // 2020/4/8: 在这里拿到了一个 Group xxx not found
-                                bot.getGroupByUinOrNull(groupUin)?.let { group ->
-                                    val member = group.getOrNull(target) as? MemberImpl ?: return null
-                                    return MemberLeaveEvent.Quit(member.also {
-                                        group.members.delegate.remove(member)
-                                    })
-                                }
+                            0x82 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
+                                val member = group.getOrNull(target) as? MemberImpl ?: return null
+                                return MemberLeaveEvent.Quit(member.also {
+                                    group.members.delegate.remove(member)
+                                })
                             }
-                            0x83 -> {
-                                bot.getGroupByUin(groupUin).let { group ->
-                                    val member = group.getOrNull(target) as? MemberImpl ?: return null
-                                    return MemberLeaveEvent.Kick(member.also {
-                                        group.members.delegate.remove(member)
-                                    }, group.members[operator])
-                                }
+                            0x83 -> bot.getGroupByUin(groupUin).let { group ->
+                                val member = group.getOrNull(target) as? MemberImpl ?: return null
+                                return MemberLeaveEvent.Kick(member.also {
+                                    group.members.delegate.remove(member)
+                                }, group.members[operator])
                             }
                         }
                     }
