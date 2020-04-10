@@ -210,6 +210,16 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
 // region 群
 
 /**
+ * 机器人被踢出群. 在事件广播前 [Bot.groups] 就已删除这个群.
+ */
+@SinceMirai("0.36.0")
+data class BotKickEvent(
+    val group: Group
+) : BotEvent, Packet {
+    override val bot: Bot get() = group.bot
+}
+
+/**
  * Bot 在群里的权限被改变. 操作人一定是群主
  */
 data class BotGroupPermissionChangeEvent(
@@ -352,7 +362,19 @@ data class GroupAllowMemberInviteEvent(
 /**
  * 成员加入群的事件
  */
-data class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet
+sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet {
+    /**
+     * 被邀请加入群
+     */
+    @SinceMirai("0.36.0")
+    data class Invite(override val member: Member) : MemberJoinEvent(member)
+
+    /**
+     * 成员主动加入群
+     */
+    @SinceMirai("0.36.0")
+    data class Active(override val member: Member) : MemberJoinEvent(member)
+}
 
 /**
  * 成员离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除

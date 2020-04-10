@@ -20,6 +20,7 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
+import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
@@ -43,6 +44,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
+import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
@@ -386,6 +388,7 @@ internal class OnlinePush {
          */
         @OptIn(LowLevelAPI::class, MiraiInternalAPI::class)
         object Transformers528 : Map<Long, MsgType0x210.(QQAndroidBot) -> Sequence<Packet>> by mapOf(
+            // 新好友
             0xB3L to lambda528 { bot ->
                 // 08 01 12 52 08 A2 FF 8C F0 03 10 00 1D 15 3D 90 5E 22 2E E6 88 91 E4 BB AC E5 B7 B2 E7 BB 8F E6 98 AF E5 A5 BD E5 8F 8B E5 95 A6 EF BC 8C E4 B8 80 E8 B5 B7 E6 9D A5 E8 81 8A E5 A4 A9 E5 90 A7 21 2A 09 48 69 6D 31 38 38 6D 6F 65 30 07 38 03 48 DD F1 92 B7 07
                 val body = vProtobuf.loadAs(Submsgtype0xb3.SubMsgType0xb3.MsgBody.serializer())
@@ -410,9 +413,22 @@ internal class OnlinePush {
 
                     }
                 }
-                bot.network.logger.debug { msg._miraiContentToString() }
+                bot.network.logger.debug { "OnlinePush528 0x44L: " + msg._miraiContentToString() }
                 return@lambda528 emptySequence()
             },
+            // bot 被踢
+            0xD4L to lambda528 { bot ->
+                @Serializable
+                data class SubD4(
+                    val uin: Long
+                ) : ProtoBuf
+
+                val uin = vProtobuf.loadAs(SubD4.serializer()).uin
+                val group = bot.getGroupByUinOrNull(uin) ?: bot.getGroupOrNull(uin)
+                // 08 E7 C1 AD B8 02
+                return@lambda528 group?.let { sequenceOf(BotKickEvent(group)) } ?: emptySequence()
+            },
+            // ModFriendRemark, DelFriend
             0x27L to lambda528 { bot ->
                 fun Submsgtype0x27.SubMsgType0x27.ModFriendRemark.transform(bot: QQAndroidBot): Sequence<Packet> {
                     return this.msgFrdRmk?.asSequence()?.mapNotNull {
