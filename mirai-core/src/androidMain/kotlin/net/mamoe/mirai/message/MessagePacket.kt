@@ -13,7 +13,6 @@ package net.mamoe.mirai.message
 
 import android.graphics.Bitmap
 import kotlinx.io.core.Input
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.MiraiInternalAPI

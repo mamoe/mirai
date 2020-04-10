@@ -17,7 +17,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  */
 @MiraiInternalAPI
 @JavaFriendlyAPI
-expect abstract class ContactJavaFriendlyAPI
+expect abstract class ContactJavaFriendlyAPI()
 
 /**
  * [Member] 中为了让 `Java` 更容易调用的 API
