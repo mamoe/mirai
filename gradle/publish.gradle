@@ -1,3 +1,5 @@
+import upload.Bintray
+
 // 部分源码来自 kotlinx.coroutines
 // Source code from kotlinx.coroutines
 
@@ -22,12 +24,8 @@ def pomConfig = {
 }
 
 bintray {
-    def keyProps = new Properties()
-    def keyFile = file("../keys.properties")
-    if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
-
-    user = keyProps.getProperty("bintrayUser")
-    key = keyProps.getProperty("bintrayKey")
+    user = Bintray.getUser(project)
+    key = Bintray.getKey(project)
 
     pkg {
         repo = 'mirai'
@@ -67,14 +65,14 @@ bintrayUpload.dependsOn {
     list
 }
 
-try{
+try {
 
 // empty xxx-javadoc.jar
     task javadocJar(type: Jar) {
         archiveClassifier = 'javadoc'
     }
 
-} catch (Exception e){
+} catch (Exception ignored) {
 
 }
 publishing {
