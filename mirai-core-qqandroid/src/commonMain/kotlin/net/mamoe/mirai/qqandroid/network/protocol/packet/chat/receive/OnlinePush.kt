@@ -84,7 +84,7 @@ internal class OnlinePush {
                 )
             }
 
-            val group = bot.getGroup(pbPushMsg.msg.msgHead.groupInfo!!.groupCode)
+            val group = bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) ?: return null // 机器人还正在进群
             val sender = group[pbPushMsg.msg.msgHead.fromUin] as MemberImpl
             val name = extraInfo?.groupCard?.run {
                 try {
