@@ -41,11 +41,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.encodeToString
-import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.*
-import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.LockFreeLinkedList
@@ -536,12 +534,6 @@ internal class OnlinePush {
                 return "OnlinePush.ReqPush.Response"
             }
         }
-
-        @Serializable
-        private class Resp(
-            @JceId(0) val var1: Long,
-            @JceId(2) val var2: Int
-        ) : JceStruct
 
         override suspend fun QQAndroidBot.handle(packet: Response, sequenceId: Int): OutgoingPacket? {
             return buildResponseUniPacket(client) {
