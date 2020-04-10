@@ -2,6 +2,19 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.36.0`  2020/4/10
+- 支持临时会话: `TempMessage` (#16)
+- 支持群员主动加入事件 `MemberJoinEvent.Active`
+- 添加 `subscribeTempMessages` 等相关 DSL
+- 添加 `FriendAddEvent`, `FriendDeleteEvent` (#216)
+- 修复各种事件重复广播的问题 (#173, #212)
+- 修复 `OfflineMessageSource.id`
+- 修复 `Member.kick`
+- 修复彩色群名片读取, 支持群名片更改事件 (#210)
+- 增加超时 (#175)
+- 支持合并转发消息的解析, 修复部分情况下长消息解析失败的问题
+- 修复新成员加入时没有添加进成员列表的问题 (#172)
+
 ## `0.35.0`  2020/4/8
 - 新增处理加好友请求: `NewFriendRequestEvent`
 - 新增处理加群请求: `MemberJoinRequestEvent`

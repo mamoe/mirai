@@ -74,7 +74,7 @@ internal class GroupImpl(
 
     override lateinit var botAsMember: Member
 
-    override lateinit var botPermission: MemberPermission
+    override val botPermission: MemberPermission get() = botAsMember.permission
 
     // e.g. 600
     override val botMuteRemaining: Int get() = botAsMember.muteTimeRemaining
