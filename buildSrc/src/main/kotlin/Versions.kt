@@ -29,8 +29,7 @@ object Versions {
     }
 
     object Publishing {
-        const val bintray = "1.8.4-jetbrains-3"
-
+        const val bintray = "1.8.5"
     }
 
 }
