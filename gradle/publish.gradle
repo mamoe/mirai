@@ -3,6 +3,11 @@ import upload.Bintray
 // 部分源码来自 kotlinx.coroutines
 // Source code from kotlinx.coroutines
 
+task ensureBintrayAvailable() {
+    if (!Bintray.isBintrayAvailable(project)) {
+        throw new IllegalStateException("bintray isn't available. ")
+    }
+}
 
 if (!Bintray.isBintrayAvailable(project)) {
     println("bintray isn't available. NO PUBLICATIONS WILL BE SET")
