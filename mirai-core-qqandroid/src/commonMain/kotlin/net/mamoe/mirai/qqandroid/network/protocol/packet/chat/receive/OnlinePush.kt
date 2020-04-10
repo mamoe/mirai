@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
@@ -22,20 +22,14 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.MemberImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsInstance
+import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
-import net.mamoe.mirai.qqandroid.network.NoPacket
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgOnlinePush
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x8fc
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
-import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
@@ -44,11 +38,7 @@ import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.*
-import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
-import net.mamoe.mirai.qqandroid.utils.io.serialization.jceRequestSBuffer
-import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.qqandroid.utils.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -91,7 +81,7 @@ internal class OnlinePush {
                     loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName!!.first { it.text.isNotEmpty() }
                         .text.encodeToString()
                 } catch (e: Exception) {
-                   encodeToString()
+                    encodeToString()
                 }
             } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard // 没有 extraInfo 就从 head 里取
 
@@ -119,13 +109,14 @@ internal class OnlinePush {
         }
     }
 
-    internal object PbPushTransMsg : IncomingPacketFactory<Packet>("OnlinePush.PbPushTransMsg", "OnlinePush.RespPush") {
+    internal object PbPushTransMsg :
+        IncomingPacketFactory<Packet?>("OnlinePush.PbPushTransMsg", "OnlinePush.RespPush") {
 
         @OptIn(MiraiInternalAPI::class)
         @ExperimentalUnsignedTypes
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
             val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
-            content.msgData.read {
+            content.msgData.read<Unit> {
                 when (content.msgType) {
                     44 -> {
                         this.discardExact(5)
@@ -183,8 +174,8 @@ internal class OnlinePush {
 
                         when (type) {
                             0x82 -> { // 2020/4/8: 在这里拿到了一个 Group xxx not found
-                                bot.getGroupByUin(groupUin).let { group ->
-                                    val member = group.getOrNull(target) as? MemberImpl ?: return NoPacket
+                                bot.getGroupByUinOrNull(groupUin)?.let { group ->
+                                    val member = group.getOrNull(target) as? MemberImpl ?: return null
                                     return MemberLeaveEvent.Quit(member.also {
                                         group.members.delegate.remove(member)
                                     })
@@ -192,7 +183,7 @@ internal class OnlinePush {
                             }
                             0x83 -> {
                                 bot.getGroupByUin(groupUin).let { group ->
-                                    val member = group.getOrNull(target) as? MemberImpl ?: return NoPacket
+                                    val member = group.getOrNull(target) as? MemberImpl ?: return null
                                     return MemberLeaveEvent.Kick(member.also {
                                         group.members.delegate.remove(member)
                                     }, group.members[operator])
@@ -202,10 +193,10 @@ internal class OnlinePush {
                     }
                 }
             }
-            return NoPacket
+            return null
         }
 
-        override suspend fun QQAndroidBot.handle(packet: Packet, sequenceId: Int): OutgoingPacket? {
+        override suspend fun QQAndroidBot.handle(packet: Packet?, sequenceId: Int): OutgoingPacket? {
             return buildResponseUniPacket(client, sequenceId = sequenceId) {}
         }
 
@@ -216,230 +207,193 @@ internal class OnlinePush {
         "OnlinePush.ReqPush",
         "OnlinePush.RespPush"
     ) {
+        // to reduce nesting depth
+        private fun List<MsgInfo>.deco(mapper: ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>): Sequence<Packet> {
+            return asSequence().flatMap { it.vMsg.read { mapper(it) } }
+        }
+
+        private fun lambda(block: ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet>):
+                ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet> {
+            return block
+        }
+
+        object Transformers732 : Map<Int, ByteReadPacket.(GroupImpl, QQAndroidBot) -> Sequence<Packet>> by mapOf(
+            0x0c to lambda { group: GroupImpl, bot: QQAndroidBot ->
+                val operatorUin = readUInt().toLong()
+                if (operatorUin == bot.id) {
+                    return@lambda emptySequence()
+                }
+                val operator = group.getOrNull(operatorUin) ?: return@lambda emptySequence()
+                readUInt().toLong() // time
+                this.discardExact(2)
+                val target = readUInt().toLong()
+                val time = readInt()
+
+                if (target == 0L) {
+                    val new = time != 0
+                    if (group.settings.isMuteAll == new) {
+                        return@lambda emptySequence()
+                    }
+                    group._muteAll = new
+                    return@lambda sequenceOf(GroupMuteAllEvent(!new, new, group, operator))
+                }
+
+                if (target == bot.id) {
+                    return@lambda when {
+                        group._botMuteTimestamp == time -> emptySequence()
+                        time == 0 -> {
+                            group._botMuteTimestamp = 0
+                            sequenceOf(BotUnmuteEvent(operator))
+                        }
+                        else -> {
+                            group._botMuteTimestamp = time
+                            sequenceOf(BotMuteEvent(time, operator))
+                        }
+                    }
+                }
+
+                val member = group.getOrNull(target) ?: return@lambda emptySequence()
+                member.checkIsMemberImpl()
+
+                if (member._muteTimestamp == time) {
+                    return@lambda emptySequence()
+                }
+
+                member._muteTimestamp = time
+                return@lambda if (time == 0) sequenceOf(MemberUnmuteEvent(member, operator))
+                else sequenceOf(MemberMuteEvent(member, time, operator))
+            },
+
+            0x0e to lambda { group: GroupImpl, _: QQAndroidBot ->
+                // 匿名
+                val operator = group.getOrNull(readUInt().toLong()) ?: return@lambda emptySequence()
+                val new = readInt() == 0
+                if (group.settings.isAnonymousChatEnabled == new) {
+                    return@lambda emptySequence()
+                }
+
+                group._anonymousChat = new
+                return@lambda sequenceOf(GroupAllowAnonymousChatEvent(!new, new, group, operator))
+            },
+
+            0x10 to lambda { group: GroupImpl, bot: QQAndroidBot ->
+                val dataBytes = readBytes(26)
+                val size = readByte().toInt() // orthodox, don't `readUByte`
+                if (size < 0) {
+                    // java.lang.IllegalStateException: negative array size: -100, remaining bytes=B0 E6 99 90 D8 E8 02 98 06 01
+                    // java.lang.IllegalStateException: negative array size: -121, remaining bytes=03 10 D9 F7 A2 93 0D 18 E0 DB E8 CA 0B 32 22 61 34 64 31 34 64 61 64 65 65 38 32 32 34 62 64 32 35 34 65 63 37 62 62 30 33 30 66 61 36 66 61 6D 6A 38 0E 48 00 58 01 70 C8 E8 9B 07 7A AD 02 3C 7B 22 69 63 6F 6E 22 3A 22 71 71 77 61 6C 6C 65 74 5F 63 75 73 74 6F 6D 5F 74 69 70 73 5F 69 64 69 6F 6D 5F 69 63 6F 6E 2E 70 6E 67 22 2C 22 61 6C 74 22 3A 22 22 7D 3E 3C 7B 22 63 6D 64 22 3A 31 2C 22 64 61 74 61 22 3A 22 6C 69 73 74 69 64 3D 31 30 30 30 30 34 35 32 30 31 32 30 30 34 30 38 31 32 30 30 31 30 39 36 31 32 33 31 34 35 30 30 26 67 72 6F 75 70 74 79 70 65 3D 31 22 2C 22 74 65 78 74 43 6F 6C 6F 72 22 3A 22 30 78 38 37 38 42 39 39 22 2C 22 74 65 78 74 22 3A 22 E6 8E A5 E9 BE 99 E7 BA A2 E5 8C 85 E4 B8 8B E4 B8 80 E4 B8 AA E6 8B BC E9 9F B3 EF BC 9A 22 7D 3E 3C 7B 22 63 6D 64 22 3A 31 2C 22 64 61 74 61 22 3A 22 6C 69 73 74 69 64 3D 31 30 30 30 30 34 35 32 30 31 32 30 30 34 30 38 31 32 30 30 31 30 39 36 31 32 33 31 34 35 30 30 26 67 72 6F 75 70 74 79 70 65 3D 31 22 2C 22 74 65 78 74 43 6F 6C 6F 72 22 3A 22 30 78 45 36 32 35 35 35 22 2C 22 74 65 78 74 22 3A 22 64 69 6E 67 22 7D 3E 82 01 0C E8 80 81 E5 83 A7 E5 85 A5 E5 AE 9A 88 01 03 92 01 04 64 69 6E 67 A0 01 00
+                    // negative array size: -40, remaining bytes=D6 94 C3 8C D8 E8 02 98 06 01
+                    error("negative array size: $size, remaining bytes=${readBytes().toUHexString()}")
+                }
+
+                val message = readString(size)
+                // println(dataBytes.toUHexString())
+                //println(message + ":" + dataBytes.toUHexString())
+
+                when (dataBytes[0].toInt()) {
+                    59 -> { // confess
+                        val new = when (message) {
+                            "管理员已关闭群聊坦白说" -> false
+                            "管理员已开启群聊坦白说" -> true
+                            else -> {
+                                bot.network.logger.debug { "Unknown server messages $message" }
+                                return@lambda emptySequence()
+                            }
+                        }
+
+                        if (group.settings.isConfessTalkEnabled == new) {
+                            return@lambda emptySequence()
+                        }
+
+                        return@lambda sequenceOf(
+                            GroupAllowConfessTalkEvent(
+                                new,
+                                false,
+                                group,
+                                false
+                            )
+                        )
+                    }
+
+                    else -> { // TODO SHOULD BE SPECIFIED TYPE
+                        if (group.name == message) {
+                            return@lambda emptySequence()
+                        }
+
+                        return@lambda sequenceOf(
+                            GroupNameChangeEvent(
+                                group.name.also { group._name = message },
+                                message, group, false
+                            )
+                        )
+                    }
+                }
+            },
+
+            // recall
+            0x11 to lambda { group: GroupImpl, bot: QQAndroidBot ->
+                discardExact(1)
+                val proto = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer())
+
+                val recallReminder = proto.optMsgRecall ?: return@lambda emptySequence()
+
+                val operator =
+                    if (recallReminder.uin == bot.id) group.botAsMember
+                    else group.getOrNull(recallReminder.uin) ?: return@lambda emptySequence()
+
+                return@lambda recallReminder.recalledMsgList.asSequence().mapNotNull { pkg ->
+                    when {
+                        pkg.authorUin == bot.id && operator.id == bot.id -> null
+                        group.lastRecalledMessageRandoms.remove(pkg.msgRandom) -> null
+                        else -> {
+                            group.lastRecalledMessageRandoms.addLast(pkg.msgRandom)
+                            MessageRecallEvent.GroupRecall(bot, pkg.authorUin, pkg.msgRandom, pkg.time, operator, group)
+                        }
+                    }
+                }
+            }
+        )
+
         @ExperimentalUnsignedTypes
         @OptIn(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Response {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
 
-            val packets: Sequence<Packet> =
-                reqPushMsg.vMsgInfos.asSequence().flatMap<MsgInfo, Packet> { msgInfo: MsgInfo ->
-                    msgInfo.vMsg!!.read {
-                        when (msgInfo.shMsgType.toInt()) {
-                            732 -> {
-                                val group = bot.getGroup(this.readUInt().toLong())
-                                GroupImpl.checkIsInstance(group)
+            val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco { msgInfo ->
+                when (msgInfo.shMsgType.toInt()) {
+                    732 -> {
+                        val group = bot.getGroup(readUInt().toLong())
+                        GroupImpl.checkIsInstance(group)
 
-                                when (val internalType = this.readByte().toInt().also { this.discardExact(1) }) {
-                                    0x0c -> { // mute
-                                        val operatorUin = this.readUInt().toLong()
-                                        if (operatorUin == bot.id) {
-                                            return@flatMap sequenceOf()
-                                        }
-                                        val operator = group.getOrNull(operatorUin) ?: return@flatMap sequenceOf()
-                                        this.readUInt().toLong() // time
-                                        this.discardExact(2)
-                                        val target = this.readUInt().toLong()
-                                        val time = this.readInt()
+                        val internalType = readByte().toInt()
+                        discardExact(1)
 
-                                        if (target == 0L) {
-                                            if (time == 0) {
-                                                return@flatMap sequenceOf(
-                                                    GroupMuteAllEvent(
-                                                        origin = group.settings.isMuteAll.also {
-                                                            group._muteAll = false
-                                                        },
-                                                        new = false,
-                                                        operator = operator,
-                                                        group = group
-                                                    )
-                                                )
-                                            } else {
-                                                return@flatMap sequenceOf(
-                                                    GroupMuteAllEvent(
-                                                        origin = group.settings.isMuteAll.also {
-                                                            group._muteAll = true
-                                                        },
-                                                        new = true,
-                                                        operator = operator,
-                                                        group = group
-                                                    )
-                                                )
-                                            }
-                                        } else {
-                                            if (target == bot.id) {
-                                                if (group._botMuteTimestamp == time) {
-                                                    return@flatMap sequenceOf()
-                                                }
-                                                if (time == 0) {
-                                                    group._botMuteTimestamp = 0
-                                                    return@flatMap sequenceOf(BotUnmuteEvent(operator))
-                                                } else {
-                                                    group._botMuteTimestamp = time
-                                                    return@flatMap sequenceOf(
-                                                        BotMuteEvent(
-                                                            durationSeconds = time,
-                                                            operator = operator
-                                                        )
-                                                    )
-                                                }
-                                            } else {
-                                                val member = group.getOrNull(target) ?: return@flatMap sequenceOf()
-                                                member as MemberImpl
-                                                if (member._muteTimestamp == time) {
-                                                    return@flatMap sequenceOf()
-                                                }
-
-                                                if (time == 0) {
-                                                    member._muteTimestamp = 0
-                                                    return@flatMap sequenceOf(
-                                                        MemberUnmuteEvent(
-                                                            member,
-                                                            operator
-                                                        )
-                                                    )
-                                                } else {
-                                                    member._muteTimestamp = time
-                                                    return@flatMap sequenceOf(
-                                                        MemberMuteEvent(
-                                                            member,
-                                                            time,
-                                                            operator
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                    0x0e -> {
-                                        // 匿名
-                                        val operator =
-                                            group.getOrNull(this.readUInt().toLong()) ?: return@flatMap sequenceOf()
-                                        val switch = this.readInt() == 0
-                                        return@flatMap sequenceOf(
-                                            GroupAllowAnonymousChatEvent(
-                                                origin = group.settings.isAnonymousChatEnabled.also {
-                                                    group._anonymousChat = switch
-                                                },
-                                                new = switch,
-                                                operator = operator,
-                                                group = group
-                                            )
-                                        )
-                                    }
-                                    0x10 -> {
-                                        val dataBytes = this.readBytes(26)
-                                        val size = this.readByte().toInt() // orthodox, don't `readUByte`
-                                        if (size < 0) {
-                                            // java.lang.IllegalStateException: negative array size: -100, remaining bytes=B0 E6 99 90 D8 E8 02 98 06 01
-                                            // java.lang.IllegalStateException: negative array size: -121, remaining bytes=03 10 D9 F7 A2 93 0D 18 E0 DB E8 CA 0B 32 22 61 34 64 31 34 64 61 64 65 65 38 32 32 34 62 64 32 35 34 65 63 37 62 62 30 33 30 66 61 36 66 61 6D 6A 38 0E 48 00 58 01 70 C8 E8 9B 07 7A AD 02 3C 7B 22 69 63 6F 6E 22 3A 22 71 71 77 61 6C 6C 65 74 5F 63 75 73 74 6F 6D 5F 74 69 70 73 5F 69 64 69 6F 6D 5F 69 63 6F 6E 2E 70 6E 67 22 2C 22 61 6C 74 22 3A 22 22 7D 3E 3C 7B 22 63 6D 64 22 3A 31 2C 22 64 61 74 61 22 3A 22 6C 69 73 74 69 64 3D 31 30 30 30 30 34 35 32 30 31 32 30 30 34 30 38 31 32 30 30 31 30 39 36 31 32 33 31 34 35 30 30 26 67 72 6F 75 70 74 79 70 65 3D 31 22 2C 22 74 65 78 74 43 6F 6C 6F 72 22 3A 22 30 78 38 37 38 42 39 39 22 2C 22 74 65 78 74 22 3A 22 E6 8E A5 E9 BE 99 E7 BA A2 E5 8C 85 E4 B8 8B E4 B8 80 E4 B8 AA E6 8B BC E9 9F B3 EF BC 9A 22 7D 3E 3C 7B 22 63 6D 64 22 3A 31 2C 22 64 61 74 61 22 3A 22 6C 69 73 74 69 64 3D 31 30 30 30 30 34 35 32 30 31 32 30 30 34 30 38 31 32 30 30 31 30 39 36 31 32 33 31 34 35 30 30 26 67 72 6F 75 70 74 79 70 65 3D 31 22 2C 22 74 65 78 74 43 6F 6C 6F 72 22 3A 22 30 78 45 36 32 35 35 35 22 2C 22 74 65 78 74 22 3A 22 64 69 6E 67 22 7D 3E 82 01 0C E8 80 81 E5 83 A7 E5 85 A5 E5 AE 9A 88 01 03 92 01 04 64 69 6E 67 A0 01 00
-                                            // negative array size: -40, remaining bytes=D6 94 C3 8C D8 E8 02 98 06 01
-                                            error(
-                                                "negative array size: $size, remaining bytes=${this.readBytes()
-                                                    .toUHexString()}"
-                                            )
-                                        }
-                                        val message = this.readString(size)
-                                        // println(dataBytes.toUHexString())
-
-                                        if (dataBytes[0].toInt() != 59) {
-                                            return@flatMap if (group.name != message) {
-                                                sequenceOf(
-                                                    GroupNameChangeEvent(
-                                                        origin = group.name.also { group._name = message },
-                                                        new = message,
-                                                        group = group,
-                                                        isByBot = false
-                                                    )
-                                                )
-                                            } else {
-                                                sequenceOf()
-                                            }
-                                        } else {
-                                            //println(message + ":" + dataBytes.toUHexString())
-                                            when (message) {
-                                                "管理员已关闭群聊坦白说" -> {
-                                                    return@flatMap sequenceOf(
-                                                        GroupAllowConfessTalkEvent(
-                                                            origin = group.settings.isConfessTalkEnabled.also {
-                                                                group._confessTalk = false
-                                                            },
-                                                            new = false,
-                                                            group = group,
-                                                            isByBot = false
-                                                        )
-                                                    )
-                                                }
-                                                "管理员已开启群聊坦白说" -> {
-                                                    return@flatMap sequenceOf(
-                                                        GroupAllowConfessTalkEvent(
-                                                            origin = group.settings.isConfessTalkEnabled.also {
-                                                                group._confessTalk = true
-                                                            },
-                                                            new = true,
-                                                            group = group,
-                                                            isByBot = false
-                                                        )
-                                                    )
-                                                }
-                                                else -> {
-                                                    bot.network.logger.debug { "Unknown server messages $message" }
-                                                    return@flatMap sequenceOf()
-                                                }
-                                            }
-                                        }
-                                    }
-                                    0x11 -> {
-                                        discardExact(1)
-                                        val proto = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer())
-                                        proto.optMsgRecall?.let { recallReminder ->
-
-                                            val memebr =
-                                                group.getOrNull(recallReminder.uin) ?: return@flatMap sequenceOf()
-                                            return@flatMap recallReminder.recalledMsgList.asSequence()
-                                                .mapNotNull { meta ->
-                                                    if (meta.authorUin == bot.id) {
-                                                        null
-                                                    } else MessageRecallEvent.GroupRecall(
-                                                        bot = bot,
-                                                        authorId = meta.authorUin,
-                                                        messageId = meta.msgRandom,
-                                                        messageTime = meta.time,
-                                                        operator = memebr,
-                                                        group = group
-                                                    )
-                                                }
-                                        }
-
-                                        return@flatMap sequenceOf()
-                                    }
-                                    // 4352 -> {
-                                    //     println(msgInfo.contentToString())
-                                    //     println(msgInfo.vMsg.toUHexString())
-                                    // }
-                                    else -> {
-                                        bot.network.logger.debug {
-                                            "unknown group internal type $internalType , data: " + this.readBytes()
-                                                .toUHexString() + " "
-                                        }
-                                        return@flatMap sequenceOf()
-                                    }
+                        Transformers732[internalType]
+                            ?.let { it(this@deco, group, bot) }
+                            ?: kotlin.run {
+                                bot.network.logger.debug {
+                                    "unknown group internal type $internalType , data: " + readBytes()
+                                        .toUHexString() + " "
                                 }
+                                return@deco emptySequence()
                             }
+                    }
+
 //                            528 -> {
 //                                val notifyMsgBody = msgInfo.vMsg.loadAs(MsgType0x210.serializer())
 //                                OnlinePush0x210Factory.solve()
-//                                return@flatMap sequenceOf()
+//                                return@flatMap emptySequence()
 //                            }
-                            else -> {
-                                bot.network.logger.debug { "unknown shtype ${msgInfo.shMsgType.toInt()}" }
-                                return@flatMap sequenceOf()
-                            }
-                        }
+                    else -> {
+                        bot.network.logger.debug { "unknown sh type ${msgInfo.shMsgType.toInt()}" }
+                        return@deco emptySequence()
                     }
                 }
+            }
             return Response(reqPushMsg.uin, reqPushMsg.svrip ?: 0, packets)
         }
 
+        @Suppress("SpellCheckingInspection")
         internal class Response(val uin: Long, val svrip: Int, sequence: Sequence<Packet>) :
             MultiPacketBySequence<Packet>(sequence)
 

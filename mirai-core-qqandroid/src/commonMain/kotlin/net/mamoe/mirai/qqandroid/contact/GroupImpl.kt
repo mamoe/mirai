@@ -63,7 +63,9 @@ internal class GroupImpl(
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
 ) : Group() {
-    companion object;
+    companion object
+
+    val lastRecalledMessageRandoms: LockFreeLinkedList<Int> = LockFreeLinkedList()
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
 

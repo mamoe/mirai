@@ -42,7 +42,7 @@ internal class MsgInfo(
     @JceId(3) val shMsgSeq: Short,
     @JceId(4) val strMsg: String?,
     @JceId(5) val uRealMsgTime: Int?,
-    @JceId(6) val vMsg: ByteArray?,
+    @JceId(6) val vMsg: ByteArray,
     @JceId(7) val uAppShareID: Long?,
     @JceId(8) val vMsgCookies: ByteArray? = EMPTY_BYTE_ARRAY,
     @JceId(9) val vAppShareCookie: ByteArray? = EMPTY_BYTE_ARRAY,
