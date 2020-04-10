@@ -25,10 +25,7 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.network.Packet
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.SinceMirai
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
@@ -405,10 +402,12 @@ data class MemberCardChangeEvent(
     override val member: Member,
 
     /**
-     * 操作人. 为 null 时则是机器人操作. 可能与 [member] 引用相同, 此时为群员自己修改.
+     * 此事件无法确定操作人, 将在未来版本删除
      */
+    @PlannedRemoval("1.0.0")
+    @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR)
     override val operator: Member?
-) : GroupMemberEvent, GroupOperableEvent
+) : GroupMemberEvent, @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR) GroupOperableEvent
 
 /**
  * 群头衔改动. 一定为群主操作
