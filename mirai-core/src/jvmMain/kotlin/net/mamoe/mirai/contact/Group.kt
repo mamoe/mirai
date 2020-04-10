@@ -96,17 +96,20 @@ actual abstract class Group : Contact(), CoroutineScope {
 
     /**
      * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException]
+     * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
     actual abstract operator fun get(id: Long): Member
 
     /**
      * 获取群成员实例, 不存在则 null
+     * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
     actual abstract fun getOrNull(id: Long): Member?
 
 
     /**
      * 检查此 id 的群成员是否存在
+     * 当 [id] 为 [Bot.id] 时返回 `true`
      */
     actual abstract operator fun contains(id: Long): Boolean
 
