@@ -155,6 +155,8 @@ val MessageRecallEvent.GroupRecall.author: Member
     get() = if (authorId == bot.id) group.botAsMember else group[authorId]
 
 val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
+// val MessageRecallEvent.GroupRecall.isByBot: Boolean get() = (this as GroupOperableEvent).isByBot
+// no need
 
 val MessageRecallEvent.isByBot: Boolean
     get() = when (this) {
