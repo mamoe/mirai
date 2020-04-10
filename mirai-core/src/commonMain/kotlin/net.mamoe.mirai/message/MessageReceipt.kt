@@ -7,17 +7,21 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "FunctionName", "unused")
 
 package net.mamoe.mirai.message
 
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recallIn
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -35,25 +39,53 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageReceipt.sourceId 源 id
  * @see MessageReceipt.sourceTime 源时间
  */
-expect open class MessageReceipt<out C : Contact>(
-    source: OnlineMessageSource.Outgoing,
-    target: C,
-    botAsMember: Member?
-) {
+@OptIn(MiraiInternalAPI::class)
+open class MessageReceipt<out C : Contact>(
     /**
      * 指代发送出去的消息
      */
-    val source: OnlineMessageSource.Outgoing
-
+    val source: OnlineMessageSource.Outgoing,
     /**
      * 发送目标, 为 [Group] 或 [QQ] 或 [Member]
      */
-    val target: C
+    val target: C,
 
+    val botAsMember: Member?
+) {
     /**
      * 是否为发送给群的消息的回执
      */
-    val isToGroup: Boolean
+    val isToGroup: Boolean = target is Group
+
+    @JavaFriendlyAPI
+    @JvmName("quoteReply")
+    fun __quoteReplyBlockingForJava__(message: Message): MessageReceipt<C> {
+        return runBlocking { return@runBlocking quoteReply(message) }
+    }
+
+    @JavaFriendlyAPI
+    @JvmName("quoteReply")
+    fun __quoteReplyBlockingForJava__(message: String): MessageReceipt<C> {
+        return runBlocking { quoteReply(message) }
+    }
+
+    @JavaFriendlyAPI
+    @JvmName("recall")
+    fun __recallBlockingForJava__() {
+        return runBlocking { recall() }
+    }
+
+    @JavaFriendlyAPI
+    @JvmName("recall")
+    fun __recallInBlockingForJava__(timeMillis: Long): Job {
+        return recallIn(timeMillis = timeMillis)
+    }
+
+    @JavaFriendlyAPI
+    @JvmName("quote")
+    fun __quoteBlockingForJava__(): QuoteReply {
+        return this.quote()
+    }
 }
 
 /**
