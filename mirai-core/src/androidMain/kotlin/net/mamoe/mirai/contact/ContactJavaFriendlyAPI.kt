@@ -18,6 +18,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.future
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.uploadImage
@@ -61,14 +62,14 @@ actual abstract class ContactJavaFriendlyAPI {
      */
     @Throws(EventCancelledException::class, IllegalStateException::class)
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<Contact> {
+    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<@JvmWildcard Contact> {
         return runBlocking {
             sendMessage(message)
         }
     }
 
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<Contact> {
+    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<@JvmWildcard Contact> {
         return runBlocking { sendMessage(message) }
     }
 
@@ -142,7 +143,7 @@ actual abstract class ContactJavaFriendlyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
-    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<Contact>> {
+    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<@JvmWildcard Contact>> {
         return future { sendMessage(message) }
     }
 
@@ -151,7 +152,7 @@ actual abstract class ContactJavaFriendlyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
-    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<Contact>> {
+    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<@JvmWildcard Contact>> {
         return future { sendMessage(message) }
     }
 

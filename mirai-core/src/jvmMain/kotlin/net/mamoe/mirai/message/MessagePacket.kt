@@ -15,6 +15,7 @@ import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.io.core.Input
 import kotlinx.io.core.Output
 import kotlinx.io.core.use
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.MiraiExperimentalAPI

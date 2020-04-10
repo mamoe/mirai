@@ -12,6 +12,7 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.utils.ExternalImage
