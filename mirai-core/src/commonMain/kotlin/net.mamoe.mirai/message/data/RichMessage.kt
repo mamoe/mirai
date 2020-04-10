@@ -174,6 +174,20 @@ class LongMessage(override val content: String, val resId: String) : RichMessage
     override fun toString(): String = "[mirai:long:$content]"
 }
 
+/**
+ * 合并转发消息
+ */
+@SinceMirai("0.36.0")
+@MiraiExperimentalAPI
+class ForwardMessage(override val content: String) : RichMessage {
+    companion object Key : Message.Key<XmlMessage> {
+        override val typeName: String
+            get() = "ForwardMessage"
+    }
+
+    // serviceId = 35
+    override fun toString(): String = "[mirai:forward:$content]"
+}
 /*
 commonElem=CommonElem#750141174 {
         businessType=0x00000001(1)

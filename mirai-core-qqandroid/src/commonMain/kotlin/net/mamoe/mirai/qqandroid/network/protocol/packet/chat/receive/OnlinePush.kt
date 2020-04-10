@@ -453,7 +453,6 @@ internal class OnlinePush {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Response {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
 
-            println(reqPushMsg._miraiContentToString())
             val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco { msgInfo ->
                 when (msgInfo.shMsgType.toInt()) {
                     732 -> {
@@ -500,7 +499,7 @@ internal class OnlinePush {
         internal data class Response(val uin: Long, val svrip: Int, val sequence: Sequence<Packet>) :
             MultiPacketBySequence<Packet>(sequence) {
             override fun toString(): String {
-                return "OnlinePush.ReqPush.Response(sequence="
+                return "OnlinePush.ReqPush.Response"
             }
         }
 
