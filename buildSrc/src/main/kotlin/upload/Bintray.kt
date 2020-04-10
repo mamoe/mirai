@@ -22,6 +22,12 @@ object Bintray {
             return bintray_user
         }
 
+        kotlin.runCatching {
+            @Suppress("UNUSED_VARIABLE", "LocalVariableName")
+            val bintray_user: String by project.rootProject
+            return bintray_user
+        }
+
         System.getProperty("bintray_user", null)?.let {
             return it.trim()
         }
@@ -50,6 +56,12 @@ object Bintray {
         kotlin.runCatching {
             @Suppress("UNUSED_VARIABLE", "LocalVariableName")
             val bintray_key: String by project
+            return bintray_key
+        }
+
+        kotlin.runCatching {
+            @Suppress("UNUSED_VARIABLE", "LocalVariableName")
+            val bintray_key: String by project.rootProject
             return bintray_key
         }
 
