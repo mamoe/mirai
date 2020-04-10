@@ -416,17 +416,19 @@ internal class OnlinePush {
                 bot.network.logger.debug { "OnlinePush528 0x44L: " + msg._miraiContentToString() }
                 return@lambda528 emptySequence()
             },
-            // bot 被踢
+            // bot 在其他客户端被踢或主动退出而同步情况
             0xD4L to lambda528 { bot ->
                 @Serializable
                 data class SubD4(
+                    // ok
                     val uin: Long
                 ) : ProtoBuf
 
                 val uin = vProtobuf.loadAs(SubD4.serializer()).uin
                 val group = bot.getGroupByUinOrNull(uin) ?: bot.getGroupOrNull(uin)
-                // 08 E7 C1 AD B8 02
-                return@lambda528 group?.let { sequenceOf(BotKickEvent(group)) } ?: emptySequence()
+                return@lambda528 if (group != null && bot.groups.delegate.remove(group)) {
+                    sequenceOf(BotLeaveEvent(group))
+                } else emptySequence()
             },
             // ModFriendRemark, DelFriend
             0x27L to lambda528 { bot ->

@@ -137,11 +137,11 @@ internal class MessageSvc {
 
         object EmptyResponse : GetMsgSuccess(emptyList())
 
-        private suspend fun MsgComm.Msg.getNewGroup(bot: QQAndroidBot): Group {
+        private suspend fun MsgComm.Msg.getNewGroup(bot: QQAndroidBot): Group? {
             val troopNum = bot.network.run {
                 FriendList.GetTroopListSimplify(bot.client)
                     .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
-            }.groups.first { it.groupUin == msgHead.fromUin }
+            }.groups.firstOrNull { it.groupUin == msgHead.fromUin } ?: return null
 
             @Suppress("DuplicatedCode")
             return GroupImpl(
@@ -217,7 +217,7 @@ internal class MessageSvc {
                                 }
                                 // 新群
 
-                                val newGroup = msg.getNewGroup(bot)
+                                val newGroup = msg.getNewGroup(bot) ?: return@mapNotNull null
                                 bot.groups.delegate.addLast(newGroup)
                                 return@mapNotNull BotJoinGroupEvent(newGroup)
                             } else {
