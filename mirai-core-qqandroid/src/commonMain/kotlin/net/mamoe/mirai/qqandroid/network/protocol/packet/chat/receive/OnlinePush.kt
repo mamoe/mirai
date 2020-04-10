@@ -148,7 +148,9 @@ internal class OnlinePush {
 
                                 return BotGroupPermissionChangeEvent(
                                     group,
-                                    group.botPermission.also { group.botPermission = newPermission },
+                                    group.botPermission.also {
+                                        group.botAsMember.checkIsMemberImpl().permission = newPermission
+                                    },
                                     newPermission
                                 )
                             } else {
