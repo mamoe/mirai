@@ -109,7 +109,7 @@ internal class MemberImpl constructor(
         if (_muteTimestamp == 0 || _muteTimestamp == 0xFFFFFFFF.toInt()) {
             0
         } else {
-            _muteTimestamp - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
+            (_muteTimestamp - currentTimeSeconds.toInt()).coerceAtLeast(0)
         }
 
     override var nameCard: String

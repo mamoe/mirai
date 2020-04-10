@@ -56,6 +56,7 @@ internal fun Group.checkIsGroupImpl() {
     GroupImpl.checkIsInstance(this)
 }
 
+@OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
 @Suppress("PropertyName")
 internal class GroupImpl(
     bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
@@ -70,44 +71,20 @@ internal class GroupImpl(
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
 
-    @OptIn(LowLevelAPI::class)
     val uin: Long = groupInfo.uin
 
     override lateinit var owner: Member
 
-    @OptIn(MiraiExperimentalAPI::class)
-    override val botAsMember: Member by lazy {
-        newMember(object : MemberInfo {
-            override val nameCard: String
-                get() = bot.nick // TODO: 2020/2/21 机器人在群内的昵称获取
-            override val permission: MemberPermission
-                get() = botPermission
-            override val specialTitle: String
-                get() = "" // TODO: 2020/2/21 获取机器人在群里的头衔
-            override val muteTimestamp: Int
-                get() = botMuteRemaining
-            override val uin: Long
-                get() = bot.id
-            override val nick: String
-                get() = bot.nick
-        })
-    }
+    override lateinit var botAsMember: Member
 
-    @OptIn(MiraiExperimentalAPI::class)
     override lateinit var botPermission: MemberPermission
 
-    var _botMuteTimestamp: Int = groupInfo.botMuteTimestamp
-
-    override val botMuteRemaining: Int =
-        if (_botMuteTimestamp == 0 || _botMuteTimestamp == 0xFFFFFFFF.toInt()) {
-            0
-        } else {
-            _botMuteTimestamp - currentTimeSeconds.toInt() - bot.client.timeDifference.toInt()
-        }
+    // e.g. 600
+    override val botMuteRemaining: Int get() = botAsMember.muteTimeRemaining
 
     override val members: ContactList<Member> = ContactList(members.mapNotNull {
         if (it.uin == bot.id) {
-            botPermission = it.permission
+            botAsMember = newMember(it)
             if (it.permission == MemberPermission.OWNER) {
                 owner = botAsMember
             }

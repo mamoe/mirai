@@ -1,8 +1,9 @@
 package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 
-import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
+import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 
 @Serializable
 internal class AddGroup(
@@ -62,7 +63,7 @@ internal class MsgType0x210(
     @JceId(7) val stMsgInfo0x20: MsgType0x210SubMsgType0x20? = null,
     @JceId(8) val stMsgInfo0x1d: MsgType0x210SubMsgType0x1d? = null,
     @JceId(9) val stMsgInfo0x24: MsgType0x210SubMsgType0x24? = null,
-    @JceId(10) val vProtobuf: ByteArray? = null
+    @JceId(10) val vProtobuf: ByteArray = EMPTY_BYTE_ARRAY
 ) : JceStruct
 
 @Serializable

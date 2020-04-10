@@ -485,6 +485,39 @@ data class MemberUnmuteEvent(
 // region 好友、群认证
 
 /**
+ * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
+ */
+@SinceMirai("0.36.0")
+data class FriendRemarkChangeEvent(
+    override val bot: Bot,
+    val friend: QQ,
+    val newName: String
+) : BotEvent, Packet
+
+/**
+ * 成功添加了一个新好友的事件
+ */
+@SinceMirai("0.36.0")
+data class FriendAddEvent(
+    /**
+     * 新好友. 已经添加到 [Bot.friends]
+     */
+    val friend: QQ
+) : BotEvent, Packet {
+    override val bot: Bot get() = friend.bot
+}
+
+/**
+ * 好友已被删除的事件.
+ */
+@SinceMirai("0.36.0")
+data class FriendDeleteEvent(
+    val friend: QQ
+) : BotEvent, Packet {
+    override val bot: Bot get() = friend.bot
+}
+
+/**
  * 一个账号请求添加机器人为好友的事件
  */
 @SinceMirai("0.35.0")

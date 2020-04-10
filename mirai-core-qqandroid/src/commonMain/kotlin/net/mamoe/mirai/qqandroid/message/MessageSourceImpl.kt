@@ -255,10 +255,6 @@ internal class OfflineMessageSourceImplBySourceMsg( // from others' quotation
     override val bot: Bot,
     groupIdOrZero: Long
 ) : OfflineMessageSource(), MessageSourceImpl {
-    init {
-        println(delegate._miraiContentToString())
-    }
-
     override val kind: Kind get() = if (delegate.srcMsg == null) Kind.GROUP else Kind.FRIEND
 
     private val isRecalled: AtomicBoolean = atomic(false)

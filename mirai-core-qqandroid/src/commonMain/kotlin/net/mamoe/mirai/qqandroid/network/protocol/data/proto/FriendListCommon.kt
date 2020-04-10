@@ -74,7 +74,7 @@ internal class Vec0xd6b : ProtoBuf {
     internal class MutualMarkData(
         @ProtoId(1) val frdUin: Long = 0L,
         @ProtoId(2) val result: Int = 0
-        // @SerialId(11) val mutualmarkInfo: List<Mutualmark.MutualMark>? = null
+        // @SerialId(11) val mutualmarkInfo: List<net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210.Mutualmark.MutualMark>? = null
     ) : ProtoBuf
 }
 

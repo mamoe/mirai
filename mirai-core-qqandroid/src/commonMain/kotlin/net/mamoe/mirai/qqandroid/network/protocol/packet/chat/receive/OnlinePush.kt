@@ -13,10 +13,13 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
@@ -27,9 +30,13 @@ import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210.Submsgtype0x27
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210.Submsgtype0x44
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.onlinePush0x210.Submsgtype0xb3
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
@@ -42,6 +49,7 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
 
 internal class OnlinePush {
@@ -220,18 +228,19 @@ internal class OnlinePush {
             return asSequence().flatMap { it.vMsg.read { mapper(it) } }
         }
 
-        private fun lambda(block: ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet>):
+        private fun lambda732(block: ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet>):
                 ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet> {
             return block
         }
 
         object Transformers732 : Map<Int, ByteReadPacket.(GroupImpl, QQAndroidBot) -> Sequence<Packet>> by mapOf(
-            0x0c to lambda { group: GroupImpl, bot: QQAndroidBot ->
+            // mute
+            0x0c to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
                 val operatorUin = readUInt().toLong()
                 if (operatorUin == bot.id) {
-                    return@lambda emptySequence()
+                    return@lambda732 emptySequence()
                 }
-                val operator = group.getOrNull(operatorUin) ?: return@lambda emptySequence()
+                val operator = group.getOrNull(operatorUin) ?: return@lambda732 emptySequence()
                 readUInt().toLong() // time
                 this.discardExact(2)
                 val target = readUInt().toLong()
@@ -240,51 +249,53 @@ internal class OnlinePush {
                 if (target == 0L) {
                     val new = time != 0
                     if (group.settings.isMuteAll == new) {
-                        return@lambda emptySequence()
+                        return@lambda732 emptySequence()
                     }
                     group._muteAll = new
-                    return@lambda sequenceOf(GroupMuteAllEvent(!new, new, group, operator))
+                    return@lambda732 sequenceOf(GroupMuteAllEvent(!new, new, group, operator))
                 }
 
                 if (target == bot.id) {
-                    return@lambda when {
-                        group._botMuteTimestamp == time -> emptySequence()
+                    return@lambda732 when {
+                        group.botMuteRemaining == time -> emptySequence()
                         time == 0 -> {
-                            group._botMuteTimestamp = 0
+                            group.botAsMember.checkIsMemberImpl()._muteTimestamp = 0
                             sequenceOf(BotUnmuteEvent(operator))
                         }
                         else -> {
-                            group._botMuteTimestamp = time
+                            group.botAsMember.checkIsMemberImpl()._muteTimestamp = currentTimeSeconds.toInt() + time
                             sequenceOf(BotMuteEvent(time, operator))
                         }
                     }
                 }
 
-                val member = group.getOrNull(target) ?: return@lambda emptySequence()
+                val member = group.getOrNull(target) ?: return@lambda732 emptySequence()
                 member.checkIsMemberImpl()
 
                 if (member._muteTimestamp == time) {
-                    return@lambda emptySequence()
+                    return@lambda732 emptySequence()
                 }
 
                 member._muteTimestamp = time
-                return@lambda if (time == 0) sequenceOf(MemberUnmuteEvent(member, operator))
+                return@lambda732 if (time == 0) sequenceOf(MemberUnmuteEvent(member, operator))
                 else sequenceOf(MemberMuteEvent(member, time, operator))
             },
 
-            0x0e to lambda { group: GroupImpl, _: QQAndroidBot ->
+            // anonymous
+            0x0e to lambda732 { group: GroupImpl, _: QQAndroidBot ->
                 // 匿名
-                val operator = group.getOrNull(readUInt().toLong()) ?: return@lambda emptySequence()
+                val operator = group.getOrNull(readUInt().toLong()) ?: return@lambda732 emptySequence()
                 val new = readInt() == 0
                 if (group.settings.isAnonymousChatEnabled == new) {
-                    return@lambda emptySequence()
+                    return@lambda732 emptySequence()
                 }
 
                 group._anonymousChat = new
-                return@lambda sequenceOf(GroupAllowAnonymousChatEvent(!new, new, group, operator))
+                return@lambda732 sequenceOf(GroupAllowAnonymousChatEvent(!new, new, group, operator))
             },
 
-            0x10 to lambda { group: GroupImpl, bot: QQAndroidBot ->
+            // confess
+            0x10 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
                 val dataBytes = readBytes(26)
                 val size = readByte().toInt() // orthodox, don't `readUByte`
                 if (size < 0) {
@@ -305,15 +316,15 @@ internal class OnlinePush {
                             "管理员已开启群聊坦白说" -> true
                             else -> {
                                 bot.network.logger.debug { "Unknown server messages $message" }
-                                return@lambda emptySequence()
+                                return@lambda732 emptySequence()
                             }
                         }
 
                         if (group.settings.isConfessTalkEnabled == new) {
-                            return@lambda emptySequence()
+                            return@lambda732 emptySequence()
                         }
 
-                        return@lambda sequenceOf(
+                        return@lambda732 sequenceOf(
                             GroupAllowConfessTalkEvent(
                                 new,
                                 false,
@@ -325,10 +336,10 @@ internal class OnlinePush {
 
                     else -> { // TODO SHOULD BE SPECIFIED TYPE
                         if (group.name == message) {
-                            return@lambda emptySequence()
+                            return@lambda732 emptySequence()
                         }
 
-                        return@lambda sequenceOf(
+                        return@lambda732 sequenceOf(
                             GroupNameChangeEvent(
                                 group.name.also { group._name = message },
                                 message, group, false
@@ -339,17 +350,17 @@ internal class OnlinePush {
             },
 
             // recall
-            0x11 to lambda { group: GroupImpl, bot: QQAndroidBot ->
+            0x11 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
                 discardExact(1)
                 val proto = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer())
 
-                val recallReminder = proto.optMsgRecall ?: return@lambda emptySequence()
+                val recallReminder = proto.optMsgRecall ?: return@lambda732 emptySequence()
 
                 val operator =
                     if (recallReminder.uin == bot.id) group.botAsMember
-                    else group.getOrNull(recallReminder.uin) ?: return@lambda emptySequence()
+                    else group.getOrNull(recallReminder.uin) ?: return@lambda732 emptySequence()
 
-                return@lambda recallReminder.recalledMsgList.asSequence().mapNotNull { pkg ->
+                return@lambda732 recallReminder.recalledMsgList.asSequence().mapNotNull { pkg ->
                     when {
                         pkg.authorUin == bot.id && operator.id == bot.id -> null
                         group.lastRecalledMessageRandoms.remove(pkg.msgRandom) -> null
@@ -362,11 +373,84 @@ internal class OnlinePush {
             }
         )
 
+        private fun lambda528(block: MsgType0x210.(bot: QQAndroidBot) -> Sequence<Packet>):
+                MsgType0x210.(bot: QQAndroidBot) -> Sequence<Packet> {
+            return block
+        }
+
+        // uSubMsgType to vProtobuf
+        // 138 or 139: top_package/akln.java:1568
+        // 66: top_package/nhz.java:269
+        /**
+         * @see MsgType0x210
+         */
+        @OptIn(LowLevelAPI::class, MiraiInternalAPI::class)
+        object Transformers528 : Map<Long, MsgType0x210.(QQAndroidBot) -> Sequence<Packet>> by mapOf(
+            0xB3L to lambda528 { bot ->
+                // 08 01 12 52 08 A2 FF 8C F0 03 10 00 1D 15 3D 90 5E 22 2E E6 88 91 E4 BB AC E5 B7 B2 E7 BB 8F E6 98 AF E5 A5 BD E5 8F 8B E5 95 A6 EF BC 8C E4 B8 80 E8 B5 B7 E6 9D A5 E8 81 8A E5 A4 A9 E5 90 A7 21 2A 09 48 69 6D 31 38 38 6D 6F 65 30 07 38 03 48 DD F1 92 B7 07
+                val body = vProtobuf.loadAs(Submsgtype0xb3.SubMsgType0xb3.MsgBody.serializer())
+                val new = bot._lowLevelNewQQ(object : FriendInfo {
+                    override val uin: Long get() = body.msgAddFrdNotify.fuin
+                    override val nick: String get() = body.msgAddFrdNotify.fuinNick
+                })
+                bot.friends.delegate.addLast(new)
+                return@lambda528 sequenceOf(FriendAddEvent(new))
+            },
+            0xE2L to lambda528 { bot ->
+                // TODO: unknown. maybe messages.
+                // 0A 35 08 00 10 A2 FF 8C F0 03 1A 1B E5 90 8C E6 84 8F E4 BD A0 E7 9A 84 E5 8A A0 E5 A5 BD E5 8F 8B E8 AF B7 E6 B1 82 22 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B 28 01
+                // vProtobuf.loadAs(Msgtype0x210.serializer())
+
+                return@lambda528 emptySequence()
+            },
+            0x44L to lambda528 { bot ->
+                val msg = vProtobuf.loadAs(Submsgtype0x44.Submsgtype0x44.MsgBody.serializer())
+                when {
+                    msg.msgFriendMsgSync != null -> {
+
+                    }
+                }
+                println(msg._miraiContentToString())
+                return@lambda528 emptySequence()
+            },
+            0x27L to lambda528 { bot ->
+                fun Submsgtype0x27.SubMsgType0x27.ModFriendRemark.transform(bot: QQAndroidBot): Sequence<Packet> {
+                    return this.msgFrdRmk?.asSequence()?.mapNotNull {
+                        val friend = bot.getFriendOrNull(it.fuin) ?: return@mapNotNull null
+                        FriendRemarkChangeEvent(bot, friend, it.rmkName)
+                    } ?: emptySequence()
+                }
+
+                fun Submsgtype0x27.SubMsgType0x27.DelFriend.transform(bot: QQAndroidBot): Sequence<Packet> {
+                    return this.uint64Uins?.asSequence()?.mapNotNull {
+                        val friend = bot.getFriendOrNull(it) ?: return@mapNotNull null
+                        FriendDeleteEvent(friend)
+                    } ?: emptySequence()
+                }
+
+                return@lambda528 vProtobuf.loadAs(Submsgtype0x27.SubMsgType0x27.MsgBody.serializer()).msgModInfos.asSequence()
+                    .flatMap {
+                        when {
+                            it.msgModFriendRemark != null -> it.msgModFriendRemark.transform(bot)
+                            it.msgDelFriend != null -> it.msgDelFriend.transform(bot)
+                            else -> {
+                                bot.network.logger.debug {
+                                    "Transformers528 0x27L: new data: ${it._miraiContentToString()}"
+                                }
+                                emptySequence()
+                            }
+                        }
+                    }
+                // 0A 1C 10 28 4A 18 0A 16 08 00 10 A2 FF 8C F0 03 1A 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B
+            }
+        )
+
         @ExperimentalUnsignedTypes
         @OptIn(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Response {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
 
+            println(reqPushMsg._miraiContentToString())
             val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco { msgInfo ->
                 when (msgInfo.shMsgType.toInt()) {
                     732 -> {
@@ -380,20 +464,28 @@ internal class OnlinePush {
                             ?.let { it(this@deco, group, bot) }
                             ?: kotlin.run {
                                 bot.network.logger.debug {
-                                    "unknown group internal type $internalType , data: " + readBytes()
-                                        .toUHexString() + " "
+                                    "unknown group 732 type $internalType, data: " + readBytes().toUHexString()
                                 }
                                 return@deco emptySequence()
                             }
                     }
 
-//                            528 -> {
-//                                val notifyMsgBody = msgInfo.vMsg.loadAs(MsgType0x210.serializer())
-//                                OnlinePush0x210Factory.solve()
-//                                return@flatMap emptySequence()
-//                            }
+
+                    // 00 27 1A 0C 1C 2C 3C 4C 5D 00 0C 6D 00 0C 7D 00 0C 8D 00 0C 9C AC BC CC DD 00 0C EC FC 0F 0B 2A 0C 1C 2C 3C 4C 5C 6C 0B 3A 0C 1C 2C 3C 4C 5C 6C 7C 8D 00 0C 9D 00 0C AC BD 00 0C CD 00 0C DC ED 00 0C FC 0F FC 10 0B 4A 0C 1C 2C 3C 4C 5C 6C 7C 8C 96 00 0B 5A 0C 1C 2C 3C 4C 5C 6C 7C 8C 9D 00 0C 0B 6A 0C 1A 0C 1C 26 00 0B 2A 0C 0B 3A 0C 16 00 0B 4A 09 0C 0B 5A 09 0C 0B 0B 7A 0C 1C 2C 36 00 0B 8A 0C 1C 2C 36 00 0B 9A 09 0C 0B AD 00 00 1E 0A 1C 10 28 4A 18 0A 16 08 00 10 A2 FF 8C F0 03 1A 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B
+                    528 -> {
+                        val notifyMsgBody = readJceStruct(MsgType0x210.serializer())
+                        Transformers528[notifyMsgBody.uSubMsgType]
+                            ?.let { processor -> processor(notifyMsgBody, bot) }
+                            ?: kotlin.run {
+                                bot.network.logger.debug {
+                                    "unknown group 528 type ${notifyMsgBody.uSubMsgType}, data: " + notifyMsgBody.vProtobuf.toUHexString()
+                                }
+                                return@deco emptySequence()
+                            }
+                    }
                     else -> {
                         bot.network.logger.debug { "unknown sh type ${msgInfo.shMsgType.toInt()}" }
+                        bot.network.logger.debug { "data=${readBytes().toUHexString()}" }
                         return@deco emptySequence()
                     }
                 }
@@ -402,8 +494,12 @@ internal class OnlinePush {
         }
 
         @Suppress("SpellCheckingInspection")
-        internal class Response(val uin: Long, val svrip: Int, sequence: Sequence<Packet>) :
-            MultiPacketBySequence<Packet>(sequence)
+        internal data class Response(val uin: Long, val svrip: Int, val sequence: Sequence<Packet>) :
+            MultiPacketBySequence<Packet>(sequence) {
+            override fun toString(): String {
+                return "OnlinePush.ReqPush.Response(sequence="
+            }
+        }
 
         @Serializable
         private class Resp(
@@ -416,13 +512,13 @@ internal class OnlinePush {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
-                        sServantName = "OnlinePush.RespPush",
+                        sServantName = "OnlinePush",
                         sFuncName = "SvcRespPushMsg",
-                        iRequestId = 0,
+                        iRequestId = sequenceId,
                         sBuffer = jceRequestSBuffer(
                             "resp",
-                            Resp.serializer(),
-                            Resp(packet.uin, packet.svrip)
+                            OnlinePushPack.SvcRespPushMsg.serializer(),
+                            OnlinePushPack.SvcRespPushMsg(packet.uin, listOf(), packet.svrip)
                         )
                     )
                 )
