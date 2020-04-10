@@ -72,7 +72,7 @@ internal class MessageSvc {
         }
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
-            println(packet._miraiContentToString())
+
             network.run {
                 return PbGetMsg(
                     client,
