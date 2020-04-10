@@ -3,7 +3,7 @@
 开发版本. 频繁更新, 不保证高稳定性
 
 ## `0.36.0`  2020/4/10
-- 支持临时会话: `TempMessage`
+- 支持临时会话: `TempMessage` (#16)
 - 支持群员主动加入事件 `MemberJoinEvent.Active`
 - 添加 `subscribeTempMessages` 等相关 DSL
 - 添加 `FriendAddEvent`, `FriendDeleteEvent` (#216)
