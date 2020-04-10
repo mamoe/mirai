@@ -36,8 +36,8 @@ internal class RequestPushNotify(
 
 @Serializable
 internal class MsgInfo(
-    @JceId(0) val lFromUin: Long? = 0L,
-    @JceId(1) val uMsgTime: Long? = 0L,
+    @JceId(0) val lFromUin: Long = 0L,
+    @JceId(1) val uMsgTime: Long = 0L,
     @JceId(2) val shMsgType: Short,
     @JceId(3) val shMsgSeq: Short,
     @JceId(4) val strMsg: String?,

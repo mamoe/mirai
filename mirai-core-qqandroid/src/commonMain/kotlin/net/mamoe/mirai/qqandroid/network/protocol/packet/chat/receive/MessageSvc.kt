@@ -292,12 +292,6 @@ internal class MessageSvc {
                             }
                             return@mapNotNull null
                         }
-                        732 -> { // ?
-                            // 27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58
-                            bot.network.logger.debug { "unknown PbGetMsg type ${msg.msgHead.msgType}: ${msg._miraiContentToString()}" }
-
-                            return@mapNotNull null
-                        }
                         34 -> { // 主动入群
                             // 27 0B 60 E7 01 44 71 47 90 03 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 36 42 35 35 46 45 32 45 35 36 43 45 45 44 30 38 30 35 31 41 35 42 37 36 39 35 34 45 30 46 43 43 36 36 45 44 43 46 45 43 42 39 33 41 41 44 32 32
                             val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
@@ -309,8 +303,9 @@ internal class MessageSvc {
                             return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
                                 .also { group.members.delegate.addLast(it) })
                         }
+                        // 732:  27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58
                         else -> {
-                            bot.network.logger.debug { "unknown PbGetMsg type ${msg.msgHead.msgType}: ${msg._miraiContentToString()}" }
+                            bot.network.logger.debug { "unknown PbGetMsg type ${msg.msgHead.msgType}" }
                             return@mapNotNull null
                         }
                     }

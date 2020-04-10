@@ -20,7 +20,7 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 
 class GroupOpenSysMsg : ProtoBuf {
     @Serializable
-internal class LightApp(
+    internal class LightApp(
         @ProtoId(1) val app: String = "",
         @ProtoId(2) val view: String = "",
         @ProtoId(3) val desc: String = "",
@@ -32,7 +32,7 @@ internal class LightApp(
     ) : ProtoBuf
 
     @Serializable
-internal class RichMsg(
+    internal class RichMsg(
         @ProtoId(1) val title: String = "",
         @ProtoId(2) val desc: String = "",
         @ProtoId(3) val brief: String = "",
@@ -42,7 +42,7 @@ internal class RichMsg(
     ) : ProtoBuf
 
     @Serializable
-internal class Sender(
+    internal class Sender(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val nick: String = "",
         @ProtoId(3) val avatar: String = "",
@@ -50,14 +50,14 @@ internal class Sender(
     ) : ProtoBuf
 
     @Serializable
-internal class Source(
+    internal class Source(
         @ProtoId(1) val name: String = "",
         @ProtoId(2) val icon: String = "",
         @ProtoId(3) val url: String = ""
     ) : ProtoBuf
 
     @Serializable
-internal class SysMsgBody(
+    internal class SysMsgBody(
         @ProtoId(1) val groupId: Long = 0L,
         @ProtoId(2) val appid: Long = 0L,
         @ProtoId(3) val sender: Sender? = null,
@@ -71,7 +71,7 @@ internal class SysMsgBody(
 @Serializable
 internal class TroopTips0x857 : ProtoBuf {
     @Serializable
-internal class AIOGrayTipsInfo(
+    internal class AIOGrayTipsInfo(
         @ProtoId(1) val optUint32ShowLastest: Int = 0,
         @ProtoId(2) val optBytesContent: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val optUint32Remind: Int = 0,
@@ -82,7 +82,7 @@ internal class AIOGrayTipsInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class AIOTopTipsInfo(
+    internal class AIOTopTipsInfo(
         @ProtoId(1) val optBytesContent: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val optUint32Icon: Int = 0,
         @ProtoId(3) val optEnumAction: Int /* enum */ = 1,
@@ -94,12 +94,12 @@ internal class AIOTopTipsInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class FloatedTipsInfo(
+    internal class FloatedTipsInfo(
         @ProtoId(1) val optBytesContent: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-internal class GeneralGrayTipInfo(
+    internal class GeneralGrayTipInfo(
         @ProtoId(1) val busiType: Long = 0L,
         @ProtoId(2) val busiId: Long = 0L,
         @ProtoId(3) val ctrlFlag: Int = 0,
@@ -113,7 +113,7 @@ internal class GeneralGrayTipInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class GoldMsgTipsElem(
+    internal class GoldMsgTipsElem(
         @ProtoId(1) val type: Int = 0,
         @ProtoId(2) val billno: String = "",
         @ProtoId(3) val result: Int = 0,
@@ -126,25 +126,25 @@ internal class GoldMsgTipsElem(
     ) : ProtoBuf
 
     @Serializable
-internal class GroupInfoChange(
+    internal class GroupInfoChange(
         @ProtoId(1) val groupHonorSwitch: Int = 0
     ) : ProtoBuf
 
     @Serializable
-internal class GroupNotifyInfo(
+    internal class GroupNotifyInfo(
         @ProtoId(1) val optUint32AutoPullFlag: Int = 0,
         @ProtoId(2) val optBytesFeedsId: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-internal class InstCtrl(
+    internal class InstCtrl(
         @ProtoId(1) val msgSendToInst: List<InstInfo>? = null,
         @ProtoId(2) val msgExcludeInst: List<InstInfo>? = null,
         @ProtoId(3) val msgFromInst: InstInfo? = null
     ) : ProtoBuf
 
     @Serializable
-internal class InstInfo(
+    internal class InstInfo(
         @ProtoId(1) val apppid: Int = 0,
         @ProtoId(2) val instid: Int = 0,
         @ProtoId(3) val platform: Int = 0,
@@ -157,7 +157,7 @@ internal class InstInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class LbsShareChangePushInfo(
+    internal class LbsShareChangePushInfo(
         @ProtoId(1) val msgType: Int = 0,
         @ProtoId(2) val msgInfo: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val versionCtrl: ByteArray = EMPTY_BYTE_ARRAY,
@@ -171,12 +171,12 @@ internal class LbsShareChangePushInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class LuckyBagNotify(
+    internal class LuckyBagNotify(
         @ProtoId(1) val msgTips: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-internal class MediaChangePushInfo(
+    internal class MediaChangePushInfo(
         @ProtoId(1) val msgType: Int = 0,
         @ProtoId(2) val msgInfo: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val versionCtrl: ByteArray = EMPTY_BYTE_ARRAY,
@@ -191,7 +191,7 @@ internal class MediaChangePushInfo(
         @ProtoId(100) val extInfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf {
         @Serializable
-internal class PersonalSetting(
+        internal class PersonalSetting(
             @ProtoId(1) val themeId: Int = 0,
             @ProtoId(2) val playerId: Int = 0,
             @ProtoId(3) val fontId: Int = 0
@@ -199,14 +199,14 @@ internal class PersonalSetting(
     }
 
     @Serializable
-internal class MessageBoxInfo(
+    internal class MessageBoxInfo(
         @ProtoId(1) val optBytesContent: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val optBytesTitle: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val optBytesButton: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-internal class MessageRecallReminder(
+    internal class MessageRecallReminder(
         @ProtoId(1) val uin: Long = 0L,
         @ProtoId(2) val nickname: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val recalledMsgList: List<MessageMeta> = listOf(),
@@ -216,7 +216,7 @@ internal class MessageRecallReminder(
         @ProtoId(7) val opType: Int = 0
     ) : ProtoBuf {
         @Serializable
-internal class MessageMeta(
+        internal class MessageMeta(
             @ProtoId(1) val seq: Int = 0,
             @ProtoId(2) val time: Int = 0,
             @ProtoId(3) val msgRandom: Int = 0,
@@ -227,12 +227,12 @@ internal class MessageMeta(
     }
 
     @Serializable
-internal class MiniAppNotify(
+    internal class MiniAppNotify(
         @ProtoId(1) val msg: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-internal class NotifyMsgBody(
+    internal class NotifyMsgBody(
         @ProtoId(1) val optEnumType: Int /* enum */ = 1,
         @ProtoId(2) val optUint64MsgTime: Long = 0L,
         @ProtoId(3) val optUint64MsgExpires: Long = 0L,
@@ -264,14 +264,14 @@ internal class NotifyMsgBody(
     ) : ProtoBuf
 
     @Serializable
-internal class NotifyObjmsgUpdate(
+    internal class NotifyObjmsgUpdate(
         @ProtoId(1) val objmsgId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val updateType: Int = 0,
         @ProtoId(3) val extMsg: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-internal class RedGrayTipsInfo(
+    internal class RedGrayTipsInfo(
         @ProtoId(1) val optUint32ShowLastest: Int = 0,
         @ProtoId(2) val senderUin: Long = 0L,
         @ProtoId(3) val receiverUin: Long = 0L,
@@ -294,7 +294,7 @@ internal class RedGrayTipsInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) val optUint64GroupCode: Long = 0L,
         @ProtoId(2) val uint64Memberuins: List<Long>? = null,
         @ProtoId(3) val optUint32Offline: Int = 0,
@@ -304,12 +304,12 @@ internal class ReqBody(
     ) : ProtoBuf
 
     @Serializable
-internal class RspBody(
+    internal class RspBody(
         @ProtoId(1) val optUint64GroupCode: Long = 0L
     ) : ProtoBuf
 
     @Serializable
-internal class SingChangePushInfo(
+    internal class SingChangePushInfo(
         @ProtoId(1) val seq: Long = 0L,
         @ProtoId(2) val actionType: Int = 0,
         @ProtoId(3) val groupId: Long = 0L,
@@ -319,13 +319,13 @@ internal class SingChangePushInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class TemplParam(
+    internal class TemplParam(
         @ProtoId(1) val name: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(2) val value: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
-internal class ThemeStateNotify(
+    internal class ThemeStateNotify(
         @ProtoId(1) val state: Int = 0,
         @ProtoId(2) val feedsId: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoId(3) val themeName: ByteArray = EMPTY_BYTE_ARRAY,
@@ -334,7 +334,7 @@ internal class ThemeStateNotify(
     ) : ProtoBuf
 
     @Serializable
-internal class TroopFormGrayTipsInfo(
+    internal class TroopFormGrayTipsInfo(
         @ProtoId(1) val writerUin: Long = 0L,
         @ProtoId(2) val creatorUin: Long = 0L,
         @ProtoId(3) val richContent: ByteArray = EMPTY_BYTE_ARRAY,
@@ -343,7 +343,7 @@ internal class TroopFormGrayTipsInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class VideoChangePushInfo(
+    internal class VideoChangePushInfo(
         @ProtoId(1) val seq: Long = 0L,
         @ProtoId(2) val actionType: Int = 0,
         @ProtoId(3) val groupId: Long = 0L,
@@ -354,7 +354,7 @@ internal class VideoChangePushInfo(
     ) : ProtoBuf
 
     @Serializable
-internal class WereWolfPush(
+    internal class WereWolfPush(
         @ProtoId(1) val pushType: Int = 0,
         @ProtoId(2) val gameRoom: Long = 0L,
         @ProtoId(3) val enumGameState: Int = 0,
@@ -374,7 +374,7 @@ internal class WereWolfPush(
         @ProtoId(17) val votedTieUsers: List<Long>? = null
     ) : ProtoBuf {
         @Serializable
-internal class GameRecord(
+        internal class GameRecord(
             @ProtoId(1) val total: Int = 0,
             @ProtoId(2) val win: Int = 0,
             @ProtoId(3) val lose: Int = 0,
@@ -382,7 +382,7 @@ internal class GameRecord(
         ) : ProtoBuf
 
         @Serializable
-internal class Role(
+        internal class Role(
             @ProtoId(1) val uin: Long = 0L,
             @ProtoId(2) val enumType: Int = 0,
             @ProtoId(3) val enumState: Int = 0,

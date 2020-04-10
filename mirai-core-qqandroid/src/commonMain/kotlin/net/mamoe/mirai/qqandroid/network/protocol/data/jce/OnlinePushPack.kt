@@ -80,7 +80,7 @@ internal class OnlinePushPack {
     internal class SvcRespPushMsg(
         @JceId(0) val uin: Long,
         @JceId(1) val vDelInfos: List<DelMsgInfo>,
-        @JceId(2) val svrip: Int,
+        @JceId(2) val svrip: Int = 0,
         @JceId(3) val pushToken: ByteArray? = null,
         @JceId(4) val serviceType: Int? = null,
         @JceId(5) val deviceInfo: DeviceInfo? = null

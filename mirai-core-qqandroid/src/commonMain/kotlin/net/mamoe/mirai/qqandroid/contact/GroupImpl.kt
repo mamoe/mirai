@@ -64,10 +64,7 @@ internal class GroupImpl(
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
 ) : Group() {
-    companion object
-
-    val lastRecalledMessageRandoms: LockFreeCacheList<Int> = LockFreeCacheList(16) // events per 3 second
-    val lastMemberPermissionChangeSequences: LockFreeCacheList<Int> = LockFreeCacheList(16) // events per 3 second
+    companion object;
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
 

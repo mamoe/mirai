@@ -30,6 +30,7 @@ import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
 import net.mamoe.mirai.qqandroid.network.Packet
+import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
@@ -47,6 +48,7 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toUHexString
+import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
@@ -135,12 +137,8 @@ internal class OnlinePush {
                         }
 
                         val group = bot.getGroupByUin(content.fromUin) as GroupImpl
-                        if (group.lastMemberPermissionChangeSequences.remove(content.msgSeq)) {
-                            return null
-                        }
 
                         if (var5 == 0L && this.remaining == 1L) {//管理员变更
-                            group.lastMemberPermissionChangeSequences.addLast(content.msgSeq)
                             val newPermission =
                                 if (this.readByte().toInt() == 1) MemberPermission.ADMINISTRATOR
                                 else MemberPermission.MEMBER
@@ -223,8 +221,31 @@ internal class OnlinePush {
         "OnlinePush.RespPush"
     ) {
         // to reduce nesting depth
-        private fun List<MsgInfo>.deco(mapper: ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>): Sequence<Packet> {
-            return asSequence().flatMap { it.vMsg.read { mapper(it) } }
+        private fun List<MsgInfo>.deco(
+            client: QQAndroidClient,
+            mapper: ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
+        ): Sequence<Packet> {
+            return asSequence().filter { msg ->
+                val cache = client.onlinePushCacheList.removeUntilFirst { it == msg.shMsgSeq }
+                if (cache == null) {
+                    client.onlinePushCacheList.addLast(msg.shMsgSeq)
+                    true
+                } else {
+                    client.onlinePushCacheList.remove(cache)
+                    false
+                }
+            }.flatMap { it.vMsg.read { mapper(it) } }
+        }
+
+        private inline fun LockFreeLinkedList<Short>.removeUntilFirst(block: (Short) -> Boolean): Short? {
+            this.forEach {
+                if (!block(it)) {
+                    this.remove(it)
+                } else {
+                    return it
+                }
+            }
+            return null
         }
 
         private fun lambda732(block: ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet>):
@@ -362,9 +383,7 @@ internal class OnlinePush {
                 return@lambda732 recallReminder.recalledMsgList.asSequence().mapNotNull { pkg ->
                     when {
                         pkg.authorUin == bot.id && operator.id == bot.id -> null
-                        group.lastRecalledMessageRandoms.remove(pkg.msgRandom) -> null
                         else -> {
-                            group.lastRecalledMessageRandoms.addLast(pkg.msgRandom)
                             MessageRecallEvent.GroupRecall(bot, pkg.authorUin, pkg.msgRandom, pkg.time, operator, group)
                         }
                     }
@@ -396,7 +415,7 @@ internal class OnlinePush {
                 bot.friends.delegate.addLast(new)
                 return@lambda528 sequenceOf(FriendAddEvent(new))
             },
-            0xE2L to lambda528 { bot ->
+            0xE2L to lambda528 {
                 // TODO: unknown. maybe messages.
                 // 0A 35 08 00 10 A2 FF 8C F0 03 1A 1B E5 90 8C E6 84 8F E4 BD A0 E7 9A 84 E5 8A A0 E5 A5 BD E5 8F 8B E8 AF B7 E6 B1 82 22 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B 28 01
                 // vProtobuf.loadAs(Msgtype0x210.serializer())
@@ -468,7 +487,7 @@ internal class OnlinePush {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Response {
             val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
 
-            val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco { msgInfo ->
+            val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
                 when (msgInfo.shMsgType.toInt()) {
                     732 -> {
                         val group = bot.getGroup(readUInt().toLong())
@@ -478,7 +497,7 @@ internal class OnlinePush {
                         discardExact(1)
 
                         Transformers732[internalType]
-                            ?.let { it(this@deco, group, bot) }
+                            ?.let { it(this@deco, group as GroupImpl, bot) }
                             ?: kotlin.run {
                                 bot.network.logger.debug {
                                     "unknown group 732 type $internalType, data: " + readBytes().toUHexString()
@@ -507,11 +526,11 @@ internal class OnlinePush {
                     }
                 }
             }
-            return Response(reqPushMsg.uin, reqPushMsg.svrip ?: 0, packets)
+            return Response(reqPushMsg, packets)
         }
 
         @Suppress("SpellCheckingInspection")
-        internal data class Response(val uin: Long, val svrip: Int, val sequence: Sequence<Packet>) :
+        internal data class Response(val request: OnlinePushPack.SvcReqPushMsg, val sequence: Sequence<Packet>) :
             MultiPacketBySequence<Packet>(sequence) {
             override fun toString(): String {
                 return "OnlinePush.ReqPush.Response"
@@ -525,7 +544,7 @@ internal class OnlinePush {
         ) : JceStruct
 
         override suspend fun QQAndroidBot.handle(packet: Response, sequenceId: Int): OutgoingPacket? {
-            return buildResponseUniPacket(client, sequenceId = sequenceId) {
+            return buildResponseUniPacket(client) {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
@@ -535,7 +554,24 @@ internal class OnlinePush {
                         sBuffer = jceRequestSBuffer(
                             "resp",
                             OnlinePushPack.SvcRespPushMsg.serializer(),
-                            OnlinePushPack.SvcRespPushMsg(packet.uin, listOf(), packet.svrip)
+                            OnlinePushPack.SvcRespPushMsg(
+                                packet.request.uin,
+                                packet.request.vMsgInfos.map { msg ->
+                                    OnlinePushPack.DelMsgInfo(
+                                        fromUin = msg.lFromUin,
+                                        shMsgSeq = msg.shMsgSeq,
+                                        vMsgCookies = msg.vMsgCookies,
+                                        uMsgTime = 0,
+                                        clientIp = 0,
+                                        sendTime = 0,
+                                        ssoIp = 0,
+                                        ssoSeq = 0,
+                                        uAppId = 0,
+                                        uMsgType = 0,
+                                        wCmd = 0
+                                    )
+                                }
+                            )
                         )
                     )
                 )
