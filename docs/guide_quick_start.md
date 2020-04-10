@@ -13,7 +13,6 @@
 
 - Kotlin 1.3.71 (必须)
 - JDK 6 或更高 (必须)
-- Android SDK 29 (可选, 用于编译安卓目标)
 
 ## 获取 Demo
 可在 [mirai-demos](https://github.com/mamoe/mirai-demos) 中获取已经配置好依赖的示例项目.
@@ -76,6 +75,7 @@ implementation("net.mamoe:mirai-core-qqandroid-common:VERSION")
 ```
 
 **android** (Android 平台源集)
+**注意**: 在 [KT-37152](https://youtrack.jetbrains.com/issue/KT-37152) 修复前, mirai 无法支持 Android 平台目标.
 
 ```kotlin
 implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
