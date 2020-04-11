@@ -21,7 +21,7 @@ internal class RequestPacket(
     @JceId(1) val iVersion: Short? = 3,
     @JceId(2) val cPacketType: Byte = 0,
     @JceId(3) val iMessageType: Int = 0,
-    @JceId(4) val iRequestId: Int,
+    @JceId(4) val iRequestId: Int = 0,
     @JceId(5) val sServantName: String = "",
     @JceId(6) val sFuncName: String = "",
     @JceId(7) val sBuffer: ByteArray = EMPTY_BYTE_ARRAY,

@@ -24,15 +24,19 @@ import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce
 import net.mamoe.mirai.qqandroid.utils.read
-import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
+internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
+    deserializer: DeserializationStrategy<T>,
+    name: String? = null
+): T = this.read { readUniPacket(deserializer, name) }
 
-internal fun <T : JceStruct> ByteArray.loadAs(deserializer: DeserializationStrategy<T>, c: JceCharset = JceCharset.UTF8): T {
-    return Jce.byCharSet(c).load(deserializer, this.toReadPacket())
-}
+internal fun <T : JceStruct> ByteArray.loadAs(
+    deserializer: DeserializationStrategy<T>,
+    c: JceCharset = JceCharset.UTF8
+): T = this.read { Jce.byCharSet(c).load(deserializer, this) }
 
 internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     serializer: SerializationStrategy<T>,
@@ -54,7 +58,10 @@ internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
 /**
  * 先解析为 [RequestPacket], 即 `UniRequest`, 再按版本解析 map, 再找出指定数据并反序列化
  */
-internal fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: DeserializationStrategy<T>, name: String? = null): T {
+internal fun <T : JceStruct> ByteReadPacket.readUniPacket(
+    deserializer: DeserializationStrategy<T>,
+    name: String? = null
+): T {
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
             discardExact(1)
@@ -66,7 +73,10 @@ internal fun <T : JceStruct> ByteReadPacket.decodeUniPacket(deserializer: Deseri
 /**
  * 先解析为 [RequestPacket], 即 `UniRequest`, 再按版本解析 map, 再找出指定数据并反序列化
  */
-internal fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: DeserializationStrategy<T>, name: String? = null): T {
+internal fun <T : ProtoBuf> ByteReadPacket.readUniPacket(
+    deserializer: DeserializationStrategy<T>,
+    name: String? = null
+): T {
     return decodeUniRequestPacketAndDeserialize(name) {
         it.read {
             discardExact(1)
@@ -74,9 +84,10 @@ internal fun <T : ProtoBuf> ByteReadPacket.decodeUniPacket(deserializer: Deseria
         }
     }
 }
+
 private fun <K, V> Map<K, V>.firstValue(): V = this.entries.first().value
 
-internal fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
+private fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
     val request = this.readJceStruct(RequestPacket.serializer())
 
     return block(if (name == null) when (request.iVersion?.toInt() ?: 3) {
@@ -91,8 +102,10 @@ internal fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: Strin
     })
 }
 
-internal fun <T : JceStruct> T.toByteArray(serializer: SerializationStrategy<T>, c: JceCharset = JceCharset.UTF8): ByteArray =
-    Jce.byCharSet(c).dump(serializer, this)
+internal fun <T : JceStruct> T.toByteArray(
+    serializer: SerializationStrategy<T>,
+    c: JceCharset = JceCharset.UTF8
+): ByteArray = Jce.byCharSet(c).dump(serializer, this)
 
 internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
     this.writeFully(v.toByteArray(serializer))
@@ -102,20 +115,14 @@ internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: Serializ
  * dump
  */
 internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
-    return ProtoBufWithNullableSupport.dump(
-        serializer,
-        this
-    )
+    return ProtoBufWithNullableSupport.dump(serializer, this)
 }
 
 /**
  * load
  */
 internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
-    return ProtoBufWithNullableSupport.load(
-        deserializer,
-        this
-    )
+    return ProtoBufWithNullableSupport.load(deserializer, this)
 }
 
 /**
@@ -124,24 +131,16 @@ internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrate
 internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
-): T {
-    return ProtoBufWithNullableSupport.load(
-        serializer,
-        this.readBytes(length)
-    )
-}
+): T = ProtoBufWithNullableSupport.load(serializer, this.readBytes(length))
 
 /**
  * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]
  */
-internal fun <T : JceStruct> jceRequestSBuffer(name: String, serializer: SerializationStrategy<T>, jceStruct: T): ByteArray {
-    return jceRequestSBuffer(
-        name,
-        serializer,
-        jceStruct,
-        JceCharset.UTF8
-    )
-}
+internal fun <T : JceStruct> jceRequestSBuffer(
+    name: String,
+    serializer: SerializationStrategy<T>,
+    jceStruct: T
+): ByteArray = jceRequestSBuffer(name, serializer, jceStruct, JceCharset.UTF8)
 
 internal fun <T : JceStruct> jceRequestSBuffer(
     name: String,

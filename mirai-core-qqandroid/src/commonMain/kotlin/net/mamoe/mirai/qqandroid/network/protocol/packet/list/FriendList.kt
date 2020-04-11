@@ -19,8 +19,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jceRequestSBuffer
+import net.mamoe.mirai.qqandroid.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeJceStruct
 
@@ -30,7 +30,7 @@ internal class FriendList {
     internal object GetTroopMemberList :
         OutgoingPacketFactory<GetTroopMemberList.Response>("friendlist.GetTroopMemberListReq") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            val res = this.decodeUniPacket(GetTroopMemberListResp.serializer())
+            val res = this.readUniPacket(GetTroopMemberListResp.serializer())
             return Response(
                 res.vecTroopMember,
                 res.nextUin
@@ -80,7 +80,7 @@ internal class FriendList {
     internal object GetTroopListSimplify :
         OutgoingPacketFactory<GetTroopListSimplify.Response>("friendlist.GetTroopListReqV2") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            val res = this.decodeUniPacket(GetTroopListRespV2.serializer())
+            val res = this.readUniPacket(GetTroopListRespV2.serializer())
             return Response(res.vecTroopList.orEmpty())
         }
 
@@ -134,7 +134,7 @@ internal class FriendList {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            val res = this.decodeUniPacket(GetFriendListResp.serializer())
+            val res = this.readUniPacket(GetFriendListResp.serializer())
             return Response(
                 res.stSelfInfo,
                 res.totoalFriendCount,

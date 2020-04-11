@@ -49,8 +49,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -67,7 +67,7 @@ internal class MessageSvc {
     internal object PushNotify : IncomingPacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): RequestPushNotify {
             discardExact(4) // don't remove
-            return decodeUniPacket(RequestPushNotify.serializer())
+            return readUniPacket(RequestPushNotify.serializer())
         }
 
         override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
@@ -343,7 +343,7 @@ internal class MessageSvc {
      */
     internal object PushForceOffline : OutgoingPacketFactory<BotOfflineEvent.Force>("MessageSvc.PushForceOffline") {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): BotOfflineEvent.Force {
-            val struct = this.decodeUniPacket(RequestPushForceOffline.serializer())
+            val struct = this.readUniPacket(RequestPushForceOffline.serializer())
             return BotOfflineEvent.Force(bot, title = struct.title ?: "", message = struct.tips ?: "")
         }
     }

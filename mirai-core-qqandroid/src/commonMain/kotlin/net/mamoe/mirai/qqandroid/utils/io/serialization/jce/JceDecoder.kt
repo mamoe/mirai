@@ -36,8 +36,10 @@ internal class JceDecoder(
 
     private fun SerialDescriptor.getJceTagId(index: Int): Int {
         // higher performance, don't use filterIsInstance
-        return (getElementAnnotations(index).first { it is JceId } as? JceId)?.id
+        val annotation = getElementAnnotations(index).firstOrNull { it is JceId }
             ?: error("missing @JceId for ${getElementName(index)} in ${this.serialName}")
+        return (annotation as JceId).id
+
     }
 
     private val SimpleByteArrayReader: SimpleByteArrayReaderImpl = SimpleByteArrayReaderImpl()
@@ -295,7 +297,7 @@ internal class JceDecoder(
     }
 
     override fun decodeTaggedInt(tag: JceTag): Int =
-        kotlin.runCatching {  jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceIntValue(it) } }.getOrElse {
+        kotlin.runCatching { jce.skipToHeadAndUseIfPossibleOrFail(tag.id) { jce.readJceIntValue(it) } }.getOrElse {
             throw IllegalStateException("$tag", it)
         }
 

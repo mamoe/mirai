@@ -116,7 +116,7 @@ actual abstract class Group : Contact(), CoroutineScope {
     /**
      * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
      */
-    @MiraiExperimentalAPI("还未支持")
+    @SinceMirai("0.37.0")
     actual abstract suspend fun quit(): Boolean
 
     /**

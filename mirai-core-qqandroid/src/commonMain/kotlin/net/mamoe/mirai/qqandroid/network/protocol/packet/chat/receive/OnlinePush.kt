@@ -440,7 +440,7 @@ internal class OnlinePush {
                 val uin = vProtobuf.loadAs(SubD4.serializer()).uin
                 val group = bot.getGroupByUinOrNull(uin) ?: bot.getGroupOrNull(uin)
                 return@lambda528 if (group != null && bot.groups.delegate.remove(group)) {
-                    sequenceOf(BotLeaveEvent(group))
+                    sequenceOf(BotLeaveEvent.Active(group))
                 } else emptySequence()
             },
             // ModFriendRemark, DelFriend
@@ -482,7 +482,7 @@ internal class OnlinePush {
         @ExperimentalUnsignedTypes
         @OptIn(ExperimentalStdlibApi::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Response {
-            val reqPushMsg = decodeUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
+            val reqPushMsg = readUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
 
             val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
                 when (msgInfo.shMsgType.toInt()) {

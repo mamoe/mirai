@@ -213,9 +213,21 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
  */
 @SinceMirai("0.36.0")
-data class BotLeaveEvent(
-    val group: Group
-) : BotEvent, Packet {
+sealed class BotLeaveEvent : BotEvent, Packet {
+    abstract val group: Group
+
+    /**
+     * 机器人主动退出一个群.
+     */
+    @SinceMirai("0.37.0")
+    data class Active(override val group: Group) : BotLeaveEvent()
+
+    /**
+     * 机器人被管理员或群主踢出群. 暂不支持获取操作人
+     */
+    @SinceMirai("0.37.0")
+    data class Kick(override val group: Group) : BotLeaveEvent()
+
     override val bot: Bot get() = group.bot
 }
 

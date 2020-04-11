@@ -22,6 +22,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
@@ -149,7 +150,8 @@ internal object KnownPacketFactories {
         MultiMsg.ApplyUp,
         NewContact.SystemMsgNewFriend,
         NewContact.SystemMsgNewGroup,
-        NewContact.Del
+        NewContact.Del,
+        ProfileService.GroupMngReq
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(

@@ -115,10 +115,12 @@ expect abstract class Group() : Contact, CoroutineScope {
 
 
     /**
-     * 让机器人退出这个群. 机器人必须为非群主才能退出. 否则将会失败
+     * 让机器人退出这个群.
+     * @throws IllegalStateException 当机器人为群主时
+     * @return 退出成功时 true; 已经退出时 false
      */
     @JvmSynthetic
-    @MiraiExperimentalAPI("还未支持")
+    @SinceMirai("0.37.0")
     abstract suspend fun quit(): Boolean
 
     /**

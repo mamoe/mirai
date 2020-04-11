@@ -32,6 +32,7 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
@@ -220,10 +221,25 @@ internal class GroupImpl(
             }
     }
 
-    @MiraiExperimentalAPI
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
-        TODO("not implemented")
+
+        if (!bot.groups.delegate.remove(this)) {
+            return false
+        }
+        bot.network.run {
+            val response: ProfileService.GroupMngReq.GroupMngReqResponse = ProfileService.GroupMngReq(
+                bot.client,
+                this@GroupImpl.id
+            ).sendAndExpect()
+            check(response.errorCode == 0) {
+                "Group.quit failed: $response".also {
+                    bot.groups.delegate.addLast(this@GroupImpl)
+                }
+            }
+        }
+        BotLeaveEvent.Active(this).broadcast()
+        return true
     }
 
     @OptIn(MiraiExperimentalAPI::class)

@@ -190,7 +190,7 @@ internal class StatSvc {
         ) : Packet, RuntimeException("dropped by StatSvc.ReqMSFOffline")
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): BotOfflineEvent.Dropped {
-            val decodeUniPacket = decodeUniPacket(RequestMSFForceOffline.serializer())
+            val decodeUniPacket = readUniPacket(RequestMSFForceOffline.serializer())
             return BotOfflineEvent.Dropped(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
         }
 
