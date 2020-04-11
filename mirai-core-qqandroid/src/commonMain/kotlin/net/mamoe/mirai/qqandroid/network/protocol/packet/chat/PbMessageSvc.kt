@@ -20,6 +20,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.utils.hexToBytes
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
@@ -92,13 +93,15 @@ internal class PbMessageSvc {
                                     fromUin = client.bot.id,
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
-                                    msgUid = 0x0100000000000000L or messageRandom.toLong().and(0xFFFF_FFFF),
+                                    msgRandom = messageRandom,
+                                    msgUid = 0x0100000000000000 or (messageRandom.toLong() and 0xFFFFFFFF),
                                     msgTime = time.toLong(),
                                     routingHead = MsgSvc.RoutingHead(
                                         grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
                                     )
                                 )
-                            )
+                            ),
+                            reserved = "08 01 10 E3 E9 D6 80 02".hexToBytes()
                         )
                     )
                 )
@@ -123,7 +126,8 @@ internal class PbMessageSvc {
                                     fromUin = client.bot.id,
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
-                                    msgUid = 0x1000000000000000L or messageRandom.toLong().and(0xFFFF_FFFF),
+                                    msgRandom = messageRandom,
+                                    msgUid = 0x0100000000000000 or (messageRandom.toLong() and 0xFFFFFFFF),
                                     msgTime = time.toLong(),
                                     routingHead = MsgSvc.RoutingHead(
                                         c2c = MsgSvc.C2C(
@@ -131,7 +135,8 @@ internal class PbMessageSvc {
                                         )
                                     )
                                 )
-                            )
+                            ),
+                            reserved = "08 00".hexToBytes()
                         )
                     )
                 )
@@ -147,7 +152,7 @@ internal class PbMessageSvc {
                 return Response.Success
             }
             resp.c2cWithDraw?.firstOrNull()?.let {
-                if (it.result != 0) {
+                if (it.result != 2 && it.result != 3) {
                     return Response.Failed(it.result, it.errmsg)
                 }
                 return Response.Success
