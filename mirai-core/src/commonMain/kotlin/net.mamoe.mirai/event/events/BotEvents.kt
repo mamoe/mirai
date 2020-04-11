@@ -594,7 +594,7 @@ data class NewFriendRequestEvent(
 }
 
 /**
- * 机器人被邀请加入群
+ * 一个账号请求加入群事件
  */
 @SinceMirai("0.35.0")
 data class MemberJoinRequestEvent(
