@@ -123,6 +123,14 @@ internal class OnlinePush {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
             val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
 
+            val cache = bot.client.pbPushTransMsgCacheList.removeUntilFirst { it == content.msgSeq }
+            if (cache == null) {
+                bot.client.pbPushTransMsgCacheList.addLast(content.msgSeq)
+            } else {
+                bot.client.pbPushTransMsgCacheList.remove(cache)
+                return null
+            }
+
             content.msgData.read<Unit> {
                 when (content.msgType) {
                     44 -> {
@@ -235,17 +243,6 @@ internal class OnlinePush {
                     false
                 }
             }.flatMap { it.vMsg.read { mapper(it) } }
-        }
-
-        private inline fun LockFreeLinkedList<Short>.removeUntilFirst(block: (Short) -> Boolean): Short? {
-            this.forEach {
-                if (!block(it)) {
-                    this.remove(it)
-                } else {
-                    return it
-                }
-            }
-            return null
         }
 
         private fun lambda732(block: ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet>):
@@ -514,7 +511,7 @@ internal class OnlinePush {
                             ?.let { processor -> processor(notifyMsgBody, bot) }
                             ?: kotlin.run {
                                 bot.network.logger.debug {
-                                    "unknown group 528 type ${notifyMsgBody.uSubMsgType}, data: " + notifyMsgBody.vProtobuf.toUHexString()
+                                    "unknown group 528 type 0x${notifyMsgBody.uSubMsgType.toUHexString("")}, data: " + notifyMsgBody.vProtobuf.toUHexString()
                                 }
                                 return@deco emptySequence()
                             }
@@ -573,3 +570,15 @@ internal class OnlinePush {
         }
     }
 }
+
+private inline fun <E> LockFreeLinkedList<E>.removeUntilFirst(block: (E) -> Boolean): E? {
+    this.forEach {
+        if (!block(it)) {
+            this.remove(it)
+        } else {
+            return it
+        }
+    }
+    return null
+}
+
