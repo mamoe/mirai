@@ -3,6 +3,7 @@ package net.mamoe.mirai.console.graphical.view
 import com.jfoenix.controls.JFXTreeTableColumn
 import javafx.scene.control.TreeTableCell
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
+import net.mamoe.mirai.console.graphical.event.ReloadEvent
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.stylesheet.PluginViewStyleSheet
 import net.mamoe.mirai.console.graphical.util.jfxButton

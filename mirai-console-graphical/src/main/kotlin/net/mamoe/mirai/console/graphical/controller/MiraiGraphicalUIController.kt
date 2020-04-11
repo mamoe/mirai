@@ -10,6 +10,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.runCommand
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.graphical.event.ReloadEvent
 import net.mamoe.mirai.console.graphical.model.*
 import net.mamoe.mirai.console.graphical.view.dialog.InputDialog
 import net.mamoe.mirai.console.graphical.view.dialog.VerificationCodeFragment
@@ -35,8 +36,16 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     private val consoleInfo = ConsoleInfo()
 
-    private val sdf by lazy {
-        SimpleDateFormat("HH:mm:ss")
+    private val sdf by lazy { SimpleDateFormat("HH:mm:ss") }
+
+    init {
+        // 监听插件重载事件，以重新从console获取插件列表
+        subscribe<ReloadEvent> {
+            pluginList.clear()
+
+            // 不能直接赋值，pluginList已经被bind，不能更换对象
+            pluginList.addAll(getPluginsFromConsole())
+        }
     }
 
     fun login(qq: String, psd: String) {
@@ -148,6 +157,15 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         return false
     }
 
+    fun reloadPlugins() {
+
+        with(PluginManager) {
+            disablePlugins()
+            loadPlugins()
+        }
+
+        fire(ReloadEvent) // 广播插件重载事件
+    }
 }
 
 class GraphicalLoginSolver : LoginSolver() {

@@ -1,27 +1,51 @@
 package net.mamoe.mirai.console.graphical.view
 
 import com.jfoenix.controls.JFXTreeTableColumn
+import javafx.application.Platform
 import javafx.collections.ObservableList
 import javafx.geometry.Pos
+import javafx.scene.control.Button
 import javafx.scene.control.TreeTableCell
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
+import net.mamoe.mirai.console.graphical.event.ReloadEvent
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.stylesheet.PluginViewStyleSheet
 import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxTreeTableView
+import net.mamoe.mirai.console.graphical.view.dialog.PluginDetailFragment
+import net.mamoe.mirai.console.plugins.PluginManager
 import tornadofx.*
 
 class PluginsCenterView : View() {
 
     private val controller = find<MiraiGraphicalUIController>()
     private val center = PluginCenter.Default
-    private val plugins: ObservableList<PluginModel> by lazy(::fetch)
+    private val plugins: ObservableList<PluginModel> = observableListOf()
+
+    init {
+        // 监听插件重载，情况插件列表，重新载入。
+        // 同时把页面刷新，按键的listener也初始化
+        subscribe<ReloadEvent> { plugins.clear() }
+    }
 
     override val root = jfxTreeTableView(plugins) {
 
         addStylesheet(PluginViewStyleSheet::class)
+
+        placeholder = button("从崔云获取插件列表") {
+            action {
+                isDisable = true
+                runAsync {
+                    fetch()
+                }.ui {
+                    plugins.addAll(it)
+                    isDisable = false
+                }
+            }
+        }
 
         isShowRoot = false
         columns.addAll(
@@ -73,7 +97,7 @@ class PluginsCenterView : View() {
 
 
                                     jfxButton("下载") {
-                                        action { download(item) }
+                                        action { download(item, this) }
                                     }
 
                                 }
@@ -90,39 +114,62 @@ class PluginsCenterView : View() {
 
     }
 
-    private fun fetch(): ObservableList<PluginModel> =
-        runAsync {
-            val ret = observableListOf<PluginModel>()
-            runBlocking {
-                var page = 1
-                while (true) {
-                    val map = center.fetchPlugin(page++)
-                    if (map.isEmpty()) return@runBlocking
-                    map.forEach {
-                        with(PluginModel(
+    private fun fetch(): List<PluginModel> = mutableListOf<PluginModel>().apply {
+        runBlocking {
+            var page = 1
+            while (true) {
+                val map = center.fetchPlugin(page++)
+                if (map.isEmpty()) return@runBlocking
+                map.forEach {
+                    with(
+                        PluginModel(
                             it.value.name,
                             it.value.version,
                             it.value.author,
                             it.value.description,
                             it.value
-                        )) {
-                            ret.add(this)
-                            controller.checkUpdate(this)
-                            controller.checkAmbiguous(this)
-                        }
+                        )
+                    ) {
+                        add(this)
+                        controller.checkUpdate(this)
+                        controller.checkAmbiguous(this)
                     }
                 }
             }
-            return@runAsync ret
-        }.get()
-
-    private fun detail(pluginModel: PluginModel) {
-        //to show pluginModel.insight
+        }
     }
 
-    private fun download(pluginModel: PluginModel) {
-        // controller.checkAmbiguous(pluginModel)
-        // do nothing
+    private fun detail(pluginModel: PluginModel) {
+        runAsync {
+            runBlocking { center.findPlugin(pluginModel.name) }
+        }.ui {
+            it?.apply {
+                PluginDetailFragment(this).openModal()
+            }
+        }
+    }
+
+    private fun download(pluginModel: PluginModel, button: Button) {
+        button.isDisable = true
+        button.text = "连接中..."
+        runAsync {
+            runBlocking {
+                center.downloadPlugin(pluginModel.name) {
+                    // download process
+                    Platform.runLater {
+                        button.text = "$it%"
+                    }
+                }
+            }
+        }.ui {
+            with(button) {
+                isDisable = false
+                text = "重载插件"
+                setOnAction {
+                    controller.reloadPlugins()
+                }
+            }
+        }
     }
 
 }
