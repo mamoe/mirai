@@ -20,7 +20,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
@@ -93,7 +92,7 @@ internal class PbMessageSvc {
                                     fromUin = client.bot.id,
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
-                                    msgUid = 1000000000000000000L or messageRandom.toULong().toLong(),
+                                    msgUid = 0x0100000000000000L or messageRandom.toLong().and(0xFFFF_FFFF),
                                     msgTime = time.toLong(),
                                     routingHead = MsgSvc.RoutingHead(
                                         grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
@@ -124,7 +123,7 @@ internal class PbMessageSvc {
                                     fromUin = client.bot.id,
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
-                                    msgUid = 1000000000000000000L or messageRandom.toULong().toLong(),
+                                    msgUid = 0x1000000000000000L or messageRandom.toLong().and(0xFFFF_FFFF),
                                     msgTime = time.toLong(),
                                     routingHead = MsgSvc.RoutingHead(
                                         c2c = MsgSvc.C2C(

@@ -49,7 +49,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.decodeUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
@@ -132,7 +131,7 @@ internal class MessageSvc {
         open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) :
             MultiPacketByIterable<Packet>(delegate) {
             override fun toString(): String =
-                "MessageSvc.PbGetMsg.Response($syncFlagFromServer=$syncFlagFromServer, messages=<Iterable>))"
+                "MessageSvc.PbGetMsg.Response(syncFlagFromServer=$syncFlagFromServer, messages=<Iterable>))"
         }
 
         object EmptyResponse : GetMsgSuccess(emptyList())
@@ -370,12 +369,13 @@ internal class MessageSvc {
             message: MessageChain,
             crossinline sourceCallback: (MessageSourceToFriendImpl) -> Unit
         ): OutgoingPacket {
+            val rand = Random.nextInt().absoluteValue
             val source = MessageSourceToFriendImpl(
-                id = Random.nextInt().absoluteValue,
+                id = rand,
                 sender = client.bot,
                 target = qq,
                 time = currentTimeSeconds.toInt(),
-                sequenceId = client.atomicNextMessageSequenceId(),
+                sequenceId = rand,
                 originalMessage = message
             )
             sourceCallback(source)
@@ -406,7 +406,7 @@ internal class MessageSvc {
                     ),
                     msgSeq = source.sequenceId,
                     msgRand = source.id,
-                    syncCookie = SyncCookie(time = source.time.toULong().toLong()).toByteArray(SyncCookie.serializer())
+                    syncCookie = SyncCookie(time = source.time.toLong()).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
             )
@@ -454,7 +454,7 @@ internal class MessageSvc {
                     ),
                     msgSeq = source.sequenceId,
                     msgRand = source.id,
-                    syncCookie = SyncCookie(time = source.time.toULong().toLong()).toByteArray(SyncCookie.serializer())
+                    syncCookie = SyncCookie(time = source.time.toLong()).toByteArray(SyncCookie.serializer())
                 )
             )
         }
