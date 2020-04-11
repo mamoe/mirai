@@ -39,6 +39,8 @@ internal interface MessageSourceImpl {
     val sequenceId: Int
 
     var isRecalledOrPlanned: Boolean // // TODO: 2020/4/7 实现 isRecalledOrPlanned
+
+    fun toJceData(): ImMsgBody.SourceMsg
 }
 
 internal suspend inline fun MessageSource.ensureSequenceIdAvailable() {
@@ -76,7 +78,7 @@ internal class MessageSourceFromFriendImpl(
         }
     }
 
-    internal fun toJceDataImplForFriend(): ImMsgBody.SourceMsg {
+    override fun toJceData(): ImMsgBody.SourceMsg {
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(msg.msgHead.msgSeq),
             senderUin = msg.msgHead.fromUin,
@@ -131,9 +133,10 @@ internal class MessageSourceFromTempImpl(
         )
     }
     override val target: Bot get() = bot
-    override val sender: Member get() = with(msg.msgHead) {
-        bot.getGroup(c2cTmpMsgHead!!.groupUin)[fromUin]
-    }
+    override val sender: Member
+        get() = with(msg.msgHead) {
+            bot.getGroup(c2cTmpMsgHead!!.groupUin)[fromUin]
+        }
 
     private val elems by lazy {
         msg.msgBody.richText.elems.toMutableList().also {
@@ -141,7 +144,7 @@ internal class MessageSourceFromTempImpl(
         }
     }
 
-    internal fun toJceDataImplForTemp(): ImMsgBody.SourceMsg {
+    override fun toJceData(): ImMsgBody.SourceMsg {
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(msg.msgHead.msgSeq),
             senderUin = msg.msgHead.fromUin,
@@ -204,7 +207,7 @@ internal class MessageSourceFromGroupImpl(
             ?: error("cannot find member for MessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
 
 
-    fun toJceDataImplForGroup(): ImMsgBody.SourceMsg {
+    override fun toJceData(): ImMsgBody.SourceMsg {
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(msg.msgHead.msgSeq),
             senderUin = msg.msgHead.fromUin,
@@ -219,7 +222,8 @@ internal class MessageSourceFromGroupImpl(
     }
 }
 
-internal class OfflineMessageSourceImplByMsg( // from other sources' originalMessage
+internal class OfflineMessageSourceImplByMsg(
+    // from other sources' originalMessage
     val delegate: MsgComm.Msg,
     override val bot: Bot
 ) : OfflineMessageSource(), MessageSourceImpl {
@@ -248,9 +252,24 @@ internal class OfflineMessageSourceImplByMsg( // from other sources' originalMes
         set(value) {
             isRecalled.value = value
         }
+
+    override fun toJceData(): ImMsgBody.SourceMsg {
+        return ImMsgBody.SourceMsg(
+            origSeqs = listOf(delegate.msgHead.msgSeq),
+            senderUin = delegate.msgHead.fromUin,
+            toUin = 0,
+            flag = 1,
+            elems = delegate.msgBody.richText.elems,
+            type = 0,
+            time = delegate.msgHead.msgTime,
+            pbReserve = EMPTY_BYTE_ARRAY,
+            srcMsg = EMPTY_BYTE_ARRAY
+        )
+    }
 }
 
-internal class OfflineMessageSourceImplBySourceMsg( // from others' quotation
+internal class OfflineMessageSourceImplBySourceMsg(
+    // from others' quotation
     val delegate: ImMsgBody.SourceMsg,
     override val bot: Bot,
     groupIdOrZero: Long
@@ -295,6 +314,10 @@ internal class OfflineMessageSourceImplBySourceMsg( // from others' quotation
             )*/
         }
     }
+
+    override fun toJceData(): ImMsgBody.SourceMsg {
+        return delegate
+    }
 }
 
 internal class MessageSourceToFriendImpl(
@@ -317,7 +340,7 @@ internal class MessageSourceToFriendImpl(
         originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
     }
 
-    fun toJceDataImplForFriend(): ImMsgBody.SourceMsg {
+    override fun toJceData(): ImMsgBody.SourceMsg {
         val messageUid: Long = sequenceId.toLong().shl(32) or id.toLong().and(0xffFFffFF)
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(sequenceId),
@@ -374,7 +397,7 @@ internal class MessageSourceToTempImpl(
         originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
     }
 
-    fun toJceDataImplForTemp(): ImMsgBody.SourceMsg {
+    override fun toJceData(): ImMsgBody.SourceMsg {
         val messageUid: Long = sequenceId.toLong().shl(32) or id.toLong().and(0xffFFffFF)
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(sequenceId),
@@ -449,7 +472,7 @@ internal class MessageSourceToGroupImpl(
     }
 
 
-    fun toJceDataImplForGroup(): ImMsgBody.SourceMsg {
+    override fun toJceData(): ImMsgBody.SourceMsg {
         return ImMsgBody.SourceMsg(
             origSeqs = listOf(sequenceId),
             senderUin = fromId,

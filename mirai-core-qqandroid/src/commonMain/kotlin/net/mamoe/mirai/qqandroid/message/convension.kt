@@ -40,14 +40,8 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 
     if (this.anyIsInstance<QuoteReply>()) {
         when (val source = this[QuoteReply].source) {
-            is OfflineMessageSourceImplBySourceMsg -> elements.add(ImMsgBody.Elem(srcMsg = source.delegate))
-            is MessageSourceToFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
-            is MessageSourceToGroupImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForGroup()))
-            is MessageSourceToTempImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForTemp()))
-            is MessageSourceFromFriendImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForFriend()))
-            is MessageSourceFromGroupImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForGroup()))
-            is MessageSourceFromTempImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceDataImplForTemp()))
-            else -> error("unsupported MessageSource implementation: ${source::class.simpleName}")
+            is MessageSourceImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
+            else -> error("unsupported MessageSource implementation: ${source::class.simpleName}. Don't implement your own MessageSource.")
         }
     }
 
