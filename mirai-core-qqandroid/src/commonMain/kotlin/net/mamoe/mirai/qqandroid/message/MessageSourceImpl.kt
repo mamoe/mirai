@@ -86,7 +86,7 @@ internal class MessageSourceFromFriendImpl(
             type = 0,
             time = msg.msgHead.msgTime,
             pbReserve = SourceMsg.ResvAttr(
-                origUids = id.toULong().toLong()
+                origUids = id.toLong() and 0xFFFF_FFFF
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
@@ -96,7 +96,7 @@ internal class MessageSourceFromFriendImpl(
                     c2cCmd = msg.msgHead.c2cCmd,
                     msgSeq = msg.msgHead.msgSeq,
                     msgTime = msg.msgHead.msgTime,
-                    msgUid = id.toULong().toLong(), // ok
+                    msgUid = id.toLong() and 0xFFFF_FFFF, // ok
                     // groupInfo = MsgComm.GroupInfo(groupCode = msg.msgHead.groupInfo.groupCode),
                     isSrcMsg = true
                 ),
@@ -151,7 +151,7 @@ internal class MessageSourceFromTempImpl(
             type = 0,
             time = msg.msgHead.msgTime,
             pbReserve = SourceMsg.ResvAttr(
-                origUids = id.toULong().toLong()
+                origUids = id.toLong() and 0xFFFF_FFFF
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
@@ -161,7 +161,7 @@ internal class MessageSourceFromTempImpl(
                     c2cCmd = msg.msgHead.c2cCmd,
                     msgSeq = msg.msgHead.msgSeq,
                     msgTime = msg.msgHead.msgTime,
-                    msgUid = id.toULong().toLong(), // ok
+                    msgUid = id.toLong() and 0xFFFF_FFFF, // ok
                     // groupInfo = MsgComm.GroupInfo(groupCode = msg.msgHead.groupInfo.groupCode),
                     isSrcMsg = true
                 ),

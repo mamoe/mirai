@@ -12,6 +12,7 @@
 package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
  * 在 [登录][Bot.login] 失败时抛出, 可正常地中断登录过程.
@@ -27,6 +28,12 @@ sealed class LoginFailedException : RuntimeException {
  * 密码输入错误
  */
 class WrongPasswordException(message: String?) : LoginFailedException(message)
+
+/**
+ * 需要短信验证时抛出. mirai 目前还不支持短信验证.
+ */
+@MiraiExperimentalAPI
+class UnsupportedSMSLoginException(message: String?) : LoginFailedException(message)
 
 /**
  * 非 mirai 实现的异常

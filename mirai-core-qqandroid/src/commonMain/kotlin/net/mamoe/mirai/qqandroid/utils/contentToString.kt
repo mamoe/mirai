@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.qqandroid.utils
 
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.debug
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
@@ -24,6 +26,12 @@ private val indent: String = " ".repeat(4)
  */
 private fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) -> CharSequence): String {
     return this.joinToString(prefix = "$prefix$indent", separator = "\n$prefix$indent", transform = transform)
+}
+
+private val SoutvLogger by lazy { DefaultLogger("soutv") }
+internal fun Any?.soutv(name: String) {
+    @Suppress("DEPRECATION")
+    SoutvLogger.debug { "$name = ${this._miraiContentToString()}" }
 }
 
 /**

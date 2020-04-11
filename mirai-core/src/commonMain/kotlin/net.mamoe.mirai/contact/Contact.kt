@@ -31,7 +31,7 @@ import kotlin.jvm.JvmSynthetic
 
 
 /**
- * 联系人. 虽然叫做联系人, 但他的子类有 [QQ] 和 [群][Group].
+ * 联系人. 虽然叫做联系人, 但他的子类有 [QQ], [群成员][Member] 和 [群][Group].
  *
  * @author Him188moe
  */ // 不要删除多平台结构 !!! kotlin bug

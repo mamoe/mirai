@@ -20,16 +20,14 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
-import net.mamoe.mirai.qqandroid.utils.encodeToString
-import net.mamoe.mirai.qqandroid.utils.hexToBytes
+import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.debug
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 
 private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
@@ -181,7 +179,12 @@ private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".h
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
 @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
-internal fun MsgComm.Msg.toMessageChain(bot: Bot, groupIdOrZero: Long, onlineSource: Boolean, isTemp: Boolean = false): MessageChain {
+internal fun MsgComm.Msg.toMessageChain(
+    bot: Bot,
+    groupIdOrZero: Long,
+    onlineSource: Boolean,
+    isTemp: Boolean = false
+): MessageChain {
     val elements = this.msgBody.richText.elems
 
     return buildMessageChain(elements.size + 1) {
@@ -251,43 +254,40 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
 @OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, message: MessageChainBuilder) {
     // (this._miraiContentToString())
-    this.forEach {
+    this.forEach { element ->
         when {
-            it.srcMsg != null -> message.add(
-                QuoteReply(
-                    OfflineMessageSourceImplBySourceMsg(
-                        it.srcMsg,
-                        bot,
-                        groupIdOrZero
-                    )
-                )
-            )
-            it.notOnlineImage != null -> message.add(OnlineFriendImageImpl(it.notOnlineImage))
-            it.customFace != null -> message.add(OnlineGroupImageImpl(it.customFace))
-            it.face != null -> message.add(Face(it.face.index))
-            it.text != null -> {
-                if (it.text.attr6Buf.isEmpty()) {
-                    message.add(it.text.str.toMessage())
+            element.srcMsg != null ->
+                message.add(QuoteReply(OfflineMessageSourceImplBySourceMsg(element.srcMsg, bot, groupIdOrZero)))
+            element.notOnlineImage != null -> message.add(OnlineFriendImageImpl(element.notOnlineImage))
+            element.customFace != null -> message.add(OnlineGroupImageImpl(element.customFace))
+            element.face != null -> message.add(Face(element.face.index))
+            element.text != null -> {
+                if (element.text.attr6Buf.isEmpty()) {
+                    message.add(element.text.str.toMessage())
                 } else {
                     val id: Long
-                    it.text.attr6Buf.read {
+                    element.text.attr6Buf.read {
                         discardExact(7)
                         id = readUInt().toLong()
                     }
                     if (id == 0L) {
                         message.add(AtAll)
                     } else {
-                        message.add(At._lowLevelConstructAtInstance(id, it.text.str))
+                        message.add(At._lowLevelConstructAtInstance(id, element.text.str))
                     }
                 }
             }
-            it.lightApp != null -> {
-                val content = MiraiPlatformUtils.unzip(it.lightApp.data, 1).encodeToString()
+            element.lightApp != null -> {
+                val content = runWithBugReport("解析 lightApp", { element.lightApp.data.toUHexString() }) {
+                    MiraiPlatformUtils.unzip(element.lightApp.data, 1).encodeToString()
+                }
                 message.add(LightApp(content))
             }
-            it.richMsg != null -> {
-                val content = MiraiPlatformUtils.unzip(it.richMsg.template1, 1).encodeToString()
-                when (it.richMsg.serviceId) {
+            element.richMsg != null -> {
+                val content = runWithBugReport("解析 richMsg", { element.richMsg.template1.toUHexString() }) {
+                    MiraiPlatformUtils.unzip(element.richMsg.template1, 1).encodeToString()
+                }
+                when (element.richMsg.serviceId) {
                     1 -> message.add(JsonMessage(content))
                     60 -> message.add(XmlMessage(content))
                     35 -> {
@@ -373,26 +373,24 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                         }
                     }
                     else -> {
-                        @Suppress("DEPRECATION")
-                        MiraiLogger.debug {
-                            "unknown richMsg.serviceId: ${it.richMsg.serviceId}, content=${it.richMsg.template1.contentToString()}, \ntryUnzip=${content}"
-                        }
+                        throw contextualBugReportException("richMsg.serviceId",
+                            "richMsg.serviceId: ${element.richMsg.serviceId}, content=${element.richMsg.template1.contentToString()}, \n" + "tryUnzip=${content}")
                     }
                 }
             }
-            it.elemFlags2 != null
-                    || it.extraInfo != null
-                    || it.generalFlags != null -> {
+            element.elemFlags2 != null
+                    || element.extraInfo != null
+                    || element.generalFlags != null -> {
 
             }
-            it.commonElem != null -> {
-                when (it.commonElem.serviceType) {
+            element.commonElem != null -> {
+                when (element.commonElem.serviceType) {
                     2 -> {
-                        val proto = it.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
+                        val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
                         message.add(PokeMessage(proto.pokeType, proto.vaspokeId))
                     }
                     3 -> {
-                        val proto = it.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())
+                        val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())
                         if (proto.flashTroopPic != null) {
                             message.add(GroupFlashImage(OnlineGroupImageImpl(proto.flashTroopPic)))
                         }
@@ -408,4 +406,27 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
         }
     }
 
+}
+
+
+internal fun contextualBugReportException(
+    context: String,
+    forDebug: String,
+    e: Throwable? = null
+): IllegalStateException {
+    return IllegalStateException("在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai. 调试信息: $forDebug", e)
+}
+
+@OptIn(ExperimentalContracts::class)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+internal inline fun <R> runWithBugReport(context: String, forDebug: () -> String, block: () -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        callsInPlace(forDebug, InvocationKind.AT_MOST_ONCE)
+    }
+
+    return runCatching(block).getOrElse {
+        throw contextualBugReportException(context, forDebug(), it)
+    }
 }

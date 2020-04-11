@@ -23,6 +23,7 @@ import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.FriendInfoImpl
@@ -105,6 +106,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }.also { heartbeatJob = it }
     }
 
+    @OptIn(MiraiExperimentalAPI::class)
     override suspend fun relogin(cause: Throwable?) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
@@ -163,8 +165,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 }
 
                 is WtLogin.Login.LoginPacketResponse.Success -> {
-                    logger.info("Login successful")
+                    logger.info { "Login successful" }
                     break@mainloop
+                }
+
+                is WtLogin.Login.LoginPacketResponse.SMSVerifyCodeNeeded -> {
+                    val message = "SMS required: $response, which isn't yet supported"
+                    logger.error(message)
+                    throw UnsupportedSMSLoginException(message)
                 }
             }
         }
@@ -600,7 +608,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     internal val packetListeners = LockFreeLinkedList<PacketListener>()
 
     @PublishedApi
-    internal inner class PacketListener( // callback
+    internal inner class PacketListener(
+        // callback
         val commandName: String,
         val sequenceId: Int
     ) : CompletableDeferred<Packet?> by CompletableDeferred(supervisor) {

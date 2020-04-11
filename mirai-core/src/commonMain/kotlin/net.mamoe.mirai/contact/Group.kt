@@ -61,7 +61,7 @@ expect abstract class Group() : Contact, CoroutineScope {
     abstract val owner: Member
 
     /**
-     * [Bot] 在群内的 [newMember] 实例
+     * [Bot] 在群内的 [Member] 实例
      */
     @MiraiExperimentalAPI
     abstract val botAsMember: Member

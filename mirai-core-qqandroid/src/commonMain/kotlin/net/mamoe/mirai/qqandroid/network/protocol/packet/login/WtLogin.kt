@@ -300,7 +300,7 @@ internal class WtLogin {
 
             class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse() {
                 override fun toString(): String {
-                    return "LoginPacketResponse.SMSVerifyCodeNeeded"
+                    return "LoginPacketResponse.SMSVerifyCodeNeeded(t402=${t402.toUHexString()}, t403=${t403.toUHexString()})"
                 }
             }
 

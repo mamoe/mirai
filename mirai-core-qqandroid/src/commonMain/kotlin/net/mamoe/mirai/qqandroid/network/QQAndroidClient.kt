@@ -131,6 +131,7 @@ internal open class QQAndroidClient(
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
     internal val onlinePushCacheList: LockFreeLinkedList<Short> = LockFreeLinkedList()
+    internal val pbPushTransMsgCacheList: LockFreeLinkedList<Int> = LockFreeLinkedList()
 
     val appClientVersion: Int = 0
 
