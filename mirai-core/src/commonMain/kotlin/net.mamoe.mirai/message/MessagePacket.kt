@@ -175,6 +175,8 @@ abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Pac
     fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target)
         ?: error("`At.member` can only be used in GroupMessage")
 
+    inline fun At.isBot(): Boolean = target == bot.id
+
     // endregion
 
     // region 下载图片
