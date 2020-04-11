@@ -16,6 +16,8 @@ if (!Bintray.isBintrayAvailable(project)) {
     return
 }
 
+def miraiGitHubUrl = "https://github.com/mamoe/mirai"
+
 def pomConfig = {
     licenses {
         license {
@@ -32,7 +34,7 @@ def pomConfig = {
         }
     }
     scm {
-        url "https://github.com/mamoe/mirai"
+        url miraiGitHubUrl
     }
 }
 
@@ -44,7 +46,13 @@ bintray {
         repo = 'mirai'
         name = "mirai-core"
         licenses = ['AGPL']
-        vcsUrl = 'https://github.com/mamoe/mirai'
+        vcsUrl = miraiGitHubUrl
+        websiteUrl = miraiGitHubUrl
+        githubRepo = miraiGitHubUrl
+        issueTrackerUrl = "$miraiGitHubUrl/issues"
+       /* version {
+            name = project.version
+        }*/
     }
 }
 
@@ -57,7 +65,7 @@ afterEvaluate {
             //root.appendNode('version', project.version)
             root.appendNode('name', project.name)
             root.appendNode('description', project.description)
-            root.appendNode('url', 'https://github.com/mamoe/mirai')
+            root.appendNode('url', miraiGitHubUrl)
             root.children().last() + pomConfig
         }
     }
@@ -99,13 +107,13 @@ publishing {
         def type = it.name
         switch (type) {
             case 'kotlinMultiplatform':
-                it.artifactId = "$project.name"
+                it.artifactId = "$project.name-native"
                 break
             case 'metadata':
                 it.artifactId = "$project.name-common"
                 break
             case 'jvm':
-                it.artifactId = "$project.name-jvm"
+                it.artifactId = "$project.name"
                 break
             case 'js':
             case 'native':
@@ -119,3 +127,5 @@ publishing {
         }
     }
 }
+
+// bintrayUpload.dependsOn publishToMavenLocal
