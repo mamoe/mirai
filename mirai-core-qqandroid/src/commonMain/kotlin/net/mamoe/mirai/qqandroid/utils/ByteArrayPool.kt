@@ -10,7 +10,7 @@ internal object ByteArrayPool : DefaultPool<ByteArray>(256) {
     /**
      * 每一个 [ByteArray] 的大小
      */
-    const val BUFFER_SIZE: Int = 81920 / 2
+    const val BUFFER_SIZE: Int = 8192 * 8
 
     override fun produceInstance(): ByteArray = ByteArray(BUFFER_SIZE)
 

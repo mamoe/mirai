@@ -84,12 +84,12 @@ internal class OnlinePush {
             val group = bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) ?: return null // 机器人还正在进群
             val sender = group[pbPushMsg.msg.msgHead.fromUin] as MemberImpl
             val name = extraInfo?.groupCard?.run {
-                try {
-                    loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName!!.first { it.text.isNotEmpty() }
-                        .text.encodeToString()
-                } catch (e: Exception) {
-                    encodeToString()
-                }
+                kotlin.runCatching {
+                    if (this[0] == 0x0A.toByte() && this[1] == 0x0A.toByte() && this[2] == 0x0A.toByte() && this[3] == 0x08.toByte())
+                        loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName?.firstOrNull { it.text.isNotEmpty() }
+                            ?.text?.encodeToString()
+                    else return@runCatching null
+                }.getOrNull() ?: encodeToString()
             } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard // 没有 extraInfo 就从 head 里取
 
             val flags = extraInfo?.flags ?: 0
