@@ -96,7 +96,7 @@ class PluginsCenterView : View() {
                                     }
 
 
-                                    jfxButton("下载") {
+                                    jfxButton(if (item.expired) "更新" else  "下载") {
                                         action { download(item, this) }
                                     }
 

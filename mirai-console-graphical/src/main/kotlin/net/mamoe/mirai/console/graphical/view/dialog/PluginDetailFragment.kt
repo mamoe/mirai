@@ -4,11 +4,13 @@ import javafx.geometry.Insets
 import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.graphical.util.jfxTextfield
 import tornadofx.Fragment
-import tornadofx.form
 import tornadofx.vbox
 
 class PluginDetailFragment(info: PluginCenter.PluginInfo) : Fragment() {
 
+    init {
+        title = info.name
+    }
 
     override val root = vbox {
 
