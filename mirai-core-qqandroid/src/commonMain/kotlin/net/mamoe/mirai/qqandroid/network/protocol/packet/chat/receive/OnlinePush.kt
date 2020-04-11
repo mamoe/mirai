@@ -494,7 +494,7 @@ internal class OnlinePush {
                         discardExact(1)
 
                         Transformers732[internalType]
-                            ?.let { it(this@deco, group as GroupImpl, bot) }
+                            ?.let { it(this@deco, group, bot) }
                             ?: kotlin.run {
                                 bot.network.logger.debug {
                                     "unknown group 732 type $internalType, data: " + readBytes().toUHexString()
