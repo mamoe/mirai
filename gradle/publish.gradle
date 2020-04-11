@@ -18,26 +18,6 @@ if (!Bintray.isBintrayAvailable(project)) {
 
 def miraiGitHubUrl = "https://github.com/mamoe/mirai"
 
-def pomConfig = {
-    licenses {
-        license {
-            name "AGPL-V3"
-            url "https://www.gnu.org/licenses/agpl-3.0.txt"
-            distribution "repo"
-        }
-    }
-    developers {
-        developer {
-            id "mamoe"
-            name "Mamoe Technologies"
-            email "support@mamoe.net"
-        }
-    }
-    scm {
-        url miraiGitHubUrl
-    }
-}
-
 bintray {
     user = Bintray.getUser(project)
     key = Bintray.getKey(project)
@@ -66,7 +46,25 @@ afterEvaluate {
             root.appendNode('name', project.name)
             root.appendNode('description', project.description)
             root.appendNode('url', miraiGitHubUrl)
-            root.children().last() + pomConfig
+            root.children().last() + {
+                licenses {
+                    license {
+                        name "AGPL-V3"
+                        url "https://www.gnu.org/licenses/agpl-3.0.txt"
+                        distribution "repo"
+                    }
+                }
+                developers {
+                    developer {
+                        id "mamoe"
+                        name "Mamoe Technologies"
+                        email "support@mamoe.net"
+                    }
+                }
+                scm {
+                    url miraiGitHubUrl
+                }
+            }
         }
     }
 }
