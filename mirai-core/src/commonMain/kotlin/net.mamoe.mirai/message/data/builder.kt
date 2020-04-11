@@ -161,4 +161,7 @@ class MessageChainBuilder private constructor(
         this.flushCache()
         return MessageChainImplByCollection(this) // fast-path, no need to constrain
     }
+
+    /** 同 [asMessageChain] */
+    fun build(): MessageChain = asMessageChain()
 }
