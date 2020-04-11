@@ -24,8 +24,10 @@ import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.TempMessage
+import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.firstIsInstance
+import net.mamoe.mirai.message.data.firstIsInstanceOrNull
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -676,6 +678,18 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     @MessageDsl
     fun sentFrom(groupId: Long, onEvent: MessageListener<GroupMessage, R>): Ret =
         content({ this is GroupMessage && this.group.id == groupId }) { onEvent(this as GroupMessage, it) }
+
+    /** 如果消息内容包含目标为 [Bot] 的 [At] */
+    @MessageDsl
+    fun atBot(): ListeningFilter =
+        content { message.firstIsInstanceOrNull<At>()?.target == bot.id }
+
+    /** 如果消息内容包含目标为 [Bot] 的 [At], 就执行 [onEvent] */
+    @MessageDsl
+    @SinceMirai("0.30.0")
+    fun atBot(onEvent: @MessageDsl suspend M.(String) -> R): Ret =
+        content({ message.firstIsInstanceOrNull<At>()?.target == bot.id },
+            { onEvent.invoke(this, message.contentToString()) })
 
     /** 如果消息内容包含 [N] 类型的 [Message] */
     @MessageDsl
