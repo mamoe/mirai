@@ -49,10 +49,7 @@ object AtAll :
     @JvmName("followedBy")
     @JvmSynthetic
     override fun followedBy1(tail: Message): CombinedMessage {
-        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
-            return followedByInternalForBinaryCompatibility(tail)
-        }
-        return followedByInternalForBinaryCompatibility(PlainText(" ") + tail)
+        return followedByInternalForBinaryCompatibility(tail)
     }
 
     override fun followedBy(tail: Message): MessageChain {
