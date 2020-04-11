@@ -456,6 +456,13 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         return case(this, onEvent = block)
     }
 
+    /** 如果消息内容 `==` [equals] */
+    @MessageDsl
+    @SinceMirai("0.38.0")
+    operator fun String.invoke(block: MessageListener<M, R>): Ret {
+        return case(this, onEvent = block)
+    }
+
     /**
      * 如果消息内容 `==` [equals]
      * @param trim `true` 则删除首尾空格后比较
