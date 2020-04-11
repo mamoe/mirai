@@ -164,6 +164,7 @@ sealed class OnlineMessageSource : MessageSource() {
             }
 
             abstract override val target: Member
+            val group: Group get() = target.group
             final override val subject: Member get() = target
         }
 
@@ -211,6 +212,7 @@ sealed class OnlineMessageSource : MessageSource() {
             }
 
             abstract override val sender: Member
+            val group: Group get() = sender.group
             final override val subject: Member get() = sender
         }
 
