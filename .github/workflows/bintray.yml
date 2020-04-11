@@ -27,7 +27,7 @@ jobs:
       - name: Gradle build
         run: ./gradlew build # if test's failed, don't publish
       - name: Check keys
-        run: ./gradlew :mirai-core:ensureBintrayAvailable :mirai-core-qqandroid:ensureBintrayAvailable
+        run: ./gradlew :mirai-core:ensureBintrayAvailable :mirai-core-qqandroid:ensureBintrayAvailable -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }} -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
       - name: Gradle :mirai-core:bintrayUpload
         run: ./gradlew :mirai-core:bintrayUpload -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }} -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
       - name: Gradle :mirai-core-qqandroid:bintrayUpload
