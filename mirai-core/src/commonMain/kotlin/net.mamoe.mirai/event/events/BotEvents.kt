@@ -551,7 +551,7 @@ data class NewFriendRequestEvent(
      */
     val eventId: Long,
     /**
-     * 入群申请消息
+     * 申请好友消息
      */
     val message: String,
     /**
