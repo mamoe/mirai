@@ -279,8 +279,7 @@ object DefaultCommands {
             alias = listOf("reloadPlugins")
             description = "重新加载全部插件"
             onCommand{
-                PluginManager.disablePlugins()
-                PluginManager.loadPlugins()
+                PluginManager.reloadPlugins()
                 sendMessage("重新加载完成")
                 true
             }

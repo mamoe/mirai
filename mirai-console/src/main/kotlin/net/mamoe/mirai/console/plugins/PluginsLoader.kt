@@ -1,14 +1,22 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 package net.mamoe.mirai.console.plugins
 
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
-import java.io.IOException
 import java.net.URLClassLoader
 
 internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
     private val loggerName = "PluginsLoader"
-    private val pluginLoaders =  linkedMapOf<String,PluginClassLoader>()
+    private val pluginLoaders = linkedMapOf<String, PluginClassLoader>()
     private val classesCache = mutableMapOf<String, Class<*>>()
     private val logger = SimpleLogger(loggerName) { p, message, e ->
         MiraiConsole.logger(p, "[${loggerName}]", 0, message)
@@ -20,15 +28,15 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
      */
     fun clear() {
         val iterator = pluginLoaders.iterator()
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             val plugin = iterator.next()
             var cl = ""
             try {
                 cl = plugin.value.toString()
                 plugin.value.close()
                 iterator.remove()
-            }catch (e: Throwable){
-                logger.error("Plugin(${plugin.key}) can't not close its ClassLoader(${cl})",e)
+            } catch (e: Throwable) {
+                logger.error("Plugin(${plugin.key}) can't not close its ClassLoader(${cl})", e)
             }
         }
         classesCache.clear()
@@ -43,16 +51,19 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
         return true
     }
 
-    fun loadPluginMainClassByJarFile(pluginName:String, mainClass: String, jarFile:File): Class<*> {
+    fun loadPluginMainClassByJarFile(pluginName: String, mainClass: String, jarFile: File): Class<*> {
         try {
-            if(!pluginLoaders.containsKey(pluginName)){
-                pluginLoaders[pluginName] = PluginClassLoader(pluginName,jarFile, this, parentClassLoader)
+            if (!pluginLoaders.containsKey(pluginName)) {
+                pluginLoaders[pluginName] = PluginClassLoader(pluginName, jarFile, this, parentClassLoader)
             }
             return pluginLoaders[pluginName]!!.loadClass(mainClass)
-        }catch (e : ClassNotFoundException){
-            throw ClassNotFoundException("PluginsClassLoader(${pluginName}) can't load this pluginMainClass:${mainClass}",e)
-        }catch (e : Throwable){
-            throw Throwable("init or load class error",e)
+        } catch (e: ClassNotFoundException) {
+            throw ClassNotFoundException(
+                "PluginsClassLoader(${pluginName}) can't load this pluginMainClass:${mainClass}",
+                e
+            )
+        } catch (e: Throwable) {
+            throw Throwable("init or load class error", e)
         }
     }
 
@@ -87,7 +98,12 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
     }
 }
 
-internal class PluginClassLoader(private val pluginName: String,files: File, private val pluginsLoader: PluginsLoader, parent: ClassLoader) :
+internal class PluginClassLoader(
+    private val pluginName: String,
+    files: File,
+    private val pluginsLoader: PluginsLoader,
+    parent: ClassLoader
+) :
     URLClassLoader(arrayOf((files.toURI().toURL())), parent) {
     private val classesCache = mutableMapOf<String, Class<*>?>()
 

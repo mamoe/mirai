@@ -160,8 +160,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     fun reloadPlugins() {
 
         with(PluginManager) {
-            disablePlugins()
-            loadPlugins()
+            reloadPlugins()
         }
 
         fire(ReloadEvent) // 广播插件重载事件

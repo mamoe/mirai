@@ -14,9 +14,7 @@ package net.mamoe.mirai.console.plugins
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.JCommandManager
 import net.mamoe.mirai.console.events.EventListener
 import net.mamoe.mirai.console.scheduler.PluginScheduler
 import net.mamoe.mirai.console.scheduler.SchedulerTaskManagerInstance
@@ -24,7 +22,6 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 import java.io.InputStream
-import java.net.URLClassLoader
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -36,6 +33,9 @@ abstract class PluginBase
 
     private val supervisorJob = SupervisorJob()
     final override val coroutineContext: CoroutineContext = coroutineContext + supervisorJob
+
+    private var loaded = false
+    private var enabled = false
 
     /**
      * 插件被分配的数据目录。数据目录会与插件名称同名。
@@ -64,6 +64,13 @@ abstract class PluginBase
      */
     open fun onDisable() {
 
+    }
+
+    /**
+     * 当Console reload时被调用
+     */
+    open fun onReload(): Boolean {
+        return true
     }
 
     /**
@@ -117,17 +124,39 @@ abstract class PluginBase
 
     // internal
 
+    internal fun load() {
+        if (!loaded) {
+            onLoad()
+            loaded = true
+        }
+    }
+
     internal fun enable() {
-        this.onEnable()
+        if (!enabled) {
+            onEnable()
+            enabled = true
+        }
     }
 
     internal fun disable(throwable: CancellationException? = null) {
-        this.coroutineContext[Job]!!.cancelChildren(throwable)
-        try {
-            this.onDisable()
-        } catch (e: Exception) {
-            logger.info(e)
+        if (enabled) {
+            this.coroutineContext[Job]!!.cancelChildren(throwable)
+            try {
+                onDisable()
+            } catch (e: Exception) {
+                logger.error(e)
+            }
+            enabled = false
         }
+    }
+
+    internal fun reload(): Boolean {
+        try {
+            return onReload()
+        } catch (e: Exception) {
+            logger.error(e)
+        }
+        return true
     }
 
     internal var pluginName: String = ""
@@ -136,9 +165,9 @@ abstract class PluginBase
     /**
      * Java API Scheduler
      */
-    private var scheduler:PluginScheduler? = null
-    fun getScheduler():PluginScheduler{
-        if(scheduler === null){
+    private var scheduler: PluginScheduler? = null
+    fun getScheduler(): PluginScheduler {
+        if (scheduler === null) {
             scheduler = SchedulerTaskManagerInstance.getPluginScheduler(this)
         }
         return scheduler!!
@@ -147,9 +176,9 @@ abstract class PluginBase
     /**
      * Java API EventListener
      */
-    private var eventListener:EventListener? = null
-    fun getEventListener():EventListener{
-        if(eventListener === null){
+    private var eventListener: EventListener? = null
+    fun getEventListener(): EventListener {
+        if (eventListener === null) {
             eventListener = EventListener(this)
         }
         return eventListener!!
@@ -161,6 +190,7 @@ abstract class PluginBase
  * 插件描述
  */
 class PluginDescription(
+    val file: File,
     val name: String,
     val author: String,
     val basePath: String,
@@ -173,11 +203,13 @@ class PluginDescription(
     override fun toString(): String {
         return "name: $name\nauthor: $author\npath: $basePath\nver: $version\ninfo: $info\ndepends: $depends"
     }
+
     companion object {
-        fun readFromContent(content_: String): PluginDescription {
+        fun readFromContent(content_: String, file: File): PluginDescription {
             with(Config.load(content_, "yml")) {
                 try {
                     return PluginDescription(
+                        file = file,
                         name = this.getString("name"),
                         author = kotlin.runCatching {
                             this.getString("author")
