@@ -50,7 +50,7 @@ bintray {
 }
 
 dependencies {
-    compileOnly("net.mamoe:mirai-core-jvm:${Versions.Mirai.core}")
+    compileOnly("net.mamoe:mirai-core:${Versions.Mirai.core}")
     implementation(project(":mirai-console"))
 
     api(group = "no.tornado", name = "tornadofx", version = "1.7.19")
@@ -59,7 +59,8 @@ dependencies {
     testApi(project(":mirai-console"))
     testApi(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
     testApi(group = "org.yaml", name = "snakeyaml", version = "1.25")
-    testApi("net.mamoe:mirai-core-jvm:${Versions.Mirai.core}")
+    testApi("net.mamoe:mirai-core:${Versions.Mirai.core}")
+    testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

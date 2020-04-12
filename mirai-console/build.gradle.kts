@@ -22,7 +22,7 @@ kotlin {
     }
 }
 dependencies {
-    compileOnly("net.mamoe:mirai-core-jvm:${Versions.Mirai.core}")
+    compileOnly("net.mamoe:mirai-core:${Versions.Mirai.core}")
     compileOnly(kotlin("stdlib")) // embedded by core
 
     api("com.google.code.gson:gson:2.8.6")
@@ -30,7 +30,7 @@ dependencies {
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
     api("org.jsoup:jsoup:1.12.1")
 
-    testApi("net.mamoe:mirai-core-qqandroid-jvm:${Versions.Mirai.core}")
+    testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
     testApi(kotlin("stdlib"))
 }
 
