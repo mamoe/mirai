@@ -151,8 +151,8 @@ expect abstract class Group() : Contact, CoroutineScope {
     /**
      * 上传一个图片以备发送.
      *
-     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
-     * @see ImageUploadEvent 图片发送完成事件
+     * @see BeforeImageUploadEvent 图片上传前事件, cancellable
+     * @see ImageUploadEvent 图片上传完成事件
      *
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
