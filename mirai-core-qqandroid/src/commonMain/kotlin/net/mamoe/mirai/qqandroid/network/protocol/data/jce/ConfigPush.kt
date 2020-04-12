@@ -12,6 +12,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
+import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 
 @Serializable
@@ -63,13 +64,46 @@ internal class DomainIpInfo(
 @Serializable
 internal class DomainIpList(
     @JceId(0) val uDomainType: Int,
-    @JceId(1) val vIplist: List<DomainIpInfo>
+    @JceId(1) val vIplist: List<DomainIpInfo>,
+    @JceId(2) val unknown: ByteArray // added
+) : JceStruct
+
+@Serializable
+internal class _340(
+    @JceId(1) val field1315: List<_339>,
+    @JceId(3) val field1316: List<_339>,
+    @JceId(4) val field1317: Int,
+    @JceId(5) val field1318: Byte? = 0,
+    @JceId(6) val field1319: Byte? = 0,
+    @JceId(7) val field1320: Int? = 1,
+    @JceId(8) val field1321: List<_339>? = null,
+    @JceId(9) val field1322: List<_339>? = null,
+    @JceId(10) val field1323: List<_339>? = null,
+    @JceId(11) val field1324: List<_339>? = null,
+    @JceId(12) val field1325: List<_339>? = null,
+    @JceId(13) val field1326: List<_339>? = null,
+    @JceId(14) val netType: Byte? = 0,
+    @JceId(15) val heThreshold: Int? = 0,
+    @JceId(16) val policyId: String? = ""
+) : ProtoBuf
+
+@Serializable
+internal class _339(
+    @JceId(1) val field1298: String = "",
+    @JceId(2) val field1299: Int = 0,
+    @JceId(3) val field1300: Byte = 0,
+    @JceId(4) val field1301: Byte = 0,
+    @JceId(5) val field1302: Byte? = 0,
+    @JceId(6) val field1303: Int? = 8,
+    @JceId(7) val field1304: Byte? = 0,
+    @JceId(8) val field1305: String = "",
+    @JceId(9) val field1306: String = ""
 ) : JceStruct
 
 @Serializable
 internal class FileStoragePushFSSvcList(
-    @JceId(0) val vUpLoadList: List<FileStorageServerListInfo>,
-    @JceId(1) val vPicDownLoadList: List<FileStorageServerListInfo>,
+    @JceId(0) val vUpLoadList: List<FileStorageServerListInfo> = listOf(),
+    @JceId(1) val vPicDownLoadList: List<FileStorageServerListInfo> = listOf(),
     @JceId(2) val vGPicDownLoadList: List<FileStorageServerListInfo>? = null,
     @JceId(3) val vQzoneProxyServiceList: List<FileStorageServerListInfo>? = null,
     @JceId(4) val vUrlEncodeServiceList: List<FileStorageServerListInfo>? = null,

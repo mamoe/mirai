@@ -231,7 +231,7 @@ internal class JceDecoder(
                             SimpleByteArrayReader
                         }
                         Jce.LIST -> ListReader
-                        else -> error("type mismatch. Expected SIMPLE_LIST or LIST, got ${it.type} instead")
+                        else -> error("type mismatch. Expected SIMPLE_LIST or LIST, got $it instead")
                     }
                 }
             }

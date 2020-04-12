@@ -12,6 +12,7 @@ package net.mamoe.mirai.qqandroid.utils.io.serialization.jce
 import kotlinx.io.core.*
 import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.JceCharset
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 
 
 /**
@@ -193,7 +194,7 @@ internal class JceInput(
             Jce.BYTE -> input.readByte().toInt()
             Jce.SHORT -> input.readShort().toInt()
             Jce.INT -> input.readInt()
-            else -> error("type mismatch: ${head.type}")
+            else -> error("type mismatch: $head, remaining=${input.readBytes().toUHexString()}")
         }
     }
 
@@ -202,7 +203,7 @@ internal class JceInput(
             Jce.ZERO_TYPE -> 0
             Jce.BYTE -> input.readByte().toShort()
             Jce.SHORT -> input.readShort()
-            else -> error("type mismatch: ${head.type}")
+            else -> error("type mismatch: $head")
         }
     }
 
@@ -222,7 +223,7 @@ internal class JceInput(
         return when (head.type) {
             Jce.ZERO_TYPE -> 0
             Jce.BYTE -> input.readByte()
-            else -> error("type mismatch: ${head.type}")
+            else -> error("type mismatch: $head")
         }
     }
 
@@ -230,7 +231,7 @@ internal class JceInput(
         return when (head.type) {
             Jce.ZERO_TYPE -> 0f
             Jce.FLOAT -> input.readFloat()
-            else -> error("type mismatch: ${head.type}")
+            else -> error("type mismatch: $head")
         }
     }
 
@@ -243,7 +244,7 @@ internal class JceInput(
                 input.readUInt().toInt().also { require(it in 1 until 104857600) { "bad string length: $it" } },
                 charset = charset.kotlinCharset
             )
-            else -> error("type mismatch: ${head.type}, expecting 6 or 7 (for string)")
+            else -> error("type mismatch: $head, expecting 6 or 7 (for string)")
         }
     }
 
@@ -252,7 +253,7 @@ internal class JceInput(
             12 -> 0.0
             4 -> input.readFloat().toDouble()
             5 -> input.readDouble()
-            else -> error("type mismatch: ${head.type}")
+            else -> error("type mismatch: $head")
         }
     }
 

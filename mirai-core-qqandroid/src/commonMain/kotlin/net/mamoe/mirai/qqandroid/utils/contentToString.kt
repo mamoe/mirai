@@ -29,7 +29,7 @@ private fun <T> Sequence<T>.joinToStringPrefixed(prefix: String, transform: (T) 
 }
 
 private val SoutvLogger by lazy { DefaultLogger("soutv") }
-internal fun Any?.soutv(name: String) {
+internal fun Any?.soutv(name: String = "unnamed") {
     @Suppress("DEPRECATION")
     SoutvLogger.debug { "$name = ${this._miraiContentToString()}" }
 }

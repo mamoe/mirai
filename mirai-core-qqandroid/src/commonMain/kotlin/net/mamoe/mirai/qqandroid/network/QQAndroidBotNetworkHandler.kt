@@ -433,7 +433,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                     "${packet.sender.nick}(${packet.sender.id}) -> ${packet.message.toString().singleLine()}"
                 }
                 is Event -> bot.logger.verbose { "Event: ${packet.toString().singleLine()}" }
-                else -> logger.verbose { "Event: ${packet.toString().singleLine()}" }
+                else -> logger.verbose { "Packet: ${packet.toString().singleLine()}" }
             }
         }
 
