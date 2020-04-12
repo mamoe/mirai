@@ -93,6 +93,7 @@ internal class ConfigPushSvc {
                         // use default
 
                         bot.network.logger.warning { "Cannot load FileStoragePushFSSvcList, source=${configPush.jcebuf.toUHexString()}" }
+                        bot.network.logger.warning(it)
                     }
 
                     return PushReqResponse.Success(configPush)
