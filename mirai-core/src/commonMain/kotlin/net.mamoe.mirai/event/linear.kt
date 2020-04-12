@@ -93,7 +93,7 @@ inline fun <reified E : Event, R : Any> CoroutineScope.subscribingGetAsync(
 internal suspend inline fun <reified E : Event, R> subscribingGetOrNullImpl(
     coroutineScope: CoroutineScope,
     noinline mapper: suspend E.(E) -> R?
-): R {
+): R? {
     var result: Result<R?> = Result.success(null) // stub
     var listener: Listener<E>? = null
     @Suppress("DuplicatedCode") // for better performance
@@ -114,5 +114,5 @@ internal suspend inline fun <reified E : Event, R> subscribingGetOrNullImpl(
     }
     listener.join()
 
-    return result.getOrThrow()!!
+    return result.getOrThrow()
 }

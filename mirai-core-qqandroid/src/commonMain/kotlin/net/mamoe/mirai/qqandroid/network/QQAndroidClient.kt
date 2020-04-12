@@ -15,8 +15,10 @@ import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.*
 import net.mamoe.mirai.data.OnlineStatus
+import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.qqandroid.BotAccount
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FileStoragePushFSSvcList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
@@ -42,6 +44,17 @@ private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray
  */
 internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
 
+internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
+    "42.81.169.46" to 8080,
+    "42.81.172.81" to 80,
+    "114.221.148.59" to 14000,
+    "42.81.172.147" to 443,
+    "125.94.60.146" to 80,
+    "114.221.144.215" to 80,
+    "msfwifi.3g.qq.com" to 8080,
+    "42.81.172.22" to 80
+)
+
 /*
  APP ID:
  GetStViaSMSVerifyLogin = 16
@@ -64,6 +77,8 @@ internal open class QQAndroidClient(
     val device: DeviceInfo = SystemDeviceInfo(context),
     bot: QQAndroidBot
 ) {
+    internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
+
     val keys: Map<String, ByteArray> by lazy {
         mapOf(
             "16 zero" to ByteArray(16),
@@ -102,10 +117,29 @@ internal open class QQAndroidClient(
     val randomKey: ByteArray = getRandomByteArray(16)
 
     var miscBitMap: Int = 184024956 // 也可能是 150470524 ?
-    var mainSigMap: Int = 16724722
+    private var mainSigMap: Int = 16724722
     var subSigMap: Int = 0x10400 //=66,560
 
     private val _ssoSequenceId: AtomicInt = atomic(85600)
+
+    lateinit var fileStoragePushFSSvcList: FileStoragePushFSSvcList
+    internal suspend inline fun useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
+        @Suppress("UNREACHABLE_CODE", "ThrowableNotThrown") // false positive
+        retryCatching(bot.client.serverList.size) {
+            val pair = bot.client.serverList.random()
+            kotlin.runCatching {
+                block(pair.first, pair.second)
+                return
+            }.getOrElse {
+                bot.client.serverList.remove(pair)
+                bot.logger.warning(it)
+                throw it
+            }
+        }.getOrElse {
+            bot.client.serverList.addAll(DefaultServerList)
+            throw NoServerAvailableException(it)
+        }
+    }
 
     @MiraiInternalAPI("Do not use directly. Get from the lambda param of buildSsoPacket")
     internal fun nextSsoSequenceId() = _ssoSequenceId.addAndGet(2)

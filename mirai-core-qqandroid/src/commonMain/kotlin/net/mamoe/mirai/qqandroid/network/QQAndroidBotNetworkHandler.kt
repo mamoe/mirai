@@ -37,6 +37,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
@@ -107,7 +108,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     @OptIn(MiraiExperimentalAPI::class)
-    override suspend fun relogin(cause: Throwable?) {
+    override suspend fun relogin(host: String, port: Int, cause: Throwable?) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
         if (::channel.isInitialized) {
@@ -121,10 +122,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
         channel = PlatformSocket()
         // TODO: 2020/2/14 连接多个服务器, #52
+
         withTimeoutOrNull(3000) {
-            channel.connect("114.221.144.22", 8080)
+            channel.connect(host, port)
         } ?: error("timeout connecting server")
-        logger.info("Connected to server 114.221.144.22:8080")
+        logger.info("Connected to server $host:$port")
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
 
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
@@ -299,6 +301,30 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         coroutineScope {
             launch { reloadFriendList() }
             launch { reloadGroupList() }
+        }
+
+        this@QQAndroidBotNetworkHandler.launch {
+            logger.info { "Awaiting ConfigPushSvc.PushReq" }
+            val resp =
+                subscribingGetOrNull<ConfigPushSvc.PushReq.PushReqResponse, ConfigPushSvc.PushReq.PushReqResponse>(
+                    10_000) { it }
+
+            when (resp) {
+                null -> logger.info { "Missing ConfigPushSvc.PushReq." }
+                is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
+                    logger.info { "ConfigPushSvc.PushReq: success" }
+                }
+                is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
+                    logger.info { "Server requires reconnect." }
+                    logger.info { "ChangeServer.unknown = ${resp.unknown}" }
+                    logger.info { "Server list: ${resp.serverList.joinToString()}" }
+
+                    resp.serverList.forEach {
+                        bot.client.serverList.add(it.host to it.port)
+                    }
+                    BotOfflineEvent.RequireReconnect(bot).broadcast()
+                }
+            }
         }
 
         withTimeoutOrNull(30000) {

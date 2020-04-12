@@ -43,6 +43,8 @@ internal sealed class PacketFactory<TPacket : Packet?> {
      * 筛选从服务器接收到的包时的 commandName
      */
     abstract val receivingCommandName: String
+
+    open val canBeCached: Boolean get() = true
 }
 
 /**
@@ -216,7 +218,7 @@ internal object KnownPacketFactories {
                 }?.let {
                     it as IncomingPacket<T>
 
-                    if (it.packetFactory is IncomingPacketFactory<T> && bot.network.pendingEnabled) {
+                    if (it.packetFactory is IncomingPacketFactory<T> && it.packetFactory.canBeCached && bot.network.pendingEnabled) {
                         bot.network.pendingIncomingPackets?.addLast(it.also {
                             it.consumer = consumer
                             it.flag2 = flag2

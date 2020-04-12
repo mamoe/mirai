@@ -83,10 +83,14 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @Suppress("PropertyName")
     internal lateinit var _network: N
 
+    protected abstract suspend fun relogin(cause: Throwable?)
+
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> = this.subscribeAlways { event ->
         when (event) {
-            is BotOfflineEvent.Dropped -> {
+            is BotOfflineEvent.Dropped,
+            is BotOfflineEvent.RequireReconnect
+            -> {
                 if (!_network.isActive) {
                     return@subscribeAlways
                 }
@@ -96,9 +100,9 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                     if (tryCount != 0) {
                         delay(configuration.reconnectPeriodMillis)
                     }
-                    network.relogin(event.cause)
+                    relogin((event as? BotOfflineEvent.Dropped)?.cause)
                     logger.info("Reconnected successfully")
-                    BotReloginEvent(bot, event.cause).broadcast()
+                    BotReloginEvent(bot, (event as? BotOfflineEvent.Dropped)?.cause).broadcast()
                     return@subscribeAlways
                 }?.let {
                     logger.info("Cannot reconnect")
@@ -134,7 +138,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             while (true) {
                 _network = createNetworkHandler(this.coroutineContext)
                 try {
-                    _network.relogin()
+                    relogin(null)
                     return
                 } catch (e: LoginFailedException) {
                     throw e

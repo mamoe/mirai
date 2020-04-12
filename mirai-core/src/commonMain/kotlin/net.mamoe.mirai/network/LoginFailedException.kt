@@ -30,6 +30,11 @@ sealed class LoginFailedException : RuntimeException {
 class WrongPasswordException(message: String?) : LoginFailedException(message)
 
 /**
+ * 无可用服务器
+ */
+class NoServerAvailableException(override val cause: Throwable?) : LoginFailedException("no server available")
+
+/**
  * 需要短信验证时抛出. mirai 目前还不支持短信验证.
  */
 @MiraiExperimentalAPI

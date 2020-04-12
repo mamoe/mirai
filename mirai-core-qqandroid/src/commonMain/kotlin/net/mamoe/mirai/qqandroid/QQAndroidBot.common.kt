@@ -46,7 +46,6 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
@@ -202,6 +201,12 @@ internal abstract class QQAndroidBotBase constructor(
             override val uin: Long get() = this@QQAndroidBotBase.id
             override val nick: String get() = this@QQAndroidBotBase.nick
         })
+    }
+
+    override suspend fun relogin(cause: Throwable?) {
+        client.useNextServers { host, port ->
+            network.relogin(host, port, cause)
+        }
     }
 
     @LowLevelAPI

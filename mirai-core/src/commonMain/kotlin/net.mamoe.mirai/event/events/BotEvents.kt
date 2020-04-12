@@ -71,6 +71,12 @@ sealed class BotOfflineEvent : BotEvent {
      * 被服务器断开或因网络问题而掉线
      */
     data class Dropped(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), Packet, BotPassiveEvent
+
+    /**
+     * 服务器主动要求更换另一个服务器
+     */
+    @SinceMirai("0.38.0")
+    data class RequireReconnect(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
 }
 
 /**

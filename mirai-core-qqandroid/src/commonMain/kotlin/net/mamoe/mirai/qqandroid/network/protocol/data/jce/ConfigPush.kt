@@ -12,7 +12,6 @@ package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
-import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 
 @Serializable
@@ -85,7 +84,7 @@ internal class _340(
     @JceId(14) val netType: Byte? = 0,
     @JceId(15) val heThreshold: Int? = 0,
     @JceId(16) val policyId: String? = ""
-) : ProtoBuf
+) : JceStruct
 
 @Serializable
 internal class _339(
@@ -102,8 +101,8 @@ internal class _339(
 
 @Serializable
 internal class FileStoragePushFSSvcList(
-    @JceId(0) val vUpLoadList: List<FileStorageServerListInfo> = listOf(),
-    @JceId(1) val vPicDownLoadList: List<FileStorageServerListInfo> = listOf(),
+    @JceId(0) val vUpLoadList: List<FileStorageServerListInfo>? = listOf(),
+    @JceId(1) val vPicDownLoadList: List<FileStorageServerListInfo>? = listOf(),
     @JceId(2) val vGPicDownLoadList: List<FileStorageServerListInfo>? = null,
     @JceId(3) val vQzoneProxyServiceList: List<FileStorageServerListInfo>? = null,
     @JceId(4) val vUrlEncodeServiceList: List<FileStorageServerListInfo>? = null,
