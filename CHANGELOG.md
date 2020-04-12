@@ -2,6 +2,16 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.37.1`  2020/4/12
+**从 `0.37.1` 起 JVM 平台依赖无需带 "-jvm" 模块名**  
+**即原 "mirai-core-jvm" 和 "mirai-core-qqandroid-jvm" 均需去掉 "-jvm", 变为 "mirai-core" 和 "mirai-core-qqandroid"**
+
+- 登录时尝试多个服务器, 随服务器需求切换服务器 (解决潜在的无法登录的问题) (#52)
+- 优化带有 `QuoteReply` 时的消息长度估算
+- 添加 `MessageChainBuilder.build`, 效果同 `asMessageChain`
+- 在 `ContactMessage` 中添加 `At.isBot`
+- 在 `MessageSubscribersBuilder` 中添加 `String.invoke`, `atBot` DSL
+
 ## `0.37.0`  2020/4/11
 - 支持主动退群: `Group.quit`, `BotLeaveEvent.Active`
 - 支持临时消息撤回
