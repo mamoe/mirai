@@ -69,7 +69,6 @@ internal class MessageSourceFromFriendImpl(
             onlineSource = false
         )
     }
-    override val target: Bot get() = bot
     override val sender: QQ get() = bot.getFriend(msg.msgHead.fromUin)
 
     private val elems by lazy {
@@ -132,7 +131,6 @@ internal class MessageSourceFromTempImpl(
             onlineSource = false
         )
     }
-    override val target: Bot get() = bot
     override val sender: Member
         get() = with(msg.msgHead) {
             bot.getGroup(c2cTmpMsgHead!!.groupUin)[fromUin]
@@ -198,7 +196,6 @@ internal class MessageSourceFromGroupImpl(
             onlineSource = false
         )
     }
-    override val target: Bot get() = bot
     override val sender: Member
         get() = bot.getGroup(
             msg.msgHead.groupInfo?.groupCode
