@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE", "EXPERIMENTAL_OVERRIDE")
 
 package net.mamoe.mirai.contact
 
@@ -36,7 +36,7 @@ import kotlin.jvm.JvmSynthetic
  * @author Him188moe
  */ // 不要删除多平台结构 !!! kotlin bug
 @OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
-abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI() {
+abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), Identified {
     /**
      * 这个联系人所属 [Bot].
      */
@@ -52,7 +52,7 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI() {
      * @see QQ.id
      * @see Group.id
      */
-    abstract val id: Long
+    abstract override val id: Long
 
     /**
      * 向这个对象发送消息.

@@ -48,7 +48,7 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 @OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
-abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI() {
+abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(), Identified {
     companion object {
         /**
          * 复制一份此时的 [Bot] 实例列表.
@@ -85,7 +85,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * QQ 号码. 实际类型为 uint
      */
     @SinceMirai("0.32.0")
-    abstract val id: Long
+    abstract override val id: Long
 
     /**
      * 昵称
