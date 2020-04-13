@@ -238,6 +238,12 @@ fun Message.asMessageChain(): MessageChain = when (this) {
  * 直接将 [this] 委托为一个 [MessageChain]
  */
 @JvmSynthetic
+fun SingleMessage.asMessageChain(): MessageChain = SingleMessageChainImpl(this)
+
+/**
+ * 直接将 [this] 委托为一个 [MessageChain]
+ */
+@JvmSynthetic
 fun Collection<SingleMessage>.asMessageChain(): MessageChain =
     MessageChainImplByCollection(this.constrainSingleMessages())
 

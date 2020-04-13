@@ -224,7 +224,7 @@ suspend inline fun <C : Contact> Message.sendTo(contact: C): MessageReceipt<C> {
 inline fun Message.repeat(count: Int): MessageChain {
     if (this is ConstrainSingle<*>) {
         // fast-path
-        return SingleMessageChainImpl(this)
+        return this.asMessageChain()
     }
     return buildMessageChain(count) {
         add(this@repeat)
