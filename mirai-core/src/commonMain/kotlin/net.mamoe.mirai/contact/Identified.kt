@@ -10,21 +10,33 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 拥有 [id] 的对象.
  * 此为 [Contact] 与 [Bot] 的唯一公共接口.
+ * **注意:** 此接口为实验性接口, 将来可能会发生不兼容的更名.
  *
  * @see Contact
  * @see Bot
  */
-@MiraiExperimentalAPI("classname may change")
-@SinceMirai("0.38.0")
+@ExperimentalIdentification("classname may change")
+@SinceMirai("0.37.2")
 interface Identified {
     /**
      * QQ 号或群号.
      */
     val id: Long
 }
+
+
+/**
+ * 标记使用实验性 [Identified] 接口.
+ */
+@Retention(AnnotationRetention.SOURCE)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS, AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CONSTRUCTOR)
+annotation class ExperimentalIdentification(
+    val message: String = ""
+)

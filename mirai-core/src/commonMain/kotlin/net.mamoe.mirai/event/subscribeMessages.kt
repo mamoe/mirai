@@ -458,7 +458,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** 如果消息内容 `==` [equals] */
     @MessageDsl
-    @SinceMirai("0.38.0")
+    @SinceMirai("0.37.1")
     operator fun String.invoke(block: MessageListener<M, R>): Ret {
         return case(this, onEvent = block)
     }

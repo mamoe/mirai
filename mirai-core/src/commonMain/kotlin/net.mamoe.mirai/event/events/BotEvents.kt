@@ -75,7 +75,7 @@ sealed class BotOfflineEvent : BotEvent {
     /**
      * 服务器主动要求更换另一个服务器
      */
-    @SinceMirai("0.38.0")
+    @SinceMirai("0.37.1")
     data class RequireReconnect(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
 }
 
