@@ -2,6 +2,9 @@
 
 package net.mamoe.mirai.utils.internal
 
+import kotlinx.io.pool.DefaultPool
+import kotlinx.io.pool.ObjectPool
+
 expect abstract class InputStream {
     open fun available(): Int
     open fun close()
@@ -21,9 +24,50 @@ internal fun ByteArray.checkOffsetAndLength(offset: Int, length: Int) {
     require(offset + length <= this.size) { "offset ($offset) + length ($length) > array.size (${this.size})" }
 }
 
-internal inline fun InputStream.readInSequence(block: (Int) -> Unit) {
+
+internal inline fun InputStream.readInSequence(block: (ByteArray, len: Int) -> Unit) {
     var read: Int
-    while (this.read().also { read = it } != -1) {
-        block(read)
+    ByteArrayPool.useInstance { buf ->
+        while (this.read(buf).also { read = it } != -1) {
+            block(buf, read)
+        }
+    }
+}
+
+
+/**
+ * 缓存 [ByteArray] 实例的 [ObjectPool]
+ */
+internal object ByteArrayPool : DefaultPool<ByteArray>(32) {
+    /**
+     * 每一个 [ByteArray] 的大小
+     */
+    const val BUFFER_SIZE: Int = 8192
+
+    override fun produceInstance(): ByteArray = ByteArray(BUFFER_SIZE)
+
+    override fun clearInstance(instance: ByteArray): ByteArray = instance
+
+    fun checkBufferSize(size: Int) {
+        require(size <= BUFFER_SIZE) { "sizePerPacket is too large. Maximum buffer size=$BUFFER_SIZE" }
+    }
+
+    fun checkBufferSize(size: Long) {
+        require(size <= BUFFER_SIZE) { "sizePerPacket is too large. Maximum buffer size=$BUFFER_SIZE" }
+    }
+
+    /**
+     * 请求一个大小至少为 [requestedSize] 的 [ByteArray] 实例.
+     */ // 不要写为扩展函数. 它需要优先于 kotlinx.io 的扩展函数 resolve
+    inline fun <R> useInstance(requestedSize: Int = 0, block: (ByteArray) -> R): R {
+        if (requestedSize > BUFFER_SIZE) {
+            return ByteArray(requestedSize).run(block)
+        }
+        val instance = borrow()
+        try {
+            return block(instance)
+        } finally {
+            recycle(instance)
+        }
     }
 }

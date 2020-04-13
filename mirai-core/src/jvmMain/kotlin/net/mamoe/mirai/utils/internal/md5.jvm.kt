@@ -13,8 +13,8 @@ internal actual fun ByteArray.md5(offset: Int, length: Int): ByteArray {
 internal actual fun InputStream.md5(): ByteArray {
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
-    this.readInSequence {
-        digest.update(it.toByte())
+    this.readInSequence { buf, len ->
+        digest.update(buf, 0, len)
     }
     return digest.digest()
 }

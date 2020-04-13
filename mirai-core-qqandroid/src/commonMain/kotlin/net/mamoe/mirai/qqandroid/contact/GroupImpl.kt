@@ -40,6 +40,9 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
+import kotlin.math.roundToInt
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 @OptIn(ExperimentalContracts::class)
 internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
@@ -344,6 +347,7 @@ internal class GroupImpl(
         return MessageReceipt(source, this, botAsMember)
     }
 
+    @OptIn(ExperimentalTime::class)
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
@@ -391,18 +395,21 @@ internal class GroupImpl(
                     // 每 10KB 等 1 秒, 最少等待 5 秒
                     val success = response.uploadIpList.zip(response.uploadPortList).any { (ip, port) ->
                         withTimeoutOrNull((image.inputSize * 1000 / 1024 / 10).coerceAtLeast(5000)) {
-                            bot.network.logger.verbose { "[Highway] Uploading group image to ${ip.toIpV4AddressString()}:$port: size=${image.inputSize / 1024} KiB" }
-                            HighwayHelper.uploadImage(
-                                client = bot.client,
-                                serverIp = ip.toIpV4AddressString(),
-                                serverPort = port,
-                                imageInput = image.input,
-                                inputSize = image.inputSize.toInt(),
-                                fileMd5 = image.md5,
-                                ticket = response.uKey,
-                                commandId = 2
-                            )
-                            bot.network.logger.verbose { "[Highway] Uploading group image: succeed" }
+                            bot.network.logger.verbose { "[Highway] Uploading group image to ${ip.toIpV4AddressString()}:$port, size=${image.inputSize / 1024} KiB" }
+
+                            val time = measureTime {
+                                HighwayHelper.uploadImage(
+                                    client = bot.client,
+                                    serverIp = ip.toIpV4AddressString(),
+                                    serverPort = port,
+                                    imageInput = image.input,
+                                    inputSize = image.inputSize.toInt(),
+                                    fileMd5 = image.md5,
+                                    ticket = response.uKey,
+                                    commandId = 2
+                                )
+                            }
+                            bot.network.logger.verbose { "[Highway] Uploading group image: succeed at ${(image.inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s" }
                             true
                         } ?: kotlin.run {
                             bot.network.logger.verbose { "[Highway] Uploading group image: timeout, retrying next server" }
