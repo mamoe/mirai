@@ -38,8 +38,11 @@ internal object CoreUpdater {
             println("Updating shadowed-core from V$current -> V$newest, this is a force update")
             this.getProtocolLib()?.delete()
             MiraiDownloader
-                .addTask("https://pan.jasonczc.cn/?/mirai/mirai-core-qqandroid/mirai-core-qqandroid-$newest.mp4",getContent("mirai-core-qqandroid-jvm-$newest.jar"))
-                //.addTask("https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/mirai-core-qqandroid/mirai-core-qqandroid-$newest.jar", getContent("mirai-core-qqandroid-jvm-$newest.jar"))
+                .addTask(
+                    "https://pan.jasonczc.cn/?/mirai/mirai-core-qqandroid/mirai-core-qqandroid-$newest.mp4",
+                    getContent("mirai-core-qqandroid-jvm-$newest.jar")
+                )
+            //.addTask("https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/mirai-core-qqandroid/mirai-core-qqandroid-$newest.jar", getContent("mirai-core-qqandroid-jvm-$newest.jar"))
 
         }
     }
@@ -54,7 +57,7 @@ internal object CoreUpdater {
                         url {
                             protocol = URLProtocol.HTTPS
                             host = "jcenter.bintray.com"
-                            path("net/mamoe/mirai-core-qqandroid-jvm/")
+                            path("net/mamoe/mirai-core-qqandroid/")
                         }
                     }).asSequence()
                 .map { it.value.drop(1).dropLast(1) }
@@ -83,7 +86,6 @@ internal object CoreUpdater {
         }
         return "0.0.0"
     }
-
 
 
     /*
