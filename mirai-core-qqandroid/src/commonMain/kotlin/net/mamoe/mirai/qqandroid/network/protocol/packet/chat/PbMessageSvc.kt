@@ -101,12 +101,14 @@ internal class PbMessageSvc {
                                     )
                                 )
                             ),
-                            reserved = "08 01 10 E3 E9 D6 80 02".hexToBytes()
+                            reserved = RESERVED_TEMP
                         )
                     )
                 )
             )
         }
+
+        private val RESERVED_TEMP = "08 01 10 E3 E9 D6 80 02".hexToBytes()
 
         fun createForFriendMessage(
             client: QQAndroidClient,
@@ -136,7 +138,7 @@ internal class PbMessageSvc {
                                     )
                                 )
                             ),
-                            reserved = "08 00".hexToBytes()
+                            reserved = byteArrayOf(0x08, 0x00)
                         )
                     )
                 )
