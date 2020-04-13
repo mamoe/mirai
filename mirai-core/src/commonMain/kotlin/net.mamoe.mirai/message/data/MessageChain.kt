@@ -246,7 +246,7 @@ fun Collection<SingleMessage>.asMessageChain(): MessageChain =
  */
 @JvmName("newChain")
 // @JsName("newChain")
-inline fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
  * 直接将 [this] 委托为一个 [MessageChain]
@@ -256,27 +256,27 @@ fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
     MessageChainImplByCollection(this.constrainSingleMessages())
 
 @JvmSynthetic
-inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
+fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
 @JvmName("newChain")
 // @JsName("newChain")
-inline fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
  * 直接将 [this] 委托为一个 [MessageChain]
  */
 @JvmSynthetic
-inline fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this)
+fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this)
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
 @JvmName("newChain")
 // @JsName("newChain")
-inline fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
  * 构造一个 [MessageChain]
@@ -386,162 +386,3 @@ object NullMessageChain : MessageChain {
     override fun equals(other: Any?): Boolean = other === this
     override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }
-
-
-////////////////////////////
-// region implementations
-///////////////////////////
-
-@OptIn(MiraiExperimentalAPI::class)
-internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
-    val iterator = this.iterator()
-    return constrainSingleMessagesImpl supplier@{
-        if (iterator.hasNext()) {
-            iterator.next()
-        } else null
-    }
-}
-
-@MiraiExperimentalAPI
-internal inline fun constrainSingleMessagesImpl(iterator: () -> SingleMessage?): ArrayList<SingleMessage> {
-    val list = ArrayList<SingleMessage>()
-    var firstConstrainIndex = -1
-
-    var next: SingleMessage?
-    do {
-        next = iterator()
-        next?.let { singleMessage ->
-            if (singleMessage is ConstrainSingle<*>) {
-                if (firstConstrainIndex == -1) {
-                    firstConstrainIndex = list.size // we are going to add one
-                } else {
-                    val key = singleMessage.key
-                    val index = list.indexOfFirst(firstConstrainIndex) { it is ConstrainSingle<*> && it.key == key }
-                    if (index != -1) {
-                        list[index] = singleMessage
-                        return@let
-                    }
-                }
-            }
-
-            list.add(singleMessage)
-        } ?: return list
-    } while (true)
-}
-
-@OptIn(MiraiExperimentalAPI::class)
-internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
-    val iterator = this.iterator()
-    return constrainSingleMessagesImpl supplier@{
-        if (iterator.hasNext()) {
-            iterator.next()
-        } else null
-    }
-}
-
-internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Boolean): Int {
-    for (index in offset..this.lastIndex) {
-        if (predicate(this[index]))
-            return index
-    }
-    return -1
-}
-
-
-@OptIn(MiraiExperimentalAPI::class)
-@JvmSynthetic
-@Suppress("UNCHECKED_CAST")
-internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M? = when (key) {
-    At -> firstIsInstanceOrNull<At>()
-    AtAll -> firstIsInstanceOrNull<AtAll>()
-    PlainText -> firstIsInstanceOrNull<PlainText>()
-    Image -> firstIsInstanceOrNull<Image>()
-    OnlineImage -> firstIsInstanceOrNull<OnlineImage>()
-    OfflineImage -> firstIsInstanceOrNull<OfflineImage>()
-    GroupImage -> firstIsInstanceOrNull<GroupImage>()
-    FriendImage -> firstIsInstanceOrNull<FriendImage>()
-    Face -> firstIsInstanceOrNull<Face>()
-    QuoteReply -> firstIsInstanceOrNull<QuoteReply>()
-    MessageSource -> firstIsInstanceOrNull<MessageSource>()
-    OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
-    OfflineMessageSource -> firstIsInstanceOrNull<OfflineMessageSource>()
-    OnlineMessageSource.Outgoing -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing>()
-    OnlineMessageSource.Outgoing.ToGroup -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing.ToGroup>()
-    OnlineMessageSource.Outgoing.ToFriend -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing.ToFriend>()
-    OnlineMessageSource.Incoming -> firstIsInstanceOrNull<OnlineMessageSource.Incoming>()
-    OnlineMessageSource.Incoming.FromGroup -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromGroup>()
-    OnlineMessageSource.Incoming.FromFriend -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromFriend>()
-    OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
-    XmlMessage -> firstIsInstanceOrNull<XmlMessage>()
-    JsonMessage -> firstIsInstanceOrNull<JsonMessage>()
-    RichMessage -> firstIsInstanceOrNull<RichMessage>()
-    LightApp -> firstIsInstanceOrNull<LightApp>()
-    PokeMessage -> firstIsInstanceOrNull<PokeMessage>()
-    HummerMessage -> firstIsInstanceOrNull<HummerMessage>()
-    FlashImage -> firstIsInstanceOrNull<FlashImage>()
-    GroupFlashImage -> firstIsInstanceOrNull<GroupFlashImage>()
-    FriendFlashImage -> firstIsInstanceOrNull<FriendFlashImage>()
-    else -> null
-} as M?
-
-/**
- * 使用 [Collection] 作为委托的 [MessageChain]
- */
-@PublishedApi
-internal class MessageChainImplByCollection constructor(
-    internal val delegate: Collection<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
-) : Message, Iterable<SingleMessage>, MessageChain {
-    override val size: Int get() = delegate.size
-    override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
-
-    private var toStringTemp: String? = null
-        get() = field ?: this.delegate.joinToString("") { it.toString() }.also { field = it }
-
-    override fun toString(): String = toStringTemp!!
-
-    private var contentToStringTemp: String? = null
-        get() = field ?: this.delegate.joinToString("") { it.contentToString() }.also { field = it }
-
-    override fun contentToString(): String = contentToStringTemp!!
-}
-
-/**
- * 使用 [Iterable] 作为委托的 [MessageChain]
- */
-@PublishedApi
-internal class MessageChainImplBySequence constructor(
-    delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
-) : Message, Iterable<SingleMessage>, MessageChain {
-    override val size: Int by lazy { collected.size }
-
-    /**
-     * [Sequence] 可能只能消耗一遍, 因此需要先转为 [List]
-     */
-    private val collected: List<SingleMessage> by lazy { delegate.constrainSingleMessages() }
-    override fun iterator(): Iterator<SingleMessage> = collected.iterator()
-
-    private var toStringTemp: String? = null
-        get() = field ?: this.joinToString("") { it.toString() }.also { field = it }
-
-    override fun toString(): String = toStringTemp!!
-
-    private var contentToStringTemp: String? = null
-        get() = field ?: this.joinToString("") { it.contentToString() }.also { field = it }
-
-    override fun contentToString(): String = contentToStringTemp!!
-}
-
-/**
- * 单个 [SingleMessage] 作为 [MessageChain]
- */
-@PublishedApi
-internal class SingleMessageChainImpl constructor(
-    internal val delegate: SingleMessage
-) : Message, Iterable<SingleMessage>, MessageChain {
-    override val size: Int get() = 1
-    override fun toString(): String = this.delegate.toString()
-    override fun contentToString(): String = this.delegate.contentToString()
-    override fun iterator(): Iterator<SingleMessage> = iterator { yield(delegate) }
-}
-
-// endregion
