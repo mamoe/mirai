@@ -554,6 +554,7 @@ internal abstract class QQAndroidBotBase constructor(
                 time = time.toInt(),
                 random = Random.nextInt().absoluteValue.toUInt(),
                 groupCode = groupCode,
+                botId = this@QQAndroidBotBase.id,
                 botMemberNameCard = group.botAsMember.nameCardOrNick
             )
 

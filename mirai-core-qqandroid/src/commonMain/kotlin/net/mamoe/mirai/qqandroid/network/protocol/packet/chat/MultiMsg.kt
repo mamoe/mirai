@@ -47,6 +47,7 @@ internal fun MessageChain.calculateValidationDataForGroup(
     time: Int,
     random: UInt,
     groupCode: Long,
+    botId: Long,
     botMemberNameCard: String
 ): MessageValidationData {
     val richTextElems = this.toRichTextElems(forGroup = true, withGeneralFlags = false)
@@ -55,7 +56,7 @@ internal fun MessageChain.calculateValidationDataForGroup(
         msg = listOf(
             MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
-                    fromUin = 1040400290,
+                    fromUin = botId,
                     msgSeq = sequenceId,
                     msgTime = time,
                     msgUid = 0x01000000000000000L or random.toLong(),
