@@ -64,7 +64,8 @@ internal class DomainIpInfo(
 internal class DomainIpList(
     @JceId(0) val uDomainType: Int,
     @JceId(1) val vIplist: List<DomainIpInfo>,
-    @JceId(2) val unknown: ByteArray // added
+    @JceId(2) val unknown: ByteArray? = null,
+    @JceId(4) val int: Int? = null// added
 ) : JceStruct
 
 @Serializable

@@ -25,7 +25,6 @@ import kotlinx.io.core.Input
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readAvailable
 import kotlinx.io.core.use
-import kotlinx.io.pool.useInstance
 import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
@@ -109,8 +108,8 @@ internal object HighwayHelper {
     ) {
         require(imageInput is Input || imageInput is InputStream || imageInput is ByteReadChannel) { "unsupported imageInput: ${imageInput::class.simpleName}" }
         require(fileMd5.size == 16) { "bad md5. Required size=16, got ${fileMd5.size}" }
-      //  require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
-       // require(commandId == 2 || commandId == 1) { "bad commandId. Must be 1 or 2" }
+        //  require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
+        // require(commandId == 2 || commandId == 1) { "bad commandId. Must be 1 or 2" }
 
         val socket = PlatformSocket()
         socket.connect(serverIp, serverPort)
