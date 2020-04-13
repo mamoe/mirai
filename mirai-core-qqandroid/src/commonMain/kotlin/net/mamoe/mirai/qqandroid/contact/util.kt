@@ -14,7 +14,7 @@ import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.MessageSendEvent
-import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.LongMessage
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.QuoteReply
@@ -28,6 +28,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.verbose
 
 @OptIn(MiraiInternalAPI::class)
 internal suspend fun QQ.sendMessageImpl(message: Message): MessageReceipt<QQ> {
@@ -55,6 +56,23 @@ internal suspend fun QQ.sendMessageImpl(message: Message): MessageReceipt<QQ> {
 internal fun Contact.logMessageSent(message: Message) {
     if (message !is LongMessage) {
         bot.logger.verbose("$this <- ${message.toString().singleLine()}")
+    }
+}
+
+@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
+internal fun ContactMessage.logMessageReceived() {
+    when (this) {
+        is GroupMessage -> bot.logger.verbose {
+            "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(${sender.id}) -> ${message.toString()
+                .singleLine()}"
+        }
+        is TempMessage -> bot.logger.verbose {
+            "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(Temp ${sender.id}) -> ${message.toString()
+                .singleLine()}"
+        }
+        is FriendMessage -> bot.logger.verbose {
+            "${sender.nick.singleLine()}(${sender.id}) -> ${message.toString().singleLine()}"
+        }
     }
 }
 

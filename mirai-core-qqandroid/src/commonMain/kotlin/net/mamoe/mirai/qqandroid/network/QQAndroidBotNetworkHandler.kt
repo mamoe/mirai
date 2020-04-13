@@ -20,16 +20,12 @@ import kotlinx.io.core.use
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
-import net.mamoe.mirai.message.FriendMessage
-import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.contact.FriendInfoImpl
-import net.mamoe.mirai.qqandroid.contact.GroupImpl
-import net.mamoe.mirai.qqandroid.contact.QQImpl
-import net.mamoe.mirai.qqandroid.contact.singleLine
+import net.mamoe.mirai.qqandroid.contact.*
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
@@ -451,13 +447,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 is Packet.NoLog -> {
                     // nothing to do
                 }
-                is GroupMessage -> bot.logger.verbose {
-                    "[${packet.group.name}(${packet.group.id})] ${packet.senderName}(${packet.sender.id}) -> ${packet.message.toString()
-                        .singleLine()}"
-                }
-                is FriendMessage -> bot.logger.verbose {
-                    "${packet.sender.nick}(${packet.sender.id}) -> ${packet.message.toString().singleLine()}"
-                }
+                is ContactMessage -> packet.logMessageReceived()
                 is Event -> bot.logger.verbose { "Event: ${packet.toString().singleLine()}" }
                 else -> logger.verbose { "Packet: ${packet.toString().singleLine()}" }
             }
