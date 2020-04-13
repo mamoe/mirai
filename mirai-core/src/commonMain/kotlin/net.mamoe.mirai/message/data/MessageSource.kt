@@ -39,12 +39,12 @@ import kotlin.jvm.JvmSynthetic
  */
 @OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.33.0")
-sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<OnlineMessageSource> {
+sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
     companion object Key : Message.Key<MessageSource> {
         override val typeName: String get() = "MessageSource"
     }
 
-    final override val key: Message.Key<OnlineMessageSource> get() = OnlineMessageSource
+    final override val key: Message.Key<MessageSource> get() = Key
 
     /**
      * 所属 [Bot]
@@ -153,13 +153,6 @@ sealed class OnlineMessageSource : MessageSource() {
             abstract override val target: QQ
             final override val subject: QQ get() = target
             //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.id})"
-
-            @PlannedRemoval("1.0.0")
-            @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
-            @get:JvmName("sender")
-            @get:JvmSynthetic
-            final override val sender2: Bot
-                get() = sender
         }
 
         abstract class ToTemp : Outgoing() {
@@ -188,8 +181,7 @@ sealed class OnlineMessageSource : MessageSource() {
      */
     sealed class Incoming : OnlineMessageSource() {
         companion object Key : Message.Key<Incoming> {
-            override val typeName: String
-                get() = "OnlineMessageSource.Incoming"
+            override val typeName: String get() = "OnlineMessageSource.Incoming"
         }
 
         abstract override val sender: QQ // out QQ
@@ -199,8 +191,7 @@ sealed class OnlineMessageSource : MessageSource() {
 
         abstract class FromFriend : Incoming() {
             companion object Key : Message.Key<FromFriend> {
-                override val typeName: String
-                    get() = "OnlineMessageSource.Incoming.FromFriend"
+                override val typeName: String get() = "OnlineMessageSource.Incoming.FromFriend"
             }
 
             abstract override val sender: QQ
@@ -211,8 +202,7 @@ sealed class OnlineMessageSource : MessageSource() {
 
         abstract class FromTemp : Incoming() {
             companion object Key : Message.Key<FromTemp> {
-                override val typeName: String
-                    get() = "OnlineMessageSource.Incoming.FromTemp"
+                override val typeName: String get() = "OnlineMessageSource.Incoming.FromTemp"
             }
 
             abstract override val sender: Member
@@ -223,8 +213,7 @@ sealed class OnlineMessageSource : MessageSource() {
 
         abstract class FromGroup : Incoming() {
             companion object Key : Message.Key<FromGroup> {
-                override val typeName: String
-                    get() = "OnlineMessageSource.Incoming.FromGroup"
+                override val typeName: String get() = "OnlineMessageSource.Incoming.FromGroup"
             }
 
             abstract override val sender: Member

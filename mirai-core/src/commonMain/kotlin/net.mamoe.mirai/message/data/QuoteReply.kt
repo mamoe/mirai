@@ -9,11 +9,12 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "unused")
 
 package net.mamoe.mirai.message.data
 
 import kotlinx.coroutines.Job
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
@@ -46,6 +47,31 @@ class QuoteReply(val source: MessageSource) : Message, MessageMetadata, Constrai
     override fun toString(): String = "[mirai:quote:${source.id}]"
     override fun contentToString(): String = ""
 }
+
+@get:JvmSynthetic
+inline val QuoteReply.id: Int
+    get() = source.id
+
+@get:JvmSynthetic
+inline val QuoteReply.fromId: Long
+    get() = source.fromId
+
+@get:JvmSynthetic
+inline val QuoteReply.targetId: Long
+    get() = source.targetId
+
+@get:JvmSynthetic
+inline val QuoteReply.originalMessage: MessageChain
+    get() = source.originalMessage
+
+@get:JvmSynthetic
+inline val QuoteReply.time: Int
+    get() = source.time
+
+@get:JvmSynthetic
+inline val QuoteReply.bot: Bot
+    get() = source.bot
+
 
 @JvmSynthetic
 suspend inline fun QuoteReply.recall() = this.source.recall()

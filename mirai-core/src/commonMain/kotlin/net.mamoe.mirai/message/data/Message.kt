@@ -270,7 +270,7 @@ interface MessageMetadata : SingleMessage {
  */
 @SinceMirai("0.34.0")
 @MiraiExperimentalAPI
-interface ConstrainSingle<M : Message> : MessageMetadata {
+interface ConstrainSingle<out M : Message> : MessageMetadata {
     val key: Message.Key<M>
 }
 
