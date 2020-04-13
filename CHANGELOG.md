@@ -2,6 +2,13 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.37.2`  2020/4/13
+- 修复 `OnlineMessageSource.Incoming.target` 类型错误
+- 引入实验性 `Identified` 接口作为 `Contact` 和 `Bot` 的公共接口
+- 加快图片 MD5 计算过程
+- 加快图片上传过程
+- 其他小优化
+
 ## `0.37.1`  2020/4/12
 **从 `0.37.1` 起 JVM 平台依赖无需带 "-jvm" 模块名**  
 **即原 "mirai-core-jvm" 和 "mirai-core-qqandroid-jvm" 均需去掉 "-jvm", 变为 "mirai-core" 和 "mirai-core-qqandroid"**
