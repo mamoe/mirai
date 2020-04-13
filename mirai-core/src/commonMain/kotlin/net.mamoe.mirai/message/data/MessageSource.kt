@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("NOTHING_TO_INLINE", "unused")
+@file:Suppress("NOTHING_TO_INLINE", "unused", "INAPPLICABLE_JVM_NAME")
 
 package net.mamoe.mirai.message.data
 
@@ -19,10 +19,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.recallIn
-import net.mamoe.mirai.utils.LazyProperty
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.SinceMirai
+import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
@@ -120,13 +117,13 @@ sealed class OnlineMessageSource : MessageSource() {
      * 消息发送人. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群员][Member].
      * 即类型必定为 [Bot], [QQ] 或 [Member]
      */
-    abstract val sender: Any
+    abstract val sender: Identified
 
     /**
      * 消息发送目标. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群][Group].
      * 即类型必定为 [Bot], [QQ] 或 [Group]
      */
-    abstract val target: Any
+    abstract val target: Identified
 
     /**
      * 消息主体. 群消息时为 [Group]. 好友消息时为 [QQ], 临时消息为 [Member]
@@ -156,6 +153,13 @@ sealed class OnlineMessageSource : MessageSource() {
             abstract override val target: QQ
             final override val subject: QQ get() = target
             //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.id})"
+
+            @PlannedRemoval("1.0.0")
+            @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
+            @get:JvmName("sender")
+            @get:JvmSynthetic
+            final override val sender2: Bot
+                get() = sender
         }
 
         abstract class ToTemp : Outgoing() {
@@ -189,7 +193,6 @@ sealed class OnlineMessageSource : MessageSource() {
         }
 
         abstract override val sender: QQ // out QQ
-        abstract override val target: Bot
 
         final override val fromId: Long get() = sender.id
         final override val targetId: Long get() = target.id
@@ -202,6 +205,7 @@ sealed class OnlineMessageSource : MessageSource() {
 
             abstract override val sender: QQ
             final override val subject: QQ get() = sender
+            final override val target: Bot get() = sender.bot
             // final override fun toString(): String = "OnlineMessageSource.FromFriend(from=${sender.id})"
         }
 
@@ -212,8 +216,9 @@ sealed class OnlineMessageSource : MessageSource() {
             }
 
             abstract override val sender: Member
-            val group: Group get() = sender.group
+            inline val group: Group get() = sender.group
             final override val subject: Member get() = sender
+            final override val target: Bot get() = sender.bot
         }
 
         abstract class FromGroup : Incoming() {
@@ -224,10 +229,37 @@ sealed class OnlineMessageSource : MessageSource() {
 
             abstract override val sender: Member
             final override val subject: Group get() = sender.group
-            val group: Group get() = sender.group
-            // final override fun toString(): String = "OnlineMessageSource.FromGroup(group=${group.id}, sender=${sender.id})"
+            final override val target: Group get() = group
+            inline val group: Group get() = sender.group
         }
+
+
+        //////////////////////////////////
+        //// FOR BINARY COMPATIBILITY ////
+        //////////////////////////////////
+
+
+        @PlannedRemoval("1.0.0")
+        @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
+        @get:JvmName("target")
+        @get:JvmSynthetic
+        final override val target2: Any
+            get() = target
     }
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
+    @get:JvmName("target")
+    @get:JvmSynthetic
+    open val target2: Any
+        get() = target
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
+    @get:JvmName("sender")
+    @get:JvmSynthetic
+    open val sender2: Any
+        get() = sender
 }
 
 // inline for future removal
@@ -298,6 +330,8 @@ abstract class OfflineMessageSource : MessageSource() {
     enum class Kind {
         GROUP,
         FRIEND,
+
+        @SinceMirai("0.36.0")
         TEMP
     }
 
