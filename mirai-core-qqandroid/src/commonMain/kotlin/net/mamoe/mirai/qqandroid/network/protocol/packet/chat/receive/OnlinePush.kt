@@ -422,11 +422,16 @@ internal class OnlinePush {
             0x44L to lambda528 { bot ->
                 val msg = vProtobuf.loadAs(Submsgtype0x44.Submsgtype0x44.MsgBody.serializer())
                 when {
+                    msg.msgCleanCountMsg != null -> {
+
+                    }
                     msg.msgFriendMsgSync != null -> {
 
                     }
+                    else -> {
+                        bot.network.logger.debug { "OnlinePush528 0x44L: " + msg._miraiContentToString() }
+                    }
                 }
-                bot.network.logger.debug { "OnlinePush528 0x44L: " + msg._miraiContentToString() }
                 return@lambda528 emptySequence()
             },
             // bot 在其他客户端被踢或主动退出而同步情况
