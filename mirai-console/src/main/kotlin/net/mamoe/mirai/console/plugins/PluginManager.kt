@@ -165,7 +165,7 @@ object PluginManager {
         val pluginsFound = findPluginsResult.pluginsFound
         val pluginsLocation = findPluginsResult.pluginsLocation
 
-        //不仅要解决A->B->C->A, 还要解决A->B->C->A
+        //不仅要解决A->B->C->A, 还要解决A->B->A->A
         fun checkNoCircularDepends(
             target: PluginDescription,
             needDepends: List<String>,
