@@ -132,38 +132,7 @@ inline fun <reified M : Message> MessageChain.anyIsInstance(): Boolean = this.an
 @OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = when (key) {
-    At -> firstIsInstanceOrNull<At>()
-    AtAll -> firstIsInstanceOrNull<AtAll>()
-    PlainText -> firstIsInstanceOrNull<PlainText>()
-    Image -> firstIsInstanceOrNull<Image>()
-    OnlineImage -> firstIsInstanceOrNull<OnlineImage>()
-    OfflineImage -> firstIsInstanceOrNull<OfflineImage>()
-    GroupImage -> firstIsInstanceOrNull<GroupImage>()
-    FriendImage -> firstIsInstanceOrNull<FriendImage>()
-    Face -> firstIsInstanceOrNull<Face>()
-    QuoteReply -> firstIsInstanceOrNull<QuoteReply>()
-    MessageSource -> firstIsInstanceOrNull<MessageSource>()
-    OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
-    OfflineMessageSource -> firstIsInstanceOrNull<OfflineMessageSource>()
-    OnlineMessageSource.Outgoing -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing>()
-    OnlineMessageSource.Outgoing.ToGroup -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing.ToGroup>()
-    OnlineMessageSource.Outgoing.ToFriend -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing.ToFriend>()
-    OnlineMessageSource.Incoming -> firstIsInstanceOrNull<OnlineMessageSource.Incoming>()
-    OnlineMessageSource.Incoming.FromGroup -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromGroup>()
-    OnlineMessageSource.Incoming.FromFriend -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromFriend>()
-    OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
-    XmlMessage -> firstIsInstanceOrNull<XmlMessage>()
-    JsonMessage -> firstIsInstanceOrNull<JsonMessage>()
-    RichMessage -> firstIsInstanceOrNull<RichMessage>()
-    LightApp -> firstIsInstanceOrNull<LightApp>()
-    PokeMessage -> firstIsInstanceOrNull<PokeMessage>()
-    HummerMessage -> firstIsInstanceOrNull<HummerMessage>()
-    FlashImage -> firstIsInstanceOrNull<FlashImage>()
-    GroupFlashImage -> firstIsInstanceOrNull<GroupFlashImage>()
-    FriendFlashImage -> firstIsInstanceOrNull<FriendFlashImage>()
-    else -> null
-} as M?
+fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = firstOrNullImpl(key)
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -419,8 +388,9 @@ object NullMessageChain : MessageChain {
 }
 
 
+////////////////////////////
 // region implementations
-
+///////////////////////////
 
 @OptIn(MiraiExperimentalAPI::class)
 internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
@@ -476,6 +446,43 @@ internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Bool
     }
     return -1
 }
+
+
+@OptIn(MiraiExperimentalAPI::class)
+@JvmSynthetic
+@Suppress("UNCHECKED_CAST")
+internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M? = when (key) {
+    At -> firstIsInstanceOrNull<At>()
+    AtAll -> firstIsInstanceOrNull<AtAll>()
+    PlainText -> firstIsInstanceOrNull<PlainText>()
+    Image -> firstIsInstanceOrNull<Image>()
+    OnlineImage -> firstIsInstanceOrNull<OnlineImage>()
+    OfflineImage -> firstIsInstanceOrNull<OfflineImage>()
+    GroupImage -> firstIsInstanceOrNull<GroupImage>()
+    FriendImage -> firstIsInstanceOrNull<FriendImage>()
+    Face -> firstIsInstanceOrNull<Face>()
+    QuoteReply -> firstIsInstanceOrNull<QuoteReply>()
+    MessageSource -> firstIsInstanceOrNull<MessageSource>()
+    OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
+    OfflineMessageSource -> firstIsInstanceOrNull<OfflineMessageSource>()
+    OnlineMessageSource.Outgoing -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing>()
+    OnlineMessageSource.Outgoing.ToGroup -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing.ToGroup>()
+    OnlineMessageSource.Outgoing.ToFriend -> firstIsInstanceOrNull<OnlineMessageSource.Outgoing.ToFriend>()
+    OnlineMessageSource.Incoming -> firstIsInstanceOrNull<OnlineMessageSource.Incoming>()
+    OnlineMessageSource.Incoming.FromGroup -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromGroup>()
+    OnlineMessageSource.Incoming.FromFriend -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromFriend>()
+    OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
+    XmlMessage -> firstIsInstanceOrNull<XmlMessage>()
+    JsonMessage -> firstIsInstanceOrNull<JsonMessage>()
+    RichMessage -> firstIsInstanceOrNull<RichMessage>()
+    LightApp -> firstIsInstanceOrNull<LightApp>()
+    PokeMessage -> firstIsInstanceOrNull<PokeMessage>()
+    HummerMessage -> firstIsInstanceOrNull<HummerMessage>()
+    FlashImage -> firstIsInstanceOrNull<FlashImage>()
+    GroupFlashImage -> firstIsInstanceOrNull<GroupFlashImage>()
+    FriendFlashImage -> firstIsInstanceOrNull<FriendFlashImage>()
+    else -> null
+} as M?
 
 /**
  * 使用 [Collection] 作为委托的 [MessageChain]
