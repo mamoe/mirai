@@ -159,7 +159,7 @@ object PluginManager {
     /**
      * 尝试加载全部插件
      */
-    fun loadPlugins() {
+    fun loadPlugins(clear: Boolean = true) {
         logger.info("""开始加载${pluginsPath}下的插件""")
         val findPluginsResult = findPlugins()
         val pluginsFound = findPluginsResult.pluginsFound
@@ -249,8 +249,10 @@ object PluginManager {
         }
 
 
-        //清掉优先级队列, 来重新填充
-        pluginsSequence.clear()
+        if (clear) {
+            //清掉优先级队列, 来重新填充
+            pluginsSequence.clear()
+        }
 
         pluginsFound.values.forEach {
             try {
@@ -341,7 +343,7 @@ object PluginManager {
                 disablePlugin(it)
             }
         }
-        loadPlugins()
+        loadPlugins(false)
     }
 
 
