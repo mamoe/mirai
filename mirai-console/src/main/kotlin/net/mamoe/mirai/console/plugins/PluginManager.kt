@@ -339,9 +339,7 @@ object PluginManager {
 
     fun reloadPlugins() {
         pluginsSequence.forEach {
-            if (it.reload()) {
-                disablePlugin(it)
-            }
+            it.disable()
         }
         loadPlugins(false)
     }

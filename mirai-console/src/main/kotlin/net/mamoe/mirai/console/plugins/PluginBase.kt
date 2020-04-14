@@ -67,13 +67,6 @@ abstract class PluginBase
     }
 
     /**
-     * 当Console reload时被调用
-     */
-    open fun onReload(): Boolean {
-        return true
-    }
-
-    /**
      * 当任意指令被使用时调用.
      *
      * 指令调用将优先触发 [Command.onCommand], 若该函数返回 `false`, 则不会调用 [PluginBase.onCommand]
@@ -150,17 +143,7 @@ abstract class PluginBase
         }
     }
 
-    internal fun reload(): Boolean {
-        try {
-            return onReload()
-        } catch (e: Exception) {
-            logger.error(e)
-        }
-        return true
-    }
-
     internal var pluginName: String = ""
-
 
     /**
      * Java API Scheduler
