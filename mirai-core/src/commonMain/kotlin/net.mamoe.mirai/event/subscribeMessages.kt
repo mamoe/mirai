@@ -28,6 +28,7 @@ import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.firstIsInstance
 import net.mamoe.mirai.message.data.firstIsInstanceOrNull
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -36,6 +37,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 
 typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<ContactMessage, Listener<ContactMessage>, Unit, Unit>
 
@@ -448,14 +450,6 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     }
 
     /** 如果消息内容 `==` [equals] */
-    @MessageDsl
-    @JvmName("case1")
-    @JsName("case1")
-    @SinceMirai("0.29.0")
-    infix fun String.`->`(block: MessageListener<M, R>): Ret {
-        return case(this, onEvent = block)
-    }
-
     /** 如果消息内容 `==` [equals] */
     @MessageDsl
     @SinceMirai("0.37.1")
@@ -476,9 +470,9 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         onEvent: MessageListener<M, R>
     ): Ret {
         val toCheck = if (trim) equals.trim() else equals
-        return content({ (if (trim) it.trim() else it).equals(toCheck, ignoreCase = ignoreCase) }, {
+        return content({ (if (trim) it.trim() else it).equals(toCheck, ignoreCase = ignoreCase) }) {
             onEvent(this, this.message.contentToString())
-        })
+        }
     }
 
     /** 如果消息内容包含 [sub] */
@@ -497,67 +491,35 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     ): Ret {
         return if (trim) {
             val toCheck = sub.trim()
-            content({ it.contains(toCheck, ignoreCase = ignoreCase) }, {
+            content({ it.contains(toCheck, ignoreCase = ignoreCase) }) {
                 onEvent(this, this.message.contentToString().trim())
-            })
+            }
         } else {
-            content({ it.contains(sub, ignoreCase = ignoreCase) }, {
+            content({ it.contains(sub, ignoreCase = ignoreCase) }) {
                 onEvent(this, this.message.contentToString())
-            })
+            }
         }
     }
 
     /** 如果消息内容包含 [sub] */
+    @JvmOverloads
     @MessageDsl
-    fun containsAny(vararg sub: String): ListeningFilter = content { sub.any { item -> item in it } }
-
-    /** 如果消息内容包含 [sub] 中的任意一个元素 */
-    @MessageDsl
-    fun containsAny(
-        vararg sub: String,
-        ignoreCase: Boolean = false,
-        trim: Boolean = true,
-        onEvent: MessageListener<M, R>
-    ): Ret {
-        return if (trim) {
+    fun containsAny(vararg sub: String, ignoreCase: Boolean = false, trim: Boolean = true): ListeningFilter =
+        if (trim) {
             val list = sub.map { it.trim() }
-            content({
-                list.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
-            }, {
-                onEvent(this, this.message.contentToString().trim())
-            })
-        } else {
-            content({
-                sub.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
-            }, {
-                onEvent(this, this.message.contentToString())
-            })
-        }
-    }
+            content { list.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } }
+        } else content { sub.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } }
 
     /** 如果消息内容包含 [sub] */
+    @JvmOverloads
     @MessageDsl
-    fun containsAll(vararg sub: String): ListeningFilter = content { sub.all { item -> item in it } }
-
-    /**
-     * 如果消息内容包含 [sub] 中的任意一个元素
-     */
-    @MessageDsl
-    fun containsAll(
-        vararg sub: String,
-        ignoreCase: Boolean = false,
-        trim: Boolean = true,
-        onEvent: MessageListener<M, R>
-    ): Ret {
-        return if (trim) {
+    fun containsAll(vararg sub: String, ignoreCase: Boolean = false, trim: Boolean = true): ListeningFilter =
+        if (trim) {
             val list = sub.map { it.trim() }
-            content({ list.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } },
-                { onEvent(this, this.message.contentToString().trim()) })
+            content { list.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } }
         } else {
-            content({ sub.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } },
-                { onEvent(this, this.message.contentToString()) })
+            content { sub.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } }
         }
-    }
 
     /** 如果消息的前缀是 [prefix] */
     @MessageDsl
@@ -576,15 +538,13 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     ): Ret {
         return if (trim) {
             val toCheck = prefix.trim()
-            content({ it.trimStart().startsWith(toCheck) }, {
+            content({ it.trimStart().startsWith(toCheck) }) {
                 if (removePrefix) this.onEvent(this.message.contentToString().substringAfter(toCheck).trim())
                 else onEvent(this, this.message.contentToString().trim())
-            })
-        } else {
-            content({ it.startsWith(prefix) }, {
-                if (removePrefix) this.onEvent(this.message.contentToString().removePrefix(prefix))
-                else onEvent(this, this.message.contentToString())
-            })
+            }
+        } else content({ it.startsWith(prefix) }) {
+            if (removePrefix) this.onEvent(this.message.contentToString().removePrefix(prefix))
+            else onEvent(this, this.message.contentToString())
         }
     }
 
@@ -602,15 +562,15 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     ): Ret {
         return if (trim) {
             val toCheck = suffix.trim()
-            content({ it.trimEnd().endsWith(toCheck) }, {
+            content({ it.trimEnd().endsWith(toCheck) }) {
                 if (removeSuffix) this.onEvent(this.message.contentToString().removeSuffix(toCheck).trim())
                 else onEvent(this, this.message.contentToString().trim())
-            })
+            }
         } else {
-            content({ it.endsWith(suffix) }, {
+            content({ it.endsWith(suffix) }) {
                 if (removeSuffix) this.onEvent(this.message.contentToString().removeSuffix(suffix))
                 else onEvent(this, this.message.contentToString())
-            })
+            }
         }
     }
 
@@ -618,18 +578,13 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     @MessageDsl
     fun sentBy(name: String): ListeningFilter = content { this is GroupMessage && this.senderName == name }
 
-    /** 如果是这个人发的消息. 消息目前只会是群消息 */
-    @MessageDsl
-    fun sentBy(name: String, onEvent: MessageListener<M, R>): Ret =
-        content({ (this as? GroupMessage)?.senderName == name }, onEvent)
-
     /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
     fun sentBy(qq: Long): ListeningFilter = content { sender.id == qq }
 
     /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
-    fun sentBy(qq: Long, onEvent: MessageListener<M, R>): Ret = content({ this.sender.id == qq }, onEvent)
+    fun sentBy(qq: Long, onEvent: MessageListener<M, R>): Ret = content { this.sender.id == qq }.invoke(onEvent)
 
     /** 如果是好友发来的消息 */
     @MessageDsl
@@ -651,40 +606,20 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     fun sentByOperator(): ListeningFilter =
         content { this is GroupMessage && sender.permission.isOperator() }
 
-    /** 如果是管理员或群主发的消息 */
-    @MessageDsl
-    fun sentByOperator(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isOperator() }, onEvent)
-
     /** 如果是管理员发的消息 */
     @MessageDsl
     fun sentByAdministrator(): ListeningFilter =
         content { this is GroupMessage && sender.permission.isAdministrator() }
-
-    /** 如果是管理员发的消息 */
-    @MessageDsl
-    fun sentByAdministrator(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isAdministrator() }, onEvent)
 
     /** 如果是群主发的消息 */
     @MessageDsl
     fun sentByOwner(): ListeningFilter =
         content { this is GroupMessage && sender.isOwner() }
 
-    /** 如果是群主发的消息 */
-    @MessageDsl
-    fun sentByOwner(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isOwner() }, onEvent)
-
     /** 如果是来自这个群的消息 */
     @MessageDsl
     fun sentFrom(groupId: Long): ListeningFilter =
         content { this is GroupMessage && group.id == groupId }
-
-    /** 如果是来自这个群的消息, 就执行 [onEvent] */
-    @MessageDsl
-    fun sentFrom(groupId: Long, onEvent: MessageListener<GroupMessage, R>): Ret =
-        content({ this is GroupMessage && this.group.id == groupId }) { onEvent(this as GroupMessage, it) }
 
     /** 如果消息内容包含目标为 [Bot] 的 [At] */
     @MessageDsl
@@ -695,18 +630,18 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     @MessageDsl
     @SinceMirai("0.30.0")
     fun atBot(onEvent: @MessageDsl suspend M.(String) -> R): Ret =
-        content({ message.firstIsInstanceOrNull<At>()?.target == bot.id },
-            { onEvent.invoke(this, message.contentToString()) })
+        content { message.firstIsInstanceOrNull<At>()?.target == bot.id }.invoke {
+            onEvent.invoke(this, message.contentToString())
+        }
+
+    @MessageDsl
+    @SinceMirai("0.30.0")
+    inline fun <reified N : Message> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
+        content { message.any { it is N } }.invoke { onEvent.invoke(this, message.firstIsInstance()) }
 
     /** 如果消息内容包含 [N] 类型的 [Message] */
     @MessageDsl
     inline fun <reified N : Message> has(): ListeningFilter = content { message.any { it is N } }
-
-    /** 如果消息内容包含 [M] 类型的 [Message], 就执行 [onEvent] */
-    @MessageDsl
-    @SinceMirai("0.30.0")
-    inline fun <reified N : Message> has(noinline onEvent: @MessageDsl suspend M.(N) -> R): Ret =
-        content({ message.any { it is N } }, { onEvent.invoke(this, message.firstIsInstance()) })
 
     /** 如果 [mapper] 返回值非空, 就执行 [onEvent] */
     @MessageDsl
@@ -717,11 +652,6 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     /** 如果 [filter] 返回 `true` */
     @MessageDsl
     fun content(filter: M.(String) -> Boolean): ListeningFilter = newListeningFilter(filter)
-
-    /** 如果 [filter] 返回 `true` 就执行 `onEvent`*/
-    @MessageDsl
-    fun content(filter: M.(String) -> Boolean, onEvent: MessageListener<M, RR>): Ret =
-        subscriber(filter) { onEvent(this, it) }
 
     /** 如果消息内容可由正则表达式匹配([Regex.matchEntire]) */
     @MessageDsl
@@ -794,6 +724,8 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
      *
      * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他类型则 [Any.toString] 后回复
      */
+    @PlannedRemoval("1.0.0")
+    @Deprecated("use startsWith on your own", replaceWith = ReplaceWith("startsWith(this, true, true, replier)"))
     @MessageDsl
     open infix fun String.startsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trimStart()
@@ -869,6 +801,107 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         return stub
     }
 
+    ////////////////////
+    //// DEPRECATED ////
+    ////////////////////
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @MessageDsl
+    fun contains(message: Message, onEvent: MessageListener<M, R>): Ret {
+        return content({ this.message.any { it == message } }, onEvent)
+    }
+
+    @MessageDsl
+    @JvmName("case1")
+    @JsName("case1")
+    @PlannedRemoval("1.0.0")
+    @SinceMirai("0.29.0")
+    @Deprecated("use String.invoke", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("this(block)"))
+    infix fun String.`->`(block: MessageListener<M, R>): Ret {
+        return this(block)
+    }
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @MessageDsl
+    fun containsAll(
+        vararg sub: String,
+        ignoreCase: Boolean = false,
+        trim: Boolean = true,
+        onEvent: MessageListener<M, R>
+    ): Ret {
+        return if (trim) {
+            val list = sub.map { it.trim() }
+            content({ list.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } },
+                { onEvent(this, this.message.contentToString().trim()) })
+        } else {
+            content({ sub.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } },
+                { onEvent(this, this.message.contentToString()) })
+        }
+    }
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @MessageDsl
+    fun containsAny(
+        vararg sub: String,
+        ignoreCase: Boolean = false,
+        trim: Boolean = true,
+        onEvent: MessageListener<M, R>
+    ): Ret {
+        return if (trim) {
+            val list = sub.map { it.trim() }
+            content({
+                list.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
+            }, {
+                onEvent(this, this.message.contentToString().trim())
+            })
+        } else {
+            content({
+                sub.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) }
+            }, {
+                onEvent(this, this.message.contentToString())
+            })
+        }
+    }
+
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @MessageDsl
+    fun sentBy(name: String, onEvent: MessageListener<M, R>): Ret =
+        content({ (this as? GroupMessage)?.senderName == name }, onEvent)
+
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @MessageDsl
+    fun sentByOperator(onEvent: MessageListener<M, R>): Ret =
+        content({ this is GroupMessage && this.sender.isOperator() }, onEvent)
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @MessageDsl
+    fun sentByAdministrator(onEvent: MessageListener<M, R>): Ret =
+        content({ this is GroupMessage && this.sender.isAdministrator() }, onEvent)
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @MessageDsl
+    fun sentByOwner(onEvent: MessageListener<M, R>): Ret =
+        content({ this is GroupMessage && this.sender.isOwner() }, onEvent)
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @MessageDsl
+    fun sentFrom(groupId: Long, onEvent: MessageListener<GroupMessage, R>): Ret =
+        content({ this is GroupMessage && this.group.id == groupId }) { onEvent(this as GroupMessage, it) }
+
+
+    @MessageDsl
+    internal fun content(filter: M.(String) -> Boolean, onEvent: MessageListener<M, RR>): Ret =
+        subscriber(filter) { onEvent(this, it) }
 }
 
 /**
