@@ -35,7 +35,7 @@ import kotlin.jvm.JvmSynthetic
  * reply("开启复读模式")
  *
  * whileSelectMessages {
- *     "stop" `->` {
+ *     "stop" {
  *         reply("已关闭复读")
  *         false // 停止循环
  *     }
@@ -90,8 +90,8 @@ suspend inline fun <reified T : ContactMessage> T.selectMessagesUnit(
  *
  * ```kotlin
  * val value: String = selectMessages {
- *   "hello" `->` { "111" }
- *   "hi" `->` { "222" }
+ *   "hello" { "111" }
+ *   "hi" { "222" }
  *   startsWith("/") { it }
  *   default { "default" }
  * }
@@ -234,7 +234,7 @@ abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi interna
 /**
  * [selectMessagesUnit] 或 [selectMessages] 时的 DSL 构建器.
  *
- * 它是特殊化的消息监听 ([subscribeMessages]) DSL, 没有屏蔽 `reply` DSL 以确保作用域安全性
+ * 它是特殊化的消息监听 ([subscribeMessages]) DSL
  *
  * @see MessageSubscribersBuilder 查看上层 API
  */
@@ -443,7 +443,14 @@ inline class MessageSelectionTimeoutChecker internal constructor(val timeoutMill
 class MessageSelectionTimeoutException : RuntimeException()
 
 
-// implementations
+
+
+
+/////////////////////////
+//// implementations ////
+/////////////////////////
+
+
 
 
 @JvmSynthetic
