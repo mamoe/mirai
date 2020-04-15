@@ -48,7 +48,7 @@ internal class AtomicResizeCacheList<E>(private val retention: Long) {
             for (cache in list) {
                 val instant = cache.time.value
                 when {
-                    instant == currentTime -> {
+                    instant == 0L -> {
                         if (cache.time.compareAndSet(instant, currentTime + retention)) {
                             cache.element = element
                             return
