@@ -115,7 +115,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * 获取一个好友对象.
      * @throws [NoSuchElementException] 当不存在这个好友时抛出
      */
-    fun getFriend(id: Long): QQ = friends.firstOrNull { it.id == id } ?: throw NoSuchElementException("group $id")
+    fun getFriend(id: Long): QQ = friends.firstOrNull { it.id == id } ?: throw NoSuchElementException("friend $id")
 
     /**
      * 机器人加入的群列表. 与服务器同步更新
