@@ -37,6 +37,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.qqandroid.utils.NoRouteToHostException
 import net.mamoe.mirai.qqandroid.utils.PlatformSocket
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
@@ -63,6 +64,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     private var heartbeatJob: Job? = null
 
     private val packetReceiveLock: Mutex = Mutex()
+
+    override fun areYouOk(): Boolean {
+        return this.isActive && ::channel.isInitialized && channel.isOpen
+                && heartbeatJob?.isActive == true && _packetReceiverJob?.isActive == true
+    }
 
     private suspend fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
         _packetReceiverJob?.cancel(cancelCause)
@@ -104,7 +110,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     }
 
     @OptIn(MiraiExperimentalAPI::class)
-    override suspend fun relogin(host: String, port: Int, cause: Throwable?) {
+    override suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable?) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
         if (::channel.isInitialized) {
@@ -119,10 +125,16 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         channel = PlatformSocket()
         // TODO: 2020/2/14 连接多个服务器, #52
 
-        withTimeoutOrNull(3000) {
-            channel.connect(host, port)
-        } ?: error("timeout connecting server")
-        logger.info("Connected to server $host:$port")
+        while (isActive) {
+            try {
+                channel.connect(host, port)
+                break
+            } catch (e: NoRouteToHostException) {
+                logger.warning { "No route to host (Mostly due to no Internet connection). Retrying in 3s..." }
+                delay(3000)
+            }
+        }
+        logger.info { "Connected to server $host:$port" }
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
 
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
@@ -348,7 +360,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         Unit // dont remove. can help type inference
     }
 
-    suspend fun doHeartBeat(): Exception? {
+    private suspend fun doHeartBeat(): Exception? {
         val lastException: Exception?
         try {
             kotlin.runCatching {
@@ -485,7 +497,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * 处理从服务器接收过来的包. 这些包可能是粘在一起的, 也可能是不完整的. 将会自动处理.
      * 处理后的包会调用 [parsePacketAsync]
      */
-    internal fun processPacket(rawInput: ByteReadPacket) {
+    private fun processPacket(rawInput: ByteReadPacket) {
         if (rawInput.remaining == 0L) {
             return
         }
@@ -563,6 +575,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     /**
      * 发送一个包, 但不期待任何返回.
+     * 不推荐使用它, 可能产生意外的情况.
      */
     suspend fun OutgoingPacket.sendWithoutExpect() {
         check(bot.isActive) { "bot is dead therefore can't send any packet" }

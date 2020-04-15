@@ -13,29 +13,26 @@
 
 package net.mamoe.mirai.qqandroid.utils
 
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.reflect.KClass
 
 
 @PublishedApi
 internal expect fun Throwable.addSuppressedMirai(e: Throwable)
 
-@OptIn(ExperimentalContracts::class)
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
 @kotlin.internal.InlineOnly
-internal inline fun <R> retryCatching(n: Int, block: () -> R): Result<R> {
-    contract {
-        callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
-    }
+internal inline fun <R> retryCatching(n: Int, except: KClass<out Throwable>? = null, block: () -> R): Result<R> {
     require(n >= 0) { "param n for retryCatching must not be negative" }
     var exception: Throwable? = null
     repeat(n) {
         try {
             return Result.success(block())
         } catch (e: Throwable) {
+            if (except?.isInstance(e) == true) {
+                return Result.failure(e)
+            }
             exception?.addSuppressedMirai(e)
             exception = e
         }

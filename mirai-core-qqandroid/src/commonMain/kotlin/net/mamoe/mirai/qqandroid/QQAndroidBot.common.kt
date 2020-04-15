@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.qqandroid
 
@@ -28,6 +28,7 @@ import kotlinx.serialization.json.int
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.LowLevelAPI
+import net.mamoe.mirai.ThisApiMustBeUsedInWithConnectionLockBlock
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
@@ -36,6 +37,7 @@ import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
 import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
@@ -203,9 +205,14 @@ internal abstract class QQAndroidBotBase constructor(
         })
     }
 
+    /**
+     * Final process for 'login'
+     */
+    @ThisApiMustBeUsedInWithConnectionLockBlock
+    @Throws(LoginFailedException::class) // only
     override suspend fun relogin(cause: Throwable?) {
         client.useNextServers { host, port ->
-            network.relogin(host, port, cause)
+            network.closeEverythingAndRelogin(host, port, cause)
         }
     }
 

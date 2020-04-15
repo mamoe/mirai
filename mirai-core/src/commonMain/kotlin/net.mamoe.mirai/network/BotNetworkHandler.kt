@@ -15,9 +15,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.WeakRefProperty
 
 /**
  * Mirai 的网络处理器, 它承担所有数据包([Packet])的处理任务.
@@ -34,12 +37,23 @@ import net.mamoe.mirai.utils.MiraiLogger
  * - 所有数据包处理和发送
  *
  * [BotNetworkHandler.close] 时将会 [取消][Job.cancel] 所有此作用域下的协程
+ *
+ * @suppress 此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
  */
 @Suppress("PropertyName")
 abstract class BotNetworkHandler : CoroutineScope {
+
+    /*
+    此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
+    此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
+    此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
+     */
+
+
     /**
      * 所属 [Bot]. 为弱引用
      */
+    @WeakRefProperty
     abstract val bot: Bot
 
     /**
@@ -67,7 +81,7 @@ abstract class BotNetworkHandler : CoroutineScope {
      */
     @Suppress("SpellCheckingInspection")
     @MiraiInternalAPI
-    abstract suspend fun relogin(host: String, port: Int, cause: Throwable? = null)
+    abstract suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable? = null)
 
     /**
      * 初始化获取好友列表等值.
@@ -83,6 +97,14 @@ abstract class BotNetworkHandler : CoroutineScope {
      * 当 [Bot] 离线时, 这个函数立即返回.
      */
     abstract suspend fun join()
+
+    abstract fun areYouOk(): Boolean
+
+
+    private val connectionLock: Mutex = Mutex()
+    internal suspend inline fun withConnectionLock(block: BotNetworkHandler.() -> Unit) {
+        connectionLock.withLock { if (areYouOk()) return else block() }
+    }
 
     /**
      * 关闭网络接口, 停止所有有关协程和任务

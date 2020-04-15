@@ -14,13 +14,13 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
 import kotlinx.io.core.ExperimentalIoApi
+import kotlinx.io.errors.IOException
 import kotlinx.io.streams.readPacketAtMost
 import kotlinx.io.streams.writePacket
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
-import java.io.IOException
 import java.net.Socket
+import java.net.SocketException
 
 /**
  * 多平台适配的 TCP Socket.
@@ -42,6 +42,7 @@ internal actual class PlatformSocket : Closeable {
 
     @PublishedApi
     internal lateinit var writeChannel: BufferedOutputStream
+
     @PublishedApi
     internal lateinit var readChannel: BufferedInputStream
 
@@ -88,3 +89,7 @@ internal actual class PlatformSocket : Closeable {
         }
     }
 }
+
+actual typealias NoRouteToHostException = java.net.NoRouteToHostException
+
+actual typealias SocketException = SocketException

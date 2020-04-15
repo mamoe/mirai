@@ -15,6 +15,7 @@ import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.*
 import net.mamoe.mirai.data.OnlineStatus
+import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.qqandroid.BotAccount
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -125,8 +126,7 @@ internal open class QQAndroidClient(
     lateinit var fileStoragePushFSSvcList: FileStoragePushFSSvcListFuckKotlin
 
     internal suspend inline fun useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
-        @Suppress("UNREACHABLE_CODE", "ThrowableNotThrown") // false positive
-        retryCatching(bot.client.serverList.size) {
+        retryCatching(bot.client.serverList.size, except = LoginFailedException::class) {
             val pair = bot.client.serverList.random()
             kotlin.runCatching {
                 block(pair.first, pair.second)

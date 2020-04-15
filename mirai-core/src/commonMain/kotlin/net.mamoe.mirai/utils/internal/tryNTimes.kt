@@ -9,31 +9,34 @@
 
 package net.mamoe.mirai.utils.internal
 
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import kotlin.reflect.KClass
 
 @PublishedApi
 internal expect fun Throwable.addSuppressedMirai(e: Throwable)
 
-@MiraiInternalAPI
-@Suppress("DuplicatedCode")
-internal inline fun <R> tryNTimesOrException(
-    repeat: Int,
-    onRetry: (Throwable?) -> Unit = {},
-    block: (Int) -> R
-): Throwable? {
-    var lastException: Throwable? = null
 
-    repeat(repeat) {
-        try {
-            block(it)
-            return null
-        } catch (e: Throwable) {
-            if (lastException == null) {
-                lastException = e
-            } else lastException!!.addSuppressedMirai(e)
-        }
-        onRetry(lastException)
+// Currently we can't share internal code between modules.
+@Suppress("DuplicatedCode", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+internal inline fun <R> retryCatching(
+    n: Int,
+    except: KClass<out Throwable>? = null,
+    block: (count: Int, lastException: Throwable?) -> R
+): Result<R> {
+    require(n >= 0) {
+        "param n for retryCatching must not be negative"
     }
-
-    return lastException!!
+    var exception: Throwable? = null
+    repeat(n) {
+        try {
+            return Result.success(block(it, exception))
+        } catch (e: Throwable) {
+            if (except?.isInstance(e) == true) {
+                return Result.failure(e)
+            }
+            exception?.addSuppressedMirai(e)
+            exception = e
+        }
+    }
+    return Result.failure(exception!!)
 }

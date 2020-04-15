@@ -18,8 +18,10 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.http.userAgent
 import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.io.ByteReadChannel
+import kotlinx.coroutines.isActive
 import kotlinx.io.InputStream
 import kotlinx.io.core.Input
 import kotlinx.io.core.discardExact
@@ -29,6 +31,7 @@ import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.NoRouteToHostException
 import net.mamoe.mirai.qqandroid.utils.PlatformSocket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.withUse
@@ -112,7 +115,14 @@ internal object HighwayHelper {
         // require(commandId == 2 || commandId == 1) { "bad commandId. Must be 1 or 2" }
 
         val socket = PlatformSocket()
-        socket.connect(serverIp, serverPort)
+        while (client.bot.network.isActive) {
+            try {
+                socket.connect(serverIp, serverPort)
+                break
+            } catch (e: NoRouteToHostException) {
+                delay(3000)
+            }
+        }
         socket.use {
             createImageDataPacketSequence(
                 client = client,

@@ -40,7 +40,7 @@ actual abstract class BotJavaFriendlyAPI actual constructor() {
      *
      * 一般情况下不需要重新登录. Mirai 能够自动处理掉线情况.
      *
-     * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.relogin]
+     * 最终调用 [net.mamoe.mirai.network.BotNetworkHandler.closeEverythingAndRelogin]
      *
      * @throws LoginFailedException
      */
