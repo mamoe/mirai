@@ -9,12 +9,13 @@
 
 @file: JvmName("MessageUtils")
 @file:JvmMultifileClass
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
+import kotlin.annotation.AnnotationTarget.*
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
@@ -23,8 +24,7 @@ import kotlin.jvm.JvmSynthetic
 /**
  * XML 消息等富文本消息
  *
- * @see XmlMessage XML
- * @see JsonMessage JSON
+ * @see ServiceMessage 子类 [XmlMessage], [JsonMessage], [LongMessage], [ForwardMessage]
  * @see LightApp 小程序 (JSON)
  */
 // not using sealed class for customized implementations
@@ -36,44 +36,10 @@ interface RichMessage : MessageContent {
     @SinceMirai("0.30.0")
     companion object Templates : Message.Key<RichMessage> {
 
-        /**
-         * 长消息.
-         *
-         * @param brief 消息内容纯文本, 显示在图片的前面
-         */
-        @SinceMirai("0.31.0")
-        @OptIn(MiraiInternalAPI::class)
-        @MiraiExperimentalAPI
-        fun longMessage(brief: String, resId: String, timeSeconds: Long): RichMessage {
-            val limited: String = if (brief.length > 30) {
-                brief.take(30) + "…"
-            } else {
-                brief
-            }
-
-            val template = """
-                <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-                <msg serviceID="35" templateID="1" action="viewMultiMsg"
-                     brief="$limited"
-                     m_resid="$resId"
-                     m_fileName="$timeSeconds" sourceMsgId="0" url=""
-                     flag="3" adverSign="0" multiMsgFlag="1">
-                    <item layout="1">
-                        <title>$limited</title>
-                        <hr hidden="false" style="0"/>
-                        <summary>点击查看完整消息</summary>
-                    </item>
-                    <source name="聊天记录" icon="" action="" appid="-1"/>
-                </msg>
-            """.trimIndent()
-
-            return LongMessage(template, resId)
-        }
-
         @MiraiExperimentalAPI
         @SinceMirai("0.30.0")
         fun share(url: String, title: String? = null, content: String? = null, coverUrl: String? = null): XmlMessage =
-            buildXmlMessage {
+            buildXmlMessage(60) {
                 templateId = 12345
                 serviceId = 1
                 action = "web"
@@ -106,88 +72,92 @@ interface RichMessage : MessageContent {
 }
 
 /**
- * Json 消息.
- *
- * @see LightApp 一些 json 消息实际上是 [LightApp]
- */
-@SinceMirai("0.27.0")
-@OptIn(MiraiExperimentalAPI::class)
-class JsonMessage(override val content: String) : RichMessage {
-    companion object Key : Message.Key<JsonMessage> {
-        override val typeName: String
-            get() = "JsonMessage"
-    }
-
-    // serviceId = 1
-    override fun toString(): String = "[mirai:json:$content]"
-}
-
-/**
  * 小程序, 如音乐分享.
  *
  * @param content 一般是 json
  */
-@OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.27.0")
 class LightApp constructor(override val content: String) : RichMessage {
-
     companion object Key : Message.Key<LightApp> {
-        override val typeName: String
-            get() = "LightApp"
+        override val typeName: String get() = "LightApp"
     }
 
     override fun toString(): String = "[mirai:app:$content]"
+}
+
+/**
+ * 服务消息, 如 [XmlMessage].
+ */
+@MiraiExperimentalAPI
+@SinceMirai("0.37.3")
+open class ServiceMessage(@MiraiExperimentalAPI val serviceId: Int, final override val content: String) : RichMessage {
+    @Suppress("DEPRECATION")
+    companion object Key : Message.Key<ServiceMessage> {
+        override val typeName: String get() = "ServiceMessage"
+    }
+
+    final override fun toString(): String = "[mirai:service:$serviceId,$content]"
+}
+
+
+/**
+ * Json 消息.
+ *
+ * @see LightApp 一些 json 消息实际上是 [LightApp]
+ */
+@MiraiExperimentalAPI
+class JsonMessage(content: String) : ServiceMessage(1, content) {
+    @Suppress("DEPRECATION")
+    companion object Key : Message.Key<JsonMessage> {
+        override val typeName: String get() = "JsonMessage"
+    }
 }
 
 
 /**
  * XML 消息, 如分享, 卡片等.
  *
+ * @param serviceId 目前未知, 一般为 60
+ *
  * @see buildXmlMessage 使用 DSL 构造一个 XML 消息
  */
+@MiraiExperimentalAPI
 @SinceMirai("0.27.0")
-@OptIn(MiraiExperimentalAPI::class)
-class XmlMessage constructor(override val content: String) : RichMessage {
+class XmlMessage @MiraiExperimentalAPI("Maybe replaced with an enum")
+constructor(serviceId: Int = 60, content: String) : ServiceMessage(serviceId, content) {
+
+    @MiraiExperimentalAPI
+    @Deprecated("specify serviceId explicitly", replaceWith = ReplaceWith("XmlMessage(60, content)"))
+    constructor(content: String) : this(60, content)
+
     companion object Key : Message.Key<XmlMessage> {
-        override val typeName: String
-            get() = "XmlMessage"
+        override val typeName: String get() = "XmlMessage"
     }
-
-    // override val serviceId: Int get() = 60
-
-    override fun toString(): String = "[mirai:xml:$content]"
 }
 
 /**
- * 长消息
+ * 长消息.
  */
 @SinceMirai("0.31.0")
 @MiraiExperimentalAPI
-@MiraiInternalAPI
-class LongMessage(override val content: String, val resId: String) : RichMessage {
+class LongMessage internal constructor(content: String, val resId: String) : ServiceMessage(35, content) {
     companion object Key : Message.Key<XmlMessage> {
-        override val typeName: String
-            get() = "LongMessage"
+        override val typeName: String get() = "LongMessage"
     }
-
-    // serviceId = 35
-    override fun toString(): String = "[mirai:long:$content]"
 }
 
 /**
  * 合并转发消息
+ * @suppress 此 API 不稳定
  */
 @SinceMirai("0.36.0")
 @MiraiExperimentalAPI
-class ForwardMessage(override val content: String) : RichMessage {
+class ForwardMessage(content: String) : ServiceMessage(35, content) {
     companion object Key : Message.Key<XmlMessage> {
-        override val typeName: String
-            get() = "ForwardMessage"
+        override val typeName: String get() = "ForwardMessage"
     }
-
-    // serviceId = 35
-    override fun toString(): String = "[mirai:forward:$content]"
 }
+
 /*
 commonElem=CommonElem#750141174 {
         businessType=0x00000001(1)
@@ -202,15 +172,15 @@ commonElem=CommonElem#750141174 {
 @JvmSynthetic
 @SinceMirai("0.27.0")
 @MiraiExperimentalAPI
-inline fun buildXmlMessage(block: @XMLDsl XmlMessageBuilder.() -> Unit): XmlMessage =
-    XmlMessage(XmlMessageBuilder().apply(block).text)
+inline fun buildXmlMessage(serviceId: Int, block: @XmlMessageDsl XmlMessageBuilder.() -> Unit): XmlMessage =
+    XmlMessage(serviceId, XmlMessageBuilder().apply(block).text)
 
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
+@Target(CLASS, FUNCTION, TYPE)
 @DslMarker
-annotation class XMLDsl
+annotation class XmlMessageDsl
 
-@Suppress("MemberVisibilityCanBePrivate")
-@XMLDsl
+@MiraiExperimentalAPI
+@XmlMessageDsl
 class XmlMessageBuilder(
     var templateId: Int = 1,
     var serviceId: Int = 1,
@@ -239,8 +209,8 @@ class XmlMessageBuilder(
                 "</msg>"
 
     @JvmOverloads
-    @XMLDsl
-    inline fun item(bg: Int = 0, layout: Int = 4, block: @XMLDsl ItemBuilder.() -> Unit) {
+    @XmlMessageDsl
+    inline fun item(bg: Int = 0, layout: Int = 4, block: @XmlMessageDsl ItemBuilder.() -> Unit) {
         builder.append(ItemBuilder(bg, layout).apply(block).text)
     }
 
@@ -250,7 +220,7 @@ class XmlMessageBuilder(
     }
 
     @SinceMirai("0.27.0")
-    @XMLDsl
+    @XmlMessageDsl
     class ItemBuilder @PublishedApi internal constructor(
         var bg: Int = 0,
         var layout: Int = 4
@@ -272,3 +242,10 @@ class XmlMessageBuilder(
         }
     }
 }
+
+
+@JvmSynthetic
+@SinceMirai("0.27.0")
+@MiraiExperimentalAPI
+@Deprecated("specify serviceId explicitly", ReplaceWith("buildXmlMessage(60, block)"))
+inline fun buildXmlMessage(block: @XmlMessageDsl XmlMessageBuilder.() -> Unit): XmlMessage = buildXmlMessage(60, block)

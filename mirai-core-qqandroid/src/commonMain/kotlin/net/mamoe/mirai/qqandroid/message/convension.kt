@@ -56,7 +56,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     elements.add(
                         ImMsgBody.Elem(
                             richMsg = ImMsgBody.RichMsg(
-                                serviceId = 35, // ok
+                                serviceId = it.serviceId, // ok
                                 template1 = byteArrayOf(1) + content
                             )
                         )
@@ -75,9 +75,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     ImMsgBody.Elem(
                         richMsg = ImMsgBody.RichMsg(
                             serviceId = when (it) {
-                                is XmlMessage -> 60
-                                is JsonMessage -> 1
-                                //   is MergedForwardedMessage -> 35
+                                is ServiceMessage -> it.serviceId
                                 else -> error("unsupported RichMessage: ${it::class.simpleName}")
                             },
                             template1 = byteArrayOf(1) + content
@@ -245,6 +243,7 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
     return null
 }
 
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 @OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, message: MessageChainBuilder) {
     // (this._miraiContentToString())
@@ -272,7 +271,8 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                 }
             }
             element.lightApp != null -> {
-                val content = runWithBugReport("解析 lightApp", { element.lightApp.data.toUHexString() }) {
+                val content = runWithBugReport("解析 lightApp",
+                    { "resId=" + element.lightApp.msgResid + "data=" + element.lightApp.data.toUHexString() }) {
                     when (element.lightApp.data[0].toInt()) {
                         0 -> element.lightApp.data.encodeToString(offset = 1)
                         1 -> MiraiPlatformUtils.unzip(element.lightApp.data, 1).encodeToString()
@@ -303,86 +303,9 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                      */
                     1 -> message.add(JsonMessage(content))
                     /**
-                     * [XmlMessage]
-                     */
-                    60 -> message.add(XmlMessage(content))
-                    /**
                      * [LongMessage], [ForwardMessage]
                      */
                     35 -> {
-                        /*
-                        Mirai 19:09:29 : cannot find longTextResid. isGroup=false elems=
-[Elem#2041089331 {
-            richMsg=RichMsg#1822931063 {
-                    flags=0x00000000(0)
-                    msgResid=<Empty ByteArray>
-                    rand=0x00000000(0)
-                    seq=0x00000000(0)
-                    serviceId=0x00000023(35)
-                    template1=01 78 9C A5 91 C1 6E D3 40 14 45 7F E5 69 36 5E 15 DB D8 A6 11 B2 5D 51 85 8A 22 05 55 0D 4D 52 AA 0A 4D EC 17 67 C8 8C 1D 66 C6 29 59 76 05 B4 8B AA 8B 6E 0A 08 21 95 45 A5 0A 58 B1 2B 7F E3 34 9F C1 D8 01 F1 01 EC 66 E6 8E DE 3B F7 DE 70 E3 8D E0 30 43 A9 58 91 47 96 7B CF B1 00 F3 A4 48 59 9E 45 D6 DE F3 AD B5 96 05 4A D3 3C A5 BC C8 31 B2 E6 A8 2C D8 88 43 A1 32 50 28 67 2C C1 ED 76 44 BC 80 80 46 31 E5 54 37 77 97 00 4D 74 3D 93 CC 18 1E 75 4A AE 59 47 65 04 86 92 E1 28 22 07 CB DB 9B EA EC BC BA BA 5C 7C FA B2 F8 F9 6E 71 FC FD 90 80 78 29 51 B1 34 22 FB 03 87 1F 15 4F 53 D5 DF 79 D1 6B 0F 86 F7 BB 3D DE F7 65 87 ED 04 FE AB 5E 2B 79 3D 50 E5 7E 32 7C B2 97 EC 6E E2 44 79 8F C4 66 B7 3D 9E 60 DF 5F 0F 1E 7B C3 71 3D 6A C4 38 3E A3 02 23 F2 A0 E5 FA 8E D7 0A 5C C7 0B 9C 75 3F F0 3D 8F 80 2A 4A 99 A0 61 DA 36 FB 1C 02 A5 E4 11 21 30 E2 34 33 76 0C 7E 6A 52 E9 B2 2C 6F 54 F1 C7 C0 56 23 3B 24 0E 99 B1 0B 9C CE 8B 52 D7 76 E3 50 33 CD 31 9E 14 05 CA 87 00 07 D5 87 5F 77 EF DF 1E 86 F6 EA FD 3F E5 B1 84 31 4B 53 34 34 23 CA 15 1A 7E 3D E7 D8 B0 D9 71 A8 4A 21 A8 9C C7 8B CF 5F EF 3E 9E FA 26 D3 55 BE AB 64 43 FB AF 1E DA 35 B6 F9 DF 98 87 BC 89 67 79 7C 52 5D 5D 2F BF FD A8 6E 2F 08 B0 A4 2E ED 5F 7D E6 34 9D D6 9D AC B9 CD 2A DB 34 1F FF 06 A5 57 D1 F0
-            }
-    }, Elem#2041089331 {
-            text=Text#677417722 {
-                    attr6Buf=<Empty ByteArray>
-                    attr7Buf=<Empty ByteArray>
-                    buf=<Empty ByteArray>
-                    link=
-                    pbReserve=<Empty ByteArray>
-                    str=你的TIM暂不支持查看[转发多条消息]，请期待后续版本。
-            }
-    }, Elem#2041089331 {
-            elemFlags2=ElemFlags2#1722087666 {
-                    colorTextId=0x00000000(0)
-                    compatibleId=0x00000000(0)
-                    crmFlags=0x00000000(0)
-                    customFont=0x00000000(0)
-                    latitude=0x00000000(0)
-                    longtitude=0x00000000(0)
-                    msgId=0x0000000000000000(0)
-                    msgRptCnt=0x00000000(0)
-                    pttChangeBit=0x00000000(0)
-                    vipStatus=0x00000000(0)
-                    whisperSessionId=0x00000000(0)
-            }
-    }, Elem#2041089331 {
-            generalFlags=GeneralFlags#707534137 {
-                    babyqGuideMsgCookie=<Empty ByteArray>
-                    bubbleDiyTextId=0x00000000(0)
-                    bubbleSubId=0x00000000(0)
-                    glamourLevel=0x00000002(2)
-                    groupFlagNew=0x00000000(0)
-                    groupRankSeq=0x0000000000000000(0)
-                    groupType=0x00000000(0)
-                    longTextFlag=0x00000000(0)
-                    longTextResid=
-                    memberLevel=0x00000000(0)
-                    olympicTorch=0x00000000(0)
-                    pbReserve=08 08 20 BF 50 80 01 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 09 B8 04 00 C0 04 00
-                    pendantId=0x0000000000000000(0)
-                    prpFold=0x00000000(0)
-                    rpId=<Empty ByteArray>
-                    rpIndex=<Empty ByteArray>
-                    toUinFlag=0x00000000(0)
-                    uin=0x0000000000000000(0)
-                    uin32ExpertFlag=0x00000000(0)
-            }
-    }, Elem#2041089331 {
-            extraInfo=ExtraInfo#913448337 {
-                    apnsSoundType=0x00000000(0)
-                    apnsTips=<Empty ByteArray>
-                    flags=0x00000008(8)
-                    groupCard=E3 81 82 E3 81 BE E3 81 A4 E6 A7 98 E5 8D 95 E6 8E A8 E4 BA BA EF BC 88 E4 B8 93 E4 B8 9A E6 8F 92 E7 94 BB E5 B8 88 EF BC 89
-                    groupMask=0x00000001(1)
-                    level=0x00000004(4)
-                    msgStateFlag=0x00000000(0)
-                    msgTailId=0x00000000(0)
-                    newGroupFlag=0x00000000(0)
-                    nick=<Empty ByteArray>
-                    senderTitle=<Empty ByteArray>
-                    uin=0x0000000000000000(0)
-            }
-    }]
-                         */
                         val resId = this.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()?.longTextResid
 
                         if (resId != null) {
@@ -391,9 +314,12 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                             message.add(ForwardMessage(content))
                         }
                     }
+
+                    // 104 新群员入群的消息
                     else -> {
-                        throw contextualBugReportException("richMsg.serviceId",
-                            "richMsg.serviceId: ${element.richMsg.serviceId}, content=${element.richMsg.template1.contentToString()}, \n" + "tryUnzip=${content}")
+                        if (element.richMsg.serviceId == 60 || content.startsWith("<?")) {
+                            message.add(XmlMessage(element.richMsg.serviceId, content))
+                        } else message.add(ServiceMessage(element.richMsg.serviceId, content))
                     }
                 }
             }
