@@ -273,13 +273,21 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
             }
             element.lightApp != null -> {
                 val content = runWithBugReport("解析 lightApp", { element.lightApp.data.toUHexString() }) {
-                    MiraiPlatformUtils.unzip(element.lightApp.data, 1).encodeToString()
+                    when (element.lightApp.data[0].toInt()) {
+                        0 -> element.lightApp.data.encodeToString(offset = 1)
+                        1 -> MiraiPlatformUtils.unzip(element.lightApp.data, 1).encodeToString()
+                        else -> error("unknown compression flag=${element.lightApp.data[0]}")
+                    }
                 }
                 message.add(LightApp(content))
             }
             element.richMsg != null -> {
                 val content = runWithBugReport("解析 richMsg", { element.richMsg.template1.toUHexString() }) {
-                    MiraiPlatformUtils.unzip(element.richMsg.template1, 1).encodeToString()
+                    when (element.richMsg.template1[0].toInt()) {
+                        0 -> element.richMsg.template1.encodeToString(offset = 1)
+                        1 -> MiraiPlatformUtils.unzip(element.richMsg.template1, 1).encodeToString()
+                        else -> error("unknown compression flag=${element.richMsg.template1[0]}")
+                    }
                 }
                 when (element.richMsg.serviceId) {
                     // 5: 使用微博长图转换功能分享到QQ群

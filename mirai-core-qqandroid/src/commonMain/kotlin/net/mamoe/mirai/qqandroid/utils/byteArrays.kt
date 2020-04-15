@@ -93,7 +93,8 @@ internal fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, l
 }
 
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun ByteArray.encodeToString(charset: Charset = Charsets.UTF_8): String = String(this, charset = charset)
+internal inline fun ByteArray.encodeToString(offset: Int = 0, charset: Charset = Charsets.UTF_8): String =
+    String(this, charset = charset, offset = offset)
 
 @PublishedApi
 internal inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) =
