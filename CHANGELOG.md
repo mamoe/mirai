@@ -2,6 +2,28 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.37.3`  2020/4/15
+新增:
+
+- 在群名片修改事件(`MemberCardChangeEvent`)中支持获取操作人
+- 修复 #229, 引入 `ServiceMessage` 作为 `JsonMessage`, `XmlMessage` 的父类并处理所有类型富文本消息解析
+- 将所有 `RichMessage` 标注 `MiraiExperimentalAPI` 以警告将来改动
+
+问题修复:
+
+- 修复潜在的长消息上传失败问题
+- 简化 `MessageSubscriberBuilder` DSL, 整理 `linear.kt`, `subscribers.kt`
+- 修复启动时概率解析失败 ConfigPushSvc.PushReq
+- 修复 #228: 登录时没有因 `LoginFailedException` 中断
+- 重构登录重连控制, 确保单一进程
+- 处理无网络连接问题, 在无网络时将不尝试登录而等待网络连接
+- 修复 #227: Android 最新版无法编译
+- 修复 #226: BotUnmuteEvent
+- 修复 #225: 重复接收到群消息撤回问题
+- 修复 #220: 无法正常解析邀请机器人进群的富文本消息
+- 修复 #217: 解析 OnlinePush confess 状态时没有覆盖全面
+- 优化遇到未知消息时的日志
+
 ## `0.37.2`  2020/4/13
 - 修复 `OnlineMessageSource.Incoming.target` 类型错误
 - 引入实验性 `Identified` 接口作为 `Contact` 和 `Bot` 的公共接口

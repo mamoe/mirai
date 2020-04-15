@@ -9,7 +9,7 @@
 
 object Versions {
     object Mirai {
-        const val version = "0.37.2"
+        const val version = "0.37.3"
     }
 
     object Kotlin {
