@@ -46,7 +46,7 @@ annotation class MiraiExperimentalAPI(
  * 标记一个自 Mirai 某个版本起才支持或在这个版本修改过的 API.
  */
 @Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 @MustBeDocumented
 annotation class SinceMirai(val version: String)
 
