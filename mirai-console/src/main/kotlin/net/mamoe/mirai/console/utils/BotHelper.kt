@@ -33,7 +33,7 @@ fun Bot.addManager(long: Long) {
 fun Bot.removeManager(long: Long) {
     BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
     BOT_MANAGERS[this.id.toString()] =
-        (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply { add(long) }
+        (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply { remove(long) }
     BotManagers.config.save()
 }
 
