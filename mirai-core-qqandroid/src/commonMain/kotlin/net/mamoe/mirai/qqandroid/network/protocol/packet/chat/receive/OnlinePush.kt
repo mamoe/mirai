@@ -46,7 +46,6 @@ import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
@@ -123,11 +122,8 @@ internal class OnlinePush {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
             val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
 
-            val cache = bot.client.pbPushTransMsgCacheList.removeUntilFirst { it == content.msgSeq }
-            if (cache == null) {
-                bot.client.pbPushTransMsgCacheList.addLast(content.msgSeq)
-            } else {
-                bot.client.pbPushTransMsgCacheList.remove(cache)
+
+            if (!bot.client.pbPushTransMsgCacheList.ensureNoDuplication(content.msgSeq)) {
                 return null
             }
 
@@ -234,14 +230,7 @@ internal class OnlinePush {
             mapper: ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
         ): Sequence<Packet> {
             return asSequence().filter { msg ->
-                val cache = client.onlinePushCacheList.removeUntilFirst { it == msg.shMsgSeq }
-                if (cache == null) {
-                    client.onlinePushCacheList.addLast(msg.shMsgSeq)
-                    true
-                } else {
-                    client.onlinePushCacheList.remove(cache)
-                    false
-                }
+                client.onlinePushCacheList.ensureNoDuplication(msg.shMsgSeq)
             }.flatMap { it.vMsg.read { mapper(it) } }
         }
 
@@ -558,14 +547,7 @@ internal class OnlinePush {
                                         fromUin = msg.lFromUin,
                                         shMsgSeq = msg.shMsgSeq,
                                         vMsgCookies = msg.vMsgCookies,
-                                        uMsgTime = 0,
-                                        clientIp = 0,
-                                        sendTime = 0,
-                                        ssoIp = 0,
-                                        ssoSeq = 0,
-                                        uAppId = 0,
-                                        uMsgType = 0,
-                                        wCmd = 0
+                                        uMsgTime = msg.uMsgTime // captured 0
                                     )
                                 }
                             )
@@ -575,16 +557,5 @@ internal class OnlinePush {
             }
         }
     }
-}
-
-private inline fun <E> LockFreeLinkedList<E>.removeUntilFirst(block: (E) -> Boolean): E? {
-    this.forEach {
-        if (!block(it)) {
-            this.remove(it)
-        } else {
-            return it
-        }
-    }
-    return null
 }
 

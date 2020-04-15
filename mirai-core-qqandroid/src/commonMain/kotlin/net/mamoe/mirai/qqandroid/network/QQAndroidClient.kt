@@ -165,8 +165,8 @@ internal open class QQAndroidClient(
     private val highwayDataTransSequenceIdForApplyUp: AtomicInt = atomic(77918)
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
-    internal val onlinePushCacheList: LockFreeLinkedList<Short> = LockFreeLinkedList()
-    internal val pbPushTransMsgCacheList: LockFreeLinkedList<Int> = LockFreeLinkedList()
+    internal val onlinePushCacheList: AtomicResizeCacheList<Short> = AtomicResizeCacheList(20.secondsToMillis)
+    internal val pbPushTransMsgCacheList: AtomicResizeCacheList<Int> = AtomicResizeCacheList(20.secondsToMillis)
 
     val appClientVersion: Int = 0
 
