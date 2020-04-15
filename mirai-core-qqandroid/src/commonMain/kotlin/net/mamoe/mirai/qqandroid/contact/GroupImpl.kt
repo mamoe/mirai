@@ -120,7 +120,7 @@ internal class GroupImpl(
                             newName = newValue
                         ).sendWithoutExpect()
                     }
-                    GroupNameChangeEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
+                    GroupNameChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                 }
             }
         }

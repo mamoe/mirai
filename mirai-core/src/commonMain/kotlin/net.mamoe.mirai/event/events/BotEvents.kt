@@ -301,8 +301,16 @@ data class GroupNameChangeEvent(
     override val origin: String,
     override val new: String,
     override val group: Group,
-    val isByBot: Boolean // 无法获取操作人
-) : GroupSettingChangeEvent<String>, Packet
+    /**
+     * 操作人. 为 null 时则是机器人操作
+     */
+    @SinceMirai("0.37.3")
+    override val operator: Member?
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent {
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    val isByBot: Boolean
+        get() = operator == null
+}
 
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
