@@ -331,7 +331,7 @@ internal class GroupImpl(
             }.sendAndExpect()
             if (response is MessageSvc.PbSendMsg.Response.Failed) {
                 when (response.resultType) {
-                    120 -> error("bot is being muted.")
+                    120 -> throw BotIsBeingMutedException(this@GroupImpl)
                     34 -> {
                         kotlin.runCatching { // allow retry once
                             return bot.lowLevelSendLongGroupMessage(id, msg)

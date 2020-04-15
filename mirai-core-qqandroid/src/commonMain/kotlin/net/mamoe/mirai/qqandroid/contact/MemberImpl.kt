@@ -105,8 +105,8 @@ internal class MemberImpl constructor(
     @Suppress("PropertyName")
     var _muteTimestamp: Int = memberInfo.muteTimestamp
 
-    override val muteTimeRemaining: Int =
-        if (_muteTimestamp == 0 || _muteTimestamp == 0xFFFFFFFF.toInt()) {
+    override val muteTimeRemaining: Int
+        get() = if (_muteTimestamp == 0 || _muteTimestamp == 0xFFFFFFFF.toInt()) {
             0
         } else {
             (_muteTimestamp - currentTimeSeconds.toInt()).coerceAtLeast(0)

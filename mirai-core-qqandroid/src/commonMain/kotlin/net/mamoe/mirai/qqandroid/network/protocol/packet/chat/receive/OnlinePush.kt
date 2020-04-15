@@ -261,10 +261,10 @@ internal class OnlinePush {
                 readUInt().toLong() // time
                 this.discardExact(2)
                 val target = readUInt().toLong()
-                val time = readInt()
+                val timeSeconds = readInt()
 
                 if (target == 0L) {
-                    val new = time != 0
+                    val new = timeSeconds != 0
                     if (group.settings.isMuteAll == new) {
                         return@lambda732 emptySequence()
                     }
@@ -274,14 +274,15 @@ internal class OnlinePush {
 
                 if (target == bot.id) {
                     return@lambda732 when {
-                        group.botMuteRemaining == time -> emptySequence()
-                        time == 0 -> {
+                        group.botMuteRemaining == timeSeconds -> emptySequence()
+                        timeSeconds == 0 || timeSeconds == 0xFFFF_FFFF.toInt() -> {
                             group.botAsMember.checkIsMemberImpl()._muteTimestamp = 0
                             sequenceOf(BotUnmuteEvent(operator))
                         }
                         else -> {
-                            group.botAsMember.checkIsMemberImpl()._muteTimestamp = currentTimeSeconds.toInt() + time
-                            sequenceOf(BotMuteEvent(time, operator))
+                            group.botAsMember.checkIsMemberImpl()._muteTimestamp =
+                                currentTimeSeconds.toInt() + timeSeconds
+                            sequenceOf(BotMuteEvent(timeSeconds, operator))
                         }
                     }
                 }
@@ -289,13 +290,13 @@ internal class OnlinePush {
                 val member = group.getOrNull(target) ?: return@lambda732 emptySequence()
                 member.checkIsMemberImpl()
 
-                if (member._muteTimestamp == time) {
+                if (member._muteTimestamp == timeSeconds) {
                     return@lambda732 emptySequence()
                 }
 
-                member._muteTimestamp = time
-                return@lambda732 if (time == 0) sequenceOf(MemberUnmuteEvent(member, operator))
-                else sequenceOf(MemberMuteEvent(member, time, operator))
+                member._muteTimestamp = timeSeconds
+                return@lambda732 if (timeSeconds == 0) sequenceOf(MemberUnmuteEvent(member, operator))
+                else sequenceOf(MemberMuteEvent(member, timeSeconds, operator))
             },
 
             // anonymous
