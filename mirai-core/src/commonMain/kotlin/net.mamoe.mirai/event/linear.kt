@@ -98,19 +98,12 @@ internal suspend inline fun <reified E : Event, R> subscribingGetOrNullImpl(
     var listener: Listener<E>? = null
     @Suppress("DuplicatedCode") // for better performance
     listener = coroutineScope.subscribe {
-        val value = try {
-            mapper.invoke(this, it)
-        } catch (e: Exception) {
-            result = Result.failure(e)
-            listener!!.complete()
-            return@subscribe ListeningStatus.STOPPED
+        result = kotlin.runCatching {
+            mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING
         }
+        listener!!.complete()
+        return@subscribe ListeningStatus.STOPPED
 
-        if (value != null) {
-            result = Result.success(value)
-            listener!!.complete()
-            return@subscribe ListeningStatus.STOPPED
-        } else return@subscribe ListeningStatus.LISTENING
     }
     listener.join()
 

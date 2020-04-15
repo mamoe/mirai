@@ -101,7 +101,7 @@ internal class _339(
 ) : JceStruct
 
 @Serializable
-internal class FileStoragePushFSSvcList(
+internal class FileStoragePushFSSvcListFuckKotlin(
     @JceId(0) val vUpLoadList: List<FileStorageServerListInfo>? = listOf(),
     @JceId(1) val vPicDownLoadList: List<FileStorageServerListInfo>? = listOf(),
     @JceId(2) val vGPicDownLoadList: List<FileStorageServerListInfo>? = null,

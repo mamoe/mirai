@@ -18,7 +18,7 @@ import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.qqandroid.BotAccount
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FileStoragePushFSSvcList
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FileStoragePushFSSvcListFuckKotlin
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.qqandroid.network.protocol.packet.Tlv
@@ -122,7 +122,8 @@ internal open class QQAndroidClient(
 
     private val _ssoSequenceId: AtomicInt = atomic(85600)
 
-    lateinit var fileStoragePushFSSvcList: FileStoragePushFSSvcList
+    lateinit var fileStoragePushFSSvcList: FileStoragePushFSSvcListFuckKotlin
+
     internal suspend inline fun useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
         @Suppress("UNREACHABLE_CODE", "ThrowableNotThrown") // false positive
         retryCatching(bot.client.serverList.size) {

@@ -7,7 +7,7 @@ import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FileStoragePushFSSvcList
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FileStoragePushFSSvcListFuckKotlin
 import net.mamoe.mirai.qqandroid.utils.autoHexToBytes
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.serialization.JceCharset
@@ -107,7 +107,7 @@ internal class JceInputTest {
 
          */
 
-        data.loadAs(FileStoragePushFSSvcList.serializer())
+        data.loadAs(FileStoragePushFSSvcListFuckKotlin.serializer())
     }
 
     @Test
