@@ -602,12 +602,12 @@ data class NewFriendRequestEvent(
 
     @JavaFriendlyAPI
     @JvmName("accept")
-    fun ` __ accept blocking for java __`() = runBlocking { accept() }
+    fun __acceptBlockingForJava__() = runBlocking { accept() }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("reject")
-    fun ` __ reject blocking for java __`(blackList: Boolean = false) =
+    fun __rejectBlockingForJava__(blackList: Boolean = false) =
         runBlocking { reject(blackList) }
 }
 
@@ -653,18 +653,18 @@ data class MemberJoinRequestEvent(
 
     @JavaFriendlyAPI
     @JvmName("accept")
-    fun ` __ accept blocking for java __`() = runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
+    fun __acceptBlockingForJava__() = runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("reject")
-    fun ` __ reject blocking for java __`(blackList: Boolean = false) =
+    fun __rejectBlockingForJava__(blackList: Boolean = false) =
         runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("ignore")
-    fun ` __ ignore blocking for java __`(blackList: Boolean = false) =
+    fun __ignoreBlockingForJava__(blackList: Boolean = false) =
         runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
