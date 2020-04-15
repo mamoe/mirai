@@ -282,8 +282,25 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                     MiraiPlatformUtils.unzip(element.richMsg.template1, 1).encodeToString()
                 }
                 when (element.richMsg.serviceId) {
+                    // 5: 使用微博长图转换功能分享到QQ群
+                    /*
+                    <?xml version="1.0" encoding="utf-8"?><msg serviceID="5" templateID="12345" brief="[分享]想要沐浴阳光，就别钻进
+阴影。 ???" ><item layout="0"><image uuid="{E5F68BD5-05F8-148B-9DA7-FECD026D30AD}.jpg" md5="E5F68BD505F8148B9DA7FECD026D
+30AD" GroupFiledid="2167263882" minWidth="120" minHeight="120" maxWidth="180" maxHeight="180" /></item><source name="新
+浪微博" icon="http://i.gtimg.cn/open/app_icon/00/73/69/03//100736903_100_m.png" appid="100736903" action="" i_actionData
+="" a_actionData="" url=""/></msg>
+                     */
+                    /**
+                     * [JsonMessage]
+                     */
                     1 -> message.add(JsonMessage(content))
+                    /**
+                     * [XmlMessage]
+                     */
                     60 -> message.add(XmlMessage(content))
+                    /**
+                     * [LongMessage], [ForwardMessage]
+                     */
                     35 -> {
                         /*
                         Mirai 19:09:29 : cannot find longTextResid. isGroup=false elems=
