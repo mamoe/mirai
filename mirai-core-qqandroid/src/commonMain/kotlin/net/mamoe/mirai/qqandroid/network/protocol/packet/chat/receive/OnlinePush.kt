@@ -23,10 +23,8 @@ import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.contact.GroupImpl
-import net.mamoe.mirai.qqandroid.contact.MemberImpl
-import net.mamoe.mirai.qqandroid.contact.checkIsInstance
-import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
+import net.mamoe.mirai.qqandroid.contact.*
+import net.mamoe.mirai.qqandroid.message.contextualBugReportException
 import net.mamoe.mirai.qqandroid.message.toMessageChain
 import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -301,24 +299,24 @@ internal class OnlinePush {
                 return@lambda732 sequenceOf(GroupAllowAnonymousChatEvent(!new, new, group, operator))
             },
 
-            // confess
+            // 传字符串信息
             0x10 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
                 val dataBytes = readBytes(26)
-                val size = readByte().toInt() // orthodox, don't `readUByte`
-                if (size < 0) {
-                    // java.lang.IllegalStateException: negative array size: -100, remaining bytes=B0 E6 99 90 D8 E8 02 98 06 01
-                    // java.lang.IllegalStateException: negative array size: -121, remaining bytes=03 10 D9 F7 A2 93 0D 18 E0 DB E8 CA 0B 32 22 61 34 64 31 34 64 61 64 65 65 38 32 32 34 62 64 32 35 34 65 63 37 62 62 30 33 30 66 61 36 66 61 6D 6A 38 0E 48 00 58 01 70 C8 E8 9B 07 7A AD 02 3C 7B 22 69 63 6F 6E 22 3A 22 71 71 77 61 6C 6C 65 74 5F 63 75 73 74 6F 6D 5F 74 69 70 73 5F 69 64 69 6F 6D 5F 69 63 6F 6E 2E 70 6E 67 22 2C 22 61 6C 74 22 3A 22 22 7D 3E 3C 7B 22 63 6D 64 22 3A 31 2C 22 64 61 74 61 22 3A 22 6C 69 73 74 69 64 3D 31 30 30 30 30 34 35 32 30 31 32 30 30 34 30 38 31 32 30 30 31 30 39 36 31 32 33 31 34 35 30 30 26 67 72 6F 75 70 74 79 70 65 3D 31 22 2C 22 74 65 78 74 43 6F 6C 6F 72 22 3A 22 30 78 38 37 38 42 39 39 22 2C 22 74 65 78 74 22 3A 22 E6 8E A5 E9 BE 99 E7 BA A2 E5 8C 85 E4 B8 8B E4 B8 80 E4 B8 AA E6 8B BC E9 9F B3 EF BC 9A 22 7D 3E 3C 7B 22 63 6D 64 22 3A 31 2C 22 64 61 74 61 22 3A 22 6C 69 73 74 69 64 3D 31 30 30 30 30 34 35 32 30 31 32 30 30 34 30 38 31 32 30 30 31 30 39 36 31 32 33 31 34 35 30 30 26 67 72 6F 75 70 74 79 70 65 3D 31 22 2C 22 74 65 78 74 43 6F 6C 6F 72 22 3A 22 30 78 45 36 32 35 35 35 22 2C 22 74 65 78 74 22 3A 22 64 69 6E 67 22 7D 3E 82 01 0C E8 80 81 E5 83 A7 E5 85 A5 E5 AE 9A 88 01 03 92 01 04 64 69 6E 67 A0 01 00
-                    // negative array size: -40, remaining bytes=D6 94 C3 8C D8 E8 02 98 06 01
-                    error("negative array size: $size, remaining bytes=${readBytes().toUHexString()}")
-                }
-
-                val message = readString(size)
-                // println(dataBytes.toUHexString())
-                //println(message + ":" + dataBytes.toUHexString())
 
                 when (dataBytes[0].toInt()) {
-                    59 -> { // confess
-                        val new = when (message) {
+                    59 -> { // TODO 应该在 Transformers528 处理
+                        val size = readByte().toInt() // orthodox, don't `readUByte`
+                        if (size < 0) {
+                            // java.lang.IllegalStateException: negative array size: -100, remaining bytes=B0 E6 99 90 D8 E8 02 98 06 01
+                            // java.lang.IllegalStateException: negative array size: -121, remaining bytes=03 10 D9 F7 A2 93 0D 18 E0 DB E8 CA 0B 32 22 61 34 64 31 34 64 61 64 65 65 38 32 32 34 62 64 32 35 34 65 63 37 62 62 30 33 30 66 61 36 66 61 6D 6A 38 0E 48 00 58 01 70 C8 E8 9B 07 7A AD 02 3C 7B 22 69 63 6F 6E 22 3A 22 71 71 77 61 6C 6C 65 74 5F 63 75 73 74 6F 6D 5F 74 69 70 73 5F 69 64 69 6F 6D 5F 69 63 6F 6E 2E 70 6E 67 22 2C 22 61 6C 74 22 3A 22 22 7D 3E 3C 7B 22 63 6D 64 22 3A 31 2C 22 64 61 74 61 22 3A 22 6C 69 73 74 69 64 3D 31 30 30 30 30 34 35 32 30 31 32 30 30 34 30 38 31 32 30 30 31 30 39 36 31 32 33 31 34 35 30 30 26 67 72 6F 75 70 74 79 70 65 3D 31 22 2C 22 74 65 78 74 43 6F 6C 6F 72 22 3A 22 30 78 38 37 38 42 39 39 22 2C 22 74 65 78 74 22 3A 22 E6 8E A5 E9 BE 99 E7 BA A2 E5 8C 85 E4 B8 8B E4 B8 80 E4 B8 AA E6 8B BC E9 9F B3 EF BC 9A 22 7D 3E 3C 7B 22 63 6D 64 22 3A 31 2C 22 64 61 74 61 22 3A 22 6C 69 73 74 69 64 3D 31 30 30 30 30 34 35 32 30 31 32 30 30 34 30 38 31 32 30 30 31 30 39 36 31 32 33 31 34 35 30 30 26 67 72 6F 75 70 74 79 70 65 3D 31 22 2C 22 74 65 78 74 43 6F 6C 6F 72 22 3A 22 30 78 45 36 32 35 35 35 22 2C 22 74 65 78 74 22 3A 22 64 69 6E 67 22 7D 3E 82 01 0C E8 80 81 E5 83 A7 E5 85 A5 E5 AE 9A 88 01 03 92 01 04 64 69 6E 67 A0 01 00
+                            // negative array size: -40, remaining bytes=D6 94 C3 8C D8 E8 02 98 06 01
+                            error("negative array size: $size, remaining bytes=${readBytes().toUHexString()}")
+                        }
+
+                        // println(dataBytes.toUHexString())
+                        //println(message + ":" + dataBytes.toUHexString())
+
+                        val new = when (val message = readString(size)) {
                             "管理员已关闭群聊坦白说" -> false
                             "管理员已开启群聊坦白说" -> true
                             else -> {
@@ -341,7 +339,19 @@ internal class OnlinePush {
                         )
                     }
 
-                    else -> { // TODO SHOULD BE SPECIFIED TYPE
+                    0x2D -> {
+                        // 修改群名. 在 Transformers528 0x27L 处理
+                        return@lambda732 emptySequence()
+                    }
+                    else -> {
+                        /*
+                        bot.network.logger.debug("unknown Transformer732 0xunknown type: ${dataBytes[0].toString(16)
+                            .toUpperCase()}")
+                        bot.network.logger.debug("unknown Transformer732 0xdata= ${readBytes().toUHexString()}")
+                        */
+                        return@lambda732 emptySequence()
+
+                        /*
                         if (group.name == message) {
                             return@lambda732 emptySequence()
                         }
@@ -351,7 +361,7 @@ internal class OnlinePush {
                                 group.name.also { group._name = message },
                                 message, group, false
                             )
-                        )
+                        )*/
                     }
                 }
             },
@@ -383,6 +393,8 @@ internal class OnlinePush {
             return block
         }
 
+        val ignoredLambda528: MsgType0x210.(bot: QQAndroidBot) -> Sequence<Packet> = lambda528 { emptySequence() }
+
         // uSubMsgType to vProtobuf
         // 138 or 139: top_package/akln.java:1568
         // 66: top_package/nhz.java:269
@@ -391,6 +403,8 @@ internal class OnlinePush {
          */
         @OptIn(LowLevelAPI::class, MiraiInternalAPI::class)
         object Transformers528 : Map<Long, MsgType0x210.(QQAndroidBot) -> Sequence<Packet>> by mapOf(
+            // 提示共同好友
+            0x111L to ignoredLambda528,
             // 新好友
             0xB3L to lambda528 { bot ->
                 // 08 01 12 52 08 A2 FF 8C F0 03 10 00 1D 15 3D 90 5E 22 2E E6 88 91 E4 BB AC E5 B7 B2 E7 BB 8F E6 98 AF E5 A5 BD E5 8F 8B E5 95 A6 EF BC 8C E4 B8 80 E8 B5 B7 E6 9D A5 E8 81 8A E5 A4 A9 E5 90 A7 21 2A 09 48 69 6D 31 38 38 6D 6F 65 30 07 38 03 48 DD F1 92 B7 07
@@ -438,7 +452,7 @@ internal class OnlinePush {
                     sequenceOf(BotLeaveEvent.Active(group))
                 } else emptySequence()
             },
-            // ModFriendRemark, DelFriend
+            // 群相关,  ModFriendRemark, DelFriend, ModGroupProfile
             0x27L to lambda528 { bot ->
                 fun Submsgtype0x27.SubMsgType0x27.ModFriendRemark.transform(bot: QQAndroidBot): Sequence<Packet> {
                     return this.msgFrdRmk?.asSequence()?.mapNotNull {
@@ -457,11 +471,63 @@ internal class OnlinePush {
                     } ?: emptySequence()
                 }
 
+                fun Submsgtype0x27.SubMsgType0x27.ModGroupProfile.transform(bot: QQAndroidBot): Sequence<Packet> {
+                    return this.msgGroupProfileInfos?.asSequence()?.mapNotNull { info ->
+                        when (info.field) {
+                            1 -> {
+                                // 群名
+                                val new = info.value.encodeToString()
+
+                                val group = bot.getGroupOrNull(this.groupCode) ?: return@mapNotNull null
+                                group.checkIsGroupImpl()
+                                val old = group.name
+
+                                if (new == old) return@mapNotNull null
+
+                                val operator = if (this.cmdUin == bot.id) null
+                                else group.getOrNull(this.cmdUin) ?: return@mapNotNull null
+
+                                group._name = new
+
+                                return@mapNotNull GroupNameChangeEvent(old, new, group, operator)
+                            }
+                            2 -> {
+                                // 头像
+                                // top_package/akkz.java:3446
+                                /*
+                                var4 = var82.byteAt(0);
+                                   short var3 = (short) (var82.byteAt(1) | var4 << 8);
+                                   var85 = var18.method_77927(var7 + "");
+                                   var85.troopface = var3;
+                                   var85.hasSetNewTroopHead = true;
+                                 */
+                                bot.logger.debug(contextualBugReportException(
+                                    "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
+                                    forDebug = "this=${this._miraiContentToString()}"
+                                ))
+                                null
+                            }
+                            3 -> { // troop.credit.data
+                                // top_package/akkz.java:3475
+                                // top_package/akkz.java:3498
+                                bot.logger.debug(contextualBugReportException(
+                                    "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
+                                    forDebug = "this=${this._miraiContentToString()}"
+                                ))
+                                null
+                            }
+
+                            else -> null
+                        }
+                    } ?: emptySequence()
+                }
+
                 return@lambda528 vProtobuf.loadAs(Submsgtype0x27.SubMsgType0x27.MsgBody.serializer()).msgModInfos.asSequence()
                     .flatMap {
                         when {
                             it.msgModFriendRemark != null -> it.msgModFriendRemark.transform(bot)
                             it.msgDelFriend != null -> it.msgDelFriend.transform(bot)
+                            it.msgModGroupProfile != null -> it.msgModGroupProfile.transform(bot)
                             else -> {
                                 bot.network.logger.debug {
                                     "Transformers528 0x27L: new data: ${it._miraiContentToString()}"
@@ -497,7 +563,6 @@ internal class OnlinePush {
                                 return@deco emptySequence()
                             }
                     }
-
 
                     // 00 27 1A 0C 1C 2C 3C 4C 5D 00 0C 6D 00 0C 7D 00 0C 8D 00 0C 9C AC BC CC DD 00 0C EC FC 0F 0B 2A 0C 1C 2C 3C 4C 5C 6C 0B 3A 0C 1C 2C 3C 4C 5C 6C 7C 8D 00 0C 9D 00 0C AC BD 00 0C CD 00 0C DC ED 00 0C FC 0F FC 10 0B 4A 0C 1C 2C 3C 4C 5C 6C 7C 8C 96 00 0B 5A 0C 1C 2C 3C 4C 5C 6C 7C 8C 9D 00 0C 0B 6A 0C 1A 0C 1C 26 00 0B 2A 0C 0B 3A 0C 16 00 0B 4A 09 0C 0B 5A 09 0C 0B 0B 7A 0C 1C 2C 36 00 0B 8A 0C 1C 2C 36 00 0B 9A 09 0C 0B AD 00 00 1E 0A 1C 10 28 4A 18 0A 16 08 00 10 A2 FF 8C F0 03 1A 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B
                     528 -> {

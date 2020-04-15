@@ -67,7 +67,10 @@ interface GroupOperableEvent : GroupEvent {
 /**
  * 是否由 [Bot] 操作
  */
-val GroupOperableEvent.isByBot: Boolean get() = operator == null
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@kotlin.internal.HidesMembers // necessary until 1.0.0
+val GroupOperableEvent.isByBot: Boolean
+    get() = operator == null
 
 /**
  * 当操作人为 [Member] 时获取这个 [Member],
