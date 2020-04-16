@@ -5,7 +5,7 @@
 ## `0.37.3`  2020/4/15
 新增:
 
-- 在群名片修改事件(`MemberCardChangeEvent`)中支持获取操作人
+- 在群名修改事件(`GroupNameChangeEvent`)中支持获取操作人
 - 修复 #229, 引入 `ServiceMessage` 作为 `JsonMessage`, `XmlMessage` 的父类并处理所有类型富文本消息解析
 - 将所有 `RichMessage` 标注 `MiraiExperimentalAPI` 以警告将来改动
 
@@ -50,7 +50,7 @@
 - 修复退群事件重复广播的问题 (#221)
 
 ## `0.36.1`  2020/4/10
-- 修复 `botAsPermission`
+- 修复 `botPermission`
 - 删除一些无用的调试输出
 
 ## `0.36.0`  2020/4/10

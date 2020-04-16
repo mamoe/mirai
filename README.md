@@ -23,11 +23,11 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 **[English](README-eng.md)**  
 
 
-多平台 **QQ Android** 和 **TIM PC** 协议支持库与高效率的机器人框架.   
-纯 Kotlin 实现协议和支持框架，模块<b>全部免费开源</b>。  
-mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的应用程序与插件承载 QQ 机器人服务。
+**QQ Android** 协议支持库与高效率的机器人框架   
+纯 Kotlin 实现协议和支持框架    
+mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的应用程序与插件承载 QQ 机器人服务。  
 
-### **一切开发旨在学习，请勿用于非法用途**
+## **一切开发旨在学习，请勿用于非法用途**
 
 加入 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), 或加入 QQ 群: 655057127
 
@@ -61,11 +61,18 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 | 完整好友列表 |
 | 处理新好友申请 |
 
+#### 不会支持的协议:
+- 点赞
+- 收付款
+- 主动添加好友
+- 主动加入群
+- 主动邀请好友加群
+
+**一切开发旨在学习，请勿用于非法用途**
+
 ## 开始
 
 Mirai 目前为快速流转（Moving fast）状态, 增量版本之间可能不具有兼容性，任何功能都可能在没有警告的情况下添加、删除或者更改。
-
-**Mirai 源码完全开放, 您可以参考 Mirai 的协议实现来开发其他框架, 但需注明来源并遵守开源协议要求 (AGPLv3)**。
 
 ### 开发者
 
@@ -94,9 +101,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 - [mirai-console](https://github.com/mamoe/mirai-console) 支持插件 **本模块正在完善**
 
-### 我是其他平台的使用者
-
-#### 酷 Q 平台用户: 
+### 其他平台的使用者
 
 - 酷Q的插件可以在 mirai 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
 - 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`Mirai-CQ-Adapter` 正在进行中
@@ -114,26 +119,6 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 若在使用过程中有任何疑问, 可提交 `issue` 或是[邮件联系](mailto:support@mamoe.net). 我们希望 mirai 变得更易用.
 
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
-
-### 贡献者
-感谢以下全体开发者对 mirai 的贡献（排名不分先后）
-
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/12100985?s=60&v=4" />](https://github.com/Him188)
-[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/24618776?s=60&v=4" />](https://github.com/liujiahua123123)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/28707253?s=60&v=4" />](https://github.com/ryoii)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/11070535?s=60&v=4" />](https://github.com/jasonczc)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/13656668?s=60&v=4" />](https://github.com/PeratX)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/23146087?s=60&v=4" />](https://github.com/mzdluo123)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/18532671?s=60&v=4" />](https://github.com/uebian)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/4546175?s=60&v=4" />](https://github.com/kenvix)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/10308687?s=60&v=4" />](https://github.com/Freedom0925)
-[<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/16398479?s=60&v=4" />](https://github.com/ice1000)
-[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/20042607?s=60&v=4" />](https://github.com/PragmaTwice)
-[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/25280943?s=60&v=4" />](https://github.com/HoshinoTented)
-[<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/40517459?s=60&v=4" />](https://github.com/Cyenoch)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/31543961?s=60&v=4" />](https://github.com/Chenwe-i-lin)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/13938334?s=60&v=4" />](https://github.com/lengthmin)
-
 
 ## 鸣谢
 
