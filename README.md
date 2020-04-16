@@ -120,27 +120,6 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
 
-### 贡献者
-感谢以下全体开发者对 mirai 的贡献（排名不分先后）
-
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/12100985?s=60&v=4" />](https://github.com/Him188)
-[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/24618776?s=60&v=4" />](https://github.com/liujiahua123123)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/28707253?s=60&v=4" />](https://github.com/ryoii)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/11070535?s=60&v=4" />](https://github.com/jasonczc)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/13656668?s=60&v=4" />](https://github.com/PeratX)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/23146087?s=60&v=4" />](https://github.com/mzdluo123)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/18532671?s=60&v=4" />](https://github.com/uebian)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/4546175?s=60&v=4" />](https://github.com/kenvix)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/10308687?s=60&v=4" />](https://github.com/Freedom0925)
-[<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/16398479?s=60&v=4" />](https://github.com/ice1000)
-[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/20042607?s=60&v=4" />](https://github.com/PragmaTwice)
-[<img width="60px" height="60px" src="https://avatars0.githubusercontent.com/u/25280943?s=60&v=4" />](https://github.com/HoshinoTented)
-[<img width="60px" height="60px" src="https://avatars3.githubusercontent.com/u/40517459?s=60&v=4" />](https://github.com/Cyenoch)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/31543961?s=60&v=4" />](https://github.com/Chenwe-i-lin)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/13938334?s=60&v=4" />](https://github.com/lengthmin)
-[<img width="60px" height="60px" src="https://avatars2.githubusercontent.com/u/20417547?s=60&v=4" />](https://github.com/sandtechnology)
-[<img width="60px" height="60px" src="https://avatars1.githubusercontent.com/u/44516212?s=60&v=4" />](https://github.com/Anders233)
-
 ## 鸣谢
 
 特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
