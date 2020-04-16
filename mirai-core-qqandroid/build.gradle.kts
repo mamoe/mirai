@@ -8,7 +8,7 @@ plugins {
     id("com.jfrog.bintray") version Versions.Publishing.bintray
 }
 
-description = "QQ protocol library"
+description = "Mirai Protocol implementation for QQ Android"
 
 val isAndroidSDKAvailable: Boolean by project
 
@@ -54,7 +54,6 @@ kotlin {
                 api("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
                 api(kotlinx("io", Versions.Kotlin.io))
                 api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
-                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
             }
         }
 
