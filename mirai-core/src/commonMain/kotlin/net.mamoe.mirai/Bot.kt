@@ -157,6 +157,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param source 消息源. 可从 [MessageReceipt.source] 获得, 或从消息事件中的 [MessageChain] 获得.
      *
      * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+     * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
      *
      * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
      * @see MessageSource.recall

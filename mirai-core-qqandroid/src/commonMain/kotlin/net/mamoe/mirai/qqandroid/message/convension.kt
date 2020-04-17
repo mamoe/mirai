@@ -40,7 +40,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 
     if (this.anyIsInstance<QuoteReply>()) {
         when (val source = this[QuoteReply].source) {
-            is MessageSourceImpl -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
+            is MessageSourceInternal -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
             else -> error("unsupported MessageSource implementation: ${source::class.simpleName}. Don't implement your own MessageSource.")
         }
     }

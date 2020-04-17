@@ -291,10 +291,13 @@ internal abstract class QQAndroidBotBase constructor(
 
     @Suppress("RemoveExplicitTypeArguments") // false positive
     override suspend fun recall(source: MessageSource) {
-        // println(source._miraiContentToString())
-
-        check(source is MessageSourceImpl)
+        check(source is MessageSourceInternal)
         source.ensureSequenceIdAvailable()
+
+        @Suppress("BooleanLiteralArgument") // false positive
+        check(!source.isRecalledOrPlanned.value && source.isRecalledOrPlanned.compareAndSet(false, true)) {
+            "$source had already been recalled."
+        }
 
         val response: PbMessageSvc.PbMsgWithDraw.Response = when (source) {
             is MessageSourceToGroupImpl,
