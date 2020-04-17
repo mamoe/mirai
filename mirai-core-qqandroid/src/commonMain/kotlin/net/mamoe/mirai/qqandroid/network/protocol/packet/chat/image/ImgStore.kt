@@ -29,8 +29,8 @@ internal class ImgStore {
             groupCode: Long,
             md5: ByteArray,
             size: Long,
-            picWidth: Int,
-            picHeight: Int,
+            picWidth: Int = 0, // not orthodox
+            picHeight: Int = 0, // not orthodox
             picType: Int = 1000,
             fileId: Long = 0,
             filename: String,
@@ -102,7 +102,10 @@ internal class ImgStore {
             return when {
                 resp.result != 0 -> Response.Failed(resultCode = resp.result, message = resp.failMsg)
                 resp.boolFileExit -> Response.FileExists(fileId = resp.fileid, fileInfo = resp.msgImgInfo!!)
-                else -> Response.RequireUpload(fileId = resp.fileid, uKey = resp.upUkey, uploadIpList = resp.uint32UpIp!!, uploadPortList = resp.uint32UpPort!!)
+                else -> Response.RequireUpload(fileId = resp.fileid,
+                    uKey = resp.upUkey,
+                    uploadIpList = resp.uint32UpIp!!,
+                    uploadPortList = resp.uint32UpPort!!)
             }
         }
     }

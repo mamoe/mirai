@@ -16,41 +16,42 @@ import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
+import kotlin.jvm.JvmField
 
 @Serializable
 internal class ImCommon : ProtoBuf {
     @Serializable
     internal class GroupInfo(
-        @ProtoId(1) val groupId: Long = 0L,
-        @ProtoId(2) val groupType: Int /* enum */ = 1
+        @ProtoId(1) @JvmField val groupId: Long = 0L,
+        @ProtoId(2) @JvmField val groupType: Int /* enum */ = 1
     ) : ProtoBuf
 
     @Serializable
     internal class Signature(
-        @ProtoId(1) val keyType: Int = 0,
-        @ProtoId(2) val sessionAppId: Int = 0,
-        @ProtoId(3) val sessionKey: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val keyType: Int = 0,
+        @ProtoId(2) @JvmField val sessionAppId: Int = 0,
+        @ProtoId(3) @JvmField val sessionKey: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class Token(
-        @ProtoId(1) val buf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val c2cType: Int = 0,
-        @ProtoId(3) val serviceType: Int = 0
+        @ProtoId(1) @JvmField val buf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val c2cType: Int = 0,
+        @ProtoId(3) @JvmField val serviceType: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class User(
-        @ProtoId(1) val uin: Long = 0L,
-        @ProtoId(2) val appId: Int = 0,
-        @ProtoId(3) val instanceId: Int = 0,
-        @ProtoId(4) val appType: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(5) val clientIp: Int = 0,
-        @ProtoId(6) val version: Int = 0,
-        @ProtoId(7) val phoneNumber: String = "",
-        @ProtoId(8) val platformId: Int = 0,
-        @ProtoId(9) val language: Int = 0,
-        @ProtoId(10) val equipKey: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val uin: Long = 0L,
+        @ProtoId(2) @JvmField val appId: Int = 0,
+        @ProtoId(3) @JvmField val instanceId: Int = 0,
+        @ProtoId(4) @JvmField val appType: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(5) @JvmField val clientIp: Int = 0,
+        @ProtoId(6) @JvmField val version: Int = 0,
+        @ProtoId(7) @JvmField val phoneNumber: String = "",
+        @ProtoId(8) @JvmField val platformId: Int = 0,
+        @ProtoId(9) @JvmField val language: Int = 0,
+        @ProtoId(10) @JvmField val equipKey: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 }
 
@@ -58,37 +59,37 @@ internal class ImCommon : ProtoBuf {
 internal class ImImagent : ProtoBuf {
     @Serializable
     internal class ImAgentHead(
-        @ProtoId(1) val command: Int /* enum */ = 1,
-        @ProtoId(2) val seq: Int = 0,
-        @ProtoId(3) val result: Int = 0,
-        @ProtoId(4) val err: String = "",
-        @ProtoId(5) val echoBuf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val reqUser: ImCommon.User? = null,
-        @ProtoId(7) val reqInfo: Requestinfo? = null,
-        @ProtoId(8) val signature: Signature? = null,
-        @ProtoId(9) val subCmd: Int = 0,
-        @ProtoId(10) val serverIp: Int = 0
+        @ProtoId(1) @JvmField val command: Int /* enum */ = 1,
+        @ProtoId(2) @JvmField val seq: Int = 0,
+        @ProtoId(3) @JvmField val result: Int = 0,
+        @ProtoId(4) @JvmField val err: String = "",
+        @ProtoId(5) @JvmField val echoBuf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val reqUser: ImCommon.User? = null,
+        @ProtoId(7) @JvmField val reqInfo: Requestinfo? = null,
+        @ProtoId(8) @JvmField val signature: Signature? = null,
+        @ProtoId(9) @JvmField val subCmd: Int = 0,
+        @ProtoId(10) @JvmField val serverIp: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class ImAgentPackage(
-        @ProtoId(1) val head: ImAgentHead? = null,
-        @ProtoId(11) val msgSendReq: ImMsg.MsgSendReq? = null,
-        @ProtoId(12) val msgSendResp: ImMsg.MsgSendResp? = null
+        @ProtoId(1) @JvmField val head: ImAgentHead? = null,
+        @ProtoId(11) @JvmField val msgSendReq: ImMsg.MsgSendReq? = null,
+        @ProtoId(12) @JvmField val msgSendResp: ImMsg.MsgSendResp? = null
     ) : ProtoBuf
 
     @Serializable
     internal class Requestinfo(
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(1) val reqIp: Int = 0,
-        @ProtoId(2) val reqPort: Int = 0,
-        @ProtoId(3) val reqFlag: Int = 0
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(1) @JvmField val reqIp: Int = 0,
+        @ProtoId(2) @JvmField val reqPort: Int = 0,
+        @ProtoId(3) @JvmField val reqFlag: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class Signature(
-        @ProtoId(1) val keyType: Int = 0,
-        @ProtoId(2) val sessionAppId: Int = 0,
-        @ProtoId(3) val sessionKey: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val keyType: Int = 0,
+        @ProtoId(2) @JvmField val sessionAppId: Int = 0,
+        @ProtoId(3) @JvmField val sessionKey: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 }
 
@@ -96,59 +97,59 @@ internal class ImImagent : ProtoBuf {
 internal class ImMsg : ProtoBuf {
     @Serializable
     internal class C2C(
-        @ProtoId(1) val sender: ImCommon.User? = null,
-        @ProtoId(2) val receiver: ImCommon.User? = null,
-        @ProtoId(3) val c2cRelation: C2CRelation? = null
+        @ProtoId(1) @JvmField val sender: ImCommon.User? = null,
+        @ProtoId(2) @JvmField val receiver: ImCommon.User? = null,
+        @ProtoId(3) @JvmField val c2cRelation: C2CRelation? = null
     ) : ProtoBuf
 
     @Serializable
     internal class C2CRelation(
-        @ProtoId(1) val c2cType: Int /* enum */ = 0,
-        @ProtoId(2) val groupInfo: ImCommon.GroupInfo? = null,
-        @ProtoId(3) val token: ImCommon.Token? = null
+        @ProtoId(1) @JvmField val c2cType: Int /* enum */ = 0,
+        @ProtoId(2) @JvmField val groupInfo: ImCommon.GroupInfo? = null,
+        @ProtoId(3) @JvmField val token: ImCommon.Token? = null
     ) : ProtoBuf
 
     @Serializable
     internal class ContentHead(
-        @ProtoId(1) val pkgNum: Int = 1,
-        @ProtoId(2) val pkgIndex: Int = 0,
-        @ProtoId(3) val seq: Int = 0,
-        @ProtoId(4) val dateTime: Int = 0,
-        @ProtoId(5) val msgType: Int = 0,
-        @ProtoId(6) val divSeq: Int = 0,
-        @ProtoId(7) val msgdbUin: Long = 0L,
-        @ProtoId(8) val msgdbSeq: Int = 0,
-        @ProtoId(9) val wordMsgSeq: Int = 0,
-        @ProtoId(10) val msgRand: Int = 0
+        @ProtoId(1) @JvmField val pkgNum: Int = 1,
+        @ProtoId(2) @JvmField val pkgIndex: Int = 0,
+        @ProtoId(3) @JvmField val seq: Int = 0,
+        @ProtoId(4) @JvmField val dateTime: Int = 0,
+        @ProtoId(5) @JvmField val msgType: Int = 0,
+        @ProtoId(6) @JvmField val divSeq: Int = 0,
+        @ProtoId(7) @JvmField val msgdbUin: Long = 0L,
+        @ProtoId(8) @JvmField val msgdbSeq: Int = 0,
+        @ProtoId(9) @JvmField val wordMsgSeq: Int = 0,
+        @ProtoId(10) @JvmField val msgRand: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class Group(
-        @ProtoId(1) val sender: ImCommon.User? = null,
-        @ProtoId(2) val receiver: ImCommon.User? = null,
-        @ProtoId(3) val groupInfo: ImCommon.GroupInfo? = null
+        @ProtoId(1) @JvmField val sender: ImCommon.User? = null,
+        @ProtoId(2) @JvmField val receiver: ImCommon.User? = null,
+        @ProtoId(3) @JvmField val groupInfo: ImCommon.GroupInfo? = null
     ) : ProtoBuf
 
     @Serializable
     internal class Msg(
-        @ProtoId(1) val head: MsgHead? = null,
-        @ProtoId(2) val body: ImMsgBody.MsgBody? = null
+        @ProtoId(1) @JvmField val head: MsgHead? = null,
+        @ProtoId(2) @JvmField val body: ImMsgBody.MsgBody? = null
     ) : ProtoBuf
 
     @Serializable
     internal class MsgHead(
-        @ProtoId(1) val routingHead: RoutingHead? = null,
-        @ProtoId(2) val contentHead: ContentHead? = null,
-        @ProtoId(3) val gbkTmpMsgBody: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val routingHead: RoutingHead? = null,
+        @ProtoId(2) @JvmField val contentHead: ContentHead? = null,
+        @ProtoId(3) @JvmField val gbkTmpMsgBody: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class MsgSendReq(
-        @ProtoId(1) val msg: Msg? = null,
-        @ProtoId(2) val buMsg: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val msgTailId: Int = 0,
-        @ProtoId(4) val connMsgFlag: Int = 0,
-        @ProtoId(5) val cookie: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val msg: Msg? = null,
+        @ProtoId(2) @JvmField val buMsg: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val msgTailId: Int = 0,
+        @ProtoId(4) @JvmField val connMsgFlag: Int = 0,
+        @ProtoId(5) @JvmField val cookie: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
@@ -156,8 +157,8 @@ internal class ImMsg : ProtoBuf {
 
     @Serializable
     internal class RoutingHead(
-        @ProtoId(1) val c2c: C2C? = null,
-        @ProtoId(2) val group: Group? = null
+        @ProtoId(1) @JvmField val c2c: C2C? = null,
+        @ProtoId(2) @JvmField val group: Group? = null
     ) : ProtoBuf
 }
 
@@ -165,806 +166,807 @@ internal class ImMsg : ProtoBuf {
 internal class ImMsgBody : ProtoBuf {
     @Serializable
     internal class AnonymousGroupMsg(
-        @ProtoId(1) val flags: Int = 0,
-        @ProtoId(2) val anonId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val anonNick: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val headPortrait: Int = 0,
-        @ProtoId(5) val expireTime: Int = 0,
-        @ProtoId(6) val bubbleId: Int = 0,
-        @ProtoId(7) val rankColor: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val flags: Int = 0,
+        @ProtoId(2) @JvmField val anonId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val anonNick: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val headPortrait: Int = 0,
+        @ProtoId(5) @JvmField val expireTime: Int = 0,
+        @ProtoId(6) @JvmField val bubbleId: Int = 0,
+        @ProtoId(7) @JvmField val rankColor: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class ApolloActMsg(
-        @ProtoId(1) val actionId: Int = 0,
-        @ProtoId(2) val actionName: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val actionText: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val flag: Int = 0,
-        @ProtoId(5) val peerUin: Int = 0,
-        @ProtoId(6) val senderTs: Int = 0,
-        @ProtoId(7) val peerTs: Int = 0,
-        @ProtoId(8) val int32SenderStatus: Int = 0,
-        @ProtoId(9) val int32PeerStatus: Int = 0,
-        @ProtoId(10) val diytextId: Int = 0,
-        @ProtoId(11) val diytextContent: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(12) val inputText: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(13) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val actionId: Int = 0,
+        @ProtoId(2) @JvmField val actionName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val actionText: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val flag: Int = 0,
+        @ProtoId(5) @JvmField val peerUin: Int = 0,
+        @ProtoId(6) @JvmField val senderTs: Int = 0,
+        @ProtoId(7) @JvmField val peerTs: Int = 0,
+        @ProtoId(8) @JvmField val int32SenderStatus: Int = 0,
+        @ProtoId(9) @JvmField val int32PeerStatus: Int = 0,
+        @ProtoId(10) @JvmField val diytextId: Int = 0,
+        @ProtoId(11) @JvmField val diytextContent: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(12) @JvmField val inputText: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(13) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class ArkAppElem(
-        @ProtoId(1) val appName: String = "",
-        @ProtoId(2) val minVersion: String = "",
-        @ProtoId(3) val xmlTemplate: String = "",
-        @ProtoId(4) val data: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val appName: String = "",
+        @ProtoId(2) @JvmField val minVersion: String = "",
+        @ProtoId(3) @JvmField val xmlTemplate: String = "",
+        @ProtoId(4) @JvmField val data: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class Attr(
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(1) val codePage: Int = -1,
-        @ProtoId(2) val time: Int = 1,
-        @ProtoId(3) val random: Int = 0,
-        @ProtoId(4) val color: Int = 0,
-        @ProtoId(5) val size: Int = 10,
-        @ProtoId(6) val effect: Int = 7,
-        @ProtoId(7) val charSet: Int = 78,
-        @ProtoId(8) val pitchAndFamily: Int = 90,
-        @ProtoId(9) val fontName: String = "Times New Roman",
-        @ProtoId(10) val reserveData: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(1) @JvmField val codePage: Int = -1,
+        @ProtoId(2) @JvmField val time: Int = 1,
+        @ProtoId(3) @JvmField val random: Int = 0,
+        @ProtoId(4) @JvmField val color: Int = 0,
+        @ProtoId(5) @JvmField val size: Int = 10,
+        @ProtoId(6) @JvmField val effect: Int = 7,
+        @ProtoId(7) @JvmField val charSet: Int = 78,
+        @ProtoId(8) @JvmField val pitchAndFamily: Int = 90,
+        @ProtoId(9) @JvmField val fontName: String = "Times New Roman",
+        @ProtoId(10) @JvmField val reserveData: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class BitAppMsg(
-        @ProtoId(1) val buf: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val buf: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class BlessingMessage(
-        @ProtoId(1) val msgType: Int = 0,
-        @ProtoId(2) val exFlag: Int = 0
+        @ProtoId(1) @JvmField val msgType: Int = 0,
+        @ProtoId(2) @JvmField val exFlag: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class CommonElem(
-        @ProtoId(1) val serviceType: Int = 0,
-        @ProtoId(2) val pbElem: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val businessType: Int = 0
+        @ProtoId(1) @JvmField val serviceType: Int = 0,
+        @ProtoId(2) @JvmField val pbElem: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val businessType: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class ConferenceTipsInfo(
-        @ProtoId(1) val sessionType: Int = 0,
-        @ProtoId(2) val sessionUin: Long = 0L,
-        @ProtoId(3) val text: String = ""
+        @ProtoId(1) @JvmField val sessionType: Int = 0,
+        @ProtoId(2) @JvmField val sessionUin: Long = 0L,
+        @ProtoId(3) @JvmField val text: String = ""
     ) : ProtoBuf
 
     @Serializable
     internal class CrmElem(
-        @ProtoId(1) val crmBuf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val qidianFlag: Int = 0,
-        @ProtoId(4) val pushFlag: Int = 0,
-        @ProtoId(5) val countFlag: Int = 0
+        @ProtoId(1) @JvmField val crmBuf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val qidianFlag: Int = 0,
+        @ProtoId(4) @JvmField val pushFlag: Int = 0,
+        @ProtoId(5) @JvmField val countFlag: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class CustomElem(
-        @ProtoId(1) val desc: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val data: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val enumType: Int /* enum */ = 1,
-        @ProtoId(4) val ext: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val sound: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val desc: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val data: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val enumType: Int /* enum */ = 1,
+        @ProtoId(4) @JvmField val ext: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val sound: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class CustomFace(
-        @ProtoId(1) val guid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val filePath: String = "",
-        @ProtoId(3) val shortcut: String = "",
-        @ProtoId(4) val buffer: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val flag: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val oldData: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(7) val fileId: Int = 0,
-        @ProtoId(8) val serverIp: Int = 0,
-        @ProtoId(9) val serverPort: Int = 0,
-        @ProtoId(10) val fileType: Int = 0,
-        @ProtoId(11) val signature: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(12) val useful: Int = 0,
-        @ProtoId(13) val md5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(14) val thumbUrl: String = "",
-        @ProtoId(15) val bigUrl: String = "",
-        @ProtoId(16) val origUrl: String = "",
-        @ProtoId(17) val bizType: Int = 0,
-        @ProtoId(18) val repeatIndex: Int = 0,
-        @ProtoId(19) val repeatImage: Int = 0,
-        @ProtoId(20) val imageType: Int = 0,
-        @ProtoId(21) val index: Int = 0,
-        @ProtoId(22) val width: Int = 0,
-        @ProtoId(23) val height: Int = 0,
-        @ProtoId(24) val source: Int = 0,
-        @ProtoId(25) val size: Int = 0,
-        @ProtoId(26) val origin: Int = 0,
-        @ProtoId(27) val thumbWidth: Int = 0,
-        @ProtoId(28) val thumbHeight: Int = 0,
-        @ProtoId(29) val showLen: Int = 0,
-        @ProtoId(30) val downloadLen: Int = 0,
-        @ProtoId(31) val _400Url: String = "",
-        @ProtoId(32) val _400Width: Int = 0,
-        @ProtoId(33) val _400Height: Int = 0,
-        @ProtoId(34) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val guid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val filePath: String = "",
+        @ProtoId(3) @JvmField val shortcut: String = "",
+        @ProtoId(4) @JvmField val buffer: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val flag: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val oldData: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(7) @JvmField val fileId: Int = 0,
+        @ProtoId(8) @JvmField val serverIp: Int = 0,
+        @ProtoId(9) @JvmField val serverPort: Int = 0,
+        @ProtoId(10) @JvmField val fileType: Int = 0,
+        @ProtoId(11) @JvmField val signature: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(12) @JvmField val useful: Int = 0,
+        @ProtoId(13) @JvmField val md5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(14) @JvmField val thumbUrl: String = "",
+        @ProtoId(15) @JvmField val bigUrl: String = "",
+        @ProtoId(16) @JvmField val origUrl: String = "",
+        @ProtoId(17) @JvmField val bizType: Int = 0,
+        @ProtoId(18) @JvmField val repeatIndex: Int = 0,
+        @ProtoId(19) @JvmField val repeatImage: Int = 0,
+        @ProtoId(20) @JvmField val imageType: Int = 0,
+        @ProtoId(21) @JvmField val index: Int = 0,
+        @ProtoId(22) @JvmField val width: Int = 0,
+        @ProtoId(23) @JvmField val height: Int = 0,
+        @ProtoId(24) @JvmField val source: Int = 0,
+        @ProtoId(25) @JvmField val size: Int = 0,
+        @ProtoId(26) @JvmField val origin: Int = 0,
+        @ProtoId(27) @JvmField val thumbWidth: Int = 0,
+        @ProtoId(28) @JvmField val thumbHeight: Int = 0,
+        @ProtoId(29) @JvmField val showLen: Int = 0,
+        @ProtoId(30) @JvmField val downloadLen: Int = 0,
+        @ProtoId(31) @JvmField val _400Url: String = "",
+        @ProtoId(32) @JvmField val _400Width: Int = 0,
+        @ProtoId(33) @JvmField val _400Height: Int = 0,
+        @ProtoId(34) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class DeliverGiftMsg(
-        @ProtoId(1) val grayTipContent: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val animationPackageId: Int = 0,
-        @ProtoId(3) val animationPackageUrlA: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val animationPackageUrlI: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val remindBrief: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val giftId: Int = 0,
-        @ProtoId(7) val giftCount: Int = 0,
-        @ProtoId(8) val animationBrief: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(9) val senderUin: Long = 0L,
-        @ProtoId(10) val receiverUin: Long = 0L,
-        @ProtoId(11) val stmessageTitle: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(12) val stmessageSubtitle: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(13) val stmessageMessage: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(14) val stmessageGiftpicid: Int = 0,
-        @ProtoId(15) val stmessageComefrom: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(16) val stmessageExflag: Int = 0,
-        @ProtoId(17) val toAllGiftId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(18) val comefromLink: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(19) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(20) val receiverName: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(21) val receiverPic: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(22) val stmessageGifturl: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val grayTipContent: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val animationPackageId: Int = 0,
+        @ProtoId(3) @JvmField val animationPackageUrlA: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val animationPackageUrlI: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val remindBrief: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val giftId: Int = 0,
+        @ProtoId(7) @JvmField val giftCount: Int = 0,
+        @ProtoId(8) @JvmField val animationBrief: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(9) @JvmField val senderUin: Long = 0L,
+        @ProtoId(10) @JvmField val receiverUin: Long = 0L,
+        @ProtoId(11) @JvmField val stmessageTitle: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(12) @JvmField val stmessageSubtitle: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(13) @JvmField val stmessageMessage: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(14) @JvmField val stmessageGiftpicid: Int = 0,
+        @ProtoId(15) @JvmField val stmessageComefrom: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(16) @JvmField val stmessageExflag: Int = 0,
+        @ProtoId(17) @JvmField val toAllGiftId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(18) @JvmField val comefromLink: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(19) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(20) @JvmField val receiverName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(21) @JvmField val receiverPic: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(22) @JvmField val stmessageGifturl: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class EIMInfo(
-        @ProtoId(1) val rootId: Long = 0L,
-        @ProtoId(2) val flag: Int = 0
+        @ProtoId(1) @JvmField val rootId: Long = 0L,
+        @ProtoId(2) @JvmField val flag: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class Elem(
-        @ProtoId(1) val text: Text? = null,
-        @ProtoId(2) val face: Face? = null,
-        @ProtoId(3) val onlineImage: OnlineImage? = null,
-        @ProtoId(4) val notOnlineImage: NotOnlineImage? = null,
-        @ProtoId(5) val transElemInfo: TransElem? = null,
-        @ProtoId(6) val marketFace: MarketFace? = null,
-        @ProtoId(7) val elemFlags: ElemFlags? = null,
-        @ProtoId(8) val customFace: CustomFace? = null,
-        @ProtoId(9) val elemFlags2: ElemFlags2? = null,
-        @ProtoId(10) val funFace: FunFace? = null,
-        @ProtoId(11) val secretFile: SecretFileMsg? = null,
-        @ProtoId(12) val richMsg: RichMsg? = null,
-        @ProtoId(13) val groupFile: GroupFile? = null,
-        @ProtoId(14) val pubGroup: PubGroup? = null,
-        @ProtoId(15) val marketTrans: MarketTrans? = null,
-        @ProtoId(16) val extraInfo: ExtraInfo? = null,
-        @ProtoId(17) val shakeWindow: ShakeWindow? = null,
-        @ProtoId(18) val pubAccount: PubAccount? = null,
-        @ProtoId(19) val videoFile: VideoFile? = null,
-        @ProtoId(20) val tipsInfo: TipsInfo? = null,
-        @ProtoId(21) val anonGroupMsg: AnonymousGroupMsg? = null,
-        @ProtoId(22) val qqLiveOld: QQLiveOld? = null,
-        @ProtoId(23) val lifeOnline: LifeOnlineAccount? = null,
-        @ProtoId(24) val qqwalletMsg: QQWalletMsg? = null,
-        @ProtoId(25) val crmElem: CrmElem? = null,
-        @ProtoId(26) val conferenceTipsInfo: ConferenceTipsInfo? = null,
-        @ProtoId(27) val redbagInfo: RedBagInfo? = null,
-        @ProtoId(28) val lowVersionTips: LowVersionTips? = null,
-        @ProtoId(29) val bankcodeCtrlInfo: ByteArray? = null,
-        @ProtoId(30) val nearByMsg: NearByMessageType? = null,
-        @ProtoId(31) val customElem: CustomElem? = null,
-        @ProtoId(32) val locationInfo: LocationInfo? = null,
-        @ProtoId(33) val pubAccInfo: PubAccInfo? = null,
-        @ProtoId(34) val smallEmoji: SmallEmoji? = null,
-        @ProtoId(35) val fsjMsgElem: FSJMessageElem? = null,
-        @ProtoId(36) val arkApp: ArkAppElem? = null,
-        @ProtoId(37) val generalFlags: GeneralFlags? = null,
-        @ProtoId(38) val hcFlashPic: CustomFace? = null,
-        @ProtoId(39) val deliverGiftMsg: DeliverGiftMsg? = null,
-        @ProtoId(40) val bitappMsg: BitAppMsg? = null,
-        @ProtoId(41) val openQqData: OpenQQData? = null,
-        @ProtoId(42) val apolloMsg: ApolloActMsg? = null,
-        @ProtoId(43) val groupPubAccInfo: GroupPubAccountInfo? = null,
-        @ProtoId(44) val blessMsg: BlessingMessage? = null,
-        @ProtoId(45) val srcMsg: SourceMsg? = null,
-        @ProtoId(46) val lolaMsg: LolaMsg? = null,
-        @ProtoId(47) val groupBusinessMsg: GroupBusinessMsg? = null,
-        @ProtoId(48) val msgWorkflowNotify: WorkflowNotifyMsg? = null,
-        @ProtoId(49) val patElem: PatsElem? = null,
-        @ProtoId(50) val groupPostElem: GroupPostElem? = null,
-        @ProtoId(51) val lightApp: LightAppElem? = null,
-        @ProtoId(52) val eimInfo: EIMInfo? = null,
-        @ProtoId(53) val commonElem: CommonElem? = null
+        @ProtoId(1) @JvmField val text: Text? = null,
+        @ProtoId(2) @JvmField val face: Face? = null,
+        @ProtoId(3) @JvmField val onlineImage: OnlineImage? = null,
+        @ProtoId(4) @JvmField val notOnlineImage: NotOnlineImage? = null,
+        @ProtoId(5) @JvmField val transElemInfo: TransElem? = null,
+        @ProtoId(6) @JvmField val marketFace: MarketFace? = null,
+        @ProtoId(7) @JvmField val elemFlags: ElemFlags? = null,
+        @ProtoId(8) @JvmField val customFace: CustomFace? = null,
+        @ProtoId(9) @JvmField val elemFlags2: ElemFlags2? = null,
+        @ProtoId(10) @JvmField val funFace: FunFace? = null,
+        @ProtoId(11) @JvmField val secretFile: SecretFileMsg? = null,
+        @ProtoId(12) @JvmField val richMsg: RichMsg? = null,
+        @ProtoId(13) @JvmField val groupFile: GroupFile? = null,
+        @ProtoId(14) @JvmField val pubGroup: PubGroup? = null,
+        @ProtoId(15) @JvmField val marketTrans: MarketTrans? = null,
+        @ProtoId(16) @JvmField val extraInfo: ExtraInfo? = null,
+        @ProtoId(17) @JvmField val shakeWindow: ShakeWindow? = null,
+        @ProtoId(18) @JvmField val pubAccount: PubAccount? = null,
+        @ProtoId(19) @JvmField val videoFile: VideoFile? = null,
+        @ProtoId(20) @JvmField val tipsInfo: TipsInfo? = null,
+        @ProtoId(21) @JvmField val anonGroupMsg: AnonymousGroupMsg? = null,
+        @ProtoId(22) @JvmField val qqLiveOld: QQLiveOld? = null,
+        @ProtoId(23) @JvmField val lifeOnline: LifeOnlineAccount? = null,
+        @ProtoId(24) @JvmField val qqwalletMsg: QQWalletMsg? = null,
+        @ProtoId(25) @JvmField val crmElem: CrmElem? = null,
+        @ProtoId(26) @JvmField val conferenceTipsInfo: ConferenceTipsInfo? = null,
+        @ProtoId(27) @JvmField val redbagInfo: RedBagInfo? = null,
+        @ProtoId(28) @JvmField val lowVersionTips: LowVersionTips? = null,
+        @ProtoId(29) @JvmField val bankcodeCtrlInfo: ByteArray? = null,
+        @ProtoId(30) @JvmField val nearByMsg: NearByMessageType? = null,
+        @ProtoId(31) @JvmField val customElem: CustomElem? = null,
+        @ProtoId(32) @JvmField val locationInfo: LocationInfo? = null,
+        @ProtoId(33) @JvmField val pubAccInfo: PubAccInfo? = null,
+        @ProtoId(34) @JvmField val smallEmoji: SmallEmoji? = null,
+        @ProtoId(35) @JvmField val fsjMsgElem: FSJMessageElem? = null,
+        @ProtoId(36) @JvmField val arkApp: ArkAppElem? = null,
+        @ProtoId(37) @JvmField val generalFlags: GeneralFlags? = null,
+        @ProtoId(38) @JvmField val hcFlashPic: CustomFace? = null,
+        @ProtoId(39) @JvmField val deliverGiftMsg: DeliverGiftMsg? = null,
+        @ProtoId(40) @JvmField val bitappMsg: BitAppMsg? = null,
+        @ProtoId(41) @JvmField val openQqData: OpenQQData? = null,
+        @ProtoId(42) @JvmField val apolloMsg: ApolloActMsg? = null,
+        @ProtoId(43) @JvmField val groupPubAccInfo: GroupPubAccountInfo? = null,
+        @ProtoId(44) @JvmField val blessMsg: BlessingMessage? = null,
+        @ProtoId(45) @JvmField val srcMsg: SourceMsg? = null,
+        @ProtoId(46) @JvmField val lolaMsg: LolaMsg? = null,
+        @ProtoId(47) @JvmField val groupBusinessMsg: GroupBusinessMsg? = null,
+        @ProtoId(48) @JvmField val msgWorkflowNotify: WorkflowNotifyMsg? = null,
+        @ProtoId(49) @JvmField val patElem: PatsElem? = null,
+        @ProtoId(50) @JvmField val groupPostElem: GroupPostElem? = null,
+        @ProtoId(51) @JvmField val lightApp: LightAppElem? = null,
+        @ProtoId(52) @JvmField val eimInfo: EIMInfo? = null,
+        @ProtoId(53) @JvmField val commonElem: CommonElem? = null
     ) : ProtoBuf
 
     @Serializable
     internal class ElemFlags(
-        @ProtoId(1) val flags1: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val businessData: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val flags1: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val businessData: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class ElemFlags2(
-        @ProtoId(1) val colorTextId: Int = 0,
-        @ProtoId(2) val msgId: Long = 0L,
-        @ProtoId(3) val whisperSessionId: Int = 0,
-        @ProtoId(4) val pttChangeBit: Int = 0,
-        @ProtoId(5) val vipStatus: Int = 0,
-        @ProtoId(6) val compatibleId: Int = 0,
-        @ProtoId(7) val insts: List<Inst>? = null,
-        @ProtoId(8) val msgRptCnt: Int = 0,
-        @ProtoId(9) val srcInst: Inst? = null,
-        @ProtoId(10) val longtitude: Int = 0,
-        @ProtoId(11) val latitude: Int = 0,
-        @ProtoId(12) val customFont: Int = 0,
-        @ProtoId(13) val pcSupportDef: PcSupportDef? = null,
-        @ProtoId(14) val crmFlags: Int = 0
+        @ProtoId(1) @JvmField val colorTextId: Int = 0,
+        @ProtoId(2) @JvmField val msgId: Long = 0L,
+        @ProtoId(3) @JvmField val whisperSessionId: Int = 0,
+        @ProtoId(4) @JvmField val pttChangeBit: Int = 0,
+        @ProtoId(5) @JvmField val vipStatus: Int = 0,
+        @ProtoId(6) @JvmField val compatibleId: Int = 0,
+        @ProtoId(7) @JvmField val insts: List<Inst>? = null,
+        @ProtoId(8) @JvmField val msgRptCnt: Int = 0,
+        @ProtoId(9) @JvmField val srcInst: Inst? = null,
+        @ProtoId(10) @JvmField val longtitude: Int = 0,
+        @ProtoId(11) @JvmField val latitude: Int = 0,
+        @ProtoId(12) @JvmField val customFont: Int = 0,
+        @ProtoId(13) @JvmField val pcSupportDef: PcSupportDef? = null,
+        @ProtoId(14) @JvmField val crmFlags: Int = 0
     ) : ProtoBuf {
         @Serializable
         internal class Inst(
-            @ProtoId(1) val appId: Int = 0,
-            @ProtoId(2) val instId: Int = 0
+            @ProtoId(1) @JvmField val appId: Int = 0,
+            @ProtoId(2) @JvmField val instId: Int = 0
         )
     }
 
     @Serializable
     internal class ExtraInfo(
-        @ProtoId(1) val nick: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val groupCard: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val level: Int = 0,
-        @ProtoId(4) val flags: Int = 0,
-        @ProtoId(5) val groupMask: Int = 0,
-        @ProtoId(6) val msgTailId: Int = 0,
-        @ProtoId(7) val senderTitle: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val apnsTips: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(9) val uin: Long = 0L,
-        @ProtoId(10) val msgStateFlag: Int = 0,
-        @ProtoId(11) val apnsSoundType: Int = 0,
-        @ProtoId(12) val newGroupFlag: Int = 0
+        @ProtoId(1) @JvmField val nick: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val groupCard: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val level: Int = 0,
+        @ProtoId(4) @JvmField val flags: Int = 0,
+        @ProtoId(5) @JvmField val groupMask: Int = 0,
+        @ProtoId(6) @JvmField val msgTailId: Int = 0,
+        @ProtoId(7) @JvmField val senderTitle: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val apnsTips: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(9) @JvmField val uin: Long = 0L,
+        @ProtoId(10) @JvmField val msgStateFlag: Int = 0,
+        @ProtoId(11) @JvmField val apnsSoundType: Int = 0,
+        @ProtoId(12) @JvmField val newGroupFlag: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class Face(
-        @ProtoId(1) val index: Int = 0,
-        @ProtoId(2) val old: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(11) val buf: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val index: Int = 0,
+        @ProtoId(2) @JvmField val old: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(11) @JvmField val buf: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class FSJMessageElem(
-        @ProtoId(1) val msgType: Int = 0
+        @ProtoId(1) @JvmField val msgType: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class FunFace(
-        @ProtoId(1) val msgTurntable: Turntable? = null,
-        @ProtoId(2) val msgBomb: Bomb? = null
+        @ProtoId(1) @JvmField val msgTurntable: Turntable? = null,
+        @ProtoId(2) @JvmField val msgBomb: Bomb? = null
     ) {
         @Serializable
         internal class Bomb(
-            @ProtoId(1) val boolBurst: Boolean = false
+            @ProtoId(1) @JvmField val boolBurst: Boolean = false
         )
 
         @Serializable
         internal class Turntable(
-            @ProtoId(1) val uint64UinList: List<Long>? = null,
-            @ProtoId(2) val hitUin: Long = 0L,
-            @ProtoId(3) val hitUinNick: String = ""
+            @ProtoId(1) @JvmField val uint64UinList: List<Long>? = null,
+            @ProtoId(2) @JvmField val hitUin: Long = 0L,
+            @ProtoId(3) @JvmField val hitUinNick: String = ""
         )
     }
 
     @Serializable
     internal class GeneralFlags(
-        @ProtoId(1) val bubbleDiyTextId: Int = 0,
-        @ProtoId(2) val groupFlagNew: Int = 0,
-        @ProtoId(3) val uin: Long = 0L,
-        @ProtoId(4) val rpId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val prpFold: Int = 0,
-        @ProtoId(6) val longTextFlag: Int = 0,
-        @ProtoId(7) val longTextResid: String = "",
-        @ProtoId(8) val groupType: Int = 0,
-        @ProtoId(9) val toUinFlag: Int = 0,
-        @ProtoId(10) val glamourLevel: Int = 0,
-        @ProtoId(11) val memberLevel: Int = 0,
-        @ProtoId(12) val groupRankSeq: Long = 0L,
-        @ProtoId(13) val olympicTorch: Int = 0,
-        @ProtoId(14) val babyqGuideMsgCookie: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(15) val uin32ExpertFlag: Int = 0,
-        @ProtoId(16) val bubbleSubId: Int = 0,
-        @ProtoId(17) val pendantId: Long = 0L,
-        @ProtoId(18) val rpIndex: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(19) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY // 78 00 F8 01 00 C8 02 00
+        @ProtoId(1) @JvmField val bubbleDiyTextId: Int = 0,
+        @ProtoId(2) @JvmField val groupFlagNew: Int = 0,
+        @ProtoId(3) @JvmField val uin: Long = 0L,
+        @ProtoId(4) @JvmField val rpId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val prpFold: Int = 0,
+        @ProtoId(6) @JvmField val longTextFlag: Int = 0,
+        @ProtoId(7) @JvmField val longTextResid: String = "",
+        @ProtoId(8) @JvmField val groupType: Int = 0,
+        @ProtoId(9) @JvmField val toUinFlag: Int = 0,
+        @ProtoId(10) @JvmField val glamourLevel: Int = 0,
+        @ProtoId(11) @JvmField val memberLevel: Int = 0,
+        @ProtoId(12) @JvmField val groupRankSeq: Long = 0L,
+        @ProtoId(13) @JvmField val olympicTorch: Int = 0,
+        @ProtoId(14) @JvmField val babyqGuideMsgCookie: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(15) @JvmField val uin32ExpertFlag: Int = 0,
+        @ProtoId(16) @JvmField val bubbleSubId: Int = 0,
+        @ProtoId(17) @JvmField val pendantId: Long = 0L,
+        @ProtoId(18) @JvmField val rpIndex: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(19) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY // 78 00 F8 01 00 C8 02 00
     ) : ProtoBuf
 
     @Serializable
     internal class GroupBusinessMsg(
-        @ProtoId(1) val flags: Int = 0,
-        @ProtoId(2) val headUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val headClkUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val nick: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val nickColor: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val rank: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(7) val rankColor: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val rankBgcolor: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val flags: Int = 0,
+        @ProtoId(2) @JvmField val headUrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val headClkUrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val nick: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val nickColor: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val rank: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(7) @JvmField val rankColor: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val rankBgcolor: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class GroupFile(
-        @ProtoId(1) val filename: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val fileSize: Long = 0L,
-        @ProtoId(3) val fileId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val batchId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val mark: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(7) val sequence: Long = 0L,
-        @ProtoId(8) val batchItemId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(9) val feedMsgTime: Int = 0,
-        @ProtoId(10) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val filename: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val fileSize: Long = 0L,
+        @ProtoId(3) @JvmField val fileId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val batchId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val mark: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(7) @JvmField val sequence: Long = 0L,
+        @ProtoId(8) @JvmField val batchItemId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(9) @JvmField val feedMsgTime: Int = 0,
+        @ProtoId(10) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class GroupPostElem(
-        @ProtoId(1) val transType: Int = 0,
-        @ProtoId(2) val transMsg: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val transType: Int = 0,
+        @ProtoId(2) @JvmField val transMsg: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class GroupPubAccountInfo(
-        @ProtoId(1) val pubAccount: Long = 0L
+        @ProtoId(1) @JvmField val pubAccount: Long = 0L
     ) : ProtoBuf
 
     @Serializable
     internal class LifeOnlineAccount(
-        @ProtoId(1) val uniqueId: Long = 0L,
-        @ProtoId(2) val op: Int = 0,
-        @ProtoId(3) val showTime: Int = 0,
-        @ProtoId(4) val report: Int = 0,
-        @ProtoId(5) val ack: Int = 0,
-        @ProtoId(6) val bitmap: Long = 0L,
-        @ProtoId(7) val gdtImpData: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val gdtCliData: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(9) val viewId: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val uniqueId: Long = 0L,
+        @ProtoId(2) @JvmField val op: Int = 0,
+        @ProtoId(3) @JvmField val showTime: Int = 0,
+        @ProtoId(4) @JvmField val report: Int = 0,
+        @ProtoId(5) @JvmField val ack: Int = 0,
+        @ProtoId(6) @JvmField val bitmap: Long = 0L,
+        @ProtoId(7) @JvmField val gdtImpData: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val gdtCliData: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(9) @JvmField val viewId: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class LightAppElem(
-        @ProtoId(1) val data: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val msgResid: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val data: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class LocationInfo(
-        @ProtoId(1) val longitude: Double = 0.0,
-        @ProtoId(2) val latitude: Double = 0.0,
-        @ProtoId(3) val desc: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val longitude: Double = 0.0,
+        @ProtoId(2) @JvmField val latitude: Double = 0.0,
+        @ProtoId(3) @JvmField val desc: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class LolaMsg(
-        @ProtoId(1) val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val encodeContent: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val longMsgUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val downloadKey: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val encodeContent: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val longMsgUrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val downloadKey: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class LowVersionTips(
-        @ProtoId(1) val businessId: Int = 0,
-        @ProtoId(2) val sessionType: Int = 0,
-        @ProtoId(3) val sessionUin: Long = 0L,
-        @ProtoId(4) val senderUin: Long = 0L,
-        @ProtoId(5) val text: String = ""
+        @ProtoId(1) @JvmField val businessId: Int = 0,
+        @ProtoId(2) @JvmField val sessionType: Int = 0,
+        @ProtoId(3) @JvmField val sessionUin: Long = 0L,
+        @ProtoId(4) @JvmField val senderUin: Long = 0L,
+        @ProtoId(5) @JvmField val text: String = ""
     ) : ProtoBuf
 
     @Serializable
     internal class MarketFace(
-        @ProtoId(1) val faceName: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val itemType: Int = 0,
-        @ProtoId(3) val faceInfo: Int = 0,
-        @ProtoId(4) val faceId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val tabId: Int = 0,
-        @ProtoId(6) val subType: Int = 0,
-        @ProtoId(7) val key: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val param: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(9) val mediaType: Int = 0,
-        @ProtoId(10) val imageWidth: Int = 0,
-        @ProtoId(11) val imageHeight: Int = 0,
-        @ProtoId(12) val mobileparam: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(13) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val faceName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val itemType: Int = 0,
+        @ProtoId(3) @JvmField val faceInfo: Int = 0,
+        @ProtoId(4) @JvmField val faceId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val tabId: Int = 0,
+        @ProtoId(6) @JvmField val subType: Int = 0,
+        @ProtoId(7) @JvmField val key: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val param: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(9) @JvmField val mediaType: Int = 0,
+        @ProtoId(10) @JvmField val imageWidth: Int = 0,
+        @ProtoId(11) @JvmField val imageHeight: Int = 0,
+        @ProtoId(12) @JvmField val mobileparam: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(13) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class MarketTrans(
-        @ProtoId(1) val int32Flag: Int = 0,
-        @ProtoId(2) val xml: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val ability: Int = 0,
-        @ProtoId(5) val minAbility: Int = 0
+        @ProtoId(1) @JvmField val int32Flag: Int = 0,
+        @ProtoId(2) @JvmField val xml: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val ability: Int = 0,
+        @ProtoId(5) @JvmField val minAbility: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class MsgBody(
-        @ProtoId(1) val richText: RichText = RichText(),
-        @ProtoId(2) val msgContent: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val msgEncryptContent: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val richText: RichText = RichText(),
+        @ProtoId(2) @JvmField val msgContent: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val msgEncryptContent: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class MsgBodySubtype4(
-        @ProtoId(1) val msgNotOnlineFile: NotOnlineFile? = null,
-        @ProtoId(2) val msgTime: Int = 0
+        @ProtoId(1) @JvmField val msgNotOnlineFile: NotOnlineFile? = null,
+        @ProtoId(2) @JvmField val msgTime: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class NearByMessageType(
-        @ProtoId(1) val type: Int = 0,
-        @ProtoId(2) val identifyType: Int = 0
+        @ProtoId(1) @JvmField val type: Int = 0,
+        @ProtoId(2) @JvmField val identifyType: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class NotOnlineFile(
-        @ProtoId(1) val fileType: Int = 0,
-        @ProtoId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val fileName: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val fileSize: Long = 0L,
-        @ProtoId(7) val note: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val reserved: Int = 0,
-        @ProtoId(9) val subcmd: Int = 0,
-        @ProtoId(10) val microCloud: Int = 0,
-        @ProtoId(11) val bytesFileUrls: List<ByteArray>? = listOf(),
-        @ProtoId(12) val downloadFlag: Int = 0,
-        @ProtoId(50) val dangerEvel: Int = 0,
-        @ProtoId(51) val lifeTime: Int = 0,
-        @ProtoId(52) val uploadTime: Int = 0,
-        @ProtoId(53) val absFileType: Int = 0,
-        @ProtoId(54) val clientType: Int = 0,
-        @ProtoId(55) val expireTime: Int = 0,
-        @ProtoId(56) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val fileType: Int = 0,
+        @ProtoId(2) @JvmField val sig: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val fileName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val fileSize: Long = 0L,
+        @ProtoId(7) @JvmField val note: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val reserved: Int = 0,
+        @ProtoId(9) @JvmField val subcmd: Int = 0,
+        @ProtoId(10) @JvmField val microCloud: Int = 0,
+        @ProtoId(11) @JvmField val bytesFileUrls: List<ByteArray>? = listOf(),
+        @ProtoId(12) @JvmField val downloadFlag: Int = 0,
+        @ProtoId(50) @JvmField val dangerEvel: Int = 0,
+        @ProtoId(51) @JvmField val lifeTime: Int = 0,
+        @ProtoId(52) @JvmField val uploadTime: Int = 0,
+        @ProtoId(53) @JvmField val absFileType: Int = 0,
+        @ProtoId(54) @JvmField val clientType: Int = 0,
+        @ProtoId(55) @JvmField val expireTime: Int = 0,
+        @ProtoId(56) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class NotOnlineImage(
-        @ProtoId(1) val filePath: String = "",
-        @ProtoId(2) val fileLen: Int = 0,
-        @ProtoId(3) val downloadPath: String = "",
-        @ProtoId(4) val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val imgType: Int = 0,
-        @ProtoId(6) val previewsImage: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(7) val picMd5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val picHeight: Int = 0,
-        @ProtoId(9) val picWidth: Int = 0,
-        @ProtoId(10) val resId: String = "",
-        @ProtoId(11) val flag: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(12) val thumbUrl: String = "",
-        @ProtoId(13) val original: Int = 0,
-        @ProtoId(14) val bigUrl: String = "",
-        @ProtoId(15) val origUrl: String = "",
-        @ProtoId(16) val bizType: Int = 0,
-        @ProtoId(17) val result: Int = 0,
-        @ProtoId(18) val index: Int = 0,
-        @ProtoId(19) val opFaceBuf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(20) val oldPicMd5: Boolean = false,
-        @ProtoId(21) val thumbWidth: Int = 0,
-        @ProtoId(22) val thumbHeight: Int = 0,
-        @ProtoId(23) val fileId: Int = 0,
-        @ProtoId(24) val showLen: Int = 0,
-        @ProtoId(25) val downloadLen: Int = 0,
-        @ProtoId(26) val _400Url: String = "",
-        @ProtoId(27) val _400Width: Int = 0,
-        @ProtoId(28) val _400Height: Int = 0,
-        @ProtoId(29) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val filePath: String = "",
+        @ProtoId(2) @JvmField val fileLen: Int = 0,
+        @ProtoId(3) @JvmField val downloadPath: String = "",
+        @ProtoId(4) @JvmField val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val imgType: Int = 0,
+        @ProtoId(6) @JvmField val previewsImage: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(7) @JvmField val picMd5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val picHeight: Int = 0,
+        @ProtoId(9) @JvmField val picWidth: Int = 0,
+        @ProtoId(10) @JvmField val resId: String = "",
+        @ProtoId(11) @JvmField val flag: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(12) @JvmField val thumbUrl: String = "",
+        @ProtoId(13) @JvmField val original: Int = 0,
+        @ProtoId(14) @JvmField val bigUrl: String = "",
+        @ProtoId(15) @JvmField val origUrl: String = "",
+        @ProtoId(16) @JvmField val bizType: Int = 0,
+        @ProtoId(17) @JvmField val result: Int = 0,
+        @ProtoId(18) @JvmField val index: Int = 0,
+        @ProtoId(19) @JvmField val opFaceBuf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(20) @JvmField val oldPicMd5: Boolean = false,
+        @ProtoId(21) @JvmField val thumbWidth: Int = 0,
+        @ProtoId(22) @JvmField val thumbHeight: Int = 0,
+        @ProtoId(23) @JvmField val fileId: Int = 0,
+        @ProtoId(24) @JvmField val showLen: Int = 0,
+        @ProtoId(25) @JvmField val downloadLen: Int = 0,
+        @ProtoId(26) @JvmField val _400Url: String = "",
+        @ProtoId(27) @JvmField val _400Width: Int = 0,
+        @ProtoId(28) @JvmField val _400Height: Int = 0,
+        @ProtoId(29) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable // 非官方.
     internal class PbReserve(
-        @ProtoId(1) val unknown1: Int = 1,
-        @ProtoId(2) val unknown2: Int = 0,
-        @ProtoId(6) val unknown3: Int = 0,
-        @ProtoId(8) val hint: String = "[动画表情]",
-        @ProtoId(10) val unknown5: Int = 0,
-        @ProtoId(15) val unknwon6: Int = 5
+        @ProtoId(1) @JvmField val unknown1: Int = 1,
+        @ProtoId(2) @JvmField val unknown2: Int = 0,
+        @ProtoId(6) @JvmField val unknown3: Int = 0,
+        @ProtoId(8) @JvmField val hint: String = "[动画表情]",
+        @ProtoId(10) @JvmField val unknown5: Int = 0,
+        @ProtoId(15) @JvmField val unknwon6: Int = 5
     ) : ProtoBuf {
         companion object {
+            @JvmField
             val DEFAULT: ByteArray = PbReserve().toByteArray(serializer())
         }
     }
 
     @Serializable
     internal class OnlineImage(
-        @ProtoId(1) val guid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val filePath: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val guid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val filePath: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val oldVerSendFile: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class OpenQQData(
-        @ProtoId(1) val carQqData: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val carQqData: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class PatsElem(
-        @ProtoId(1) val patType: Int = 0,
-        @ProtoId(2) val patCount: Int = 0
+        @ProtoId(1) @JvmField val patType: Int = 0,
+        @ProtoId(2) @JvmField val patCount: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class PcSupportDef(
-        @ProtoId(1) val pcPtlBegin: Int = 0,
-        @ProtoId(2) val pcPtlEnd: Int = 0,
-        @ProtoId(3) val macPtlBegin: Int = 0,
-        @ProtoId(4) val macPtlEnd: Int = 0,
-        @ProtoId(5) val ptlsSupport: List<Int>? = null,
-        @ProtoId(6) val ptlsNotSupport: List<Int>? = null
+        @ProtoId(1) @JvmField val pcPtlBegin: Int = 0,
+        @ProtoId(2) @JvmField val pcPtlEnd: Int = 0,
+        @ProtoId(3) @JvmField val macPtlBegin: Int = 0,
+        @ProtoId(4) @JvmField val macPtlEnd: Int = 0,
+        @ProtoId(5) @JvmField val ptlsSupport: List<Int>? = null,
+        @ProtoId(6) @JvmField val ptlsNotSupport: List<Int>? = null
     ) : ProtoBuf
 
     @Serializable
     internal class Ptt(
-        @ProtoId(1) val fileType: Int = 0,
-        @ProtoId(2) val srcUin: Long = 0L,
-        @ProtoId(3) val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val fileName: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val fileSize: Int = 0,
-        @ProtoId(7) val reserve: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val fileId: Int = 0,
-        @ProtoId(9) val serverIp: Int = 0,
-        @ProtoId(10) val serverPort: Int = 0,
-        @ProtoId(11) val boolValid: Boolean = false,
-        @ProtoId(12) val signature: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(13) val shortcut: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(14) val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(15) val magicPttIndex: Int = 0,
-        @ProtoId(16) val voiceSwitch: Int = 0,
-        @ProtoId(17) val pttUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(18) val groupFileKey: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(19) val time: Int = 0,
-        @ProtoId(20) val downPara: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(29) val format: Int = 0,
-        @ProtoId(30) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(31) val bytesPttUrls: List<ByteArray>? = listOf(),
-        @ProtoId(32) val downloadFlag: Int = 0
+        @ProtoId(1) @JvmField val fileType: Int = 0,
+        @ProtoId(2) @JvmField val srcUin: Long = 0L,
+        @ProtoId(3) @JvmField val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val fileName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val fileSize: Int = 0,
+        @ProtoId(7) @JvmField val reserve: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val fileId: Int = 0,
+        @ProtoId(9) @JvmField val serverIp: Int = 0,
+        @ProtoId(10) @JvmField val serverPort: Int = 0,
+        @ProtoId(11) @JvmField val boolValid: Boolean = false,
+        @ProtoId(12) @JvmField val signature: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(13) @JvmField val shortcut: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(14) @JvmField val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(15) @JvmField val magicPttIndex: Int = 0,
+        @ProtoId(16) @JvmField val voiceSwitch: Int = 0,
+        @ProtoId(17) @JvmField val pttUrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(18) @JvmField val groupFileKey: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(19) @JvmField val time: Int = 0,
+        @ProtoId(20) @JvmField val downPara: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(29) @JvmField val format: Int = 0,
+        @ProtoId(30) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(31) @JvmField val bytesPttUrls: List<ByteArray>? = listOf(),
+        @ProtoId(32) @JvmField val downloadFlag: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class PubAccInfo(
-        @ProtoId(1) val isInterNum: Int = 0,
-        @ProtoId(2) val ingMsgTemplateId: String = "",
-        @ProtoId(3) val ingLongMsgUrl: String = "",
-        @ProtoId(4) val downloadKey: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val isInterNum: Int = 0,
+        @ProtoId(2) @JvmField val ingMsgTemplateId: String = "",
+        @ProtoId(3) @JvmField val ingLongMsgUrl: String = "",
+        @ProtoId(4) @JvmField val downloadKey: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class PubAccount(
-        @ProtoId(1) val buf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val pubAccountUin: Long = 0L
+        @ProtoId(1) @JvmField val buf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val pubAccountUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
     internal class PubGroup(
-        @ProtoId(1) val nickname: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val gender: Int = 0,
-        @ProtoId(3) val age: Int = 0,
-        @ProtoId(4) val distance: Int = 0
+        @ProtoId(1) @JvmField val nickname: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val gender: Int = 0,
+        @ProtoId(3) @JvmField val age: Int = 0,
+        @ProtoId(4) @JvmField val distance: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class QQLiveOld(
-        @ProtoId(1) val subCmd: Int = 0,
-        @ProtoId(2) val showText: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val param: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val introduce: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val subCmd: Int = 0,
+        @ProtoId(2) @JvmField val showText: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val param: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val introduce: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class QQWalletAioBody(
-        @ProtoId(1) val senduin: Long = 0L,
-        @ProtoId(2) val sender: QQWalletAioElem? = null,
-        @ProtoId(3) val receiver: QQWalletAioElem? = null,
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(4) val sint32Channelid: Int = 0,
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(5) val sint32Templateid: Int = 0,
-        @ProtoId(6) val resend: Int = 0,
-        @ProtoId(7) val msgPriority: Int = 0,
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(8) val sint32Redtype: Int = 0,
-        @ProtoId(9) val billno: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(10) val authkey: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(11) val sint32Sessiontype: Int = 0,
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(12) val sint32Msgtype: Int = 0,
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(13) val sint32Envelopeid: Int = 0,
-        @ProtoId(14) val name: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(15) val sint32Conftype: Int = 0,
-        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(16) val sint32MsgFrom: Int = 0,
-        @ProtoId(17) val pcBody: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(18) val ingIndex: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(19) val redchannel: Int = 0,
-        @ProtoId(20) val grapUin: List<Long>? = null,
-        @ProtoId(21) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val senduin: Long = 0L,
+        @ProtoId(2) @JvmField val sender: QQWalletAioElem? = null,
+        @ProtoId(3) @JvmField val receiver: QQWalletAioElem? = null,
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(4) @JvmField val sint32Channelid: Int = 0,
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(5) @JvmField val sint32Templateid: Int = 0,
+        @ProtoId(6) @JvmField val resend: Int = 0,
+        @ProtoId(7) @JvmField val msgPriority: Int = 0,
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(8) @JvmField val sint32Redtype: Int = 0,
+        @ProtoId(9) @JvmField val billno: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(10) @JvmField val authkey: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(11) @JvmField val sint32Sessiontype: Int = 0,
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(12) @JvmField val sint32Msgtype: Int = 0,
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(13) @JvmField val sint32Envelopeid: Int = 0,
+        @ProtoId(14) @JvmField val name: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(15) @JvmField val sint32Conftype: Int = 0,
+        @ProtoType(ProtoNumberType.SIGNED) @ProtoId(16) @JvmField val sint32MsgFrom: Int = 0,
+        @ProtoId(17) @JvmField val pcBody: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(18) @JvmField val ingIndex: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(19) @JvmField val redchannel: Int = 0,
+        @ProtoId(20) @JvmField val grapUin: List<Long>? = null,
+        @ProtoId(21) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class QQWalletAioElem(
-        @ProtoId(1) val background: Int = 0,
-        @ProtoId(2) val icon: Int = 0,
-        @ProtoId(3) val title: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val subtitle: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val content: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val linkurl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(7) val blackstripe: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val notice: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(9) val titleColor: Int = 0,
-        @ProtoId(10) val subtitleColor: Int = 0,
-        @ProtoId(11) val actionsPriority: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(12) val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(13) val nativeIos: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(14) val nativeAndroid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(15) val iconurl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(16) val contentColor: Int = 0,
-        @ProtoId(17) val contentBgcolor: Int = 0,
-        @ProtoId(18) val aioImageLeft: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(19) val aioImageRight: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(20) val cftImage: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(21) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val background: Int = 0,
+        @ProtoId(2) @JvmField val icon: Int = 0,
+        @ProtoId(3) @JvmField val title: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val subtitle: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val content: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val linkurl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(7) @JvmField val blackstripe: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val notice: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(9) @JvmField val titleColor: Int = 0,
+        @ProtoId(10) @JvmField val subtitleColor: Int = 0,
+        @ProtoId(11) @JvmField val actionsPriority: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(12) @JvmField val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(13) @JvmField val nativeIos: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(14) @JvmField val nativeAndroid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(15) @JvmField val iconurl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(16) @JvmField val contentColor: Int = 0,
+        @ProtoId(17) @JvmField val contentBgcolor: Int = 0,
+        @ProtoId(18) @JvmField val aioImageLeft: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(19) @JvmField val aioImageRight: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(20) @JvmField val cftImage: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(21) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class QQWalletMsg(
-        @ProtoId(1) val aioBody: QQWalletAioBody? = null
+        @ProtoId(1) @JvmField val aioBody: QQWalletAioBody? = null
     ) : ProtoBuf
 
     @Serializable
     internal class RedBagInfo(
-        @ProtoId(1) val redbagType: Int = 0
+        @ProtoId(1) @JvmField val redbagType: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class RichMsg(
-        @ProtoId(1) val template1: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val serviceId: Int = 0,
-        @ProtoId(3) val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val rand: Int = 0,
-        @ProtoId(5) val seq: Int = 0,
-        @ProtoId(6) val flags: Int = 0
+        @ProtoId(1) @JvmField val template1: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val serviceId: Int = 0,
+        @ProtoId(3) @JvmField val msgResid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val rand: Int = 0,
+        @ProtoId(5) @JvmField val seq: Int = 0,
+        @ProtoId(6) @JvmField val flags: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class RichText(
-        @ProtoId(1) val attr: Attr? = null,
-        @ProtoId(2) val elems: MutableList<Elem> = mutableListOf(),
-        @ProtoId(3) val notOnlineFile: NotOnlineFile? = null,
-        @ProtoId(4) val ptt: Ptt? = null,
-        @ProtoId(5) val tmpPtt: TmpPtt? = null,
-        @ProtoId(6) val trans211TmpMsg: Trans211TmpMsg? = null
+        @ProtoId(1) @JvmField val attr: Attr? = null,
+        @ProtoId(2) @JvmField val elems: MutableList<Elem> = mutableListOf(),
+        @ProtoId(3) @JvmField val notOnlineFile: NotOnlineFile? = null,
+        @ProtoId(4) @JvmField val ptt: Ptt? = null,
+        @ProtoId(5) @JvmField val tmpPtt: TmpPtt? = null,
+        @ProtoId(6) @JvmField val trans211TmpMsg: Trans211TmpMsg? = null
     ) : ProtoBuf
 
     @Serializable
     internal class SecretFileMsg(
-        @ProtoId(1) val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val fromUin: Long = 0L,
-        @ProtoId(3) val toUin: Long = 0L,
-        @ProtoId(4) val status: Int = 0,
-        @ProtoId(5) val ttl: Int = 0,
-        @ProtoId(6) val type: Int = 0,
-        @ProtoId(7) val encryptPreheadLength: Int = 0,
-        @ProtoId(8) val encryptType: Int = 0,
-        @ProtoId(9) val encryptKey: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(10) val readTimes: Int = 0,
-        @ProtoId(11) val leftTime: Int = 0,
-        @ProtoId(12) val notOnlineImage: NotOnlineImage? = null,
-        @ProtoId(13) val elemFlags2: ElemFlags2? = null,
-        @ProtoId(14) val opertype: Int = 0,
-        @ProtoId(15) val fromphonenum: String = ""
+        @ProtoId(1) @JvmField val fileKey: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val fromUin: Long = 0L,
+        @ProtoId(3) @JvmField val toUin: Long = 0L,
+        @ProtoId(4) @JvmField val status: Int = 0,
+        @ProtoId(5) @JvmField val ttl: Int = 0,
+        @ProtoId(6) @JvmField val type: Int = 0,
+        @ProtoId(7) @JvmField val encryptPreheadLength: Int = 0,
+        @ProtoId(8) @JvmField val encryptType: Int = 0,
+        @ProtoId(9) @JvmField val encryptKey: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(10) @JvmField val readTimes: Int = 0,
+        @ProtoId(11) @JvmField val leftTime: Int = 0,
+        @ProtoId(12) @JvmField val notOnlineImage: NotOnlineImage? = null,
+        @ProtoId(13) @JvmField val elemFlags2: ElemFlags2? = null,
+        @ProtoId(14) @JvmField val opertype: Int = 0,
+        @ProtoId(15) @JvmField val fromphonenum: String = ""
     ) : ProtoBuf
 
     @Serializable
     internal class ShakeWindow(
-        @ProtoId(1) val type: Int = 0,
-        @ProtoId(2) val reserve: Int = 0,
-        @ProtoId(3) val uin: Long = 0L
+        @ProtoId(1) @JvmField val type: Int = 0,
+        @ProtoId(2) @JvmField val reserve: Int = 0,
+        @ProtoId(3) @JvmField val uin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
     internal class SmallEmoji(
-        @ProtoId(1) val packIdSum: Int = 0,
-        @ProtoId(2) val imageType: Int = 0
+        @ProtoId(1) @JvmField val packIdSum: Int = 0,
+        @ProtoId(2) @JvmField val imageType: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class SourceMsg(
-        @ProtoId(1) val origSeqs: List<Int>? = null,
-        @ProtoId(2) val senderUin: Long = 0L,
-        @ProtoId(3) val time: Int = 0,
-        @ProtoId(4) val flag: Int = 0,
-        @ProtoId(5) val elems: List<Elem>? = null,
-        @ProtoId(6) val type: Int = 0,
-        @ProtoId(7) val richMsg: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(9) val srcMsg: ByteArray? = null,
-        @ProtoId(10) val toUin: Long = 0L,
-        @ProtoId(11) val troopName: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val origSeqs: List<Int>? = null,
+        @ProtoId(2) @JvmField val senderUin: Long = 0L,
+        @ProtoId(3) @JvmField val time: Int = 0,
+        @ProtoId(4) @JvmField val flag: Int = 0,
+        @ProtoId(5) @JvmField val elems: List<Elem>? = null,
+        @ProtoId(6) @JvmField val type: Int = 0,
+        @ProtoId(7) @JvmField val richMsg: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(9) @JvmField val srcMsg: ByteArray? = null,
+        @ProtoId(10) @JvmField val toUin: Long = 0L,
+        @ProtoId(11) @JvmField val troopName: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class Text(
-        @ProtoId(1) val str: String = "",
-        @ProtoId(2) val link: String = "",
-        @ProtoId(3) val attr6Buf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val attr7Buf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(11) val buf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(12) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val str: String = "",
+        @ProtoId(2) @JvmField val link: String = "",
+        @ProtoId(3) @JvmField val attr6Buf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val attr7Buf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(11) @JvmField val buf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(12) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class TipsInfo(
-        @ProtoId(1) val text: String = ""
+        @ProtoId(1) @JvmField val text: String = ""
     ) : ProtoBuf
 
     @Serializable
     internal class TmpPtt(
-        @ProtoId(1) val fileType: Int = 0,
-        @ProtoId(2) val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val fileName: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val fileSize: Int = 0,
-        @ProtoId(6) val pttTimes: Int = 0,
-        @ProtoId(7) val userType: Int = 0,
-        @ProtoId(8) val ptttransFlag: Int = 0,
-        @ProtoId(9) val busiType: Int = 0,
-        @ProtoId(10) val msgId: Long = 0L,
-        @ProtoId(30) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(31) val pttEncodeData: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val fileType: Int = 0,
+        @ProtoId(2) @JvmField val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val fileName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val fileSize: Int = 0,
+        @ProtoId(6) @JvmField val pttTimes: Int = 0,
+        @ProtoId(7) @JvmField val userType: Int = 0,
+        @ProtoId(8) @JvmField val ptttransFlag: Int = 0,
+        @ProtoId(9) @JvmField val busiType: Int = 0,
+        @ProtoId(10) @JvmField val msgId: Long = 0L,
+        @ProtoId(30) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(31) @JvmField val pttEncodeData: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class Trans211TmpMsg(
-        @ProtoId(1) val msgBody: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val c2cCmd: Int = 0
+        @ProtoId(1) @JvmField val msgBody: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val c2cCmd: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class TransElem(
-        @ProtoId(1) val elemType: Int = 0,
-        @ProtoId(2) val elemValue: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val elemType: Int = 0,
+        @ProtoId(2) @JvmField val elemValue: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class VideoFile(
-        @ProtoId(1) val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val fileName: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(4) val fileFormat: Int = 0,
-        @ProtoId(5) val fileTime: Int = 0,
-        @ProtoId(6) val fileSize: Int = 0,
-        @ProtoId(7) val thumbWidth: Int = 0,
-        @ProtoId(8) val thumbHeight: Int = 0,
-        @ProtoId(9) val thumbFileMd5: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(10) val source: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(11) val thumbFileSize: Int = 0,
-        @ProtoId(12) val busiType: Int = 0,
-        @ProtoId(13) val fromChatType: Int = 0,
-        @ProtoId(14) val toChatType: Int = 0,
-        @ProtoId(15) val boolSupportProgressive: Boolean = false,
-        @ProtoId(16) val fileWidth: Int = 0,
-        @ProtoId(17) val fileHeight: Int = 0,
-        @ProtoId(18) val subBusiType: Int = 0,
-        @ProtoId(19) val videoAttr: Int = 0,
-        @ProtoId(20) val bytesThumbFileUrls: List<ByteArray>? = null,
-        @ProtoId(21) val bytesVideoFileUrls: List<ByteArray>? = null,
-        @ProtoId(22) val thumbDownloadFlag: Int = 0,
-        @ProtoId(23) val videoDownloadFlag: Int = 0,
-        @ProtoId(24) val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val fileUuid: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val fileMd5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val fileName: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(4) @JvmField val fileFormat: Int = 0,
+        @ProtoId(5) @JvmField val fileTime: Int = 0,
+        @ProtoId(6) @JvmField val fileSize: Int = 0,
+        @ProtoId(7) @JvmField val thumbWidth: Int = 0,
+        @ProtoId(8) @JvmField val thumbHeight: Int = 0,
+        @ProtoId(9) @JvmField val thumbFileMd5: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(10) @JvmField val source: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(11) @JvmField val thumbFileSize: Int = 0,
+        @ProtoId(12) @JvmField val busiType: Int = 0,
+        @ProtoId(13) @JvmField val fromChatType: Int = 0,
+        @ProtoId(14) @JvmField val toChatType: Int = 0,
+        @ProtoId(15) @JvmField val boolSupportProgressive: Boolean = false,
+        @ProtoId(16) @JvmField val fileWidth: Int = 0,
+        @ProtoId(17) @JvmField val fileHeight: Int = 0,
+        @ProtoId(18) @JvmField val subBusiType: Int = 0,
+        @ProtoId(19) @JvmField val videoAttr: Int = 0,
+        @ProtoId(20) @JvmField val bytesThumbFileUrls: List<ByteArray>? = null,
+        @ProtoId(21) @JvmField val bytesVideoFileUrls: List<ByteArray>? = null,
+        @ProtoId(22) @JvmField val thumbDownloadFlag: Int = 0,
+        @ProtoId(23) @JvmField val videoDownloadFlag: Int = 0,
+        @ProtoId(24) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class WorkflowNotifyMsg(
-        @ProtoId(1) val extMsg: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val createUin: Long = 0L
+        @ProtoId(1) @JvmField val extMsg: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val createUin: Long = 0L
     ) : ProtoBuf
 }
 
@@ -972,140 +974,140 @@ internal class ImMsgBody : ProtoBuf {
 internal class ImMsgHead : ProtoBuf {
     @Serializable
     internal class C2CHead(
-        @ProtoId(1) val toUin: Long = 0L,
-        @ProtoId(2) val fromUin: Long = 0L,
-        @ProtoId(3) val ccType: Int = 0,
-        @ProtoId(4) val ccCmd: Int = 0,
-        @ProtoId(5) val authPicSig: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val authSig: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(7) val authBuf: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(8) val serverTime: Int = 0,
-        @ProtoId(9) val clientTime: Int = 0,
-        @ProtoId(10) val rand: Int = 0,
-        @ProtoId(11) val ingPhoneNumber: String = ""
+        @ProtoId(1) @JvmField val toUin: Long = 0L,
+        @ProtoId(2) @JvmField val fromUin: Long = 0L,
+        @ProtoId(3) @JvmField val ccType: Int = 0,
+        @ProtoId(4) @JvmField val ccCmd: Int = 0,
+        @ProtoId(5) @JvmField val authPicSig: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val authSig: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(7) @JvmField val authBuf: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(8) @JvmField val serverTime: Int = 0,
+        @ProtoId(9) @JvmField val clientTime: Int = 0,
+        @ProtoId(10) @JvmField val rand: Int = 0,
+        @ProtoId(11) @JvmField val ingPhoneNumber: String = ""
     ) : ProtoBuf
 
     @Serializable
     internal class CSHead(
-        @ProtoId(1) val uin: Long = 0L,
-        @ProtoId(2) val command: Int = 0,
-        @ProtoId(3) val seq: Int = 0,
-        @ProtoId(4) val version: Int = 0,
-        @ProtoId(5) val retryTimes: Int = 0,
-        @ProtoId(6) val clientType: Int = 0,
-        @ProtoId(7) val pubno: Int = 0,
-        @ProtoId(8) val localid: Int = 0,
-        @ProtoId(9) val timezone: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(10) val clientIp: Int = 0,
-        @ProtoId(11) val clientPort: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(12) val connIp: Int = 0,
-        @ProtoId(13) val connPort: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(14) val interfaceIp: Int = 0,
-        @ProtoId(15) val interfacePort: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(16) val actualIp: Int = 0,
-        @ProtoId(17) val flag: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(18) val timestamp: Int = 0,
-        @ProtoId(19) val subcmd: Int = 0,
-        @ProtoId(20) val result: Int = 0,
-        @ProtoId(21) val appId: Int = 0,
-        @ProtoId(22) val instanceId: Int = 0,
-        @ProtoId(23) val sessionId: Long = 0L,
-        @ProtoId(24) val idcId: Int = 0
+        @ProtoId(1) @JvmField val uin: Long = 0L,
+        @ProtoId(2) @JvmField val command: Int = 0,
+        @ProtoId(3) @JvmField val seq: Int = 0,
+        @ProtoId(4) @JvmField val version: Int = 0,
+        @ProtoId(5) @JvmField val retryTimes: Int = 0,
+        @ProtoId(6) @JvmField val clientType: Int = 0,
+        @ProtoId(7) @JvmField val pubno: Int = 0,
+        @ProtoId(8) @JvmField val localid: Int = 0,
+        @ProtoId(9) @JvmField val timezone: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(10) @JvmField val clientIp: Int = 0,
+        @ProtoId(11) @JvmField val clientPort: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(12) @JvmField val connIp: Int = 0,
+        @ProtoId(13) @JvmField val connPort: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(14) @JvmField val interfaceIp: Int = 0,
+        @ProtoId(15) @JvmField val interfacePort: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(16) @JvmField val actualIp: Int = 0,
+        @ProtoId(17) @JvmField val flag: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(18) @JvmField val timestamp: Int = 0,
+        @ProtoId(19) @JvmField val subcmd: Int = 0,
+        @ProtoId(20) @JvmField val result: Int = 0,
+        @ProtoId(21) @JvmField val appId: Int = 0,
+        @ProtoId(22) @JvmField val instanceId: Int = 0,
+        @ProtoId(23) @JvmField val sessionId: Long = 0L,
+        @ProtoId(24) @JvmField val idcId: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class DeltaHead(
-        @ProtoId(1) val totalLen: Long = 0L,
-        @ProtoId(2) val offset: Long = 0L,
-        @ProtoId(3) val ackOffset: Long = 0L,
-        @ProtoId(4) val cookie: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(5) val ackCookie: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val result: Int = 0,
-        @ProtoId(7) val flags: Int = 0
+        @ProtoId(1) @JvmField val totalLen: Long = 0L,
+        @ProtoId(2) @JvmField val offset: Long = 0L,
+        @ProtoId(3) @JvmField val ackOffset: Long = 0L,
+        @ProtoId(4) @JvmField val cookie: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(5) @JvmField val ackCookie: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val result: Int = 0,
+        @ProtoId(7) @JvmField val flags: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class Head(
-        @ProtoId(1) val headType: Int = 0,
-        @ProtoId(2) val msgCsHead: CSHead? = null,
-        @ProtoId(3) val msgS2cHead: S2CHead? = null,
-        @ProtoId(4) val msgHttpconnHead: HttpConnHead? = null,
-        @ProtoId(5) val paintFlag: Int = 0,
-        @ProtoId(6) val msgLoginSig: LoginSig? = null,
-        @ProtoId(7) val msgDeltaHead: DeltaHead? = null,
-        @ProtoId(8) val msgC2cHead: C2CHead? = null,
-        @ProtoId(9) val msgSconnHead: SConnHead? = null,
-        @ProtoId(10) val msgInstCtrl: InstCtrl? = null
+        @ProtoId(1) @JvmField val headType: Int = 0,
+        @ProtoId(2) @JvmField val msgCsHead: CSHead? = null,
+        @ProtoId(3) @JvmField val msgS2cHead: S2CHead? = null,
+        @ProtoId(4) @JvmField val msgHttpconnHead: HttpConnHead? = null,
+        @ProtoId(5) @JvmField val paintFlag: Int = 0,
+        @ProtoId(6) @JvmField val msgLoginSig: LoginSig? = null,
+        @ProtoId(7) @JvmField val msgDeltaHead: DeltaHead? = null,
+        @ProtoId(8) @JvmField val msgC2cHead: C2CHead? = null,
+        @ProtoId(9) @JvmField val msgSconnHead: SConnHead? = null,
+        @ProtoId(10) @JvmField val msgInstCtrl: InstCtrl? = null
     ) : ProtoBuf
 
     @Serializable
     internal class HttpConnHead(
-        @ProtoId(1) val uin: Long = 0L,
-        @ProtoId(2) val command: Int = 0,
-        @ProtoId(3) val subCommand: Int = 0,
-        @ProtoId(4) val seq: Int = 0,
-        @ProtoId(5) val version: Int = 0,
-        @ProtoId(6) val retryTimes: Int = 0,
-        @ProtoId(7) val clientType: Int = 0,
-        @ProtoId(8) val pubNo: Int = 0,
-        @ProtoId(9) val localId: Int = 0,
-        @ProtoId(10) val timeZone: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(11) val clientIp: Int = 0,
-        @ProtoId(12) val clientPort: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(13) val qzhttpIp: Int = 0,
-        @ProtoId(14) val qzhttpPort: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(15) val sppIp: Int = 0,
-        @ProtoId(16) val sppPort: Int = 0,
-        @ProtoId(17) val flag: Int = 0,
-        @ProtoId(18) val key: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(19) val compressType: Int = 0,
-        @ProtoId(20) val originSize: Int = 0,
-        @ProtoId(21) val errorCode: Int = 0,
-        @ProtoId(22) val msgRedirect: RedirectMsg? = null,
-        @ProtoId(23) val commandId: Int = 0,
-        @ProtoId(24) val serviceCmdid: Int = 0,
-        @ProtoId(25) val msgOidbhead: TransOidbHead? = null
+        @ProtoId(1) @JvmField val uin: Long = 0L,
+        @ProtoId(2) @JvmField val command: Int = 0,
+        @ProtoId(3) @JvmField val subCommand: Int = 0,
+        @ProtoId(4) @JvmField val seq: Int = 0,
+        @ProtoId(5) @JvmField val version: Int = 0,
+        @ProtoId(6) @JvmField val retryTimes: Int = 0,
+        @ProtoId(7) @JvmField val clientType: Int = 0,
+        @ProtoId(8) @JvmField val pubNo: Int = 0,
+        @ProtoId(9) @JvmField val localId: Int = 0,
+        @ProtoId(10) @JvmField val timeZone: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(11) @JvmField val clientIp: Int = 0,
+        @ProtoId(12) @JvmField val clientPort: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(13) @JvmField val qzhttpIp: Int = 0,
+        @ProtoId(14) @JvmField val qzhttpPort: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(15) @JvmField val sppIp: Int = 0,
+        @ProtoId(16) @JvmField val sppPort: Int = 0,
+        @ProtoId(17) @JvmField val flag: Int = 0,
+        @ProtoId(18) @JvmField val key: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(19) @JvmField val compressType: Int = 0,
+        @ProtoId(20) @JvmField val originSize: Int = 0,
+        @ProtoId(21) @JvmField val errorCode: Int = 0,
+        @ProtoId(22) @JvmField val msgRedirect: RedirectMsg? = null,
+        @ProtoId(23) @JvmField val commandId: Int = 0,
+        @ProtoId(24) @JvmField val serviceCmdid: Int = 0,
+        @ProtoId(25) @JvmField val msgOidbhead: TransOidbHead? = null
     ) : ProtoBuf
 
     @Serializable
     internal class InstCtrl(
-        @ProtoId(1) val msgSendToInst: List<InstInfo>? = listOf(),
-        @ProtoId(2) val msgExcludeInst: List<InstInfo>? = listOf(),
-        @ProtoId(3) val msgFromInst: InstInfo? = InstInfo()
+        @ProtoId(1) @JvmField val msgSendToInst: List<InstInfo>? = listOf(),
+        @ProtoId(2) @JvmField val msgExcludeInst: List<InstInfo>? = listOf(),
+        @ProtoId(3) @JvmField val msgFromInst: InstInfo? = InstInfo()
     ) : ProtoBuf
 
     @Serializable
     internal class InstInfo(
-        @ProtoId(1) val apppid: Int = 0,
-        @ProtoId(2) val instid: Int = 0,
-        @ProtoId(3) val platform: Int = 0,
-        @ProtoId(10) val enumDeviceType: Int /* enum */ = 0
+        @ProtoId(1) @JvmField val apppid: Int = 0,
+        @ProtoId(2) @JvmField val instid: Int = 0,
+        @ProtoId(3) @JvmField val platform: Int = 0,
+        @ProtoId(10) @JvmField val enumDeviceType: Int /* enum */ = 0
     ) : ProtoBuf
 
     @Serializable
     internal class LoginSig(
-        @ProtoId(1) val type: Int = 0,
-        @ProtoId(2) val sig: ByteArray = EMPTY_BYTE_ARRAY
+        @ProtoId(1) @JvmField val type: Int = 0,
+        @ProtoId(2) @JvmField val sig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class RedirectMsg(
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(1) val lastRedirectIp: Int = 0,
-        @ProtoId(2) val lastRedirectPort: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(3) val redirectIp: Int = 0,
-        @ProtoId(4) val redirectPort: Int = 0,
-        @ProtoId(5) val redirectCount: Int = 0
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(1) @JvmField val lastRedirectIp: Int = 0,
+        @ProtoId(2) @JvmField val lastRedirectPort: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(3) @JvmField val redirectIp: Int = 0,
+        @ProtoId(4) @JvmField val redirectPort: Int = 0,
+        @ProtoId(5) @JvmField val redirectCount: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class S2CHead(
-        @ProtoId(1) val subMsgtype: Int = 0,
-        @ProtoId(2) val msgType: Int = 0,
-        @ProtoId(3) val fromUin: Long = 0L,
-        @ProtoId(4) val msgId: Int = 0,
-        @ProtoType(ProtoNumberType.FIXED) @ProtoId(5) val relayIp: Int = 0,
-        @ProtoId(6) val relayPort: Int = 0,
-        @ProtoId(7) val toUin: Long = 0L
+        @ProtoId(1) @JvmField val subMsgtype: Int = 0,
+        @ProtoId(2) @JvmField val msgType: Int = 0,
+        @ProtoId(3) @JvmField val fromUin: Long = 0L,
+        @ProtoId(4) @JvmField val msgId: Int = 0,
+        @ProtoType(ProtoNumberType.FIXED) @ProtoId(5) @JvmField val relayIp: Int = 0,
+        @ProtoId(6) @JvmField val relayPort: Int = 0,
+        @ProtoId(7) @JvmField val toUin: Long = 0L
     ) : ProtoBuf
 
     @Serializable
@@ -1113,10 +1115,10 @@ internal class ImMsgHead : ProtoBuf {
 
     @Serializable
     internal class TransOidbHead(
-        @ProtoId(1) val command: Int = 0,
-        @ProtoId(2) val serviceType: Int = 0,
-        @ProtoId(3) val result: Int = 0,
-        @ProtoId(4) val errorMsg: String = ""
+        @ProtoId(1) @JvmField val command: Int = 0,
+        @ProtoId(2) @JvmField val serviceType: Int = 0,
+        @ProtoId(3) @JvmField val result: Int = 0,
+        @ProtoId(4) @JvmField val errorMsg: String = ""
     ) : ProtoBuf
 }
 
@@ -1124,27 +1126,27 @@ internal class ImMsgHead : ProtoBuf {
 internal class ImReceipt : ProtoBuf {
     @Serializable
     internal class MsgInfo(
-        @ProtoId(1) val fromUin: Long = 0L,
-        @ProtoId(2) val toUin: Long = 0L,
-        @ProtoId(3) val msgSeq: Int = 0,
-        @ProtoId(4) val msgRandom: Int = 0
+        @ProtoId(1) @JvmField val fromUin: Long = 0L,
+        @ProtoId(2) @JvmField val toUin: Long = 0L,
+        @ProtoId(3) @JvmField val msgSeq: Int = 0,
+        @ProtoId(4) @JvmField val msgRandom: Int = 0
     ) : ProtoBuf
 
     @Serializable
     data internal class ReceiptInfo(
-        @ProtoId(1) val readTime: Long = 0L
+        @ProtoId(1) @JvmField val readTime: Long = 0L
     ) : ProtoBuf
 
     @Serializable
     internal class ReceiptReq(
-        @ProtoId(1) val command: Int /* enum */ = 1,
-        @ProtoId(2) val msgInfo: MsgInfo? = null
+        @ProtoId(1) @JvmField val command: Int /* enum */ = 1,
+        @ProtoId(2) @JvmField val msgInfo: MsgInfo? = null
     ) : ProtoBuf
 
     @Serializable
     internal class ReceiptResp(
-        @ProtoId(1) val command: Int /* enum */ = 1,
-        @ProtoId(2) val receiptInfo: ReceiptInfo? = null
+        @ProtoId(1) @JvmField val command: Int /* enum */ = 1,
+        @ProtoId(2) @JvmField val receiptInfo: ReceiptInfo? = null
     ) : ProtoBuf
 }
 
@@ -1152,36 +1154,36 @@ internal class ImReceipt : ProtoBuf {
 internal class ObjMsg : ProtoBuf {
     @Serializable
     internal class MsgContentInfo(
-        @ProtoId(1) val contentInfoId: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val msgFile: MsgFile? = null
+        @ProtoId(1) @JvmField val contentInfoId: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val msgFile: MsgFile? = null
     ) : ProtoBuf {
         @Serializable
         internal class MsgFile(
-            @ProtoId(1) val busId: Int = 0,
-            @ProtoId(2) val filePath: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoId(3) val fileSize: Long = 0L,
-            @ProtoId(4) val fileName: String = "",
-            @ProtoId(5) val int64DeadTime: Long = 0L,
-            @ProtoId(6) val fileSha1: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoId(7) val ext: ByteArray = EMPTY_BYTE_ARRAY
+            @ProtoId(1) @JvmField val busId: Int = 0,
+            @ProtoId(2) @JvmField val filePath: ByteArray = EMPTY_BYTE_ARRAY,
+            @ProtoId(3) @JvmField val fileSize: Long = 0L,
+            @ProtoId(4) @JvmField val fileName: String = "",
+            @ProtoId(5) @JvmField val int64DeadTime: Long = 0L,
+            @ProtoId(6) @JvmField val fileSha1: ByteArray = EMPTY_BYTE_ARRAY,
+            @ProtoId(7) @JvmField val ext: ByteArray = EMPTY_BYTE_ARRAY
         ) : ProtoBuf
     }
 
     @Serializable
     internal class MsgPic(
-        @ProtoId(1) val smallPicUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val originalPicUrl: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val localPicId: Int = 0
+        @ProtoId(1) @JvmField val smallPicUrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val originalPicUrl: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val localPicId: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class ObjMsg(
-        @ProtoId(1) val msgType: Int = 0,
-        @ProtoId(2) val title: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(3) val bytesAbstact: List<ByteArray>? = null,
-        @ProtoId(5) val titleExt: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(6) val msgPic: List<MsgPic>? = null,
-        @ProtoId(7) val msgContentInfo: List<MsgContentInfo>? = null,
-        @ProtoId(8) val reportIdShow: Int = 0
+        @ProtoId(1) @JvmField val msgType: Int = 0,
+        @ProtoId(2) @JvmField val title: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val bytesAbstact: List<ByteArray>? = null,
+        @ProtoId(5) @JvmField val titleExt: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(6) @JvmField val msgPic: List<MsgPic>? = null,
+        @ProtoId(7) @JvmField val msgContentInfo: List<MsgContentInfo>? = null,
+        @ProtoId(8) @JvmField val reportIdShow: Int = 0
     ) : ProtoBuf
 }
