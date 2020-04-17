@@ -140,7 +140,7 @@ internal object HighwayHelper {
                     val headLength = readInt()
                     discardExact(4)
                     val proto = readProtoBuf(CSDataHighwayHead.RspDataHighwayHead.serializer(), length = headLength)
-                    check(proto.errorCode == 0) { "image upload failed: Transfer errno=${proto.errorCode}" }
+                    check(proto.errorCode == 0) { "highway transfer failed, error ${proto.errorCode}" }
                 }
             }
         }
