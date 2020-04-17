@@ -43,7 +43,7 @@ sealed class HummerMessage : MessageContent {
  */
 @SinceMirai("0.31.0")
 @OptIn(MiraiInternalAPI::class)
-class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") constructor(
+data class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") constructor(
     @MiraiExperimentalAPI
     val type: Int,
     @MiraiExperimentalAPI
@@ -87,11 +87,20 @@ class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") 
     override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
         stringValue.subSequence(startIndex, endIndex)
 
-    override fun contentToString(): String {
-        return "[戳一戳]"
-    }
+    override fun contentToString(): String = "[戳一戳]"
+
+    @OptIn(MiraiExperimentalAPI::class)
+    override fun equals(other: Any?): Boolean = other is PokeMessage && other.type == this.type && other.id == this.id
 
     override fun compareTo(other: String): Int = stringValue.compareTo(other)
+
+    @OptIn(MiraiExperimentalAPI::class)
+    override fun hashCode(): Int {
+        var result = type
+        result = 31 * result + id
+        result = 31 * result + stringValue.hashCode()
+        return result
+    }
 
     //businessType=0x00000001(1)
     //pbElem=08 01 18 00 20 FF FF FF FF 0F 2A 00 32 00 38 00 50 00
@@ -178,7 +187,7 @@ inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFla
  * @see FlashImage.invoke
  */
 @SinceMirai("0.33.0")
-class GroupFlashImage(override val image: GroupImage) : FlashImage() {
+data class GroupFlashImage(override val image: GroupImage) : FlashImage() {
     companion object Key : Message.Key<GroupFlashImage> {
         override val typeName: String
             get() = "GroupFlashImage"
@@ -189,7 +198,7 @@ class GroupFlashImage(override val image: GroupImage) : FlashImage() {
  * @see FlashImage.invoke
  */
 @SinceMirai("0.33.0")
-class FriendFlashImage(override val image: FriendImage) : FlashImage() {
+data class FriendFlashImage(override val image: FriendImage) : FlashImage() {
     companion object Key : Message.Key<FriendFlashImage> {
         override val typeName: String
             get() = "FriendFlashImage"

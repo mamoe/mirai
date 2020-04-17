@@ -212,7 +212,7 @@ data class OfflineGroupImage(
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is OfflineGroupImage && other.md5.contentEquals(this.md5) && other.filepath == this.filepath
+        return other is OfflineGroupImage && other::class == this::class && other.md5.contentEquals(this.md5) && other.filepath == this.filepath
     }
 }
 
@@ -276,8 +276,8 @@ data class OfflineFriendImage(
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is OfflineFriendImage && other.md5
-            .contentEquals(this.md5) && other.resourceId == this.resourceId
+        return other is OfflineFriendImage && other::class == this::class &&
+                other.md5.contentEquals(this.md5) && other.resourceId == this.resourceId
     }
 }
 
@@ -290,7 +290,10 @@ abstract class OnlineFriendImage : FriendImage(), OnlineImage
 // endregion
 
 
+//////////////////////
 // region internal
+//////////////////////
+
 
 private val EMPTY_BYTE_ARRAY = ByteArray(0)
 

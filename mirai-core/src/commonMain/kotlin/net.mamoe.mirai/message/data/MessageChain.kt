@@ -373,6 +373,7 @@ object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
     override val size: Int get() = 0
     override fun toString(): String = ""
     override fun contentToString(): String = ""
+    override fun equals(other: Any?): Boolean = other === this
 
     override fun iterator(): Iterator<SingleMessage> = this
     override fun hasNext(): Boolean = false

@@ -100,8 +100,6 @@ interface Message {
      * ```
      */
     @SinceMirai("0.34.0")
-    @Suppress("DEPRECATION_ERROR")
-    @OptIn(MiraiInternalAPI::class)
     @JvmSynthetic // in java they should use `plus` instead
     fun followedBy(tail: Message): MessageChain = followedByImpl(tail)
 

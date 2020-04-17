@@ -29,7 +29,8 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see AtAll 全体成员
  */
-class At
+data class At
+@Suppress("DataClassPrivateConstructor")
 private constructor(val target: Long, val display: String) :
     MessageContent,
     CharSequence by display,
@@ -39,6 +40,10 @@ private constructor(val target: Long, val display: String) :
      * 构造一个 [At] 实例. 这是唯一的公开的构造方式.
      */
     constructor(member: Member) : this(member.id, "@${member.nameCardOrNick}")
+
+    override fun equals(other: Any?): Boolean {
+        return other is At && other.target == this.target && other.display == this.display
+    }
 
     override fun toString(): String = "[mirai:at:$target]"
     override fun contentToString(): String = this.display
@@ -57,6 +62,20 @@ private constructor(val target: Long, val display: String) :
     }
 
     // 自动为消息补充 " "
+    override fun followedBy(tail: Message): MessageChain {
+        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
+            return super.followedBy(tail)
+        }
+        return super.followedBy(PlainText(" ")) + tail
+    }
+
+    override fun hashCode(): Int {
+        var result = target.hashCode()
+        result = 31 * result + display.hashCode()
+        return result
+    }
+
+
     @OptIn(MiraiInternalAPI::class)
     @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -64,13 +83,6 @@ private constructor(val target: Long, val display: String) :
     @JvmSynthetic
     override fun followedBy1(tail: Message): CombinedMessage {
         return followedByInternalForBinaryCompatibility(tail)
-    }
-
-    override fun followedBy(tail: Message): MessageChain {
-        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
-            return super.followedBy(tail)
-        }
-        return super.followedBy(PlainText(" ")) + tail
     }
 }
 

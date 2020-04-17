@@ -33,6 +33,7 @@ interface RichMessage : MessageContent {
 
     override fun contentToString(): String = this.content
 
+    @MiraiExperimentalAPI
     @SinceMirai("0.30.0")
     companion object Templates : Message.Key<RichMessage> {
 
@@ -77,7 +78,7 @@ interface RichMessage : MessageContent {
  * @param content 一般是 json
  */
 @SinceMirai("0.27.0")
-class LightApp constructor(override val content: String) : RichMessage {
+data class LightApp(override val content: String) : RichMessage {
     companion object Key : Message.Key<LightApp> {
         override val typeName: String get() = "LightApp"
     }
@@ -97,6 +98,19 @@ open class ServiceMessage(@MiraiExperimentalAPI val serviceId: Int, final overri
     }
 
     final override fun toString(): String = "[mirai:service:$serviceId,$content]"
+
+    final override fun equals(other: Any?): Boolean {
+        if (other == null) return false
+        if (other::class != this::class) return false
+        other as ServiceMessage
+        return other.serviceId == this.serviceId && other.content == this.content
+    }
+
+    final override fun hashCode(): Int {
+        var result = serviceId
+        result = 31 * result + content.hashCode()
+        return result
+    }
 }
 
 

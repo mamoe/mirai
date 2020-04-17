@@ -18,14 +18,18 @@ import kotlin.jvm.JvmName
 /**
  * QQ 自带表情
  */
-class Face private constructor(val id: Int, private val stringValue: String) :
+data class Face
+@Suppress("DataClassPrivateConstructor")
+private constructor(val id: Int, private val stringValue: String) : // used in delegation
     MessageContent,
     CharSequence by stringValue, Comparable<String> by stringValue {
-
     constructor(id: Int) : this(id, "[mirai:face:$id]")
 
     override fun toString(): String = stringValue
     override fun contentToString(): String = "[表情]"
+
+    override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
+    override fun hashCode(): Int = id
 
     /**
      * @author LamGC

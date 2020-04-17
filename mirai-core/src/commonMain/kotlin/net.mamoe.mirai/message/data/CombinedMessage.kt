@@ -14,6 +14,7 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -30,8 +31,8 @@ import kotlin.jvm.JvmSynthetic
  */
 internal class CombinedMessage
 internal constructor(
-    internal val left: Message, // 必须已经完成 constrain single
-    internal val tail: Message
+    @JvmField internal val left: Message, // 必须已经完成 constrain single
+    @JvmField internal val tail: Message
 ) : Message, MessageChain {
     @OptIn(MiraiExperimentalAPI::class)
     fun asSequence(): Sequence<SingleMessage> = sequence {
@@ -49,6 +50,10 @@ internal constructor(
         size
     }
 
+    override fun equals(other: Any?): Boolean {
+        return other is CombinedMessage && other.left == this.left && other.tail == this.tail
+    }
+
     @OptIn(MiraiExperimentalAPI::class)
     override fun toString(): String {
         return tail.toString() + left.toString()
@@ -56,6 +61,12 @@ internal constructor(
 
     override fun contentToString(): String {
         return left.contentToString() + tail.contentToString()
+    }
+
+    override fun hashCode(): Int {
+        var result = left.hashCode()
+        result = 31 * result + tail.hashCode()
+        return result
     }
 }
 

@@ -41,6 +41,13 @@ object AtAll :
     @Suppress("SpellCheckingInspection")
     override fun toString(): String = "[mirai:atall]"
     override fun contentToString(): String = display
+    override fun equals(other: Any?): Boolean {
+        return other === this
+    }
+
+    override fun hashCode(): Int {
+        return display.hashCode()
+    }
 
     // 自动为消息补充 " "
     @OptIn(MiraiInternalAPI::class)

@@ -46,6 +46,8 @@ class QuoteReply(val source: MessageSource) : Message, MessageMetadata, Constrai
 
     override fun toString(): String = "[mirai:quote:${source.id}]"
     override fun contentToString(): String = ""
+    override fun equals(other: Any?): Boolean = other is QuoteReply && other.source == this.source
+    override fun hashCode(): Int = source.hashCode()
 }
 
 @get:JvmSynthetic
