@@ -13,13 +13,14 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
 import kotlinx.io.errors.IOException
 import net.mamoe.mirai.utils.Throws
+import kotlin.coroutines.CoroutineContext
 
 /**
  * 多平台适配的 TCP Socket.
  */
 internal expect class PlatformSocket() : Closeable {
-    @Throws(NoRouteToHostException::class)
-    suspend fun connect(serverHost: String, serverPort: Int)
+    @Throws(SocketException::class)
+    suspend fun connect(coroutineContext: CoroutineContext, serverHost: String, serverPort: Int)
 
     /**
      * @throws SendPacketInternalException

@@ -39,6 +39,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.qqandroid.utils.NoRouteToHostException
 import net.mamoe.mirai.qqandroid.utils.PlatformSocket
+import net.mamoe.mirai.qqandroid.utils.SocketException
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import net.mamoe.mirai.qqandroid.utils.retryCatching
@@ -127,9 +128,9 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
         while (isActive) {
             try {
-                channel.connect(host, port)
+                channel.connect(coroutineContext + CoroutineName("Socket"), host, port)
                 break
-            } catch (e: NoRouteToHostException) {
+            } catch (e: SocketException) {
                 logger.warning { "No route to host (Mostly due to no Internet connection). Retrying in 3s..." }
                 delay(3000)
             }

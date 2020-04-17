@@ -33,10 +33,12 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.NoRouteToHostException
 import net.mamoe.mirai.qqandroid.utils.PlatformSocket
+import net.mamoe.mirai.qqandroid.utils.SocketException
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.withUse
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.copyAndClose
+import kotlin.coroutines.EmptyCoroutineContext
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 @Suppress("SpellCheckingInspection")
@@ -117,9 +119,9 @@ internal object HighwayHelper {
         val socket = PlatformSocket()
         while (client.bot.network.isActive) {
             try {
-                socket.connect(serverIp, serverPort)
+                socket.connect(EmptyCoroutineContext, serverIp, serverPort)
                 break
-            } catch (e: NoRouteToHostException) {
+            } catch (e: SocketException) {
                 delay(3000)
             }
         }
