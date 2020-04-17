@@ -195,6 +195,9 @@ abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Pac
      * @see ByteReadChannel.copyAndClose
      * @see ByteReadChannel.copyTo
      */
+    @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
+    @PlannedRemoval("1.0.0")
+    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
     suspend inline fun Image.channel(): ByteReadChannel = bot.openChannel(this)
     // endregion
 

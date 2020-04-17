@@ -177,6 +177,9 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @see ByteReadChannel.copyAndClose
      * @see ByteReadChannel.copyTo
      */
+    @PlannedRemoval("1.0.0")
+    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
+    @MiraiExperimentalAPI
     @JvmSynthetic
     abstract suspend fun openChannel(image: Image): ByteReadChannel
 

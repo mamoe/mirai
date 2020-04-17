@@ -651,6 +651,9 @@ internal abstract class QQAndroidBotBase constructor(
         else -> error("unsupported image class: ${image::class.simpleName}")
     }
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @PlannedRemoval("1.0.0")
+    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
     override suspend fun openChannel(image: Image): ByteReadChannel {
         return MiraiPlatformUtils.Http.get<HttpResponse>(queryImageUrl(image)).content.toKotlinByteReadChannel()
     }
