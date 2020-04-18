@@ -17,6 +17,7 @@ import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recallIn
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.coroutines.CoroutineContext
@@ -50,6 +51,7 @@ open class MessageReceipt<out C : Contact>(
      */
     val target: C,
 
+    @MiraiExperimentalAPI
     val botAsMember: Member?
 ) {
     /**
