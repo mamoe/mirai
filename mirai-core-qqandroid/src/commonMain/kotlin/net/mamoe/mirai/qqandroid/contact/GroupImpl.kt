@@ -33,6 +33,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
+import net.mamoe.mirai.qqandroid.utils.addSuppressedMirai
 import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
@@ -393,31 +394,40 @@ internal class GroupImpl(
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
                     // 每 10KB 等 1 秒, 最少等待 5 秒
+                    var exception: Throwable? = null
                     val success = response.uploadIpList.zip(response.uploadPortList).any { (ip, port) ->
-                        withTimeoutOrNull((image.inputSize * 1000 / 1024 / 10).coerceAtLeast(5000)) {
-                            bot.network.logger.verbose { "[Highway] Uploading group image to ${ip.toIpV4AddressString()}:$port, size=${image.inputSize / 1024} KiB" }
+                        kotlin.runCatching {
+                            withTimeoutOrNull((image.inputSize * 1000 / 1024 / 10).coerceAtLeast(5000)) {
+                                bot.network.logger.verbose { "[Highway] Uploading group image to ${ip.toIpV4AddressString()}:$port, size=${image.inputSize / 1024} KiB" }
 
-                            val time = measureTime {
-                                HighwayHelper.uploadImage(
-                                    client = bot.client,
-                                    serverIp = ip.toIpV4AddressString(),
-                                    serverPort = port,
-                                    imageInput = image.input,
-                                    inputSize = image.inputSize.toInt(),
-                                    fileMd5 = image.md5,
-                                    ticket = response.uKey,
-                                    commandId = 2
-                                )
+                                val time = measureTime {
+                                    HighwayHelper.uploadImage(
+                                        client = bot.client,
+                                        serverIp = ip.toIpV4AddressString(),
+                                        serverPort = port,
+                                        imageInput = image.input,
+                                        inputSize = image.inputSize.toInt(),
+                                        fileMd5 = image.md5,
+                                        ticket = response.uKey,
+                                        commandId = 2
+                                    )
+                                }
+                                bot.network.logger.verbose { "[Highway] Uploading group image: succeed at ${(image.inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s" }
+                                true
+                            } ?: kotlin.run {
+                                bot.network.logger.verbose { "[Highway] Uploading group image: timeout, retrying next server" }
+                                false
                             }
-                            bot.network.logger.verbose { "[Highway] Uploading group image: succeed at ${(image.inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s" }
-                            true
-                        } ?: kotlin.run {
-                            bot.network.logger.verbose { "[Highway] Uploading group image: timeout, retrying next server" }
+                        }.getOrElse {
+                            exception?.addSuppressedMirai(it)
+                            exception = it
                             false
                         }
                     }
 
-                    check(success) { "cannot upload group image, failed on all servers." }
+                    if (!success) {
+                        throw IllegalStateException("cannot upload group image, failed on all servers.", exception)
+                    }
 
                     val resourceId = image.calculateImageResourceId()
                     // return NotOnlineImageFromFile(
