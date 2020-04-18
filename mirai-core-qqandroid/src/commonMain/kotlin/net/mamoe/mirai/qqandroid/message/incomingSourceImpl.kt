@@ -27,16 +27,24 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 
 internal interface MessageSourceInternal {
     val sequenceId: Int
+    val random: Int
+
+    @Deprecated("don't use this internally. Use sequenceId or random instead.", level = DeprecationLevel.ERROR)
+    val id: Int
 
     val isRecalledOrPlanned: MiraiAtomicBoolean
 
     fun toJceData(): ImMsgBody.SourceMsg
 }
 
+@Suppress("RedundantSuspendModifier", "unused")
 internal suspend inline fun MessageSource.ensureSequenceIdAvailable() {
+    // obsolete but keep for future
+    return
+    /*
     if (this is MessageSourceToGroupImpl) {
         this.ensureSequenceIdAvailable()
-    }
+    }*/
 }
 
 internal class MessageSourceFromFriendImpl(
@@ -45,12 +53,13 @@ internal class MessageSourceFromFriendImpl(
 ) : OnlineMessageSource.Incoming.FromFriend(), MessageSourceInternal {
     override val sequenceId: Int get() = msg.msgHead.msgSeq
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
-    override val id: Int get() = msg.msgBody.richText.attr!!.random
+    override val id: Int get() = sequenceId// msg.msgBody.richText.attr!!.random
+    override val random: Int get() = msg.msgBody.richText.attr!!.random
     override val time: Int get() = msg.msgHead.msgTime
     override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, 0, false) }
     override val sender: QQ get() = bot.getFriend(msg.msgHead.fromUin)
 
-    private val jceData by lazy { msg.toJceDataFriendOrTemp(id) }
+    private val jceData by lazy { msg.toJceDataFriendOrTemp(random) }
 
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
@@ -96,13 +105,14 @@ internal class MessageSourceFromTempImpl(
     private val msg: MsgComm.Msg
 ) : OnlineMessageSource.Incoming.FromTemp(), MessageSourceInternal {
     override val sequenceId: Int get() = msg.msgHead.msgSeq
+    override val random: Int get() = msg.msgBody.richText.attr!!.random
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
-    override val id: Int get() = msg.msgBody.richText.attr!!.random
+    override val id: Int get() = sequenceId//
     override val time: Int get() = msg.msgHead.msgTime
     override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, 0, false) }
     override val sender: Member get() = with(msg.msgHead) { bot.getGroup(c2cTmpMsgHead!!.groupUin)[fromUin] }
 
-    private val jceData by lazy { msg.toJceDataFriendOrTemp(id) }
+    private val jceData by lazy { msg.toJceDataFriendOrTemp(random) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
@@ -112,7 +122,8 @@ internal data class MessageSourceFromGroupImpl(
 ) : OnlineMessageSource.Incoming.FromGroup(), MessageSourceInternal {
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
     override val sequenceId: Int get() = msg.msgHead.msgSeq
-    override val id: Int get() = msg.msgBody.richText.attr!!.random
+    override val random: Int get() = msg.msgBody.richText.attr!!.random
+    override val id: Int get() = sequenceId
     override val time: Int get() = msg.msgHead.msgTime
     override val originalMessage: MessageChain by lazy {
         msg.toMessageChain(bot, groupIdOrZero = group.id, onlineSource = false)

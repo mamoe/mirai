@@ -27,7 +27,8 @@ internal class OfflineMessageSourceImplByMsg(
     override val bot: Bot
 ) : OfflineMessageSource(), MessageSourceInternal {
     override val kind: Kind = if (delegate.msgHead.groupInfo != null) Kind.GROUP else Kind.FRIEND
-    override val id: Int
+    override val id: Int get() = sequenceId
+    override val random: Int
         get() = delegate.msgHead.msgUid.toInt()
     override val time: Int
         get() = delegate.msgHead.msgTime
@@ -73,6 +74,8 @@ internal class OfflineMessageSourceImplBySourceMsg(
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
     override val sequenceId: Int
         get() = delegate.origSeqs?.first() ?: error("cannot find sequenceId")
+    override val random: Int
+        get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids?.toInt() ?: 0
     override val time: Int get() = delegate.time
     override val originalMessage: MessageChain by lazy { delegate.toMessageChain(bot, groupIdOrZero) }
     /*
@@ -82,9 +85,9 @@ internal class OfflineMessageSourceImplBySourceMsg(
                 delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids!!.and(0xFFFFFFFF)
     */
 
-    override val id: Int
-        get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids?.toInt()
-            ?: 0
+    override val id: Int get() = sequenceId
+    // delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids?.toInt()
+    // ?: 0
 
     // override val sourceMessage: MessageChain get() = delegate.toMessageChain()
     override val fromId: Long get() = delegate.senderUin

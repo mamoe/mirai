@@ -34,7 +34,7 @@ private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
         where T : MessageSourceInternal, T : MessageSource {
 
     val elements = originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
-    val messageUid: Long = sequenceId.toLong().shl(32) or id.toLong().and(0xffFFffFF)
+    val messageUid: Long = sequenceId.toLong().shl(32) or random.toLong().and(0xffFFffFF)
     return ImMsgBody.SourceMsg(
         origSeqs = listOf(sequenceId),
         senderUin = fromId,
@@ -71,7 +71,7 @@ private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
 
 internal class MessageSourceToFriendImpl(
     override val sequenceId: Int,
-    override val id: Int,
+    override val random: Int,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
@@ -79,6 +79,8 @@ internal class MessageSourceToFriendImpl(
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal {
     override val bot: Bot
         get() = sender
+    override val id: Int
+        get() = sequenceId
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
     private val jceData by lazy { toJceDataImpl() }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
@@ -86,7 +88,7 @@ internal class MessageSourceToFriendImpl(
 
 internal class MessageSourceToTempImpl(
     override val sequenceId: Int,
-    override val id: Int,
+    override val random: Int,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
@@ -94,18 +96,22 @@ internal class MessageSourceToTempImpl(
 ) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceInternal {
     override val bot: Bot
         get() = sender
+    override val id: Int
+        get() = sequenceId
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
     private val jceData by lazy { toJceDataImpl() }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
 internal class MessageSourceToGroupImpl(
-    override val id: Int,
+    override val random: Int,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Group
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal {
+    override val id: Int
+        get() = sequenceId
     override val bot: Bot
         get() = sender
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
@@ -113,7 +119,11 @@ internal class MessageSourceToGroupImpl(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val sequenceId: Int
-        get() = sequenceIdDeferred.getCompleted()
+        get() = when {
+            sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted()
+            !sequenceIdDeferred.isActive -> 0
+            else -> error("sequenceId not yet available")
+        }
 
     @OptIn(MiraiExperimentalAPI::class)
     internal fun startWaitingSequenceId(coroutineScope: CoroutineScope) {

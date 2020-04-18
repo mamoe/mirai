@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.qqandroid
 
@@ -322,7 +322,7 @@ internal abstract class QQAndroidBotBase constructor(
                         bot.asQQAndroidBot().client,
                         group.id,
                         source.sequenceId,
-                        source.id
+                        source.random
                     ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                 }
             }
@@ -336,7 +336,7 @@ internal abstract class QQAndroidBotBase constructor(
                     bot.client,
                     source.targetId,
                     source.sequenceId,
-                    source.id,
+                    source.random,
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
@@ -352,7 +352,7 @@ internal abstract class QQAndroidBotBase constructor(
                     source.target.group.id,
                     source.targetId,
                     source.sequenceId,
-                    source.id,
+                    source.random,
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
@@ -366,7 +366,7 @@ internal abstract class QQAndroidBotBase constructor(
                             bot.client,
                             source.targetId,
                             source.sequenceId,
-                            source.id,
+                            source.random,
                             source.time
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
@@ -379,7 +379,7 @@ internal abstract class QQAndroidBotBase constructor(
                             source.targetId, // groupUin
                             source.targetId, // memberUin
                             source.sequenceId,
-                            source.id,
+                            source.random,
                             source.time
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
@@ -388,7 +388,7 @@ internal abstract class QQAndroidBotBase constructor(
                             bot.client,
                             source.targetId,
                             source.sequenceId,
-                            source.id
+                            source.random
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
                 }

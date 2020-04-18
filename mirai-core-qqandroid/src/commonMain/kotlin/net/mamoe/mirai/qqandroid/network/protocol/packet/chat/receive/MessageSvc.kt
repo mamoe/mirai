@@ -371,7 +371,7 @@ internal class MessageSvc {
         ): OutgoingPacket {
             val rand = Random.nextInt().absoluteValue
             val source = MessageSourceToFriendImpl(
-                id = rand,
+                random = rand,
                 sender = client.bot,
                 target = qq,
                 time = currentTimeSeconds.toInt(),
@@ -405,7 +405,7 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = source.sequenceId,
-                    msgRand = source.id,
+                    msgRand = source.random,
                     syncCookie = SyncCookie(time = source.time.toLong()).toByteArray(SyncCookie.serializer())
                     // msgVia = 1
                 )
@@ -420,7 +420,7 @@ internal class MessageSvc {
             sourceCallback: (MessageSourceToTempImpl) -> Unit
         ): OutgoingPacket {
             val source = MessageSourceToTempImpl(
-                id = Random.nextInt().absoluteValue,
+                random = Random.nextInt().absoluteValue,
                 sender = client.bot,
                 target = member,
                 time = currentTimeSeconds.toInt(),
@@ -453,7 +453,7 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = source.sequenceId,
-                    msgRand = source.id,
+                    msgRand = source.random,
                     syncCookie = SyncCookie(time = source.time.toLong()).toByteArray(SyncCookie.serializer())
                 )
             )
@@ -468,7 +468,7 @@ internal class MessageSvc {
         ): OutgoingPacket {
 
             val source = MessageSourceToGroupImpl(
-                id = Random.nextInt().absoluteValue,
+                random = Random.nextInt().absoluteValue,
                 sender = client.bot,
                 target = group,
                 time = currentTimeSeconds.toInt(),
@@ -504,7 +504,7 @@ internal class MessageSvc {
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),
-                    msgRand = source.id,
+                    msgRand = source.random,
                     syncCookie = EMPTY_BYTE_ARRAY,
                     msgVia = 1
                 )

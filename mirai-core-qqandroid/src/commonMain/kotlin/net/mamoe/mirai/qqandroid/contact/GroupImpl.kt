@@ -345,6 +345,15 @@ internal class GroupImpl(
             }
         }
 
+        try {
+            source.ensureSequenceIdAvailable()
+        } catch (e: Exception) {
+            bot.network.logger.warning {
+                "Timeout awaiting sequenceId for group message(${message.contentToString()
+                    .take(10)}). Some features may not work properly"
+            }
+        }
+
         return MessageReceipt(source, this, botAsMember)
     }
 
