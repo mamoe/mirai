@@ -19,6 +19,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -78,7 +79,7 @@ open class MessageReceipt<out C : Contact>(
     }
 
     @JavaFriendlyAPI
-    @JvmName("recall")
+    @JvmName("recallIn")
     fun __recallInBlockingForJava__(timeMillis: Long): Job {
         return recallIn(timeMillis = timeMillis)
     }
@@ -87,6 +88,16 @@ open class MessageReceipt<out C : Contact>(
     @JvmName("quote")
     fun __quoteBlockingForJava__(): QuoteReply {
         return this.quote()
+    }
+
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
+    @JavaFriendlyAPI
+    @JvmName("recall")
+    fun __recallInBlockingForJava__2(timeMillis: Long): Job {
+        return recallIn(timeMillis = timeMillis)
     }
 }
 
