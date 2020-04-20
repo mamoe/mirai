@@ -125,18 +125,6 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
 
-### 第三方类库(无排名)
-
-- [kotlin-stdlib](https://github.com/JetBrains/kotlin)
-- [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
-- [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
-- [kotlin-reflect](https://github.com/JetBrains/kotlin)
-- [atomicfu](https://github.com/Kotlin/kotlinx.atomicfu)
-- [ktor](https://github.com/ktorio/ktor)
-- [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
-- [bouncycastle](https://www.bouncycastle.org/java.html)
-
-
 
 ## 许可证
 
