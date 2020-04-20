@@ -14,6 +14,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 
@@ -84,6 +85,7 @@ open class BotConfiguration {
     /**
      * 不显示网络日志
      */
+    @ConfigurationDsl
     fun noNetworkLog() {
         networkLoggerSupplier = { _: BotNetworkHandler -> SilentLogger }
     }
@@ -93,10 +95,33 @@ open class BotConfiguration {
      *
      * 此函数只在 JVM 有效. 在其他平台将会导致一直使用默认的随机的设备信息.
      */
+    @ConfigurationDsl
     @JvmOverloads
     fun fileBasedDeviceInfo(filename: String = "device.json") {
         deviceInfo = getFileBasedDeviceInfoSupplier(filename)
     }
+
+    /**
+     * 使用当前协程的 [coroutineContext] 作为 [parentCoroutineContext]
+     *
+     * 用例:
+     * ```
+     * coroutineScope {
+     *   val bot = Bot(...)
+     *   bot.login()
+     * } // coroutineScope 会等待 Bot 退出
+     * ```
+     */
+    @ConfigurationDsl
+    @SinceMirai("0.38.0")
+    suspend fun inheritCoroutineContext() {
+        parentCoroutineContext = coroutineContext
+    }
+
+
+    @SinceMirai("0.38.0")
+    @DslMarker
+    annotation class ConfigurationDsl
 }
 
 @OptIn(ExperimentalMultiplatform::class)
