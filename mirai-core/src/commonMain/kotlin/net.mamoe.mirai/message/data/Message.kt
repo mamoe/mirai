@@ -17,7 +17,6 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -132,6 +131,61 @@ interface Message {
      */
     @SinceMirai("0.34.0")
     fun contentToString(): String
+
+
+    /**
+     * 判断内容是否与 [another] 相等.
+     *
+     * 若本函数返回 `true`, 则表明:
+     * - `this` 与 [another] 的 [contentToString] 相等
+     * - `this` 为 [another] 的所有 [MessageContent] 都 [相等][Message.equals] 且有同样的排列顺序.
+     *
+     * @sample net.mamoe.mirai.message.data.ContentEqualsTest
+     */
+    @SinceMirai("0.38.0")
+    fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean {
+        if (!this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)) return false
+        return when {
+            this is SingleMessage && another is SingleMessage -> true
+            this is SingleMessage && another is MessageChain -> another.all { it is MessageMetadata || it is PlainText }
+            this is MessageChain && another is SingleMessage -> this.all { it is MessageMetadata || it is PlainText }
+            this is MessageChain && another is MessageChain -> {
+                val anotherIterator = another.iterator()
+
+                /**
+                 * 逐个判断非 [PlainText] 的 [Message] 是否 [equals]
+                 */
+                this.forEachContent { thisElement ->
+                    if (thisElement.isPlain()) return@forEachContent
+                    for (it in anotherIterator) {
+                        if (it.isPlain() || it !is MessageContent) continue
+                        if (thisElement != it) return false
+                    }
+                }
+                return true
+            }
+            else -> error("shouldn't be reached")
+        }
+    }
+
+    /**
+     * 判断内容是否与 [another] 相等.
+     *
+     * 若本函数返回 `true`, 则表明:
+     * - [contentToString] 与 [another] 相等
+     * - 若 `this` 为 [MessageChain], 则只包含 [MessageMetadata] 和 [PlainText]
+     *
+     * @sample net.mamoe.mirai.message.data.ContentEqualsTest
+     */
+    @SinceMirai("0.38.0")
+    fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
+        if (!this.contentToString().equals(another, ignoreCase = ignoreCase)) return false
+        return when (this) {
+            is SingleMessage -> true
+            is MessageChain -> this.all { it is MessageMetadata || it is PlainText }
+            else -> error("shouldn't be reached")
+        }
+    }
 
     operator fun plus(another: Message): MessageChain = this.followedBy(another)
 
