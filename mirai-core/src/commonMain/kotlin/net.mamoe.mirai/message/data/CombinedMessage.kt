@@ -55,14 +55,14 @@ internal constructor(
         return other is CombinedMessage && other.left == this.left && other.tail == this.tail
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
-    override fun toString(): String {
-        return left.toString() + tail.toString()
-    }
+    private var toStringCache: String? = null
 
-    override fun contentToString(): String {
-        return left.contentToString() + tail.contentToString()
-    }
+    @OptIn(MiraiExperimentalAPI::class)
+    override fun toString(): String = toStringCache ?: (left.toString() + tail.toString()).also { toStringCache = it }
+
+    private var contentToStringCache: String? = null
+    override fun contentToString(): String =
+        contentToStringCache ?: (left.contentToString() + tail.contentToString()).also { contentToStringCache = it }
 
     override fun hashCode(): Int {
         var result = left.hashCode()
