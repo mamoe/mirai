@@ -82,7 +82,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     @JvmName("forEachContent")
     @MiraiInternalAPI
     fun `__forEachContent for Java__`(block: (Message) -> Unit) {
-        this.foreachContent(block)
+        this.forEachContent(block)
     }
 
     /**
@@ -115,14 +115,56 @@ interface MessageChain : Message, Iterable<SingleMessage> {
 // region accessors
 
 /**
- * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [PokeMessage], [FlashImage]
+ * 遍历每一个 [消息内容][MessageContent]
  */
 @JvmSynthetic
-inline fun MessageChain.foreachContent(block: (Message) -> Unit) {
+inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
     this.forEach {
-        if (it !is MessageMetadata) block(it)
+        if (it !is MessageMetadata) {
+            check(it is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
+            block(it)
+        }
     }
 }
+
+@Deprecated("typo, use forEachContent",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("forEachContent(block)"))
+@JvmSynthetic
+inline fun MessageChain.foreachContent(block: (MessageContent) -> Unit) = forEachContent(block)
+
+/**
+ * 如果每一个 [消息内容][MessageContent] 都满足 [block], 返回 `true`
+ */
+@JvmSynthetic
+inline fun MessageChain.allContent(block: (MessageContent) -> Boolean): Boolean {
+    this.forEach {
+        if (it !is MessageMetadata) {
+            check(it is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
+            if (!block(it)) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
+/**
+ * 如果每一个 [消息内容][MessageContent] 都不满足 [block], 返回 `true`
+ */
+@JvmSynthetic
+inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): Boolean {
+    this.forEach {
+        if (it !is MessageMetadata) {
+            check(it is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
+            if (block(it)) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
