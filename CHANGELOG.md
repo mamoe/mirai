@@ -2,6 +2,18 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.38.0`  2020/4/20
+- 新增自定义消息 (实验性): `CustomMessage`
+- 新增 `MessageChain.contentEquals`
+- 新增 `Message.isPlain`, `Message.isNotPlain`
+- 新增 `MessageChain.allContent`, `MessageChain.noneContent`
+- 修复 `CombinedMessage.toString` 顺序错误, 添加缓存
+- 新增 `BotConfiguration.inheritCoroutineContext`
+- 将 Java API `MessageChain.getOrNull` 更名为 `MessageChain.firstOrNull`
+- 将 Java API `MessageChain.get` 更名为 `MessageChain.first`
+- 将 Java API `MessageReceipt.recall(long)` 更名为 `MessageReceipt.recallIn(long)` 以与其他 API 保持一致
+- 优化 `MessageChainBuilder` 构建逻辑
+
 ## `0.37.5`  2020/4/20
 - 上传长消息和图片时允许重试, 提高稳定性
 - 优化无网络时的重连逻辑
