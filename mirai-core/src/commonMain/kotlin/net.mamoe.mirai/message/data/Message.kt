@@ -214,6 +214,9 @@ interface Message {
         this.followedByInternalForBinaryCompatibility(another.toString().toMessage())
 }
 
+inline fun Message.isPlain(): Boolean = this is PlainText
+
+inline fun Message.isNotPlain(): Boolean = this !is PlainText
 
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
