@@ -57,7 +57,7 @@ internal constructor(
 
     @OptIn(MiraiExperimentalAPI::class)
     override fun toString(): String {
-        return tail.toString() + left.toString()
+        return left.toString() + tail.toString()
     }
 
     override fun contentToString(): String {

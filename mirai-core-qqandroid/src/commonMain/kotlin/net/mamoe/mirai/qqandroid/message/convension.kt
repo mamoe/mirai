@@ -34,6 +34,7 @@ private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持�
 private val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最新版手机QQ体验新功能。")
 private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版手机QQ查看闪照。")
 
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = mutableListOf<ImMsgBody.Elem>()
@@ -87,6 +88,15 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 
         when (it) {
             is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
+            is CustomMessage -> {
+                @Suppress("UNCHECKED_CAST")
+                elements.add(
+                    ImMsgBody.Elem(customElem = ImMsgBody.CustomElem(
+                        enumType = MIRAI_CUSTOM_ELEM_TYPE,
+                        data = CustomMessage.serialize(it.getFactory() as CustomMessage.Factory<CustomMessage>, it)
+                    ))
+                )
+            }
             is At -> {
                 elements.add(ImMsgBody.Elem(text = it.toJceData()))
                 elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
@@ -243,20 +253,23 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
     return null
 }
 
+internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
+
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
-internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, message: MessageChainBuilder) {
+@OptIn(MiraiInternalAPI::class, LowLevelAPI::class, ExperimentalStdlibApi::class)
+internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, list: MessageChainBuilder) {
     // (this._miraiContentToString())
     this.forEach { element ->
         when {
-            element.srcMsg != null ->
-                message.add(QuoteReply(OfflineMessageSourceImplBySourceMsg(element.srcMsg, bot, groupIdOrZero)))
-            element.notOnlineImage != null -> message.add(OnlineFriendImageImpl(element.notOnlineImage))
-            element.customFace != null -> message.add(OnlineGroupImageImpl(element.customFace))
-            element.face != null -> message.add(Face(element.face.index))
+            element.srcMsg != null -> {
+                list.add(QuoteReply(OfflineMessageSourceImplBySourceMsg(element.srcMsg, bot, groupIdOrZero)))
+            }
+            element.notOnlineImage != null -> list.add(OnlineFriendImageImpl(element.notOnlineImage))
+            element.customFace != null -> list.add(OnlineGroupImageImpl(element.customFace))
+            element.face != null -> list.add(Face(element.face.index))
             element.text != null -> {
                 if (element.text.attr6Buf.isEmpty()) {
-                    message.add(element.text.str.toMessage())
+                    list.add(element.text.str.toMessage())
                 } else {
                     val id: Long
                     element.text.attr6Buf.read {
@@ -264,9 +277,9 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                         id = readUInt().toLong()
                     }
                     if (id == 0L) {
-                        message.add(AtAll)
+                        list.add(AtAll)
                     } else {
-                        message.add(At._lowLevelConstructAtInstance(id, element.text.str))
+                        list.add(At._lowLevelConstructAtInstance(id, element.text.str))
                     }
                 }
             }
@@ -279,7 +292,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                         else -> error("unknown compression flag=${element.lightApp.data[0]}")
                     }
                 }
-                message.add(LightApp(content))
+                list.add(LightApp(content))
             }
             element.richMsg != null -> {
                 val content = runWithBugReport("解析 richMsg", { element.richMsg.template1.toUHexString() }) {
@@ -301,7 +314,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                     /**
                      * [JsonMessage]
                      */
-                    1 -> message.add(JsonMessage(content))
+                    1 -> list.add(JsonMessage(content))
                     /**
                      * [LongMessage], [ForwardMessage]
                      */
@@ -309,17 +322,17 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                         val resId = this.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()?.longTextResid
 
                         if (resId != null) {
-                            message.add(LongMessage(content, resId))
+                            list.add(LongMessage(content, resId))
                         } else {
-                            message.add(ForwardMessage(content))
+                            list.add(ForwardMessage(content))
                         }
                     }
 
                     // 104 新群员入群的消息
                     else -> {
                         if (element.richMsg.serviceId == 60 || content.startsWith("<?")) {
-                            message.add(XmlMessage(element.richMsg.serviceId, content))
-                        } else message.add(ServiceMessage(element.richMsg.serviceId, content))
+                            list.add(XmlMessage(element.richMsg.serviceId, content))
+                        } else list.add(ServiceMessage(element.richMsg.serviceId, content))
                     }
                 }
             }
@@ -328,19 +341,45 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                     || element.generalFlags != null -> {
 
             }
+            element.customElem != null -> {
+                element.customElem.data.read {
+                    kotlin.runCatching {
+                        CustomMessage.deserialize(this)
+                    }.fold(
+                        onFailure = {
+                            if (it is CustomMessage.Key.CustomMessageFullDataDeserializeInternalException) {
+                                bot.logger.error("Internal error: " +
+                                        "exception while deserializing CustomMessage head data," +
+                                        " data=${element.customElem.data.toUHexString()}", it)
+                            } else {
+                                it as CustomMessage.Key.CustomMessageFullDataDeserializeUserException
+                                bot.logger.error("User error: " +
+                                        "exception while deserializing CustomMessage body," +
+                                        " body=${it.body.toUHexString()}", it)
+                            }
+
+                        },
+                        onSuccess = {
+                            if (it != null) {
+                                list.add(it)
+                            }
+                        }
+                    )
+                }
+            }
             element.commonElem != null -> {
                 when (element.commonElem.serviceType) {
                     2 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
-                        message.add(PokeMessage(proto.pokeType, proto.vaspokeId))
+                        list.add(PokeMessage(proto.pokeType, proto.vaspokeId))
                     }
                     3 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())
                         if (proto.flashTroopPic != null) {
-                            message.add(GroupFlashImage(OnlineGroupImageImpl(proto.flashTroopPic)))
+                            list.add(GroupFlashImage(OnlineGroupImageImpl(proto.flashTroopPic)))
                         }
                         if (proto.flashC2cPic != null) {
-                            message.add(FriendFlashImage(OnlineFriendImageImpl(proto.flashC2cPic)))
+                            list.add(FriendFlashImage(OnlineFriendImageImpl(proto.flashC2cPic)))
                         }
                     }
                 }

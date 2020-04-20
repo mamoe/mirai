@@ -13,7 +13,6 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
@@ -280,11 +279,9 @@ interface MessageMetadata : SingleMessage {
 
 /**
  * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 保持原顺序.
- *
- * **MiraiExperimentalAPI**: 此 API 可能在将来版本修改
+ * 实现此接口的元素将会在连接时自动处理替换.
  */
 @SinceMirai("0.34.0")
-@MiraiExperimentalAPI
 interface ConstrainSingle<out M : Message> : MessageMetadata {
     val key: Message.Key<M>
 }

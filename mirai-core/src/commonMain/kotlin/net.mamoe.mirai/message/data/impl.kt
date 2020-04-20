@@ -202,7 +202,21 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     FlashImage -> firstIsInstanceOrNull<FlashImage>()
     GroupFlashImage -> firstIsInstanceOrNull<GroupFlashImage>()
     FriendFlashImage -> firstIsInstanceOrNull<FriendFlashImage>()
-    else -> null
+    CustomMessage -> firstIsInstanceOrNull()
+    CustomMessageMetadata -> firstIsInstanceOrNull()
+    else -> {
+        this.forEach { message ->
+            if (message is CustomMessage) {
+                @Suppress("UNCHECKED_CAST")
+                if (message.getFactory() == key) {
+                    return message as? M
+                        ?: error("cannot cast ${message::class.qualifiedName}. Make sure CustomMessage.getFactory returns a factory that has a generic type which is the same as the type of your CustomMessage")
+                }
+            }
+        }
+
+        null
+    }
 } as M?
 
 /**
