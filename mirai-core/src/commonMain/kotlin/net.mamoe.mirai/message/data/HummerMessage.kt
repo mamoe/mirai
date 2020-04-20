@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
@@ -40,15 +41,18 @@ sealed class HummerMessage : MessageContent {
 
 /**
  * 戳一戳. 可以发送给好友或群.
+ *
+ * @see Types 使用伴生对象中的常量
  */
 @SinceMirai("0.31.0")
 @OptIn(MiraiInternalAPI::class)
-data class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常量") constructor(
-    @MiraiExperimentalAPI
+data class PokeMessage internal constructor(
+    @MiraiExperimentalAPI("may change in future")
     val type: Int,
-    @MiraiExperimentalAPI
+    @MiraiExperimentalAPI("may change in future")
     val id: Int
 ) : HummerMessage() {
+    @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     companion object Types : Message.Key<PokeMessage> {
         override val typeName: String
             get() = "PokeMessage"
@@ -117,6 +121,8 @@ data class PokeMessage @MiraiInternalAPI(message = "使用伴生对象中的常�
  * 闪照
  *
  * @see Image.flash 转换普通图片为闪照
+ *
+ * @see Image 查看图片相关信息
  */
 @SinceMirai("0.33.0")
 sealed class FlashImage : MessageContent, HummerMessage() {

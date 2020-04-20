@@ -74,6 +74,8 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), Identified {
     /**
      * 上传一个图片以备发送.
      *
+     * @see Image 查看更多信息
+     *
      * @see BeforeImageUploadEvent 图片发送前事件, cancellable
      * @see ImageUploadEvent 图片发送完成事件
      *

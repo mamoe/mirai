@@ -133,7 +133,7 @@ class ExternalImage private constructor(
      *  PNG:    1001
      *  WEBP:   1002
      *  BMP:    1005
-     *  GIG:    2000
+     *  GIG:    2000 // TODO gig? gif?
      *  APNG:   2001
      *  SHARPP: 1004
      */
@@ -148,7 +148,7 @@ class ExternalImage private constructor(
 }
 
 /**
- * 将图片发送给指定联系人
+ * 将图片作为单独的消息发送给指定联系人
  */
 @JvmSynthetic
 suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
@@ -171,7 +171,7 @@ suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact
 }
 
 /**
- * 将图片发送给 [this]
+ * 将图片作为单独的消息发送给 [this]
  */
 @JvmSynthetic
 suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)

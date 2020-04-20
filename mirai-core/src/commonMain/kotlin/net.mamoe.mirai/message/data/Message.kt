@@ -113,7 +113,7 @@ interface Message {
      * [GroupImage]: "[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png]"
      * [FriendImage]: "[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"
      * [PokeMessage]: "[mirai:poke:1,-1]"
-     * [MessageChain]: 直接无间隔地连接所有元素 (`joinToString("")`)
+     * [MessageChain]: 无间隔地连接所有元素 (`joinToString("")`)
      *
      * @see contentToString
      */
@@ -122,10 +122,13 @@ interface Message {
     /**
      * 转为最接近官方格式的字符串. 如 `At(member) + "test"` 将转为 `"@群名片 test"`.
      *
-     * 对于 [NullMessageChain], 这个函数返回空字符串 "";
-     * 对于其他 [MessageChain], 这个函数返回值同 [toString].
+     * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用 [contentToString] 而不是 [toString]
      *
-     * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString]
+     * 各个 [SingleMessage] 的转换示例:
+     * [PlainText]: "Hello"
+     * [Image]: "\[图片\]"
+     * [PokeMessage]: "\[戳一戳\]"
+     * [MessageChain]: 无间隔地连接所有元素 (`joinToString("", transformer=Message::contentToString)`)
      */
     @SinceMirai("0.34.0")
     fun contentToString(): String
@@ -234,25 +237,39 @@ inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 @Suppress("OverridingDeprecatedMember")
 interface SingleMessage : Message, CharSequence, Comparable<String> {
-    /**
-     * 即 `sub in this.contentToString()`
-     */
+    @PlannedRemoval("1.0.0")
+    @JvmSynthetic
+    @Deprecated(
+        "有歧义, 自行使用 contentToString() 比较",
+        ReplaceWith("this.contentToString() == other"),
+        DeprecationLevel.ERROR
+    )
     /* final */ override operator fun contains(sub: String): Boolean = sub in this.contentToString()
 
-    /**
-     * 比较两个消息的 [contentToString]
-     */
+    @PlannedRemoval("1.0.0")
+    @JvmSynthetic
+    @Deprecated(
+        "有歧义, 自行使用 contentToString() 比较",
+        ReplaceWith("this.contentToString() == other"),
+        DeprecationLevel.ERROR
+    )
     /* final */ override infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
 
-    /**
-     * 将 [contentToString] 与 [other] 比较
-     */
+    @PlannedRemoval("1.0.0")
+    @JvmSynthetic
+    @Deprecated(
+        "有歧义, 自行使用 contentToString() 比较",
+        ReplaceWith("this.contentToString() == other"),
+        DeprecationLevel.ERROR
+    )
     /* final */ override infix fun eq(other: String): Boolean = this.contentToString() == other
 }
 
 /**
  * 消息元数据, 即不含内容的元素.
  * 包括: [MessageSource]
+ *
+ * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
 interface MessageMetadata : SingleMessage {
     override val length: Int get() = 0

@@ -29,13 +29,14 @@ import kotlin.jvm.JvmSynthetic
 /**
  * 自定义表情 (收藏的表情), 图片
  *
+ * 查看平台 actual 定义以获取更多说明.
+ *
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-interface Image : Message, MessageContent {
+expect interface Image : Message, MessageContent {
     companion object Key : Message.Key<Image> {
         override val typeName: String
-            get() = "Image"
     }
 
     /**
@@ -64,7 +65,7 @@ interface Image : Message, MessageContent {
 fun Image(imageId: String): Image = when {
     imageId.startsWith('/') -> OfflineFriendImage(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
     imageId.length == 42 || imageId.startsWith('{') && imageId.endsWith('}') -> OfflineGroupImage(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
-    else -> throw IllegalArgumentException("Bad imageId, expecting length=37 or 42, got ${imageId.length}")
+    else -> throw IllegalArgumentException("illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
 }
 
 @MiraiInternalAPI("使用 Image")
@@ -285,83 +286,5 @@ data class OfflineFriendImage(
  * 接收消息时获取到的 [FriendImage]. 它可以直接获取下载链接 [originUrl]
  */
 abstract class OnlineFriendImage : FriendImage(), OnlineImage
-
-
-// endregion
-
-
-//////////////////////
-// region internal
-//////////////////////
-
-
-private val EMPTY_BYTE_ARRAY = ByteArray(0)
-
-
-// /000000000-3814297509-BFB7027B9354B8F899A062061D74E206
-private val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
-
-// /f8f1ab55-bf8e-4236-b55e-955848d7069f
-private val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/.{8}-(.{4}-){3}.{12}""")
-
-// {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
-private val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}}\..*""")
-
-@Suppress("NOTHING_TO_INLINE") // no stack waste
-internal inline fun Char.hexDigitToByte(): Int {
-    return when (this) {
-        in '0'..'9' -> this - '0'
-        in 'A'..'F' -> 10 + (this - 'A')
-        in 'a'..'f' -> 10 + (this - 'a')
-        else -> throw IllegalArgumentException("illegal hex digit: $this")
-    }
-}
-
-internal fun String.skipToSecondHyphen(): Int {
-    var count = 0
-    this.forEachIndexed { index, c ->
-        if (c == '-' && ++count == 2) return index
-    }
-    error("cannot find two hyphens")
-}
-
-internal fun String.imageIdToMd5(offset: Int): ByteArray {
-    val result = ByteArray(16)
-    var cur = 0
-    var hasCurrent = false
-    var lastChar: Char = 0.toChar()
-    for (index in offset..this.lastIndex) {
-        val char = this[index]
-        if (char == '-') continue
-        if (hasCurrent) {
-            result[cur++] = (lastChar.hexDigitToByte().shl(4) or char.hexDigitToByte()).toByte()
-            if (cur == 16) return result
-            hasCurrent = false
-        } else {
-            lastChar = char
-            hasCurrent = true
-        }
-    }
-    error("No enough chars")
-}
-
-@OptIn(ExperimentalStdlibApi::class)
-internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
-    return when {
-        imageId.matches(FRIEND_IMAGE_ID_REGEX_1) -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
-        imageId.matches(FRIEND_IMAGE_ID_REGEX_2) ->
-            imageId.imageIdToMd5(1)
-        imageId.matches(GROUP_IMAGE_ID_REGEX) -> {
-            imageId.imageIdToMd5(1)
-        }
-        else -> error(
-            "illegal imageId: $imageId. " +
-                    "ImageId must matches Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
-                    "`${FRIEND_IMAGE_ID_REGEX_2.pattern}` or " +
-                    "`${GROUP_IMAGE_ID_REGEX.pattern}`"
-        )
-    }
-}
-
 
 // endregion
