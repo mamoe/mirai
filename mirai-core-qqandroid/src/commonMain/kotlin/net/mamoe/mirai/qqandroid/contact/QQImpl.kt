@@ -152,7 +152,6 @@ internal class QQImpl(
         }
     } finally {
         (image.input as? Closeable)?.close()
-        (image.input as? Closeable)?.close()
     }
 
     override fun hashCode(): Int {
