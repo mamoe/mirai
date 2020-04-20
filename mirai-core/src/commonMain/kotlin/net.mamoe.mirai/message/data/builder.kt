@@ -14,6 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -53,6 +54,153 @@ class MessageChainBuilder private constructor(
     constructor() : this(mutableListOf())
     constructor(initialSize: Int) : this(ArrayList<SingleMessage>(initialSize))
 
+    override fun add(element: SingleMessage): Boolean {
+        checkBuilt()
+        flushCache()
+        return addAndCheckConstrainSingle(element)
+    }
+
+    fun add(element: Message): Boolean {
+        checkBuilt()
+        flushCache()
+        @Suppress("UNCHECKED_CAST")
+        return when (element) {
+            is ConstrainSingle<*> -> addAndCheckConstrainSingle(element)
+            is SingleMessage -> container.add(element) // no need to constrain
+            is Iterable<*> -> this.addAll(element.flatten())
+            else -> error("stub")
+        }
+    }
+
+    override fun addAll(elements: Collection<SingleMessage>): Boolean {
+        checkBuilt()
+        flushCache()
+        return addAll(elements.flatten())
+    }
+
+    @JvmName("addAllFlatten") // erased generic type cause declaration clash
+    fun addAll(elements: Collection<Message>): Boolean {
+        checkBuilt()
+        flushCache()
+        return addAll(elements.flatten())
+    }
+
+    operator fun Message.unaryPlus() {
+        checkBuilt()
+        flushCache()
+        add(this)
+    }
+
+
+    operator fun String.unaryPlus() {
+        checkBuilt()
+        add(this)
+    }
+
+    operator fun plusAssign(plain: String) {
+        checkBuilt()
+        withCache { append(plain) }
+    }
+
+    operator fun plusAssign(message: Message) {
+        checkBuilt()
+        flushCache()
+        this.add(message)
+    }
+
+    operator fun plusAssign(message: SingleMessage) { // avoid resolution ambiguity
+        checkBuilt()
+        flushCache()
+        this.add(message)
+    }
+
+    fun add(plain: String) {
+        checkBuilt()
+        withCache { append(plain) }
+    }
+
+    operator fun plusAssign(charSequence: CharSequence) {
+        checkBuilt()
+        withCache { append(charSequence) }
+    }
+
+    override fun append(value: Char): MessageChainBuilder = withCache { append(value) }
+    override fun append(value: CharSequence?): MessageChainBuilder = withCache { append(value) }
+    override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): MessageChainBuilder =
+        withCache { append(value, startIndex, endIndex) }
+
+    fun append(message: Message): MessageChainBuilder = apply { add(message) }
+    fun append(message: SingleMessage): MessageChainBuilder = apply { add(message) }
+
+    // avoid resolution to extensions
+    fun asMessageChain(): MessageChain {
+        built = true
+        this.flushCache()
+        return MessageChainImplByCollection(this) // fast-path, no need to constrain
+    }
+
+    /** 同 [asMessageChain] */
+    fun build(): MessageChain = asMessageChain()
+
+    /**
+     * 将所有已有元素引用复制到一个新的 [MessageChainBuilder]
+     */
+    @SinceMirai("0.38.0")
+    fun copy(): MessageChainBuilder {
+        return MessageChainBuilder(container.toMutableList())
+    }
+
+    ///////
+    // FOR IMMUTABLE SAFETY
+
+    override fun remove(element: SingleMessage): Boolean {
+        checkBuilt()
+        return container.remove(element)
+    }
+
+    override fun removeAll(elements: Collection<SingleMessage>): Boolean {
+        checkBuilt()
+        return container.removeAll(elements)
+    }
+
+    override fun removeAt(index: Int): SingleMessage {
+        checkBuilt()
+        return container.removeAt(index)
+    }
+
+    override fun clear() {
+        checkBuilt()
+        return container.clear()
+    }
+
+    override fun set(index: Int, element: SingleMessage): SingleMessage {
+        checkBuilt()
+        return container.set(index, element)
+    }
+
+    ///////
+    // IMPLEMENTATION
+    private var cache: StringBuilder? = null
+    private fun flushCache() {
+        cache?.let {
+            container.add(it.toString().toMessage())
+        }
+        cache = null
+    }
+
+    private inline fun withCache(block: StringBuilder.() -> Unit): MessageChainBuilder {
+        checkBuilt()
+        if (cache == null) {
+            cache = StringBuilder().apply(block)
+        } else {
+            cache!!.apply(block)
+        }
+        return this
+    }
+
+    private var built = false
+    private fun checkBuilt() = check(!built) { "MessageChainBuilder is already built therefore can't modify" }
+
     private var firstConstrainSingleIndex = -1
 
     private fun addAndCheckConstrainSingle(element: SingleMessage): Boolean {
@@ -75,93 +223,4 @@ class MessageChainBuilder private constructor(
             return container.add(element)
         }
     }
-
-    override fun add(element: SingleMessage): Boolean {
-        flushCache()
-        return addAndCheckConstrainSingle(element)
-    }
-
-    fun add(element: Message): Boolean {
-        flushCache()
-        @Suppress("UNCHECKED_CAST")
-        return when (element) {
-            is ConstrainSingle<*> -> addAndCheckConstrainSingle(element)
-            is SingleMessage -> container.add(element) // no need to constrain
-            is Iterable<*> -> this.addAll(element.flatten())
-            else -> error("stub")
-        }
-    }
-
-    override fun addAll(elements: Collection<SingleMessage>): Boolean {
-        flushCache()
-        return addAll(elements.flatten())
-    }
-
-    @JvmName("addAllFlatten") // erased generic type cause declaration clash
-    fun addAll(elements: Collection<Message>): Boolean {
-        flushCache()
-        return addAll(elements.flatten())
-    }
-
-    operator fun Message.unaryPlus() {
-        flushCache()
-        add(this)
-    }
-
-
-    operator fun String.unaryPlus() {
-        add(this)
-    }
-
-    operator fun plusAssign(plain: String) {
-        withCache { append(plain) }
-    }
-
-    operator fun plusAssign(message: Message) {
-        flushCache()
-        this.add(message)
-    }
-
-    operator fun plusAssign(message: SingleMessage) { // avoid resolution ambiguity
-        flushCache()
-        this.add(message)
-    }
-
-    fun add(plain: String) {
-        withCache { append(plain) }
-    }
-
-    private var cache: StringBuilder? = null
-    private fun flushCache() {
-        cache?.let {
-            container.add(it.toString().toMessage())
-        }
-        cache = null
-    }
-
-    private inline fun withCache(block: StringBuilder.() -> Unit): MessageChainBuilder {
-        if (cache == null) {
-            cache = StringBuilder().apply(block)
-        } else {
-            cache!!.apply(block)
-        }
-        return this
-    }
-
-    operator fun plusAssign(charSequence: CharSequence) {
-        withCache { append(charSequence) }
-    }
-
-    override fun append(value: Char): Appendable = withCache { append(value) }
-    override fun append(value: CharSequence?): Appendable = withCache { append(value) }
-    override fun append(value: CharSequence?, startIndex: Int, endIndex: Int) =
-        withCache { append(value, startIndex, endIndex) }
-
-    fun asMessageChain(): MessageChain {
-        this.flushCache()
-        return MessageChainImplByCollection(this) // fast-path, no need to constrain
-    }
-
-    /** 同 [asMessageChain] */
-    fun build(): MessageChain = asMessageChain()
 }

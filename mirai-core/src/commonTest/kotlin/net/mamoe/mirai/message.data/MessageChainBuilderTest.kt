@@ -21,11 +21,11 @@ internal class MessageChainBuilderTest {
             +PlainText("foo")
             +" "
             +(PlainText("bar") + " goo ")
-            +buildMessageChain {
+            buildMessageChain {
                 +"1"
                 +"2"
                 +"3"
-            }
+            }.joinTo(this)
         }
 
         assertEquals("test foo bar goo 123", chain.toString())
