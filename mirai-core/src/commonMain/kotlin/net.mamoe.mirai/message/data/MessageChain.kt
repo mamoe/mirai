@@ -60,6 +60,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      * @throws NoSuchElementException 当找不到这个类型的 [Message] 时
      */
+    @JvmName("first")
     operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
 
     /**
@@ -92,6 +93,12 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     fun `__forEach for Java__`(block: (Message) -> Unit) {
         this.forEach(block)
     }
+
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
+    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
+    @JvmName("get")
+    fun <M : Message> get2(key: Message.Key<M>): M = first(key)
 }
 
 // region accessors
