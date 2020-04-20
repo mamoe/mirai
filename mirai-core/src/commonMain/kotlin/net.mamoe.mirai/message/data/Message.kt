@@ -17,6 +17,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -266,7 +267,10 @@ interface SingleMessage : Message, CharSequence, Comparable<String> {
 
 /**
  * 消息元数据, 即不含内容的元素.
- * 包括: [MessageSource]
+ *
+ * @see MessageSource 消息源
+ * @see QuoteReply 引用回复
+ * @see CustomMessageMetadata 自定义元数据
  *
  * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
@@ -288,6 +292,14 @@ interface ConstrainSingle<out M : Message> : MessageMetadata {
 
 /**
  * 消息内容
+ *
+ * @see PlainText 纯文本
+ * @see At At 一个群成员.
+ * @see AtAll At 全体成员
+ * @see HummerMessage 一些特殊消息: [戳一戳][PokeMessage], [闪照][FlashImage]
+ * @see Image 图片
+ * @see RichMessage 富文本
+ * @see Face 原生表情
  */
 interface MessageContent : SingleMessage
 

@@ -31,6 +31,8 @@ import net.mamoe.mirai.utils.*
  * **实现方法**:
  *
  * @sample samples.CustomMessageIdentifier 实现示例
+ *
+ * @see CustomMessageMetadata
  */
 @SinceMirai("0.38.0")
 @MiraiExperimentalAPI

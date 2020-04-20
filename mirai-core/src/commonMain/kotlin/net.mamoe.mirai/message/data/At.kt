@@ -25,7 +25,7 @@ import kotlin.jvm.JvmSynthetic
 
 
 /**
- * At 一个人. 只能发送给一个群.
+ * At 一个群成员. 只能发送给一个群.
  *
  * @see AtAll 全体成员
  */
