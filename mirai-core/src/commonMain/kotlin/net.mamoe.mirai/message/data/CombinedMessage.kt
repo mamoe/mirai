@@ -34,7 +34,7 @@ internal constructor(
     @JvmField internal val left: Message, // 必须已经完成 constrain single
     @JvmField internal val tail: Message
 ) : Message, MessageChain {
-    @OptIn(MiraiExperimentalAPI::class)
+
     fun asSequence(): Sequence<SingleMessage> = sequence {
         yieldCombinedOrElementsFlatten(this@CombinedMessage)
     }
@@ -43,12 +43,13 @@ internal constructor(
         return asSequence().iterator()
     }
 
-    override val size: Int by lazy {
-        var size = 0
-        size += if (left is MessageChain) left.size else 1
-        size += if (tail is MessageChain) tail.size else 1
-        size
-    }
+    override val size: Int
+        get() = kotlin.run {
+            var size = 0
+            size += if (left is MessageChain) left.size else 1
+            size += if (tail is MessageChain) tail.size else 1
+            size
+        }
 
     override fun equals(other: Any?): Boolean {
         return other is CombinedMessage && other.left == this.left && other.tail == this.tail
@@ -76,7 +77,7 @@ internal constructor(
 private suspend fun SequenceScope<SingleMessage>.yieldCombinedOrElementsFlatten(message: Message) {
     when (message) {
         is CombinedMessage -> {
-            // fast path, 避免创建新的 iterator, 也不会挂起协程
+            // fast path
             yieldCombinedOrElementsFlatten(message.left)
             yieldCombinedOrElementsFlatten(message.tail)
         }
