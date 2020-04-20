@@ -60,15 +60,18 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      * @throws NoSuchElementException 当找不到这个类型的 [Message] 时
      */
+    @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("first")
-    operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
+    /* final */ operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
 
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例, 找不到则返回 `null`
      *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
-    fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @JvmName("firstOrNull")
+            /* final */ fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
 
     /**
      * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply].
@@ -94,11 +97,19 @@ interface MessageChain : Message, Iterable<SingleMessage> {
         this.forEach(block)
     }
 
+    @PlannedRemoval("1.0.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @JvmSynthetic
     @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
     @JvmName("get")
     fun <M : Message> get2(key: Message.Key<M>): M = first(key)
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmSynthetic
+    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
+    @JvmName("getOrNull")
+    fun <M : Message> getOrNull2(key: Message.Key<M>): M? = getOrNull(key)
 }
 
 // region accessors
