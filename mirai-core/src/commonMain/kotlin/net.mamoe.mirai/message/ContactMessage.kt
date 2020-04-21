@@ -29,8 +29,8 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.selectMessages
-import net.mamoe.mirai.event.subscribingGet
-import net.mamoe.mirai.event.subscribingGetOrNull
+import net.mamoe.mirai.event.syncFromEvent
+import net.mamoe.mirai.event.syncFromEventOrNull
 import net.mamoe.mirai.event.whileSelectMessages
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -225,16 +225,16 @@ fun ContactMessage.isContextIdenticalWith(another: ContactMessage): Boolean {
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
+ * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  *
- * @see subscribingGet
+ * @see syncFromEvent
  */
 @JvmSynthetic
 suspend inline fun <reified P : ContactMessage> P.nextMessage(
     timeoutMillis: Long = -1,
     crossinline filter: suspend P.(P) -> Boolean
 ): MessageChain {
-    return subscribingGet<P, P>(timeoutMillis) {
+    return syncFromEvent<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
     }.message
 }
@@ -245,17 +245,17 @@ suspend inline fun <reified P : ContactMessage> P.nextMessage(
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [subscribingGet] 会返回这个值
+ * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  * @return 消息链. 超时时返回 `null`
  *
- * @see subscribingGetOrNull
+ * @see syncFromEventOrNull
  */
 @JvmSynthetic
 suspend inline fun <reified P : ContactMessage> P.nextMessageOrNull(
     timeoutMillis: Long = -1,
     crossinline filter: suspend P.(P) -> Boolean
 ): MessageChain? {
-    return subscribingGetOrNull<P, P>(timeoutMillis) {
+    return syncFromEventOrNull<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }?.takeIf { filter(it, it) }
     }?.message
 }
@@ -267,13 +267,13 @@ suspend inline fun <reified P : ContactMessage> P.nextMessageOrNull(
  *
  * @throws TimeoutCancellationException
  *
- * @see subscribingGet
+ * @see syncFromEvent
  */
 @JvmSynthetic
 suspend inline fun <reified P : ContactMessage> P.nextMessage(
     timeoutMillis: Long = -1
 ): MessageChain {
-    return subscribingGet<P, P>(timeoutMillis) {
+    return syncFromEvent<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }
     }.message
 }
@@ -288,7 +288,7 @@ inline fun <reified P : ContactMessage> P.nextMessageAsync(
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Deferred<MessageChain> {
     return this.bot.async(coroutineContext) {
-        subscribingGet<P, P>(timeoutMillis) {
+        syncFromEvent<P, P>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageAsync) }
         }.message
     }
@@ -304,7 +304,7 @@ inline fun <reified P : ContactMessage> P.nextMessageAsync(
     crossinline filter: suspend P.(P) -> Boolean
 ): Deferred<MessageChain> {
     return this.bot.async(coroutineContext) {
-        subscribingGet<P, P>(timeoutMillis) {
+        syncFromEvent<P, P>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageAsync) }
                 .takeIf { filter(this, this) }
         }.message
@@ -319,13 +319,13 @@ inline fun <reified P : ContactMessage> P.nextMessageAsync(
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @return 消息链. 超时时返回 `null`
  *
- * @see subscribingGetOrNull
+ * @see syncFromEventOrNull
  */
 @JvmSynthetic
 suspend inline fun <reified P : ContactMessage> P.nextMessageOrNull(
     timeoutMillis: Long = -1
 ): MessageChain? {
-    return subscribingGetOrNull<P, P>(timeoutMillis) {
+    return syncFromEventOrNull<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }
     }?.message
 }
@@ -339,7 +339,7 @@ inline fun <reified P : ContactMessage> P.nextMessageOrNullAsync(
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Deferred<MessageChain?> {
     return this.bot.async(coroutineContext) {
-        subscribingGetOrNull<P, P>(timeoutMillis) {
+        syncFromEventOrNull<P, P>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageOrNullAsync) }
         }?.message
     }
@@ -352,7 +352,7 @@ inline fun <reified P : ContactMessage> P.nextMessageOrNullAsync(
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  *
- * @see subscribingGet
+ * @see syncFromEvent
  * @see whileSelectMessages
  * @see selectMessages
  */
@@ -360,7 +360,7 @@ inline fun <reified P : ContactMessage> P.nextMessageOrNullAsync(
 suspend inline fun <reified M : Message> ContactMessage.nextMessageContaining(
     timeoutMillis: Long = -1
 ): M {
-    return subscribingGet<ContactMessage, ContactMessage>(timeoutMillis) {
+    return syncFromEvent<ContactMessage, ContactMessage>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageContaining) }
             .takeIf { this.message.anyIsInstance<M>() }
     }.message.firstIsInstance()
@@ -373,7 +373,7 @@ inline fun <reified M : Message> ContactMessage.nextMessageContainingAsync(
 ): Deferred<M> {
     return this.bot.async(coroutineContext) {
         @Suppress("RemoveExplicitTypeArguments")
-        subscribingGet<ContactMessage, ContactMessage>(timeoutMillis) {
+        syncFromEvent<ContactMessage, ContactMessage>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageContainingAsync) }
                 .takeIf { this.message.anyIsInstance<M>() }
         }.message.firstIsInstance<M>()
@@ -388,13 +388,13 @@ inline fun <reified M : Message> ContactMessage.nextMessageContainingAsync(
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @return 指定类型的消息. 超时时返回 `null`
  *
- * @see subscribingGetOrNull
+ * @see syncFromEventOrNull
  */
 @JvmSynthetic
 suspend inline fun <reified M : Message> ContactMessage.nextMessageContainingOrNull(
     timeoutMillis: Long = -1
 ): M? {
-    return subscribingGetOrNull<ContactMessage, ContactMessage>(timeoutMillis) {
+    return syncFromEventOrNull<ContactMessage, ContactMessage>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNull) }
             .takeIf { this.message.anyIsInstance<M>() }
     }?.message?.firstIsInstance()
@@ -406,7 +406,7 @@ inline fun <reified M : Message> ContactMessage.nextMessageContainingOrNullAsync
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Deferred<M?> {
     return this.bot.async(coroutineContext) {
-        subscribingGetOrNull<ContactMessage, ContactMessage>(timeoutMillis) {
+        syncFromEventOrNull<ContactMessage, ContactMessage>(timeoutMillis) {
             takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNullAsync) }
                 .takeIf { this.message.anyIsInstance<M>() }
         }?.message?.firstIsInstance<M>()
@@ -414,6 +414,7 @@ inline fun <reified M : Message> ContactMessage.nextMessageContainingOrNullAsync
 }
 
 
+@PlannedRemoval("1.0.0")
 @Suppress("DEPRECATION")
 @Deprecated(level = DeprecationLevel.HIDDEN, message = "for binary compatibility")
 fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Boolean {
