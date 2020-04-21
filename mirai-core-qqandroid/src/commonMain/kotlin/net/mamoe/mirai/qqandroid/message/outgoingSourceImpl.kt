@@ -17,8 +17,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.event.asyncFromEventOrNull
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
-import net.mamoe.mirai.event.subscribingGetAsync
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -27,7 +27,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 
 private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
@@ -104,6 +103,7 @@ internal class MessageSourceToTempImpl(
 }
 
 internal class MessageSourceToGroupImpl(
+    coroutineScope: CoroutineScope,
     override val random: Int,
     override val time: Int,
     override val originalMessage: MessageChain,
@@ -115,29 +115,25 @@ internal class MessageSourceToGroupImpl(
     override val bot: Bot
         get() = sender
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
-    private lateinit var sequenceIdDeferred: Deferred<Int>
+
+    private val sequenceIdDeferred: Deferred<Int?> =
+        coroutineScope.asyncFromEventOrNull<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(
+            timeoutMillis = 3000
+        ) {
+            if (it.messageRandom == this@MessageSourceToGroupImpl.random) {
+                it.sequenceId
+            } else null
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val sequenceId: Int
         get() = when {
-            sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted()
+            sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: 0
             !sequenceIdDeferred.isActive -> 0
             else -> error("sequenceId not yet available")
         }
 
-    @OptIn(MiraiExperimentalAPI::class)
-    internal fun startWaitingSequenceId(coroutineScope: CoroutineScope) {
-        sequenceIdDeferred =
-            coroutineScope.subscribingGetAsync<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(
-                timeoutMillis = 3000
-            ) {
-                if (it.messageRandom == this@MessageSourceToGroupImpl.id) {
-                    it.sequenceId
-                } else null
-            }
-    }
-
-    suspend fun ensureSequenceIdAvailable() = sequenceIdDeferred.join()
+    suspend fun ensureSequenceIdAvailable() = kotlin.run { sequenceIdDeferred.await() }
 
     private val jceData by lazy {
         val elements = originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)

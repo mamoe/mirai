@@ -328,7 +328,6 @@ internal class GroupImpl(
                 msg
             ) {
                 source = it
-                source.startWaitingSequenceId(this)
             }.sendAndExpect()
             if (response is MessageSvc.PbSendMsg.Response.Failed) {
                 when (response.resultType) {
@@ -352,6 +351,7 @@ internal class GroupImpl(
                 "Timeout awaiting sequenceId for group message(${message.contentToString()
                     .take(10)}). Some features may not work properly"
             }
+            bot.network.logger.warning(e)
         }
 
         return MessageReceipt(source, this, botAsMember)

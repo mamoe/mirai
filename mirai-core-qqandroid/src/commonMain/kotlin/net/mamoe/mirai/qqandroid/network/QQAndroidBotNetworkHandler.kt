@@ -37,7 +37,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.qqandroid.utils.NoRouteToHostException
 import net.mamoe.mirai.qqandroid.utils.PlatformSocket
 import net.mamoe.mirai.qqandroid.utils.SocketException
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
@@ -315,7 +314,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         this@QQAndroidBotNetworkHandler.launch {
             logger.info { "Awaiting ConfigPushSvc.PushReq" }
             val resp =
-                subscribingGetOrNull<ConfigPushSvc.PushReq.PushReqResponse, ConfigPushSvc.PushReq.PushReqResponse>(
+                syncFromEventOrNull<ConfigPushSvc.PushReq.PushReqResponse, ConfigPushSvc.PushReq.PushReqResponse>(
                     10_000) { it }
 
             when (resp) {
@@ -337,7 +336,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         withTimeoutOrNull(30000) {
-            launch { subscribingGet<MessageSvc.PbGetMsg.GetMsgSuccess, Unit> { Unit } }
+            launch { syncFromEvent<MessageSvc.PbGetMsg.GetMsgSuccess, Unit> { Unit } }
             MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
         } ?: error("timeout syncing friend message history")
 

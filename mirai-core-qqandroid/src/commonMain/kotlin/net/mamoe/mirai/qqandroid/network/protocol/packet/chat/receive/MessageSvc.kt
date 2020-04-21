@@ -468,6 +468,7 @@ internal class MessageSvc {
         ): OutgoingPacket {
 
             val source = MessageSourceToGroupImpl(
+                group,
                 random = Random.nextInt().absoluteValue,
                 sender = client.bot,
                 target = group,
