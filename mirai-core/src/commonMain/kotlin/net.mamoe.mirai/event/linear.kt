@@ -79,6 +79,7 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
  * @param coroutineContext 额外的 [CoroutineContext]
  * @param mapper 过滤转换器. 返回非 `null` 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  */
+@JvmSynthetic
 @Suppress("DeferredIsResult")
 @SinceMirai("0.38.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
@@ -102,6 +103,7 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
  * @param coroutineContext 额外的 [CoroutineContext]
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  */
+@JvmSynthetic
 @Suppress("DeferredIsResult")
 @SinceMirai("0.38.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
@@ -126,13 +128,10 @@ internal suspend fun <E : Event, R> syncFromEventOrNullImpl(
     coroutineScope: CoroutineScope,
     mapper: suspend E.(E) -> R?
 ): R? = suspendCoroutine { cont ->
-    var listener: Listener<E>? = null
-    @Suppress("DuplicatedCode") // for better performance
-    listener = coroutineScope.subscribe(eventClass) {
+    coroutineScope.subscribe(eventClass) {
         cont.resumeWith(kotlin.runCatching {
             mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING
         })
-        listener!!.complete()
         return@subscribe ListeningStatus.STOPPED
     }
 }
