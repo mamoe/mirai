@@ -15,7 +15,6 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.coroutines.suspendCoroutine
 import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KClass
 
@@ -37,7 +36,16 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
-    return syncFromEventOrNull(timeoutMillis, mapper) ?: error("timeout $timeoutMillis ms asyncFromEvent")
+
+    return if (timeoutMillis == -1L) {
+        coroutineScope {
+            syncFromEventImpl<E, R>(E::class, this, mapper)
+        }
+    } else {
+        withTimeout(timeoutMillis) {
+            syncFromEventImpl<E, R>(E::class, this, mapper)
+        }
+    }
 }
 
 /**
@@ -54,19 +62,13 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
 @JvmSynthetic
 @SinceMirai("0.38.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
-    timeoutMillis: Long = -1,
+    timeoutMillis: Long,
     noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): R? {
-    require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
+    require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
 
-    return if (timeoutMillis == -1L) {
-        coroutineScope {
-            syncFromEventOrNullImpl<E, R>(E::class, this, mapper)
-        }
-    } else {
-        withTimeoutOrNull(timeoutMillis) {
-            syncFromEventOrNullImpl<E, R>(E::class, this, mapper)
-        }
+    return withTimeoutOrNull(timeoutMillis) {
+        syncFromEventImpl<E, R>(E::class, this, mapper)
     }
 }
 
@@ -83,7 +85,7 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
 @Suppress("DeferredIsResult")
 @SinceMirai("0.38.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
-    timeoutMillis: Long = -1,
+    timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): Deferred<R?> {
@@ -123,11 +125,11 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 //////////////
 
 @PublishedApi
-internal suspend fun <E : Event, R> syncFromEventOrNullImpl(
+internal suspend fun <E : Event, R> syncFromEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
     mapper: suspend E.(E) -> R?
-): R? = suspendCoroutine { cont ->
+): R = suspendCancellableCoroutine { cont ->
     coroutineScope.subscribe(eventClass) {
         cont.resumeWith(kotlin.runCatching {
             mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING
