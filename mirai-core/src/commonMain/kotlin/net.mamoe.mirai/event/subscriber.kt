@@ -20,9 +20,6 @@ import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmName
@@ -125,7 +122,7 @@ interface Listener<in E : Event> : CompletableJob {
  * @param concurrency 并发类型. 查看 [Listener.ConcurrencyKind]
  *
  * @see syncFromEvent 监听一个事件, 并尝试从这个事件中获取一个值.
- * @see syncFromEventAsync 异步监听一个事件, 并尝试从这个事件中获取一个值.
+ * @see asyncFromEvent 异步监听一个事件, 并尝试从这个事件中获取一个值.
  *
  * @see selectMessages 以 `when` 的语法 '选择' 即将到来的一条消息.
  * @see whileSelectMessages 以 `when` 的语法 '选择' 即将到来的所有消息, 直到不满足筛选结果.
@@ -137,17 +134,11 @@ interface Listener<in E : Event> : CompletableJob {
  * @see subscribeGroupMessages  监听群消息 DSL
  * @see subscribeFriendMessages 监听好友消息 DSL
  */
-@OptIn(ExperimentalContracts::class)
 inline fun <reified E : Event> CoroutineScope.subscribe(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     noinline handler: suspend E.(E) -> ListeningStatus
-): Listener<E> {
-    contract {
-        callsInPlace(handler, InvocationKind.UNKNOWN)
-    }
-    return subscribe(E::class, coroutineContext, concurrency, handler)
-}
+): Listener<E> = subscribe(E::class, coroutineContext, concurrency, handler)
 
 /**
  * @see CoroutineScope.subscribe
@@ -158,8 +149,7 @@ fun <E : Event> CoroutineScope.subscribe(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     handler: suspend E.(E) -> ListeningStatus
-): Listener<E> =
-    eventClass.subscribeInternal(Handler(coroutineContext, concurrency) { it.handler(it); })
+): Listener<E> = eventClass.subscribeInternal(Handler(coroutineContext, concurrency) { it.handler(it); })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
@@ -172,36 +162,24 @@ fun <E : Event> CoroutineScope.subscribe(
  *
  * @see CoroutineScope.subscribe 获取更多说明
  */
-@OptIn(ExperimentalContracts::class)
 inline fun <reified E : Event> CoroutineScope.subscribeAlways(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     noinline listener: suspend E.(E) -> Unit
-): Listener<E> {
-    contract {
-        callsInPlace(listener, InvocationKind.UNKNOWN)
-    }
-    return subscribeAlways(E::class, coroutineContext, concurrency, listener)
-}
+): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, listener)
 
 /**
  * @see CoroutineScope.subscribeAlways
  */
 @SinceMirai("0.38.0")
-@OptIn(ExperimentalContracts::class)
 fun <E : Event> CoroutineScope.subscribeAlways(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     listener: suspend E.(E) -> Unit
-): Listener<E> {
-    contract {
-        callsInPlace(listener, InvocationKind.UNKNOWN)
-    }
-    return eventClass.subscribeInternal(
-        Handler(coroutineContext, concurrency) { it.listener(it); ListeningStatus.LISTENING }
-    )
-}
+): Listener<E> = eventClass.subscribeInternal(
+    Handler(coroutineContext, concurrency) { it.listener(it); ListeningStatus.LISTENING }
+)
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
@@ -228,10 +206,9 @@ fun <E : Event> CoroutineScope.subscribeOnce(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     listener: suspend E.(E) -> Unit
-): Listener<E> =
-    eventClass.subscribeInternal(
-        Handler(coroutineContext, Listener.ConcurrencyKind.LOCKED) { it.listener(it); ListeningStatus.STOPPED }
-    )
+): Listener<E> = eventClass.subscribeInternal(
+    Handler(coroutineContext, Listener.ConcurrencyKind.LOCKED) { it.listener(it); ListeningStatus.STOPPED }
+)
 
 //
 // 以下为带筛选 Bot 的监听
@@ -268,10 +245,9 @@ fun <E : BotEvent> Bot.subscribe(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     handler: suspend E.(E) -> ListeningStatus
-): Listener<E> =
-    eventClass.subscribeInternal(
-        Handler(coroutineContext, concurrency) { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING }
-    )
+): Listener<E> = eventClass.subscribeInternal(
+    Handler(coroutineContext, concurrency) { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING }
+)
 
 
 /**
@@ -303,11 +279,9 @@ fun <E : BotEvent> Bot.subscribeAlways(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listener: suspend E.(E) -> Unit
-): Listener<E> {
-    return eventClass.subscribeInternal(
-        Handler(coroutineContext, concurrency) { if (it.bot === this) it.listener(it); ListeningStatus.LISTENING }
-    )
-}
+): Listener<E> = eventClass.subscribeInternal(
+    Handler(coroutineContext, concurrency) { if (it.bot === this) it.listener(it); ListeningStatus.LISTENING }
+)
 
 /**
  * 在 [Bot] 的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
