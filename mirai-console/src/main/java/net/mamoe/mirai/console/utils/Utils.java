@@ -10,26 +10,29 @@ public class Utils {
      * 否则就会throw
      */
     public static <T> T tryNTimes(
+            /*@Range(from=1, to=Integer.MAX_VALUE)*/
             int n,
             Callable<T> callable
     ) throws Exception {
-
-        T result = null;
+        if (n < 0) {
+            throw new IllegalArgumentException("Must be executed at least once.");
+        }
         Exception last = null;
 
-        while(n-- > 0){
-            try{
-                result = callable.call();
-                break;
-            }catch(Exception e){last=e;}
+        while (n-- > 0) {
+            try {
+                return callable.call();
+            } catch (Exception e) {
+                if (last == null) {
+                    last = e;
+                } else {
+                    last.addSuppressed(e);
+                }
+            }
         }
 
-        if(result != null){
-            return result;
-        }
-
-        if(last == null){
-            last = new Exception("unknown error");
+        if (last == null) {
+            throw new Exception("unknown error");
         }
 
         throw last;

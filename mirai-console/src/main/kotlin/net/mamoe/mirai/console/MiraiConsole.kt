@@ -94,6 +94,9 @@ object MiraiConsole {
         logger("Mirai-console 启动完成")
         logger("\"/login qqnumber qqpassword \" to login a bot")
         logger("\"/login qq号 qq密码 \" 来登录一个BOT")
+
+        /* 尝试从系统配置自动登录 */
+        DefaultCommands.tryLoginAuto()
     }
 
     /**

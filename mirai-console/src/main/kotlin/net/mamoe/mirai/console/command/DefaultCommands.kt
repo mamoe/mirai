@@ -9,14 +9,13 @@
 
 package net.mamoe.mirai.console.command
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.plugins.PluginManager
-import net.mamoe.mirai.console.utils.addManager
-import net.mamoe.mirai.console.utils.checkManager
-import net.mamoe.mirai.console.utils.managers
-import net.mamoe.mirai.console.utils.removeManager
+import net.mamoe.mirai.console.utils.*
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.getFriendOrNull
@@ -30,6 +29,69 @@ import java.util.*
  */
 
 object DefaultCommands {
+    private suspend fun CommandSender.login(account: Long, password: String) {
+        MiraiConsole.logger("[Bot Login]", 0, "login...")
+        try {
+            MiraiConsole.frontEnd.prePushBot(account)
+            val bot = Bot(account, password) {
+                fileBasedDeviceInfo()
+                this.loginSolver = MiraiConsole.frontEnd.createLoginSolver()
+                this.botLoggerSupplier = {
+                    SimpleLogger("BOT $account]") { _, message, e ->
+                        MiraiConsole.logger("[BOT $account]", account, message)
+                        if (e != null) {
+                            MiraiConsole.logger("[NETWORK ERROR]", account, e)//因为在一页 所以可以不打QQ
+                        }
+                    }
+                }
+                this.networkLoggerSupplier = {
+                    SimpleLogger("BOT $account") { _, message, e ->
+                        MiraiConsole.logger("[NETWORK]", account, message)//因为在一页 所以可以不打QQ
+                        if (e != null) {
+                            MiraiConsole.logger("[NETWORK ERROR]", account, e)//因为在一页 所以可以不打QQ
+                        }
+                    }
+                }
+            }
+            bot.login()
+            bot.subscribeMessages {
+                startsWith("/") { message ->
+                    if (bot.checkManager(this.sender.id)) {
+                        val sender = if (this is GroupMessage) {
+                            GroupContactCommandSender(this.sender, this.subject)
+                        } else {
+                            ContactCommandSender(this.subject)
+                        }
+                        CommandManager.runCommand(
+                            sender, message
+                        )
+                    }
+                }
+            }
+            sendMessage("$account login successes")
+            MiraiConsole.frontEnd.pushBot(bot)
+        } catch (e: Exception) {
+            sendMessage("$account login failed -> " + e.message)
+        }
+    }
+
+    private fun String.property(): String? = System.getProperty(this)
+
+    @JvmSynthetic
+    internal fun tryLoginAuto() {
+        // For java -Dmirai.account=10086 -Dmirai.password=Password -jar mirai-console-wrapper-X.jar
+        val account = ("mirai.account".property() ?: return).toLong()
+        val password = "mirai.password".property() ?: "mirai.passphrase".property() ?: "mirai.passwd".property()
+        if (password == null) {
+            MiraiConsole.logger.invoke(SimpleLogger.LogPriority.ERROR, "[AUTO LOGIN]", account,
+                "Find the account to be logged in, but no password specified")
+            return
+        }
+        GlobalScope.launch {
+            ConsoleCommandSender.login(account, password)
+        }
+    }
+
     operator fun invoke() {
         registerConsoleCommands {
             name = "manager"
@@ -68,8 +130,11 @@ object DefaultCommands {
                             MiraiConsole.logger("[Bot Manager]", 0, it[2] + " 不是一个ID")
                             return@onCommand false
                         }
-                        bot.addManager(adminID)
-                        MiraiConsole.logger("[Bot Manager]", 0, it[2] + "增加成功")
+                        if (bot.addManager(adminID)) {
+                            MiraiConsole.logger("[Bot Manager]", 0, it[2] + "增加成功")
+                        } else {
+                            MiraiConsole.logger("[Bot Manager]", 0, it[2] + "已经是一个manager了")
+                        }
                     }
                     "remove" -> {
                         if (it.size < 3) {
@@ -99,7 +164,7 @@ object DefaultCommands {
             }
         }
 
-        registerConsoleCommands{
+        registerConsoleCommands {
             name = "login"
             description = "机器人登录"
             onCommand {
@@ -114,49 +179,7 @@ object DefaultCommands {
                 }
                 val qqNumber = it[0].toLong()
                 val qqPassword = it[1]
-                MiraiConsole.logger("[Bot Login]", 0, "login...")
-                try {
-                    MiraiConsole.frontEnd.prePushBot(qqNumber)
-                    val bot = Bot(qqNumber, qqPassword) {
-                        fileBasedDeviceInfo()
-                        this.loginSolver = MiraiConsole.frontEnd.createLoginSolver()
-                        this.botLoggerSupplier = {
-                            SimpleLogger("BOT $qqNumber]") { _, message, e ->
-                                MiraiConsole.logger("[BOT $qqNumber]", qqNumber, message)
-                                if (e != null) {
-                                    MiraiConsole.logger("[NETWORK ERROR]", qqNumber, e)//因为在一页 所以可以不打QQ
-                                }
-                            }
-                        }
-                        this.networkLoggerSupplier = {
-                            SimpleLogger("BOT $qqNumber") { _, message, e ->
-                                MiraiConsole.logger("[NETWORK]", qqNumber, message)//因为在一页 所以可以不打QQ
-                                if (e != null) {
-                                    MiraiConsole.logger("[NETWORK ERROR]", qqNumber, e)//因为在一页 所以可以不打QQ
-                                }
-                            }
-                        }
-                    }
-                    bot.login()
-                    bot.subscribeMessages {
-                        startsWith("/") { message ->
-                            if (bot.checkManager(this.sender.id)) {
-                                val sender = if(this is GroupMessage) {
-                                    GroupContactCommandSender(this.sender,this.subject)
-                                }else{
-                                    ContactCommandSender(this.subject)
-                                }
-                                CommandManager.runCommand(
-                                    sender, message
-                                )
-                            }
-                        }
-                    }
-                    sendMessage("$qqNumber login successes")
-                    MiraiConsole.frontEnd.pushBot(bot)
-                } catch (e: Exception) {
-                    sendMessage("$qqNumber login failed -> " + e.message)
-                }
+                login(qqNumber, qqPassword)
                 true
             }
         }
@@ -278,7 +301,7 @@ object DefaultCommands {
             name = "reload"
             alias = listOf("reloadPlugins")
             description = "重新加载全部插件"
-            onCommand{
+            onCommand {
                 PluginManager.reloadPlugins()
                 sendMessage("重新加载完成")
                 true
@@ -293,7 +316,7 @@ object DefaultCommands {
 
                 val center = PluginCenter.Default
 
-                suspend fun showPage(num:Int){
+                suspend fun showPage(num: Int) {
                     sendMessage("正在连接" + center.name)
                     val list = PluginCenter.Default.fetchPlugin(num)
                     appendMessage("\n")
@@ -302,36 +325,36 @@ object DefaultCommands {
                     }
                 }
 
-                suspend fun installPlugin(name: String){
+                suspend fun installPlugin(name: String) {
                     sendMessage("正在连接" + center.name)
                     val plugin = center.findPlugin(name)
-                    if(plugin == null){
+                    if (plugin == null) {
                         sendMessage("插件未找到, 请注意大小写")
                         return
                     }
                     sendMessage("正在安装" + plugin.name)
-                    try{
-                       center.downloadPlugin(name){}
+                    try {
+                        center.downloadPlugin(name) {}
                         sendMessage("安装" + plugin.name + "成功")
-                    }catch (e: Exception){
-                        sendMessage("安装" + plugin.name + "失败, "  + (e.message?:"未知原因"))
+                    } catch (e: Exception) {
+                        sendMessage("安装" + plugin.name + "失败, " + (e.message ?: "未知原因"))
                     }
                 }
 
-                if(it.isEmpty()){
+                if (it.isEmpty()) {
                     showPage(1)
-                }else{
+                } else {
                     val arg = it[0]
 
-                    val id = try{
-                         arg.toInt()
-                    }catch (e:Exception){
+                    val id = try {
+                        arg.toInt()
+                    } catch (e: Exception) {
                         0
                     }
 
-                    if(id > 0){
+                    if (id > 0) {
                         showPage(id)
-                    }else{
+                    } else {
                         installPlugin(arg)
                     }
                 }

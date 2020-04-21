@@ -2,6 +2,10 @@
 
 import kotlin.math.pow
 
+tasks.withType(JavaCompile::class.java) {
+    options.encoding = "UTF8"
+}
+
 buildscript {
     repositories {
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")

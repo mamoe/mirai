@@ -23,11 +23,22 @@ internal object BotManagers {
     val BOT_MANAGERS: ConfigSection by config.withDefaultWriteSave { ConfigSectionImpl() }
 }
 
-fun Bot.addManager(long: Long) {
+@JvmName("addManager")
+@JvmSynthetic
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+fun Bot.addManagerDeprecated(long: Long) {
+    addManager(long)
+}
+
+fun Bot.addManager(long: Long): Boolean {
     BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
     BOT_MANAGERS[this.id.toString()] =
-        (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply { add(long) }
+        (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply {
+            if (contains(long)) return@addManager false
+            add(long)
+        }
     BotManagers.config.save()
+    return true
 }
 
 fun Bot.removeManager(long: Long) {
@@ -48,6 +59,6 @@ fun Bot.checkManager(long: Long): Boolean {
 }
 
 
-fun getBotManagers(bot:Bot):List<Long>{
+fun getBotManagers(bot: Bot): List<Long> {
     return bot.managers
 }
