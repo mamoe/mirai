@@ -58,6 +58,9 @@ expect interface Image : Message, MessageContent {
  * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
  *
  * 请查看 `ExternalImageJvm` 获取更多创建 [Image] 的方法
+ *
+ * @see Image 获取更多说明
+ * @see Image.imageId 获取更多说明
  */
 @Suppress("FunctionName")
 @JsName("newImage")
