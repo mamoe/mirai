@@ -78,8 +78,14 @@ open class MessageChainBuilder private constructor(
         return addAll(elements.flatten())
     }
 
+    fun addAll(elements: Iterable<SingleMessage>): Boolean {
+        checkBuilt()
+        flushCache()
+        return addAll(elements.flatten())
+    }
+
     @JvmName("addAllFlatten") // erased generic type cause declaration clash
-    fun addAll(elements: Collection<Message>): Boolean {
+    fun addAll(elements: Iterable<Message>): Boolean {
         checkBuilt()
         flushCache()
         return addAll(elements.flatten())
