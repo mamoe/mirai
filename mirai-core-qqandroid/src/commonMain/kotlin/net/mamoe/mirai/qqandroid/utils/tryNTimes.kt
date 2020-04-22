@@ -24,7 +24,7 @@ internal expect fun Throwable.addSuppressedMirai(e: Throwable)
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
 @kotlin.internal.InlineOnly
 internal inline fun <R> retryCatching(n: Int, except: KClass<out Throwable>? = null, block: () -> R): Result<R> {
-    require(n >= 0) { "param n for retryCatching must not be negative" }
+    require(n > 0) { "param n for retryCatching must not be negative" }
     var exception: Throwable? = null
     repeat(n) {
         try {

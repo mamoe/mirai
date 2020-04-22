@@ -126,11 +126,14 @@ internal open class QQAndroidClient(
     lateinit var fileStoragePushFSSvcList: FileStoragePushFSSvcListFuckKotlin
 
     internal suspend inline fun useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
+        if (bot.client.serverList.isEmpty()) {
+            throw NoServerAvailableException(null)
+        }
         retryCatching(bot.client.serverList.size, except = LoginFailedException::class) {
             val pair = bot.client.serverList.random()
             kotlin.runCatching {
                 block(pair.first, pair.second)
-                return
+                return@retryCatching
             }.getOrElse {
                 bot.client.serverList.remove(pair)
                 bot.logger.warning(it)

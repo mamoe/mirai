@@ -107,25 +107,37 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                     }
                     bot.logger.info { "Connection dropped by server or lost, retrying login" }
 
-                    retryCatching(configuration.reconnectionRetryTimes,
-                        except = LoginFailedException::class) { tryCount, _ ->
-                        if (tryCount != 0) {
-                            delay(configuration.reconnectPeriodMillis)
+                    tailrec suspend fun reconnect() {
+                        retryCatching<Unit>(configuration.reconnectionRetryTimes,
+                            except = LoginFailedException::class) { tryCount, _ ->
+                            if (tryCount != 0) {
+                                delay(configuration.reconnectPeriodMillis)
+                            }
+                            network.withConnectionLock {
+                                /**
+                                 * [BotImpl.relogin] only, no [BotNetworkHandler.init]
+                                 */
+                                @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
+                                relogin((event as? BotOfflineEvent.Dropped)?.cause)
+                            }
+                            logger.info { "Reconnected successfully" }
+                            BotReloginEvent(bot, (event as? BotOfflineEvent.Dropped)?.cause).broadcast()
+                            return
+                        }.getOrElse {
+                            if (it is LoginFailedException && !it.killBot) {
+                                logger.info { "Cannot reconnect" }
+                                logger.warning(it)
+                                logger.info { "Retrying in 3s..." }
+                                delay(3000)
+                                return@getOrElse
+                            }
+                            logger.info { "Cannot reconnect" }
+                            throw it
                         }
-                        network.withConnectionLock {
-                            /**
-                             * [BotImpl.relogin] only, no [BotNetworkHandler.init]
-                             */
-                            @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-                            relogin((event as? BotOfflineEvent.Dropped)?.cause)
-                        }
-                        logger.info { "Reconnected successfully" }
-                        BotReloginEvent(bot, (event as? BotOfflineEvent.Dropped)?.cause).broadcast()
-                        return@subscribeAlways
-                    }.getOrElse {
-                        logger.info { "Cannot reconnect" }
-                        throw it
+                        reconnect()
                     }
+
+                    reconnect()
                 }
                 is BotOfflineEvent.Active -> {
                     val msg = if (event.cause == null) {
@@ -158,7 +170,14 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                         relogin(null)
                         return
                     } catch (e: LoginFailedException) {
-                        throw e
+                        if (e.killBot) {
+                            throw e
+                        } else {
+                            logger.warning("Login failed. Retrying in 3s...")
+                            _network.closeAndJoin(e)
+                            delay(3000)
+                            continue
+                        }
                     } catch (e: Exception) {
                         network.logger.error(e)
                         _network.closeAndJoin(e)
