@@ -33,7 +33,7 @@ import kotlin.reflect.KClass
 @SinceMirai("0.39.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     timeoutMillis: Long = -1,
-    noinline mapper: suspend E.(E) -> R?// 不要 crossinline: crossinline 后 stacktrace 会不正常
+    crossinline mapper: suspend E.(E) -> R?
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
 
@@ -63,7 +63,7 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
 @SinceMirai("0.39.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
-    noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
+    crossinline mapper: suspend E.(E) -> R?
 ): R? {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
 
@@ -87,7 +87,7 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
+    crossinline mapper: suspend E.(E) -> R?
 ): Deferred<R?> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return this.async(coroutineContext) {
@@ -111,7 +111,7 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
+    crossinline mapper: suspend E.(E) -> R?
 ): Deferred<R> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return this.async(coroutineContext) {
@@ -124,11 +124,12 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 //// internal
 //////////////
 
+@JvmSynthetic
 @PublishedApi
-internal suspend fun <E : Event, R> syncFromEventImpl(
+internal suspend inline fun <E : Event, R> syncFromEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
-    mapper: suspend E.(E) -> R?
+    crossinline mapper: suspend E.(E) -> R?
 ): R = suspendCancellableCoroutine { cont ->
     coroutineScope.subscribe(eventClass) {
         cont.resumeWith(kotlin.runCatching {
