@@ -28,6 +28,14 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 **[下载(download)](https://github.com/mamoe/mirai-console/releases)**  
 请下载最新的 `mirai-console-wrapper-x.x.x-all.jar`
 
+你也可以下载这里的一键安装包来快速启动mirai-console **[下载地址](https://suihou-my.sharepoint.com/:f:/g/personal/user18_5tb_site/ErWGr97FpPVDjkboIDmDAJkBID-23ZMNbTPggGajf1zvGw?e=51NZWM)**
+
+**请注意**
+* 使用时请留意安装包里的说明文字
+* 目前本安装包只支持Windows系统，且mirai-console仍在开发中，可能会存在一些bug
+* 关于安装包本身的一切问题请到QQ群内反馈
+* 如果上面的链接下载过慢，你可以到QQ群内高速下载
+
 #### 如何启动
 如果是打包好的软件, 双击<br>
 如果是命令行运行, 请注意运行目录, 推荐cd到jar的文件夹下运行, 运行目录与Console的全部配置文件储存位置有关
@@ -43,7 +51,7 @@ Mirai Console 提供了6个版本以满足各种需要<br>
 |  名称    | 介绍 |
 | --- | --- |
 | Mirai-Console-Pure  |  最纯净版, CLI环境, 通过标准输入与标准输出 交互 |
-| Mirai-Console-Terminal  |  (UNIX)Terminal环境 提供简洁的富文本控制台 |
+| Mirai-Console-Terminal  |  (UNIX)Terminal环境 提供简洁的富文本控制台(暂未发布) |
 | Mirai-Console-Android   |  安卓APP (TODO) |
 | Mirai-Console-Graphical  |  JavaFX的图形化界面 (.jar/.exe/.dmg) |
 | Mirai-Console-WebPanel  |   Web Panel操作(TODO) |
@@ -72,4 +80,11 @@ Mirai Console 提供了6个版本以满足各种需要<br>
     }      
 ``` 
 ----
+对于上面的一键安装包来说，默认的启动版本是`Graphical`，如果你需要启动Pure版本请点击`启动(Pure)`
+
+### 常见问题
+
+#### 我无法正常启动`Graphical`版本
+
+请检查你的Java环境是否带有javafx相关组件；对于Windows用户，我们建议使用上面的一键安装包启动`Graphical`版本
 
