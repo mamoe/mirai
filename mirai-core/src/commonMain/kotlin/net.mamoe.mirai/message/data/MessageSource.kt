@@ -117,14 +117,14 @@ sealed class OnlineMessageSource : MessageSource() {
      * 即类型必定为 [Bot], [QQ] 或 [Member]
      */
     @ExperimentalIdentification
-    abstract val sender: Identified
+    abstract val sender: ContactOrBot
 
     /**
      * 消息发送目标. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群][Group].
      * 即类型必定为 [Bot], [QQ] 或 [Group]
      */
     @ExperimentalIdentification
-    abstract val target: Identified
+    abstract val target: ContactOrBot
 
     /**
      * 消息主体. 群消息时为 [Group]. 好友消息时为 [QQ], 临时消息为 [Member]

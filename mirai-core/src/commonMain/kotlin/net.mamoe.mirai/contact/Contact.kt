@@ -8,6 +8,7 @@
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE", "EXPERIMENTAL_OVERRIDE")
+@file:OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
 
 package net.mamoe.mirai.contact
 
@@ -34,9 +35,8 @@ import kotlin.jvm.JvmSynthetic
  * 联系人. 虽然叫做联系人, 但他的子类有 [QQ], [群成员][Member] 和 [群][Group].
  *
  * @author Him188moe
- */ // 不要删除多平台结构 !!! kotlin bug
-@OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
-abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), Identified {
+ */
+abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot {
     /**
      * 这个联系人所属 [Bot].
      */

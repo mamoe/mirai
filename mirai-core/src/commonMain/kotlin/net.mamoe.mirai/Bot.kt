@@ -50,7 +50,7 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 @OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
-abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(), Identified {
+abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(), ContactOrBot {
     companion object {
         /**
          * 复制一份此时的 [Bot] 实例列表.

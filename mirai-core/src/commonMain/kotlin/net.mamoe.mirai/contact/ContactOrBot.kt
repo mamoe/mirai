@@ -20,23 +20,10 @@ import net.mamoe.mirai.utils.SinceMirai
  * @see Contact
  * @see Bot
  */
-@ExperimentalIdentification("classname may change")
 @SinceMirai("0.37.2")
-interface Identified {
+interface ContactOrBot {
     /**
      * QQ 号或群号.
      */
     val id: Long
 }
-
-
-/**
- * 标记使用实验性 [Identified] 接口.
- */
-@Retention(AnnotationRetention.SOURCE)
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPEALIAS, AnnotationTarget.FUNCTION,
-    AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CONSTRUCTOR)
-annotation class ExperimentalIdentification(
-    val message: String = ""
-)
