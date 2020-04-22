@@ -30,10 +30,10 @@ import kotlin.reflect.KClass
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-@SinceMirai("0.38.0")
+@SinceMirai("0.39.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     timeoutMillis: Long = -1,
-    noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
+    noinline mapper: suspend E.(E) -> R?// 不要 crossinline: crossinline 后 stacktrace 会不正常
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
 
@@ -60,7 +60,7 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-@SinceMirai("0.38.0")
+@SinceMirai("0.39.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
     noinline mapper: suspend E.(E) -> R? // 不要 crossinline: crossinline 后 stacktrace 会不正常
@@ -83,7 +83,7 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
-@SinceMirai("0.38.0")
+@SinceMirai("0.39.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -107,7 +107,7 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
-@SinceMirai("0.38.0")
+@SinceMirai("0.39.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
