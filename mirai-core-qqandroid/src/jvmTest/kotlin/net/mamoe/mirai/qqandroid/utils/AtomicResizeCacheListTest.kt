@@ -30,7 +30,7 @@ internal class AtomicResizeCacheListTest {
         val list = AtomicResizeCacheList<Int>(1000)
         assertTrue { list.ensureNoDuplication(1) }
         runBlocking {
-            delay(1001)
+            delay(1010)
             // because no concurrency guaranteed on same elements
             assertFalse { list.ensureNoDuplication(1) }
             assertTrue { list.ensureNoDuplication(2) }
