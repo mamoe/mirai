@@ -31,6 +31,7 @@ internal class SubscribingGetTest {
                         cont.resume(Unit)
                     }
                 }
+                delay(200)
                 launch {
                     TestEvent().broadcast()
                 }
