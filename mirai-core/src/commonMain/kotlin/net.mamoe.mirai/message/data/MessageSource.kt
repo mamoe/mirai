@@ -63,6 +63,7 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
     /**
      * 内部 id, 仅用于 [Bot.constructMessageSource]
      * 值没有顺序, 也可能为 0, 取决于服务器是否提供.
+     * 在事件中和在引用中无法保证同一条消息的 [internalId] 相同.
      *
      * 仅用于协议实现.
      */

@@ -123,16 +123,24 @@ sealed class MessageRecallEvent : BotEvent {
     abstract val messageId: Int
 
     /**
+     * 消息内部 id.
+     * @see MessageSource.id
+     */
+    @SinceMirai("0.39.0")
+    abstract val messageInternalId: Int
+
+    /**
      * 原发送时间
      */
     abstract val messageTime: Int // seconds
 
     /**
-     * 好友消息撤回事件, 暂不支持解析.
-     */
+     * 好友消息撤回事件, 暂不支持.
+     */ // TODO: 2020/4/22 支持好友消息撤回事件的解析和主动广播
     data class FriendRecall(
         override val bot: Bot,
         override val messageId: Int,
+        override val messageInternalId: Int,
         override val messageTime: Int,
         /**
          * 撤回操作人, 可能为 [Bot.uin] 或好友的 [QQ.id]
@@ -143,10 +151,14 @@ sealed class MessageRecallEvent : BotEvent {
             get() = bot.id
     }
 
+    /**
+     * 群消息撤回事件.
+     */
     data class GroupRecall(
         override val bot: Bot,
         override val authorId: Long,
         override val messageId: Int,
+        override val messageInternalId: Int,
         override val messageTime: Int,
         /**
          * 操作人. 为 null 时则为 [Bot] 操作.

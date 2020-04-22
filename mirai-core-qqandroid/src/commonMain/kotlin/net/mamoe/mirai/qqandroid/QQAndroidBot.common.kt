@@ -313,6 +313,7 @@ internal abstract class QQAndroidBotBase constructor(
                     this,
                     source.fromId,
                     source.id,
+                    source.internalId,
                     source.time,
                     null,
                     group

@@ -381,7 +381,13 @@ internal class OnlinePush {
                     when {
                         pkg.authorUin == bot.id && operator.id == bot.id -> null
                         else -> {
-                            MessageRecallEvent.GroupRecall(bot, pkg.authorUin, pkg.msgRandom, pkg.time, operator, group)
+                            MessageRecallEvent.GroupRecall(bot,
+                                pkg.authorUin,
+                                pkg.seq,
+                                pkg.msgRandom,
+                                pkg.time,
+                                operator,
+                                group)
                         }
                     }
                 }
