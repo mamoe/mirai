@@ -13,7 +13,6 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.event.TestEvent
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.syncFromEvent
-import net.mamoe.mirai.test.runBlocking
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.resume
@@ -23,16 +22,16 @@ import kotlin.test.assertFailsWith
 internal class SubscribingGetTest {
 
     @Test
-    fun testSyncFromEvent(): Unit = runBlocking {
-        withTimeout(500) {
+    fun testSyncFromEvent() {
+        runBlockingWithTimeout(1000) {
             suspendCancellableCoroutine<Unit> { cont ->
                 launch {
-                    syncFromEvent(5000) { _: TestEvent ->
+                    syncFromEvent(500) { _: TestEvent ->
                         cont.resume(Unit)
                     }
                 }
-                delay(200)
                 launch {
+                    delay(200)
                     TestEvent().broadcast()
                 }
             }

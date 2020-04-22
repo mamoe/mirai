@@ -11,7 +11,7 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.GlobalScope
-import net.mamoe.mirai.test.runBlocking
+import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

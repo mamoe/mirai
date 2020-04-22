@@ -12,7 +12,6 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.test.runBlocking
 import net.mamoe.mirai.test.shouldBeEqualTo
 import net.mamoe.mirai.test.shouldBeTrue
 import kotlin.test.Test
