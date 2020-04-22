@@ -15,18 +15,13 @@
 package net.mamoe.mirai.event
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.isAdministrator
-import net.mamoe.mirai.contact.isOperator
-import net.mamoe.mirai.contact.isOwner
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.internal.*
 import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.TempMessage
-import net.mamoe.mirai.message.data.At
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.firstIsInstance
-import net.mamoe.mirai.message.data.firstIsInstanceOrNull
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.js.JsName
 import kotlin.jvm.JvmName
@@ -184,7 +179,8 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** [消息内容][Message.contentToString]包含 [sub] */
     @MessageDsl
-    fun contains(sub: String): ListeningFilter = content { sub in it }
+    @JvmOverloads // bin comp
+    fun contains(sub: String, ignoreCase: Boolean = false): ListeningFilter = content { it.contains(sub, ignoreCase) }
 
     /**
      * [消息内容][Message.contentToString]包含 [sub] 中的任意一个元素
@@ -245,6 +241,10 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
+    fun sentBy(friend: QQ): ListeningFilter = content { sender.id == friend.id }
+
+    /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
+    @MessageDsl
     fun sentBy(qq: Long, onEvent: MessageListener<M, R>): Ret = content { this.sender.id == qq }.invoke(onEvent)
 
     /** 如果是好友发来的消息 */
@@ -276,9 +276,25 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
     @MessageDsl
     fun sentFrom(groupId: Long): ListeningFilter = content { this is GroupMessage && group.id == groupId }
 
+    /** 如果是来自这个群的消息 */
+    @MessageDsl
+    fun sentFrom(group: Group): ListeningFilter = content { this is GroupMessage && group.id == group.id }
+
     /** [消息内容][Message.contentToString]包含目标为 [Bot] 的 [At] */
     @MessageDsl
     fun atBot(): ListeningFilter = content { message.firstIsInstanceOrNull<At>()?.target == bot.id }
+
+    /** [消息内容][Message.contentToString]包含 [AtAll] */
+    @MessageDsl
+    fun atAll(): ListeningFilter = content { message.firstIsInstanceOrNull<AtAll>() != null }
+
+    /** [消息内容][Message.contentToString]包含 [AtAll] */
+    @MessageDsl
+    fun at(target: Long): ListeningFilter = content { message.firstIsInstanceOrNull<At>()?.target == target }
+
+    /** [消息内容][Message.contentToString]包含目标为 [target] 的 [At] */
+    @MessageDsl
+    fun at(target: QQ): ListeningFilter = content { message.firstIsInstanceOrNull<At>()?.target == target.id }
 
     /** [消息内容][Message.contentToString]包含目标为 [Bot] 的 [At], 就执行 [onEvent] */
     @MessageDsl
