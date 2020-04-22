@@ -13,13 +13,14 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.BotImpl
-import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.ContactOrBot
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
-import net.mamoe.mirai.utils.asSequence
+import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -53,68 +54,231 @@ abstract class OfflineMessageSource : MessageSource() {
 }
 
 
-/**
- * 复制这个消息源, 并修改
- */
-@JvmName("copySource")
-inline fun MessageSource.copyAmend(
-    block: MessageSourceBuilder.() -> Unit
-): OfflineMessageSource {
-    return constructMessageSource()
-}
+///////////////
+//// AMEND ////
+///////////////
 
+
+/**
+ * 复制这个消息源, 并以 [block] 修改
+ *
+ * @see buildMessageSource 查看更多说明
+ */
 @MiraiExperimentalAPI
 @SinceMirai("0.39.0")
-@OptIn(MiraiInternalAPI::class)
-fun constructMessageSource(
-    kind: OfflineMessageSource.Kind,
-    fromUin: Long, targetUin: Long,
-    id: Int, time: Int, internalId: Int,
-    originalMessage: MessageChain
-): OfflineMessageSource {
-    val bot = BotImpl.instances.asSequence().mapNotNull { it.get() }.firstOrNull()
-        ?: error("no Bot instance available")
+@JvmName("copySource")
+fun MessageSource.copyAmend(
+    block: MessageSourceAmender.() -> Unit
+): OfflineMessageSource = toMutableOffline().apply(block)
 
-    return bot.constructMessageSource(kind, fromUin, targetUin, id, time, internalId, originalMessage)
+/**
+ * 仅于 [copyAmend] 中修改 [MessageSource]
+ */
+@SinceMirai("0.39.0")
+interface MessageSourceAmender {
+    var kind: OfflineMessageSource.Kind
+    var fromUin: Long
+    var targetUin: Long
+    var id: Int
+    var time: Int
+    var internalId: Int
+
+    var originalMessage: MessageChain
 }
 
+
+///////////////
+//// BUILD ////
+///////////////
+
+
+/**
+ * 构建一个 [OfflineMessageSource]
+ *
+ * ### 参数
+ * 一个 [OfflineMessageSource] 须要以下参数:
+ * - 发送人和发送目标: 通过 [MessageSourceBuilder.sendTo] 设置
+ * - 消息元数据 (即 [MessageSource.id], [MessageSource.internalId], [MessageSource.time])
+ *   元数据用于 [撤回][MessageSource.recall], [引用回复][MessageSource.quote], 和官方客户端定位原消息.
+ *   可通过 [MessageSourceBuilder.id], [MessageSourceBuilder.time], [MessageSourceBuilder.internalId] 设置
+ *   可通过 [MessageSourceBuilder.metadata] 从另一个 [MessageSource] 复制
+ * - 消息内容: 通过 [MessageSourceBuilder.messages] 设置
+ *
+ * ### 性质
+ * - 当两个消息的元数据相同时, 他们在群中会是同一条消息. 可通过此特性决定官方客户端 "定位原消息" 的目标
+ * - 发送人的信息和消息内容会在官方客户端显示在引用回复中.
+ */
+@SinceMirai("0.39.0")
 @JvmSynthetic
 @MiraiExperimentalAPI
-inline fun buildMessageSource(block: MessageSourceBuilder.() -> Unit): MessageSource {
-    val builder = MessageSourceBuilder().apply(block)
+fun Bot.buildMessageSource(block: MessageSourceBuilder.() -> Unit): MessageSource {
+    val builder = MessageSourceBuilderImpl().apply(block)
     return constructMessageSource(
-        builder.kind ?: error("found "),
-        block
+        builder.kind ?: error("You must call `Contact.sendTo(Contact)` when `buildMessageSource`"),
+        builder.fromUin,
+        builder.targetUin,
+        builder.id,
+        builder.time,
+        builder.internalId,
+        builder.originalMessages.build()
     )
 }
 
-@DslMarker
-annotation class SourceBuilderDsl
+/**
+ * @see buildMessageSource
+ */
+abstract class MessageSourceBuilder {
+    internal abstract var kind: OfflineMessageSource.Kind?
+    internal abstract var fromUin: Long
+    internal abstract var targetUin: Long
 
-class MessageSourceBuilder(
-    source: OfflineMessageSource
-) : MessageChainBuilder() {
-    var kind: OfflineMessageSource.Kind = source.kind
-    var fromUin: Long = source.fromId
-    var targetUin: Long = source.targetId
-    var id: Int = source.id
-    var time: Int = source.time
-    var internalId: Int = source.internalId
-    var originalMessage: MessageChain = source.originalMessage
+    internal abstract var id: Int
+    internal abstract var time: Int
+    internal abstract var internalId: Int
 
-    fun from(sender: Contact): MessageSourceBuilder {
-        fromUin = if (sender is Group) {
-            Group.calculateGroupUinByGroupCode(sender.id)
-        } else sender.id
+    @PublishedApi
+    internal val originalMessages: MessageChainBuilder = MessageChainBuilder()
+
+    fun time(from: MessageSource): MessageSourceBuilder = apply { this.time = from.time }
+    val now: Int get() = currentTimeSeconds.toInt()
+    fun time(value: Int) = apply { this.time = value }
+
+    fun internalId(from: MessageSource): MessageSourceBuilder = apply { this.internalId = from.internalId }
+    fun internalId(value: Int): MessageSourceBuilder = apply { this.internalId = value }
+
+    fun id(from: MessageSource): MessageSourceBuilder = apply { this.id = from.id }
+    fun id(value: Int): MessageSourceBuilder = apply { this.id = value }
+
+
+    /**
+     * 从另一个 [MessageSource] 复制 [id], [time], [internalId].
+     * 这三个数据决定官方客户端能 "定位" 到的原消息
+     */
+    fun metadata(from: MessageSource): MessageSourceBuilder = apply {
+        id(from)
+        internalId(from)
+        time(from)
+    }
+
+    /**
+     * 从另一个 [MessageSource] 复制所有信息, 包括消息内容. 不会清空已有消息.
+     */
+    fun allFrom(source: MessageSource): MessageSourceBuilder {
+        this.kind = determineKind(source)
+        this.id = source.id
+        this.time = source.time
+        this.fromUin = source.fromId
+        this.targetUin = source.targetId
+        this.internalId = source.internalId
+        this.originalMessages.addAll(source.originalMessage)
         return this
     }
 
-    fun target(target: Contact): MessageSourceBuilder {
+
+    /**
+     * 从另一个 [MessageSource] 复制 [消息内容][MessageSource.originalMessage]. 不会清空已有消息.
+     */
+    fun messagesFrom(source: MessageSource): MessageSourceBuilder = apply {
+        this.originalMessages.addAll(source.originalMessage)
+    }
+
+    fun messages(messages: Iterable<Message>): MessageSourceBuilder = apply {
+        this.originalMessages.addAll(messages)
+    }
+
+    fun messages(vararg message: Message): MessageSourceBuilder = apply {
+        for (it in message) {
+            this.originalMessages.add(it)
+        }
+    }
+
+    @JvmSynthetic
+    inline fun messages(block: MessageChainBuilder.() -> Unit): MessageSourceBuilder = apply {
+        this.originalMessages.apply(block)
+    }
+
+    fun clearMessages(): MessageSourceBuilder = apply { this.originalMessages.clear() }
+
+    /**
+     * 设置 [发送人][this] 和 [发送目标][target], 并自动判断 [kind]
+     */
+    @JvmSynthetic
+    abstract infix fun ContactOrBot.sendTo(target: ContactOrBot): MessageSourceBuilder
+
+    fun setSenderAndTarget(sender: ContactOrBot, target: ContactOrBot) = sender sendTo target
+}
+
+
+//////////////////
+//// INTERNAL ////
+//////////////////
+
+
+internal class MessageSourceBuilderImpl : MessageSourceBuilder() {
+    override var kind: OfflineMessageSource.Kind? = null
+    override var fromUin: Long = 0
+    override var targetUin: Long = 0
+
+    override var id: Int = 0
+    override var time: Int = currentTimeSeconds.toInt()
+    override var internalId: Int = 0
+
+    @JvmSynthetic
+    override fun ContactOrBot.sendTo(target: ContactOrBot): MessageSourceBuilder {
+        fromUin = if (this is Group) {
+            Group.calculateGroupUinByGroupCode(this.id)
+        } else this.id
+
         targetUin = if (target is Group) {
             Group.calculateGroupUinByGroupCode(target.id)
         } else target.id
-        return this
-    }
 
-    fun
+        check(this != target) { "sender and target mustn't be the same" }
+
+        kind = when {
+            this is Group || target is Group -> OfflineMessageSource.Kind.GROUP
+            this is Member || target is Member -> OfflineMessageSource.Kind.TEMP
+            this is Bot && target is Friend -> OfflineMessageSource.Kind.FRIEND
+            this is Friend && target is Bot -> OfflineMessageSource.Kind.FRIEND
+            else -> throw IllegalArgumentException("Cannot determine source kind for sender $this and target $target")
+        }
+        return this@MessageSourceBuilderImpl
+    }
+}
+
+
+@JvmSynthetic
+internal fun MessageSource.toMutableOffline(): MutableOfflineMessageSourceByOnline =
+    MutableOfflineMessageSourceByOnline(this)
+
+internal class MutableOfflineMessageSourceByOnline(
+    origin: MessageSource
+) : OfflineMessageSource(), MessageSourceAmender {
+    override var kind: Kind = determineKind(origin)
+    override var fromUin: Long
+        get() = fromId
+        set(value) {
+            fromId = value
+        }
+    override var targetUin: Long
+        get() = targetId
+        set(value) {
+            targetId = value
+        }
+    override var bot: Bot = origin.bot
+    override var id: Int = origin.id
+    override var internalId: Int = origin.internalId
+    override var time: Int = origin.time
+    override var fromId: Long = origin.fromId
+    override var targetId: Long = origin.targetId
+    override var originalMessage: MessageChain = origin.originalMessage
+}
+
+private fun determineKind(source: MessageSource): OfflineMessageSource.Kind {
+    return when {
+        source.isAboutGroup() -> OfflineMessageSource.Kind.GROUP
+        source.isAboutFriend() -> OfflineMessageSource.Kind.FRIEND
+        source.isAboutTemp() -> OfflineMessageSource.Kind.TEMP
+        else -> error("stub")
+    }
 }

@@ -62,8 +62,11 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
 
     /**
      * 内部 id, 仅用于 [Bot.constructMessageSource]
-     * 可能为 0, 取决于服务器是否提供.
+     * 值没有顺序, 也可能为 0, 取决于服务器是否提供.
+     *
+     * 仅用于协议实现.
      */
+    @SinceMirai("0.39.0")
     abstract val internalId: Int
 
     /**
@@ -94,7 +97,7 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
     @LazyProperty
     abstract val originalMessage: MessageChain
 
-    final override fun toString(): String = "[mirai:source:$id]"
+    final override fun toString(): String = "[mirai:source:$id,$internalId]"
     final override fun contentToString(): String = ""
 }
 

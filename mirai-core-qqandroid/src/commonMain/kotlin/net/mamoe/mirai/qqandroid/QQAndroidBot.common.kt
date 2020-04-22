@@ -35,6 +35,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
@@ -45,6 +46,7 @@ import net.mamoe.mirai.qqandroid.message.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
@@ -321,7 +323,7 @@ internal abstract class QQAndroidBotBase constructor(
                         bot.asQQAndroidBot().client,
                         group.id,
                         source.sequenceId,
-                        source.random
+                        source.internalId
                     ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                 }
             }
@@ -335,7 +337,7 @@ internal abstract class QQAndroidBotBase constructor(
                     bot.client,
                     source.targetId,
                     source.sequenceId,
-                    source.random,
+                    source.internalId,
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
@@ -351,7 +353,7 @@ internal abstract class QQAndroidBotBase constructor(
                     source.target.group.id,
                     source.targetId,
                     source.sequenceId,
-                    source.random,
+                    source.internalId,
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
@@ -365,7 +367,7 @@ internal abstract class QQAndroidBotBase constructor(
                             bot.client,
                             source.targetId,
                             source.sequenceId,
-                            source.random,
+                            source.internalId,
                             source.time
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
@@ -378,7 +380,7 @@ internal abstract class QQAndroidBotBase constructor(
                             source.targetId, // groupUin
                             source.targetId, // memberUin
                             source.sequenceId,
-                            source.random,
+                            source.internalId,
                             source.time
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
@@ -387,7 +389,7 @@ internal abstract class QQAndroidBotBase constructor(
                             bot.client,
                             source.targetId,
                             source.sequenceId,
-                            source.random
+                            source.internalId
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
                 }
@@ -658,6 +660,43 @@ internal abstract class QQAndroidBotBase constructor(
         else -> error("unsupported image class: ${image::class.simpleName}")
     }
 
+    override fun constructMessageSource(
+        kind: OfflineMessageSource.Kind,
+        fromUin: Long,
+        targetUin: Long,
+        id: Int,
+        time: Int,
+        internalId: Int,
+        originalMessage: MessageChain
+    ): OfflineMessageSource {
+        return object : OfflineMessageSource(), MessageSourceInternal {
+            override val kind: Kind get() = kind
+            override val id: Int get() = id
+            override val bot: Bot get() = this@QQAndroidBotBase
+            override val time: Int get() = time
+            override val fromId: Long get() = fromUin
+            override val targetId: Long get() = targetUin
+            override val originalMessage: MessageChain get() = originalMessage
+            override val sequenceId: Int = id
+            override val internalId: Int = internalId
+            override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+
+            override fun toJceData(): ImMsgBody.SourceMsg {
+                return ImMsgBody.SourceMsg(
+                    origSeqs = listOf(sequenceId),
+                    senderUin = fromUin,
+                    toUin = 0,
+                    flag = 1,
+                    elems = originalMessage.toRichTextElems(forGroup = kind == Kind.GROUP, withGeneralFlags = false),
+                    type = 0,
+                    time = time,
+                    pbReserve = EMPTY_BYTE_ARRAY,
+                    srcMsg = EMPTY_BYTE_ARRAY
+                )
+            }
+        }
+    }
+
     @Suppress("DeprecatedCallableAddReplaceWith")
     @PlannedRemoval("1.0.0")
     @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
@@ -672,6 +711,8 @@ internal abstract class QQAndroidBotBase constructor(
         get() = client.wLoginSigInfo.sKey.data
             .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
 }
+
+internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
 @Suppress("DEPRECATION")
 @OptIn(MiraiInternalAPI::class)

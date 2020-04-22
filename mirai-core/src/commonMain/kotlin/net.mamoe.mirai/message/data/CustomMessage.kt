@@ -28,11 +28,9 @@ import net.mamoe.mirai.utils.*
  *
  * 目前在回复时无法通过 [originalMessage] 获取自定义类型消息
  *
- * **实现方法**:
- *
  * @sample samples.CustomMessageIdentifier 实现示例
  *
- * @see CustomMessageMetadata
+ * @see CustomMessageMetadata 自定义消息元数据
  */
 @SinceMirai("0.38.0")
 @MiraiExperimentalAPI
@@ -172,6 +170,11 @@ sealed class CustomMessage : SingleMessage {
 /**
  * 自定义消息元数据.
  *
+ * **实现方法**:
+ * 1. 实现一个类继承 [CustomMessageMetadata], 添加 `@Serializable` (来自 `kotlinx.serialization`)
+ * 2. 添加伴生对象, 继承 [CustomMessage.ProtoBufSerializerFactory] 或 [CustomMessage.JsonSerializerFactory], 或 [CustomMessage.Factory]
+ * 3. 在需要解析消息前调用一次伴生对象以注册
+ *
  * @see CustomMessage 查看更多信息
  * @see ConstrainSingle 可实现此接口以保证消息链中只存在一个元素
  */
@@ -191,8 +194,9 @@ abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
 }
 
 
+@Suppress("NOTHING_TO_INLINE")
 @OptIn(MiraiExperimentalAPI::class)
-internal fun <T : CustomMessageMetadata> T.customToStringImpl(factory: CustomMessage.Factory<*>): ByteArray {
+internal inline fun <T : CustomMessageMetadata> T.customToStringImpl(factory: CustomMessage.Factory<*>): ByteArray {
     @Suppress("UNCHECKED_CAST")
     return (factory as CustomMessage.Factory<T>).serialize(this)
 }

@@ -58,6 +58,7 @@ import kotlin.jvm.JvmSynthetic
  * @see QuoteReply 一条消息的引用
  * @see RichMessage 富文本消息, 如 [Xml][XmlMessage], [小程序][LightApp], [Json][JsonMessage]
  * @see HummerMessage 一些特殊的消息, 如 [闪照][FlashImage], [戳一戳][PokeMessage]
+ * @see CustomMessage 自定义消息类型
  *
  * @see MessageChain 消息链(即 `List<Message>`)
  * @see buildMessageChain 构造一个 [MessageChain]

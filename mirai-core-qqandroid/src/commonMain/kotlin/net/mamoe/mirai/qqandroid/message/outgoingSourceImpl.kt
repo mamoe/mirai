@@ -33,7 +33,7 @@ private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
         where T : MessageSourceInternal, T : MessageSource {
 
     val elements = originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
-    val messageUid: Long = sequenceId.toLong().shl(32) or random.toLong().and(0xffFFffFF)
+    val messageUid: Long = sequenceId.toLong().shl(32) or internalId.toLong().and(0xffFFffFF)
     return ImMsgBody.SourceMsg(
         origSeqs = listOf(sequenceId),
         senderUin = fromId,
@@ -70,7 +70,7 @@ private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
 
 internal class MessageSourceToFriendImpl(
     override val sequenceId: Int,
-    override val random: Int,
+    override val internalId: Int,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
@@ -87,7 +87,7 @@ internal class MessageSourceToFriendImpl(
 
 internal class MessageSourceToTempImpl(
     override val sequenceId: Int,
-    override val random: Int,
+    override val internalId: Int,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
@@ -104,7 +104,7 @@ internal class MessageSourceToTempImpl(
 
 internal class MessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,
-    override val random: Int,
+    override val internalId: Int,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
@@ -120,7 +120,7 @@ internal class MessageSourceToGroupImpl(
         coroutineScope.asyncFromEventOrNull<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(
             timeoutMillis = 3000
         ) {
-            if (it.messageRandom == this@MessageSourceToGroupImpl.random) {
+            if (it.messageRandom == this@MessageSourceToGroupImpl.internalId) {
                 it.sequenceId
             } else null
         }

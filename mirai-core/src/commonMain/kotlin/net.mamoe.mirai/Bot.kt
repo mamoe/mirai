@@ -180,6 +180,24 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     abstract suspend fun queryImageUrl(image: Image): String
 
     /**
+     * 构造一个 [OfflineMessageSource]
+     *
+     * @param id 即 [MessageSource.id]
+     * @param internalId 即 [MessageSource.internalId]
+     *
+     * @param fromUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
+     * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("0.39.0")
+    abstract fun constructMessageSource(
+        kind: OfflineMessageSource.Kind,
+        fromUin: Long, targetUin: Long,
+        id: Int, time: Int, internalId: Int,
+        originalMessage: MessageChain
+    ): OfflineMessageSource
+
+    /**
      * 获取图片下载链接并开始下载.
      *
      * @see ByteReadChannel.copyAndClose
@@ -281,6 +299,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     val selfQQDeprecated: QQ
         get() = selfQQ
 
+    @PlannedRemoval("1.0.0.")
     @JvmName("getFriend")
     @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
