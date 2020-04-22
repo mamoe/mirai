@@ -28,8 +28,6 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
  *
  * A QQ instance helps you to receive event from or sendPacket event to.
  * Notice that, one QQ instance belong to one [Bot], that is, QQ instances from different [Bot] are NOT the same.
- *
- * @author Him188moe
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 actual abstract class QQ : Contact(), CoroutineScope {

@@ -10,7 +10,7 @@
 package net.mamoe.mirai.qqandroid.contact
 
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.MessageSendEvent
@@ -31,7 +31,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.verbose
 
 @OptIn(MiraiInternalAPI::class)
-internal suspend fun QQ.sendMessageImpl(message: Message): MessageReceipt<QQ> {
+internal suspend fun Friend.sendMessageImpl(message: Message): MessageReceipt<Friend> {
     val event = MessageSendEvent.FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
     if (event.isCancelled) {
         throw EventCancelledException("cancelled by FriendMessageSendEvent")

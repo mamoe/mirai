@@ -32,9 +32,7 @@ import kotlin.jvm.JvmSynthetic
 
 
 /**
- * 联系人. 虽然叫做联系人, 但他的子类有 [QQ], [群成员][Member] 和 [群][Group].
- *
- * @author Him188moe
+ * 联系人. 虽然叫做联系人, 但他的子类有 [人][User], 和 [群][Group].
  */
 abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot {
     /**
@@ -85,23 +83,11 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
     @JvmSynthetic
     abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
 
-    /**
-     * 判断 `this` 和 [other] 是否是相同的类型, 并且 [id] 相同.
-     *
-     * 注:
-     * [id] 相同的 [Member] 和 [QQ], 他们并不 [equals].
-     * 因为, [Member] 含义为群员, 必属于一个群.
-     * 而 [QQ] 含义为一个独立的人, 可以是好友, 也可以是陌生人.
-     */
-    abstract override fun equals(other: Any?): Boolean
+    final override fun equals(other: Any?): Boolean = super.equals(other)
+    final override fun hashCode(): Int = super.hashCode()
 
     /**
-     * @return `bot.hashCode() * 31 + id.hashCode()`
-     */
-    abstract override fun hashCode(): Int
-
-    /**
-     * @return "QQ($id)" or "Group($id)" or "Member($id)"
+     * @return "Friend($id)" or "Group($id)" or "Member($id)"
      */
     abstract override fun toString(): String
 }

@@ -14,9 +14,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.asyncFromEventOrNull
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.message.data.MessageChain
@@ -74,7 +74,7 @@ internal class MessageSourceToFriendImpl(
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
-    override val target: QQ
+    override val target: Friend
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal {
     override val bot: Bot
         get() = sender

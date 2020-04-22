@@ -8,7 +8,7 @@
  */
 
 @file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.qqandroid.contact
 
@@ -16,12 +16,8 @@ import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
-import net.mamoe.mirai.data.FriendNameRemark
-import net.mamoe.mirai.data.PreviousNameList
-import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
@@ -35,7 +31,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -49,20 +48,20 @@ internal inline class FriendInfoImpl(
 }
 
 @OptIn(ExperimentalContracts::class)
-internal fun QQ.checkIsQQImpl(): QQImpl {
+internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
     contract {
-        returns() implies (this@checkIsQQImpl is QQImpl)
+        returns() implies (this@checkIsFriendImpl is FriendImpl)
     }
-    check(this is QQImpl) { "A QQ instance is not instance of QQImpl. Don't interlace two protocol implementations together!" }
+    check(this is FriendImpl) { "A Friend instance is not instance of FriendImpl. Don't interlace two protocol implementations together!" }
     return this
 }
 
-internal class QQImpl(
+internal class FriendImpl(
     bot: QQAndroidBot,
     override val coroutineContext: CoroutineContext,
     override val id: Long,
     private val friendInfo: FriendInfo
-) : QQ() {
+) : Friend() {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
 
@@ -72,7 +71,7 @@ internal class QQImpl(
 
     @JvmSynthetic
     @Suppress("DuplicatedCode")
-    override suspend fun sendMessage(message: Message): MessageReceipt<QQ> {
+    override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
         return sendMessageImpl(message).also {
             logMessageSent(message)
         }
@@ -110,7 +109,7 @@ internal class QQImpl(
                     width = response.imageInfo.fileWidth,
                     resourceId = response.resourceId
                 ).also {
-                    ImageUploadEvent.Succeed(this@QQImpl, image, it).broadcast()
+                    ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     MiraiPlatformUtils.Http.postImage(
@@ -141,11 +140,11 @@ internal class QQImpl(
                         width = image.width,
                         resourceId = response.resourceId
                     ).also {
-                        ImageUploadEvent.Succeed(this@QQImpl, image, it).broadcast()
+                        ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                     }
                 }
                 is LongConn.OffPicUp.Response.Failed -> {
-                    ImageUploadEvent.Failed(this@QQImpl, image, -1, response.message).broadcast()
+                    ImageUploadEvent.Failed(this@FriendImpl, image, -1, response.message).broadcast()
                     error(response.message)
                 }
             }
@@ -153,35 +152,4 @@ internal class QQImpl(
     } finally {
         (image.input as? Closeable)?.close()
     }
-
-    override fun hashCode(): Int {
-        var result = bot.hashCode()
-        result = 31 * result + id.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        @Suppress("DuplicatedCode")
-        if (this === other) return true
-        if (other !is Contact) return false
-        if (this::class != other::class) return false
-        return this.id == other.id && this.bot == other.bot
-    }
-
-    @MiraiExperimentalAPI
-    override suspend fun queryProfile(): Profile {
-        TODO("not implemented")
-    }
-
-    @MiraiExperimentalAPI
-    override suspend fun queryPreviousNameList(): PreviousNameList {
-        TODO("not implemented")
-    }
-
-    @MiraiExperimentalAPI
-    override suspend fun queryRemark(): FriendNameRemark {
-        TODO("not implemented")
-    }
-
-    override fun toString(): String = "QQ($id)"
 }

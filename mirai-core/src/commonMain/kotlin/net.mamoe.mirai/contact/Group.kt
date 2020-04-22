@@ -21,23 +21,25 @@ import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineGroupImage
+import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.SinceMirai
+import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
 /**
- * 群. 在 QQ Android 中叫做 "Troop"
+ * 群.
  */
-expect abstract class Group() : Contact, CoroutineScope {
+abstract class Group : Contact(), CoroutineScope {
     /**
      * 群名称.
      *
-     * 在修改时将会异步上传至服务器.
+     * 在修改时将会异步上传至服务器, 也会广播事件 [GroupNameChangeEvent].
      * 频繁修改可能会被服务器拒绝.
      *
-     * @see MemberPermissionChangeEvent
+     * @see GroupNameChangeEvent 群名片修改事件
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     abstract var name: String
@@ -88,6 +90,7 @@ expect abstract class Group() : Contact, CoroutineScope {
      * 群头像下载链接.
      */
     val avatarUrl: String
+        get() = "https://p.qlogo.cn/gh/$id/${id}_1/640"
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
@@ -149,6 +152,16 @@ expect abstract class Group() : Contact, CoroutineScope {
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<Group>
 
     /**
+     * @see sendMessage
+     */
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
+    @kotlin.internal.InlineOnly // purely virtual
+    @JvmSynthetic
+    suspend inline fun sendMessage(message: String): MessageReceipt<Group> {
+        return sendMessage(message.toMessage())
+    }
+
+    /**
      * 上传一个图片以备发送.
      *
      * @see BeforeImageUploadEvent 图片上传前事件, cancellable
@@ -161,14 +174,20 @@ expect abstract class Group() : Contact, CoroutineScope {
     abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
 
     companion object {
-        // don't @JvmStatic: JDK 1.8 required
-        fun calculateGroupUinByGroupCode(groupCode: Long): Long
+        /**
+         * @suppress internal api
+         */
+        @JvmStatic
+        fun calculateGroupUinByGroupCode(groupCode: Long): Long =
+            CommonGroupCalculations.calculateGroupUinByGroupCode(groupCode)
 
-        fun calculateGroupCodeByGroupUin(groupUin: Long): Long
+        /**
+         * @suppress internal api
+         */
+        @JvmStatic
+        fun calculateGroupCodeByGroupUin(groupUin: Long): Long =
+            CommonGroupCalculations.calculateGroupCodeByGroupUin(groupUin)
     }
-
-    @MiraiExperimentalAPI
-    fun toFullString(): String
 }
 
 /**

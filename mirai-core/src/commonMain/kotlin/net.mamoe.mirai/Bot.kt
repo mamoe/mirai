@@ -109,20 +109,21 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     // region contacts
 
     /**
-     * [QQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewQQ] 实例
+     * [QQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewFriend] 实例
      */
-    abstract val selfQQ: QQ
+    abstract val selfQQ: Friend
+
 
     /**
      * 机器人的好友列表. 与服务器同步更新
      */
-    abstract val friends: ContactList<QQ>
+    abstract val friends: ContactList<Friend>
 
     /**
      * 获取一个好友对象.
      * @throws [NoSuchElementException] 当不存在这个好友时抛出
      */
-    fun getFriend(id: Long): QQ = friends.firstOrNull { it.id == id } ?: throw NoSuchElementException("friend $id")
+    fun getFriend(id: Long): Friend = friends.firstOrNull { it.id == id } ?: throw NoSuchElementException("friend $id")
 
     /**
      * 机器人加入的群列表. 与服务器同步更新
@@ -273,9 +274,17 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     @MiraiInternalAPI
     abstract val network: BotNetworkHandler
 
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
-    suspend inline fun Bot.join() = this.coroutineContext[Job]!!.join()
+    @PlannedRemoval("1.0.0.")
+    @get:JvmName("getSelfQQ")
+    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    val selfQQDeprecated: QQ
+        get() = selfQQ
+
+    @JvmName("getFriend")
+    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun getFriendDeprecated(id: Long): QQ = this.getFriend(id)
 }
 
 /**
@@ -351,7 +360,7 @@ inline fun Bot.containsFriend(id: Long): Boolean = this.friends.contains(id)
 inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
 
 @JvmSynthetic
-inline fun Bot.getFriendOrNull(id: Long): QQ? = this.friends.getOrNull(id)
+inline fun Bot.getFriendOrNull(id: Long): Friend? = this.friends.getOrNull(id)
 
 @JvmSynthetic
 inline fun Bot.getGroupOrNull(id: Long): Group? = this.groups.getOrNull(id)

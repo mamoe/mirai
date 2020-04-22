@@ -38,8 +38,8 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
+import net.mamoe.mirai.qqandroid.contact.FriendImpl
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
-import net.mamoe.mirai.qqandroid.contact.QQImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
 import net.mamoe.mirai.qqandroid.message.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
@@ -89,7 +89,7 @@ internal class QQAndroidBot constructor(
                 event,
                 accept = true
             ).sendWithoutExpect()
-            bot.friends.delegate.addLast(bot._lowLevelNewQQ(object : FriendInfo {
+            bot.friends.delegate.addLast(bot._lowLevelNewFriend(object : FriendInfo {
                 override val uin: Long get() = event.fromId
                 override val nick: String get() = event.fromNick
             }))
@@ -150,7 +150,6 @@ internal class QQAndroidBot constructor(
     }
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
-
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
@@ -188,15 +187,15 @@ internal abstract class QQAndroidBotBase constructor(
         val json = Json(JsonConfiguration(ignoreUnknownKeys = true, encodeDefaults = true))
     }
 
-    override val friends: ContactList<QQ> = ContactList(LockFreeLinkedList())
+    override val friends: ContactList<Friend> = ContactList(LockFreeLinkedList())
 
     override val nick: String get() = selfInfo.nick
 
     internal lateinit var selfInfo: JceFriendInfo
 
-    override val selfQQ: QQ by lazy {
+    override val selfQQ: Friend by lazy {
         @OptIn(LowLevelAPI::class)
-        _lowLevelNewQQ(object : FriendInfo {
+        _lowLevelNewFriend(object : FriendInfo {
             override val uin: Long get() = this@QQAndroidBotBase.id
             override val nick: String get() = this@QQAndroidBotBase.nick
         })
@@ -214,10 +213,10 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     @LowLevelAPI
-    override fun _lowLevelNewQQ(friendInfo: FriendInfo): QQ {
-        return QQImpl(
+    override fun _lowLevelNewFriend(friendInfo: FriendInfo): Friend {
+        return FriendImpl(
             this as QQAndroidBot,
-            coroutineContext + CoroutineName("QQ(${friendInfo.uin}"),
+            coroutineContext + CoroutineName("Friend(${friendInfo.uin}"),
             friendInfo.uin,
             friendInfo
         )

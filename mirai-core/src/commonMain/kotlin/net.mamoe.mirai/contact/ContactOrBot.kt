@@ -15,12 +15,11 @@ import net.mamoe.mirai.utils.SinceMirai
 /**
  * 拥有 [id] 的对象.
  * 此为 [Contact] 与 [Bot] 的唯一公共接口.
- * **注意:** 此接口为实验性接口, 将来可能会发生不兼容的更名.
  *
  * @see Contact
  * @see Bot
  */
-@SinceMirai("0.37.2")
+@SinceMirai("0.39.0")
 interface ContactOrBot {
     /**
      * QQ 号或群号.

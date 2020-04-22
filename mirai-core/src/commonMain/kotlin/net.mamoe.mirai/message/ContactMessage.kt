@@ -23,10 +23,7 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.selectMessages
 import net.mamoe.mirai.event.syncFromEvent
@@ -52,7 +49,7 @@ import kotlin.jvm.JvmSynthetic
  */
 @Suppress("DEPRECATION")
 @SinceMirai("0.32.0")
-abstract class ContactMessage : MessagePacket<QQ, Contact>(), BotEvent
+abstract class ContactMessage : MessagePacket<User, Contact>(), BotEvent
 
 /**
  * 一条从服务器接收到的消息事件.
@@ -63,7 +60,7 @@ abstract class ContactMessage : MessagePacket<QQ, Contact>(), BotEvent
     message = "use ContactMessage",
     replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
 )
-expect abstract class MessagePacket<TSender : QQ, TSubject : Contact> constructor() :
+expect abstract class MessagePacket<TSender : User, TSubject : Contact> constructor() :
     MessagePacketBase<TSender, TSubject>
 
 /**
@@ -74,7 +71,7 @@ expect abstract class MessagePacket<TSender : QQ, TSubject : Contact> constructo
     replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
 )
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
-abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Packet, BotEvent {
+abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : Packet, BotEvent {
     /**
      * 接受到这条消息的
      */
@@ -105,6 +102,10 @@ abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Pac
      */
     abstract val message: MessageChain
 
+    /**
+     * 消息源
+     */
+    open val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 
     // region 发送 Message
 
@@ -118,18 +119,11 @@ abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Pac
 
     suspend inline fun reply(plain: String): MessageReceipt<TSubject> =
         subject.sendMessage(plain.toMessage().asMessageChain()) as MessageReceipt<TSubject>
-
     // endregion
 
-    // region 撤回
-
-    // endregion
-
-    // region 上传图片
+    // region 图片
     suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
-    // endregion
 
-    // region 发送图片
     suspend inline fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
     suspend inline fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
@@ -159,21 +153,11 @@ abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Pac
     @JvmName("reply2")
     suspend inline fun MessageChain.quoteReply(): MessageReceipt<TSubject> = quoteReply(this)
 
-    open val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
-
     // endregion
 
-    operator fun <M : Message> get(at: Message.Key<M>): M {
+    inline operator fun <M : Message> get(at: Message.Key<M>): M {
         return this.message[at]
     }
-
-    /**
-     * 创建 @ 这个账号的消息. 当且仅当消息为群消息时可用. 否则将会抛出 [IllegalArgumentException]
-     */
-    fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
-
-    fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target)
-        ?: error("`At.member` can only be used in GroupMessage")
 
     inline fun At.isBot(): Boolean = target == bot.id
 
@@ -202,13 +186,40 @@ abstract class MessagePacketBase<out TSender : QQ, out TSubject : Contact> : Pac
     // endregion
 
 
-    @Deprecated("use reply(String) for clear semantics", ReplaceWith("reply(this)"))
+    @PlannedRemoval("1.0.0")
+    @Deprecated("use reply(String) for clear semantics", ReplaceWith("reply(this)"),
+        DeprecationLevel.ERROR)
     @JvmName("reply1")
     suspend inline fun String.reply(): MessageReceipt<TSubject> = reply(this)
 
-    @Deprecated("use reply(String) for clear semantics", ReplaceWith("reply(this)"))
+    @PlannedRemoval("1.0.0")
+    @Deprecated("use reply(String) for clear semantics", ReplaceWith("reply(this)"),
+        level = DeprecationLevel.ERROR)
     @JvmName("reply1")
     suspend inline fun Message.reply(): MessageReceipt<TSubject> = reply(this)
+
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @get:JvmSynthetic
+    @get:JvmName("getSender")
+    @Suppress("DEPRECATION_ERROR", "INAPPLICABLE_JVM_NAME")
+    val senderDeprecated: QQ
+        get() = sender as QQ
+
+    @Suppress("DEPRECATION_ERROR")
+    @PlannedRemoval("1.0.0")
+    @Deprecated("removed",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("At(this as? Member ?: error(\"`QQ.at` can only be used in GroupMessage\"))",
+            "net.mamoe.mirai.message.data.At",
+            "net.mamoe.mirai.contact.Member"))
+    fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("removed",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("(this@MessagePacketBase as? GroupMessage)?.group?.get(this.target) ?: error(\"`At.member` can only be used in GroupMessage\")"))
+    fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target)
+        ?: error("`At.member` can only be used in GroupMessage")
 }
 
 /**

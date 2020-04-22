@@ -16,7 +16,8 @@ import kotlinx.io.core.Input
 import kotlinx.io.core.Output
 import kotlinx.io.core.use
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -38,7 +39,7 @@ import java.net.URL
     replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
 )
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
-actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() :
+actual abstract class MessagePacket<TSender : User, TSubject : Contact> actual constructor() :
     MessagePacketBase<TSender, TSubject>() {
     // region 上传图片
     @JvmSynthetic

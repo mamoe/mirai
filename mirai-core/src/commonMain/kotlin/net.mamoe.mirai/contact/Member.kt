@@ -14,8 +14,10 @@ package net.mamoe.mirai.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.jvm.JvmSynthetic
@@ -24,10 +26,13 @@ import kotlin.time.ExperimentalTime
 
 /**
  * 群成员.
- */ // 不要删除多平台结构, kotlin bug
+ *
+ * 群成员可能也是好友, 但他们在对象类型上不同.
+ * 群成员可以通过 [asFriend] 得到相关好友对象.
+ */
 @Suppress("INAPPLICABLE_JVM_NAME")
 @OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
-expect abstract class Member() : MemberJavaFriendlyAPI {
+abstract class Member : MemberJavaFriendlyAPI() {
     /**
      * 所在的群.
      */
@@ -120,16 +125,6 @@ expect abstract class Member() : MemberJavaFriendlyAPI {
     abstract suspend fun kick(message: String = "")
 
     /**
-     * 当且仅当 `[other] is [Member] && [other].id == this.id && [other].group == this.group` 时为 true
-     */
-    abstract override fun equals(other: Any?): Boolean
-
-    /**
-     * @return `bot.hashCode() * 31 + id.hashCode()`
-     */
-    abstract override fun hashCode(): Int
-
-    /**
      * 向这个对象发送消息.
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.
@@ -145,6 +140,43 @@ expect abstract class Member() : MemberJavaFriendlyAPI {
      */
     @JvmSynthetic
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
+
+    /**
+     * @see sendMessage
+     */
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
+    @kotlin.internal.InlineOnly // purely virtual
+    @JvmSynthetic
+    suspend inline fun sendMessage(message: String): MessageReceipt<Member> {
+        return sendMessage(message.toMessage())
+    }
+
+    final override fun toString(): String = "Member($id)"
+}
+
+/**
+ * 得到此成员作为好友的对象.
+ */
+inline val Member.asFriend: Friend
+    get() = this.bot.getFriendOrNull(this.id) ?: error("$this is not a friend")
+
+/**
+ * 得到此成员作为好友的对象.
+ */
+inline val Member.asFriendOrNull: Friend?
+    get() = this.bot.getFriendOrNull(this.id)
+
+/**
+ * 判断此成员是否为好友
+ */
+inline val Member.isFriend: Boolean
+    get() = this.bot.friends.contains(this.id)
+
+/**
+ * 如果此成员是好友, 则执行 [block] 并返回其返回值. 否则返回 `null`
+ */
+inline fun <R> Member.takeIfFriend(block: (Friend) -> R): R? {
+    return this.asFriendOrNull?.let(block)
 }
 
 /**
@@ -161,6 +193,9 @@ fun Member.isMuted(): Boolean {
     return muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
 }
 
+/**
+ * @see Member.mute
+ */
 @ExperimentalTime
 suspend inline fun Member.mute(duration: Duration) {
     require(duration.inDays <= 30) { "duration must be at most 1 month" }
@@ -168,4 +203,7 @@ suspend inline fun Member.mute(duration: Duration) {
     this.mute(duration.inSeconds.toInt())
 }
 
+/**
+ * @see Member.mute
+ */
 suspend inline fun Member.mute(durationSeconds: Long) = this.mute(durationSeconds.toInt())

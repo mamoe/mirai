@@ -116,14 +116,12 @@ sealed class OnlineMessageSource : MessageSource() {
      * 消息发送人. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群员][Member].
      * 即类型必定为 [Bot], [QQ] 或 [Member]
      */
-    @ExperimentalIdentification
     abstract val sender: ContactOrBot
 
     /**
      * 消息发送目标. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群][Group].
      * 即类型必定为 [Bot], [QQ] 或 [Group]
      */
-    @ExperimentalIdentification
     abstract val target: ContactOrBot
 
     /**
@@ -135,7 +133,6 @@ sealed class OnlineMessageSource : MessageSource() {
     /**
      * 由 [机器人主动发送消息][Contact.sendMessage] 产生的 [MessageSource]
      */
-    @OptIn(ExperimentalIdentification::class)
     sealed class Outgoing : OnlineMessageSource() {
         companion object Key : Message.Key<Outgoing> {
             override val typeName: String get() = "OnlineMessageSource.Outgoing"
@@ -152,8 +149,8 @@ sealed class OnlineMessageSource : MessageSource() {
                 override val typeName: String get() = "OnlineMessageSource.Outgoing.ToFriend"
             }
 
-            abstract override val target: QQ
-            final override val subject: QQ get() = target
+            abstract override val target: Friend
+            final override val subject: Friend get() = target
             //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.id})"
         }
 
@@ -181,13 +178,12 @@ sealed class OnlineMessageSource : MessageSource() {
     /**
      * 接收到的一条消息的 [MessageSource]
      */
-    @OptIn(ExperimentalIdentification::class)
     sealed class Incoming : OnlineMessageSource() {
         companion object Key : Message.Key<Incoming> {
             override val typeName: String get() = "OnlineMessageSource.Incoming"
         }
 
-        abstract override val sender: QQ // out QQ
+        abstract override val sender: User
 
         final override val fromId: Long get() = sender.id
         final override val targetId: Long get() = target.id
@@ -197,8 +193,8 @@ sealed class OnlineMessageSource : MessageSource() {
                 override val typeName: String get() = "OnlineMessageSource.Incoming.FromFriend"
             }
 
-            abstract override val sender: QQ
-            final override val subject: QQ get() = sender
+            abstract override val sender: Friend
+            final override val subject: Friend get() = sender
             final override val target: Bot get() = sender.bot
             // final override fun toString(): String = "OnlineMessageSource.FromFriend(from=${sender.id})"
         }
@@ -243,7 +239,6 @@ sealed class OnlineMessageSource : MessageSource() {
     @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
     @get:JvmName("target")
     @get:JvmSynthetic
-    @OptIn(ExperimentalIdentification::class)
     open val target2: Any
         get() = target
 
@@ -251,7 +246,6 @@ sealed class OnlineMessageSource : MessageSource() {
     @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
     @get:JvmName("sender")
     @get:JvmSynthetic
-    @OptIn(ExperimentalIdentification::class)
     open val sender2: Any
         get() = sender
 }

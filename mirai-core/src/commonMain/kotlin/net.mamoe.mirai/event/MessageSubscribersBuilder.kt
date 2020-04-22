@@ -241,7 +241,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
-    fun sentBy(friend: QQ): ListeningFilter = content { sender.id == friend.id }
+    fun sentBy(friend: User): ListeningFilter = content { sender.id == friend.id }
 
     /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
@@ -294,7 +294,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** [消息内容][Message.contentToString]包含目标为 [target] 的 [At] */
     @MessageDsl
-    fun at(target: QQ): ListeningFilter = content { message.firstIsInstanceOrNull<At>()?.target == target.id }
+    fun at(target: User): ListeningFilter = content { message.firstIsInstanceOrNull<At>()?.target == target.id }
 
     /** [消息内容][Message.contentToString]包含目标为 [Bot] 的 [At], 就执行 [onEvent] */
     @MessageDsl

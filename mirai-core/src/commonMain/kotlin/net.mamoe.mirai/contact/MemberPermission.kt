@@ -12,9 +12,7 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
-
 
 /**
  * 群成员的权限.
@@ -37,39 +35,42 @@ enum class MemberPermission : Comparable<MemberPermission> {
      */
     OWNER; // ordinal = 2
 
+    /**
+     * 权限等级. [OWNER] 为 2, [ADMINISTRATOR] 为 1, [MEMBER] 为 0
+     */
     @SinceMirai("0.32.0")
     val level: Int
         get() = ordinal
 }
 
 /**
- * 是群主
+ * 判断权限是否为群主
  */
 inline fun MemberPermission.isOwner(): Boolean = this == MemberPermission.OWNER
 
 /**
- * 是管理员
+ * 判断权限是否为管理员
  */
 inline fun MemberPermission.isAdministrator(): Boolean = this == MemberPermission.ADMINISTRATOR
 
 /**
- * 是管理员或群主
+ * 判断权限是否为管理员或群主
  */
 inline fun MemberPermission.isOperator(): Boolean = isAdministrator() || isOwner()
 
 
 /**
- * 是群主
+ * 判断权限是否为群主
  */
 inline fun Member.isOwner(): Boolean = this.permission.isOwner()
 
 /**
- * 是管理员
+ * 判断权限是否为管理员
  */
 inline fun Member.isAdministrator(): Boolean = this.permission.isAdministrator()
 
 /**
- * 是管理员或群主
+ * 判断权限是否为管理员或群主
  */
 inline fun Member.isOperator(): Boolean = this.permission.isOperator()
 
@@ -77,9 +78,10 @@ inline fun Member.isOperator(): Boolean = this.permission.isOperator()
 /**
  * 权限不足
  */
-expect class PermissionDeniedException : IllegalStateException {
-    constructor()
-    constructor(message: String?)
+@Suppress("unused")
+class PermissionDeniedException : IllegalStateException {
+    constructor() : super("Permission denied")
+    constructor(message: String?) : super(message)
 }
 
 /**
@@ -87,10 +89,9 @@ expect class PermissionDeniedException : IllegalStateException {
  *
  * @throws PermissionDeniedException
  */
-@OptIn(MiraiExperimentalAPI::class)
 inline fun Group.checkBotPermission(
     required: MemberPermission,
-    lazyMessage: () -> String = {
+    crossinline lazyMessage: () -> String = {
         "Permission denied: required $required, got actual $botPermission for $bot in group $id"
     }
 ) {
@@ -104,9 +105,8 @@ inline fun Group.checkBotPermission(
  *
  * @throws PermissionDeniedException
  */
-@OptIn(MiraiExperimentalAPI::class)
 inline fun Group.checkBotPermissionOperator(
-    lazyMessage: () -> String = {
+    crossinline lazyMessage: () -> String = {
         "Permission denied: required ${MemberPermission.ADMINISTRATOR} or ${MemberPermission.OWNER}, got actual $botPermission for $bot in group $id"
     }
 ) {

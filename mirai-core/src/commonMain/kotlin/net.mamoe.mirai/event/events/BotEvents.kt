@@ -102,7 +102,7 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
     ) : MessageSendEvent(), CancellableEvent
 
     data class FriendMessageSendEvent(
-        override val target: QQ,
+        override val target: Friend,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
 }
@@ -539,9 +539,17 @@ data class MemberUnmuteEvent(
 @SinceMirai("0.36.0")
 data class FriendRemarkChangeEvent(
     override val bot: Bot,
-    val friend: QQ,
+    val friend: Friend,
     val newName: String
-) : BotEvent, Packet
+) : BotEvent, Packet {
+
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    @get:JvmSynthetic
+    @get:JvmName("getFriend")
+    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+    val friendDeprecated: QQ
+        get() = friend
+}
 
 /**
  * 成功添加了一个新好友的事件
@@ -551,9 +559,16 @@ data class FriendAddEvent(
     /**
      * 新好友. 已经添加到 [Bot.friends]
      */
-    val friend: QQ
+    val friend: Friend
 ) : BotEvent, Packet {
     override val bot: Bot get() = friend.bot
+
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    @get:JvmSynthetic
+    @get:JvmName("getFriend")
+    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+    val friendDeprecated: QQ
+        get() = friend
 }
 
 /**
@@ -561,9 +576,16 @@ data class FriendAddEvent(
  */
 @SinceMirai("0.36.0")
 data class FriendDeleteEvent(
-    val friend: QQ
+    val friend: Friend
 ) : BotEvent, Packet {
     override val bot: Bot get() = friend.bot
+
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    @get:JvmSynthetic
+    @get:JvmName("getFriend")
+    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+    val friendDeprecated: QQ
+        get() = friend
 }
 
 /**

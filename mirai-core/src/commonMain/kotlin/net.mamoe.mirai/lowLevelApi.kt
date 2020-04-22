@@ -10,8 +10,8 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.Job
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
@@ -37,13 +37,13 @@ annotation class LowLevelAPI
 @LowLevelAPI
 interface LowLevelBotAPIAccessor {
     /**
-     * 构造一个 [_lowLevelNewQQ] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
+     * 构造一个 [Friend] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
      *
      * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
      * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
      */
     @LowLevelAPI
-    fun _lowLevelNewQQ(friendInfo: FriendInfo): QQ
+    fun _lowLevelNewFriend(friendInfo: FriendInfo): Friend
 
     /**
      * 向服务器查询群列表. 返回值高 32 bits 为 uin, 低 32 bits 为 groupCode

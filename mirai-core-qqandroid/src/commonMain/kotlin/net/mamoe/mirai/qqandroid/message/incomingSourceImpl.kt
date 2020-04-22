@@ -12,8 +12,8 @@
 package net.mamoe.mirai.qqandroid.message
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -57,7 +57,7 @@ internal class MessageSourceFromFriendImpl(
     override val random: Int get() = msg.msgBody.richText.attr!!.random
     override val time: Int get() = msg.msgHead.msgTime
     override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, 0, false) }
-    override val sender: QQ get() = bot.getFriend(msg.msgHead.fromUin)
+    override val sender: Friend get() = bot.getFriend(msg.msgHead.fromUin)
 
     private val jceData by lazy { msg.toJceDataFriendOrTemp(random) }
 

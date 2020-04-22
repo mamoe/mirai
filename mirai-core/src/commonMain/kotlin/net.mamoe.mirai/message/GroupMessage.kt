@@ -14,10 +14,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.message.data.source
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
@@ -44,7 +41,7 @@ class GroupMessage(
 
     override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 
-    inline fun Long.member(): Member = group[this]
+    inline fun At.asMember(): Member = group[this.target]
 
     override fun toString(): String =
         "GroupMessage(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"

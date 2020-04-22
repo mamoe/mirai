@@ -13,15 +13,18 @@ import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
- * [Contact] 中为了让 `Java` 更容易调用的 API
+ * [Contact] 中为了让 `Java` 更容易调用的 API.
+ * 不要用它作为一个类型, 只应使用其中的方法
  */
 @MiraiInternalAPI
 @JavaFriendlyAPI
-expect abstract class ContactJavaFriendlyAPI()
+expect abstract class ContactJavaFriendlyAPI internal constructor()
 
 /**
  * [Member] 中为了让 `Java` 更容易调用的 API
+ * 不要用它作为一个类型, 只应使用其中的方法
  */
+@Suppress("DEPRECATION_ERROR")
 @MiraiInternalAPI
 @JavaFriendlyAPI
-expect abstract class MemberJavaFriendlyAPI : QQ
+expect abstract class MemberJavaFriendlyAPI internal constructor() : QQ // 将来会改为 User

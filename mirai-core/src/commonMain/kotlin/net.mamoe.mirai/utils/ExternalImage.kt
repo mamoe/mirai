@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.utils
 
@@ -18,7 +18,7 @@ import kotlinx.io.core.Input
 import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.OfflineImage
@@ -153,7 +153,7 @@ class ExternalImage private constructor(
 @JvmSynthetic
 suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
     is Group -> contact.uploadImage(this).sendTo(contact)
-    is QQ -> contact.uploadImage(this).sendTo(contact)
+    is User -> contact.uploadImage(this).sendTo(contact)
     else -> error("unreachable")
 }
 
@@ -166,7 +166,7 @@ suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = 
 @JvmSynthetic
 suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact) {
     is Group -> contact.uploadImage(this)
-    is QQ -> contact.uploadImage(this)
+    is User -> contact.uploadImage(this)
     else -> error("unreachable")
 }
 

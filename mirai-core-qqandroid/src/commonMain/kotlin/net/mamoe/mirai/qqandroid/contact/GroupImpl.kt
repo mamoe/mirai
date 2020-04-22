@@ -250,7 +250,7 @@ internal class GroupImpl(
     override fun newMember(memberInfo: MemberInfo): Member {
         return MemberImpl(
             @OptIn(LowLevelAPI::class)
-            bot._lowLevelNewQQ(memberInfo) as QQImpl,
+            bot._lowLevelNewFriend(memberInfo) as FriendImpl,
             this,
             this.coroutineContext,
             memberInfo
@@ -476,23 +476,5 @@ internal class GroupImpl(
         (image.input as? Closeable)?.close()
     }
 
-    override fun toString(): String {
-        return "Group($id)"
-    }
-
-    override fun hashCode(): Int {
-        var result = bot.hashCode()
-        result = 31 * result + id.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        @Suppress("DuplicatedCode", "DuplicatedCode")
-        if (this === other) return true
-        if (other !is Contact) return false
-        if (this::class != other::class) return false
-        return this.id == other.id && this.bot == other.bot
-    }
-
-
+    override fun toString(): String = "Group($id)"
 }

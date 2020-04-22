@@ -1,7 +1,6 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.contact.recall
 import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.MessageReceipt

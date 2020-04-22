@@ -18,27 +18,24 @@ import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.message.data.toMessage
 import kotlin.jvm.JvmSynthetic
 
 /**
- * QQ 对象.
+ * 好友 对象.
+ * 注意: 一个 [Friend] 实例并不是独立的, 它属于一个 [Bot].
+ * 它不能被直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
  *
- * 自 0.39.0 起 mirai 引入 [User] 作为 [Friend] 和 [Member] 的父类,
- * 以备将来支持仅 [Friend] 可用的 API, 如设置备注.
- *
- * 所有 API 均有二进制兼容.
- *
- * 请根据实际情况, 使用 [Friend] 或 [User] 替代.
+ * 对于同一个 [Bot] 任何一个人的 [Friend] 实例都是单一的.
+ * 它不能被直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
  */
-@PlannedRemoval("1.0.0")
-@Deprecated(
-    "use Friend or Person instead",
-    replaceWith = ReplaceWith("Friend", "net.mamoe.mirai.contact.Friend"),
-    level = DeprecationLevel.ERROR
-)
 @Suppress("DEPRECATION_ERROR")
-abstract class QQ : User(), CoroutineScope {
+abstract class Friend : QQ(), CoroutineScope {
+    /**
+     * 请求头像下载链接
+     */
+    // @MiraiExperimentalAPI
+    //suspend fun queryAvatar(): AvatarLink
     /**
      * QQ 号码
      */
@@ -70,5 +67,14 @@ abstract class QQ : User(), CoroutineScope {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    abstract override suspend fun sendMessage(message: Message): MessageReceipt<QQ>
+    abstract override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
+
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
+    @kotlin.internal.InlineOnly // purely virtual
+    @JvmSynthetic
+    suspend inline fun sendMessage(message: String): MessageReceipt<Friend> {
+        return sendMessage(message.toMessage())
+    }
+
+    final override fun toString(): String = "Friend($id)"
 }

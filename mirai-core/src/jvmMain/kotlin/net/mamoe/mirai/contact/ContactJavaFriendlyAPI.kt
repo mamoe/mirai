@@ -205,7 +205,7 @@ actual abstract class ContactJavaFriendlyAPI {
     }
 }
 
-@Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused", "unused")
+@Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused", "unused", "DEPRECATION_ERROR")
 @MiraiInternalAPI
 @JavaFriendlyAPI
 actual abstract class MemberJavaFriendlyAPI : QQ() {

@@ -16,10 +16,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.FriendNameRemark
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.data.PreviousNameList
-import net.mamoe.mirai.data.Profile
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MemberLeaveEvent
@@ -42,7 +39,7 @@ import kotlin.jvm.JvmSynthetic
 @OptIn(LowLevelAPI::class)
 @Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl constructor(
-    val qq: QQImpl, // 不要 WeakRef
+    val qq: FriendImpl, // 不要 WeakRef
     group: GroupImpl,
     override val coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
@@ -52,22 +49,10 @@ internal class MemberImpl constructor(
     @Suppress("unused") // false positive
     val lastMessageSequence: AtomicInt = atomic(-1)
 
-    // region QQ delegate
     override val id: Long = qq.id
     override val nick: String = qq.nick
 
-    @MiraiExperimentalAPI
-    override suspend fun queryProfile(): Profile = qq.queryProfile()
-
-    @MiraiExperimentalAPI
-    override suspend fun queryPreviousNameList(): PreviousNameList = qq.queryPreviousNameList()
-
-    @MiraiExperimentalAPI
-    override suspend fun queryRemark(): FriendNameRemark = qq.queryRemark()
-
-    @OptIn(MiraiInternalAPI::class)
     @JvmSynthetic
-    @Suppress("DuplicatedCode", "UNCHECKED_CAST")
     override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
         return sendMessageImpl(message).also {
             logMessageSent(message)
@@ -92,7 +77,6 @@ internal class MemberImpl constructor(
 
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = qq.uploadImage(image)
-    // endregion
 
     override var permission: MemberPermission = memberInfo.permission
 
@@ -216,23 +200,6 @@ internal class MemberImpl constructor(
             group.members.delegate.removeIf { it.id == this@MemberImpl.id }
             MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
-    }
-
-    override fun hashCode(): Int {
-        var result = bot.hashCode()
-        result = 31 * result + id.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Contact) return false
-        if (this::class != other::class) return false
-        return this.id == other.id && this.bot == other.bot
-    }
-
-    override fun toString(): String {
-        return "Member($id)"
     }
 }
 

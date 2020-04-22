@@ -18,10 +18,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.LowLevelAPI
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.contact.QQ
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
@@ -33,8 +33,8 @@ import net.mamoe.mirai.message.TempMessage
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
+import net.mamoe.mirai.qqandroid.contact.checkIsFriendImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
-import net.mamoe.mirai.qqandroid.contact.checkIsQQImpl
 import net.mamoe.mirai.qqandroid.message.*
 import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -53,10 +53,8 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.*
+import kotlin.collections.firstOrNull
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -191,7 +189,7 @@ internal class MessageSvc {
 
             if (resp.result != 0) {
                 bot.network.logger
-                    .warning("MessageSvc.PushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}")
+                    .warning { "MessageSvc.PushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}" }
                 return EmptyResponse
             }
 
@@ -231,7 +229,7 @@ internal class MessageSvc {
                         }
                         166 -> {
                             val friend = bot.getFriendOrNull(msg.msgHead.fromUin) ?: return@mapNotNull null
-                            friend.checkIsQQImpl()
+                            friend.checkIsFriendImpl()
 
                             if (msg.msgHead.fromUin == bot.id || !bot.firstLoginSucceed) {
                                 return@mapNotNull null
@@ -365,7 +363,7 @@ internal class MessageSvc {
 
         inline fun createToFriend(
             client: QQAndroidClient,
-            qq: QQ,
+            qq: Friend,
             message: MessageChain,
             crossinline sourceCallback: (MessageSourceToFriendImpl) -> Unit
         ): OutgoingPacket {

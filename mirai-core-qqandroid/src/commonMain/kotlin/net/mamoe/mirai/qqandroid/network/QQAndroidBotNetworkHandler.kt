@@ -227,7 +227,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
             data.friendList.forEach {
                 // atomic
                 bot.friends.delegate.addLast(
-                    QQImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
+                    FriendImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
                 ).also { currentFriendCount++ }
             }
             logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }

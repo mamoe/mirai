@@ -409,7 +409,7 @@ internal class OnlinePush {
             0xB3L to lambda528 { bot ->
                 // 08 01 12 52 08 A2 FF 8C F0 03 10 00 1D 15 3D 90 5E 22 2E E6 88 91 E4 BB AC E5 B7 B2 E7 BB 8F E6 98 AF E5 A5 BD E5 8F 8B E5 95 A6 EF BC 8C E4 B8 80 E8 B5 B7 E6 9D A5 E8 81 8A E5 A4 A9 E5 90 A7 21 2A 09 48 69 6D 31 38 38 6D 6F 65 30 07 38 03 48 DD F1 92 B7 07
                 val body = vProtobuf.loadAs(Submsgtype0xb3.SubMsgType0xb3.MsgBody.serializer())
-                val new = bot._lowLevelNewQQ(object : FriendInfo {
+                val new = bot._lowLevelNewFriend(object : FriendInfo {
                     override val uin: Long get() = body.msgAddFrdNotify.fuin
                     override val nick: String get() = body.msgAddFrdNotify.fuinNick
                 })
