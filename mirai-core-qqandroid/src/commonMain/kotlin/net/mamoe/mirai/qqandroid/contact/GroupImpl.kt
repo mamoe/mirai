@@ -282,16 +282,16 @@ internal class GroupImpl(
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
 
-        return sendMessageImpl(message).also {
+        return sendMessageImpl(message, false).also {
             logMessageSent(message)
         }
     }
 
     @OptIn(MiraiExperimentalAPI::class)
-    private suspend fun sendMessageImpl(message: Message): MessageReceipt<Group> {
+    private suspend fun sendMessageImpl(message: Message, isForward: Boolean): MessageReceipt<Group> {
         if (message is MessageChain) {
             if (message.anyIsInstance<ForwardMessage>()) {
-                return sendMessageImpl(message.singleOrNull() ?: error("ForwardMessage must be standalone"))
+                return sendMessageImpl(message.singleOrNull() ?: error("ForwardMessage must be standalone"), true)
             }
         }
         if (message is ForwardMessage) {
@@ -333,7 +333,8 @@ internal class GroupImpl(
             val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.createToGroup(
                 bot.client,
                 this@GroupImpl,
-                msg
+                msg,
+                isForward
             ) {
                 source = it
             }.sendAndExpect()
