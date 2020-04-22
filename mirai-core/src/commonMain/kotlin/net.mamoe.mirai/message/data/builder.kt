@@ -48,13 +48,13 @@ inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> 
  * @see asMessageChain 完成构建
  */
 @OptIn(MiraiExperimentalAPI::class)
-class MessageChainBuilder private constructor(
+open class MessageChainBuilder private constructor(
     private val container: MutableList<SingleMessage>
 ) : MutableList<SingleMessage> by container, Appendable {
     constructor() : this(mutableListOf())
     constructor(initialSize: Int) : this(ArrayList<SingleMessage>(initialSize))
 
-    override fun add(element: SingleMessage): Boolean {
+    final override fun add(element: SingleMessage): Boolean {
         checkBuilt()
         flushCache()
         return addAndCheckConstrainSingle(element)
@@ -72,7 +72,7 @@ class MessageChainBuilder private constructor(
         }
     }
 
-    override fun addAll(elements: Collection<SingleMessage>): Boolean {
+    final override fun addAll(elements: Collection<SingleMessage>): Boolean {
         checkBuilt()
         flushCache()
         return addAll(elements.flatten())
@@ -124,9 +124,9 @@ class MessageChainBuilder private constructor(
         withCache { append(charSequence) }
     }
 
-    override fun append(value: Char): MessageChainBuilder = withCache { append(value) }
-    override fun append(value: CharSequence?): MessageChainBuilder = withCache { append(value) }
-    override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): MessageChainBuilder =
+    final override fun append(value: Char): MessageChainBuilder = withCache { append(value) }
+    final override fun append(value: CharSequence?): MessageChainBuilder = withCache { append(value) }
+    final override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): MessageChainBuilder =
         withCache { append(value, startIndex, endIndex) }
 
     fun append(message: Message): MessageChainBuilder = apply { add(message) }
@@ -153,27 +153,27 @@ class MessageChainBuilder private constructor(
     ///////
     // FOR IMMUTABLE SAFETY
 
-    override fun remove(element: SingleMessage): Boolean {
+    final override fun remove(element: SingleMessage): Boolean {
         checkBuilt()
         return container.remove(element)
     }
 
-    override fun removeAll(elements: Collection<SingleMessage>): Boolean {
+    final override fun removeAll(elements: Collection<SingleMessage>): Boolean {
         checkBuilt()
         return container.removeAll(elements)
     }
 
-    override fun removeAt(index: Int): SingleMessage {
+    final override fun removeAt(index: Int): SingleMessage {
         checkBuilt()
         return container.removeAt(index)
     }
 
-    override fun clear() {
+    final override fun clear() {
         checkBuilt()
         return container.clear()
     }
 
-    override fun set(index: Int, element: SingleMessage): SingleMessage {
+    final override fun set(index: Int, element: SingleMessage): SingleMessage {
         checkBuilt()
         return container.set(index, element)
     }
