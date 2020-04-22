@@ -42,7 +42,7 @@ internal class MessageValidationData @OptIn(MiraiInternalAPI::class) constructor
 }
 
 @OptIn(MiraiInternalAPI::class)
-internal fun MessageChain.calculateValidationDataForGroup(
+internal fun Collection<MessageChain>.calculateValidationDataForGroup(
     sequenceId: Int,
     time: Int,
     random: UInt,
@@ -50,10 +50,9 @@ internal fun MessageChain.calculateValidationDataForGroup(
     botId: Long,
     botMemberNameCard: String
 ): MessageValidationData {
-    val richTextElems = this.toRichTextElems(forGroup = true, withGeneralFlags = false)
 
     val msgTransmit = MsgTransmit.PbMultiMsgTransmit(
-        msg = listOf(
+        msg = this.map { chain ->
             MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
                     fromUin = botId,
@@ -73,11 +72,11 @@ internal fun MessageChain.calculateValidationDataForGroup(
                 ),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = richTextElems.toMutableList()
+                        elems = chain.toRichTextElems(forGroup = true, withGeneralFlags = false).toMutableList()
                     )
                 )
             )
-        )
+        }
     )
 
     val bytes = msgTransmit.toByteArray(MsgTransmit.PbMultiMsgTransmit.serializer())
@@ -105,6 +104,7 @@ internal class MultiMsg {
 
         // captured from group
         fun createForGroupLongMessage(
+            buType: Int,
             client: QQAndroidClient,
             messageData: MessageValidationData,
             dstUin: Long // group uin
@@ -112,7 +112,7 @@ internal class MultiMsg {
             writeProtoBuf(
                 MultiMsg.ReqBody.serializer(),
                 MultiMsg.ReqBody(
-                    buType = 1,
+                    buType = buType, // 1: long, 2: 合并转发
                     buildVer = "8.2.0.1296",
                     multimsgApplyupReq = listOf(
                         MultiMsg.MultiMsgApplyUpReq(

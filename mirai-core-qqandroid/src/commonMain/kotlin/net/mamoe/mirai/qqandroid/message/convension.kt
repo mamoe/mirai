@@ -52,6 +52,17 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
         if (it is RichMessage) {
             val content = MiraiPlatformUtils.zip(it.content.toByteArray())
             when (it) {
+                is ForwardMessageInternal -> {
+                    elements.add(
+                        ImMsgBody.Elem(
+                            richMsg = ImMsgBody.RichMsg(
+                                serviceId = it.serviceId, // ok
+                                template1 = byteArrayOf(1) + content
+                            )
+                        )
+                    )
+                    transformOneMessage(UNSUPPORTED_MERGED_MESSAGE_PLAIN)
+                }
                 is LongMessage -> {
                     check(longTextResId == null) { "There must be no more than one LongMessage element in the message chain" }
                     elements.add(
@@ -136,6 +147,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     }
                 }
             }
+            is ForwardMessage,
             is MessageSource, // mirai metadata only
             is RichMessage // already transformed above
             -> {
@@ -324,7 +336,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                         if (resId != null) {
                             list.add(LongMessage(content, resId))
                         } else {
-                            list.add(ForwardMessage(content))
+                            list.add(ForwardMessageInternal(content))
                         }
                     }
 

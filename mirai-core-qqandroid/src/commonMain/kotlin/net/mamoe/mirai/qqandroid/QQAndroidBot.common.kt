@@ -550,12 +550,18 @@ internal abstract class QQAndroidBotBase constructor(
     @JvmSynthetic
     @LowLevelAPI
     @MiraiExperimentalAPI
-    internal suspend fun lowLevelSendLongGroupMessage(groupCode: Long, message: MessageChain): MessageReceipt<Group> {
+    internal suspend fun lowLevelSendGroupLongOrForwardMessage(
+        groupCode: Long,
+        message: Collection<MessageChain>,
+        isLong: Boolean
+    ): MessageReceipt<Group> {
+        message.forEach {
+            it.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+        }
         val group = getGroup(groupCode)
 
         val time = currentTimeSeconds
         val sequenceId = client.atomicNextMessageSequenceId()
-        message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
         network.run {
             val data = message.calculateValidationDataForGroup(
@@ -569,6 +575,7 @@ internal abstract class QQAndroidBotBase constructor(
 
             val response =
                 MultiMsg.ApplyUp.createForGroupLongMessage(
+                    buType = if (isLong) 1 else 2,
                     client = this@QQAndroidBotBase.client,
                     messageData = data,
                     dstUin = Group.calculateGroupUinByGroupCode(groupCode)
@@ -578,10 +585,7 @@ internal abstract class QQAndroidBotBase constructor(
             when (response) {
                 is MultiMsg.ApplyUp.Response.MessageTooLarge ->
                     error(
-                        "Internal error: message is too large, but this should be handled before sending. Message content:" +
-                                message.joinToString {
-                                    "${it::class.simpleName}(l=${it.toString().length})"
-                                }
+                        "Internal error: message is too large, but this should be handled before sending. "
                     )
                 is MultiMsg.ApplyUp.Response.RequireUpload -> {
                     resId = response.proto.msgResid
@@ -639,13 +643,27 @@ internal abstract class QQAndroidBotBase constructor(
                 }
             }
 
-            return group.sendMessage(
-                RichMessage.longMessage(
-                    brief = message.joinToString(limit = 27) { it.contentToString() },
-                    resId = resId,
-                    timeSeconds = time
+            return if (isLong) {
+                group.sendMessage(
+                    RichMessage.longMessage(
+                        brief = message.joinToString(limit = 27) { it.contentToString() },
+                        resId = resId,
+                        timeSeconds = time
+                    )
                 )
-            )
+            } else {
+                group.sendMessage(
+                    RichMessage.forwardMessage(
+                        resId = resId,
+                        timeSeconds = time,
+                        preview = message.take(3).joinToString {
+                            """
+                                <title size="26" color="#777777" maxLines="2" lineSpace="12">${it.joinToString(limit = 10)}</title>
+                            """.trimIndent()
+                        }
+                    )
+                )
+            }
         }
     }
 
@@ -745,4 +763,27 @@ private fun RichMessage.Templates.longMessage(brief: String, resId: String, time
             """.trimIndent()
 
     return LongMessage(template, resId)
+}
+
+
+private fun RichMessage.Templates.forwardMessage(
+    resId: String,
+    timeSeconds: Long,
+    preview: String
+): ForwardMessageInternal {
+    val template = """
+        <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="[聊天记录]"
+             m_resid="$resId" m_fileName="$timeSeconds"
+             tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
+            <item layout="1" advertiser_id="0" aid="0">
+                <title size="34" maxLines="2" lineSpace="12">群聊的聊天记录</title>
+                $preview
+                <hr hidden="false" style="0"/>
+                <summary size="26" color="#777777">查看3条转发消息</summary>
+            </item>
+            <source name="聊天记录" icon="" action="" appid="-1"/>
+        </msg>
+    """.trimIndent()
+    return ForwardMessageInternal(template)
 }

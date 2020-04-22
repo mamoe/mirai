@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+@file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 
 package net.mamoe.mirai.qqandroid.contact
@@ -289,10 +289,18 @@ internal class GroupImpl(
 
     @OptIn(MiraiExperimentalAPI::class)
     private suspend fun sendMessageImpl(message: Message): MessageReceipt<Group> {
+        if (message is MessageChain) {
+            if (message.anyIsInstance<ForwardMessage>()) {
+                return sendMessageImpl(message.singleOrNull() ?: error("ForwardMessage must be standalone"))
+            }
+        }
+        if (message is ForwardMessage) {
+            return bot.lowLevelSendGroupLongOrForwardMessage(this.id, message.messageList, false)
+        }
 
         val msg: MessageChain
 
-        if (message !is LongMessage) {
+        if (message !is LongMessage && message !is ForwardMessageInternal) {
             val event = GroupMessageSendEvent(this, message.asMessageChain()).broadcast()
             if (event.isCancelled) {
                 throw EventCancelledException("cancelled by GroupMessageSendEvent")
@@ -314,7 +322,7 @@ internal class GroupImpl(
             }
 
             if (length > 702 || imageCnt > 2)
-                return bot.lowLevelSendLongGroupMessage(this.id, event.message)
+                return bot.lowLevelSendGroupLongOrForwardMessage(this.id, listOf(event.message), true)
 
             msg = event.message
         } else msg = message.asMessageChain()
@@ -334,7 +342,7 @@ internal class GroupImpl(
                     120 -> throw BotIsBeingMutedException(this@GroupImpl)
                     34 -> {
                         kotlin.runCatching { // allow retry once
-                            return bot.lowLevelSendLongGroupMessage(id, msg)
+                            return bot.lowLevelSendGroupLongOrForwardMessage(id, listOf(msg), true)
                         }.getOrElse {
                             throw IllegalStateException("internal error: send message failed(34)", it)
                         }

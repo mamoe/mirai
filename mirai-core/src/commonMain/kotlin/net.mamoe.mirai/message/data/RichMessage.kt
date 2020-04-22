@@ -155,22 +155,18 @@ constructor(serviceId: Int = 60, content: String) : ServiceMessage(serviceId, co
 @SinceMirai("0.31.0")
 @MiraiExperimentalAPI
 class LongMessage internal constructor(content: String, val resId: String) : ServiceMessage(35, content) {
-    companion object Key : Message.Key<XmlMessage> {
+    companion object Key : Message.Key<LongMessage> {
         override val typeName: String get() = "LongMessage"
     }
 }
 
 /**
  * 合并转发消息
- * @suppress 此 API 不稳定
+ * @suppress 此 API 非常不稳定
  */
-@SinceMirai("0.36.0")
-@MiraiExperimentalAPI
-class ForwardMessage(content: String) : ServiceMessage(35, content) {
-    companion object Key : Message.Key<XmlMessage> {
-        override val typeName: String get() = "ForwardMessage"
-    }
-}
+@SinceMirai("0.39.0")
+@MiraiExperimentalAPI("此 API 非常不稳定")
+internal class ForwardMessageInternal(content: String) : ServiceMessage(35, content)
 
 /*
 commonElem=CommonElem#750141174 {
