@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.message
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.*
 import net.mamoe.mirai.event.TestEvent
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.syncFromEvent
@@ -20,7 +17,6 @@ import net.mamoe.mirai.test.runBlocking
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
@@ -29,7 +25,7 @@ internal class SubscribingGetTest {
     @Test
     fun testSyncFromEvent(): Unit = runBlocking {
         withTimeout(500) {
-            suspendCoroutine<Unit> { cont ->
+            suspendCancellableCoroutine<Unit> { cont ->
                 launch {
                     syncFromEvent(5000) { _: TestEvent ->
                         cont.resume(Unit)
