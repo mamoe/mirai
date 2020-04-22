@@ -43,4 +43,4 @@ class BotIsBeingMutedException(
     val target: Group
 ) : RuntimeException("bot is being muted, remaining ${target.botMuteRemaining} seconds")
 
-val BotIsBeingMutedException.botMuteRemaining: Int get() = target.botMuteRemaining
+inline val BotIsBeingMutedException.botMuteRemaining: Int get() = target.botMuteRemaining
