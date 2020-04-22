@@ -28,6 +28,7 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -55,7 +56,13 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
          * 复制一份此时的 [Bot] 实例列表.
          */
         @JvmStatic
-        val instances: List<WeakRef<Bot>>
+        val instances: Sequence<Bot>
+            get() = BotImpl.instances.asSequence().mapNotNull { it.get() }
+
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+        @JvmStatic
+        internal val instancesDeprecated: List<WeakRef<Bot>>
+            @JvmName("instances")
             get() = BotImpl.instances.toList()
 
         /**
