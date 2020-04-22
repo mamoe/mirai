@@ -25,34 +25,10 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
-
-/**
- * 由一条消息中的 [QuoteReply] 得到的 [MessageSource].
- * 此消息源可能来自一条与机器人无关的消息. 因此无法提供对象化的 `sender` 或 `target` 获取.
- */
-@SinceMirai("0.33.0")
-abstract class OfflineMessageSource : MessageSource() {
-    companion object Key : Message.Key<OfflineMessageSource> {
-        override val typeName: String
-            get() = "OfflineMessageSource"
-    }
-
-    enum class Kind {
-        GROUP,
-        FRIEND,
-
-        @SinceMirai("0.36.0")
-        TEMP
-    }
-
-    /**
-     * 消息种类
-     */
-    abstract val kind: Kind
-
-    // final override fun toString(): String = "OfflineMessageSource(sender=$senderId, target=$targetId)"
-}
-
+@SinceMirai("0.39.0")
+@JvmName("toOfflineMessageSource")
+fun OnlineMessageSource.toOffline(): OfflineMessageSource =
+    OfflineMessageSourceByOnline(this)
 
 ///////////////
 //// AMEND ////
@@ -281,4 +257,23 @@ private fun determineKind(source: MessageSource): OfflineMessageSource.Kind {
         source.isAboutTemp() -> OfflineMessageSource.Kind.TEMP
         else -> error("stub")
     }
+}
+
+internal class OfflineMessageSourceByOnline(
+    private val onlineMessageSource: OnlineMessageSource
+) : OfflineMessageSource() {
+    override val kind: Kind
+        get() = when {
+            onlineMessageSource.isAboutGroup() -> Kind.GROUP
+            onlineMessageSource.isAboutFriend() -> Kind.FRIEND
+            onlineMessageSource.isAboutTemp() -> Kind.TEMP
+            else -> error("stub")
+        }
+    override val bot: Bot get() = onlineMessageSource.bot
+    override val id: Int get() = onlineMessageSource.id
+    override val internalId: Int get() = onlineMessageSource.internalId
+    override val time: Int get() = onlineMessageSource.time
+    override val fromId: Long get() = onlineMessageSource.fromId
+    override val targetId: Long get() = onlineMessageSource.targetId
+    override val originalMessage: MessageChain get() = onlineMessageSource.originalMessage
 }
