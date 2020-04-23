@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.unsafeWeakRef
 
 @Suppress("unused", "NOTHING_TO_INLINE")
 class GroupMessage(
-    val senderName: String,
+    override val senderName: String,
     /**
      * 发送方权限.
      */

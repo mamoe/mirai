@@ -97,6 +97,8 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
     @WeakRefProperty
     abstract val sender: TSender
 
+    abstract val senderName: String
+
     /**
      * 消息内容
      */

@@ -48,6 +48,7 @@ class FriendMessage constructor(
     override val sender: Friend by sender.unsafeWeakRef()
     override val bot: Bot get() = sender.bot
     override val subject: Friend get() = sender
+    override val senderName: String get() = sender.nick
     override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
 
     override fun toString(): String = "FriendMessage(sender=${sender.id}, message=$message)"
