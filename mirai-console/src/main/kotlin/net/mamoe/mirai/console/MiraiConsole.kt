@@ -31,15 +31,16 @@ object MiraiConsole {
     /**
      * 获取从Console登陆上的Bot, Bots
      * */
-    val bots get() = Bot.instances
+    val bots: List<Bot> get() = Bot.instances
 
     fun getBotOrNull(uin: Long): Bot? {
-        return bots.asSequence().mapNotNull { it.get() }.firstOrNull { it.id == uin }
+        return bots.firstOrNull { it.id == uin }
     }
 
-    class BotNotFoundException(uin: Long):Exception("Bot $uin Not Found")
-    fun getBotOrThrow(uin: Long):Bot{
-        return bots.asSequence().mapNotNull { it.get() }.firstOrNull { it.id == uin }?:throw BotNotFoundException(uin)
+    class BotNotFoundException(uin: Long) : Exception("Bot $uin Not Found")
+
+    fun getBotOrThrow(uin: Long): Bot {
+        return bots.firstOrNull { it.id == uin } ?: throw BotNotFoundException(uin)
     }
 
     /**
@@ -107,7 +108,7 @@ object MiraiConsole {
         CommandManager.cancel()
         try {
             bots.forEach {
-                it.get()?.close()
+                it.close()
             }
         } catch (ignored: Exception) {
         }

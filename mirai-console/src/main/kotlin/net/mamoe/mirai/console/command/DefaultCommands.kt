@@ -15,7 +15,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.plugins.PluginManager
-import net.mamoe.mirai.console.utils.*
+import net.mamoe.mirai.console.utils.addManager
+import net.mamoe.mirai.console.utils.checkManager
+import net.mamoe.mirai.console.utils.managers
+import net.mamoe.mirai.console.utils.removeManager
 import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.getFriendOrNull
@@ -196,11 +199,10 @@ object DefaultCommands {
                         val bot = args[0]
                         var find = false
                         MiraiConsole.bots.forEach {
-                            if (it.get()?.id.toString().contains(bot)) {
+                            if (it.id.toString().contains(bot)) {
                                 find = true
                                 appendMessage(
-                                    "" + it.get()?.id + ": 在线中; 好友数量:" + it.get()?.friends?.size + "; 群组数量:" + it.get()
-                                        ?.groups?.size
+                                    "" + it.id + ": 在线中; 好友数量:" + it.friends.size + "; 群组数量:" + it.groups.size
                                 )
                             }
                         }
@@ -228,7 +230,7 @@ object DefaultCommands {
                         MiraiConsole.logger("还没有BOT登录")
                         return@onCommand false
                     }
-                    MiraiConsole.bots[0].get()
+                    MiraiConsole.bots[0]
                 } else {
                     MiraiConsole.getBotOrNull(it[0].toLong())
                 }
@@ -312,7 +314,7 @@ object DefaultCommands {
             name = "install"
             description = "Install plugin from PluginCenter"
             usage = "/install [plugin-name] to install plugin or /install [page-num] to show list "
-            onCommand {
+            onCommand { args ->
 
                 val center = PluginCenter.Default
 
@@ -341,10 +343,10 @@ object DefaultCommands {
                     }
                 }
 
-                if (it.isEmpty()) {
+                if (args.isEmpty()) {
                     showPage(1)
                 } else {
-                    val arg = it[0]
+                    val arg = args[0]
 
                     val id = try {
                         arg.toInt()
