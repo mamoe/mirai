@@ -43,8 +43,7 @@ import java.net.URL
  */
 actual interface Image : Message, MessageContent {
     actual companion object Key : Message.Key<Image> {
-        actual override val typeName: String
-            get() = "Image"
+        actual override val typeName: String get() = "Image"
     }
 
     /**

@@ -15,12 +15,12 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -65,7 +65,18 @@ expect interface Image : Message, MessageContent {
 @Suppress("FunctionName")
 @JsName("newImage")
 @JvmName("newImage")
-fun Image(imageId: String): Image = when {
+fun Image(imageId: String): OfflineImage = when {
+    imageId.startsWith('/') -> OfflineFriendImage(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
+    imageId.length == 42 || imageId.startsWith('{') && imageId.endsWith('}') -> OfflineGroupImage(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
+    else -> throw IllegalArgumentException("illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
+}
+
+@JvmSynthetic
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@Suppress("FunctionName")
+@JsName("newImage")
+@JvmName("newImage")
+fun Image2(imageId: String): Image = when {
     imageId.startsWith('/') -> OfflineFriendImage(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
     imageId.length == 42 || imageId.startsWith('{') && imageId.endsWith('}') -> OfflineGroupImage(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
     else -> throw IllegalArgumentException("illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
@@ -100,8 +111,7 @@ sealed class AbstractImage : Image {
  */
 interface OnlineImage : Image {
     companion object Key : Message.Key<OnlineImage> {
-        override val typeName: String
-            get() = "OnlineImage"
+        override val typeName: String get() = "OnlineImage"
     }
 
     /**
@@ -113,6 +123,7 @@ interface OnlineImage : Image {
 /**
  * 查询原图下载链接.
  */
+@JvmSynthetic
 suspend fun Image.queryUrl(): String {
     @OptIn(MiraiInternalAPI::class)
     return when (this) {
@@ -135,8 +146,7 @@ suspend fun Image.queryUrl(): String {
  */
 interface OfflineImage : Image {
     companion object Key : Message.Key<OfflineImage> {
-        override val typeName: String
-            get() = "OfflineImage"
+        override val typeName: String get() = "OfflineImage"
     }
 }
 
@@ -163,26 +173,8 @@ suspend fun OfflineImage.queryUrl(): String {
 @OptIn(MiraiInternalAPI::class)
 sealed class GroupImage : AbstractImage() {
     companion object Key : Message.Key<GroupImage> {
-        override val typeName: String
-            get() = "GroupImage"
+        override val typeName: String get() = "GroupImage"
     }
-
-    abstract val filepath: String
-    abstract val fileId: Int
-    abstract val serverIp: Int
-    abstract val serverPort: Int
-    abstract val fileType: Int
-    abstract val signature: ByteArray
-    abstract val useful: Int
-    abstract val md5: ByteArray
-    abstract val bizType: Int
-    abstract val imageType: Int
-    abstract val width: Int
-    abstract val height: Int
-    abstract val source: Int
-    abstract val size: Int
-    abstract val pbReserve: ByteArray
-    abstract val original: Int
 }
 
 /**
@@ -190,35 +182,13 @@ sealed class GroupImage : AbstractImage() {
  */
 @Serializable
 data class OfflineGroupImage(
-    override val filepath: String, // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
-    override val md5: ByteArray
-) : GroupImage(), OfflineImage {
-    constructor(imageId: String) : this(filepath = imageId, md5 = calculateImageMd5ByImageId(imageId))
+    override val imageId: String
+) : GroupImage(), OfflineImage
 
-    override val fileId: Int get() = 0
-    override val serverIp: Int get() = 0
-    override val serverPort: Int get() = 0
-    override val fileType: Int get() = 0 // 0
-    override val signature: ByteArray get() = EMPTY_BYTE_ARRAY
-    override val useful: Int get() = 1
-    override val bizType: Int get() = 0
-    override val imageType: Int get() = 0
-    override val width: Int get() = 0
-    override val height: Int get() = 0
-    override val source: Int get() = 200
-    override val size: Int get() = 0
-    override val original: Int get() = 1
-    override val pbReserve: ByteArray get() = EMPTY_BYTE_ARRAY
-    override val imageId: String get() = filepath
-
-    override fun hashCode(): Int {
-        return filepath.hashCode() + 31 * md5.hashCode()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is OfflineGroupImage && other::class == this::class && other.md5.contentEquals(this.md5) && other.filepath == this.filepath
-    }
-}
+@get:JvmName("calculateImageMd5")
+@SinceMirai("0.39.0")
+val Image.md5: ByteArray
+    get() = calculateImageMd5ByImageId(imageId)
 
 /**
  * 接收消息时获取到的 [GroupImage]. 它可以直接获取下载链接 [originUrl]
@@ -239,51 +209,19 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
 @OptIn(MiraiInternalAPI::class)
 sealed class FriendImage : AbstractImage() {
     companion object Key : Message.Key<FriendImage> {
-        override val typeName: String
-            get() = "FriendImage"
+        override val typeName: String get() = "FriendImage"
     }
 
-    abstract val resourceId: String
-    abstract val md5: ByteArray
-    abstract val filepath: String
-    abstract val fileLength: Int
-    abstract val height: Int
-    abstract val width: Int
-    open val bizType: Int get() = 0
-    open val imageType: Int get() = 1000
-    abstract val fileId: Int
-    open val downloadPath: String get() = resourceId
     open val original: Int get() = 1
-
-    override val imageId: String get() = resourceId
 }
 
 /**
  * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [Bot.queryImageUrl]
  */
+@Serializable
 data class OfflineFriendImage(
-    override val resourceId: String,
-    override val md5: ByteArray,
-    @Transient override val filepath: String = resourceId,
-    @Transient override val fileLength: Int = 0,
-    @Transient override val height: Int = 0,
-    @Transient override val width: Int = 0,
-    @Transient override val bizType: Int = 0,
-    @Transient override val imageType: Int = 1000,
-    @Transient override val downloadPath: String = resourceId,
-    @Transient override val fileId: Int = 0
-) : FriendImage(), OfflineImage {
-    constructor(imageId: String) : this(resourceId = imageId, md5 = calculateImageMd5ByImageId(imageId))
-
-    override fun hashCode(): Int {
-        return resourceId.hashCode() + 31 * md5.hashCode()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is OfflineFriendImage && other::class == this::class &&
-                other.md5.contentEquals(this.md5) && other.resourceId == this.resourceId
-    }
-}
+    override val imageId: String
+) : FriendImage(), OfflineImage
 
 /**
  * 接收消息时获取到的 [FriendImage]. 它可以直接获取下载链接 [originUrl]

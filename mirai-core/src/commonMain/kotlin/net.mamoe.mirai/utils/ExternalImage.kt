@@ -23,6 +23,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.sendTo
+import net.mamoe.mirai.message.data.toLongUnsigned
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -34,52 +35,32 @@ import kotlin.jvm.JvmSynthetic
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
 class ExternalImage private constructor(
-    val width: Int,
-    val height: Int,
     val md5: ByteArray,
-    imageFormat: String,
     val input: Any, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
-    val inputSize: Long, // dont be greater than Int.MAX
-    val filename: String
+    val inputSize: Long // dont be greater than Int.MAX
 ) {
     constructor(
-        width: Int,
-        height: Int,
         md5: ByteArray,
-        imageFormat: String,
         input: ByteReadChannel,
-        inputSize: Long, // dont be greater than Int.MAX
-        filename: String
-    ) : this(width, height, md5, imageFormat, input as Any, inputSize, filename)
+        inputSize: Long // dont be greater than Int.MAX
+    ) : this(md5, input as Any, inputSize)
 
     constructor(
-        width: Int,
-        height: Int,
         md5: ByteArray,
-        imageFormat: String,
         input: Input,
-        inputSize: Long, // dont be greater than Int.MAX
-        filename: String
-    ) : this(width, height, md5, imageFormat, input as Any, inputSize, filename)
+        inputSize: Long // dont be greater than Int.MAX
+    ) : this(md5, input as Any, inputSize)
 
     constructor(
-        width: Int,
-        height: Int,
         md5: ByteArray,
-        imageFormat: String,
-        input: ByteReadPacket,
-        filename: String
-    ) : this(width, height, md5, imageFormat, input as Any, input.remaining, filename)
+        input: ByteReadPacket
+    ) : this(md5, input as Any, input.remaining)
 
     @OptIn(InternalSerializationApi::class)
     constructor(
-        width: Int,
-        height: Int,
         md5: ByteArray,
-        imageFormat: String,
-        input: InputStream,
-        filename: String
-    ) : this(width, height, md5, imageFormat, input as Any, input.available().toLong(), filename)
+        input: InputStream
+    ) : this(md5, input as Any, input.available().toLongUnsigned())
 
     init {
         require(inputSize < 30L * 1024 * 1024) { "file is too big. Maximum is about 20MB" }
@@ -87,63 +68,30 @@ class ExternalImage private constructor(
 
     companion object {
         fun generateUUID(md5: ByteArray): String {
-            return "${md5[0..3]}-${md5[4..5]}-${md5[6..7]}-${md5[8..9]}-${md5[10..15]}"
+            return "${md5[0, 3]}-${md5[4, 5]}-${md5[6, 7]}-${md5[8, 9]}-${md5[10, 15]}"
         }
 
-        fun generateImageId(md5: ByteArray, imageType: Int): String {
-            return """{${generateUUID(md5)}}.${determineFormat(imageType)}"""
-        }
-
-        fun determineImageType(format: String): Int {
-            return when (format) {
-                "jpg" -> 1000
-                "png" -> 1001
-                "webp" -> 1002
-                "bmp" -> 1005
-                "gig" -> 2000
-                "apng" -> 2001
-                "sharpp" -> 1004
-                else -> 1000 // unsupported, just make it jpg
-            }
-        }
-
-        fun determineFormat(imageType: Int): String {
-            return when (imageType) {
-                1000 -> "jpg"
-                1001 -> "png"
-                1002 -> "webp"
-                1005 -> "bmp"
-                2000 -> "gig"
-                2001 -> "apng"
-                1004 -> "sharpp"
-                else -> "jpg" // unsupported, just make it jpg
-            }
+        fun generateImageId(md5: ByteArray): String {
+            return """{${generateUUID(md5)}}.gif"""
         }
     }
 
-    val format: String =
-        when (val it = imageFormat.toLowerCase()) {
-            "jpeg" -> "jpg" //必须转换
-            else -> it
-        }
-
-    /**
+    /*
      * ImgType:
      *  JPG:    1000
      *  PNG:    1001
      *  WEBP:   1002
      *  BMP:    1005
-     *  GIG:    2000 // TODO gig? gif?
+     *  GIG:    2000 // gig? gif?
      *  APNG:   2001
      *  SHARPP: 1004
      */
-    val imageType: Int
-        get() = determineImageType(format)
 
-    override fun toString(): String = "[ExternalImage(${width}x$height $format)]"
+
+    override fun toString(): String = "[ExternalImage(${generateUUID(md5)})]"
 
     fun calculateImageResourceId(): String {
-        return "{${generateUUID(md5)}}.$format"
+        return "{${generateUUID(md5)}}.gif"
     }
 }
 
@@ -176,8 +124,8 @@ suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact
 @JvmSynthetic
 suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
 
-internal operator fun ByteArray.get(range: IntRange): String = buildString {
-    range.forEach {
+internal operator fun ByteArray.get(rangeStart: Int, rangeEnd: Int): String = buildString {
+    for (it in rangeStart..rangeEnd) {
         append(this@get[it].fixToString())
     }
 }

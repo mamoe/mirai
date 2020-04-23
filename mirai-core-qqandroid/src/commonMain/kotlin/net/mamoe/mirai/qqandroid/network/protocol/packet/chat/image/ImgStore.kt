@@ -19,6 +19,19 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
+import kotlin.random.Random
+import kotlin.random.nextInt
+
+internal fun getRandomString(length: Int): String =
+    getRandomString(length, *defaultRanges)
+
+private val defaultRanges: Array<CharRange> = arrayOf('a'..'z', 'A'..'Z', '0'..'9')
+
+internal fun getRandomString(length: Int, charRange: CharRange): String =
+    String(CharArray(length) { charRange.random() })
+
+internal fun getRandomString(length: Int, vararg charRanges: CharRange): String =
+    String(CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() })
 
 internal class ImgStore {
     object GroupPicUp : OutgoingPacketFactory<GroupPicUp.Response>("ImgStore.GroupPicUp") {
@@ -33,7 +46,7 @@ internal class ImgStore {
             picHeight: Int = 0, // not orthodox
             picType: Int = 1000,
             fileId: Long = 0,
-            filename: String,
+            filename: String = getRandomString(16) + ".gif", // make server happier
             srcTerm: Int = 5,
             platformType: Int = 9,
             buType: Int = 1,

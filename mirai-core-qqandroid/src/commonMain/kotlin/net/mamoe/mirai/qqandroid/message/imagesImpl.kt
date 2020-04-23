@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.message
 
-import net.mamoe.mirai.message.data.OfflineFriendImage
-import net.mamoe.mirai.message.data.OfflineGroupImage
-import net.mamoe.mirai.message.data.OnlineFriendImage
-import net.mamoe.mirai.message.data.OnlineGroupImage
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.utils.hexToBytes
 import net.mamoe.mirai.utils.ExternalImage
@@ -20,28 +17,12 @@ import net.mamoe.mirai.utils.ExternalImage
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
 ) : OnlineGroupImage() {
-    override val filepath: String = delegate.filePath
-    override val fileId: Int get() = delegate.fileId
-    override val serverIp: Int get() = delegate.serverIp
-    override val serverPort: Int get() = delegate.serverPort
-    override val fileType: Int get() = delegate.fileType
-    override val signature: ByteArray get() = delegate.signature
-    override val useful: Int get() = delegate.useful
-    override val md5: ByteArray get() = delegate.md5
-    override val bizType: Int get() = delegate.bizType
-    override val imageType: Int get() = delegate.imageType
-    override val width: Int get() = delegate.width
-    override val height: Int get() = delegate.height
-    override val source: Int get() = delegate.source
-    override val size: Int get() = delegate.size
-    override val original: Int get() = delegate.origin
-    override val pbReserve: ByteArray get() = delegate.pbReserve
-    override val imageId: String = ExternalImage.generateImageId(delegate.md5, imageType)
+    override val imageId: String = ExternalImage.generateImageId(delegate.md5)
     override val originUrl: String
         get() = "http://gchat.qpic.cn" + delegate.origUrl
 
     override fun equals(other: Any?): Boolean {
-        return other is OnlineGroupImageImpl && other.filepath == this.filepath && other.md5.contentEquals(this.md5)
+        return other is OnlineGroupImageImpl && other.imageId == this.imageId
     }
 
     override fun hashCode(): Int {
@@ -52,23 +33,13 @@ internal class OnlineGroupImageImpl(
 internal class OnlineFriendImageImpl(
     internal val delegate: ImMsgBody.NotOnlineImage
 ) : OnlineFriendImage() {
-    override val resourceId: String get() = delegate.resId
-    override val md5: ByteArray get() = delegate.picMd5
-    override val filepath: String get() = delegate.filePath
-    override val fileLength: Int get() = delegate.fileLen
-    override val height: Int get() = delegate.picHeight
-    override val width: Int get() = delegate.picWidth
-    override val bizType: Int get() = delegate.bizType
-    override val imageType: Int get() = delegate.imgType
-    override val downloadPath: String get() = delegate.downloadPath
-    override val fileId: Int get() = delegate.fileId
+    override val imageId: String get() = delegate.resId
     override val original: Int get() = delegate.original
     override val originUrl: String
         get() = "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
 
     override fun equals(other: Any?): Boolean {
-        return other is OnlineFriendImageImpl && other.resourceId == this.resourceId && other.md5
-            .contentEquals(this.md5)
+        return other is OnlineFriendImageImpl && other.imageId == this.imageId
     }
 
     override fun hashCode(): Int {
@@ -78,22 +49,8 @@ internal class OnlineFriendImageImpl(
 
 internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
-        filePath = this.filepath,
-        fileId = this.fileId,
-        serverIp = this.serverIp,
-        serverPort = this.serverPort,
-        fileType = this.fileType,
-        signature = this.signature,
-        useful = this.useful,
+        filePath = this.imageId,
         md5 = this.md5,
-        bizType = this.bizType,
-        imageType = this.imageType,
-        width = this.width,
-        height = this.height,
-        source = this.source,
-        size = this.size,
-        origin = this.original,
-        pbReserve = this.pbReserve,
         flag = ByteArray(4),
         //_400Height = 235,
         //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
@@ -108,18 +65,12 @@ private val oldData: ByteArray =
 
 internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
     return ImMsgBody.NotOnlineImage(
-        filePath = this.filepath,
-        resId = this.resourceId,
+        filePath = this.imageId,
+        resId = this.imageId,
         oldPicMd5 = false,
         picMd5 = this.md5,
-        fileLen = this.fileLength,
-        picHeight = this.height,
-        picWidth = this.width,
-        bizType = this.bizType,
-        imgType = this.imageType,
-        downloadPath = this.downloadPath,
-        original = this.original,
-        fileId = this.fileId,
+        downloadPath = this.imageId,
+        original = 1,
         pbReserve = byteArrayOf(0x78, 0x02)
     )
 }

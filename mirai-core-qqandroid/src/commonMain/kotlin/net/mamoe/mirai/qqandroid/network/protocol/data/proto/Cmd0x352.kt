@@ -129,8 +129,8 @@ internal class Cmd0x352 : ProtoBuf {
         @ProtoId(11) @JvmField val retry: Int = 0,//default
         @ProtoId(12) @JvmField val buType: Int = 1,//1或96 不确定
         @ProtoId(13) @JvmField val imgOriginal: Int,//是否为原图
-        @ProtoId(14) @JvmField val imgWidth: Int,
-        @ProtoId(15) @JvmField val imgHeight: Int,
+        @ProtoId(14) @JvmField val imgWidth: Int = 0,
+        @ProtoId(15) @JvmField val imgHeight: Int = 0,
         /**
          * ImgType:
          *  JPG:    1000

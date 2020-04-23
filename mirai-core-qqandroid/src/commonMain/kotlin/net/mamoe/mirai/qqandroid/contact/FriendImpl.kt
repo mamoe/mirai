@@ -91,24 +91,14 @@ internal class FriendImpl(
                     fileId = 0,
                     fileMd5 = image.md5,
                     fileSize = image.inputSize.toInt(),
-                    fileName = image.md5.toUHexString("") + "." + image.format,
-                    imgOriginal = 1,
-                    imgWidth = image.width,
-                    imgHeight = image.height,
-                    imgType = image.imageType
+                    fileName = image.md5.toUHexString("") + ".gif",
+                    imgOriginal = 1
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
 
             @Suppress("UNCHECKED_CAST") // bug
             return when (response) {
-                is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(
-                    filepath = response.resourceId,
-                    md5 = response.imageInfo.fileMd5,
-                    fileLength = response.imageInfo.fileSize.toInt(),
-                    height = response.imageInfo.fileHeight,
-                    width = response.imageInfo.fileWidth,
-                    resourceId = response.resourceId
-                ).also {
+                is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId).also {
                     ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
@@ -132,14 +122,7 @@ internal class FriendImpl(
                     //)
                     // 为什么不能 ??
 
-                    return OfflineFriendImage(
-                        filepath = response.resourceId,
-                        md5 = image.md5,
-                        fileLength = image.inputSize.toInt(),
-                        height = image.height,
-                        width = image.width,
-                        resourceId = response.resourceId
-                    ).also {
+                    return OfflineFriendImage(response.resourceId).also {
                         ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                     }
                 }

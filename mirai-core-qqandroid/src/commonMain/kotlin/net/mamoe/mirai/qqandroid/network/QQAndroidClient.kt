@@ -28,7 +28,6 @@ import net.mamoe.mirai.qqandroid.utils.cryptor.ECDH
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.utils.*
 import kotlin.random.Random
-import kotlin.random.nextInt
 
 internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
 
@@ -43,7 +42,7 @@ private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray
 /**
  * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
  */
-internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0..255).toByte() }
+internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0, 255).toByte() }
 
 internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
     "42.81.169.46" to 8080,

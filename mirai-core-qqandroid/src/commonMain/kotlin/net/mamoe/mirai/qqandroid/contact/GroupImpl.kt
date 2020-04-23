@@ -400,11 +400,7 @@ internal class GroupImpl(
                 uin = bot.id,
                 groupCode = id,
                 md5 = image.md5,
-                size = image.inputSize,
-                picWidth = image.width,
-                picHeight = image.height,
-                picType = image.imageType,
-                filename = image.filename
+                size = image.inputSize
             ).sendAndExpect()
 
             @Suppress("UNCHECKED_CAST") // bug
@@ -427,10 +423,8 @@ internal class GroupImpl(
 //                        fileId = response.fileId.toInt()
 //                    )
                     //  println("NMSL")
-                    return OfflineGroupImage(
-                        md5 = image.md5,
-                        filepath = resourceId
-                    ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
+                    return OfflineGroupImage(imageId = resourceId)
+                        .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
                     // 每 10KB 等 1 秒, 最少等待 5 秒
@@ -480,10 +474,8 @@ internal class GroupImpl(
                     //     imageType = image.imageType,
                     //     fileId = response.fileId.toInt()
                     // )
-                    return OfflineGroupImage(
-                        md5 = image.md5,
-                        filepath = resourceId
-                    ).also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
+                    return OfflineGroupImage(imageId = resourceId)
+                        .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                     /*
                         fileId = response.fileId.toInt(),
                         fileType = 0, // ?

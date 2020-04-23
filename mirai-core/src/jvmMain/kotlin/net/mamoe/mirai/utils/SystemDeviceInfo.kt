@@ -87,7 +87,9 @@ internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Ra
  * 随机生成长度为 [length] 的 [String].
  */
 internal fun getRandomString(length: Int): String =
-    getRandomString(length, 'a'..'z', 'A'..'Z', '0'..'9')
+    getRandomString(length, *defaultRanges)
+
+private val defaultRanges: Array<CharRange> = arrayOf('a'..'z', 'A'..'Z', '0'..'9')
 
 /**
  * 根据所给 [charRange] 随机生成长度为 [length] 的 [String].
