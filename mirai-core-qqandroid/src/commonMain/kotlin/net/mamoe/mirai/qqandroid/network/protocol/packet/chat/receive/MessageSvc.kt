@@ -241,7 +241,8 @@ internal class MessageSvc {
                                     if (friend.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
                                         return@mapNotNull FriendMessage(
                                             friend,
-                                            msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true)
+                                            msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
+                                            msg.msgHead.msgTime
                                         )
                                     }
                                 } else return@mapNotNull null
@@ -266,7 +267,8 @@ internal class MessageSvc {
                                             msg.toMessageChain(bot,
                                                 groupIdOrZero = 0,
                                                 onlineSource = true,
-                                                isTemp = true)
+                                                isTemp = true),
+                                            msg.msgHead.msgTime
                                         )
                                     }
                                 } else return@mapNotNull null

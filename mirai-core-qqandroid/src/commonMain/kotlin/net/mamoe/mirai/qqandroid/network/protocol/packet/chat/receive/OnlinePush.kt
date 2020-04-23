@@ -108,7 +108,8 @@ internal class OnlinePush {
                         bot.logger.warning("判断群员权限失败: ${pbPushMsg.msg.msgHead._miraiContentToString()}. 请完整截图或复制此日志发送给 mirai 维护者以帮助解决问题.")
                         MemberPermission.MEMBER
                     }
-                }
+                },
+                time = pbPushMsg.msg.msgHead.msgTime
             )
         }
     }

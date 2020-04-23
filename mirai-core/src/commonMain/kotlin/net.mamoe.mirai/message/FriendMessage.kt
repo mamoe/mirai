@@ -20,19 +20,25 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 /**
  * 好友消息
  */
-class FriendMessage(
+class FriendMessage constructor(
     sender: Friend,
-    override val message: MessageChain
+    override val message: MessageChain,
+    override val time: Int
 ) : ContactMessage(), BroadcastControllable {
     @PlannedRemoval("1.0.0")
     @Deprecated("", level = DeprecationLevel.HIDDEN)
-    constructor(sender: QQ, message: MessageChain) : this(sender as Friend, message)
+    constructor(sender: QQ, message: MessageChain) : this(sender as Friend, message, currentTimeSeconds.toInt())
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    constructor(sender: Friend, message: MessageChain) : this(sender, message, currentTimeSeconds.toInt())
 
     init {
         val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")

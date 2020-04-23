@@ -103,6 +103,12 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
     abstract val message: MessageChain
 
     /**
+     * 消息发送时间 (由服务器提供)
+     */
+    @SinceMirai("0.39.0")
+    abstract val time: Int
+
+    /**
      * 消息源
      */
     open val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
