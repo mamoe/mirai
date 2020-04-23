@@ -59,12 +59,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         val instances: List<Bot>
             get() = BotImpl.instances.asSequence().mapNotNull { it.get() }.toList()
 
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        @JvmStatic
-        internal val instancesDeprecated: List<WeakRef<Bot>>
-            @JvmName("instances")
-            get() = BotImpl.instances.toList()
-
         /**
          * 遍历每一个 [Bot] 实例
          */
