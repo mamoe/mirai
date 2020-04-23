@@ -229,10 +229,21 @@ internal class MessageSvc {
                             }
                         }
                         166 -> {
+                            if (msg.msgHead.fromUin == bot.id) {
+                                loop@ while (true) {
+                                    val instance = bot.client.getFriendSeq()
+                                    if (instance < msg.msgHead.msgSeq) {
+                                        if (bot.client.setFriendSeq(instance, msg.msgHead.msgSeq)) {
+                                            break@loop
+                                        }
+                                    } else break@loop
+                                }
+                                return@mapNotNull null
+                            }
                             val friend = bot.getFriendOrNull(msg.msgHead.fromUin) ?: return@mapNotNull null
                             friend.checkIsFriendImpl()
 
-                            if (msg.msgHead.fromUin == bot.id || !bot.firstLoginSucceed) {
+                            if (!bot.firstLoginSucceed) {
                                 return@mapNotNull null
                             }
 
@@ -376,7 +387,7 @@ internal class MessageSvc {
                 sender = client.bot,
                 target = qq,
                 time = currentTimeSeconds.toInt(),
-                sequenceId = rand,
+                sequenceId = client.nextFriendSeq(),
                 originalMessage = message
             )
             sourceCallback(source)

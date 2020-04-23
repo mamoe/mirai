@@ -155,6 +155,20 @@ internal open class QQAndroidClient(
     private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
 
+
+    private val friendSeq: AtomicInt = atomic(22911)
+    internal fun getFriendSeq(): Int {
+        return friendSeq.value
+    }
+
+    internal fun nextFriendSeq(): Int {
+        return friendSeq.incrementAndGet()
+    }
+
+    internal fun setFriendSeq(compare: Int, id: Int): Boolean {
+        return friendSeq.compareAndSet(compare, id % 65535)
+    }
+
     private val requestPacketRequestId: AtomicInt = atomic(1921334513)
     internal fun nextRequestPacketRequestId(): Int = requestPacketRequestId.getAndAdd(2)
 
