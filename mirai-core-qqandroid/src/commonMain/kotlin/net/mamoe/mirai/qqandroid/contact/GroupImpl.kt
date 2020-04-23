@@ -295,7 +295,13 @@ internal class GroupImpl(
             }
         }
         if (message is ForwardMessage) {
-            return bot.lowLevelSendGroupLongOrForwardMessage(this.id, message.messageList, false)
+            check(message.nodeList.size < 200) {
+                throw MessageTooLargeException(
+                    this, message, message,
+                    "ForwardMessage allows up to 200 nodes, but found ${message.nodeList.size}")
+            }
+
+            return bot.lowLevelSendGroupLongOrForwardMessage(this.id, message.nodeList, false, message)
         }
 
         val msg: MessageChain
@@ -321,8 +327,16 @@ internal class GroupImpl(
                 )
             }
 
-            if (length > 702 || imageCnt > 2)
-                return bot.lowLevelSendGroupLongOrForwardMessage(this.id, listOf(event.message), true)
+            if (length > 702 || imageCnt > 2) {
+                return bot.lowLevelSendGroupLongOrForwardMessage(this.id,
+                    listOf(ForwardMessage.Node(
+                        senderId = bot.id,
+                        time = currentTimeSeconds.toInt(),
+                        message = event.message,
+                        senderName = bot.nick)
+                    ),
+                    true, null)
+            }
 
             msg = event.message
         } else msg = message.asMessageChain()
@@ -343,7 +357,15 @@ internal class GroupImpl(
                     120 -> throw BotIsBeingMutedException(this@GroupImpl)
                     34 -> {
                         kotlin.runCatching { // allow retry once
-                            return bot.lowLevelSendGroupLongOrForwardMessage(id, listOf(msg), true)
+                            return bot.lowLevelSendGroupLongOrForwardMessage(
+                                id, listOf(
+                                    ForwardMessage.Node(
+                                        senderId = bot.id,
+                                        time = currentTimeSeconds.toInt(),
+                                        message = msg,
+                                        senderName = bot.nick
+                                    )
+                                ), true, null)
                         }.getOrElse {
                             throw IllegalStateException("internal error: send message failed(34)", it)
                         }

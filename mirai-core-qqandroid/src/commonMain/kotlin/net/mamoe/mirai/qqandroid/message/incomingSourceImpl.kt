@@ -15,6 +15,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
@@ -39,6 +40,18 @@ internal interface MessageSourceInternal {
 
 @Suppress("RedundantSuspendModifier", "unused")
 internal suspend inline fun MessageSource.ensureSequenceIdAvailable() {
+    // obsolete but keep for future
+    return
+    /*
+    if (this is MessageSourceToGroupImpl) {
+        this.ensureSequenceIdAvailable()
+    }*/
+}
+
+@Suppress("RedundantSuspendModifier", "unused")
+internal suspend inline fun Message.ensureSequenceIdAvailable() {
+    // no suspend.
+
     // obsolete but keep for future
     return
     /*

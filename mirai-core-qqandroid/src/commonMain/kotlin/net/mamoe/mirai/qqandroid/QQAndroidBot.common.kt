@@ -552,12 +552,14 @@ internal abstract class QQAndroidBotBase constructor(
     @MiraiExperimentalAPI
     internal suspend fun lowLevelSendGroupLongOrForwardMessage(
         groupCode: Long,
-        message: Collection<MessageChain>,
-        isLong: Boolean
+        message: Collection<ForwardMessage.INode>,
+        isLong: Boolean,
+        forwardMessage: ForwardMessage?
     ): MessageReceipt<Group> {
         message.forEach {
-            it.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+            it.message.ensureSequenceIdAvailable()
         }
+
         val group = getGroup(groupCode)
 
         val time = currentTimeSeconds
@@ -566,10 +568,8 @@ internal abstract class QQAndroidBotBase constructor(
         network.run {
             val data = message.calculateValidationDataForGroup(
                 sequenceId = sequenceId,
-                time = time.toInt(),
                 random = Random.nextInt().absoluteValue.toUInt(),
                 groupCode = groupCode,
-                botId = this@QQAndroidBotBase.id,
                 botMemberNameCard = group.botAsMember.nameCardOrNick
             )
 
@@ -646,21 +646,30 @@ internal abstract class QQAndroidBotBase constructor(
             return if (isLong) {
                 group.sendMessage(
                     RichMessage.longMessage(
-                        brief = message.joinToString(limit = 27) { it.contentToString() },
+                        brief = message.joinToString(limit = 27) { it.message.contentToString() },
                         resId = resId,
                         timeSeconds = time
                     )
                 )
             } else {
+                checkNotNull(forwardMessage) { "Internal error: forwardMessage is null when sending forward" }
                 group.sendMessage(
                     RichMessage.forwardMessage(
                         resId = resId,
                         timeSeconds = time,
-                        preview = message.take(3).joinToString {
-                            """
-                                <title size="26" color="#777777" maxLines="2" lineSpace="12">${it.joinToString(limit = 10)}</title>
-                            """.trimIndent()
-                        }
+                        //  preview = message.take(5).joinToString {
+                        //      """
+                        //          <title size="26" color="#777777" maxLines="2" lineSpace="12">${it.message.asMessageChain().joinToString(limit = 10)}</title>
+                        //      """.trimIndent()
+                        //  },
+                        preview = forwardMessage.displayStrategy.generatePreview(forwardMessage).take(4)
+                            .map {
+                                """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+                            }.joinToString(""),
+                        title = forwardMessage.displayStrategy.generateTitle(forwardMessage),
+                        brief = forwardMessage.displayStrategy.generateBrief(forwardMessage),
+                        source = forwardMessage.displayStrategy.generateSource(forwardMessage),
+                        summary = forwardMessage.displayStrategy.generateSummary(forwardMessage)
                     )
                 )
             }
@@ -769,21 +778,25 @@ private fun RichMessage.Templates.longMessage(brief: String, resId: String, time
 private fun RichMessage.Templates.forwardMessage(
     resId: String,
     timeSeconds: Long,
-    preview: String
+    preview: String,
+    title: String,
+    brief: String,
+    source: String,
+    summary: String
 ): ForwardMessageInternal {
     val template = """
         <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="[聊天记录]"
+        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="$brief"
              m_resid="$resId" m_fileName="$timeSeconds"
              tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
             <item layout="1" advertiser_id="0" aid="0">
-                <title size="34" maxLines="2" lineSpace="12">群聊的聊天记录</title>
+                <title size="34" maxLines="2" lineSpace="12">$title</title>
                 $preview
                 <hr hidden="false" style="0"/>
-                <summary size="26" color="#777777">查看3条转发消息</summary>
+                <summary size="26" color="#777777">$summary</summary>
             </item>
-            <source name="聊天记录" icon="" action="" appid="-1"/>
+            <source name="$source" icon="" action="" appid="-1"/>
         </msg>
-    """.trimIndent()
+    """.trimIndent().replace("\n", " ")
     return ForwardMessageInternal(template)
 }

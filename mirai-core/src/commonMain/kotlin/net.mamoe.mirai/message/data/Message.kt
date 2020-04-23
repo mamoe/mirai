@@ -358,6 +358,7 @@ interface ConstrainSingle<out M : Message> : MessageMetadata {
  * @see Image 图片
  * @see RichMessage 富文本
  * @see Face 原生表情
+ * @see ForwardMessage 合并转发
  */
 interface MessageContent : SingleMessage
 

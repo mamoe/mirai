@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.annotation.AnnotationTarget.*
@@ -151,6 +152,8 @@ constructor(serviceId: Int = 60, content: String) : ServiceMessage(serviceId, co
 
 /**
  * 长消息.
+ *
+ * 不需要手动区分长消息和普通消息, 在 [Contact.sendMessage] 时会自动判断.
  */
 @SinceMirai("0.31.0")
 @MiraiExperimentalAPI
@@ -164,8 +167,8 @@ class LongMessage internal constructor(content: String, val resId: String) : Ser
  * 合并转发消息
  * @suppress 此 API 非常不稳定
  */
+@OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.39.0")
-@MiraiExperimentalAPI("此 API 非常不稳定")
 internal class ForwardMessageInternal(content: String) : ServiceMessage(35, content)
 
 /*

@@ -12,7 +12,8 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.ForwardMessage
+import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.toRichTextElems
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -42,12 +43,10 @@ internal class MessageValidationData @OptIn(MiraiInternalAPI::class) constructor
 }
 
 @OptIn(MiraiInternalAPI::class)
-internal fun Collection<MessageChain>.calculateValidationDataForGroup(
+internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
     sequenceId: Int,
-    time: Int,
     random: UInt,
     groupCode: Long,
-    botId: Long,
     botMemberNameCard: String
 ): MessageValidationData {
 
@@ -55,9 +54,9 @@ internal fun Collection<MessageChain>.calculateValidationDataForGroup(
         msg = this.map { chain ->
             MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
-                    fromUin = botId,
+                    fromUin = chain.senderId,
                     msgSeq = sequenceId,
-                    msgTime = time,
+                    msgTime = chain.time,
                     msgUid = 0x01000000000000000L or random.toLong(),
                     mutiltransHead = MsgComm.MutilTransHead(
                         status = 0,
@@ -66,13 +65,14 @@ internal fun Collection<MessageChain>.calculateValidationDataForGroup(
                     msgType = 82, // troop
                     groupInfo = MsgComm.GroupInfo(
                         groupCode = groupCode,
-                        groupCard = botMemberNameCard // Cinnamon
+                        groupCard = chain.senderName // Cinnamon
                     ),
                     isSrcMsg = false
                 ),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = chain.toRichTextElems(forGroup = true, withGeneralFlags = false).toMutableList()
+                        elems = chain.message.asMessageChain()
+                            .toRichTextElems(forGroup = true, withGeneralFlags = false).toMutableList()
                     )
                 )
             )
