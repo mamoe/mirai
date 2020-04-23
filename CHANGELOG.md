@@ -2,6 +2,99 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.39.0`  2020/4/23
+**二进制不兼容的修改:** `Bot.instances` 现在返回 `List<Bot>`, 而不是 `List<WeakRef<Bot>>` 由于他们在 JVM 签名相同, 无法做兼容.
+
+### Contact 架构改变
+原有 `Member` 继承 `QQ`, `QQ` 继承 `Contact` 架构改变.
+
+
+新架构为:
+- 弃用 `QQ` 命名 (二进制兼容到 1.0.0)
+- 新增 `User` 继承 `Contact`, 作为 `Member` 和 `Friend`
+- `Member` 继承 `User`
+- `Friend` 继承 `User`
+
+#### 迁移
+由于 `Member` 不再是 `QQ` 子类, 而原本表示 '好友' 意义的 `QQ` 删除,  
+需要根据实际情况替换 `QQ` 的引用为 `Friend` 或 `Group`
+
+
+因修改, 新增以下 API:
+- `fun Member.asFriend(): Friend`: 得到此成员作为好友的对象或抛出异常
+- `fun Member.asFriendOrNull(): Friend`: 得到此成员作为好友的对象或返回 `null`
+- `inline val Member.isFriend: Boolean`: 判断此成员是否为好友
+
+
+同时有以下修改:
+- `val User.nameCardOrNick`: 获取非空群名片 (如果是群员) 或昵称
+- 弃用 `fun Member.isMuted()` 而改为属性 `val Member.isMuted`
+
+### 图片
+- 构造所有类型图片时只接受唯一一个参数 `imageId: String`.
+- 所有类型图片只能获取唯一一个属性 `imageId: String` (以前可以获取长宽等数据)
+- 提高发送图片的性能
+- 优化 `BufferedImage.toExternalImage` 的性能
+- 统一图片后缀: `{ ... }.mirai`
+
+### 消息
+- 新增合并转发及其 DSL
+- 新增 `OfflineMessageSource` 构造
+- 新增 `MessageSource` 修改: `MessageSource.copyAmend(block)`
+- 修复 'sequence not yet available' 问题 (#)
+- 修复好友消息的消息源 id 错误的问题 (#247)
+- 如果群成员是好友, 则发送好友消息, 而不是临时会话消息.
+- 添加 `MessageSource.internalId` 以便将来使用
+- 添加 `OnlineMessageSource.toOffline`
+
+- 添加 `ContactMessage.time`
+- 添加 `ContactMessage.senderName`
+
+#### `OfflineMessageSource` 构造
+可使用 DSL 构造离线消息, 修改其发送人, 发送时间, 发送内容等. 这对于跨群转发等情况十分有用.  
+[OfflineMessageSource.kt: Line 90](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/OfflineMessageSource.kt#L90)
+DSL 总览:
+```
+val source: OfflineMessageSource = bot.buildMessageSource {
+    bot sendTo target // 指定发送人和发送目标
+    metadata(source) // 从另一个消息源复制 id, internalId, time
+
+    messages { // 指定消息内容
+        +"hi"
+    }
+}
+```
+
+#### 合并转发及其 DSL
+合并转发: [ForwardMessage](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/ForwardMessage.kt#L80)  
+DSL: [ForwardMessageBuilder](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/ForwardMessage.kt#L315)  
+
+DSL 总览:
+```kotlin
+buildForwardMessage {
+    123456789 named "鸽子 A" says "咕"
+    100200300 named "鸽子 C" at 1582315452 says "咕咕咕" // at 设置时间
+    987654321 named "鸽子 B" says "咕"
+    myFriend says "咕"
+    bot says { // 构造消息链, 同 `buildMessageChain`
+        +"发个图片试试"
+        +Image("{90CCED1C-2D64-313B-5D66-46625CAB31D7}.jpg")
+    }
+}
+```
+不支持解析别人的转发.
+
+### 其他
+- 支持 bot 名片被其他人修改时的同步
+- 修复登录时遇到服务器不可用时无法继续重连的问题
+- 更名 `Identified` 到 `ContactOrBot`, 去掉其 '实验性' 注解
+- `Bot.instances` 现在返回 `List<Bot>`, 而不是 `List<WeakRef<Bot>>` (二进制兼容)
+- 更名 `subscribingGet` 到 `syncFromEvent`, 并将其定义为稳定 API.
+- 更名 `subscribingGetAsync` 到 `asyncFromEvent`, 并将其定义为稳定 API.
+- 添加接受 `eventClass: KClass<Event>` 参数的事件监听 `subscribe`
+- 在 `MessageSubscribersBuilder` 添加 `sentBy(User)`, `sentFrom(Group)`, `atAll`, `at` DSL
+- 修复某些时候未处理 `BotOfflineEvent.Force` 的问题
+
 ## `0.38.0`  2020/4/20
 - 新增自定义消息 (实验性): `CustomMessage`
 - 新增 `MessageChain.contentEquals`
@@ -321,23 +414,19 @@ bot.subscribeMessages {
 - 其他杂项优化
 
 ## `0.23.0` 2020/2/28
-### mirai-core
 - 修复上传图片
 - 一些问题修复
 - 大量杂项优化
 
-### mirai-core-qqandroid
 - `MessageReceipt.source` 现在为 public. 可获取源消息 id
 - 修复上传好友图片失败的问题
 - 上传群图片现在分包缓存, 优化性能
 
 ## `0.22.0` 2020/2/24
-### mirai-core
 - 重构 `MessageChain`, 引入 `CombinedMessage`. (兼容大部分原 API)
 - 新增 `MessageChainBuilder`, `buildMessageChain`
 - `ExternalImage` 现在接收多种输入参数
 
-### mirai-core-qqandroid
 - 修复访问好友消息回执 `.sequenceId` 时抛出异常的问题
 
 ## `0.21.0` 2020/2/23
@@ -346,7 +435,6 @@ bot.subscribeMessages {
 
 ## `0.20.0` 2020/2/23
 
-### mirai-core
 - 支持图片下载: `image.channel(): ByteReadChannel`, `image.url()`
 
 - 添加 `LockFreeLinkedList<E>.iterator`
@@ -362,7 +450,6 @@ bot.subscribeMessages {
 
 ## `0.19.1` 2020/2/21
 
-### mirai-core
 - 支持机器人撤回群消息 (含自己发送的消息): `Group.recall`, `MessageReceipt.recall`
 - 支持一定时间后自动撤回: `Group.recallIn`, `MessageReceipt.recallIn`
 - `sendMessage` 返回 `MessageReceipt` 以实现撤回功能
@@ -386,21 +473,21 @@ case("复读下一条") {
 }
 ```
 
-### mirai-core-qqandroid
+
 - 修复一些情况下 `At` 无法发送的问题
 - 统一 ImageId: 群消息收到的 ImageId 均为 `{xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx}.jpg` 形式（固定长度 37）
 - 支持成员主动离开事件的解析 (#51)
 
 ## `0.18.0` 2020/2/20
 
-### mirai-core
+
 - 添加 `MessageSource.time`
 - 添加事件监听时额外的 `coroutineContext`
 - 为一些带有 `operator` 的事件添加 `.isByBot` 的属性扩展
 - 优化事件广播逻辑, 修复可能无法触发监听的问题
 - 为所有 `Contact` 添加 `toString()` (#80)
 
-### mirai-core-qqandroid
+
 - 支持成员禁言状态和时间查询 `Member.muteTimeRemaining`
 - 修复 `At` 的 `display` (#73), 同时修复 `QuoteReply` 无法显示问题 (#54).
 - 广播 `BotReloginEvent` (#78)
@@ -408,36 +495,36 @@ case("复读下一条") {
 
 ## `0.17.0` 2020/2/20
 
-### mirai-core
+
 - 支持原生表情 `Face`
 - 修正 `groupCardOrNick` 为 `nameCardOrNick`
 - 增加 `MessageChain.foreachContent(lambda)` 和 `Message.hasContent(): Boolean`
 
-### mirai-core-qqandroid
+
 - 提高重连速度
 - 修复重连后某些情况不会心跳
 - 修复收包时可能产生异常
 
 ## `0.16.0` 2020/2/19
 
-### mirai-core
+
 - 添加 `Bot.subscribe` 等筛选 Bot 实例的监听方法
 - 其他一些小问题修复
 
-### mirai-core-qqandroid
+
 - 优化重连处理逻辑
 - 确保好友消息和历史事件在初始化结束前同步完成
 - 同步好友消息记录时不广播
 
 ## `0.15.5` 2020/2/19
 
-### mirai-core
+
 - 为 `MiraiLogger` 添加 common property `val isEnabled: Boolean`
 - 修复 #62: 掉线重连后无 heartbeat
 - 修复 #65: `Bot` close 后仍会重连
 - 修复 #70: ECDH is not available on Android platform
 
-### mirai-core-qqandroid
+
 - 从服务器收到的事件将会额外使用 `bot.logger` 记录 (verbose).
 - 降低包记录的等级: `info` -> `verbose`
 - 改善 `Bot` 的 log 记录
@@ -455,25 +542,25 @@ case("复读下一条") {
 
 ## `0.15.2` 2020/2/18
 
-### mirai-core
+
 - 尝试修复 `atomicfu` 编译错误的问题
 
-### mirai-core-qqandroid
+
 - 查询群信息失败后重试
 
 ## `0.15.1` 2020/2/15
 
-### mirai-core
+
 - 统一异常处理: 所有群成员相关操作无权限时均抛出异常而不返回 `false`.
 
-### mirai-core-qqandroid
+
 - 初始化未完成时缓存接收的所有事件包 (#46)
 - 解析群踢人事件时忽略找不到的群成员
 - 登录完成后广播事件 `BotOnlineEvent`
 
 ## `0.15.0` 2020/2/14
 
-### mirai-core
+
 
 - 新增事件: `BotReloginEvent` 和 `BotOfflineEvent.Dropped`
 - `AtAll` 现在实现 `Message.Key`
@@ -486,18 +573,18 @@ case("复读下一条") {
 - 有原因的登录失败时将抛出特定异常: `LoginFailedException`
 - 默认心跳时间调整为 60s
 
-### mirai-core-qqandroid
+
 
 - 解决一些验证码无法识别的问题
 - 忽略一些不需要处理的事件(机器人主动操作触发的事件)
 
 ## `0.14.0` 2020/2/13
 
-### mirai-core
+
 
 - **支持 at 全体成员: `AtAll`**
 
-### mirai-core-qqandroid
+
 
 - **支持 `AtAll` 的发送和解析**
 - **修复某些情况下禁言处理异常**
@@ -511,12 +598,12 @@ case("复读下一条") {
 
 ## `0.13.0` 2020/2/12
 
-### mirai-core
+
 - 修改 BotFactory, 添加 `context` 参数.
 - currentTimeMillis 减少不必要对象创建
 - 优化无锁链表性能 (大幅提升 `addAll` 性能)
 
-### mirai-core-qqanroid
+-qqanroid
 安卓协议发布, 基于最新 QQ, 版本 `8.2.0`
 支持的功能:
 - 登录: 密码登录. 设备锁支持, 不安全状态支持, 图片验证码支持, 滑动验证码支持.
@@ -532,7 +619,7 @@ HTTP API 已完成, by [@ryoii](https://github.com/ryoii).
 
 Mirai 仍处于快速迭代状态. 将来仍可能会有 API 改动.
 ## `0.12.0`  *2020/1/19*
-### mirai-core
+
 1. 监听消息时允许使用条件式的表达式, 如:
 ```kotlin
 (contains("1") and has<Image>()){
@@ -557,12 +644,12 @@ contains("1"){
 4. 事件 `cancelled` 属性修改为 `val` (以前是 `var` with `private set`)
 
 ## `0.11.0`  *2020/1/12*
-### mirai-core
+
 - 弃用 `BotAccount.id`. 将来它可能会被改名成为邮箱等账号. QQ 号码需通过 `bot.uin` 获取.
 - `Gender` 由 `inline class` 改为 enum
 - `String.chain()` 改为 `String.toChain()`
 - `List<Message>.chain()` 改为 `List<Message>.toChain()`
-### mirai-core-timpc
+-timpc
 - 修复在有入群验证时无法解析群资料的问题 (#30)
 
 ## `0.10.6`  *2020/1/8*
