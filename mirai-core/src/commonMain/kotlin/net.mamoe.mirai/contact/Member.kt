@@ -19,7 +19,10 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRefProperty
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -156,15 +159,15 @@ abstract class Member : MemberJavaFriendlyAPI() {
 
 /**
  * 得到此成员作为好友的对象.
+ *
+ * @throws IllegalStateException 当此成员不是好友时抛出
  */
-inline val Member.asFriend: Friend
-    get() = this.bot.getFriendOrNull(this.id) ?: error("$this is not a friend")
+fun Member.asFriend(): Friend = this.bot.getFriendOrNull(this.id) ?: error("$this is not a friend")
 
 /**
  * 得到此成员作为好友的对象.
  */
-inline val Member.asFriendOrNull: Friend?
-    get() = this.bot.getFriendOrNull(this.id)
+fun Member.asFriendOrNull(): Friend? = this.bot.getFriendOrNull(this.id)
 
 /**
  * 判断此成员是否为好友
@@ -175,8 +178,8 @@ inline val Member.isFriend: Boolean
 /**
  * 如果此成员是好友, 则执行 [block] 并返回其返回值. 否则返回 `null`
  */
-inline fun <R> Member.takeIfFriend(block: (Friend) -> R): R? {
-    return this.asFriendOrNull?.let(block)
+inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
+    return this.asFriendOrNull()?.let(block)
 }
 
 /**
@@ -187,11 +190,35 @@ inline fun <R> Member.takeIfFriend(block: (Friend) -> R): R? {
 val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
 
 /**
+ * 获取非空群名片或昵称.
+ *
+ * @return 当 [User] 为 [Member] 时返回 [Member.nameCardOrNick]
+ *
+ * 否则返回 [Member.nick]
+ */
+@SinceMirai("0.39.0")
+val User.nameCardOrNick: String
+    get() = when (this) {
+        is Member -> this.nameCardOrNick
+        else -> this.nick
+    }
+
+/**
  * 判断改成员是否处于禁言状态.
  */
-fun Member.isMuted(): Boolean {
-    return muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
-}
+@JvmName("isMuted2") // make compiler happy
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.InlineOnly // val Member.isMuted 编译在 JVM 也会产生 `public boolean isMuted(Member receive)`
+@PlannedRemoval("1.0.0")
+@Deprecated("use property instead", ReplaceWith("this.isMuted"))
+inline fun Member.isMuted(): Boolean = this.isMuted
+
+/**
+ * 判断群成员是否处于禁言状态.
+ */
+@SinceMirai("0.39.0")
+val Member.isMuted: Boolean
+    get() = muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
 
 /**
  * @see Member.mute
