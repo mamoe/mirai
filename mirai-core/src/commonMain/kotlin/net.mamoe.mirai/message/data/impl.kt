@@ -204,6 +204,7 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     FriendFlashImage -> firstIsInstanceOrNull<FriendFlashImage>()
     CustomMessage -> firstIsInstanceOrNull()
     CustomMessageMetadata -> firstIsInstanceOrNull()
+    ForwardMessage -> firstIsInstanceOrNull()
     else -> {
         this.forEach { message ->
             if (message is CustomMessage) {
