@@ -82,7 +82,7 @@ internal class OnlinePush {
             val sender = group[pbPushMsg.msg.msgHead.fromUin] as MemberImpl
             val name = extraInfo?.groupCard?.run {
                 kotlin.runCatching {
-                    if (this[0] == 0x0A.toByte() && this[1] == 0x0A.toByte() && this[2] == 0x0A.toByte() && this[3] == 0x08.toByte())
+                    if (this[0] == 0x0A.toByte())
                         loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName?.firstOrNull { it.text.isNotEmpty() }
                             ?.text?.encodeToString()
                     else return@runCatching null
