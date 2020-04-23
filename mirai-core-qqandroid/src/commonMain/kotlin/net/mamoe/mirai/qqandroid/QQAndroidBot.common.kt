@@ -568,7 +568,7 @@ internal abstract class QQAndroidBotBase constructor(
         network.run {
             val data = message.calculateValidationDataForGroup(
                 sequenceId = sequenceId,
-                random = Random.nextInt().absoluteValue.toUInt(),
+                random = Random.nextInt().absoluteValue,
                 groupCode = groupCode
             )
 
