@@ -102,8 +102,6 @@ internal suspend fun HttpClient.postImage(
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 internal object HighwayHelper {
-
-    @OptIn(ExperimentalTime::class)
     suspend fun uploadImageToServers(
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
@@ -111,14 +109,26 @@ internal object HighwayHelper {
         image: ExternalImage,
         kind: String,
         commandId: Int
+    ) = uploadImageToServers(bot, servers, uKey, image.md5, image.input, image.inputSize, kind, commandId)
+
+    @OptIn(ExperimentalTime::class)
+    suspend fun uploadImageToServers(
+        bot: QQAndroidBot,
+        servers: List<Pair<Int, Int>>,
+        uKey: ByteArray,
+        md5: ByteArray,
+        input: Any,
+        inputSize: Long,
+        kind: String,
+        commandId: Int
     ) = servers.retryWithServers(
-        (image.inputSize * 1000 / 1024 / 10).coerceAtLeast(5000),
+        (inputSize * 1000 / 1024 / 10).coerceAtLeast(5000),
         onFail = {
-            throw IllegalStateException("cannot upload $kind image, failed on all servers.", it)
+            throw IllegalStateException("cannot upload $kind, failed on all servers.", it)
         }
     ) { ip, port ->
         bot.network.logger.verbose {
-            "[Highway] Uploading $kind image to ${ip}:$port, size=${image.inputSize / 1024} KiB"
+            "[Highway] Uploading $kind to ${ip}:$port, size=${inputSize / 1024} KiB"
         }
 
         val time = measureTime {
@@ -126,21 +136,21 @@ internal object HighwayHelper {
                 client = bot.client,
                 serverIp = ip,
                 serverPort = port,
-                imageInput = image.input,
-                inputSize = image.inputSize.toInt(),
-                fileMd5 = image.md5,
+                imageInput = input,
+                inputSize = inputSize.toInt(),
+                fileMd5 = md5,
                 ticket = uKey,
                 commandId = commandId
             )
         }
 
         bot.network.logger.verbose {
-            "[Highway] Uploading $kind image: succeed at ${(image.inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+            "[Highway] Uploading $kind: succeed at ${(inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
         }
     }
 
     @OptIn(InternalCoroutinesApi::class)
-    private suspend fun uploadImage(
+    internal suspend fun uploadImage(
         client: QQAndroidClient,
         serverIp: String,
         serverPort: Int,
