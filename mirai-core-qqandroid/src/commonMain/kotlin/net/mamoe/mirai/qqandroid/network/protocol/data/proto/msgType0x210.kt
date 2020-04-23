@@ -769,7 +769,7 @@ internal class Submsgtype0x27 {
         @Serializable
         internal class GroupMemberProfileInfo(
             @ProtoId(1) @JvmField val field: Int = 0,
-            @ProtoId(2) @JvmField val value: ByteArray = EMPTY_BYTE_ARRAY
+            @ProtoId(2) @JvmField val value: String = ""
         ) : ProtoBuf
 
         @Serializable

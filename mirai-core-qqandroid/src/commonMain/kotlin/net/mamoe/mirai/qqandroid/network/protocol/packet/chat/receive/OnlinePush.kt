@@ -529,12 +529,47 @@ internal class OnlinePush {
                     } ?: emptySequence()
                 }
 
+                fun Submsgtype0x27.SubMsgType0x27.ModGroupMemberProfile.transform(bot: QQAndroidBot): Sequence<Packet> {
+                    return this.msgGroupMemberProfileInfos?.asSequence()?.mapNotNull { info ->
+                        when (info.field) {
+                            1 -> { // name card
+                                val new = info.value
+                                val group = bot.getGroupOrNull(this.groupCode) ?: return@mapNotNull null
+                                group.checkIsGroupImpl()
+                                val member = group.getOrNull(this.uin) ?: return@mapNotNull null
+                                member.checkIsMemberImpl()
+
+                                val old = member.nameCard
+
+                                if (new == old) return@mapNotNull null
+
+                                return@mapNotNull MemberCardChangeEvent(old, new, member, null)
+                            }
+                            2 -> {
+                                if (info.value.singleOrNull()?.toInt() != 0) {
+                                    bot.logger.debug {
+                                        "Unknown Transformers528 0x27L ModGroupMemberProfile, field=${info.field}, value=${info.value}"
+                                    }
+                                }
+                                return@mapNotNull null
+                            }
+                            else -> {
+                                bot.logger.debug {
+                                    "Unknown Transformers528 0x27L ModGroupMemberProfile, field=${info.field}, value=${info.value}"
+                                }
+                                return@mapNotNull null
+                            }
+                        }
+                    } ?: emptySequence()
+                }
+
                 return@lambda528 vProtobuf.loadAs(Submsgtype0x27.SubMsgType0x27.MsgBody.serializer()).msgModInfos.asSequence()
                     .flatMap {
                         when {
                             it.msgModFriendRemark != null -> it.msgModFriendRemark.transform(bot)
                             it.msgDelFriend != null -> it.msgDelFriend.transform(bot)
                             it.msgModGroupProfile != null -> it.msgModGroupProfile.transform(bot)
+                            it.msgModGroupMemberProfile != null -> it.msgModGroupMemberProfile.transform(bot)
                             else -> {
                                 bot.network.logger.debug {
                                     "Transformers528 0x27L: new data: ${it._miraiContentToString()}"

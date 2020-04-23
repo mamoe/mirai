@@ -469,7 +469,8 @@ data class MemberCardChangeEvent(
     @PlannedRemoval("1.0.0")
     @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR)
     override val operator: Member?
-) : GroupMemberEvent, @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR) GroupOperableEvent
+) : GroupMemberEvent, Packet,
+    @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR) GroupOperableEvent
 
 /**
  * 群头衔改动. 一定为群主操作

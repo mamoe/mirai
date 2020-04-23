@@ -383,9 +383,14 @@ internal class TroopManagement {
 
     internal object EditGroupNametag :
         OutgoingPacketFactory<EditGroupNametag.Response>("friendlist.ModifyGroupCardReq") {
-        object Response : Packet
+        object Response : Packet {
+            override fun toString(): String {
+                return "TroopManagement.EditGroupNametag.Response"
+            }
+        }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): EditGroupNametag.Response {
+            this.close()
             return Response
         }
 

@@ -142,6 +142,9 @@ internal class MemberImpl constructor(
 
     @JvmSynthetic
     override suspend fun mute(durationSeconds: Int) {
+        check(this.id != bot.id) {
+            "A bot can't mute itself."
+        }
         checkBotPermissionHigherThanThis()
         bot.network.run {
             TroopManagement.Mute(
