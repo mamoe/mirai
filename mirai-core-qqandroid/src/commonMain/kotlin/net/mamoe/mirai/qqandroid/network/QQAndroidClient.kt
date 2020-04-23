@@ -139,6 +139,9 @@ internal open class QQAndroidClient(
                 throw it
             }
         }.getOrElse {
+            if (it is LoginFailedException) {
+                throw it
+            }
             bot.client.serverList.addAll(DefaultServerList)
             throw NoServerAvailableException(it)
         }
