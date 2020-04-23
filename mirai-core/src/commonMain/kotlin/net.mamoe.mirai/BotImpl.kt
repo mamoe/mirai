@@ -93,7 +93,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
         this@BotImpl.subscribeAlways(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
-            if (network.areYouOk()) {
+            if (network.areYouOk() && event !is BotOfflineEvent.Force) {
                 // avoid concurrent re-login tasks
                 return@subscribeAlways
             }
