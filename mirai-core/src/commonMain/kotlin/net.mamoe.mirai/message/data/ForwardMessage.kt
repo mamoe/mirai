@@ -263,7 +263,7 @@ annotation class ForwardMessageDsl
  *     123456789 named "鸽子 A" says "咕" // 意为 名为 "鸽子 A" 的用户 123456789 发送了一条内容为 "咕" 的消息
  *     100200300 named "鸽子 C" at 1582315452 says "咕咕咕" // at 设置时间 (在 PC 端显示, 在手机端不影响顺序)
  *     987654321 named "鸽子 B" says "咕" // 未指定时间, 则自动顺序安排时间
- *     5555555 says "咕" // 未指定发送人
+ *     myFriend says "咕" // User.says
  *     bot says { // 构造消息链, 同 `buildMessageChain`
  *         +"发个图片试试"
  *         +Image("{90CCED1C-2D64-313B-5D66-46625CAB31D7}.jpg")

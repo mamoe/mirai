@@ -416,7 +416,7 @@ internal class GroupImpl(
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
                         image,
-                        kind = "group",
+                        kind = "group image",
                         commandId = 2
                     )
                     val resourceId = image.calculateImageResourceId()

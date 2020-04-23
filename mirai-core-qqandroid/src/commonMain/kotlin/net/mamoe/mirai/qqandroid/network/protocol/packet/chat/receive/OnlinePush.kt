@@ -542,6 +542,7 @@ internal class OnlinePush {
                                 val old = member.nameCard
 
                                 if (new == old) return@mapNotNull null
+                                member._nameCard = new
 
                                 return@mapNotNull MemberCardChangeEvent(old, new, member, null)
                             }

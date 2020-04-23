@@ -67,12 +67,15 @@ class ExternalImage private constructor(
     }
 
     companion object {
+        const val defaultFormatName = "mirai"
+
+
         fun generateUUID(md5: ByteArray): String {
             return "${md5[0, 3]}-${md5[4, 5]}-${md5[6, 7]}-${md5[8, 9]}-${md5[10, 15]}"
         }
 
         fun generateImageId(md5: ByteArray): String {
-            return """{${generateUUID(md5)}}.gif"""
+            return """{${generateUUID(md5)}}.$defaultFormatName"""
         }
     }
 
@@ -90,9 +93,7 @@ class ExternalImage private constructor(
 
     override fun toString(): String = "[ExternalImage(${generateUUID(md5)})]"
 
-    fun calculateImageResourceId(): String {
-        return "{${generateUUID(md5)}}.gif"
-    }
+    fun calculateImageResourceId(): String = generateImageId(md5)
 }
 
 /**

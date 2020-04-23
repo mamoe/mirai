@@ -91,7 +91,7 @@ internal class FriendImpl(
                     fileId = 0,
                     fileMd5 = image.md5,
                     fileSize = image.inputSize.toInt(),
-                    fileName = image.md5.toUHexString("") + ".gif",
+                    fileName = image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
                     imgOriginal = 1
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()

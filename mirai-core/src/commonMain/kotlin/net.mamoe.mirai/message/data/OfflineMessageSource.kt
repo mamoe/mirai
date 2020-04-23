@@ -83,6 +83,18 @@ interface MessageSourceAmender {
  * ### 性质
  * - 当两个消息的元数据相同时, 他们在群中会是同一条消息. 可通过此特性决定官方客户端 "定位原消息" 的目标
  * - 发送人的信息和消息内容会在官方客户端显示在引用回复中.
+ *
+ * ### 实例
+ * ```
+ * bot.buildMessageSource {
+ *     bot sendTo target // 指定发送人和发送目标
+ *     metadata(source) // 从另一个消息源复制 id, internalId, time
+ *
+ *     messages { // 指定消息内容
+ *         +"hi"
+ *     }
+ * }
+ * ```
  */
 @SinceMirai("0.39.0")
 @JvmSynthetic

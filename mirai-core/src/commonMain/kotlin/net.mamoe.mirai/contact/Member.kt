@@ -162,22 +162,26 @@ abstract class Member : MemberJavaFriendlyAPI() {
  *
  * @throws IllegalStateException 当此成员不是好友时抛出
  */
+@SinceMirai("0.39.0")
 fun Member.asFriend(): Friend = this.bot.getFriendOrNull(this.id) ?: error("$this is not a friend")
 
 /**
  * 得到此成员作为好友的对象.
  */
+@SinceMirai("0.39.0")
 fun Member.asFriendOrNull(): Friend? = this.bot.getFriendOrNull(this.id)
 
 /**
  * 判断此成员是否为好友
  */
+@SinceMirai("0.39.0")
 inline val Member.isFriend: Boolean
     get() = this.bot.friends.contains(this.id)
 
 /**
  * 如果此成员是好友, 则执行 [block] 并返回其返回值. 否则返回 `null`
  */
+@SinceMirai("0.39.0")
 inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
     return this.asFriendOrNull()?.let(block)
 }
