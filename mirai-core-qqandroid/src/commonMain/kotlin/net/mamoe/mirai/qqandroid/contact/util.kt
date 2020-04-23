@@ -31,7 +31,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.verbose
 
 @OptIn(MiraiInternalAPI::class)
-internal suspend fun Friend.sendMessageImpl(message: Message): MessageReceipt<Friend> {
+internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: Message): MessageReceipt<T> {
     val event = MessageSendEvent.FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
     if (event.isCancelled) {
         throw EventCancelledException("cancelled by FriendMessageSendEvent")
@@ -49,7 +49,7 @@ internal suspend fun Friend.sendMessageImpl(message: Message): MessageReceipt<Fr
             }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
         ) { "send message failed" }
     }
-    return MessageReceipt(source, this, null)
+    return MessageReceipt(source, generic, null)
 }
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)

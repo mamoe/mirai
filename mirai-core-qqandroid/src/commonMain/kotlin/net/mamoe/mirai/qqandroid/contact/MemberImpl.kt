@@ -54,9 +54,8 @@ internal class MemberImpl constructor(
 
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
-        return sendMessageImpl(message).also {
-            logMessageSent(message)
-        }
+        return (this.asFriendOrNull()?.sendMessageImpl(this, message) ?: sendMessageImpl(message))
+            .also { logMessageSent(message) }
     }
 
     private suspend fun sendMessageImpl(message: Message): MessageReceipt<Member> {

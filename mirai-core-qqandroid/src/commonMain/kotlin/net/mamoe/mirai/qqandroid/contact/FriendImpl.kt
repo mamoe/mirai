@@ -31,14 +31,14 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
+import kotlin.math.roundToInt
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 internal inline class FriendInfoImpl(
     private val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
@@ -72,13 +72,13 @@ internal class FriendImpl(
     @JvmSynthetic
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
-        return sendMessageImpl(message).also {
+        return sendMessageImpl(this, message).also {
             logMessageSent(message)
         }
     }
 
     @JvmSynthetic
-    @OptIn(MiraiInternalAPI::class)
+    @OptIn(MiraiInternalAPI::class, ExperimentalStdlibApi::class, ExperimentalTime::class)
     override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
@@ -102,24 +102,34 @@ internal class FriendImpl(
                     ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
-                    MiraiPlatformUtils.Http.postImage(
-                        "0x6ff0070",
-                        bot.id,
-                        null,
-                        imageInput = image.input,
-                        inputSize = image.inputSize,
-                        uKeyHex = response.uKey.toUHexString("")
-                    )
-                    //HighwayHelper.uploadImage(
-                    //    client = bot.client,
-                    //    serverIp = response.serverIp[0].toIpV4AddressString(),
-                    //    serverPort = response.serverPort[0],
-                    //    imageInput = image.input,
-                    //    inputSize = image.inputSize.toInt(),
-                    //    fileMd5 = image.md5,
-                    //    uKey = response.uKey,
-                    //    commandId = 1
-                    //)
+                    bot.network.logger.verbose {
+                        "[Http] Uploading friend image, size=${image.inputSize / 1024} KiB"
+                    }
+
+                    val time = measureTime {
+                        MiraiPlatformUtils.Http.postImage(
+                            "0x6ff0070",
+                            bot.id,
+                            null,
+                            imageInput = image.input,
+                            inputSize = image.inputSize,
+                            uKeyHex = response.uKey.toUHexString("")
+                        )
+                    }
+
+                    bot.network.logger.verbose {
+                        "[Http] Uploading friend image: succeed at ${(image.inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+                    }
+
+                    /*
+                    HighwayHelper.uploadImageToServers(
+                        bot,
+                        response.serverIp.zip(response.serverPort),
+                        response.uKey,
+                        image,
+                        kind = "friend",
+                        commandId = 1
+                    )*/
                     // 为什么不能 ??
 
                     return OfflineFriendImage(response.resourceId).also {

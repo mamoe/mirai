@@ -13,7 +13,6 @@
 package net.mamoe.mirai.qqandroid.contact
 
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
@@ -33,17 +32,13 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
-import net.mamoe.mirai.qqandroid.utils.addSuppressedMirai
 import net.mamoe.mirai.qqandroid.utils.estimateLength
-import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
-import kotlin.math.roundToInt
 import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 
 @OptIn(ExperimentalContracts::class)
 internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
@@ -412,86 +407,21 @@ internal class GroupImpl(
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
                     val resourceId = image.calculateImageResourceId()
-//                    return NotOnlineImageFromFile(
-//                        resourceId = resourceId,
-//                        md5 = response.fileInfo.fileMd5,
-//                        filepath = resourceId,
-//                        fileLength = response.fileInfo.fileSize.toInt(),
-//                        height = response.fileInfo.fileHeight,
-//                        width = response.fileInfo.fileWidth,
-//                        imageType = response.fileInfo.fileType,
-//                        fileId = response.fileId.toInt()
-//                    )
-                    //  println("NMSL")
                     return OfflineGroupImage(imageId = resourceId)
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
-                    // 每 10KB 等 1 秒, 最少等待 5 秒
-                    var exception: Throwable? = null
-                    val success = response.uploadIpList.zip(response.uploadPortList).any { (ip, port) ->
-                        kotlin.runCatching {
-                            withTimeoutOrNull((image.inputSize * 1000 / 1024 / 10).coerceAtLeast(5000)) {
-                                bot.network.logger.verbose { "[Highway] Uploading group image to ${ip.toIpV4AddressString()}:$port, size=${image.inputSize / 1024} KiB" }
-
-                                val time = measureTime {
-                                    HighwayHelper.uploadImage(
-                                        client = bot.client,
-                                        serverIp = ip.toIpV4AddressString(),
-                                        serverPort = port,
-                                        imageInput = image.input,
-                                        inputSize = image.inputSize.toInt(),
-                                        fileMd5 = image.md5,
-                                        ticket = response.uKey,
-                                        commandId = 2
-                                    )
-                                }
-                                bot.network.logger.verbose { "[Highway] Uploading group image: succeed at ${(image.inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s" }
-                                true
-                            } ?: kotlin.run {
-                                bot.network.logger.verbose { "[Highway] Uploading group image: timeout, retrying next server" }
-                                false
-                            }
-                        }.getOrElse {
-                            exception?.addSuppressedMirai(it)
-                            exception = it
-                            false
-                        }
-                    }
-
-                    if (!success) {
-                        throw IllegalStateException("cannot upload group image, failed on all servers.", exception)
-                    }
-
+                    HighwayHelper.uploadImageToServers(
+                        bot,
+                        response.uploadIpList.zip(response.uploadPortList),
+                        response.uKey,
+                        image,
+                        kind = "group",
+                        commandId = 2
+                    )
                     val resourceId = image.calculateImageResourceId()
-                    // return NotOnlineImageFromFile(
-                    //     resourceId = resourceId,
-                    //     md5 = image.md5,
-                    //     filepath = resourceId,
-                    //     fileLength = image.inputSize.toInt(),
-                    //     height = image.height,
-                    //     width = image.width,
-                    //     imageType = image.imageType,
-                    //     fileId = response.fileId.toInt()
-                    // )
                     return OfflineGroupImage(imageId = resourceId)
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
-                    /*
-                        fileId = response.fileId.toInt(),
-                        fileType = 0, // ?
-                        height = image.height,
-                        width = image.width,
-                        imageType = image.imageType,
-                        bizType = 0,
-                        serverIp = response.uploadIpList.first(),
-                        serverPort = response.uploadPortList.first(),
-                        signature = image.md5,
-                        size = image.inputSize.toInt(),
-                        useful = 1,
-                        source = 200,
-                        original = 1,
-                        pbReserve = EMPTY_BYTE_ARRAY
-                     */
                 }
             }
         }
