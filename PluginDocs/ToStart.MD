@@ -135,7 +135,7 @@ IDEA分付费的Ultimate版和免费的Community版，选择自己的系统后�
 6: 出现以下显示的时候切换到Remote并点击debug
 ![listening](assets/debug6.png)<br>
 ![debug](assets/debug7.png)<br>
-7: 当调试器附加成功时程序才会开始运行，因此你可以在任何地方使用断点，当然也可能会出现一些问题导致某些地方断点失效
+7: 当调试器附加成功时程序才会开始运行，因此你可以在任何地方使用断点，当然也可能会出现一些问题导致某些地方断点失效<br>
 ![breakpoint](assets/debug8.png)<br>
 
 
