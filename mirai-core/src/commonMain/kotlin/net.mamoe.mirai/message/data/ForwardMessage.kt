@@ -547,13 +547,12 @@ class ForwardMessageBuilder private constructor(
     /** 构造 [ForwardMessage] */
     fun build(): ForwardMessage = ForwardMessage(container.toList(), this.displayStrategy)
 
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
-
     @OptIn(MiraiExperimentalAPI::class)
     internal fun Bot.smartName(): String = when (val c = this@ForwardMessageBuilder.context) {
         is Group -> c.botAsMember.nameCardOrNick
         else -> nick
     }
 }
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)

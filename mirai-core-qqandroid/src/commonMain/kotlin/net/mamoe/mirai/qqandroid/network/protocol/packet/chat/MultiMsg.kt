@@ -42,14 +42,15 @@ internal class MessageValidationData @OptIn(MiraiInternalAPI::class) constructor
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
+
 @OptIn(MiraiInternalAPI::class)
 internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
     sequenceId: Int,
-    random: UInt,
-    groupCode: Long,
-    botMemberNameCard: String
+    random: Int,
+    groupCode: Long
 ): MessageValidationData {
-
     val msgTransmit = MsgTransmit.PbMultiMsgTransmit(
         msg = this.map { chain ->
             MsgComm.Msg(
@@ -57,7 +58,7 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
                     fromUin = chain.senderId,
                     msgSeq = sequenceId,
                     msgTime = chain.time,
-                    msgUid = 0x01000000000000000L or random.toLong(),
+                    msgUid = 0x01000000000000000L or random.toLongUnsigned(),
                     mutiltransHead = MsgComm.MutilTransHead(
                         status = 0,
                         msgId = 1

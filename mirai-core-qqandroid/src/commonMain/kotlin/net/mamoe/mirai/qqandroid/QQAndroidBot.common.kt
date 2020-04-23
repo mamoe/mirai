@@ -569,8 +569,7 @@ internal abstract class QQAndroidBotBase constructor(
             val data = message.calculateValidationDataForGroup(
                 sequenceId = sequenceId,
                 random = Random.nextInt().absoluteValue.toUInt(),
-                groupCode = groupCode,
-                botMemberNameCard = group.botAsMember.nameCardOrNick
+                groupCode = groupCode
             )
 
             val response =
