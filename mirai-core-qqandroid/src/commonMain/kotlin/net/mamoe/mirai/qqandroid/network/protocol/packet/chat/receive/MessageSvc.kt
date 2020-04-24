@@ -206,12 +206,8 @@ internal class MessageSvc {
             val messages = resp.uinPairMsgs.asFlow()
                 .filterNot { it.msg == null }
                 .flatMapConcat { it.msg!!.asFlow() }
+                .also { Del.delete(bot, it) } // 删除消息
                 .mapNotNull<MsgComm.Msg, Packet> { msg ->
-
-                    // 删除消息
-                    bot.network.run {
-                        Del(bot.client, msg.msgHead).sendWithoutExpect()
-                    }
 
                     when (msg.msgHead.msgType) {
                         33 -> { // 邀请入群
@@ -297,10 +293,12 @@ internal class MessageSvc {
                                     if (member.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
                                         return@mapNotNull TempMessage(
                                             member,
-                                            msg.toMessageChain(bot,
+                                            msg.toMessageChain(
+                                                bot,
                                                 groupIdOrZero = 0,
                                                 onlineSource = true,
-                                                isTemp = true),
+                                                isTemp = true
+                                            ),
                                             msg.msgHead.msgTime
                                         )
                                     }
@@ -546,24 +544,33 @@ internal class MessageSvc {
 
     internal object Del : OutgoingPacketFactory<Nothing?>("MessageSvc.PbDeleteMsg") {
 
-        internal operator fun invoke(client: QQAndroidClient, header: MsgComm.MsgHead) = buildOutgoingUniPacket(client) {
+        internal operator fun invoke(client: QQAndroidClient, items: List<MsgSvc.PbDeleteMsgReq.MsgItem>) =
+            buildOutgoingUniPacket(client) {
 
-            writeProtoBuf(
-                MsgSvc.PbDeleteMsgReq.serializer(),
-                MsgSvc.PbDeleteMsgReq(
-                    msgItems = listOf(
-                        MsgSvc.PbDeleteMsgReq.MsgItem(
-                            fromUin = header.fromUin,
-                            toUin = header.toUin,
-                            // 群为84、好友为187。但是群通过其他方法删除，测试通过187也能删除群消息。
-                            msgType = 187,
-                            msgSeq = header.msgSeq,
-                            msgUid = header.msgUid
-                        )
+                writeProtoBuf(
+                    MsgSvc.PbDeleteMsgReq.serializer(),
+                    MsgSvc.PbDeleteMsgReq(
+                        msgItems = items
                     )
                 )
-            )
-        }
+            }
+
+        internal suspend fun delete(bot: QQAndroidBot, messages: Flow<MsgComm.Msg>) =
+            bot.network.run {
+
+                val map = messages.map {
+                    MsgSvc.PbDeleteMsgReq.MsgItem(
+                        fromUin = it.msgHead.fromUin,
+                        toUin = it.msgHead.toUin,
+                        // 群为84、好友为187。但是群通过其他方法删除，测试通过187也能删除群消息。
+                        msgType = 187,
+                        msgSeq = it.msgHead.msgSeq,
+                        msgUid = it.msgHead.msgUid
+                    )
+                }.toList()
+
+                Del(bot.client, map).sendWithoutExpect()
+            }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot) = null
     }
