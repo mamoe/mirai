@@ -45,16 +45,26 @@ interface Command {
     suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean
 }
 
+abstract class AbstractCommand(
+    override val name: String,
+    override val alias: List<String>,
+    override val description: String,
+    override val usage: String
+) : Command
+
 /**
  * 注册这个指令
  */
-inline fun Command.register(commandOwner: CommandOwner) = CommandManager.register(commandOwner,this)
+inline fun Command.register(commandOwner: CommandOwner) = CommandManager.register(commandOwner, this)
 
-internal inline fun registerConsoleCommands(builder: CommandBuilder.() -> Unit):Command{
+internal inline fun registerConsoleCommands(builder: CommandBuilder.() -> Unit): Command {
     return CommandBuilder().apply(builder).register(ConsoleCommandOwner)
 }
 
-inline fun PluginBase.registerCommand(builder: CommandBuilder.() -> Unit):Command{
+/**
+ * 构造并注册一个指令
+ */
+inline fun PluginBase.registerCommand(builder: CommandBuilder.() -> Unit): Command {
     return CommandBuilder().apply(builder).register(this.asCommandOwner())
 }
 
