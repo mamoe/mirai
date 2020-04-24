@@ -186,28 +186,4 @@ internal class NewContact {
             override suspend fun ByteReadPacket.decode(bot: QQAndroidBot) = null
         }
     }
-
-    internal object Del : OutgoingPacketFactory<Nothing?>("MessageSvc.PbDeleteMsg") {
-
-        internal operator fun invoke(client: QQAndroidClient, header: MsgComm.MsgHead) = buildOutgoingUniPacket(client) {
-
-            writeProtoBuf(
-                MsgSvc.PbDeleteMsgReq.serializer(),
-                MsgSvc.PbDeleteMsgReq(
-                    msgItems = listOf(
-                        MsgSvc.PbDeleteMsgReq.MsgItem(
-                            fromUin = header.fromUin,
-                            toUin = header.toUin,
-                            // 群为84、好友为187。但是群通过其他方法删除，测试通过187也能删除群消息。
-                            msgType = 187,
-                            msgSeq = header.msgSeq,
-                            msgUid = header.msgUid
-                        )
-                    )
-                )
-            )
-        }
-
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot) = null
-    }
 }

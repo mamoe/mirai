@@ -135,6 +135,7 @@ internal object KnownPacketFactories {
         MessageSvc.PbGetMsg,
         MessageSvc.PushForceOffline,
         MessageSvc.PbSendMsg,
+        MessageSvc.Del,
         FriendList.GetFriendGroupList,
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
@@ -152,7 +153,6 @@ internal object KnownPacketFactories {
         MultiMsg.ApplyUp,
         NewContact.SystemMsgNewFriend,
         NewContact.SystemMsgNewGroup,
-        NewContact.Del,
         ProfileService.GroupMngReq
     )
 
