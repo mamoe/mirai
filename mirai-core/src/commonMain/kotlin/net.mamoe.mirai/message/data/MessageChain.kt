@@ -142,9 +142,7 @@ inline fun MessageChain.allContent(block: (MessageContent) -> Boolean): Boolean 
     this.forEach {
         if (it !is MessageMetadata) {
             check(it is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
-            if (!block(it)) {
-                return false
-            }
+            if (!block(it)) return false
         }
     }
     return true
@@ -158,9 +156,7 @@ inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): Boolean
     this.forEach {
         if (it !is MessageMetadata) {
             check(it is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
-            if (block(it)) {
-                return false
-            }
+            if (block(it)) return false
         }
     }
     return true

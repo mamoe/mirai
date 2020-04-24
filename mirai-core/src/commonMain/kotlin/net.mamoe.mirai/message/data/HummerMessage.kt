@@ -8,6 +8,8 @@
  */
 
 @file:Suppress("unused", "NOTHING_TO_INLINE")
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils") // since 0.39.1
 
 package net.mamoe.mirai.message.data
 
@@ -15,10 +17,7 @@ import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
+import kotlin.jvm.*
 
 /**
  * 一些特殊的消息

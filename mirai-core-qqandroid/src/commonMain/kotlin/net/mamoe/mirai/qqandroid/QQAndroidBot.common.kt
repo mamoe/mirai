@@ -24,10 +24,7 @@ import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.json.int
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.BotImpl
-import net.mamoe.mirai.LowLevelAPI
-import net.mamoe.mirai.ThisApiMustBeUsedInWithConnectionLockBlock
+import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
@@ -82,8 +79,16 @@ internal class QQAndroidBot constructor(
 
     @OptIn(LowLevelAPI::class)
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
+        check(event.bot === this) {
+            "the request $event is from Bot ${event.bot.id} but you are responding with bot ${this.id}"
+        }
+
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
+        }
+
+        check(!friends.contains(event.fromId)) {
+            "the request $event is outdated: You had already responded it on another device."
         }
 
         network.run {
@@ -100,8 +105,16 @@ internal class QQAndroidBot constructor(
     }
 
     override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
+        check(event.bot === this) {
+            "the request $event is from Bot ${event.bot.id} but you are responding with bot ${this.id}"
+        }
+
         check(event.responded.compareAndSet(false, true)) {
-            "the request $this has already been responded"
+            "the request $event has already been responded"
+        }
+
+        check(!friends.contains(event.fromId)) {
+            "the request $event is outdated: You had already responded it on another device."
         }
 
         network.run {
@@ -116,8 +129,14 @@ internal class QQAndroidBot constructor(
 
     @OptIn(LowLevelAPI::class)
     override suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent) {
+        @Suppress("DuplicatedCode")
+        checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
+        }
+
+        check(!event.group.members.contains(event.fromId)) {
+            "the request $this is outdated: Another operator has already responded it."
         }
 
         network.run {
@@ -137,10 +156,16 @@ internal class QQAndroidBot constructor(
         }
     }
 
+    @Suppress("DuplicatedCode")
     @OptIn(LowLevelAPI::class)
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
+        checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
+        }
+
+        check(!event.group.members.contains(event.fromId)) {
+            "the request $this is outdated: Another operator has already responded it."
         }
         network.run {
             NewContact.SystemMsgNewGroup.Action(
@@ -152,7 +177,22 @@ internal class QQAndroidBot constructor(
         }
     }
 
+    private inline fun checkGroupPermission(eventBot: Bot, eventGroup: Group, eventName: () -> String) {
+        val group = this.getGroupOrNull(eventGroup.id)
+            ?: kotlin.run {
+                if (this == eventBot) {
+                    error("A ${eventName()} is outdated. Group ${eventGroup.id} not found for bot ${this.id}. " +
+                            "This is because bot isn't in the group anymore")
+                } else {
+                    error("A ${eventName()} is from bot ${eventBot.id}, but you are trying to respond it using bot ${this.id} who isn't a member of the group ${eventGroup.id}")
+                }
+            }
+
+        group.checkBotPermissionOperator()
+    }
+
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
+        checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }

@@ -42,6 +42,8 @@ inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> 
 /**
  * [MessageChain] 构建器.
  * 多个连续的 [String] 会被连接为单个 [PlainText] 以优化性能.
+ *
+ *
  * **注意:** 无并发安全性.
  *
  * @see buildMessageChain 推荐使用
@@ -91,6 +93,7 @@ open class MessageChainBuilder private constructor(
         return addAll(elements.flatten())
     }
 
+    @JvmSynthetic
     operator fun Message.unaryPlus() {
         checkBuilt()
         flushCache()
@@ -98,22 +101,26 @@ open class MessageChainBuilder private constructor(
     }
 
 
+    @JvmSynthetic
     operator fun String.unaryPlus() {
         checkBuilt()
         add(this)
     }
 
+    @JvmSynthetic // they should use add
     operator fun plusAssign(plain: String) {
         checkBuilt()
         withCache { append(plain) }
     }
 
+    @JvmSynthetic // they should use add
     operator fun plusAssign(message: Message) {
         checkBuilt()
         flushCache()
         this.add(message)
     }
 
+    @JvmSynthetic // they should use add
     operator fun plusAssign(message: SingleMessage) { // avoid resolution ambiguity
         checkBuilt()
         flushCache()
@@ -125,6 +132,7 @@ open class MessageChainBuilder private constructor(
         withCache { append(plain) }
     }
 
+    @JvmSynthetic // they should use add
     operator fun plusAssign(charSequence: CharSequence) {
         checkBuilt()
         withCache { append(charSequence) }

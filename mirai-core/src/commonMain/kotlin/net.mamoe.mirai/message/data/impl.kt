@@ -311,9 +311,11 @@ internal class SingleMessageChainImpl constructor(
 
 
 @SharedImmutable
+@get:JvmSynthetic
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
 
+@JvmSynthetic
 @Suppress("NOTHING_TO_INLINE") // no stack waste
 internal inline fun Char.hexDigitToByte(): Int {
     return when (this) {
@@ -324,6 +326,7 @@ internal inline fun Char.hexDigitToByte(): Int {
     }
 }
 
+@JvmSynthetic
 internal fun String.skipToSecondHyphen(): Int {
     var count = 0
     this.forEachIndexed { index, c ->
@@ -332,6 +335,7 @@ internal fun String.skipToSecondHyphen(): Int {
     error("cannot find two hyphens")
 }
 
+@JvmSynthetic
 internal fun String.imageIdToMd5(offset: Int): ByteArray {
     val result = ByteArray(16)
     var cur = 0

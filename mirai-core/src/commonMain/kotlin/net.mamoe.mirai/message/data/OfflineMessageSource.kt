@@ -25,6 +25,9 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
+/**
+ * 将在线消息源转换为离线消息源.
+ */
 @SinceMirai("0.39.0")
 @JvmName("toOfflineMessageSource")
 fun OnlineMessageSource.toOffline(): OfflineMessageSource =
@@ -60,6 +63,14 @@ interface MessageSourceAmender {
     var internalId: Int
 
     var originalMessage: MessageChain
+
+    /** 从另一个 [MessageSource] 中复制 [id], [internalId], [time]*/
+    @SinceMirai("0.39.2")
+    fun metadataFrom(another: MessageSource) {
+        this.id = another.id
+        this.internalId = another.internalId
+        this.time = another.time
+    }
 }
 
 

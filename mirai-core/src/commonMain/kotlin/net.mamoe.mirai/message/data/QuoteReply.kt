@@ -15,7 +15,6 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
@@ -29,10 +28,19 @@ import kotlin.jvm.JvmSynthetic
 /**
  * 引用回复.
  *
- * 可以引用一条群消息并发送给一个好友, 或是引用好友消息发送给群.
- * 可以引用自己发出的消息. 详见 [MessageReceipt.quote]
+ * 支持引用任何一条消息发送给任何人.
  *
- * @see MessageSource 获取更多信息
+ * #### [source] 的类型:
+ * - 在发送引用回复时, [source] 类型为 [OnlineMessageSource] 或 [OfflineMessageSource]
+ * - 在接收引用回复时, [source] 类型一定为 [OfflineMessageSource]
+ *
+ * #### 原消息内容
+ * 引用回复的原消息内容完全由 [source] 中 [MessageSource.originalMessage] 控制, 客户端不会自行寻找原消息.
+ *
+ * #### 客户端内跳转
+ * 客户端在跳转原消息时, 会通过 [MessageSource.id] 等 metadata
+ *
+ * @see MessageSource 获取有关消息源的更多信息
  */
 @OptIn(MiraiExperimentalAPI::class)
 @SinceMirai("0.33.0")
@@ -50,26 +58,52 @@ class QuoteReply(val source: MessageSource) : Message, MessageMetadata, Constrai
     override fun hashCode(): Int = source.hashCode()
 }
 
+/**
+ * @see MessageSource.id
+ */
 @get:JvmSynthetic
 inline val QuoteReply.id: Int
     get() = source.id
 
+/**
+ * @see MessageSource.internalId
+ */
+@SinceMirai("0.39.2")
+@get:JvmSynthetic
+inline val QuoteReply.internalId: Int
+    get() = source.internalId
+
+/**
+ * @see MessageSource.fromId
+ */
 @get:JvmSynthetic
 inline val QuoteReply.fromId: Long
     get() = source.fromId
 
+/**
+ * @see MessageSource.targetId
+ */
 @get:JvmSynthetic
 inline val QuoteReply.targetId: Long
     get() = source.targetId
 
+/**
+ * @see MessageSource.originalMessage
+ */
 @get:JvmSynthetic
 inline val QuoteReply.originalMessage: MessageChain
     get() = source.originalMessage
 
+/**
+ * @see MessageSource.time
+ */
 @get:JvmSynthetic
 inline val QuoteReply.time: Int
     get() = source.time
 
+/**
+ * @see MessageSource.bot
+ */
 @get:JvmSynthetic
 inline val QuoteReply.bot: Bot
     get() = source.bot
@@ -78,6 +112,9 @@ inline val QuoteReply.bot: Bot
 @JvmSynthetic
 suspend inline fun QuoteReply.recall() = this.source.recall()
 
+/**
+ * 在一段时间后撤回这条消息.
+ */
 @JvmOverloads
 inline fun QuoteReply.recallIn(
     millis: Long,

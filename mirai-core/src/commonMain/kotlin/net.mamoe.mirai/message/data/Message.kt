@@ -8,6 +8,8 @@
  */
 
 @file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
+@file:JvmMultifileClass
+@file:JvmName("MessageUtils")
 
 package net.mamoe.mirai.message.data
 
@@ -17,6 +19,7 @@ import net.mamoe.mirai.message.data.Message.Key
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
+import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
@@ -313,6 +316,8 @@ interface SingleMessage : Message, CharSequence, Comparable<String> {
 /**
  * 消息元数据, 即不含内容的元素.
  *
+ * 所有子类的 [contentToString] 都应该返回空字符串.
+ *
  * @see MessageSource 消息源
  * @see QuoteReply 引用回复
  * @see CustomMessageMetadata 自定义元数据
@@ -328,11 +333,12 @@ interface MessageMetadata : SingleMessage {
 
 /**
  * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 保持原顺序.
+ *
  * 实现此接口的元素将会在连接时自动处理替换.
  */
 @SinceMirai("0.34.0")
 interface ConstrainSingle<out M : Message> : MessageMetadata {
-    val key: Message.Key<M>
+    val key: Key<M>
 }
 
 /**

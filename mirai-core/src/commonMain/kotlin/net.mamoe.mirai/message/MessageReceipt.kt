@@ -44,7 +44,7 @@ import kotlin.jvm.JvmSynthetic
 @OptIn(MiraiInternalAPI::class)
 open class MessageReceipt<out C : Contact>(
     /**
-     * 指代发送出去的消息
+     * 指代发送出去的消息.
      */
     val source: OnlineMessageSource.Outgoing,
     /**
