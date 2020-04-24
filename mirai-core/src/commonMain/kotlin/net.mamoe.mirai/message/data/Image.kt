@@ -90,6 +90,7 @@ expect interface Image : Message, MessageContent {
  * 好友图片 ID 正则表达式
  *
  * `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
+ * @see FRIEND_IMAGE_ID_REGEX_2
  */
 @SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
@@ -115,7 +116,7 @@ val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
 val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}}\.mirai""")
 
 /**
- * 在 `0.39.1` 前的图片的正则表示
+ * 在 `0.39.0` 前的图片的正则表示
  */
 @Deprecated("Only for temporal use",
     replaceWith = ReplaceWith("GROUP_IMAGE_ID_REGEX", "net.mamoe.mirai.message.data.GROUP_IMAGE_ID_REGEX"))
@@ -143,48 +144,6 @@ fun Image(imageId: String): OfflineImage = when {
     imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
     imageId matches GROUP_IMAGE_ID_REGEX_OLD -> OfflineGroupImage(imageId)
     else -> throw IllegalArgumentException("illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
-}
-
-@PlannedRemoval("1.0.0")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("FunctionName")
-@JsName("newImage")
-@JvmName("newImage")
-fun Image2(imageId: String): Image = Image(imageId)
-
-
-/**
- * 所有 [Image] 实现的基类.
- */
-@Deprecated(
-    "This is internal API. Use Image instead",
-    level = DeprecationLevel.HIDDEN, // so that others can't see this class
-    replaceWith = ReplaceWith("Image")
-)
-@MiraiInternalAPI("Use Image instead")
-sealed class AbstractImage : Image {
-    @Deprecated("""
-        不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
-    """, level = DeprecationLevel.HIDDEN)
-    @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
-    @get:JvmSynthetic
-    final override val DoNotImplementThisClass: Nothing?
-        get() = error("stub")
-
-    private var _stringValue: String? = null
-        get() = field ?: kotlin.run {
-            field = "[mirai:image:$imageId]"
-            field
-        }
-    override val length: Int get() = _stringValue!!.length
-    override fun get(index: Int): Char = _stringValue!![index]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        _stringValue!!.subSequence(startIndex, endIndex)
-
-    override fun compareTo(other: String): Int = _stringValue!!.compareTo(other)
-    final override fun toString(): String = _stringValue!!
-    final override fun contentToString(): String = "[图片]"
 }
 
 // region 在线图片
@@ -331,3 +290,46 @@ data class OfflineFriendImage(
 abstract class OnlineFriendImage : FriendImage(), OnlineImage
 
 // endregion
+
+
+@PlannedRemoval("1.0.0")
+@JvmSynthetic
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@Suppress("FunctionName")
+@JsName("newImage")
+@JvmName("newImage")
+fun Image2(imageId: String): Image = Image(imageId)
+
+
+/**
+ * 所有 [Image] 实现的基类.
+ */
+@Deprecated(
+    "This is internal API. Use Image instead",
+    level = DeprecationLevel.HIDDEN, // so that others can't see this class
+    replaceWith = ReplaceWith("Image")
+)
+@MiraiInternalAPI("Use Image instead")
+sealed class AbstractImage : Image {
+    @Deprecated("""
+        不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
+    """, level = DeprecationLevel.HIDDEN)
+    @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
+    @get:JvmSynthetic
+    final override val DoNotImplementThisClass: Nothing?
+        get() = error("stub")
+
+    private var _stringValue: String? = null
+        get() = field ?: kotlin.run {
+            field = "[mirai:image:$imageId]"
+            field
+        }
+    override val length: Int get() = _stringValue!!.length
+    override fun get(index: Int): Char = _stringValue!![index]
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
+        _stringValue!!.subSequence(startIndex, endIndex)
+
+    override fun compareTo(other: String): Int = _stringValue!!.compareTo(other)
+    final override fun toString(): String = _stringValue!!
+    final override fun contentToString(): String = "[图片]"
+}
