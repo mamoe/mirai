@@ -44,6 +44,7 @@ object SwingSolver : LoginSolver() {
                 需要进行账户安全认证<br>
                 该账户有[设备锁]/[不常用登录地点]/[不常用设备登录]的问题<br>
                 完成以下账号认证即可成功登录|理论本认证在mirai每个账户中最多出现1次<br>
+                完成后请关闭该窗口
                 """.trimIndent()
             ).last()
             JTextField(url).append()
