@@ -37,26 +37,26 @@ class DefaultLoginSolver(
     val input: suspend () -> String,
     val overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
-    private val degelate: LoginSolver
+    private val delegate: LoginSolver
 
     init {
         if (Desktop.isDesktopSupported()) {
-            degelate = SwingSolver
+            delegate = SwingSolver
         } else {
-            degelate = DefaultLoginSolverImpl(input, overrideLogger)
+            delegate = DefaultLoginSolverImpl(input, overrideLogger)
         }
     }
 
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
-        return degelate.onSolvePicCaptcha(bot, data)
+        return delegate.onSolvePicCaptcha(bot, data)
     }
 
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
-        return degelate.onSolveSliderCaptcha(bot, url)
+        return delegate.onSolveSliderCaptcha(bot, url)
     }
 
     override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
-        return degelate.onSolveUnsafeDeviceLoginVerify(bot, url)
+        return delegate.onSolveUnsafeDeviceLoginVerify(bot, url)
     }
 }
 
