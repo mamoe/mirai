@@ -2,6 +2,12 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.39.1`  2020/4/24
+- 修复长消息发送失败的问题 (#256)
+- 撤销 `Bot.instances` 更改, 添加新的 `Bot.botInstances` 以兼容以前代码
+- 修复密码错误时未停止重连的问题
+- 修复 `ForwardMessage` 无法从 `firstOrNull` 获取的问题
+
 ## `0.39.0`  2020/4/23
 **二进制不兼容的修改:** `Bot.instances` 现在返回 `List<Bot>`, 而不是 `List<WeakRef<Bot>>` 由于他们在 JVM 签名相同, 无法做兼容.
 
