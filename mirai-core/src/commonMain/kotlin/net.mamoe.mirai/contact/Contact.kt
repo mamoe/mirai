@@ -72,13 +72,13 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
     /**
      * 上传一个图片以备发送.
      *
-     * @see Image 查看更多信息
+     * @see Image 查看有关图片的更多信息
      *
-     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
-     * @see ImageUploadEvent 图片发送完成事件
+     * @see BeforeImageUploadEvent 图片发送前事件, 可拦截.
+     * @see ImageUploadEvent 图片发送完成事件, 不可拦截.
      *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
+     * @throws EventCancelledException 当发送消息事件被取消时抛出
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     @JvmSynthetic
     abstract suspend fun uploadImage(image: ExternalImage): OfflineImage

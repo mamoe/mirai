@@ -18,6 +18,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
+import kotlin.native.concurrent.SharedImmutable
 
 /////////////////////////
 //// IMPLEMENTATIONS ////
@@ -41,6 +42,32 @@ private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
 @Suppress("DEPRECATION_ERROR")
 internal fun Message.followedByInternalForBinaryCompatibility(tail: Message): CombinedMessage {
     return CombinedMessage(EmptyMessageChain, this.followedBy(tail))
+}
+
+@JvmSynthetic
+internal fun Message.contentEqualsImpl(another: Message, ignoreCase: Boolean): Boolean {
+    if (!this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)) return false
+    return when {
+        this is SingleMessage && another is SingleMessage -> true
+        this is SingleMessage && another is MessageChain -> another.all { it is MessageMetadata || it is PlainText }
+        this is MessageChain && another is SingleMessage -> this.all { it is MessageMetadata || it is PlainText }
+        this is MessageChain && another is MessageChain -> {
+            val anotherIterator = another.iterator()
+
+            /**
+             * 逐个判断非 [PlainText] 的 [Message] 是否 [equals]
+             */
+            this.forEachContent { thisElement ->
+                if (thisElement.isPlain()) return@forEachContent
+                for (it in anotherIterator) {
+                    if (it.isPlain() || it !is MessageContent) continue
+                    if (thisElement != it) return false
+                }
+            }
+            return true
+        }
+        else -> error("shouldn't be reached")
+    }
 }
 
 @JvmSynthetic
@@ -283,17 +310,9 @@ internal class SingleMessageChainImpl constructor(
 //////////////////////
 
 
+@SharedImmutable
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-
-// /000000000-3814297509-BFB7027B9354B8F899A062061D74E206
-private val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
-
-// /f8f1ab55-bf8e-4236-b55e-955848d7069f
-private val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/.{8}-(.{4}-){3}.{12}""")
-
-// {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
-private val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}}\..*""")
 
 @Suppress("NOTHING_TO_INLINE") // no stack waste
 internal inline fun Char.hexDigitToByte(): Int {
@@ -335,11 +354,12 @@ internal fun String.imageIdToMd5(offset: Int): ByteArray {
 
 @OptIn(ExperimentalStdlibApi::class)
 internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
+    @Suppress("DEPRECATION")
     return when {
         imageId.matches(FRIEND_IMAGE_ID_REGEX_1) -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
         imageId.matches(FRIEND_IMAGE_ID_REGEX_2) ->
             imageId.imageIdToMd5(1)
-        imageId.matches(GROUP_IMAGE_ID_REGEX) -> {
+        imageId.matches(GROUP_IMAGE_ID_REGEX) || imageId.matches(GROUP_IMAGE_ID_REGEX_OLD) -> {
             imageId.imageIdToMd5(1)
         }
         else -> error(

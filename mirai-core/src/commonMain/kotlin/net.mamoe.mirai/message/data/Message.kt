@@ -13,6 +13,7 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Message.Key
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
@@ -50,6 +51,9 @@ import kotlin.jvm.JvmSynthetic
  *
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *
+ * #### 实现规范
+ * 除 [MessageChain] 外, 所有 [Message] 的实现类都有伴生对象实现 [Key] 接口.
+ *
  * @see PlainText 纯文本
  * @see Image 图片
  * @see Face 原生表情
@@ -68,9 +72,13 @@ import kotlin.jvm.JvmSynthetic
 @OptIn(MiraiInternalAPI::class)
 interface Message {
     /**
-     * 类型 Key.
+     * 类型 Key. 由伴生对象实现, 表示一个 [Message] 对象的类型.
+     *
      * 除 [MessageChain] 外, 每个 [Message] 类型都拥有一个`伴生对象`(companion object) 来持有一个 Key
      * 在 [MessageChain.get] 时将会使用到这个 Key 进行判断类型.
+     *
+     * #### 用例
+     * [MessageChain.get]: 允许使用数组访问操作符获取指定类型的消息元素 ```val image: Image = chain[Image]```
      *
      * @param M 指代持有这个 Key 的消息类型
      */
@@ -83,21 +91,23 @@ interface Message {
     }
 
     /**
-     * 把 `this` 连接到 [tail] 的头部. 类似于字符串相加.
+     * 将 `this` 和 [tail] 连接.
      *
      * 连接后可以保证 [ConstrainSingle] 的元素单独存在.
      *
      * 例:
-     * ```kotlin
+     * ```
      * val a = PlainText("Hello ")
      * val b = PlainText("world!")
-     * val c: CombinedMessage = a + b
+     * val c: MessageChain = a + b
      * println(c) // "Hello world!"
      *
      * val d = PlainText("world!")
      * val e = c + d; // PlainText + CombinedMessage
      * println(c) // "Hello world!"
      * ```
+     *
+     * @see plus `+` 操作符重载
      */
     @SinceMirai("0.34.0")
     @JvmSynthetic // in java they should use `plus` instead
@@ -144,30 +154,7 @@ interface Message {
      * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
     @SinceMirai("0.38.0")
-    fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean {
-        if (!this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)) return false
-        return when {
-            this is SingleMessage && another is SingleMessage -> true
-            this is SingleMessage && another is MessageChain -> another.all { it is MessageMetadata || it is PlainText }
-            this is MessageChain && another is SingleMessage -> this.all { it is MessageMetadata || it is PlainText }
-            this is MessageChain && another is MessageChain -> {
-                val anotherIterator = another.iterator()
-
-                /**
-                 * 逐个判断非 [PlainText] 的 [Message] 是否 [equals]
-                 */
-                this.forEachContent { thisElement ->
-                    if (thisElement.isPlain()) return@forEachContent
-                    for (it in anotherIterator) {
-                        if (it.isPlain() || it !is MessageContent) continue
-                        if (thisElement != it) return false
-                    }
-                }
-                return true
-            }
-            else -> error("shouldn't be reached")
-        }
-    }
+    fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean = contentEqualsImpl(another, ignoreCase)
 
     /**
      * 判断内容是否与 [another] 相等.

@@ -14,6 +14,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.utils.ExternalImage
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -21,10 +22,15 @@ import java.net.URL
 /**
  * 自定义表情 (收藏的表情) 和普通图片.
  *
+ *
+ * 最推荐的存储方式是存储图片原文件, 每次发送图片时都使用文件上传.
+ * 在上传时服务器会根据其缓存情况回复已有的图片 ID 或要求客户端上传. 详见 [Contact.uploadImage]
+ *
+ *
  * ### 上传和发送图片
- * @see Contact.uploadImage 上传图片并得到 [Image] 消息
- * @see Contact.sendImage 上传并发送单个图片作为一条消息
- * @see Image.sendTo 上传图片并得到 [Image] 消息
+ * @see Contact.uploadImage 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
+ * @see Contact.sendImage 上传 [图片文件][ExternalImage] 并发送返回的 [Image] 作为一条消息
+ * @see Image.sendTo 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
  *
  * @see File.uploadAsImage
  * @see InputStream.uploadAsImage
@@ -46,16 +52,29 @@ actual interface Image : Message, MessageContent {
         actual override val typeName: String get() = "Image"
     }
 
+
     /**
      * 图片的 id.
-     * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
-     * 图片 id 主要根据图片文件 md5 计算得到.
      *
-     * 示例:
-     * 好友图片的 id: `/f8f1ab55-bf8e-4236-b55e-955848d7069f` 或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
-     * 群图片的 id: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png`
+     * 图片 id 不一定会长时间保存, 也可能在将来改变格式, 因此不建议使用 id 发送图片.
+     *
+     * ### 格式
+     * 群图片:
+     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 ".mirai")
+     *
+     * 好友图片:
+     * - [FRIEND_IMAGE_ID_REGEX_1], 示例: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
+     * - [FRIEND_IMAGE_ID_REGEX_2], 示例: `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
      *
      * @see Image 使用 id 构造图片
      */
     actual val imageId: String
+
+
+    @Deprecated("""
+        不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
+    """, level = DeprecationLevel.HIDDEN)
+    @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
+    @get:JvmSynthetic
+    actual val DoNotImplementThisClass: Nothing?
 }

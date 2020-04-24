@@ -117,12 +117,13 @@ interface MessageChain : Message, Iterable<SingleMessage> {
 /**
  * 遍历每一个 [消息内容][MessageContent]
  */
+@SinceMirai("0.39.0")
 @JvmSynthetic
 inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
-    this.forEach {
-        if (it !is MessageMetadata) {
-            check(it is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
-            block(it)
+    for (element in this) {
+        if (element !is MessageMetadata) {
+            check(element is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
+            block(element)
         }
     }
 }

@@ -34,9 +34,9 @@ internal class OnlineFriendImageImpl(
     internal val delegate: ImMsgBody.NotOnlineImage
 ) : OnlineFriendImage() {
     override val imageId: String get() = delegate.resId
-    override val original: Int get() = delegate.original
     override val originUrl: String
         get() = "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
+    // TODO: 2020/4/24 动态获取图片下载链接的 host
 
     override fun equals(other: Any?): Boolean {
         return other is OnlineFriendImageImpl && other.imageId == this.imageId
