@@ -20,6 +20,7 @@ import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
@@ -53,6 +54,44 @@ expect interface Image : Message, MessageContent {
 }
 
 /**
+ * 好友图片 ID 正则表达式
+ *
+ * `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
+ */
+@SinceMirai("0.39.2")
+// Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
+val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/.{8}-(.{4}-){3}.{12}""")
+
+/**
+ * 好友图片 ID 正则表达式 2
+ *
+ * `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
+ * @see FRIEND_IMAGE_ID_REGEX_1
+ */
+@SinceMirai("0.39.2")
+// Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_2
+val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
+
+/**
+ * 群图片 ID 正则表达式
+ *
+ * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai`
+ */
+@SinceMirai("0.39.2")
+// Java: MessageUtils.GROUP_IMAGE_ID_REGEX
+val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}}\.mirai""")
+
+/**
+ * 在 `0.39.1` 前的图片的正则表示
+ */
+@Deprecated("Only for temporal use",
+    replaceWith = ReplaceWith("GROUP_IMAGE_ID_REGEX", "net.mamoe.mirai.message.data.GROUP_IMAGE_ID_REGEX"))
+@SinceMirai("0.39.2")
+@PlannedRemoval("1.0.0")
+// Java: MessageUtils.GROUP_IMAGE_ID_REGEX_OLD
+val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{.{8}-(.{4}-){3}.{12}}\..*""")
+
+/**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
  * 这个图片必须是服务器已经存在的图片.
  * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
@@ -62,25 +101,24 @@ expect interface Image : Message, MessageContent {
  * @see Image 获取更多说明
  * @see Image.imageId 获取更多说明
  */
-@Suppress("FunctionName")
+@Suppress("FunctionName", "DEPRECATION")
 @JsName("newImage")
 @JvmName("newImage")
 fun Image(imageId: String): OfflineImage = when {
-    imageId.startsWith('/') -> OfflineFriendImage(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
-    imageId.length == 42 || imageId.startsWith('{') && imageId.endsWith('}') -> OfflineGroupImage(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
+    imageId matches FRIEND_IMAGE_ID_REGEX_1 -> OfflineFriendImage(imageId)
+    imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
+    imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
+    imageId matches GROUP_IMAGE_ID_REGEX_OLD -> OfflineGroupImage(imageId)
     else -> throw IllegalArgumentException("illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
 }
 
+@PlannedRemoval("1.0.0")
 @JvmSynthetic
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("FunctionName")
 @JsName("newImage")
 @JvmName("newImage")
-fun Image2(imageId: String): Image = when {
-    imageId.startsWith('/') -> OfflineFriendImage(imageId) // /f8f1ab55-bf8e-4236-b55e-955848d7069f
-    imageId.length == 42 || imageId.startsWith('{') && imageId.endsWith('}') -> OfflineGroupImage(imageId) // {01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png
-    else -> throw IllegalArgumentException("illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
-}
+fun Image2(imageId: String): Image = Image(imageId)
 
 @MiraiInternalAPI("使用 Image")
 sealed class AbstractImage : Image {
