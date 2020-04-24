@@ -55,8 +55,17 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
+        @Deprecated("use botInstances instead", replaceWith = ReplaceWith("botInstances"))
         @JvmStatic
-        val instances: List<Bot>
+        val instances: List<WeakRef<Bot>>
+            get() = BotImpl.instances.toList()
+
+        /**
+         * 复制一份此时的 [Bot] 实例列表.
+         */
+        @SinceMirai("0.39.1")
+        @JvmStatic
+        val botInstances: List<Bot>
             get() = BotImpl.instances.asSequence().mapNotNull { it.get() }.toList()
 
         /**
