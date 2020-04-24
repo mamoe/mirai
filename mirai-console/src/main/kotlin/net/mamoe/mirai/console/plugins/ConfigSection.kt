@@ -32,41 +32,78 @@ import kotlin.reflect.full.isSubclassOf
 
 
 /**
- * TODO: support all config types
- * only JSON is now supported
+ * 标注一个即将在将来版本删除的 API
  *
+ * 目前 [Config] 的读写设计语义不明, list 和 map 读取效率低, 属性委托写入语义不明
+ * 将在未来重写并变为 `ReadOnlyConfig` 和 `ReadWriteConfig`.
+ * 并计划添加图形端配置绑定, 和带注释的序列化, 自动保存的配置文件, 与指令绑定的属性.
  */
+@RequiresOptIn("将在未来进行不兼容的修改", RequiresOptIn.Level.WARNING)
+annotation class ToBeRemoved
 
+/**
+ * 可读可写配置文件.
+ *
+ * @suppress 注意: 配置文件正在进行不兼容的修改
+ */
 interface Config {
+    @ToBeRemoved
     fun getConfigSection(key: String): ConfigSection
+
     fun getString(key: String): String
     fun getInt(key: String): Int
     fun getFloat(key: String): Float
     fun getDouble(key: String): Double
     fun getLong(key: String): Long
     fun getBoolean(key: String): Boolean
+
+    @ToBeRemoved
     fun getList(key: String): List<*>
+
+
+    @ToBeRemoved
     fun getStringList(key: String): List<String>
+
+    @ToBeRemoved
     fun getIntList(key: String): List<Int>
+
+    @ToBeRemoved
     fun getFloatList(key: String): List<Float>
+
+    @ToBeRemoved
     fun getDoubleList(key: String): List<Double>
+
+    @ToBeRemoved
     fun getLongList(key: String): List<Long>
+
+    @ToBeRemoved
     fun getConfigSectionList(key: String): List<ConfigSection>
+
     operator fun set(key: String, value: Any)
     operator fun get(key: String): Any?
     operator fun contains(key: String): Boolean
+
+    @ToBeRemoved
     fun exist(key: String): Boolean
+
     /**
      * 设置 key = value (如果value不存在则valueInitializer会被调用)
      * 之后返回当前key对应的值
      * */
-    fun <T:Any> setIfAbsent(key: String, value: T)
-    fun <T:Any> setIfAbsent(key: String, valueInitializer: Config.() -> T)
+    @ToBeRemoved
+    fun <T : Any> setIfAbsent(key: String, value: T)
 
+    @ToBeRemoved
+    fun <T : Any> setIfAbsent(key: String, valueInitializer: Config.() -> T)
+
+    @ToBeRemoved
     fun asMap(): Map<String, Any>
+
+    @ToBeRemoved
     fun save()
 
     companion object {
+        @ToBeRemoved
         fun load(fileName: String): Config {
             return load(
                 File(
@@ -81,6 +118,7 @@ interface Config {
         /**
          * create a read-write config
          * */
+        @ToBeRemoved
         fun load(file: File): Config {
             if (!file.exists()) {
                 file.createNewFile()
@@ -102,6 +140,7 @@ interface Config {
         /**
          * create a read-only config
          */
+        @ToBeRemoved
         fun load(content: String, type: String): Config {
             return when (type.toLowerCase()) {
                 "json" -> JsonConfig(content)
@@ -120,6 +159,7 @@ interface Config {
         /**
          * create a read-only config
          */
+        @ToBeRemoved
         fun load(inputStream: InputStream, type: String): Config {
             return load(inputStream.readBytes().encodeToString(), type)
         }
@@ -128,21 +168,25 @@ interface Config {
 }
 
 
+@ToBeRemoved
 fun File.loadAsConfig(): Config {
     return Config.load(this)
 }
 
 /* 最简单的代理 */
+@ToBeRemoved
 inline operator fun <reified T : Any> Config.getValue(thisRef: Any?, property: KProperty<*>): T {
     return smartCast(property)
 }
 
+@ToBeRemoved
 inline operator fun <reified T : Any> Config.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
     this[property.name] = value
 }
 
 /* 带有默认值的代理 */
 @Suppress("unused")
+@ToBeRemoved
 inline fun <reified T : Any> Config.withDefault(
     crossinline defaultValue: () -> T
 ): ReadWriteProperty<Any, T> {
@@ -162,6 +206,7 @@ inline fun <reified T : Any> Config.withDefault(
 
 /* 带有默认值且如果为空会写入的代理 */
 @Suppress("unused")
+@ToBeRemoved
 inline fun <reified T : Any> Config.withDefaultWrite(
     noinline defaultValue: () -> T
 ): WithDefaultWriteLoader<T> {
@@ -174,12 +219,14 @@ inline fun <reified T : Any> Config.withDefaultWrite(
 }
 
 /* 带有默认值且如果为空会写入保存的代理 */
+@ToBeRemoved
 inline fun <reified T : Any> Config.withDefaultWriteSave(
     noinline defaultValue: () -> T
 ): WithDefaultWriteLoader<T> {
     return WithDefaultWriteLoader(T::class, this, defaultValue, true)
 }
 
+@ToBeRemoved
 class WithDefaultWriteLoader<T : Any>(
     private val _class: KClass<T>,
     private val config: Config,
@@ -217,6 +264,7 @@ internal inline fun <reified T : Any> Config.smartCast(property: KProperty<*>): 
     return smartCastInternal(property.name, T::class)
 }
 
+@OptIn(ToBeRemoved::class)
 @PublishedApi
 @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
 internal fun <T : Any> Config.smartCastInternal(propertyName: String, _class: KClass<T>): T {
@@ -260,13 +308,14 @@ internal fun <T : Any> Config.smartCastInternal(propertyName: String, _class: KC
 }
 
 
+@ToBeRemoved
 interface ConfigSection : Config, MutableMap<String, Any> {
-    companion object{
-        fun create():ConfigSection{
+    companion object {
+        fun create(): ConfigSection {
             return ConfigSectionImpl()
         }
 
-        fun new():ConfigSection{
+        fun new(): ConfigSection {
             return this.create()
         }
     }
@@ -356,17 +405,19 @@ interface ConfigSection : Config, MutableMap<String, Any> {
     }
 
     override fun <T : Any> setIfAbsent(key: String, valueInitializer: Config.() -> T) {
-        if(this.exist(key)){
-            put(key,valueInitializer.invoke(this))
+        if (this.exist(key)) {
+            put(key, valueInitializer.invoke(this))
         }
     }
 }
 
-internal inline fun <reified T:Any> ConfigSection.smartGet(key:String):T{
-    return this.smartCastInternal(key,T::class)
+@OptIn(ToBeRemoved::class)
+internal inline fun <reified T : Any> ConfigSection.smartGet(key: String): T {
+    return this.smartCastInternal(key, T::class)
 }
 
 @Serializable
+@ToBeRemoved
 open class ConfigSectionImpl : ConcurrentHashMap<String, Any>(),
 
     ConfigSection {
@@ -396,6 +447,7 @@ open class ConfigSectionImpl : ConcurrentHashMap<String, Any>(),
     }
 }
 
+@ToBeRemoved
 open class ConfigSectionDelegation(
     private val delegate: MutableMap<String, Any>
 ) : ConfigSection, MutableMap<String, Any> by delegate {
@@ -417,6 +469,7 @@ open class ConfigSectionDelegation(
 }
 
 
+@ToBeRemoved
 interface FileConfig : Config {
     fun deserialize(content: String): ConfigSection
 
@@ -425,6 +478,7 @@ interface FileConfig : Config {
 
 
 @MiraiInternalAPI
+@ToBeRemoved
 abstract class FileConfigImpl internal constructor(
     private val rawContent: String
 ) : FileConfig,
@@ -486,6 +540,7 @@ abstract class FileConfigImpl internal constructor(
 
 }
 
+@ToBeRemoved
 @OptIn(MiraiInternalAPI::class)
 class JsonConfig internal constructor(
     content: String
@@ -500,7 +555,7 @@ class JsonConfig internal constructor(
             return ConfigSectionImpl()
         }
         val gson = Gson()
-        val typeRef = object : TypeToken<Map<String, Any>>(){}.type
+        val typeRef = object : TypeToken<Map<String, Any>>() {}.type
         return ConfigSectionDelegation(
             gson.fromJson(content, typeRef)
         )
@@ -513,6 +568,7 @@ class JsonConfig internal constructor(
     }
 }
 
+@ToBeRemoved
 @OptIn(MiraiInternalAPI::class)
 class YamlConfig internal constructor(content: String) : FileConfigImpl(content) {
     constructor(file: File) : this(file.readText()) {
@@ -536,6 +592,7 @@ class YamlConfig internal constructor(content: String) : FileConfigImpl(content)
 
 }
 
+@ToBeRemoved
 @OptIn(MiraiInternalAPI::class)
 class TomlConfig internal constructor(content: String) : FileConfigImpl(content) {
     constructor(file: File) : this(file.readText()) {
@@ -551,7 +608,7 @@ class TomlConfig internal constructor(content: String) : FileConfigImpl(content)
                 Toml().read(content).toMap()
             )
         )
-        
+
     }
 
     override fun serialize(config: ConfigSection): String {
