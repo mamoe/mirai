@@ -36,7 +36,12 @@ internal class ImageTest {
     fun testCalculateImageMd5ByImageId() {
         assertEquals(
             "01E9451B-70ED-EAE3-B37C-101F1EEBF5B5".filterNot { it == '-' }.autoHexToBytes().contentToString(),
-            calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png").contentToString()
+            calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai").contentToString()
+        )
+
+        assertEquals(
+            "01E9451B-70ED-EAE3-B37C-101F1EEBF5B5".filterNot { it == '-' }.autoHexToBytes().contentToString(),
+            calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.gif").contentToString()
         )
 
         assertEquals(

@@ -360,12 +360,11 @@ internal fun String.imageIdToMd5(offset: Int): ByteArray {
 internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
     @Suppress("DEPRECATION")
     return when {
-        imageId.matches(FRIEND_IMAGE_ID_REGEX_1) -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
-        imageId.matches(FRIEND_IMAGE_ID_REGEX_2) ->
-            imageId.imageIdToMd5(1)
-        imageId.matches(GROUP_IMAGE_ID_REGEX) || imageId.matches(GROUP_IMAGE_ID_REGEX_OLD) -> {
-            imageId.imageIdToMd5(1)
-        }
+        imageId matches FRIEND_IMAGE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
+        imageId matches FRIEND_IMAGE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
+        imageId matches GROUP_IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
+        imageId matches GROUP_IMAGE_ID_REGEX_OLD -> imageId.imageIdToMd5(1)
+
         else -> error(
             "illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE"
         )
