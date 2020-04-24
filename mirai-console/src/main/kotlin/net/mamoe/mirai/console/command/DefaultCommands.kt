@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.command
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Bot.Companion.botInstances
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.plugins.PluginManager
@@ -86,8 +87,10 @@ object DefaultCommands {
         val account = ("mirai.account".property() ?: return).toLong()
         val password = "mirai.password".property() ?: "mirai.passphrase".property() ?: "mirai.passwd".property()
         if (password == null) {
-            MiraiConsole.logger.invoke(SimpleLogger.LogPriority.ERROR, "[AUTO LOGIN]", account,
-                "Find the account to be logged in, but no password specified")
+            MiraiConsole.logger.invoke(
+                SimpleLogger.LogPriority.ERROR, "[AUTO LOGIN]", account,
+                "Find the account to be logged in, but no password specified"
+            )
             return
         }
         GlobalScope.launch {
@@ -193,12 +196,12 @@ object DefaultCommands {
             onCommand { args ->
                 when (args.size) {
                     0 -> {
-                        sendMessage("当前有" + MiraiConsole.bots.size + "个BOT在线")
+                        sendMessage("当前有" + botInstances.size + "个BOT在线")
                     }
                     1 -> {
                         val bot = args[0]
                         var find = false
-                        MiraiConsole.bots.forEach {
+                        botInstances.forEach {
                             if (it.id.toString().contains(bot)) {
                                 find = true
                                 appendMessage(
@@ -226,11 +229,11 @@ object DefaultCommands {
                     return@onCommand false
                 }
                 val bot: Bot? = if (it.size == 2) {
-                    if (MiraiConsole.bots.isEmpty()) {
+                    if (botInstances.isEmpty()) {
                         MiraiConsole.logger("还没有BOT登录")
                         return@onCommand false
                     }
-                    MiraiConsole.bots[0]
+                    botInstances[0]
                 } else {
                     MiraiConsole.getBotOrNull(it[0].toLong())
                 }
@@ -319,27 +322,33 @@ object DefaultCommands {
                 val center = PluginCenter.Default
 
                 suspend fun showPage(num: Int) {
-                    sendMessage("正在连接" + center.name)
+                    sendMessage("正在连接 " + center.name)
                     val list = PluginCenter.Default.fetchPlugin(num)
+                    if (list.isEmpty()) {
+                        sendMessage("页码过大")
+                        return
+                    }
+                    sendMessage("显示插件列表第 $num 页")
                     appendMessage("\n")
                     list.values.forEach {
-                        appendMessage("=>" + it.name + " ;作者: " + it.author + " ;介绍: " + it.description)
+                        appendMessage("=> " + it.name + " ;作者: " + it.author + " ;介绍: " + it.description)
                     }
+                    sendMessage("使用 /install ${num + 1} 查看下一页")
                 }
 
                 suspend fun installPlugin(name: String) {
-                    sendMessage("正在连接" + center.name)
+                    sendMessage("正在连接 " + center.name)
                     val plugin = center.findPlugin(name)
                     if (plugin == null) {
                         sendMessage("插件未找到, 请注意大小写")
                         return
                     }
-                    sendMessage("正在安装" + plugin.name)
+                    sendMessage("正在安装 " + plugin.name)
                     try {
                         center.downloadPlugin(name) {}
-                        sendMessage("安装" + plugin.name + "成功")
+                        sendMessage("安装 " + plugin.name + " 成功, 请重启服务器以更新")
                     } catch (e: Exception) {
-                        sendMessage("安装" + plugin.name + "失败, " + (e.message ?: "未知原因"))
+                        sendMessage("安装 " + plugin.name + " 失败, " + (e.message ?: "未知原因"))
                     }
                 }
 
@@ -348,12 +357,7 @@ object DefaultCommands {
                 } else {
                     val arg = args[0]
 
-                    val id = try {
-                        arg.toInt()
-                    } catch (e: Exception) {
-                        0
-                    }
-
+                    val id = arg.toIntOrNull() ?: 0
                     if (id > 0) {
                         showPage(id)
                     } else {

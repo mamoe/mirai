@@ -3,39 +3,41 @@ package net.mamoe.mirai.console.center
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.get
+import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.plugins.PluginManager
+import net.mamoe.mirai.console.utils.retryCatching
 import net.mamoe.mirai.console.utils.tryNTimes
-import org.jsoup.Connection
-import org.jsoup.Jsoup
 import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlin.system.exitProcess
 
-internal object CuiPluginCenter: PluginCenter{
+internal object CuiPluginCenter : PluginCenter {
 
-    var plugins:JsonArray? = null
+    var plugins: JsonArray? = null
 
     /**
      * 一页10个吧,pageMinNum=1
      */
     override suspend fun fetchPlugin(page: Int): Map<String, PluginCenter.PluginInsight> {
         check(page > 0)
-        val startIndex = (page-1)*10
-        val endIndex = startIndex+9
+        val startIndex = (page - 1) * 10
+        val endIndex = startIndex + 9
         val map = mutableMapOf<String, PluginCenter.PluginInsight>()
         (startIndex until endIndex).forEach {
-            if(plugins == null){
+            if (plugins == null) {
                 refresh()
             }
-            if(it >= plugins!!.size()){
+            if (it >= plugins!!.size()) {
                 return@forEach
             }
             val info = plugins!![it]
-            with(info.asJsonObject){
+            with(info.asJsonObject) {
                 map[this.get("name").asString] = PluginCenter.PluginInsight(
                     this.get("name")?.asString ?: "",
                     this.get("version")?.asString ?: "",
@@ -51,22 +53,21 @@ internal object CuiPluginCenter: PluginCenter{
         return map
     }
 
-    override suspend fun findPlugin(name: String): PluginCenter.PluginInfo? {
-        val result = withContext(Dispatchers.IO){
-            tryNTimes {
-                Jsoup
-                    .connect("https://miraiapi.jasonczc.cn/getPluginDetailedInfo?name=$name")
-                    .method(Connection.Method.GET)
-                    .ignoreContentType(true)
-                    .execute()
-            }
-        }.body()
+    @OptIn(KtorExperimentalAPI::class)
+    private val Http = HttpClient(CIO)
 
-        if(result == "err:not found"){
+    override suspend fun findPlugin(name: String): PluginCenter.PluginInfo? {
+        val result = retryCatching(3) {
+            Http.get<String>("https://miraiapi.jasonczc.cn/getPluginDetailedInfo?name=$name")
+        }.recover {
+            return null
+        }.getOrNull() ?: return null
+
+        if (result == "err:not found") {
             return null
         }
 
-        return result.asJson().run{
+        return result.asJson().run {
             PluginCenter.PluginInfo(
                 this.get("name")?.asString ?: "",
                 this.get("version")?.asString ?: "",
@@ -86,23 +87,15 @@ internal object CuiPluginCenter: PluginCenter{
     }
 
     override suspend fun refresh() {
-        val results =
-                withContext(Dispatchers.IO) {
-                    tryNTimes {
-                        Jsoup
-                            .connect("https://miraiapi.jasonczc.cn/getPluginList")
-                            .ignoreContentType(true)
-                            .execute()
-                    }
-                }.body().asJson()
+        val results = Http.get<String>("https://miraiapi.jasonczc.cn/getPluginList").asJson()
 
-        if(!(results.has("success") && results["success"].asBoolean)){
+        if (!(results.has("success") && results["success"].asBoolean)) {
             error("Failed to fetch plugin list from Cui Cloud")
         }
         plugins = results.get("result").asJsonArray//先不解析
     }
 
-    override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit):File{
+    override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit): File {
         val info = findPlugin(name) ?: error("Plugin Not Found")
         val targetFile = File(PluginManager.pluginsPath, "$name-" + info.version + ".jar")
         withContext(Dispatchers.IO) {
@@ -129,7 +122,7 @@ internal object CuiPluginCenter: PluginCenter{
         get() = "崔云"
 
 
-    fun String.asJson(): JsonObject {
+    private fun String.asJson(): JsonObject {
         return JsonParser.parseString(this).asJsonObject
     }
 

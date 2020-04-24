@@ -42,8 +42,8 @@ interface PluginCenter {
     suspend fun fetchPlugin(page: Int): Map<String, PluginInsight>
 
     /**
-     * 尝试获取到某个插件by全名, case sensitive
-     * null则没有
+     * 尝试获取到某个插件 by 全名, case sensitive
+     * null 则没有
      */
     suspend fun findPlugin(name:String):PluginInfo?
 
