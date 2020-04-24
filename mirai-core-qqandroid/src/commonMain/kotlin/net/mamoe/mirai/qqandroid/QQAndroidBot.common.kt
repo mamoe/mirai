@@ -613,7 +613,7 @@ internal abstract class QQAndroidBotBase constructor(
                         response.proto.msgSig,
                         MiraiPlatformUtils.md5(body),
                         body.toReadPacket(),
-                        body.size.toLongUnsigned(),
+                        body.size.toLong().and(0xFFFF_FFFF), // don't use toLongUnsigned: Overload resolution ambiguity
                         "group long message",
                         27
                     )
