@@ -22,19 +22,46 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.BotNetworkHandler
+import java.awt.Desktop
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.RandomAccessFile
 import javax.imageio.ImageIO
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 actual typealias Throws = kotlin.jvm.Throws
 
 @MiraiExperimentalAPI
 class DefaultLoginSolver(
+    val input: suspend () -> String,
+    val overrideLogger: MiraiLogger? = null
+) : LoginSolver() {
+    private val degelate: LoginSolver
+
+    init {
+        if (Desktop.isDesktopSupported()) {
+            degelate = SwingSolver
+        } else {
+            degelate = DefaultLoginSolverImpl(input, overrideLogger)
+        }
+    }
+
+    override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
+        return degelate.onSolvePicCaptcha(bot, data)
+    }
+
+    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+        return degelate.onSolveSliderCaptcha(bot, url)
+    }
+
+    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+        return degelate.onSolveUnsafeDeviceLoginVerify(bot, url)
+    }
+}
+
+@MiraiExperimentalAPI
+class DefaultLoginSolverImpl(
     private val input: suspend () -> String,
     private val overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
@@ -106,7 +133,14 @@ actual abstract class LoginSolver {
     actual companion object {
         actual val Default: LoginSolver
             @OptIn(MiraiExperimentalAPI::class)
-            get() = DefaultLoginSolver(input = { withContext(Dispatchers.IO) { readLine() } ?: error("No standard input") })
+            get() {
+                if (Desktop.isDesktopSupported()) {
+                    return SwingSolver
+                }
+                return DefaultLoginSolverImpl(input = {
+                    withContext(Dispatchers.IO) { readLine() } ?: error("No standard input")
+                })
+            }
     }
 }
 
@@ -149,7 +183,8 @@ private fun BufferedImage.createCharImg(outputWidth: Int = 100, ignoreRate: Doub
         return (r * 30 + g * 59 + b * 11 + 50) / 100
     }
 
-    fun grayCompare(g1: Int, g2: Int): Boolean = kotlin.math.min(g1, g2).toDouble() / kotlin.math.max(g1, g2) >= ignoreRate
+    fun grayCompare(g1: Int, g2: Int): Boolean =
+        kotlin.math.min(g1, g2).toDouble() / kotlin.math.max(g1, g2) >= ignoreRate
 
     val background = gray(image.getRGB(0, 0))
 
