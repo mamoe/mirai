@@ -28,6 +28,7 @@ import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
@@ -56,6 +57,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
+import kotlin.jvm.Synchronized
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
@@ -202,6 +204,31 @@ internal class QQAndroidBot constructor(
                 event,
                 accept = null,
                 blackList = blackList
+            ).sendWithoutExpect()
+        }
+    }
+
+    override suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
+        = solveInvitedJoinGroupRequest(event, accept = true)
+
+    override suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
+        = solveInvitedJoinGroupRequest(event, accept = false)
+
+
+    private suspend fun solveInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent, accept: Boolean) {
+        check(event.responded.compareAndSet(false, true)) {
+            "the request $this has already been responded"
+        }
+
+        check(!groups.contains(event.groupId)) {
+            "the request $this is outdated: Bot has been already in the group."
+        }
+
+        network.run {
+            NewContact.SystemMsgNewGroup.Action(
+                bot.client,
+                event,
+                accept = accept
             ).sendWithoutExpect()
         }
     }

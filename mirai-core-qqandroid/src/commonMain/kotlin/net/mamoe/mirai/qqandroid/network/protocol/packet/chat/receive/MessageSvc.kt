@@ -307,7 +307,7 @@ internal class MessageSvc {
                                 } else return@mapNotNull null
                             }
                         }
-                        84 -> { // 请求入群验证
+                        84, 87 -> { // 请求入群验证 和 被要求入群
                             bot.network.run {
                                 NewContact.SystemMsgNewGroup(bot.client).sendWithoutExpect()
                             }

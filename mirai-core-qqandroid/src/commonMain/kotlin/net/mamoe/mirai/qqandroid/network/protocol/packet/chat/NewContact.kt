@@ -2,12 +2,12 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
+import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
@@ -93,7 +93,7 @@ internal class NewContact {
 
 
     internal object SystemMsgNewGroup :
-        OutgoingPacketFactory<MemberJoinRequestEvent?>("ProfileService.Pb.ReqSystemMsgNew.Group") {
+        OutgoingPacketFactory<Packet?>("ProfileService.Pb.ReqSystemMsgNew.Group") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -129,22 +129,35 @@ internal class NewContact {
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MemberJoinRequestEvent? {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = groupmsgs?.firstOrNull()
 
                 return if (struct == null) null else {
                     struct.msg?.run {
-                        MemberJoinRequestEvent(
-                            bot,
-                            struct.msgSeq,
-                            msgAdditional,
-                            struct.reqUin,
-                            groupCode,
-                            groupName,
-                            reqUinNick
-                        )
-                    }
+                        if (c2cInviteJoinGroupFlag == 1) {
+                            // 被邀请入群
+                            BotInvitedJoinGroupRequestEvent(
+                                bot,
+                                struct.msgSeq,
+                                actionUin,
+                                groupCode,
+                                groupName,
+                                actionUinNick
+                            )
+                        } else {
+                            // 成员申请入群
+                            MemberJoinRequestEvent(
+                                bot,
+                                struct.msgSeq,
+                                msgAdditional,
+                                struct.reqUin,
+                                groupCode,
+                                groupName,
+                                reqUinNick
+                            )
+                        }
+                    } as Packet // 没有 as Packet 垃圾 kotlin 会把类型推断为Any
                 }
             }
         }
@@ -178,6 +191,30 @@ internal class NewContact {
                             reqUin = event.fromId,
                             srcId = 3,
                             subSrcId = 31,
+                            subType = 1
+                        )
+                    )
+                }
+
+            operator fun invoke(
+                client: QQAndroidClient,
+                event: BotInvitedJoinGroupRequestEvent,
+                accept: Boolean
+            ) =
+                buildOutgoingUniPacket(client) {
+                    writeProtoBuf(
+                        Structmsg.ReqSystemMsgAction.serializer(),
+                        Structmsg.ReqSystemMsgAction(
+                            actionInfo = Structmsg.SystemMsgActionInfo(
+                                type = if (accept) 11 else 12,
+                                groupCode = event.groupId
+                            ),
+                            groupMsgType = 2,
+                            language = 1000,
+                            msgSeq = event.eventId,
+                            reqUin = event.invitorId,
+                            srcId = 3,
+                            subSrcId = 10016,
                             subType = 1
                         )
                     )

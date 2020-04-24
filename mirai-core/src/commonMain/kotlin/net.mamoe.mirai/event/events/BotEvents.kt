@@ -711,4 +711,42 @@ data class MemberJoinRequestEvent(
         runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
+@SinceMirai("0.40.0")
+data class BotInvitedJoinGroupRequestEvent(
+    override val bot: Bot,
+    /**
+     * 事件唯一识别号
+     */
+    val eventId: Long,
+    /**
+     * 邀请入群的账号的 id
+     */
+    val invitorId: Long,
+    val groupId: Long,
+    val groupName: String,
+    /**
+     * 邀请人昵称
+     */
+    val invitorNick: String
+) : BotEvent, Packet {
+    val invitor: Friend = this.bot.getFriend(invitorId)
+
+    @JvmField
+    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+
+    @JvmSynthetic
+    suspend fun accept() = bot.acceptInvitedJoinGroupRequest(this)
+
+    @JvmSynthetic
+    suspend fun ignore() = bot
+
+    @JavaFriendlyAPI
+    @JvmName("accept")
+    fun __acceptBlockingForJava__() = runBlocking { bot.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+
+    @JavaFriendlyAPI
+    @JvmName("ignore")
+    fun __ignoreBlockingForJava__() = runBlocking { bot.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+}
+
 // endregion 好友、群认证

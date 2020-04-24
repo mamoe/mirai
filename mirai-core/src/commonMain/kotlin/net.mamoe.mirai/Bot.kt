@@ -19,6 +19,7 @@ import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
+import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
@@ -270,6 +271,24 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     @SinceMirai("0.35.0")
     @JvmSynthetic
     abstract suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
+
+    /**
+     * 接收邀请入群（需管理员权限）
+     *
+     * @param event 邀请入群的事件对象
+     */
+    @SinceMirai("0.40.0")
+    @JvmSynthetic
+    abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
+
+    /**
+     * 忽略邀请入群（需管理员权限）
+     *
+     * @param event 邀请入群的事件对象
+     */
+    @JvmSynthetic
+    @SinceMirai("0.40.0")
+    abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
     // endregion
 
