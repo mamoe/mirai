@@ -83,8 +83,7 @@ internal class OnlinePush {
             val name = extraInfo?.groupCard?.run {
                 kotlin.runCatching {
                     if (this[0] == 0x0A.toByte())
-                        loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName?.firstOrNull { it.text.isNotEmpty() }
-                            ?.text?.encodeToString()
+                        loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName?.joinToString("") { it.text.encodeToString() }
                     else return@runCatching null
                 }.getOrNull() ?: encodeToString()
             } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard // 没有 extraInfo 就从 head 里取
@@ -105,8 +104,8 @@ internal class OnlinePush {
                     flags and 8 != 0 -> MemberPermission.OWNER
                     flags == 0 -> MemberPermission.MEMBER
                     else -> {
-                        bot.logger.warning("判断群员权限失败: ${pbPushMsg.msg.msgHead._miraiContentToString()}. 请完整截图或复制此日志发送给 mirai 维护者以帮助解决问题.")
-                        MemberPermission.MEMBER
+                        bot.logger.warning("判断群 ${sender.group.id} 的群员 ${sender.id} 的权限失败: ${pbPushMsg.msg.msgHead._miraiContentToString()}. 请完整截图或复制此日志并确认其真实权限后发送给 mirai 维护者以帮助解决问题.")
+                        sender.permission
                     }
                 },
                 time = pbPushMsg.msg.msgHead.msgTime
