@@ -208,15 +208,13 @@ internal class MessageSvc {
                 .flatMapConcat { it.msg!!.asFlow() }
                 .mapNotNull<MsgComm.Msg, Packet> { msg ->
 
-                    println(msg._miraiContentToString())
+                    // 删除消息
+                    bot.network.run {
+                        Del(bot.client, msg.msgHead).sendWithoutExpect()
+                    }
 
                     when (msg.msgHead.msgType) {
                         33 -> { // 邀请入群
-
-                            // 删除消息
-                            bot.network.run {
-                                NewContact.Del(bot.client, msg.msgHead).sendWithoutExpect()
-                            }
 
                             val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
                             if (msg.msgHead.authUin == bot.id) {
@@ -231,16 +229,15 @@ internal class MessageSvc {
                             } else {
                                 group ?: return@mapNotNull null
 
+                                if (group.members.contains(msg.msgHead.authUin)) {
+                                    return@mapNotNull null
+                                }
+
                                 return@mapNotNull MemberJoinEvent.Invite(group.newMember(msg.getNewMemberInfo())
                                     .also { group.members.delegate.addLast(it) })
                             }
                         }
                         34 -> { // 主动入群
-
-                            // 删除消息
-                            bot.network.run {
-                                NewContact.Del(bot.client, msg.msgHead).sendWithoutExpect()
-                            }
 
                             // 27 0B 60 E7 01 44 71 47 90 03 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 36 42 35 35 46 45 32 45 35 36 43 45 45 44 30 38 30 35 31 41 35 42 37 36 39 35 34 45 30 46 43 43 36 36 45 44 43 46 45 43 42 39 33 41 41 44 32 32
                             val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
@@ -253,10 +250,6 @@ internal class MessageSvc {
                                 .also { group.members.delegate.addLast(it) })
                         }
                         166 -> {
-                            // 删除消息
-                            bot.network.run {
-                                NewContact.Del(bot.client, msg.msgHead).sendWithoutExpect()
-                            }
 
                             if (msg.msgHead.fromUin == bot.id) {
                                 loop@ while (true) {
@@ -317,18 +310,12 @@ internal class MessageSvc {
                         84 -> { // 请求入群验证
                             bot.network.run {
                                 NewContact.SystemMsgNewGroup(bot.client).sendWithoutExpect()
-
-                                // 处理后要向服务器提交已阅，否则登陆时会重复收到事件
-                                NewContact.Del(bot.client, msg.msgHead).sendWithoutExpect()
                             }
                             return@mapNotNull null
                         }
                         187 -> { // 请求加好友验证
                             bot.network.run {
                                 NewContact.SystemMsgNewFriend(bot.client).sendWithoutExpect()
-
-                                // 处理后要向服务器提交已阅，否则登陆时会重复收到事件
-                                NewContact.Del(bot.client, msg.msgHead).sendWithoutExpect()
                             }
                             return@mapNotNull null
                         }
@@ -555,6 +542,30 @@ internal class MessageSvc {
                 Response.Failed(response.result, response.errtype, response.errmsg)
             }
         }
+    }
+
+    internal object Del : OutgoingPacketFactory<Nothing?>("MessageSvc.PbDeleteMsg") {
+
+        internal operator fun invoke(client: QQAndroidClient, header: MsgComm.MsgHead) = buildOutgoingUniPacket(client) {
+
+            writeProtoBuf(
+                MsgSvc.PbDeleteMsgReq.serializer(),
+                MsgSvc.PbDeleteMsgReq(
+                    msgItems = listOf(
+                        MsgSvc.PbDeleteMsgReq.MsgItem(
+                            fromUin = header.fromUin,
+                            toUin = header.toUin,
+                            // 群为84、好友为187。但是群通过其他方法删除，测试通过187也能删除群消息。
+                            msgType = 187,
+                            msgSeq = header.msgSeq,
+                            msgUid = header.msgUid
+                        )
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot) = null
     }
 }
 
