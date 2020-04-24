@@ -35,7 +35,11 @@ internal class OnlineFriendImageImpl(
 ) : OnlineFriendImage() {
     override val imageId: String get() = delegate.resId
     override val originUrl: String
-        get() = "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
+        get() = if (delegate.origUrl.isNotEmpty()) {
+            "http://c2cpicdw.qpic.cn" + this.delegate.origUrl
+        } else {
+            "http://c2cpicdw.qpic.cn/offpic_new/0/" + delegate.resId + "/0?term=2"
+        }
     // TODO: 2020/4/24 动态获取图片下载链接的 host
 
     override fun equals(other: Any?): Boolean {
