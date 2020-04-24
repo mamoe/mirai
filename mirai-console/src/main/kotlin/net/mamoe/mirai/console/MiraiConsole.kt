@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.command.DefaultCommands
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
+import net.mamoe.mirai.utils.WeakRef
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 
@@ -31,16 +32,19 @@ object MiraiConsole {
     /**
      * 获取从Console登陆上的Bot, Bots
      * */
-    val bots: List<Bot> get() = Bot.instances
+    @Suppress("DEPRECATION")
+    @Deprecated("use Bot.instances from mirai-core", replaceWith = ReplaceWith("Bot.instances", "net.mamoe.mirai.Bot"))
+    val bots: List<WeakRef<Bot>>
+        get() = Bot.instances
 
     fun getBotOrNull(uin: Long): Bot? {
-        return bots.firstOrNull { it.id == uin }
+        return Bot.botInstances.firstOrNull { it.id == uin }
     }
 
     class BotNotFoundException(uin: Long) : Exception("Bot $uin Not Found")
 
     fun getBotOrThrow(uin: Long): Bot {
-        return bots.firstOrNull { it.id == uin } ?: throw BotNotFoundException(uin)
+        return Bot.botInstances.firstOrNull { it.id == uin } ?: throw BotNotFoundException(uin)
     }
 
     /**
@@ -107,7 +111,7 @@ object MiraiConsole {
         PluginManager.disablePlugins()
         CommandManager.cancel()
         try {
-            bots.forEach {
+            Bot.botInstances.forEach {
                 it.close()
             }
         } catch (ignored: Exception) {
