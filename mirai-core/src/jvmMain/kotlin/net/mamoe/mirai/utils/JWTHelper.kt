@@ -23,7 +23,7 @@ import java.awt.event.WindowEvent
 import javax.swing.JFrame
 import javax.swing.JTextField
 
-class WindowInitialzier(private val initializer: WindowInitialzier.(JFrame) -> Unit) {
+internal class WindowInitialzier(private val initializer: WindowInitialzier.(JFrame) -> Unit) {
     private lateinit var frame0: JFrame
     val frame: JFrame get() = frame0
     fun java.awt.Component.append() {
@@ -40,11 +40,11 @@ class WindowInitialzier(private val initializer: WindowInitialzier.(JFrame) -> U
     }
 }
 
-suspend fun openWindow(title: String = "", initializer: WindowInitialzier.(JFrame) -> Unit = {}): String {
+internal suspend fun openWindow(title: String = "", initializer: WindowInitialzier.(JFrame) -> Unit = {}): String {
     return openWindow(title, WindowInitialzier(initializer))
 }
 
-suspend fun openWindow(title: String = "", initializer: WindowInitialzier = WindowInitialzier {}): String {
+internal suspend fun openWindow(title: String = "", initializer: WindowInitialzier = WindowInitialzier {}): String {
     val frame = JFrame()
     val value = JTextField()
     val def = CompletableDeferred<String>()

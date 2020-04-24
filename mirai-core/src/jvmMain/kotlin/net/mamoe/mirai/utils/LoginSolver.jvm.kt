@@ -22,7 +22,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.BotNetworkHandler
 import java.awt.Desktop
 import java.awt.Image
 import java.awt.image.BufferedImage
@@ -30,7 +29,6 @@ import java.io.File
 import java.io.RandomAccessFile
 import javax.imageio.ImageIO
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 actual typealias Throws = kotlin.jvm.Throws
 
@@ -43,9 +41,9 @@ class DefaultLoginSolver(
 
     init {
         if (Desktop.isDesktopSupported()) {
-            degelate = SwingSolver()
+            degelate = SwingSolver
         } else {
-            degelate = DefaultLoginSolverImplements(input, overrideLogger)
+            degelate = DefaultLoginSolverImpl(input, overrideLogger)
         }
     }
 
@@ -63,7 +61,7 @@ class DefaultLoginSolver(
 }
 
 @MiraiExperimentalAPI
-class DefaultLoginSolverImplements(
+class DefaultLoginSolverImpl(
     private val input: suspend () -> String,
     private val overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
@@ -137,9 +135,9 @@ actual abstract class LoginSolver {
             @OptIn(MiraiExperimentalAPI::class)
             get() {
                 if (Desktop.isDesktopSupported()) {
-                    return SwingSolver()
+                    return SwingSolver
                 }
-                return DefaultLoginSolverImplements(input = {
+                return DefaultLoginSolverImpl(input = {
                     withContext(Dispatchers.IO) { readLine() } ?: error("No standard input")
                 })
             }

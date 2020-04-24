@@ -21,7 +21,7 @@ import javax.swing.JTextField
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
 @MiraiExperimentalAPI
-class SwingSolver : LoginSolver() {
+object SwingSolver : LoginSolver() {
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
         return openWindow("Mirai PicCaptcha(${bot.id})") {
             val image = ImageIO.read(data.inputStream())
