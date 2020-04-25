@@ -40,7 +40,7 @@ class DefaultLoginSolver(
     private val delegate: LoginSolver
 
     init {
-        if (Desktop.isDesktopSupported()) {
+        if (WindowHelperJvm.isDesktopSupport) {
             delegate = SwingSolver
         } else {
             delegate = DefaultLoginSolverImpl(input, overrideLogger)

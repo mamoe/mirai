@@ -23,6 +23,16 @@ import java.awt.event.WindowEvent
 import javax.swing.JFrame
 import javax.swing.JTextField
 
+// 隔离类代码
+internal object WindowHelperJvm {
+    internal val isDesktopSupport: Boolean =
+        kotlin.runCatching {
+            Desktop.isDesktopSupported()
+        }.getOrElse {
+            false
+        }
+}
+
 internal class WindowInitialzier(private val initializer: WindowInitialzier.(JFrame) -> Unit) {
     private lateinit var frame0: JFrame
     val frame: JFrame get() = frame0
