@@ -15,6 +15,7 @@ import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.gradle.api.Project
@@ -84,14 +85,15 @@ object CuiCloud {
         val bytes = file.readBytes()
 
         runBlocking {
-            retryCatching(5) {
+            retryCatching(50) {
                 uploadToCuiCloud(
                     cuiCloudUrl,
                     key,
                     "/mirai/${project.name}/${file.nameWithoutExtension}.mp4",
                     bytes
                 )
-            }
+                delay(30_000)
+            }.getOrThrow()
         }
     }
 
