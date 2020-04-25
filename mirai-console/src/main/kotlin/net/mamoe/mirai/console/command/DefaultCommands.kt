@@ -33,6 +33,7 @@ import java.util.*
  */
 
 object DefaultCommands {
+    private val commandPrefix = "mirai.command.prefix".property() ?: "/"
     private suspend fun CommandSender.login(account: Long, password: String) {
         MiraiConsole.logger("[Bot Login]", 0, "login...")
         try {
@@ -59,7 +60,7 @@ object DefaultCommands {
             }
             bot.login()
             bot.subscribeMessages {
-                startsWith("/") { message ->
+                startsWith(commandPrefix) { message ->
                     if (bot.checkManager(this.sender.id)) {
                         val sender = if (this is GroupMessage) {
                             GroupContactCommandSender(this.sender, this.subject)
