@@ -91,6 +91,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 - （社区）`Go`: [gomirai](https://github.com/Logiase/gomirai) 基于 mirai-api-http 的 GoLang SDK
 - （社区）`Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk)
 - （社区）`Lua`: [lua-mirai](https://github.com/only52607/lua-mirai)
+- （社区）`C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) mirai-http-api 的 C++ 封装，方便使用 C++ 开发 mirai-http-api 插件
 - （官方）其他任意语言：使用由 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 提供的 http 接口进行接入
 
 #### 使用 mirai 为第三方依赖库引入项目

@@ -443,7 +443,7 @@ internal class MessageSvc {
                 originalMessage = message
             )
             sourceCallback(source)
-            return createToTemp(client, member.group.id, member.id, message, source)
+            return createToTemp(client, (member.group as GroupImpl).uin, member.id, message, source)
         }
 
         /**
