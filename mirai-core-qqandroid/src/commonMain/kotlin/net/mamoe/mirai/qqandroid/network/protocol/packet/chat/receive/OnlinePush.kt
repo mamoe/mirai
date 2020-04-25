@@ -15,6 +15,7 @@ import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
@@ -80,13 +81,14 @@ internal class OnlinePush {
 
             val group = bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) ?: return null // 机器人还正在进群
             val sender = group[pbPushMsg.msg.msgHead.fromUin] as MemberImpl
-            val name = extraInfo?.groupCard?.run {
+            val name = extraInfo?.groupCard?.takeIf { it.isNotEmpty() }?.run {
                 kotlin.runCatching {
                     if (this[0] == 0x0A.toByte())
                         loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName?.joinToString("") { it.text.encodeToString() }
                     else return@runCatching null
                 }.getOrNull() ?: encodeToString()
-            } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard // 没有 extraInfo 就从 head 里取
+            } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard.takeIf { it.isNotEmpty() }
+            ?: sender.nameCardOrNick // 没有 extraInfo 就从 head 里取
 
             val flags = extraInfo?.flags ?: 0
             return GroupMessage(
