@@ -280,7 +280,7 @@ interface Message { // must be interface. Don't consider any changes.
 fun Message.isContentEmpty(): Boolean = when (this) {
     is MessageMetadata -> true
     is PlainText -> this.isEmpty()
-    is MessageChain -> this.any { it.isContentEmpty() }
+    is MessageChain -> this.all { it.isContentEmpty() }
     else -> false
 }
 
