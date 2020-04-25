@@ -69,6 +69,13 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
     @JvmSynthetic
     abstract suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
+    @kotlin.internal.InlineOnly // purely virtual
+    @JvmSynthetic
+    suspend inline fun sendMessage(message: String): MessageReceipt<Contact> {
+        return sendMessage(message.toMessage())
+    }
+
     /**
      * 上传一个图片以备发送.
      *
