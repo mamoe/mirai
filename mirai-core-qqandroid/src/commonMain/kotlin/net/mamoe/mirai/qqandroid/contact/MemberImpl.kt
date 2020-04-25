@@ -25,6 +25,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
@@ -54,6 +55,8 @@ internal class MemberImpl constructor(
 
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
+        require(message.isContentNotEmpty()) { "message is empty" }
+
         return (this.asFriendOrNull()?.sendMessageImpl(this, message) ?: sendMessageImpl(message))
             .also { logMessageSent(message) }
     }

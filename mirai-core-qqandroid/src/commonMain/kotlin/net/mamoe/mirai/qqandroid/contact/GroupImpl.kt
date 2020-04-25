@@ -275,6 +275,7 @@ internal class GroupImpl(
     @OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
+        require(message.isContentNotEmpty()) { "message is empty" }
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
 
         return sendMessageImpl(message, false).also {

@@ -25,6 +25,7 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineFriendImage
+import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
@@ -72,6 +73,7 @@ internal class FriendImpl(
     @JvmSynthetic
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
+        require(message.isContentNotEmpty()) { "message is empty" }
         return sendMessageImpl(this, message).also {
             logMessageSent(message)
         }
