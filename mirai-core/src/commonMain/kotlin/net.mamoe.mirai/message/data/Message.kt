@@ -73,7 +73,7 @@ import kotlin.jvm.JvmSynthetic
  * @see Contact.sendMessage 发送消息
  */
 @OptIn(MiraiInternalAPI::class)
-interface Message {
+interface Message { // must be interface. Don't consider any changes.
     /**
      * 类型 Key. 由伴生对象实现, 表示一个 [Message] 对象的类型.
      *
@@ -123,12 +123,12 @@ interface Message {
      *
      * 各个 [SingleMessage] 的转换示例:
      * [PlainText]: "Hello"
-     * [GroupImage]: "[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png]"
+     * [GroupImage]: "[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"
      * [FriendImage]: "[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"
      * [PokeMessage]: "[mirai:poke:1,-1]"
      * [MessageChain]: 无间隔地连接所有元素 (`joinToString("")`)
      *
-     * @see contentToString
+     * @see contentToString 转为最接近官方格式的字符串
      */
     override fun toString(): String
 
@@ -142,6 +142,8 @@ interface Message {
      * [Image]: "\[图片\]"
      * [PokeMessage]: "\[戳一戳\]"
      * [MessageChain]: 无间隔地连接所有元素 (`joinToString("", transformer=Message::contentToString)`)
+     *
+     * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
      */
     @SinceMirai("0.34.0")
     fun contentToString(): String
