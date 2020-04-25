@@ -37,6 +37,12 @@ class WrongPasswordException(message: String?) : LoginFailedException(true, mess
 class NoServerAvailableException(override val cause: Throwable?) : LoginFailedException(false, "no server available")
 
 /**
+ * 无标准输入或 Kotlin 不支持此输入.
+ */
+class NoStandardInputForCaptchaException(override val cause: Throwable?) :
+    LoginFailedException(true, "no standard input for captcha")
+
+/**
  * 需要短信验证时抛出. mirai 目前还不支持短信验证.
  */
 @MiraiExperimentalAPI

@@ -22,7 +22,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
-import java.awt.Desktop
+import net.mamoe.mirai.network.NoStandardInputForCaptchaException
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -32,6 +32,9 @@ import kotlin.coroutines.CoroutineContext
 
 actual typealias Throws = kotlin.jvm.Throws
 
+/**
+ * 自动选择 [SwingSolver] 或 [StandardCharImageLoginSolver]
+ */
 @MiraiExperimentalAPI
 class DefaultLoginSolver(
     val input: suspend () -> String,
@@ -40,10 +43,10 @@ class DefaultLoginSolver(
     private val delegate: LoginSolver
 
     init {
-        if (WindowHelperJvm.isDesktopSupport) {
+        if (WindowHelperJvm.isDesktopSupported) {
             delegate = SwingSolver
         } else {
-            delegate = DefaultLoginSolverImpl(input, overrideLogger)
+            delegate = StandardCharImageLoginSolver(input, overrideLogger)
         }
     }
 
@@ -60,9 +63,15 @@ class DefaultLoginSolver(
     }
 }
 
+/**
+ * 使用字符图片展示验证码, 使用 [input] 获取输入, 使用 [overrideLogger] 输出
+ */
 @MiraiExperimentalAPI
-class DefaultLoginSolverImpl(
+class StandardCharImageLoginSolver(
     input: suspend () -> String,
+    /**
+     * 为 `null` 时使用 [Bot.logger]
+     */
     private val overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
     private val input: suspend () -> String = suspend {
@@ -135,16 +144,9 @@ actual abstract class LoginSolver {
     actual abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
 
     actual companion object {
-        actual val Default: LoginSolver
+        actual val Default: LoginSolver =
             @OptIn(MiraiExperimentalAPI::class)
-            get() {
-                if (Desktop.isDesktopSupported()) {
-                    return SwingSolver
-                }
-                return DefaultLoginSolverImpl(input = {
-                    withContext(Dispatchers.IO) { readLine() } ?: error("No standard input")
-                })
-            }
+            DefaultLoginSolver({ readLine() ?: throw NoStandardInputForCaptchaException(null) })
     }
 }
 

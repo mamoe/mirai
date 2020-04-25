@@ -25,7 +25,7 @@ import javax.swing.JTextField
 
 // 隔离类代码
 internal object WindowHelperJvm {
-    internal val isDesktopSupport: Boolean =
+    internal val isDesktopSupported: Boolean =
         kotlin.runCatching {
             Desktop.isDesktopSupported()
         }.getOrElse {
