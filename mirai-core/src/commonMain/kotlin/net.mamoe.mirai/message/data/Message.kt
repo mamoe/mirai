@@ -57,6 +57,11 @@ import kotlin.jvm.JvmSynthetic
  * #### 实现规范
  * 除 [MessageChain] 外, 所有 [Message] 的实现类都有伴生对象实现 [Key] 接口.
  *
+ * #### [CharSequence] 继承
+ * 所有 [CharSequence] 的行为均由 [toString] 委托.
+ *
+ * 即, `appendable.append(message)` 相当于 `appendable.append(message.toString())`
+ *
  * @see PlainText 纯文本
  * @see Image 图片
  * @see Face 原生表情
@@ -259,6 +264,13 @@ interface Message { // must be interface. Don't consider any changes.
     @JvmSynthetic
     fun plus1(another: CharSequence): CombinedMessage =
         this.followedByInternalForBinaryCompatibility(another.toString().toMessage())
+}
+
+@SinceMirai("0.39.3")
+fun Message.isContentEmpty(): Boolean = when (this) {
+    is PlainText -> this.isEmpty()
+    is MessageChain -> this.any { it.isContentEmpty() }
+    else -> false
 }
 
 inline fun Message.isPlain(): Boolean = this is PlainText
