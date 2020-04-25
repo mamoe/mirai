@@ -62,9 +62,13 @@ class DefaultLoginSolver(
 
 @MiraiExperimentalAPI
 class DefaultLoginSolverImpl(
-    private val input: suspend () -> String,
+    input: suspend () -> String,
     private val overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
+    private val input: suspend () -> String = suspend {
+        withContext(Dispatchers.IO) { input() }
+    }
+
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
         val logger = overrideLogger ?: bot.logger
         val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
