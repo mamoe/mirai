@@ -30,8 +30,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 ## **一切开发旨在学习，请勿用于非法用途**
 
 加入 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge), 或加入 QQ 群: 
-①群：655057127 (已满)；
-②群：1101724738 
+群：655057127
 
 ## 协议支持
 
