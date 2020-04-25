@@ -340,7 +340,7 @@ class ForwardMessageBuilder private constructor(
 
     /**
      * 当前时间.
-     * 在使用 [says] 时若不指定之间, 则会使用 [currentTime] 自增 1 的事件.
+     * 在使用 [says] 时若不指定时间, 则会使用 [currentTime] 自增 1 的事件.
      */
     var currentTime: Int = currentTimeSeconds.toInt()
 
