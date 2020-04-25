@@ -128,7 +128,8 @@ abstract class Member : MemberJavaFriendlyAPI() {
     abstract suspend fun kick(message: String = "")
 
     /**
-     * 向这个对象发送消息.
+     * 向群成员发送消息.
+     * 若群成员同时是好友, 则会发送好友消息. 否则发送临时会话消息.
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.
      *

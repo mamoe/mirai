@@ -32,7 +32,7 @@ import kotlin.jvm.JvmSynthetic
 
 
 /**
- * 联系人. 虽然叫做联系人, 但他的子类有 [人][User], 和 [群][Group].
+ * 联系人. 虽然叫做联系人, 但他的子类有 [用户][User], 和 [群][Group].
  */
 abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot {
     /**
