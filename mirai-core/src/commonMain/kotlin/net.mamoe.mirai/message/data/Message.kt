@@ -266,12 +266,26 @@ interface Message { // must be interface. Don't consider any changes.
         this.followedByInternalForBinaryCompatibility(another.toString().toMessage())
 }
 
+
+/**
+ * 判断消息内容是否为空.
+ *
+ * 以下情况视为 "空消息":
+ *
+ * - 是 [MessageMetadata] (因为 [MessageMetadata.contentToString] 都必须返回空字符串)
+ * - [PlainText] 长度为 0
+ * - [MessageChain] 所有元素都满足 [isContentEmpty]
+ */
 @SinceMirai("0.39.3")
 fun Message.isContentEmpty(): Boolean = when (this) {
+    is MessageMetadata -> true
     is PlainText -> this.isEmpty()
     is MessageChain -> this.any { it.isContentEmpty() }
     else -> false
 }
+
+@SinceMirai("0.39.3")
+inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
 
 inline fun Message.isPlain(): Boolean = this is PlainText
 
