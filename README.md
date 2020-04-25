@@ -74,7 +74,9 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 
 ## 开始
 
-Mirai 目前为快速流转（Moving fast）状态, 增量版本之间可能不具有兼容性，任何功能都可能在没有警告的情况下添加、删除或者更改。
+[Mirai-core 1.0.0 Milestone](https://github.com/mamoe/mirai/milestone/2) 已经完成, mirai 正在进行进一步的稳定性和性能优化, 并计划发布第一个正式版本.
+
+在 1.0.0 将会删除全部过时的 API, 目前的 API 也可能会改变.
 
 ### 开发者
 
