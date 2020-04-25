@@ -84,6 +84,12 @@ class ForwardMessage @JvmOverloads constructor(
     val nodeList: Collection<INode>,
     val displayStrategy: DisplayStrategy = DisplayStrategy
 ) : MessageContent {
+    init {
+        require(nodeList.isNotEmpty()) {
+            "Forward nodeList mustn't be empty"
+        }
+    }
+
     /**
      * @see ForwardMessage
      */
