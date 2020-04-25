@@ -37,6 +37,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.qqandroid.contact.FriendImpl
+import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.MemberInfoImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
 import net.mamoe.mirai.qqandroid.message.*
@@ -419,7 +420,7 @@ internal abstract class QQAndroidBotBase constructor(
                 source as MessageSourceToTempImpl
                 PbMessageSvc.PbMsgWithDraw.createForTempMessage(
                     bot.client,
-                    source.target.group.id,
+                    (source.target.group as GroupImpl).uin,
                     source.targetId,
                     source.sequenceId,
                     source.internalId,
