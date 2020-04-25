@@ -13,6 +13,7 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
@@ -22,10 +23,9 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineGroupImage
 import net.mamoe.mirai.message.data.toMessage
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.SinceMirai
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.internal.runBlocking
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -189,6 +189,16 @@ abstract class Group : Contact(), CoroutineScope {
         fun calculateGroupCodeByGroupUin(groupUin: Long): Long =
             CommonGroupCalculations.calculateGroupCodeByGroupUin(groupUin)
     }
+
+    /**
+     * @see quit
+     */
+    @OptIn(MiraiInternalAPI::class)
+    @Suppress("FunctionName")
+    @JvmName("quit")
+    @JavaFriendlyAPI
+    @SinceMirai("0.39.4")
+    fun __quitBlockingForJava__(): Boolean = runBlocking { quit() }
 }
 
 /**
