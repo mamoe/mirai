@@ -85,14 +85,21 @@ object CuiCloud {
         val bytes = file.readBytes()
 
         runBlocking {
-            retryCatching(50) {
+            var first = true
+            retryCatching(1000) {
+                if (!first) {
+                    println()
+                    println()
+                    println("Upload failed. Waiting 15s")
+                    delay(15_000)
+                }
+                first = false
                 uploadToCuiCloud(
                     cuiCloudUrl,
                     key,
                     "/mirai/${project.name}/${file.nameWithoutExtension}.mp4",
                     bytes
                 )
-                delay(30_000)
             }.getOrThrow()
         }
     }
