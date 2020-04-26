@@ -12,18 +12,23 @@
 package net.mamoe.mirai.qqandroid.message
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
+import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
+import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 
 internal interface MessageSourceInternal {
@@ -141,13 +146,19 @@ internal data class MessageSourceFromGroupImpl(
     override val originalMessage: MessageChain by lazy {
         msg.toMessageChain(bot, groupIdOrZero = group.id, onlineSource = false)
     }
-    override val sender: Member
-        get() = bot.getGroup(
+
+    override val sender: Member by lazy {
+        (bot.getGroup(
             msg.msgHead.groupInfo?.groupCode
                 ?: error("cannot find groupCode for MessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
-        ).getOrNull(msg.msgHead.fromUin)
-            ?: error("cannot find member for MessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
-
+        ) as GroupImpl).run {
+            getOrNull(msg.msgHead.fromUin)
+                ?: msg.msgBody.richText.elems.firstOrNull { it.anonGroupMsg != null }?.run {
+                    newAnonymous(anonGroupMsg!!.anonNick.encodeToString())
+                }
+                ?: error("cannot find member for MessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
+        }
+    }
 
     override fun toJceData(): ImMsgBody.SourceMsg {
         return ImMsgBody.SourceMsg(

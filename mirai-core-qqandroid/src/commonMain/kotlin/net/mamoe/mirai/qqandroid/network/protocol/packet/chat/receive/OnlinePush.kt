@@ -69,9 +69,6 @@ internal class OnlinePush {
             if (!bot.firstLoginSucceed) return null
             val pbPushMsg = readProtoBuf(MsgOnlinePush.PbPushMsg.serializer())
 
-            val extraInfo: ImMsgBody.ExtraInfo? =
-                pbPushMsg.msg.msgBody.richText.elems.firstOrNull { it.extraInfo != null }?.extraInfo
-
             if (pbPushMsg.msg.msgHead.fromUin == bot.id) {
                 return SendGroupMessageReceipt(
                     pbPushMsg.msg.msgBody.richText.attr!!.random,
@@ -79,16 +76,30 @@ internal class OnlinePush {
                 )
             }
 
-            val group = bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) ?: return null // 机器人还正在进群
-            val sender = group[pbPushMsg.msg.msgHead.fromUin] as MemberImpl
-            val name = extraInfo?.groupCard?.takeIf { it.isNotEmpty() }?.run {
-                kotlin.runCatching {
-                    if (this[0] == 0x0A.toByte())
-                        loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName?.joinToString("") { it.text.encodeToString() }
-                    else return@runCatching null
-                }.getOrNull() ?: encodeToString()
-            } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard.takeIf { it.isNotEmpty() }
-            ?: sender.nameCardOrNick // 没有 extraInfo 就从 head 里取
+            val extraInfo: ImMsgBody.ExtraInfo? =
+                pbPushMsg.msg.msgBody.richText.elems.firstOrNull { it.extraInfo != null }?.extraInfo
+
+            val anonymous = pbPushMsg.msg.msgBody.richText.elems.firstOrNull { it.anonGroupMsg != null }?.anonGroupMsg
+
+            val group = bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl ?: return null // 机器人还正在进群
+            val sender = if (anonymous != null) {
+                group.newAnonymous(anonymous.anonNick.encodeToString())
+            } else {
+                group[pbPushMsg.msg.msgHead.fromUin]
+            } as MemberImpl
+
+            val name = if (anonymous != null) {
+                sender.nameCard
+            } else {
+                extraInfo?.groupCard?.takeIf { it.isNotEmpty() }?.run {
+                    kotlin.runCatching {
+                        if (this[0] == 0x0A.toByte())
+                            loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName?.joinToString("") { it.text.encodeToString() }
+                        else return@runCatching null
+                    }.getOrNull() ?: encodeToString()
+                } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard.takeIf { it.isNotEmpty() }
+                ?: sender.nameCardOrNick // 没有 extraInfo 就从 head 里取
+            }
 
             val flags = extraInfo?.flags ?: 0
             return GroupMessage(

@@ -28,10 +28,12 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceToGroupImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
+import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
@@ -252,6 +254,16 @@ internal class GroupImpl(
         )
     }
 
+    internal fun newAnonymous(name: String): Member = newMember(
+        object : MemberInfo {
+            override val nameCard = name
+            override val permission = MemberPermission.MEMBER
+            override val specialTitle = "匿名"
+            override val muteTimestamp = 0
+            override val uin = 80000000L
+            override val nick = name
+        }
+    )
 
     override operator fun get(id: Long): Member {
         if (id == bot.id) {
