@@ -76,12 +76,17 @@ internal class OnlinePush {
                 )
             }
 
-            val extraInfo: ImMsgBody.ExtraInfo? =
-                pbPushMsg.msg.msgBody.richText.elems.firstOrNull { it.extraInfo != null }?.extraInfo
+            var extraInfo: ImMsgBody.ExtraInfo? = null
+            var anonymous: ImMsgBody.AnonymousGroupMsg? = null
 
-            val anonymous = pbPushMsg.msg.msgBody.richText.elems.firstOrNull { it.anonGroupMsg != null }?.anonGroupMsg
+            for (elem in pbPushMsg.msg.msgBody.richText.elems) {
+                when {
+                    elem.extraInfo != null -> extraInfo = elem.extraInfo
+                    elem.anonGroupMsg != null -> anonymous = elem.anonGroupMsg
+                }
+            }
 
-            val group = bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl ?: return null // 机器人还正在进群
+            val group = bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl? ?: return null // 机器人还正在进群
             val sender = if (anonymous != null) {
                 group.newAnonymous(anonymous.anonNick.encodeToString())
             } else {
