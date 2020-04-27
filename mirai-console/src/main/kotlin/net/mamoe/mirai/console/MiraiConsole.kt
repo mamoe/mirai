@@ -55,7 +55,7 @@ object MiraiConsole {
     /**
      * Console运行路径
      */
-    var path: String = System.getProperty("user.dir")
+    lateinit var path: String
         internal set
 
     /**
@@ -68,19 +68,47 @@ object MiraiConsole {
     private var started = false
 
 
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @Suppress("FunctionName")
+    @JvmSynthetic
+    @JvmStatic
+    fun /* synthetic */`start$default`(
+        miraiConsole: MiraiConsole,
+        miraiConsoleUI: MiraiConsoleUI?,
+        string: String?,
+        string2: String?,
+        n: Int,
+        @Suppress("UNUSED_PARAMETER") `object`: Any?
+    ) {
+        @Suppress("NAME_SHADOWING")
+        var string = string
+
+        @Suppress("NAME_SHADOWING")
+        var string2 = string2
+        if (n and 2 != 0) {
+            string = "0.0.0"
+        }
+        if (n and 4 != 0) {
+            string2 = "0.0.0"
+        }
+        miraiConsole.start(miraiConsoleUI!!, string!!, string2!!)
+    }
+
     /**
      * 启动Console
      */
+    @JvmOverloads
     fun start(
         frontEnd: MiraiConsoleUI,
         coreVersion: String = "0.0.0",
-        consoleVersion: String = "0.0.0"
+        consoleVersion: String = "0.0.0",
+        path:String = System.getProperty("user.dir")
     ) {
         if (started) {
             return
         }
         started = true
-
+        this.path = path
         /* 初始化前端 */
         this.version = consoleVersion
         this.frontEnd = frontEnd
