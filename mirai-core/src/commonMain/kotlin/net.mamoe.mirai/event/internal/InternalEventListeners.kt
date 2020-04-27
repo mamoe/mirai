@@ -35,21 +35,23 @@ internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listen
 }
 
 private fun <E : Event> EventListeners<E>.register(listener: Listener<E>) {
-    var start: LockFreeLinkedListNode<Listener<E>> = head
     while (true) {
-        val next = start.nextNode
-        if (next == tail) {
-            if (tryInsertAfter(start, listener)) return
-            continue
-        }
-        if (next.isRemoved()) {
+        var start: LockFreeLinkedListNode<Listener<E>> = head
+        while (true) {
+            val next = start.nextNode
+            if (next.isTail()) {
+                if (tryInsertAfter(start, listener)) return
+                break
+            }
+            if (next.isRemoved()) {
+                start = next
+                continue
+            }
+            if (next.nodeValue.priority > listener.priority) {
+                if (tryInsertAfter(start, listener)) return
+                break
+            }
             start = next
-            continue
-        }
-        val nextListener = next.nodeValue
-        if (nextListener.priority > listener.priority) {
-            if (tryInsertAfter(start, listener)) return
-            continue
         }
     }
 }
@@ -191,6 +193,17 @@ private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(
     val nodes: Array<LockFreeLinkedListNode<Listener<E>>> = listeners.map { it.head }.toTypedArray()
     // atomic foreach
     launch {
+        /*
+        println(listenersArray.let {
+            val list = mutableListOf<Listener.EventPriority>()
+            for (i in it) {
+                for (node in i) {
+                    list.add(node.priority)
+                }
+            }
+            list
+        })
+        */
         for (p in Listener.EventPriority.values()) {
             for (node_index in nodes.indices) {
                 var node = nodes[node_index]
@@ -227,6 +240,7 @@ private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(
                             }
                         }
                     }
+                    node = node.nextNode
                 }
                 nodes[node_index] = node
             }

@@ -347,8 +347,10 @@ open class LockFreeLinkedList<E> : Iterable<E> {
             override tailrec fun hasNext(): Boolean {
                 if (node.isTail()) return false
                 val current = node
-                node = node.nextNode
-                if (current.isHead() || current.isRemoved()) return hasNext()
+                if (current.isHead() || current.isRemoved()) {
+                    node = node.nextNode
+                    return hasNext()
+                }
                 return true
             }
 
