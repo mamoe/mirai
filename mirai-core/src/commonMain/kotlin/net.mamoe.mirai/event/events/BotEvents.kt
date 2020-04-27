@@ -711,7 +711,7 @@ data class MemberJoinRequestEvent(
         runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
-@SinceMirai("0.40.0")
+@SinceMirai("0.39.4")
 data class BotInvitedJoinGroupRequestEvent(
     override val bot: Bot,
     /**
@@ -738,7 +738,7 @@ data class BotInvitedJoinGroupRequestEvent(
     suspend fun accept() = bot.acceptInvitedJoinGroupRequest(this)
 
     @JvmSynthetic
-    suspend fun ignore() = bot
+    suspend fun ignore() = bot.ignoreInvitedJoinGroupRequest(this)
 
     @JavaFriendlyAPI
     @JvmName("accept")
