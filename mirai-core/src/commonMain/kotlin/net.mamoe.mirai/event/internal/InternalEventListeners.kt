@@ -19,7 +19,6 @@ import net.mamoe.mirai.event.ListeningStatus
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.isRemoved
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
@@ -29,6 +28,7 @@ import kotlin.reflect.KClass
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
     with(this.listeners()) {
         addLast(listener)
+        postReset()
         listener.invokeOnCompletion {
             this.remove(listener)
         }
@@ -41,11 +41,12 @@ internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listen
 internal fun <E : Event> CoroutineScope.Handler(
     coroutineContext: CoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     handler: suspend (E) -> ListeningStatus
 ): Handler<E> {
     @OptIn(ExperimentalCoroutinesApi::class) // don't remove
     val context = this.newCoroutineContext(coroutineContext)
-    return Handler(context[Job], context, handler, concurrencyKind)
+    return Handler(context[Job], context, handler, concurrencyKind, priority)
 }
 
 /**
@@ -57,7 +58,8 @@ internal class Handler<in E : Event>
     parentJob: Job?,
     private val subscriberContext: CoroutineContext,
     @JvmField val handler: suspend (E) -> ListeningStatus,
-    override val concurrencyKind: Listener.ConcurrencyKind
+    override val concurrencyKind: Listener.ConcurrencyKind,
+    override val priority: Listener.EventPriority
 ) :
     Listener<E>, CompletableJob by Job(parentJob) {
 
@@ -98,9 +100,19 @@ internal class Handler<in E : Event>
  */
 internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
 
+internal class ListenerNode<T : Event>(val listener: Listener<T>, val listeners: EventListeners<*>)
+
 internal expect class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>> {
+    fun postReset()
+
     @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
     val supertypes: Set<KClass<out Event>>
+
+    @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
+    val children: MutableSet<KClass<out Event>>
+
+
+    val handlers: Iterable<ListenerNode<E>?>
 }
 
 internal expect class MiraiAtomicBoolean(initial: Boolean) {
@@ -146,26 +158,41 @@ internal suspend inline fun Event.broadcastInternal() = coroutineScope {
 
     val listeners = this@broadcastInternal::class.listeners()
     callAndRemoveIfRequired(this@broadcastInternal, listeners)
+    /*
     listeners.supertypes.forEach {
         callAndRemoveIfRequired(this@broadcastInternal, it.listeners())
     }
+    */
 }
 
 @OptIn(MiraiInternalAPI::class)
 private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(event: E, listeners: EventListeners<E>) {
     // atomic foreach
-    listeners.forEachNode { node ->
-        launch {
-            val listener = node.nodeValue
-            if (listener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
-                (listener as Handler).lock!!.withLock {
-                    if (!node.isRemoved() && listener.onEvent(event) == ListeningStatus.STOPPED) {
-                        listeners.remove(listener) // atomic remove
+    launch {
+        for (listener in listeners.handlers) {
+            if (listener == null) continue
+            val currentListener = listener.listener
+            val currentListeners = listener.listeners
+            if (currentListener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
+                (currentListener as Handler).lock!!.withLock {
+                    when (currentListener.onEvent(event)) {
+                        ListeningStatus.STOPPED -> {
+                            @Suppress("UNCHECKED_CAST")
+                            currentListeners.remove(currentListener as Listener<Event>) // atomic remove
+                        }
+                        ListeningStatus.INTERCEPTION -> {
+                            return@launch
+                        }
+                        else -> {
+                        }
                     }
                 }
             } else {
-                if (!node.isRemoved() && listener.onEvent(event) == ListeningStatus.STOPPED) {
-                    listeners.remove(listener) // atomic remove
+                launch {
+                    if (currentListener.onEvent(event) == ListeningStatus.STOPPED) {
+                        @Suppress("UNCHECKED_CAST")
+                        currentListeners.remove(currentListener as Listener<Event>) // atomic remove
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +17,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.event.internal.EventListeners
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -42,7 +44,12 @@ enum class ListeningStatus {
     /**
      * 表示已停止
      */
-    STOPPED
+    STOPPED,
+
+    /**
+     * 表示不会再让其他处理器处理, 即已拦截, 仅支持 [Mutex]
+     */
+    INTERCEPTION
 }
 
 /**
@@ -70,7 +77,15 @@ interface Listener<in E : Event> : CompletableJob {
      */
     val concurrencyKind: ConcurrencyKind
 
+    enum class EventPriority {
+        LOWEST, LOW, NORMAL, HIGH, HIGHEST, MONITOR;
+
+    }
+
+    val priority: EventPriority get() = EventPriority.NORMAL
+
     suspend fun onEvent(event: E): ListeningStatus
+
 }
 
 // region 顶层方法 创建当前 coroutineContext 下的子 Job
@@ -236,6 +251,16 @@ inline fun <reified E : BotEvent> Bot.subscribe(
     noinline handler: suspend E.(E) -> ListeningStatus
 ): Listener<E> = this.subscribe(E::class, coroutineContext, concurrency, handler)
 
+@JvmSynthetic
+@JvmName("subscribeAlwaysForBot")
+@OptIn(MiraiInternalAPI::class)
+inline fun <reified E : BotEvent> Bot.subscribe(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    noinline handler: suspend E.(E) -> ListeningStatus
+): Listener<E> = this.subscribe(E::class, coroutineContext, concurrency, priority, handler)
+
 /**
  * @see Bot.subscribe
  */
@@ -247,6 +272,20 @@ fun <E : BotEvent> Bot.subscribe(
     handler: suspend E.(E) -> ListeningStatus
 ): Listener<E> = eventClass.subscribeInternal(
     Handler(coroutineContext, concurrency) { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING }
+)
+
+fun <E : BotEvent> Bot.subscribe(
+    eventClass: KClass<E>,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
+    priority: Listener.EventPriority,
+    handler: suspend E.(E) -> ListeningStatus
+): Listener<E> = eventClass.subscribeInternal(
+    Handler(
+        coroutineContext,
+        concurrency,
+        priority
+    ) { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING }
 )
 
 
