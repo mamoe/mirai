@@ -7,13 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package test
+package net.mamoe.mirai.utils
 
-import net.mamoe.mirai.utils.InsertLink
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-object InsertLinkTest {
+class InsertLinkTest {
     fun InsertLink<String>.str(): String {
         return joinToString(", ")
     }
