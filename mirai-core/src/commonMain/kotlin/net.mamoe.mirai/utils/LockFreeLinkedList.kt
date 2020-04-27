@@ -51,15 +51,26 @@ fun <E> LockFreeLinkedList<E>.toMutableSet(): MutableSet<E> {
 /**
  * Builds a [Sequence] containing all the elements in [this] in the same order.
  *
- * Note that the sequence is dynamic, that is, elements are yielded atomically only when it is required
+ * Note that the sequence is dynamic
  */
 @MiraiInternalAPI
 fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
-    return sequence {
-        forEach {
-            yield(it)
+    return generateSequence(head) { current: LockFreeLinkedListNode<E> ->
+        current.nextValidNode(until = tail).takeIf { it != tail }
+    }.drop(1) // drop head, should be dropped lazily
+        .map { it.nodeValue }
+}
+
+@OptIn(MiraiInternalAPI::class)
+internal fun <E> LockFreeLinkedListNode<E>.nextValidNode(until: LockFreeLinkedListNode<E>): LockFreeLinkedListNode<E> {
+    var node: LockFreeLinkedListNode<E> = this.nextNode
+    while (node != until) {
+        if (node.isValidElementNode()) {
+            return node
         }
+        node = node.nextNode
     }
+    return node
 }
 
 @MiraiInternalAPI
