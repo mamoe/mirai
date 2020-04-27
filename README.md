@@ -90,7 +90,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 - （社区）`JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) mirai 的 Node.js SDK
 - （社区）`Go`: [gomirai](https://github.com/Logiase/gomirai) 基于 mirai-api-http 的 GoLang SDK
 - （社区）`Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk)为基于 Rhino(如 Auto.js 等安卓 app 或运行环境)的 JavaScript 提供简单易用的 SDK
-- （社区）`Lua`: [lua-mirai](https://github.com/only52607/lua-mirai)
+- （社区）`Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) 基于mirai-core 的Lua SDK，并提供了java扩展支持，可在lua中调用java代码开发机器人
 - （社区）`C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) mirai-http-api 的 C++ 封装，方便使用 C++ 开发 mirai-http-api 插件
 - （官方）其他任意语言：使用由 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 提供的 http 接口进行接入
 
