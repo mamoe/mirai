@@ -133,11 +133,3 @@ inline fun Contact.recallIn(
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.bot.recallIn(source, millis, coroutineContext)
-
-/**
- * @see Contact.sendMessage
- */
-@Suppress("UNCHECKED_CAST")
-@JvmSynthetic
-suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> =
-    sendMessage(plain.toMessage()) as? MessageReceipt<C> ?: error("Internal class cast mistake")

@@ -134,7 +134,7 @@ internal class NewContact {
                 val struct = groupmsgs?.firstOrNull()
 
                 return if (struct == null) null else {
-                    struct.msg?.run {
+                    struct.msg?.run<Structmsg.SystemMsg, Packet> {
                         if (c2cInviteJoinGroupFlag == 1) {
                             // 被邀请入群
                             BotInvitedJoinGroupRequestEvent(

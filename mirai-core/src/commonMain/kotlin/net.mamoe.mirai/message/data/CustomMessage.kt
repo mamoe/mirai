@@ -7,6 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:OptIn(MiraiInternalAPI::class)
 package net.mamoe.mirai.message.data
 
 import kotlinx.io.core.*
@@ -114,6 +115,7 @@ sealed class CustomMessage : SingleMessage {
         override val typeName: String get() = "CustomMessage"
         private val factories: LockFreeLinkedList<Factory<*>> = LockFreeLinkedList()
 
+        @OptIn(MiraiInternalAPI::class)
         internal fun register(factory: Factory<out CustomMessage>) {
             factories.removeIf { it::class == factory::class }
             val exist = factories.asSequence().firstOrNull { it.typeName == factory.typeName }
@@ -134,6 +136,7 @@ sealed class CustomMessage : SingleMessage {
         class CustomMessageFullDataDeserializeUserException(val body: ByteArray, cause: Throwable?) :
             RuntimeException(cause)
 
+        @OptIn(MiraiInternalAPI::class)
         internal fun deserialize(fullData: ByteReadPacket): CustomMessage? {
             val msg = kotlin.runCatching {
                 val length = fullData.readInt()

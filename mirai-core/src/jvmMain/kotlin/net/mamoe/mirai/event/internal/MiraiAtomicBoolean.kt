@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:OptIn(MiraiInternalAPI::class)
+
 package net.mamoe.mirai.event.internal
 
 import net.mamoe.mirai.event.Event
@@ -14,6 +16,7 @@ import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.utils.InsertLink
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.isRemoved
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
