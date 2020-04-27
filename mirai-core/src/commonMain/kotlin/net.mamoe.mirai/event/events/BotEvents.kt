@@ -655,7 +655,7 @@ data class NewFriendRequestEvent(
 }
 
 /**
- * 一个账号请求加入群事件
+ * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
  */
 @SinceMirai("0.35.0")
 data class MemberJoinRequestEvent(
@@ -711,6 +711,9 @@ data class MemberJoinRequestEvent(
         runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
+/**
+ * [Bot] 被邀请加入一个群.
+ */
 @SinceMirai("0.39.4")
 data class BotInvitedJoinGroupRequestEvent(
     override val bot: Bot,
@@ -742,11 +745,13 @@ data class BotInvitedJoinGroupRequestEvent(
 
     @JavaFriendlyAPI
     @JvmName("accept")
-    fun __acceptBlockingForJava__() = runBlocking { bot.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+    fun __acceptBlockingForJava__() =
+        runBlocking { bot.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
 
     @JavaFriendlyAPI
     @JvmName("ignore")
-    fun __ignoreBlockingForJava__() = runBlocking { bot.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+    fun __ignoreBlockingForJava__() =
+        runBlocking { bot.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
 }
 
 // endregion 好友、群认证
