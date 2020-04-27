@@ -81,16 +81,19 @@ val ContactList<*>.idContentString: String
     ) + "]"
 
 
+@MiraiInternalAPI
 operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {
     forEach { if (it.id == id) return it }
     throw NoSuchElementException("No such contact: $id")
 }
 
+@MiraiInternalAPI
 fun <C : Contact> LockFreeLinkedList<C>.getOrNull(id: Long): C? {
     forEach { if (it.id == id) return it }
     return null
 }
 
+@OptIn(MiraiInternalAPI::class)
 @PlannedRemoval("1.0.0")
 @Deprecated(
     "use firstOrNull from stdlib",
@@ -102,6 +105,7 @@ inline fun <C : Contact> LockFreeLinkedList<C>.firstOrNull(filter: (C) -> Boolea
     return null
 }
 
+@OptIn(MiraiInternalAPI::class)
 @PlannedRemoval("1.0.0")
 @Deprecated(
     "use firstOrNull from stdlib",
