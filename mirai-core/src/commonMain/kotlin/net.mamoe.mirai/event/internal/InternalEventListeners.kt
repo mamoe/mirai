@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.event.internal
 
@@ -134,6 +135,7 @@ internal object EventListenerManager {
     // 不要用 atomicfu. 在 publish 后会出现 VerifyError
     private val lock: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
+    @OptIn(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
     internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
         registries.forEach {

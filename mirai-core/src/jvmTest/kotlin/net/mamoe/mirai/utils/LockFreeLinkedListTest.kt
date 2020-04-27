@@ -20,6 +20,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @Suppress("UnusedEquals")
+@OptIn(MiraiInternalAPI::class)
 @MiraiExperimentalAPI
 internal class LockFreeLinkedListTest {
     @Test
@@ -263,7 +264,7 @@ internal class LockFreeLinkedListTest {
      */
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, MiraiInternalAPI::class)
 @MiraiExperimentalAPI
 internal suspend inline fun <E : LockFreeLinkedList<*>> E.concurrentDo(
     numberOfCoroutines: Int,
