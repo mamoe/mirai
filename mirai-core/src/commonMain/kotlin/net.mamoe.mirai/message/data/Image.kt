@@ -112,7 +112,7 @@ val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
  */
 @SinceMirai("0.39.2")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
-val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}}\.mirai""")
+val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}\}\.mirai""")
 
 /**
  * 在 `0.39.0` 前的图片的正则表示
@@ -122,7 +122,7 @@ val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}}\.mirai""")
 @SinceMirai("0.39.2")
 @PlannedRemoval("1.0.0")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX_OLD
-val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{.{8}-(.{4}-){3}.{12}}\..*""")
+val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{.{8}-(.{4}-){3}.{12}\}\..*""")
 
 /**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
