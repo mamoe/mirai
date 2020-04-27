@@ -2,6 +2,14 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.39.4`  2020/4/27
+- 支持匿名消息解析 (#277)
+- 修复部分情况下撤回失败的问题
+- 修复部分情况下解析群名片错误的问题
+- 修复解析匿名群成员错误的问题
+- 修复 `LoginSolver` `Swing` 选择问题
+- 添加 `NoStandardInputForCaptchaException`, 在无可用标准输入时中断登录
+
 ## `0.39.3`  2020/4/25
 - 添加 `Message.isContentEmpty()` 和 `Message.isContentNotEmpty()`
 - 在发送消息前检查是否为空 (#268)
