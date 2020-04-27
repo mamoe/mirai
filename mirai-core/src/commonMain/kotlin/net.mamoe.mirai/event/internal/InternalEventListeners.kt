@@ -16,9 +16,7 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventDisabled
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
@@ -27,13 +25,32 @@ import kotlin.reflect.KClass
 @PublishedApi
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
     with(this.listeners()) {
-        addLast(listener)
-        postReset()
+        register(listener)
         listener.invokeOnCompletion {
             this.remove(listener)
         }
     }
     return listener
+}
+
+private fun <E : Event> EventListeners<E>.register(listener: Listener<E>) {
+    var start: LockFreeLinkedListNode<Listener<E>> = head
+    while (true) {
+        val next = start.nextNode
+        if (next == tail) {
+            if (tryInsertAfter(start, listener)) return
+            continue
+        }
+        if (next.isRemoved()) {
+            start = next
+            continue
+        }
+        val nextListener = next.nodeValue
+        if (nextListener.priority > listener.priority) {
+            if (tryInsertAfter(start, listener)) return
+            continue
+        }
+    }
 }
 
 @PublishedApi
@@ -103,16 +120,10 @@ internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventLis
 internal class ListenerNode<T : Event>(val listener: Listener<T>, val listeners: EventListeners<*>)
 
 internal expect class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>> {
-    fun postReset()
 
     @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
     val supertypes: Set<KClass<out Event>>
 
-    @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
-    val children: MutableSet<KClass<out Event>>
-
-
-    val handlers: Iterable<ListenerNode<E>?>
 }
 
 internal expect class MiraiAtomicBoolean(initial: Boolean) {
@@ -157,7 +168,11 @@ internal suspend inline fun Event.broadcastInternal() = coroutineScope {
     if (EventDisabled) return@coroutineScope
 
     val listeners = this@broadcastInternal::class.listeners()
-    callAndRemoveIfRequired(this@broadcastInternal, listeners)
+    callAndRemoveIfRequired(this@broadcastInternal,
+        listeners.supertypes.mapTo(mutableListOf<EventListeners<Event>>()) {
+            it.listeners()
+        }.also { it.add(listeners) }
+    )
     /*
     listeners.supertypes.forEach {
         callAndRemoveIfRequired(this@broadcastInternal, it.listeners())
@@ -166,11 +181,56 @@ internal suspend inline fun Event.broadcastInternal() = coroutineScope {
 }
 
 @OptIn(MiraiInternalAPI::class)
-private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(event: E, listeners: EventListeners<E>) {
+private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(
+    event: E,
+    listeners: List<EventListeners<E>>
+) {
+    val listenersArray = listeners.toTypedArray()
+    val nodes: Array<LockFreeLinkedListNode<Listener<E>>> = listeners.map { it.head }.toTypedArray()
     // atomic foreach
     launch {
-        for (listener in listeners.handlers) {
-            if (listener == null) continue
+        for (p in Listener.EventPriority.values()) {
+            for (node_index in nodes.indices) {
+                var node = nodes[node_index]
+                while ((node.isHead() || node.isRemoved()) && !node.isTail()) {
+                    node = node.nextNode
+                }
+                // Looking all
+                while (!node.isTail()) {
+                    if (node.isRemoved()) {
+                        node = node.nextNode
+                        continue
+                    }
+                    val listener = node.nodeValue
+                    if (listener.priority != p) break
+                    if (listener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
+                        (listener as Handler).lock!!.withLock {
+                            when (listener.onEvent(event)) {
+                                ListeningStatus.STOPPED -> {
+                                    @Suppress("UNCHECKED_CAST")
+                                    listenersArray[node_index].removeNode(node) // atomic remove
+                                }
+                                ListeningStatus.INTERCEPTION -> {
+                                    return@launch
+                                }
+                                else -> {
+                                }
+                            }
+                        }
+                    } else {
+                        launch {
+                            if (listener.onEvent(event) == ListeningStatus.STOPPED) {
+                                @Suppress("UNCHECKED_CAST")
+                                listenersArray[node_index].remove(listener) // atomic remove
+                            }
+                        }
+                    }
+                }
+                nodes[node_index] = node
+            }
+        }
+        /*
+        for (listener in listeners) {
             val currentListener = listener.listener
             val currentListeners = listener.listeners
             if (currentListener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
@@ -196,5 +256,6 @@ private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(event: E, listene
                 }
             }
         }
+        */
     }
 }

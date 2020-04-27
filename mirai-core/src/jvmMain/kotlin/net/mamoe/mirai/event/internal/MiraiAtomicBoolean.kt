@@ -44,7 +44,6 @@ internal actual class EventListeners<E : Event> actual constructor(clazz: KClass
                 val classifier = it.classifier as? KClass<out Event>
                 if (classifier != null) {
                     supertypes.add(classifier)
-                    classifier.listeners().children.add(clazz)
                     addSupertypes(classifier)
                 }
             }
@@ -54,59 +53,4 @@ internal actual class EventListeners<E : Event> actual constructor(clazz: KClass
         supertypes
     }
 
-    @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
-    actual val children: MutableSet<KClass<out Event>> = mutableSetOf()
-    private var handlers0: Iterable<ListenerNode<E>?>? = null
-    actual val handlers: Iterable<ListenerNode<E>?>
-        get() {
-            val h = handlers0
-            if (h != null) {
-                return h
-            }
-            val link = InsertLink<ListenerNode<E>>()
-            val head = link.head
-            fun EventListeners<*>.register(l: Listener<E>) {
-                val p = l.priority
-                val node0 = ListenerNode(l, this)
-                var scanning = head
-                while (true) {
-                    val next = scanning.next
-                    if (next == null || next == link.tail) {
-                        scanning.insertAfter(node0)
-                        return@register
-                    }
-                    val np = next.value!!.listener.priority
-                    if (np > p) {
-                        scanning.insertAfter(node0)
-                        return@register
-                    }
-                    scanning = next
-                }
-            }
-            forEachNode { if (!it.isRemoved()) register(it.nodeValue) }
-            supertypes.forEach {
-                it.listeners().apply {
-                    forEachNode {
-                        if (!it.isRemoved())
-                            this@apply.register(it.nodeValue)
-                    }
-                }
-            }
-            handlers0 = link
-            return link
-        }
-
-    override fun remove(element: Listener<E>): Boolean {
-        val result = super.remove(element)
-        if (result) postReset()
-        return result
-    }
-
-    actual fun postReset() {
-        if (handlers0 != null) {
-            handlers0 = null
-            children.forEach { it.listeners().postReset() }
-            supertypes.forEach { it.listeners().postReset() }
-        }
-    }
 }

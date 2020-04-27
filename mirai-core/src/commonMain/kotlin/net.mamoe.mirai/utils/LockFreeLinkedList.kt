@@ -81,7 +81,7 @@ fun <E> Sequence<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
  * Modifying can be performed concurrently.
  * Iterating concurrency is guaranteed.
  */
-open class LockFreeLinkedList<E> {
+open class LockFreeLinkedList<E> : Iterable<E> {
     @PublishedApi
     internal val tail: Tail<E> = Tail()
 
@@ -133,6 +133,18 @@ open class LockFreeLinkedList<E> {
                 return
             }
         }
+    }
+
+    open fun tryInsertAfter(node: LockFreeLinkedListNode<E>, newValue: E): Boolean {
+        if (node == tail) {
+            error("Cannot insert value after tail")
+        }
+        if (node.isRemoved()) {
+            return false
+        }
+        val next = node.nextNodeRef.value
+        val newNode = newValue.asNode(next)
+        return node.nextNodeRef.compareAndSet(next, newNode)
     }
 
     /**
@@ -308,6 +320,32 @@ open class LockFreeLinkedList<E> {
         }
     }
 
+    override fun iterator(): Iterator<E> {
+        var node: LockFreeLinkedListNode<E> = head
+        return object : Iterator<E> {
+            override tailrec fun hasNext(): Boolean {
+                if (node.isTail()) return false
+                val current = node
+                node = node.nextNode
+                if (current.isHead() || current.isRemoved()) return hasNext()
+                return true
+            }
+
+            override tailrec fun next(): E {
+                if (node.isTail()) {
+                    throw NoSuchElementException()
+                }
+                val current = node
+                node = node.nextNode
+                if (current.isHead() || current.isRemoved()) {
+                    return next()
+                }
+                return current.nodeValue
+            }
+
+        }
+    }
+
     inline fun forEachNode(block: (LockFreeLinkedListNode<E>) -> Unit) {
         var node: LockFreeLinkedListNode<E> = head
         while (true) {
@@ -337,27 +375,40 @@ open class LockFreeLinkedList<E> {
     @Suppress("unused")
     open fun removeAll(elements: Collection<E>): Boolean = elements.all { remove(it) }
 
-    /*
-
-
-    private fun removeNode(node: Node<E>): Boolean {
+    @Suppress("DuplicatedCode")
+    open fun removeNode(node: LockFreeLinkedListNode<E>): Boolean {
         if (node == tail) {
             return false
         }
         while (true) {
             val before = head.iterateBeforeFirst { it === node }
             val toRemove = before.nextNode
-            val next = toRemove.nextNode
-            if (toRemove == tail) { // This
-                return true
+            if (toRemove === tail) {
+                return false
             }
-            toRemove.nodeValue = null // logically remove first, then all the operations will recognize this node invalid
+            if (toRemove.isRemoved()) {
+                continue
+            }
+            @Suppress("BooleanLiteralArgument") // false positive
+            if (!toRemove.removed.compareAndSet(false, true)) {
+                // logically remove: all the operations will recognize this node invalid
+                continue
+            }
 
-            if (before.nextNodeRef.compareAndSet(toRemove, next)) { // physically remove: try to fix the link
+
+            // physically remove: try to fix the link
+            var next: LockFreeLinkedListNode<E> = toRemove.nextNode
+            while (next !== tail && next.isRemoved()) {
+                next = next.nextNode
+            }
+            if (before.nextNodeRef.compareAndSet(toRemove, next)) {
                 return true
             }
         }
     }
+
+    /*
+
 
     fun removeAt(index: Int): E {
         require(index >= 0) { "index must be >= 0" }
