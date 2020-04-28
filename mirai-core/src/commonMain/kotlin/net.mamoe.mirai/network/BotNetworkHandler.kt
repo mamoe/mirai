@@ -40,6 +40,7 @@ import net.mamoe.mirai.utils.WeakRefProperty
  *
  * @suppress 此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
  */
+@MiraiInternalAPI
 @Suppress("PropertyName")
 abstract class BotNetworkHandler : CoroutineScope {
 
@@ -122,6 +123,7 @@ abstract class BotNetworkHandler : CoroutineScope {
     }
 }
 
+@MiraiInternalAPI
 @OptIn(MiraiInternalAPI::class)
 suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null) {
     this.close(cause)

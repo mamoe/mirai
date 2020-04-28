@@ -13,6 +13,8 @@ package net.mamoe.mirai.qqandroid.contact
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
@@ -42,10 +44,11 @@ import kotlin.jvm.JvmSynthetic
 internal class MemberImpl constructor(
     val qq: FriendImpl, // 不要 WeakRef
     group: GroupImpl,
-    override val coroutineContext: CoroutineContext,
+    coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
 ) : Member() {
     override val group: GroupImpl by group.unsafeWeakRef()
+    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
     @Suppress("unused") // false positive
     val lastMessageSequence: AtomicInt = atomic(-1)

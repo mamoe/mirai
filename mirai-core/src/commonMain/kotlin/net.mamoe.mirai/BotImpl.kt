@@ -173,7 +173,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                         if (e.killBot) {
                             throw e
                         } else {
-                            logger.warning("Login failed. Retrying in 3s...")
+                            logger.warning { "Login failed. Retrying in 3s..." }
                             _network.closeAndJoin(e)
                             delay(3000)
                             continue
@@ -182,35 +182,34 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                         network.logger.error(e)
                         _network.closeAndJoin(e)
                     }
-                    logger.warning("Login failed. Retrying in 3s...")
+                    logger.warning { "Login failed. Retrying in 3s..." }
                     delay(3000)
                 }
             }
 
             suspend fun doInit() {
-                retryCatching(2) { count, lastException ->
+                retryCatching(5) { count, lastException ->
                     if (count != 0) {
                         if (!isActive) {
                             logger.error("Cannot init due to fatal error")
-                            if (lastException == null) {
-                                logger.error("<no exception>")
-                            } else {
-                                logger.error(lastException)
-                            }
+                            throw lastException ?: error("<No lastException>")
                         }
-                        logger.warning("Init failed. Retrying in 3s...")
+                        logger.warning { "Init failed. Retrying in 3s..." }
                         delay(3000)
                     }
+
                     _network.init()
                 }.getOrElse {
-                    network.logger.error(it)
-                    logger.error("Cannot init. some features may be affected")
+                    logger.error { "Cannot init. some features may be affected" }
+                    throw it // abort
                 }
             }
 
             // logger.info("Initializing BotNetworkHandler")
 
             if (::_network.isInitialized) {
+                _network.cancel(CancellationException("manual re-login", cause = cause))
+
                 BotReloginEvent(this, cause).broadcast()
                 doRelogin()
                 return
@@ -220,7 +219,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             doInit()
         }
 
-        logger.info("Logging in...")
+        logger.info { "Logging in..." }
         if (::_network.isInitialized) {
             network.withConnectionLock {
                 @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
@@ -230,7 +229,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
             reinitializeNetworkHandler(null)
         }
-        logger.info("Login successful")
+        logger.info { "Login successful" }
     }
 
     protected abstract fun createNetworkHandler(coroutineContext: CoroutineContext): N
@@ -241,7 +240,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     init {
         coroutineContext[Job]!!.invokeOnCompletion { throwable ->
             network.close(throwable)
-            offlineListener.cancel(CancellationException("bot cancelled", throwable))
+            offlineListener.cancel(CancellationException("Bot cancelled", throwable))
 
             groups.delegate.clear() // job is cancelled, so child jobs are to be cancelled
             friends.delegate.clear()

@@ -31,6 +31,7 @@ open class BotConfiguration {
     /**
      * 网络层日志构造器
      */
+    @OptIn(MiraiInternalAPI::class)
     var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.id})") }
 
     /**
@@ -85,6 +86,7 @@ open class BotConfiguration {
     /**
      * 不显示网络日志
      */
+    @OptIn(MiraiInternalAPI::class)
     @ConfigurationDsl
     fun noNetworkLog() {
         networkLoggerSupplier = { _: BotNetworkHandler -> SilentLogger }
