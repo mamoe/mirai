@@ -120,7 +120,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                             businessType = it.type,
                             pbElem = HummerCommelem.MsgElemInfoServtype2(
                                 pokeType = it.type,
-                                vaspokeId = it.id
+                                vaspokeId = it.id,
+                                vaspokeMinver = "7.2.0",
+                                vaspokeName = it.name
                             ).toByteArray(HummerCommelem.MsgElemInfoServtype2.serializer())
                         )
                     )
@@ -383,7 +385,13 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                 when (element.commonElem.serviceType) {
                     2 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
-                        list.add(PokeMessage(proto.pokeType, proto.vaspokeId))
+                        list.add(PokeMessage(
+                            proto.vaspokeName.takeIf { it.isNotEmpty() }
+                                ?: PokeMessage.values.firstOrNull { it.id == proto.vaspokeId && it.type == proto.pokeType }?.name
+                                    .orEmpty(),
+                            proto.pokeType,
+                            proto.vaspokeId
+                        ))
                     }
                     3 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())
