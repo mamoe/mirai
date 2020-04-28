@@ -25,7 +25,6 @@ import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
-import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.verbose
@@ -76,31 +75,6 @@ internal fun ContactMessage.logMessageReceived() {
     }
 }
 
-
 internal fun String.singleLine(): String {
     return this.replace("\n", """\n""").replace("\r", "")
-}
-
-
-/**
- * Size management isn't atomic.
- */
-internal class LockFreeCacheList<E>(private val maxSize: Int) : LockFreeLinkedList<E>() {
-    override fun addLast(element: E) {
-        if (size >= maxSize) {
-            this.removeFirst()
-        }
-
-        super.addLast(element)
-    }
-
-    @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    override fun addAll(iterable: Iterable<E>) {
-        super.addAll(iterable)
-    }
-
-    @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    override fun addAll(iterable: Sequence<E>) {
-        super.addAll(iterable)
-    }
 }
