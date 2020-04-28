@@ -14,6 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.data.PokeMessage.Types
+import net.mamoe.mirai.message.data.VipFace.Companion
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
@@ -145,23 +146,98 @@ data class PokeMessage internal constructor(
         stringValue.subSequence(startIndex, endIndex)
 
     override fun contentToString(): String = "[戳一戳]"
-
-    @OptIn(MiraiExperimentalAPI::class)
-    override fun equals(other: Any?): Boolean = other is PokeMessage && other.type == this.type && other.id == this.id
-
     override fun compareTo(other: String): Int = stringValue.compareTo(other)
-
-    @OptIn(MiraiExperimentalAPI::class)
-    override fun hashCode(): Int {
-        var result = type
-        result = 31 * result + id
-        result = 31 * result + stringValue.hashCode()
-        return result
-    }
-
     //businessType=0x00000001(1)
     //pbElem=08 01 18 00 20 FF FF FF FF 0F 2A 00 32 00 38 00 50 00
     //serviceType=0x00000002(2)
+}
+
+
+////////////////////////////////////
+///////////// VIP FACE /////////////
+////////////////////////////////////
+
+/**
+ * VIP 表情. 可以发送给好友或群.
+ *
+ * 不支持发送.
+ *
+ * @see Types 使用伴生对象中的常量
+ */
+@SinceMirai("0.40.0")
+@OptIn(MiraiInternalAPI::class)
+data class VipFace internal constructor(
+    /**
+     * 使用 [Companion] 中常量.
+     */
+    val kind: Kind,
+    val count: Int
+) : HummerMessage() {
+    data class Kind(
+        val id: Int,
+        val name: String
+    )
+
+    @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    companion object : Message.Key<VipFace> {
+        override val typeName: String get() = "VipFace"
+
+        @JvmStatic
+        val LiuLian = 9 to "榴莲"
+
+        @JvmStatic
+        val PingDiGuo = 1 to "平底锅"
+
+        @JvmStatic
+        val ChaoPiao = 12 to "钞票"
+
+        @JvmStatic
+        val LueLueLue = 10 to "略略略"
+
+        @JvmStatic
+        val ZhuTou = 4 to "猪头"
+
+        @JvmStatic
+        val BianBian = 6 to "便便"
+
+        @JvmStatic
+        val ZhaDan = 5 to "炸弹"
+
+        @JvmStatic
+        val AiXin = 2 to "爱心"
+
+        @JvmStatic
+        val HaHa = 3 to "哈哈"
+
+        @JvmStatic
+        val DianZan = 1 to "点赞"
+
+        @JvmStatic
+        val QinQin = 7 to "亲亲"
+
+        @JvmStatic
+        val YaoWan = 8 to "药丸"
+
+        @JvmStatic
+        val values: Array<Kind> = arrayOf(
+            LiuLian, PingDiGuo, ChaoPiao, LueLueLue, ZhuTou,
+            BianBian, ZhaDan, AiXin, HaHa, DianZan, QinQin, YaoWan
+        )
+
+        private infix fun Int.to(name: String): Kind = Kind(this, name)
+    }
+
+    @OptIn(MiraiExperimentalAPI::class)
+    private val stringValue = "[mirai:vipface:$kind,$count]"
+
+    override fun toString(): String = stringValue
+    override val length: Int get() = stringValue.length
+    override fun get(index: Int): Char = stringValue[index]
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
+        stringValue.subSequence(startIndex, endIndex)
+
+    override fun contentToString(): String = "[${kind.name}]x$count"
+    override fun compareTo(other: String): Int = stringValue.compareTo(other)
 }
 
 

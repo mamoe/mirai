@@ -245,6 +245,13 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     return@forEach
                 }
             }
+            if (last is VipFace && element is PlainText) {
+                val l = last as VipFace
+                if (element.length == 4 + (l.count / 10) + l.kind.name.length) {
+                    last = element
+                    return@forEach
+                }
+            }
             if (last is FlashImage && element is PlainText) {
                 if (element == UNSUPPORTED_FLASH_MESSAGE_PLAIN) {
                     last = element
@@ -383,6 +390,10 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
             }
             element.commonElem != null -> {
                 when (element.commonElem.serviceType) {
+                    23 -> {
+                        val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype23.serializer())
+                        list.add(VipFace(VipFace.Kind(proto.faceType, proto.faceSummary), proto.faceBubbleCount))
+                    }
                     2 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
                         list.add(PokeMessage(
