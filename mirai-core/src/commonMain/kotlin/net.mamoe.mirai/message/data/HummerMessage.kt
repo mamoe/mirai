@@ -158,7 +158,7 @@ data class PokeMessage internal constructor(
 ////////////////////////////////////
 
 /**
- * VIP 表情. 可以发送给好友或群.
+ * VIP 表情.
  *
  * 不支持发送.
  *
