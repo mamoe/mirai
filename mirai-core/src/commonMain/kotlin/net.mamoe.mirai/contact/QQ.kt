@@ -13,76 +13,47 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.data.FriendNameRemark
-import net.mamoe.mirai.data.PreviousNameList
-import net.mamoe.mirai.data.Profile
-import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineFriendImage
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.jvm.JvmSynthetic
 
 /**
  * QQ 对象.
- * 注意: 一个 [QQ] 实例并不是独立的, 它属于一个 [Bot].
- * 它不能被直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
  *
- * 对于同一个 [Bot] 任何一个人的 [QQ] 实例都是单一的.
+ * 自 0.39.0 起 mirai 引入 [User] 作为 [Friend] 和 [Member] 的父类,
+ * 以备将来支持仅 [Friend] 可用的 API, 如设置备注.
  *
- * A QQ instance helps you to receive event from or sendPacket event to.
- * Notice that, one QQ instance belong to one [Bot], that is, QQ instances from different [Bot] are NOT the same.
+ * 所有 API 均有二进制兼容.
  *
- * @author Him188moe
+ * 请根据实际情况, 使用 [Friend] 或 [User] 替代.
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
-expect abstract class QQ() : Contact, CoroutineScope {
-    /**
-     * 请求头像下载链接
-     */
-    // @MiraiExperimentalAPI
-    //suspend fun queryAvatar(): AvatarLink
+@PlannedRemoval("1.0.0")
+@Deprecated(
+    "use Friend or Person instead",
+    replaceWith = ReplaceWith("Friend", "net.mamoe.mirai.contact.Friend"),
+    level = DeprecationLevel.ERROR
+)
+@Suppress("DEPRECATION_ERROR")
+abstract class QQ : User(), CoroutineScope {
     /**
      * QQ 号码
      */
     abstract override val id: Long
+
     /**
      * 昵称
      */
-    abstract val nick: String
-
-    /**
-     * 查询用户资料
-     */
-    @MiraiExperimentalAPI("还未支持")
-    abstract suspend fun queryProfile(): Profile
+    abstract override val nick: String
 
     /**
      * 头像下载链接
      */
-    val avatarUrl: String
-
-    /**
-     * 查询曾用名.
-     *
-     * 曾用名可能是:
-     * - 昵称
-     * - 共同群内的群名片
-     */
-    @MiraiExperimentalAPI("还未支持")
-    abstract suspend fun queryPreviousNameList(): PreviousNameList
-
-    /**
-     * 查询机器人账号给这个人设置的备注
-     */
-    @MiraiExperimentalAPI("还未支持")
-    abstract suspend fun queryRemark(): FriendNameRemark
+    override val avatarUrl: String
+        get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
 
     /**
      * 向这个对象发送消息.
@@ -92,23 +63,12 @@ expect abstract class QQ() : Contact, CoroutineScope {
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws EventCancelledException 当发送消息事件被取消时抛出
+     * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws MessageTooLargeException 当消息过长时抛出
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    abstract override suspend fun sendMessage(message: Message): MessageReceipt<out QQ>
-
-    /**
-     * 上传一个图片以备发送.
-     *
-     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
-     * @see ImageUploadEvent 图片发送完成事件
-     *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
-     */
-    @JvmSynthetic
-    abstract override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage
+    abstract override suspend fun sendMessage(message: Message): MessageReceipt<QQ>
 }

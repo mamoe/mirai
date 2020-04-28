@@ -7,30 +7,38 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "FunctionName")
+@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractCancellableEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
+import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.network.Packet
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.internal.runBlocking
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 
 @Suppress("unused")
-expect class EventCancelledException : RuntimeException {
-    constructor()
-    constructor(message: String?)
-    constructor(message: String?, cause: Throwable?)
-    constructor(cause: Throwable?)
+class EventCancelledException : RuntimeException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
 }
 
 // note: 若你使用 IntelliJ IDEA, 按 alt + 7 可打开结构
@@ -63,6 +71,12 @@ sealed class BotOfflineEvent : BotEvent {
      * 被服务器断开或因网络问题而掉线
      */
     data class Dropped(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), Packet, BotPassiveEvent
+
+    /**
+     * 服务器主动要求更换另一个服务器
+     */
+    @SinceMirai("0.37.1")
+    data class RequireReconnect(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
 }
 
 /**
@@ -88,7 +102,7 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
     ) : MessageSendEvent(), CancellableEvent
 
     data class FriendMessageSendEvent(
-        override val target: QQ,
+        override val target: Friend,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
 }
@@ -106,7 +120,14 @@ sealed class MessageRecallEvent : BotEvent {
      * 消息 id.
      * @see MessageSource.id
      */
-    abstract val messageId: Long
+    abstract val messageId: Int
+
+    /**
+     * 消息内部 id.
+     * @see MessageSource.id
+     */
+    @SinceMirai("0.39.0")
+    abstract val messageInternalId: Int
 
     /**
      * 原发送时间
@@ -114,11 +135,12 @@ sealed class MessageRecallEvent : BotEvent {
     abstract val messageTime: Int // seconds
 
     /**
-     * 好友消息撤回事件, 暂不支持解析.
-     */
+     * 好友消息撤回事件, 暂不支持.
+     */ // TODO: 2020/4/22 支持好友消息撤回事件的解析和主动广播
     data class FriendRecall(
         override val bot: Bot,
-        override val messageId: Long,
+        override val messageId: Int,
+        override val messageInternalId: Int,
         override val messageTime: Int,
         /**
          * 撤回操作人, 可能为 [Bot.uin] 或好友的 [QQ.id]
@@ -126,13 +148,17 @@ sealed class MessageRecallEvent : BotEvent {
         val operator: Long
     ) : MessageRecallEvent(), Packet {
         override val authorId: Long
-            get() = bot.uin
+            get() = bot.id
     }
 
+    /**
+     * 群消息撤回事件.
+     */
     data class GroupRecall(
         override val bot: Bot,
         override val authorId: Long,
-        override val messageId: Long,
+        override val messageId: Int,
+        override val messageInternalId: Int,
         override val messageTime: Int,
         /**
          * 操作人. 为 null 时则为 [Bot] 操作.
@@ -144,9 +170,11 @@ sealed class MessageRecallEvent : BotEvent {
 
 @OptIn(MiraiExperimentalAPI::class)
 val MessageRecallEvent.GroupRecall.author: Member
-    get() = if (authorId == bot.uin) group.botAsMember else group[authorId]
+    get() = if (authorId == bot.id) group.botAsMember else group[authorId]
 
-val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.uin
+val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
+// val MessageRecallEvent.GroupRecall.isByBot: Boolean get() = (this as GroupOperableEvent).isByBot
+// no need
 
 val MessageRecallEvent.isByBot: Boolean
     get() = when (this) {
@@ -198,6 +226,28 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
 // endregion
 
 // region 群
+
+/**
+ * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
+ */
+@SinceMirai("0.36.0")
+sealed class BotLeaveEvent : BotEvent, Packet {
+    abstract val group: Group
+
+    /**
+     * 机器人主动退出一个群.
+     */
+    @SinceMirai("0.37.0")
+    data class Active(override val group: Group) : BotLeaveEvent()
+
+    /**
+     * 机器人被管理员或群主踢出群. 暂不支持获取操作人
+     */
+    @SinceMirai("0.37.0")
+    data class Kick(override val group: Group) : BotLeaveEvent()
+
+    override val bot: Bot get() = group.bot
+}
 
 /**
  * Bot 在群里的权限被改变. 操作人一定是群主
@@ -263,8 +313,16 @@ data class GroupNameChangeEvent(
     override val origin: String,
     override val new: String,
     override val group: Group,
-    val isByBot: Boolean // 无法获取操作人
-) : GroupSettingChangeEvent<String>, Packet
+    /**
+     * 操作人. 为 null 时则是机器人操作
+     */
+    @SinceMirai("0.37.3")
+    override val operator: Member?
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent {
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    val isByBot: Boolean
+        get() = operator == null
+}
 
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
@@ -342,10 +400,22 @@ data class GroupAllowMemberInviteEvent(
 /**
  * 成员加入群的事件
  */
-data class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet
+sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet {
+    /**
+     * 被邀请加入群
+     */
+    @SinceMirai("0.36.0")
+    data class Invite(override val member: Member) : MemberJoinEvent(member)
+
+    /**
+     * 成员主动加入群
+     */
+    @SinceMirai("0.36.0")
+    data class Active(override val member: Member) : MemberJoinEvent(member)
+}
 
 /**
- * 成员离开群的事件
+ * 成员离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除
  */
 sealed class MemberLeaveEvent : GroupMemberEvent {
     /**
@@ -354,7 +424,7 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
     data class Kick(
         override val member: Member,
         /**
-         * 操作人. 为 null 则是机器人操作
+         * 操作人. 为 null 则是机器人操作.
          */
         override val operator: Member?
     ) : MemberLeaveEvent(), Packet, GroupOperableEvent {
@@ -394,10 +464,13 @@ data class MemberCardChangeEvent(
     override val member: Member,
 
     /**
-     * 操作人. 为 null 时则是机器人操作. 可能与 [member] 引用相同, 此时为群员自己修改.
+     * 此事件无法确定操作人, 将在未来版本删除
      */
+    @PlannedRemoval("1.0.0")
+    @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR)
     override val operator: Member?
-) : GroupMemberEvent, GroupOperableEvent
+) : GroupMemberEvent, Packet,
+    @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR) GroupOperableEvent
 
 /**
  * 群头衔改动. 一定为群主操作
@@ -470,3 +543,215 @@ data class MemberUnmuteEvent(
 // endregion
 
 // endregion
+
+// region 好友、群认证
+
+/**
+ * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
+ */
+@SinceMirai("0.36.0")
+data class FriendRemarkChangeEvent(
+    override val bot: Bot,
+    val friend: Friend,
+    val newName: String
+) : BotEvent, Packet {
+
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    @get:JvmSynthetic
+    @get:JvmName("getFriend")
+    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+    val friendDeprecated: QQ
+        get() = friend
+}
+
+/**
+ * 成功添加了一个新好友的事件
+ */
+@SinceMirai("0.36.0")
+data class FriendAddEvent(
+    /**
+     * 新好友. 已经添加到 [Bot.friends]
+     */
+    val friend: Friend
+) : BotEvent, Packet {
+    override val bot: Bot get() = friend.bot
+
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    @get:JvmSynthetic
+    @get:JvmName("getFriend")
+    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+    val friendDeprecated: QQ
+        get() = friend
+}
+
+/**
+ * 好友已被删除的事件.
+ */
+@SinceMirai("0.36.0")
+data class FriendDeleteEvent(
+    val friend: Friend
+) : BotEvent, Packet {
+    override val bot: Bot get() = friend.bot
+
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    @get:JvmSynthetic
+    @get:JvmName("getFriend")
+    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+    val friendDeprecated: QQ
+        get() = friend
+}
+
+/**
+ * 一个账号请求添加机器人为好友的事件
+ */
+@SinceMirai("0.35.0")
+data class NewFriendRequestEvent(
+    override val bot: Bot,
+    /**
+     * 事件唯一识别号
+     */
+    val eventId: Long,
+    /**
+     * 申请好友消息
+     */
+    val message: String,
+    /**
+     * 请求人 [QQ.id]
+     */
+    val fromId: Long,
+    /**
+     * 来自群 [Group.id], 其他途径时为 0
+     */
+    val fromGroupId: Long,
+    /**
+     * 群名片或好友昵称
+     */
+    val fromNick: String
+) : BotEvent, Packet {
+    @JvmField
+    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+
+    /**
+     * @return 申请人来自的群. 当申请人来自其他途径申请时为 `null`
+     */
+    val fromGroup: Group? = if (fromGroupId == 0L) null else bot.getGroup(fromGroupId)
+
+    @JvmSynthetic
+    suspend fun accept() = bot.acceptNewFriendRequest(this)
+
+    @JvmSynthetic
+    suspend fun reject(blackList: Boolean = false) = bot.rejectNewFriendRequest(this, blackList)
+
+
+    @JavaFriendlyAPI
+    @JvmName("accept")
+    fun __acceptBlockingForJava__() = runBlocking { accept() }
+
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @JvmName("reject")
+    fun __rejectBlockingForJava__(blackList: Boolean = false) =
+        runBlocking { reject(blackList) }
+}
+
+/**
+ * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
+ */
+@SinceMirai("0.35.0")
+data class MemberJoinRequestEvent(
+    override val bot: Bot,
+    /**
+     * 事件唯一识别号
+     */
+    val eventId: Long,
+    /**
+     * 入群申请消息
+     */
+    val message: String,
+    /**
+     * 申请入群的账号的 id
+     */
+    val fromId: Long,
+    val groupId: Long,
+    val groupName: String,
+    /**
+     * 申请人昵称
+     */
+    val fromNick: String
+) : BotEvent, Packet {
+    val group: Group = this.bot.getGroup(groupId)
+
+    @JvmField
+    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+
+    @JvmSynthetic
+    suspend fun accept() = bot.acceptMemberJoinRequest(this)
+
+    @JvmSynthetic
+    suspend fun reject(blackList: Boolean = false) = bot.rejectMemberJoinRequest(this, blackList)
+
+    @JvmSynthetic
+    suspend fun ignore(blackList: Boolean = false) = bot.ignoreMemberJoinRequest(this, blackList)
+
+
+    @JavaFriendlyAPI
+    @JvmName("accept")
+    fun __acceptBlockingForJava__() = runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
+
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @JvmName("reject")
+    fun __rejectBlockingForJava__(blackList: Boolean = false) =
+        runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
+
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @JvmName("ignore")
+    fun __ignoreBlockingForJava__(blackList: Boolean = false) =
+        runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
+}
+
+/**
+ * [Bot] 被邀请加入一个群.
+ */
+@SinceMirai("0.39.4")
+data class BotInvitedJoinGroupRequestEvent(
+    override val bot: Bot,
+    /**
+     * 事件唯一识别号
+     */
+    val eventId: Long,
+    /**
+     * 邀请入群的账号的 id
+     */
+    val invitorId: Long,
+    val groupId: Long,
+    val groupName: String,
+    /**
+     * 邀请人昵称
+     */
+    val invitorNick: String
+) : BotEvent, Packet {
+    val invitor: Friend = this.bot.getFriend(invitorId)
+
+    @JvmField
+    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+
+    @JvmSynthetic
+    suspend fun accept() = bot.acceptInvitedJoinGroupRequest(this)
+
+    @JvmSynthetic
+    suspend fun ignore() = bot.ignoreInvitedJoinGroupRequest(this)
+
+    @JavaFriendlyAPI
+    @JvmName("accept")
+    fun __acceptBlockingForJava__() =
+        runBlocking { bot.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+
+    @JavaFriendlyAPI
+    @JvmName("ignore")
+    fun __ignoreBlockingForJava__() =
+        runBlocking { bot.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+}
+
+// endregion 好友、群认证

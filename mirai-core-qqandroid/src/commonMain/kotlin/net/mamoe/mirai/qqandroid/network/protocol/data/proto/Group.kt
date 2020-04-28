@@ -11,58 +11,59 @@ package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoId
-import net.mamoe.mirai.qqandroid.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
+import kotlin.jvm.JvmField
 
 @Serializable
-class GroupLabel : ProtoBuf {
+internal class GroupLabel : ProtoBuf {
     @Serializable
-    class Label(
-        @ProtoId(1) val name: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val enumType: Int /* enum */ = 1,
-        @ProtoId(3) val textColor: GroupLabel.Color? = null,
-        @ProtoId(4) val edgingColor: GroupLabel.Color? = null,
-        @ProtoId(5) val labelAttr: Int = 0,
-        @ProtoId(6) val labelType: Int = 0
+    internal class Label(
+        @ProtoId(1) @JvmField val name: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val enumType: Int /* enum */ = 1,
+        @ProtoId(3) @JvmField val textColor: Color? = null,
+        @ProtoId(4) @JvmField val edgingColor: Color? = null,
+        @ProtoId(5) @JvmField val labelAttr: Int = 0,
+        @ProtoId(6) @JvmField val labelType: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class RspBody(
-        @ProtoId(1) val error: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoId(2) val groupInfo: List<GroupLabel.GroupInfo>? = null
+    internal class RspBody(
+        @ProtoId(1) @JvmField val error: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(2) @JvmField val groupInfo: List<GroupInfo>? = null
     ) : ProtoBuf
 
     @Serializable
-    class SourceId(
-        @ProtoId(1) val sourceId: Int = 0
+    internal class SourceId(
+        @ProtoId(1) @JvmField val sourceId: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class GroupInfo(
-        @ProtoId(1) val int32Result: Int = 0,
-        @ProtoId(2) val groupCode: Long = 0L,
-        @ProtoId(3) val groupLabel: List<GroupLabel.Label>? = null
+    internal class GroupInfo(
+        @ProtoId(1) @JvmField val int32Result: Int = 0,
+        @ProtoId(2) @JvmField val groupCode: Long = 0L,
+        @ProtoId(3) @JvmField val groupLabel: List<Label>? = null
     ) : ProtoBuf
 
     @Serializable
-    class Color(
-        @ProtoId(1) val r: Int = 0,
-        @ProtoId(2) val g: Int = 0,
-        @ProtoId(3) val b: Int = 0
+    internal class Color(
+        @ProtoId(1) @JvmField val r: Int = 0,
+        @ProtoId(2) @JvmField val g: Int = 0,
+        @ProtoId(3) @JvmField val b: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class ReqBody(
-        @ProtoId(1) val sourceId: GroupLabel.SourceId? = null,
-        @ProtoId(2) val uinInfo: GroupLabel.UinInfo? = null,
-        @ProtoId(3) val numberLabel: Int = 5,
-        @ProtoId(4) val groupCode: List<Long>? = null,
-        @ProtoId(5) val labelStyle: Int = 0
+    internal class ReqBody(
+        @ProtoId(1) @JvmField val sourceId: SourceId? = null,
+        @ProtoId(2) @JvmField val uinInfo: UinInfo? = null,
+        @ProtoId(3) @JvmField val numberLabel: Int = 5,
+        @ProtoId(4) @JvmField val groupCode: List<Long>? = null,
+        @ProtoId(5) @JvmField val labelStyle: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    class UinInfo(
-        @ProtoId(1) val int64Longitude: Long = 0L,
-        @ProtoId(2) val int64Latitude: Long = 0L
+    internal class UinInfo(
+        @ProtoId(1) @JvmField val int64Longitude: Long = 0L,
+        @ProtoId(2) @JvmField val int64Latitude: Long = 0L
     ) : ProtoBuf
 }

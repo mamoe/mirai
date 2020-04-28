@@ -11,85 +11,86 @@ package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoId
-import net.mamoe.mirai.qqandroid.io.ProtoBuf
+import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
+import kotlin.jvm.JvmField
 
 class Oidb0x769 {
     @Serializable
-    class RequestBody(
-        @ProtoId(1) val rpt_config_list: List<ConfigSeq>
-       // @SerialId(2) val msg_device_info: DeviceInfo,
-       // @SerialId(3) val str_info: String = "",
-       // @SerialId(4) val province: String,
-       // @SerialId(5) val city: String,
-       // @SerialId(6) val req_debug_msg: Int = 0,
-       // @SerialId(101) val query_uin_package_usage_req: QueryUinPackageUsageReq
+internal class RequestBody(
+        @ProtoId(1) @JvmField val rpt_config_list: List<ConfigSeq>
+        // @SerialId(2) @JvmField val msg_device_info: DeviceInfo,
+        // @SerialId(3) @JvmField val str_info: String = "",
+        // @SerialId(4) @JvmField val province: String,
+        // @SerialId(5) @JvmField val city: String,
+        // @SerialId(6) @JvmField val req_debug_msg: Int = 0,
+        // @SerialId(101) @JvmField val query_uin_package_usage_req: QueryUinPackageUsageReq
     ) : ProtoBuf
 
     @Serializable
-    class QueryUinPackageUsageReq(
-        @ProtoId(1) val type: Int,
-        @ProtoId(2) val uinFileSize: Long = 0
+internal class QueryUinPackageUsageReq(
+        @ProtoId(1) @JvmField val type: Int,
+        @ProtoId(2) @JvmField val uinFileSize: Long = 0
     ): ProtoBuf
 
     @Serializable
-    class ConfigSeq(
-        @ProtoId(1) val type: Int, // uint
-        @ProtoId(2) val version: Int // uint
+internal class ConfigSeq(
+        @ProtoId(1) @JvmField val type: Int, // uint
+        @ProtoId(2) @JvmField val version: Int // uint
     ): ProtoBuf
 
     @Serializable
-    class DeviceInfo(
-        @ProtoId(1) val brand: String,
-        @ProtoId(2) val model: String
-        //@SerialId(3) val os: OS,
-        //@SerialId(4) val cpu: CPU,
-        //@SerialId(5) val memory: Memory,
-        //@SerialId(6) val storage: Storage,
-        //@SerialId(7) val screen: Screen,
-        //@SerialId(8) val camera: Camera
+internal class DeviceInfo(
+        @ProtoId(1) @JvmField val brand: String,
+        @ProtoId(2) @JvmField val model: String
+        //@SerialId(3) @JvmField val os: OS,
+        //@SerialId(4) @JvmField val cpu: CPU,
+        //@SerialId(5) @JvmField val memory: Memory,
+        //@SerialId(6) @JvmField val storage: Storage,
+        //@SerialId(7) @JvmField val screen: Screen,
+        //@SerialId(8) @JvmField val camera: Camera
     ): ProtoBuf
 
     @Serializable
-    class OS(
-        @ProtoId(1) val type: Int = 1,
-        @ProtoId(2) val version: String,
-        @ProtoId(3) val sdk: String,
-        @ProtoId(4) val kernel: String,
-        @ProtoId(5) val rom: String
+internal class OS(
+        @ProtoId(1) @JvmField val type: Int = 1,
+        @ProtoId(2) @JvmField val version: String,
+        @ProtoId(3) @JvmField val sdk: String,
+        @ProtoId(4) @JvmField val kernel: String,
+        @ProtoId(5) @JvmField val rom: String
     ): ProtoBuf
 
     @Serializable
-    class Camera(
-        @ProtoId(1) val primary: Long,
-        @ProtoId(2) val secondary: Long,
-        @ProtoId(3) val flag: Boolean
+internal class Camera(
+        @ProtoId(1) @JvmField val primary: Long,
+        @ProtoId(2) @JvmField val secondary: Long,
+        @ProtoId(3) @JvmField val flag: Boolean
     ): ProtoBuf
 
     @Serializable
-    class CPU(
-        @ProtoId(1) val model: String,
-        @ProtoId(2) val frequency: Int,
-        @ProtoId(3) val cores: Int
+internal class CPU(
+        @ProtoId(1) @JvmField val model: String,
+        @ProtoId(2) @JvmField val frequency: Int,
+        @ProtoId(3) @JvmField val cores: Int
     ): ProtoBuf
 
     @Serializable
-    class Memory(
-        @ProtoId(1) val total: Int,
-        @ProtoId(2) val process: Int
+internal class Memory(
+        @ProtoId(1) @JvmField val total: Int,
+        @ProtoId(2) @JvmField val process: Int
     ): ProtoBuf
 
     @Serializable
-    class Screen(
-        @ProtoId(1) val model: String,
-        @ProtoId(2) val width: Int,
-        @ProtoId(3) val height: Int,
-        @ProtoId(4) val dpi: Int,
-        @ProtoId(5) val multiTouch: Boolean
+internal class Screen(
+        @ProtoId(1) @JvmField val model: String,
+        @ProtoId(2) @JvmField val width: Int,
+        @ProtoId(3) @JvmField val height: Int,
+        @ProtoId(4) @JvmField val dpi: Int,
+        @ProtoId(5) @JvmField val multiTouch: Boolean
     ): ProtoBuf
 
     @Serializable
-    class Storage(
-        @ProtoId(1) val builtin: Int,
-        @ProtoId(2) val external: Int
+internal class Storage(
+        @ProtoId(1) @JvmField val builtin: Int,
+        @ProtoId(2) @JvmField val external: Int
     ): ProtoBuf
 }

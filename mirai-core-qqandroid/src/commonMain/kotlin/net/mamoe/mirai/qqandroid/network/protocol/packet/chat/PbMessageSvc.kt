@@ -7,20 +7,23 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.serialization.readProtoBuf
-import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgRevokeUserDef
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.utils.hexToBytes
+import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
+import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 
 internal class PbMessageSvc {
     object PbMsgWithDraw : OutgoingPacketFactory<PbMsgWithDraw.Response>(
@@ -40,7 +43,7 @@ internal class PbMessageSvc {
         }
 
         // 12 1A 08 01 10 00 18 E7 C1 AD B8 02 22 0A 08 BF BA 03 10 BF 81 CB B7 03 2A 02 08 00
-        fun Group(
+        fun createForGroupMessage(
             client: QQAndroidClient,
             groupCode: Long,
             messageSequenceId: Int, // 56639
@@ -71,14 +74,14 @@ internal class PbMessageSvc {
             )
         }
 
-        fun Friend(
+        fun createForTempMessage(
             client: QQAndroidClient,
+            groupUin: Long,
             toUin: Long,
             messageSequenceId: Int, // 56639
             messageRandom: Int, // 921878719
-            time: Long
+            time: Int
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
-            val messageUid: Long = 262144L.shl(32) or messageRandom.toLong().and(0xffFFffFF)
             writeProtoBuf(
                 MsgSvc.PbMsgWithDrawReq.serializer(),
                 MsgSvc.PbMsgWithDrawReq(
@@ -87,18 +90,55 @@ internal class PbMessageSvc {
                             subCmd = 1,
                             msgInfo = listOf(
                                 MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
-                                    fromUin = client.bot.uin,
+                                    fromUin = client.bot.id,
                                     toUin = toUin,
                                     msgSeq = messageSequenceId,
-                                    msgUid = messageUid,
-                                    msgTime = time and 0xffffffff,
+                                    msgRandom = messageRandom,
+                                    msgUid = 0x0100000000000000 or (messageRandom.toLong() and 0xFFFFFFFF),
+                                    msgTime = time.toLong(),
+                                    routingHead = MsgSvc.RoutingHead(
+                                        grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
+                                    )
+                                )
+                            ),
+                            reserved = RESERVED_TEMP
+                        )
+                    )
+                )
+            )
+        }
+
+        private val RESERVED_TEMP = "08 01 10 E3 E9 D6 80 02".hexToBytes()
+
+        fun createForFriendMessage(
+            client: QQAndroidClient,
+            toUin: Long,
+            messageSequenceId: Int, // 56639
+            messageRandom: Int, // 921878719
+            time: Int
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                MsgSvc.PbMsgWithDrawReq.serializer(),
+                MsgSvc.PbMsgWithDrawReq(
+                    c2cWithDraw = listOf(
+                        MsgSvc.PbC2CMsgWithDrawReq(
+                            subCmd = 1,
+                            msgInfo = listOf(
+                                MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
+                                    fromUin = client.bot.id,
+                                    toUin = toUin,
+                                    msgSeq = messageSequenceId,
+                                    msgRandom = messageRandom,
+                                    msgUid = 0x0100000000000000 or (messageRandom.toLong() and 0xFFFFFFFF),
+                                    msgTime = time.toLong(),
                                     routingHead = MsgSvc.RoutingHead(
                                         c2c = MsgSvc.C2C(
                                             toUin = toUin
                                         )
                                     )
                                 )
-                            )
+                            ),
+                            reserved = byteArrayOf(0x08, 0x00)
                         )
                     )
                 )
@@ -114,7 +154,7 @@ internal class PbMessageSvc {
                 return Response.Success
             }
             resp.c2cWithDraw?.firstOrNull()?.let {
-                if (it.result != 0) {
+                if (it.result != 2 && it.result != 3) {
                     return Response.Failed(it.result, it.errmsg)
                 }
                 return Response.Success

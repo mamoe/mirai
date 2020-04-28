@@ -12,64 +12,84 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
- * 链接的两个消息.
+ * 快速链接的两个消息 (避免构造新的 list).
+ *
+ * 不要直接构造 [CombinedMessage], 使用 [Message.plus]
+ * 要连接多个 [Message], 使用 [buildMessageChain]
  *
  * @see Message.plus
  *
  * Left-biased list
  */
-class CombinedMessage(
-    val left: Message,
-    val tail: Message
-) : Iterable<Message>, Message {
+internal class CombinedMessage
+internal constructor(
+    @JvmField internal val left: Message, // 必须已经完成 constrain single
+    @JvmField internal val tail: Message
+) : Message, MessageChain {
 
-    // 不要把它用作 local function, 会编译错误
-    private suspend fun SequenceScope<Message>.yieldCombinedOrElements(message: Message) {
-        when (message) {
-            is CombinedMessage -> {
-                // fast path, 避免创建新的 iterator, 也不会挂起协程
-                yieldCombinedOrElements(message.left)
-                yieldCombinedOrElements(message.tail)
-            }
-            is Iterable<*> -> {
-                // 更好的性能, 因为协程不会挂起.
-                // 这可能会导致爆栈 (十万个元素), 但作为消息序列足够了.
-                message.forEach {
-                    yieldCombinedOrElements(
-                        it as? Message ?: error(
-                            "A Message implementing Iterable must implement Iterable<Message>, " +
-                                    "whereas got ${it!!::class.simpleName}"
-                        )
-                    )
-                }
-            }
-            else -> {
-                check(message is SingleMessage) {
-                    "unsupported Message type. " +
-                            "A Message must be a CombinedMessage, a Iterable<Message> or a SingleMessage"
-                }
-                yield(message)
-            }
-        }
+    fun asSequence(): Sequence<SingleMessage> = sequence {
+        yieldCombinedOrElementsFlatten(this@CombinedMessage)
     }
 
-    fun asSequence(): Sequence<Message> = sequence {
-        yieldCombinedOrElements(this@CombinedMessage)
-    }
-
-    override fun iterator(): Iterator<Message> {
+    override fun iterator(): Iterator<SingleMessage> {
         return asSequence().iterator()
     }
 
-    override fun toString(): String {
-        return tail.toString() + left.toString()
+    override val size: Int
+        get() = kotlin.run {
+            var size = 0
+            size += if (left is MessageChain) left.size else 1
+            size += if (tail is MessageChain) tail.size else 1
+            size
+        }
+
+    override fun equals(other: Any?): Boolean {
+        return other is CombinedMessage && other.left == this.left && other.tail == this.tail
     }
 
-    fun isFlat(): Boolean {
-        return tail is SingleMessage && left is SingleMessage
+    private var toStringCache: String? = null
+
+    @OptIn(MiraiExperimentalAPI::class)
+    override fun toString(): String = toStringCache ?: (left.toString() + tail.toString()).also { toStringCache = it }
+
+    private var contentToStringCache: String? = null
+    override fun contentToString(): String =
+        contentToStringCache ?: (left.contentToString() + tail.contentToString()).also { contentToStringCache = it }
+
+    override fun hashCode(): Int {
+        var result = left.hashCode()
+        result = 31 * result + tail.hashCode()
+        return result
+    }
+}
+
+@JvmSynthetic
+// 不要把它用作 local function, 会编译错误
+@OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
+private suspend fun SequenceScope<SingleMessage>.yieldCombinedOrElementsFlatten(message: Message) {
+    when (message) {
+        is CombinedMessage -> {
+            // fast path
+            yieldCombinedOrElementsFlatten(message.left)
+            yieldCombinedOrElementsFlatten(message.tail)
+        }
+        is MessageChain -> {
+            yieldAll(message)
+        }
+        else -> {
+            check(message is SingleMessage) {
+                "unsupported Message type: ${message::class}" +
+                        "A Message must be a CombinedMessage, a Iterable<Message> or a SingleMessage"
+            }
+            yield(message)
+        }
     }
 }

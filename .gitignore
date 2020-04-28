@@ -44,3 +44,5 @@ keys.properties
 /plugins/
 
 token.txt
+bintray.user.txt
+bintray.key.txt

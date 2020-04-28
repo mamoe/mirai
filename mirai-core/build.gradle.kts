@@ -5,11 +5,12 @@ plugins {
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("org.jetbrains.dokka")
+    id("signing")
     `maven-publish`
     id("com.jfrog.bintray") version Versions.Publishing.bintray
 }
 
-description = "QQ protocol library"
+description = "Mirai API module"
 
 val isAndroidSDKAvailable: Boolean by project
 
@@ -48,12 +49,10 @@ kotlin {
                 api(kotlin("serialization"))
                 api(kotlin("reflect"))
 
-                api(kotlinx("coroutines-core-common", Versions.Kotlin.coroutines))
                 api(kotlinx("serialization-runtime-common", Versions.Kotlin.serialization))
                 api(kotlinx("serialization-protobuf-common", Versions.Kotlin.serialization))
                 api(kotlinx("io", Versions.Kotlin.io))
                 api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
-                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
 
                 api("org.jetbrains.kotlinx:atomicfu-common:${Versions.Kotlin.atomicFU}")
 
@@ -77,7 +76,6 @@ kotlin {
                     api(kotlinx("io-jvm", Versions.Kotlin.io))
                     api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
                     api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
-                    api(kotlinx("coroutines-android", Versions.Kotlin.coroutines))
                     api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
 
                     api(ktor("client-android", Versions.Kotlin.ktor))
@@ -105,7 +103,6 @@ kotlin {
                 api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
                 api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
-                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
 
                 api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE

@@ -15,32 +15,35 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
+import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.contact.FriendInfoImpl
-import net.mamoe.mirai.qqandroid.contact.GroupImpl
-import net.mamoe.mirai.qqandroid.contact.QQImpl
+import net.mamoe.mirai.qqandroid.contact.*
 import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
+import net.mamoe.mirai.qqandroid.utils.NoRouteToHostException
+import net.mamoe.mirai.qqandroid.utils.PlatformSocket
+import net.mamoe.mirai.qqandroid.utils.SocketException
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
+import net.mamoe.mirai.qqandroid.utils.retryCatching
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.PlatformSocket
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
 import kotlin.time.ExperimentalTime
@@ -62,6 +65,11 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     private var heartbeatJob: Job? = null
 
     private val packetReceiveLock: Mutex = Mutex()
+
+    override fun areYouOk(): Boolean {
+        return this.isActive && ::channel.isInitialized && channel.isOpen
+                && heartbeatJob?.isActive == true && _packetReceiverJob?.isActive == true
+    }
 
     private suspend fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
         _packetReceiverJob?.cancel(cancelCause)
@@ -102,24 +110,36 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }.also { heartbeatJob = it }
     }
 
-    override suspend fun relogin(cause: Throwable?) {
+    @OptIn(MiraiExperimentalAPI::class)
+    override suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable?) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
         if (::channel.isInitialized) {
-            if (channel.isOpen) {
-                kotlin.runCatching {
-                    registerClientOnline(500)
-                }.exceptionOrNull() ?: return
-                logger.info("Cannot do fast relogin. Trying slow relogin")
-            }
+            // if (channel.isOpen) {
+            //     kotlin.runCatching {
+            //         registerClientOnline(500)
+            //     }.exceptionOrNull() ?: return
+            //     logger.info("Cannot do fast relogin. Trying slow relogin")
+            // }
             channel.close()
         }
         channel = PlatformSocket()
         // TODO: 2020/2/14 连接多个服务器, #52
-        withTimeoutOrNull(3000) {
-            channel.connect("114.221.144.22", 8080)
-        } ?: error("timeout connecting server")
-        logger.info("Connected to server 114.221.144.22:8080")
+
+        while (isActive) {
+            try {
+                channel.connect(coroutineContext + CoroutineName("Socket"), host, port)
+                break
+            } catch (e: SocketException) {
+                if (e is NoRouteToHostException || e.message?.contains("Network is unreachable") == true) {
+                    logger.warning { "No route to host (Mostly due to no Internet connection). Retrying in 3s..." }
+                    delay(3000)
+                } else {
+                    throw e
+                }
+            }
+        }
+        logger.info { "Connected to server $host:$port" }
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
 
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
@@ -160,8 +180,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 }
 
                 is WtLogin.Login.LoginPacketResponse.Success -> {
-                    logger.info("Login successful")
+                    logger.info { "Login successful" }
                     break@mainloop
+                }
+
+                is WtLogin.Login.LoginPacketResponse.SMSVerifyCodeNeeded -> {
+                    val message = "SMS required: $response, which isn't yet supported"
+                    logger.error(message)
+                    throw UnsupportedSMSLoginException(message)
                 }
             }
         }
@@ -183,6 +209,93 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
         LockFreeLinkedList()
 
+    /**
+     * Don't use concurrently
+     */
+    suspend fun reloadFriendList() {
+        logger.info { "开始加载好友信息" }
+        var currentFriendCount = 0
+        var totalFriendCount: Short
+        while (true) {
+            val data = FriendList.GetFriendGroupList(
+                bot.client, currentFriendCount, 150, 0, 0
+            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
+
+            // self info
+            data.selfInfo?.run {
+                bot.selfInfo = this
+//                            bot.remark = remark ?: ""
+//                            bot.sex = sex
+            }
+
+            totalFriendCount = data.totalFriendCount
+            data.friendList.forEach {
+                // atomic
+                bot.friends.delegate.addLast(
+                    FriendImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
+                ).also { currentFriendCount++ }
+            }
+            logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
+            if (currentFriendCount >= totalFriendCount) {
+                break
+            }
+            // delay(200)
+        }
+        logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
+    }
+
+    suspend fun StTroopNum.reloadGroup() {
+        retryCatching(3) {
+            bot.groups.delegate.addLast(
+                @Suppress("DuplicatedCode")
+                GroupImpl(
+                    bot = bot,
+                    coroutineContext = bot.coroutineContext,
+                    id = groupCode,
+                    groupInfo = bot._lowLevelQueryGroupInfo(groupCode).apply {
+                        this as GroupInfoImpl
+
+                        if (this.delegate.groupName == null) {
+                            this.delegate.groupName = groupName
+                        }
+
+                        if (this.delegate.groupMemo == null) {
+                            this.delegate.groupMemo = groupMemo
+                        }
+
+                        if (this.delegate.groupUin == null) {
+                            this.delegate.groupUin = groupUin
+                        }
+
+                        this.delegate.groupCode = this@reloadGroup.groupCode
+                    },
+                    members = bot._lowLevelQueryGroupMemberList(
+                        groupUin,
+                        groupCode,
+                        dwGroupOwnerUin
+                    )
+                )
+            )
+        }.getOrThrow()
+    }
+
+    suspend fun reloadGroupList() {
+        logger.info { "开始加载群组列表与群成员列表" }
+        val troopListData = FriendList.GetTroopListSimplify(bot.client)
+            .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 3)
+
+        troopListData.groups.chunked(50).forEach { chunk ->
+            coroutineScope {
+                chunk.forEach {
+                    launch {
+                        retryCatching(3) { it.reloadGroup() }.getOrThrow()
+                    }
+                }
+            }
+        }
+        logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
+    }
+
     @OptIn(MiraiExperimentalAPI::class, ExperimentalTime::class)
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init" }
@@ -199,127 +312,37 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         }
 
         coroutineScope {
-            launch {
-                lateinit var loadFriends: suspend () -> Unit
-                // 不要用 fun, 不要 join declaration, 不要用 val, 编译失败警告
-                loadFriends = suspend loadFriends@{
-                    logger.info("开始加载好友信息")
-                    var currentFriendCount = 0
-                    var totalFriendCount: Short
-                    while (true) {
-                        val data = runCatching {
-                            FriendList.GetFriendGroupList(
-                                bot.client,
-                                currentFriendCount,
-                                150,
-                                0,
-                                0
-                            ).sendAndExpect<FriendList.GetFriendGroupList.Response>(timeoutMillis = 5000, retry = 2)
-                        }.getOrElse {
-                            logger.error("无法加载好友列表", it)
-                            this@QQAndroidBotNetworkHandler.launch { delay(10.secondsToMillis); loadFriends() }
-                            logger.error("稍后重试加载好友列表")
-                            return@loadFriends
-                        }
-                        totalFriendCount = data.totalFriendCount
-                        data.friendList.forEach {
-                            // atomic add
-                            bot.friends.delegate.addLast(
-                                QQImpl(
-                                    bot,
-                                    bot.coroutineContext,
-                                    it.friendUin,
-                                    FriendInfoImpl(it)
-                                )
-                            ).also {
-                                currentFriendCount++
-                            }
-                        }
-                        logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
-                        if (currentFriendCount >= totalFriendCount) {
-                            break
-                        }
-                        // delay(200)
-                    }
-                    logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
+            launch { reloadFriendList() }
+            launch { reloadGroupList() }
+        }
+
+        this@QQAndroidBotNetworkHandler.launch {
+            logger.info { "Awaiting ConfigPushSvc.PushReq" }
+            val resp =
+                syncFromEventOrNull<ConfigPushSvc.PushReq.PushReqResponse, ConfigPushSvc.PushReq.PushReqResponse>(
+                    10_000) { it }
+
+            when (resp) {
+                null -> logger.info { "Missing ConfigPushSvc.PushReq." }
+                is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
+                    logger.info { "ConfigPushSvc.PushReq: success" }
                 }
+                is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
+                    logger.info { "Server requires reconnect." }
+                    logger.info { "ChangeServer.unknown = ${resp.unknown}" }
+                    logger.info { "Server list: ${resp.serverList.joinToString()}" }
 
-                loadFriends()
-            }
-
-            launch {
-                try {
-                    logger.info("开始加载群组列表与群成员列表")
-                    val troopListData = FriendList.GetTroopListSimplify(bot.client)
-                        .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 2)
-
-                    troopListData.groups.forEach { troopNum ->
-                        // 别用 fun, 别 val, 编译失败警告
-                        lateinit var loadGroup: suspend () -> Unit
-
-                        loadGroup = suspend {
-                            tryNTimesOrException(3) {
-                                bot.groups.delegate.addLast(
-                                    @Suppress("DuplicatedCode")
-                                    (GroupImpl(
-                                        bot = bot,
-                                        coroutineContext = bot.coroutineContext,
-                                        id = troopNum.groupCode,
-                                        groupInfo = bot._lowLevelQueryGroupInfo(troopNum.groupCode).apply {
-                                            this as GroupInfoImpl
-
-                                            if (this.delegate.groupName == null) {
-                                                this.delegate.groupName = troopNum.groupName
-                                            }
-
-                                            if (this.delegate.groupMemo == null) {
-                                                this.delegate.groupMemo = troopNum.groupMemo
-                                            }
-
-                                            if (this.delegate.groupUin == null) {
-                                                this.delegate.groupUin = troopNum.groupUin
-                                            }
-
-                                            this.delegate.groupCode = troopNum.groupCode
-                                        },
-                                        members = bot._lowLevelQueryGroupMemberList(
-                                            troopNum.groupUin,
-                                            troopNum.groupCode,
-                                            troopNum.dwGroupOwnerUin
-                                        )
-                                    ))
-                                )
-                            }?.let {
-                                logger.error { "群${troopNum.groupCode}的列表拉取失败, 一段时间后将会重试" }
-                                logger.error(it)
-                                this@QQAndroidBotNetworkHandler.launch {
-                                    delay(10_000)
-                                    loadGroup()
-                                }
-                            }
-                            Unit // 别删, 编译失败警告
-                        }
-                        launch {
-                            loadGroup()
-                        }
+                    resp.serverList.forEach {
+                        bot.client.serverList.add(it.host to it.port)
                     }
-                    logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
-                } catch (e: Exception) {
-                    logger.error { "加载组信息失败|一般这是由于加载过于频繁导致/将以热加载方式加载群列表" }
-                    logger.error(e)
+                    BotOfflineEvent.RequireReconnect(bot).broadcast()
                 }
             }
         }
 
-        withTimeoutOrNull(5000) {
-            lateinit var listener: Listener<PacketReceivedEvent>
-            listener = this.subscribeAlways {
-                if (it.packet is MessageSvc.PbGetMsg.GetMsgSuccess) {
-                    listener.complete()
-                }
-            }
-
-            MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendWithoutExpect()
+        withTimeoutOrNull(30000) {
+            launch { syncFromEvent<MessageSvc.PbGetMsg.GetMsgSuccess, Unit> { Unit } }
+            MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
         } ?: error("timeout syncing friend message history")
 
         bot.firstLoginSucceed = true
@@ -342,7 +365,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         Unit // dont remove. can help type inference
     }
 
-    suspend fun doHeartBeat(): Exception? {
+    private suspend fun doHeartBeat(): Exception? {
         val lastException: Exception?
         try {
             kotlin.runCatching {
@@ -388,7 +411,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun parsePacketAsync(input: Input): Job {
+    fun parsePacketAsync(input: ByteReadPacket): Job {
         return this.launch(
             start = CoroutineStart.ATOMIC
         ) {
@@ -407,12 +430,12 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      *
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
-    suspend fun parsePacket(input: Input) {
+    suspend fun parsePacket(input: ByteReadPacket) {
         generifiedParsePacket<Packet>(input)
     }
 
     // with generic type, less mistakes
-    private suspend fun <P : Packet?> generifiedParsePacket(input: Input) {
+    private suspend fun <P : Packet?> generifiedParsePacket(input: ByteReadPacket) {
         KnownPacketFactories.parseIncomingPacket(
             bot,
             input
@@ -437,11 +460,14 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     ) {
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
-            val logMessage = "Received: ${packet.toString().replace("\n", """\n""").replace("\r", "")}"
-
-            if (packet is Event) {
-                bot.logger.verbose(logMessage)
-            } else logger.verbose(logMessage)
+            when (packet) {
+                is Packet.NoLog -> {
+                    // nothing to do
+                }
+                is ContactMessage -> packet.logMessageReceived()
+                is Event -> bot.logger.verbose { "Event: ${packet.toString().singleLine()}" }
+                else -> logger.verbose { "Packet: ${packet.toString().singleLine()}" }
+            }
         }
 
         packetListeners.forEach { listener ->
@@ -476,7 +502,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
      * 处理从服务器接收过来的包. 这些包可能是粘在一起的, 也可能是不完整的. 将会自动处理.
      * 处理后的包会调用 [parsePacketAsync]
      */
-    internal fun processPacket(rawInput: ByteReadPacket) {
+    private fun processPacket(rawInput: ByteReadPacket) {
         if (rawInput.remaining == 0L) {
             return
         }
@@ -554,26 +580,21 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
 
     /**
      * 发送一个包, 但不期待任何返回.
+     * 不推荐使用它, 可能产生意外的情况.
      */
     suspend fun OutgoingPacket.sendWithoutExpect() {
         check(bot.isActive) { "bot is dead therefore can't send any packet" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
         logger.verbose("Send: ${this.commandName}")
-        withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
-            PacketLogger.debug { "Channel sending: $commandName" }
-            channel.send(delegate)
-            PacketLogger.debug { "Channel send done: $commandName" }
-        }
+        channel.send(delegate)
     }
 
     class TimeoutException(override val message: String?) : Exception()
 
     /**
-     * 发送一个包, 并挂起直到接收到指定的返回包或超时(3000ms)
-     *
-     * @param retry 当不为 0 时将使用 [ByteArrayPool] 缓存. 因此若非必要, 请不要允许 retry
+     * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
-    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 3000, retry: Int = 0): E {
+    suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
         require(retry >= 0) { "retry must >= 0" }
 
@@ -581,25 +602,19 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
 
         suspend fun doSendAndReceive(handler: PacketListener, data: Any, length: Int): E {
-            withTimeoutOrNull(3000) {
-                withContext(this@QQAndroidBotNetworkHandler.coroutineContext + CoroutineName("Packet sender")) {
-                    PacketLogger.debug { "Channel sending: $commandName" }
-                    when (data) {
-                        is ByteArray -> channel.send(data, 0, length)
-                        is ByteReadPacket -> channel.send(data)
-                        else -> error("Internal error: unexpected data type: ${data::class.simpleName}")
-                    }
-                    PacketLogger.debug { "Channel send done: $commandName" }
-                }
-            } ?: throw TimeoutException("timeout sending packet $commandName")
+            when (data) {
+                is ByteArray -> channel.send(data, 0, length)
+                is ByteReadPacket -> channel.send(data)
+                else -> error("Internal error: unexpected data type: ${data::class.simpleName}")
+            }
 
-            logger.verbose("Send done: $commandName")
+            logger.verbose { "Send done: $commandName" }
 
             @Suppress("UNCHECKED_CAST")
             return withTimeoutOrNull(timeoutMillis) {
                 handler.await()
                 // 不要 `withTimeout`. timeout 的报错会不正常.
-            } as E? ?:  throw TimeoutException("timeout receiving response of $commandName")
+            } as E? ?: throw TimeoutException("timeout receiving response of $commandName")
         }
 
         if (retry == 0) {
@@ -611,7 +626,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 packetListeners.remove(handler)
             }
         } else this.delegate.useBytes { data, length ->
-            return tryNTimes(retry + 1) {
+            return retryCatching(retry + 1) {
                 val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
                 packetListeners.addLast(handler)
                 try {
@@ -619,7 +634,7 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
                 } finally {
                     packetListeners.remove(handler)
                 }
-            }
+            }.getOrThrow()
         }
     }
 
@@ -627,7 +642,8 @@ internal class QQAndroidBotNetworkHandler(bot: QQAndroidBot) : BotNetworkHandler
     internal val packetListeners = LockFreeLinkedList<PacketListener>()
 
     @PublishedApi
-    internal inner class PacketListener( // callback
+    internal inner class PacketListener(
+        // callback
         val commandName: String,
         val sequenceId: Int
     ) : CompletableDeferred<Packet?> by CompletableDeferred(supervisor) {

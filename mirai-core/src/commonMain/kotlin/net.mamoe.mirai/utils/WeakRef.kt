@@ -7,10 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.utils
 
+import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KProperty
 
 // TODO: 2020/2/10 添加中文 doc
@@ -18,7 +19,7 @@ import kotlin.reflect.KProperty
 /**
  * WeakRef that `getValue` for delegation throws an [IllegalStateException] if the referent is released by GC. Therefore it returns notnull value only
  */
-inline class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
+class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
     fun get(): T = weakRef.get() ?: error("WeakRef is released")
     fun clear() = weakRef.clear()
 }
@@ -30,7 +31,8 @@ inline class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
  * val bot: Bot by param.unsafeWeakRef()
  * ```
  */
-operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T = get()
+@JvmSynthetic
+inline operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T = get()
 
 /**
  * Weak Reference.
@@ -62,12 +64,14 @@ annotation class WeakRefProperty
  * Provides a weak reference to [this]
  * The `getValue` for delegation returns [this] when [this] is not released by GC
  */
-fun <T> T.weakRef(): WeakRef<T> = WeakRef(this)
+@JvmSynthetic
+inline fun <T> T.weakRef(): WeakRef<T> = WeakRef(this)
 
 /**
  * Constructs an unsafe inline delegate for [this]
  */
-fun <T> WeakRef<T>.unsafe(): UnsafeWeakRef<T> = UnsafeWeakRef(this)
+@JvmSynthetic
+inline fun <T> WeakRef<T>.unsafe(): UnsafeWeakRef<T> = UnsafeWeakRef(this)
 
 /**
  * Provides a weak reference to [this].
@@ -75,7 +79,8 @@ fun <T> WeakRef<T>.unsafe(): UnsafeWeakRef<T> = UnsafeWeakRef(this)
  *
  * **UNSTABLE API**: It is strongly suggested not to use this api
  */
-fun <T> T.unsafeWeakRef(): UnsafeWeakRef<T> = UnsafeWeakRef(this.weakRef())
+@JvmSynthetic
+inline fun <T> T.unsafeWeakRef(): UnsafeWeakRef<T> = UnsafeWeakRef(this.weakRef())
 
 /**
  * Provides delegate value.
@@ -84,9 +89,11 @@ fun <T> T.unsafeWeakRef(): UnsafeWeakRef<T> = UnsafeWeakRef(this.weakRef())
  * val bot: Bot? by param.weakRef()
  * ```
  */
-operator fun <T> WeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T? = this.get()
+@JvmSynthetic
+inline operator fun <T> WeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T? = this.get()
 
 /**
  * Call the block if the referent is absent
  */
+@JvmSynthetic
 inline fun <T, R> WeakRef<T>.ifAbsent(block: (T) -> R): R? = this.get()?.let(block)

@@ -7,7 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE", "EXPERIMENTAL_OVERRIDE")
+@file:OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
 
 package net.mamoe.mirai.contact
 
@@ -31,12 +32,9 @@ import kotlin.jvm.JvmSynthetic
 
 
 /**
- * 联系人. 虽然叫做联系人, 但他的子类有 [QQ] 和 [群][Group].
- *
- * @author Him188moe
- */ // 不要删除多平台结构 !!! kotlin bug
-@OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
-expect abstract class Contact() : CoroutineScope, ContactJavaFriendlyAPI {
+ * 联系人. 虽然叫做联系人, 但他的子类有 [用户][User], 和 [群][Group].
+ */
+abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot {
     /**
      * 这个联系人所属 [Bot].
      */
@@ -52,7 +50,7 @@ expect abstract class Contact() : CoroutineScope, ContactJavaFriendlyAPI {
      * @see QQ.id
      * @see Group.id
      */
-    abstract val id: Long
+    abstract override val id: Long
 
     /**
      * 向这个对象发送消息.
@@ -62,43 +60,42 @@ expect abstract class Contact() : CoroutineScope, ContactJavaFriendlyAPI {
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws EventCancelledException 当发送消息事件被取消时抛出
+     * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws MessageTooLargeException 当消息过长时抛出
+     * @throws IllegalArgumentException 当消息内容为空时抛出 (详见 [Message.isContentEmpty])
      *
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
     @JvmSynthetic
-    abstract suspend fun sendMessage(message: Message): MessageReceipt<out Contact>
+    abstract suspend fun sendMessage(message: Message): MessageReceipt<Contact>
+
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
+    @kotlin.internal.InlineOnly // purely virtual
+    @JvmSynthetic
+    suspend inline fun sendMessage(message: String): MessageReceipt<Contact> {
+        return sendMessage(message.toMessage())
+    }
 
     /**
      * 上传一个图片以备发送.
      *
-     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
-     * @see ImageUploadEvent 图片发送完成事件
+     * @see Image 查看有关图片的更多信息
      *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
+     * @see BeforeImageUploadEvent 图片发送前事件, 可拦截.
+     * @see ImageUploadEvent 图片发送完成事件, 不可拦截.
+     *
+     * @throws EventCancelledException 当发送消息事件被取消时抛出
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     @JvmSynthetic
     abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
 
-    /**
-     * 判断 `this` 和 [other] 是否是相同的类型, 并且 [id] 相同.
-     *
-     * 注:
-     * [id] 相同的 [Member] 和 [QQ], 他们并不 [equals].
-     * 因为, [Member] 含义为群员, 必属于一个群.
-     * 而 [QQ] 含义为一个独立的人, 可以是好友, 也可以是陌生人.
-     */
-    abstract override fun equals(other: Any?): Boolean
+    final override fun equals(other: Any?): Boolean = super.equals(other)
+    final override fun hashCode(): Int = super.hashCode()
 
     /**
-     * @return `bot.hashCode() * 31 + id.hashCode()`
-     */
-    abstract override fun hashCode(): Int
-
-    /**
-     * @return "QQ($id)" or "Group($id)" or "Member($id)"
+     * @return "Friend($id)" or "Group($id)" or "Member($id)"
      */
     abstract override fun toString(): String
 }
@@ -107,17 +104,20 @@ expect abstract class Contact() : CoroutineScope, ContactJavaFriendlyAPI {
  * @see Bot.recall
  */
 @MiraiExperimentalAPI
+@JvmSynthetic
 suspend inline fun Contact.recall(source: MessageChain) = this.bot.recall(source)
 
 /**
  * @see Bot.recall
  */
+@JvmSynthetic
 suspend inline fun Contact.recall(source: MessageSource) = this.bot.recall(source)
 
 /**
  * @see Bot.recallIn
  */
 @MiraiExperimentalAPI
+@JvmSynthetic
 inline fun Contact.recallIn(
     message: MessageChain,
     millis: Long,
@@ -127,15 +127,9 @@ inline fun Contact.recallIn(
 /**
  * @see Bot.recallIn
  */
+@JvmSynthetic
 inline fun Contact.recallIn(
     source: MessageSource,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.bot.recallIn(source, millis, coroutineContext)
-
-/**
- * @see Contact.sendMessage
- */
-@Suppress("UNCHECKED_CAST")
-suspend inline fun <C : Contact> C.sendMessage(plain: String): MessageReceipt<C> =
-    sendMessage(plain.toMessage()) as? MessageReceipt<C> ?: error("Internal class cast mistake")

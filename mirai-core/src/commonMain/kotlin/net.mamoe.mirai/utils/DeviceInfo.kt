@@ -49,13 +49,11 @@ abstract class DeviceInfo {
     abstract val imsiMd5: ByteArray
     abstract val imei: String
 
-    abstract val ipAddress: ByteArray
+    val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
 
     abstract val androidId: ByteArray
 
     abstract val apn: ByteArray
-
-    val guid: ByteArray by lazy { generateGuid(androidId, macAddress) }
 
     fun generateDeviceInfoData(): ByteArray {
         @Serializable
@@ -121,11 +119,6 @@ class DeviceInfoData(
     @Transient
     override lateinit var context: Context
 
-    @OptIn(ExperimentalUnsignedTypes::class)
-    override val ipAddress: ByteArray
-        get() = MiraiPlatformUtils.localIpAddress().split(".").map { it.toUByte().toByte() }.takeIf { it.size == 4 }
-            ?.toByteArray()
-            ?: byteArrayOf()
     override val androidId: ByteArray get() = display
 
     @Serializable
@@ -136,13 +129,6 @@ class DeviceInfoData(
         override val sdk: Int = SystemDeviceInfo.Version.sdk
     ) : Version
 }
-
-/**
- * Defaults "%4;7t>;28<fc.5*6".toByteArray()
- */
-@OptIn(MiraiInternalAPI::class)
-fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
-    MiraiPlatformUtils.md5(androidId + macAddress)
 
 /*
 fun DeviceInfo.toOidb0x769DeviceInfo() : Oidb0x769.DeviceInfo = Oidb0x769.DeviceInfo(

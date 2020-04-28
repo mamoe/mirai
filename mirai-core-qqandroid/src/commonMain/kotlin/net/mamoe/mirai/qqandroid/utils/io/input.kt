@@ -13,12 +13,12 @@
 
 package net.mamoe.mirai.qqandroid.utils.io
 
-import kotlinx.io.OutputStream
 import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.*
-import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.utils.MiraiDebugAPI
+import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -26,36 +26,21 @@ import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
-import kotlinx.serialization.InternalSerializationApi
-import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.toReadPacket
-import net.mamoe.mirai.utils.io.toUHexString
 
-@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
-fun ByteReadPacket.copyTo(outputStream: OutputStream) {
-    ByteArrayPool.useInstance {
-        while (this.isNotEmpty) {
-            outputStream.write(it, 0, this.readAvailable(it))
-        }
-    }
-}
-
-@MiraiInternalAPI
-inline fun <R> ByteReadPacket.useBytes(
+internal inline fun <R> ByteReadPacket.useBytes(
     n: Int = remaining.toInt(),//not that safe but adequate
     block: (data: ByteArray, length: Int) -> R
-): R = ByteArrayPool.useInstance {
+): R = ByteArrayPool.useInstance(n) {
     this.readFully(it, 0, n)
     block(it, n)
 }
 
-@MiraiInternalAPI
-inline fun ByteReadPacket.readPacketExact(
+internal inline fun ByteReadPacket.readPacketExact(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
 
 @OptIn(ExperimentalContracts::class)
-inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
+internal inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
@@ -64,24 +49,23 @@ inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
 
 private inline fun <R> inline(block: () -> R): R = block()
 
-typealias TlvMap = MutableMap<Int, ByteArray>
+internal typealias TlvMap = MutableMap<Int, ByteArray>
 
-inline fun TlvMap.getOrFail(tag: Int): ByteArray {
-    return this[tag] ?: error("cannot find tlv 0x${tag.toUHexString("")}($tag)")
+internal inline fun TlvMap.getOrFail(tag: Int): ByteArray {
+    return this[tag] ?: error("cannot find tlv 0x${tag. toUHexString("")}($tag)")
 }
 
-inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteArray {
+internal inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteArray {
     return this[tag] ?: error(lazyMessage(tag))
 }
 
 @Suppress("FunctionName")
 @MiraiInternalAPI
-inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap =
+internal inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap =
     _readTLVMap(true, tagSize, suppressDuplication)
 
-@MiraiDebugAPI
 @Suppress("DuplicatedCode", "FunctionName")
-fun Input._readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplication: Boolean = true): TlvMap {
+internal fun Input._readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplication: Boolean = true): TlvMap {
     val map = mutableMapOf<Int, ByteArray>()
     var key = 0
 
@@ -138,18 +122,18 @@ fun Input._readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplic
     return map
 }
 
-inline fun Input.readString(length: Int, charset: Charset = Charsets.UTF_8): String =
+internal inline fun Input.readString(length: Int, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length), charset = charset)
 
-inline fun Input.readString(length: Long, charset: Charset = Charsets.UTF_8): String =
+internal inline fun Input.readString(length: Long, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length.toInt()), charset = charset)
 
-inline fun Input.readString(length: Short, charset: Charset = Charsets.UTF_8): String =
+internal inline fun Input.readString(length: Short, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length.toInt()), charset = charset)
 
 @JvmSynthetic
-inline fun Input.readString(length: UShort, charset: Charset = Charsets.UTF_8): String =
+internal inline fun Input.readString(length: UShort, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length.toInt()), charset = charset)
 
-inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF_8): String =
+internal inline fun Input.readString(length: Byte, charset: Charset = Charsets.UTF_8): String =
     String(this.readBytes(length.toInt()), charset = charset)

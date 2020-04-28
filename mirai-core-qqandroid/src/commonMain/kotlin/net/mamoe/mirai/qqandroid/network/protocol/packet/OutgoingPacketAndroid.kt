@@ -15,10 +15,10 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.qqandroid.utils.io.encryptAndWrite
 import net.mamoe.mirai.qqandroid.utils.io.writeHex
 import net.mamoe.mirai.qqandroid.utils.io.writeIntLVPacket
+import net.mamoe.mirai.utils.MiraiInternalAPI
 
 internal class OutgoingPacket constructor(
     name: String?,
@@ -99,7 +99,7 @@ internal inline fun IncomingPacketFactory<*>.buildResponseUniPacket(
 }
 
 @OptIn(MiraiInternalAPI::class)
-internal inline fun BytePacketBuilder.writeUniPacket(
+private inline fun BytePacketBuilder.writeUniPacket(
     commandName: String,
     unknownData: ByteArray,
     extraData: ByteReadPacket = BRP_STUB,

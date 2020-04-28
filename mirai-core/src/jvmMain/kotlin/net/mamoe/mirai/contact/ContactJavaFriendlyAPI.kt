@@ -53,19 +53,20 @@ actual abstract class ContactJavaFriendlyAPI {
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws EventCancelledException 当发送消息事件被取消时抛出
+     * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws MessageTooLargeException 当消息过长时抛出
      *
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
     @Throws(EventCancelledException::class, IllegalStateException::class)
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<out Contact> {
+    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<Contact> {
         return runBlocking { sendMessage(message) }
     }
 
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<out Contact> {
+    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<Contact> {
         return runBlocking { sendMessage(message) }
     }
 
@@ -139,7 +140,7 @@ actual abstract class ContactJavaFriendlyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
-    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<out Contact>> {
+    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<Contact>> {
         return future { sendMessage(message) }
     }
 
@@ -148,7 +149,7 @@ actual abstract class ContactJavaFriendlyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
-    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<out Contact>> {
+    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<Contact>> {
         return future { sendMessage(message) }
     }
 
@@ -204,7 +205,7 @@ actual abstract class ContactJavaFriendlyAPI {
     }
 }
 
-@Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused", "unused")
+@Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused", "unused", "DEPRECATION_ERROR")
 @MiraiInternalAPI
 @JavaFriendlyAPI
 actual abstract class MemberJavaFriendlyAPI : QQ() {
@@ -264,8 +265,8 @@ actual abstract class MemberJavaFriendlyAPI : QQ() {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("kick")
-    open fun __kickBlockingForJava__(message: String) {
-        runBlocking { kick() }
+    open fun __kickBlockingForJava__(message: String = "") {
+        runBlocking { kick(message) }
     }
 
     /**
@@ -325,8 +326,8 @@ actual abstract class MemberJavaFriendlyAPI : QQ() {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("kickAsync")
-    open fun __kickAsyncForJava__(message: String): Future<Unit> {
-        return future { kick() }
+    open fun __kickAsyncForJava__(message: String = ""): Future<Unit> {
+        return future { kick(message) }
     }
 
     /**

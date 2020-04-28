@@ -28,8 +28,6 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
  *
  * A QQ instance helps you to receive event from or sendPacket event to.
  * Notice that, one QQ instance belong to one [Bot], that is, QQ instances from different [Bot] are NOT the same.
- *
- * @author Him188moe
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 actual abstract class QQ : Contact(), CoroutineScope {
@@ -83,13 +81,14 @@ actual abstract class QQ : Contact(), CoroutineScope {
      * @see FriendMessageSendEvent 发送好友信息事件, cancellable
      * @see GroupMessageSendEvent  发送群消息事件. cancellable
      *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws IllegalStateException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws EventCancelledException 当发送消息事件被取消时抛出
+     * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws MessageTooLargeException 当消息过长时抛出
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<out QQ>
+    actual abstract override suspend fun sendMessage(message: Message): MessageReceipt<QQ>
 
     /**
      * 上传一个图片以备发送.

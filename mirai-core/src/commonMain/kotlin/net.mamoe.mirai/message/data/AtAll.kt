@@ -33,13 +33,22 @@ object AtAll :
 
     @SinceMirai("0.31.2")
     const val display = displayA
+    override val typeName: String
+        get() = "AtAll"
 
     @Suppress("SpellCheckingInspection")
     override fun toString(): String = "[mirai:atall]"
+    override fun contentToString(): String = display
+    override fun equals(other: Any?): Boolean {
+        return other === this
+    }
+
+    override fun hashCode(): Int {
+        return display.hashCode()
+    }
 
     // 自动为消息补充 " "
-
-    override fun followedBy(tail: Message): CombinedMessage {
+    override fun followedBy(tail: Message): MessageChain {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }

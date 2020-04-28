@@ -16,12 +16,12 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.qqandroid.network.protocol.LoginType
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.qqandroid.utils.io.*
+import net.mamoe.mirai.qqandroid.utils.toByteArray
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.io.*
 import kotlin.random.Random
 
 /**

@@ -19,17 +19,19 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
-import net.mamoe.mirai.qqandroid.io.serialization.toByteArray
+import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
+import net.mamoe.mirai.qqandroid.utils.io.chunkedFlow
+import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.io.*
-import kotlinx.serialization.InternalSerializationApi
-import net.mamoe.mirai.utils.MiraiPlatformUtils
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
-internal fun createImageDataPacketSequence( // RequestDataTrans
+internal fun createImageDataPacketSequence(
+    // RequestDataTrans
     client: QQAndroidClient,
     command: String,
     appId: Int = 537062845,
@@ -41,11 +43,11 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
     data: Any,
     dataSize: Int,
     fileMd5: ByteArray,
-    sizePerPacket: Int = 8192
+    sizePerPacket: Int = ByteArrayPool.BUFFER_SIZE
 ): Flow<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     require(data is Input || data is InputStream || data is ByteReadChannel) { "unsupported data: ${data::class.simpleName}" }
- //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
+    //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
     require(data !is ByteReadPacket || data.remaining.toInt() == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as ByteReadPacket).remaining}" }
 
     val flow = when (data) {
@@ -77,7 +79,7 @@ internal fun createImageDataPacketSequence( // RequestDataTrans
                     localeId = localId
                 ),
                 msgSeghead = CSDataHighwayHead.SegHead(
-                 //   cacheAddr = 812157193,
+                    //   cacheAddr = 812157193,
                     datalength = chunkedInput.bufferSize,
                     dataoffset = offset,
                     filesize = dataSize.toLong(),

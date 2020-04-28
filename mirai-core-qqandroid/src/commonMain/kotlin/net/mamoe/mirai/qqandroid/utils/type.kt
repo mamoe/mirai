@@ -12,10 +12,8 @@
 
 package net.mamoe.mirai.qqandroid.utils
 
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.QuoteReply
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.AtAll.display
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -35,18 +33,31 @@ internal fun Int.toIpV4AddressString(): String {
 }
 
 internal fun String.chineseLength(upTo: Int): Int {
-    return this.sumUpTo(upTo) { if (it in '\u0391'..'\uFFE5') 3 else 1 }
-}
-
-internal fun MessageChain.estimateLength(upTo: Int = Int.MAX_VALUE): Int =
-    sumUpTo(upTo) { it, up ->
+    return this.sumUpTo(upTo) {
         when (it) {
-            is QuoteReply -> 700
-            is Image -> 300
-            is PlainText -> it.stringValue.chineseLength(up)
-            else -> it.toString().chineseLength(up)
+            in '\u0000'..'\u007F' -> 1
+            in '\u0080'..'\u07FF' -> 2
+            in '\u0800'..'\uFFFF' -> 3
+            else -> 4
         }
     }
+}
+
+internal fun MessageChain.estimateLength(upTo: Int): Int =
+    sumUpTo(upTo) { it, up ->
+        it.estimateLength(up)
+    }
+
+internal fun SingleMessage.estimateLength(upTo: Int): Int {
+    return when (this) {
+        is QuoteReply -> 444 + this.source.originalMessage.estimateLength(upTo) // Magic number
+        is Image -> 260 // Magic number
+        is PlainText -> stringValue.chineseLength(upTo)
+        is At -> display.chineseLength(upTo)
+        is AtAll -> display.chineseLength(upTo)
+        else -> this.toString().chineseLength(upTo)
+    }
+}
 
 internal inline fun <T> Iterable<T>.sumUpTo(upTo: Int, selector: (T, remaining: Int) -> Int): Int {
     var sum = 0
@@ -60,7 +71,7 @@ internal inline fun <T> Iterable<T>.sumUpTo(upTo: Int, selector: (T, remaining: 
 }
 
 internal inline fun CharSequence.sumUpTo(upTo: Int, selector: (Char) -> Int): Int {
-    var sum: Int = 0
+    var sum = 0
     for (element in this) {
         sum += selector(element)
         if (sum >= upTo) {

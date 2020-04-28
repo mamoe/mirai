@@ -10,11 +10,11 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet
 
 import kotlinx.io.core.*
-import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.MultiMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
@@ -22,11 +22,13 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.qqandroid.network.readUShortLVByteArray
+import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.qqandroid.utils.cryptor.adjustToPublicKey
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
@@ -34,18 +36,15 @@ import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import net.mamoe.mirai.qqandroid.utils.io.withUse
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.toInt
-import net.mamoe.mirai.utils.io.toReadPacket
-import net.mamoe.mirai.utils.io.toUHexString
 import kotlin.jvm.JvmName
-
 
 internal sealed class PacketFactory<TPacket : Packet?> {
     /**
      * 筛选从服务器接收到的包时的 commandName
      */
     abstract val receivingCommandName: String
+
+    open val canBeCached: Boolean get() = true
 }
 
 /**
@@ -127,9 +126,6 @@ internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>,
 @PublishedApi
 internal val PacketLogger: MiraiLoggerWithSwitch = DefaultLogger("Packet").withSwitch(false)
 
-/**
- * 已知的数据包工厂列表.
- */
 @OptIn(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(
@@ -139,6 +135,7 @@ internal object KnownPacketFactories {
         MessageSvc.PbGetMsg,
         MessageSvc.PushForceOffline,
         MessageSvc.PbSendMsg,
+        MessageSvc.Del,
         FriendList.GetFriendGroupList,
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
@@ -153,7 +150,10 @@ internal object KnownPacketFactories {
         TroopManagement.Kick,
         Heartbeat.Alive,
         PbMessageSvc.PbMsgWithDraw,
-        MultiMsg.ApplyUp
+        MultiMsg.ApplyUp,
+        NewContact.SystemMsgNewFriend,
+        NewContact.SystemMsgNewGroup,
+        ProfileService.GroupMngReq
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(
@@ -177,7 +177,11 @@ internal object KnownPacketFactories {
     // do not inline. Exceptions thrown will not be reported correctly
     @OptIn(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
-    suspend fun <T : Packet?> parseIncomingPacket(bot: QQAndroidBot, rawInput: Input, consumer: PacketConsumer<T>) =
+    suspend fun <T : Packet?> parseIncomingPacket(
+        bot: QQAndroidBot,
+        rawInput: ByteReadPacket,
+        consumer: PacketConsumer<T>
+    ) =
         with(rawInput) {
             // login
             val flag1 = readInt()
@@ -193,7 +197,7 @@ internal object KnownPacketFactories {
 
             readString(readInt() - 4)// uinAccount
 
-            ByteArrayPool.useInstance { data ->
+            ByteArrayPool.useInstance(this.remaining.toInt()) { data ->
                 val size = this.readAvailable(data)
 
                 kotlin.runCatching {
@@ -214,7 +218,7 @@ internal object KnownPacketFactories {
                 }?.let {
                     it as IncomingPacket<T>
 
-                    if (it.packetFactory is IncomingPacketFactory<T> && bot.network.pendingEnabled) {
+                    if (it.packetFactory is IncomingPacketFactory<T> && it.packetFactory.canBeCached && bot.network.pendingEnabled) {
                         bot.network.pendingIncomingPackets?.addLast(it.also {
                             it.consumer = consumer
                             it.flag2 = flag2
@@ -292,9 +296,6 @@ internal object KnownPacketFactories {
         lateinit var consumer: PacketConsumer<T>
     }
 
-    /**
-     * 解析 SSO 层包装
-     */
     @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket<*> {
         val commandName: String
@@ -363,14 +364,14 @@ internal object KnownPacketFactories {
     ) {
         @Suppress("DuplicatedCode")
         check(readByte().toInt() == 2)
-        this.discardExact(2) // 27 + 2 + body.size
-        this.discardExact(2) // const, =8001
-        this.readUShort() // commandId
-        this.readShort() // const, =0x0001
-        this.readUInt().toLong() // qq
+        this.discardExact(2)
+        this.discardExact(2)
+        this.readUShort()
+        this.readShort()
+        this.readUInt().toLong()
         val encryptionMethod = this.readUShort().toInt()
 
-        this.discardExact(1) // const = 0
+        this.discardExact(1)
         val packet = when (encryptionMethod) {
             4 -> {
                 var data = TEA.decrypt(this, bot.client.ecdh.keyPair.initialShareKey, (this.remaining - 1).toInt())
@@ -383,7 +384,7 @@ internal object KnownPacketFactories {
             }
             0 -> {
                 val data = if (bot.client.loginState == 0) {
-                    ByteArrayPool.useInstance { byteArrayBuffer ->
+                    ByteArrayPool.useInstance(this.remaining.toInt()) { byteArrayBuffer ->
                         val size = (this.remaining - 1).toInt()
                         this.readFully(byteArrayBuffer, 0, size)
 

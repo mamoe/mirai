@@ -17,6 +17,7 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -24,11 +25,12 @@ import kotlin.jvm.JvmSynthetic
 
 
 /**
- * At 一个人. 只能发送给一个群.
+ * At 一个群成员. 只能发送给一个群.
  *
  * @see AtAll 全体成员
  */
-class At
+data class At
+@Suppress("DataClassPrivateConstructor")
 private constructor(val target: Long, val display: String) :
     MessageContent,
     CharSequence by display,
@@ -39,9 +41,17 @@ private constructor(val target: Long, val display: String) :
      */
     constructor(member: Member) : this(member.id, "@${member.nameCardOrNick}")
 
+    override fun equals(other: Any?): Boolean {
+        return other is At && other.target == this.target && other.display == this.display
+    }
+
     override fun toString(): String = "[mirai:at:$target]"
+    override fun contentToString(): String = this.display
 
     companion object Key : Message.Key<At> {
+        override val typeName: String
+            get() = "At"
+
         /**
          * 构造一个 [At], 仅供内部使用, 否则可能造成消息无法发出的问题.
          */
@@ -52,12 +62,27 @@ private constructor(val target: Long, val display: String) :
     }
 
     // 自动为消息补充 " "
-
-    override fun followedBy(tail: Message): CombinedMessage {
+    override fun followedBy(tail: Message): MessageChain {
         if (tail is PlainText && tail.stringValue.startsWith(' ')) {
             return super.followedBy(tail)
         }
         return super.followedBy(PlainText(" ")) + tail
+    }
+
+    override fun hashCode(): Int {
+        var result = target.hashCode()
+        result = 31 * result + display.hashCode()
+        return result
+    }
+
+
+    @OptIn(MiraiInternalAPI::class)
+    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JvmName("followedBy")
+    @JvmSynthetic
+    override fun followedBy1(tail: Message): CombinedMessage {
+        return followedByInternalForBinaryCompatibility(tail)
     }
 }
 

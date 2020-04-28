@@ -7,12 +7,18 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPERIMENTAL_API_USAGE")
+
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.io.autoHexToBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+
+internal fun String.autoHexToBytes(): ByteArray =
+    this.replace("\n", "").replace(" ", "").asSequence().chunked(2).map {
+        (it[0].toString() + it[1]).toUByte(16).toByte()
+    }.toList().toByteArray()
 
 internal class ImageTest {
 
@@ -30,7 +36,12 @@ internal class ImageTest {
     fun testCalculateImageMd5ByImageId() {
         assertEquals(
             "01E9451B-70ED-EAE3-B37C-101F1EEBF5B5".filterNot { it == '-' }.autoHexToBytes().contentToString(),
-            calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png").contentToString()
+            calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai").contentToString()
+        )
+
+        assertEquals(
+            "01E9451B-70ED-EAE3-B37C-101F1EEBF5B5".filterNot { it == '-' }.autoHexToBytes().contentToString(),
+            calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.gif").contentToString()
         )
 
         assertEquals(

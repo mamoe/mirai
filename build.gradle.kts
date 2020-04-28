@@ -1,7 +1,6 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE")
 
 import java.time.Duration
-import java.util.*
 import kotlin.math.pow
 
 buildscript {
@@ -27,6 +26,13 @@ plugins {
     // id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
 }
 
+project.ext.set("isAndroidSDKAvailable", false)
+
+// until
+// https://youtrack.jetbrains.com/issue/KT-37152,
+// are fixed.
+
+/*
 runCatching {
     val keyProps = Properties().apply {
         file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -36,7 +42,9 @@ runCatching {
     } else {
         project.ext.set("isAndroidSDKAvailable", false)
     }
-}
+}.exceptionOrNull()?.run {
+    project.ext.set("isAndroidSDKAvailable", false)
+}*/
 
 allprojects {
     group = "net.mamoe"

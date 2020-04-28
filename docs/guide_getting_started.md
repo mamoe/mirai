@@ -18,7 +18,6 @@
 ### 1 安装IDEA与JDK
 
 - JDK 要求6以上
-- IDEA 内设置 kotlin 插件为 EAP 版本，参考[本文](https://kotlinlang.org/eap/install-eap-plugin.html)
 
 ### 2 新建Gradle项目
 
@@ -57,7 +56,7 @@
 
   ```groovy
   dependencies {
-      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.31.4'//此处版本应替换为当前最新
+      implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.32.0'//此处版本应替换为当前最新
       implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
       testCompile group: 'junit', name: 'junit', version: '4.12'
   }

@@ -10,9 +10,9 @@
 package net.mamoe.mirai.qqandroid.utils.cryptor
 
 import android.annotation.SuppressLint
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils.md5
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.MiraiPlatformUtils.md5
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec

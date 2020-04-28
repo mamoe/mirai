@@ -15,12 +15,16 @@ import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.provideDelegate
 import java.io.File
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 @Suppress("DEPRECATION")
 object CuiCloud {
@@ -77,13 +81,26 @@ object CuiCloud {
         val cuiCloudUrl = getUrl(project)
         val key = getKey(project)
 
+
+        val bytes = file.readBytes()
+
         runBlocking {
-            uploadToCuiCloud(
-                cuiCloudUrl,
-                key,
-                "/mirai/${project.name}/${file.nameWithoutExtension}.mp4",
-                file.readBytes()
-            )
+            var first = true
+            retryCatching(1000) {
+                if (!first) {
+                    println()
+                    println()
+                    println("Upload failed. Waiting 15s")
+                    delay(15_000)
+                }
+                first = false
+                uploadToCuiCloud(
+                    cuiCloudUrl,
+                    key,
+                    "/mirai/${project.name}/${file.nameWithoutExtension}.mp4",
+                    bytes
+                )
+            }.getOrThrow()
         }
     }
 
@@ -127,6 +144,30 @@ object CuiCloud {
             error("Cui cloud response: ${response.status}")
         }
     }
+}
+
+
+@OptIn(ExperimentalContracts::class)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@kotlin.internal.InlineOnly
+internal inline fun <R> retryCatching(n: Int, block: () -> R): Result<R> {
+    contract {
+        callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
+    }
+    require(n >= 0) { "param n for retryCatching must not be negative" }
+    var exception: Throwable? = null
+    repeat(n) {
+        try {
+            return Result.success(block())
+        } catch (e: Throwable) {
+            try {
+                exception?.addSuppressed(e)
+            } catch (e: Throwable) {
+            }
+            exception = e
+        }
+    }
+    return Result.failure(exception!!)
 }
 
 inline fun <E> buildList(builderAction: MutableList<E>.() -> Unit): List<E> {

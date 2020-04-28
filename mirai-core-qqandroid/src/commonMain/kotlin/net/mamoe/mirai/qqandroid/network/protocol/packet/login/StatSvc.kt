@@ -10,11 +10,11 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.qqandroid.QQAndroidBot
-import net.mamoe.mirai.qqandroid.io.serialization.*
+import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
+import net.mamoe.mirai.qqandroid.network.guid
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestMSFForceOffline
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RspMSFForceOffline
@@ -22,13 +22,14 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.SvcReqRegister
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.NetworkType
+import net.mamoe.mirai.qqandroid.utils.encodeToString
+import net.mamoe.mirai.qqandroid.utils.io.serialization.*
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.MiraiPlatformUtils
-import net.mamoe.mirai.utils.io.encodeToString
-import net.mamoe.mirai.utils.io.toReadPacket
 
-@Suppress("EnumEntryName")
+@Suppress("EnumEntryName", "unused")
 internal enum class RegPushReason {
     appRegister,
     createDefaultRegInfo,
@@ -189,7 +190,7 @@ internal class StatSvc {
         ) : Packet, RuntimeException("dropped by StatSvc.ReqMSFOffline")
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): BotOfflineEvent.Dropped {
-            val decodeUniPacket = decodeUniPacket(RequestMSFForceOffline.serializer())
+            val decodeUniPacket = readUniPacket(RequestMSFForceOffline.serializer())
             return BotOfflineEvent.Dropped(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
         }
 

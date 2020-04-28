@@ -1,11 +1,12 @@
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 
+@OptIn(MiraiInternalAPI::class)
 internal class CombinedMessageTest {
+
 
     @Test
     fun testAsSequence() {
@@ -31,84 +32,6 @@ internal class CombinedMessageTest {
             "Hello World",
             (message as CombinedMessage).asSequence().joinToString(separator = "")
         )
-    }
-
-    private val toAdd = "1".toMessage()
-
-    @OptIn(ExperimentalTime::class)
-    @Test
-    fun speedTest() = repeat(100) {
-        var count = 1L
-
-        repeat(Int.MAX_VALUE) {
-            count++
-        }
-
-        var combineMessage: Message = toAdd
-
-        println(
-            "init combine ok " + measureTime {
-                repeat(1000) {
-                    combineMessage += toAdd
-                }
-            }.inMilliseconds
-        )
-
-        val list = mutableListOf<Message>()
-        println(
-            "init messageChain ok " + measureTime {
-                repeat(1000) {
-                    list += toAdd
-                }
-            }.inMilliseconds
-        )
-
-        measureTime {
-            list.joinToString(separator = "")
-        }.let { time ->
-            println("list foreach: ${time.inMilliseconds} ms")
-        }
-
-        measureTime {
-            (combineMessage as CombinedMessage).iterator().joinToString(separator = "")
-        }.let { time ->
-            println("combined iterate: ${time.inMilliseconds} ms")
-        }
-
-        measureTime {
-            (combineMessage as CombinedMessage).asSequence().joinToString(separator = "")
-        }.let { time ->
-            println("combined sequence: ${time.inMilliseconds} ms")
-        }
-
-        repeat(5) {
-            println()
-        }
-    }
-
-    @OptIn(ExperimentalTime::class)
-    @Test
-    fun testFastIteration() {
-        println("start!")
-        println("start!")
-        println("start!")
-        println("start!")
-
-        var combineMessage: Message = toAdd
-
-        println(
-            "init combine ok " + measureTime {
-                repeat(1000) {
-                    combineMessage += toAdd
-                }
-            }.inMilliseconds
-        )
-
-        measureTime {
-            (combineMessage as CombinedMessage).iterator().joinToString(separator = "")
-        }.let { time ->
-            println("combine: ${time.inMilliseconds} ms")
-        }
     }
 }
 
@@ -140,7 +63,7 @@ fun <T, A : Appendable> Iterator<T>.joinTo(
             buffer.appendElement(element, transform)
         } else break
     }
-    if (limit >= 0 && count > limit) buffer.append(truncated)
+    if (limit in 0 until count) buffer.append(truncated)
     buffer.append(postfix)
     return buffer
 }

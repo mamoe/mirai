@@ -15,11 +15,10 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
-import kotlinx.io.core.buildPacket
 import kotlinx.io.core.copyTo
 import kotlinx.io.errors.IOException
 import kotlinx.io.streams.asOutput
-import net.mamoe.mirai.utils.io.getRandomString
+import net.mamoe.mirai.utils.internal.md5
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
@@ -34,48 +33,49 @@ import javax.imageio.ImageIO
 
 
 /**
- * 读取 [BufferedImage] 的属性, 然后构造 [ExternalImage]
+ * 将 [BufferedImage] 保存稳临时文件, 然后构造 [ExternalImage]
  */
+@JvmOverloads
 @Throws(IOException::class)
 fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
+    val file = createTempFile().apply { deleteOnExit() }
+
     val digest = MessageDigest.getInstance("md5")
     digest.reset()
 
-    val buffer = buildPacket {
+    file.outputStream().use { out ->
         ImageIO.write(this@toExternalImage, formatName, object : OutputStream() {
             override fun write(b: Int) {
-                b.toByte().let {
-                    this@buildPacket.writeByte(it)
-                    digest.update(it)
-                }
+                out.write(b)
+                digest.update(b.toByte())
+            }
+
+            override fun write(b: ByteArray) {
+                out.write(b)
+                digest.update(b)
+            }
+
+            override fun write(b: ByteArray, off: Int, len: Int) {
+                out.write(b, off, len)
+                digest.update(b, off, len)
             }
         })
     }
 
-    return ExternalImage(width, height, digest.digest(), formatName, buffer, getRandomString(16) + "." + formatName)
+    return ExternalImage(digest.digest(), file.inputStream())
 }
 
 suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
 
 /**
- * 读取文件头识别图片属性, 然后构造 [ExternalImage]
+ * 直接使用文件 [inputStream] 构造 [ExternalImage]
  */
 @OptIn(MiraiInternalAPI::class)
 @Throws(IOException::class)
 fun File.toExternalImage(): ExternalImage {
-    val input = ImageIO.createImageInputStream(this)
-    checkNotNull(input) { "Unable to read file(path=${this.path}), no ImageInputStream found" }
-    val image = ImageIO.getImageReaders(input).asSequence().firstOrNull()
-        ?: error("Unable to read file(path=${this.path}), no ImageReader found (file type not supported)")
-    image.input = input
-
     return ExternalImage(
-        width = image.getWidth(0),
-        height = image.getHeight(0),
-        md5 = MiraiPlatformUtils.md5(this.inputStream()), // dont change
-        imageFormat = image.formatName,
-        input = this.inputStream(),
-        filename = this.name
+        md5 = this.inputStream().md5(), // dont change
+        input = this.inputStream()
     )
 }
 

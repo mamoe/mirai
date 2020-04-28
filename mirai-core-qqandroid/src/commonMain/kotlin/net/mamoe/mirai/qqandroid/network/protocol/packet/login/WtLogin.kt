@@ -12,18 +12,18 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import io.ktor.util.InternalAPI
 import kotlinx.io.core.*
-import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.*
 import net.mamoe.mirai.qqandroid.network.protocol.LoginType
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
-import net.mamoe.mirai.qqandroid.utils.GuidSource
-import net.mamoe.mirai.qqandroid.utils.MacOrAndroidIdChangeFlag
+import net.mamoe.mirai.qqandroid.utils.*
+import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.qqandroid.utils.guidFlag
 import net.mamoe.mirai.qqandroid.utils.io.*
-import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
-import net.mamoe.mirai.utils.io.*
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.error
 
 internal class WtLogin {
     /**
@@ -300,7 +300,7 @@ internal class WtLogin {
 
             class SMSVerifyCodeNeeded(val t402: ByteArray, val t403: ByteArray) : LoginPacketResponse() {
                 override fun toString(): String {
-                    return "LoginPacketResponse.SMSVerifyCodeNeeded"
+                    return "LoginPacketResponse.SMSVerifyCodeNeeded(t402=${t402.toUHexString()}, t403=${t403.toUHexString()})"
                 }
             }
 
@@ -310,7 +310,6 @@ internal class WtLogin {
         }
 
         @InternalAPI
-        @OptIn(MiraiDebugAPI::class)
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
 
             discardExact(2) // subCommand
@@ -369,7 +368,6 @@ internal class WtLogin {
         }
 
         @InternalAPI
-        @OptIn(MiraiDebugAPI::class)
         private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
             /*
             java.lang.IllegalStateException: UNKNOWN CAPTCHA QUESTION:
@@ -405,7 +403,6 @@ internal class WtLogin {
             error("UNKNOWN CAPTCHA, tlvMap=" + tlvMap._miraiContentToString())
         }
 
-        @OptIn(MiraiDebugAPI::class)
         private fun onLoginSuccess(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Success {
             val client = bot.client
             //println("TLV KEYS: " + tlvMap.keys.joinToString { it.contentToString() })

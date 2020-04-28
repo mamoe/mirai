@@ -14,27 +14,42 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 @Suppress("unused", "NOTHING_TO_INLINE")
 class GroupMessage(
-    val senderName: String,
+    override val senderName: String,
     /**
      * 发送方权限.
      */
     val permission: MemberPermission,
     sender: Member,
-    override val message: MessageChain
-) : MessagePacket<Member, Group>(), Event {
+    override val message: MessageChain,
+    override val time: Int
+) : ContactMessage(), Event {
+    @PlannedRemoval("1.0.0")
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    constructor(senderName: String, permission: MemberPermission, sender: Member, message: MessageChain) :
+            this(senderName, permission, sender, message, currentTimeSeconds.toInt())
+
+    init {
+        val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
+    }
+
     override val sender: Member by sender.unsafeWeakRef()
     val group: Group get() = sender.group
     override val bot: Bot get() = sender.bot
 
     override val subject: Group get() = group
 
-    inline fun Long.member(): Member = group[this]
+    override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
+
+    inline fun At.asMember(): Member = group[this.target]
 
     override fun toString(): String =
         "GroupMessage(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"

@@ -1,39 +1,38 @@
+import upload.Bintray
+
 // 部分源码来自 kotlinx.coroutines
 // Source code from kotlinx.coroutines
 
-def pomConfig = {
-    licenses {
-        license {
-            name "AGPL-V3"
-            url "https://www.gnu.org/licenses/agpl-3.0.txt"
-            distribution "repo"
+task ensureBintrayAvailable() {
+    doLast {
+        if (!Bintray.isBintrayAvailable(project)) {
+            throw new IllegalStateException("bintray isn't available. ")
         }
-    }
-    developers {
-        developer {
-            id "mamoe"
-            name "Mamoe Technologies"
-            email "support@mamoe.net"
-        }
-    }
-    scm {
-        url "https://github.com/mamoe/mirai"
     }
 }
 
-bintray {
-    def keyProps = new Properties()
-    def keyFile = file("../keys.properties")
-    if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+if (!Bintray.isBintrayAvailable(project)) {
+    println("bintray isn't available. NO PUBLICATIONS WILL BE SET")
+    return
+}
 
-    user = keyProps.getProperty("bintrayUser")
-    key = keyProps.getProperty("bintrayKey")
+def miraiGitHubUrl = "https://github.com/mamoe/mirai"
+
+bintray {
+    user = Bintray.getUser(project)
+    key = Bintray.getKey(project)
 
     pkg {
         repo = 'mirai'
         name = "mirai-core"
         licenses = ['AGPL']
-        vcsUrl = 'https://github.com/mamoe/mirai'
+        vcsUrl = miraiGitHubUrl
+        websiteUrl = miraiGitHubUrl
+        githubRepo = miraiGitHubUrl
+        issueTrackerUrl = "$miraiGitHubUrl/issues"
+       /* version {
+            name = project.version
+        }*/
     }
 }
 
@@ -46,8 +45,26 @@ afterEvaluate {
             //root.appendNode('version', project.version)
             root.appendNode('name', project.name)
             root.appendNode('description', project.description)
-            root.appendNode('url', 'https://github.com/mamoe/mirai')
-            root.children().last() + pomConfig
+            root.appendNode('url', miraiGitHubUrl)
+            root.children().last() + {
+                licenses {
+                    license {
+                        name "AGPL-V3"
+                        url "https://www.gnu.org/licenses/agpl-3.0.txt"
+                        distribution "repo"
+                    }
+                }
+                developers {
+                    developer {
+                        id "mamoe"
+                        name "Mamoe Technologies"
+                        email "support@mamoe.net"
+                    }
+                }
+                scm {
+                    url miraiGitHubUrl
+                }
+            }
         }
     }
 }
@@ -67,14 +84,14 @@ bintrayUpload.dependsOn {
     list
 }
 
-try{
+try {
 
 // empty xxx-javadoc.jar
     task javadocJar(type: Jar) {
         archiveClassifier = 'javadoc'
     }
 
-} catch (Exception e){
+} catch (Exception ignored) {
 
 }
 publishing {
@@ -88,13 +105,13 @@ publishing {
         def type = it.name
         switch (type) {
             case 'kotlinMultiplatform':
-                it.artifactId = "$project.name"
+                it.artifactId = "$project.name-native"
                 break
             case 'metadata':
                 it.artifactId = "$project.name-common"
                 break
             case 'jvm':
-                it.artifactId = "$project.name-jvm"
+                it.artifactId = "$project.name"
                 break
             case 'js':
             case 'native':
@@ -108,3 +125,5 @@ publishing {
         }
     }
 }
+
+// bintrayUpload.dependsOn publishToMavenLocal

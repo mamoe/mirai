@@ -9,69 +9,114 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
+@file:Suppress("NOTHING_TO_INLINE", "unused")
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.QQ
-import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import kotlinx.coroutines.Job
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmSynthetic
 
 
 /**
- * 从服务器接收的或客户端构造用来发送的群内的或好友的引用回复.
+ * 引用回复.
  *
- * 可以引用一条群消息并发送给一个好友, 或是引用好友消息发送给群.
- * 可以引用自己发出的消息. 详见 [MessageReceipt.quote]
+ * 支持引用任何一条消息发送给任何人.
  *
- * 总是使用 [quote] 来构造这个实例.
+ * #### [source] 的类型:
+ * - 在发送引用回复时, [source] 类型为 [OnlineMessageSource] 或 [OfflineMessageSource]
+ * - 在接收引用回复时, [source] 类型一定为 [OfflineMessageSource]
+ *
+ * #### 原消息内容
+ * 引用回复的原消息内容完全由 [source] 中 [MessageSource.originalMessage] 控制, 客户端不会自行寻找原消息.
+ *
+ * #### 客户端内跳转
+ * 客户端在跳转原消息时, 会通过 [MessageSource.id] 等 metadata
+ *
+ * @see MessageSource 获取有关消息源的更多信息
  */
-open class QuoteReply
-@OptIn(ExperimentalMessageSource::class)
-@MiraiInternalAPI constructor(val source: MessageSource) : Message, MessageMetadata {
-    companion object Key : Message.Key<QuoteReply>
-
-    final override fun toString(): String = "[mirai:quote]"
-}
-
-/**
- * 用于发送的引用回复.
- * 总是使用 [quote] 来构造实例.
- */
-@OptIn(MiraiInternalAPI::class, ExperimentalMessageSource::class)
-sealed class QuoteReplyToSend
-@MiraiInternalAPI constructor(source: MessageSource) : QuoteReply(source) {
-    class ToGroup(source: MessageSource, val sender: QQ) : QuoteReplyToSend(source) {
-        fun createAt(): At = At(sender as Member)
+@OptIn(MiraiExperimentalAPI::class)
+@SinceMirai("0.33.0")
+class QuoteReply(val source: MessageSource) : Message, MessageMetadata, ConstrainSingle<QuoteReply> {
+    companion object Key : Message.Key<QuoteReply> {
+        override val typeName: String
+            get() = "QuoteReply"
     }
 
-    class ToFriend(source: MessageSource) : QuoteReplyToSend(source)
+    override val key: Message.Key<QuoteReply> get() = Key
+
+    override fun toString(): String = "[mirai:quote:${source.id},${source.internalId}]"
+    override fun contentToString(): String = ""
+    override fun equals(other: Any?): Boolean = other is QuoteReply && other.source == this.source
+    override fun hashCode(): Int = source.hashCode()
 }
 
 /**
- * 引用这条消息.
- * @see sender 消息发送人.
+ * @see MessageSource.id
  */
-@ExperimentalMessageSource
-@OptIn(MiraiInternalAPI::class)
-fun MessageChain.quote(sender: QQ?): QuoteReplyToSend {
-    this.firstOrNull<MessageSource>()?.let {
-        return it.quote(sender)
-    }
-    error("cannot find MessageSource")
-}
+@get:JvmSynthetic
+inline val QuoteReply.id: Int
+    get() = source.id
 
 /**
- * 引用这条消息.
- * @see from 消息来源. 若是好友发送
+ * @see MessageSource.internalId
  */
-@ExperimentalMessageSource
-@OptIn(MiraiInternalAPI::class)
-fun MessageSource.quote(from: QQ?): QuoteReplyToSend {
-    return if (this.groupId != 0L) {
-        check(from is Member) { "sender must be Member to quote a GroupMessage" }
-        QuoteReplyToSend.ToGroup(this, from)
-    } else QuoteReplyToSend.ToFriend(this)
-}
+@SinceMirai("0.39.2")
+@get:JvmSynthetic
+inline val QuoteReply.internalId: Int
+    get() = source.internalId
+
+/**
+ * @see MessageSource.fromId
+ */
+@get:JvmSynthetic
+inline val QuoteReply.fromId: Long
+    get() = source.fromId
+
+/**
+ * @see MessageSource.targetId
+ */
+@get:JvmSynthetic
+inline val QuoteReply.targetId: Long
+    get() = source.targetId
+
+/**
+ * @see MessageSource.originalMessage
+ */
+@get:JvmSynthetic
+inline val QuoteReply.originalMessage: MessageChain
+    get() = source.originalMessage
+
+/**
+ * @see MessageSource.time
+ */
+@get:JvmSynthetic
+inline val QuoteReply.time: Int
+    get() = source.time
+
+/**
+ * @see MessageSource.bot
+ */
+@get:JvmSynthetic
+inline val QuoteReply.bot: Bot
+    get() = source.bot
+
+
+@JvmSynthetic
+suspend inline fun QuoteReply.recall() = this.source.recall()
+
+/**
+ * 在一段时间后撤回这条消息.
+ */
+@JvmOverloads
+inline fun QuoteReply.recallIn(
+    millis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Job = this.source.recallIn(millis, coroutineContext)

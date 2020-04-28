@@ -8,7 +8,7 @@ plugins {
     id("com.jfrog.bintray") version Versions.Publishing.bintray
 }
 
-description = "QQ protocol library"
+description = "Mirai Protocol implementation for QQ Android"
 
 val isAndroidSDKAvailable: Boolean by project
 
@@ -46,7 +46,7 @@ kotlin {
             }
         }
 
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 api(kotlin("stdlib", Versions.Kotlin.stdlib))
                 api(kotlinx("serialization-runtime-common", Versions.Kotlin.serialization))
@@ -54,11 +54,10 @@ kotlin {
                 api("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
                 api(kotlinx("io", Versions.Kotlin.io))
                 api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
-                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
             }
         }
 
-        commonTest {
+        val commonTest by getting {
             dependencies {
                 implementation(kotlin("test-annotations-common"))
                 implementation(kotlin("test-common"))
@@ -94,6 +93,7 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
+                dependsOn(commonTest)
                 implementation(kotlin("test", Versions.Kotlin.stdlib))
                 implementation(kotlin("test-junit", Versions.Kotlin.stdlib))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")

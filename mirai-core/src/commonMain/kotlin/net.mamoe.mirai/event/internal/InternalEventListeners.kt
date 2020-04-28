@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.event.internal
 
@@ -16,16 +17,17 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.EventDisabled
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.LockFreeLinkedList
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.isRemoved
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 
-val EventLogger: MiraiLoggerWithSwitch = DefaultLogger("Event").withSwitch(false)
-
-@MiraiInternalAPI
-fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
+@PublishedApi
+internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
     with(this.listeners()) {
         addLast(listener)
         listener.invokeOnCompletion {
@@ -67,7 +69,6 @@ internal class Handler<in E : Event>
     }
 
     @Suppress("unused")
-    @OptIn(MiraiDebugAPI::class)
     override suspend fun onEvent(event: E): ListeningStatus {
         if (isCompleted || isCancelled) return ListeningStatus.STOPPED
         if (!isActive) return ListeningStatus.LISTENING
@@ -122,6 +123,7 @@ internal object EventListenerManager {
     // 不要用 atomicfu. 在 publish 后会出现 VerifyError
     private val lock: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
+    @OptIn(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
     internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
         registries.forEach {
@@ -143,8 +145,6 @@ internal object EventListenerManager {
 @Suppress("UNCHECKED_CAST")
 internal suspend inline fun Event.broadcastInternal() = coroutineScope {
     if (EventDisabled) return@coroutineScope
-
-    EventLogger.info { "Event broadcast: $this" }
 
     val listeners = this@broadcastInternal::class.listeners()
     callAndRemoveIfRequired(this@broadcastInternal, listeners)

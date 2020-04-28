@@ -22,7 +22,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * 一般不需要主动构造 [PlainText], [Message] 可直接与 [String] 相加. Java 用户请使用 [MessageChain.plus]
  */
-class PlainText(val stringValue: String) :
+data class PlainText(val stringValue: String) :
     MessageContent,
     Comparable<String> by stringValue,
     CharSequence by stringValue {
@@ -30,10 +30,13 @@ class PlainText(val stringValue: String) :
     @Suppress("unused")
     constructor(charSequence: CharSequence) : this(charSequence.toString())
 
-    override operator fun contains(sub: String): Boolean = sub in stringValue
     override fun toString(): String = stringValue
+    override fun contentToString(): String = stringValue
 
-    companion object Key : Message.Key<PlainText>
+    companion object Key : Message.Key<PlainText> {
+        override val typeName: String
+            get() = "PlainText"
+    }
 }
 
 /**

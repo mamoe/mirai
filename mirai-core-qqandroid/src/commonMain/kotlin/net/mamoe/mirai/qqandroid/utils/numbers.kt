@@ -38,10 +38,10 @@ internal fun Long.coerceAtLeastOrFail(min: Long): Long {
  */
 @PublishedApi
 internal fun Int.coerceAtMostOrFail(max: Int): Int =
-    if (this >= max) error("value is greater than its expected maximum value $max")
+    if (this >= max) error("value $this is greater than its expected maximum value $max")
     else this
 
 @PublishedApi
 internal fun Long.coerceAtMostOrFail(max: Long): Long =
-    if (this >= max) error("value is greater than its expected maximum value $max")
+    if (this >= max) error("value $this is greater than its expected maximum value $max")
     else this

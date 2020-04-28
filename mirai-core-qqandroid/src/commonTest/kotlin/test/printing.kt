@@ -16,12 +16,12 @@ import kotlinx.io.core.Input
 import kotlinx.io.core.readAvailable
 import kotlinx.io.core.use
 import kotlinx.io.pool.useInstance
+import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import net.mamoe.mirai.qqandroid.utils.toReadPacket
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
-import net.mamoe.mirai.utils.io.ByteArrayPool
-import net.mamoe.mirai.utils.io.toReadPacket
-import net.mamoe.mirai.utils.io.toUHexString
 import net.mamoe.mirai.utils.withSwitch
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -30,13 +30,17 @@ import kotlin.contracts.contract
 
 val DebugLogger: MiraiLoggerWithSwitch = DefaultLogger("Packet Debug").withSwitch(true)
 
-inline fun ByteArray.debugPrintThis(name: String): ByteArray {
+internal inline fun ByteArray.debugPrintThis(name: String): ByteArray {
     DebugLogger.debug(name + "=" + this.toUHexString())
     return this
 }
 
 @OptIn(ExperimentalContracts::class, MiraiInternalAPI::class)
-inline fun <R> Input.debugIfFail(name: String = "", onFail: (ByteArray) -> ByteReadPacket = { it.toReadPacket() }, block: ByteReadPacket.() -> R): R {
+internal inline fun <R> Input.debugIfFail(
+    name: String = "",
+    onFail: (ByteArray) -> ByteReadPacket = { it.toReadPacket() },
+    block: ByteReadPacket.() -> R
+): R {
 
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)

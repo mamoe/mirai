@@ -7,31 +7,26 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
 
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.JvmName
 
 
 /**
- * 只读联系人列表, lock-free 实现
+ * 只读联系人列表, 无锁链表实现
  *
  * @see ContactList.asSequence
  */
 @OptIn(MiraiInternalAPI::class)
 @Suppress("unused")
-class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedList<C>) {
-    /**
-     * ID 列表的字符串表示.
-     * 如:
-     * ```
-     * [123456, 321654, 123654]
-     * ```
-     */
-    val idContentString: String get() = "[" + buildString { delegate.forEach { append(it.id).append(", ") } }.dropLast(2) + "]"
+class ContactList<C : Contact>(@MiraiInternalAPI("Implementation may change in future release") val delegate: LockFreeLinkedList<C>) :
+    Iterable<C> {
+    operator fun get(id: Long): C =
+        delegate.asSequence().firstOrNull { it.id == id } ?: throw NoSuchElementException("Contact id $id")
 
-    operator fun get(id: Long): C = delegate[id]
     fun getOrNull(id: Long): C? = delegate.getOrNull(id)
 
     val size: Int get() = delegate.size
@@ -39,64 +34,106 @@ class ContactList<C : Contact>(@MiraiInternalAPI val delegate: LockFreeLinkedLis
     operator fun contains(id: Long): Boolean = delegate.getOrNull(id) != null
     fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
     fun isEmpty(): Boolean = delegate.isEmpty()
+
+    override fun toString(): String =
+        delegate.asSequence().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
+
+    override fun iterator(): Iterator<C> {
+        return this.delegate.asSequence().iterator()
+    }
+
+    @PlannedRemoval("1.0.0")
+    @Suppress("PropertyName")
+    @get:JvmName("getIdContentString")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    val _idContentString: String
+        get() = this.idContentString
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     inline fun forEach(block: (C) -> Unit) = delegate.forEach(block)
+
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     fun first(): C {
         forEach { return it }
         throw NoSuchElementException()
     }
 
+    @PlannedRemoval("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     fun firstOrNull(): C? {
         forEach { return it }
         return null
     }
-
-    override fun toString(): String = delegate.asSequence().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
 }
 
+/**
+ * ID 列表的字符串表示.
+ * 如:
+ * ```
+ * [123456, 321654, 123654]
+ * ```
+ */
+val ContactList<*>.idContentString: String
+    get() = "[" + @OptIn(MiraiInternalAPI::class) buildString { delegate.forEach { append(it.id).append(", ") } }.dropLast(
+        2
+    ) + "]"
+
+
+@MiraiInternalAPI
 operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {
     forEach { if (it.id == id) return it }
     throw NoSuchElementException("No such contact: $id")
 }
 
+@MiraiInternalAPI
 fun <C : Contact> LockFreeLinkedList<C>.getOrNull(id: Long): C? {
     forEach { if (it.id == id) return it }
     return null
 }
 
-inline fun <C : Contact> LockFreeLinkedList<C>.filteringGetOrNull(filter: (C) -> Boolean): C? {
+@OptIn(MiraiInternalAPI::class)
+@PlannedRemoval("1.0.0")
+@Deprecated(
+    "use firstOrNull from stdlib",
+    replaceWith = ReplaceWith("this.asSequence().firstOrNull(filter)"),
+    level = DeprecationLevel.ERROR
+)
+inline fun <C : Contact> LockFreeLinkedList<C>.firstOrNull(filter: (C) -> Boolean): C? {
     forEach { if (filter(it)) return it }
     return null
 }
 
+@OptIn(MiraiInternalAPI::class)
+@PlannedRemoval("1.0.0")
+@Deprecated(
+    "use firstOrNull from stdlib",
+    replaceWith = ReplaceWith("firstOrNull(filter)"),
+    level = DeprecationLevel.ERROR
+)
+inline fun <C : Contact> LockFreeLinkedList<C>.filteringGetOrNull(filter: (C) -> Boolean): C? =
+    this.asSequence().firstOrNull(filter)
 
-/**
- * Collect all the elements into a [MutableList] then cast it as a [List]
- */
+@PlannedRemoval("1.0.0")
+@Deprecated("use Iterator.toList from stdlib", level = DeprecationLevel.HIDDEN)
 fun <E : Contact> ContactList<E>.toList(): List<E> = toMutableList()
 
-/**
- * Collect all the elements into a [MutableList].
- */
+@PlannedRemoval("1.0.0")
+@Deprecated("use Iterator.toMutableList from stdlib", level = DeprecationLevel.HIDDEN)
 @OptIn(MiraiInternalAPI::class)
 fun <E : Contact> ContactList<E>.toMutableList(): MutableList<E> = this.delegate.toMutableList()
 
-/**
- * Collect all the elements into a [MutableSet] then cast it as a [Set]
- */
+@PlannedRemoval("1.0.0")
+@Deprecated("use Iterator.toSet from stdlib", level = DeprecationLevel.HIDDEN)
 fun <E : Contact> ContactList<E>.toSet(): Set<E> = toMutableSet()
 
-/**
- * Collect all the elements into a [MutableSet].
- */
+@PlannedRemoval("1.0.0")
+@Deprecated("use Iterator.toMutableSet from stdlib", level = DeprecationLevel.HIDDEN)
 @OptIn(MiraiInternalAPI::class)
 fun <E : Contact> ContactList<E>.toMutableSet(): MutableSet<E> = this.delegate.toMutableSet()
 
-/**
- * Builds a [Sequence] containing all the elements in [this] in the same order.
- *
- * Note that the sequence is dynamic, that is, elements are yielded atomically only when it is required
- */
+@PlannedRemoval("1.0.0")
+@Deprecated("use Iterator.asSequence from stdlib", level = DeprecationLevel.HIDDEN)
 @OptIn(MiraiInternalAPI::class)
-fun <E : Contact> ContactList<E>.asSequence(): Sequence<E> {
-    return this.delegate.asSequence()
-}
+fun <E : Contact> ContactList<E>.asSequence(): Sequence<E> = this.delegate.asSequence()

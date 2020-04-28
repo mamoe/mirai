@@ -9,15 +9,15 @@
 
 object Versions {
     object Mirai {
-        const val version = "0.31.4"
+        const val version = "0.39.4"
     }
 
     object Kotlin {
-        const val stdlib = "1.4-M1"
-        const val coroutines = "1.3.5-1.4-M1"
-        const val atomicFU = "0.14.2-1.4-M1"
-        const val serialization = "0.20.0-1.4-M1"
-        const val ktor = "1.3.2-1.4-M1"
+        const val stdlib = "1.3.72"
+        const val coroutines = "1.3.5" // isn't used
+        const val atomicFU = "0.14.2"
+        const val serialization = "0.20.0"
+        const val ktor = "1.3.2"
 
         const val io = "0.1.16"
         const val coroutinesIo = "0.1.16"
@@ -29,8 +29,7 @@ object Versions {
     }
 
     object Publishing {
-        const val bintray = "1.8.4-jetbrains-3"
-
+        const val bintray = "1.8.5"
     }
 
 }
