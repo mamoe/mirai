@@ -2,6 +2,15 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.39.5`  2020/4/28
+- 优化登录初始化, 提高稳定性 (#282)
+- 支持 VIP 表情的解析: `VipFace` (不支持发送)
+- 支持更多的戳一戳消息 (`PokeMessage`) 类型
+- 修复 Android 平台的正则语法错误问题
+- 修复 `BotInvitedJoinRequestEvent.ignore`
+- 提升 `LockFreeLinkedList` 遍历性能, 即 `ContactList` 遍历性能
+- 将 `LockFreeLinkedList` 标注 `@MiraiInternalAPI` 并计划于 1.0.0 修改为 `internal`
+
 ## `0.39.4`  2020/4/27
 - 支持匿名消息解析 (#277)
 - 修复部分情况下撤回失败的问题
