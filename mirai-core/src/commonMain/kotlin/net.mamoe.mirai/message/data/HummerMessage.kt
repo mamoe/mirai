@@ -164,7 +164,7 @@ data class PokeMessage internal constructor(
  *
  * @see Types 使用伴生对象中的常量
  */
-@SinceMirai("0.40.0")
+@SinceMirai("0.39.5")
 @OptIn(MiraiInternalAPI::class)
 data class VipFace internal constructor(
     /**
