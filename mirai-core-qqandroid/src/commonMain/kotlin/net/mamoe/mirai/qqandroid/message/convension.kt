@@ -149,6 +149,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     }
                 }
             }
+            is VipFace -> {
+                transformOneMessage(PlainText(it.contentToString()))
+            }
             is ForwardMessage,
             is MessageSource, // mirai metadata only
             is RichMessage // already transformed above
