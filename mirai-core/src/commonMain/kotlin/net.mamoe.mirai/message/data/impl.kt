@@ -198,7 +198,7 @@ internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Bool
 
 @OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
-@Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR")
 internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M? = when (key) {
     At -> firstIsInstanceOrNull<At>()
     AtAll -> firstIsInstanceOrNull<AtAll>()
@@ -221,6 +221,7 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     OnlineMessageSource.Incoming.FromFriend -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromFriend>()
     OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
     XmlMessage -> firstIsInstanceOrNull<XmlMessage>()
+    LongMessage -> firstIsInstanceOrNull()
     JsonMessage -> firstIsInstanceOrNull<JsonMessage>()
     RichMessage -> firstIsInstanceOrNull<RichMessage>()
     LightApp -> firstIsInstanceOrNull<LightApp>()

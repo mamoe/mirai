@@ -338,7 +338,8 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                     /**
                      * [JsonMessage]
                      */
-                    1 -> list.add(JsonMessage(content))
+                    1 -> @Suppress("DEPRECATION_ERROR")
+                    list.add(JsonMessage(content))
                     /**
                      * [LongMessage], [ForwardMessage]
                      */
@@ -355,6 +356,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                     // 104 新群员入群的消息
                     else -> {
                         if (element.richMsg.serviceId == 60 || content.startsWith("<?")) {
+                            @Suppress("DEPRECATION_ERROR")
                             list.add(XmlMessage(element.richMsg.serviceId, content))
                         } else list.add(ServiceMessage(element.richMsg.serviceId, content))
                     }
