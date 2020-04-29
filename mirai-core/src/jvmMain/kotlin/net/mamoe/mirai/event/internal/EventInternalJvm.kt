@@ -29,8 +29,8 @@ internal fun <E : Event> Class<E>._subscribeEventForJaptOnly(
 ): Listener<E> {
     return this.kotlin.subscribeInternal(
         scope.Handler(
-            EmptyCoroutineContext,
-            Listener.ConcurrencyKind.CONCURRENT
+            scope.coroutineContext,
+            Listener.ConcurrencyKind.LOCKED
         ) { withContext(Dispatchers.IO) { onEvent.apply(it) } })
 }
 
@@ -39,6 +39,6 @@ internal fun <E : Event> Class<E>._subscribeEventForJaptOnly(scope: CoroutineSco
     return this.kotlin.subscribeInternal(
         scope.Handler(
             EmptyCoroutineContext,
-            Listener.ConcurrencyKind.CONCURRENT
+            Listener.ConcurrencyKind.LOCKED
         ) { withContext(Dispatchers.IO) { onEvent.accept(it) }; ListeningStatus.LISTENING; })
 }
