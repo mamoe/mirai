@@ -86,11 +86,6 @@ interface RichMessage : MessageContent {
     }
 
     val content: String
-
-    override val length: Int get() = content.length
-    override fun get(index: Int): Char = content[index]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = content.subSequence(startIndex, endIndex)
-    override fun compareTo(other: String): Int = content.compareTo(other)
 }
 
 /**

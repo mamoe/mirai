@@ -140,13 +140,7 @@ data class PokeMessage internal constructor(
     private val stringValue = "[mirai:poke:$type,$id]"
 
     override fun toString(): String = stringValue
-    override val length: Int get() = stringValue.length
-    override fun get(index: Int): Char = stringValue[index]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        stringValue.subSequence(startIndex, endIndex)
-
     override fun contentToString(): String = "[戳一戳]"
-    override fun compareTo(other: String): Int = stringValue.compareTo(other)
     //businessType=0x00000001(1)
     //pbElem=08 01 18 00 20 FF FF FF FF 0F 2A 00 32 00 38 00 50 00
     //serviceType=0x00000002(2)
@@ -231,13 +225,7 @@ data class VipFace internal constructor(
     private val stringValue = "[mirai:vipface:$kind,$count]"
 
     override fun toString(): String = stringValue
-    override val length: Int get() = stringValue.length
-    override fun get(index: Int): Char = stringValue[index]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        stringValue.subSequence(startIndex, endIndex)
-
     override fun contentToString(): String = "[${kind.name}]x$count"
-    override fun compareTo(other: String): Int = stringValue.compareTo(other)
 }
 
 
@@ -299,11 +287,6 @@ sealed class FlashImage : MessageContent, HummerMessage() {
         }
 
     override fun toString(): String = stringValue!!
-    override val length: Int get() = stringValue!!.length
-    override fun get(index: Int) = stringValue!![index]
-    override fun subSequence(startIndex: Int, endIndex: Int) = stringValue!!.subSequence(startIndex, endIndex)
-    override fun compareTo(other: String) = other.compareTo(stringValue!!)
-
     override fun contentToString(): String = "[闪照]"
 }
 

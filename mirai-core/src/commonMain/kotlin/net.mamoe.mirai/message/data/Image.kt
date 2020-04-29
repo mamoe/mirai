@@ -110,6 +110,7 @@ val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
  *
  * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai`
  */
+@Suppress("RegExpRedundantEscape") // This is required on Android
 @SinceMirai("0.39.2")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
 val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}\}\.mirai""")
@@ -117,6 +118,7 @@ val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}\}\.mirai""")
 /**
  * 在 `0.39.0` 前的图片的正则表示
  */
+@Suppress("RegExpRedundantEscape") // This is required on Android
 @Deprecated("Only for temporal use",
     replaceWith = ReplaceWith("GROUP_IMAGE_ID_REGEX", "net.mamoe.mirai.message.data.GROUP_IMAGE_ID_REGEX"))
 @SinceMirai("0.39.2")
@@ -323,12 +325,6 @@ sealed class AbstractImage : Image {
             field = "[mirai:image:$imageId]"
             field
         }
-    override val length: Int get() = _stringValue!!.length
-    override fun get(index: Int): Char = _stringValue!![index]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        _stringValue!!.subSequence(startIndex, endIndex)
-
-    override fun compareTo(other: String): Int = _stringValue!!.compareTo(other)
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = "[图片]"
 }
