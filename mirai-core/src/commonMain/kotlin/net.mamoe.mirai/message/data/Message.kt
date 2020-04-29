@@ -279,7 +279,7 @@ interface Message { // must be interface. Don't consider any changes.
 @SinceMirai("0.39.3")
 fun Message.isContentEmpty(): Boolean = when (this) {
     is MessageMetadata -> true
-    is PlainText -> this.stringValue.isEmpty()
+    is PlainText -> this.content.isEmpty()
     is MessageChain -> this.all { it.isContentEmpty() }
     else -> false
 }
@@ -339,6 +339,25 @@ interface SingleMessage : Message {
         DeprecationLevel.ERROR
     )
     /* final */ override infix fun eq(other: String): Boolean = this.contentToString() == other
+
+
+    @PlannedRemoval("1.1.0")
+    @JvmSynthetic
+    @SinceMirai("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun length(): Int = this.toString().length
+
+    @PlannedRemoval("1.1.0")
+    @JvmSynthetic
+    @SinceMirai("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun charAt(index: Int): Char = this.toString()[index]
+
+    @PlannedRemoval("1.1.0")
+    @JvmSynthetic
+    @SinceMirai("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun subSequence(start: Int, end: Int): CharSequence = this.toString().subSequence(start, end)
 }
 
 /**

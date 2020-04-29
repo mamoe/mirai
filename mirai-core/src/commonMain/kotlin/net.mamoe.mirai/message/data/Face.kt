@@ -21,8 +21,7 @@ import kotlin.jvm.JvmName
 data class Face
 @Suppress("DataClassPrivateConstructor")
 private constructor(val id: Int, private val stringValue: String) : // used in delegation
-    MessageContent,
-    CharSequence by stringValue, Comparable<String> by stringValue {
+    MessageContent {
     constructor(id: Int) : this(id, "[mirai:face:$id]")
 
     override fun toString(): String = stringValue

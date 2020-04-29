@@ -98,7 +98,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
         }
 
         when (it) {
-            is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
+            is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.content)))
             is CustomMessage -> {
                 @Suppress("UNCHECKED_CAST")
                 elements.add(
@@ -250,7 +250,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
             }
             if (last is VipFace && element is PlainText) {
                 val l = last as VipFace
-                if (element.length == 4 + (l.count / 10) + l.kind.name.length) {
+                if (element.content.length == 4 + (l.count / 10) + l.kind.name.length) {
                     last = element
                     return@forEach
                 }
