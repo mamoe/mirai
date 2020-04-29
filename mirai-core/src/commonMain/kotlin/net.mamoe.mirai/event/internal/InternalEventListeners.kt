@@ -56,11 +56,12 @@ internal fun <E : Event> CoroutineScope.Handler(
 internal class Handler<in E : Event>
 @PublishedApi internal constructor(
     parentJob: Job?,
-    private val subscriberContext: CoroutineContext,
+    subscriberContext: CoroutineContext,
     @JvmField val handler: suspend (E) -> ListeningStatus,
     override val concurrencyKind: Listener.ConcurrencyKind
-) :
-    Listener<E>, CompletableJob by Job(parentJob) {
+) : Listener<E>, CompletableJob by SupervisorJob(parentJob) { // avoid being cancelled on handling event
+
+    private val subscriberContext: CoroutineContext = subscriberContext + this // override Job.
 
     @MiraiInternalAPI
     val lock: Mutex? = when (concurrencyKind) {
