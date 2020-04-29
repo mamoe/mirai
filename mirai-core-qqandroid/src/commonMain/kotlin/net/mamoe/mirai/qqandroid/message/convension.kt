@@ -236,6 +236,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
     var last: SingleMessage? = null
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             if (last is LongMessage && element is PlainText) {
                 if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
                     last = element
@@ -347,16 +348,18 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                         val resId = this.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()?.longTextResid
 
                         if (resId != null) {
-                            list.add(LongMessage(content, resId))
+                            // TODO: 2020/4/29 解析长消息
+                            list.add(ServiceMessage(35, content)) // resId
                         } else {
-                            list.add(ForwardMessageInternal(content))
+                            // TODO: 2020/4/29 解析合并转发
+                            list.add(ServiceMessage(35, content))
                         }
                     }
 
                     // 104 新群员入群的消息
                     else -> {
                         if (element.richMsg.serviceId == 60 || content.startsWith("<?")) {
-                            @Suppress("DEPRECATION_ERROR")
+                            @Suppress("DEPRECATION_ERROR") // bin comp
                             list.add(XmlMessage(element.richMsg.serviceId, content))
                         } else list.add(ServiceMessage(element.richMsg.serviceId, content))
                     }

@@ -13,7 +13,6 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
@@ -105,10 +104,8 @@ data class LightApp(override val content: String) : RichMessage {
 /**
  * 服务消息, 如 [XmlMessage].
  */
-@MiraiExperimentalAPI
 @SinceMirai("0.37.3")
-open class ServiceMessage(@MiraiExperimentalAPI val serviceId: Int, final override val content: String) : RichMessage {
-    @Suppress("DEPRECATION")
+open class ServiceMessage(val serviceId: Int, final override val content: String) : RichMessage {
     companion object Key : Message.Key<ServiceMessage> {
         override val typeName: String get() = "ServiceMessage"
     }
@@ -133,6 +130,8 @@ open class ServiceMessage(@MiraiExperimentalAPI val serviceId: Int, final overri
 /**
  * Json 消息.
  *
+ * 由于 [serviceId] 不准确, 请使用 [ServiceMessage] 并手动指定 `serviceId`
+ *
  * @see LightApp 一些 json 消息实际上是 [LightApp]
  */
 @PlannedRemoval("1.0.0")
@@ -156,6 +155,8 @@ constructor(content: String) : ServiceMessage(1, content) {
 /**
  * XML 消息, 如分享, 卡片等.
  *
+ * 由于 [serviceId] 不准确, 请使用 [ServiceMessage] 并手动指定 `serviceId`
+ *
  * @param serviceId 目前未知, 一般为 60
  *
  * @see buildXmlMessage 使用 DSL 构造一个 XML 消息
@@ -178,27 +179,6 @@ constructor(serviceId: Int = 60, content: String) : ServiceMessage(serviceId, co
         override val typeName: String get() = "XmlMessage"
     }
 }
-
-/**
- * 长消息.
- *
- * 不需要手动区分长消息和普通消息, 在 [Contact.sendMessage] 时会自动判断.
- */
-@SinceMirai("0.31.0")
-@MiraiExperimentalAPI
-class LongMessage internal constructor(content: String, val resId: String) : ServiceMessage(35, content) {
-    companion object Key : Message.Key<LongMessage> {
-        override val typeName: String get() = "LongMessage"
-    }
-}
-
-/**
- * 合并转发消息
- * @suppress 此 API 非常不稳定
- */
-@OptIn(MiraiExperimentalAPI::class)
-@SinceMirai("0.39.0")
-internal class ForwardMessageInternal(content: String) : ServiceMessage(35, content)
 
 /*
 commonElem=CommonElem#750141174 {
@@ -293,3 +273,16 @@ class XmlMessageBuilder(
 @Deprecated("specify serviceId explicitly", ReplaceWith("buildXmlMessage(60, block)"))
 inline fun buildXmlMessage(block: @XmlMessageDsl XmlMessageBuilder.() -> Unit): ServiceMessage =
     buildXmlMessage(60, block)
+
+
+@SinceMirai("0.31.0")
+@MiraiExperimentalAPI
+internal class LongMessage internal constructor(content: String, val resId: String) : ServiceMessage(35, content) {
+    companion object Key : Message.Key<LongMessage> {
+        override val typeName: String get() = "LongMessage"
+    }
+}
+
+@OptIn(MiraiExperimentalAPI::class)
+@SinceMirai("0.39.0")
+internal class ForwardMessageInternal(content: String) : ServiceMessage(35, content)
