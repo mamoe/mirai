@@ -62,6 +62,7 @@ fun BufferedImage.toExternalImage(formatName: String = "png"): ExternalImage {
         })
     }
 
+    @Suppress("DEPRECATION_ERROR")
     return ExternalImage(digest.digest(), file.inputStream())
 }
 
@@ -73,6 +74,7 @@ suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withC
 @OptIn(MiraiInternalAPI::class)
 @Throws(IOException::class)
 fun File.toExternalImage(): ExternalImage {
+    @Suppress("DEPRECATION_ERROR")
     return ExternalImage(
         md5 = this.inputStream().md5(), // dont change
         input = this.inputStream()

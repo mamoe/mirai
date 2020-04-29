@@ -39,23 +39,27 @@ class ExternalImage private constructor(
     val input: Any, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
     val inputSize: Long // dont be greater than Int.MAX
 ) {
+    @Deprecated("changing soon in 1.0.0", level = DeprecationLevel.ERROR)
     constructor(
         md5: ByteArray,
         input: ByteReadChannel,
         inputSize: Long // dont be greater than Int.MAX
     ) : this(md5, input as Any, inputSize)
 
+    @Deprecated("changing soon in 1.0.0", level = DeprecationLevel.ERROR)
     constructor(
         md5: ByteArray,
         input: Input,
         inputSize: Long // dont be greater than Int.MAX
     ) : this(md5, input as Any, inputSize)
 
+    @Deprecated("changing soon in 1.0.0", level = DeprecationLevel.ERROR)
     constructor(
         md5: ByteArray,
         input: ByteReadPacket
     ) : this(md5, input as Any, input.remaining)
 
+    @Deprecated("changing soon in 1.0.0", level = DeprecationLevel.ERROR)
     @OptIn(InternalSerializationApi::class)
     constructor(
         md5: ByteArray,
