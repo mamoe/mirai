@@ -37,7 +37,7 @@ import javax.imageio.ImageIO
  */
 @JvmOverloads
 @Throws(IOException::class)
-fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
+fun BufferedImage.toExternalImage(formatName: String = "png"): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
 
     val digest = MessageDigest.getInstance("md5")
