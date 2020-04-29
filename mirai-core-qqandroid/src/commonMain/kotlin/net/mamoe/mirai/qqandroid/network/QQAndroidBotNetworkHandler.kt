@@ -46,7 +46,6 @@ import net.mamoe.mirai.qqandroid.utils.retryCatching
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.Volatile
-import kotlin.random.Random
 import kotlin.time.ExperimentalTime
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -331,12 +330,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         coroutineScope {
             launch { reloadFriendList() }
-            launch {
-                if (Random.nextInt() > 50) {
-                    error("boom")
-                }
-                reloadGroupList()
-            }
+            launch { reloadGroupList() }
         }
 
         this@QQAndroidBotNetworkHandler.launch {
