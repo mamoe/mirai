@@ -155,6 +155,13 @@ inline fun <reified E : Event> CoroutineScope.subscribe(
     noinline handler: suspend E.(E) -> ListeningStatus
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, handler)
 
+inline fun <reified E : Event> CoroutineScope.subscribe(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    noinline handler: suspend E.(E) -> ListeningStatus
+): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority, handler)
+
 /**
  * @see CoroutineScope.subscribe
  */
@@ -165,6 +172,14 @@ fun <E : Event> CoroutineScope.subscribe(
     concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
     handler: suspend E.(E) -> ListeningStatus
 ): Listener<E> = eventClass.subscribeInternal(Handler(coroutineContext, concurrency) { it.handler(it); })
+
+fun <E : Event> CoroutineScope.subscribe(
+    eventClass: KClass<E>,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    handler: suspend E.(E) -> ListeningStatus
+): Listener<E> = eventClass.subscribeInternal(Handler(coroutineContext, concurrency, priority) { it.handler(it); })
 
 /**
  * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.

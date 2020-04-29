@@ -9,9 +9,10 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.CompletableJob
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
+import net.mamoe.mirai.utils.StepUtil
 import net.mamoe.mirai.utils.internal.runBlocking
+import java.util.concurrent.Executor
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -74,6 +75,40 @@ class EventTests {
             }
             assertTrue(ChildChildEvent().broadcast().triggered)
             job.complete()
+        }
+    }
+
+    open class PriorityTestEvent : Event {}
+
+    fun singleThreaded(invoke: suspend CoroutineScope.() -> Unit) {
+        val scope = CoroutineScope(Executor { it.run() }.asCoroutineDispatcher())
+        scope.launch {
+            invoke(scope)
+        }
+    }
+
+    @Test
+    fun `test event priority`() {
+        // Listener.EventPriority.LOW
+        singleThreaded {
+            val step = StepUtil()
+            subscribe<PriorityTestEvent> {
+                step.step(1)
+                ListeningStatus.LISTENING
+            }
+            subscribe<PriorityTestEvent>(priority = Listener.EventPriority.LOW) {
+                step.step(0)
+                ListeningStatus.LISTENING
+            }
+            subscribe<PriorityTestEvent>(priority = Listener.EventPriority.HIGH) {
+                step.step(3)
+                ListeningStatus.LISTENING
+            }
+            subscribe<PriorityTestEvent> {
+                step.step(2)
+                ListeningStatus.LISTENING
+            }
+            PriorityTestEvent().broadcast()
         }
     }
 }
