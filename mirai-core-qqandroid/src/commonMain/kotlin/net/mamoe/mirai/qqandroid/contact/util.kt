@@ -15,7 +15,6 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.MessageSendEvent
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.message.data.LongMessage
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.asMessageChain
@@ -53,7 +52,8 @@ internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: M
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun Contact.logMessageSent(message: Message) {
-    if (message !is LongMessage) {
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    if (message !is net.mamoe.mirai.message.data.LongMessage) {
         bot.logger.verbose("$this <- ${message.toString().singleLine()}")
     }
 }
