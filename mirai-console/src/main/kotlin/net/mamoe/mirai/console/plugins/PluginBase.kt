@@ -79,6 +79,7 @@ abstract class PluginBase
      * 加载一个 [dataFolder] 中的 [Config]
      */
     fun loadConfig(fileName: String): Config {
+        @OptIn(ToBeRemoved::class)
         return Config.load(dataFolder.absolutePath + "/" + fileName)
     }
 
@@ -112,6 +113,7 @@ abstract class PluginBase
      */
     fun getResourcesConfig(fileName: String): Config {
         require(fileName.contains(".")) { "Unknown Config Type" }
+        @OptIn(ToBeRemoved::class)
         return Config.load(getResources(fileName) ?: error("No such file: $fileName"), fileName.substringAfter('.'))
     }
 
@@ -188,6 +190,7 @@ class PluginDescription(
     }
 
     companion object {
+        @OptIn(ToBeRemoved::class)
         fun readFromContent(content_: String, file: File): PluginDescription {
             with(Config.load(content_, "yml")) {
                 try {
