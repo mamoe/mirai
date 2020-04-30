@@ -144,7 +144,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     /**
      * return `true` when command is ambiguous
      */
-    fun checkAmbiguous(plugin: PluginModel) : Boolean {
+    fun checkAmbiguous(plugin: PluginModel): Boolean {
         plugin.insight?.commands?.forEach { name ->
             CommandManager.commands.forEach {
                 if (name == it.name) return true
@@ -182,7 +182,7 @@ class GraphicalLoginSolver : LoginSolver() {
         while (code.isDirty || code.code.value == null) {
             delay(1000)
             if (code.code.value === VerificationCodeFragment.MAGIC_KEY) {
-                throw WrongPasswordException("取消登录")
+                throw LoginCancelledManuallyException()
             }
         }
         return code.code.value
@@ -197,3 +197,5 @@ class GraphicalLoginSolver : LoginSolver() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
+
+class LoginCancelledManuallyException : CustomLoginFailedException(true, "取消登录")
