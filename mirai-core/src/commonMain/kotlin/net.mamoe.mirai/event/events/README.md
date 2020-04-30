@@ -10,10 +10,10 @@
 ### Bot
 - Bot 登录完成: BotOnlineEvent
 - Bot 离线: BotOfflineEvent
-  - 主动: BotOfflineEvent.Active
-  - 被挤下线: BotOfflineEvent.Force
-  - 被服务器断开或因网络问题而掉线: BotOfflineEvent.Dropped
-  - 服务器主动要求更换另一个服务器: BotOfflineEvent.RequireReconnect
+  - 主动: Active
+  - 被挤下线: Force
+  - 被服务器断开或因网络问题而掉线: Dropped
+  - 服务器主动要求更换另一个服务器: RequireReconnect
 - Bot 重新登录: BotReloginEvent
 
 ### 消息
@@ -25,13 +25,13 @@
   - 群撤回: GroupRecall
 - 图片上传前: BeforeImageUploadEvent
 - 图片上传完成: ImageUploadEvent
-  - 图片上传成功: ImageUploadEvent.Succeed
-  - 图片上传失败: ImageUploadEvent.Failed
+  - 图片上传成功: Succeed
+  - 图片上传失败: Failed
 
 ### 群
 - 机器人被踢出群或在其他客户端主动退出一个群: BotLeaveEvent
-  - 机器人主动退出一个群: BotLeaveEvent.Active
-  - 机器人被管理员或群主踢出群: BotLeaveEvent.Kick
+  - 机器人主动退出一个群: Active
+  - 机器人被管理员或群主踢出群: Kick
 - 机器人在群里的权限被改变: BotGroupPermissionChangeEvent
 - 机器人被禁言: BotMuteEvent
 - 机器人被取消禁言: BotUnmuteEvent
@@ -49,12 +49,12 @@
 #### 群成员
 ##### 成员列表变更
 - 成员已经加入群: MemberJoinEvent
-  - 成员被邀请加入群: MemberJoinEvent.Invite
-  - 成员主动加入群: MemberJoinEvent.Active
+  - 成员被邀请加入群: Invite
+  - 成员主动加入群: Active
 
 - 成员已经离开群: MemberLeaveEvent
-  - 成员被踢出群: MemberLeaveEvent.Kick
-  - 成员主动离开群: MemberLeaveEvent.Quit
+  - 成员被踢出群: Kick
+  - 成员主动离开群: Quit
 
 - 一个账号请求加入群: MemberJoinRequestEvent
 - 机器人被邀请加入群: BotInvitedJoinGroupRequestEvent
