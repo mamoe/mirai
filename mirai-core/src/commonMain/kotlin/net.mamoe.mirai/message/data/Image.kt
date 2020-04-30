@@ -62,7 +62,7 @@ expect interface Image : Message, MessageContent {
      *
      * ### 格式
      * 群图片:
-     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 ".mirai")
+     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
      *
      * 好友图片:
      * - [FRIEND_IMAGE_ID_REGEX_1], 示例: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
@@ -79,7 +79,7 @@ expect interface Image : Message, MessageContent {
     */
 
     @Deprecated("""
-        不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
+        不要自行实现 Image, 它必须由协议模块实现, 否则会无法发送也无法解析.
     """, level = DeprecationLevel.HIDDEN)
     @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
     @get:JvmSynthetic
@@ -314,7 +314,7 @@ fun Image2(imageId: String): Image = Image(imageId)
 @MiraiInternalAPI("Use Image instead")
 sealed class AbstractImage : Image {
     @Deprecated("""
-        不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
+        不要自行实现 Image, 它必须由协议模块实现, 否则会无法发送也无法解析.
     """, level = DeprecationLevel.HIDDEN)
     @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
     @get:JvmSynthetic
