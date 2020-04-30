@@ -373,7 +373,7 @@ internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
 }
 
 internal val ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE =
-    "ImageId must matches Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
+    "ImageId must match Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
             "`${FRIEND_IMAGE_ID_REGEX_2.pattern}` or " +
             "`${GROUP_IMAGE_ID_REGEX.pattern}`"
 
