@@ -15,16 +15,23 @@ import java.awt.TextArea
 import java.io.File
 import java.net.URLClassLoader
 import java.util.*
+import java.util.jar.JarFile
 import javax.swing.JFrame
 import javax.swing.JPanel
 
 
 val contentPath by lazy {
-    File(System.getProperty("user.dir") + "/content/").also {
+    File(System.getProperty("user.dir"), "content").also {
         if (!it.exists()) {
             it.mkdirs()
         }
     }
+}
+
+val extendedLibraries by lazy {
+    val file =
+        System.getProperty("mirai.libraries")?.let { File(it) } ?: File(System.getProperty("user.dir"), "libraries")
+    file.also { if (!it.exists()) it.mkdirs() }
 }
 
 object WrapperMain {
@@ -56,6 +63,7 @@ object WrapperMain {
             uiLog("正在进行版本检查\n")
             val dic = System.getProperty("user.dir")
             uiLog("工作目录: ${dic}\n")
+            uiLog("扩展库目录: ${extendedLibraries}\n")
             uiLog("若无法启动, 请尝试清除工作目录下/content/文件夹\n")
             var uiOpen = true
             GlobalScope.launch {
@@ -94,6 +102,7 @@ object WrapperMain {
 
     private fun preStartInNonNative() {
         println("You are running Mirai-Console-Wrapper under " + System.getProperty("user.dir"))
+        println("All additional libraries are located at $extendedLibraries")
         var type = WrapperProperties.determineConsoleType(WrapperProperties.content)
         if (type != null) {
             println("Starting Mirai Console $type, reset by clear /content/")
@@ -138,25 +147,19 @@ object WrapperMain {
         val loader = MiraiClassLoader(
             CoreUpdater.getProtocolLib()!!,
             ConsoleUpdater.getFile()!!,
-            null
+            WrapperMain::class.java.classLoader
         )
 
         loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
+        loader.loadClass(
+            when (type) {
+                CONSOLE_PURE -> "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
+                CONSOLE_GRAPHICAL -> "net.mamoe.mirai.console.graphical.MiraiConsoleGraphicalLoader"
+                else -> return
+            }
+        ).getMethod("load", String::class.java, String::class.java)
+            .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
 
-        when (type) {
-            CONSOLE_PURE -> {
-                loader.loadClass(
-                        "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
-                    ).getMethod("load", String::class.java, String::class.java)
-                    .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
-            }
-            CONSOLE_GRAPHICAL -> {
-                loader.loadClass(
-                        "net.mamoe.mirai.console.graphical.MiraiConsoleGraphicalLoader"
-                    ).getMethod("load", String::class.java, String::class.java)
-                    .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
-            }
-        }
     }
 }
 
@@ -169,13 +172,38 @@ private class MiraiClassLoader(
     arrayOf(
         protocol.toURI().toURL(),
         console.toURI().toURL()
-    ), parent
-)
+    ), null
+) {
+    init {
+        extendedLibraries.listFiles { file ->
+            file.isFile && file.extension == "jar"
+        }?.forEach {
+            kotlin.runCatching {
+                /*
+                Confirm that the current jar is valid
+                确认当前jar是否有效
+                */
+                JarFile(it).close()
+                addURL(it.toURI().toURL())
+            }
+        }
+    }
+
+    private val parent0: ClassLoader? = parent
+    override fun findClass(name: String?): Class<*> {
+        return try {
+            super.findClass(name)
+        } catch (exception: ClassNotFoundException) {
+            if (parent0 == null) throw exception
+            parent0.loadClass(name)
+        }
+    }
+}
 
 
 private object WrapperProperties {
     val contentFile by lazy {
-        File(contentPath.absolutePath + "/.wrapper.txt").also {
+        File(contentPath, ".wrapper.txt").also {
             if (!it.exists()) it.createNewFile()
         }
     }

@@ -149,11 +149,11 @@ object CommandManager : Job by {
 
     private suspend fun processCommandImpl(sender: CommandSender, fullCommand: String): Boolean {
         val blocks = fullCommand.split(" ")
-        val commandHead = blocks[0].replace("/", "")
+        val commandHead = blocks[0] //.replace("/", "")
         val args = blocks.drop(1)
         return registeredCommand[commandHead]?.run {
             try {
-                return onCommand(sender, blocks.drop(1)).also {
+                return onCommand(sender, ArrayList(args)).also {
                     if (it) {
                         PluginManager.onCommand(this, sender, args)
                     } else {

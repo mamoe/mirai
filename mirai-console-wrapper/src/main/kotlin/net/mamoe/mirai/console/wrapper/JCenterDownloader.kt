@@ -139,5 +139,5 @@ internal suspend fun ByteReadChannel.saveToContent(filepath: String) {
 
 
 internal fun getContent(filepath: String):File{
-    return File(contentPath.absolutePath + "/" + filepath)
+    return File(contentPath, filepath)
 }

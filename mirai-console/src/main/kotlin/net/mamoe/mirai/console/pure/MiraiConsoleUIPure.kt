@@ -43,7 +43,7 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
     }
 
     init {
-        thread {
+        thread(name = "Mirai Console Input Thread") {
             while (true) {
                 val input = readLine() ?: return@thread
                 if (requesting) {
