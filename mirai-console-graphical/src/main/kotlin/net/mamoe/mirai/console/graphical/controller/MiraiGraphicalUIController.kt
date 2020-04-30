@@ -6,6 +6,7 @@ import javafx.stage.Modality
 import javafx.stage.StageStyle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.runCommand
@@ -16,12 +17,13 @@ import net.mamoe.mirai.console.graphical.view.dialog.InputDialog
 import net.mamoe.mirai.console.graphical.view.dialog.VerificationCodeFragment
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.MiraiConsoleUI
-import net.mamoe.mirai.network.WrongPasswordException
+import net.mamoe.mirai.network.CustomLoginFailedException
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import tornadofx.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.coroutines.resume
 
 class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
@@ -105,18 +107,12 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
         }
     }
 
-    override suspend fun requestInput(hint: String): String {
-        var ret: String? = null
-
-        // UI必须在UI线程执行，requestInput在协程种被调用
-        Platform.runLater {
-            ret = InputDialog(hint).open()
+    override suspend fun requestInput(hint: String): String =
+        suspendCancellableCoroutine {
+            Platform.runLater {
+                it.resume(InputDialog(hint).open())
+            }
         }
-        while (ret == null) {
-            delay(1000)
-        }
-        return ret!!
-    }
 
     override fun pushBotAdminStatus(identity: Long, admins: List<Long>) = Platform.runLater {
         cache[identity]?.admins?.setAll(admins)
