@@ -19,6 +19,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
@@ -37,7 +38,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * ### [toString] 和 [contentToString]
  * - [toString] 固定返回 `[mirai:image:<ID>]` 格式字符串, 其中 `<ID>` 代表 [imageId].
- * - [contentToString] 固定返回 ```"[图片]"```
+ * - [contentToString] 固定返回 `"[图片]"`
  *
  * ### 上传和发送图片
  * @see Contact.uploadImage 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
