@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.19.1'
+    implementation 'net.mamoe:mirai-core-qqandroid:0.19.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
@@ -155,7 +155,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.mamoe:mirai-core-qqandroid-jvm:0.23.0'
+    implementation 'net.mamoe:mirai-core-qqandroid:0.23.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
