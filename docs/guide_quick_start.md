@@ -41,7 +41,7 @@ Kotlin 在 Maven 上只支持 JVM 平台.
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core-qqandroid-jvm</artifactId>
+        <artifactId>mirai-core-qqandroid</artifactId>
         <version>0.23.0</version> <!-- 替换版本为最新版本 -->
     </dependency>
 </dependencies>
@@ -65,7 +65,7 @@ Mirai 核心由 API 模块（`mirai-core`）和协议模块组成。
 **jvm** (JVM 平台源集)
 
 ```kotlin
-implementation("net.mamoe:mirai-core-qqandroid-jvm:VERSION")
+implementation("net.mamoe:mirai-core-qqandroid:VERSION")
 ```
 
 **common** (Kotlin 多平台项目的通用源集)
