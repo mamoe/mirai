@@ -323,7 +323,7 @@ internal inline fun Char.hexDigitToByte(): Int {
         in '0'..'9' -> this - '0'
         in 'A'..'F' -> 10 + (this - 'A')
         in 'a'..'f' -> 10 + (this - 'a')
-        else -> throw IllegalArgumentException("illegal hex digit: $this")
+        else -> throw IllegalArgumentException("Illegal hex digit: $this")
     }
 }
 
@@ -333,7 +333,7 @@ internal fun String.skipToSecondHyphen(): Int {
     this.forEachIndexed { index, c ->
         if (c == '-' && ++count == 2) return index
     }
-    error("cannot find two hyphens")
+    error("Internal error: failed skipToSecondHyphen, cannot find two hyphens. Input=$this")
 }
 
 @JvmSynthetic
@@ -354,7 +354,7 @@ internal fun String.imageIdToMd5(offset: Int): ByteArray {
             hasCurrent = true
         }
     }
-    error("No enough chars")
+    error("Internal error: failed imageIdToMd5, no enough chars. Input=$this, offset=$offset")
 }
 
 @OptIn(ExperimentalStdlibApi::class)

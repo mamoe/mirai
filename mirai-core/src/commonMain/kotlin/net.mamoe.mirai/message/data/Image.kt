@@ -94,7 +94,7 @@ expect interface Image : Message, MessageContent {
  */
 @SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
-val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/.{8}-(.{4}-){3}.{12}""")
+val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
 
 /**
  * 好友图片 ID 正则表达式 2
@@ -104,7 +104,7 @@ val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/.{8}-(.{4}-){3}.{12}""")
  */
 @SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_2
-val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
+val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
 
 /**
  * 群图片 ID 正则表达式
@@ -114,7 +114,7 @@ val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
 @Suppress("RegExpRedundantEscape") // This is required on Android
 @SinceMirai("0.39.2")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
-val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}\}\.mirai""")
+val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\.mirai""")
 
 /**
  * 在 `0.39.0` 前的图片的正则表示
@@ -125,7 +125,7 @@ val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}\}\.mirai""")
 @SinceMirai("0.39.2")
 @PlannedRemoval("1.0.0")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX_OLD
-val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{.{8}-(.{4}-){3}.{12}\}\..*""")
+val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..*""")
 
 /**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
@@ -145,7 +145,7 @@ fun Image(imageId: String): OfflineImage = when {
     imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
     imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
     imageId matches GROUP_IMAGE_ID_REGEX_OLD -> OfflineGroupImage(imageId)
-    else -> throw IllegalArgumentException("illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
+    else -> throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
 }
 
 // region 在线图片
