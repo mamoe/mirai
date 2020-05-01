@@ -72,6 +72,37 @@ class EventTests {
     }
 
     @Test
+    fun `test concurrent listening 3`() {
+        runBlocking {
+            val called = AtomicInteger()
+            val registered = AtomicInteger()
+            coroutineScope {
+                println("Step 0")
+                for (priority in Listener.EventPriority.values()) {
+                    launch {
+                        repeat(5000) {
+                            registered.getAndIncrement()
+                            GlobalScope.subscribeAlways<ParentEvent>(
+                                priority = priority
+                            ) {
+                                called.getAndIncrement()
+                            }
+                        }
+                        println("Registeterd $priority")
+                    }
+                }
+                println("Step 1")
+            }
+            println("Step 2")
+            ParentEvent().broadcast()
+            println("Step 3")
+            check(called.get() == registered.get())
+            println("Done")
+            println("Called ${called.get()}, registered ${registered.get()}")
+        }
+    }
+
+    @Test
     fun `test concurrent listening 2`() {
         val registered = AtomicInteger()
         val called = AtomicInteger()
