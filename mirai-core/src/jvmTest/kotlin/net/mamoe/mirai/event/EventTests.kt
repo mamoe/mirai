@@ -149,8 +149,20 @@ class EventTests {
     }
 
     @Test
+    fun `test listener complete`() {
+        val step = StepUtil()
+        singleThreaded(step) {
+            val listener = subscribeAlways<ParentEvent> {
+                step.step(0, "boom!")
+            }
+            ParentEvent().broadcast()
+            listener.complete()
+            ParentEvent().broadcast()
+        }
+    }
+
+    @Test
     fun `test event priority`() {
-        // Listener.EventPriority.LOW
         val step = StepUtil()
         singleThreaded(step) {
             subscribe<PriorityTestEvent> {
