@@ -7,10 +7,10 @@ class StepUtil {
     val step = atomic(0)
     val exceptions = ConcurrentLinkedDeque<Throwable>()
     fun step(step: Int, message: String = "Wrong step") {
+        println("Invoking step $step")
         if (step != this.step.getAndIncrement()) {
             throw IllegalStateException(message).also { exceptions.add(it) }
         }
-        println("Invoking step $step")
     }
 
     fun throws() {

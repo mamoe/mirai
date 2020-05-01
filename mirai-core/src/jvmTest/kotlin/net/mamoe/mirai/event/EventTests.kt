@@ -9,10 +9,13 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.atomicfu.AtomicInt
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.utils.StepUtil
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -44,6 +47,28 @@ class EventTests {
         }
     }
 
+    @Test
+    fun `test concurrent listening`() {
+        var listeners = 0
+        val counter = AtomicInteger(0)
+        for (p in Listener.EventPriority.values()) {
+            repeat(2333) {
+                listeners++
+                GlobalScope.subscribeAlways<ParentEvent> {
+                    counter.getAndIncrement()
+                }
+            }
+        }
+        kotlinx.coroutines.runBlocking {
+            ParentEvent().broadcast()
+            delay(5000L) // ?
+        }
+        val called = counter.get()
+        println("Registered $listeners listeners and $called called")
+        if (listeners != called) {
+            throw IllegalStateException("Registered $listeners listeners but only $called called")
+        }
+    }
 
     open class ParentEvent : Event, AbstractEvent() {
         var triggered = false
@@ -169,11 +194,11 @@ class EventTests {
                 step.step(1)
                 ListeningStatus.LISTENING
             }
-            subscribe<PriorityTestEvent>(priority = Listener.EventPriority.LOW) {
+            subscribe<PriorityTestEvent>(priority = Listener.EventPriority.HIGH) {
                 step.step(0)
                 ListeningStatus.LISTENING
             }
-            subscribe<PriorityTestEvent>(priority = Listener.EventPriority.HIGH) {
+            subscribe<PriorityTestEvent>(priority = Listener.EventPriority.LOW) {
                 step.step(3)
                 ListeningStatus.LISTENING
             }
