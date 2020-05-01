@@ -13,10 +13,7 @@ package net.mamoe.mirai.event.internal
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.EventDisabled
-import net.mamoe.mirai.event.Listener
-import net.mamoe.mirai.event.ListeningStatus
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -71,8 +68,8 @@ internal class Handler<in E : Event>
 
     @MiraiInternalAPI
     val lock: Mutex? = when (concurrencyKind) {
-        Listener.ConcurrencyKind.CONCURRENT -> null
         Listener.ConcurrencyKind.LOCKED -> Mutex()
+        else -> null
     }
 
     @Suppress("unused")
@@ -126,15 +123,17 @@ internal expect class MiraiAtomicBoolean(initial: Boolean) {
     var value: Boolean
 }
 
+val logger = DefaultLogger("Internal Event Poster")
+
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
 internal suspend inline fun Event.broadcastInternal() = coroutineScope {
     if (EventDisabled) return@coroutineScope
-    callAndRemoveIfRequired(this@broadcastInternal)
+    callAndRemoveIfRequired(this@broadcastInternal as? AbstractEvent ?: error("Events must extends AbstractEvent"))
 }
 
 @OptIn(MiraiInternalAPI::class)
-private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(
+private fun <E : AbstractEvent> CoroutineScope.callAndRemoveIfRequired(
     event: E
 ) {
     // atomic foreach
@@ -152,26 +151,52 @@ private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(
         */
         for (p in Listener.EventPriority.values()) {
             GlobalEventListeners[p].forEachNode { eventNode ->
+                if (event .isIntercepted) {
+                    return@launch
+                }
                 val node = eventNode.nodeValue
                 if (!node.owner.isInstance(event)) return@forEachNode
                 val listener = node.listener
-                if (listener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
-                    (listener as Handler).lock!!.withLock {
-                        when (listener.onEvent(event)) {
-                            ListeningStatus.STOPPED -> {
-                                removeNode(eventNode)
-                            }
-                            ListeningStatus.INTERCEPTION -> {
-                                return@launch
-                            }
-                            else -> {
+                when (listener.concurrencyKind) {
+                    Listener.ConcurrencyKind.LOCKED -> {
+                        (listener as Handler).lock!!.withLock {
+                            kotlin.runCatching {
+                                when (listener.onEvent(event)) {
+                                    ListeningStatus.STOPPED -> {
+                                        removeNode(eventNode)
+                                    }
+                                    ListeningStatus.INTERCEPTED -> {
+                                        return@launch
+                                    }
+                                    else -> {
+                                    }
+                                }
+                            }.onFailure {
+                                logger.error("Exception in calling locked listener", it)
                             }
                         }
                     }
-                } else {
-                    launch {
-                        if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                            removeNode(eventNode)
+                    Listener.ConcurrencyKind.SOLE_CONCURRENT -> {
+                        kotlin.runCatching {
+                            when (listener.onEvent(event)) {
+                                ListeningStatus.STOPPED -> {
+                                    removeNode(eventNode)
+                                }
+                                ListeningStatus.INTERCEPTED -> {
+                                    return@launch
+                                }
+                                else -> {
+                                }
+                            }
+                        }.onFailure {
+                            logger.error("Exception in calling sole concurrent listener", it)
+                        }
+                    }
+                    else -> {
+                        launch {
+                            if (listener.onEvent(event) == ListeningStatus.STOPPED) {
+                                removeNode(eventNode)
+                            }
                         }
                     }
                 }

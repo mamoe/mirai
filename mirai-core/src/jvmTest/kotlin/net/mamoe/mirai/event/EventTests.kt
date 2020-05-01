@@ -78,19 +78,24 @@ class EventTests {
         }
     }
 
-    open class PriorityTestEvent : Event {}
+    open class PriorityTestEvent : AbstractEvent() {}
 
-    fun singleThreaded(invoke: suspend CoroutineScope.() -> Unit) {
+    fun singleThreaded(step: StepUtil, invoke: suspend CoroutineScope.() -> Unit) {
+        // runBlocking 会完全堵死, 没法退出
         val scope = CoroutineScope(Executor { it.run() }.asCoroutineDispatcher())
-        scope.launch {
+        val job = scope.launch {
             invoke(scope)
         }
+        kotlinx.coroutines.runBlocking {
+            job.join()
+        }
+        step.throws()
     }
 
     @Test
     fun `test handler remvoe`() {
-        singleThreaded {
-            val step = StepUtil()
+        val step = StepUtil()
+        singleThreaded(step) {
             subscribe<Event> {
                 step.step(0)
                 ListeningStatus.STOPPED
@@ -100,13 +105,40 @@ class EventTests {
         }
     }
 
+    /*
     @Test
-    fun `test interception`() {
-        singleThreaded {
-            val step = StepUtil()
+    fun `test boom`() {
+        val step = StepUtil()
+        singleThreaded(step) {
+            step.step(0)
+            step.step(0)
+        }
+    }
+    */
+
+    @Test
+    fun `test intercept with always`() {
+        val step = StepUtil()
+        singleThreaded(step) {
+            subscribeAlways<ParentEvent> {
+                step.step(0)
+                intercept()
+            }
+            subscribe<Event> {
+                step.step(-1, "Boom")
+                ListeningStatus.LISTENING
+            }
+            ParentEvent().broadcast()
+        }
+    }
+
+    @Test
+    fun `test intercept`() {
+        val step = StepUtil()
+        singleThreaded(step) {
             subscribe<Event> {
                 step.step(0)
-                ListeningStatus.INTERCEPTION
+                ListeningStatus.INTERCEPTED
             }
             subscribe<Event> {
                 step.step(-1, "Boom")
@@ -119,8 +151,8 @@ class EventTests {
     @Test
     fun `test event priority`() {
         // Listener.EventPriority.LOW
-        singleThreaded {
-            val step = StepUtil()
+        val step = StepUtil()
+        singleThreaded(step) {
             subscribe<PriorityTestEvent> {
                 step.step(1)
                 ListeningStatus.LISTENING

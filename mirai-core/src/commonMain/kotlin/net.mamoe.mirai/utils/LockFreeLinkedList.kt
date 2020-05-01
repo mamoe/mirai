@@ -102,7 +102,7 @@ fun <E> Sequence<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
  */
 @PlannedRemoval("1.0.0") // make internal
 @MiraiInternalAPI("This is unstable API and is going to be internal in 1.0.0")
-open class LockFreeLinkedList<E> : Iterable<E> {
+open class LockFreeLinkedList<E> {
     @PublishedApi
     internal val tail: Tail<E> = Tail()
 
@@ -341,35 +341,8 @@ open class LockFreeLinkedList<E> : Iterable<E> {
         }
     }
 
-    override fun iterator(): Iterator<E> {
-        var node: LockFreeLinkedListNode<E> = head
-        return object : Iterator<E> {
-            override tailrec fun hasNext(): Boolean {
-                if (node.isTail()) return false
-                val current = node
-                if (current.isHead() || current.isRemoved()) {
-                    node = node.nextNode
-                    return hasNext()
-                }
-                return true
-            }
-
-            override tailrec fun next(): E {
-                if (node.isTail()) {
-                    throw NoSuchElementException()
-                }
-                val current = node
-                node = node.nextNode
-                if (current.isHead() || current.isRemoved()) {
-                    return next()
-                }
-                return current.nodeValue
-            }
-
-        }
-    }
-
     inline fun forEachNode(block: LockFreeLinkedList<E>.(LockFreeLinkedListNode<E>) -> Unit) {
+        // Copy from forEach
         var node: LockFreeLinkedListNode<E> = head
         while (true) {
             if (node === tail) return

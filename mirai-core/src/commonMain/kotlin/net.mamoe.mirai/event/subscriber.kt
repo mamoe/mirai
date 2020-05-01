@@ -47,7 +47,7 @@ enum class ListeningStatus {
     /**
      * 表示不会再让其他处理器处理, 即已拦截, 仅支持 [Mutex]
      */
-    INTERCEPTION
+    INTERCEPTED
 }
 
 /**
@@ -67,7 +67,13 @@ interface Listener<in E : Event> : CompletableJob {
         /**
          * 使用 [Mutex] 保证同一时刻只处理一个事件.
          */
-        LOCKED
+        LOCKED,
+
+        /**
+         * 并发地同时处理多个事件, 也能保证 [onEvent] 返回 [ListeningStatus.STOPPED] 后立即停止事件监听.
+         * 但是效率比 [CONCURRENT] 略低
+         */
+        SOLE_CONCURRENT
     }
 
     /**
