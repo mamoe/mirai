@@ -16,6 +16,7 @@ import net.mamoe.mirai.utils.StepUtil
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.thread
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -67,6 +68,43 @@ class EventTests {
         println("Registered $listeners listeners and $called called")
         if (listeners != called) {
             throw IllegalStateException("Registered $listeners listeners but only $called called")
+        }
+    }
+
+    @Test
+    fun `test concurrent listening 2`() {
+        val registered = AtomicInteger()
+        val called = AtomicInteger()
+        val threads = mutableListOf<Thread>()
+        repeat(50) {
+            threads.add(thread {
+                repeat(444) {
+                    registered.getAndIncrement()
+                    GlobalScope.launch {
+                        subscribeAlways<ParentEvent> {
+                            called.getAndIncrement()
+                        }
+                    }
+                }
+            })
+        }
+        Thread.sleep(5000L)// Wait all thread started.
+        threads.forEach {
+            it.join() // Wait all finished
+        }
+        println("All listeners registered")
+        val postCount = 3
+        kotlinx.coroutines.runBlocking {
+            repeat(postCount) {
+                ParentEvent().broadcast()
+            }
+            delay(5000L)
+        }
+        val calledCount = called.get()
+        val shouldCalled = registered.get() * postCount
+        println("Should call $shouldCalled times and $called called")
+        if (shouldCalled != calledCount) {
+            throw IllegalStateException("?")
         }
     }
 
