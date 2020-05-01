@@ -130,6 +130,10 @@ tasks {
         outputFormat = "markdown"
         outputDirectory = "$buildDir/dokka-markdown"
     }
+    val dokkaGfm by creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
+        outputFormat = "gfm"
+        outputDirectory = "$buildDir/dokka-gfm"
+    }
 }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
