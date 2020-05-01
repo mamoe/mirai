@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file: JvmName("MessageUtils")
+@file:JvmName("MessageUtils")
 @file:JvmMultifileClass
 @file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
@@ -23,21 +23,39 @@ import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
 /**
- * XML 消息等富文本消息
+ * XML, JSON 消息等富文本消息
  *
- * @see ServiceMessage 子类 [XmlMessage], [JsonMessage], [LongMessage], [ForwardMessage]
+ * **注意**: 富文本消息的 [RichMessage.contentEquals] 和 [RichMessage.toString] 都不稳定. 将来可能在没有任何警告的情况下改变格式.
+ *
+ * @see ServiceMessage 服务消息 (XML, JSON)
  * @see LightApp 小程序 (JSON)
  */
 // not using sealed class for customized implementations
 @SinceMirai("0.27.0")
 interface RichMessage : MessageContent {
 
+    /**
+     * **注意**: 富文本消息的 [RichMessage.contentEquals] 和 [RichMessage.toString] 都不稳定. 将来可能在没有任何警告的情况下改变格式.
+     */
+    @MiraiExperimentalAPI
     override fun contentToString(): String = this.content
 
+    /**
+     * 消息内容. 可为 JSON 文本或 XML 文本
+     */
+    val content: String
+
+    /**
+     * 一些模板
+     * @suppress 此 API 不稳定, 可能在任意时刻被删除
+     */
     @MiraiExperimentalAPI
     @SinceMirai("0.30.0")
     companion object Templates : Message.Key<RichMessage> {
 
+        /**
+         * @suppress 此 API 不稳定, 可能在任意时刻被删除
+         */
         @MiraiExperimentalAPI
         @SinceMirai("0.30.0")
         fun share(
@@ -83,14 +101,16 @@ interface RichMessage : MessageContent {
         override val typeName: String
             get() = "RichMessage"
     }
-
-    val content: String
 }
 
 /**
  * 小程序, 如音乐分享.
  *
+ * 大部分 JSON 消息为此类型, 另外一部分为 [ServiceMessage]
+ *
  * @param content 一般是 json
+ *
+ * @see ServiceMessage 服务消息
  */
 @SinceMirai("0.27.0")
 data class LightApp(override val content: String) : RichMessage {
@@ -102,7 +122,14 @@ data class LightApp(override val content: String) : RichMessage {
 }
 
 /**
- * 服务消息, 如 [XmlMessage].
+ * 服务消息, 可以是 JSON 消息或 XML 消息.
+ *
+ * JSON 消息更多情况下通过 [LightApp] 发送.
+ *
+ * @param serviceId 目前未知, XML 一般为 60, JSON 一般为 1
+ * @param content 消息内容. 可为 JSON 文本或 XML 文本
+ *
+ * @see LightApp 小程序类型消息
  */
 @SinceMirai("0.37.3")
 open class ServiceMessage(val serviceId: Int, final override val content: String) : RichMessage {
@@ -190,6 +217,7 @@ commonElem=CommonElem#750141174 {
 
 /**
  * 构造一条 XML 消息
+ * @suppress 此 API 不稳定
  */
 @Suppress("DEPRECATION_ERROR")
 @JvmSynthetic
@@ -198,10 +226,14 @@ commonElem=CommonElem#750141174 {
 inline fun buildXmlMessage(serviceId: Int, block: @XmlMessageDsl XmlMessageBuilder.() -> Unit): ServiceMessage =
     XmlMessage(serviceId, XmlMessageBuilder().apply(block).text)
 
+@MiraiExperimentalAPI
 @Target(CLASS, FUNCTION, TYPE)
 @DslMarker
 annotation class XmlMessageDsl
 
+/**
+ * @suppress 此 API 不稳定
+ */
 @MiraiExperimentalAPI
 @XmlMessageDsl
 class XmlMessageBuilder(
