@@ -128,7 +128,7 @@ internal object HighwayHelper {
         }
     ) { ip, port ->
         bot.network.logger.verbose {
-            "[Highway] Uploading $kind to ${ip}:$port, size=${inputSize / 1024} KiB"
+            "[Highway] Uploading $kind to ${ip}:$port, size=${inputSize.sizeToString()}"
         }
 
         val time = measureTime {
@@ -223,4 +223,10 @@ internal suspend inline fun List<Pair<Int, Int>>.retryWithServers(
     }
 
     onFail(exception)
+}
+
+internal fun Long.sizeToString(): String {
+    return if (this < 1024) {
+        "$this B"
+    } else ((this * 100.0 / 1024).roundToInt() / 100.0).toString() + " KiB"
 }
