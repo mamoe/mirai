@@ -577,7 +577,7 @@ internal class MessageSvc {
                     MsgSvc.PbDeleteMsgReq.MsgItem(
                         fromUin = it.msgHead.fromUin,
                         toUin = it.msgHead.toUin,
-                        // 群为84、好友为187。但是群通过其他方法删除，测试通过187也能删除群消息。
+                        // 群为84、好友为187。群通过其他方法删除，但测试结果显示通过187也能删除群消息。
                         msgType = 187,
                         msgSeq = it.msgHead.msgSeq,
                         msgUid = it.msgHead.msgUid
