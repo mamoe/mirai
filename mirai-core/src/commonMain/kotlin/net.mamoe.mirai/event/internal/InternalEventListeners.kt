@@ -14,14 +14,17 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.event.events.BotEvent
+import net.mamoe.mirai.utils.LockFreeLinkedList
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 
 
-@PublishedApi
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
     with(GlobalEventListeners[listener.priority]) {
         @Suppress("UNCHECKED_CAST")
@@ -37,7 +40,6 @@ internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listen
 }
 
 
-@PublishedApi
 @Suppress("FunctionName")
 internal fun <E : Event> CoroutineScope.Handler(
     coroutineContext: CoroutineContext,
@@ -53,9 +55,7 @@ internal fun <E : Event> CoroutineScope.Handler(
 /**
  * 事件处理器.
  */
-@PublishedApi
-internal class Handler<in E : Event>
-@PublishedApi internal constructor(
+internal class Handler<in E : Event> internal constructor(
     parentJob: Job?,
     subscriberContext: CoroutineContext,
     @JvmField val handler: suspend (E) -> ListeningStatus,
@@ -65,8 +65,6 @@ internal class Handler<in E : Event>
 
     private val subscriberContext: CoroutineContext = subscriberContext + this // override Job.
 
-
-    @MiraiInternalAPI
     val lock: Mutex? = when (concurrencyKind) {
         Listener.ConcurrencyKind.LOCKED -> Mutex()
         else -> null
@@ -84,10 +82,11 @@ internal class Handler<in E : Event>
                 ?: coroutineContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
                 ?: kotlin.run {
                     @Suppress("DEPRECATION")
-                    MiraiLogger.warning(
-                        """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
+                    (if (event is BotEvent) event.bot.logger else MiraiLogger)
+                        .warning(
+                            """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
                         either in coroutineContext from Handler job, or in subscriberContext""".trimIndent(), e
-                    )
+                        )
                 }
             // this.complete() // do not `completeExceptionally`, otherwise parentJob will fai`l.
             // ListeningStatus.STOPPED
@@ -102,6 +101,7 @@ internal class ListenerNode(
     val listener: Listener<Event>,
     val owner: KClass<out Event>
 )
+
 internal expect object GlobalEventListeners {
     operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerNode>
 }
@@ -116,51 +116,61 @@ internal expect class MiraiAtomicBoolean(initial: Boolean) {
 
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
-internal suspend inline fun Event.broadcastInternal() = coroutineScope {
-    if (EventDisabled) return@coroutineScope
+internal suspend inline fun Event.broadcastInternal() {
+    @OptIn(MiraiExperimentalAPI::class)
+    if (EventDisabled) return
     callAndRemoveIfRequired(this@broadcastInternal as? AbstractEvent ?: error("Events must extends AbstractEvent"))
 }
 
+@Suppress("DuplicatedCode")
 @OptIn(MiraiInternalAPI::class)
-private suspend fun <E : AbstractEvent> callAndRemoveIfRequired(
+internal suspend fun <E : AbstractEvent> callAndRemoveIfRequired(
     event: E
 ) {
-    coroutineScope {
-        for (p in Listener.EventPriority.values()) {
-            GlobalEventListeners[p].forEachNode { eventNode ->
-                if (event.isIntercepted) {
-                    return@coroutineScope
+    for (p in Listener.EventPriority.valuesExceptMonitor) {
+        GlobalEventListeners[p].forEachNode { eventNode ->
+            if (event.isIntercepted) {
+                return
+            }
+            val node = eventNode.nodeValue
+            if (!node.owner.isInstance(event)) return@forEachNode
+            val listener = node.listener
+            when (listener.concurrencyKind) {
+                Listener.ConcurrencyKind.LOCKED -> {
+                    (listener as Handler).lock!!.withLock {
+                        if (listener.onEvent(event) == ListeningStatus.STOPPED) {
+                            removeNode(eventNode)
+                        }
+                    }
                 }
-                val node = eventNode.nodeValue
-                if (!node.owner.isInstance(event)) return@forEachNode
-                val listener = node.listener
+                Listener.ConcurrencyKind.CONCURRENT -> {
+                    if (listener.onEvent(event) == ListeningStatus.STOPPED) {
+                        removeNode(eventNode)
+                    }
+                }
+            }
+        }
+    }
+    coroutineScope {
+        GlobalEventListeners[Listener.EventPriority.MONITOR].forEachNode { eventNode ->
+            if (event.isIntercepted) {
+                return@coroutineScope
+            }
+            val node = eventNode.nodeValue
+            if (!node.owner.isInstance(event)) return@forEachNode
+            val listener = node.listener
+            launch {
                 when (listener.concurrencyKind) {
                     Listener.ConcurrencyKind.LOCKED -> {
                         (listener as Handler).lock!!.withLock {
-                            kotlin.runCatching {
-                                when (listener.onEvent(event)) {
-                                    ListeningStatus.STOPPED -> {
-                                        removeNode(eventNode)
-                                    }
-                                    else -> {
-                                    }
-                                }
-                            }.onFailure {
-                                // TODO("Exception catching")
+                            if (listener.onEvent(event) == ListeningStatus.STOPPED) {
+                                removeNode(eventNode)
                             }
                         }
                     }
                     Listener.ConcurrencyKind.CONCURRENT -> {
-                        kotlin.runCatching {
-                            when (listener.onEvent(event)) {
-                                ListeningStatus.STOPPED -> {
-                                    removeNode(eventNode)
-                                }
-                                else -> {
-                                }
-                            }
-                        }.onFailure {
-                            // TODO("Exception catching")
+                        if (listener.onEvent(event) == ListeningStatus.STOPPED) {
+                            removeNode(eventNode)
                         }
                     }
                 }

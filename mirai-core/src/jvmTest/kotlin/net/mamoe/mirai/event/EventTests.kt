@@ -9,8 +9,6 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.atomicfu.AtomicInt
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.internal.GlobalEventListeners
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -18,7 +16,6 @@ import net.mamoe.mirai.utils.StepUtil
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.thread
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -67,7 +64,6 @@ class EventTests {
         }
         kotlinx.coroutines.runBlocking {
             ParentEvent().broadcast()
-            delay(5000L) // ?
         }
         val called = counter.get()
         println("Registered $listeners listeners and $called called")
@@ -109,37 +105,39 @@ class EventTests {
     }
 
     @Test
-    fun `test concurrent listening 2`() {
+    fun `test concurrent listening 2`() = runBlocking {
         resetEventListeners()
         val registered = AtomicInteger()
         val called = AtomicInteger()
-        val threads = mutableListOf<Thread>()
-        repeat(50) {
-            threads.add(thread {
-                repeat(444) {
-                    registered.getAndIncrement()
-                    GlobalScope.launch {
-                        subscribeAlways<ParentEvent> {
+
+        val supervisor = CoroutineScope(SupervisorJob())
+
+        coroutineScope {
+            repeat(50) {
+                launch {
+                    repeat(444) {
+                        registered.getAndIncrement()
+
+                        supervisor.subscribeAlways<ParentEvent> {
                             called.getAndIncrement()
                         }
                     }
                 }
-            })
-        }
-        Thread.sleep(5000L)// Wait all thread started.
-        threads.forEach {
-            it.join() // Wait all finished
-        }
-        println("All listeners registered")
-        val postCount = 3
-        kotlinx.coroutines.runBlocking {
-            repeat(postCount) {
-                ParentEvent().broadcast()
             }
-            delay(5000L)
         }
+
+        println("All listeners registered")
+
+        val postCount = 3
+        coroutineScope {
+            repeat(postCount) {
+                launch { ParentEvent().broadcast() }
+            }
+        }
+
         val calledCount = called.get()
         val shouldCalled = registered.get() * postCount
+
         println("Should call $shouldCalled times and $called called")
         if (shouldCalled != calledCount) {
             throw IllegalStateException("?")

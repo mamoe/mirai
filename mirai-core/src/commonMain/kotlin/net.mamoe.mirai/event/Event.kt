@@ -13,10 +13,12 @@ package net.mamoe.mirai.event
 
 import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.event.internal.broadcastInternal
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmSynthetic
+import kotlin.jvm.Volatile
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.
@@ -34,6 +36,20 @@ import kotlin.jvm.JvmSynthetic
  * @see [subscribe] 监听事件
  */
 interface Event {
+    /**
+     * 事件是否已被拦截.
+     *
+     * 所有事件都可以被拦截, 拦截后低优先级的监听器将不会处理到这个事件.
+     */
+    @SinceMirai("1.0.0")
+    val isIntercepted: Boolean
+
+    /**
+     * 拦截这个事件
+     */
+    @SinceMirai("1.0.0")
+    fun intercept()
+
 
     @Deprecated(
         """
@@ -47,6 +63,8 @@ interface Event {
 
 /**
  * 所有实现了 [Event] 接口的类都应该继承的父类.
+ *
+ * 在使用事件时应使用类型 [Event]. 在实现自定义事件时应继承 [AbstractEvent].
  */
 @SinceMirai("1.0.0")
 abstract class AbstractEvent : Event {
@@ -56,40 +74,20 @@ abstract class AbstractEvent : Event {
     final override val DoNotImplementThisClassButExtendAbstractEvent: Nothing
         get() = throw Error("Shouldn't be reached")
 
+    @Volatile
     private var _intercepted = false
     private val _cancelled = atomic(false)
 
-    /**
-     * 事件是否已被拦截.
-     *
-     * 所有事件都可以被拦截, 拦截后低优先级的监听器将不会处理到这个事件.
-     */
-    @SinceMirai("1.0.0")
-    val isIntercepted: Boolean
-        get() = _intercepted
+    // 实现 Event
+    override val isIntercepted: Boolean get() = _intercepted
 
-    /**
-     * 拦截这个事件.
-     * 重复拦截时不会抛出异常.
-     */
     @SinceMirai("1.0.0")
-    fun intercept() {
+    override fun intercept() {
         _intercepted = true
     }
 
-
-    /**
-     * 事件是否已取消.
-     *
-     * 事件需实现 [CancellableEvent] 接口才可以被取消,
-     * 否则此属性固定返回 false.
-     */
+    // 实现 CancellableEvent
     val isCancelled: Boolean get() = _cancelled.value
-
-    /**
-     * 取消这个事件.
-     * 重复取消时不会抛出异常.
-     */
     fun cancel() {
         check(this is CancellableEvent) {
             "Event $this is not cancellable"
@@ -103,12 +101,18 @@ abstract class AbstractEvent : Event {
  */
 interface CancellableEvent : Event {
     /**
-     * 事件是否已取消.
+     * 事件是否已被取消.
+     *
+     * 事件需实现 [CancellableEvent] 接口才可以被取消,
+     * 否则此属性固定返回 false.
      */
     val isCancelled: Boolean
 
     /**
      * 取消这个事件.
+     * 事件需实现 [CancellableEvent] 接口才可以被取消
+     *
+     * @throws IllegalStateException 当事件未实现接口 [CancellableEvent] 时抛出
      */
     fun cancel()
 }
@@ -128,6 +132,7 @@ suspend fun <E : Event> E.broadcast(): E = apply {
  * 设置为 `true` 以关闭事件.
  * 所有的 `subscribe` 都能正常添加到监听器列表, 但所有的广播都会直接返回.
  */
+@MiraiExperimentalAPI
 var EventDisabled = false
 
 /**
