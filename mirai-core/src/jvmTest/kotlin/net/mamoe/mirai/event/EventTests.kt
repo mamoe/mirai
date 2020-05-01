@@ -15,7 +15,7 @@ import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-class TestEvent : Event {
+class TestEvent : Event, AbstractEvent() {
     var triggered = false
 }
 
@@ -44,7 +44,7 @@ class EventTests {
     }
 
 
-    open class ParentEvent : Event {
+    open class ParentEvent : Event, AbstractEvent() {
         var triggered = false
     }
 

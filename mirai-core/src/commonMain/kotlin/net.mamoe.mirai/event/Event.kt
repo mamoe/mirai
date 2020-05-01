@@ -11,13 +11,19 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.utils.SinceMirai
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.
  *
  * 若监听这个类, 监听器将会接收所有事件的广播.
+ *
+ * 所有 [Event] 都应继承 [AbstractEvent] 而不要直接实现 [Event]. 否则将无法广播也无法监听.
  *
  * @see subscribeAlways
  * @see subscribeOnce
@@ -27,12 +33,74 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
  * @see [broadcast] 广播事件
  * @see [subscribe] 监听事件
  */
-interface Event
+interface Event {
+
+    @Deprecated("""
+        Don't implement Event but extend AbstractEvent instead.
+    """, level = DeprecationLevel.HIDDEN) // so Kotlin class won't be compiled.
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName")
+    @get:JvmSynthetic // so Java user won't see it
+    internal val DoNotImplementThisClassButExtendAbstractEvent: Nothing
+}
+
+/**
+ * 所有实现了 [Event] 接口的类都应该继承的父类.
+ */
+@SinceMirai("1.0.0")
+abstract class AbstractEvent : Event {
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName")
+    @get:JvmSynthetic // so Java user won't see it
+    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    final override val DoNotImplementThisClassButExtendAbstractEvent: Nothing
+        get() = throw Error("Shouldn't be reached")
+
+    private val _intercepted = atomic(false)
+    private val _cancelled = atomic(false)
+
+
+    /**
+     * 事件是否已被拦截.
+     *
+     * 所有事件都可以被拦截, 拦截后低优先级的监听器将不会处理到这个事件.
+     */
+    @SinceMirai("1.0.0")
+    val isIntercepted: Boolean
+        get() = _intercepted.value
+
+    /**
+     * 拦截这个事件.
+     * 重复拦截时不会抛出异常.
+     */
+    @SinceMirai("1.0.0")
+    fun intercept() {
+        _intercepted.value = true
+    }
+
+
+    /**
+     * 事件是否已取消.
+     *
+     * 事件需实现 [CancellableEvent] 接口才可以被取消,
+     * 否则此属性固定返回 false.
+     */
+    val isCancelled: Boolean get() = _cancelled.value
+
+    /**
+     * 取消这个事件.
+     * 重复取消时不会抛出异常.
+     */
+    fun cancel() {
+        check(this is CancellableEvent) {
+            "Event $this is not cancellable"
+        }
+        _cancelled.value = true
+    }
+}
 
 /**
  * 可被取消的事件
  */
-interface CancellableEvent {
+interface CancellableEvent : Event {
     /**
      * 事件是否已取消.
      */
@@ -42,25 +110,6 @@ interface CancellableEvent {
      * 取消这个事件.
      */
     fun cancel()
-}
-
-/**
- * 可被取消的事件的实现
- */
-abstract class AbstractCancellableEvent : Event, CancellableEvent {
-    /**
-     * 事件是否已取消.
-     */
-    override val isCancelled: Boolean get() = _cancelled
-
-    private var _cancelled: Boolean = false
-
-    /**
-     * 取消事件.
-     */
-    override fun cancel() {
-        _cancelled = true
-    }
 }
 
 /**
@@ -81,9 +130,20 @@ suspend fun <E : Event> E.broadcast(): E = apply {
 var EventDisabled = false
 
 /**
- * 可控制是否需要广播这个事件包
+ * 可控制是否需要广播这个事件
  */
 interface BroadcastControllable : Event {
+    /**
+     * 返回 `false` 时将不会广播这个事件.
+     */
     val shouldBroadcast: Boolean
         get() = true
 }
+
+
+@PlannedRemoval("1.1.0")
+@Deprecated(
+    "use AbstractEvent and implement CancellableEvent",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("AbstractEvent", "net.mamoe.mirai.event.AbstractEvent"))
+abstract class AbstractCancellableEvent : AbstractEvent(), CancellableEvent

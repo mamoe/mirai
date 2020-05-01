@@ -26,7 +26,6 @@ import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.*
-import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
@@ -509,10 +508,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 is OutgoingPacketFactory<P> -> bot.handle(packet)
                 is IncomingPacketFactory<P> -> bot.handle(packet, sequenceId)?.sendWithoutExpect()
             }
-        }
-
-        if (packet != null && PacketReceivedEvent(packet).broadcast().isCancelled) {
-            return
         }
 
         if (packet is Event) {

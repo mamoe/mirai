@@ -17,6 +17,7 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.data.FriendInfo
+import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
@@ -57,7 +58,7 @@ internal class OnlinePush {
         internal class SendGroupMessageReceipt(
             val messageRandom: Int,
             val sequenceId: Int
-        ) : Packet, Event, Packet.NoLog {
+        ) : Packet, Event, Packet.NoLog, AbstractEvent() {
             override fun toString(): String {
                 return "OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt(messageRandom=$messageRandom, sequenceId=$sequenceId)"
             }
