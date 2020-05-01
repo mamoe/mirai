@@ -35,9 +35,11 @@ import kotlin.jvm.JvmSynthetic
  */
 interface Event {
 
-    @Deprecated("""
+    @Deprecated(
+        """
         Don't implement Event but extend AbstractEvent instead.
-    """, level = DeprecationLevel.HIDDEN) // so Kotlin class won't be compiled.
+    """, level = DeprecationLevel.HIDDEN
+    ) // so Kotlin class won't be compiled.
     @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName")
     @get:JvmSynthetic // so Java user won't see it
     internal val DoNotImplementThisClassButExtendAbstractEvent: Nothing
@@ -54,9 +56,8 @@ abstract class AbstractEvent : Event {
     final override val DoNotImplementThisClassButExtendAbstractEvent: Nothing
         get() = throw Error("Shouldn't be reached")
 
-    private val _intercepted = atomic(false)
+    private var _intercepted = false
     private val _cancelled = atomic(false)
-
 
     /**
      * 事件是否已被拦截.
@@ -65,7 +66,7 @@ abstract class AbstractEvent : Event {
      */
     @SinceMirai("1.0.0")
     val isIntercepted: Boolean
-        get() = _intercepted.value
+        get() = _intercepted
 
     /**
      * 拦截这个事件.
@@ -73,7 +74,7 @@ abstract class AbstractEvent : Event {
      */
     @SinceMirai("1.0.0")
     fun intercept() {
-        _intercepted.value = true
+        _intercepted = true
     }
 
 
@@ -145,5 +146,6 @@ interface BroadcastControllable : Event {
 @Deprecated(
     "use AbstractEvent and implement CancellableEvent",
     level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith("AbstractEvent", "net.mamoe.mirai.event.AbstractEvent"))
+    replaceWith = ReplaceWith("AbstractEvent", "net.mamoe.mirai.event.AbstractEvent")
+)
 abstract class AbstractCancellableEvent : AbstractEvent(), CancellableEvent

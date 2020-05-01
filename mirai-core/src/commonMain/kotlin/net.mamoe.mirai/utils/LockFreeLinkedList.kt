@@ -156,6 +156,18 @@ open class LockFreeLinkedList<E> {
         }
     }
 
+    open fun tryInsertAfter(node: LockFreeLinkedListNode<E>, newValue: E): Boolean {
+        if (node == tail) {
+            error("Cannot insert value after tail")
+        }
+        if (node.isRemoved()) {
+            return false
+        }
+        val next = node.nextNodeRef.value
+        val newNode = newValue.asNode(next)
+        return node.nextNodeRef.compareAndSet(next, newNode)
+    }
+
     /**
      * 先把元素建立好链表, 再加入到 list.
      */
@@ -329,7 +341,8 @@ open class LockFreeLinkedList<E> {
         }
     }
 
-    inline fun forEachNode(block: (LockFreeLinkedListNode<E>) -> Unit) {
+    inline fun forEachNode(block: LockFreeLinkedList<E>.(LockFreeLinkedListNode<E>) -> Unit) {
+        // Copy from forEach
         var node: LockFreeLinkedListNode<E> = head
         while (true) {
             if (node === tail) return
@@ -358,27 +371,40 @@ open class LockFreeLinkedList<E> {
     @Suppress("unused")
     open fun removeAll(elements: Collection<E>): Boolean = elements.all { remove(it) }
 
-    /*
-
-
-    private fun removeNode(node: Node<E>): Boolean {
+    @Suppress("DuplicatedCode")
+    open fun removeNode(node: LockFreeLinkedListNode<E>): Boolean {
         if (node == tail) {
             return false
         }
         while (true) {
             val before = head.iterateBeforeFirst { it === node }
             val toRemove = before.nextNode
-            val next = toRemove.nextNode
-            if (toRemove == tail) { // This
-                return true
+            if (toRemove === tail) {
+                return false
             }
-            toRemove.nodeValue = null // logically remove first, then all the operations will recognize this node invalid
+            if (toRemove.isRemoved()) {
+                continue
+            }
+            @Suppress("BooleanLiteralArgument") // false positive
+            if (!toRemove.removed.compareAndSet(false, true)) {
+                // logically remove: all the operations will recognize this node invalid
+                continue
+            }
 
-            if (before.nextNodeRef.compareAndSet(toRemove, next)) { // physically remove: try to fix the link
+
+            // physically remove: try to fix the link
+            var next: LockFreeLinkedListNode<E> = toRemove.nextNode
+            while (next !== tail && next.isRemoved()) {
+                next = next.nextNode
+            }
+            if (before.nextNodeRef.compareAndSet(toRemove, next)) {
                 return true
             }
         }
     }
+
+    /*
+
 
     fun removeAt(index: Int): E {
         require(index >= 0) { "index must be >= 0" }
