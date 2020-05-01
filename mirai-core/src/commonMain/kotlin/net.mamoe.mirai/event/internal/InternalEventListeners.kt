@@ -25,7 +25,7 @@ import kotlin.reflect.KClass
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
     with(GlobalEventListeners[listener.priority]) {
         @Suppress("UNCHECKED_CAST")
-        val node = ListenerNode(listener as Listener<Event>, listener.priority, this@subscribeInternal)
+        val node = ListenerNode(listener as Listener<Event>, this@subscribeInternal)
         @OptIn(MiraiInternalAPI::class)
         addLast(node)
         listener.invokeOnCompletion {
@@ -100,18 +100,8 @@ internal class Handler<in E : Event>
 
 internal class ListenerNode(
     val listener: Listener<Event>,
-    val priority: Listener.EventPriority,
     val owner: KClass<out Event>
 )
-
-/*
-internal expect class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>> {
-
-    @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
-    val supertypes: Set<KClass<out Event>>
-
-}
- */
 internal expect object GlobalEventListeners {
     operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerNode>
 }
@@ -123,7 +113,6 @@ internal expect class MiraiAtomicBoolean(initial: Boolean) {
     var value: Boolean
 }
 
-val logger = DefaultLogger("Internal Event Poster")
 
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
@@ -133,26 +122,14 @@ internal suspend inline fun Event.broadcastInternal() = coroutineScope {
 }
 
 @OptIn(MiraiInternalAPI::class)
-private fun <E : AbstractEvent> CoroutineScope.callAndRemoveIfRequired(
+private suspend fun <E : AbstractEvent> callAndRemoveIfRequired(
     event: E
 ) {
-    // atomic foreach
-    launch {
-        /*
-        println(listenersArray.let {
-            val list = mutableListOf<Listener.EventPriority>()
-            for (i in it) {
-                for (node in i) {
-                    list.add(node.priority)
-                }
-            }
-            list
-        })
-        */
+    coroutineScope {
         for (p in Listener.EventPriority.values()) {
             GlobalEventListeners[p].forEachNode { eventNode ->
-                if (event .isIntercepted) {
-                    return@launch
+                if (event.isIntercepted) {
+                    return@coroutineScope
                 }
                 val node = eventNode.nodeValue
                 if (!node.owner.isInstance(event)) return@forEachNode
@@ -165,38 +142,25 @@ private fun <E : AbstractEvent> CoroutineScope.callAndRemoveIfRequired(
                                     ListeningStatus.STOPPED -> {
                                         removeNode(eventNode)
                                     }
-                                    ListeningStatus.INTERCEPTED -> {
-                                        return@launch
-                                    }
                                     else -> {
                                     }
                                 }
                             }.onFailure {
-                                logger.error("Exception in calling locked listener", it)
+                                TODO("Exception catching")
                             }
                         }
                     }
-                    Listener.ConcurrencyKind.SOLE_CONCURRENT -> {
+                    Listener.ConcurrencyKind.CONCURRENT -> {
                         kotlin.runCatching {
                             when (listener.onEvent(event)) {
                                 ListeningStatus.STOPPED -> {
                                     removeNode(eventNode)
                                 }
-                                ListeningStatus.INTERCEPTED -> {
-                                    return@launch
-                                }
                                 else -> {
                                 }
                             }
                         }.onFailure {
-                            logger.error("Exception in calling sole concurrent listener", it)
-                        }
-                    }
-                    else -> {
-                        launch {
-                            if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                                removeNode(eventNode)
-                            }
+                            TODO("Exception catching")
                         }
                     }
                 }
