@@ -12,6 +12,8 @@ package net.mamoe.mirai.event
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import net.mamoe.mirai.event.internal.GlobalEventListeners
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.StepUtil
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.Executor
@@ -27,6 +29,7 @@ class TestEvent : Event, AbstractEvent() {
 class EventTests {
     @Test
     fun testSubscribeInplace() {
+        resetEventListeners()
         runBlocking {
             val subscriber = subscribeAlways<TestEvent> {
                 triggered = true
@@ -39,6 +42,7 @@ class EventTests {
 
     @Test
     fun testSubscribeGlobalScope() {
+        resetEventListeners()
         runBlocking {
             GlobalScope.subscribeAlways<TestEvent> {
                 triggered = true
@@ -50,6 +54,7 @@ class EventTests {
 
     @Test
     fun `test concurrent listening`() {
+        resetEventListeners()
         var listeners = 0
         val counter = AtomicInteger(0)
         for (p in Listener.EventPriority.values()) {
@@ -73,6 +78,7 @@ class EventTests {
 
     @Test
     fun `test concurrent listening 3`() {
+        resetEventListeners()
         runBlocking {
             val called = AtomicInteger()
             val registered = AtomicInteger()
@@ -104,6 +110,7 @@ class EventTests {
 
     @Test
     fun `test concurrent listening 2`() {
+        resetEventListeners()
         val registered = AtomicInteger()
         val called = AtomicInteger()
         val threads = mutableListOf<Thread>()
@@ -149,6 +156,7 @@ class EventTests {
 
     @Test
     fun `broadcast Child to Parent`() {
+        resetEventListeners()
         runBlocking {
             val job: CompletableJob
             job = subscribeAlways<ParentEvent> {
@@ -162,6 +170,7 @@ class EventTests {
 
     @Test
     fun `broadcast ChildChild to Parent`() {
+        resetEventListeners()
         runBlocking {
             val job: CompletableJob
             job = subscribeAlways<ParentEvent> {
@@ -188,6 +197,7 @@ class EventTests {
 
     @Test
     fun `test handler remvoe`() {
+        resetEventListeners()
         val step = StepUtil()
         singleThreaded(step) {
             subscribe<Event> {
@@ -209,9 +219,16 @@ class EventTests {
         }
     }
     */
+    fun resetEventListeners() {
+        for (p in Listener.EventPriority.values()) {
+            @OptIn(MiraiInternalAPI::class)
+            GlobalEventListeners[p].clear()
+        }
+    }
 
     @Test
     fun `test intercept with always`() {
+        resetEventListeners()
         val step = StepUtil()
         singleThreaded(step) {
             subscribeAlways<ParentEvent> {
@@ -228,6 +245,7 @@ class EventTests {
 
     @Test
     fun `test intercept`() {
+        resetEventListeners()
         val step = StepUtil()
         singleThreaded(step) {
             subscribeAlways<AbstractEvent> {
@@ -244,6 +262,7 @@ class EventTests {
 
     @Test
     fun `test listener complete`() {
+        resetEventListeners()
         val step = StepUtil()
         singleThreaded(step) {
             val listener = subscribeAlways<ParentEvent> {
@@ -257,6 +276,7 @@ class EventTests {
 
     @Test
     fun `test event priority`() {
+        resetEventListeners()
         val step = StepUtil()
         singleThreaded(step) {
             subscribe<PriorityTestEvent> {
