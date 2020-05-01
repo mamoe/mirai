@@ -146,7 +146,7 @@ private suspend fun <E : AbstractEvent> callAndRemoveIfRequired(
                                     }
                                 }
                             }.onFailure {
-                                TODO("Exception catching")
+                                // TODO("Exception catching")
                             }
                         }
                     }
@@ -160,7 +160,7 @@ private suspend fun <E : AbstractEvent> callAndRemoveIfRequired(
                                 }
                             }
                         }.onFailure {
-                            TODO("Exception catching")
+                            // TODO("Exception catching")
                         }
                     }
                 }

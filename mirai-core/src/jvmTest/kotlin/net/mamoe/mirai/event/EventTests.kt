@@ -230,9 +230,9 @@ class EventTests {
     fun `test intercept`() {
         val step = StepUtil()
         singleThreaded(step) {
-            subscribe<Event> {
+            subscribeAlways<AbstractEvent> {
                 step.step(0)
-                ListeningStatus.INTERCEPTED
+                intercept()
             }
             subscribe<Event> {
                 step.step(-1, "Boom")
