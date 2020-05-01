@@ -14,6 +14,7 @@ package net.mamoe.mirai.event.internal
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.utils.LockFreeLinkedList
+import net.mamoe.mirai.utils.LockFreeLinkedListNode
 import net.mamoe.mirai.utils.isRemoved
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.util.*
@@ -35,6 +36,22 @@ internal actual class MiraiAtomicBoolean actual constructor(initial: Boolean) {
         }
 }
 
+internal actual object GlobalEventListeners {
+    private val map: Map<Listener.EventPriority, LockFreeLinkedList<ListenerNode>>
+
+    init {
+        val map = EnumMap<Listener.EventPriority, LockFreeLinkedList<ListenerNode>>(Listener.EventPriority::class.java)
+        Listener.EventPriority.values().forEach {
+            map[it] = LockFreeLinkedList()
+        }
+        this.map = map
+    }
+
+    actual operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerNode> = map[priority]!!
+
+}
+
+/*
 internal actual class EventListeners<E : Event> actual constructor(clazz: KClass<E>) :
     LockFreeLinkedList<Listener<E>>() {
     @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
@@ -56,3 +73,4 @@ internal actual class EventListeners<E : Event> actual constructor(clazz: KClass
     }
 
 }
+ */

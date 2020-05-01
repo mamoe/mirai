@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +16,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.internal.EventListeners
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
 import net.mamoe.mirai.utils.MiraiInternalAPI

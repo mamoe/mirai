@@ -23,38 +23,22 @@ import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 
+
 @PublishedApi
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
-    with(this.listeners()) {
-        register(listener)
+    with(GlobalEventListeners[listener.priority]) {
+        @Suppress("UNCHECKED_CAST")
+        val node = ListenerNode(listener as Listener<Event>, listener.priority, this@subscribeInternal)
+        @OptIn(MiraiInternalAPI::class)
+        addLast(node)
         listener.invokeOnCompletion {
-            this.remove(listener)
+            @OptIn(MiraiInternalAPI::class)
+            this.remove(node)
         }
     }
     return listener
 }
 
-private fun <E : Event> EventListeners<E>.register(listener: Listener<E>) {
-    while (true) {
-        var start: LockFreeLinkedListNode<Listener<E>> = head
-        while (true) {
-            val next = start.nextNode
-            if (next.isTail()) {
-                if (tryInsertAfter(start, listener)) return
-                break
-            }
-            if (next.isRemoved()) {
-                start = next
-                continue
-            }
-            if (next.nodeValue.priority > listener.priority) {
-                if (tryInsertAfter(start, listener)) return
-                break
-            }
-            start = next
-        }
-    }
-}
 
 @PublishedApi
 @Suppress("FunctionName")
@@ -117,18 +101,22 @@ internal class Handler<in E : Event>
     }
 }
 
-/**
- * 这个事件类的监听器 list
- */
-internal fun <E : Event> KClass<out E>.listeners(): EventListeners<E> = EventListenerManager.get(this)
+internal class ListenerNode(
+    val listener: Listener<Event>,
+    val priority: Listener.EventPriority,
+    val owner: KClass<out Event>
+)
 
-internal class ListenerNode<T : Event>(val listener: Listener<T>, val listeners: EventListeners<*>)
-
+/*
 internal expect class EventListeners<E : Event>(clazz: KClass<E>) : LockFreeLinkedList<Listener<E>> {
 
     @Suppress("UNCHECKED_CAST", "UNSUPPORTED", "NO_REFLECTION_IN_CLASS_PATH")
     val supertypes: Set<KClass<out Event>>
 
+}
+ */
+internal expect object GlobalEventListeners {
+    operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerNode>
 }
 
 internal expect class MiraiAtomicBoolean(initial: Boolean) {
@@ -138,61 +126,17 @@ internal expect class MiraiAtomicBoolean(initial: Boolean) {
     var value: Boolean
 }
 
-/**
- * 管理每个事件 class 的 [EventListeners].
- * [EventListeners] 是 lazy 的: 它们只会在被需要的时候才创建和存储.
- */
-internal object EventListenerManager {
-    private data class Registry<E : Event>(val clazz: KClass<E>, val listeners: EventListeners<E>)
-
-    private val registries = LockFreeLinkedList<Registry<*>>()
-
-    // 不要用 atomicfu. 在 publish 后会出现 VerifyError
-    private val lock: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
-
-    @OptIn(MiraiInternalAPI::class)
-    @Suppress("UNCHECKED_CAST", "BooleanLiteralArgument")
-    internal tailrec fun <E : Event> get(clazz: KClass<out E>): EventListeners<E> {
-        registries.forEach {
-            if (it.clazz == clazz) {
-                return it.listeners as EventListeners<E>
-            }
-        }
-        if (lock.compareAndSet(false, true)) {
-            val registry = Registry(clazz as KClass<E>, EventListeners(clazz))
-            registries.addLast(registry)
-            lock.value = false
-            return registry.listeners
-        }
-        return get(clazz)
-    }
-}
-
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
 internal suspend inline fun Event.broadcastInternal() = coroutineScope {
     if (EventDisabled) return@coroutineScope
-
-    val listeners = this@broadcastInternal::class.listeners()
-    callAndRemoveIfRequired(this@broadcastInternal,
-        listeners.supertypes.mapTo(mutableListOf<EventListeners<Event>>()) {
-            it.listeners()
-        }.also { it.add(listeners) }
-    )
-    /*
-    listeners.supertypes.forEach {
-        callAndRemoveIfRequired(this@broadcastInternal, it.listeners())
-    }
-    */
+    callAndRemoveIfRequired(this@broadcastInternal)
 }
 
 @OptIn(MiraiInternalAPI::class)
 private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(
-    event: E,
-    listeners: List<EventListeners<E>>
+    event: E
 ) {
-    val listenersArray = listeners.toTypedArray()
-    val nodes: Array<LockFreeLinkedListNode<Listener<E>>> = listeners.map { it.head }.toTypedArray()
     // atomic foreach
     launch {
         /*
@@ -207,73 +151,31 @@ private fun <E : Event> CoroutineScope.callAndRemoveIfRequired(
         })
         */
         for (p in Listener.EventPriority.values()) {
-            for (node_index in nodes.indices) {
-                var node = nodes[node_index]
-                while ((node.isHead() || node.isRemoved()) && !node.isTail()) {
-                    node = node.nextNode
-                }
-                // Looking all
-                while (!node.isTail()) {
-                    if (node.isRemoved()) {
-                        node = node.nextNode
-                        continue
-                    }
-                    val listener = node.nodeValue
-                    if (listener.priority != p) break
-                    if (listener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
-                        (listener as Handler).lock!!.withLock {
-                            when (listener.onEvent(event)) {
-                                ListeningStatus.STOPPED -> {
-                                    @Suppress("UNCHECKED_CAST")
-                                    listenersArray[node_index].removeNode(node) // atomic remove
-                                }
-                                ListeningStatus.INTERCEPTION -> {
-                                    return@launch
-                                }
-                                else -> {
-                                }
+            GlobalEventListeners[p].forEachNode { eventNode ->
+                val node = eventNode.nodeValue
+                if (!node.owner.isInstance(event)) return@forEachNode
+                val listener = node.listener
+                if (listener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
+                    (listener as Handler).lock!!.withLock {
+                        when (listener.onEvent(event)) {
+                            ListeningStatus.STOPPED -> {
+                                removeNode(eventNode)
                             }
-                        }
-                    } else {
-                        launch {
-                            if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                                @Suppress("UNCHECKED_CAST")
-                                listenersArray[node_index].remove(listener) // atomic remove
+                            ListeningStatus.INTERCEPTION -> {
+                                return@launch
+                            }
+                            else -> {
                             }
                         }
                     }
-                    node = node.nextNode
-                }
-                nodes[node_index] = node
-            }
-        }
-        /*
-        for (listener in listeners) {
-            val currentListener = listener.listener
-            val currentListeners = listener.listeners
-            if (currentListener.concurrencyKind == Listener.ConcurrencyKind.LOCKED) {
-                (currentListener as Handler).lock!!.withLock {
-                    when (currentListener.onEvent(event)) {
-                        ListeningStatus.STOPPED -> {
-                            @Suppress("UNCHECKED_CAST")
-                            currentListeners.remove(currentListener as Listener<Event>) // atomic remove
+                } else {
+                    launch {
+                        if (listener.onEvent(event) == ListeningStatus.STOPPED) {
+                            removeNode(eventNode)
                         }
-                        ListeningStatus.INTERCEPTION -> {
-                            return@launch
-                        }
-                        else -> {
-                        }
-                    }
-                }
-            } else {
-                launch {
-                    if (currentListener.onEvent(event) == ListeningStatus.STOPPED) {
-                        @Suppress("UNCHECKED_CAST")
-                        currentListeners.remove(currentListener as Listener<Event>) // atomic remove
                     }
                 }
             }
         }
-        */
     }
 }

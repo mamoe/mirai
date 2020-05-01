@@ -369,7 +369,7 @@ open class LockFreeLinkedList<E> : Iterable<E> {
         }
     }
 
-    inline fun forEachNode(block: (LockFreeLinkedListNode<E>) -> Unit) {
+    inline fun forEachNode(block: LockFreeLinkedList<E>.(LockFreeLinkedListNode<E>) -> Unit) {
         var node: LockFreeLinkedListNode<E> = head
         while (true) {
             if (node === tail) return
