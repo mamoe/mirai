@@ -17,6 +17,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
@@ -32,6 +33,9 @@ import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.TempMessage
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.PttMessage
+import net.mamoe.mirai.message.data.Voice
+import net.mamoe.mirai.message.data.firstOrNull
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsFriendImpl
@@ -51,6 +55,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
@@ -279,6 +284,10 @@ internal class MessageSvc {
                                     }
                                 } else return@mapNotNull null
                             }
+                        }
+                        208 -> {
+                            // friend ptt
+                            return@mapNotNull null
                         }
                         141 -> {
                             val tmpHead = msg.msgHead.c2cTmpMsgHead ?: return@mapNotNull null
@@ -521,7 +530,10 @@ internal class MessageSvc {
                     contentHead = MsgComm.ContentHead(pkgNum = 1),
                     msgBody = ImMsgBody.MsgBody(
                         richText = ImMsgBody.RichText(
-                            elems = message.toRichTextElems(forGroup = true, withGeneralFlags = true)
+                            elems = message.toRichTextElems(forGroup = true, withGeneralFlags = true),
+                            ptt = message.firstOrNull(PttMessage)?.run {
+                                ImMsgBody.Ptt(fileName = fileName.toByteArray(), fileMd5 = md5)
+                            }
                         )
                     ),
                     msgSeq = client.atomicNextMessageSequenceId(),

@@ -233,6 +233,8 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     CustomMessage -> firstIsInstanceOrNull()
     CustomMessageMetadata -> firstIsInstanceOrNull()
     ForwardMessage -> firstIsInstanceOrNull()
+    PttMessage -> firstIsInstanceOrNull<PttMessage>()
+    Voice -> firstIsInstanceOrNull<Voice>()
     else -> {
         this.forEach { message ->
             if (message is CustomMessage) {

@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.qqandroid.message
 
+import kotlinx.io.core.String
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import kotlinx.io.core.toByteArray
@@ -156,6 +157,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             is VipFace -> {
                 transformOneMessage(PlainText(it.contentToString()))
             }
+            is PttMessage,
             is ForwardMessage,
             is MessageSource, // mirai metadata only
             is RichMessage // already transformed above
@@ -187,6 +189,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             this.anyIsInstance<FlashImage>() -> {
                 elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_DOUTU)))
             }
+            this.anyIsInstance<PttMessage>() -> {
+                elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_PTT)))
+            }
             else -> elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_ELSE)))
         }
     }
@@ -196,6 +201,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 
 private val PB_RESERVE_FOR_RICH_MESSAGE =
     "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes()
+
+private val PB_RESERVE_FOR_PTT =
+    "78 00 F8 01 00 C8 02 00 AA 03 26 08 22 12 22 41 20 41 3B 25 3E 16 45 3F 43 2F 29 3E 44 24 14 18 46 3D 2B 4A 44 3A 18 2E 19 29 1B 26 32 31 31 29 43".hexToBytes()
 
 @Suppress("SpellCheckingInspection")
 private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".hexToBytes()
@@ -209,8 +217,16 @@ internal fun MsgComm.Msg.toMessageChain(
     isTemp: Boolean = false
 ): MessageChain {
     val elements = this.msgBody.richText.elems
+    val ptt = this.msgBody.richText.ptt
 
-    return buildMessageChain(elements.size + 1) {
+    val pptMsg = ptt?.run {
+        when(fileType) {
+            4 -> Voice(String(fileName), fileMd5, String(downPara))
+            else -> null
+        }
+    }
+
+    return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {
         if (onlineSource) {
             when {
                 isTemp -> +MessageSourceFromTempImpl(bot, this@toMessageChain)
@@ -221,6 +237,7 @@ internal fun MsgComm.Msg.toMessageChain(
             +OfflineMessageSourceImplByMsg(this@toMessageChain, bot)
         }
         elements.joinToMessageChain(groupIdOrZero, bot, this)
+        pptMsg?.let(::add)
     }.cleanupRubbishMessageElements()
 }
 
