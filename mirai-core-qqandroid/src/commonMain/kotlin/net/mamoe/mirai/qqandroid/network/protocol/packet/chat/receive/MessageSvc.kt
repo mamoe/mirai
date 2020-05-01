@@ -23,6 +23,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -36,7 +37,7 @@ import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsFriendImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
 import net.mamoe.mirai.qqandroid.message.*
-import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
+import net.mamoe.mirai.qqandroid.network.MultiPacket
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPushForceOffline
@@ -50,7 +51,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
@@ -129,7 +129,10 @@ internal class MessageSvc {
          */
         @MiraiInternalAPI
         open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) :
-            MultiPacketByIterable<Packet>(delegate) {
+            AbstractEvent(),
+            MultiPacket<Packet>,
+            Iterable<Packet> by (delegate) {
+
             override fun toString(): String =
                 "MessageSvc.PbGetMsg.Response(syncFlagFromServer=$syncFlagFromServer, messages=<Iterable>))"
         }

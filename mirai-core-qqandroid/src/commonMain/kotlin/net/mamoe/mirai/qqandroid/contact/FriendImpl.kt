@@ -30,6 +30,7 @@ import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.highway.postImage
+import net.mamoe.mirai.qqandroid.network.highway.sizeToString
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
@@ -109,7 +110,7 @@ internal class FriendImpl(
                 }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     bot.network.logger.verbose {
-                        "[Http] Uploading friend image, size=${image.inputSize / 1024} KiB"
+                        "[Http] Uploading friend image, size=${image.inputSize.sizeToString()}"
                     }
 
                     val time = measureTime {

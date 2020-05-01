@@ -15,7 +15,7 @@ package net.mamoe.mirai.event.events
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.AbstractCancellableEvent
+import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.CancellableEvent
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
@@ -49,12 +49,12 @@ class EventCancelledException : RuntimeException {
 /**
  * [Bot] 登录完成, 好友列表, 群组列表初始化完成
  */
-data class BotOnlineEvent(override val bot: Bot) : BotActiveEvent
+data class BotOnlineEvent(override val bot: Bot) : BotActiveEvent, AbstractEvent()
 
 /**
  * [Bot] 离线.
  */
-sealed class BotOfflineEvent : BotEvent {
+sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
 
     /**
      * 主动离线
@@ -85,7 +85,7 @@ sealed class BotOfflineEvent : BotEvent {
 data class BotReloginEvent(
     override val bot: Bot,
     val cause: Throwable?
-) : BotEvent, BotActiveEvent
+) : BotEvent, BotActiveEvent, AbstractEvent()
 
 // endregion
 
@@ -94,7 +94,7 @@ data class BotReloginEvent(
 /**
  * 主动发送消息
  */
-sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEvent() {
+sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
     abstract val target: Contact
     final override val bot: Bot
         get() = target.bot
@@ -115,7 +115,7 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
 /**
  * 消息撤回事件. 可是任意消息被任意人撤回.
  */
-sealed class MessageRecallEvent : BotEvent {
+sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 消息原发送人
      */
@@ -197,7 +197,7 @@ val MessageRecallEvent.isByBot: Boolean
 data class BeforeImageUploadEvent(
     val target: Contact,
     val source: ExternalImage
-) : BotEvent, BotActiveEvent, AbstractCancellableEvent() {
+) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
     override val bot: Bot
         get() = target.bot
 }
@@ -208,7 +208,7 @@ data class BeforeImageUploadEvent(
  * @see Succeed
  * @see Failed
  */
-sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEvent() {
+sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
     abstract val target: Contact
     abstract val source: ExternalImage
     override val bot: Bot
@@ -218,14 +218,14 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
         override val target: Contact,
         override val source: ExternalImage,
         val image: Image
-    ) : ImageUploadEvent(), CancellableEvent
+    ) : ImageUploadEvent()
 
     data class Failed(
         override val target: Contact,
         override val source: ExternalImage,
         val errno: Int,
         val message: String
-    ) : ImageUploadEvent(), CancellableEvent
+    ) : ImageUploadEvent()
 }
 
 // endregion
@@ -236,7 +236,7 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
  */
 @SinceMirai("0.36.0")
-sealed class BotLeaveEvent : BotEvent, Packet {
+sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
     abstract val group: Group
 
     /**
@@ -261,7 +261,7 @@ data class BotGroupPermissionChangeEvent(
     override val group: Group,
     val origin: MemberPermission,
     val new: MemberPermission
-) : BotPassiveEvent, GroupEvent, Packet
+) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent()
 
 /**
  * Bot 被禁言
@@ -272,7 +272,7 @@ data class BotMuteEvent(
      * 操作人.
      */
     val operator: Member
-) : GroupEvent, Packet, BotPassiveEvent {
+) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
     override val group: Group
         get() = operator.group
 }
@@ -285,7 +285,7 @@ data class BotUnmuteEvent(
      * 操作人.
      */
     val operator: Member
-) : GroupEvent, Packet, BotPassiveEvent {
+) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
     override val group: Group
         get() = operator.group
 }
@@ -296,7 +296,7 @@ data class BotUnmuteEvent(
 @MiraiExperimentalAPI
 data class BotJoinGroupEvent(
     override val group: Group
-) : BotPassiveEvent, GroupEvent, Packet
+) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent()
 
 // region 群设置
 
@@ -323,7 +323,7 @@ data class GroupNameChangeEvent(
      */
     @SinceMirai("0.37.3")
     override val operator: Member?
-) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent {
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent() {
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     val isByBot: Boolean
         get() = operator == null
@@ -340,7 +340,7 @@ data class GroupEntranceAnnouncementChangeEvent(
      * 操作人. 为 null 时则是机器人操作
      */
     override val operator: Member?
-) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
 
 
 /**
@@ -354,7 +354,7 @@ data class GroupMuteAllEvent(
      * 操作人. 为 null 时则是机器人操作
      */
     override val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
 /**
@@ -368,7 +368,7 @@ data class GroupAllowAnonymousChatEvent(
      * 操作人. 为 null 时则是机器人操作
      */
     override val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
 /**
@@ -379,7 +379,7 @@ data class GroupAllowConfessTalkEvent(
     override val new: Boolean,
     override val group: Group,
     val isByBot: Boolean // 无法获取操作人
-) : GroupSettingChangeEvent<Boolean>, Packet
+) : GroupSettingChangeEvent<Boolean>, Packet, AbstractEvent()
 
 /**
  * 群 "允许群员邀请好友加群" 功能状态改变. 此事件广播前修改就已经完成.
@@ -392,7 +392,7 @@ data class GroupAllowMemberInviteEvent(
      * 操作人. 为 null 时则是机器人操作
      */
     override val operator: Member?
-) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent
+) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
 // endregion
@@ -405,7 +405,7 @@ data class GroupAllowMemberInviteEvent(
 /**
  * 成员已经加入群的事件
  */
-sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet {
+sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent() {
     /**
      * 被邀请加入群
      */
@@ -422,7 +422,7 @@ sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, Bo
 /**
  * 成员已经离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除
  */
-sealed class MemberLeaveEvent : GroupMemberEvent {
+sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
     /**
      * 成员被踢出群. 成员不可能是机器人自己.
      */
@@ -468,7 +468,7 @@ data class BotInvitedJoinGroupRequestEvent(
      * 邀请人昵称
      */
     val invitorNick: String
-) : BotEvent, Packet {
+) : BotEvent, Packet, AbstractEvent() {
     val invitor: Friend = this.bot.getFriend(invitorId)
 
     @JvmField
@@ -515,7 +515,7 @@ data class MemberJoinRequestEvent(
      * 申请人昵称
      */
     val fromNick: String
-) : BotEvent, Packet {
+) : BotEvent, Packet, AbstractEvent() {
     val group: Group = this.bot.getGroup(groupId)
 
     @JvmField
@@ -574,8 +574,9 @@ data class MemberCardChangeEvent(
     @PlannedRemoval("1.0.0")
     @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR)
     override val operator: Member?
-) : GroupMemberEvent, Packet,
-    @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR) GroupOperableEvent
+) : GroupMemberEvent, Packet, AbstractEvent(),
+    @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR)
+    GroupOperableEvent
 
 /**
  * 成员群头衔改动. 一定为群主操作
@@ -599,7 +600,7 @@ data class MemberSpecialTitleChangeEvent(
      * 为 null 时则是机器人操作.
      */
     override val operator: Member?
-) : GroupMemberEvent, GroupOperableEvent
+) : GroupMemberEvent, GroupOperableEvent, AbstractEvent()
 
 // endregion
 
@@ -613,7 +614,7 @@ data class MemberPermissionChangeEvent(
     override val member: Member,
     val origin: MemberPermission,
     val new: MemberPermission
-) : GroupMemberEvent, BotPassiveEvent, Packet
+) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
 
 // endregion
 
@@ -630,7 +631,7 @@ data class MemberMuteEvent(
      * 操作人. 为 null 则为机器人操作
      */
     override val operator: Member?
-) : GroupMemberEvent, Packet, GroupOperableEvent
+) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent()
 
 /**
  * 群成员被取消禁言事件. 被禁言的成员都不可能是机器人本人
@@ -641,7 +642,7 @@ data class MemberUnmuteEvent(
      * 操作人. 为 null 则为机器人操作
      */
     override val operator: Member?
-) : GroupMemberEvent, Packet, GroupOperableEvent
+) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent()
 
 // endregion
 
@@ -659,8 +660,9 @@ data class FriendRemarkChangeEvent(
     override val bot: Bot,
     val friend: Friend,
     val newName: String
-) : BotEvent, Packet {
+) : BotEvent, Packet, AbstractEvent() {
 
+    @PlannedRemoval("1.0.0")
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     @get:JvmSynthetic
     @get:JvmName("getFriend")
@@ -678,9 +680,10 @@ data class FriendAddEvent(
      * 新好友. 已经添加到 [Bot.friends]
      */
     val friend: Friend
-) : BotEvent, Packet {
+) : BotEvent, Packet, AbstractEvent() {
     override val bot: Bot get() = friend.bot
 
+    @PlannedRemoval("1.0.0")
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     @get:JvmSynthetic
     @get:JvmName("getFriend")
@@ -695,9 +698,10 @@ data class FriendAddEvent(
 @SinceMirai("0.36.0")
 data class FriendDeleteEvent(
     val friend: Friend
-) : BotEvent, Packet {
+) : BotEvent, Packet, AbstractEvent() {
     override val bot: Bot get() = friend.bot
 
+    @PlannedRemoval("1.0.0")
     @Deprecated("", level = DeprecationLevel.HIDDEN)
     @get:JvmSynthetic
     @get:JvmName("getFriend")
@@ -732,7 +736,7 @@ data class NewFriendRequestEvent(
      * 群名片或好友昵称
      */
     val fromNick: String
-) : BotEvent, Packet {
+) : BotEvent, Packet, AbstractEvent() {
     @JvmField
     internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 

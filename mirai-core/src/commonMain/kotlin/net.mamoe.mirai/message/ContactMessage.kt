@@ -24,11 +24,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.selectMessages
-import net.mamoe.mirai.event.syncFromEvent
-import net.mamoe.mirai.event.syncFromEventOrNull
-import net.mamoe.mirai.event.whileSelectMessages
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.utils.*
@@ -71,7 +68,7 @@ expect abstract class MessagePacket<TSender : User, TSubject : Contact> construc
     replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
 )
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
-abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : Packet, BotEvent {
+abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : Packet, BotEvent, AbstractEvent() {
     /**
      * 接受到这条消息的
      */
