@@ -146,7 +146,7 @@ internal class MessageSourceToGroupImpl(
             type = 0,
             time = time,
             pbReserve = SourceMsg.ResvAttr(
-                origUids = id.toLong() and 0xffFFffFF // id is actually messageRandom
+                origUids = internalId.toLong() and 0xffFFffFF // id is actually messageRandom
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
@@ -156,7 +156,7 @@ internal class MessageSourceToGroupImpl(
                     c2cCmd = 1,
                     msgSeq = sequenceId,
                     msgTime = time,
-                    msgUid = id.toLong() and 0xffFFffFF, // ok
+                    msgUid = internalId.toLong() and 0xffFFffFF, // ok
                     groupInfo = MsgComm.GroupInfo(groupCode = targetId),
                     isSrcMsg = true
                 ),

@@ -24,8 +24,8 @@ import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MemberLeaveEvent
 import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -81,7 +81,7 @@ internal class MemberImpl constructor(
     }
 
     @JvmSynthetic
-    override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = qq.uploadImage(image)
+    override suspend fun uploadImage(image: ExternalImage): Image = qq.uploadImage(image)
 
     override var permission: MemberPermission = memberInfo.permission
 

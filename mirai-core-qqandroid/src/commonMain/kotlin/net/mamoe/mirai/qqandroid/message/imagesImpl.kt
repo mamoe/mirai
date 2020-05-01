@@ -16,7 +16,8 @@ import net.mamoe.mirai.utils.ExternalImage
 
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
-) : OnlineGroupImage() {
+) : @Suppress("DEPRECATION")
+OnlineGroupImage() {
     override val imageId: String = ExternalImage.generateImageId(delegate.md5)
     override val originUrl: String
         get() = "http://gchat.qpic.cn" + delegate.origUrl
@@ -32,7 +33,8 @@ internal class OnlineGroupImageImpl(
 
 internal class OnlineFriendImageImpl(
     internal val delegate: ImMsgBody.NotOnlineImage
-) : OnlineFriendImage() {
+) : @Suppress("DEPRECATION")
+OnlineFriendImage() {
     override val imageId: String get() = delegate.resId
     override val originUrl: String
         get() = if (delegate.origUrl.isNotEmpty()) {
@@ -51,6 +53,7 @@ internal class OnlineFriendImageImpl(
     }
 }
 
+@Suppress("DEPRECATION")
 internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
         filePath = this.imageId,
@@ -67,6 +70,7 @@ private val oldData: ByteArray =
     "15 36 20 39 32 6B 41 31 00 38 37 32 66 30 36 36 30 33 61 65 31 30 33 62 37 20 20 20 20 20 20 35 30 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 7B 30 31 45 39 34 35 31 42 2D 37 30 45 44 2D 45 41 45 33 2D 42 33 37 43 2D 31 30 31 46 31 45 45 42 46 35 42 35 7D 2E 70 6E 67 41".hexToBytes()
 
 
+@Suppress("DEPRECATION")
 internal fun OfflineFriendImage.toJceData(): ImMsgBody.NotOnlineImage {
     return ImMsgBody.NotOnlineImage(
         filePath = this.imageId,

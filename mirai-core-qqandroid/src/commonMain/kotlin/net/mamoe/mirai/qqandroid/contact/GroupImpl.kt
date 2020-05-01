@@ -399,6 +399,7 @@ internal class GroupImpl(
         return MessageReceipt(source, this, botAsMember)
     }
 
+    @Suppress("DEPRECATION")
     @OptIn(ExperimentalTime::class)
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {

@@ -198,7 +198,7 @@ internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Bool
 
 @OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
-@Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR")
+@Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR", "DEPRECATION")
 internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M? = when (key) {
     At -> firstIsInstanceOrNull<At>()
     AtAll -> firstIsInstanceOrNull<AtAll>()

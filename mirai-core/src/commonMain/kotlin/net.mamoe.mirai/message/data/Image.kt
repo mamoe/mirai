@@ -10,7 +10,7 @@
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "WRONG_MODIFIER_CONTAINING_DECLARATION", "DEPRECATION")
 
 package net.mamoe.mirai.message.data
 
@@ -81,9 +81,50 @@ expect interface Image : Message, MessageContent {
     @Deprecated("""
         不要自行实现 Image, 它必须由协议模块实现, 否则会无法发送也无法解析.
     """, level = DeprecationLevel.HIDDEN)
-    @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
+    @Suppress("PropertyName")
     @get:JvmSynthetic
-    val DoNotImplementThisClass: Nothing?
+    internal val DoNotImplementThisClass: Nothing?
+}
+
+/**
+ * 群图片.
+ *
+ * 群拖
+ *
+ * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
+ * @see Image 查看更多说明
+ */
+@Suppress("DEPRECATION_ERROR")
+// CustomFace
+@OptIn(MiraiInternalAPI::class)
+sealed class GroupImage : AbstractImage() {
+    companion object Key : Message.Key<GroupImage> {
+        override val typeName: String get() = "GroupImage"
+    }
+}
+
+/**
+ * 计算图片的 md5 校验值.
+ *
+ * 在 Java 使用: `MessageUtils.calculateImageMd5(image)`
+ */
+@get:JvmName("calculateImageMd5")
+@SinceMirai("0.39.0")
+val Image.md5: ByteArray
+    get() = calculateImageMd5ByImageId(imageId)
+
+
+/**
+ * 好友图片
+ *
+ * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
+ */ // NotOnlineImage
+@Suppress("DEPRECATION_ERROR")
+@OptIn(MiraiInternalAPI::class)
+sealed class FriendImage : AbstractImage() {
+    companion object Key : Message.Key<FriendImage> {
+        override val typeName: String get() = "FriendImage"
+    }
 }
 
 /**
@@ -148,29 +189,18 @@ fun Image(imageId: String): OfflineImage = when {
     else -> throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
 }
 
-// region 在线图片
-
-/**
- * 在服务器上的图片. 它可以直接获取下载链接.
- *
- * 一般由 [Contact.uploadImage] 得到
- */
-interface OnlineImage : Image {
-    companion object Key : Message.Key<OnlineImage> {
-        override val typeName: String get() = "OnlineImage"
-    }
-
-    /**
-     * 原图下载链接. 包含域名
-     */
-    val originUrl: String
-}
-
 /**
  * 查询原图下载链接.
+ *
+ * 当图片为从服务器接收的消息中的图片时, 可以直接获取下载链接, 本函数不会挂起协程.
+ * 其他情况下协程可能会挂起并向服务器查询下载链接, 或不挂起并拼接一个链接.
+ *
+ * @return 原图 HTTP 下载链接 (非 HTTPS)
+ * @throws IllegalStateException 当无任何 [Bot] 在线时抛出 (因为无法获取相关协议)
  */
 @JvmSynthetic
 suspend fun Image.queryUrl(): String {
+    @Suppress("DEPRECATION")
     @OptIn(MiraiInternalAPI::class)
     return when (this) {
         is OnlineImage -> this.originUrl
@@ -179,10 +209,32 @@ suspend fun Image.queryUrl(): String {
     }
 }
 
-// endregion 在线图片
+
+/////////////////////////
+///// 以下 API 已弃用 /////
+/////////////////////////
 
 
-// region 离线图片
+// region 已启用
+
+internal const val ONLINE_OFFLINE_DEPRECATION_MESSAGE = """
+自 1.0.0 起, mirai 已经能正常处理离线图片和在线图片的下载链接等功能. 
+使用者无需考虑一个图片为在线图片还是离线图片, 只需使用 Image 类型.
+"""
+
+
+@PlannedRemoval("1.2.0") // 改为 internal
+@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
+)
+interface OnlineImage : Image {
+    companion object Key : Message.Key<OnlineImage> {
+        override val typeName: String get() = "OnlineImage"
+    }
+
+    val originUrl: String
+}
 
 /**
  * 离线的图片, 即为客户端主动上传到服务器而获得的 [Image] 实例.
@@ -190,38 +242,25 @@ suspend fun Image.queryUrl(): String {
  *
  * 一般由 [Contact.uploadImage] 得到
  */
+@PlannedRemoval("1.2.0") // 改为 internal
+@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
+)
 interface OfflineImage : Image {
     companion object Key : Message.Key<OfflineImage> {
         override val typeName: String get() = "OfflineImage"
     }
 }
 
-/**
- * 原图下载链接. 包含域名
- */
+@PlannedRemoval("1.2.0") // 删除
+@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+    level = DeprecationLevel.HIDDEN
+)
 @JvmSynthetic
 suspend fun OfflineImage.queryUrl(): String {
     @OptIn(MiraiInternalAPI::class)
     return BotImpl.instances.peekFirst().get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
-}
-
-// endregion 离线图片
-
-// region 群图片
-
-
-/**
- * 群图片.
- *
- * [imageId] 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (45 长度)
- */
-@Suppress("DEPRECATION_ERROR")
-// CustomFace
-@OptIn(MiraiInternalAPI::class)
-sealed class GroupImage : AbstractImage() {
-    companion object Key : Message.Key<GroupImage> {
-        override val typeName: String get() = "GroupImage"
-    }
 }
 
 /**
@@ -229,6 +268,11 @@ sealed class GroupImage : AbstractImage() {
  *
  * @param imageId 参考 [Image.imageId]
  */
+@PlannedRemoval("1.2.0") // 改为 internal
+@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
+)
 @Serializable
 data class OfflineGroupImage(
     override val imageId: String
@@ -241,40 +285,26 @@ data class OfflineGroupImage(
     }
 }
 
-@get:JvmName("calculateImageMd5")
-@SinceMirai("0.39.0")
-val Image.md5: ByteArray
-    get() = calculateImageMd5ByImageId(imageId)
-
 /**
  * 接收消息时获取到的 [GroupImage]. 它可以直接获取下载链接 [originUrl]
  */
+@PlannedRemoval("1.2.0") // 改为 internal
+@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
+)
 abstract class OnlineGroupImage : GroupImage(), OnlineImage
-
-
-// endregion 群图片
-
-// region 好友图片
-
-
-/**
- * 好友图片
- *
- * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
- */ // NotOnlineImage
-@Suppress("DEPRECATION_ERROR")
-@OptIn(MiraiInternalAPI::class)
-sealed class FriendImage : AbstractImage() {
-    companion object Key : Message.Key<FriendImage> {
-        override val typeName: String get() = "FriendImage"
-    }
-}
 
 /**
  * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [Bot.queryImageUrl]
  *
  * @param imageId 参考 [Image.imageId]
  */
+@PlannedRemoval("1.2.0") // 改为 internal
+@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
+)
 @Serializable
 data class OfflineFriendImage(
     override val imageId: String
@@ -289,6 +319,11 @@ data class OfflineFriendImage(
 /**
  * 接收消息时获取到的 [FriendImage]. 它可以直接获取下载链接 [originUrl]
  */
+@PlannedRemoval("1.2.0") // 改为 internal
+@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+    level = DeprecationLevel.WARNING,
+    replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
+)
 abstract class OnlineFriendImage : FriendImage(), OnlineImage
 
 // endregion
@@ -326,6 +361,7 @@ sealed class AbstractImage : Image {
             field = "[mirai:image:$imageId]"
             field
         }
+
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = "[图片]"
 }

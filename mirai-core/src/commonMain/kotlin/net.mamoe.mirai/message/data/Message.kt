@@ -25,6 +25,7 @@ import kotlin.jvm.JvmSynthetic
 
 /**
  * 可发送的或从服务器接收的消息.
+ *
  * 采用这样的消息模式是因为 QQ 的消息多元化, 一条消息中可包含 [纯文本][PlainText], [图片][Image] 等.
  *
  * [消息][Message] 分为
@@ -37,20 +38,20 @@ import kotlin.jvm.JvmSynthetic
  * 这与使用 [String] 的使用非常类似.
  *
  * 比较 [SingleMessage] 与 [String]:
- *  `if(message.contentToString() == "你好") qq.sendMessage(event)`
+ *  `if(message.contentToString() == "你好") friend.sendMessage(event)`
  *
- * 连接 [Message] 与 [Message], [String], (使用 operator [Message.plus]):
- *  ```kotlin
+ * 连接 [Message] 与 [Message], [String], (使用操作符 [Message.plus]):
+ *  ```
  *      text = PlainText("Hello ")
  *      qq.sendMessage(text + "world")
  *  ```
  *
  * `Message1 + Message2 + Message3`, 类似 [String] 的连接:
- *
+ * ```
  *   +----------+   plus  +----------+   plus  +----------+
  *   | Message1 | <------ | Message2 | <------ | Message3 |
  *   +----------+         +----------+         +----------+
- *
+ * ```
  *
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *

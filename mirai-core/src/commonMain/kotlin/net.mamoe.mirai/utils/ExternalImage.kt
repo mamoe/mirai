@@ -21,7 +21,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.message.data.toLongUnsigned
 import kotlin.jvm.JvmSynthetic
@@ -117,7 +116,7 @@ suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = 
  * @see contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
  */
 @JvmSynthetic
-suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact) {
+suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
     is Group -> contact.uploadImage(this)
     is User -> contact.uploadImage(this)
     else -> error("unreachable")
@@ -129,6 +128,8 @@ suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact
 @JvmSynthetic
 suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
 
+
+@JvmSynthetic
 internal operator fun ByteArray.get(rangeStart: Int, rangeEnd: Int): String = buildString {
     for (it in rangeStart..rangeEnd) {
         append(this@get[it].fixToString())

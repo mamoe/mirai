@@ -129,10 +129,14 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                 )
                 transformOneMessage(UNSUPPORTED_POKE_MESSAGE_PLAIN)
             }
-            is OfflineGroupImage -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
+            is @Suppress("DEPRECATION")
+            OfflineGroupImage
+            -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
-            is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
+            is @Suppress("DEPRECATION")
+            OfflineFriendImage
+            -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is GroupFlashImage -> elements.add(it.toJceData())
                 .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is FriendFlashImage -> elements.add(it.toJceData())

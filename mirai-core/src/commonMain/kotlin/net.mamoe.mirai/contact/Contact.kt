@@ -89,7 +89,7 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     @JvmSynthetic
-    abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
+    abstract suspend fun uploadImage(image: ExternalImage): Image
 
     final override fun equals(other: Any?): Boolean = super.equals(other)
     final override fun hashCode(): Int = super.hashCode()

@@ -20,8 +20,8 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineGroupImage
 import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.runBlocking
@@ -172,7 +172,7 @@ abstract class Group : Contact(), CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     @JvmSynthetic
-    abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
+    abstract override suspend fun uploadImage(image: ExternalImage): Image
 
     companion object {
         /**

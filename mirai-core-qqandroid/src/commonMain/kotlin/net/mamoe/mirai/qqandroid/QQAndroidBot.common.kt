@@ -720,6 +720,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
+    @Suppress("DEPRECATION")
     override suspend fun queryImageUrl(image: Image): String = when (image) {
         is OnlineFriendImageImpl -> image.originUrl
         is OnlineGroupImageImpl -> image.originUrl

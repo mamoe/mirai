@@ -25,8 +25,8 @@ import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.highway.postImage
@@ -86,7 +86,7 @@ internal class FriendImpl(
 
     @JvmSynthetic
     @OptIn(MiraiInternalAPI::class, ExperimentalStdlibApi::class, ExperimentalTime::class)
-    override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = try {
+    override suspend fun uploadImage(image: ExternalImage): Image = try {
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -103,11 +103,12 @@ internal class FriendImpl(
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
 
-            @Suppress("UNCHECKED_CAST") // bug
+            @Suppress("UNCHECKED_CAST", "DEPRECATION") // bug
             return when (response) {
-                is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId).also {
-                    ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
-                }
+                is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId)
+                    .also {
+                        ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
+                    }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     bot.network.logger.verbose {
                         "[Http] Uploading friend image, size=${image.inputSize.sizeToString()}"
@@ -139,7 +140,7 @@ internal class FriendImpl(
                     )*/
                     // 为什么不能 ??
 
-                    return OfflineFriendImage(response.resourceId).also {
+                    return net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId).also {
                         ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                     }
                 }

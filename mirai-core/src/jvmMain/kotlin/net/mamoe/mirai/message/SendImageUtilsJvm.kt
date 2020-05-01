@@ -16,7 +16,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.sendTo
 import net.mamoe.mirai.utils.toExternalImage
@@ -82,8 +81,9 @@ suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
  * 在 [Dispatchers.IO] 中将图片上传后构造 [Image]. 不会创建临时文件
  * @throws OverFileSizeMaxException
  */
+@JvmSynthetic
 @Throws(OverFileSizeMaxException::class)
-suspend fun BufferedImage.upload(contact: Contact): OfflineImage =
+suspend fun BufferedImage.upload(contact: Contact): Image =
     withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 
 /**
@@ -91,7 +91,7 @@ suspend fun BufferedImage.upload(contact: Contact): OfflineImage =
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun URL.uploadAsImage(contact: Contact): OfflineImage =
+suspend fun URL.uploadAsImage(contact: Contact): Image =
     withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 
 /**
@@ -99,7 +99,7 @@ suspend fun URL.uploadAsImage(contact: Contact): OfflineImage =
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun Input.uploadAsImage(contact: Contact): OfflineImage =
+suspend fun Input.uploadAsImage(contact: Contact): Image =
     withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 
 /**
@@ -107,7 +107,7 @@ suspend fun Input.uploadAsImage(contact: Contact): OfflineImage =
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun InputStream.uploadAsImage(contact: Contact): OfflineImage =
+suspend fun InputStream.uploadAsImage(contact: Contact): Image =
     withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 
 /**
@@ -115,7 +115,7 @@ suspend fun InputStream.uploadAsImage(contact: Contact): OfflineImage =
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend fun File.uploadAsImage(contact: Contact): OfflineImage {
+suspend fun File.uploadAsImage(contact: Contact): Image {
     require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
     return withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
 }
@@ -170,34 +170,34 @@ suspend inline fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = fi
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.uploadImage(bufferedImage: BufferedImage): OfflineImage = bufferedImage.upload(this)
+suspend inline fun Contact.uploadImage(bufferedImage: BufferedImage): Image = bufferedImage.upload(this)
 
 /**
  * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片上传, 但不发送
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.uploadImage(imageUrl: URL): OfflineImage = imageUrl.uploadAsImage(this)
+suspend inline fun Contact.uploadImage(imageUrl: URL): Image = imageUrl.uploadAsImage(this)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片上传, 但不发送
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.uploadImage(imageInput: Input): OfflineImage = imageInput.uploadAsImage(this)
+suspend inline fun Contact.uploadImage(imageInput: Input): Image = imageInput.uploadAsImage(this)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片上传, 但不发送
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.uploadImage(imageStream: InputStream): OfflineImage = imageStream.uploadAsImage(this)
+suspend inline fun Contact.uploadImage(imageStream: InputStream): Image = imageStream.uploadAsImage(this)
 
 /**
  * 在 [Dispatchers.IO] 中将文件作为图片上传, 但不发送
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-suspend inline fun Contact.uploadImage(file: File): OfflineImage = file.uploadAsImage(this)
+suspend inline fun Contact.uploadImage(file: File): Image = file.uploadAsImage(this)
 
 // endregion
