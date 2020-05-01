@@ -12,6 +12,8 @@
 
 package net.mamoe.mirai.qqandroid.contact
 
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
@@ -28,12 +30,10 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceToGroupImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
-import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
@@ -61,12 +61,15 @@ internal fun Group.checkIsGroupImpl() {
 @OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
 @Suppress("PropertyName")
 internal class GroupImpl(
-    bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
+    bot: QQAndroidBot,
+    coroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
 ) : Group() {
     companion object;
+
+    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
 

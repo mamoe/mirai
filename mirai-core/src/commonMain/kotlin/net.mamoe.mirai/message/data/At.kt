@@ -32,9 +32,7 @@ import kotlin.jvm.JvmSynthetic
 data class At
 @Suppress("DataClassPrivateConstructor")
 private constructor(val target: Long, val display: String) :
-    MessageContent,
-    CharSequence by display,
-    Comparable<String> by display {
+    MessageContent {
 
     /**
      * 构造一个 [At] 实例. 这是唯一的公开的构造方式.
@@ -63,7 +61,7 @@ private constructor(val target: Long, val display: String) :
 
     // 自动为消息补充 " "
     override fun followedBy(tail: Message): MessageChain {
-        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
+        if (tail is PlainText && tail.content.startsWith(' ')) {
             return super.followedBy(tail)
         }
         return super.followedBy(PlainText(" ")) + tail

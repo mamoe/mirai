@@ -37,7 +37,7 @@ import javax.imageio.ImageIO
  */
 @JvmOverloads
 @Throws(IOException::class)
-fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
+fun BufferedImage.toExternalImage(formatName: String = "png"): ExternalImage {
     val file = createTempFile().apply { deleteOnExit() }
 
     val digest = MessageDigest.getInstance("md5")
@@ -62,6 +62,7 @@ fun BufferedImage.toExternalImage(formatName: String = "gif"): ExternalImage {
         })
     }
 
+    @Suppress("DEPRECATION_ERROR")
     return ExternalImage(digest.digest(), file.inputStream())
 }
 
@@ -73,6 +74,7 @@ suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withC
 @OptIn(MiraiInternalAPI::class)
 @Throws(IOException::class)
 fun File.toExternalImage(): ExternalImage {
+    @Suppress("DEPRECATION_ERROR")
     return ExternalImage(
         md5 = this.inputStream().md5(), // dont change
         input = this.inputStream()

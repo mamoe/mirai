@@ -2,6 +2,27 @@
 
 开发版本. 频繁更新, 不保证高稳定性
 
+## `0.40.0`  2020/4/29
+在 `1.0.0` 正式版发布时, 所有为旧版本做的兼容都将删除, 因此请尽快迁移.
+
+- `Message` 不再继承 `CharSequence` (兼容到 `1.0.0`)
+- 废弃 `XmlMessage` 和 `JsonMessage`. 需使用 `ServiceMessage` 并手动指定 `serviceId`
+- 修复登录时概率失败的问题
+- 提高事件处理稳定性
+- Java 事件默认 `LOCKED`, 而不是 `CONCURRENT`
+- 弃用 `PlainText.stringValue`, 以 `PlainText.content` 替代
+- 将 `VipFace` 作为 `PlainText` 发送, 而不是抛出异常
+- 修复 `BufferedImage.toExternalImage` 降低图片质量的问题
+
+## `0.39.5`  2020/4/28
+- 优化登录初始化, 提高稳定性 (#282)
+- 支持 VIP 表情的解析: `VipFace` (不支持发送)
+- 支持更多的戳一戳消息 (`PokeMessage`) 类型
+- 修复 Android 平台的正则语法错误问题
+- 修复 `BotInvitedJoinRequestEvent.ignore`
+- 提升 `LockFreeLinkedList` 遍历性能, 即 `ContactList` 遍历性能
+- 将 `LockFreeLinkedList` 标注 `@MiraiInternalAPI` 并计划于 1.0.0 修改为 `internal`
+
 ## `0.39.4`  2020/4/27
 - 支持匿名消息解析 (#277)
 - 修复部分情况下撤回失败的问题

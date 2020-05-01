@@ -98,7 +98,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
         }
 
         when (it) {
-            is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
+            is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.content)))
             is CustomMessage -> {
                 @Suppress("UNCHECKED_CAST")
                 elements.add(
@@ -120,7 +120,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                             businessType = it.type,
                             pbElem = HummerCommelem.MsgElemInfoServtype2(
                                 pokeType = it.type,
-                                vaspokeId = it.id
+                                vaspokeId = it.id,
+                                vaspokeMinver = "7.2.0",
+                                vaspokeName = it.name
                             ).toByteArray(HummerCommelem.MsgElemInfoServtype2.serializer())
                         )
                     )
@@ -146,6 +148,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                         }
                     }
                 }
+            }
+            is VipFace -> {
+                transformOneMessage(PlainText(it.contentToString()))
             }
             is ForwardMessage,
             is MessageSource, // mirai metadata only
@@ -231,6 +236,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
     var last: SingleMessage? = null
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             if (last is LongMessage && element is PlainText) {
                 if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
                     last = element
@@ -239,6 +245,13 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
             }
             if (last is PokeMessage && element is PlainText) {
                 if (element == UNSUPPORTED_POKE_MESSAGE_PLAIN) {
+                    last = element
+                    return@forEach
+                }
+            }
+            if (last is VipFace && element is PlainText) {
+                val l = last as VipFace
+                if (element.content.length == 4 + (l.count / 10) + l.kind.name.length) {
                     last = element
                     return@forEach
                 }
@@ -326,7 +339,8 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                     /**
                      * [JsonMessage]
                      */
-                    1 -> list.add(JsonMessage(content))
+                    1 -> @Suppress("DEPRECATION_ERROR")
+                    list.add(JsonMessage(content))
                     /**
                      * [LongMessage], [ForwardMessage]
                      */
@@ -334,15 +348,18 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                         val resId = this.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()?.longTextResid
 
                         if (resId != null) {
-                            list.add(LongMessage(content, resId))
+                            // TODO: 2020/4/29 解析长消息
+                            list.add(ServiceMessage(35, content)) // resId
                         } else {
-                            list.add(ForwardMessageInternal(content))
+                            // TODO: 2020/4/29 解析合并转发
+                            list.add(ServiceMessage(35, content))
                         }
                     }
 
                     // 104 新群员入群的消息
                     else -> {
                         if (element.richMsg.serviceId == 60 || content.startsWith("<?")) {
+                            @Suppress("DEPRECATION_ERROR") // bin comp
                             list.add(XmlMessage(element.richMsg.serviceId, content))
                         } else list.add(ServiceMessage(element.richMsg.serviceId, content))
                     }
@@ -381,9 +398,19 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
             }
             element.commonElem != null -> {
                 when (element.commonElem.serviceType) {
+                    23 -> {
+                        val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype23.serializer())
+                        list.add(VipFace(VipFace.Kind(proto.faceType, proto.faceSummary), proto.faceBubbleCount))
+                    }
                     2 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
-                        list.add(PokeMessage(proto.pokeType, proto.vaspokeId))
+                        list.add(PokeMessage(
+                            proto.vaspokeName.takeIf { it.isNotEmpty() }
+                                ?: PokeMessage.values.firstOrNull { it.id == proto.vaspokeId && it.type == proto.pokeType }?.name
+                                    .orEmpty(),
+                            proto.pokeType,
+                            proto.vaspokeId
+                        ))
                     }
                     3 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())

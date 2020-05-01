@@ -91,6 +91,9 @@ data class BotReloginEvent(
 
 // region 消息
 
+/**
+ * 主动发送消息
+ */
 sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEvent() {
     abstract val target: Contact
     final override val bot: Bot
@@ -105,6 +108,8 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractCancellableEve
         override val target: Friend,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
+
+    // TODO: 2020/4/30 添加临时会话消息发送事件
 }
 
 /**
@@ -286,7 +291,7 @@ data class BotUnmuteEvent(
 }
 
 /**
- * Bot 加入了一个新群
+ * Bot 成功加入了一个新群
  */
 @MiraiExperimentalAPI
 data class BotJoinGroupEvent(
@@ -398,7 +403,7 @@ data class GroupAllowMemberInviteEvent(
 // region 成员变更
 
 /**
- * 成员加入群的事件
+ * 成员已经加入群的事件
  */
 sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet {
     /**
@@ -415,7 +420,7 @@ sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, Bo
 }
 
 /**
- * 成员离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除
+ * 成员已经离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除
  */
 sealed class MemberLeaveEvent : GroupMemberEvent {
     /**
@@ -443,12 +448,112 @@ sealed class MemberLeaveEvent : GroupMemberEvent {
     }
 }
 
+/**
+ * [Bot] 被邀请加入一个群.
+ */
+@SinceMirai("0.39.4")
+data class BotInvitedJoinGroupRequestEvent(
+    override val bot: Bot,
+    /**
+     * 事件唯一识别号
+     */
+    val eventId: Long,
+    /**
+     * 邀请入群的账号的 id
+     */
+    val invitorId: Long,
+    val groupId: Long,
+    val groupName: String,
+    /**
+     * 邀请人昵称
+     */
+    val invitorNick: String
+) : BotEvent, Packet {
+    val invitor: Friend = this.bot.getFriend(invitorId)
+
+    @JvmField
+    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+
+    @JvmSynthetic
+    suspend fun accept() = bot.acceptInvitedJoinGroupRequest(this)
+
+    @JvmSynthetic
+    suspend fun ignore() = bot.ignoreInvitedJoinGroupRequest(this)
+
+    @JavaFriendlyAPI
+    @JvmName("accept")
+    fun __acceptBlockingForJava__() =
+        runBlocking { bot.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+
+    @JavaFriendlyAPI
+    @JvmName("ignore")
+    fun __ignoreBlockingForJava__() =
+        runBlocking { bot.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+}
+
+/**
+ * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
+ */
+@SinceMirai("0.35.0")
+data class MemberJoinRequestEvent(
+    override val bot: Bot,
+    /**
+     * 事件唯一识别号
+     */
+    val eventId: Long,
+    /**
+     * 入群申请消息
+     */
+    val message: String,
+    /**
+     * 申请入群的账号的 id
+     */
+    val fromId: Long,
+    val groupId: Long,
+    val groupName: String,
+    /**
+     * 申请人昵称
+     */
+    val fromNick: String
+) : BotEvent, Packet {
+    val group: Group = this.bot.getGroup(groupId)
+
+    @JvmField
+    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+
+    @JvmSynthetic
+    suspend fun accept() = bot.acceptMemberJoinRequest(this)
+
+    @JvmSynthetic
+    suspend fun reject(blackList: Boolean = false) = bot.rejectMemberJoinRequest(this, blackList)
+
+    @JvmSynthetic
+    suspend fun ignore(blackList: Boolean = false) = bot.ignoreMemberJoinRequest(this, blackList)
+
+
+    @JavaFriendlyAPI
+    @JvmName("accept")
+    fun __acceptBlockingForJava__() = runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
+
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @JvmName("reject")
+    fun __rejectBlockingForJava__(blackList: Boolean = false) =
+        runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
+
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @JvmName("ignore")
+    fun __ignoreBlockingForJava__(blackList: Boolean = false) =
+        runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
+}
+
 // endregion
 
 // region 名片和头衔
 
 /**
- * 群名片改动. 此事件广播前修改就已经完成.
+ * 成员群名片改动. 此事件广播前修改就已经完成.
  */
 data class MemberCardChangeEvent(
     /**
@@ -473,7 +578,7 @@ data class MemberCardChangeEvent(
     @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR) GroupOperableEvent
 
 /**
- * 群头衔改动. 一定为群主操作
+ * 成员群头衔改动. 一定为群主操作
  */
 data class MemberSpecialTitleChangeEvent(
     /**
@@ -544,7 +649,7 @@ data class MemberUnmuteEvent(
 
 // endregion
 
-// region 好友、群认证
+// region 好友
 
 /**
  * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
@@ -654,104 +759,4 @@ data class NewFriendRequestEvent(
         runBlocking { reject(blackList) }
 }
 
-/**
- * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
- */
-@SinceMirai("0.35.0")
-data class MemberJoinRequestEvent(
-    override val bot: Bot,
-    /**
-     * 事件唯一识别号
-     */
-    val eventId: Long,
-    /**
-     * 入群申请消息
-     */
-    val message: String,
-    /**
-     * 申请入群的账号的 id
-     */
-    val fromId: Long,
-    val groupId: Long,
-    val groupName: String,
-    /**
-     * 申请人昵称
-     */
-    val fromNick: String
-) : BotEvent, Packet {
-    val group: Group = this.bot.getGroup(groupId)
-
-    @JvmField
-    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
-
-    @JvmSynthetic
-    suspend fun accept() = bot.acceptMemberJoinRequest(this)
-
-    @JvmSynthetic
-    suspend fun reject(blackList: Boolean = false) = bot.rejectMemberJoinRequest(this, blackList)
-
-    @JvmSynthetic
-    suspend fun ignore(blackList: Boolean = false) = bot.ignoreMemberJoinRequest(this, blackList)
-
-
-    @JavaFriendlyAPI
-    @JvmName("accept")
-    fun __acceptBlockingForJava__() = runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
-
-    @JavaFriendlyAPI
-    @JvmOverloads
-    @JvmName("reject")
-    fun __rejectBlockingForJava__(blackList: Boolean = false) =
-        runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
-
-    @JavaFriendlyAPI
-    @JvmOverloads
-    @JvmName("ignore")
-    fun __ignoreBlockingForJava__(blackList: Boolean = false) =
-        runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
-}
-
-/**
- * [Bot] 被邀请加入一个群.
- */
-@SinceMirai("0.39.4")
-data class BotInvitedJoinGroupRequestEvent(
-    override val bot: Bot,
-    /**
-     * 事件唯一识别号
-     */
-    val eventId: Long,
-    /**
-     * 邀请入群的账号的 id
-     */
-    val invitorId: Long,
-    val groupId: Long,
-    val groupName: String,
-    /**
-     * 邀请人昵称
-     */
-    val invitorNick: String
-) : BotEvent, Packet {
-    val invitor: Friend = this.bot.getFriend(invitorId)
-
-    @JvmField
-    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
-
-    @JvmSynthetic
-    suspend fun accept() = bot.acceptInvitedJoinGroupRequest(this)
-
-    @JvmSynthetic
-    suspend fun ignore() = bot.ignoreInvitedJoinGroupRequest(this)
-
-    @JavaFriendlyAPI
-    @JvmName("accept")
-    fun __acceptBlockingForJava__() =
-        runBlocking { bot.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
-
-    @JavaFriendlyAPI
-    @JvmName("ignore")
-    fun __ignoreBlockingForJava__() =
-        runBlocking { bot.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
-}
-
-// endregion 好友、群认证
+// endregion 好友

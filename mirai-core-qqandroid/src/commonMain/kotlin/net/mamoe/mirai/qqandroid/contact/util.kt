@@ -15,7 +15,6 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.MessageSendEvent
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.message.data.LongMessage
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.asMessageChain
@@ -25,7 +24,6 @@ import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
-import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.verbose
@@ -54,7 +52,8 @@ internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: M
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun Contact.logMessageSent(message: Message) {
-    if (message !is LongMessage) {
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    if (message !is net.mamoe.mirai.message.data.LongMessage) {
         bot.logger.verbose("$this <- ${message.toString().singleLine()}")
     }
 }
@@ -76,31 +75,6 @@ internal fun ContactMessage.logMessageReceived() {
     }
 }
 
-
 internal fun String.singleLine(): String {
     return this.replace("\n", """\n""").replace("\r", "")
-}
-
-
-/**
- * Size management isn't atomic.
- */
-internal class LockFreeCacheList<E>(private val maxSize: Int) : LockFreeLinkedList<E>() {
-    override fun addLast(element: E) {
-        if (size >= maxSize) {
-            this.removeFirst()
-        }
-
-        super.addLast(element)
-    }
-
-    @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    override fun addAll(iterable: Iterable<E>) {
-        super.addAll(iterable)
-    }
-
-    @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    override fun addAll(iterable: Sequence<E>) {
-        super.addAll(iterable)
-    }
 }

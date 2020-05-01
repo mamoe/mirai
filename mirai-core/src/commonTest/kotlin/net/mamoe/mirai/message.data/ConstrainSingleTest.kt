@@ -32,20 +32,6 @@ internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleM
 
     override val key: Message.Key<TestConstrainSingleMessage>
         get() = Key
-    override val length: Int
-        get() = TODO("Not yet implemented")
-
-    override fun get(index: Int): Char {
-        TODO("Not yet implemented")
-    }
-
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence {
-        TODO("Not yet implemented")
-    }
-
-    override fun compareTo(other: String): Int {
-        TODO("Not yet implemented")
-    }
 }
 
 @OptIn(MiraiExperimentalAPI::class)

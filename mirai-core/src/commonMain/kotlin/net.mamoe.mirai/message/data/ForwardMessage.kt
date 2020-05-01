@@ -178,12 +178,6 @@ class ForwardMessage @JvmOverloads constructor(
 
     @MiraiExperimentalAPI
     override fun contentToString(): String = contentToString
-    override val length: Int get() = contentToString.length
-    override fun get(index: Int): Char = contentToString[length]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        contentToString.subSequence(startIndex, endIndex)
-
-    override fun compareTo(other: String): Int = contentToString.compareTo(other)
 }
 
 

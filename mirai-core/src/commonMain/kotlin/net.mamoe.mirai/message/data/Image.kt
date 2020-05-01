@@ -19,6 +19,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
@@ -37,7 +38,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * ### [toString] 和 [contentToString]
  * - [toString] 固定返回 `[mirai:image:<ID>]` 格式字符串, 其中 `<ID>` 代表 [imageId].
- * - [contentToString] 固定返回 ```"[图片]"```
+ * - [contentToString] 固定返回 `"[图片]"`
  *
  * ### 上传和发送图片
  * @see Contact.uploadImage 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
@@ -61,7 +62,7 @@ expect interface Image : Message, MessageContent {
      *
      * ### 格式
      * 群图片:
-     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 ".mirai")
+     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
      *
      * 好友图片:
      * - [FRIEND_IMAGE_ID_REGEX_1], 示例: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
@@ -78,7 +79,7 @@ expect interface Image : Message, MessageContent {
     */
 
     @Deprecated("""
-        不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
+        不要自行实现 Image, 它必须由协议模块实现, 否则会无法发送也无法解析.
     """, level = DeprecationLevel.HIDDEN)
     @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
     @get:JvmSynthetic
@@ -93,7 +94,7 @@ expect interface Image : Message, MessageContent {
  */
 @SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
-val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/.{8}-(.{4}-){3}.{12}""")
+val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
 
 /**
  * 好友图片 ID 正则表达式 2
@@ -103,26 +104,28 @@ val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/.{8}-(.{4}-){3}.{12}""")
  */
 @SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_2
-val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-zA-Z]{32}""")
+val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
 
 /**
  * 群图片 ID 正则表达式
  *
  * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai`
  */
+@Suppress("RegExpRedundantEscape") // This is required on Android
 @SinceMirai("0.39.2")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
-val GROUP_IMAGE_ID_REGEX = Regex("""\{.{8}-(.{4}-){3}.{12}}\.mirai""")
+val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\.mirai""")
 
 /**
  * 在 `0.39.0` 前的图片的正则表示
  */
+@Suppress("RegExpRedundantEscape") // This is required on Android
 @Deprecated("Only for temporal use",
     replaceWith = ReplaceWith("GROUP_IMAGE_ID_REGEX", "net.mamoe.mirai.message.data.GROUP_IMAGE_ID_REGEX"))
 @SinceMirai("0.39.2")
 @PlannedRemoval("1.0.0")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX_OLD
-val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{.{8}-(.{4}-){3}.{12}}\..*""")
+val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..*""")
 
 /**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
@@ -142,7 +145,7 @@ fun Image(imageId: String): OfflineImage = when {
     imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
     imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
     imageId matches GROUP_IMAGE_ID_REGEX_OLD -> OfflineGroupImage(imageId)
-    else -> throw IllegalArgumentException("illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
+    else -> throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
 }
 
 // region 在线图片
@@ -311,7 +314,7 @@ fun Image2(imageId: String): Image = Image(imageId)
 @MiraiInternalAPI("Use Image instead")
 sealed class AbstractImage : Image {
     @Deprecated("""
-        不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
+        不要自行实现 Image, 它必须由协议模块实现, 否则会无法发送也无法解析.
     """, level = DeprecationLevel.HIDDEN)
     @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
     @get:JvmSynthetic
@@ -323,12 +326,6 @@ sealed class AbstractImage : Image {
             field = "[mirai:image:$imageId]"
             field
         }
-    override val length: Int get() = _stringValue!!.length
-    override fun get(index: Int): Char = _stringValue!![index]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        _stringValue!!.subSequence(startIndex, endIndex)
-
-    override fun compareTo(other: String): Int = _stringValue!!.compareTo(other)
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = "[图片]"
 }

@@ -14,6 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.data.PokeMessage.Types
+import net.mamoe.mirai.message.data.VipFace.Companion
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
@@ -46,9 +47,12 @@ sealed class HummerMessage : MessageContent {
 @SinceMirai("0.31.0")
 @OptIn(MiraiInternalAPI::class)
 data class PokeMessage internal constructor(
-    @MiraiExperimentalAPI("may change in future")
+    /**
+     * 仅 mirai, 显示的名称
+     */
+    val name: String,
+
     val type: Int,
-    @MiraiExperimentalAPI("may change in future")
     val id: Int
 ) : HummerMessage() {
     @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -58,56 +62,170 @@ data class PokeMessage internal constructor(
 
         /** 戳一戳 */
         @JvmField
-        val Poke = PokeMessage(1, -1)
+        val Poke = PokeMessage("戳一戳", 1, -1)
 
         /** 比心 */
         @JvmField
-        val ShowLove = PokeMessage(2, -1)
+        val ShowLove = PokeMessage("比心", 2, -1)
 
         /** 点赞  */
         @JvmField
-        val Like = PokeMessage(3, -1)
+        val Like = PokeMessage("点赞", 3, -1)
 
         /** 心碎 */
         @JvmField
-        val Heartbroken = PokeMessage(4, -1)
+        val Heartbroken = PokeMessage("心碎", 4, -1)
 
         /** 666 */
         @JvmField
-        val SixSixSix = PokeMessage(5, -1)
+        val SixSixSix = PokeMessage("666", 5, -1)
 
         /** 放大招 */
         @JvmField
-        val FangDaZhao = PokeMessage(6, -1)
+        val FangDaZhao = PokeMessage("放大招", 6, -1)
+
+        /** 宝贝球 (SVIP) */
+        @JvmField
+        val BaoBeiQiu = PokeMessage("宝贝球", 126, 2011)
+
+        /** 玫瑰花 (SVIP) */
+        @JvmField
+        val Rose = PokeMessage("玫瑰花", 126, 2007)
+
+        /** 召唤术 (SVIP) */
+        @JvmField
+        val ZhaoHuanShu = PokeMessage("召唤术", 126, 2006)
+
+        /** 让你皮 (SVIP) */
+        @JvmField
+        val RangNiPi = PokeMessage("让你皮", 126, 2009)
+
+        /** 结印 (SVIP) */
+        @JvmField
+        val JieYin = PokeMessage("结印", 126, 2005)
+
+        /** 手雷 (SVIP) */
+        @JvmField
+        val ShouLei = PokeMessage("手雷", 126, 2004)
+
+        /** 勾引 */
+        @JvmField
+        val GouYin = PokeMessage("勾引", 126, 2003)
+
+        /** 抓一下 (SVIP) */
+        @JvmField
+        val ZhuaYiXia = PokeMessage("抓一下", 126, 2001)
+
+        /** 碎屏 (SVIP) */
+        @JvmField
+        val SuiPing = PokeMessage("碎屏", 126, 2002)
+
+        /** 敲门 (SVIP) */
+        @JvmField
+        val QiaoMen = PokeMessage("敲门", 126, 2002)
+
+
+        /**
+         * 所有类型数组
+         */
+        @JvmStatic
+        val values: Array<PokeMessage> = arrayOf(
+            Poke, ShowLove, Like, Heartbroken, SixSixSix,
+            FangDaZhao, BaoBeiQiu, Rose, ZhaoHuanShu, RangNiPi,
+            JieYin, ShouLei, GouYin, ZhuaYiXia, SuiPing
+        )
     }
 
     @OptIn(MiraiExperimentalAPI::class)
     private val stringValue = "[mirai:poke:$type,$id]"
 
     override fun toString(): String = stringValue
-    override val length: Int get() = stringValue.length
-    override fun get(index: Int): Char = stringValue[index]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        stringValue.subSequence(startIndex, endIndex)
-
     override fun contentToString(): String = "[戳一戳]"
-
-    @OptIn(MiraiExperimentalAPI::class)
-    override fun equals(other: Any?): Boolean = other is PokeMessage && other.type == this.type && other.id == this.id
-
-    override fun compareTo(other: String): Int = stringValue.compareTo(other)
-
-    @OptIn(MiraiExperimentalAPI::class)
-    override fun hashCode(): Int {
-        var result = type
-        result = 31 * result + id
-        result = 31 * result + stringValue.hashCode()
-        return result
-    }
-
     //businessType=0x00000001(1)
     //pbElem=08 01 18 00 20 FF FF FF FF 0F 2A 00 32 00 38 00 50 00
     //serviceType=0x00000002(2)
+}
+
+
+////////////////////////////////////
+///////////// VIP FACE /////////////
+////////////////////////////////////
+
+/**
+ * VIP 表情.
+ *
+ * 不支持发送.
+ *
+ * @see Types 使用伴生对象中的常量
+ */
+@SinceMirai("0.39.5")
+@OptIn(MiraiInternalAPI::class)
+data class VipFace internal constructor(
+    /**
+     * 使用 [Companion] 中常量.
+     */
+    val kind: Kind,
+    val count: Int
+) : HummerMessage() {
+    data class Kind(
+        val id: Int,
+        val name: String
+    )
+
+    @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    companion object : Message.Key<VipFace> {
+        override val typeName: String get() = "VipFace"
+
+        @JvmStatic
+        val LiuLian = 9 to "榴莲"
+
+        @JvmStatic
+        val PingDiGuo = 1 to "平底锅"
+
+        @JvmStatic
+        val ChaoPiao = 12 to "钞票"
+
+        @JvmStatic
+        val LueLueLue = 10 to "略略略"
+
+        @JvmStatic
+        val ZhuTou = 4 to "猪头"
+
+        @JvmStatic
+        val BianBian = 6 to "便便"
+
+        @JvmStatic
+        val ZhaDan = 5 to "炸弹"
+
+        @JvmStatic
+        val AiXin = 2 to "爱心"
+
+        @JvmStatic
+        val HaHa = 3 to "哈哈"
+
+        @JvmStatic
+        val DianZan = 1 to "点赞"
+
+        @JvmStatic
+        val QinQin = 7 to "亲亲"
+
+        @JvmStatic
+        val YaoWan = 8 to "药丸"
+
+        @JvmStatic
+        val values: Array<Kind> = arrayOf(
+            LiuLian, PingDiGuo, ChaoPiao, LueLueLue, ZhuTou,
+            BianBian, ZhaDan, AiXin, HaHa, DianZan, QinQin, YaoWan
+        )
+
+        private infix fun Int.to(name: String): Kind = Kind(this, name)
+    }
+
+    @OptIn(MiraiExperimentalAPI::class)
+    private val stringValue = "[mirai:vipface:$kind,$count]"
+
+    override fun toString(): String = stringValue
+    override fun contentToString(): String = "[${kind.name}]x$count"
 }
 
 
@@ -169,11 +287,6 @@ sealed class FlashImage : MessageContent, HummerMessage() {
         }
 
     override fun toString(): String = stringValue!!
-    override val length: Int get() = stringValue!!.length
-    override fun get(index: Int) = stringValue!![index]
-    override fun subSequence(startIndex: Int, endIndex: Int) = stringValue!!.subSequence(startIndex, endIndex)
-    override fun compareTo(other: String) = other.compareTo(stringValue!!)
-
     override fun contentToString(): String = "[闪照]"
 }
 

@@ -198,7 +198,7 @@ internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Bool
 
 @OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
-@Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR")
 internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M? = when (key) {
     At -> firstIsInstanceOrNull<At>()
     AtAll -> firstIsInstanceOrNull<AtAll>()
@@ -221,6 +221,7 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     OnlineMessageSource.Incoming.FromFriend -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromFriend>()
     OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
     XmlMessage -> firstIsInstanceOrNull<XmlMessage>()
+    LongMessage -> firstIsInstanceOrNull()
     JsonMessage -> firstIsInstanceOrNull<JsonMessage>()
     RichMessage -> firstIsInstanceOrNull<RichMessage>()
     LightApp -> firstIsInstanceOrNull<LightApp>()
@@ -322,7 +323,7 @@ internal inline fun Char.hexDigitToByte(): Int {
         in '0'..'9' -> this - '0'
         in 'A'..'F' -> 10 + (this - 'A')
         in 'a'..'f' -> 10 + (this - 'a')
-        else -> throw IllegalArgumentException("illegal hex digit: $this")
+        else -> throw IllegalArgumentException("Illegal hex digit: $this")
     }
 }
 
@@ -332,7 +333,7 @@ internal fun String.skipToSecondHyphen(): Int {
     this.forEachIndexed { index, c ->
         if (c == '-' && ++count == 2) return index
     }
-    error("cannot find two hyphens")
+    error("Internal error: failed skipToSecondHyphen, cannot find two hyphens. Input=$this")
 }
 
 @JvmSynthetic
@@ -353,7 +354,7 @@ internal fun String.imageIdToMd5(offset: Int): ByteArray {
             hasCurrent = true
         }
     }
-    error("No enough chars")
+    error("Internal error: failed imageIdToMd5, no enough chars. Input=$this, offset=$offset")
 }
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -372,7 +373,7 @@ internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
 }
 
 internal val ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE =
-    "ImageId must matches Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
+    "ImageId must match Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
             "`${FRIEND_IMAGE_ID_REGEX_2.pattern}` or " +
             "`${GROUP_IMAGE_ID_REGEX.pattern}`"
 

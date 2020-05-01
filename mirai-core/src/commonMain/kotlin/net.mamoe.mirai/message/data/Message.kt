@@ -279,7 +279,7 @@ interface Message { // must be interface. Don't consider any changes.
 @SinceMirai("0.39.3")
 fun Message.isContentEmpty(): Boolean = when (this) {
     is MessageMetadata -> true
-    is PlainText -> this.isEmpty()
+    is PlainText -> this.content.isEmpty()
     is MessageChain -> this.all { it.isContentEmpty() }
     else -> false
 }
@@ -312,7 +312,7 @@ inline fun Message.repeat(count: Int): MessageChain {
 inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 @Suppress("OverridingDeprecatedMember")
-interface SingleMessage : Message, CharSequence, Comparable<String> {
+interface SingleMessage : Message {
     @PlannedRemoval("1.0.0")
     @JvmSynthetic
     @Deprecated(
@@ -339,6 +339,25 @@ interface SingleMessage : Message, CharSequence, Comparable<String> {
         DeprecationLevel.ERROR
     )
     /* final */ override infix fun eq(other: String): Boolean = this.contentToString() == other
+
+
+    @PlannedRemoval("1.1.0")
+    @JvmSynthetic
+    @SinceMirai("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun length(): Int = this.toString().length
+
+    @PlannedRemoval("1.1.0")
+    @JvmSynthetic
+    @SinceMirai("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun charAt(index: Int): Char = this.toString()[index]
+
+    @PlannedRemoval("1.1.0")
+    @JvmSynthetic
+    @SinceMirai("1.0.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun subSequence(start: Int, end: Int): CharSequence = this.toString().subSequence(start, end)
 }
 
 /**
@@ -352,12 +371,7 @@ interface SingleMessage : Message, CharSequence, Comparable<String> {
  *
  * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
-interface MessageMetadata : SingleMessage {
-    override val length: Int get() = 0
-    override fun get(index: Int): Char = ""[index] // produce uniform exception
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence = "".subSequence(startIndex, endIndex)
-    override fun compareTo(other: String): Int = "".compareTo(other)
-}
+interface MessageMetadata : SingleMessage
 
 /**
  * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 保持原顺序.

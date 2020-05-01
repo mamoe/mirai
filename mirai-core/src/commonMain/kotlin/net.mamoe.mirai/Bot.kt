@@ -277,7 +277,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 邀请入群的事件对象
      */
-    @SinceMirai("0.40.0")
+    @SinceMirai("0.39.4")
     @JvmSynthetic
     abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
@@ -287,7 +287,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 邀请入群的事件对象
      */
     @JvmSynthetic
-    @SinceMirai("0.40.0")
+    @SinceMirai("0.39.4")
     abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
     // endregion

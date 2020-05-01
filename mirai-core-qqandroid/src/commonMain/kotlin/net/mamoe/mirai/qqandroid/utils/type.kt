@@ -52,7 +52,7 @@ internal fun SingleMessage.estimateLength(upTo: Int): Int {
     return when (this) {
         is QuoteReply -> 444 + this.source.originalMessage.estimateLength(upTo) // Magic number
         is Image -> 260 // Magic number
-        is PlainText -> stringValue.chineseLength(upTo)
+        is PlainText -> content.chineseLength(upTo)
         is At -> display.chineseLength(upTo)
         is AtAll -> display.chineseLength(upTo)
         else -> this.toString().chineseLength(upTo)

@@ -58,7 +58,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
-import kotlin.jvm.Synchronized
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
@@ -294,7 +293,7 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {
-        return QQAndroidBotNetworkHandler(this as QQAndroidBot)
+        return QQAndroidBotNetworkHandler(coroutineContext, this as QQAndroidBot)
     }
 
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())

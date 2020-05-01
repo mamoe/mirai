@@ -14,6 +14,8 @@ package net.mamoe.mirai.qqandroid.contact
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Friend
@@ -59,10 +61,12 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
 
 internal class FriendImpl(
     bot: QQAndroidBot,
-    override val coroutineContext: CoroutineContext,
+    coroutineContext: CoroutineContext,
     override val id: Long,
     private val friendInfo: FriendInfo
 ) : Friend() {
+    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
+
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
 
