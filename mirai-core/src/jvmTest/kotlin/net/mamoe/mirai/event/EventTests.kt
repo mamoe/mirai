@@ -88,6 +88,35 @@ class EventTests {
     }
 
     @Test
+    fun `test handler remvoe`() {
+        singleThreaded {
+            val step = StepUtil()
+            subscribe<Event> {
+                step.step(0)
+                ListeningStatus.STOPPED
+            }
+            ParentEvent().broadcast()
+            ParentEvent().broadcast()
+        }
+    }
+
+    @Test
+    fun `test interception`() {
+        singleThreaded {
+            val step = StepUtil()
+            subscribe<Event> {
+                step.step(0)
+                ListeningStatus.INTERCEPTION
+            }
+            subscribe<Event> {
+                step.step(-1, "Boom")
+                ListeningStatus.LISTENING
+            }
+            ParentEvent().broadcast()
+        }
+    }
+
+    @Test
     fun `test event priority`() {
         // Listener.EventPriority.LOW
         singleThreaded {
