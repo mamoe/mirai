@@ -380,12 +380,12 @@ fun MessageSource.quote(): QuoteReply {
 }
 
 /**
- * 引用这条消息
+ * 引用这条消息. 仅从服务器接收的消息 (即来自 [ContactMessage]) 才可以通过这个方式被引用.
  * @see QuoteReply
  */
 fun MessageChain.quote(): QuoteReply {
     @OptIn(MiraiInternalAPI::class)
-    return QuoteReply(this.source as? OnlineMessageSource ?: error("only online messages can be quoted"))
+    return QuoteReply(this.source)
 }
 
 /**
