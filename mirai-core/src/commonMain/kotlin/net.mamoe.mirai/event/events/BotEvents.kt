@@ -652,9 +652,9 @@ data class MemberUnmuteEvent(
 @SinceMirai("0.36.0")
 data class FriendRemarkChangeEvent(
     override val bot: Bot,
-    val friend: Friend,
+    override val friend: Friend,
     val newName: String
-) : BotEvent, Packet, AbstractEvent()
+) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * 成功添加了一个新好友的事件
@@ -664,8 +664,8 @@ data class FriendAddEvent(
     /**
      * 新好友. 已经添加到 [Bot.friends]
      */
-    val friend: Friend
-) : BotEvent, Packet, AbstractEvent() {
+    override val friend: Friend
+) : FriendEvent, Packet, AbstractEvent() {
     override val bot: Bot get() = friend.bot
 }
 
@@ -674,8 +674,8 @@ data class FriendAddEvent(
  */
 @SinceMirai("0.36.0")
 data class FriendDeleteEvent(
-    val friend: Friend
-) : BotEvent, Packet, AbstractEvent() {
+    override val friend: Friend
+) : FriendEvent, Packet, AbstractEvent() {
     override val bot: Bot get() = friend.bot
 }
 
