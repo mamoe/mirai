@@ -289,6 +289,10 @@ internal class MessageSvc {
                             // friend ptt
                             return@mapNotNull null
                         }
+                        529 -> {
+                            // 好友文件
+                            return@mapNotNull null
+                        }
                         141 -> {
                             val tmpHead = msg.msgHead.c2cTmpMsgHead ?: return@mapNotNull null
                             val member = bot.getGroupByUinOrNull(tmpHead.groupUin)?.getOrNull(msg.msgHead.fromUin)
