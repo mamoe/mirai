@@ -46,10 +46,6 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     override val context: Context by context.unsafeWeakRef()
 
-    @Deprecated("use id instead", replaceWith = ReplaceWith("id"))
-    override val uin: Long
-        get() = this.id
-
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
 
     init {
@@ -60,7 +56,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         @PublishedApi
         internal val instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
 
-        inline fun forEachInstance(block: (Bot) -> Unit) = instances.forEach {
+        fun forEachInstance(block: (Bot) -> Unit) = instances.forEach {
             it.get()?.let(block)
         }
 

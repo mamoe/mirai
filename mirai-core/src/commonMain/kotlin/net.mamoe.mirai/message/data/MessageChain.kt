@@ -15,7 +15,6 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
@@ -32,7 +31,7 @@ import kotlin.reflect.KProperty
  * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
  * @see asMessageChain 将 [Iterable] 或 [Sequence] 委托为 [MessageChain]
  *
- * @see foreachContent 遍历内容
+ * @see forEachContent 遍历内容
  *
  * @see orNull 属性委托扩展
  * @see orElse 属性委托扩展
@@ -40,14 +39,6 @@ import kotlin.reflect.KProperty
  * @see flatten 扁平化
  */
 interface MessageChain : Message, Iterable<SingleMessage> {
-    @PlannedRemoval("1.0.0")
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("this.contentToString().contains(sub)")
-    )
-    /* final */ override operator fun contains(sub: String): Boolean = this.contentToString().contains(sub)
-
     /**
      * 元素数量. [EmptyMessageChain] 不参加计数.
      */
@@ -96,20 +87,6 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     fun `__forEach for Java__`(block: (Message) -> Unit) {
         this.forEach(block)
     }
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
-    @JvmName("get")
-    fun <M : Message> get2(key: Message.Key<M>): M = first(key)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
-    @JvmName("getOrNull")
-    fun <M : Message> getOrNull2(key: Message.Key<M>): M? = getOrNull(key)
 }
 
 // region accessors
@@ -127,12 +104,6 @@ inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
         }
     }
 }
-
-@Deprecated("typo, use forEachContent",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith("forEachContent(block)"))
-@JvmSynthetic
-inline fun MessageChain.foreachContent(block: (MessageContent) -> Unit) = forEachContent(block)
 
 /**
  * 如果每一个 [消息内容][MessageContent] 都满足 [block], 返回 `true`
@@ -435,18 +406,4 @@ object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
     override fun iterator(): Iterator<SingleMessage> = this
     override fun hasNext(): Boolean = false
     override fun next(): SingleMessage = throw NoSuchElementException("EmptyMessageChain is empty.")
-}
-
-/**
- * Null 的 [MessageChain].
- * 它不包含任何元素, 也没有创建任何 list.
- */
-@PlannedRemoval("1.0.0")
-@Deprecated("ambiguous. use `null` or EmptyMessageChain instead", level = DeprecationLevel.ERROR)
-object NullMessageChain : MessageChain {
-    override fun toString(): String = "NullMessageChain"
-    override fun contentToString(): String = ""
-    override val size: Int get() = 0
-    override fun equals(other: Any?): Boolean = other === this
-    override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }

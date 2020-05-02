@@ -21,7 +21,6 @@ package net.mamoe.mirai.message
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
-import kotlinx.coroutines.io.ByteReadChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.*
@@ -78,8 +77,9 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
     /**
      * 消息事件主体.
      *
-     * 对于好友消息, 这个属性为 [QQ] 的实例, 与 [sender] 引用相同;
-     * 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessage.group] 引用相同
+     * - 对于好友消息, 这个属性为 [Friend] 的实例, 与 [sender] 引用相同;
+     * - 对于临时会话消息, 这个属性为 [Member] 的实例, 与 [sender] 引用相同;
+     * - 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessage.group] 引用相同
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */
@@ -89,7 +89,7 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
     /**
      * 发送人.
      *
-     * 在好友消息时为 [QQ] 的实例, 在群消息时为 [Member] 的实例
+     * 在好友消息时为 [Friend] 的实例, 在群消息时为 [Member] 的实例
      */
     @WeakRefProperty
     abstract val sender: TSender
@@ -178,53 +178,7 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
      */
     suspend inline fun Image.url(): String = bot.queryImageUrl(this@url)
 
-    /**
-     * 获取图片下载链接并开始下载.
-     *
-     * @see ByteReadChannel.copyAndClose
-     * @see ByteReadChannel.copyTo
-     */
-    @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
-    suspend inline fun Image.channel(): ByteReadChannel = bot.openChannel(this)
     // endregion
-
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use reply(String) for clear semantics", ReplaceWith("reply(this)"),
-        DeprecationLevel.ERROR)
-    @JvmName("reply1")
-    suspend inline fun String.reply(): MessageReceipt<TSubject> = reply(this)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use reply(String) for clear semantics", ReplaceWith("reply(this)"),
-        level = DeprecationLevel.ERROR)
-    @JvmName("reply1")
-    suspend inline fun Message.reply(): MessageReceipt<TSubject> = reply(this)
-
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @get:JvmSynthetic
-    @get:JvmName("getSender")
-    @Suppress("DEPRECATION_ERROR", "INAPPLICABLE_JVM_NAME")
-    val senderDeprecated: QQ
-        get() = sender as QQ
-
-    @Suppress("DEPRECATION_ERROR")
-    @PlannedRemoval("1.0.0")
-    @Deprecated("removed",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("At(this as? Member ?: error(\"`QQ.at` can only be used in GroupMessage\"))",
-            "net.mamoe.mirai.message.data.At",
-            "net.mamoe.mirai.contact.Member"))
-    fun QQ.at(): At = At(this as? Member ?: error("`QQ.at` can only be used in GroupMessage"))
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("removed",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("(this@MessagePacketBase as? GroupMessage)?.group?.get(this.target) ?: error(\"`At.member` can only be used in GroupMessage\")"))
-    fun At.member(): Member = (this@MessagePacketBase as? GroupMessage)?.group?.get(this.target)
-        ?: error("`At.member` can only be used in GroupMessage")
 }
 
 /**
@@ -427,12 +381,4 @@ inline fun <reified M : Message> ContactMessage.nextMessageContainingOrNullAsync
                 .takeIf { this.message.anyIsInstance<M>() }
         }?.message?.firstIsInstance<M>()
     }
-}
-
-
-@PlannedRemoval("1.0.0")
-@Suppress("DEPRECATION")
-@Deprecated(level = DeprecationLevel.HIDDEN, message = "for binary compatibility")
-fun MessagePacket<*, *>.isContextIdenticalWith(another: MessagePacket<*, *>): Boolean {
-    return (this as ContactMessage).isContextIdenticalWith(another as ContactMessage)
 }

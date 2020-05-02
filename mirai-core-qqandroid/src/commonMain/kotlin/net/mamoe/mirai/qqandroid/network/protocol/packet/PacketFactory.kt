@@ -219,6 +219,7 @@ internal object KnownPacketFactories {
                     it as IncomingPacket<T>
 
                     if (it.packetFactory is IncomingPacketFactory<T> && it.packetFactory.canBeCached && bot.network.pendingEnabled) {
+                        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                         bot.network.pendingIncomingPackets?.addLast(it.also {
                             it.consumer = consumer
                             it.flag2 = flag2

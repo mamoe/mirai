@@ -9,7 +9,9 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.SinceMirai
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.unsafeWeakRef
 
 /**
  * 临时会话消息
@@ -20,11 +22,6 @@ class TempMessage(
     override val message: MessageChain,
     override val time: Int
 ) : ContactMessage(), BroadcastControllable {
-    @PlannedRemoval("1.0.0")
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
-    constructor(sender: Member, message: MessageChain) :
-            this(sender, message, currentTimeSeconds.toInt())
-
     init {
         val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }

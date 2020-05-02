@@ -15,7 +15,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
@@ -764,13 +763,6 @@ internal abstract class QQAndroidBotBase constructor(
                 )
             }
         }
-    }
-
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
-    override suspend fun openChannel(image: Image): ByteReadChannel {
-        return MiraiPlatformUtils.Http.get<HttpResponse>(queryImageUrl(image)).content.toKotlinByteReadChannel()
     }
 
     /**

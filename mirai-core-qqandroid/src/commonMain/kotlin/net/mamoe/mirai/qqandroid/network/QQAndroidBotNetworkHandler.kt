@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.atomicfu.AtomicRef
@@ -44,6 +46,7 @@ import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import net.mamoe.mirai.qqandroid.utils.retryCatching
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.jvm.Volatile
 import kotlin.time.ExperimentalTime
 
@@ -204,6 +207,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private val _pendingEnabled = atomic(true)
     internal val pendingEnabled get() = _pendingEnabled.value
 
+    @JvmField
     @Volatile
     internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
         LockFreeLinkedList()

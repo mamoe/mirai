@@ -19,10 +19,8 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -191,7 +189,7 @@ inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
 /**
  * 获取非空群名片或昵称.
  *
- * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [QQ.nick]
+ * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [User.nick]
  */
 val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
 
@@ -208,16 +206,6 @@ val User.nameCardOrNick: String
         is Member -> this.nameCardOrNick
         else -> this.nick
     }
-
-/**
- * 判断改成员是否处于禁言状态.
- */
-@JvmName("isMuted2") // make compiler happy
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@kotlin.internal.InlineOnly // val Member.isMuted 编译在 JVM 也会产生 `public boolean isMuted(Member receive)`
-@PlannedRemoval("1.0.0")
-@Deprecated("use property instead", ReplaceWith("this.isMuted"))
-inline fun Member.isMuted(): Boolean = this.isMuted
 
 /**
  * 判断群成员是否处于禁言状态.

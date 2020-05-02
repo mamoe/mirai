@@ -223,6 +223,7 @@ internal class MessageSvc {
                                 // 新群
 
                                 val newGroup = msg.getNewGroup(bot) ?: return@mapNotNull null
+                                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                                 bot.groups.delegate.addLast(newGroup)
                                 return@mapNotNull BotJoinGroupEvent(newGroup)
                             } else {
@@ -232,6 +233,7 @@ internal class MessageSvc {
                                     return@mapNotNull null
                                 }
 
+                                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                                 return@mapNotNull MemberJoinEvent.Invite(group.newMember(msg.getNewMemberInfo())
                                     .also { group.members.delegate.addLast(it) })
                             }
@@ -245,6 +247,7 @@ internal class MessageSvc {
                             if (group.members.contains(msg.msgHead.authUin)) {
                                 return@mapNotNull null
                             }
+                            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                             return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
                                 .also { group.members.delegate.addLast(it) })
                         }

@@ -19,7 +19,10 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.recallIn
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.LazyProperty
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
@@ -279,34 +282,7 @@ sealed class OnlineMessageSource : MessageSource() {
             final override val target: Group get() = group
             inline val group: Group get() = sender.group
         }
-
-
-        //////////////////////////////////
-        //// FOR BINARY COMPATIBILITY ////
-        //////////////////////////////////
-
-
-        @PlannedRemoval("1.0.0")
-        @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
-        @get:JvmName("target")
-        @get:JvmSynthetic
-        final override val target2: Any
-            get() = target
     }
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
-    @get:JvmName("target")
-    @get:JvmSynthetic
-    open val target2: Any
-        get() = target
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
-    @get:JvmName("sender")
-    @get:JvmSynthetic
-    open val sender2: Any
-        get() = sender
 }
 
 /**

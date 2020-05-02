@@ -41,14 +41,14 @@ internal fun createImageDataPacketSequence(
     ticket: ByteArray,
 
     data: Any,
-    dataSize: Int,
+    dataSize: Long,
     fileMd5: ByteArray,
     sizePerPacket: Int = ByteArrayPool.BUFFER_SIZE
 ): Flow<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     require(data is Input || data is InputStream || data is ByteReadChannel) { "unsupported data: ${data::class.simpleName}" }
     //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
-    require(data !is ByteReadPacket || data.remaining.toInt() == dataSize) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as ByteReadPacket).remaining}" }
+    require(data !is ByteReadPacket) { "bad input. given dataSize=$dataSize, but actual readRemaining=${(data as ByteReadPacket).remaining}" }
 
     val flow = when (data) {
         is ByteReadPacket -> data.chunkedFlow(sizePerPacket)
@@ -82,7 +82,7 @@ internal fun createImageDataPacketSequence(
                     //   cacheAddr = 812157193,
                     datalength = chunkedInput.bufferSize,
                     dataoffset = offset,
-                    filesize = dataSize.toLong(),
+                    filesize = dataSize,
                     serviceticket = ticket,
                     md5 = MiraiPlatformUtils.md5(chunkedInput.buffer, 0, chunkedInput.bufferSize),
                     fileMd5 = fileMd5,

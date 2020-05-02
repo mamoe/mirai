@@ -27,4 +27,4 @@ expect abstract class ContactJavaFriendlyAPI internal constructor()
 @Suppress("DEPRECATION_ERROR")
 @MiraiInternalAPI
 @JavaFriendlyAPI
-expect abstract class MemberJavaFriendlyAPI internal constructor() : QQ // 将来会改为 User
+expect abstract class MemberJavaFriendlyAPI internal constructor() : User

@@ -186,9 +186,6 @@ abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi interna
     override fun Regex.findingReply(replier: suspend M.(MatchResult) -> Any?) = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun String.startsWithReply(replier: suspend M.(String) -> Any?) = error("prohibited")
-
-    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override fun String.endsWithReply(replier: suspend M.(String) -> Any?) = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)

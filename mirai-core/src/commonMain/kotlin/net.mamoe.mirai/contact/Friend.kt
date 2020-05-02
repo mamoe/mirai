@@ -30,7 +30,7 @@ import kotlin.jvm.JvmSynthetic
  * 它不能被直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
  */
 @Suppress("DEPRECATION_ERROR")
-abstract class Friend : QQ(), CoroutineScope {
+abstract class Friend : User(), CoroutineScope {
     /**
      * 请求头像下载链接
      */

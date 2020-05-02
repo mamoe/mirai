@@ -22,8 +22,6 @@ import net.mamoe.mirai.message.FriendMessage
 import net.mamoe.mirai.message.GroupMessage
 import net.mamoe.mirai.message.TempMessage
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.js.JsName
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
@@ -440,79 +438,6 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         }
         return stub
     }
-
-    /**
-     * 不考虑空格, [消息内容][Message.contentToString]以 [this] 开始则执行 [replier] 并将其返回值回复给发信对象.
-     * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他类型则 [Any.toString] 后回复
-     */
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use startsWith on your own", replaceWith = ReplaceWith("startsWith(this, true, true, replier)"))
-    open infix fun String.startsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
-        val toCheck = this.trimStart()
-        return content({ it.trim().startsWith(toCheck) }, {
-            executeAndReply(this) { replier(this, it.trim().removePrefix(toCheck)) }
-        })
-    }
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun contains(message: Message, onEvent: MessageListener<M, R>): Ret {
-        return content({ this.message.any { it == message } }, onEvent)
-    }
-
-    @JvmName("case1")
-    @JsName("case1")
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use String.invoke", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("this(block)"))
-    infix fun String.`->`(block: MessageListener<M, R>): Ret {
-        return this(block)
-    }
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun containsAll(
-        vararg sub: String,
-        ignoreCase: Boolean = false,
-        trim: Boolean = true,
-        onEvent: MessageListener<M, R>
-    ): Ret = containsAllImpl(sub, ignoreCase = ignoreCase, trim = trim).invoke(onEvent)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun containsAny(
-        vararg sub: String,
-        ignoreCase: Boolean = false,
-        trim: Boolean = true,
-        onEvent: MessageListener<M, R>
-    ): Ret = containsAnyImpl(*sub, ignoreCase = ignoreCase, trim = trim).invoke(onEvent)
-
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentBy(name: String, onEvent: MessageListener<M, R>): Ret =
-        content({ (this as? GroupMessage)?.senderName == name }, onEvent)
-
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentByOperator(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isOperator() }, onEvent)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentByAdministrator(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isAdministrator() }, onEvent)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentByOwner(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isOwner() }, onEvent)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentFrom(groupId: Long, onEvent: MessageListener<GroupMessage, R>): Ret =
-        content({ this is GroupMessage && this.group.id == groupId }) { onEvent(this as GroupMessage, it) }
-
 }
 
 /**

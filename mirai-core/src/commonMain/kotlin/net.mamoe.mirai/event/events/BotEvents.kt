@@ -25,7 +25,10 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.network.Packet
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
@@ -148,7 +151,7 @@ sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         override val messageInternalId: Int,
         override val messageTime: Int,
         /**
-         * 撤回操作人, 可能为 [Bot.uin] 或好友的 [QQ.id]
+         * 撤回操作人, 可能为 [Bot.uin] 或好友的 [User.id]
          */
         val operator: Long
     ) : MessageRecallEvent(), Packet {
@@ -566,17 +569,8 @@ data class MemberCardChangeEvent(
      */
     val new: String,
 
-    override val member: Member,
-
-    /**
-     * 此事件无法确定操作人, 将在未来版本删除
-     */
-    @PlannedRemoval("1.0.0")
-    @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR)
-    override val operator: Member?
-) : GroupMemberEvent, Packet, AbstractEvent(),
-    @Deprecated("operator is always unknown", level = DeprecationLevel.ERROR)
-    GroupOperableEvent
+    override val member: Member
+) : GroupMemberEvent, Packet, AbstractEvent()
 
 /**
  * 成员群头衔改动. 一定为群主操作
@@ -660,16 +654,7 @@ data class FriendRemarkChangeEvent(
     override val bot: Bot,
     val friend: Friend,
     val newName: String
-) : BotEvent, Packet, AbstractEvent() {
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
-    @get:JvmSynthetic
-    @get:JvmName("getFriend")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    val friendDeprecated: QQ
-        get() = friend
-}
+) : BotEvent, Packet, AbstractEvent()
 
 /**
  * 成功添加了一个新好友的事件
@@ -682,14 +667,6 @@ data class FriendAddEvent(
     val friend: Friend
 ) : BotEvent, Packet, AbstractEvent() {
     override val bot: Bot get() = friend.bot
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
-    @get:JvmSynthetic
-    @get:JvmName("getFriend")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    val friendDeprecated: QQ
-        get() = friend
 }
 
 /**
@@ -700,14 +677,6 @@ data class FriendDeleteEvent(
     val friend: Friend
 ) : BotEvent, Packet, AbstractEvent() {
     override val bot: Bot get() = friend.bot
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
-    @get:JvmSynthetic
-    @get:JvmName("getFriend")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    val friendDeprecated: QQ
-        get() = friend
 }
 
 /**
@@ -725,7 +694,7 @@ data class NewFriendRequestEvent(
      */
     val message: String,
     /**
-     * 请求人 [QQ.id]
+     * 请求人 [User.id]
      */
     val fromId: Long,
     /**

@@ -195,76 +195,6 @@ interface Message { // must be interface. Don't consider any changes.
 
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
     operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
-
-    //////////////////////////////////////
-    // FOR BINARY COMPATIBILITY UNTIL 1.0.0
-    //////////////////////////////////////
-
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
-
-    /**
-     * 将 [contentToString] 与 [other] 比较
-     */
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    infix fun eq(other: String): Boolean = this.contentToString() == other
-
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    operator fun contains(sub: String): Boolean = false
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("followedBy")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun followedBy1(tail: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(tail)
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("plus")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun plus1(another: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("plus")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun plus1(another: SingleMessage): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("plus")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun plus1(another: String): CombinedMessage = this.followedByInternalForBinaryCompatibility(another.toMessage())
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("plus")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun plus1(another: CharSequence): CombinedMessage =
-        this.followedByInternalForBinaryCompatibility(another.toString().toMessage())
 }
 
 
@@ -314,47 +244,19 @@ inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 @Suppress("OverridingDeprecatedMember")
 interface SingleMessage : Message {
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    /* final */ override operator fun contains(sub: String): Boolean = sub in this.contentToString()
-
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    /* final */ override infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
-
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    /* final */ override infix fun eq(other: String): Boolean = this.contentToString() == other
-
-
-    @PlannedRemoval("1.1.0")
+    @PlannedRemoval("1.2.0")
     @JvmSynthetic
     @SinceMirai("1.0.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     fun length(): Int = this.toString().length
 
-    @PlannedRemoval("1.1.0")
+    @PlannedRemoval("1.2.0")
     @JvmSynthetic
     @SinceMirai("1.0.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     fun charAt(index: Int): Char = this.toString()[index]
 
-    @PlannedRemoval("1.1.0")
+    @PlannedRemoval("1.2.0")
     @JvmSynthetic
     @SinceMirai("1.0.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)

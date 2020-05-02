@@ -15,7 +15,6 @@ package net.mamoe.mirai
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.AddFriendResult
@@ -29,7 +28,6 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -56,6 +54,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
+        @PlannedRemoval("1.2.0")
         @Deprecated("use botInstances instead", replaceWith = ReplaceWith("botInstances"))
         @JvmStatic
         val instances: List<WeakRef<Bot>>
@@ -72,7 +71,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         /**
          * 遍历每一个 [Bot] 实例
          */
-        inline fun forEachInstance(block: (Bot) -> Unit) = BotImpl.forEachInstance(block)
+        fun forEachInstance(block: (Bot) -> Unit) = BotImpl.forEachInstance(block)
 
         /**
          * 获取一个 [Bot] 实例, 找不到则 [NoSuchElementException]
@@ -88,10 +87,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * 在 Android 实现为 `android.content.Context`
      */
     abstract val context: Context
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use id instead", replaceWith = ReplaceWith("id"))
-    abstract val uin: Long
 
     /**
      * QQ 号码. 实际类型为 uint
@@ -113,7 +108,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     // region contacts
 
     /**
-     * [QQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewFriend] 实例
+     * [User.id] 与 [Bot.id] 相同的 [_lowLevelNewFriend] 实例
      */
     abstract val selfQQ: Friend
 
@@ -200,18 +195,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         id: Int, time: Int, internalId: Int,
         originalMessage: MessageChain
     ): OfflineMessageSource
-
-    /**
-     * 获取图片下载链接并开始下载.
-     *
-     * @see ByteReadChannel.copyAndClose
-     * @see ByteReadChannel.copyTo
-     */
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
-    @MiraiExperimentalAPI
-    @JvmSynthetic
-    abstract suspend fun openChannel(image: Image): ByteReadChannel
 
     /**
      * 添加一个好友
@@ -313,19 +296,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      */
     @MiraiInternalAPI
     abstract val network: BotNetworkHandler
-
-    @PlannedRemoval("1.0.0.")
-    @get:JvmName("getSelfQQ")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    val selfQQDeprecated: QQ
-        get() = selfQQ
-
-    @PlannedRemoval("1.0.0.")
-    @JvmName("getFriend")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun getFriendDeprecated(id: Long): QQ = this.getFriend(id)
 }
 
 /**

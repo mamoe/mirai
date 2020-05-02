@@ -412,7 +412,7 @@ internal class GroupImpl(
                 uin = bot.id,
                 groupCode = id,
                 md5 = image.md5,
-                size = image.inputSize
+                size = image.input.size.toInt()
             ).sendAndExpect()
 
             @Suppress("UNCHECKED_CAST") // bug
@@ -432,7 +432,7 @@ internal class GroupImpl(
                         bot,
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
-                        image,
+                        image.input,
                         kind = "group image",
                         commandId = 2
                     )

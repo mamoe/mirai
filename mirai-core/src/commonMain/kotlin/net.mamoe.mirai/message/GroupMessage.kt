@@ -15,8 +15,6 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.PlannedRemoval
-import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
@@ -31,11 +29,6 @@ class GroupMessage(
     override val message: MessageChain,
     override val time: Int
 ) : ContactMessage(), Event {
-    @PlannedRemoval("1.0.0")
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
-    constructor(senderName: String, permission: MemberPermission, sender: Member, message: MessageChain) :
-            this(senderName, permission, sender, message, currentTimeSeconds.toInt())
-
     init {
         val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }

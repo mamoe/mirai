@@ -208,7 +208,7 @@ actual abstract class ContactJavaFriendlyAPI {
 @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused", "unused", "DEPRECATION_ERROR")
 @MiraiInternalAPI
 @JavaFriendlyAPI
-actual abstract class MemberJavaFriendlyAPI : QQ() {
+actual abstract class MemberJavaFriendlyAPI : User() {
     private inline fun <R> runBlocking(crossinline block: suspend Member.() -> R): R {
         @Suppress("CAST_NEVER_SUCCEEDS")
         return kotlinx.coroutines.runBlocking { block(this@MemberJavaFriendlyAPI as Member) }

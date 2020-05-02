@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
@@ -87,7 +87,8 @@ internal class OnlinePush {
                 }
             }
 
-            val group = bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl? ?: return null // 机器人还正在进群
+            val group =
+                bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl? ?: return null // 机器人还正在进群
             val sender = if (anonymous != null) {
                 group.newAnonymous(anonymous.anonNick.encodeToString())
             } else {
@@ -113,7 +114,7 @@ internal class OnlinePush {
                     if (it != sender.nameCard) {
                         val origin = sender._nameCard
                         sender._nameCard = name
-                        MemberCardChangeEvent(origin, name, sender, sender).broadcast() // 不知道operator
+                        MemberCardChangeEvent(origin, name, sender).broadcast()
                     }
                 },
                 sender = sender,
@@ -562,7 +563,7 @@ internal class OnlinePush {
                                 if (new == old) return@mapNotNull null
                                 member._nameCard = new
 
-                                return@mapNotNull MemberCardChangeEvent(old, new, member, null)
+                                return@mapNotNull MemberCardChangeEvent(old, new, member)
                             }
                             2 -> {
                                 if (info.value.singleOrNull()?.toInt() != 0) {

@@ -94,6 +94,7 @@ expect interface Image : Message, MessageContent {
  * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
  * @see Image 查看更多说明
  */
+@PlannedRemoval("1.2.0") // make internal
 @Suppress("DEPRECATION_ERROR")
 // CustomFace
 @OptIn(MiraiInternalAPI::class)
@@ -119,6 +120,7 @@ val Image.md5: ByteArray
  *
  * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
  */ // NotOnlineImage
+@PlannedRemoval("1.2.0") // make internal
 @Suppress("DEPRECATION_ERROR")
 @OptIn(MiraiInternalAPI::class)
 sealed class FriendImage : AbstractImage() {
@@ -158,17 +160,6 @@ val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
 val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\.mirai""")
 
 /**
- * 在 `0.39.0` 前的图片的正则表示
- */
-@Suppress("RegExpRedundantEscape") // This is required on Android
-@Deprecated("Only for temporal use",
-    replaceWith = ReplaceWith("GROUP_IMAGE_ID_REGEX", "net.mamoe.mirai.message.data.GROUP_IMAGE_ID_REGEX"))
-@SinceMirai("0.39.2")
-@PlannedRemoval("1.0.0")
-// Java: MessageUtils.GROUP_IMAGE_ID_REGEX_OLD
-val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..*""")
-
-/**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
  * 这个图片必须是服务器已经存在的图片.
  * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
@@ -185,7 +176,6 @@ fun Image(imageId: String): OfflineImage = when {
     imageId matches FRIEND_IMAGE_ID_REGEX_1 -> OfflineFriendImage(imageId)
     imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
     imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
-    imageId matches GROUP_IMAGE_ID_REGEX_OLD -> OfflineGroupImage(imageId)
     else -> throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
 }
 
@@ -279,7 +269,7 @@ data class OfflineGroupImage(
 ) : GroupImage(), OfflineImage {
     init {
         @Suppress("DEPRECATION")
-        require(imageId matches GROUP_IMAGE_ID_REGEX || imageId matches GROUP_IMAGE_ID_REGEX_OLD) {
+        require(imageId matches GROUP_IMAGE_ID_REGEX) {
             "Illegal imageId. It must matches GROUP_IMAGE_ID_REGEX"
         }
     }
@@ -329,18 +319,10 @@ abstract class OnlineFriendImage : FriendImage(), OnlineImage
 // endregion
 
 
-@PlannedRemoval("1.0.0")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("FunctionName")
-@JsName("newImage")
-@JvmName("newImage")
-fun Image2(imageId: String): Image = Image(imageId)
-
-
 /**
  * 所有 [Image] 实现的基类.
  */
+@PlannedRemoval("1.2.0") // make internal
 @Deprecated(
     "This is internal API. Use Image instead",
     level = DeprecationLevel.HIDDEN, // so that others can't see this class

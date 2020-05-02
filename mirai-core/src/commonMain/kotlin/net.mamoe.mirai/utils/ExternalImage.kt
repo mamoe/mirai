@@ -22,8 +22,8 @@ import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
-import net.mamoe.mirai.message.data.toLongUnsigned
 import net.mamoe.mirai.utils.internal.asReusableInput
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -37,43 +37,44 @@ import kotlin.jvm.JvmSynthetic
 @OptIn(MiraiInternalAPI::class)
 class ExternalImage internal constructor(
     val md5: ByteArray,
-    @Suppress("EXPOSED_PROPERTY_TYPE_IN_CONSTRUCTOR")
-    @MiraiInternalAPI("unstable API")
-    val input: ReusableInput, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
-    @MiraiInternalAPI("unstable API")
-    val inputSize: Int // dont be greater than Int.MAX
+    @JvmField
+    internal val input: ReusableInput // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
 ) {
     @SinceMirai("1.0.0")
     internal interface ReusableInput {
+        val md5: ByteArray
+        val size: Long
+
+        /**
+         * Create a input for once usage
+         */
         fun input(): Input
     }
 
 
     constructor(
         md5: ByteArray,
-        input: ByteReadChannel,
-        inputSize: Long // dont be greater than Int.MAX
-    ) : this(md5, input.asReusableInput(), inputSize.coerceAtMost(Int.MAX_VALUE.toLongUnsigned()).toInt())
+        input: ByteReadChannel
+    ) : this(md5, input.asReusableInput())
 
     constructor(
         md5: ByteArray,
-        input: Input,
-        inputSize: Long // dont be greater than Int.MAX
-    ) : this(md5, input.asReusableInput(), inputSize.coerceAtMost(Int.MAX_VALUE.toLongUnsigned()).toInt())
+        input: Input
+    ) : this(md5, input.asReusableInput())
 
     constructor(
         md5: ByteArray,
         input: ByteReadPacket
-    ) : this(md5, input.asReusableInput(), input.remaining.coerceAtMost(Int.MAX_VALUE.toLongUnsigned()).toInt())
+    ) : this(md5, input.asReusableInput())
 
     @OptIn(InternalSerializationApi::class)
     constructor(
         md5: ByteArray,
         input: InputStream
-    ) : this(md5, input.asReusableInput(), input.available())
+    ) : this(md5, input.asReusableInput())
 
     init {
-        require(inputSize < 30L * 1024 * 1024) { "file is too big. Maximum is about 20MB" }
+        require(input.size < 30L * 1024 * 1024) { "Image file is too big. Maximum is 30 MiB, but recommended to be 20 MiB" }
     }
 
     companion object {

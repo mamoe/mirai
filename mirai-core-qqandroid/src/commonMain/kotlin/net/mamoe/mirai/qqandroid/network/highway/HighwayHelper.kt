@@ -42,13 +42,12 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
-@Suppress("SpellCheckingInspection")
+@Suppress("SpellCheckingInspection", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal suspend fun HttpClient.postImage(
     htcmd: String,
     uin: Long,
     groupcode: Long?,
-    imageInput: Any, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
-    inputSize: Long,
+    imageInput: ExternalImage.ReusableInput, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
     uKeyHex: String
 ): Boolean = post<HttpStatusCode> {
     url {
@@ -63,7 +62,7 @@ internal suspend fun HttpClient.postImage(
 
         parameters["term"] = "pc"
         parameters["ver"] = "5603"
-        parameters["filesize"] = inputSize.toString()
+        parameters["filesize"] = imageInput.size.toString()
         parameters["range"] = 0.toString()
         parameters["ukey"] = uKeyHex
 
@@ -72,7 +71,7 @@ internal suspend fun HttpClient.postImage(
 
     body = object : OutgoingContent.WriteChannelContent() {
         override val contentType: ContentType = ContentType.Image.Any
-        override val contentLength: Long = inputSize
+        override val contentLength: Long = imageInput.size
 
         @OptIn(MiraiExperimentalAPI::class)
         override suspend fun writeTo(channel: ByteWriteChannel) {
@@ -102,14 +101,15 @@ internal suspend fun HttpClient.postImage(
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
 internal object HighwayHelper {
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     suspend fun uploadImageToServers(
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
-        image: ExternalImage,
+        image: ExternalImage.ReusableInput,
         kind: String,
         commandId: Int
-    ) = uploadImageToServers(bot, servers, uKey, image.md5, image.input, image.inputSize, kind, commandId)
+    ) = uploadImageToServers(bot, servers, uKey, image.md5, image.input(), image.size, kind, commandId)
 
     @OptIn(ExperimentalTime::class)
     suspend fun uploadImageToServers(
@@ -137,7 +137,7 @@ internal object HighwayHelper {
                 serverIp = ip,
                 serverPort = port,
                 imageInput = input,
-                inputSize = inputSize.toInt(),
+                inputSize = inputSize,
                 fileMd5 = md5,
                 ticket = uKey,
                 commandId = commandId
@@ -156,7 +156,7 @@ internal object HighwayHelper {
         serverPort: Int,
         ticket: ByteArray,
         imageInput: Any,
-        inputSize: Int,
+        inputSize: Long,
         fileMd5: ByteArray,
         commandId: Int  // group=2, friend=1
     ) {
