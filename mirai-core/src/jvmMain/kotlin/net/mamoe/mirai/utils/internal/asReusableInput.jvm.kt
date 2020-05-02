@@ -1,18 +1,70 @@
 package net.mamoe.mirai.utils.internal
 
-import kotlinx.coroutines.io.ByteReadChannel
-import kotlinx.io.core.Input
+import io.ktor.utils.io.ByteWriteChannel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import net.mamoe.mirai.message.data.toLongUnsigned
 import net.mamoe.mirai.utils.ExternalImage
+import java.io.File
 import java.io.InputStream
 
-internal actual fun ByteReadChannel.asReusableInput(): ExternalImage.ReusableInput {
-    TODO("Not yet implemented")
+internal actual fun ByteArray.asReusableInput(): ExternalImage.ReusableInput {
+    return object : ExternalImage.ReusableInput {
+        override val md5: ByteArray = md5()
+        override val size: Long get() = this@asReusableInput.size.toLongUnsigned()
+
+        override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
+            return object : ChunkedFlowSession<ChunkedInput> {
+                override val flow: Flow<ChunkedInput> = inputStream().chunkedFlow(sizePerPacket)
+
+                override fun close() {
+                    // nothing to do
+                }
+            }
+        }
+
+        override suspend fun writeTo(out: ByteWriteChannel): Long {
+            out.writeFully(this@asReusableInput, 0, this@asReusableInput.size)
+            out.flush()
+            return this@asReusableInput.size.toLongUnsigned()
+        }
+    }
 }
 
-internal actual fun Input.asReusableInput(): ExternalImage.ReusableInput {
-    TODO("Not yet implemented")
+internal fun File.asReusableInput(): ExternalImage.ReusableInput {
+    return object : ExternalImage.ReusableInput {
+        override val md5: ByteArray = inputStream().use { it.md5() }
+        override val size: Long get() = length()
+
+        override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
+            val stream = inputStream()
+            return object : ChunkedFlowSession<ChunkedInput> {
+                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket)
+                override fun close() = stream.close()
+            }
+        }
+
+        override suspend fun writeTo(out: ByteWriteChannel): Long {
+            return inputStream().use { it.copyTo(out) }
+        }
+    }
 }
 
-internal actual fun InputStream.asReusableInput(): ExternalImage.ReusableInput {
-    TODO("Not yet implemented")
+
+private suspend fun InputStream.copyTo(out: ByteWriteChannel): Long = withContext(Dispatchers.IO) {
+    var bytesCopied: Long = 0
+
+    ByteArrayPool.useInstance { buffer ->
+        var bytes = read(buffer)
+        while (bytes >= 0) {
+            out.writeFully(buffer, 0, bytes)
+            bytesCopied += bytes
+            bytes = read(buffer)
+        }
+    }
+
+    out.flush()
+
+    return@withContext bytesCopied
 }

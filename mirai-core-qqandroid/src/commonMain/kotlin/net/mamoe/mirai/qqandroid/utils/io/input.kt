@@ -27,6 +27,7 @@ import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal inline fun <R> ByteReadPacket.useBytes(
     n: Int = remaining.toInt(),//not that safe but adequate
     block: (data: ByteArray, length: Int) -> R

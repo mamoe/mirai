@@ -9,15 +9,9 @@
 
 package net.mamoe.mirai.utils.internal
 
-import kotlinx.coroutines.io.ByteReadChannel
-import kotlinx.io.InputStream
-import kotlinx.io.core.Input
-import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.utils.ExternalImage
 
 
-internal expect fun ByteReadChannel.asReusableInput(): ExternalImage.ReusableInput
-internal expect fun Input.asReusableInput(): ExternalImage.ReusableInput
+internal expect fun ByteArray.asReusableInput(): ExternalImage.ReusableInput
 
-@OptIn(InternalSerializationApi::class)
-internal expect fun InputStream.asReusableInput(): ExternalImage.ReusableInput
+internal fun asReusableInput0(input: ByteArray): ExternalImage.ReusableInput = input.asReusableInput()

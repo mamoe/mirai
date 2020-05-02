@@ -18,6 +18,7 @@ import kotlinx.io.core.Input
 import kotlinx.io.core.copyTo
 import kotlinx.io.errors.IOException
 import kotlinx.io.streams.asOutput
+import net.mamoe.mirai.utils.internal.asReusableInput
 import net.mamoe.mirai.utils.internal.md5
 import java.awt.image.BufferedImage
 import java.io.File
@@ -63,7 +64,7 @@ fun BufferedImage.toExternalImage(formatName: String = "png"): ExternalImage {
     }
 
     @Suppress("DEPRECATION_ERROR")
-    return ExternalImage(digest.digest(), file.inputStream())
+    return ExternalImage(file.asReusableInput())
 }
 
 suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withContext(IO) { toExternalImage() }
@@ -76,8 +77,7 @@ suspend inline fun BufferedImage.suspendToExternalImage(): ExternalImage = withC
 fun File.toExternalImage(): ExternalImage {
     @Suppress("DEPRECATION_ERROR")
     return ExternalImage(
-        md5 = this.inputStream().md5(), // dont change
-        input = this.inputStream()
+        input = this.asReusableInput()
     )
 }
 

@@ -11,18 +11,15 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.coroutines.io.ByteReadChannel
-import kotlinx.io.InputStream
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
-import kotlinx.serialization.InternalSerializationApi
+import io.ktor.utils.io.ByteWriteChannel
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
-import net.mamoe.mirai.utils.internal.asReusableInput
+import net.mamoe.mirai.utils.internal.ChunkedFlowSession
+import net.mamoe.mirai.utils.internal.ChunkedInput
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 
@@ -36,42 +33,19 @@ import kotlin.jvm.JvmSynthetic
  */
 @OptIn(MiraiInternalAPI::class)
 class ExternalImage internal constructor(
-    val md5: ByteArray,
     @JvmField
     internal val input: ReusableInput // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
 ) {
+    val md5: ByteArray get() = this.input.md5
+
     @SinceMirai("1.0.0")
     internal interface ReusableInput {
         val md5: ByteArray
         val size: Long
 
-        /**
-         * Create a input for once usage
-         */
-        fun input(): Input
+        fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput>
+        suspend fun writeTo(out: ByteWriteChannel): Long
     }
-
-
-    constructor(
-        md5: ByteArray,
-        input: ByteReadChannel
-    ) : this(md5, input.asReusableInput())
-
-    constructor(
-        md5: ByteArray,
-        input: Input
-    ) : this(md5, input.asReusableInput())
-
-    constructor(
-        md5: ByteArray,
-        input: ByteReadPacket
-    ) : this(md5, input.asReusableInput())
-
-    @OptIn(InternalSerializationApi::class)
-    constructor(
-        md5: ByteArray,
-        input: InputStream
-    ) : this(md5, input.asReusableInput())
 
     init {
         require(input.size < 30L * 1024 * 1024) { "Image file is too big. Maximum is 30 MiB, but recommended to be 20 MiB" }

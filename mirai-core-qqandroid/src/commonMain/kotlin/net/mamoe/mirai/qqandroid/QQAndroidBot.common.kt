@@ -50,7 +50,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
 import kotlin.contracts.ExperimentalContracts
@@ -678,8 +677,8 @@ internal abstract class QQAndroidBotBase constructor(
                         response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
                         response.proto.msgSig,
                         MiraiPlatformUtils.md5(body),
-                        body.toReadPacket(),
-                        body.size.toLong().and(0xFFFF_FFFF), // don't use toLongUnsigned: Overload resolution ambiguity
+                        @Suppress("INVISIBLE_REFERENCE")
+                        net.mamoe.mirai.utils.internal.asReusableInput0(body), // don't use toLongUnsigned: Overload resolution ambiguity
                         "group long message",
                         27
                     )

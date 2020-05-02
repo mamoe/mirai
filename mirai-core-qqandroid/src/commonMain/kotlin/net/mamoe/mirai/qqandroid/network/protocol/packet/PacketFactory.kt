@@ -197,6 +197,7 @@ internal object KnownPacketFactories {
 
             readString(readInt() - 4)// uinAccount
 
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             ByteArrayPool.useInstance(this.remaining.toInt()) { data ->
                 val size = this.readAvailable(data)
 
@@ -385,6 +386,7 @@ internal object KnownPacketFactories {
             }
             0 -> {
                 val data = if (bot.client.loginState == 0) {
+                    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                     ByteArrayPool.useInstance(this.remaining.toInt()) { byteArrayBuffer ->
                         val size = (this.remaining - 1).toInt()
                         this.readFully(byteArrayBuffer, 0, size)
