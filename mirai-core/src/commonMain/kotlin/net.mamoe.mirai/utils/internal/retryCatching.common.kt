@@ -11,7 +11,6 @@ package net.mamoe.mirai.utils.internal
 
 import kotlin.reflect.KClass
 
-@PublishedApi
 internal expect fun Throwable.addSuppressedMirai(e: Throwable)
 
 

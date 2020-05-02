@@ -17,7 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
@@ -195,16 +194,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         id: Int, time: Int, internalId: Int,
         originalMessage: MessageChain
     ): OfflineMessageSource
-
-    /**
-     * 添加一个好友
-     *
-     * @param message 若需要验证请求时的验证消息.
-     * @param remark 好友备注
-     */
-    @JvmSynthetic
-    @MiraiExperimentalAPI("未支持")
-    abstract suspend fun addFriend(id: Long, message: String? = null, remark: String? = null): AddFriendResult
 
 
     /**

@@ -349,10 +349,6 @@ internal abstract class QQAndroidBotBase constructor(
             return sequence
         }
 
-    override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
-        TODO("not implemented")
-    }
-
     @Suppress("RemoveExplicitTypeArguments") // false positive
     override suspend fun recall(source: MessageSource) {
         check(source is MessageSourceInternal)
