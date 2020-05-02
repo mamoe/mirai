@@ -10,9 +10,11 @@
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
 @file:Suppress("unused", "NOTHING_TO_INLINE")
+@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
@@ -51,40 +53,40 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      * @throws NoSuchElementException 当找不到这个类型的 [Message] 时
      */
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
     @JvmName("first")
-    /* final */ operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
+    final operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
 
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例, 找不到则返回 `null`
      *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
-    @Suppress("INAPPLICABLE_JVM_NAME")
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
     @JvmName("firstOrNull")
-            /* final */ fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
+    final fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
 
     /**
-     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply].
+     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face] 等
      * 仅供 `Java` 使用
      */
-    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "FunctionName", "INAPPLICABLE_JVM_NAME")
     @JsName("forEachContent")
     @JvmName("forEachContent")
-    @MiraiInternalAPI
-    fun `__forEachContent for Java__`(block: (Message) -> Unit) {
+    @JavaFriendlyAPI
+    final fun __forEachContentForJava__(block: (Message) -> Unit) {
         this.forEachContent(block)
     }
 
     /**
-     * 遍历每一个消息, 即 [MessageSource] [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply].
+     * 遍历每一个消息, 即 [MessageSource] [At], [AtAll], [PlainText], [Image], [QuoteReply] 等
      * 仅供 `Java` 使用
      */
-    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "FunctionName", "INAPPLICABLE_JVM_NAME")
     @JsName("forEach")
     @JvmName("forEach")
-    @MiraiInternalAPI
-    fun `__forEach for Java__`(block: (Message) -> Unit) {
+    @JavaFriendlyAPI
+    final fun __forEachForJava__(block: (Message) -> Unit) {
         this.forEach(block)
     }
 }
