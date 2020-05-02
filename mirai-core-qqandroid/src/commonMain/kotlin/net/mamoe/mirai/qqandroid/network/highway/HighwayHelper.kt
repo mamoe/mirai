@@ -159,6 +159,7 @@ internal object HighwayHelper {
         socket.use {
             createImageDataPacketSequence(
                 client = client,
+                appId = client.subAppId.toInt(),
                 command = "PicUp.DataUp",
                 commandId = commandId,
                 ticket = ticket,

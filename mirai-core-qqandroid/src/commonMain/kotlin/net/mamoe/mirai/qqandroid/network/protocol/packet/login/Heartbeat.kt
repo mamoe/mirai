@@ -25,7 +25,7 @@ internal class Heartbeat {
         operator fun invoke(
             client: QQAndroidClient
         ): OutgoingPacket = buildLoginOutgoingPacket(client, 0, key = NO_ENCRYPT) {
-            writeSsoPacket(client, 537062845, commandName, sequenceId = it) {
+            writeSsoPacket(client, client.subAppId, commandName, sequenceId = it) {
 
             }
         }

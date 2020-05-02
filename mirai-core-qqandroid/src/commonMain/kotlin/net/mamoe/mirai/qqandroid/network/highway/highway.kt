@@ -32,7 +32,7 @@ internal fun createImageDataPacketSequence(
     // RequestDataTrans
     client: QQAndroidClient,
     command: String,
-    appId: Int = 537062845,
+    appId: Int,
     dataFlag: Int = 4096,
     commandId: Int,
     localId: Int = 2052,

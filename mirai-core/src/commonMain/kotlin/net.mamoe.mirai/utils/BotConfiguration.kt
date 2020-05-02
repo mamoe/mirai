@@ -15,6 +15,7 @@ import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 
@@ -74,6 +75,34 @@ open class BotConfiguration {
      * 验证码处理器
      */
     var loginSolver: LoginSolver = LoginSolver.Default
+
+    /**
+     * 使用协议类型
+     */
+    @SinceMirai("1.0.0")
+    val protocol: MiraiProtocol = MiraiProtocol.ANDROID_PAD
+
+    @SinceMirai("1.0.0")
+    enum class MiraiProtocol(
+        /** 协议模块使用的 ID */
+        @JvmField internal val id: Long
+    ) {
+        /**
+         * Android 手机.
+         *
+         * - 与手机冲突
+         * - 与平板和电脑不冲突
+         */
+        ANDROID_PHONE(537062845),
+
+        /**
+         * Android 平板.
+         *
+         * - 与平板冲突
+         * - 与手机和电脑不冲突
+         */
+        ANDROID_PAD(537062409)
+    }
 
     companion object {
         /**

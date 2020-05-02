@@ -88,8 +88,6 @@ internal class StatSvc {
             override fun toString(): String = "Response(StatSvc.register)"
         }
 
-        private const val subAppId = 537062845L
-
         @OptIn(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient,
@@ -101,7 +99,7 @@ internal class StatSvc {
             key = client.wLoginSigInfo.d2Key
         ) { sequenceId ->
             writeSsoPacket(
-                client, subAppId = subAppId, commandName = commandName,
+                client, subAppId = client.subAppId, commandName = commandName,
                 extraData = client.wLoginSigInfo.tgt.toReadPacket(), sequenceId = sequenceId
             ) {
                 writeJceStruct(
