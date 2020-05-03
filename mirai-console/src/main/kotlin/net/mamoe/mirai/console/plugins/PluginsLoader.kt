@@ -103,15 +103,25 @@ internal class PluginClassLoader(
     files: File,
     private val pluginsLoader: PluginsLoader,
     parent: ClassLoader
-) :
-    URLClassLoader(arrayOf((files.toURI().toURL())), parent) {
+) {
     private val classesCache = mutableMapOf<String, Class<*>?>()
+    private var classLoader: ClassLoader
 
-    override fun findClass(name: String): Class<*>? {
-        return this.findClass(name, true)
+    init {
+        classLoader = try {
+            //兼容Android
+            val loaderClass = Class.forName("dalvik.system.PathClassLoader")
+            loaderClass.getConstructor(String::class.java, ClassLoader::class.java)
+                .newInstance(files.absolutePath, parent) as ClassLoader
+        } catch (e: ClassNotFoundException) {
+            URLClassLoader(arrayOf((files.toURI().toURL())), parent)
+        }
     }
 
-    fun findClass(name: String, isSearchDependent: Boolean): Class<*>? {
+    fun loadClass(className: String): Class<*> = classLoader.loadClass(className)!!
+
+
+    fun findClass(name: String, isSearchDependent: Boolean = true): Class<*>? {
         var clz: Class<*>? = null
         // 缓存中找
         if (classesCache.containsKey(name)) {
@@ -122,9 +132,9 @@ internal class PluginClassLoader(
         if (isSearchDependent) {
             clz = pluginsLoader.loadDependentClass(name)
         }
-        // 交给super去findClass
+        // 好像没有findClass，直接load
         if (clz == null) {
-            clz = super.findClass(name)
+            clz = classLoader.loadClass(name)
         }
         // 加入缓存
         if (clz != null) {
@@ -137,8 +147,10 @@ internal class PluginClassLoader(
         return clz
     }
 
-    override fun close() {
-        super.close()
+    fun close() {
+        if (classLoader is URLClassLoader) {
+            (classLoader as URLClassLoader).close()
+        }
         classesCache.clear()
     }
 }
