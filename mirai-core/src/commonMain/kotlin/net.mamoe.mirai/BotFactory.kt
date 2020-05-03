@@ -14,6 +14,7 @@ package net.mamoe.mirai
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 构造 [Bot] 的工厂. 这是 [Bot] 唯一的构造方式.
@@ -49,6 +50,7 @@ expect interface BotFactory {
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@JvmSynthetic
 inline fun BotFactory.Bot(
     context: Context,
     qq: Long,
@@ -59,6 +61,7 @@ inline fun BotFactory.Bot(
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@JvmSynthetic
 inline fun BotFactory.Bot(
     context: Context,
     qq: Long,
