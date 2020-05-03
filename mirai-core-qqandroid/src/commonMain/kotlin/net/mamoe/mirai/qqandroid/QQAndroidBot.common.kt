@@ -188,7 +188,7 @@ internal class QQAndroidBot constructor(
                 }
             }
 
-        group.checkBotPermissionOperator()
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
     }
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
@@ -369,7 +369,7 @@ internal abstract class QQAndroidBotBase constructor(
                     else -> error("stub")
                 }
                 if (this.id != source.fromId) {
-                    group.checkBotPermissionOperator()
+                    group.checkBotPermission(MemberPermission.ADMINISTRATOR)
                 }
                 MessageRecallEvent.GroupRecall(
                     this,

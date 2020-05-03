@@ -105,7 +105,7 @@ internal class MemberImpl constructor(
         get() = _nameCard
         set(newValue) {
             if (id != bot.id) {
-                group.checkBotPermissionOperator()
+                group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             }
             if (_nameCard != newValue) {
                 val oldValue = _nameCard
