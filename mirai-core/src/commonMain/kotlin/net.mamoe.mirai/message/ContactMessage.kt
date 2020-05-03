@@ -34,12 +34,14 @@ import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
- * 一条消息事件.
+ * 一个消息事件.
+ *
  * 它是一个 [BotEvent], 因此可以被 [监听][Bot.subscribe]
  *
  * 支持的消息类型:
- * [GroupMessage]
- * [FriendMessage]
+ * - [群消息事件][GroupMessage]
+ * - [好友消息事件][FriendMessage]
+ * - [临时会话消息事件][TempMessage]
  *
  * @see isContextIdenticalWith 判断语境是否相同
  */

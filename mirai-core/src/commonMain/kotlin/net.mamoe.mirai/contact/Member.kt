@@ -26,10 +26,13 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 /**
- * 群成员.
+ * 代表一位群成员.
  *
  * 群成员可能也是好友, 但他们在对象类型上不同.
  * 群成员可以通过 [asFriend] 得到相关好友对象.
+ *
+ * ## 与好友相关的操作
+ * [Member.isFriend] 判断此成员是否为好友
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 @OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
@@ -93,12 +96,16 @@ abstract class Member : MemberJavaFriendlyAPI() {
      * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 机器人无权限时返回 `false`
      *
+     * @see Member.isMuted 判断此成员是否正处于禁言状态中
+     * @see unmute 取消禁言此成员
+     *
      * @see Int.minutesToSeconds
      * @see Int.hoursToSeconds
      * @see Int.daysToSeconds
      *
      * @see MemberMuteEvent 成员被禁言事件
-     * @throws PermissionDeniedException 无权限修改时
+     *
+     * @throws PermissionDeniedException 无权限修改时抛出
      */
     @JvmSynthetic
     abstract suspend fun mute(durationSeconds: Int)
@@ -108,8 +115,11 @@ abstract class Member : MemberJavaFriendlyAPI() {
      *
      * 管理员可解除成员的禁言, 群主可解除管理员和群员的禁言.
      *
-     * @see MemberUnmuteEvent 成员被取消禁言事件.
-     * @throws PermissionDeniedException 无权限修改时
+     * @see Member.isMuted 判断此成员是否正处于禁言状态中
+     *
+     * @see MemberUnmuteEvent 成员被取消禁言事件
+     *
+     * @throws PermissionDeniedException 无权限修改时抛出
      */
     @JvmSynthetic
     abstract suspend fun unmute()
@@ -166,7 +176,7 @@ abstract class Member : MemberJavaFriendlyAPI() {
 fun Member.asFriend(): Friend = this.bot.getFriendOrNull(this.id) ?: error("$this is not a friend")
 
 /**
- * 得到此成员作为好友的对象.
+ * 得到此成员作为好友的对象, 当此成员不是好友时返回 `null`
  */
 @SinceMirai("0.39.0")
 fun Member.asFriendOrNull(): Friend? = this.bot.getFriendOrNull(this.id)

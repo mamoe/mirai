@@ -45,6 +45,8 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  *
  * @see Contact 联系人
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
+ *
+ * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
 @OptIn(MiraiInternalAPI::class, LowLevelAPI::class)

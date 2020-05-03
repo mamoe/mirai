@@ -32,11 +32,11 @@ import kotlin.jvm.JvmSynthetic
 
 
 /**
- * 联系人. 虽然叫做联系人, 但他的子类有 [用户][User], 和 [群][Group].
+ * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
  */
 abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot {
     /**
-     * 这个联系人所属 [Bot].
+     * 这个联系对象所属 [Bot].
      */
     @WeakRefProperty
     abstract val bot: Bot
@@ -44,10 +44,7 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
     /**
      * 可以是 QQ 号码或者群号码.
      *
-     * 对于 [QQ], `uin` 与 `id` 是相同的意思.
-     * 对于 [Group], `groupCode` 与 `id` 是相同的意思.
-     *
-     * @see QQ.id
+     * @see User.id
      * @see Group.id
      */
     abstract override val id: Long

@@ -617,6 +617,8 @@ data class MemberPermissionChangeEvent(
 
 /**
  * 群成员被禁言事件. 被禁言的成员都不可能是机器人本人
+ *
+ * @see BotMuteEvent 机器人被禁言的事件
  */
 data class MemberMuteEvent(
     override val member: Member,
@@ -629,6 +631,8 @@ data class MemberMuteEvent(
 
 /**
  * 群成员被取消禁言事件. 被禁言的成员都不可能是机器人本人
+ *
+ * @see BotUnmuteEvent 机器人被取消禁言的事件
  */
 data class MemberUnmuteEvent(
     override val member: Member,

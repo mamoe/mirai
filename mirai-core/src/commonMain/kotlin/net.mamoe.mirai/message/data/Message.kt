@@ -14,6 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.ContactMessage
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message.Key
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -25,8 +26,6 @@ import kotlin.jvm.JvmSynthetic
 
 /**
  * 可发送的或从服务器接收的消息.
- *
- * 采用这样的消息模式是因为 QQ 的消息多元化, 一条消息中可包含 [纯文本][PlainText], [图片][Image] 等.
  *
  * [消息][Message] 分为
  * - [SingleMessage]:
@@ -62,6 +61,11 @@ import kotlin.jvm.JvmSynthetic
  * 所有 [CharSequence] 的行为均由 [toString] 委托.
  *
  * 即, `appendable.append(message)` 相当于 `appendable.append(message.toString())`
+ *
+ * #### 发送消息
+ * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
+ * - 通过 [Message] 的扩展函数: [Message.sendTo]
+ * - 在 [ContactMessage] 中使用 [ContactMessage.reply] 等捷径
  *
  * @see PlainText 纯文本
  * @see Image 图片

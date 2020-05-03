@@ -18,6 +18,11 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
+/**
+ * 群消息事件
+ *
+ * @see ContactMessage
+ */
 @Suppress("unused", "NOTHING_TO_INLINE")
 class GroupMessage(
     override val senderName: String,

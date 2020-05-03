@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
 
 /**
- * 好友消息
+ * 好友消息事件
  */
 class FriendMessage constructor(
     sender: Friend,

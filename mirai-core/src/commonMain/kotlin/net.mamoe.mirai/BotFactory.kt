@@ -16,13 +16,13 @@ import net.mamoe.mirai.utils.Context
 import kotlin.jvm.JvmName
 
 /**
- * 构造 [Bot] 的工厂.
+ * 构造 [Bot] 的工厂. 这是 [Bot] 唯一的构造方式.
  *
- * 在协议模块中有各自的实现.
- * - `mirai-core-timpc`: `TIMPC`
- * - `mirai-core-qqandroid`: `QQAndroid`
+ * `mirai-core-qqandroid`: `QQAndroid`
+ *
+ * 在 JVM, 请查看 `BotFactoryJvm`
  */
-interface BotFactory {
+expect interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */

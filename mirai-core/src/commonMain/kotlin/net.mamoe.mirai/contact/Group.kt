@@ -80,7 +80,6 @@ abstract class Group : Contact(), CoroutineScope {
      * 机器人在这个群里的权限
      *
      * @see Group.checkBotPermission 检查 [Bot] 在这个群里的权限
-     * @see Group.checkBotPermissionOperator 要求 [Bot] 在这个群里的权限为 [管理员或群主][MemberPermission.isOperator]
      *
      * @see BotGroupPermissionChangeEvent 机器人群员修改
      */
