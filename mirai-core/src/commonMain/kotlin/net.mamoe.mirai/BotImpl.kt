@@ -24,6 +24,8 @@ import net.mamoe.mirai.network.closeAndJoin
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.retryCatching
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 /*
  * 泛型 N 不需要向外(接口)暴露.
@@ -86,6 +88,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @Throws(LoginFailedException::class) // only
     protected abstract suspend fun relogin(cause: Throwable?)
 
+    @OptIn(ExperimentalTime::class)
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
         this@BotImpl.subscribeAlways(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
@@ -103,37 +106,39 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                     }
                     bot.logger.info { "Connection dropped by server or lost, retrying login" }
 
-                    tailrec suspend fun reconnect() {
-                        retryCatching<Unit>(configuration.reconnectionRetryTimes,
-                            except = LoginFailedException::class) { tryCount, _ ->
-                            if (tryCount != 0) {
-                                delay(configuration.reconnectPeriodMillis)
-                            }
-                            network.withConnectionLock {
-                                /**
-                                 * [BotImpl.relogin] only, no [BotNetworkHandler.init]
-                                 */
-                                @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
-                                relogin((event as? BotOfflineEvent.Dropped)?.cause)
-                            }
-                            logger.info { "Reconnected successfully" }
-                            BotReloginEvent(bot, (event as? BotOfflineEvent.Dropped)?.cause).broadcast()
-                            return
-                        }.getOrElse {
-                            if (it is LoginFailedException && !it.killBot) {
+                    val time = measureTime {
+                        tailrec suspend fun reconnect() {
+                            retryCatching<Unit>(configuration.reconnectionRetryTimes,
+                                except = LoginFailedException::class) { tryCount, _ ->
+                                if (tryCount != 0) {
+                                    delay(configuration.reconnectPeriodMillis)
+                                }
+                                network.withConnectionLock {
+                                    /**
+                                     * [BotImpl.relogin] only, no [BotNetworkHandler.init]
+                                     */
+                                    @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
+                                    relogin((event as? BotOfflineEvent.Dropped)?.cause)
+                                }
+                                BotReloginEvent(bot, (event as? BotOfflineEvent.Dropped)?.cause).broadcast()
+                                return
+                            }.getOrElse {
+                                if (it is LoginFailedException && !it.killBot) {
+                                    logger.info { "Cannot reconnect" }
+                                    logger.warning(it)
+                                    logger.info { "Retrying in 3s..." }
+                                    delay(3000)
+                                    return@getOrElse
+                                }
                                 logger.info { "Cannot reconnect" }
-                                logger.warning(it)
-                                logger.info { "Retrying in 3s..." }
-                                delay(3000)
-                                return@getOrElse
+                                throw it
                             }
-                            logger.info { "Cannot reconnect" }
-                            throw it
+                            reconnect()
                         }
                         reconnect()
                     }
 
-                    reconnect()
+                    logger.info { "Reconnected successfully in ${time.inMilliseconds} ms" }
                 }
                 is BotOfflineEvent.Active -> {
                     val msg = if (event.cause == null) {
