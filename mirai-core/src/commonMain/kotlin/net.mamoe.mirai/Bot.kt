@@ -173,6 +173,8 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
 
     /**
      * 获取图片下载链接
+     *
+     * @see Image.queryUrl [Image] 的扩展函数
      */
     @JvmSynthetic
     abstract suspend fun queryImageUrl(image: Image): String

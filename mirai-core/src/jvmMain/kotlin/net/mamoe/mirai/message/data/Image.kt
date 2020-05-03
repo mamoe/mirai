@@ -44,6 +44,9 @@ import java.net.URL
  * @see URL.sendAsImageTo
  *
  *
+ * ### 下载图片
+ * @see Image.queryUrl 查询图片下载链接
+ *
  *
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照

@@ -45,6 +45,10 @@ import kotlin.jvm.JvmSynthetic
  * @see Contact.sendImage 上传 [图片文件][ExternalImage] 并发送返回的 [Image] 作为一条消息
  * @see Image.sendTo 上传图片并得到 [Image] 消息
  *
+ * ### 下载图片
+ * @see Image.queryUrl 扩展函数. 查询图片下载链接
+ * @see Bot.queryImageUrl 查询图片下载链接 (Java 使用)
+ *
  * 查看平台 `actual` 定义以获取上传方式扩展.
  *
  * @see FlashImage 闪照
