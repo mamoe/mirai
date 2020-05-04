@@ -53,6 +53,7 @@ allprojects {
     repositories {
         maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
+        maven(url = "https://dl.bintray.com/him188moe/jcekt")
         jcenter()
         google()
     }
