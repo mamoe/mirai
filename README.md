@@ -112,6 +112,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 - 酷Q的插件可以在 mirai 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
 - 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`Mirai-CQ-Adapter` 正在进行中
+- [MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid) 让mirai-console的插件在Android运行 **实验性**
 
 ## 我想马上开始使用它
 
