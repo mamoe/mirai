@@ -10,7 +10,7 @@
 ![Gradle CI](https://github.com/mamoe/mirai/workflows/Gradle%20CI/badge.svg?branch=master)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
-Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持的高效率机器人框架
+Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持的高效率机器人库
 
 这个项目的名字来源于
      <p><a href = "http://www.kyotoanimation.co.jp/">京都动画</a>作品<a href = "https://zh.moegirl.org/zh-hans/%E5%A2%83%E7%95%8C%E7%9A%84%E5%BD%BC%E6%96%B9">《境界的彼方》</a>的<a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a></p>
@@ -24,7 +24,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 
 
 **QQ Android** 协议支持库与高效率的机器人框架   
-纯 Kotlin 实现协议和支持框架    
+纯 Kotlin 实现协议和支持库    
 mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的应用程序与插件承载 QQ 机器人服务。  
 
 ## **一切开发旨在学习，请勿用于非法用途**
@@ -93,6 +93,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 - （社区）`Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) 基于mirai-core 的Lua SDK，并提供了java扩展支持，可在lua中调用java代码开发机器人
 - （社区）`C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) mirai-http-api 的 C++ 封装，方便使用 C++ 开发 mirai-http-api 插件
 - （社区）`C++`: [miraipp](https://github.com/Chlorie/miraipp-template) mirai-http-api 的另一个 C++ 封装，使用现代 C++ 特性，并提供了较完善的说明文档
+- （社区）`Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) mirai-http-api 的 Rust 封装
 - （官方）其他任意语言：使用由 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 提供的 http 接口进行接入
 
 #### 使用 mirai 为第三方依赖库引入项目
@@ -111,6 +112,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 - 酷Q的插件可以在 mirai 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
 - 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`Mirai-CQ-Adapter` 正在进行中
+- [MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid) 让mirai-console的插件在Android运行 **实验性**
 
 ## 我想马上开始使用它
 
