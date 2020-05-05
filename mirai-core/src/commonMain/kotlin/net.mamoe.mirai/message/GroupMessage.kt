@@ -15,8 +15,6 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
 
 /**
  * 群消息事件
@@ -30,7 +28,7 @@ class GroupMessage(
      * 发送方权限.
      */
     val permission: MemberPermission,
-    sender: Member,
+    override val sender: Member,
     override val message: MessageChain,
     override val time: Int
 ) : ContactMessage(), Event {
@@ -39,7 +37,6 @@ class GroupMessage(
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
     }
 
-    override val sender: Member by sender.unsafeWeakRef()
     val group: Group get() = sender.group
     override val bot: Bot get() = sender.bot
 

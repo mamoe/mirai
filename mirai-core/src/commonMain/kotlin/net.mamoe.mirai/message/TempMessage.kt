@@ -10,15 +10,13 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.utils.SinceMirai
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
 
 /**
  * 临时会话消息
  */
 @SinceMirai("0.35.0")
 class TempMessage(
-    sender: Member,
+    override val sender: Member,
     override val message: MessageChain,
     override val time: Int
 ) : ContactMessage(), BroadcastControllable {
@@ -27,7 +25,6 @@ class TempMessage(
         check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
     }
 
-    override val sender: Member by sender.unsafeWeakRef()
     override val bot: Bot get() = sender.bot
     override val subject: Member get() = sender
     inline val group: Group get() = sender.group

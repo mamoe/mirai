@@ -73,7 +73,6 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
     /**
      * 接受到这条消息的
      */
-    @WeakRefProperty
     abstract override val bot: Bot
 
     /**
@@ -85,7 +84,6 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */
-    @WeakRefProperty
     abstract val subject: TSubject
 
     /**
@@ -93,7 +91,6 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
      *
      * 在好友消息时为 [Friend] 的实例, 在群消息时为 [Member] 的实例
      */
-    @WeakRefProperty
     abstract val sender: TSender
 
     abstract val senderName: String

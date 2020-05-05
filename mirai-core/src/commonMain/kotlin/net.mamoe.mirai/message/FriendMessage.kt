@@ -18,14 +18,12 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
 
 /**
  * 好友消息事件
  */
 class FriendMessage constructor(
-    sender: Friend,
+    override val sender: Friend,
     override val message: MessageChain,
     override val time: Int
 ) : ContactMessage(), BroadcastControllable {
@@ -34,7 +32,6 @@ class FriendMessage constructor(
         check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
     }
 
-    override val sender: Friend by sender.unsafeWeakRef()
     override val bot: Bot get() = sender.bot
     override val subject: Friend get() = sender
     override val senderName: String get() = sender.nick
