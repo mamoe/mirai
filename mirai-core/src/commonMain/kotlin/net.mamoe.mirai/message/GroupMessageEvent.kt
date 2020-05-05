@@ -39,7 +39,7 @@ class GroupMessageEvent(
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
     }
 
-    inline val group: Group get() = sender.group
+    override val group: Group get() = sender.group
     override val bot: Bot get() = sender.bot
 
     override val subject: Group get() = group

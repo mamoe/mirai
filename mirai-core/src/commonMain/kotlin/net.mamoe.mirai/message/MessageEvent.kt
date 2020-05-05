@@ -208,7 +208,9 @@ abstract class FriendMessage : MessageEvent()
     level = DeprecationLevel.ERROR
 )
 @Suppress("DEPRECATION_ERROR")
-abstract class GroupMessage : MessageEvent()
+abstract class GroupMessage : MessageEvent() {
+    abstract val group: Group
+}
 
 @PlannedRemoval("1.2.0")
 @Deprecated(
