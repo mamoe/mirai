@@ -24,6 +24,8 @@ import kotlin.reflect.KClass
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  *
  * @see asyncFromEvent 本函数的异步版本
+ * @see subscribe 普通地监听一个事件
+ * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  *
  * @throws TimeoutCancellationException 在超时后抛出.
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
@@ -55,6 +57,9 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
  * @return 超时返回 `null`, 否则返回 [mapper] 返回的第一个非 `null` 值.
  *
  * @see asyncFromEvent 本函数的异步版本
+ * @see subscribe 普通地监听一个事件
+ * @see nextEvent 挂起当前协程, 并获取下一个事件实例
+ *
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
@@ -77,6 +82,11 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param coroutineContext 额外的 [CoroutineContext]
  * @param mapper 过滤转换器. 返回非 `null` 则代表得到了需要的值. [syncFromEvent] 会返回这个值
+ *
+ * @see syncFromEvent
+ * @see asyncFromEvent
+ * @see subscribe 普通地监听一个事件
+ * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
@@ -100,6 +110,11 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param coroutineContext 额外的 [CoroutineContext]
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
+ *
+ * @see syncFromEvent
+ * @see asyncFromEventOrNull
+ * @see subscribe 普通地监听一个事件
+ * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
@@ -127,9 +142,12 @@ internal suspend inline fun <E : Event, R> syncFromEventImpl(
     crossinline mapper: suspend E.(E) -> R?
 ): R = suspendCancellableCoroutine { cont ->
     coroutineScope.subscribe(eventClass) {
-        cont.resumeWith(kotlin.runCatching {
-            mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING
-        })
+        try {
+            cont.resumeWith(kotlin.runCatching {
+                mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING
+            })
+        } catch (e: Exception) {
+        }
         return@subscribe ListeningStatus.STOPPED
     }
 }

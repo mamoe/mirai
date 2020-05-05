@@ -446,7 +446,7 @@ class MessageSelectionTimeoutException : RuntimeException()
 
 @JvmSynthetic
 @PublishedApi
-internal suspend inline fun <R> withTimeoutOrCoroutineScope(
+internal suspend inline fun <R> withSilentTimeoutOrCoroutineScope(
     timeoutMillis: Long,
     noinline block: suspend CoroutineScope.() -> R
 ): R {
@@ -480,7 +480,7 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
     filterContext: Boolean = true,
     @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, R>.() -> Unit
-): R = withTimeoutOrCoroutineScope(timeoutMillis) {
+): R = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
     var deferred: CompletableDeferred<R>? = CompletableDeferred()
     coroutineContext[Job]!!.invokeOnCompletion {
         deferred?.cancel()
@@ -500,7 +500,7 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
             SELECT_MESSAGE_STUB,
             outside
         ) {
-            override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
+            override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withSilentTimeoutOrCoroutineScope
             override fun obtainCurrentDeferred(): CompletableDeferred<R>? = deferred
             override fun default(onEvent: MessageListener<T, R>) {
                 defaultListeners += onEvent
@@ -516,7 +516,7 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
             SELECT_MESSAGE_STUB,
             outside
         ) {
-            override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
+            override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withSilentTimeoutOrCoroutineScope
             override fun obtainCurrentDeferred(): CompletableDeferred<R>? = deferred
             override fun default(onEvent: MessageListener<T, R>) {
                 defaultListeners += onEvent
@@ -577,7 +577,7 @@ internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
-) = withTimeoutOrCoroutineScope(timeoutMillis) {
+) = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
     var deferred: CompletableDeferred<Boolean>? = CompletableDeferred()
     coroutineContext[Job]!!.invokeOnCompletion {
         deferred?.cancel()
@@ -596,7 +596,7 @@ internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl
         SELECT_MESSAGE_STUB,
         outside
     ) {
-        override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
+        override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withSilentTimeoutOrCoroutineScope
         override fun obtainCurrentDeferred(): CompletableDeferred<Boolean>? = deferred
         override fun default(onEvent: MessageListener<T, Boolean>) {
             defaultListeners += onEvent
