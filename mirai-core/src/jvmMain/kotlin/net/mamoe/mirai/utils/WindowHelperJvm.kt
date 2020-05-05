@@ -22,6 +22,7 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
 import javax.swing.JTextField
+import javax.swing.SwingUtilities
 
 // 隔离类代码
 internal object WindowHelperJvm {
@@ -88,7 +89,9 @@ internal suspend fun openWindow(title: String = "", initializer: WindowInitialzi
     frame.title = title
     frame.isVisible = true
 
-    val result = def.await()
-    frame.dispose()
+    val result = def.await().trim()
+    SwingUtilities.invokeLater {
+        frame.dispose()
+    }
     return result
 }
