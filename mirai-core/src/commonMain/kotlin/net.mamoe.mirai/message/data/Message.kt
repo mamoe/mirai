@@ -14,7 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message.Key
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -65,7 +65,7 @@ import kotlin.jvm.JvmSynthetic
  * #### 发送消息
  * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
  * - 通过 [Message] 的扩展函数: [Message.sendTo]
- * - 在 [ContactMessage] 中使用 [ContactMessage.reply] 等捷径
+ * - 在 [MessageEvent] 中使用 [MessageEvent.reply] 等捷径
  *
  * @see PlainText 纯文本
  * @see Image 图片
@@ -73,7 +73,7 @@ import kotlin.jvm.JvmSynthetic
  * @see At 一个群成员的引用
  * @see AtAll 全体成员的引用
  * @see QuoteReply 一条消息的引用
- * @see RichMessage 富文本消息, 如 [Xml][XmlMessage], [小程序][LightApp], [Json][JsonMessage]
+ * @see RichMessage 富文本消息, 如 [XML 和 JSON][ServiceMessage], [小程序][LightApp]
  * @see HummerMessage 一些特殊的消息, 如 [闪照][FlashImage], [戳一戳][PokeMessage]
  * @see CustomMessage 自定义消息类型
  *
@@ -200,6 +200,12 @@ interface Message { // must be interface. Don't consider any changes.
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
     operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
 }
+
+
+/**
+ * [Message.contentToString] 的捷径
+ */
+inline val Message.content: String get() = contentToString()
 
 
 /**
