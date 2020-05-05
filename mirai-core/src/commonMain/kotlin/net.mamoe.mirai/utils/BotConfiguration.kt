@@ -10,6 +10,7 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
@@ -24,30 +25,20 @@ import kotlin.jvm.JvmStatic
  */
 @Suppress("PropertyName")
 open class BotConfiguration {
-    /**
-     * 日志记录器
-     */
+    /** 日志记录器 */
     var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot(${it.id})") }
 
-    /**
-     * 网络层日志构造器
-     */
+    /** 网络层日志构造器 */
     @OptIn(MiraiInternalAPI::class)
     var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.id})") }
 
-    /**
-     * 设备信息覆盖. 默认使用随机的设备信息.
-     */
+    /** 设备信息覆盖. 默认使用随机的设备信息. */
     var deviceInfo: ((Context) -> DeviceInfo)? = null
 
-    /**
-     * 父 [CoroutineContext]
-     */
+    /** 父 [CoroutineContext]. [Bot] 创建后会覆盖其 [Job], 但会将这个 [Job] 作为父 [Job] */
     var parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 
-    /**
-     * 心跳周期. 过长会导致被服务器断开连接.
-     */
+    /** 心跳周期. 过长会导致被服务器断开连接. */
     var heartbeatPeriodMillis: Long = 60.secondsToMillis
 
     /**
@@ -56,31 +47,26 @@ open class BotConfiguration {
      */
     var heartbeatTimeoutMillis: Long = 2.secondsToMillis
 
-    /**
-     * 心跳失败后的第一次重连前的等待时间.
-     */
+    /** 心跳失败后的第一次重连前的等待时间. */
     var firstReconnectDelayMillis: Long = 5.secondsToMillis
 
-    /**
-     * 重连失败后, 继续尝试的每次等待时间
-     */
+    /** 重连失败后, 继续尝试的每次等待时间 */
     var reconnectPeriodMillis: Long = 5.secondsToMillis
 
-    /**
-     * 最多尝试多少次重连
-     */
+    /** 最多尝试多少次重连 */
     var reconnectionRetryTimes: Int = Int.MAX_VALUE
 
-    /**
-     * 验证码处理器
-     */
+    /** 验证码处理器 */
     var loginSolver: LoginSolver = LoginSolver.Default
 
-    /**
-     * 使用协议类型
-     */
+    /** 使用协议类型 */
     @SinceMirai("1.0.0")
-    val protocol: MiraiProtocol = MiraiProtocol.ANDROID_PAD
+    var protocol: MiraiProtocol = MiraiProtocol.ANDROID_PAD
+
+    /** 缓存策略  */
+    @SinceMirai("1.0.0")
+    @MiraiExperimentalAPI
+    var fileCacheStrategy: FileCacheStrategy = FileCacheStrategy.PlatformDefault
 
     @SinceMirai("1.0.0")
     enum class MiraiProtocol(
@@ -105,9 +91,7 @@ open class BotConfiguration {
     }
 
     companion object {
-        /**
-         * 默认的配置实例
-         */
+        /** 默认的配置实例. 可以进行修改 */
         @JvmStatic
         val Default = BotConfiguration()
     }
@@ -144,11 +128,31 @@ open class BotConfiguration {
      * ```
      */
     @ConfigurationDsl
-    suspend fun inheritCoroutineContext() {
+    suspend inline fun inheritCoroutineContext() {
         parentCoroutineContext = coroutineContext
     }
+
     @DslMarker
     annotation class ConfigurationDsl
+
+    @SinceMirai("1.0.0")
+    fun copy(): BotConfiguration {
+        @OptIn(MiraiExperimentalAPI::class)
+        return BotConfiguration().also { new ->
+            new.botLoggerSupplier = botLoggerSupplier
+            new.networkLoggerSupplier = networkLoggerSupplier
+            new.deviceInfo = deviceInfo
+            new.parentCoroutineContext = parentCoroutineContext
+            new.heartbeatPeriodMillis = heartbeatPeriodMillis
+            new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
+            new.firstReconnectDelayMillis = firstReconnectDelayMillis
+            new.reconnectPeriodMillis = reconnectPeriodMillis
+            new.reconnectionRetryTimes = reconnectionRetryTimes
+            new.loginSolver = loginSolver
+            new.protocol = protocol
+            new.fileCacheStrategy = fileCacheStrategy
+        }
+    }
 }
 
 @OptIn(ExperimentalMultiplatform::class)

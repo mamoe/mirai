@@ -9,9 +9,6 @@
 
 package net.mamoe.mirai.utils.internal
 
-import net.mamoe.mirai.utils.ExternalImage
+internal expect fun ByteArray.asReusableInput(): ReusableInput
 
-
-internal expect fun ByteArray.asReusableInput(): ExternalImage.ReusableInput
-
-internal fun asReusableInput0(input: ByteArray): ExternalImage.ReusableInput = input.asReusableInput()
+internal fun asReusableInput0(input: ByteArray): ReusableInput = input.asReusableInput()

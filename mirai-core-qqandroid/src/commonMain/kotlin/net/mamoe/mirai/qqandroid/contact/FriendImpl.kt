@@ -87,6 +87,10 @@ internal class FriendImpl(
     @JvmSynthetic
     @OptIn(MiraiInternalAPI::class, ExperimentalStdlibApi::class, ExperimentalTime::class)
     override suspend fun uploadImage(image: ExternalImage): Image = try {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
+            image.input.init(bot.configuration.fileCacheStrategy)
+        }
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -96,10 +100,10 @@ internal class FriendImpl(
                     srcUin = bot.id.toInt(),
                     dstUin = id.toInt(),
                     fileId = 0,
-                    fileMd5 = image.md5,
+                    fileMd5 = @Suppress("INVISIBLE_MEMBER") image.md5,
                     fileSize = @Suppress("INVISIBLE_MEMBER")
                     image.input.size.toInt(),
-                    fileName = image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
+                    fileName = @Suppress("INVISIBLE_MEMBER") image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
                     imgOriginal = 1
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()

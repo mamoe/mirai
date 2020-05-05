@@ -37,7 +37,7 @@ import java.net.URL
  */
 @Throws(OverFileSizeMaxException::class)
 suspend fun <C : Contact> BufferedImage.sendTo(contact: C): MessageReceipt<C> =
-    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+    toExternalImage().sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片发送到指定联系人
@@ -45,7 +45,7 @@ suspend fun <C : Contact> BufferedImage.sendTo(contact: C): MessageReceipt<C> =
  */
 @Throws(OverFileSizeMaxException::class)
 suspend fun <C : Contact> URL.sendAsImageTo(contact: C): MessageReceipt<C> =
-    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+    toExternalImage().sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片发送到指定联系人
@@ -53,7 +53,7 @@ suspend fun <C : Contact> URL.sendAsImageTo(contact: C): MessageReceipt<C> =
  */
 @Throws(OverFileSizeMaxException::class)
 suspend fun <C : Contact> Input.sendAsImageTo(contact: C): MessageReceipt<C> =
-    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+    toExternalImage().sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
@@ -61,7 +61,7 @@ suspend fun <C : Contact> Input.sendAsImageTo(contact: C): MessageReceipt<C> =
  */
 @Throws(OverFileSizeMaxException::class)
 suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
-    withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+    toExternalImage().sendTo(contact)
 
 /**
  * 在 [Dispatchers.IO] 中将文件作为图片发送到指定联系人
@@ -70,7 +70,7 @@ suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<
 @Throws(OverFileSizeMaxException::class)
 suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
     require(this.exists() && this.canRead())
-    return withContext(Dispatchers.IO) { toExternalImage() }.sendTo(contact)
+    return toExternalImage().sendTo(contact)
 }
 
 // endregion
@@ -84,7 +84,7 @@ suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
 @JvmSynthetic
 @Throws(OverFileSizeMaxException::class)
 suspend fun BufferedImage.upload(contact: Contact): Image =
-    withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+    toExternalImage().upload(contact)
 
 /**
  * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片上传后构造 [Image]
@@ -92,7 +92,7 @@ suspend fun BufferedImage.upload(contact: Contact): Image =
  */
 @Throws(OverFileSizeMaxException::class)
 suspend fun URL.uploadAsImage(contact: Contact): Image =
-    withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+    toExternalImage().upload(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片上传后构造 [Image]
@@ -100,7 +100,7 @@ suspend fun URL.uploadAsImage(contact: Contact): Image =
  */
 @Throws(OverFileSizeMaxException::class)
 suspend fun Input.uploadAsImage(contact: Contact): Image =
-    withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+    toExternalImage().upload(contact)
 
 /**
  * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
@@ -108,7 +108,7 @@ suspend fun Input.uploadAsImage(contact: Contact): Image =
  */
 @Throws(OverFileSizeMaxException::class)
 suspend fun InputStream.uploadAsImage(contact: Contact): Image =
-    withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+    toExternalImage().upload(contact)
 
 /**
  * 在 [Dispatchers.IO] 中将文件作为图片上传后构造 [Image]
@@ -117,7 +117,7 @@ suspend fun InputStream.uploadAsImage(contact: Contact): Image =
 @Throws(OverFileSizeMaxException::class)
 suspend fun File.uploadAsImage(contact: Contact): Image {
     require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
-    return withContext(Dispatchers.IO) { toExternalImage() }.upload(contact)
+    return toExternalImage().upload(contact)
 }
 
 // endregion

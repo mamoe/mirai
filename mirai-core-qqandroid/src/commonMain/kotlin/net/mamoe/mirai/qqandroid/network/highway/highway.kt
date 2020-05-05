@@ -21,10 +21,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.internal.ChunkedFlowSession
 import net.mamoe.mirai.utils.internal.ChunkedInput
+import net.mamoe.mirai.utils.internal.ReusableInput
 import net.mamoe.mirai.utils.internal.map
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
@@ -37,7 +37,7 @@ internal fun createImageDataPacketSequence(
     commandId: Int,
     localId: Int = 2052,
     ticket: ByteArray,
-    data: ExternalImage.ReusableInput,
+    data: ReusableInput,
     fileMd5: ByteArray,
     sizePerPacket: Int = ByteArrayPool.BUFFER_SIZE
 ): ChunkedFlowSession<ByteReadPacket> {

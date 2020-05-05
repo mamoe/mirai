@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
 package net.mamoe.mirai.qqandroid.network.highway
 
 import io.ktor.client.HttpClient
@@ -34,9 +36,9 @@ import net.mamoe.mirai.qqandroid.utils.addSuppressedMirai
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.withUse
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
-import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.internal.ReusableInput
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.roundToInt
@@ -44,12 +46,12 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 @OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
-@Suppress("SpellCheckingInspection", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@Suppress("SpellCheckingInspection")
 internal suspend fun HttpClient.postImage(
     htcmd: String,
     uin: Long,
     groupcode: Long?,
-    imageInput: ExternalImage.ReusableInput, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
+    imageInput: ReusableInput,
     uKeyHex: String
 ): Boolean = post<HttpStatusCode> {
     url {
@@ -90,7 +92,7 @@ internal object HighwayHelper {
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
-        image: ExternalImage.ReusableInput,
+        image: ReusableInput,
         kind: String,
         commandId: Int
     ) = uploadImageToServers(bot, servers, uKey, image.md5, image, kind, commandId)
@@ -102,7 +104,7 @@ internal object HighwayHelper {
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
         md5: ByteArray,
-        input: ExternalImage.ReusableInput,
+        input: ReusableInput,
         kind: String,
         commandId: Int
     ) = servers.retryWithServers(
@@ -139,7 +141,7 @@ internal object HighwayHelper {
         serverIp: String,
         serverPort: Int,
         ticket: ByteArray,
-        imageInput: ExternalImage.ReusableInput,
+        imageInput: ReusableInput,
         fileMd5: ByteArray,
         commandId: Int  // group=2, friend=1
     ) {

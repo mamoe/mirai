@@ -5,12 +5,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.message.data.toLongUnsigned
-import net.mamoe.mirai.utils.ExternalImage
 import java.io.File
 import java.io.InputStream
 
-internal actual fun ByteArray.asReusableInput(): ExternalImage.ReusableInput {
-    return object : ExternalImage.ReusableInput {
+internal actual fun ByteArray.asReusableInput(): ReusableInput {
+    return object : ReusableInput {
         override val md5: ByteArray = md5()
         override val size: Long get() = this@asReusableInput.size.toLongUnsigned()
 
@@ -32,8 +31,8 @@ internal actual fun ByteArray.asReusableInput(): ExternalImage.ReusableInput {
     }
 }
 
-internal fun File.asReusableInput(): ExternalImage.ReusableInput {
-    return object : ExternalImage.ReusableInput {
+internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
+    return object : ReusableInput {
         override val md5: ByteArray = inputStream().use { it.md5() }
         override val size: Long get() = length()
 
@@ -41,7 +40,10 @@ internal fun File.asReusableInput(): ExternalImage.ReusableInput {
             val stream = inputStream()
             return object : ChunkedFlowSession<ChunkedInput> {
                 override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket)
-                override fun close() = stream.close()
+                override fun close() {
+                    stream.close()
+                    if (deleteOnClose) this@asReusableInput.delete()
+                }
             }
         }
 
@@ -51,6 +53,27 @@ internal fun File.asReusableInput(): ExternalImage.ReusableInput {
     }
 }
 
+internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): ReusableInput {
+    return object : ReusableInput {
+        override val md5: ByteArray get() = md5
+        override val size: Long get() = length()
+
+        override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
+            val stream = inputStream()
+            return object : ChunkedFlowSession<ChunkedInput> {
+                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket)
+                override fun close() {
+                    stream.close()
+                    if (deleteOnClose) this@asReusableInput.delete()
+                }
+            }
+        }
+
+        override suspend fun writeTo(out: ByteWriteChannel): Long {
+            return inputStream().use { it.copyTo(out) }
+        }
+    }
+}
 
 private suspend fun InputStream.copyTo(out: ByteWriteChannel): Long = withContext(Dispatchers.IO) {
     var bytesCopied: Long = 0

@@ -406,6 +406,10 @@ internal class GroupImpl(
     @OptIn(ExperimentalTime::class)
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
+            image.input.init(bot.configuration.fileCacheStrategy)
+        }
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
