@@ -14,16 +14,10 @@
 package net.mamoe.mirai.message
 
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
-import net.mamoe.mirai.event.selectMessages
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.event.syncFromEventOrNull
-import net.mamoe.mirai.event.whileSelectMessages
-import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.anyIsInstance
-import net.mamoe.mirai.message.data.firstIsInstance
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -39,6 +33,7 @@ fun MessageEvent.isContextIdenticalWith(another: MessageEvent): Boolean {
     return this.sender == another.sender && this.subject == another.subject
 }
 
+
 /**
  * 挂起当前协程, 等待下一条 [MessageEvent.sender] 和 [MessageEvent.subject] 与 [this] 相同且通过 [筛选][filter] 的 [MessageEvent]
  *
@@ -47,12 +42,12 @@ fun MessageEvent.isContextIdenticalWith(another: MessageEvent): Boolean {
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  *
- * @see syncFromEvent
+ * @see syncFromEvent 实现原理
  */
 @JvmSynthetic
 suspend inline fun <reified P : MessageEvent> P.nextMessage(
     timeoutMillis: Long = -1,
-    crossinline filter: suspend P.(P) -> Boolean
+    noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain {
     return syncFromEvent<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
@@ -64,54 +59,21 @@ suspend inline fun <reified P : MessageEvent> P.nextMessage(
  *
  * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
  *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
+ * @param timeoutMillis 超时. 单位为毫秒.
  * @param filter 过滤器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  * @return 消息链. 超时时返回 `null`
  *
- * @see syncFromEventOrNull
+ * @see syncFromEventOrNull 实现原理
  */
 @JvmSynthetic
 suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(
-    timeoutMillis: Long = -1,
-    crossinline filter: suspend P.(P) -> Boolean
+    timeoutMillis: Long,
+    noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain? {
+    require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
     return syncFromEventOrNull<P, P>(timeoutMillis) {
         takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }?.takeIf { filter(it, it) }
     }?.message
-}
-
-/**
- * 挂起当前协程, 等待下一条 [MessageEvent.sender] 和 [MessageEvent.subject] 与 [this] 相同的 [MessageEvent]
- *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- *
- * @throws TimeoutCancellationException
- *
- * @see syncFromEvent
- */
-@JvmSynthetic
-suspend inline fun <reified P : MessageEvent> P.nextMessage(
-    timeoutMillis: Long = -1
-): MessageChain {
-    return syncFromEvent<P, P>(timeoutMillis) {
-        takeIf { this.isContextIdenticalWith(this@nextMessage) }
-    }.message
-}
-
-/**
- * @see nextMessage
- * @throws TimeoutCancellationException
- */
-@JvmSynthetic
-inline fun <reified P : MessageEvent> P.nextMessageAsync(
-    timeoutMillis: Long = -1,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Deferred<MessageChain> {
-    return this.bot.async(coroutineContext) {
-        syncFromEvent<P, P>(timeoutMillis) {
-            takeIf { this.isContextIdenticalWith(this@nextMessageAsync) }
-        }.message
-    }
 }
 
 /**
@@ -121,115 +83,27 @@ inline fun <reified P : MessageEvent> P.nextMessageAsync(
 inline fun <reified P : MessageEvent> P.nextMessageAsync(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    crossinline filter: suspend P.(P) -> Boolean
+    noinline filter: suspend P.(P) -> Boolean = { true }
 ): Deferred<MessageChain> {
     return this.bot.async(coroutineContext) {
-        syncFromEvent<P, P>(timeoutMillis) {
-            takeIf { this.isContextIdenticalWith(this@nextMessageAsync) }
-                .takeIf { filter(this, this) }
-        }.message
+        nextMessage(timeoutMillis, filter)
     }
 }
 
 /**
- * 挂起当前协程, 等待下一条 [MessageEvent.sender] 和 [MessageEvent.subject] 与 [this] 相同的 [MessageEvent]
+ * [nextMessageOrNull] 的异步版本
  *
- * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
- *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- * @return 消息链. 超时时返回 `null`
- *
- * @see syncFromEventOrNull
- */
-@JvmSynthetic
-suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(
-    timeoutMillis: Long = -1
-): MessageChain? {
-    return syncFromEventOrNull<P, P>(timeoutMillis) {
-        takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }
-    }?.message
-}
-
-/**
  * @see nextMessageOrNull
  */
 @JvmSynthetic
 inline fun <reified P : MessageEvent> P.nextMessageOrNullAsync(
-    timeoutMillis: Long = -1,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
+    timeoutMillis: Long,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    noinline filter: suspend P.(P) -> Boolean = { true }
 ): Deferred<MessageChain?> {
+    require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
     return this.bot.async(coroutineContext) {
-        syncFromEventOrNull<P, P>(timeoutMillis) {
-            takeIf { this.isContextIdenticalWith(this@nextMessageOrNullAsync) }
-        }?.message
-    }
-}
-
-/**
- * 挂起当前协程, 等待下一条 [MessageEvent.sender] 和 [MessageEvent.subject] 与 [this] 相同的 [MessageEvent]
- *
- * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
- *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- *
- * @see syncFromEvent
- * @see whileSelectMessages
- * @see selectMessages
- */
-@JvmSynthetic
-suspend inline fun <reified M : Message> MessageEvent.nextMessageContaining(
-    timeoutMillis: Long = -1
-): M {
-    return syncFromEvent<MessageEvent, MessageEvent>(timeoutMillis) {
-        takeIf { this.isContextIdenticalWith(this@nextMessageContaining) }
-            .takeIf { this.message.anyIsInstance<M>() }
-    }.message.firstIsInstance()
-}
-
-@JvmSynthetic
-inline fun <reified M : Message> MessageEvent.nextMessageContainingAsync(
-    timeoutMillis: Long = -1,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Deferred<M> {
-    return this.bot.async(coroutineContext) {
-        @Suppress("RemoveExplicitTypeArguments")
-        syncFromEvent<MessageEvent, MessageEvent>(timeoutMillis) {
-            takeIf { this.isContextIdenticalWith(this@nextMessageContainingAsync) }
-                .takeIf { this.message.anyIsInstance<M>() }
-        }.message.firstIsInstance<M>()
-    }
-}
-
-/**
- * 挂起当前协程, 等待下一条 [MessageEvent.sender] 和 [MessageEvent.subject] 与 [this] 相同并含有 [M] 类型的消息的 [MessageEvent]
- *
- * 若 [filter] 抛出了一个异常, 本函数会立即抛出这个异常.
- *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
- * @return 指定类型的消息. 超时时返回 `null`
- *
- * @see syncFromEventOrNull
- */
-@JvmSynthetic
-suspend inline fun <reified M : Message> MessageEvent.nextMessageContainingOrNull(
-    timeoutMillis: Long = -1
-): M? {
-    return syncFromEventOrNull<MessageEvent, MessageEvent>(timeoutMillis) {
-        takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNull) }
-            .takeIf { this.message.anyIsInstance<M>() }
-    }?.message?.firstIsInstance()
-}
-
-@JvmSynthetic
-inline fun <reified M : Message> MessageEvent.nextMessageContainingOrNullAsync(
-    timeoutMillis: Long = -1,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Deferred<M?> {
-    return this.bot.async(coroutineContext) {
-        syncFromEventOrNull<MessageEvent, MessageEvent>(timeoutMillis) {
-            takeIf { this.isContextIdenticalWith(this@nextMessageContainingOrNullAsync) }
-                .takeIf { this.message.anyIsInstance<M>() }
-        }?.message?.firstIsInstance<M>()
+        nextMessageOrNull(timeoutMillis, filter)
     }
 }
 
