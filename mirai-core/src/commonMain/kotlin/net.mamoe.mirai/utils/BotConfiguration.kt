@@ -144,13 +144,9 @@ open class BotConfiguration {
      * ```
      */
     @ConfigurationDsl
-    @SinceMirai("0.38.0")
     suspend fun inheritCoroutineContext() {
         parentCoroutineContext = coroutineContext
     }
-
-
-    @SinceMirai("0.38.0")
     @DslMarker
     annotation class ConfigurationDsl
 }

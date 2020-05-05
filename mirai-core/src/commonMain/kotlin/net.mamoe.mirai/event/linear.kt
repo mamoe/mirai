@@ -12,7 +12,6 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmSynthetic
@@ -30,7 +29,6 @@ import kotlin.reflect.KClass
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-@SinceMirai("0.39.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     timeoutMillis: Long = -1,
     crossinline mapper: suspend E.(E) -> R?
@@ -60,7 +58,6 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-@SinceMirai("0.39.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
     crossinline mapper: suspend E.(E) -> R?
@@ -83,7 +80,6 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
-@SinceMirai("0.39.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -107,7 +103,6 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
-@SinceMirai("0.39.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

@@ -12,7 +12,6 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.internal.InlineOnly
 
 /**
@@ -46,7 +45,6 @@ enum class MemberPermission : Comparable<MemberPermission> {
     /**
      * 权限等级. [OWNER] 为 2, [ADMINISTRATOR] 为 1, [MEMBER] 为 0
      */
-    @SinceMirai("0.32.0")
     val level: Int
         get() = ordinal
 }

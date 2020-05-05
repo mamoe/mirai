@@ -14,7 +14,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -30,7 +29,6 @@ import kotlin.jvm.JvmSynthetic
  * @see LightApp 小程序 (JSON)
  */
 // not using sealed class for customized implementations
-@SinceMirai("0.27.0")
 interface RichMessage : MessageContent {
 
     /**
@@ -49,14 +47,12 @@ interface RichMessage : MessageContent {
      * @suppress 此 API 不稳定, 可能在任意时刻被删除
      */
     @MiraiExperimentalAPI
-    @SinceMirai("0.30.0")
     companion object Templates : Message.Key<RichMessage> {
 
         /**
          * @suppress 此 API 不稳定, 可能在任意时刻被删除
          */
         @MiraiExperimentalAPI
-        @SinceMirai("0.30.0")
         fun share(
             url: String,
             title: String? = null,
@@ -97,7 +93,6 @@ interface RichMessage : MessageContent {
  *
  * @see ServiceMessage 服务消息
  */
-@SinceMirai("0.27.0")
 data class LightApp(override val content: String) : RichMessage {
     companion object Key : Message.Key<LightApp> {
         override val typeName: String get() = "LightApp"
@@ -116,7 +111,6 @@ data class LightApp(override val content: String) : RichMessage {
  *
  * @see LightApp 小程序类型消息
  */
-@SinceMirai("0.37.3")
 open class ServiceMessage(val serviceId: Int, final override val content: String) : RichMessage {
     companion object Key : Message.Key<ServiceMessage> {
         override val typeName: String get() = "ServiceMessage"
@@ -153,7 +147,6 @@ commonElem=CommonElem#750141174 {
  */
 @Suppress("DEPRECATION_ERROR")
 @JvmSynthetic
-@SinceMirai("0.27.0")
 @MiraiExperimentalAPI
 inline fun buildXmlMessage(serviceId: Int, block: @XmlMessageDsl XmlMessageBuilder.() -> Unit): ServiceMessage =
     ServiceMessage(serviceId, XmlMessageBuilder().apply(block).text)
@@ -205,8 +198,6 @@ class XmlMessageBuilder(
         sourceName = name
         sourceIconURL = iconURL
     }
-
-    @SinceMirai("0.27.0")
     @XmlMessageDsl
     class ItemBuilder @PublishedApi internal constructor(
         var bg: Int = 0,
@@ -229,9 +220,6 @@ class XmlMessageBuilder(
         }
     }
 }
-
-
-@SinceMirai("0.31.0")
 @MiraiExperimentalAPI
 internal class LongMessage internal constructor(content: String, val resId: String) : ServiceMessage(35, content) {
     companion object Key : Message.Key<LongMessage> {
@@ -240,5 +228,4 @@ internal class LongMessage internal constructor(content: String, val resId: Stri
 }
 
 @OptIn(MiraiExperimentalAPI::class)
-@SinceMirai("0.39.0")
 internal class ForwardMessageInternal(content: String) : ServiceMessage(35, content)

@@ -28,7 +28,6 @@ import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
@@ -78,7 +77,6 @@ sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
      * 服务器主动要求更换另一个服务器
      */
-    @SinceMirai("0.37.1")
     data class RequireReconnect(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
 }
 
@@ -134,7 +132,6 @@ sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
      * 消息内部 id.
      * @see MessageSource.id
      */
-    @SinceMirai("0.39.0")
     abstract val messageInternalId: Int
 
     /**
@@ -238,20 +235,17 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
 /**
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
  */
-@SinceMirai("0.36.0")
 sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
     abstract val group: Group
 
     /**
      * 机器人主动退出一个群.
      */
-    @SinceMirai("0.37.0")
     data class Active(override val group: Group) : BotLeaveEvent()
 
     /**
      * 机器人被管理员或群主踢出群. 暂不支持获取操作人
      */
-    @SinceMirai("0.37.0")
     data class Kick(override val group: Group) : BotLeaveEvent()
 
     override val bot: Bot get() = group.bot
@@ -324,7 +318,6 @@ data class GroupNameChangeEvent(
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    @SinceMirai("0.37.3")
     override val operator: Member?
 ) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent() {
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -412,13 +405,11 @@ sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, Bo
     /**
      * 被邀请加入群
      */
-    @SinceMirai("0.36.0")
     data class Invite(override val member: Member) : MemberJoinEvent(member)
 
     /**
      * 成员主动加入群
      */
-    @SinceMirai("0.36.0")
     data class Active(override val member: Member) : MemberJoinEvent(member)
 }
 
@@ -454,7 +445,6 @@ sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
 /**
  * [Bot] 被邀请加入一个群.
  */
-@SinceMirai("0.39.4")
 data class BotInvitedJoinGroupRequestEvent(
     override val bot: Bot,
     /**
@@ -497,7 +487,6 @@ data class BotInvitedJoinGroupRequestEvent(
 /**
  * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
  */
-@SinceMirai("0.35.0")
 data class MemberJoinRequestEvent(
     override val bot: Bot,
     /**
@@ -653,7 +642,6 @@ data class MemberUnmuteEvent(
 /**
  * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
  */
-@SinceMirai("0.36.0")
 data class FriendRemarkChangeEvent(
     override val bot: Bot,
     override val friend: Friend,
@@ -663,7 +651,6 @@ data class FriendRemarkChangeEvent(
 /**
  * 成功添加了一个新好友的事件
  */
-@SinceMirai("0.36.0")
 data class FriendAddEvent(
     /**
      * 新好友. 已经添加到 [Bot.friends]
@@ -676,7 +663,6 @@ data class FriendAddEvent(
 /**
  * 好友已被删除的事件.
  */
-@SinceMirai("0.36.0")
 data class FriendDeleteEvent(
     override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent() {
@@ -686,7 +672,6 @@ data class FriendDeleteEvent(
 /**
  * 一个账号请求添加机器人为好友的事件
  */
-@SinceMirai("0.35.0")
 data class NewFriendRequestEvent(
     override val bot: Bot,
     /**

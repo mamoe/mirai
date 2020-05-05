@@ -18,7 +18,6 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.experimental.ExperimentalTypeInference
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -59,7 +58,6 @@ import kotlin.jvm.JvmSynthetic
  * @see subscribeMessages
  * @see nextMessage 挂起协程并等待下一条消息
  */
-@SinceMirai("0.29.0")
 @Suppress("unused")
 suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
     timeoutMillis: Long = -1,
@@ -72,7 +70,6 @@ suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
  */
 @OptIn(ExperimentalTypeInference::class)
 @MiraiExperimentalAPI
-@SinceMirai("0.29.0")
 @JvmName("selectMessages1")
 suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
     timeoutMillis: Long = -1,
@@ -101,7 +98,6 @@ suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
  *
  * @see nextMessage 挂起协程并等待下一条消息
  */
-@SinceMirai("0.29.0")
 @Suppress("unused") // false positive
 // @BuilderInference // https://youtrack.jetbrains.com/issue/KT-37716
 suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
@@ -120,7 +116,6 @@ suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
  * @see MessageSelectBuilderUnit 查看上层 API
  */
 @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-@SinceMirai("0.29.0")
 abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal constructor(
     ownerMessagePacket: M,
     stub: Any?,
@@ -235,7 +230,6 @@ abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal 
  *
  * @see MessageSubscribersBuilder 查看上层 API
  */
-@SinceMirai("0.29.0")
 abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi internal constructor(
     private val ownerMessagePacket: M,
     stub: Any?,

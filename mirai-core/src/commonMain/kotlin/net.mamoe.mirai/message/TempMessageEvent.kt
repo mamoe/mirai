@@ -11,14 +11,12 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
-import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 机器人收到的群临时会话消息的事件
  *
  * @see MessageEvent
  */
-@SinceMirai("0.35.0")
 class TempMessageEvent(
     override val sender: Member,
     override val message: MessageChain,

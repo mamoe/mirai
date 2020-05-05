@@ -19,7 +19,6 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -28,7 +27,6 @@ import kotlin.jvm.JvmSynthetic
 /**
  * 将在线消息源转换为离线消息源.
  */
-@SinceMirai("0.39.0")
 @JvmName("toOfflineMessageSource")
 fun OnlineMessageSource.toOffline(): OfflineMessageSource =
     OfflineMessageSourceByOnline(this)
@@ -44,7 +42,6 @@ fun OnlineMessageSource.toOffline(): OfflineMessageSource =
  * @see buildMessageSource 查看更多说明
  */
 @MiraiExperimentalAPI
-@SinceMirai("0.39.0")
 @JvmName("copySource")
 fun MessageSource.copyAmend(
     block: MessageSourceAmender.() -> Unit
@@ -53,7 +50,6 @@ fun MessageSource.copyAmend(
 /**
  * 仅于 [copyAmend] 中修改 [MessageSource]
  */
-@SinceMirai("0.39.0")
 interface MessageSourceAmender {
     var kind: OfflineMessageSource.Kind
     var fromUin: Long
@@ -65,7 +61,6 @@ interface MessageSourceAmender {
     var originalMessage: MessageChain
 
     /** 从另一个 [MessageSource] 中复制 [id], [internalId], [time]*/
-    @SinceMirai("0.39.2")
     fun metadataFrom(another: MessageSource) {
         this.id = another.id
         this.internalId = another.internalId
@@ -107,7 +102,6 @@ interface MessageSourceAmender {
  * }
  * ```
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
 @MiraiExperimentalAPI
 fun Bot.buildMessageSource(block: MessageSourceBuilder.() -> Unit): MessageSource {

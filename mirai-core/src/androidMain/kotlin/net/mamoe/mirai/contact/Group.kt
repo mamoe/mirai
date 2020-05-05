@@ -42,7 +42,6 @@ actual abstract class Group : Contact(), CoroutineScope {
     /**
      * 群设置
      */
-    @SinceMirai("0.30.0")
     actual abstract val settings: GroupSettings
 
     /**

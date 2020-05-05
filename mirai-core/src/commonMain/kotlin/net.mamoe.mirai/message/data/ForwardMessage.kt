@@ -19,7 +19,6 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
@@ -79,7 +78,6 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see buildForwardMessage
  */
-@SinceMirai("0.39.0")
 class ForwardMessage @JvmOverloads constructor(
     /**
      * 消息列表
@@ -187,7 +185,6 @@ class ForwardMessage @JvmOverloads constructor(
 /**
  * 转换为 [ForwardMessage]
  */
-@SinceMirai("0.39.0")
 @JvmOverloads
 fun Iterable<MessageEvent>.toForwardMessage(displayStrategy: DisplayStrategy = DisplayStrategy): ForwardMessage {
     val iterator = this.iterator()
@@ -208,7 +205,6 @@ fun Message.toForwardMessage(
 /**
  * 转换为 [ForwardMessage]
  */
-@SinceMirai("0.39.0")
 @JvmOverloads
 fun Message.toForwardMessage(
     senderId: Long,
@@ -223,7 +219,6 @@ fun Message.toForwardMessage(
  * @see ForwardMessageBuilder 查看 DSL 帮助
  * @see ForwardMessage 查看转发消息说明
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
 inline fun buildForwardMessage(
     context: Contact,
@@ -237,7 +232,6 @@ inline fun buildForwardMessage(
  * @see ForwardMessageBuilder 查看 DSL 帮助
  * @see ForwardMessage 查看转发消息说明
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
 inline fun MessageEvent.buildForwardMessage(
     context: Contact = this.subject,
@@ -250,7 +244,6 @@ inline fun MessageEvent.buildForwardMessage(
 /**
  * 标记转发消息 DSL
  */
-@SinceMirai("0.39.0")
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
 @DslMarker
 annotation class ForwardMessageDsl
@@ -314,7 +307,6 @@ annotation class ForwardMessageDsl
  *
  * `S named "name1" named "name2" says M` 最终的发送人名称为 `"name2"`
  */
-@SinceMirai("0.39.0")
 class ForwardMessageBuilder private constructor(
     /**
      * 消息语境. 可为 [Group] 或 [User]

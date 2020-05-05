@@ -17,7 +17,6 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -44,7 +43,6 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     /**
      * 元素数量. [EmptyMessageChain] 不参加计数.
      */
-    @SinceMirai("0.31.1")
     val size: Int
 
     /**
@@ -96,7 +94,6 @@ interface MessageChain : Message, Iterable<SingleMessage> {
 /**
  * 遍历每一个 [消息内容][MessageContent]
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
 inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
     for (element in this) {

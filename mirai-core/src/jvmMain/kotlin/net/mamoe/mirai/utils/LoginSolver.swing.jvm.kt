@@ -20,7 +20,6 @@ import javax.swing.JTextField
 /**
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
-@SinceMirai("0.39.2")
 @MiraiExperimentalAPI
 object SwingSolver : LoginSolver() {
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {

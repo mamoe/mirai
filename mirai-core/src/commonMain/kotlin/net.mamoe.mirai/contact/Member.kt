@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
@@ -172,26 +171,22 @@ abstract class Member : MemberJavaFriendlyAPI() {
  *
  * @throws IllegalStateException 当此成员不是好友时抛出
  */
-@SinceMirai("0.39.0")
 fun Member.asFriend(): Friend = this.bot.getFriendOrNull(this.id) ?: error("$this is not a friend")
 
 /**
  * 得到此成员作为好友的对象, 当此成员不是好友时返回 `null`
  */
-@SinceMirai("0.39.0")
 fun Member.asFriendOrNull(): Friend? = this.bot.getFriendOrNull(this.id)
 
 /**
  * 判断此成员是否为好友
  */
-@SinceMirai("0.39.0")
 inline val Member.isFriend: Boolean
     get() = this.bot.friends.contains(this.id)
 
 /**
  * 如果此成员是好友, 则执行 [block] 并返回其返回值. 否则返回 `null`
  */
-@SinceMirai("0.39.0")
 inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
     return this.asFriendOrNull()?.let(block)
 }
@@ -210,7 +205,6 @@ val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty()
  *
  * 否则返回 [Member.nick]
  */
-@SinceMirai("0.39.0")
 val User.nameCardOrNick: String
     get() = when (this) {
         is Member -> this.nameCardOrNick
@@ -220,7 +214,6 @@ val User.nameCardOrNick: String
 /**
  * 判断群成员是否处于禁言状态.
  */
-@SinceMirai("0.39.0")
 val Member.isMuted: Boolean
     get() = muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
 

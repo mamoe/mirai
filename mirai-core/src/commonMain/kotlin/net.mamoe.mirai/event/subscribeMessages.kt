@@ -21,7 +21,6 @@ import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.TempMessageEvent
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -211,7 +210,6 @@ fun <R> Bot.subscribeFriendMessages(
  *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
-@SinceMirai("0.35.0")
 @OptIn(ExperimentalContracts::class)
 fun <R> Bot.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

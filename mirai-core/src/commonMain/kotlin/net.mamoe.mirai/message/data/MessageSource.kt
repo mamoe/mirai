@@ -22,7 +22,6 @@ import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.LazyProperty
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
@@ -60,7 +59,6 @@ import kotlin.jvm.JvmSynthetic
  * @see OfflineMessageSource 离线消息的 [MessageSource]
  */
 @OptIn(MiraiExperimentalAPI::class)
-@SinceMirai("0.33.0")
 sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
     companion object Key : Message.Key<MessageSource> {
         override val typeName: String get() = "MessageSource"
@@ -96,7 +94,6 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
      *
      * 在事件中和在引用中无法保证同一条消息的 [internalId] 相同.
      */
-    @SinceMirai("0.39.0")
     abstract val internalId: Int
 
     /**
@@ -167,7 +164,6 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
  *
  * @see OnlineMessageSource.toOffline 转为 [OfflineMessageSource]
  */
-@SinceMirai("0.33.0")
 @OptIn(MiraiExperimentalAPI::class)
 sealed class OnlineMessageSource : MessageSource() {
     companion object Key : Message.Key<OnlineMessageSource> {
@@ -291,7 +287,6 @@ sealed class OnlineMessageSource : MessageSource() {
  *
  * @see buildMessageSource 构建一个 [OfflineMessageSource]
  */
-@SinceMirai("0.33.0")
 abstract class OfflineMessageSource : MessageSource() {
     companion object Key : Message.Key<OfflineMessageSource> {
         override val typeName: String
@@ -301,8 +296,6 @@ abstract class OfflineMessageSource : MessageSource() {
     enum class Kind {
         GROUP,
         FRIEND,
-
-        @SinceMirai("0.36.0")
         TEMP
     }
 

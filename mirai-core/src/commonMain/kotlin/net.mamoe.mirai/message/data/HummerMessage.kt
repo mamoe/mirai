@@ -17,7 +17,6 @@ import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.message.data.VipFace.Companion
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.*
 
 /**
@@ -26,7 +25,6 @@ import kotlin.jvm.*
  * @see PokeMessage 戳一戳
  * @see FlashImage 闪照
  */
-@SinceMirai("0.31.0")
 sealed class HummerMessage : MessageContent {
     companion object Key : Message.Key<HummerMessage> {
         override val typeName: String
@@ -44,7 +42,6 @@ sealed class HummerMessage : MessageContent {
  *
  * @see Types 使用伴生对象中的常量
  */
-@SinceMirai("0.31.0")
 @OptIn(MiraiInternalAPI::class)
 data class PokeMessage internal constructor(
     /**
@@ -158,7 +155,6 @@ data class PokeMessage internal constructor(
  *
  * @see Types 使用伴生对象中的常量
  */
-@SinceMirai("0.39.5")
 @OptIn(MiraiInternalAPI::class)
 data class VipFace internal constructor(
     /**
@@ -241,7 +237,6 @@ data class VipFace internal constructor(
  *
  * @see Image 查看图片相关信息
  */
-@SinceMirai("0.33.0")
 sealed class FlashImage : MessageContent, HummerMessage() {
     companion object Key : Message.Key<FlashImage> {
         /**
@@ -289,22 +284,17 @@ sealed class FlashImage : MessageContent, HummerMessage() {
     override fun toString(): String = stringValue!!
     override fun contentToString(): String = "[闪照]"
 }
-
-@SinceMirai("0.33.0")
 inline fun Image.flash(): FlashImage = FlashImage(this)
 
 @JvmSynthetic
-@SinceMirai("0.33.0")
 inline fun GroupImage.flash(): GroupFlashImage = FlashImage(this) as GroupFlashImage
 
 @JvmSynthetic
-@SinceMirai("0.33.0")
 inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFlashImage
 
 /**
  * @see FlashImage.invoke
  */
-@SinceMirai("0.33.0")
 data class GroupFlashImage(override val image: GroupImage) : FlashImage() {
     companion object Key : Message.Key<GroupFlashImage> {
         override val typeName: String
@@ -315,7 +305,6 @@ data class GroupFlashImage(override val image: GroupImage) : FlashImage() {
 /**
  * @see FlashImage.invoke
  */
-@SinceMirai("0.33.0")
 data class FriendFlashImage(override val image: FriendImage) : FlashImage() {
     companion object Key : Message.Key<FriendFlashImage> {
         override val typeName: String

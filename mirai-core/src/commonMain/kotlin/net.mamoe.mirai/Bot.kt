@@ -64,7 +64,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
-        @SinceMirai("0.39.1")
         @JvmStatic
         val botInstances: List<Bot>
             get() = BotImpl.instances.asSequence().mapNotNull { it.get() }.toList()
@@ -92,13 +91,11 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     /**
      * QQ 号码. 实际类型为 uint
      */
-    @SinceMirai("0.32.0")
     abstract override val id: Long
 
     /**
      * 昵称
      */
-    @SinceMirai("0.33.1")
     abstract val nick: String
 
     /**
@@ -191,7 +188,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
      */
     @MiraiExperimentalAPI
-    @SinceMirai("0.39.0")
     abstract fun constructMessageSource(
         kind: OfflineMessageSource.Kind,
         fromUin: Long, targetUin: Long,
@@ -205,7 +201,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 好友验证的事件对象
      */
-    @SinceMirai("0.35.0")
     @JvmSynthetic
     abstract suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent)
 
@@ -215,7 +210,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 好友验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
-    @SinceMirai("0.35.0")
     @JvmSynthetic
     abstract suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean = false)
 
@@ -224,7 +218,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 加群验证的事件对象
      */
-    @SinceMirai("0.35.0")
     @JvmSynthetic
     abstract suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent)
 
@@ -234,7 +227,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 加群验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
-    @SinceMirai("0.35.0")
     @JvmSynthetic
     abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
@@ -244,7 +236,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 加群验证的事件对象
      * @param blackList 忽略后是否拉入黑名单
      */
-    @SinceMirai("0.35.0")
     @JvmSynthetic
     abstract suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
@@ -253,7 +244,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 邀请入群的事件对象
      */
-    @SinceMirai("0.39.4")
     @JvmSynthetic
     abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
@@ -263,7 +253,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 邀请入群的事件对象
      */
     @JvmSynthetic
-    @SinceMirai("0.39.4")
     abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
     // endregion

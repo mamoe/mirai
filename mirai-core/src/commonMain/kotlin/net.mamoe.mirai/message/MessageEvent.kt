@@ -44,7 +44,6 @@ import kotlin.jvm.JvmSynthetic
  * @see isContextIdenticalWith 判断语境是否相同
  */
 @Suppress("DEPRECATION_ERROR")
-@SinceMirai("0.32.0")
 abstract class MessageEvent : @PlannedRemoval("1.2.0") ContactMessage(),
     BotEvent, MessageEventExtensions<User, Contact> {
 
@@ -77,7 +76,6 @@ abstract class MessageEvent : @PlannedRemoval("1.2.0") ContactMessage(),
     abstract override val message: MessageChain
 
     /** 消息发送时间 (由服务器提供) */
-    @SinceMirai("0.39.0")
     abstract val time: Int
 
     /** 消息源 */

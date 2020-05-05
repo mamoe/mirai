@@ -22,7 +22,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -114,7 +113,6 @@ sealed class GroupImage : AbstractImage() {
  * 在 Java 使用: `MessageUtils.calculateImageMd5(image)`
  */
 @get:JvmName("calculateImageMd5")
-@SinceMirai("0.39.0")
 val Image.md5: ByteArray
     get() = calculateImageMd5ByImageId(imageId)
 
@@ -139,7 +137,6 @@ sealed class FriendImage : AbstractImage() {
  * `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
  * @see FRIEND_IMAGE_ID_REGEX_2
  */
-@SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
 val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
 
@@ -149,7 +146,6 @@ val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a
  * `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
  * @see FRIEND_IMAGE_ID_REGEX_1
  */
-@SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_2
 val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
 
@@ -159,7 +155,6 @@ val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
  * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai`
  */
 @Suppress("RegExpRedundantEscape") // This is required on Android
-@SinceMirai("0.39.2")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
 val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\.mirai""")
 
