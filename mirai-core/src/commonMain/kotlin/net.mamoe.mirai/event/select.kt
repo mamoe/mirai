@@ -12,7 +12,7 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.isContextIdenticalWith
@@ -61,7 +61,7 @@ import kotlin.jvm.JvmSynthetic
  */
 @SinceMirai("0.29.0")
 @Suppress("unused")
-suspend inline fun <reified T : ContactMessage> T.whileSelectMessages(
+suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
@@ -74,7 +74,7 @@ suspend inline fun <reified T : ContactMessage> T.whileSelectMessages(
 @MiraiExperimentalAPI
 @SinceMirai("0.29.0")
 @JvmName("selectMessages1")
-suspend inline fun <reified T : ContactMessage> T.selectMessagesUnit(
+suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, Unit>.() -> Unit
@@ -104,7 +104,7 @@ suspend inline fun <reified T : ContactMessage> T.selectMessagesUnit(
 @SinceMirai("0.29.0")
 @Suppress("unused") // false positive
 // @BuilderInference // https://youtrack.jetbrains.com/issue/KT-37716
-suspend inline fun <reified T : ContactMessage, R> T.selectMessages(
+suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     // @BuilderInference
@@ -121,7 +121,7 @@ suspend inline fun <reified T : ContactMessage, R> T.selectMessages(
  */
 @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
 @SinceMirai("0.29.0")
-abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi internal constructor(
+abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal constructor(
     ownerMessagePacket: M,
     stub: Any?,
     subscriber: (M.(String) -> Boolean, MessageListener<M, Any?>) -> Unit
@@ -236,7 +236,7 @@ abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi interna
  * @see MessageSubscribersBuilder 查看上层 API
  */
 @SinceMirai("0.29.0")
-abstract class MessageSelectBuilderUnit<M : ContactMessage, R> @PublishedApi internal constructor(
+abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi internal constructor(
     private val ownerMessagePacket: M,
     stub: Any?,
     subscriber: (M.(String) -> Boolean, MessageListener<M, Any?>) -> Unit
@@ -480,7 +480,7 @@ internal val ExceptionHandlerIgnoringCancellationException = CoroutineExceptionH
 @PublishedApi
 @BuilderInference
 @OptIn(ExperimentalTypeInference::class)
-internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl(
+internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
     timeoutMillis: Long = -1,
     isUnit: Boolean,
     filterContext: Boolean = true,
@@ -579,7 +579,7 @@ internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl
 
 @Suppress("unused")
 @PublishedApi
-internal suspend inline fun <reified T : ContactMessage> T.whileSelectMessagesImpl(
+internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit

@@ -16,7 +16,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.LazyProperty
@@ -159,7 +159,7 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
  * 此回执的 [消息源][MessageReceipt.source] 即为一个 [外向消息源][OnlineMessageSource.Outgoing], 代表着刚刚发出的那条消息的来源.
  *
  * #### 机器人接受消息
- * 当机器人接收一条消息 [ContactMessage], 这条消息包含一个 [内向消息源][OnlineMessageSource.Incoming], 代表着接收到的这条消息的来源.
+ * 当机器人接收一条消息 [MessageEvent], 这条消息包含一个 [内向消息源][OnlineMessageSource.Incoming], 代表着接收到的这条消息的来源.
  *
  *
  * ### 实现
@@ -356,7 +356,7 @@ fun MessageSource.quote(): QuoteReply {
 }
 
 /**
- * 引用这条消息. 仅从服务器接收的消息 (即来自 [ContactMessage]) 才可以通过这个方式被引用.
+ * 引用这条消息. 仅从服务器接收的消息 (即来自 [MessageEvent]) 才可以通过这个方式被引用.
  * @see QuoteReply
  */
 fun MessageChain.quote(): QuoteReply {

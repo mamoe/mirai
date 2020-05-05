@@ -16,7 +16,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
-import net.mamoe.mirai.message.FriendMessage
+import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessage
@@ -29,7 +29,7 @@ import kotlin.jvm.JvmSynthetic
  * 对于同一个 [Bot], 任何一个人的 [Friend] 实例都是单一的.
  * [Friend] 无法通过任何方式直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
  *
- * @see FriendMessage
+ * @see FriendMessageEvent
  */
 @Suppress("DEPRECATION_ERROR")
 abstract class Friend : User(), CoroutineScope {

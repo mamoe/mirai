@@ -18,17 +18,21 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
+import net.mamoe.mirai.utils.PlannedRemoval
 
 /**
- * 好友消息事件
+ * 机器人收到的好友消息的事件
+ *
+ * @see MessageEvent
  */
-class FriendMessage constructor(
+class FriendMessageEvent constructor(
     override val sender: Friend,
     override val message: MessageChain,
     override val time: Int
-) : ContactMessage(), BroadcastControllable {
+) : @PlannedRemoval("1.2.0") FriendMessage(), BroadcastControllable {
     init {
-        val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")
+        val source =
+            message.getOrNull(MessageSource) ?: throw IllegalArgumentException("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
     }
 
@@ -37,5 +41,5 @@ class FriendMessage constructor(
     override val senderName: String get() = sender.nick
     override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
 
-    override fun toString(): String = "FriendMessage(sender=${sender.id}, message=$message)"
+    override fun toString(): String = "FriendMessageEvent(sender=${sender.id}, message=$message)"
 }

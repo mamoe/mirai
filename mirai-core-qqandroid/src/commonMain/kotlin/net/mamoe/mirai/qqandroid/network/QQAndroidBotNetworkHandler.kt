@@ -22,7 +22,7 @@ import kotlinx.io.core.use
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
@@ -495,7 +495,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 is Packet.NoLog -> {
                     // nothing to do
                 }
-                is ContactMessage -> packet.logMessageReceived()
+                is MessageEvent -> packet.logMessageReceived()
                 is Event -> bot.logger.verbose { "Event: ${packet.toString().singleLine()}" }
                 else -> logger.verbose { "Packet: ${packet.toString().singleLine()}" }
             }

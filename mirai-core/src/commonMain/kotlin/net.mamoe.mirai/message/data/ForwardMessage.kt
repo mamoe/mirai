@@ -12,8 +12,11 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
@@ -72,7 +75,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * ### 构造
  * - 使用 [DSL][buildForwardMessage]
- * - 通过 [ContactMessage] 集合转换: [toForwardMessage]
+ * - 通过 [MessageEvent] 集合转换: [toForwardMessage]
  *
  * @see buildForwardMessage
  */
@@ -186,7 +189,7 @@ class ForwardMessage @JvmOverloads constructor(
  */
 @SinceMirai("0.39.0")
 @JvmOverloads
-fun Iterable<ContactMessage>.toForwardMessage(displayStrategy: DisplayStrategy = DisplayStrategy): ForwardMessage {
+fun Iterable<MessageEvent>.toForwardMessage(displayStrategy: DisplayStrategy = DisplayStrategy): ForwardMessage {
     val iterator = this.iterator()
     if (!iterator.hasNext()) return ForwardMessage(emptyList(), displayStrategy)
     return ForwardMessage(
@@ -236,7 +239,7 @@ inline fun buildForwardMessage(
  */
 @SinceMirai("0.39.0")
 @JvmSynthetic
-inline fun ContactMessage.buildForwardMessage(
+inline fun MessageEvent.buildForwardMessage(
     context: Contact = this.subject,
     displayStrategy: DisplayStrategy = DisplayStrategy,
     block: ForwardMessageBuilder.() -> Unit

@@ -17,10 +17,10 @@ package net.mamoe.mirai.event
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.internal.*
-import net.mamoe.mirai.message.ContactMessage
-import net.mamoe.mirai.message.FriendMessage
-import net.mamoe.mirai.message.GroupMessage
-import net.mamoe.mirai.message.TempMessage
+import net.mamoe.mirai.message.FriendMessageEvent
+import net.mamoe.mirai.message.GroupMessageEvent
+import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.message.data.*
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
@@ -31,7 +31,7 @@ import kotlin.jvm.JvmSynthetic
  * 消息事件的处理器.
  *
  * 注:
- * 接受者 T 为 [ContactMessage]
+ * 接受者 T 为 [MessageEvent]
  * 参数 String 为 转为字符串了的消息 ([Message.toString])
  */
 typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
@@ -47,7 +47,7 @@ typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  * @see subscribeFriendMessages
  */
 @MessageDsl
-open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
+open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     /**
      * 用于 [MessageListener] 无返回值的替代.
      */
@@ -231,7 +231,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** 如果是这个人发的消息. 消息目前只会是群消息 */
     @MessageDsl
-    fun sentBy(name: String): ListeningFilter = content { this is GroupMessage && this.senderName == name }
+    fun sentBy(name: String): ListeningFilter = content { this is GroupMessageEvent && this.senderName == name }
 
     /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
@@ -247,36 +247,37 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** 如果是好友发来的消息 */
     @MessageDsl
-    fun sentByFriend(onEvent: MessageListener<FriendMessage, R>): Ret =
-        content({ this is FriendMessage }) { onEvent(this as FriendMessage, it) }
+    fun sentByFriend(onEvent: MessageListener<FriendMessageEvent, R>): Ret =
+        content({ this is FriendMessageEvent }) { onEvent(this as FriendMessageEvent, it) }
 
     /** 如果是好友发来的消息 */
     @MessageDsl
-    fun sentByFriend(): ListeningFilter = newListeningFilter { this is FriendMessage }
+    fun sentByFriend(): ListeningFilter = newListeningFilter { this is FriendMessageEvent }
 
-    /** 如果是好友发来的消息 */
+    /** 如果是群临时会话消息 */
     @MessageDsl
-    fun sentByTemp(): ListeningFilter = newListeningFilter { this is TempMessage }
+    fun sentByTemp(): ListeningFilter = newListeningFilter { this is TempMessageEvent }
 
     /** 如果是管理员或群主发的消息 */
     @MessageDsl
-    fun sentByOperator(): ListeningFilter = content { this is GroupMessage && sender.permission.isOperator() }
+    fun sentByOperator(): ListeningFilter = content { this is GroupMessageEvent && sender.permission.isOperator() }
 
     /** 如果是管理员发的消息 */
     @MessageDsl
-    fun sentByAdministrator(): ListeningFilter = content { this is GroupMessage && sender.permission.isAdministrator() }
+    fun sentByAdministrator(): ListeningFilter =
+        content { this is GroupMessageEvent && sender.permission.isAdministrator() }
 
     /** 如果是群主发的消息 */
     @MessageDsl
-    fun sentByOwner(): ListeningFilter = content { this is GroupMessage && sender.isOwner() }
+    fun sentByOwner(): ListeningFilter = content { this is GroupMessageEvent && sender.isOwner() }
 
     /** 如果是来自这个群的消息 */
     @MessageDsl
-    fun sentFrom(groupId: Long): ListeningFilter = content { this is GroupMessage && group.id == groupId }
+    fun sentFrom(groupId: Long): ListeningFilter = content { this is GroupMessageEvent && group.id == groupId }
 
     /** 如果是来自这个群的消息 */
     @MessageDsl
-    fun sentFrom(group: Group): ListeningFilter = content { this is GroupMessage && group.id == group.id }
+    fun sentFrom(group: Group): ListeningFilter = content { this is GroupMessageEvent && group.id == group.id }
 
     /** [消息内容][Message.contentToString]包含目标为 [Bot] 的 [At] */
     @MessageDsl

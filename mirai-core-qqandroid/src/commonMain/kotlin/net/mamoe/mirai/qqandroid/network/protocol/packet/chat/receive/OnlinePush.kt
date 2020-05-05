@@ -23,7 +23,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
-import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.*
 import net.mamoe.mirai.qqandroid.message.contextualBugReportException
@@ -109,7 +109,7 @@ internal class OnlinePush {
             }
 
             val flags = extraInfo?.flags ?: 0
-            return GroupMessage(
+            return GroupMessageEvent(
                 senderName = name.also {
                     if (it != sender.nameCard) {
                         val origin = sender._nameCard

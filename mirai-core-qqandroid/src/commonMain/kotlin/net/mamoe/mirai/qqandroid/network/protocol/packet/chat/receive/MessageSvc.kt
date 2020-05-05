@@ -29,8 +29,8 @@ import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.getFriendOrNull
-import net.mamoe.mirai.message.FriendMessage
-import net.mamoe.mirai.message.TempMessage
+import net.mamoe.mirai.message.FriendMessageEvent
+import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
@@ -274,7 +274,7 @@ internal class MessageSvc {
                             friend.lastMessageSequence.loop { instant ->
                                 if (msg.msgHead.msgSeq > instant) {
                                     if (friend.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
-                                        return@mapNotNull FriendMessage(
+                                        return@mapNotNull FriendMessageEvent(
                                             friend,
                                             msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
                                             msg.msgHead.msgTime
@@ -297,7 +297,7 @@ internal class MessageSvc {
                             member.lastMessageSequence.loop { instant ->
                                 if (msg.msgHead.msgSeq > instant) {
                                     if (member.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
-                                        return@mapNotNull TempMessage(
+                                        return@mapNotNull TempMessageEvent(
                                             member,
                                             msg.toMessageChain(
                                                 bot,
