@@ -2,6 +2,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
@@ -51,7 +52,7 @@ internal class NewContact {
                             struct.msgSeq,
                             msgAdditional,
                             struct.reqUin,
-                            groupCode,
+                            Group.calculateGroupUinByGroupCode(groupCode),
                             reqUinNick
                         )
                     }
@@ -141,7 +142,7 @@ internal class NewContact {
                                 bot,
                                 struct.msgSeq,
                                 actionUin,
-                                groupCode,
+                                Group.calculateGroupUinByGroupCode(groupCode),
                                 groupName,
                                 actionUinNick
                             )
@@ -152,7 +153,7 @@ internal class NewContact {
                                 struct.msgSeq,
                                 msgAdditional,
                                 struct.reqUin,
-                                groupCode,
+                                Group.calculateGroupUinByGroupCode(groupCode),
                                 groupName,
                                 reqUinNick
                             )
@@ -180,7 +181,7 @@ internal class NewContact {
                                     true -> 11 // accept
                                     false -> 12 // reject
                                 },
-                                groupCode = event.groupId,
+                                groupCode = Group.calculateGroupCodeByGroupUin(event.groupId),
                                 msg = "",
                                 remark = "",
                                 blacklist = blackList
@@ -207,7 +208,7 @@ internal class NewContact {
                         Structmsg.ReqSystemMsgAction(
                             actionInfo = Structmsg.SystemMsgActionInfo(
                                 type = if (accept) 11 else 12,
-                                groupCode = event.groupId
+                                groupCode = Group.calculateGroupCodeByGroupUin(event.groupId)
                             ),
                             groupMsgType = 2,
                             language = 1000,
