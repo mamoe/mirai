@@ -136,27 +136,31 @@ internal class NewContact {
 
                 return if (struct == null) null else {
                     struct.msg?.run<Structmsg.SystemMsg, Packet> {
-                        if (c2cInviteJoinGroupFlag == 1) {
-                            // 被邀请入群
-                            BotInvitedJoinGroupRequestEvent(
-                                bot,
-                                struct.msgSeq,
-                                actionUin,
-                                Group.calculateGroupUinByGroupCode(groupCode),
-                                groupName,
-                                actionUinNick
-                            )
-                        } else {
-                            // 成员申请入群
-                            MemberJoinRequestEvent(
-                                bot,
-                                struct.msgSeq,
-                                msgAdditional,
-                                struct.reqUin,
-                                Group.calculateGroupUinByGroupCode(groupCode),
-                                groupName,
-                                reqUinNick
-                            )
+                        when (c2cInviteJoinGroupFlag) {
+                            1 -> {
+                                // 被邀请入群
+                                BotInvitedJoinGroupRequestEvent(
+                                    bot,
+                                    struct.msgSeq,
+                                    actionUin,
+                                    Group.calculateGroupUinByGroupCode(groupCode),
+                                    groupName,
+                                    actionUinNick
+                                )
+                            }
+                            0 -> {
+                                // 成员申请入群
+                                MemberJoinRequestEvent(
+                                    bot,
+                                    struct.msgSeq,
+                                    msgAdditional,
+                                    struct.reqUin,
+                                    Group.calculateGroupUinByGroupCode(groupCode),
+                                    groupName,
+                                    reqUinNick
+                                )
+                            }
+                            else -> throw IllegalStateException("Unknown c2cInviteJoinGroupFlag: $c2cInviteJoinGroupFlag in SystemMsgNewGroup packet")
                         }
                     } as Packet // 没有 as Packet 垃圾 kotlin 会把类型推断为Any
                 }
