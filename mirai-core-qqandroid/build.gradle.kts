@@ -51,6 +51,7 @@ kotlin {
                 api(kotlin("stdlib", Versions.Kotlin.stdlib))
                 api(kotlinx("serialization-runtime-common", Versions.Kotlin.serialization))
                 api(kotlinx("serialization-protobuf-common", Versions.Kotlin.serialization))
+                api("moe.him188:jcekt-common:${Versions.jcekt}")
                 api("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
                 api(kotlinx("io", Versions.Kotlin.io))
                 api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
@@ -86,6 +87,7 @@ kotlin {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 //    api(kotlinx("coroutines-debug", "1.3.5"))
+                api("moe.him188:jcekt:${Versions.jcekt}")
                 api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
                 //api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
 

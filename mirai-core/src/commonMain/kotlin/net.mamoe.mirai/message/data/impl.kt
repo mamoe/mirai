@@ -37,13 +37,6 @@ private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
     }
 }
 
-@OptIn(MiraiInternalAPI::class)
-@JvmSynthetic
-@Suppress("DEPRECATION_ERROR")
-internal fun Message.followedByInternalForBinaryCompatibility(tail: Message): CombinedMessage {
-    return CombinedMessage(EmptyMessageChain, this.followedBy(tail))
-}
-
 @JvmSynthetic
 internal fun Message.contentEqualsImpl(another: Message, ignoreCase: Boolean): Boolean {
     if (!this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)) return false
@@ -220,9 +213,7 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     OnlineMessageSource.Incoming.FromGroup -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromGroup>()
     OnlineMessageSource.Incoming.FromFriend -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromFriend>()
     OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
-    XmlMessage -> firstIsInstanceOrNull<XmlMessage>()
     LongMessage -> firstIsInstanceOrNull()
-    JsonMessage -> firstIsInstanceOrNull<JsonMessage>()
     RichMessage -> firstIsInstanceOrNull<RichMessage>()
     LightApp -> firstIsInstanceOrNull<LightApp>()
     PokeMessage -> firstIsInstanceOrNull<PokeMessage>()
@@ -366,7 +357,6 @@ internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
         imageId matches FRIEND_IMAGE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
         imageId matches FRIEND_IMAGE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
         imageId matches GROUP_IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
-        imageId matches GROUP_IMAGE_ID_REGEX_OLD -> imageId.imageIdToMd5(1)
 
         else -> error(
             "illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE"

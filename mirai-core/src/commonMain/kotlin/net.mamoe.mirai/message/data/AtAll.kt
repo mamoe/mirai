@@ -12,7 +12,6 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -28,8 +27,6 @@ private const val displayA = "@全体成员"
 object AtAll :
     Message.Key<AtAll>,
     MessageContent {
-
-    @SinceMirai("0.31.2")
     const val display = displayA
     override val typeName: String
         get() = "AtAll"

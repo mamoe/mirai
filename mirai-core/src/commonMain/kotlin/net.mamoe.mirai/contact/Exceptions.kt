@@ -12,14 +12,12 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 发送消息时消息过长抛出的异常.
  *
  * @see Contact.sendMessage
  */
-@SinceMirai("0.32.0")
 class MessageTooLargeException(
     val target: Contact,
     /**
@@ -38,7 +36,6 @@ class MessageTooLargeException(
  *
  * @see Group.sendMessage
  */
-@SinceMirai("0.33.0")
 class BotIsBeingMutedException(
     val target: Group
 ) : RuntimeException("bot is being muted, remaining ${target.botMuteRemaining} seconds")

@@ -23,9 +23,12 @@ import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
+import moe.him188.jcekt.JceId
 import net.mamoe.mirai.qqandroid.utils.io.serialization.ProtoBufWithNullableSupport.Varint.encodeVarint
 
 internal typealias ProtoDesc = Pair<Int, ProtoNumberType>
+
+internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<JceId>(index)?.id
 
 internal fun extractParameters(desc: SerialDescriptor, index: Int, zeroBasedDefault: Boolean = false): ProtoDesc {
     val idx = getSerialId(desc, index) ?: (if (zeroBasedDefault) index else index + 1)

@@ -33,7 +33,6 @@ import net.mamoe.mirai.utils.*
  *
  * @see CustomMessageMetadata 自定义消息元数据
  */
-@SinceMirai("0.38.0")
 @MiraiExperimentalAPI
 sealed class CustomMessage : SingleMessage {
     /**
@@ -181,7 +180,6 @@ sealed class CustomMessage : SingleMessage {
  * @see CustomMessage 查看更多信息
  * @see ConstrainSingle 可实现此接口以保证消息链中只存在一个元素
  */
-@SinceMirai("0.38.0")
 @MiraiExperimentalAPI
 abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
     companion object Key : Message.Key<CustomMessageMetadata> {

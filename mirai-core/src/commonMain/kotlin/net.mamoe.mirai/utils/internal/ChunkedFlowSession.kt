@@ -7,20 +7,33 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.qqandroid.utils.io
+package net.mamoe.mirai.utils.internal
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.io.InputStream
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Closeable
 import kotlinx.io.core.Input
-import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlinx.serialization.InternalSerializationApi
-import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
+import kotlin.jvm.JvmField
+
+
+internal interface ChunkedFlowSession<T> : Closeable {
+    val flow: Flow<T>
+    override fun close()
+}
+
+internal inline fun <T, R> ChunkedFlowSession<T>.map(crossinline mapper: suspend ChunkedFlowSession<T>.(T) -> R): ChunkedFlowSession<R> {
+    return object : ChunkedFlowSession<R> {
+        override val flow: Flow<R> = this@map.flow.map { this@map.mapper(it) }
+        override fun close() = this@map.close()
+    }
+}
 
 
 /**
@@ -34,13 +47,13 @@ internal class ChunkedInput(
      *
      * **注意**: 不要将他带出 [Flow.collect] 作用域, 否则将造成内存泄露
      */
-    val buffer: ByteArray,
-    internal var size: Int
+    @JvmField val buffer: ByteArray,
+    @JvmField internal var size: Int
 ) {
     /**
      * [buffer] 的有效大小
      */
-    val bufferSize: Int get() = size
+    inline val bufferSize: Int get() = size
 }
 
 /**
@@ -51,7 +64,6 @@ internal class ChunkedInput(
  *
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
-@OptIn(MiraiInternalAPI::class)
 internal fun ByteReadPacket.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.remaining <= sizePerPacket.toLong()) {
@@ -81,7 +93,6 @@ internal fun ByteReadPacket.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> 
  * 对于一个 1000 长度的 [ByteReadChannel] 和参数 [sizePerPacket] = 300, 将会产生含四个元素的 [Sequence],
  * 其长度分别为: 300, 300, 300, 100.
  */
-@OptIn(MiraiInternalAPI::class)
 internal fun ByteReadChannel.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.isClosedForRead) {
@@ -105,7 +116,7 @@ internal fun ByteReadChannel.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput>
  * 对于一个 1000 长度的 [Input] 和参数 [sizePerPacket] = 300, 将会产生含四个元素的 [Sequence],
  * 其长度分别为: 300, 300, 300, 100.
  */
-@OptIn(MiraiInternalAPI::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
 
@@ -132,9 +143,7 @@ internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
  *
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
-@OptIn(
-    MiraiInternalAPI::class, ExperimentalCoroutinesApi::class, InternalSerializationApi::class
-)
+@OptIn(ExperimentalCoroutinesApi::class, InternalSerializationApi::class)
 internal fun InputStream.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
 

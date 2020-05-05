@@ -11,18 +11,15 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.coroutines.io.ByteReadChannel
-import kotlinx.io.InputStream
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
-import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
-import net.mamoe.mirai.message.data.toLongUnsigned
+import net.mamoe.mirai.utils.internal.DeferredReusableInput
+import net.mamoe.mirai.utils.internal.ReusableInput
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -33,40 +30,16 @@ import kotlin.jvm.JvmSynthetic
  * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
-class ExternalImage private constructor(
-    val md5: ByteArray,
-    val input: Any, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
-    val inputSize: Long // dont be greater than Int.MAX
+class ExternalImage internal constructor(
+    @JvmField
+    internal val input: ReusableInput
 ) {
-    @Deprecated("changing soon in 1.0.0", level = DeprecationLevel.ERROR)
-    constructor(
-        md5: ByteArray,
-        input: ByteReadChannel,
-        inputSize: Long // dont be greater than Int.MAX
-    ) : this(md5, input as Any, inputSize)
-
-    @Deprecated("changing soon in 1.0.0", level = DeprecationLevel.ERROR)
-    constructor(
-        md5: ByteArray,
-        input: Input,
-        inputSize: Long // dont be greater than Int.MAX
-    ) : this(md5, input as Any, inputSize)
-
-    @Deprecated("changing soon in 1.0.0", level = DeprecationLevel.ERROR)
-    constructor(
-        md5: ByteArray,
-        input: ByteReadPacket
-    ) : this(md5, input as Any, input.remaining)
-
-    @Deprecated("changing soon in 1.0.0", level = DeprecationLevel.ERROR)
-    @OptIn(InternalSerializationApi::class)
-    constructor(
-        md5: ByteArray,
-        input: InputStream
-    ) : this(md5, input as Any, input.available().toLongUnsigned())
+    internal val md5: ByteArray get() = this.input.md5
 
     init {
-        require(inputSize < 30L * 1024 * 1024) { "file is too big. Maximum is about 20MB" }
+        if (input !is DeferredReusableInput) {
+            require(input.size < 30L * 1024 * 1024) { "Image file is too big. Maximum is 30 MiB, but recommended to be 20 MiB" }
+        }
     }
 
     companion object {
@@ -93,10 +66,16 @@ class ExternalImage private constructor(
      *  SHARPP: 1004
      */
 
+    override fun toString(): String {
+        if (input is DeferredReusableInput) {
+            if (!input.initialized) {
+                return "ExternalImage(uninitialized)"
+            }
+        }
+        return "ExternalImage(${generateUUID(md5)})"
+    }
 
-    override fun toString(): String = "[ExternalImage(${generateUUID(md5)})]"
-
-    fun calculateImageResourceId(): String = generateImageId(md5)
+    internal fun calculateImageResourceId(): String = generateImageId(md5)
 }
 
 /**

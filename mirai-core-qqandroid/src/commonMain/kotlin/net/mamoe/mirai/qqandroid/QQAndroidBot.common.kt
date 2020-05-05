@@ -15,7 +15,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
 import kotlinx.coroutines.io.ByteReadChannel
@@ -51,7 +50,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
 import kotlin.contracts.ExperimentalContracts
@@ -190,7 +188,7 @@ internal class QQAndroidBot constructor(
                 }
             }
 
-        group.checkBotPermissionOperator()
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
     }
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
@@ -351,10 +349,6 @@ internal abstract class QQAndroidBotBase constructor(
             return sequence
         }
 
-    override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
-        TODO("not implemented")
-    }
-
     @Suppress("RemoveExplicitTypeArguments") // false positive
     override suspend fun recall(source: MessageSource) {
         check(source is MessageSourceInternal)
@@ -375,7 +369,7 @@ internal abstract class QQAndroidBotBase constructor(
                     else -> error("stub")
                 }
                 if (this.id != source.fromId) {
-                    group.checkBotPermissionOperator()
+                    group.checkBotPermission(MemberPermission.ADMINISTRATOR)
                 }
                 MessageRecallEvent.GroupRecall(
                     this,
@@ -679,8 +673,8 @@ internal abstract class QQAndroidBotBase constructor(
                         response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
                         response.proto.msgSig,
                         MiraiPlatformUtils.md5(body),
-                        body.toReadPacket(),
-                        body.size.toLong().and(0xFFFF_FFFF), // don't use toLongUnsigned: Overload resolution ambiguity
+                        @Suppress("INVISIBLE_REFERENCE")
+                        net.mamoe.mirai.utils.internal.asReusableInput0(body), // don't use toLongUnsigned: Overload resolution ambiguity
                         "group long message",
                         27
                     )
@@ -764,13 +758,6 @@ internal abstract class QQAndroidBotBase constructor(
                 )
             }
         }
-    }
-
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
-    override suspend fun openChannel(image: Image): ByteReadChannel {
-        return MiraiPlatformUtils.Http.get<HttpResponse>(queryImageUrl(image)).content.toKotlinByteReadChannel()
     }
 
     /**

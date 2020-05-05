@@ -100,7 +100,7 @@ internal class TroopManagement {
                         serviceType = 7,
                         result = 0,
                         bodybuffer = Oidb0x88d.ReqBody(
-                            appid = 537062845,
+                            appid = client.subAppId.toInt(),
                             stzreqgroupinfo = listOf(
                                 Oidb0x88d.ReqGroupInfo(
                                     stgroupinfo = Oidb0x88d.GroupInfo(

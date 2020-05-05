@@ -83,7 +83,7 @@ internal fun BytePacketBuilder.t18(
 @OptIn(MiraiInternalAPI::class)
 internal fun BytePacketBuilder.t106(
     appId: Long = 16L,
-    subAppId: Long = 537062845L,
+    subAppId: Long,
     appClientVersion: Int = 0,
     uin: Long,
     n5_always_1: Int = 1,
@@ -159,7 +159,7 @@ internal fun BytePacketBuilder.t116(
 
 internal fun BytePacketBuilder.t100(
     appId: Long = 16,
-    subAppId: Long = 537062845,
+    subAppId: Long,
     appClientVersion: Int
 ) {
     writeShort(0x100)

@@ -14,7 +14,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -159,7 +158,6 @@ open class MessageChainBuilder private constructor(
     /**
      * 将所有已有元素引用复制到一个新的 [MessageChainBuilder]
      */
-    @SinceMirai("0.38.0")
     fun copy(): MessageChainBuilder {
         return MessageChainBuilder(container.toMutableList())
     }

@@ -17,7 +17,6 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -73,15 +72,6 @@ private constructor(val target: Long, val display: String) :
         return result
     }
 
-
-    @OptIn(MiraiInternalAPI::class)
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmName("followedBy")
-    @JvmSynthetic
-    override fun followedBy1(tail: Message): CombinedMessage {
-        return followedByInternalForBinaryCompatibility(tail)
-    }
 }
 
 /**

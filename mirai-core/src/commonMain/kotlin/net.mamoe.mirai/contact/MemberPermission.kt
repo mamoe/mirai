@@ -7,17 +7,24 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.SinceMirai
+import kotlin.internal.InlineOnly
 
 /**
  * 群成员的权限.
  *
  * 可通过 [compareTo] 判断是否有更高的权限.
+ *
+ * @see isOwner 判断权限是否为群主
+ * @see isOperator 判断权限是否为管理员或群主
+ *
+ * @see Member.isOwner 对 [Member] 的扩展函数, 判断此成员是否为群主
+ * @see Member.isOperator 对 [Member] 的扩展函数, 判断此成员是否为管理员或群主
+ * @see Member.isAdministrator 对 [Member] 的扩展函数, 判断此成员是否为管理员
  */
 enum class MemberPermission : Comparable<MemberPermission> {
     /**
@@ -38,7 +45,6 @@ enum class MemberPermission : Comparable<MemberPermission> {
     /**
      * 权限等级. [OWNER] 为 2, [ADMINISTRATOR] 为 1, [MEMBER] 为 0
      */
-    @SinceMirai("0.32.0")
     val level: Int
         get() = ordinal
 }
@@ -46,16 +52,19 @@ enum class MemberPermission : Comparable<MemberPermission> {
 /**
  * 判断权限是否为群主
  */
+@InlineOnly
 inline fun MemberPermission.isOwner(): Boolean = this == MemberPermission.OWNER
 
 /**
  * 判断权限是否为管理员
  */
+@InlineOnly
 inline fun MemberPermission.isAdministrator(): Boolean = this == MemberPermission.ADMINISTRATOR
 
 /**
  * 判断权限是否为管理员或群主
  */
+@InlineOnly
 inline fun MemberPermission.isOperator(): Boolean = isAdministrator() || isOwner()
 
 
@@ -85,7 +94,7 @@ class PermissionDeniedException : IllegalStateException {
 }
 
 /**
- * 要求 [Bot] 在这个群里的权限为 [required], 否则抛出异常 [PermissionDeniedException]
+ * 要求 [Bot] 在这个群里的权限至少为 [required], 否则抛出异常 [PermissionDeniedException]
  *
  * @throws PermissionDeniedException
  */
@@ -95,7 +104,7 @@ inline fun Group.checkBotPermission(
         "Permission denied: required $required, got actual $botPermission for $bot in group $id"
     }
 ) {
-    if (botPermission != required) {
+    if (botPermission < required) {
         throw PermissionDeniedException(lazyMessage())
     }
 }
@@ -105,12 +114,9 @@ inline fun Group.checkBotPermission(
  *
  * @throws PermissionDeniedException
  */
+@Deprecated("use checkBotPermission", ReplaceWith("checkBotPermission(MemberPermission.ADMINISTRATOR)"))
 inline fun Group.checkBotPermissionOperator(
     crossinline lazyMessage: () -> String = {
         "Permission denied: required ${MemberPermission.ADMINISTRATOR} or ${MemberPermission.OWNER}, got actual $botPermission for $bot in group $id"
     }
-) {
-    if (!botPermission.isOperator()) {
-        throw PermissionDeniedException(lazyMessage())
-    }
-}
+) = checkBotPermission(MemberPermission.ADMINISTRATOR, lazyMessage)

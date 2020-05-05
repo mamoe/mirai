@@ -16,10 +16,12 @@ package net.mamoe.mirai.message.data
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.recallIn
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.LazyProperty
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
@@ -57,7 +59,6 @@ import kotlin.jvm.JvmSynthetic
  * @see OfflineMessageSource 离线消息的 [MessageSource]
  */
 @OptIn(MiraiExperimentalAPI::class)
-@SinceMirai("0.33.0")
 sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
     companion object Key : Message.Key<MessageSource> {
         override val typeName: String get() = "MessageSource"
@@ -93,7 +94,6 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
      *
      * 在事件中和在引用中无法保证同一条消息的 [internalId] 相同.
      */
-    @SinceMirai("0.39.0")
     abstract val internalId: Int
 
     /**
@@ -156,7 +156,7 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
  * 此回执的 [消息源][MessageReceipt.source] 即为一个 [外向消息源][OnlineMessageSource.Outgoing], 代表着刚刚发出的那条消息的来源.
  *
  * #### 机器人接受消息
- * 当机器人接收一条消息 [ContactMessage], 这条消息包含一个 [内向消息源][OnlineMessageSource.Incoming], 代表着接收到的这条消息的来源.
+ * 当机器人接收一条消息 [MessageEvent], 这条消息包含一个 [内向消息源][OnlineMessageSource.Incoming], 代表着接收到的这条消息的来源.
  *
  *
  * ### 实现
@@ -164,7 +164,6 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
  *
  * @see OnlineMessageSource.toOffline 转为 [OfflineMessageSource]
  */
-@SinceMirai("0.33.0")
 @OptIn(MiraiExperimentalAPI::class)
 sealed class OnlineMessageSource : MessageSource() {
     companion object Key : Message.Key<OnlineMessageSource> {
@@ -279,34 +278,7 @@ sealed class OnlineMessageSource : MessageSource() {
             final override val target: Group get() = group
             inline val group: Group get() = sender.group
         }
-
-
-        //////////////////////////////////
-        //// FOR BINARY COMPATIBILITY ////
-        //////////////////////////////////
-
-
-        @PlannedRemoval("1.0.0")
-        @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
-        @get:JvmName("target")
-        @get:JvmSynthetic
-        final override val target2: Any
-            get() = target
     }
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
-    @get:JvmName("target")
-    @get:JvmSynthetic
-    open val target2: Any
-        get() = target
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility until 1.0.0", level = DeprecationLevel.HIDDEN)
-    @get:JvmName("sender")
-    @get:JvmSynthetic
-    open val sender2: Any
-        get() = sender
 }
 
 /**
@@ -315,7 +287,6 @@ sealed class OnlineMessageSource : MessageSource() {
  *
  * @see buildMessageSource 构建一个 [OfflineMessageSource]
  */
-@SinceMirai("0.33.0")
 abstract class OfflineMessageSource : MessageSource() {
     companion object Key : Message.Key<OfflineMessageSource> {
         override val typeName: String
@@ -325,8 +296,6 @@ abstract class OfflineMessageSource : MessageSource() {
     enum class Kind {
         GROUP,
         FRIEND,
-
-        @SinceMirai("0.36.0")
         TEMP
     }
 
@@ -380,7 +349,7 @@ fun MessageSource.quote(): QuoteReply {
 }
 
 /**
- * 引用这条消息. 仅从服务器接收的消息 (即来自 [ContactMessage]) 才可以通过这个方式被引用.
+ * 引用这条消息. 仅从服务器接收的消息 (即来自 [MessageEvent]) 才可以通过这个方式被引用.
  * @see QuoteReply
  */
 fun MessageChain.quote(): QuoteReply {

@@ -17,13 +17,11 @@ package net.mamoe.mirai.event
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.internal.*
-import net.mamoe.mirai.message.ContactMessage
-import net.mamoe.mirai.message.FriendMessage
-import net.mamoe.mirai.message.GroupMessage
-import net.mamoe.mirai.message.TempMessage
+import net.mamoe.mirai.message.FriendMessageEvent
+import net.mamoe.mirai.message.GroupMessageEvent
+import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.js.JsName
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
@@ -33,7 +31,7 @@ import kotlin.jvm.JvmSynthetic
  * 消息事件的处理器.
  *
  * 注:
- * 接受者 T 为 [ContactMessage]
+ * 接受者 T 为 [MessageEvent]
  * 参数 String 为 转为字符串了的消息 ([Message.toString])
  */
 typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
@@ -49,7 +47,7 @@ typealias MessageListener<T, R> = @MessageDsl suspend T.(String) -> R
  * @see subscribeFriendMessages
  */
 @MessageDsl
-open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
+open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     /**
      * 用于 [MessageListener] 无返回值的替代.
      */
@@ -233,7 +231,7 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** 如果是这个人发的消息. 消息目前只会是群消息 */
     @MessageDsl
-    fun sentBy(name: String): ListeningFilter = content { this is GroupMessage && this.senderName == name }
+    fun sentBy(name: String): ListeningFilter = content { this is GroupMessageEvent && this.senderName == name }
 
     /** 如果是这个人发的消息. 消息可以是好友消息也可以是群消息 */
     @MessageDsl
@@ -249,36 +247,37 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
 
     /** 如果是好友发来的消息 */
     @MessageDsl
-    fun sentByFriend(onEvent: MessageListener<FriendMessage, R>): Ret =
-        content({ this is FriendMessage }) { onEvent(this as FriendMessage, it) }
+    fun sentByFriend(onEvent: MessageListener<FriendMessageEvent, R>): Ret =
+        content({ this is FriendMessageEvent }) { onEvent(this as FriendMessageEvent, it) }
 
     /** 如果是好友发来的消息 */
     @MessageDsl
-    fun sentByFriend(): ListeningFilter = newListeningFilter { this is FriendMessage }
+    fun sentByFriend(): ListeningFilter = newListeningFilter { this is FriendMessageEvent }
 
-    /** 如果是好友发来的消息 */
+    /** 如果是群临时会话消息 */
     @MessageDsl
-    fun sentByTemp(): ListeningFilter = newListeningFilter { this is TempMessage }
+    fun sentByTemp(): ListeningFilter = newListeningFilter { this is TempMessageEvent }
 
     /** 如果是管理员或群主发的消息 */
     @MessageDsl
-    fun sentByOperator(): ListeningFilter = content { this is GroupMessage && sender.permission.isOperator() }
+    fun sentByOperator(): ListeningFilter = content { this is GroupMessageEvent && sender.permission.isOperator() }
 
     /** 如果是管理员发的消息 */
     @MessageDsl
-    fun sentByAdministrator(): ListeningFilter = content { this is GroupMessage && sender.permission.isAdministrator() }
+    fun sentByAdministrator(): ListeningFilter =
+        content { this is GroupMessageEvent && sender.permission.isAdministrator() }
 
     /** 如果是群主发的消息 */
     @MessageDsl
-    fun sentByOwner(): ListeningFilter = content { this is GroupMessage && sender.isOwner() }
+    fun sentByOwner(): ListeningFilter = content { this is GroupMessageEvent && sender.isOwner() }
 
     /** 如果是来自这个群的消息 */
     @MessageDsl
-    fun sentFrom(groupId: Long): ListeningFilter = content { this is GroupMessage && group.id == groupId }
+    fun sentFrom(groupId: Long): ListeningFilter = content { this is GroupMessageEvent && group.id == groupId }
 
     /** 如果是来自这个群的消息 */
     @MessageDsl
-    fun sentFrom(group: Group): ListeningFilter = content { this is GroupMessage && group.id == group.id }
+    fun sentFrom(group: Group): ListeningFilter = content { this is GroupMessageEvent && group.id == group.id }
 
     /** [消息内容][Message.contentToString]包含目标为 [Bot] 的 [At] */
     @MessageDsl
@@ -440,79 +439,6 @@ open class MessageSubscribersBuilder<M : ContactMessage, out Ret, R : RR, RR>(
         }
         return stub
     }
-
-    /**
-     * 不考虑空格, [消息内容][Message.contentToString]以 [this] 开始则执行 [replier] 并将其返回值回复给发信对象.
-     * @param replier 若返回 [Message] 则直接发送; 若返回 [Unit] 则不回复; 其他类型则 [Any.toString] 后回复
-     */
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use startsWith on your own", replaceWith = ReplaceWith("startsWith(this, true, true, replier)"))
-    open infix fun String.startsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
-        val toCheck = this.trimStart()
-        return content({ it.trim().startsWith(toCheck) }, {
-            executeAndReply(this) { replier(this, it.trim().removePrefix(toCheck)) }
-        })
-    }
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun contains(message: Message, onEvent: MessageListener<M, R>): Ret {
-        return content({ this.message.any { it == message } }, onEvent)
-    }
-
-    @JvmName("case1")
-    @JsName("case1")
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use String.invoke", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("this(block)"))
-    infix fun String.`->`(block: MessageListener<M, R>): Ret {
-        return this(block)
-    }
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun containsAll(
-        vararg sub: String,
-        ignoreCase: Boolean = false,
-        trim: Boolean = true,
-        onEvent: MessageListener<M, R>
-    ): Ret = containsAllImpl(sub, ignoreCase = ignoreCase, trim = trim).invoke(onEvent)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun containsAny(
-        vararg sub: String,
-        ignoreCase: Boolean = false,
-        trim: Boolean = true,
-        onEvent: MessageListener<M, R>
-    ): Ret = containsAnyImpl(*sub, ignoreCase = ignoreCase, trim = trim).invoke(onEvent)
-
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentBy(name: String, onEvent: MessageListener<M, R>): Ret =
-        content({ (this as? GroupMessage)?.senderName == name }, onEvent)
-
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentByOperator(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isOperator() }, onEvent)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentByAdministrator(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isAdministrator() }, onEvent)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentByOwner(onEvent: MessageListener<M, R>): Ret =
-        content({ this is GroupMessage && this.sender.isOwner() }, onEvent)
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun sentFrom(groupId: Long, onEvent: MessageListener<GroupMessage, R>): Ret =
-        content({ this is GroupMessage && this.group.id == groupId }) { onEvent(this as GroupMessage, it) }
-
 }
 
 /**

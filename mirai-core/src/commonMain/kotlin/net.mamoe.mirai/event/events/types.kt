@@ -15,8 +15,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 有关一个 [Bot] 的事件
@@ -90,11 +88,4 @@ interface FriendEvent : BotEvent {
     val friend: Friend
     override val bot: Bot
         get() = friend.bot
-
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
-    @get:JvmSynthetic
-    @get:JvmName("getFriend")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    val friendDeprecated: net.mamoe.mirai.contact.QQ
-        get() = friend
 }

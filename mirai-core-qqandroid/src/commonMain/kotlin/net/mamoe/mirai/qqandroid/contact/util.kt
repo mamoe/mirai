@@ -59,17 +59,17 @@ internal fun Contact.logMessageSent(message: Message) {
 }
 
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
-internal fun ContactMessage.logMessageReceived() {
+internal fun MessageEvent.logMessageReceived() {
     when (this) {
-        is GroupMessage -> bot.logger.verbose {
+        is GroupMessageEvent -> bot.logger.verbose {
             "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(${sender.id}) -> ${message.toString()
                 .singleLine()}"
         }
-        is TempMessage -> bot.logger.verbose {
+        is TempMessageEvent -> bot.logger.verbose {
             "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(Temp ${sender.id}) -> ${message.toString()
                 .singleLine()}"
         }
-        is FriendMessage -> bot.logger.verbose {
+        is FriendMessageEvent -> bot.logger.verbose {
             "${sender.nick.singleLine()}(${sender.id}) -> ${message.toString().singleLine()}"
         }
     }

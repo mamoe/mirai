@@ -19,14 +19,12 @@ import kotlin.jvm.JvmOverloads
 /**
  * Collect all the elements into a [MutableList] then cast it as a [List]
  */
-@MiraiInternalAPI
-fun <E> LockFreeLinkedList<E>.toList(): List<E> = toMutableList()
+internal fun <E> LockFreeLinkedList<E>.toList(): List<E> = toMutableList()
 
 /**
  * Collect all the elements into a [MutableList].
  */
-@MiraiInternalAPI
-fun <E> LockFreeLinkedList<E>.toMutableList(): MutableList<E> {
+internal fun <E> LockFreeLinkedList<E>.toMutableList(): MutableList<E> {
     val list = mutableListOf<E>()
     this.forEach { list.add(it) }
     return list
@@ -35,14 +33,12 @@ fun <E> LockFreeLinkedList<E>.toMutableList(): MutableList<E> {
 /**
  * Collect all the elements into a [MutableSet] then cast it as a [Set]
  */
-@MiraiInternalAPI
-fun <E> LockFreeLinkedList<E>.toSet(): Set<E> = toMutableSet()
+internal fun <E> LockFreeLinkedList<E>.toSet(): Set<E> = toMutableSet()
 
 /**
  * Collect all the elements into a [MutableSet].
  */
-@MiraiInternalAPI
-fun <E> LockFreeLinkedList<E>.toMutableSet(): MutableSet<E> {
+internal fun <E> LockFreeLinkedList<E>.toMutableSet(): MutableSet<E> {
     val list = mutableSetOf<E>()
     this.forEach { list.add(it) }
     return list
@@ -53,15 +49,13 @@ fun <E> LockFreeLinkedList<E>.toMutableSet(): MutableSet<E> {
  *
  * Note that the sequence is dynamic
  */
-@MiraiInternalAPI
-fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
+internal fun <E> LockFreeLinkedList<E>.asSequence(): Sequence<E> {
     return generateSequence(head) { current: LockFreeLinkedListNode<E> ->
         current.nextValidNode(until = tail).takeIf { it != tail }
     }.drop(1) // drop head, should be dropped lazily
         .map { it.nodeValue }
 }
 
-@OptIn(MiraiInternalAPI::class)
 internal fun <E> LockFreeLinkedListNode<E>.nextValidNode(until: LockFreeLinkedListNode<E>): LockFreeLinkedListNode<E> {
     var node: LockFreeLinkedListNode<E> = this.nextNode
     while (node != until) {
@@ -73,24 +67,21 @@ internal fun <E> LockFreeLinkedListNode<E>.nextValidNode(until: LockFreeLinkedLi
     return node
 }
 
-@MiraiInternalAPI
-operator fun <E> LockFreeLinkedList<E>.iterator(): Iterator<E> {
+internal operator fun <E> LockFreeLinkedList<E>.iterator(): Iterator<E> {
     return asSequence().iterator()
 }
 
 /**
  * 构建链表结构然后转为 [LockFreeLinkedList]
  */
-@MiraiInternalAPI
-fun <E> Iterable<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
+internal fun <E> Iterable<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
     return LockFreeLinkedList<E>().apply { addAll(this@toLockFreeLinkedList) }
 }
 
 /**
  * 构建链表结构然后转为 [LockFreeLinkedList]
  */
-@MiraiInternalAPI
-fun <E> Sequence<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
+internal fun <E> Sequence<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
     return LockFreeLinkedList<E>().apply { addAll(this@toLockFreeLinkedList) }
 }
 
@@ -100,9 +91,7 @@ fun <E> Sequence<E>.toLockFreeLinkedList(): LockFreeLinkedList<E> {
  * Modifying can be performed concurrently.
  * Iterating concurrency is guaranteed.
  */
-@PlannedRemoval("1.0.0") // make internal
-@MiraiInternalAPI("This is unstable API and is going to be internal in 1.0.0")
-open class LockFreeLinkedList<E> {
+internal open class LockFreeLinkedList<E> {
     @PublishedApi
     internal val tail: Tail<E> = Tail()
 

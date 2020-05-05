@@ -101,7 +101,7 @@
 
 #### `OfflineMessageSource` 构造
 可使用 DSL 构造离线消息, 修改其发送人, 发送时间, 发送内容等. 这对于跨群转发等情况十分有用.  
-[OfflineMessageSource.kt: Line 90](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/OfflineMessageSource.kt#L90)
+[MessageSourceBuilder.kt: Line 90](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/MessageSourceBuilder.kt#L90)
 DSL 总览:
 ```
 val source: OfflineMessageSource = bot.buildMessageSource {

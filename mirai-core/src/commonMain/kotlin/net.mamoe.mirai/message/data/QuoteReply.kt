@@ -16,7 +16,6 @@ package net.mamoe.mirai.message.data
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
@@ -43,7 +42,6 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageSource 获取有关消息源的更多信息
  */
 @OptIn(MiraiExperimentalAPI::class)
-@SinceMirai("0.33.0")
 class QuoteReply(val source: MessageSource) : Message, MessageMetadata, ConstrainSingle<QuoteReply> {
     companion object Key : Message.Key<QuoteReply> {
         override val typeName: String
@@ -68,7 +66,6 @@ inline val QuoteReply.id: Int
 /**
  * @see MessageSource.internalId
  */
-@SinceMirai("0.39.2")
 @get:JvmSynthetic
 inline val QuoteReply.internalId: Int
     get() = source.internalId

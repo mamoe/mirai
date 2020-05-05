@@ -206,7 +206,6 @@ inline fun <reified E : Event> CoroutineScope.subscribe(
  *
  * @see CoroutineScope.subscribe
  */
-@SinceMirai("0.38.0")
 fun <E : Event> CoroutineScope.subscribe(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -238,7 +237,6 @@ inline fun <reified E : Event> CoroutineScope.subscribeAlways(
 /**
  * @see CoroutineScope.subscribeAlways
  */
-@SinceMirai("0.38.0")
 fun <E : Event> CoroutineScope.subscribeAlways(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -271,7 +269,6 @@ inline fun <reified E : Event> CoroutineScope.subscribeOnce(
 /**
  * @see CoroutineScope.subscribeOnce
  */
-@SinceMirai("0.38.0")
 fun <E : Event> CoroutineScope.subscribeOnce(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -308,7 +305,6 @@ inline fun <reified E : BotEvent> Bot.subscribe(
  *
  * @see Bot.subscribe
  */
-@SinceMirai("0.38.0")
 fun <E : BotEvent> Bot.subscribe(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -345,7 +341,6 @@ inline fun <reified E : BotEvent> Bot.subscribeAlways(
  *
  * @see Bot.subscribeAlways
  */
-@SinceMirai("0.38.0")
 fun <E : BotEvent> Bot.subscribeAlways(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -376,7 +371,6 @@ inline fun <reified E : BotEvent> Bot.subscribeOnce(
  *
  * @see Bot.subscribeOnce
  */
-@SinceMirai("0.38.0")
 fun <E : BotEvent> Bot.subscribeOnce(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

@@ -22,7 +22,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -44,6 +43,10 @@ import kotlin.jvm.JvmSynthetic
  * @see Contact.uploadImage 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
  * @see Contact.sendImage 上传 [图片文件][ExternalImage] 并发送返回的 [Image] 作为一条消息
  * @see Image.sendTo 上传图片并得到 [Image] 消息
+ *
+ * ### 下载图片
+ * @see Image.queryUrl 扩展函数. 查询图片下载链接
+ * @see Bot.queryImageUrl 查询图片下载链接 (Java 使用)
  *
  * 查看平台 `actual` 定义以获取上传方式扩展.
  *
@@ -94,6 +97,7 @@ expect interface Image : Message, MessageContent {
  * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
  * @see Image 查看更多说明
  */
+@PlannedRemoval("1.2.0") // make internal
 @Suppress("DEPRECATION_ERROR")
 // CustomFace
 @OptIn(MiraiInternalAPI::class)
@@ -109,7 +113,6 @@ sealed class GroupImage : AbstractImage() {
  * 在 Java 使用: `MessageUtils.calculateImageMd5(image)`
  */
 @get:JvmName("calculateImageMd5")
-@SinceMirai("0.39.0")
 val Image.md5: ByteArray
     get() = calculateImageMd5ByImageId(imageId)
 
@@ -119,6 +122,7 @@ val Image.md5: ByteArray
  *
  * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
  */ // NotOnlineImage
+@PlannedRemoval("1.2.0") // make internal
 @Suppress("DEPRECATION_ERROR")
 @OptIn(MiraiInternalAPI::class)
 sealed class FriendImage : AbstractImage() {
@@ -133,7 +137,6 @@ sealed class FriendImage : AbstractImage() {
  * `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
  * @see FRIEND_IMAGE_ID_REGEX_2
  */
-@SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
 val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
 
@@ -143,7 +146,6 @@ val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a
  * `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
  * @see FRIEND_IMAGE_ID_REGEX_1
  */
-@SinceMirai("0.39.2")
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_2
 val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
 
@@ -153,20 +155,8 @@ val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
  * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai`
  */
 @Suppress("RegExpRedundantEscape") // This is required on Android
-@SinceMirai("0.39.2")
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
 val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\.mirai""")
-
-/**
- * 在 `0.39.0` 前的图片的正则表示
- */
-@Suppress("RegExpRedundantEscape") // This is required on Android
-@Deprecated("Only for temporal use",
-    replaceWith = ReplaceWith("GROUP_IMAGE_ID_REGEX", "net.mamoe.mirai.message.data.GROUP_IMAGE_ID_REGEX"))
-@SinceMirai("0.39.2")
-@PlannedRemoval("1.0.0")
-// Java: MessageUtils.GROUP_IMAGE_ID_REGEX_OLD
-val GROUP_IMAGE_ID_REGEX_OLD = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..*""")
 
 /**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
@@ -185,7 +175,6 @@ fun Image(imageId: String): OfflineImage = when {
     imageId matches FRIEND_IMAGE_ID_REGEX_1 -> OfflineFriendImage(imageId)
     imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
     imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
-    imageId matches GROUP_IMAGE_ID_REGEX_OLD -> OfflineGroupImage(imageId)
     else -> throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
 }
 
@@ -279,7 +268,7 @@ data class OfflineGroupImage(
 ) : GroupImage(), OfflineImage {
     init {
         @Suppress("DEPRECATION")
-        require(imageId matches GROUP_IMAGE_ID_REGEX || imageId matches GROUP_IMAGE_ID_REGEX_OLD) {
+        require(imageId matches GROUP_IMAGE_ID_REGEX) {
             "Illegal imageId. It must matches GROUP_IMAGE_ID_REGEX"
         }
     }
@@ -329,18 +318,10 @@ abstract class OnlineFriendImage : FriendImage(), OnlineImage
 // endregion
 
 
-@PlannedRemoval("1.0.0")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("FunctionName")
-@JsName("newImage")
-@JvmName("newImage")
-fun Image2(imageId: String): Image = Image(imageId)
-
-
 /**
  * 所有 [Image] 实现的基类.
  */
+@PlannedRemoval("1.2.0") // make internal
 @Deprecated(
     "This is internal API. Use Image instead",
     level = DeprecationLevel.HIDDEN, // so that others can't see this class

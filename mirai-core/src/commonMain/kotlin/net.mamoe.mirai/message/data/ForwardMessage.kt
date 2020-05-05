@@ -12,11 +12,13 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
@@ -72,11 +74,10 @@ import kotlin.jvm.JvmSynthetic
  *
  * ### 构造
  * - 使用 [DSL][buildForwardMessage]
- * - 通过 [ContactMessage] 集合转换: [toForwardMessage]
+ * - 通过 [MessageEvent] 集合转换: [toForwardMessage]
  *
  * @see buildForwardMessage
  */
-@SinceMirai("0.39.0")
 class ForwardMessage @JvmOverloads constructor(
     /**
      * 消息列表
@@ -184,9 +185,8 @@ class ForwardMessage @JvmOverloads constructor(
 /**
  * 转换为 [ForwardMessage]
  */
-@SinceMirai("0.39.0")
 @JvmOverloads
-fun Iterable<ContactMessage>.toForwardMessage(displayStrategy: DisplayStrategy = DisplayStrategy): ForwardMessage {
+fun Iterable<MessageEvent>.toForwardMessage(displayStrategy: DisplayStrategy = DisplayStrategy): ForwardMessage {
     val iterator = this.iterator()
     if (!iterator.hasNext()) return ForwardMessage(emptyList(), displayStrategy)
     return ForwardMessage(
@@ -205,7 +205,6 @@ fun Message.toForwardMessage(
 /**
  * 转换为 [ForwardMessage]
  */
-@SinceMirai("0.39.0")
 @JvmOverloads
 fun Message.toForwardMessage(
     senderId: Long,
@@ -220,7 +219,6 @@ fun Message.toForwardMessage(
  * @see ForwardMessageBuilder 查看 DSL 帮助
  * @see ForwardMessage 查看转发消息说明
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
 inline fun buildForwardMessage(
     context: Contact,
@@ -234,9 +232,8 @@ inline fun buildForwardMessage(
  * @see ForwardMessageBuilder 查看 DSL 帮助
  * @see ForwardMessage 查看转发消息说明
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
-inline fun ContactMessage.buildForwardMessage(
+inline fun MessageEvent.buildForwardMessage(
     context: Contact = this.subject,
     displayStrategy: DisplayStrategy = DisplayStrategy,
     block: ForwardMessageBuilder.() -> Unit
@@ -247,7 +244,6 @@ inline fun ContactMessage.buildForwardMessage(
 /**
  * 标记转发消息 DSL
  */
-@SinceMirai("0.39.0")
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
 @DslMarker
 annotation class ForwardMessageDsl
@@ -311,7 +307,6 @@ annotation class ForwardMessageDsl
  *
  * `S named "name1" named "name2" says M` 最终的发送人名称为 `"name2"`
  */
-@SinceMirai("0.39.0")
 class ForwardMessageBuilder private constructor(
     /**
      * 消息语境. 可为 [Group] 或 [User]

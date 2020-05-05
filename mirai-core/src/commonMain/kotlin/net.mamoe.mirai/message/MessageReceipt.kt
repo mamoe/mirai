@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -35,7 +34,7 @@ import kotlin.jvm.JvmSynthetic
  * @param target 消息发送对象
  *
  * @see Group.sendMessage 发送群消息, 返回回执（此对象）
- * @see QQ.sendMessage 发送群消息, 返回回执（此对象）
+ * @see User.sendMessage 发送群消息, 返回回执（此对象）
  * @see Member.sendMessage 发送临时消息, 返回回执（此对象）
  *
  * @see MessageReceipt.sourceId 源 id
@@ -48,7 +47,7 @@ open class MessageReceipt<out C : Contact>(
      */
     val source: OnlineMessageSource.Outgoing,
     /**
-     * 发送目标, 为 [Group] 或 [QQ] 或 [Member]
+     * 发送目标, 为 [Group] 或 [Friend] 或 [Member]
      */
     val target: C,
 
@@ -88,16 +87,6 @@ open class MessageReceipt<out C : Contact>(
     @JvmName("quote")
     fun __quoteBlockingForJava__(): QuoteReply {
         return this.quote()
-    }
-
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    @JavaFriendlyAPI
-    @JvmName("recall")
-    fun __recallInBlockingForJava__2(timeMillis: Long): Job {
-        return recallIn(timeMillis = timeMillis)
     }
 }
 

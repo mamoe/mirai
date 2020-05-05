@@ -70,7 +70,7 @@ interface Event {
 abstract class AbstractEvent : Event {
     @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName")
     @get:JvmSynthetic // so Java user won't see it
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
+    @Deprecated("prohibit illegal overrides", level = DeprecationLevel.HIDDEN)
     final override val DoNotImplementThisClassButExtendAbstractEvent: Nothing
         get() = throw Error("Shouldn't be reached")
 

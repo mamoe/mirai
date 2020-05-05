@@ -87,6 +87,10 @@ internal class FriendImpl(
     @JvmSynthetic
     @OptIn(MiraiInternalAPI::class, ExperimentalStdlibApi::class, ExperimentalTime::class)
     override suspend fun uploadImage(image: ExternalImage): Image = try {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
+            image.input.init(bot.configuration.fileCacheStrategy)
+        }
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -96,14 +100,15 @@ internal class FriendImpl(
                     srcUin = bot.id.toInt(),
                     dstUin = id.toInt(),
                     fileId = 0,
-                    fileMd5 = image.md5,
-                    fileSize = image.inputSize.toInt(),
-                    fileName = image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
+                    fileMd5 = @Suppress("INVISIBLE_MEMBER") image.md5,
+                    fileSize = @Suppress("INVISIBLE_MEMBER")
+                    image.input.size.toInt(),
+                    fileName = @Suppress("INVISIBLE_MEMBER") image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
                     imgOriginal = 1
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
 
-            @Suppress("UNCHECKED_CAST", "DEPRECATION") // bug
+            @Suppress("UNCHECKED_CAST", "DEPRECATION", "INVISIBLE_MEMBER")
             return when (response) {
                 is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId)
                     .also {
@@ -111,7 +116,7 @@ internal class FriendImpl(
                     }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     bot.network.logger.verbose {
-                        "[Http] Uploading friend image, size=${image.inputSize.sizeToString()}"
+                        "[Http] Uploading friend image, size=${image.input.size.sizeToString()}"
                     }
 
                     val time = measureTime {
@@ -120,13 +125,12 @@ internal class FriendImpl(
                             bot.id,
                             null,
                             imageInput = image.input,
-                            inputSize = image.inputSize,
                             uKeyHex = response.uKey.toUHexString("")
                         )
                     }
 
                     bot.network.logger.verbose {
-                        "[Http] Uploading friend image: succeed at ${(image.inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+                        "[Http] Uploading friend image: succeed at ${(image.input.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
                     }
 
                     /*
@@ -151,6 +155,7 @@ internal class FriendImpl(
             }
         }
     } finally {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         (image.input as? Closeable)?.close()
     }
 }

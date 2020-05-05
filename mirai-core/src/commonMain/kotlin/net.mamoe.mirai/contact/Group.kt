@@ -47,7 +47,6 @@ abstract class Group : Contact(), CoroutineScope {
     /**
      * 群设置
      */
-    @SinceMirai("0.30.0")
     abstract val settings: GroupSettings
 
     /**
@@ -80,7 +79,6 @@ abstract class Group : Contact(), CoroutineScope {
      * 机器人在这个群里的权限
      *
      * @see Group.checkBotPermission 检查 [Bot] 在这个群里的权限
-     * @see Group.checkBotPermissionOperator 要求 [Bot] 在这个群里的权限为 [管理员或群主][MemberPermission.isOperator]
      *
      * @see BotGroupPermissionChangeEvent 机器人群员修改
      */
@@ -123,7 +121,6 @@ abstract class Group : Contact(), CoroutineScope {
      * @return 退出成功时 true; 已经退出时 false
      */
     @JvmSynthetic
-    @SinceMirai("0.37.0")
     abstract suspend fun quit(): Boolean
 
     /**
@@ -197,7 +194,6 @@ abstract class Group : Contact(), CoroutineScope {
     @Suppress("FunctionName")
     @JvmName("quit")
     @JavaFriendlyAPI
-    @SinceMirai("0.39.4")
     fun __quitBlockingForJava__(): Boolean = runBlocking { quit() }
 }
 
@@ -206,7 +202,6 @@ abstract class Group : Contact(), CoroutineScope {
  *
  * @see Group.settings 获取群设置
  */
-@SinceMirai("0.30.0")
 interface GroupSettings {
     /**
      * 入群公告, 没有时为空字符串.

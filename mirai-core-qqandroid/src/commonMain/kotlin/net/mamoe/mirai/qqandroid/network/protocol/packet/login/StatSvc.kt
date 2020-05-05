@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.serialization.protobuf.ProtoBuf
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -88,8 +89,6 @@ internal class StatSvc {
             override fun toString(): String = "Response(StatSvc.register)"
         }
 
-        private const val subAppId = 537062845L
-
         @OptIn(MiraiInternalAPI::class)
         operator fun invoke(
             client: QQAndroidClient,
@@ -101,7 +100,7 @@ internal class StatSvc {
             key = client.wLoginSigInfo.d2Key
         ) { sequenceId ->
             writeSsoPacket(
-                client, subAppId = subAppId, commandName = commandName,
+                client, subAppId = client.subAppId, commandName = commandName,
                 extraData = client.wLoginSigInfo.tgt.toReadPacket(), sequenceId = sequenceId
             ) {
                 writeJceStruct(
@@ -153,7 +152,7 @@ internal class StatSvc {
                                 var44.strVendorName = ROMUtil.getRomName();
                                 var44.strVendorOSName = ROMUtil.getRomVersion(20);
                                 */
-                                bytes_0x769_reqbody = ProtoBufWithNullableSupport.dump(
+                                bytes_0x769_reqbody = ProtoBuf.dump(
                                     Oidb0x769.RequestBody.serializer(), Oidb0x769.RequestBody(
                                         rpt_config_list = listOf(
                                             Oidb0x769.ConfigSeq(

@@ -7,12 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.data
+package net.mamoe.mirai.utils.internal
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+internal expect fun ByteArray.asReusableInput(): ReusableInput
 
-/**
- * 给好友设置的备注
- */
-@MiraiExperimentalAPI
-inline class FriendNameRemark(val value: String)
+internal fun asReusableInput0(input: ByteArray): ReusableInput = input.asReusableInput()

@@ -38,11 +38,11 @@ internal inline fun InputStream.readInSequence(block: (ByteArray, len: Int) -> U
 /**
  * 缓存 [ByteArray] 实例的 [ObjectPool]
  */
-internal object ByteArrayPool : DefaultPool<ByteArray>(32) {
+internal object ByteArrayPool : DefaultPool<ByteArray>(256) {
     /**
      * 每一个 [ByteArray] 的大小
      */
-    const val BUFFER_SIZE: Int = 8192
+    const val BUFFER_SIZE: Int = 8192 * 8
 
     override fun produceInstance(): ByteArray = ByteArray(BUFFER_SIZE)
 

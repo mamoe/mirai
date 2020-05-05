@@ -24,6 +24,8 @@ object Versions {
         const val dokka = "0.10.1"
     }
 
+    const val jcekt = "1.0.0"
+
     object Android {
         const val androidGradlePlugin = "3.5.3"
     }

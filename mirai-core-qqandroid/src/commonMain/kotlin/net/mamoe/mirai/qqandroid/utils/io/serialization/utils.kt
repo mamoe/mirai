@@ -16,15 +16,14 @@ import kotlinx.io.core.*
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
+import moe.him188.jcekt.Jce
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
-import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.Jce
 import net.mamoe.mirai.qqandroid.utils.read
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -34,25 +33,21 @@ internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
 ): T = this.read { readUniPacket(deserializer, name) }
 
 internal fun <T : JceStruct> ByteArray.loadAs(
-    deserializer: DeserializationStrategy<T>,
-    c: JceCharset = JceCharset.UTF8
-): T = this.read { Jce.byCharSet(c).load(deserializer, this) }
+    deserializer: DeserializationStrategy<T>
+): T = this.read { Jce.UTF_8.load(deserializer, this) }
 
 internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     serializer: SerializationStrategy<T>,
-    struct: T,
-    charset: JceCharset = JceCharset.UTF8
+    struct: T
 ) {
-    Jce.byCharSet(charset).dumpTo(serializer, struct, this)
+    Jce.UTF_8.dumpTo(serializer, struct, this)
 }
 
 internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
     serializer: DeserializationStrategy<T>,
-    charset: JceCharset = JceCharset.UTF8,
     length: Int = this.remaining.toInt()
 ): T {
-    @OptIn(MiraiInternalAPI::class)
-    return Jce.byCharSet(charset).load(serializer, this.readPacketExact(length))
+    return Jce.UTF_8.load(serializer, this.readPacketExact(length))
 }
 
 /**
@@ -103,9 +98,8 @@ private fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String
 }
 
 internal fun <T : JceStruct> T.toByteArray(
-    serializer: SerializationStrategy<T>,
-    c: JceCharset = JceCharset.UTF8
-): ByteArray = Jce.byCharSet(c).dump(serializer, this)
+    serializer: SerializationStrategy<T>
+): ByteArray = Jce.UTF_8.dump(serializer, this)
 
 internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
     this.writeFully(v.toByteArray(serializer))
@@ -140,19 +134,12 @@ internal fun <T : JceStruct> jceRequestSBuffer(
     name: String,
     serializer: SerializationStrategy<T>,
     jceStruct: T
-): ByteArray = jceRequestSBuffer(name, serializer, jceStruct, JceCharset.UTF8)
-
-internal fun <T : JceStruct> jceRequestSBuffer(
-    name: String,
-    serializer: SerializationStrategy<T>,
-    jceStruct: T,
-    charset: JceCharset
 ): ByteArray {
     return RequestDataVersion3(
         mapOf(
             name to JCE_STRUCT_HEAD_OF_TAG_0 + jceStruct.toByteArray(serializer) + JCE_STRUCT_TAIL_OF_TAG_0
         )
-    ).toByteArray(RequestDataVersion3.serializer(), charset)
+    ).toByteArray(RequestDataVersion3.serializer())
 }
 
 private val JCE_STRUCT_HEAD_OF_TAG_0 = byteArrayOf(0x0A)

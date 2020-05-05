@@ -70,6 +70,7 @@ internal class ConfigPushSvc {
 
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqResponse? {
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             ByteArrayPool.useInstance(this.remaining.toInt()) { buffer ->
                 val length = this.readAvailable(buffer)
 

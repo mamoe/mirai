@@ -14,6 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message.Key
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -25,8 +26,6 @@ import kotlin.jvm.JvmSynthetic
 
 /**
  * 可发送的或从服务器接收的消息.
- *
- * 采用这样的消息模式是因为 QQ 的消息多元化, 一条消息中可包含 [纯文本][PlainText], [图片][Image] 等.
  *
  * [消息][Message] 分为
  * - [SingleMessage]:
@@ -63,13 +62,18 @@ import kotlin.jvm.JvmSynthetic
  *
  * 即, `appendable.append(message)` 相当于 `appendable.append(message.toString())`
  *
+ * #### 发送消息
+ * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
+ * - 通过 [Message] 的扩展函数: [Message.sendTo]
+ * - 在 [MessageEvent] 中使用 [MessageEvent.reply] 等捷径
+ *
  * @see PlainText 纯文本
  * @see Image 图片
  * @see Face 原生表情
  * @see At 一个群成员的引用
  * @see AtAll 全体成员的引用
  * @see QuoteReply 一条消息的引用
- * @see RichMessage 富文本消息, 如 [Xml][XmlMessage], [小程序][LightApp], [Json][JsonMessage]
+ * @see RichMessage 富文本消息, 如 [XML 和 JSON][ServiceMessage], [小程序][LightApp]
  * @see HummerMessage 一些特殊的消息, 如 [闪照][FlashImage], [戳一戳][PokeMessage]
  * @see CustomMessage 自定义消息类型
  *
@@ -95,7 +99,6 @@ interface Message { // must be interface. Don't consider any changes.
         /**
          * 此 [Key] 指代的 [Message] 类型名. 一般为 `class.simpleName`, 如 "QuoteReply", "PlainText"
          */
-        @SinceMirai("0.34.0")
         val typeName: String
     }
 
@@ -118,7 +121,6 @@ interface Message { // must be interface. Don't consider any changes.
      *
      * @see plus `+` 操作符重载
      */
-    @SinceMirai("0.34.0")
     @JvmSynthetic // in java they should use `plus` instead
     fun followedBy(tail: Message): MessageChain = followedByImpl(tail)
 
@@ -151,7 +153,6 @@ interface Message { // must be interface. Don't consider any changes.
      *
      * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
      */
-    @SinceMirai("0.34.0")
     fun contentToString(): String
 
 
@@ -164,7 +165,6 @@ interface Message { // must be interface. Don't consider any changes.
      *
      * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
-    @SinceMirai("0.38.0")
     fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean = contentEqualsImpl(another, ignoreCase)
 
     /**
@@ -176,7 +176,6 @@ interface Message { // must be interface. Don't consider any changes.
      *
      * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
-    @SinceMirai("0.38.0")
     fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
         if (!this.contentToString().equals(another, ignoreCase = ignoreCase)) return false
         return when (this) {
@@ -195,77 +194,13 @@ interface Message { // must be interface. Don't consider any changes.
 
     // `+ ""` will be resolved to `plus(String)` instead of `plus(CharSeq)`
     operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
-
-    //////////////////////////////////////
-    // FOR BINARY COMPATIBILITY UNTIL 1.0.0
-    //////////////////////////////////////
-
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
-
-    /**
-     * 将 [contentToString] 与 [other] 比较
-     */
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    infix fun eq(other: String): Boolean = this.contentToString() == other
-
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    operator fun contains(sub: String): Boolean = false
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("followedBy")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun followedBy1(tail: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(tail)
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("plus")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun plus1(another: Message): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("plus")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun plus1(another: SingleMessage): CombinedMessage = this.followedByInternalForBinaryCompatibility(another)
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("plus")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun plus1(another: String): CombinedMessage = this.followedByInternalForBinaryCompatibility(another.toMessage())
-
-    @PlannedRemoval("1.0.0")
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @JvmName("plus")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    fun plus1(another: CharSequence): CombinedMessage =
-        this.followedByInternalForBinaryCompatibility(another.toString().toMessage())
 }
+
+
+/**
+ * [Message.contentToString] 的捷径
+ */
+inline val Message.content: String get() = contentToString()
 
 
 /**
@@ -277,15 +212,12 @@ interface Message { // must be interface. Don't consider any changes.
  * - [PlainText] 长度为 0
  * - [MessageChain] 所有元素都满足 [isContentEmpty]
  */
-@SinceMirai("0.39.3")
 fun Message.isContentEmpty(): Boolean = when (this) {
     is MessageMetadata -> true
     is PlainText -> this.content.isEmpty()
     is MessageChain -> this.all { it.isContentEmpty() }
     else -> false
 }
-
-@SinceMirai("0.39.3")
 inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
 
 inline fun Message.isPlain(): Boolean = this is PlainText
@@ -314,47 +246,19 @@ inline operator fun Message.times(count: Int): MessageChain = this.repeat(count)
 
 @Suppress("OverridingDeprecatedMember")
 interface SingleMessage : Message {
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    /* final */ override operator fun contains(sub: String): Boolean = sub in this.contentToString()
-
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    /* final */ override infix fun eq(other: Message): Boolean = this.contentToString() == other.contentToString()
-
-    @PlannedRemoval("1.0.0")
-    @JvmSynthetic
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        ReplaceWith("this.contentToString() == other"),
-        DeprecationLevel.ERROR
-    )
-    /* final */ override infix fun eq(other: String): Boolean = this.contentToString() == other
-
-
-    @PlannedRemoval("1.1.0")
+    @PlannedRemoval("1.2.0")
     @JvmSynthetic
     @SinceMirai("1.0.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     fun length(): Int = this.toString().length
 
-    @PlannedRemoval("1.1.0")
+    @PlannedRemoval("1.2.0")
     @JvmSynthetic
     @SinceMirai("1.0.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     fun charAt(index: Int): Char = this.toString()[index]
 
-    @PlannedRemoval("1.1.0")
+    @PlannedRemoval("1.2.0")
     @JvmSynthetic
     @SinceMirai("1.0.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -379,7 +283,6 @@ interface MessageMetadata : SingleMessage
  *
  * 实现此接口的元素将会在连接时自动处理替换.
  */
-@SinceMirai("0.34.0")
 interface ConstrainSingle<out M : Message> : MessageMetadata {
     val key: Key<M>
 }

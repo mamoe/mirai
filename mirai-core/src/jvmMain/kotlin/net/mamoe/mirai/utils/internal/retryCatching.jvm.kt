@@ -2,7 +2,6 @@ package net.mamoe.mirai.utils.internal
 
 private var isAddSuppressedSupported: Boolean = true
 
-@PublishedApi
 internal actual fun Throwable.addSuppressedMirai(e: Throwable) {
     if (this == e) {
         return

@@ -2,7 +2,6 @@ package net.mamoe.mirai
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.recall
-import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
@@ -117,23 +116,6 @@ actual abstract class BotJavaFriendlyAPI actual constructor() {
     @JvmName("join")
     fun __joinBlockingForJava__() {
         runBlocking { join() }
-    }
-
-    /**
-     * 添加一个好友
-     *
-     * @param message 若需要验证请求时的验证消息.
-     * @param remark 好友备注
-     */
-    @OptIn(MiraiExperimentalAPI::class)
-    @JvmName("addFriend")
-    fun __addFriendBlockingForJava__(
-        id: Long,
-        message: String? = null,
-        remark: String? = null
-    ): AddFriendResult {
-        @OptIn(MiraiExperimentalAPI::class)
-        return runBlocking { addFriend(id, message, remark) }
     }
 
     /**

@@ -197,6 +197,7 @@ internal object KnownPacketFactories {
 
             readString(readInt() - 4)// uinAccount
 
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             ByteArrayPool.useInstance(this.remaining.toInt()) { data ->
                 val size = this.readAvailable(data)
 
@@ -219,6 +220,7 @@ internal object KnownPacketFactories {
                     it as IncomingPacket<T>
 
                     if (it.packetFactory is IncomingPacketFactory<T> && it.packetFactory.canBeCached && bot.network.pendingEnabled) {
+                        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                         bot.network.pendingIncomingPackets?.addLast(it.also {
                             it.consumer = consumer
                             it.flag2 = flag2
@@ -384,6 +386,7 @@ internal object KnownPacketFactories {
             }
             0 -> {
                 val data = if (bot.client.loginState == 0) {
+                    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
                     ByteArrayPool.useInstance(this.remaining.toInt()) { byteArrayBuffer ->
                         val size = (this.remaining - 1).toInt()
                         this.readFully(byteArrayBuffer, 0, size)

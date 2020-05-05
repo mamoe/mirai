@@ -109,7 +109,8 @@ internal class GroupImpl(
     override var name: String
         get() = _name
         set(newValue) {
-            checkBotPermissionOperator()
+
+            checkBotPermission(MemberPermission.ADMINISTRATOR)
             if (_name != newValue) {
                 val oldValue = _name
                 _name = newValue
@@ -131,7 +132,7 @@ internal class GroupImpl(
         override var entranceAnnouncement: String
             get() = _announcement
             set(newValue) {
-                checkBotPermissionOperator()
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
                 if (_announcement != newValue) {
                     val oldValue = _announcement
                     _announcement = newValue
@@ -152,7 +153,7 @@ internal class GroupImpl(
         override var isAllowMemberInvite: Boolean
             get() = _allowMemberInvite
             set(newValue) {
-                checkBotPermissionOperator()
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
                 if (_allowMemberInvite != newValue) {
                     val oldValue = _allowMemberInvite
                     _allowMemberInvite = newValue
@@ -186,7 +187,8 @@ internal class GroupImpl(
         override var isConfessTalkEnabled: Boolean
             get() = _confessTalk
             set(newValue) {
-                checkBotPermissionOperator()
+
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
                 if (_confessTalk != newValue) {
                     val oldValue = _confessTalk
                     _confessTalk = newValue
@@ -207,7 +209,8 @@ internal class GroupImpl(
         override var isMuteAll: Boolean
             get() = _muteAll
             set(newValue) {
-                checkBotPermissionOperator()
+
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
                 if (_muteAll != newValue) {
                     val oldValue = _muteAll
                     _muteAll = newValue
@@ -403,6 +406,10 @@ internal class GroupImpl(
     @OptIn(ExperimentalTime::class)
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
+            image.input.init(bot.configuration.fileCacheStrategy)
+        }
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -412,7 +419,7 @@ internal class GroupImpl(
                 uin = bot.id,
                 groupCode = id,
                 md5 = image.md5,
-                size = image.inputSize
+                size = image.input.size.toInt()
             ).sendAndExpect()
 
             @Suppress("UNCHECKED_CAST") // bug
@@ -432,7 +439,7 @@ internal class GroupImpl(
                         bot,
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
-                        image,
+                        image.input,
                         kind = "group image",
                         commandId = 2
                     )

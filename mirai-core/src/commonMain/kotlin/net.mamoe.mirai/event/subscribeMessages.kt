@@ -17,18 +17,17 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.message.ContactMessage
-import net.mamoe.mirai.message.FriendMessage
-import net.mamoe.mirai.message.GroupMessage
-import net.mamoe.mirai.message.TempMessage
-import net.mamoe.mirai.utils.SinceMirai
+import net.mamoe.mirai.message.FriendMessageEvent
+import net.mamoe.mirai.message.GroupMessageEvent
+import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.message.TempMessageEvent
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<ContactMessage, Listener<ContactMessage>, Unit, Unit>
+typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessageEvent, Listener<MessageEvent>, Unit, Unit>
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
@@ -47,7 +46,7 @@ fun <R> CoroutineScope.subscribeMessages(
     }
 
     return MessagePacketSubscribersBuilder(Unit)
-    { filter, messageListener: MessageListener<ContactMessage, Unit> ->
+    { filter, messageListener: MessageListener<MessageEvent, Unit> ->
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
         // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
         subscribeAlways(coroutineContext, concurrencyKind) {
@@ -59,7 +58,7 @@ fun <R> CoroutineScope.subscribeMessages(
     }.run(listeners)
 }
 
-typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessage, Listener<GroupMessage>, Unit, Unit>
+typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessageEvent, Listener<GroupMessageEvent>, Unit, Unit>
 
 /**
  * 订阅来自所有 [Bot] 的所有群消息事件
@@ -84,7 +83,7 @@ fun <R> CoroutineScope.subscribeGroupMessages(
     }.run(listeners)
 }
 
-typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<FriendMessage, Listener<FriendMessage>, Unit, Unit>
+typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<FriendMessageEvent, Listener<FriendMessageEvent>, Unit, Unit>
 
 /**
  * 订阅来自所有 [Bot] 的所有好友消息事件
@@ -109,7 +108,7 @@ fun <R> CoroutineScope.subscribeFriendMessages(
     }.run(listeners)
 }
 
-typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessage, Listener<TempMessage>, Unit, Unit>
+typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessageEvent, Listener<TempMessageEvent>, Unit, Unit>
 
 /**
  * 订阅来自所有 [Bot] 的所有临时会话消息事件
@@ -211,7 +210,6 @@ fun <R> Bot.subscribeFriendMessages(
  *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
-@SinceMirai("0.35.0")
 @OptIn(ExperimentalContracts::class)
 fun <R> Bot.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

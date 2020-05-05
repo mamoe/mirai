@@ -358,10 +358,10 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
 ="" a_actionData="" url=""/></msg>
                      */
                     /**
-                     * [JsonMessage]
+                     * json?
                      */
                     1 -> @Suppress("DEPRECATION_ERROR")
-                    list.add(JsonMessage(content))
+                    list.add(ServiceMessage(1, content))
                     /**
                      * [LongMessage], [ForwardMessage]
                      */
@@ -381,7 +381,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                     else -> {
                         if (element.richMsg.serviceId == 60 || content.startsWith("<?")) {
                             @Suppress("DEPRECATION_ERROR") // bin comp
-                            list.add(XmlMessage(element.richMsg.serviceId, content))
+                            list.add(ServiceMessage(element.richMsg.serviceId, content))
                         } else list.add(ServiceMessage(element.richMsg.serviceId, content))
                     }
                 }
