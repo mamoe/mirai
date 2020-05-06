@@ -62,8 +62,9 @@ import kotlin.jvm.JvmSynthetic
 suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
-) = whileSelectMessagesImpl(timeoutMillis, filterContext, selectBuilder)
+) = whileSelectMessagesImpl(timeoutMillis, filterContext, priority, selectBuilder)
 
 /**
  * [selectMessages] 的 [Unit] 返回值捷径 (由于 Kotlin 无法推断 [Unit] 类型)
@@ -74,8 +75,9 @@ suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
 suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, Unit>.() -> Unit
-) = selectMessagesImpl(timeoutMillis, true, filterContext, selectBuilder)
+) = selectMessagesImpl(timeoutMillis, true, filterContext, priority, selectBuilder)
 
 
 /**
@@ -103,10 +105,14 @@ suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
 suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     // @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, R>.() -> Unit
 ): R =
-    selectMessagesImpl(timeoutMillis, false, filterContext) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
+    selectMessagesImpl(timeoutMillis,
+        false,
+        filterContext,
+        priority) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
 
 /**
  * [selectMessages] 时的 DSL 构建器.
@@ -434,14 +440,9 @@ inline class MessageSelectionTimeoutChecker internal constructor(val timeoutMill
 class MessageSelectionTimeoutException : RuntimeException()
 
 
-
-
-
 /////////////////////////
 //// implementations ////
 /////////////////////////
-
-
 
 
 @JvmSynthetic
@@ -478,6 +479,7 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
     timeoutMillis: Long = -1,
     isUnit: Boolean,
     filterContext: Boolean = true,
+    priority: Listener.EventPriority,
     @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, R>.() -> Unit
 ): R = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
@@ -526,7 +528,10 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
 
     // we don't have any way to reduce duplication yet,
     // until local functions are supported in inline functions
-    @Suppress("DuplicatedCode") val subscribeAlways = subscribeAlways<T> { event ->
+    @Suppress("DuplicatedCode") val subscribeAlways = subscribeAlways<T>(
+        concurrency = Listener.ConcurrencyKind.LOCKED,
+        priority = priority
+    ) { event ->
         if (filterContext && !this.isContextIdenticalWith(this@selectMessagesImpl))
             return@subscribeAlways
 
@@ -574,8 +579,9 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
 @Suppress("unused")
 @PublishedApi
 internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl(
-    timeoutMillis: Long = -1,
-    filterContext: Boolean = true,
+    timeoutMillis: Long,
+    filterContext: Boolean,
+    priority: Listener.EventPriority,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
 ) = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
     var deferred: CompletableDeferred<Boolean>? = CompletableDeferred()
@@ -604,7 +610,10 @@ internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl
     }.apply(selectBuilder)
 
     // ensure atomic completing
-    val subscribeAlways = subscribeAlways<T>(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
+    val subscribeAlways = subscribeAlways<T>(
+        concurrency = Listener.ConcurrencyKind.LOCKED,
+        priority = priority
+    ) { event ->
         if (filterContext && !this.isContextIdenticalWith(this@whileSelectMessagesImpl))
             return@subscribeAlways
 
