@@ -21,6 +21,7 @@ import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.TempMessageEvent
+import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -38,6 +39,7 @@ typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessageEve
 fun <R> CoroutineScope.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     listeners: MessagePacketSubscribersBuilder.() -> R
 ): R {
     // contract 可帮助 IDE 进行类型推断. 无实际代码作用.
@@ -49,7 +51,7 @@ fun <R> CoroutineScope.subscribeMessages(
     { filter, messageListener: MessageListener<MessageEvent, Unit> ->
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
         // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
-        subscribeAlways(coroutineContext, concurrencyKind) {
+        subscribeAlways(coroutineContext, concurrencyKind, priority) {
             // this.message.contentToString() 即为 messageListener 中 it 接收到的值
             val toString = this.message.contentToString()
             if (filter.invoke(this, toString))
@@ -69,13 +71,14 @@ typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessag
 fun <R> CoroutineScope.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     listeners: GroupMessageSubscribersBuilder.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return GroupMessageSubscribersBuilder(Unit) { filter, listener ->
-        subscribeAlways(coroutineContext, concurrencyKind) {
+        subscribeAlways(coroutineContext, concurrencyKind, priority) {
             val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
@@ -94,13 +97,14 @@ typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<FriendMess
 fun <R> CoroutineScope.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     listeners: FriendMessageSubscribersBuilder.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return FriendMessageSubscribersBuilder(Unit) { filter, listener ->
-        subscribeAlways(coroutineContext, concurrencyKind) {
+        subscribeAlways(coroutineContext, concurrencyKind, priority) {
             val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
@@ -119,13 +123,14 @@ typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessageE
 fun <R> CoroutineScope.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     listeners: TempMessageSubscribersBuilder.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return TempMessageSubscribersBuilder(Unit) { filter, listener ->
-        subscribeAlways(coroutineContext, concurrencyKind) {
+        subscribeAlways(coroutineContext, concurrencyKind, priority) {
             val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
@@ -142,13 +147,14 @@ fun <R> CoroutineScope.subscribeTempMessages(
 fun <R> Bot.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     listeners: MessagePacketSubscribersBuilder.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return MessagePacketSubscribersBuilder(Unit) { filter, listener ->
-        this.subscribeAlways(coroutineContext, concurrencyKind) {
+        this.subscribeAlways(coroutineContext, concurrencyKind, priority) {
             val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
@@ -167,13 +173,14 @@ fun <R> Bot.subscribeMessages(
 fun <R> Bot.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     listeners: GroupMessageSubscribersBuilder.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return GroupMessageSubscribersBuilder(Unit) { filter, listener ->
-        this.subscribeAlways(coroutineContext, concurrencyKind) {
+        this.subscribeAlways(coroutineContext, concurrencyKind, priority) {
             val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
@@ -190,13 +197,14 @@ fun <R> Bot.subscribeGroupMessages(
 fun <R> Bot.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     listeners: FriendMessageSubscribersBuilder.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return FriendMessageSubscribersBuilder(Unit) { filter, listener ->
-        this.subscribeAlways(coroutineContext, concurrencyKind) {
+        this.subscribeAlways(coroutineContext, concurrencyKind, priority) {
             val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
@@ -214,13 +222,14 @@ fun <R> Bot.subscribeFriendMessages(
 fun <R> Bot.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     listeners: TempMessageSubscribersBuilder.() -> R
 ): R {
     contract {
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
     return TempMessageSubscribersBuilder(Unit) { filter, listener ->
-        this.subscribeAlways(coroutineContext, concurrencyKind) {
+        this.subscribeAlways(coroutineContext, concurrencyKind, priority) {
             val toString = this.message.contentToString()
             if (filter(this, toString))
                 listener(this, toString)
@@ -243,10 +252,11 @@ fun <R> Bot.subscribeTempMessages(
 inline fun <reified E : Event> CoroutineScope.incoming(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
-        val listener = this@incoming.subscribeAlways<E>(coroutineContext, concurrencyKind) {
+        val listener = this@incoming.subscribeAlways<E>(coroutineContext, concurrencyKind, priority) {
             send(this)
         }
         this.invokeOnClose {
@@ -271,10 +281,11 @@ inline fun <reified E : Event> CoroutineScope.incoming(
 inline fun <reified E : BotEvent> Bot.incoming(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
     capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
-        val listener = this@incoming.subscribeAlways<E>(coroutineContext, concurrencyKind) {
+        val listener = this@incoming.subscribeAlways<E>(coroutineContext, concurrencyKind, priority) {
             send(this)
         }
         this.invokeOnClose {
@@ -282,3 +293,68 @@ inline fun <reified E : BotEvent> Bot.incoming(
         }
     }
 }
+
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@PlannedRemoval("1.2.0")
+fun <R> CoroutineScope.subscribeMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: MessagePacketSubscribersBuilder.() -> R
+): R = this.subscribeMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@PlannedRemoval("1.2.0")
+fun <R> CoroutineScope.subscribeGroupMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: GroupMessageSubscribersBuilder.() -> R
+): R = this.subscribeGroupMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@PlannedRemoval("1.2.0")
+fun <R> CoroutineScope.subscribeFriendMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: FriendMessageSubscribersBuilder.() -> R
+): R = this.subscribeFriendMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@PlannedRemoval("1.2.0")
+fun <R> CoroutineScope.subscribeTempMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: TempMessageSubscribersBuilder.() -> R
+): R = this.subscribeTempMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@PlannedRemoval("1.2.0")
+fun <R> Bot.subscribeMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: MessagePacketSubscribersBuilder.() -> R
+): R = this.subscribeMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@PlannedRemoval("1.2.0")
+fun <R> Bot.subscribeGroupMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: GroupMessageSubscribersBuilder.() -> R
+): R = this.subscribeGroupMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@PlannedRemoval("1.2.0")
+fun <R> Bot.subscribeFriendMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: FriendMessageSubscribersBuilder.() -> R
+): R = this.subscribeFriendMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@PlannedRemoval("1.2.0")
+fun <R> Bot.subscribeTempMessages(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    listeners: TempMessageSubscribersBuilder.() -> R
+): R = this.subscribeTempMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
