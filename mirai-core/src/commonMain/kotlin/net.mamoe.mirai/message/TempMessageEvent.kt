@@ -29,7 +29,7 @@ class TempMessageEvent(
 
     override val bot: Bot get() = sender.bot
     override val subject: Member get() = sender
-    inline val group: Group get() = sender.group
+    override val group: Group get() = sender.group
     override val senderName: String get() = sender.nameCardOrNick
     override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
 

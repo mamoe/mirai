@@ -70,16 +70,19 @@ abstract class MessageEvent : @PlannedRemoval("1.2.0") ContactMessage(),
      */
     abstract override val sender: User
 
-    abstract val senderName: String
+    /**
+     * 发送人名称
+     */
+    abstract override val senderName: String
 
     /** 消息内容 */
     abstract override val message: MessageChain
 
     /** 消息发送时间 (由服务器提供) */
-    abstract val time: Int
+    abstract override val time: Int
 
     /** 消息源 */
-    open val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
+    override val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 }
 
 /** 消息事件的扩展函数 */
@@ -165,7 +168,15 @@ internal expect interface MessageEventPlatformExtensions<out TSender : User, out
     replaceWith = ReplaceWith("MessageEvent", "net.mamoe.mirai.message.MessageEvent"),
     level = DeprecationLevel.ERROR
 )
-abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : Packet, BotEvent, AbstractEvent()
+abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : Packet, BotEvent, AbstractEvent() {
+    abstract override val bot: Bot
+    abstract val sender: User
+    abstract val subject: Contact
+    abstract val message: MessageChain
+    abstract val time: Int
+    abstract val source: OnlineMessageSource.Incoming
+    abstract val senderName: String
+}
 
 @PlannedRemoval("1.2.0")
 @Deprecated(
@@ -175,7 +186,15 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
 )
 @Suppress("DEPRECATION_ERROR")
 abstract class MessagePacket : MessagePacketBase<User, Contact>(),
-    BotEvent, MessageEventExtensions<User, Contact>
+    BotEvent, MessageEventExtensions<User, Contact> {
+    abstract override val bot: Bot
+    abstract override val sender: User
+    abstract override val subject: Contact
+    abstract override val message: MessageChain
+    abstract override val time: Int
+    abstract override val source: OnlineMessageSource.Incoming
+    abstract override val senderName: String
+}
 
 @PlannedRemoval("1.2.0")
 @Deprecated(
@@ -185,7 +204,15 @@ abstract class MessagePacket : MessagePacketBase<User, Contact>(),
 )
 @Suppress("DEPRECATION_ERROR")
 abstract class ContactMessage : MessagePacket(),
-    BotEvent, MessageEventExtensions<User, Contact>
+    BotEvent, MessageEventExtensions<User, Contact> {
+    abstract override val bot: Bot
+    abstract override val sender: User
+    abstract override val subject: Contact
+    abstract override val message: MessageChain
+    abstract override val time: Int
+    abstract override val source: OnlineMessageSource.Incoming
+    abstract override val senderName: String
+}
 
 @PlannedRemoval("1.2.0")
 @Deprecated(
@@ -194,7 +221,15 @@ abstract class ContactMessage : MessagePacket(),
     level = DeprecationLevel.ERROR
 )
 @Suppress("DEPRECATION_ERROR")
-abstract class FriendMessage : MessageEvent()
+abstract class FriendMessage : MessageEvent() {
+    abstract override val bot: Bot
+    abstract override val sender: Friend
+    abstract override val subject: Friend
+    abstract override val message: MessageChain
+    abstract override val time: Int
+    abstract override val source: OnlineMessageSource.Incoming.FromFriend
+    abstract override val senderName: String
+}
 
 @PlannedRemoval("1.2.0")
 @Deprecated(
@@ -205,6 +240,13 @@ abstract class FriendMessage : MessageEvent()
 @Suppress("DEPRECATION_ERROR")
 abstract class GroupMessage : MessageEvent() {
     abstract val group: Group
+    abstract override val bot: Bot
+    abstract override val sender: Member
+    abstract override val subject: Group
+    abstract override val message: MessageChain
+    abstract override val time: Int
+    abstract override val source: OnlineMessageSource.Incoming.FromGroup
+    abstract override val senderName: String
 }
 
 @PlannedRemoval("1.2.0")
@@ -213,4 +255,13 @@ abstract class GroupMessage : MessageEvent() {
     replaceWith = ReplaceWith("TempMessageEvent", "net.mamoe.mirai.message.TempMessageEvent"),
     level = DeprecationLevel.ERROR
 )
-abstract class TempMessage : MessageEvent()
+abstract class TempMessage : MessageEvent() {
+    abstract override val bot: Bot
+    abstract override val sender: Member
+    abstract override val subject: Member
+    abstract override val message: MessageChain
+    abstract override val time: Int
+    abstract override val source: OnlineMessageSource.Incoming.FromTemp
+    abstract val group: Group
+    abstract override val senderName: String
+}
