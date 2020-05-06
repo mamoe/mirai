@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("unused", "NOTHING_TO_INLINE")
+@file:Suppress("unused", "NOTHING_TO_INLINE", "WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
 @file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.message.data
@@ -17,6 +17,7 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -51,7 +52,6 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
     @JvmName("first")
     final operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
 
@@ -59,7 +59,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face] 等
      * 仅供 `Java` 使用
      */
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "FunctionName", "INAPPLICABLE_JVM_NAME")
+    @Suppress("FunctionName")
     @JsName("forEachContent")
     @JvmName("forEachContent")
     @JavaFriendlyAPI
@@ -71,7 +71,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      * 遍历每一个消息, 即 [MessageSource] [At], [AtAll], [PlainText], [Image], [QuoteReply] 等
      * 仅供 `Java` 使用
      */
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "FunctionName", "INAPPLICABLE_JVM_NAME")
+    @Suppress("FunctionName")
     @JsName("forEach")
     @JvmName("forEach")
     @JavaFriendlyAPI
@@ -85,7 +85,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
      */
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
+    @PlannedRemoval("1.2.0")
     @JvmName("firstOrNull")
     @Deprecated("use get", ReplaceWith("get(key)"))
     final fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
