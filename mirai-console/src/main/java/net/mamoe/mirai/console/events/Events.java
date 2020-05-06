@@ -22,37 +22,6 @@ import java.util.function.Function;
  * 事件处理
  */
 public final class Events {
-
-    private static void printDeprecated(){
-        System.err.println("Events.subscribe is deprecated, it will be remove soon");
-        System.err.println("Please use PluginBase.getEventListener");
-        System.err.println("Events.subscribe 即将在下个版本移除");
-        System.err.println("请更换为PluginBase.getEventListener");
-        System.err.println("Events.subscribe is deprecated, it will be remove soon");
-        System.err.println("Please use PluginBase.getEventListener");
-        System.err.println("Events.subscribe 即将在下个版本移除");
-        System.err.println("请更换为PluginBase.getEventListener");
-        System.err.println("Events.subscribe is deprecated, it will be remove soon");
-        System.err.println("Please use PluginBase.getEventListener");
-        System.err.println("Events.subscribe 即将在下个版本移除");
-        System.err.println("请更换为PluginBase.getEventListener");
-    }
-
-    @NotNull
-    @Deprecated()
-    public static <E extends Event> Listener<E> subscribe(@NotNull Class<E> eventClass, @NotNull Function<E, ListeningStatus> onEvent) {
-        printDeprecated();
-        return EventsImplKt.subscribeEventForJaptOnly(eventClass, GlobalScope.INSTANCE, onEvent);
-    }
-
-    @NotNull
-    @Deprecated()
-    public static <E extends Event> Listener<E> subscribeAlways(@NotNull Class<E> eventClass, @NotNull Consumer<E> onEvent) {
-        printDeprecated();
-        return EventsImplKt.subscribeEventForJaptOnly(eventClass, GlobalScope.INSTANCE, onEvent);
-    }
-
-
     /**
      * 阻塞地广播一个事件.
      *

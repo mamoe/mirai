@@ -29,7 +29,7 @@ fun Bot.addManagerDeprecated(long: Long) {
 }
 
 @OptIn(ToBeRemoved::class)
-fun Bot.addManager(long: Long): Boolean {
+internal fun Bot.addManager(long: Long): Boolean {
     BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
     BOT_MANAGERS[this.id.toString()] =
         (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply {

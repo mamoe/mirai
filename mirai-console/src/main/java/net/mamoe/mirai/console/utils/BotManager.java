@@ -11,20 +11,20 @@ import java.util.List;
  */
 public class BotManager {
 
-    static List<Long> getManagers(long botAccount) {
+    public static List<Long> getManagers(long botAccount) {
         Bot bot = MiraiConsole.INSTANCE.getBotOrThrow(botAccount);
         return getManagers(bot);
     }
 
-    static List<Long> getManagers(Bot bot){
+    public static List<Long> getManagers(Bot bot){
         return BotHelperKt.getBotManagers(bot);
     }
 
-    static boolean isManager(Bot bot, long target){
+    public static boolean isManager(Bot bot, long target){
         return getManagers(bot).contains(target);
     }
 
-    static boolean isManager(long botAccount, long target){
+    public static boolean isManager(long botAccount, long target){
         return getManagers(botAccount).contains(target);
     }
 }
