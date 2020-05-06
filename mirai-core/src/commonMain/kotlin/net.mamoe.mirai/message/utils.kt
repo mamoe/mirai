@@ -15,6 +15,7 @@ package net.mamoe.mirai.message
 
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.event.syncFromEventOrNull
 import net.mamoe.mirai.message.data.MessageChain
@@ -47,9 +48,10 @@ fun MessageEvent.isContextIdenticalWith(another: MessageEvent): Boolean {
 @JvmSynthetic
 suspend inline fun <reified P : MessageEvent> P.nextMessage(
     timeoutMillis: Long = -1,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain {
-    return syncFromEvent<P, P>(timeoutMillis) {
+    return syncFromEvent<P, P>(timeoutMillis, priority) {
         takeIf { this.isContextIdenticalWith(this@nextMessage) }?.takeIf { filter(it, it) }
     }.message
 }
@@ -68,10 +70,11 @@ suspend inline fun <reified P : MessageEvent> P.nextMessage(
 @JvmSynthetic
 suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(
     timeoutMillis: Long,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): MessageChain? {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
-    return syncFromEventOrNull<P, P>(timeoutMillis) {
+    return syncFromEventOrNull<P, P>(timeoutMillis, priority) {
         takeIf { this.isContextIdenticalWith(this@nextMessageOrNull) }?.takeIf { filter(it, it) }
     }?.message
 }
@@ -83,10 +86,11 @@ suspend inline fun <reified P : MessageEvent> P.nextMessageOrNull(
 inline fun <reified P : MessageEvent> P.nextMessageAsync(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): Deferred<MessageChain> {
     return this.bot.async(coroutineContext) {
-        nextMessage(timeoutMillis, filter)
+        nextMessage(timeoutMillis, priority, filter)
     }
 }
 
@@ -99,11 +103,12 @@ inline fun <reified P : MessageEvent> P.nextMessageAsync(
 inline fun <reified P : MessageEvent> P.nextMessageOrNullAsync(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     noinline filter: suspend P.(P) -> Boolean = { true }
 ): Deferred<MessageChain?> {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
     return this.bot.async(coroutineContext) {
-        nextMessageOrNull(timeoutMillis, filter)
+        nextMessageOrNull(timeoutMillis, priority, filter)
     }
 }
 
