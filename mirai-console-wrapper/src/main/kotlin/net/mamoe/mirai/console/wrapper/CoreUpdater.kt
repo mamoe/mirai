@@ -44,7 +44,6 @@ internal object CoreUpdater {
                     getContent("mirai-core-qqandroid-jvm-$newest.jar")
                 )
             //.addTask("https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/mirai-core-qqandroid/mirai-core-qqandroid-$newest.jar", getContent("mirai-core-qqandroid-jvm-$newest.jar"))
-
         }
     }
 
@@ -54,11 +53,7 @@ internal object CoreUpdater {
      */
     fun getCurrentVersion(): String {
         val file = getProtocolLib() ?: return "0.0.0"
-        val numberVersion = """([0-9])*\.([0-9])*\.([0-9])*""".toRegex().find(file.name)?.value
-        if (numberVersion != null) {
-            return numberVersion + file.name.substringAfter(numberVersion).substringBefore(".jar")
-        }
-        return "0.0.0"
+        return file.name.substringBefore(".jar").substringAfter("mirai-core-qqandroid-jvm-")
     }
 
 

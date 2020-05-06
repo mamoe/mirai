@@ -122,6 +122,7 @@ object WrapperCli : CliktCommand(name = "mirai-warpper") {
             }
 
             WrapperMain.start(ConsoleType.Graphical)
+
         } else {
             WrapperMain.preStartInNonNative(console, update)
         }
@@ -192,22 +193,38 @@ object WrapperMain {
     }
 
     internal fun start(type: ConsoleType) {
+
         val loader = MiraiClassLoader(
             CoreUpdater.getProtocolLib()!!,
             ConsoleUpdater.getFile()!!,
             WrapperMain::class.java.classLoader
         )
 
-        loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
-        loader.loadClass(
-                when (type) {
-                    ConsoleType.Pure -> "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
-                    ConsoleType.Graphical -> "net.mamoe.mirai.console.graphical.MiraiConsoleGraphicalLoader"
-                    else -> return
-                }
-            ).getMethod("load", String::class.java, String::class.java)
-            .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
+        try {
+            loader.loadClass("net.mamoe.mirai.BotFactoryJvm")
+        } catch (e: ClassNotFoundException) {
+            System.err.println("Found mirai-core file broken, re-downloading...")
+            loader.close()
+            CoreUpdater.getProtocolLib()?.delete()
+            WrapperCli.run()
+            return
+        }
 
+        try {
+            loader.loadClass(
+                    when (type) {
+                        ConsoleType.Pure -> "net.mamoe.mirai.console.pure.MiraiConsolePureLoader"
+                        ConsoleType.Graphical -> "net.mamoe.mirai.console.graphical.MiraiConsoleGraphicalLoader"
+                        else -> return
+                    }
+                ).getMethod("load", String::class.java, String::class.java)
+                .invoke(null, CoreUpdater.getCurrentVersion(), ConsoleUpdater.getCurrentVersion())
+        } catch (e: ClassNotFoundException) {
+            System.err.println("Found mirai-console file broken, re-downloading...")
+            loader.close()
+            ConsoleUpdater.getFile()?.delete()
+            WrapperCli.run()
+        }
     }
 }
 

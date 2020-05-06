@@ -46,7 +46,7 @@ internal object ConsoleUpdater {
                 if (file.name.contains("mirai-console")) {
                     when (consoleType) {
                         ConsoleType.Pure -> {
-                            if (!file.name.contains("pure")) {
+                            if (!file.name.contains("graphical")) {
                                 return file
                             }
                         }
@@ -68,7 +68,7 @@ internal object ConsoleUpdater {
     suspend fun versionCheck(type: ConsoleType, strategy: VersionUpdateStrategy) {
         this.consoleType = type
         println("Fetching Newest Console Version of $type")
-        val current = CoreUpdater.getCurrentVersion()
+        val current = getCurrentVersion()
         if (current != "0.0.0" && strategy == VersionUpdateStrategy.KEEP) {
             println("Stay on current version.")
             return
@@ -97,10 +97,7 @@ internal object ConsoleUpdater {
     fun getCurrentVersion(): String {
         val file = getFile()
         if (file != null) {
-            val numberVersion = """([0-9])*\.([0-9])*\.([0-9])*""".toRegex().find(file.name)?.value
-            if (numberVersion != null) {
-                return numberVersion + file.name.substringAfter(numberVersion).substringBefore(".jar")
-            }
+            return file.name.substringAfter(getProjectName() + "-").substringBefore(".jar")
         }
         return "0.0.0"
     }
