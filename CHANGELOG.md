@@ -1,4 +1,70 @@
-# Major version 0
+# Version 1.x
+
+## `1.0-RC`  2020/5/6
+
+### 事件优先级与拦截
+> 特别感谢 @Karlatemp (#279)
+
+- 支持事件拦截: `Event.intercept()`, `Event.isIntercepted`
+
+- 支持事件优先级: `HIGHEST, HIGH, NORMAL, LOW, LOWEST` 和 `MONITOR`  
+事件广播时按监听器的优先级从高到低依次调用, 在任意一个监听器 拦截事件(`Event.intercept()`) 后停止广播, 不调用后续监听器.  
+最后调用 `MONITOR` 级别的监听器.
+
+- 在 `subscribe`, `subscribeAlways`, `nextMessage`, `syncFromEvent`, `subscribeMessages` 等所有事件监听函数中添加 `priority` 参数, 默认使用 `NORMAL` 优先级.  
+兼容 `1.0` 以前的 API 到 `1.2.0`, 旧版本 API 使用 `MONITOR` 级别.
+
+### 图片缓存策略 `FileCacheStrategy`
+- 新增 `FileCacheStrategy`, 可管理上传图片等操作时的缓存行为.
+- 内置内存缓存 (`FileCacheStrategy.MemoryCache`) 与默认使用的临时文件 (`FileCacheStrategy.TempCache`) 缓存, 可选临时文件存放目录
+- 新增 `BotConfiguration.fileCacheStrategy`, 为单个 `Bot` 指定缓存策略
+- 在图片上传 (无论是否成功) 删除临时文件
+- 图片上传失败时支持自动重试
+- 修复部分情况下文件没有关闭的问题 (#302)
+- 因新架构为懒惰处理, 弃用所有 `*.suspendToExternalImage`
+
+### 修正 `ContactMessage` 命名歧义
+(#299)
+
+- 原有 `ContactMessage` 实际上是一个事件, 而其命名与消息 `Message` 易产生迷惑.  
+  弃用 (兼容到 `1.2.0`):
+  - `MessagePacket`
+  - `MessagePacketBase`
+  进行如下更名:
+  - `ContactMessage` -> `MessageEvent`
+  - `FriendMessage` -> `FriendMessageEvent`
+  - `GroupMessage` -> `GroupMessageEvent`
+  - `TempMessage` -> `TempMessageEvent`
+  暂未决定是否提供 `UserMessageEvent` 作为 `TempMessageEvent` 和 `FriendMessageEvent` 的公共父类.
+
+- 优化扩展函数结构, 统一放置在 `MessageEventExtensions`, 以使 `MessageEvent` 结构清晰.
+
+### 支持平板登录方式
+- 可选, 且默认作为平板身份登录, 与手机电脑不冲突.
+- 可通过 `BotConfiguration.protocol` 切换协议.
+
+### 其他
+
+- **`MessageChain.get` 现在返回可空的 `Message`**. 可迁移到 `MessageChain.getOrFail`.
+- 添加 `nextEvent`: 挂起当前协程, 直到监听到事件 `[E]` 的广播, 返回这个事件实例.
+- 删除部分冗长的如 `nextMessageContainingOrNullAsync` 等函数.
+- 添加 `Message.content` 扩展属性作为 `Message.contentToString()` 的捷径
+- 简化图片结构, 弃用 `OnlineFriendImage`, `OnlineGroupImage`, `OfflineGroupImage`, `OfflineFriendImage` 这四个类.
+- 修复关闭验证码窗口后阻塞协程的问题 (#296)
+- 删除全部 `0.x.x` 版本更新时做的兼容
+- 删除全部 `@SinceMirai("0.x.0")`
+- 支持接收群语音消息
+- 优化图片 ID 正则表达式
+- 优化大量 KDoc
+- 优化上传图片和长消息时的日志内容
+- 允许引用回复离线的消息源 (在 `MessageChain.quote` 时消息链中的 `MessageSource` 可以为 `OfflineMessageSource`)
+- 拆分 JCE 序列化到独立的库 (#300)
+- 在重连时增加计时
+- 简化 `MemberPermission` 比较
+- 在消息事件中使用强引用 (#303)
+- 修复邀请机器人进群事件无法解析的问题 (#301)
+
+# Version 0.x
 
 开发版本. 频繁更新, 不保证高稳定性
 
