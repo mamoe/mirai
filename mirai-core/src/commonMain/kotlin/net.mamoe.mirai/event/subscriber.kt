@@ -228,7 +228,7 @@ fun <E : Event> CoroutineScope.subscribe(
  */
 inline fun <reified E : Event> CoroutineScope.subscribeAlways(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     priority: Listener.EventPriority = NORMAL,
     noinline listener: suspend E.(E) -> Unit
 ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority, listener)
@@ -240,7 +240,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeAlways(
 fun <E : Event> CoroutineScope.subscribeAlways(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.LOCKED,
+    concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     priority: Listener.EventPriority = NORMAL,
     listener: suspend E.(E) -> Unit
 ): Listener<E> = eventClass.subscribeInternal(
