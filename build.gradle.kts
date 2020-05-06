@@ -139,17 +139,20 @@ subprojects {
 }
 
 
-fun Project.findLatestFile(): Map.Entry<String, File>? {
+fun Project.findLatestFile(): Map.Entry<String, File> {
     return File(projectDir, "build/libs").walk()
         .filter { it.isFile }
         .onEach { println("all files=$it") }
-        .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*\.jar""")) }
+        .filter { it.name.matches(Regex("""${project.name}-[0-9][0-9]*(\.[0-9]*)*.*\.jar""")) }
         .onEach { println("matched file: ${it.name}") }
         .associateBy { it.nameWithoutExtension.substringAfterLast('-') }
         .onEach { println("versions: $it") }
-        .maxBy {
-            it.key.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
-                acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
+        .maxBy { (version, file) ->
+            version.split('.').let {
+                if (it.size == 2) it + "0"
+                else it
+            }.reversed().foldIndexed(0) { index: Int, acc: Int, s: String ->
+                acc + 100.0.pow(index).toInt() * (s.toIntOrNull() ?: 0)
             }
-        }
+        } ?: error("cannot find any file to upload")
 }
