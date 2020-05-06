@@ -35,7 +35,7 @@ class GroupMessageEvent(
     override val time: Int
 ) : @PlannedRemoval("1.2.0") GroupMessage(), Event {
     init {
-        val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
     }
 

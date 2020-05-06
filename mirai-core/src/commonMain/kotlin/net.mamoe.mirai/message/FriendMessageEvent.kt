@@ -32,7 +32,7 @@ class FriendMessageEvent constructor(
 ) : @PlannedRemoval("1.2.0") FriendMessage(), BroadcastControllable {
     init {
         val source =
-            message.getOrNull(MessageSource) ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
     }
 

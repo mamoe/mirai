@@ -109,17 +109,17 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
      * 发送人.
      *
      * - 当 [OnlineMessageSource.Outgoing] 时为 [机器人][Bot.id]
-     * - 当 [OnlineMessageSource.Incoming] 时为发信 [目标好友][QQ.id] 或 [群][Group.id]
-     * - 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][QQ.id] 或 [群][Group.id] (取决于 [OfflineMessageSource.kind])
+     * - 当 [OnlineMessageSource.Incoming] 时为发信 [目标好友][Friend.id] 或 [群][Group.id]
+     * - 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][Friend.id] 或 [群][Group.id] (取决于 [OfflineMessageSource.kind])
      */
     abstract val fromId: Long
 
     /**
      * 消息发送目标.
      *
-     * - 当 [OnlineMessageSource.Outgoing] 时为发信 [目标好友][QQ.id] 或 [群][Group.id] 或 [临时消息][Member.id]
+     * - 当 [OnlineMessageSource.Outgoing] 时为发信 [目标好友][Friend.id] 或 [群][Group.id] 或 [临时消息][Member.id]
      * - 当 [OnlineMessageSource.Incoming] 时为 [机器人][Bot.id]
-     * - 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][QQ.id] 或 [群][Group.id] 或 [临时消息][Member.id] (取决于 [OfflineMessageSource.kind])
+     * - 当 [OfflineMessageSource] 时为 [机器人][Bot.id], 发信 [目标好友][Friend.id] 或 [群][Group.id] 或 [临时消息][Member.id] (取决于 [OfflineMessageSource.kind])
      */
     abstract val targetId: Long // groupCode / friendUin / memberUin
 
@@ -171,19 +171,19 @@ sealed class OnlineMessageSource : MessageSource() {
     }
 
     /**
-     * 消息发送人. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群员][Member].
-     * 即类型必定为 [Bot], [QQ] 或 [Member]
+     * 消息发送人. 可能为 [机器人][Bot] 或 [好友][Friend] 或 [群员][Member].
+     * 即类型必定为 [Bot], [Friend] 或 [Member]
      */
     abstract val sender: ContactOrBot
 
     /**
-     * 消息发送目标. 可能为 [机器人][Bot] 或 [好友][QQ] 或 [群][Group].
-     * 即类型必定为 [Bot], [QQ] 或 [Group]
+     * 消息发送目标. 可能为 [机器人][Bot] 或 [好友][Friend] 或 [群][Group].
+     * 即类型必定为 [Bot], [Friend] 或 [Group]
      */
     abstract val target: ContactOrBot
 
     /**
-     * 消息主体. 群消息时为 [Group]. 好友消息时为 [QQ], 临时消息为 [Member]
+     * 消息主体. 群消息时为 [Group]. 好友消息时为 [Friend], 临时消息为 [Member]
      * 不论是机器人接收的消息还是发送的消息, 此属性都指向机器人能进行回复的目标.
      */
     abstract val subject: Contact
@@ -436,7 +436,7 @@ inline val MessageChain.bot: Bot
  */
 @get:JvmSynthetic
 inline val MessageChain.source: MessageSource
-    get() = this[MessageSource]
+    get() = this.getOrFail(MessageSource)
 
 /**
  * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.

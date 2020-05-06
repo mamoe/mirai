@@ -136,11 +136,6 @@ interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
     suspend inline fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
 
     @JvmSynthetic
-    inline operator fun <M : Message> get(at: Message.Key<M>): M {
-        return this.message[at]
-    }
-
-    @JvmSynthetic
     inline fun At.isBot(): Boolean = target == bot.id
 
 

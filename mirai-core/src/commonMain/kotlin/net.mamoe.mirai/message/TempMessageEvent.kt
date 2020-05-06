@@ -23,7 +23,7 @@ class TempMessageEvent(
     override val time: Int
 ) : TempMessage(), BroadcastControllable {
     init {
-        val source = message.getOrNull(MessageSource) ?: error("Cannot find MessageSource from message")
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
     }
 

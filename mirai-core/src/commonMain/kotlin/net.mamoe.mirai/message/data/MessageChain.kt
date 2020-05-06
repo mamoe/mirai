@@ -20,6 +20,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KProperty
 
@@ -46,23 +47,13 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     val size: Int
 
     /**
-     * 获取第一个类型为 [key] 的 [Message] 实例
+     * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`
      *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
-     * @throws NoSuchElementException 当找不到这个类型的 [Message] 时
      */
     @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
     @JvmName("first")
-    final operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
-
-    /**
-     * 获取第一个类型为 [key] 的 [Message] 实例, 找不到则返回 `null`
-     *
-     * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
-     */
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
-    @JvmName("firstOrNull")
-    final fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
+    final operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
 
     /**
      * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face] 等
@@ -87,9 +78,32 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     final fun __forEachForJava__(block: (Message) -> Unit) {
         this.forEach(block)
     }
+
+
+    /**
+     * 获取第一个类型为 [key] 的 [Message] 实例, 找不到则返回 `null`
+     *
+     * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
+     */
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
+    @JvmName("firstOrNull")
+    @Deprecated("use get", ReplaceWith("get(key)"))
+    final fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
 }
 
 // region accessors
+
+/**
+ * 获取第一个类型为 [key] 的 [Message] 实例
+ *
+ * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
+ */
+@JvmOverloads
+inline fun <M : Message> MessageChain.getOrFail(
+    key: Message.Key<M>,
+    crossinline lazyMessage: (key: Message.Key<M>) -> String = { key.typeName }
+): M = firstOrNull(key) ?: throw NoSuchElementException(lazyMessage(key))
+
 
 /**
  * 遍历每一个 [消息内容][MessageContent]

@@ -38,10 +38,10 @@ private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
-    val elements = mutableListOf<ImMsgBody.Elem>()
+    val elements = ArrayList<ImMsgBody.Elem>(this.size)
 
     if (this.anyIsInstance<QuoteReply>()) {
-        when (val source = this[QuoteReply].source) {
+        when (val source = this[QuoteReply]!!.source) {
             is MessageSourceInternal -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
             else -> error("unsupported MessageSource implementation: ${source::class.simpleName}. Don't implement your own MessageSource.")
         }
