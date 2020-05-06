@@ -79,15 +79,30 @@ abstract class AbstractEvent : Event {
     private val _cancelled = atomic(false)
 
     // 实现 Event
-    override val isIntercepted: Boolean get() = _intercepted
+    /**
+     * @see Event.isIntercepted
+     */
+    @SinceMirai("1.0.0")
+    override val isIntercepted: Boolean
+        get() = _intercepted
 
+    /**
+     * @see Event.intercept
+     */
     @SinceMirai("1.0.0")
     override fun intercept() {
         _intercepted = true
     }
 
     // 实现 CancellableEvent
+    /**
+     * @see CancellableEvent.isCancelled
+     */
     val isCancelled: Boolean get() = _cancelled.value
+
+    /**
+     * @see CancellableEvent.cancel
+     */
     fun cancel() {
         check(this is CancellableEvent) {
             "Event $this is not cancellable"
