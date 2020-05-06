@@ -37,7 +37,12 @@ fun BufferedImage.toExternalImage(formatName: String = "png"): ExternalImage =
  * @param deleteOnClose 若为 `true`, 图片发送后将会删除这个文件
  */
 @JvmOverloads
-fun File.toExternalImage(deleteOnClose: Boolean = false): ExternalImage = ExternalImage(asReusableInput(deleteOnClose))
+fun File.toExternalImage(deleteOnClose: Boolean = false): ExternalImage {
+    require(this.isFile) { "File must be a file" }
+    require(this.exists()) { "File must exist" }
+    require(this.canRead()) { "File must can be read" }
+    return ExternalImage(asReusableInput(deleteOnClose))
+}
 
 /**
  * 将 [URL] 委托为 [ExternalImage].
