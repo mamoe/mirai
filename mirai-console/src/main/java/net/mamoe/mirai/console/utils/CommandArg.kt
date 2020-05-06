@@ -4,7 +4,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.GroupContactCommandSender
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.QQ
 
 /**
  * this output type of that arg
