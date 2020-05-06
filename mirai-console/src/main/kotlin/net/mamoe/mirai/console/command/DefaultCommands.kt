@@ -20,10 +20,9 @@ import net.mamoe.mirai.console.utils.addManager
 import net.mamoe.mirai.console.utils.checkManager
 import net.mamoe.mirai.console.utils.managers
 import net.mamoe.mirai.console.utils.removeManager
-import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.getFriendOrNull
-import net.mamoe.mirai.message.GroupMessage
+import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.utils.SimpleLogger
 import java.util.*
 
@@ -62,7 +61,7 @@ object DefaultCommands {
             bot.subscribeMessages {
                 startsWith(commandPrefix) { message ->
                     if (bot.checkManager(this.sender.id)) {
-                        val sender = if (this is GroupMessage) {
+                        val sender = if (this is GroupMessageEvent) {
                             GroupContactCommandSender(this.sender, this.subject)
                         } else {
                             ContactCommandSender(this.subject)

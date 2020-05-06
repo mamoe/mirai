@@ -11,11 +11,7 @@
 
 package net.mamoe.mirai.console.wrapper
 
-import io.ktor.client.request.get
-import io.ktor.http.URLProtocol
 import java.io.File
-import kotlin.math.pow
-import kotlin.system.exitProcess
 
 internal object CoreUpdater {
 
@@ -29,13 +25,18 @@ internal object CoreUpdater {
     }
 
 
-    suspend fun versionCheck() {
+    suspend fun versionCheck(strategy: VersionUpdateStrategy) {
         println("Fetching Newest Core Version .. ")
-        val newest = getNewestVersion()
         val current = getCurrentVersion()
-        println("Local Core Version: $current | Newest Core Version: $newest")
+        if (current != "0.0.0" && strategy == VersionUpdateStrategy.KEEP) {
+            println("Stay on current version.")
+            return
+        }
+
+        val newest = getNewestVersion(strategy, "net/mamoe/mirai-core-qqandroid/")
+        println("Local Core Version: $current | Newest $strategy Core Version: $newest")
         if (current != newest) {
-            println("Updating shadowed-core from V$current -> V$newest, this is a force update")
+            println("Updating shadowed-core from V$current -> V$newest")
             this.getProtocolLib()?.delete()
             MiraiDownloader
                 .addTask(
@@ -43,34 +44,6 @@ internal object CoreUpdater {
                     getContent("mirai-core-qqandroid-jvm-$newest.jar")
                 )
             //.addTask("https://raw.githubusercontent.com/mamoe/mirai-repo/master/shadow/mirai-core-qqandroid/mirai-core-qqandroid-$newest.jar", getContent("mirai-core-qqandroid-jvm-$newest.jar"))
-
-        }
-    }
-
-    /**
-     * 判断最新版本
-     * */
-    private suspend fun getNewestVersion(): String {
-        try {
-            return """>([0-9])*\.([0-9])*\.([0-9])*/""".toRegex().findAll(
-                    Http.get<String> {
-                        url {
-                            protocol = URLProtocol.HTTPS
-                            host = "jcenter.bintray.com"
-                            path("net/mamoe/mirai-core-qqandroid/")
-                        }
-                    }).asSequence()
-                .map { it.value.drop(1).dropLast(1) }
-                .maxBy {
-                    it.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
-                        acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
-                    }
-                }!!
-        } catch (e: Exception) {
-            println("Failed to fetch newest Core version, please seek for help")
-            e.printStackTrace()
-            println("Failed to fetch newest Core version, please seek for help")
-            exitProcess(1)
         }
     }
 
@@ -80,11 +53,7 @@ internal object CoreUpdater {
      */
     fun getCurrentVersion(): String {
         val file = getProtocolLib() ?: return "0.0.0"
-        val numberVersion = """([0-9])*\.([0-9])*\.([0-9])*""".toRegex().find(file.name)?.value
-        if (numberVersion != null) {
-            return numberVersion + file.name.substringAfter(numberVersion).substringBefore(".jar")
-        }
-        return "0.0.0"
+        return file.name.substringBefore(".jar").substringAfter("mirai-core-qqandroid-jvm-")
     }
 
 
