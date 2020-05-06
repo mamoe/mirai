@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.sendMessage
 import net.mamoe.mirai.message.data.Message
 
 /**
