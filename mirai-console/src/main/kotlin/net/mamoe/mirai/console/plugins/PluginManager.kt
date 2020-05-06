@@ -29,7 +29,7 @@ import java.util.jar.JarFile
 
 
 object PluginManager {
-    internal val pluginsPath = (System.getProperty("user.dir") + "/plugins/").replace("//", "/").also {
+    internal val pluginsPath = (MiraiConsole.path + "/plugins/").replace("//", "/").also {
         File(it).mkdirs()
     }
 
@@ -371,6 +371,7 @@ object PluginManager {
         }
         return null
     }
+
 
     /**
      * 根据插件名字找Jar中的文件

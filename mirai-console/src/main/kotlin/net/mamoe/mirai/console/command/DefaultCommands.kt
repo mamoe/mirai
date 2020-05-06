@@ -39,7 +39,7 @@ object DefaultCommands {
         try {
             MiraiConsole.frontEnd.prePushBot(account)
             val bot = Bot(account, password) {
-                fileBasedDeviceInfo()
+                fileBasedDeviceInfo(MiraiConsole.path + "/device.json")
                 this.loginSolver = MiraiConsole.frontEnd.createLoginSolver()
                 this.botLoggerSupplier = {
                     SimpleLogger("BOT $account]") { _, message, e ->
