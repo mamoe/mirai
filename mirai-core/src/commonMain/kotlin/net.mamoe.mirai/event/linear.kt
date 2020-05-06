@@ -33,17 +33,18 @@ import kotlin.reflect.KClass
 @JvmSynthetic
 suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     timeoutMillis: Long = -1,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
 
     return if (timeoutMillis == -1L) {
         coroutineScope {
-            syncFromEventImpl<E, R>(E::class, this, mapper)
+            syncFromEventImpl<E, R>(E::class, this, priority, mapper)
         }
     } else {
         withTimeout(timeoutMillis) {
-            syncFromEventImpl<E, R>(E::class, this, mapper)
+            syncFromEventImpl<E, R>(E::class, this, priority, mapper)
         }
     }
 }
@@ -65,12 +66,13 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
 @JvmSynthetic
 suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): R? {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
 
     return withTimeoutOrNull(timeoutMillis) {
-        syncFromEventImpl<E, R>(E::class, this, mapper)
+        syncFromEventImpl<E, R>(E::class, this, priority, mapper)
     }
 }
 
@@ -93,11 +95,12 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): Deferred<R?> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return this.async(coroutineContext) {
-        syncFromEventOrNull(timeoutMillis, mapper)
+        syncFromEventOrNull(timeoutMillis, priority, mapper)
     }
 }
 
@@ -121,11 +124,12 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): Deferred<R> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return this.async(coroutineContext) {
-        syncFromEvent(timeoutMillis, mapper)
+        syncFromEvent(timeoutMillis, priority, mapper)
     }
 }
 
@@ -139,9 +143,10 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 internal suspend inline fun <E : Event, R> syncFromEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
+    priority: Listener.EventPriority,
     crossinline mapper: suspend E.(E) -> R?
 ): R = suspendCancellableCoroutine { cont ->
-    coroutineScope.subscribe(eventClass) {
+    coroutineScope.subscribe(eventClass, priority = priority) {
         try {
             cont.resumeWith(kotlin.runCatching {
                 mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING

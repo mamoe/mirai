@@ -29,11 +29,12 @@ import kotlin.reflect.KClass
  */
 @JvmSynthetic
 suspend inline fun <reified E : Event> nextEvent(
-    timeoutMillis: Long = -1
+    timeoutMillis: Long = -1,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR
 ): E {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return withTimeoutOrCoroutineScope(timeoutMillis) {
-        nextEventImpl(E::class, this)
+        nextEventImpl(E::class, this, priority)
     }
 }
 
@@ -50,11 +51,12 @@ suspend inline fun <reified E : Event> nextEvent(
  */
 @JvmSynthetic
 suspend inline fun <reified E : BotEvent> Bot.nextEvent(
-    timeoutMillis: Long = -1
+    timeoutMillis: Long = -1,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR
 ): E {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return withTimeoutOrCoroutineScope(timeoutMillis) {
-        nextBotEventImpl(this@nextEvent, E::class, this)
+        nextBotEventImpl(this@nextEvent, E::class, this, priority)
     }
 }
 
@@ -63,9 +65,10 @@ suspend inline fun <reified E : BotEvent> Bot.nextEvent(
 @PublishedApi
 internal suspend inline fun <E : Event> nextEventImpl(
     eventClass: KClass<E>,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    priority: Listener.EventPriority
 ): E = suspendCancellableCoroutine { cont ->
-    coroutineScope.subscribe(eventClass) {
+    coroutineScope.subscribe(eventClass, priority = priority) {
         try {
             cont.resume(this)
         } catch (e: Exception) {
@@ -79,9 +82,10 @@ internal suspend inline fun <E : Event> nextEventImpl(
 internal suspend inline fun <E : BotEvent> nextBotEventImpl(
     bot: Bot,
     eventClass: KClass<E>,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    priority: Listener.EventPriority
 ): E = suspendCancellableCoroutine { cont ->
-    coroutineScope.subscribe(eventClass) {
+    coroutineScope.subscribe(eventClass, priority = priority) {
         try {
             if (this.bot == bot) cont.resume(this)
         } catch (e: Exception) {
