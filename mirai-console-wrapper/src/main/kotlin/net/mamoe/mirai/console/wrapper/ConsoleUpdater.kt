@@ -46,7 +46,7 @@ internal object ConsoleUpdater {
                 if (file.name.contains("mirai-console")) {
                     when (consoleType) {
                         ConsoleType.Pure -> {
-                            if (!file.name.contains("graphical")) {
+                            if (!file.name.contains("pure")) {
                                 return file
                             }
                         }
