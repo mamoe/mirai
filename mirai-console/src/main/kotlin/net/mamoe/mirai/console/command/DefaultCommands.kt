@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Bot.Companion.botInstances
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.addManager
 import net.mamoe.mirai.console.utils.checkManager
@@ -319,11 +318,11 @@ object DefaultCommands {
             usage = "/install [plugin-name] to install plugin or /install [page-num] to show list "
             onCommand { args ->
 
-                val center = PluginCenter.Default
+                val center = MiraiConsole.frontEnd.pluginCenter
 
                 suspend fun showPage(num: Int) {
                     sendMessage("正在连接 " + center.name)
-                    val list = PluginCenter.Default.fetchPlugin(num)
+                    val list = center.fetchPlugin(num)
                     if (list.isEmpty()) {
                         sendMessage("页码过大")
                         return

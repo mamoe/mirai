@@ -10,6 +10,8 @@
 package net.mamoe.mirai.console.utils
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.center.CuiPluginCenter
+import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 
@@ -18,6 +20,11 @@ import net.mamoe.mirai.utils.SimpleLogger.LogPriority
  * 需要保证线程安全
  */
 interface MiraiConsoleUI {
+    /**
+     * 提供 [PluginCenter]
+     */
+    val pluginCenter: PluginCenter get() = CuiPluginCenter
+
     /**
      * 让 UI 层展示一条 log
      *
