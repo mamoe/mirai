@@ -287,7 +287,7 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     @MessageDsl
     fun atAll(): ListeningFilter = content { message.firstIsInstanceOrNull<AtAll>() != null }
 
-    /** [消息内容][Message.contentToString]包含 [AtAll] */
+    /** [消息内容][Message.contentToString]包含目标为 [target] 的 [At] */
     @MessageDsl
     fun at(target: Long): ListeningFilter = content { message.firstIsInstanceOrNull<At>()?.target == target }
 
