@@ -150,7 +150,7 @@ internal object HighwayHelper {
         // require(commandId == 2 || commandId == 1) { "bad commandId. Must be 1 or 2" }
 
         val socket = PlatformSocket()
-        while (client.bot.network.isActive) {
+        while (client.bot.network.areYouOk() && client.bot.isActive) {
             try {
                 socket.connect(EmptyCoroutineContext, serverIp, serverPort)
                 break
