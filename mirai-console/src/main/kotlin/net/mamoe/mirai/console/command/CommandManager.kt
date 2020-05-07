@@ -21,8 +21,9 @@ import java.util.concurrent.Executors
 
 interface CommandOwner
 
-class PluginCommandOwner(val pluginBase: PluginBase):CommandOwner
-internal object ConsoleCommandOwner:CommandOwner
+class PluginCommandOwner(val pluginBase: PluginBase) : CommandOwner
+internal object ConsoleCommandOwner : CommandOwner
+
 fun PluginBase.asCommandOwner() = PluginCommandOwner(this)
 
 
@@ -33,11 +34,11 @@ object CommandManager : Job by {
 }() {
     private val registeredCommand: MutableMap<String, Command> = mutableMapOf()
     val commands: Collection<Command> get() = registeredCommand.values
-    private val pluginCommands:MutableMap<PluginBase,MutableCollection<Command>> = mutableMapOf()
+    private val pluginCommands: MutableMap<PluginBase, MutableCollection<Command>> = mutableMapOf()
 
-    internal fun clearPluginsCommands(){
-        pluginCommands.values.forEach {a ->
-            a.forEach{
+    internal fun clearPluginsCommands() {
+        pluginCommands.values.forEach { a ->
+            a.forEach {
                 unregister(it)
             }
         }
@@ -46,7 +47,7 @@ object CommandManager : Job by {
 
     internal fun clearPluginCommands(
         pluginBase: PluginBase
-    ){
+    ) {
         pluginCommands[pluginBase]?.run {
             this.forEach { unregister(it) }
             this.clear()
@@ -68,13 +69,13 @@ object CommandManager : Job by {
         allNames.forEach {
             registeredCommand[it] = command
         }
-        if(commandOwner is PluginCommandOwner){
-            pluginCommands.putIfAbsent(commandOwner.pluginBase, mutableSetOf())
-            pluginCommands[commandOwner.pluginBase]!!.add(command)
+        if (commandOwner is PluginCommandOwner) {
+            pluginCommands.computeIfAbsent(commandOwner.pluginBase) { mutableSetOf() }.add(command)
         }
     }
 
-    fun register(pluginBase:PluginBase, command: Command) = CommandManager.register(pluginBase.asCommandOwner(),command)
+    fun register(pluginBase: PluginBase, command: Command) =
+        CommandManager.register(pluginBase.asCommandOwner(), command)
 
     fun unregister(command: Command) {
         command.alias.forEach {
@@ -172,7 +173,7 @@ object CommandManager : Job by {
 
     internal class FullCommand(
         val sender: CommandSender,
-        val commandStr: String
+        val commandLine: String
     )
 
     private val commandChannel: Channel<FullCommand> = Channel(Channel.UNLIMITED)
@@ -180,13 +181,27 @@ object CommandManager : Job by {
     private tailrec suspend fun processCommandQueue() {
         val command = commandChannel.receive()
         try {
-            processCommand(command.sender, command.commandStr)
+            processCommand(command.sender, command.commandLine)
         } catch (e: UnknownCommandException) {
-            command.sender.sendMessage("未知指令 " + command.commandStr)
+            command.sender.sendMessage("未知指令 " + command.commandLine)
+            (command.sender as? ConsoleCommandSender)?.apply {
+                val cmd = command.commandLine.let {
+                    val index = it.indexOf(' ')
+                    if (index == -1) return@let it
+                    return@let it.substring(0, index)
+                }
+                if (cmd.isNotEmpty()) {
+                    if (cmd[0] == '/') {
+                        registeredCommand[cmd.substring(1)]?.let {
+                            sendMessage("请问你是不是想执行 `${command.commandLine.substring(1)}`")
+                        }
+                    }
+                }
+            }
         } catch (e: Throwable) {//should never happen
             MiraiConsole.logger(e)
         }
-        if(isActive) {
+        if (isActive) {
             processCommandQueue()
         }
     }
