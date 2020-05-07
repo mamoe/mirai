@@ -39,7 +39,7 @@ typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessageEve
 fun <R> CoroutineScope.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     listeners: MessagePacketSubscribersBuilder.() -> R
 ): R {
     // contract 可帮助 IDE 进行类型推断. 无实际代码作用.
@@ -71,7 +71,7 @@ typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessag
 fun <R> CoroutineScope.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     listeners: GroupMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -97,7 +97,7 @@ typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<FriendMess
 fun <R> CoroutineScope.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     listeners: FriendMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -123,7 +123,7 @@ typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessageE
 fun <R> CoroutineScope.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     listeners: TempMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -147,7 +147,7 @@ fun <R> CoroutineScope.subscribeTempMessages(
 fun <R> Bot.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     listeners: MessagePacketSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -173,7 +173,7 @@ fun <R> Bot.subscribeMessages(
 fun <R> Bot.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     listeners: GroupMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -197,7 +197,7 @@ fun <R> Bot.subscribeGroupMessages(
 fun <R> Bot.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     listeners: FriendMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -222,7 +222,7 @@ fun <R> Bot.subscribeFriendMessages(
 fun <R> Bot.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     listeners: TempMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -252,7 +252,7 @@ fun <R> Bot.subscribeTempMessages(
 inline fun <reified E : Event> CoroutineScope.incoming(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
@@ -281,7 +281,7 @@ inline fun <reified E : Event> CoroutineScope.incoming(
 inline fun <reified E : BotEvent> Bot.incoming(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
     capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
