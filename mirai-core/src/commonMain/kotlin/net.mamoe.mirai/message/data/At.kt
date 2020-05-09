@@ -30,7 +30,13 @@ import kotlin.jvm.JvmSynthetic
  */
 data class At
 @Suppress("DataClassPrivateConstructor")
-private constructor(val target: Long, val display: String) :
+private constructor(
+    val target: Long,
+    /**
+     * "@群员名片"
+     */
+    val display: String
+) : // don't change
     MessageContent {
 
     /**
