@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -81,7 +80,9 @@ abstract class AbstractEvent : Event {
 
     @Volatile
     private var _intercepted = false
-    private val _cancelled = atomic(false)
+
+    @Volatile
+    private var _cancelled = false
 
     // 实现 Event
     /**
@@ -103,7 +104,7 @@ abstract class AbstractEvent : Event {
     /**
      * @see CancellableEvent.isCancelled
      */
-    val isCancelled: Boolean get() = _cancelled.value
+    val isCancelled: Boolean get() = _cancelled
 
     /**
      * @see CancellableEvent.cancel
@@ -112,7 +113,7 @@ abstract class AbstractEvent : Event {
         check(this is CancellableEvent) {
             "Event $this is not cancellable"
         }
-        _cancelled.value = true
+        _cancelled = true
     }
 }
 
