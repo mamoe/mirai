@@ -504,8 +504,8 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class SecretFileHead(
-        @ProtoId(1) @JvmField val secretFileMsg: SubMsgType0xc1.MsgBody? = null,
-        @ProtoId(2) @JvmField val secretFileStatus: SubMsgType0x1a.MsgBody? = null
+        @ProtoId(1) @JvmField val secretFileMsg: SubMsgType0xc1.MsgBody? = null
+        //    @ProtoId(2) @JvmField val secretFileStatus: SubMsgType0x1a.MsgBody? = null
     )
 
     @Serializable
@@ -815,6 +815,7 @@ internal class SubMsgType0xc1 {
     ) : ProtoBuf
 }
 
+/*
 @Serializable
 internal class SubMsgType0x1a {
     @Serializable
@@ -830,4 +831,4 @@ internal class SubMsgType0x1a {
         @ProtoId(9) @JvmField val fromUin: Long = 0L,
         @ProtoId(10) @JvmField val toUin: Long = 0L
     ) : ProtoBuf
-}
+}*/

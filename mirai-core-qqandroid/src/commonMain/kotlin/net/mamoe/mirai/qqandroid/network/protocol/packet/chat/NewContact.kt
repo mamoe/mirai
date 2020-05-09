@@ -52,7 +52,7 @@ internal class NewContact {
                             struct.msgSeq,
                             msgAdditional,
                             struct.reqUin,
-                            Group.calculateGroupUinByGroupCode(groupCode),
+                            groupCode,
                             reqUinNick
                         )
                     }
@@ -143,7 +143,7 @@ internal class NewContact {
                                     bot,
                                     struct.msgSeq,
                                     actionUin,
-                                    Group.calculateGroupUinByGroupCode(groupCode),
+                                    groupCode,
                                     groupName,
                                     actionUinNick
                                 )
@@ -155,7 +155,7 @@ internal class NewContact {
                                     struct.msgSeq,
                                     msgAdditional,
                                     struct.reqUin,
-                                    Group.calculateGroupUinByGroupCode(groupCode),
+                                    groupCode,
                                     groupName,
                                     reqUinNick
                                 )
@@ -185,7 +185,7 @@ internal class NewContact {
                                     true -> 11 // accept
                                     false -> 12 // reject
                                 },
-                                groupCode = Group.calculateGroupCodeByGroupUin(event.groupId),
+                                groupCode = event.groupId,
                                 msg = "",
                                 remark = "",
                                 blacklist = blackList

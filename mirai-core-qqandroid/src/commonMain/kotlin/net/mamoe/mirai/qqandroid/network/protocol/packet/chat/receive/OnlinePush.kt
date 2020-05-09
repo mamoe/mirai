@@ -13,6 +13,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.nameCardOrNick
@@ -401,13 +402,15 @@ internal class OnlinePush {
                     when {
                         pkg.authorUin == bot.id && operator.id == bot.id -> null
                         else -> {
-                            MessageRecallEvent.GroupRecall(bot,
+                            MessageRecallEvent.GroupRecall(
+                                bot,
                                 pkg.authorUin,
                                 pkg.seq,
                                 pkg.msgRandom,
                                 pkg.time,
                                 operator,
-                                group)
+                                group
+                            )
                         }
                     }
                 }
@@ -583,6 +586,10 @@ internal class OnlinePush {
                     } ?: emptySequence()
                 }
 
+                fun Submsgtype0x27.SubMsgType0x27.ModCustomFace.transform(bot: QQAndroidBot): Sequence<Packet> =
+                    sequenceOf(BotFaceChangedEvent(Bot.getInstance(uin)))
+
+
                 return@lambda528 vProtobuf.loadAs(Submsgtype0x27.SubMsgType0x27.MsgBody.serializer()).msgModInfos.asSequence()
                     .flatMap {
                         when {
@@ -590,6 +597,7 @@ internal class OnlinePush {
                             it.msgDelFriend != null -> it.msgDelFriend.transform(bot)
                             it.msgModGroupProfile != null -> it.msgModGroupProfile.transform(bot)
                             it.msgModGroupMemberProfile != null -> it.msgModGroupMemberProfile.transform(bot)
+                            it.msgModCustomFace != null -> it.msgModCustomFace.transform(bot)
                             else -> {
                                 bot.network.logger.debug {
                                     "Transformers528 0x27L: new data: ${it._miraiContentToString()}"

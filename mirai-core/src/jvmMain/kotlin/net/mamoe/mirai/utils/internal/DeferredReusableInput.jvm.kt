@@ -24,8 +24,8 @@ internal actual class DeferredReusableInput actual constructor(
             is InputStream -> strategy.newImageCache(input)
             is ByteArray -> strategy.newImageCache(input)
             is Input -> strategy.newImageCache(input)
-            is BufferedImage -> strategy.newImageCache(input, extraArg as String)
             is URL -> strategy.newImageCache(input)
+            is BufferedImage -> strategy.newImageCache(input, extraArg as String)
             else -> error("Internal error: unsupported DeferredReusableInput.input: ${input::class.qualifiedName}")
         }.input
     }

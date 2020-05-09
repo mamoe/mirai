@@ -88,6 +88,13 @@ data class BotReloginEvent(
     val cause: Throwable?
 ) : BotEvent, BotActiveEvent, AbstractEvent()
 
+/**
+ * [Bot] 头像被修改（通过其他客户端修改了Bot的头像）
+ */
+data class BotFaceChangedEvent(
+    override val bot: Bot
+) : BotEvent, Packet, AbstractEvent()
+
 // endregion
 
 // region 消息
