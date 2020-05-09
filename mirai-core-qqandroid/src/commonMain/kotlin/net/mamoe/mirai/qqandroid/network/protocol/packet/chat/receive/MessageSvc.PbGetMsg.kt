@@ -44,6 +44,8 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.utils.soutv
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.*
 
 
@@ -213,6 +215,8 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
                         group ?: return@mapNotNull null
 
+                        msg.soutv("主动入群")
+
                         if (group.members.contains(msg.msgHead.authUin)) {
                             return@mapNotNull null
                         }
@@ -300,9 +304,16 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         }
                         return@mapNotNull null
                     }
+
+                    732 -> {
+                        // unknown
+                        return@mapNotNull null
+                    }
                     // 732:  27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58
+                    // 732:  27 0B 60 E7 11 00 40 08 07 20 E7 C1 AD B8 02 5A 36 08 B4 E7 E0 F0 09 1A 1A 08 9C D4 16 10 F7 D2 D8 F5 05 18 D0 E2 85 F4 06 20 00 28 00 30 B4 E7 E0 F0 09 2A 0E 08 00 12 0A 08 9C D4 16 10 00 18 01 20 00 30 00 38 00
+                    // 732:  27 0B 60 E7 11 00 33 08 07 20 E7 C1 AD B8 02 5A 29 08 EE 97 85 E9 01 1A 19 08 EE D6 16 10 FF F2 D8 F5 05 18 E9 E7 A3 05 20 00 28 00 30 EE 97 85 E9 01 2A 02 08 00 30 00 38 00
                     else -> {
-                        bot.network.logger.debug { "unknown PbGetMsg type ${msg.msgHead.msgType}" }
+                        bot.network.logger.debug { "unknown PbGetMsg type ${msg.msgHead.msgType}, data=${msg.msgBody.msgContent.toUHexString()}" }
                         return@mapNotNull null
                     }
                 }
