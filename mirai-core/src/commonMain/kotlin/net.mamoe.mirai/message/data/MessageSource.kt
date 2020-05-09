@@ -33,7 +33,7 @@ import kotlin.jvm.JvmSynthetic
  *
  *
  * ### 组成
- * MessageSource 由 metadata (元数据), form & target, content 组成
+ * [MessageSource] 由 metadata (元数据), form & target, content 组成
  *
  * #### metadata
  * - [id] 消息 id (序列号)

@@ -196,6 +196,7 @@ fun Iterable<MessageEvent>.toForwardMessage(displayStrategy: DisplayStrategy = D
 /**
  * 转换为 [ForwardMessage]
  */
+@JvmOverloads
 fun Message.toForwardMessage(
     sender: User,
     time: Int = currentTimeSeconds.toInt(),

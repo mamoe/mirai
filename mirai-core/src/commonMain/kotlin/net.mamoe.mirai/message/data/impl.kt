@@ -245,8 +245,8 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
 internal class MessageChainImplByCollection constructor(
-    internal val delegate: Collection<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
-) : Message, Iterable<SingleMessage>, MessageChain {
+    internal val delegate: List<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
+) : Message, MessageChain, List<SingleMessage> by delegate {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
 
@@ -266,15 +266,7 @@ internal class MessageChainImplByCollection constructor(
  */
 internal class MessageChainImplBySequence constructor(
     delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
-) : Message, Iterable<SingleMessage>, MessageChain {
-    override val size: Int by lazy { collected.size }
-
-    /**
-     * [Sequence] 可能只能消耗一遍, 因此需要先转为 [List]
-     */
-    private val collected: List<SingleMessage> by lazy { delegate.constrainSingleMessages() }
-    override fun iterator(): Iterator<SingleMessage> = collected.iterator()
-
+) : Message, Iterable<SingleMessage>, MessageChain, List<SingleMessage> by delegate.constrainSingleMessages() {
     private var toStringTemp: String? = null
         get() = field ?: this.joinToString("") { it.toString() }.also { field = it }
 
@@ -291,11 +283,9 @@ internal class MessageChainImplBySequence constructor(
  */
 internal class SingleMessageChainImpl constructor(
     internal val delegate: SingleMessage
-) : Message, Iterable<SingleMessage>, MessageChain {
-    override val size: Int get() = 1
+) : Message, MessageChain, List<SingleMessage> by listOf(delegate) {
     override fun toString(): String = this.delegate.toString()
     override fun contentToString(): String = this.delegate.contentToString()
-    override fun iterator(): Iterator<SingleMessage> = iterator { yield(delegate) }
 }
 
 

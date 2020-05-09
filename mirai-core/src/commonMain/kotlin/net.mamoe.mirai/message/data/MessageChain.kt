@@ -33,6 +33,10 @@ import kotlin.reflect.KProperty
  * 要获取更多消息相关的信息, 查看 [Message]
  *
  * ### 构造消息链
+ * - [buildMessageChain]: 使用构建器
+ * - [Message.plus]: 将两个消息相连成为一个消息链
+ * - [asMessageChain] 将 [Iterable], 等类型消息
+ * - [messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
  *
  * ### 消息链如何工作
  * - [SingleMessageChainImpl] 将 [单个消息][SingleMessage] 委托为一个 [MessageChain]
@@ -54,7 +58,8 @@ import kotlin.reflect.KProperty
  * @see getValue 属性委托扩展
  * @see flatten 扁平化
  */
-interface MessageChain : Message, Iterable<SingleMessage> {
+@Suppress("FunctionName", "DeprecatedCallableAddReplaceWith", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+interface MessageChain : Message, List<SingleMessage>, RandomAccess {
     /**
      * 元素数量. [EmptyMessageChain] 不参加计数.
      */
@@ -72,35 +77,22 @@ interface MessageChain : Message, Iterable<SingleMessage> {
      * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face] 等
      * 仅供 `Java` 使用
      */
-    @Suppress("FunctionName")
-    @JsName("forEachContent")
     @JvmName("forEachContent")
     @JavaFriendlyAPI
-    final fun __forEachContentForJava__(block: (Message) -> Unit) {
-        this.forEachContent(block)
-    }
+    final fun __forEachContentForJava__(block: (Message) -> Unit) = this.forEachContent(block)
 
-    /**
-     * 遍历每一个消息, 即 [MessageSource] [At], [AtAll], [PlainText], [Image], [QuoteReply] 等
-     * 仅供 `Java` 使用
-     */
-    @Suppress("FunctionName")
-    @JsName("forEach")
+
+    @PlannedRemoval("1.1.0")
+    @Deprecated("use Java 8 API", level = DeprecationLevel.HIDDEN)
     @JvmName("forEach")
     @JavaFriendlyAPI
-    final fun __forEachForJava__(block: (Message) -> Unit) {
-        this.forEach(block)
-    }
+    @JvmSynthetic
+    @kotlin.internal.LowPriorityInOverloadResolution
+    final fun __forEachForJava__(block: (Message) -> Unit) = this.forEach(block)
 
-
-    /**
-     * 获取第一个类型为 [key] 的 [Message] 实例, 找不到则返回 `null`
-     *
-     * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
-     */
     @PlannedRemoval("1.2.0")
     @JvmName("firstOrNull")
-    @Deprecated("use get", ReplaceWith("get(key)"))
+    @Deprecated("use get instead. This is going to be removed in mirai 1.2.0", ReplaceWith("get(key)"))
     final fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
 }
 
@@ -271,6 +263,13 @@ inline fun <reified T : Message?> MessageChain.orElse(
 
 
 // region asMessageChain
+
+/**
+ * 返回一个包含 [messages] 所有元素的消息链, 保留顺序.
+ */
+@JvmName("newChain")
+inline fun messageChainOf(vararg messages: Message): MessageChain = messages.asMessageChain()
+
 /**
  * 得到包含 [this] 的 [MessageChain].
  *
@@ -304,6 +303,18 @@ fun Collection<SingleMessage>.asMessageChain(): MessageChain =
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
+@JvmSynthetic
+@JvmName("newChain1")
+// @JsName("newChain")
+fun Array<out Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+
+@JvmSynthetic
+@JvmName("newChain2")
+fun Array<out SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.asSequence())
+
+/**
+ * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
+ */
 @JvmName("newChain")
 // @JsName("newChain")
 fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
@@ -316,7 +327,7 @@ fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
     MessageChainImplByCollection(this.constrainSingleMessages())
 
 @JvmSynthetic
-fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
+inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
@@ -338,15 +349,6 @@ fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByS
 // @JsName("newChain")
 fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
-/**
- * 构造一个 [MessageChain]
- * 为提供更好的 Java API.
- */
-@Suppress("FunctionName")
-@JvmName("newChain")
-fun _____newChain______(vararg messages: Message): MessageChain {
-    return messages.asIterable().asMessageChain()
-}
 
 /**
  * 构造一个 [MessageChain]
@@ -395,6 +397,10 @@ inline fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.f
 @JvmName("flatten1")
 @JvmSynthetic
 inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
+
+inline fun Array<out Message>.flatten(): Sequence<SingleMessage> = this.asSequence().flatten()
+
+inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 
 /**
  * 扁平化 [Message]
