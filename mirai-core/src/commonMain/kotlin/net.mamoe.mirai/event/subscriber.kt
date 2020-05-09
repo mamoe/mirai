@@ -223,7 +223,7 @@ inline fun <reified E : Event> CoroutineScope.subscribe(
  * @return 监听器实例. 此监听器已经注册到指定事件上, 在事件广播时将会调用 [handler]
  */
 fun <E : Event> CoroutineScope.subscribe(
-    eventClass: KClass<E>,
+    eventClass: KClass<out E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
     priority: Listener.EventPriority = NORMAL,
@@ -258,7 +258,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeAlways(
  * @see CoroutineScope.subscribeAlways
  */
 fun <E : Event> CoroutineScope.subscribeAlways(
-    eventClass: KClass<E>,
+    eventClass: KClass<out E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = NORMAL,
@@ -290,7 +290,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeOnce(
  * @see CoroutineScope.subscribeOnce
  */
 fun <E : Event> CoroutineScope.subscribeOnce(
-    eventClass: KClass<E>,
+    eventClass: KClass<out E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     priority: Listener.EventPriority = NORMAL,
     handler: suspend E.(E) -> Unit
