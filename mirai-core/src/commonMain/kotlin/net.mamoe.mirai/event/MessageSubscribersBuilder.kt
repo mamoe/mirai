@@ -97,12 +97,14 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
 
     /** 启动这个监听器, 在满足条件时回复原消息 */
     @MessageDsl
-    open infix fun ListeningFilter.reply(toReply: String): Ret = content(filter) { reply(toReply);stub }
+    open infix fun ListeningFilter.reply(toReply: String): Ret =
+        content(filter) { reply(toReply);this@MessageSubscribersBuilder.stub }
 
 
     /** 启动这个监听器, 在满足条件时回复原消息 */
     @MessageDsl
-    open infix fun ListeningFilter.reply(message: Message): Ret = content(filter) { reply(message);stub }
+    open infix fun ListeningFilter.reply(message: Message): Ret =
+        content(filter) { reply(message);this@MessageSubscribersBuilder.stub }
 
     /** 启动这个监听器, 在满足条件时回复原消息 */
     @JvmName("reply3")
@@ -117,22 +119,22 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     /** 启动这个监听器, 在满足条件时回复原消息 */
     @MessageDsl
     open infix fun ListeningFilter.reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret =
-        content(filter) { executeAndReply(this, replier) }
+        content(filter) { this@MessageSubscribersBuilder.executeAndReply(this, replier) }
 
     /** 启动这个监听器, 在满足条件时引用回复原消息 */
     @MessageDsl
     open infix fun ListeningFilter.quoteReply(toReply: String): Ret =
-        content(filter) { quoteReply(toReply);stub }
+        content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
 
     /** 启动这个监听器, 在满足条件时引用回复原消息 */
     @MessageDsl
     open infix fun ListeningFilter.quoteReply(toReply: Message): Ret =
-        content(filter) { quoteReply(toReply);stub }
+        content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
 
     /** 启动这个监听器, 在满足条件时执行 [replier] 并引用回复原消息 */
     @MessageDsl
     open infix fun ListeningFilter.quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret =
-        content(filter) { executeAndQuoteReply(this, replier) }
+        content(filter) { this@MessageSubscribersBuilder.executeAndQuoteReply(this, replier) }
 
     /** 无任何触发条件, 每次收到消息都执行 [onEvent] */
     @MessageDsl
@@ -158,7 +160,7 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     @JvmSynthetic
     @JvmName("findingExtension")
     infix fun Regex.finding(block: @MessageDsl suspend M.(MatchResult) -> R): Ret =
-        always { content -> this@finding.find(content)?.let { block(this, it) } ?: stub }
+        always { content -> this@finding.find(content)?.let { block(this, it) } ?: this@MessageSubscribersBuilder.stub }
 
     /**
      * [消息内容][Message.contentToString] `==` [equals]
@@ -313,7 +315,12 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     /** 如果 [mapper] 返回值非空, 就执行 [onEvent] */
     @MessageDsl
     open fun <N : Any> mapping(mapper: M.(String) -> N?, onEvent: @MessageDsl suspend M.(N) -> R): Ret =
-        always { onEvent.invoke(this, mapper(this, message.contentToString()) ?: return@always stub) }
+        always {
+            onEvent.invoke(
+                this,
+                mapper(this, message.contentToString()) ?: return@always this@MessageSubscribersBuilder.stub
+            )
+        }
 
     /** 如果 [filter] 返回 `true` */
     @MessageDsl
@@ -327,7 +334,14 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     /** [消息内容][Message.contentToString]可由正则表达式匹配([Regex.matchEntire]), 就执行 `onEvent` */
     @MessageDsl
     fun matching(regex: Regex, onEvent: @MessageDsl suspend M.(MatchResult) -> Unit): Ret =
-        always { executeAndReply(this) { onEvent.invoke(this, regex.matchEntire(it) ?: return@always stub) } }
+        always {
+            this@MessageSubscribersBuilder.executeAndReply(this) {
+                onEvent.invoke(
+                    this,
+                    regex.matchEntire(it) ?: return@always this@MessageSubscribersBuilder.stub
+                )
+            }
+        }
 
     /** [消息内容][Message.contentToString]可由正则表达式查找([Regex.find]) */
     @MessageDsl
@@ -336,13 +350,20 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     /** [消息内容][Message.contentToString]可由正则表达式查找([Regex.find]), 就执行 `onEvent` */
     @MessageDsl
     fun finding(regex: Regex, onEvent: @MessageDsl suspend M.(MatchResult) -> Unit): Ret =
-        always { executeAndReply(this) { onEvent.invoke(this, regex.find(it) ?: return@always stub) } }
+        always {
+            this@MessageSubscribersBuilder.executeAndReply(this) {
+                onEvent.invoke(
+                    this,
+                    regex.find(it) ?: return@always this@MessageSubscribersBuilder.stub
+                )
+            }
+        }
 
 
     /** [消息内容][Message.contentToString]包含 [this] 则回复 [reply] */
     @MessageDsl
     open infix fun String.containsReply(reply: String): Ret =
-        content({ this@containsReply in it }, { reply(reply); stub })
+        content({ this@containsReply in it }, { reply(reply); this@MessageSubscribersBuilder.stub })
 
     /**
      * [消息内容][Message.contentToString]包含 [this] 则执行 [replier] 并将其返回值回复给发信对象.
@@ -353,7 +374,7 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
      */
     @MessageDsl
     open infix fun String.containsReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret =
-        content({ this@containsReply in it }, { executeAndReply(this, replier) })
+        content({ this@containsReply in it }, { this@MessageSubscribersBuilder.executeAndReply(this, replier) })
 
     /**
      * [消息内容][Message.contentToString]可由正则表达式匹配([Regex.matchEntire]), 则执行 [replier] 并将其返回值回复给发信对象.
@@ -364,7 +385,14 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
      */
     @MessageDsl
     open infix fun Regex.matchingReply(replier: @MessageDsl suspend M.(MatchResult) -> Any?): Ret =
-        always { executeAndReply(this) { replier.invoke(this, matchEntire(it) ?: return@always stub) } }
+        always {
+            this@MessageSubscribersBuilder.executeAndReply(this) {
+                replier.invoke(
+                    this,
+                    matchEntire(it) ?: return@always this@MessageSubscribersBuilder.stub
+                )
+            }
+        }
 
     /**
      * [消息内容][Message.contentToString]可由正则表达式查找([Regex.find]), 则执行 [replier] 并将其返回值回复给发信对象.
@@ -375,7 +403,14 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
      */
     @MessageDsl
     open infix fun Regex.findingReply(replier: @MessageDsl suspend M.(MatchResult) -> Any?): Ret =
-        always { executeAndReply(this) { replier.invoke(this, this@findingReply.find(it) ?: return@always stub) } }
+        always {
+            this@MessageSubscribersBuilder.executeAndReply(this) {
+                replier.invoke(
+                    this,
+                    this@findingReply.find(it) ?: return@always this@MessageSubscribersBuilder.stub
+                )
+            }
+        }
 
 
     /**
@@ -386,7 +421,7 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     open infix fun String.endsWithReply(replier: @MessageDsl suspend M.(String) -> Any?): Ret {
         val toCheck = this.trimEnd()
         return content({ it.trim().endsWith(toCheck) }, {
-            executeAndReply(this) { replier(this, it.trim().removeSuffix(toCheck)) }
+            this@MessageSubscribersBuilder.executeAndReply(this) { replier(this, it.trim().removeSuffix(toCheck)) }
         })
     }
 
@@ -394,14 +429,14 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     @MessageDsl
     open infix fun String.reply(reply: String): Ret {
         val toCheck = this.trim()
-        return content({ it.trim() == toCheck }, { reply(reply);stub })
+        return content({ it.trim() == toCheck }, { reply(reply);this@MessageSubscribersBuilder.stub })
     }
 
     /** 当发送的消息内容为 [this] 就回复 [reply] */
     @MessageDsl
     open infix fun String.reply(reply: Message): Ret {
         val toCheck = this.trim()
-        return content({ it.trim() == toCheck }, { reply(reply);stub })
+        return content({ it.trim() == toCheck }, { reply(reply);this@MessageSubscribersBuilder.stub })
     }
 
     /** 当发送的消息内容为 [this] 就执行并回复 [replier] 的返回值 */
@@ -410,7 +445,7 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
         val toCheck = this.trim()
         return content({ it.trim() == toCheck }, {
             @Suppress("DSL_SCOPE_VIOLATION_WARNING")
-            executeAndReply(this) { replier(this, it.trim()) }
+            this@MessageSubscribersBuilder.executeAndReply(this) { replier(this, it.trim()) }
         })
     }
 

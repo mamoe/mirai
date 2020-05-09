@@ -41,6 +41,7 @@ kotlin {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
+            languageSettings.progressiveMode = true
         }
 
         commonMain {

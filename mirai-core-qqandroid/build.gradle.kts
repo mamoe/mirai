@@ -40,6 +40,7 @@ kotlin {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
+            languageSettings.progressiveMode = true
 
             dependencies {
                 api(project(":mirai-core"))
