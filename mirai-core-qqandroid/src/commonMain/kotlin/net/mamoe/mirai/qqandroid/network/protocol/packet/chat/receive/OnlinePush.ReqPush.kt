@@ -20,9 +20,12 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.*
+import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.getFriendOrNull
+import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
@@ -43,8 +46,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePushReqPush.ignoredLambda528
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePushReqPush.lambda528
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePushReqPush.lambda732
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.encodeToString
@@ -60,7 +61,7 @@ import net.mamoe.mirai.utils.debug
 
 
 //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C
-internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.Response>(
+internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqPushDecoded>(
     "OnlinePush.ReqPush",
     "OnlinePush.RespPush"
 ) {
@@ -80,16 +81,10 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.Resp
         return block
     }
 
-    private fun lambda528(block: MsgType0x210.(bot: QQAndroidBot) -> Sequence<Packet>):
-            MsgType0x210.(bot: QQAndroidBot) -> Sequence<Packet> {
-        return block
-    }
-
-    val ignoredLambda528: MsgType0x210.(bot: QQAndroidBot) -> Sequence<Packet> = lambda528 { emptySequence() }
 
     @ExperimentalUnsignedTypes
     @OptIn(ExperimentalStdlibApi::class)
-    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Response {
+    override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): ReqPushDecoded {
         val reqPushMsg = readUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
 
         val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
@@ -118,8 +113,6 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.Resp
                         ?.let { processor -> processor(notifyMsgBody, bot) }
                         ?: kotlin.run {
                             bot.network.logger.debug {
-                                // Network(1994701021) 16:03:54 : unknown group 528 type 0x0000000000000026, data: 08 01 12 40 0A 06 08 F4 EF BB 8F 04 10 E7 C1 AD B8 02 18 01 22 2C 10 01 1A 1A 18 B4 DC F8 9B 0C 20 E7 C1 AD B8 02 28 06 30 02 A2 01 04 08 93 D6 03 A8 01 08 20 00 28 00 32 08 18 01 20 FE AF AF F5 05 28 00
-                                // VIP 进群提示
                                 "unknown group 528 type 0x${notifyMsgBody.uSubMsgType.toUHexString("")}, data: " + notifyMsgBody.vProtobuf.toUHexString()
                             }
                             return@deco emptySequence()
@@ -132,18 +125,18 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.Resp
                 }
             }
         }
-        return Response(reqPushMsg, packets)
+        return ReqPushDecoded(reqPushMsg, packets)
     }
 
     @Suppress("SpellCheckingInspection")
-    internal data class Response(val request: OnlinePushPack.SvcReqPushMsg, val sequence: Sequence<Packet>) :
-        MultiPacketBySequence<Packet>(sequence) {
+    internal data class ReqPushDecoded(val request: OnlinePushPack.SvcReqPushMsg, val sequence: Sequence<Packet>) :
+        MultiPacketBySequence<Packet>(sequence), Packet.NoLog {
         override fun toString(): String {
-            return "OnlinePush.ReqPush.Response"
+            return "OnlinePush.ReqPush.ReqPushDecoded"
         }
     }
 
-    override suspend fun QQAndroidBot.handle(packet: Response, sequenceId: Int): OutgoingPacket? {
+    override suspend fun QQAndroidBot.handle(packet: ReqPushDecoded, sequenceId: Int): OutgoingPacket? {
         return buildResponseUniPacket(client) {
             writeJceStruct(
                 RequestPacket.serializer(),
@@ -331,6 +324,20 @@ private object Transformers732 : Map<Int, ByteReadPacket.(GroupImpl, QQAndroidBo
     }
 )
 
+internal val ignoredLambda528: Lambda528 = lambda528 { emptySequence() }
+
+internal interface Lambda528 {
+    operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot): Sequence<Packet>
+}
+
+internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot) -> Sequence<Packet>): Lambda528 {
+    return object : Lambda528 {
+        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot): Sequence<Packet> {
+            return block(msg, bot)
+        }
+    }
+}
+
 // uSubMsgType to vProtobuf
 // 138 or 139: top_package/akln.java:1568
 // 66: top_package/nhz.java:269
@@ -338,7 +345,11 @@ private object Transformers732 : Map<Int, ByteReadPacket.(GroupImpl, QQAndroidBo
  * @see MsgType0x210
  */
 @OptIn(LowLevelAPI::class, MiraiInternalAPI::class)
-private object Transformers528 : Map<Long, MsgType0x210.(QQAndroidBot) -> Sequence<Packet>> by mapOf(
+internal object Transformers528 : Map<Long, Lambda528> by mapOf(
+
+    // Network(1994701021) 16:03:54 : unknown group 528 type 0x0000000000000026, data: 08 01 12 40 0A 06 08 F4 EF BB 8F 04 10 E7 C1 AD B8 02 18 01 22 2C 10 01 1A 1A 18 B4 DC F8 9B 0C 20 E7 C1 AD B8 02 28 06 30 02 A2 01 04 08 93 D6 03 A8 01 08 20 00 28 00 32 08 18 01 20 FE AF AF F5 05 28 00
+    // VIP 进群提示
+    0x26L to ignoredLambda528,
     // 提示共同好友
     0x111L to ignoredLambda528,
     // 新好友
