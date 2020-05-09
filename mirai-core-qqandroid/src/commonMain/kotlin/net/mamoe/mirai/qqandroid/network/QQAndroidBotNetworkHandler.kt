@@ -32,7 +32,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
@@ -362,8 +362,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         logger.info { "Syncing friend message history..." }
         withTimeoutOrNull(30000) {
-            launch { syncFromEvent<MessageSvc.PbGetMsg.GetMsgSuccess, Unit> { Unit } }
-            MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
+            launch { syncFromEvent<MessageSvcPbGetMsg.GetMsgSuccess, Unit> { Unit } }
+            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
         } ?: error("timeout syncing friend message history")
         logger.info { "Syncing friend message history: Success" }
 

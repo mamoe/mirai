@@ -155,7 +155,7 @@ sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         override val messageInternalId: Int,
         override val messageTime: Int,
         /**
-         * 撤回操作人, 可能为 [Bot.uin] 或好友的 [User.id]
+         * 撤回操作人, 可能为 [Bot.id] 或好友的 [User.id]
          */
         val operator: Long
     ) : MessageRecallEvent(), Packet {

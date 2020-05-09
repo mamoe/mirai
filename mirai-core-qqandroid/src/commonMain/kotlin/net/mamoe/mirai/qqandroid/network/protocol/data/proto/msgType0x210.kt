@@ -897,7 +897,7 @@ internal class Submsgtype0x27 {
         ) : ProtoBuf
 
         @Serializable
-        internal class MsgBody(
+        internal class SubMsgType0x27MsgBody(
             @ProtoId(1) @JvmField val msgModInfos: List<ForwardBody> = listOf()
         ) : ProtoBuf
 

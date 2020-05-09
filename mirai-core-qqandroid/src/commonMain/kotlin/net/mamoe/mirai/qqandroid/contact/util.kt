@@ -23,7 +23,7 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceToFriendImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.verbose
@@ -38,13 +38,13 @@ internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: M
     lateinit var source: MessageSourceToFriendImpl
     (bot.network as QQAndroidBotNetworkHandler).run {
         check(
-            MessageSvc.PbSendMsg.createToFriend(
+            MessageSvcPbSendMsg.createToFriend(
                 bot.asQQAndroidBot().client,
                 this@sendMessageImpl,
                 event.message
             ) {
                 source = it
-            }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+            }.sendAndExpect<MessageSvcPbSendMsg.Response>() is MessageSvcPbSendMsg.Response.SUCCESS
         ) { "send message failed" }
     }
     return MessageReceipt(source, generic, null)

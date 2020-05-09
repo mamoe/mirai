@@ -19,8 +19,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
@@ -132,10 +131,10 @@ internal object KnownPacketFactories {
         WtLogin.Login,
         StatSvc.Register,
         StatSvc.GetOnlineStatus,
-        MessageSvc.PbGetMsg,
-        MessageSvc.PushForceOffline,
-        MessageSvc.PbSendMsg,
-        MessageSvc.Del,
+        MessageSvcPbGetMsg,
+        MessageSvcPushForceOffline,
+        MessageSvcPbSendMsg,
+        MessageSvcPbDeleteMsg,
         FriendList.GetFriendGroupList,
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
@@ -157,15 +156,15 @@ internal object KnownPacketFactories {
     )
 
     object IncomingFactories : List<IncomingPacketFactory<*>> by mutableListOf(
-        OnlinePush.PbPushGroupMsg,
-        OnlinePush.ReqPush,
-        OnlinePush.PbPushTransMsg,
-        MessageSvc.PushNotify,
+        OnlinePushPbPushGroupMsg,
+        OnlinePushReqPush,
+        OnlinePushPbPushTransMsg,
+        MessageSvcPushNotify,
         ConfigPushSvc.PushReq,
         StatSvc.ReqMSFOffline
     )
     // SvcReqMSFLoginNotify 自己的其他设备上限
-    // MessageSvc.PushReaded 电脑阅读了别人的消息, 告知手机
+    // MessageSvcPushReaded 电脑阅读了别人的消息, 告知手机
     // OnlinePush.PbC2CMsgSync 电脑发消息给别人, 同步给手机
 
     @Suppress("MemberVisibilityCanBePrivate") // debugging use
@@ -259,21 +258,20 @@ internal object KnownPacketFactories {
         PacketLogger.info { "Handle packet: ${it.commandName}" }
         it.data.withUse {
             when (flag2) {
-                0, 1 ->
-                    when (it.packetFactory) {
-                        is OutgoingPacketFactory<*> -> consumer(
-                            it.packetFactory as OutgoingPacketFactory<T>,
-                            it.packetFactory.run { decode(bot, it.data) },
-                            it.packetFactory.commandName,
-                            it.sequenceId
-                        )
-                        is IncomingPacketFactory<*> -> consumer(
-                            it.packetFactory as IncomingPacketFactory<T>,
-                            it.packetFactory.run { decode(bot, it.data, it.sequenceId) },
-                            it.packetFactory.receivingCommandName,
-                            it.sequenceId
-                        )
-                    }
+                0, 1 -> when (it.packetFactory) {
+                    is OutgoingPacketFactory<*> -> consumer(
+                        it.packetFactory as OutgoingPacketFactory<T>,
+                        it.packetFactory.run { decode(bot, it.data) },
+                        it.packetFactory.commandName,
+                        it.sequenceId
+                    )
+                    is IncomingPacketFactory<*> -> consumer(
+                        it.packetFactory as IncomingPacketFactory<T>,
+                        it.packetFactory.run { decode(bot, it.data, it.sequenceId) },
+                        it.packetFactory.receivingCommandName,
+                        it.sequenceId
+                    )
+                }
 
                 2 -> it.data.parseOicqResponse(
                     bot,

@@ -32,7 +32,7 @@ import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.utils.*
@@ -358,7 +358,7 @@ internal class GroupImpl(
 
         lateinit var source: MessageSourceToGroupImpl
         bot.network.run {
-            val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.createToGroup(
+            val response: MessageSvcPbSendMsg.Response = MessageSvcPbSendMsg.createToGroup(
                 bot.client,
                 this@GroupImpl,
                 msg,
@@ -366,7 +366,7 @@ internal class GroupImpl(
             ) {
                 source = it
             }.sendAndExpect()
-            if (response is MessageSvc.PbSendMsg.Response.Failed) {
+            if (response is MessageSvcPbSendMsg.Response.Failed) {
                 when (response.resultType) {
                     120 -> throw BotIsBeingMutedException(this@GroupImpl)
                     34 -> {
