@@ -28,13 +28,26 @@ import kotlin.reflect.KProperty
 /**
  * 消息链. 空的实现为 [EmptyMessageChain]
  *
- * 要获取更多信息, 请查看 [Message]
+ * 在发送消息时必须构造一个消息链, 可通过一系列扩展函数 [asMessageChain] 转换.
+ *
+ * 要获取更多消息相关的信息, 查看 [Message]
+ *
+ * ### 构造消息链
+ *
+ * ### 消息链如何工作
+ * - [SingleMessageChainImpl] 将 [单个消息][SingleMessage] 委托为一个 [MessageChain]
+ *
+ * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
+ * @see getOrFail 获取消息链中一个类型的元素, 不存在时抛出异常 [NoSuchElementException]
+ * @see quote 引用这条消息.
  *
  * @see buildMessageChain 构造一个 [MessageChain]
  * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
  * @see asMessageChain 将 [Iterable] 或 [Sequence] 委托为 [MessageChain]
  *
  * @see forEachContent 遍历内容
+ * @see allContent 判断是否每一个 [MessageContent] 都满足条件
+ * @see noneContent 判断是否每一个 [MessageContent] 都不满足条件
  *
  * @see orNull 属性委托扩展
  * @see orElse 属性委托扩展
@@ -45,7 +58,7 @@ interface MessageChain : Message, Iterable<SingleMessage> {
     /**
      * 元素数量. [EmptyMessageChain] 不参加计数.
      */
-    val size: Int
+    override val size: Int
 
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`
@@ -161,7 +174,7 @@ inline fun <reified M : Message?> MessageChain.firstIsInstanceOrNull(): M? = thi
 inline fun <reified M : Message> MessageChain.firstIsInstance(): M = this.first { it is M } as M
 
 /**
- * 获取第一个 [M] 类型的 [Message] 实例
+ * 判断 [this] 中是否存在 [Message] 的实例
  */
 @JvmSynthetic
 inline fun <reified M : Message> MessageChain.anyIsInstance(): Boolean = this.any { it is M }
@@ -257,7 +270,7 @@ inline fun <reified T : Message?> MessageChain.orElse(
 // endregion delegate
 
 
-// region converters
+// region asMessageChain
 /**
  * 得到包含 [this] 的 [MessageChain].
  *
@@ -409,7 +422,7 @@ inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() /
 /**
  * 不含任何元素的 [MessageChain].
  */
-object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
+object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, List<SingleMessage> by emptyList() {
 
     override val size: Int get() = 0
     override fun toString(): String = ""

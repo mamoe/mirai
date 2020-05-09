@@ -79,16 +79,15 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
      *
      * #### 顺序
      * 群消息的 id 由服务器维护. 好友消息的 id 由 mirai 维护.
+     * 此 id 不一定从 0 开始.
      *
-     * - 在同一个群的消息中此值随每条消息递增 1.
+     * - 在同一个群的消息中此值随每条消息递增 1, 但此行为由服务器决定, mirai 不保证自增顺序.
      * - 在好友消息中无法保证每次都递增 1. 也可能会产生大幅跳过的情况.
      */
     abstract val id: Int
 
     /**
-     * 内部 id. 仅用于协议模块使用.
-     *
-     * 在撤回消息和引用回复时均需使用此 id.
+     * 内部 id. **仅用于协议模块使用**
      *
      * 值没有顺序, 也可能为 0, 取决于服务器是否提供.
      *
@@ -100,8 +99,6 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
      * 发送时间时间戳, 单位为秒.
      *
      * 时间戳可能来自服务器, 也可能来自 mirai, 且无法保证两者时间同步.
-     *
-     * 撤回消息时需要此值.
      */
     abstract val time: Int
 
@@ -188,6 +185,10 @@ sealed class OnlineMessageSource : MessageSource() {
      */
     abstract val subject: Contact
 
+    /*
+     * 以下子类型仅是覆盖了 [target], [subject], [sender] 等的类型
+     */
+
     /**
      * 由 [机器人主动发送消息][Contact.sendMessage] 产生的 [MessageSource], 可通过 [MessageReceipt] 获得.
      */
@@ -229,7 +230,6 @@ sealed class OnlineMessageSource : MessageSource() {
 
             abstract override val target: Group
             final override val subject: Group get() = target
-            //  final override fun toString(): String = "OnlineMessageSource.ToGroup(group=${target.id})"
         }
     }
 
@@ -289,8 +289,7 @@ sealed class OnlineMessageSource : MessageSource() {
  */
 abstract class OfflineMessageSource : MessageSource() {
     companion object Key : Message.Key<OfflineMessageSource> {
-        override val typeName: String
-            get() = "OfflineMessageSource"
+        override val typeName: String get() = "OfflineMessageSource"
     }
 
     enum class Kind {
@@ -303,8 +302,6 @@ abstract class OfflineMessageSource : MessageSource() {
      * 消息种类
      */
     abstract val kind: Kind
-
-    // final override fun toString(): String = "OfflineMessageSource(sender=$senderId, target=$targetId)"
 }
 
 /**

@@ -26,12 +26,14 @@ import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
- * 发送消息后得到的回执. 可用于撤回.
- *
- * 此对象持有 [Contact] 的弱引用, [Bot] 离线后将会释放引用, 届时 [target] 将无法访问.
+ * 发送消息后得到的回执. 可用于撤回, 引用回复等.
  *
  * @param source 指代发送出去的消息
  * @param target 消息发送对象
+ *
+ * @see quote 引用这条消息. 即引用机器人自己发出去的消息
+ * @see quoteReply 引用并回复这条消息.
+ * @see recall 撤回这条消息
  *
  * @see Group.sendMessage 发送群消息, 返回回执（此对象）
  * @see User.sendMessage 发送群消息, 返回回执（此对象）
@@ -147,6 +149,16 @@ suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: String): 
 @get:JvmSynthetic
 inline val MessageReceipt<*>.sourceId: Int
     get() = this.source.id
+
+
+/**
+ * 获取源消息 [MessageSource.internalId]
+ *
+ * @see MessageSource.id
+ */
+@get:JvmSynthetic
+inline val MessageReceipt<*>.sourceInternalId: Int
+    get() = this.source.internalId
 
 /**
  * 获取源消息 [MessageSource.time]
