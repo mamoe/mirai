@@ -12,19 +12,18 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
 
 /**
  * QQ 自带表情
  */
-data class Face
-@Suppress("DataClassPrivateConstructor")
-private constructor(val id: Int, private val stringValue: String) : // used in delegation
+data class Face(val id: Int) : // used in delegation
     MessageContent {
-    constructor(id: Int) : this(id, "[mirai:face:$id]")
 
-    override fun toString(): String = stringValue
+    override fun toString(): String = "[mirai:face:$id]"
     override fun contentToString(): String = "[表情]"
 
     override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
@@ -232,4 +231,22 @@ private constructor(val id: Int, private val stringValue: String) : // used in d
         const val shuaitou: Int = 243
         const val rengou: Int = 244
     }
+
+
+    @PlannedRemoval("1.2.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @Suppress("unused", "UNUSED_PARAMETER")
+    private constructor(id: Int, stringValue: String) : this(id)
+
+    @JvmSynthetic
+    @PlannedRemoval("1.2.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @Suppress("unused", "UNUSED_PARAMETER")
+    fun copy(id: Int = this.id, stringValue: String = "") = this.copy(id = id)
+
+    @JvmSynthetic
+    @PlannedRemoval("1.2.0")
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @Suppress("unused", "UNUSED_PARAMETER")
+    operator fun component2(): String = toString()
 }
