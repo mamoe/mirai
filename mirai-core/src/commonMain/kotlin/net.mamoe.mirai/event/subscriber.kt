@@ -8,6 +8,8 @@
  */
 
 @file:Suppress("unused", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:JvmName("SubscriberKt")
+@file:JvmMultifileClass
 
 package net.mamoe.mirai.event
 
@@ -23,12 +25,12 @@ import net.mamoe.mirai.event.Listener.EventPriority.*
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.internal.LowPriorityInOverloadResolution
+import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
@@ -128,7 +130,7 @@ interface Listener<in E : Event> : CompletableJob {
     suspend fun onEvent(event: E): ListeningStatus
 }
 
-// region 顶层方法 创建当前 coroutineContext 下的子 Job
+// region subscribe / subscribeAlways / subscribeOnce
 
 /**
  * 在指定的 [协程作用域][CoroutineScope] 下创建一个事件监听器, 监听所有 [E] 及其子类事件.
@@ -298,352 +300,178 @@ fun <E : Event> CoroutineScope.subscribeOnce(
     Handler(coroutineContext, LOCKED, priority) { it.handler(it); ListeningStatus.STOPPED }
 )
 
-//
-// 以下为带筛选 Bot 的监听 (已启用)
-//
-
-
-/**
- * **注意:** 与 [CoroutineScope.subscribe] 不同的是,
- * [Bot.subscribe] 会筛选事件来源 [Bot], 只监听来自 [this] 的事件.
- *
- * @see CoroutineScope.subscribe 获取更多说明
- */
-@PlannedRemoval("1.3.0")
-@Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
-@JvmSynthetic
-@JvmName("subscribeAlwaysForBot")
-@OptIn(MiraiInternalAPI::class)
-@kotlin.internal.LowPriorityInOverloadResolution
-@Deprecated(
-    "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
-    level = DeprecationLevel.HIDDEN
-)
-inline fun <reified E : BotEvent> Bot.subscribe(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = LOCKED,
-    priority: Listener.EventPriority = NORMAL,
-    noinline handler: suspend E.(E) -> ListeningStatus
-): Listener<E> = this.subscribe(E::class, coroutineContext, concurrency, priority, handler)
-
-/**
- * **注意:** 与 [CoroutineScope.subscribe] 不同的是,
- * [Bot.subscribe] 会筛选事件来源 [Bot], 只监听来自 [this] 的事件.
- *
- * @see Bot.subscribe
- */
-@PlannedRemoval("1.3.0")
-@Suppress("DeprecatedCallableAddReplaceWith")
-@kotlin.internal.LowPriorityInOverloadResolution
-@Deprecated(
-    "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
-    level = DeprecationLevel.HIDDEN
-)
-fun <E : BotEvent> Bot.subscribe(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = LOCKED,
-    priority: Listener.EventPriority = NORMAL,
-    handler: suspend E.(E) -> ListeningStatus
-): Listener<E> = eventClass.subscribeInternal(
-    Handler(
-        coroutineContext,
-        concurrency,
-        priority
-    ) { if (it.bot === this) it.handler(it) else ListeningStatus.LISTENING }
-)
-
-/**
- * **注意:** 与 [CoroutineScope.subscribe] 不同的是,
- * [Bot.subscribe] 会筛选事件来源 [Bot], 只监听来自 [this] 的事件.
- *
- * @see CoroutineScope.subscribeAlways 获取更多说明
- */
-@PlannedRemoval("1.3.0")
-@Suppress("DeprecatedCallableAddReplaceWith")
-@JvmSynthetic
-@JvmName("subscribeAlwaysForBot1")
-@kotlin.internal.LowPriorityInOverloadResolution
-@OptIn(MiraiInternalAPI::class)
-@Deprecated(
-    "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
-    level = DeprecationLevel.HIDDEN
-)
-inline fun <reified E : BotEvent> Bot.subscribeAlways(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = NORMAL,
-    noinline listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority, listener)
-
-/**
- * **注意:** 与 [CoroutineScope.subscribe] 不同的是,
- * [Bot.subscribe] 会筛选事件来源 [Bot], 只监听来自 [this] 的事件.
- *
- * @see Bot.subscribeAlways
- */
-@PlannedRemoval("1.3.0")
-@kotlin.internal.LowPriorityInOverloadResolution
-@Deprecated(
-    "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
-    level = DeprecationLevel.HIDDEN
-)
-fun <E : BotEvent> Bot.subscribeAlways(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = CONCURRENT,
-    priority: Listener.EventPriority = NORMAL,
-    listener: suspend E.(E) -> Unit
-): Listener<E> = eventClass.subscribeInternal(
-    Handler(coroutineContext, concurrency, priority) { if (it.bot === this) it.listener(it); ListeningStatus.LISTENING }
-)
-
-/**
- * **注意:** 与 [CoroutineScope.subscribe] 不同的是,
- * [Bot.subscribe] 会筛选事件来源 [Bot], 只监听来自 [this] 的事件.
- *
- * @see subscribeOnce 获取更多说明
- */
-@Suppress("DeprecatedCallableAddReplaceWith")
-@JvmSynthetic
-@JvmName("subscribeOnceForBot2")
-@PlannedRemoval("1.3.0")
-@kotlin.internal.LowPriorityInOverloadResolution
-@Deprecated(
-    "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
-    level = DeprecationLevel.HIDDEN
-)
-inline fun <reified E : BotEvent> Bot.subscribeOnce(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    priority: Listener.EventPriority = NORMAL,
-    noinline listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeOnce(E::class, coroutineContext, priority, listener)
-
-/**
- * **注意:** 与 [CoroutineScope.subscribe] 不同的是,
- * [Bot.subscribe] 会筛选事件来源 [Bot], 只监听来自 [this] 的事件.
- *
- * @see Bot.subscribeOnce
- */
-@PlannedRemoval("1.3.0")
-@kotlin.internal.LowPriorityInOverloadResolution
-@Deprecated(
-    "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
-    level = DeprecationLevel.HIDDEN
-)
-fun <E : BotEvent> Bot.subscribeOnce(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    priority: Listener.EventPriority = NORMAL,
-    listener: suspend E.(E) -> Unit
-): Listener<E> =
-    eventClass.subscribeInternal(Handler(coroutineContext, LOCKED, priority) {
-        if (it.bot === this) {
-            it.listener(it)
-            ListeningStatus.STOPPED
-        } else ListeningStatus.LISTENING
-    })
 
 // endregion
 
 
-// region 为了兼容旧版本的方法
+// region subscribe for Kotlin functional reference
 
-@PlannedRemoval("1.2.0")
-@JvmName("subscribe")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-inline fun <reified E : Event> CoroutineScope.subscribeDeprecated(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = LOCKED,
-    noinline handler: suspend E.(E) -> ListeningStatus
-): Listener<E> = subscribe(
-    coroutineContext = coroutineContext,
-    concurrency = concurrency,
-    priority = MONITOR,
-    handler = handler
-)
 
-@PlannedRemoval("1.2.0")
-@JvmName("subscribe")
+/**
+ * 支持 Kotlin 带接收者的挂起函数的函数引用的监听方式.
+ *
+ * ```
+ * fun onMessage(event: GroupMessageEvent): ListeningStatus {
+ *     return ListeningStatus.LISTENING
+ * }
+ *
+ * scope.subscribe(::onMessage)
+ * ```
+ */
 @JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-fun <E : Event> CoroutineScope.subscribeDeprecated(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = LOCKED,
-    handler: suspend E.(E) -> ListeningStatus
-): Listener<E> = subscribe(
-    eventClass = eventClass,
-    coroutineContext = coroutineContext,
-    concurrency = concurrency,
-    priority = MONITOR,
-    handler = handler
-)
-
-@PlannedRemoval("1.2.0")
-@JvmName("subscribeAlways")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-inline fun <reified E : Event> CoroutineScope.subscribeAlwaysDeprecated(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = LOCKED,
-    noinline listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeAlways(
-    coroutineContext = coroutineContext,
-    concurrency = concurrency,
-    priority = MONITOR,
-    handler = listener
-)
-
-@PlannedRemoval("1.2.0")
-@JvmName("subscribeAlways")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-fun <E : Event> CoroutineScope.subscribeAlwaysDeprecated(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = LOCKED,
-    listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeAlways(
-    eventClass = eventClass,
-    coroutineContext = coroutineContext,
-    concurrency = concurrency,
-    priority = MONITOR,
-    handler = listener
-)
-
-@PlannedRemoval("1.2.0")
-@JvmName("subscribeOnce")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-inline fun <reified E : Event> CoroutineScope.subscribeOnceDeprecated(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    noinline listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeOnce(
-    coroutineContext = coroutineContext,
-    priority = MONITOR,
-    handler = listener
-)
-
-@PlannedRemoval("1.2.0")
-@JvmName("subscribeOnce")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-fun <E : Event> CoroutineScope.subscribeOnceDeprecated(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeOnce(
-    eventClass = eventClass,
-    coroutineContext = coroutineContext,
-    priority = MONITOR,
-    handler = listener
-)
-
-@PlannedRemoval("1.2.0")
-@JvmSynthetic
-@JvmName("subscribeAlwaysForBot")
-@OptIn(MiraiInternalAPI::class)
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-inline fun <reified E : BotEvent> Bot.subscribeDeprecated(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = LOCKED,
-    noinline handler: suspend E.(E) -> ListeningStatus
-): Listener<E> = this.subscribe(
-    coroutineContext = coroutineContext,
-    concurrency = concurrency,
-    priority = MONITOR,
-    handler = handler
-)
-
-@PlannedRemoval("1.2.0")
-@JvmSynthetic
-@JvmName("subscribe")
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-fun <E : BotEvent> Bot.subscribeDeprecated(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrency: Listener.ConcurrencyKind = LOCKED,
-    handler: suspend E.(E) -> ListeningStatus
-): Listener<E> = subscribe(
-    eventClass = eventClass,
-    coroutineContext = coroutineContext,
-    concurrency = concurrency,
-    priority = MONITOR,
-    handler = handler
-)
-
-@PlannedRemoval("1.2.0")
-@JvmSynthetic
-@JvmName("subscribeAlwaysForBot1")
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-@OptIn(MiraiInternalAPI::class)
-inline fun <reified E : BotEvent> Bot.subscribeAlwaysDeprecated(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+@LowPriorityInOverloadResolution
+@JvmName("subscribe1")
+inline fun <reified E : Event> CoroutineScope.subscribe(
+    crossinline handler: (E) -> ListeningStatus,
+    priority: Listener.EventPriority = NORMAL,
     concurrency: Listener.ConcurrencyKind = CONCURRENT,
-    noinline listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeAlways(
-    coroutineContext = coroutineContext,
-    concurrency = concurrency,
-    priority = MONITOR,
-    handler = listener
-)
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
-@PlannedRemoval("1.2.0")
+/**
+ * 支持 Kotlin 带接收者的函数的函数引用的监听方式.
+ *
+ * ```
+ * fun GroupMessageEvent.onMessage(event: GroupMessageEvent): ListeningStatus {
+ *     return ListeningStatus.LISTENING
+ * }
+ *
+ * scope.subscribe(GroupMessageEvent::onMessage)
+ * ```
+ */
 @JvmSynthetic
-@JvmName("subscribeAlways")
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-fun <E : BotEvent> Bot.subscribeAlwaysDeprecated(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+@LowPriorityInOverloadResolution
+@JvmName("subscribe2")
+inline fun <reified E : Event> CoroutineScope.subscribe(
+    crossinline handler: E.(E) -> ListeningStatus,
+    priority: Listener.EventPriority = NORMAL,
     concurrency: Listener.ConcurrencyKind = CONCURRENT,
-    listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeAlways(
-    eventClass = eventClass,
-    coroutineContext = coroutineContext,
-    concurrency = concurrency,
-    priority = MONITOR,
-    handler = listener
-)
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
-@PlannedRemoval("1.2.0")
+/**
+ * 支持 Kotlin 挂起函数的函数引用的监听方式.
+ *
+ * ```
+ * suspend fun onMessage(event: GroupMessageEvent): ListeningStatus {
+ *     return ListeningStatus.LISTENING
+ * }
+ *
+ * scope.subscribe(::onMessage)
+ * ```
+ */
 @JvmSynthetic
-@JvmName("subscribeOnceForBot2")
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-inline fun <reified E : BotEvent> Bot.subscribeOnceDeprecated(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    noinline listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeOnce(
-    coroutineContext = coroutineContext,
-    priority = MONITOR,
-    handler = listener
-)
+@LowPriorityInOverloadResolution
+@JvmName("subscribe1")
+inline fun <reified E : Event> CoroutineScope.subscribe(
+    crossinline handler: suspend (E) -> ListeningStatus,
+    priority: Listener.EventPriority = NORMAL,
+    concurrency: Listener.ConcurrencyKind = CONCURRENT,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
 
-@PlannedRemoval("1.2.0")
+/**
+ * 支持 Kotlin 带接收者的挂起函数的函数引用的监听方式.
+ *
+ * ```
+ * suspend fun GroupMessageEvent.onMessage(event: GroupMessageEvent): ListeningStatus {
+ *     return ListeningStatus.LISTENING
+ * }
+ *
+ * scope.subscribe(GroupMessageEvent::onMessage)
+ * ```
+ */
 @JvmSynthetic
-@JvmName("subscribeOnce")
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("unused")
-fun <E : BotEvent> Bot.subscribeOnceDeprecated(
-    eventClass: KClass<E>,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    listener: suspend E.(E) -> Unit
-): Listener<E> = subscribeOnce(
-    eventClass = eventClass,
-    coroutineContext = coroutineContext,
-    priority = MONITOR,
-    handler = listener
-)
+@LowPriorityInOverloadResolution
+@JvmName("subscribe3")
+inline fun <reified E : Event> CoroutineScope.subscribe(
+    crossinline handler: suspend E.(E) -> ListeningStatus,
+    priority: Listener.EventPriority = NORMAL,
+    concurrency: Listener.ConcurrencyKind = CONCURRENT,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
+
+
+// endregion
+
+
+// region subscribeAlways for Kotlin functional references
+
+
+/**
+ * 支持 Kotlin 带接收者的挂起函数的函数引用的监听方式.
+ * ```
+ * fun onMessage(event: GroupMessageEvent) {
+ *
+ * }
+ * scope.subscribeAlways(::onMessage)
+ * ```
+ */
+@JvmSynthetic
+@LowPriorityInOverloadResolution
+@JvmName("subscribeAlways1")
+inline fun <reified E : Event> CoroutineScope.subscribeAlways(
+    crossinline handler: (E) -> Unit,
+    priority: Listener.EventPriority = NORMAL,
+    concurrency: Listener.ConcurrencyKind = CONCURRENT,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
+
+/**
+ * 支持 Kotlin 带接收者的函数的函数引用的监听方式.
+ * ```
+ * fun GroupMessageEvent.onMessage(event: GroupMessageEvent) {
+ *
+ * }
+ * scope.subscribeAlways(GroupMessageEvent::onMessage)
+ * ```
+ */
+@JvmSynthetic
+@LowPriorityInOverloadResolution
+@JvmName("subscribeAlways1")
+inline fun <reified E : Event> CoroutineScope.subscribeAlways(
+    crossinline handler: E.(E) -> Unit,
+    priority: Listener.EventPriority = NORMAL,
+    concurrency: Listener.ConcurrencyKind = CONCURRENT,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
+
+/**
+ * 支持 Kotlin 挂起函数的函数引用的监听方式.
+ * ```
+ * suspend fun onMessage(event: GroupMessageEvent) {
+ *
+ * }
+ * scope.subscribeAlways(::onMessage)
+ * ```
+ */
+@JvmSynthetic
+@LowPriorityInOverloadResolution
+@JvmName("subscribe4")
+inline fun <reified E : Event> CoroutineScope.subscribeAlways(
+    crossinline handler: suspend (E) -> Unit,
+    priority: Listener.EventPriority = NORMAL,
+    concurrency: Listener.ConcurrencyKind = CONCURRENT,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
+
+/**
+ * 支持 Kotlin 带接收者的挂起函数的函数引用的监听方式.
+ * ```
+ * suspend fun GroupMessageEvent.onMessage(event: GroupMessageEvent) {
+ *
+ * }
+ * scope.subscribeAlways(GroupMessageEvent::onMessage)
+ * ```
+ */
+@JvmSynthetic
+@LowPriorityInOverloadResolution
+@JvmName("subscribe1")
+inline fun <reified E : Event> CoroutineScope.subscribeAlways(
+    crossinline handler: suspend E.(E) -> Unit,
+    priority: Listener.EventPriority = NORMAL,
+    concurrency: Listener.ConcurrencyKind = CONCURRENT,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
+
 // endregion
