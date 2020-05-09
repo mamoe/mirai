@@ -38,12 +38,10 @@ import kotlin.reflect.KProperty
  * - [asMessageChain] 将 [Iterable], 等类型消息
  * - [messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
  *
- * ### 消息链如何工作
- * - [SingleMessageChainImpl] 将 [单个消息][SingleMessage] 委托为一个 [MessageChain]
- *
  * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
  * @see getOrFail 获取消息链中一个类型的元素, 不存在时抛出异常 [NoSuchElementException]
- * @see quote 引用这条消息.
+ * @see quote 引用这条消息
+ * @see recall 撤回这条消息 (
  *
  * @see buildMessageChain 构造一个 [MessageChain]
  * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
