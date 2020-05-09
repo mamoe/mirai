@@ -81,7 +81,7 @@ sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
 }
 
 /**
- * [Bot] 主动重新登录.
+ * [Bot] 主动或被动重新登录.
  */
 data class BotReloginEvent(
     override val bot: Bot,
