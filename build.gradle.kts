@@ -18,6 +18,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.stdlib}")
         classpath("org.jetbrains.kotlin:kotlin-serialization:${Versions.Kotlin.stdlib}")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.Kotlin.atomicFU}")
+        classpath("org.jetbrains.kotlinx:binary-compatibility-validator:${Versions.Kotlin.binaryValidator}")
     }
 }
 
@@ -25,6 +26,10 @@ plugins {
     id("org.jetbrains.dokka") version Versions.Kotlin.dokka apply false
     // id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
 }
+
+// https://github.com/kotlin/binary-compatibility-validator
+apply(plugin = "binary-compatibility-validator")
+
 
 project.ext.set("isAndroidSDKAvailable", false)
 
