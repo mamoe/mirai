@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.event
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -31,7 +32,7 @@ import kotlin.jvm.Volatile
  * @see subscribeMessages
  *
  * @see [broadcast] 广播事件
- * @see [subscribe] 监听事件
+ * @see [CoroutineScope.subscribe] 监听事件
  */
 interface Event {
     /**

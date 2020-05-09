@@ -33,7 +33,7 @@ import kotlin.reflect.KClass
 @JvmSynthetic
 suspend inline fun <reified E : Event> nextEvent(
     timeoutMillis: Long = -1,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR
+    priority: Listener.EventPriority = EventPriority.MONITOR
 ): E {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return withTimeoutOrCoroutineScope(timeoutMillis) {
@@ -55,7 +55,7 @@ suspend inline fun <reified E : Event> nextEvent(
 @JvmSynthetic
 suspend inline fun <reified E : Event> nextEventOrNull(
     timeoutMillis: Long,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR
+    priority: Listener.EventPriority = EventPriority.MONITOR
 ): E? {
     return withTimeoutOrNull(timeoutMillis) {
         nextEventImpl(E::class, this, priority)
@@ -79,7 +79,7 @@ suspend inline fun <reified E : Event> nextEventOrNull(
 @JvmSynthetic
 suspend inline fun <reified E : BotEvent> Bot.nextEvent(
     timeoutMillis: Long = -1,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR
+    priority: Listener.EventPriority = EventPriority.MONITOR
 ): E {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return withTimeoutOrCoroutineScope(timeoutMillis) {

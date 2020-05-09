@@ -47,7 +47,7 @@ internal fun <E : Event> CoroutineScope.Handler(
 ): Handler<E> {
     @OptIn(ExperimentalCoroutinesApi::class) // don't remove
     val context = this.newCoroutineContext(coroutineContext)
-    return Handler(context[Job], context, handler, concurrencyKind, Listener.EventPriority.NORMAL)
+    return Handler(context[Job], context, handler, concurrencyKind, EventPriority.NORMAL)
 }
 
 
@@ -55,7 +55,7 @@ internal fun <E : Event> CoroutineScope.Handler(
 internal fun <E : Event> CoroutineScope.Handler(
     coroutineContext: CoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind,
-    priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    priority: Listener.EventPriority = EventPriority.NORMAL,
     handler: suspend (E) -> ListeningStatus
 ): Handler<E> {
     @OptIn(ExperimentalCoroutinesApi::class) // don't remove
@@ -163,7 +163,7 @@ internal suspend fun <E : AbstractEvent> callAndRemoveIfRequired(
         }
     }
     coroutineScope {
-        GlobalEventListeners[Listener.EventPriority.MONITOR].forEachNode { eventNode ->
+        GlobalEventListeners[EventPriority.MONITOR].forEachNode { eventNode ->
             if (event.isIntercepted) {
                 return@coroutineScope
             }

@@ -68,7 +68,7 @@ abstract class AbstractCancellableEvent : AbstractEvent(), CancellableEvent
 fun <R> Bot.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     listeners: MessagePacketSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -94,7 +94,7 @@ fun <R> Bot.subscribeMessages(
 fun <R> Bot.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     listeners: GroupMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -120,7 +120,7 @@ fun <R> Bot.subscribeGroupMessages(
 fun <R> Bot.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     listeners: FriendMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -147,7 +147,7 @@ fun <R> Bot.subscribeFriendMessages(
 fun <R> Bot.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     listeners: TempMessageSubscribersBuilder.() -> R
 ): R {
     contract {
@@ -172,7 +172,7 @@ fun <R> Bot.subscribeTempMessages(
 inline fun <reified E : BotEvent> Bot.incoming(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
     return Channel<E>(capacity).apply {
@@ -192,7 +192,7 @@ fun <R> CoroutineScope.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listeners: MessagePacketSubscribersBuilder.() -> R
-): R = this.subscribeMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+): R = this.subscribeMessages(coroutineContext, concurrencyKind, EventPriority.MONITOR, listeners)
 
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @kotlin.internal.LowPriorityInOverloadResolution
@@ -201,7 +201,7 @@ fun <R> CoroutineScope.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listeners: GroupMessageSubscribersBuilder.() -> R
-): R = this.subscribeGroupMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+): R = this.subscribeGroupMessages(coroutineContext, concurrencyKind, EventPriority.MONITOR, listeners)
 
 @kotlin.internal.LowPriorityInOverloadResolution
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -210,7 +210,7 @@ fun <R> CoroutineScope.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listeners: FriendMessageSubscribersBuilder.() -> R
-): R = this.subscribeFriendMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+): R = this.subscribeFriendMessages(coroutineContext, concurrencyKind, EventPriority.MONITOR, listeners)
 
 @kotlin.internal.LowPriorityInOverloadResolution
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -219,7 +219,7 @@ fun <R> CoroutineScope.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listeners: TempMessageSubscribersBuilder.() -> R
-): R = this.subscribeTempMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+): R = this.subscribeTempMessages(coroutineContext, concurrencyKind, EventPriority.MONITOR, listeners)
 
 @kotlin.internal.LowPriorityInOverloadResolution
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -228,7 +228,7 @@ fun <R> Bot.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listeners: MessagePacketSubscribersBuilder.() -> R
-): R = this.subscribeMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+): R = this.subscribeMessages(coroutineContext, concurrencyKind, EventPriority.MONITOR, listeners)
 
 @kotlin.internal.LowPriorityInOverloadResolution
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -237,7 +237,7 @@ fun <R> Bot.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listeners: GroupMessageSubscribersBuilder.() -> R
-): R = this.subscribeGroupMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+): R = this.subscribeGroupMessages(coroutineContext, concurrencyKind, EventPriority.MONITOR, listeners)
 
 @kotlin.internal.LowPriorityInOverloadResolution
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -246,7 +246,7 @@ fun <R> Bot.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listeners: FriendMessageSubscribersBuilder.() -> R
-): R = this.subscribeFriendMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+): R = this.subscribeFriendMessages(coroutineContext, concurrencyKind, EventPriority.MONITOR, listeners)
 
 @kotlin.internal.LowPriorityInOverloadResolution
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -255,4 +255,4 @@ fun <R> Bot.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
     listeners: TempMessageSubscribersBuilder.() -> R
-): R = this.subscribeTempMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
+): R = this.subscribeTempMessages(coroutineContext, concurrencyKind, EventPriority.MONITOR, listeners)

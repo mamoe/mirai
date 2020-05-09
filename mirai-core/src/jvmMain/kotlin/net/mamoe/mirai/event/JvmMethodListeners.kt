@@ -71,7 +71,7 @@ annotation class EventHandler(
      * @see Listener.EventPriority
      * @see Event.intercept
      */
-    val priority: Listener.EventPriority = Listener.EventPriority.NORMAL,
+    val priority: Listener.EventPriority = EventPriority.NORMAL,
     /**
      * 是否自动忽略被 [取消][CancellableEvent.isCancelled]
      * @see CancellableEvent

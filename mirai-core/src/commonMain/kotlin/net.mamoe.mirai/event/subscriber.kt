@@ -62,7 +62,7 @@ enum class ListeningStatus {
 
 /**
  * 事件监听器.
- * 由 [subscribe] 等方法返回.
+ * 由 [CoroutineScope.subscribe] 等方法返回.
  *
  * 取消监听: [complete]
  */
@@ -123,9 +123,9 @@ interface Listener<in E : Event> : CompletableJob {
     val priority: EventPriority get() = NORMAL
 
     /**
-     * 这个方法将会调用 [subscribe] 时提供的参数 `noinline handler: suspend E.(E) -> ListeningStatus`.
+     * 这个方法将会调用 [CoroutineScope.subscribe] 时提供的参数 `noinline handler: suspend E.(E) -> ListeningStatus`.
      *
-     * 这个函数不会抛出任何异常, 详见 [subscribe]
+     * 这个函数不会抛出任何异常, 详见 [CoroutineScope.subscribe]
      */
     suspend fun onEvent(event: E): ListeningStatus
 }
@@ -220,7 +220,7 @@ inline fun <reified E : Event> CoroutineScope.subscribe(
 ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority, handler)
 
 /**
- * 与 [subscribe] 的区别是接受 [eventClass] 参数, 而不使用 `reified` 泛型
+ * 与 [CoroutineScope.subscribe] 的区别是接受 [eventClass] 参数, 而不使用 `reified` 泛型
  *
  * @see CoroutineScope.subscribe
  *
@@ -281,7 +281,7 @@ fun <E : Event> CoroutineScope.subscribeAlways(
  * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
  * @param priority 处理优先级, 优先级高的先执行
  *
- * @see subscribe 获取更多说明
+ * @see CoroutineScope.subscribe 获取更多说明
  */
 @JvmSynthetic
 inline fun <reified E : Event> CoroutineScope.subscribeOnce(

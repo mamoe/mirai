@@ -97,7 +97,7 @@ internal class JvmMethodEventsTest {
                 called.getAndIncrement()
             }
 
-            @EventHandler(Listener.EventPriority.MONITOR)
+            @EventHandler(EventPriority.MONITOR)
             private fun TestEvent.`receiver param LS`(event: TestEvent): ListeningStatus {
                 called.getAndIncrement()
                 return ListeningStatus.STOPPED
