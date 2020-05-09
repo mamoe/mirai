@@ -41,7 +41,6 @@ import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.roundToInt
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 internal inline class FriendInfoImpl(
@@ -85,7 +84,7 @@ internal class FriendImpl(
     }
 
     @JvmSynthetic
-    @OptIn(MiraiInternalAPI::class, ExperimentalStdlibApi::class, ExperimentalTime::class)
+
     override suspend fun uploadImage(image: ExternalImage): Image = try {
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {

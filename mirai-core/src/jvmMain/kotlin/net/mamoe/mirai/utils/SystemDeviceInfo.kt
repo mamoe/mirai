@@ -36,7 +36,6 @@ fun File.loadAsDeviceInfo(context: Context = ContextImpl()): DeviceInfo {
 private val JSON = Json(JsonConfiguration.Stable)
 
 @Serializable
-@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
     actual constructor(context: Context) : this() {
         this.context = context

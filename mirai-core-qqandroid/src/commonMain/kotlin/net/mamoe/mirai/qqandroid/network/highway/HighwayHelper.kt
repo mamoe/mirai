@@ -26,7 +26,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.use
-import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
@@ -36,8 +35,6 @@ import net.mamoe.mirai.qqandroid.utils.addSuppressedMirai
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.withUse
 import net.mamoe.mirai.qqandroid.utils.toIpV4AddressString
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.internal.ReusableInput
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.EmptyCoroutineContext
@@ -45,7 +42,7 @@ import kotlin.math.roundToInt
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
+
 @Suppress("SpellCheckingInspection")
 internal suspend fun HttpClient.postImage(
     htcmd: String,
@@ -77,7 +74,7 @@ internal suspend fun HttpClient.postImage(
         override val contentType: ContentType = ContentType.Image.Any
         override val contentLength: Long = imageInput.size
 
-        @OptIn(MiraiExperimentalAPI::class)
+
         override suspend fun writeTo(channel: ByteWriteChannel) {
             imageInput.writeTo(channel)
 
@@ -85,7 +82,7 @@ internal suspend fun HttpClient.postImage(
     }
 } == HttpStatusCode.OK
 
-@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
+
 internal object HighwayHelper {
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     suspend fun uploadImageToServers(

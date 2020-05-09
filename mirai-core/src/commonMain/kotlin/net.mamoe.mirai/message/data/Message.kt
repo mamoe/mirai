@@ -17,9 +17,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message.Key
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -78,7 +76,6 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see Contact.sendMessage 发送消息
  */
-@OptIn(MiraiInternalAPI::class)
 interface Message { // must be interface. Don't consider any changes.
     /**
      * 类型 Key. 由伴生对象实现, 表示一个 [Message] 对象的类型.
@@ -205,7 +202,6 @@ inline val Message.content: String
  * - [PlainText] 长度为 0
  * - [MessageChain] 所有元素都满足 [isContentEmpty]
  */
-@OptIn(ExperimentalContracts::class)
 fun Message.isContentEmpty(): Boolean {
     contract {
         returns(false) implies (this@isContentEmpty is MessageContent)
@@ -218,7 +214,6 @@ fun Message.isContentEmpty(): Boolean {
     }
 }
 
-@OptIn(ExperimentalContracts::class)
 inline fun Message.isContentNotEmpty(): Boolean {
     contract {
         returns(true) implies (this@isContentNotEmpty is MessageContent)
@@ -226,7 +221,6 @@ inline fun Message.isContentNotEmpty(): Boolean {
     return !this.isContentEmpty()
 }
 
-@OptIn(ExperimentalContracts::class)
 inline fun Message.isPlain(): Boolean {
     contract {
         returns(true) implies (this@isPlain is PlainText)
@@ -235,7 +229,6 @@ inline fun Message.isPlain(): Boolean {
     return this is PlainText
 }
 
-@OptIn(ExperimentalContracts::class)
 inline fun Message.isNotPlain(): Boolean {
     contract {
         returns(false) implies (this@isNotPlain is PlainText)

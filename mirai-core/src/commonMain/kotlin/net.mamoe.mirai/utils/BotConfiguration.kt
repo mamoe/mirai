@@ -29,7 +29,6 @@ open class BotConfiguration {
     var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot(${it.id})") }
 
     /** 网络层日志构造器 */
-    @OptIn(MiraiInternalAPI::class)
     var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.id})") }
 
     /** 设备信息覆盖. 默认使用随机的设备信息. */
@@ -99,7 +98,6 @@ open class BotConfiguration {
     /**
      * 不显示网络日志
      */
-    @OptIn(MiraiInternalAPI::class)
     @ConfigurationDsl
     fun noNetworkLog() {
         networkLoggerSupplier = { _: BotNetworkHandler -> SilentLogger }
@@ -137,7 +135,6 @@ open class BotConfiguration {
 
     @SinceMirai("1.0.0")
     fun copy(): BotConfiguration {
-        @OptIn(MiraiExperimentalAPI::class)
         return BotConfiguration().also { new ->
             new.botLoggerSupplier = botLoggerSupplier
             new.networkLoggerSupplier = networkLoggerSupplier

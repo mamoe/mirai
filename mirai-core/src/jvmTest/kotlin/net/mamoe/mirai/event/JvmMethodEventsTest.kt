@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("RedundantSuspendModifier", "unused")
+@file:Suppress("RedundantSuspendModifier", "unused", "UNUSED_PARAMETER")
 
 package net.mamoe.mirai.event
 
@@ -28,32 +28,38 @@ internal class JvmMethodEventsTest {
 
             fun getCalled() = called.get()
 
+            @Suppress("unused")
             @EventHandler
             suspend fun TestEvent.`suspend receiver param Unit`(event: TestEvent) {
                 called.getAndIncrement()
             }
 
+            @Suppress("unused")
             @EventHandler
             suspend fun TestEvent.`suspend receiver Unit`() {
                 called.getAndIncrement()
             }
 
+            @Suppress("unused")
             @EventHandler
             suspend fun `suspend param Unit`(event: TestEvent) {
                 called.getAndIncrement()
             }
 
             @EventHandler
+            @Suppress("unused")
             fun TestEvent.`receiver param Unit`(event: TestEvent) {
                 called.getAndIncrement()
             }
 
             @EventHandler
+            @Suppress("unused")
             suspend fun TestEvent.`suspend receiver param LS`(event: TestEvent): ListeningStatus {
                 called.getAndIncrement()
                 return ListeningStatus.STOPPED
             }
 
+            @Suppress("unused")
             @EventHandler
             suspend fun TestEvent.`suspend receiver LS`(): ListeningStatus {
                 called.getAndIncrement()
@@ -61,12 +67,14 @@ internal class JvmMethodEventsTest {
             }
 
             @EventHandler
+            @Suppress("unused")
             suspend fun `suspend param LS`(event: TestEvent): ListeningStatus {
                 called.getAndIncrement()
                 return ListeningStatus.STOPPED
             }
 
             @EventHandler
+            @Suppress("unused")
             fun TestEvent.`receiver param LS`(event: TestEvent): ListeningStatus {
                 called.getAndIncrement()
                 return ListeningStatus.STOPPED
@@ -91,13 +99,15 @@ internal class JvmMethodEventsTest {
 
             fun getCalled() = called.get()
 
-            @EventHandler(Listener.EventPriority.HIGHEST)
+            @Suppress("unused")
+            @EventHandler(EventPriority.HIGHEST)
             private suspend fun TestEvent.`suspend receiver param Unit`(event: TestEvent) {
                 intercept()
                 called.getAndIncrement()
             }
 
             @EventHandler(EventPriority.MONITOR)
+            @Suppress("unused")
             private fun TestEvent.`receiver param LS`(event: TestEvent): ListeningStatus {
                 called.getAndIncrement()
                 return ListeningStatus.STOPPED

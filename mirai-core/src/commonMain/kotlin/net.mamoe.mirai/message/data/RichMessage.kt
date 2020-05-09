@@ -227,5 +227,5 @@ internal class LongMessage internal constructor(content: String, val resId: Stri
     }
 }
 
-@OptIn(MiraiExperimentalAPI::class)
+
 internal class ForwardMessageInternal(content: String) : ServiceMessage(35, content)

@@ -12,7 +12,6 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmMultifileClass
@@ -53,7 +52,7 @@ internal constructor(
 
     private var toStringCache: String? = null
 
-    @OptIn(MiraiExperimentalAPI::class)
+
     override fun toString(): String = toStringCache ?: (left.toString() + tail.toString()).also { toStringCache = it }
 
     private var contentToStringCache: String? = null
@@ -70,7 +69,7 @@ internal constructor(
 /*
 @JvmSynthetic
 // 不要把它用作 local function, 会编译错误
-@OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
+
 private suspend fun SequenceScope<SingleMessage>.yieldCombinedOrElementsFlatten(message: Message) {
     when (message) {
         is CombinedMessage -> {

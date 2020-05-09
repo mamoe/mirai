@@ -14,7 +14,6 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmSynthetic
 import kotlin.jvm.Volatile
@@ -142,7 +141,6 @@ interface CancellableEvent : Event {
 /**
  * 广播一个事件的唯一途径.
  */
-@OptIn(MiraiInternalAPI::class)
 suspend fun <E : Event> E.broadcast(): E = apply {
     if (this is BroadcastControllable && !this.shouldBroadcast) {
         return@apply

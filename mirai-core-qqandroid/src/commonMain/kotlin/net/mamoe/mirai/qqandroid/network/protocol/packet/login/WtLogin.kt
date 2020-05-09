@@ -10,7 +10,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 
-import io.ktor.util.InternalAPI
 import kotlinx.io.core.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.*
@@ -20,8 +19,6 @@ import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.qqandroid.utils.guidFlag
 import net.mamoe.mirai.qqandroid.utils.io.*
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.error
 
@@ -30,7 +27,6 @@ internal class WtLogin {
      * OicqRequest
      */
     @Suppress("FunctionName")
-    @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     internal object Login : OutgoingPacketFactory<Login.LoginPacketResponse>("wtlogin.login") {
         /**
          * 提交验证码
@@ -125,7 +121,6 @@ internal class WtLogin {
         object SubCommand9 {
             private const val appId = 16L
 
-            @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
             operator fun invoke(
                 client: QQAndroidClient
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
@@ -306,7 +301,6 @@ internal class WtLogin {
             }
         }
 
-        @InternalAPI
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
 
             discardExact(2) // subCommand
@@ -364,7 +358,6 @@ internal class WtLogin {
             }
         }
 
-        @InternalAPI
         private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
             /*
             java.lang.IllegalStateException: UNKNOWN CAPTCHA QUESTION:

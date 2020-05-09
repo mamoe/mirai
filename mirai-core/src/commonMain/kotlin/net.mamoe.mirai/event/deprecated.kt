@@ -26,7 +26,6 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -64,7 +63,6 @@ abstract class AbstractCancellableEvent : AbstractEvent(), CancellableEvent
     level = DeprecationLevel.HIDDEN
 )
 @kotlin.internal.LowPriorityInOverloadResolution
-@OptIn(ExperimentalContracts::class)
 fun <R> Bot.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
@@ -90,7 +88,6 @@ fun <R> Bot.subscribeMessages(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-@OptIn(ExperimentalContracts::class)
 fun <R> Bot.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
@@ -116,7 +113,6 @@ fun <R> Bot.subscribeGroupMessages(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-@OptIn(ExperimentalContracts::class)
 fun <R> Bot.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
@@ -143,7 +139,6 @@ fun <R> Bot.subscribeFriendMessages(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-@OptIn(ExperimentalContracts::class)
 fun <R> Bot.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,

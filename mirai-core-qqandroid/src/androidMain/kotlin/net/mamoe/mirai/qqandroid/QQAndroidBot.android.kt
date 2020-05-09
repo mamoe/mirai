@@ -21,7 +21,6 @@ import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.nio.ByteBuffer
 
-@OptIn(MiraiInternalAPI::class)
 @Suppress("DEPRECATION")
 internal actual fun ByteReadChannel.toKotlinByteReadChannel(): kotlinx.coroutines.io.ByteReadChannel {
     return object : kotlinx.coroutines.io.ByteReadChannel {

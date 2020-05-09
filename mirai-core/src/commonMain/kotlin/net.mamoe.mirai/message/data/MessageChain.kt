@@ -15,7 +15,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.js.JsName
@@ -173,7 +172,6 @@ inline fun <reified M : Message> MessageChain.anyIsInstance(): Boolean = this.an
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
-@OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = firstOrNullImpl(key)
@@ -278,7 +276,6 @@ inline fun messageChainOf(vararg messages: Message): MessageChain = messages.asM
 @JvmName("newChain")
 @JsName("newChain")
 @Suppress("UNCHECKED_CAST")
-@OptIn(MiraiInternalAPI::class)
 fun Message.asMessageChain(): MessageChain = when (this) {
     is MessageChain -> this
     is CombinedMessage -> (this as Iterable<Message>).asMessageChain()
@@ -409,7 +406,6 @@ inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.as
  * - 其他: 返回 `sequenceOf(this)`
  */
 fun Message.flatten(): Sequence<SingleMessage> {
-    @OptIn(MiraiInternalAPI::class)
     return when (this) {
         is MessageChain -> this.asSequence()
         is CombinedMessage -> this.asSequence() // already constrained single.

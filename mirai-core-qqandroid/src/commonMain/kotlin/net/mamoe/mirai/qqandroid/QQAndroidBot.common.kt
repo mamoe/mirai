@@ -70,7 +70,6 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
 }
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument")
-@OptIn(MiraiInternalAPI::class)
 internal class QQAndroidBot constructor(
     context: Context,
     account: BotAccount,
@@ -232,7 +231,7 @@ internal class QQAndroidBot constructor(
     }
 }
 
-@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
+
 internal abstract class QQAndroidBotBase constructor(
     context: Context,
     private val account: BotAccount,
@@ -771,11 +770,9 @@ internal abstract class QQAndroidBotBase constructor(
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
 @Suppress("DEPRECATION")
-@OptIn(MiraiInternalAPI::class)
 internal expect fun io.ktor.utils.io.ByteReadChannel.toKotlinByteReadChannel(): ByteReadChannel
 
 
-@OptIn(MiraiInternalAPI::class)
 private fun RichMessage.Templates.longMessage(brief: String, resId: String, timeSeconds: Long): RichMessage {
     val limited: String = if (brief.length > 30) {
         brief.take(30) + "…"

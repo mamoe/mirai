@@ -20,7 +20,6 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.event.*
-import net.mamoe.mirai.event.Listener.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
@@ -50,10 +49,8 @@ import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmField
 import kotlin.jvm.Volatile
-import kotlin.time.ExperimentalTime
 
 @Suppress("MemberVisibilityCanBePrivate")
-@OptIn(MiraiInternalAPI::class)
 internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bot: QQAndroidBot) : BotNetworkHandler() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(coroutineContext[Job])
@@ -114,7 +111,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }.also { heartbeatJob = it }
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
+
     override suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable?) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
@@ -314,7 +311,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         initGroupOk = true
     }
 
-    @OptIn(MiraiExperimentalAPI::class, ExperimentalTime::class)
+
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
@@ -390,7 +387,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     }
 
     init {
-        val listener = bot.subscribeAlways<BotReloginEvent>(priority = MONITOR) {
+        @Suppress("RemoveRedundantQualifierName")
+        val listener = bot.subscribeAlways<BotReloginEvent>(priority = Listener.EventPriority.MONITOR) {
             if (bot != this.bot) return@subscribeAlways
             this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
         }

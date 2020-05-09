@@ -81,7 +81,6 @@ internal actual class PlatformSocket : Closeable {
         }
     }
 
-    @OptIn(ExperimentalIoApi::class)
     actual suspend fun connect(coroutineContext: CoroutineContext, serverHost: String, serverPort: Int) {
         withContext(Dispatchers.IO) {
             socket = Socket(serverHost, serverPort)

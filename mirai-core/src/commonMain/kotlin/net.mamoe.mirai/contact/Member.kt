@@ -18,7 +18,6 @@ import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessage
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
@@ -34,7 +33,7 @@ import kotlin.time.ExperimentalTime
  * [Member.isFriend] 判断此成员是否为好友
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
+@OptIn(JavaFriendlyAPI::class)
 abstract class Member : MemberJavaFriendlyAPI() {
     /**
      * 所在的群.

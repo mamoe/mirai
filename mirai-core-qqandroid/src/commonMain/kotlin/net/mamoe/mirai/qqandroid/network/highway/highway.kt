@@ -14,20 +14,18 @@ package net.mamoe.mirai.qqandroid.network.highway
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
-import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.internal.ChunkedFlowSession
 import net.mamoe.mirai.utils.internal.ChunkedInput
 import net.mamoe.mirai.utils.internal.ReusableInput
 import net.mamoe.mirai.utils.internal.map
 
-@OptIn(MiraiInternalAPI::class, InternalSerializationApi::class)
+
 internal fun createImageDataPacketSequence(
     // RequestDataTrans
     client: QQAndroidClient,

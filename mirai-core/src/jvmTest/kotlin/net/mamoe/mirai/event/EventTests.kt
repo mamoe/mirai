@@ -219,7 +219,6 @@ class EventTests {
     */
     fun resetEventListeners() {
         for (p in Listener.EventPriority.values()) {
-            @OptIn(MiraiInternalAPI::class)
             GlobalEventListeners[p].clear()
         }
     }

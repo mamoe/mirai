@@ -18,7 +18,6 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -42,7 +41,6 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageReceipt.sourceId 源 id
  * @see MessageReceipt.sourceTime 源时间
  */
-@OptIn(MiraiInternalAPI::class)
 open class MessageReceipt<out C : Contact>(
     /**
      * 指代发送出去的消息.

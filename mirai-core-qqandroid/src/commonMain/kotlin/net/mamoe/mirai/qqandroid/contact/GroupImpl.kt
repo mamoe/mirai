@@ -36,13 +36,11 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.utils.*
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalContracts::class)
 internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     contract {
         returns() implies (instance is GroupImpl)
@@ -50,7 +48,6 @@ internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     check(instance is GroupImpl) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
 }
 
-@OptIn(ExperimentalContracts::class)
 internal fun Group.checkIsGroupImpl() {
     contract {
         returns() implies (this@checkIsGroupImpl is GroupImpl)
@@ -58,7 +55,6 @@ internal fun Group.checkIsGroupImpl() {
     GroupImpl.checkIsInstance(this)
 }
 
-@OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
 @Suppress("PropertyName")
 internal class GroupImpl(
     bot: QQAndroidBot,
@@ -249,10 +245,8 @@ internal class GroupImpl(
         return true
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
     override fun newMember(memberInfo: MemberInfo): Member {
         return MemberImpl(
-            @OptIn(LowLevelAPI::class)
             bot._lowLevelNewFriend(memberInfo) as FriendImpl,
             this,
             this.coroutineContext,
@@ -290,7 +284,6 @@ internal class GroupImpl(
         return members.firstOrNull { it.id == id }
     }
 
-    @OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         require(message.isContentNotEmpty()) { "message is empty" }
@@ -301,7 +294,6 @@ internal class GroupImpl(
         }
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
     private suspend fun sendMessageImpl(message: Message, isForward: Boolean): MessageReceipt<Group> {
         if (message is MessageChain) {
             if (message.anyIsInstance<ForwardMessage>()) {

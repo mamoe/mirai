@@ -14,7 +14,6 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 /**
  * 有关一个 [Bot] 的事件
@@ -76,7 +75,6 @@ val GroupOperableEvent.isByBot: Boolean
  * 当操作人为 [Member] 时获取这个 [Member],
  * 当操作人为 [Bot] 时获取 [Group.botAsMember]
  */
-@OptIn(MiraiExperimentalAPI::class)
 val GroupOperableEvent.operatorOrBot: Member
     get() = this.operator ?: this.group.botAsMember
 

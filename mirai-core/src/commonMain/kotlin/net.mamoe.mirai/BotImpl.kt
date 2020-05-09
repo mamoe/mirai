@@ -30,7 +30,6 @@ import kotlin.time.measureTime
 /*
  * 泛型 N 不需要向外(接口)暴露.
  */
-@OptIn(MiraiExperimentalAPI::class)
 @MiraiInternalAPI
 abstract class BotImpl<N : BotNetworkHandler> constructor(
     context: Context,
@@ -254,7 +253,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         }
     }
 
-    @OptIn(MiraiInternalAPI::class)
+
     override fun close(cause: Throwable?) {
         if (!this.isActive) {
             // already cancelled

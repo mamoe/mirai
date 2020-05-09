@@ -13,7 +13,6 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -48,7 +47,6 @@ inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> 
  * @see buildMessageChain 推荐使用
  * @see asMessageChain 完成构建
  */
-@OptIn(MiraiExperimentalAPI::class)
 open class MessageChainBuilder private constructor(
     private val container: MutableList<SingleMessage>
 ) : MutableList<SingleMessage> by container, Appendable {

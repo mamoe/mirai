@@ -14,7 +14,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -23,9 +22,6 @@ import kotlin.native.concurrent.SharedImmutable
 /////////////////////////
 //// IMPLEMENTATIONS ////
 /////////////////////////
-
-
-@OptIn(MiraiInternalAPI::class)
 private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
     return when (this) {
         is SingleMessage -> (this as? ConstrainSingle<*>)?.key == key
@@ -129,7 +125,6 @@ internal fun Message.followedByImpl(tail: Message): MessageChain {
 }
 
 
-@OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
 internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
     val iterator = this.iterator()
@@ -169,7 +164,7 @@ internal inline fun constrainSingleMessagesImpl(iterator: () -> SingleMessage?):
 }
 
 @JvmSynthetic
-@OptIn(MiraiExperimentalAPI::class)
+
 internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
     val iterator = this.iterator()
     return constrainSingleMessagesImpl supplier@{
@@ -189,7 +184,6 @@ internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Bool
 }
 
 
-@OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR", "DEPRECATION")
 internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M? = when (key) {

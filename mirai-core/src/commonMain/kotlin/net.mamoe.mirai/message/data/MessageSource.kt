@@ -20,8 +20,6 @@ import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.LazyProperty
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
@@ -58,7 +56,6 @@ import kotlin.jvm.JvmSynthetic
  * @see OnlineMessageSource 在线消息的 [MessageSource]
  * @see OfflineMessageSource 离线消息的 [MessageSource]
  */
-@OptIn(MiraiExperimentalAPI::class)
 sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
     companion object Key : Message.Key<MessageSource> {
         override val typeName: String get() = "MessageSource"
@@ -156,7 +153,6 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
  *
  * @see OnlineMessageSource.toOffline 转为 [OfflineMessageSource]
  */
-@OptIn(MiraiExperimentalAPI::class)
 sealed class OnlineMessageSource : MessageSource() {
     companion object Key : Message.Key<OnlineMessageSource> {
         override val typeName: String get() = "OnlineMessageSource"
@@ -336,7 +332,7 @@ inline fun MessageSource.isAboutFriend(): Boolean {
  * @see QuoteReply
  */
 fun MessageSource.quote(): QuoteReply {
-    @OptIn(MiraiInternalAPI::class)
+
     return QuoteReply(this)
 }
 
@@ -345,7 +341,7 @@ fun MessageSource.quote(): QuoteReply {
  * @see QuoteReply
  */
 fun MessageChain.quote(): QuoteReply {
-    @OptIn(MiraiInternalAPI::class)
+
     return QuoteReply(this.source)
 }
 

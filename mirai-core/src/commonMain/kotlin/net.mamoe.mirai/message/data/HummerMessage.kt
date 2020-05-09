@@ -15,8 +15,6 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.message.data.VipFace.Companion
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.*
 
 /**
@@ -42,7 +40,6 @@ sealed class HummerMessage : MessageContent {
  *
  * @see Types 使用伴生对象中的常量
  */
-@OptIn(MiraiInternalAPI::class)
 data class PokeMessage internal constructor(
     /**
      * 仅 mirai, 显示的名称
@@ -133,7 +130,7 @@ data class PokeMessage internal constructor(
         )
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
+
     private val stringValue = "[mirai:poke:$type,$id]"
 
     override fun toString(): String = stringValue
@@ -155,7 +152,6 @@ data class PokeMessage internal constructor(
  *
  * @see Types 使用伴生对象中的常量
  */
-@OptIn(MiraiInternalAPI::class)
 data class VipFace internal constructor(
     /**
      * 使用 [Companion] 中常量.
@@ -217,7 +213,7 @@ data class VipFace internal constructor(
         private infix fun Int.to(name: String): Kind = Kind(this, name)
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
+
     private val stringValue = "[mirai:vipface:$kind,$count]"
 
     override fun toString(): String = stringValue
@@ -245,7 +241,7 @@ sealed class FlashImage : MessageContent, HummerMessage() {
         @JvmStatic
         @JvmName("from")
         operator fun invoke(image: Image): FlashImage {
-            @OptIn(MiraiInternalAPI::class)
+
             return when (image) {
                 is GroupImage -> GroupFlashImage(image)
                 is FriendImage -> FriendFlashImage(image)

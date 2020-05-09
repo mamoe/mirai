@@ -22,7 +22,6 @@ import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.TempMessageEvent
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -39,7 +38,7 @@ typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessageEve
  *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
-@OptIn(ExperimentalContracts::class)
+
 fun <R> CoroutineScope.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
@@ -73,7 +72,6 @@ typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessag
  *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
-@OptIn(ExperimentalContracts::class)
 fun <R> CoroutineScope.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
@@ -101,7 +99,6 @@ typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<FriendMess
  *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
-@OptIn(ExperimentalContracts::class)
 fun <R> CoroutineScope.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
@@ -129,7 +126,6 @@ typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessageE
  *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
-@OptIn(ExperimentalContracts::class)
 fun <R> CoroutineScope.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,

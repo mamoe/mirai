@@ -125,14 +125,13 @@ actual abstract class BotJavaFriendlyAPI actual constructor() {
      * @param message 若需要验证请求时的验证消息.
      * @param remark 好友备注
      */
-    @OptIn(MiraiExperimentalAPI::class)
     @JvmName("addFriend")
     fun __addFriendBlockingForJava__(
         id: Long,
         message: String? = null,
         remark: String? = null
     ): AddFriendResult {
-        @OptIn(MiraiExperimentalAPI::class)
+
         return runBlocking { addFriend(id, message, remark) }
     }
 

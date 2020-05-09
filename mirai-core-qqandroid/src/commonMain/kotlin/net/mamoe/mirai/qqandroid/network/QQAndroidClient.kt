@@ -35,7 +35,6 @@ internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddre
  * Defaults "%4;7t>;28<fc.5*6".toByteArray()
  */
 @Suppress("RemoveRedundantQualifierName") // bug
-@OptIn(MiraiInternalAPI::class)
 private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
     net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils.md5(androidId + macAddress)
 
@@ -68,7 +67,6 @@ internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
  DOMAINS
  Pskey: "openmobile.qq.com"
  */
-@OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
 @PublishedApi
 internal open class QQAndroidClient(
     context: Context,
@@ -270,7 +268,6 @@ internal open class QQAndroidClient(
 }
 
 @Suppress("RemoveRedundantQualifierName") // bug
-@OptIn(MiraiInternalAPI::class)
 internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
     net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils.md5(getRandomByteArray(16) + guid)
 

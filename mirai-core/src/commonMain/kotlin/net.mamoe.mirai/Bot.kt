@@ -49,7 +49,6 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-@OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
 abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(), ContactOrBot {
     companion object {
         /**
@@ -269,7 +268,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      */
     abstract fun close(cause: Throwable? = null)
 
-    @OptIn(LowLevelAPI::class, MiraiExperimentalAPI::class)
     final override fun toString(): String = "Bot($id)"
 
     /**

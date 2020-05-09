@@ -5,7 +5,7 @@ import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(MiraiInternalAPI::class)
+
 internal class CombinedMessageTest {
 
 

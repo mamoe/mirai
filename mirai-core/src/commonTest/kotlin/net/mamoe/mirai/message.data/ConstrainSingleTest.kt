@@ -9,15 +9,12 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 
-@OptIn(MiraiExperimentalAPI::class)
 internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleMessage>, Any() {
     companion object Key : Message.Key<TestConstrainSingleMessage> {
         override val typeName: String
@@ -30,10 +27,10 @@ internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleM
         get() = Key
 }
 
-@OptIn(MiraiExperimentalAPI::class)
+
 internal class ConstrainSingleTest {
 
-    @OptIn(MiraiInternalAPI::class)
+
     @Test
     fun testCombine() {
         val result = PlainText("te") + PlainText("st")

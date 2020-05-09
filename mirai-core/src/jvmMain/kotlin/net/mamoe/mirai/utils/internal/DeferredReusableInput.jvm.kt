@@ -15,7 +15,7 @@ internal actual class DeferredReusableInput actual constructor(
 ) : ReusableInput {
 
 
-    @OptIn(MiraiExperimentalAPI::class)
+
     actual suspend fun init(strategy: FileCacheStrategy) = withContext(Dispatchers.IO) {
         if (delegate != null) {
             return@withContext

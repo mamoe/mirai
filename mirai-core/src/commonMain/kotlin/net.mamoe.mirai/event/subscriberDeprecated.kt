@@ -22,7 +22,6 @@ import net.mamoe.mirai.event.Listener.EventPriority.NORMAL
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -41,7 +40,6 @@ import kotlin.reflect.KClass
 @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
 @JvmSynthetic
 @JvmName("subscribeAlwaysForBot")
-@OptIn(MiraiInternalAPI::class)
 @kotlin.internal.LowPriorityInOverloadResolution
 @Deprecated(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
@@ -80,7 +78,6 @@ fun <E : BotEvent> Bot.subscribe(
 @JvmSynthetic
 @JvmName("subscribeAlwaysForBot1")
 @kotlin.internal.LowPriorityInOverloadResolution
-@OptIn(MiraiInternalAPI::class)
 @Deprecated(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
@@ -248,7 +245,6 @@ fun <E : Event> CoroutineScope.subscribeOnceDeprecated(
 @PlannedRemoval("1.2.0")
 @JvmSynthetic
 @JvmName("subscribeAlwaysForBot")
-@OptIn(MiraiInternalAPI::class)
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
 inline fun <reified E : BotEvent> Bot.subscribeDeprecated(
@@ -285,7 +281,6 @@ fun <E : BotEvent> Bot.subscribeDeprecated(
 @JvmName("subscribeAlwaysForBot1")
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-@OptIn(MiraiInternalAPI::class)
 inline fun <reified E : BotEvent> Bot.subscribeAlwaysDeprecated(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = CONCURRENT,

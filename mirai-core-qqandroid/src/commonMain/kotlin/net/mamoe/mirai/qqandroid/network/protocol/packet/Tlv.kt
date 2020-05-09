@@ -20,7 +20,6 @@ import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.qqandroid.utils.io.*
 import net.mamoe.mirai.qqandroid.utils.toByteArray
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeMillis
 import kotlin.random.Random
 
@@ -80,7 +79,7 @@ internal fun BytePacketBuilder.t18(
     } shouldEqualsTo 22
 }
 
-@OptIn(MiraiInternalAPI::class)
+
 internal fun BytePacketBuilder.t106(
     appId: Long = 16L,
     subAppId: Long,
@@ -326,7 +325,7 @@ internal fun BytePacketBuilder.t144(
     }
 }
 
-@OptIn(MiraiInternalAPI::class)
+
 internal fun BytePacketBuilder.t109(
     androidId: ByteArray
 ) {
@@ -562,7 +561,7 @@ internal fun BytePacketBuilder.t400(
     }
 }
 
-@OptIn(MiraiInternalAPI::class)
+
 internal fun BytePacketBuilder.t187(
     macAddress: ByteArray
 ) {
@@ -572,7 +571,7 @@ internal fun BytePacketBuilder.t187(
     }
 }
 
-@OptIn(MiraiInternalAPI::class)
+
 internal fun BytePacketBuilder.t188(
     androidId: ByteArray
 ) {

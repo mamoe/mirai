@@ -186,7 +186,6 @@ actual interface FileCacheStrategy {
     }
 }
 
-@OptIn(ExperimentalContracts::class)
 internal inline fun <I : Closeable, O : Closeable, R> I.withOut(output: O, block: I.(output: O) -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)

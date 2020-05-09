@@ -54,7 +54,6 @@ internal sealed class PacketFactory<TPacket : Packet?> {
  *
  * @param TPacket 服务器回复包解析结果
  */
-@OptIn(ExperimentalUnsignedTypes::class)
 internal abstract class OutgoingPacketFactory<TPacket : Packet?>(
     /**
      * 命令名. 如 `wtlogin.login`, `ConfigPushSvc.PushDomain`
@@ -125,7 +124,6 @@ internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>,
 @PublishedApi
 internal val PacketLogger: MiraiLoggerWithSwitch = DefaultLogger("Packet").withSwitch(false)
 
-@OptIn(ExperimentalUnsignedTypes::class)
 internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(
         WtLogin.Login,
@@ -174,7 +172,6 @@ internal object KnownPacketFactories {
     }
 
     // do not inline. Exceptions thrown will not be reported correctly
-    @OptIn(MiraiInternalAPI::class)
     @Suppress("UNCHECKED_CAST")
     suspend fun <T : Packet?> parseIncomingPacket(
         bot: QQAndroidBot,
@@ -235,7 +232,6 @@ internal object KnownPacketFactories {
             }
         }
 
-    @OptIn(MiraiInternalAPI::class)
     internal suspend fun <T : Packet?> handleIncomingPacket(
         it: IncomingPacket<T>,
         bot: QQAndroidBot,
@@ -296,7 +292,6 @@ internal object KnownPacketFactories {
         lateinit var consumer: PacketConsumer<T>
     }
 
-    @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     private fun parseSsoFrame(bot: QQAndroidBot, input: ByteReadPacket): IncomingPacket<*> {
         val commandName: String
         val ssoSequenceId: Int
@@ -355,7 +350,6 @@ internal object KnownPacketFactories {
         return IncomingPacket(packetFactory, ssoSequenceId, packet, commandName)
     }
 
-    @OptIn(MiraiInternalAPI::class)
     private suspend fun <T : Packet?> ByteReadPacket.parseOicqResponse(
         bot: QQAndroidBot,
         packetFactory: OutgoingPacketFactory<T>,

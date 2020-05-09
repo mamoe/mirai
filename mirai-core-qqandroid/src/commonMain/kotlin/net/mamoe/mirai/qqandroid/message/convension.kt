@@ -36,7 +36,6 @@ private val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最�
 private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版手机QQ查看闪照。")
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = ArrayList<ImMsgBody.Elem>(this.size)
 
@@ -302,7 +301,6 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
 internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@OptIn(MiraiInternalAPI::class, LowLevelAPI::class, ExperimentalStdlibApi::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, list: MessageChainBuilder) {
     // (this._miraiContentToString())
     this.forEach { element ->

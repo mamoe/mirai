@@ -24,11 +24,8 @@ import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.verbose
 
-@OptIn(MiraiInternalAPI::class)
 internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: Message): MessageReceipt<T> {
     val event = MessageSendEvent.FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
     if (event.isCancelled) {
@@ -50,7 +47,6 @@ internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: M
     return MessageReceipt(source, generic, null)
 }
 
-@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun Contact.logMessageSent(message: Message) {
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     if (message !is net.mamoe.mirai.message.data.LongMessage) {
@@ -58,7 +54,6 @@ internal fun Contact.logMessageSent(message: Message) {
     }
 }
 
-@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageEvent.logMessageReceived() {
     when (this) {
         is GroupMessageEvent -> bot.logger.verbose {

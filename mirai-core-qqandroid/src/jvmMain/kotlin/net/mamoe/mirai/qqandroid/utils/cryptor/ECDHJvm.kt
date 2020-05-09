@@ -71,7 +71,6 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
                 .genKeyPair())
         }
 
-        @OptIn(MiraiInternalAPI::class)
         actual fun calculateShareKey(
             privateKey: ECDHPrivateKey,
             publicKey: ECDHPublicKey

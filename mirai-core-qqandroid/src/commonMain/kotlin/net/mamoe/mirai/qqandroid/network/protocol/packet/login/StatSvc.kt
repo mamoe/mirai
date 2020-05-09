@@ -28,7 +28,6 @@ import net.mamoe.mirai.qqandroid.utils.NetworkType
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
-import net.mamoe.mirai.utils.MiraiInternalAPI
 
 @Suppress("EnumEntryName", "unused")
 internal enum class RegPushReason {
@@ -89,7 +88,7 @@ internal class StatSvc {
             override fun toString(): String = "Response(StatSvc.register)"
         }
 
-        @OptIn(MiraiInternalAPI::class)
+
         operator fun invoke(
             client: QQAndroidClient,
             regPushReason: RegPushReason = RegPushReason.appRegister

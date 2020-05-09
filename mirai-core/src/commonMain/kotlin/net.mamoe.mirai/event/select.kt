@@ -18,7 +18,6 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import kotlin.experimental.ExperimentalTypeInference
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
@@ -69,7 +68,6 @@ suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
 /**
  * [selectMessages] 的 [Unit] 返回值捷径 (由于 Kotlin 无法推断 [Unit] 类型)
  */
-@OptIn(ExperimentalTypeInference::class)
 @MiraiExperimentalAPI
 @JvmName("selectMessages1")
 suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
@@ -474,7 +472,6 @@ internal val ExceptionHandlerIgnoringCancellationException = CoroutineExceptionH
 
 @PublishedApi
 @BuilderInference
-@OptIn(ExperimentalTypeInference::class)
 internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
     timeoutMillis: Long = -1,
     isUnit: Boolean,
