@@ -95,6 +95,13 @@ data class BotFaceChangedEvent(
     override val bot: Bot
 ) : BotEvent, Packet, AbstractEvent()
 
+/**
+ * [Friend] 头像被修改
+ */
+data class FriendFaceChangedEvent(
+    override val friend: Friend
+) : FriendEvent, Packet, AbstractEvent()
+
 // endregion
 
 // region 消息

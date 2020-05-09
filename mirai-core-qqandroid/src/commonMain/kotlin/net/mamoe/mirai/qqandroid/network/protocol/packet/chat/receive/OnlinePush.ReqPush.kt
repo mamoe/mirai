@@ -493,8 +493,13 @@ private object Transformers528 : Map<Long, MsgType0x210.(QQAndroidBot) -> Sequen
             } ?: emptySequence()
         }
 
-        fun ModCustomFace.transform(): Sequence<Packet> =
-            sequenceOf(BotFaceChangedEvent(Bot.getInstance(uin)))
+        fun ModCustomFace.transform(bot: QQAndroidBot): Sequence<Packet> {
+            if (uin == bot.id) {
+                return sequenceOf(BotFaceChangedEvent(bot))
+            }
+            val friend = bot.getFriendOrNull(uin) ?: return emptySequence()
+            return sequenceOf(FriendFaceChangedEvent(friend))
+        }
 
 
         return@lambda528 vProtobuf.loadAs(SubMsgType0x27MsgBody.serializer()).msgModInfos.asSequence()
@@ -504,7 +509,7 @@ private object Transformers528 : Map<Long, MsgType0x210.(QQAndroidBot) -> Sequen
                     it.msgDelFriend != null -> it.msgDelFriend.transform(bot)
                     it.msgModGroupProfile != null -> it.msgModGroupProfile.transform(bot)
                     it.msgModGroupMemberProfile != null -> it.msgModGroupMemberProfile.transform(bot)
-                    it.msgModCustomFace != null -> it.msgModCustomFace.transform()
+                    it.msgModCustomFace != null -> it.msgModCustomFace.transform(bot)
                     else -> {
                         bot.network.logger.debug {
                             "Transformers528 0x27L: new data: ${it._miraiContentToString()}"
