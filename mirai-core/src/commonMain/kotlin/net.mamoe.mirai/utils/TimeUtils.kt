@@ -15,6 +15,10 @@ package net.mamoe.mirai.utils
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
+import kotlin.math.floor
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
 
 /**
  * 时间戳
@@ -77,3 +81,20 @@ inline val Int.weeksToSeconds: Long
 @get:JvmSynthetic
 inline val Int.monthsToSeconds: Long
     get() = this * 30.daysToSeconds
+
+@ExperimentalTime
+val Duration.asHumanReadable: String
+    get() {
+        val builder = StringBuilder()
+        val days = toInt(DurationUnit.DAYS)
+        val hours = toInt(DurationUnit.HOURS) % 24
+        val minutes = toInt(DurationUnit.MINUTES) % 60
+        val s = floor(toDouble(DurationUnit.SECONDS) % 60 * 1000) / 1000
+        with(builder) {
+            if (days != 0) append("${days}d ")
+            if (hours != 0) append("${hours}h ")
+            if (minutes != 0) append("${minutes}min ")
+            append("${s}s")
+        }
+        return builder.toString()
+    }
