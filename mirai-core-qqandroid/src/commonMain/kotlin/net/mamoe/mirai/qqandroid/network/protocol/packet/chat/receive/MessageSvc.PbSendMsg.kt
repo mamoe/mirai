@@ -37,7 +37,7 @@ import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
-internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.Response>("MessageSvcPbSendMsg") {
+internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.Response>("MessageSvc.PbSendMsg") {
     sealed class Response : Packet {
         object SUCCESS : Response() {
             override fun toString(): String = "MessageSvcPbSendMsg.Response.SUCCESS"

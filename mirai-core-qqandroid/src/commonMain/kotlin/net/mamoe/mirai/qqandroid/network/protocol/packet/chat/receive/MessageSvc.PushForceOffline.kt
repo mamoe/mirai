@@ -21,7 +21,7 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.readUniPacket
  * 被挤下线
  */
 internal object MessageSvcPushForceOffline :
-    OutgoingPacketFactory<BotOfflineEvent.Force>("MessageSvcPushForceOffline") {
+    OutgoingPacketFactory<BotOfflineEvent.Force>("MessageSvc.PushForceOffline") {
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): BotOfflineEvent.Force {
         val struct = this.readUniPacket(RequestPushForceOffline.serializer())
         return BotOfflineEvent.Force(bot, title = struct.title ?: "", message = struct.tips ?: "")

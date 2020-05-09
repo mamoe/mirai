@@ -23,7 +23,7 @@ import net.mamoe.mirai.utils.currentTimeSeconds
 /**
  * 告知要刷新好友消息
  */
-internal object MessageSvcPushNotify : IncomingPacketFactory<RequestPushNotify>("MessageSvcPushNotify") {
+internal object MessageSvcPushNotify : IncomingPacketFactory<RequestPushNotify>("MessageSvc.PushNotify") {
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): RequestPushNotify {
         discardExact(4) // don't remove
         return readUniPacket(RequestPushNotify.serializer())

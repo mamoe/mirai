@@ -51,7 +51,7 @@ import net.mamoe.mirai.utils.*
  * 获取好友消息和消息记录
  */
 @OptIn(MiraiInternalAPI::class)
-internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Response>("MessageSvcPbGetMsg") {
+internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Response>("MessageSvc.PbGetMsg") {
     @Suppress("SpellCheckingInspection")
     operator fun invoke(
         client: QQAndroidClient,

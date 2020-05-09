@@ -21,7 +21,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 
-internal object MessageSvcPbDeleteMsg : OutgoingPacketFactory<Nothing?>("MessageSvcPbDeleteMsg") {
+internal object MessageSvcPbDeleteMsg : OutgoingPacketFactory<Nothing?>("MessageSvc.PbDeleteMsg") {
 
     internal operator fun invoke(client: QQAndroidClient, items: List<MsgSvc.PbDeleteMsgReq.MsgItem>) =
         buildOutgoingUniPacket(client) {
