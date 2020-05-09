@@ -130,6 +130,8 @@ interface Listener<in E : Event> : CompletableJob {
     suspend fun onEvent(event: E): ListeningStatus
 }
 
+typealias EventPriority = Listener.EventPriority
+
 // region subscribe / subscribeAlways / subscribeOnce
 
 /**
