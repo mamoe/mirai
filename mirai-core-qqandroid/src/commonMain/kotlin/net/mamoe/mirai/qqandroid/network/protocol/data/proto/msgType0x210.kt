@@ -515,6 +515,7 @@ internal class Submsgtype0x129 {
 }
 
 
+/*
 internal class Submsgtype0x1a {
     internal class SubMsgType0x1a : ProtoBuf {
         @Serializable
@@ -531,7 +532,7 @@ internal class Submsgtype0x1a {
             @ProtoId(10) @JvmField val toUin: Long = 0L
         ) : ProtoBuf
     }
-}
+}*/
 
 
 internal class Submsgtype0x26 {
@@ -2730,6 +2731,7 @@ internal class Submsgtype0xbe {
 }
 
 
+/*
 internal class Submsgtype0xc1 {
     internal class Submsgtype0xc1 : ProtoBuf {
         @Serializable
@@ -2740,7 +2742,7 @@ internal class Submsgtype0xc1 {
         ) : ProtoBuf
     }
 }
-
+*/
 
 internal class Submsgtype0xc3 {
     internal class Submsgtype0xc3 : ProtoBuf {
