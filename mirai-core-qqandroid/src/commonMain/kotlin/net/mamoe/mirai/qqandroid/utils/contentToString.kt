@@ -142,9 +142,19 @@ private val KProperty1<*, *>.isConst: Boolean
 private val KClass<*>.isData: Boolean
     get() = false // on JVM, it will be resolved to member function
 
+private fun Any.canBeIgnored(): Boolean {
+    return when (this) {
+        is String -> this.isEmpty()
+        is ByteArray -> this.isEmpty()
+        is Array<*> -> this.isEmpty()
+        is Number -> this == 0
+        else -> false
+    }
+}
+
 private fun Any.contentToStringReflectively(
     prefix: String,
-    filter: ((name: String, value: Any?) -> Boolean)? = null
+    filter: ((name: String, value: Any?) -> Boolean)? = null,
 ): String {
     val newPrefix = "$prefix    "
     return (this::class.simpleName ?: "<UnnamedClass>") + "#" + this::class.hashCode() + " {\n" +
@@ -165,10 +175,13 @@ private fun Any.contentToStringReflectively(
                 .joinToStringPrefixed(
                     prefix = newPrefix
                 ) { (name: String, value: Any?) ->
-                    "$name=" + kotlin.runCatching {
-                        if (value == this) "<this>"
-                        else value._miraiContentToString(newPrefix)
-                    }.getOrElse { "<!>" }
+                    if (value.canBeIgnored()) ""
+                    else {
+                        "$name=" + kotlin.runCatching {
+                            if (value == this) "<this>"
+                            else value._miraiContentToString(newPrefix)
+                        }.getOrElse { "<!>" }
+                    }
                 } + "\n$prefix}"
 }
 
