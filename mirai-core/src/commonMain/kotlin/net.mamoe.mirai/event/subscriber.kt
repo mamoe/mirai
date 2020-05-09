@@ -120,7 +120,7 @@ interface Listener<in E : Event> : CompletableJob {
     /**
      * 这个方法将会调用 [subscribe] 时提供的参数 `noinline handler: suspend E.(E) -> ListeningStatus`.
      *
-     * 这个函数不会抛出任何异常, 详见 [subscribe] 中 ``
+     * 这个函数不会抛出任何异常, 详见 [subscribe]
      */
     suspend fun onEvent(event: E): ListeningStatus
 }
@@ -130,7 +130,7 @@ interface Listener<in E : Event> : CompletableJob {
 /**
  * 在指定的 [协程作用域][CoroutineScope] 下创建一个事件监听器, 监听所有 [E] 及其子类事件.
  *
- * 每当 [事件广播][Event.broadcast] 时, [handler] 都会被执行.
+ * 每当 [事件广播][Event.broadcast] 时, [listener] 都会被执行.
  *
  *
  * ### 创建监听
