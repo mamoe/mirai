@@ -39,7 +39,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
                                  UI 类型. "GRAPHICAL" 为 JavaFX 图形界面;
                                  "TERMINAL" 为 Unix 终端界面; "PURE" 为纯命令行.
                                  
--h, --help                       显示这个帮主
+-h, --help                       显示这个帮助
 ```
 
 #### 对于Windows用户
