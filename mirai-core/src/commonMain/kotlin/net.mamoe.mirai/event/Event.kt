@@ -39,12 +39,18 @@ interface Event {
      * 事件是否已被拦截.
      *
      * 所有事件都可以被拦截, 拦截后低优先级的监听器将不会处理到这个事件.
+     *
+     * @see intercept 拦截事件
      */
     @SinceMirai("1.0.0")
     val isIntercepted: Boolean
 
     /**
      * 拦截这个事件
+     *
+     * 当事件被 [拦截][Event.intercept] 后, 优先级较低 (靠右) 的监听器将不会被调用.
+     *
+     * @see [Listener.EventPriority] 查看优先级相关信息
      */
     @SinceMirai("1.0.0")
     fun intercept()

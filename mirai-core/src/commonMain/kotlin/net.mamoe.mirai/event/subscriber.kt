@@ -92,6 +92,8 @@ interface Listener<in E : Event> : CompletableJob {
      * - 使用 [MONITOR] 优先级的监听器将会被**并行**调用.
      * - 使用其他优先级的监听器都将会**按顺序**调用.
      *   因此一个监听器的挂起可以阻塞事件处理过程而导致低优先级的监听器较晚处理.
+     *
+     * 当事件被 [拦截][Event.intercept] 后, 优先级较低 (靠右) 的监听器将不会被调用.
      */
     @SinceMirai("1.0.0")
     enum class EventPriority {
@@ -101,7 +103,8 @@ interface Listener<in E : Event> : CompletableJob {
         /**
          * 最低的优先级.
          *
-         * 只监听事件而不拦截事件的监听器应使用此监听器.
+         * 使用此优先级的监听器应遵循约束:
+         * - 不 [拦截事件][Event.intercept]
          */
         MONITOR;
 
