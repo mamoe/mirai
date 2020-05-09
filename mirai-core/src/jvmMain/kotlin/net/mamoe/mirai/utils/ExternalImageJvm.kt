@@ -54,7 +54,6 @@ fun URL.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(t
  * 将 [InputStream] 委托为 [ExternalImage].
  * 只会在上传图片时才读取 [InputStream] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
  */
-@JvmName("toExternalImage")
 fun InputStream.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
 
 /**
