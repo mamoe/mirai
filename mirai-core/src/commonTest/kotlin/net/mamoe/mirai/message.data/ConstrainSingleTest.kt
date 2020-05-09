@@ -26,10 +26,6 @@ internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleM
 
     override fun toString(): String = "<TestConstrainSingleMessage#${super.hashCode()}>"
 
-    override fun contentToString(): String {
-        return ""
-    }
-
     override val key: Message.Key<TestConstrainSingleMessage>
         get() = Key
 }

@@ -132,11 +132,6 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
      * 返回 `"[mirai:source:$id,$internalId]"`
      */
     final override fun toString(): String = "[mirai:source:$id,$internalId]"
-
-    /**
-     * 返回空字符串, 因 [MessageMetadata] 的约束.
-     */
-    final override fun contentToString(): String = ""
 }
 
 

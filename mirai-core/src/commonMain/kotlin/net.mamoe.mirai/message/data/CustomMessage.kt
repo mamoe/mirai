@@ -190,8 +190,6 @@ abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
 
     final override fun toString(): String =
         "[mirai:custom:${getFactory().typeName}:${String(customToString())}]"
-
-    final override fun contentToString(): String = ""
 }
 
 

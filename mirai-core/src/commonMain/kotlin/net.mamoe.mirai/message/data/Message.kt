@@ -297,7 +297,13 @@ interface SingleMessage : Message {
  *
  * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
-interface MessageMetadata : SingleMessage
+interface MessageMetadata : SingleMessage {
+    /**
+     * 返回空字符串
+     */
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+    final override fun contentToString(): String = ""
+}
 
 /**
  * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 保持原顺序.
