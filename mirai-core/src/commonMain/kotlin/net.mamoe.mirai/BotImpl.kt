@@ -24,7 +24,6 @@ import net.mamoe.mirai.network.closeAndJoin
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.retryCatching
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -71,7 +70,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                     }
                 }
             }
-            throw NoSuchElementException()
+            throw NoSuchElementException(qq.toString())
         }
     }
 
