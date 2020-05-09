@@ -15,6 +15,7 @@ package net.mamoe.mirai.message
 
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.event.syncFromEventOrNull
