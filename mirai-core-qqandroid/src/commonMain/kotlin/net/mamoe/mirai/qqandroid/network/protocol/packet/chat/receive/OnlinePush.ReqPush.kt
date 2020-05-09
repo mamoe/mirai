@@ -8,10 +8,12 @@
  */
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@file:OptIn(MiraiInternalAPI::class,
+@file:OptIn(
+    MiraiInternalAPI::class,
     MiraiExperimentalAPI::class,
     JavaFriendlyAPI::class,
-    ExperimentalUnsignedTypes::class)
+    ExperimentalUnsignedTypes::class
+)
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
@@ -46,7 +48,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePushReqPush.lambda732
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
@@ -73,12 +74,6 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
         return asSequence().filter { msg ->
             client.onlinePushCacheList.ensureNoDuplication(msg.shMsgSeq)
         }.flatMap { it.vMsg.read { mapper(it) } }
-    }
-
-    @Suppress("unused") // bug
-    private fun lambda732(block: ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet>):
-            ByteReadPacket.(group: GroupImpl, bot: QQAndroidBot) -> Sequence<Packet> {
-        return block
     }
 
 
@@ -165,7 +160,20 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
     }
 }
 
-private object Transformers732 : Map<Int, ByteReadPacket.(GroupImpl, QQAndroidBot) -> Sequence<Packet>> by mapOf(
+
+internal interface Lambda732 {
+    operator fun invoke(pk: ByteReadPacket, group: GroupImpl, bot: QQAndroidBot): Sequence<Packet>
+}
+
+internal inline fun lambda732(crossinline block: ByteReadPacket.(GroupImpl, QQAndroidBot) -> Sequence<Packet>): Lambda732 {
+    return object : Lambda732 {
+        override fun invoke(pk: ByteReadPacket, group: GroupImpl, bot: QQAndroidBot): Sequence<Packet> {
+            return block(pk, group, bot)
+        }
+    }
+}
+
+private object Transformers732 : Map<Int, Lambda732> by mapOf(
     // mute
     0x0c to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
         val operatorUin = readUInt().toLong()
@@ -448,19 +456,23 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                            var85.troopface = var3;
                            var85.hasSetNewTroopHead = true;
                          */
-                        bot.logger.debug(contextualBugReportException(
-                            "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
-                            forDebug = "this=${this._miraiContentToString()}"
-                        ))
+                        bot.logger.debug(
+                            contextualBugReportException(
+                                "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
+                                forDebug = "this=${this._miraiContentToString()}"
+                            )
+                        )
                         null
                     }
                     3 -> { // troop.credit.data
                         // top_package/akkz.java:3475
                         // top_package/akkz.java:3498
-                        bot.logger.debug(contextualBugReportException(
-                            "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
-                            forDebug = "this=${this._miraiContentToString()}"
-                        ))
+                        bot.logger.debug(
+                            contextualBugReportException(
+                                "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
+                                forDebug = "this=${this._miraiContentToString()}"
+                            )
+                        )
                         null
                     }
 

@@ -13,6 +13,7 @@ import kotlinx.atomicfu.loop
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.discardExact
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
@@ -44,6 +45,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.soutv
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.*
@@ -200,30 +202,82 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         } else {
                             group ?: return@mapNotNull null
 
+                            // 主动入群, 直接加入: msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 42 39 41 30 33 45 38 34 30 39 34 42 46 30 45 32 45 38 42 31 43 43 41 34 32 42 38 42 44 42 35 34 44 42 31 44 32 32 30 46 30 38 39 46 46 35 41 38
+                            // 主动直接加入                  27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 33 30 45 38 42 31 33 46 41 41 31 33 46 38 31 35 34 41 38 33 32 37 31 43 34 34 38 35 33 35 46 45 31 38 32 43 39 42 43 46 46 32 44 39 39 46 41 37
+
+                            // 有人被邀请(经过同意后)加入      27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 34 30 34 38 32 33 38 35 37 41 37 38 46 33 45 37 35 38 42 39 38 46 43 45 44 43 32 41 30 31 36 36 30 34 31 36 39 35 39 30 38 39 30 39 45 31 34 34
+                            // 搜索到群, 直接加入             27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
+
+                            msg.msgBody.msgContent.soutv("33类型的content")
+
                             if (group.members.contains(msg.msgHead.authUin)) {
                                 return@mapNotNull null
                             }
 
+                            if (msg.msgBody.msgContent.read {
+                                    discardExact(9)
+                                    readByte().toInt().and(0xff)
+                                } == 0x83) {
+                                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+                                return@mapNotNull MemberJoinEvent.Invite(group.newMember(msg.getNewMemberInfo())
+                                    .also { group.members.delegate.addLast(it) })
+                            }
+
                             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                            return@mapNotNull MemberJoinEvent.Invite(group.newMember(msg.getNewMemberInfo())
+                            return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
                                 .also { group.members.delegate.addLast(it) })
                         }
                     }
+
+                    34 -> { // 与 33 重复
+                        return@mapNotNull null
+                    }
+                    /*
                     34 -> { // 主动入群
 
-                        // 27 0B 60 E7 01 44 71 47 90 03 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 36 42 35 35 46 45 32 45 35 36 43 45 45 44 30 38 30 35 31 41 35 42 37 36 39 35 34 45 30 46 43 43 36 36 45 44 43 46 45 43 42 39 33 41 41 44 32 32
+                        // 回答了问题, 还需要管理员审核
+                        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 00 30 45 41 31 30 35 35 42 44 39 39 42 35 37 46 44 31 41 31 46 36 42 43 42 43 33 43 42 39 34 34 38 31 33 34 42 36 31 46 38 45 43 39 38 38 43 39 37 33
+                        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 02 00 30 44 44 41 43 44 33 35 43 31 39 34 30 46 42 39 39 34 46 43 32 34 43 39 32 33 39 31 45 42 35 32 33 46 36 30 37 35 42 41 38 42 30 30 37 42 36 42 41
+                        // 回答正确问题, 直接加入
+
+                        //            27 0B 60 E7 01 76 E4 B8 DD 82 00 30 43 37 37 39 41 38 32 44 38 33 30 35 37 38 31 33 37 45 42 39 35 43 42 45 36 45 43 38 36 34 38 44 34 35 44 42 33 44 45 37 34 41 36 30 33 37 46 45
+                        // 提交验证消息加入, 需要审核
+
+                        // 被踢了??
+                        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 46 46 32 33 36 39 35 33 31 37 42 44 46 37 43 36 39 34 37 41 45 38 39 43 45 43 42 46 33 41 37 35 39 34 39 45 36 37 33 37 31 41 39 44 33 33 45 33
+
+                        /*
+                        // 搜索后直接加入群
+
+                        soutv 17:43:32 : 33类型的content = 27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
+                        soutv 17:43:32 : 主动入群content = 2A 3D F5 69 01 35 D7 10 EA 83 4C EF 4F DD 06 B9 DC C0 ED D4 B1 00 30 37 41 39 31 39 34 31 41 30 37 46 38 32 31 39 39 43 34 35 46 39 30 36 31 43 37 39 37 33 39 35 43 34 44 36 31 33 43 31 35 42 37 32 45 46 43 43 36
+                         */
+
                         val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
                         group ?: return@mapNotNull null
 
-                        msg.soutv("主动入群")
+                        msg.msgBody.msgContent.soutv("主动入群content")
 
-                        if (group.members.contains(msg.msgHead.authUin)) {
-                            return@mapNotNull null
-                        }
-                        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                        return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
-                            .also { group.members.delegate.addLast(it) })
+                        if (msg.msgBody.msgContent.read {
+                                discardExact(4) // group code
+                                discardExact(1) // 1
+                                discardExact(4) // requester uin
+                                readByte().toInt().and(0xff)
+                                // 0x02: 回答正确问题直接加入
+                                // 0x82: 回答了问题, 或者有验证消息, 需要管理员审核
+                                // 0x83: 回答正确问题直接加入
+                            } != 0x82) {
+
+                            if (group.members.contains(msg.msgHead.authUin)) {
+                                return@mapNotNull null
+                            }
+                            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+                            return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
+                                .also { group.members.delegate.addLast(it) })
+                        } else return@mapNotNull null
                     }
+                    */
+
                     166 -> {
 
                         if (msg.msgHead.fromUin == bot.id) {

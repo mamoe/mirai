@@ -33,7 +33,7 @@ internal class RequestPushNotify(
     @JceId(11) @JvmField val serverBuf: ByteArray?,
     @JceId(12) @JvmField val pingFlag: Long?,
     @JceId(13) @JvmField val svrip: Int?
-) : JceStruct, Packet
+) : JceStruct, Packet, Packet.NoLog
 
 @Serializable
 internal class MsgInfo(
