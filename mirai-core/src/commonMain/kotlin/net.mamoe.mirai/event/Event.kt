@@ -15,7 +15,6 @@ import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmSynthetic
 import kotlin.jvm.Volatile
@@ -161,11 +160,3 @@ interface BroadcastControllable : Event {
         get() = true
 }
 
-
-@PlannedRemoval("1.1.0")
-@Deprecated(
-    "use AbstractEvent and implement CancellableEvent",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith("AbstractEvent", "net.mamoe.mirai.event.AbstractEvent")
-)
-abstract class AbstractCancellableEvent : AbstractEvent(), CancellableEvent

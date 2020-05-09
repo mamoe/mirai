@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("SubscribeMessagesKt")
 @file:Suppress("EXPERIMENTAL_API_USAGE", "MemberVisibilityCanBePrivate", "unused")
 
 package net.mamoe.mirai.event
@@ -16,22 +18,24 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.TempMessageEvent
-import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmMultifileClass
+import kotlin.jvm.JvmName
 
 typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<MessageEvent, Listener<MessageEvent>, Unit, Unit>
 
 /**
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
+ *
+ * @see subscribe 事件监听基础
  *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
@@ -65,6 +69,8 @@ typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<GroupMessag
 /**
  * 订阅来自所有 [Bot] 的所有群消息事件
  *
+ * @see subscribe 事件监听基础
+ *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
 @OptIn(ExperimentalContracts::class)
@@ -90,6 +96,8 @@ typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<FriendMess
 
 /**
  * 订阅来自所有 [Bot] 的所有好友消息事件
+ *
+ * @see subscribe 事件监听基础
  *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
@@ -117,6 +125,8 @@ typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempMessageE
 /**
  * 订阅来自所有 [Bot] 的所有临时会话消息事件
  *
+ * @see subscribe 事件监听基础
+ *
  * @see CoroutineScope.incoming 打开一个指定事件的接收通道
  */
 @OptIn(ExperimentalContracts::class)
@@ -138,104 +148,6 @@ fun <R> CoroutineScope.subscribeTempMessages(
     }.run(listeners)
 }
 
-/**
- * 订阅来自这个 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
- *
- * @see CoroutineScope.incoming 打开一个指定事件的接收通道
- */
-@OptIn(ExperimentalContracts::class)
-fun <R> Bot.subscribeMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
-    listeners: MessagePacketSubscribersBuilder.() -> R
-): R {
-    contract {
-        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
-    }
-    return MessagePacketSubscribersBuilder(Unit) { filter, listener ->
-        this.subscribeAlways(coroutineContext, concurrencyKind, priority) {
-            val toString = this.message.contentToString()
-            if (filter(this, toString))
-                listener(this, toString)
-        }
-    }.run(listeners)
-}
-
-/**
- * 订阅来自这个 [Bot] 的所有群消息事件
- *
- * @param coroutineContext 给事件监听协程的额外的 [CoroutineContext]
- *
- * @see CoroutineScope.incoming 打开一个指定事件的接收通道
- */
-@OptIn(ExperimentalContracts::class)
-fun <R> Bot.subscribeGroupMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
-    listeners: GroupMessageSubscribersBuilder.() -> R
-): R {
-    contract {
-        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
-    }
-    return GroupMessageSubscribersBuilder(Unit) { filter, listener ->
-        this.subscribeAlways(coroutineContext, concurrencyKind, priority) {
-            val toString = this.message.contentToString()
-            if (filter(this, toString))
-                listener(this, toString)
-        }
-    }.run(listeners)
-}
-
-/**
- * 订阅来自这个 [Bot] 的所有好友消息事件.
- *
- * @see CoroutineScope.incoming 打开一个指定事件的接收通道
- */
-@OptIn(ExperimentalContracts::class)
-fun <R> Bot.subscribeFriendMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
-    listeners: FriendMessageSubscribersBuilder.() -> R
-): R {
-    contract {
-        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
-    }
-    return FriendMessageSubscribersBuilder(Unit) { filter, listener ->
-        this.subscribeAlways(coroutineContext, concurrencyKind, priority) {
-            val toString = this.message.contentToString()
-            if (filter(this, toString))
-                listener(this, toString)
-        }
-    }.run(listeners)
-}
-
-
-/**
- * 订阅来自这个 [Bot] 的所有临时会话消息事件.
- *
- * @see CoroutineScope.incoming 打开一个指定事件的接收通道
- */
-@OptIn(ExperimentalContracts::class)
-fun <R> Bot.subscribeTempMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
-    listeners: TempMessageSubscribersBuilder.() -> R
-): R {
-    contract {
-        callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
-    }
-    return TempMessageSubscribersBuilder(Unit) { filter, listener ->
-        this.subscribeAlways(coroutineContext, concurrencyKind, priority) {
-            val toString = this.message.contentToString()
-            if (filter(this, toString))
-                listener(this, toString)
-        }
-    }.run(listeners)
-}
 
 /**
  * 打开一个指定事件的接收通道
@@ -244,6 +156,8 @@ fun <R> Bot.subscribeTempMessages(
  *
  * @see capacity 默认无限大小. 详见 [Channel.Factory] 中的常量 [Channel.UNLIMITED], [Channel.CONFLATED], [Channel.RENDEZVOUS].
  * 请谨慎使用 [Channel.RENDEZVOUS]: 在 [Channel] 未被 [接收][Channel.receive] 时他将会阻塞事件处理
+ *
+ * @see subscribe 事件监听基础
  *
  * @see subscribeFriendMessages
  * @see subscribeMessages
@@ -265,96 +179,3 @@ inline fun <reified E : Event> CoroutineScope.incoming(
     }
 }
 
-
-/**
- * 打开一个来自指定 [Bot] 的指定事件的接收通道
- *
- * @param capacity 同 [Channel] 的参数, 参见 [Channel.Factory] 中的常量.
- *
- * @see capacity 默认无限大小. 详见 [Channel.Factory] 中的常量 [Channel.UNLIMITED], [Channel.CONFLATED], [Channel.RENDEZVOUS].
- * 请谨慎使用 [Channel.RENDEZVOUS]: 在 [Channel] 未被 [接收][Channel.receive] 时他将会阻塞事件处理
- *
- * @see subscribeFriendMessages
- * @see subscribeMessages
- * @see subscribeGroupMessages
- */
-inline fun <reified E : BotEvent> Bot.incoming(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    priority: Listener.EventPriority = Listener.EventPriority.MONITOR,
-    capacity: Int = Channel.UNLIMITED
-): ReceiveChannel<E> {
-    return Channel<E>(capacity).apply {
-        val listener = this@incoming.subscribeAlways<E>(coroutineContext, concurrencyKind, priority) {
-            send(this)
-        }
-        this.invokeOnClose {
-            listener.cancel(CancellationException("ReceiveChannel closed", it))
-        }
-    }
-}
-
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@PlannedRemoval("1.2.0")
-fun <R> CoroutineScope.subscribeMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: MessagePacketSubscribersBuilder.() -> R
-): R = this.subscribeMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@PlannedRemoval("1.2.0")
-fun <R> CoroutineScope.subscribeGroupMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: GroupMessageSubscribersBuilder.() -> R
-): R = this.subscribeGroupMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@PlannedRemoval("1.2.0")
-fun <R> CoroutineScope.subscribeFriendMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: FriendMessageSubscribersBuilder.() -> R
-): R = this.subscribeFriendMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@PlannedRemoval("1.2.0")
-fun <R> CoroutineScope.subscribeTempMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: TempMessageSubscribersBuilder.() -> R
-): R = this.subscribeTempMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@PlannedRemoval("1.2.0")
-fun <R> Bot.subscribeMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: MessagePacketSubscribersBuilder.() -> R
-): R = this.subscribeMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@PlannedRemoval("1.2.0")
-fun <R> Bot.subscribeGroupMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: GroupMessageSubscribersBuilder.() -> R
-): R = this.subscribeGroupMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@PlannedRemoval("1.2.0")
-fun <R> Bot.subscribeFriendMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: FriendMessageSubscribersBuilder.() -> R
-): R = this.subscribeFriendMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)
-
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@PlannedRemoval("1.2.0")
-fun <R> Bot.subscribeTempMessages(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
-    listeners: TempMessageSubscribersBuilder.() -> R
-): R = this.subscribeTempMessages(coroutineContext, concurrencyKind, Listener.EventPriority.MONITOR, listeners)

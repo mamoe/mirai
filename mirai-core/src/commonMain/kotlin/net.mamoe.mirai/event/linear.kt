@@ -27,6 +27,8 @@ import kotlin.reflect.KClass
  * @see subscribe 普通地监听一个事件
  * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  *
+ * @see syncFromEventOrNull 本函数的在超时后返回 `null` 的版本
+ *
  * @throws TimeoutCancellationException 在超时后抛出.
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */

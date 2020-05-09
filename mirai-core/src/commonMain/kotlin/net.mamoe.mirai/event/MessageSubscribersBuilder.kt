@@ -418,7 +418,6 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     //// DEPRECATED AND INTERNAL ////
     /////////////////////////////////
 
-    @PublishedApi
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
     internal suspend inline fun executeAndReply(m: M, replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(m, m.message.contentToString())) {
@@ -429,7 +428,6 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
         return stub
     }
 
-    @PublishedApi
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
     internal suspend inline fun executeAndQuoteReply(m: M, replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(m, m.message.contentToString())) {

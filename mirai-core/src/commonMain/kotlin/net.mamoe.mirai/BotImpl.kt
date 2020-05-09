@@ -92,6 +92,9 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
         this@BotImpl.subscribeAlways(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
+            if (event.bot != this.bot) {
+                return@subscribeAlways
+            }
             if (network.areYouOk() && event !is BotOfflineEvent.Force) {
                 // avoid concurrent re-login tasks
                 return@subscribeAlways
@@ -108,8 +111,10 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
                     val time = measureTime {
                         tailrec suspend fun reconnect() {
-                            retryCatching<Unit>(configuration.reconnectionRetryTimes,
-                                except = LoginFailedException::class) { tryCount, _ ->
+                            retryCatching<Unit>(
+                                configuration.reconnectionRetryTimes,
+                                except = LoginFailedException::class
+                            ) { tryCount, _ ->
                                 if (tryCount != 0) {
                                     delay(configuration.reconnectPeriodMillis)
                                 }

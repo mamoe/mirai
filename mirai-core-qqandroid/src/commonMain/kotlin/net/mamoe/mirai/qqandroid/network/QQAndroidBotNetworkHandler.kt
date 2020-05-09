@@ -391,6 +391,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     init {
         val listener = bot.subscribeAlways<BotReloginEvent>(priority = MONITOR) {
+            if (bot != this.bot) return@subscribeAlways
             this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
         }
         supervisor.invokeOnCompletion { listener.cancel() }
