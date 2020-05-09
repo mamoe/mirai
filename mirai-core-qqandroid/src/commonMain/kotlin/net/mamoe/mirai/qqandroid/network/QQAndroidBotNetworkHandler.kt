@@ -20,8 +20,10 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.use
 import net.mamoe.mirai.event.*
+import net.mamoe.mirai.event.Listener.EventPriority.MONITOR
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
+import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
@@ -336,13 +338,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             launch { reloadGroupList() }
         }
 
-        this@QQAndroidBotNetworkHandler.launch {
+        this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
             logger.info { "Awaiting ConfigPushSvc.PushReq" }
-            val resp =
-                syncFromEventOrNull<ConfigPushSvc.PushReq.PushReqResponse, ConfigPushSvc.PushReq.PushReqResponse>(
-                    10_000) { it }
-
-            when (resp) {
+            when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(10_000)) {
                 null -> logger.info { "Missing ConfigPushSvc.PushReq." }
                 is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
                     logger.info { "ConfigPushSvc.PushReq: Success" }
@@ -360,12 +358,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             }
         }
 
-        logger.info { "Syncing friend message history..." }
-        withTimeoutOrNull(30000) {
-            launch { syncFromEvent<MessageSvcPbGetMsg.GetMsgSuccess, Unit> { Unit } }
-            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
-        } ?: error("timeout syncing friend message history")
-        logger.info { "Syncing friend message history: Success" }
+        syncMessageSvc()
 
         bot.firstLoginSucceed = true
 
@@ -394,6 +387,22 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
 
         Unit // dont remove. can help type inference
+    }
+
+    init {
+        val listener = bot.subscribeAlways<BotReloginEvent>(priority = MONITOR) {
+            this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
+        }
+        supervisor.invokeOnCompletion { listener.cancel() }
+    }
+
+    private suspend fun syncMessageSvc() {
+        logger.info { "Syncing friend message history..." }
+        withTimeoutOrNull(30000) {
+            launch(CoroutineName("Syncing friend message history")) { syncFromEvent<MessageSvcPbGetMsg.GetMsgSuccess, Unit> { Unit } }
+            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
+        } ?: error("timeout syncing friend message history")
+        logger.info { "Syncing friend message history: Success" }
     }
 
     private suspend fun doHeartBeat(): Exception? {
