@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
@@ -38,6 +40,28 @@ suspend inline fun <reified E : Event> nextEvent(
     }
 }
 
+
+/**
+ * 挂起当前协程, 直到监听到事件 [E] 的广播, 返回这个事件实例.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
+ *
+ * @see subscribe 普通地监听一个事件
+ * @see syncFromEvent 挂起当前协程, 并尝试从事件中同步一个值
+ *
+ * @return 事件实例, 在超时后返回 `null`
+ */
+@JvmSynthetic
+suspend inline fun <reified E : Event> nextEventOrNull(
+    timeoutMillis: Long,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR
+): E? {
+    return withTimeoutOrNull(timeoutMillis) {
+        nextEventImpl(E::class, this, priority)
+    }
+}
+
+
 /**
  * 挂起当前协程, 直到监听到事件 [E] 的广播, 返回这个事件实例.
  * 将筛选 [BotEvent.bot] 与 [this] 相等的事件.
@@ -60,6 +84,26 @@ suspend inline fun <reified E : BotEvent> Bot.nextEvent(
     }
 }
 
+/**
+ * 挂起当前协程, 直到监听到事件 [E] 的广播, 返回这个事件实例.
+ * 将筛选 [BotEvent.bot] 与 [this] 相等的事件.
+ *
+ * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
+ *
+ * @see subscribe 普通地监听一个事件
+ * @see syncFromEvent 挂起当前协程, 并尝试从事件中同步一个值
+ *
+ * @return 事件实例, 在超时后返回 `null`
+ */
+@JvmSynthetic
+suspend inline fun <reified E : BotEvent> Bot.nextEventOrNull(
+    timeoutMillis: Long,
+    priority: Listener.EventPriority = Listener.EventPriority.MONITOR
+): E? {
+    return withTimeoutOrNull(timeoutMillis) {
+        nextBotEventImpl(this@nextEventOrNull, E::class, this, priority)
+    }
+}
 
 @JvmSynthetic
 @PublishedApi
