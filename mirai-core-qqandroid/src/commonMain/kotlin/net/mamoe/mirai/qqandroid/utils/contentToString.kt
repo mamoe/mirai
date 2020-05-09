@@ -182,7 +182,7 @@ private fun Any.contentToStringReflectively(
                             else value._miraiContentToString(newPrefix)
                         }.getOrElse { "<!>" }
                     }
-                } + "\n$prefix}"
+                }.lines().filterNot { it.isBlank() }.joinToString("\n") + "\n$prefix}"
 }
 
 // on JVM, it will be resolved to member function
