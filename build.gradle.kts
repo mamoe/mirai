@@ -28,7 +28,7 @@ plugins {
 }
 
 // https://github.com/kotlin/binary-compatibility-validator
-apply(plugin = "binary-compatibility-validator")
+//apply(plugin = "binary-compatibility-validator")
 
 
 project.ext.set("isAndroidSDKAvailable", false)
