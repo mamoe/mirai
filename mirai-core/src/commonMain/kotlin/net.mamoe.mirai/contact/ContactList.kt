@@ -23,17 +23,17 @@ import kotlin.jvm.JvmField
  */
 @Suppress("unused")
 class ContactList<C : Contact> internal constructor(@JvmField internal val delegate: LockFreeLinkedList<C>) :
-    Iterable<C> {
+    Iterable<C>, Collection<C> {
     operator fun get(id: Long): C =
         delegate.asSequence().firstOrNull { it.id == id } ?: throw NoSuchElementException("Contact id $id")
 
     fun getOrNull(id: Long): C? = delegate.getOrNull(id)
 
-    val size: Int get() = delegate.size
-    operator fun contains(element: C): Boolean = delegate.contains(element)
+    override val size: Int get() = delegate.size
+    override operator fun contains(element: C): Boolean = delegate.contains(element)
     operator fun contains(id: Long): Boolean = delegate.getOrNull(id) != null
-    fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
-    fun isEmpty(): Boolean = delegate.isEmpty()
+    override fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
+    override fun isEmpty(): Boolean = delegate.isEmpty()
 
     override fun toString(): String =
         delegate.asSequence().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
