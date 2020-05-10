@@ -248,12 +248,17 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     init {
         coroutineContext[Job]!!.invokeOnCompletion { throwable ->
+            instances.removeIf { it.get()?.id == this.id }
+
             network.close(throwable)
             offlineListener.cancel(CancellationException("Bot cancelled", throwable))
 
+            // help GC release instances
+            groups.forEach {
+                it.members.delegate.clear()
+            }
             groups.delegate.clear() // job is cancelled, so child jobs are to be cancelled
             friends.delegate.clear()
-            instances.removeIf { it.get()?.id == this.id }
         }
     }
 
