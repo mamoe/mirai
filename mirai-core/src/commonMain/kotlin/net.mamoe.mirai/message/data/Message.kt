@@ -7,18 +7,25 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
+@file:Suppress(
+    "MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE",
+    "NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE"
+)
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.fold
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message.Key
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.contracts.contract
+import kotlin.internal.HidesMembers
+import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -178,12 +185,71 @@ interface Message { // must be interface. Don't consider any changes.
         }
     }
 
+    @LowPriorityInOverloadResolution
+    @PlannedRemoval("1.2.0")
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     operator fun plus(another: Message): MessageChain = this.followedBy(another)
+
+    @PlannedRemoval("1.2.0")
+    @LowPriorityInOverloadResolution
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
+
+    @PlannedRemoval("1.2.0")
+    @JvmSynthetic
+    @LowPriorityInOverloadResolution // won't be resolved
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
+
+    @PlannedRemoval("1.2.0")
+    @LowPriorityInOverloadResolution
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
 }
 
+@JvmSynthetic
+@HidesMembers
+inline operator fun Message.plus(another: Message): MessageChain = this.followedBy(another)
+
+@HidesMembers
+@JvmSynthetic
+inline operator fun Message.plus(another: SingleMessage): MessageChain = this.followedBy(another)
+
+@HidesMembers
+@JvmSynthetic
+inline operator fun Message.plus(another: String): MessageChain = this.followedBy(another.toMessage())
+
+@HidesMembers
+@JvmSynthetic
+inline operator fun Message.plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
+
+@HidesMembers
+@JvmSynthetic
+inline operator fun Message.plus(another: Iterable<Message>): MessageChain =
+    another.fold(this, Message::plus).asMessageChain()
+
+@JvmName("plus1")
+@HidesMembers
+@JvmSynthetic
+inline operator fun Message.plus(another: Iterable<String>): MessageChain =
+    another.fold(this, Message::plus).asMessageChain()
+
+@JvmSynthetic
+@HidesMembers
+inline operator fun Message.plus(another: Sequence<Message>): MessageChain =
+    another.fold(this, Message::plus).asMessageChain()
+
+@HidesMembers
+@JvmSynthetic
+inline operator fun Message.plus(another: MessageChain): MessageChain = this + another as Message
+
+@HidesMembers
+@JvmSynthetic
+suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
+    another.fold(this) { acc, it -> acc + it }.asMessageChain()
 
 /**
  * [Message.contentToString] 的捷径
