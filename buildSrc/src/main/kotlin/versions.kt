@@ -18,7 +18,7 @@ object Versions {
     }
 
     object Kotlin {
-        const val stdlib = "1.3.71"
+        const val stdlib = "1.3.72"
         const val coroutines = "1.3.5"
         const val serialization = "0.20.0"
         const val ktor = "1.3.2"

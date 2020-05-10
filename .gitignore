@@ -41,3 +41,6 @@ local.properties
 # Maven publishing credits
 keys.properties
 /plugins/
+
+bintray.user.txt
+bintray.key.txt
