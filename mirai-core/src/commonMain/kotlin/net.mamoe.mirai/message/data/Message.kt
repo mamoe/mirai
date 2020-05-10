@@ -247,7 +247,9 @@ inline fun Message.repeat(count: Int): MessageChain {
         return this.asMessageChain()
     }
     return buildMessageChain(count) {
-        add(this@repeat)
+        repeat(count) {
+            add(this@repeat)
+        }
     }
 }
 
