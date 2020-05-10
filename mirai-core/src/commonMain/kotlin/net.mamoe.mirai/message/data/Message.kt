@@ -16,6 +16,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import net.mamoe.mirai.contact.Contact
@@ -246,6 +247,7 @@ inline operator fun Message.plus(another: Sequence<Message>): MessageChain =
 @JvmSynthetic
 inline operator fun Message.plus(another: MessageChain): MessageChain = this + another as Message
 
+@ExperimentalCoroutinesApi
 @HidesMembers
 @JvmSynthetic
 suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
