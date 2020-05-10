@@ -11,6 +11,7 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
@@ -34,7 +35,7 @@ open class BotConfiguration {
     /** 设备信息覆盖. 默认使用随机的设备信息. */
     var deviceInfo: ((Context) -> DeviceInfo)? = null
 
-    /** 父 [CoroutineContext]. [Bot] 创建后会覆盖其 [Job], 但会将这个 [Job] 作为父 [Job] */
+    /** 父 [CoroutineContext]. [Bot] 创建后会使用 [SupervisorJob] 覆盖其 [Job], 但会将这个 [Job] 作为父 [Job] */
     var parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 
     /** 心跳周期. 过长会导致被服务器断开连接. */
@@ -115,21 +116,64 @@ open class BotConfiguration {
     }
 
     /**
-     * 使用当前协程的 [coroutineContext] 作为 [parentCoroutineContext]
+     * 使用当前协程的 [coroutineContext] 作为 [parentCoroutineContext].
+     *
+     * Bot 将会使用一个 [SupervisorJob] 覆盖 [coroutineContext] 当前协程的 [Job], 并使用当前协程的 [Job] 作为父 [Job]
      *
      * 用例:
      * ```
      * coroutineScope {
-     *   val bot = Bot(...)
+     *   val bot = Bot(...) {
+     *     inheritCoroutineContext()
+     *   }
      *   bot.login()
      * } // coroutineScope 会等待 Bot 退出
      * ```
+     *
+     *
+     * **注意**: `bot.cancel` 时将会让父 [Job] 也被 cancel.
+     * ```
+     * coroutineScope { // this: CoroutineScope
+     *   launch {
+     *     while(isActive) {
+     *       delay(500)
+     *       println("I'm alive")
+     *     }
+     *   }
+     *
+     *   val bot = Bot(...) {
+     *      inheritCoroutineContext() // 使用 `coroutineScope` 的 Job 作为父 Job
+     *   }
+     *   bot.login()
+     *   bot.cancel() // 取消了整个 `coroutineScope`, 因此上文不断打印 `"I'm alive"` 的协程也会被取消.
+     * }
+     * ```
+     *
+     * 因此, 此函数尤为适合在 `suspend fun main()` 中使用, 它能阻止主线程退出:
+     * ```
+     * suspend fun main() {
+     *   val bot = Bot() {
+     *     inheritCoroutineContext()
+     *   }
+     *   bot.subscribe { ... }
+     *
+     *   // 主线程不会退出, 直到 Bot 离线.
+     * }
+     * ```
+     *
+     * 简言之,
+     * - 若想让 [Bot] 作为 '守护进程' 运行, 则无需调用 [inheritCoroutineContext].
+     * - 若想让 [Bot] 依赖于当前协程, 让当前协程等待 [Bot] 运行, 则使用 [inheritCoroutineContext]
+     *
+     * @see parentCoroutineContext
      */
     @ConfigurationDsl
     suspend inline fun inheritCoroutineContext() {
         parentCoroutineContext = coroutineContext
     }
 
+    /** 标注一个配置 DSL 函数 */
+    @Target(AnnotationTarget.FUNCTION)
     @DslMarker
     annotation class ConfigurationDsl
 

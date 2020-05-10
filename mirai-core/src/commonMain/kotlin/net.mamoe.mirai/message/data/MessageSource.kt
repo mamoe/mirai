@@ -331,19 +331,15 @@ inline fun MessageSource.isAboutFriend(): Boolean {
  * 引用这条消息
  * @see QuoteReply
  */
-fun MessageSource.quote(): QuoteReply {
-
-    return QuoteReply(this)
-}
+@JvmSynthetic
+inline fun MessageSource.quote(): QuoteReply = QuoteReply(this)
 
 /**
  * 引用这条消息. 仅从服务器接收的消息 (即来自 [MessageEvent]) 才可以通过这个方式被引用.
  * @see QuoteReply
  */
-fun MessageChain.quote(): QuoteReply {
-
-    return QuoteReply(this.source)
-}
+@JvmSynthetic
+inline fun MessageChain.quote(): QuoteReply = QuoteReply(this.source)
 
 /**
  * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.

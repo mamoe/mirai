@@ -24,6 +24,7 @@ internal object MessageSvcPushForceOffline :
     OutgoingPacketFactory<BotOfflineEvent.Force>("MessageSvc.PushForceOffline") {
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): BotOfflineEvent.Force {
         val struct = this.readUniPacket(RequestPushForceOffline.serializer())
+        @Suppress("INVISIBLE_MEMBER")
         return BotOfflineEvent.Force(bot, title = struct.title ?: "", message = struct.tips ?: "")
     }
 }

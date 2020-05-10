@@ -51,7 +51,7 @@ class EventCancelledException : RuntimeException {
 /**
  * [Bot] 登录完成, 好友列表, 群组列表初始化完成
  */
-data class BotOnlineEvent(override val bot: Bot) : BotActiveEvent, AbstractEvent()
+data class BotOnlineEvent internal constructor(override val bot: Bot) : BotActiveEvent, AbstractEvent()
 
 /**
  * [Bot] 离线.
@@ -59,31 +59,33 @@ data class BotOnlineEvent(override val bot: Bot) : BotActiveEvent, AbstractEvent
 sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
 
     /**
-     * 主动离线
+     * 主动离线. 主动广播这个事件也可以让 [Bot] 关闭.
      */
     data class Active(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), BotActiveEvent
 
     /**
      * 被挤下线
      */
-    data class Force(override val bot: Bot, val title: String, val message: String) : BotOfflineEvent(), Packet,
+    data class Force internal constructor(override val bot: Bot, val title: String, val message: String) :
+        BotOfflineEvent(), Packet,
         BotPassiveEvent
 
     /**
      * 被服务器断开或因网络问题而掉线
      */
-    data class Dropped(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), Packet, BotPassiveEvent
+    data class Dropped internal constructor(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), Packet,
+        BotPassiveEvent
 
     /**
      * 服务器主动要求更换另一个服务器
      */
-    data class RequireReconnect(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
+    data class RequireReconnect internal constructor(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
 }
 
 /**
  * [Bot] 主动或被动重新登录.
  */
-data class BotReloginEvent(
+data class BotReloginEvent internal constructor(
     override val bot: Bot,
     val cause: Throwable?
 ) : BotEvent, BotActiveEvent, AbstractEvent()

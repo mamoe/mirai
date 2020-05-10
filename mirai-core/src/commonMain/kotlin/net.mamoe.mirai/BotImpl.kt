@@ -91,11 +91,15 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
         this@BotImpl.subscribeAlways(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
-            if (event.bot != this.bot) {
+            if (event.bot != this@BotImpl) {
+                return@subscribeAlways
+            }
+            if (!::_network.isInitialized) {
+                // bot 还未登录就被 close
                 return@subscribeAlways
             }
             if (network.areYouOk() && event !is BotOfflineEvent.Force) {
-                // avoid concurrent re-login tasks
+                // network 运行正常
                 return@subscribeAlways
             }
             when (event) {
@@ -262,14 +266,14 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
         this.launch {
             BotOfflineEvent.Active(this@BotImpl, cause).broadcast()
         }
+        logger.info { "Bot cancelled" + cause?.message?.let { ": $it" }.orEmpty() }
         if (cause == null) {
-            this.cancel()
+            supervisorJob.cancel()
         } else {
-            this.cancel(CancellationException("bot cancelled", cause))
+            supervisorJob.cancel(CancellationException("Bot closed", cause))
         }
     }
 }
-
 
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 internal annotation class ThisApiMustBeUsedInWithConnectionLockBlock

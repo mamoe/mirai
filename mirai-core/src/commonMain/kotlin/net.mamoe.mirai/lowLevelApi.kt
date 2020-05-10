@@ -30,6 +30,10 @@ annotation class LowLevelAPI
 
 /**
  * [Bot] 相关协议层低级 API.
+ *
+ * **注意**: 不应该把这个类作为一个类型, 只应使用其中的方法
+ *
+ * **警告**: 所有的低级 API 都可能在任意时刻不经过任何警告和迭代就被修改. 因此非常不建议在任何情况下使用这些 API.
  */
 @MiraiExperimentalAPI
 @Suppress("FunctionName", "unused")

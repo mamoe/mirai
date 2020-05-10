@@ -189,6 +189,7 @@ internal class StatSvc {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): BotOfflineEvent.Dropped {
             val decodeUniPacket = readUniPacket(RequestMSFForceOffline.serializer())
+            @Suppress("INVISIBLE_MEMBER")
             return BotOfflineEvent.Dropped(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
         }
 

@@ -7,15 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE", "UnusedImport",
-    "EXPERIMENTAL_OVERRIDE")
+@file:Suppress(
+    "EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE", "UnusedImport",
+    "EXPERIMENTAL_OVERRIDE"
+)
 
 package net.mamoe.mirai
 
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
@@ -35,13 +34,12 @@ import kotlin.jvm.JvmSynthetic
  */
 @JvmSynthetic
 suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
-// 任何人都能看到这个方法
 
 /**
  * 机器人对象. 一个机器人实例登录一个 QQ 账号.
  * Mirai 为多账号设计, 可同时维护多个机器人.
  *
- * 注: Bot 为全协程实现, 没有其他任务时若不使用 [join], 主线程将会退出.
+ * 有关 [Bot] 生命管理, 请查看 [BotConfiguration.inheritCoroutineContext]
  *
  * @see Contact 联系人
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
@@ -279,6 +277,13 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
 }
 
 /**
+ * 获取 [Job] 的协程 [Job]. 此 [Job] 为一个 [SupervisorJob]
+ */
+@get:JvmSynthetic
+inline val Bot.supervisorJob: CompletableJob
+    get() = this.coroutineContext[Job] as CompletableJob
+
+/**
  * 挂起协程直到 [Bot] 下线.
  */
 @JvmSynthetic
@@ -305,13 +310,13 @@ suspend inline fun Bot.recall(message: MessageChain) =
  * @see recall
  */
 @JvmSynthetic
-inline fun Bot.recallIn(
+inline fun CoroutineScope.recallIn(
     source: MessageSource,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    kotlinx.coroutines.delay(millis)
-    recall(source)
+    delay(millis)
+    source.recall()
 }
 
 /**
@@ -322,13 +327,13 @@ inline fun Bot.recallIn(
  * @see recall
  */
 @JvmSynthetic
-inline fun Bot.recallIn(
+inline fun CoroutineScope.recallIn(
     message: MessageChain,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    kotlinx.coroutines.delay(millis)
-    recall(message)
+    delay(millis)
+    message.recall()
 }
 
 /**

@@ -404,27 +404,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         logger.info { "Syncing friend message history: Success" }
     }
 
-    private suspend fun doHeartBeat(): Exception? {
-        val lastException: Exception?
-        try {
-            kotlin.runCatching {
-                Heartbeat.Alive(bot.client)
-                    .sendAndExpect<Heartbeat.Alive.Response>(
-                        timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
-                        retry = 2
-                    )
-                return null
-            }
+    private suspend fun doHeartBeat(): Throwable? {
+        return retryCatching(2) {
             Heartbeat.Alive(bot.client)
                 .sendAndExpect<Heartbeat.Alive.Response>(
                     timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
                     retry = 2
                 )
             return null
-        } catch (e: Exception) {
-            lastException = e
-        }
-        return lastException
+        }.exceptionOrNull()
     }
 
     /**
