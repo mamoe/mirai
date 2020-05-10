@@ -1,30 +1,44 @@
-<div align="center">
-   <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
+# mirai-console
+高效率插件支持 QQ 机器人框架, 机器人核心来自 [mirai](https://github.com/mamoe/mirai)
 
-   <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="title">
+## 模块说明
 
-----
+console 由后端和前端一起工作. 使用时必须选择一个前端.
 
-[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-![Gradle CI](https://github.com/mamoe/mirai-console/workflows/Gradle%20CI/badge.svg?branch=master)
-[![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-console/)  
+- `mirai-console`: console 的后端, 包含插件管理, 指令系统, 配置系统. 还包含一个轻量命令行的前端 (因此可以独立启动 `mirai-console`).
+- `mirai-console-graphical`: console 的 JavaFX 图形化界面前端.
+- `mirai-console-terminal`: console 的 Unix 终端界面前端. (实验性)
 
-Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持的高效率机器人框架
 
-这个项目的名字来源于
-     <p><a href = "http://www.kyotoanimation.co.jp/">京都动画</a>作品<a href = "https://zh.moegirl.org/zh-hans/%E5%A2%83%E7%95%8C%E7%9A%84%E5%BD%BC%E6%96%B9">《境界的彼方》</a>的<a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a></p>
-     <p><a href = "https://www.crypton.co.jp/">CRYPTON</a>以<a href = "https://www.crypton.co.jp/miku_eng">初音未来</a>为代表的创作与活动<a href = "https://magicalmirai.com/2019/index_en.html">(Magical <b>Mirai</b>)</a></p>
-图标以及形象由画师<a href = "">DazeCake</a>绘制
-</div>
-
-# mirai-console 
-高效率插件支持机器人框架
-
-### 插件开发与获取
-[插件中心](https://github.com/mamoe/mirai-plugins) <br>
-[mirai-console插件开发快速上手](PluginDocs/ToStart.MD) 
+`mirai-console-wrapper`: console 启动器. 可根据用户选择从服务器下载 console 后端, mirai-core, 和指定的前端并启动.
 
 ### 使用
+
+#### Windows
+
+建议任何人都使用一键安装包来快速启动 mirai-console (因此你无需解决 JavaFX 和兼容等相关问题)  
+**[下载地址](https://suihou-my.sharepoint.com/:f:/g/personal/user18_5tb_site/ErWGr97FpPVDjkboIDmDAJkBID-23ZMNbTPggGajf1zvGw?e=51NZWM)**
+
+**请注意**
+* 使用时请留意安装包里的说明文字
+* 目前本安装包只支持Windows系统，**且 mirai-console 仍在开发中，可能会存在一些bug**
+* 关于安装包本身的一切问题请到 QQ 群内反馈 (推荐), 或 [邮件联系](mailto:support@mamoe.net)
+* 如果上面的链接下载过慢，你可以到QQ群内高速下载
+
+若你不愿意简单地启动, 你可以往下阅读复杂的启动方式.
+
+#### Unix
+
+Unix 没有一键包提供. 请使用 wrapper 启动器.
+
+1. 安装 JRE (Java 运行环境):
+   -  若使用图形界面, 至少需要 JRE 11 并带有 JavaFX 11, 且不推荐使用 12 或更高版本.
+   -  若使用命令行或终端, 至少需要 JRE 8.
+   -  可以在 [华为镜像源](https://repo.huaweicloud.com/java/jdk/) 下载 JDK (JDK 包含 JRE 和开发工具)
+2. 下载 `mirai-console-wrapper-x.x.x.jar`
+3. 参照下文命令行参数, 运行 `$ java -jar mirai-console-wrapper-x.x.x.jar`
+
+##### wrapper 命令行参数
 **[下载(download)](https://github.com/mamoe/mirai-console/releases)**  
 请下载最新的 `mirai-console-wrapper-x.x.x.jar`
 
@@ -32,79 +46,33 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 ```
 --native / -n                    以图形界面模式启动
                                  
---update [KEEP|STABLE|EA]        版本升级策略. "KEEP" 为停留在当前版本; "STABLE"
+--update [KEEP|STABLE|EA]        版本升级策略. "KEEP" 为停留在当前版本; "STABLE" (默认)
                                  为更新到最新稳定版; "EA" 为更新到最新预览版.
                                  
 --console [Graphical|Terminal|Pure]
                                  UI 类型. "GRAPHICAL" 为 JavaFX 图形界面;
-                                 "TERMINAL" 为 Unix 终端界面; "PURE" 为纯命令行.
+                 
+--native / -n                    以图形界面模式启动
+                                 
+--update [KEEP|STABLE|EA]        版本升级策略. "KEEP" 为停留在当前版本; "STABLE" (默认)
+                                 为更新到最新稳定版; "EA" 为更新到最新预览版.
+                                 
+--console [Graphical|Terminal|Pure]
+                                 UI 类型. "GRAPHICAL" 为 JavaFX 图形界面;
+                                 "TERMINAL" 为 Unix 终端界面; "PURE" (默认) 为纯命令行.
                                  
 -h, --help                       显示这个帮助
 ```
+                "TERMINAL" 为 Unix 终端界面; "PURE" (默认) 为纯命令行.
 
-#### 对于Windows用户
-
-你可以下载这里的一键安装包来快速启动mirai-console，这是最简单的方法 **[下载地址](https://suihou-my.sharepoint.com/:f:/g/personal/user18_5tb_site/ErWGr97FpPVDjkboIDmDAJkBID-23ZMNbTPggGajf1zvGw?e=51NZWM)**
-
-**请注意**
-* 使用时请留意安装包里的说明文字
-* 目前本安装包只支持Windows系统，且mirai-console仍在开发中，可能会存在一些bug
-* 关于安装包本身的一切问题请到QQ群内反馈
-* 如果上面的链接下载过慢，你可以到QQ群内高速下载
-
-#### 对于Linux用户
-
-运行本软件需要openjdk11，请在上面的链接下载`mirai-console-wrapper-x.x.x-all.jar`直接运行即可
-
-#### 如何启动
-如果是打包好的软件, 双击<br>
-如果是命令行运行, 请注意运行目录, 推荐cd到jar的文件夹下运行, 运行目录与Console的全部配置文件储存位置有关
-#### 如何添加插件
-如果是打包好的软件, 请根据UI操作<br>
-如果是命令行运行, 请将插件放入 **运行目录/plugins** 下
-#### 如何更改插件配置
-如果是打包好的软件, 请根据UI操作<br>
-如果是命令行运行, 插件的所有配置文件将出现在 **运行目录/plugins/插件名** 下，推荐在mirai-console关闭时修改
-#### 如何选择版本
-Mirai Console 提供了6个版本以满足各种需要<br>
-所有版本的 Mirai Console API 相同 插件系统相同<br>
-|  名称    | 介绍 |
-| --- | --- |
-| Mirai-Console-Pure  |  最纯净版, CLI环境, 通过标准输入与标准输出 交互 |
-| Mirai-Console-Terminal  |  (UNIX)Terminal环境 提供简洁的富文本控制台(暂未发布) |
-| Mirai-Console-Android   |  安卓APP (TODO) |
-| Mirai-Console-Graphical  |  JavaFX的图形化界面 (.jar/.exe/.dmg) |
-| Mirai-Console-WebPanel  |   Web Panel操作(TODO) |
-| Mirai-Console-Ios   |  IOS APP (TODO) |
-
-1:  Mirai-Console-Pure 兼容性最高, 在其他都表现不佳的时候请使用</br>
-2:  以系统区分
-```kotlin
-    return when(operatingSystem){
-        WINDOWS -> listOf("Graphical","WebPanel","Pure")
-        MAC_OS  -> listOf("Graphical","Terminal","WebPanel","Pure") 
-        LINUX   -> listOf("Terminal","Pure")
-        ANDROID -> listOf("Android","Pure","WebPanel") 
-        IOS     -> listOf("Ios") 
-        else    -> listOf("Pure") 
-    }      
+-h, --help                       显示这个帮助
 ```
-3: 以策略区分
-```kotlin
-    return when(task){
-        体验         -> listOf("Graphical","Terminal","WebPanel","Android","Pure")
-        测试插件      -> listOf("Pure") 
-        调试插件      -> byOperatingSystem() 
-        稳定挂机      -> listOf("Terminal","Pure") 
-        else         -> listOf("Pure") 
-    }      
-``` 
-----
-对于上面的一键安装包来说，默认的启动版本是`Graphical`，如果你需要启动Pure版本请点击`启动(Pure)`
 
-### 常见问题
+### 插件开发与获取
 
-#### 我无法正常启动`Graphical`版本
+mirai-console 支持 Jar 插件.
 
-请检查你的Java环境是否带有javafx相关组件；对于Windows用户，我们建议使用上面的一键安装包启动`Graphical`版本
+**mirai-console 目前仍为实验性阶段, 任何功能和 API 都不保证稳定性. 任何 API 都可能在没有警告的情况下修改.**
 
+(实验性) [插件中心](https://github.com/mamoe/mirai-plugins)  
+[mirai-console插件开发快速上手](PluginDocs/ToStart.MD) 
