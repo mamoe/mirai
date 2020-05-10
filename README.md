@@ -10,7 +10,7 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 - `mirai-console-terminal`: console 的 Unix 终端界面前端. (实验性)
 
 
-`mirai-console-wrapper`: console 启动器. 可根据用户选择从服务器下载 console 后端, mirai-core, 和指定的前端并启动.
+[`mirai-console-wrapper`](https://github.com/mamoe/mirai-console-wrapper): console 启动器. 可根据用户选择从服务器下载 console 后端, mirai-core, 和指定的前端并启动.
 
 ### 使用
 
@@ -36,37 +36,7 @@ Unix 没有一键包提供. 请使用 wrapper 启动器.
    -  若使用命令行或终端, 至少需要 JRE 8.
    -  可以在 [华为镜像源](https://repo.huaweicloud.com/java/jdk/) 下载 JDK (JDK 包含 JRE 和开发工具)
 2. 下载 `mirai-console-wrapper-x.x.x.jar`
-3. 参照下文命令行参数, 运行 `$ java -jar mirai-console-wrapper-x.x.x.jar`
-
-##### wrapper 命令行参数
-**[下载(download)](https://github.com/mamoe/mirai-console/releases)**  
-请下载最新的 `mirai-console-wrapper-x.x.x.jar`
-
-参数
-```
---native / -n                    以图形界面模式启动
-                                 
---update [KEEP|STABLE|EA]        版本升级策略. "KEEP" 为停留在当前版本; "STABLE" (默认)
-                                 为更新到最新稳定版; "EA" 为更新到最新预览版.
-                                 
---console [Graphical|Terminal|Pure]
-                                 UI 类型. "GRAPHICAL" 为 JavaFX 图形界面;
-                 
---native / -n                    以图形界面模式启动
-                                 
---update [KEEP|STABLE|EA]        版本升级策略. "KEEP" 为停留在当前版本; "STABLE" (默认)
-                                 为更新到最新稳定版; "EA" 为更新到最新预览版.
-                                 
---console [Graphical|Terminal|Pure]
-                                 UI 类型. "GRAPHICAL" 为 JavaFX 图形界面;
-                                 "TERMINAL" 为 Unix 终端界面; "PURE" (默认) 为纯命令行.
-                                 
--h, --help                       显示这个帮助
-```
-                "TERMINAL" 为 Unix 终端界面; "PURE" (默认) 为纯命令行.
-
--h, --help                       显示这个帮助
-```
+3. 参照 [wrapper 命令行参数](https://github.com/mirai/mirai-console-wrapper/README.md#命令行参数), 运行 `$ java -jar mirai-console-wrapper-x.x.x.jar`
 
 ### 插件开发与获取
 
