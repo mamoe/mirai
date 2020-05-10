@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package upload
@@ -94,7 +103,7 @@ object GitHub {
         /*
         * 只能获取1M以内/branch为master的sha
         * */
-        class TargetTooLargeException() : Exception("Target TOO Large")
+        class TargetTooLargeException : Exception("Target TOO Large")
 
         suspend fun getShaSmart(repo: String, filePath: String, project: Project): String? {
             return withContext(Dispatchers.IO) {
