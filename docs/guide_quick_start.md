@@ -1,13 +1,11 @@
 # Mirai Guide - Quick Start
 
-由于 mirai 项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020/3/26```，对应版本```0.30.1```
+由于 mirai 项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020/5/11```，对应版本```1.0-RC2-1```
 
 本文适用于对 Kotlin 较熟悉的开发者,  
 使用 mirai 作为第三方依赖库引用任意一个 Kotlin, Java 或其他 JVM 平台的项目
 
 **若你希望一份更基础的教程**, 请参阅: [mirai-guide-getting-started](guide_getting_started.md)
-
-**若你希望使用 Java 开发**, 请参阅: [mirai-japt](https://github.com/mamoe/mirai-japt)
 
 ## 构建需求
 
@@ -76,7 +74,6 @@ implementation("net.mamoe:mirai-core-qqandroid-common:VERSION")
 
 **android** (Android 平台源集)
 **注意**: 在 [KT-37152](https://youtrack.jetbrains.com/issue/KT-37152) 修复前, mirai 无法支持 Android 平台目标.
-
 ```kotlin
 implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
 ```
@@ -85,12 +82,16 @@ implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
 
 ```kotlin
 val bot = Bot(qqId, password).alsoLogin()
-bot.subscribeMessages {
-  "你好" reply "你好!"
-  contains("图片"){ File("C:\\image.png").sendAsImage() }
+bot.subscribeAlways<GroupMessageEvent> { event ->
+  if (event.message.content.contains("你好")) {
+    reply("你好!")
+  } else if (event.message.content.contains("你好")) {
+     File("C:\\image.png").uploadAsImage()
+  } 
 }
-bot.subscribeAlways<MemberPermissionChangedEvent> {
-  if (it.kind == BECOME_OPERATOR)
-    reply("${it.member.id} 成为了管理员")
+
+bot.subscribeAlways<MemberPermissionChangedEvent> { event ->
+  if (event.kind == BECOME_OPERATOR)
+    reply("${event.member.id} 成为了管理员")
 }
 ```
