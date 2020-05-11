@@ -28,6 +28,8 @@ import kotlin.jvm.JvmOverloads
  * **注意:** 请为日志做好分类, 即不同的模块使用不同的 [MiraiLogger].
  * 如, [Bot] 中使用 identity 为 "Bot(qqId)" 的 [MiraiLogger]
  * 而 [Bot] 的网络处理中使用 identity 为 "BotNetworkHandler" 的.
+ *
+ * Java 调用: `Utils.getDefaultLogger().invoke(identity)`
  */
 var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger(it) }
 

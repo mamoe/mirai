@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.contact
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 
 /**
@@ -18,7 +19,7 @@ import net.mamoe.mirai.Bot
  * @see Contact
  * @see Bot
  */
-interface ContactOrBot {
+interface ContactOrBot : CoroutineScope {
     /**
      * QQ 号或群号.
      */

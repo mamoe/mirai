@@ -12,9 +12,12 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
+import net.mamoe.mirai.utils.internal.runBlocking
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlin.jvm.Volatile
 
@@ -32,6 +35,8 @@ import kotlin.jvm.Volatile
  *
  * @see [broadcast] 广播事件
  * @see [CoroutineScope.subscribe] 监听事件
+ *
+ * @see CancellableEvent 可被取消的事件
  */
 interface Event {
     /**
@@ -140,12 +145,29 @@ interface CancellableEvent : Event {
 
 /**
  * 广播一个事件的唯一途径.
+ * @see __broadcastJava
  */
+@JvmSynthetic
 suspend fun <E : Event> E.broadcast(): E = apply {
     if (this is BroadcastControllable && !this.shouldBroadcast) {
         return@apply
     }
     this@broadcast.broadcastInternal() // inline, no extra cost
+}
+
+/**
+ * 在 Java 广播一个事件的唯一途径.
+ *
+ * 调用方法: `EventKt.broadcast(event)`
+ */
+@Suppress("FunctionName")
+@JvmName("broadcast")
+@JavaFriendlyAPI
+fun <E : Event> E.__broadcastJava(): E = apply {
+    if (this is BroadcastControllable && !this.shouldBroadcast) {
+        return@apply
+    }
+    runBlocking { this@__broadcastJava.broadcastInternal() }
 }
 
 /**

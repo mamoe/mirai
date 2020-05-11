@@ -84,7 +84,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 
 ### 开发者
 
-**了解 mirai 架构**： [Wiki](https://github.com/mamoe/mirai/wiki/Home) 
+**阅读文档**： [docs/mirai.md](docs/mirai.md)
 
 #### 使用 mirai 作为服务器，为 mirai 开发插件
 
@@ -130,10 +130,9 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 ## 更新日志
 
-* 在 [Project](https://github.com/mamoe/mirai/projects/3) 查看已支持功能和计划
 * 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
 
-## [贡献](https://github.com/mamoe/mirai/blob/master/CONTRIBUTING.md)
+## [贡献](CONTRIBUTING.md)
 
 我们欢迎一切形式的贡献。  
 我们也期待有更多人能加入 mirai 的开发。  
