@@ -19,6 +19,8 @@ kotlin {
 
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
             languageSettings.useExperimentalAnnotation("kotlin.OptIn")
+            languageSettings.progressiveMode = true
+            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
         }
     }
 }

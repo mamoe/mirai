@@ -42,6 +42,18 @@ dependencies {
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
 }
 
+kotlin {
+    sourceSets {
+        all {
+
+            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
+            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
+            languageSettings.progressiveMode = true
+            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
+        }
+    }
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
