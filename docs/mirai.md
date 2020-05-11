@@ -27,12 +27,12 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
   console 由 '后端' 和 '前端' 组成.  
   `mirai-console` 即为后端, 包含所有开发时需要用到的功能.  
   可用的前端:
-  - 命令行: `mirai-console` 内置命令行后端.
+  - 纯命令行: `mirai-console` 内置纯命令行前端.
   - 基于 JavaFX 的图形端: [`mirai-console-graphical`](https://github.com/mamoe/mirai-console/tree/master/mirai-console-graphical)
   - Unix 友好的终端: [`mirai-console-terminal`](https://github.com/mamoe/mirai-console/tree/master/mirai-console-terminal)
 
 
-**注意**: `mirai-core` 于 2020 年 6 月发布的 `1.0.0` 版本正式进入稳定更新阶段,  
+**注意**: `mirai-core` (将)于 2020 年 6 月发布的 `1.0.0` 版本正式进入稳定更新阶段,   
 **而 `mirai-console` 仍处于快速迭代阶段, 任何 API 都有可能在不经过警告的情况下改动, 任何 API 都不具有任何稳定性.**
 
 ## `mirai-core`
@@ -41,9 +41,9 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
 
 你可以在这里快速地大致了解 mirai 的全部 API.
 
-要能看懂下文, 建议至少学习 Java, Kotlin 或 C# 其中一门语言.
-
 ### 准备
+
+要能看懂下文, 建议至少学习 Java, Kotlin 或 C# 其中一门语言.
 
 mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotlin 参考: [kotlincn.net](https://www.kotlincn.net/docs/reference/)  
 有关协程 (`suspend`)部分, mirai 做了大量的兼容性转换以让 Java 使用相同的 API 阻塞地调用一个协程函数.  
@@ -51,7 +51,7 @@ mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotl
 
 ### 开始
 
-1. [实验性 API 注解 MiraiExperimentalAPI](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/Annotations.kt#L41-L54)
+1. [实验性 API 注解 MiraiExperimentalAPI](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/Annotations.kt#L41)
 
 2. '机器人' 和 '联系人'
    1. [ContactOrBot](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/contact/ContactOrBot.kt)
@@ -81,7 +81,7 @@ mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotl
    3. - Kotlin: [函数式监听事件 subscribe](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/subscriber.kt)
       - Kotlin & Java: [方法反射监听事件 JvmMethodListeners](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/event/JvmMethodListeners.kt)
    4. 内建事件列表 [README](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/events/README.md).  
-      注意: mirai 将接收到的消息事件独立放置在 `net.mamoe.mirai.message` 下, 并命名为 `MessageEvent`. 并为他们实现了一些扩展. 详见 [MessageEvent.kt](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/MessageEvent.kt)
+      **注意**: mirai 将接收到的消息事件独立放置在 `net.mamoe.mirai.message` 下, 并命名为 `MessageEvent`. 并为他们实现了一些扩展. 详见 [MessageEvent.kt](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/MessageEvent.kt)
    5. 事件工具类和工具函数 (仅 Kotlin) (可以跳过本节):
       标注 (*) 的几种处理方式可能需要比较好的 Kotlin 技能才能理解并正确使用. 建议在不熟悉时不要使用它们.
       - 挂起当前协程, 直到返回下一个事件实例: [nextEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/nextEvent.kt)
@@ -90,8 +90,8 @@ mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotl
       - (*) 协程 `select` 语法的监听方式: [selectMessages](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/select.kt)
       - (*) 挂起协程并等待下一个与 `this` 语境相同的事件 [MessageEvent.nextMessage](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/utils.kt#L50)
 
-
-
+<br><br>
+<br><br>
 一切准备就绪. 现在开始构造 `Bot` 实例:
 
 1. `Bot` 的配置: [BotConfiguration](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.kt)
