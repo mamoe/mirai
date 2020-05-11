@@ -2,34 +2,33 @@ package net.mamoe.mirai.console.utils
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.BotAware
+import net.mamoe.mirai.console.command.ContactCommandSender
 import net.mamoe.mirai.console.command.GroupContactCommandSender
-import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.content
+import java.lang.NumberFormatException
 
 /**
  * this output type of that arg
  * input is always String
  */
 interface CommandArg<T:Any>{
-    operator fun invoke():T = get()
+    operator fun invoke(s:String, commandSender: CommandSender):T = parse(s,commandSender)
 
-    fun get():T
+    operator fun invoke(s:SingleMessage, commandSender: CommandSender):T = parse(s,commandSender)
 
-    fun read(s:String, commandSender: CommandSender)
+    fun parse(s:String, commandSender: CommandSender):T
+
+    fun parse(s:SingleMessage, commandSender: CommandSender):T
 }
 
 
 abstract class CommandArgImpl<T:Any>(
 ):CommandArg<T>{
-
-    lateinit var value:T
-
-    override fun get(): T = value
-
-    override fun read(s: String, commandSender: CommandSender) {
-        value = parse(s, commandSender)
-    }
-
-    abstract fun parse(s:String, commandSender: CommandSender):T
+    override fun parse(s: SingleMessage, commandSender: CommandSender): T  = parse(s.content,commandSender)
 }
 
 class IntArg:CommandArgImpl<Int>(){
@@ -41,7 +40,6 @@ class IntArg:CommandArgImpl<Int>(){
         }
     }
 }
-
 class LongArg:CommandArgImpl<Long>(){
     override fun parse(s: String, commandSender: CommandSender): Long {
         return try{
@@ -51,7 +49,6 @@ class LongArg:CommandArgImpl<Long>(){
         }
     }
 }
-
 class DoubleArg:CommandArgImpl<Double>(){
     override fun parse(s: String, commandSender: CommandSender): Double {
         return try{
@@ -61,8 +58,20 @@ class DoubleArg:CommandArgImpl<Double>(){
         }
     }
 }
-
-
+class FloatArg:CommandArgImpl<Float>(){
+    override fun parse(s: String, commandSender: CommandSender): Float{
+        return try{
+            s.toFloat()
+        }catch (e:Exception){
+            error("无法识别小数$s")
+        }
+    }
+}
+class BooleanArg:CommandArgImpl<Boolean>(){
+    override fun parse(s: String, commandSender: CommandSender): Boolean {
+        return s.equals("true",true) || s.equals("yes",true)
+    }
+}
 class StringArg:CommandArgImpl<String>(){
     override fun parse(s: String, commandSender: CommandSender): String {
         return s
@@ -75,7 +84,6 @@ class StringArg:CommandArgImpl<String>(){
  * output: Bot
  * errors: String->Int convert, Bot Not Exist
  */
-
 class ExistBotArg:CommandArgImpl<Bot>(){
     override fun parse(s: String, commandSender: CommandSender): Bot {
         val uin = try{
@@ -91,22 +99,69 @@ class ExistBotArg:CommandArgImpl<Bot>(){
     }
 }
 
-
+class ExistFriendArg:CommandArgImpl<Friend>(){
+    override fun parse(s: String, commandSender: CommandSender): Friend {
+        TODO("Not yet implemented")
+    }
+}
 
 class ExistGroupArg:CommandArgImpl<Group>(){
-
     override fun parse(s: String, commandSender: CommandSender): Group {
-        if((s === "" || s === "~") && commandSender is GroupContactCommandSender){
+        //by default
+        if ((s == "" || s == "~") && commandSender is GroupContactCommandSender) {
             return commandSender.contact as Group
         }
-
-        val code = try{
-            s.toLong()
-        }catch (e:Exception){
-            error("无法识别Group Code$s")
+        //from bot to group
+        if (commandSender is BotAware) {
+            val code = try {
+                s.toLong()
+            } catch (e: NoSuchElementException) {
+                error("无法识别Group Code$s")
+            }
+            return try {
+                commandSender.bot.getGroup(code)
+            } catch (e: NoSuchElementException) {
+                error("无法找到Group " + code + " from Bot " + commandSender.bot.id)
+            }
         }
+        //from console/other
+        return with(s.split(".")) {
+            if (this.size != 2) {
+                error("请使用BotQQ号.群号 来表示Bot的一个群")
+            }
+            try {
+                Bot.getInstance(this[0].toLong()).getGroup(this[1].toLong())
+            }catch (e:NoSuchElementException){
+                error("无法找到" + this[0] + "的" + this[1] + "群")
+            }catch (e:NumberFormatException){
+                error("无法识别群号或机器人UIN")
+            }
+        }
+    }
+}
 
-        TODO()
+class ExistMemberArg:CommandArgImpl<Member>(){
+    //后台: Bot.Group.Member[QQ/名片]
+    //私聊: Group.Member[QQ/名片]
+    //群内: Q号
+    //群内: 名片
+    override fun parse(s: String, commandSender: CommandSender): Member {
+        if(commandSender !is BotAware){
+            with(s.split(".")){
+                if(this.size < 3){
+                    //TODO()
+                }
+            }
+        }
+        //TODO()
+    }
 
+    override fun parse(s: SingleMessage, commandSender: CommandSender): Member {
+        return if(s is At){
+            assert(commandSender is GroupContactCommandSender)
+            ((commandSender as GroupContactCommandSender).contact as Group).members[s.target]
+        }else{
+            error("无法识别Member" + s.content)
+        }
     }
 }

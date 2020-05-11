@@ -62,9 +62,9 @@ object DefaultCommands {
                 startsWith(commandPrefix) { message ->
                     if (bot.checkManager(this.sender.id)) {
                         val sender = if (this is GroupMessageEvent) {
-                            GroupContactCommandSender(this.sender, this.subject)
+                            GroupContactCommandSender(bot,this.sender, this.subject)
                         } else {
-                            ContactCommandSender(this.subject)
+                            ContactCommandSender(bot,this.subject)
                         }
                         CommandManager.runCommand(
                             sender, message

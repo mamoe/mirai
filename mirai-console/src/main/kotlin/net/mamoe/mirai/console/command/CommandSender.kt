@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member
@@ -35,6 +36,7 @@ interface CommandSender {
     fun sendMessageBlocking(messageChain: Message) = runBlocking { sendMessage(messageChain) }
     fun sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
 }
+
 
 abstract class AbstractCommandSender : CommandSender {
     internal val builder = StringBuilder()
@@ -69,10 +71,19 @@ object ConsoleCommandSender : AbstractCommandSender() {
 }
 
 /**
+ * 指向性CommandSender
+ * 你可以获得用户在和哪个Bot说指令
+ */
+interface BotAware{
+    val bot:Bot
+}
+
+
+/**
  * 联系人指令执行者. 代表由一个 QQ 用户私聊执行指令
  */
 @Suppress("MemberVisibilityCanBePrivate")
-open class ContactCommandSender(val contact: Contact) : AbstractCommandSender() {
+open class ContactCommandSender(override val bot: Bot, val contact: Contact) : AbstractCommandSender(), BotAware{
     override suspend fun sendMessage(messageChain: Message) {
         contact.sendMessage(messageChain)
     }
@@ -86,6 +97,7 @@ open class ContactCommandSender(val contact: Contact) : AbstractCommandSender() 
  * 联系人指令执行者. 代表由一个 QQ 用户 在群里执行指令
  */
 open class GroupContactCommandSender(
+    bot: Bot,
     val realSender: Member,
     subject: Contact
-):ContactCommandSender(subject)
+):ContactCommandSender(bot,subject)
