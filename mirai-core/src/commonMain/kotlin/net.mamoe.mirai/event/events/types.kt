@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
@@ -84,6 +86,5 @@ val GroupOperableEvent.operatorOrBot: Member
  */
 interface FriendEvent : BotEvent {
     val friend: Friend
-    override val bot: Bot
-        get() = friend.bot
+    final override val bot: Bot get() = friend.bot
 }

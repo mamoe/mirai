@@ -83,7 +83,7 @@ sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
 }
 
 /**
- * [Bot] 主动或被动重新登录.
+ * [Bot] 主动或被动重新登录. 在此事件广播前就已经登录完毕.
  */
 data class BotReloginEvent internal constructor(
     override val bot: Bot,
@@ -91,14 +91,14 @@ data class BotReloginEvent internal constructor(
 ) : BotEvent, BotActiveEvent, AbstractEvent()
 
 /**
- * [Bot] 头像被修改（通过其他客户端修改了Bot的头像）
+ * [Bot] 头像被修改（通过其他客户端修改了头像）. 在此事件广播前就已经修改完毕.
  */
 data class BotAvatarChangedEvent(
     override val bot: Bot
 ) : BotEvent, Packet, AbstractEvent()
 
 /**
- * [Friend] 头像被修改
+ * [Friend] 头像被修改. 在此事件广播前就已经修改完毕.
  */
 data class FriendAvatarChangedEvent(
     override val friend: Friend
@@ -658,7 +658,6 @@ data class MemberUnmuteEvent(
  * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
  */
 data class FriendRemarkChangeEvent(
-    override val bot: Bot,
     override val friend: Friend,
     val newName: String
 ) : FriendEvent, Packet, AbstractEvent()
@@ -671,18 +670,14 @@ data class FriendAddEvent(
      * 新好友. 已经添加到 [Bot.friends]
      */
     override val friend: Friend
-) : FriendEvent, Packet, AbstractEvent() {
-    override val bot: Bot get() = friend.bot
-}
+) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * 好友已被删除的事件.
  */
 data class FriendDeleteEvent(
     override val friend: Friend
-) : FriendEvent, Packet, AbstractEvent() {
-    override val bot: Bot get() = friend.bot
-}
+) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * 一个账号请求添加机器人为好友的事件

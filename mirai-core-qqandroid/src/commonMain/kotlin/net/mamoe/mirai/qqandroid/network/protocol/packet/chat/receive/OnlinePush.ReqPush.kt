@@ -411,7 +411,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             return this.msgFrdRmk?.asSequence()?.mapNotNull {
                 val friend = bot.getFriendOrNull(it.fuin) ?: return@mapNotNull null
                 // TODO: 2020/4/10 ADD REMARK QUERY
-                FriendRemarkChangeEvent(bot, friend, it.rmkName)
+                FriendRemarkChangeEvent(friend, it.rmkName)
             } ?: emptySequence()
         }
 
@@ -519,7 +519,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 return sequenceOf(BotAvatarChangedEvent(bot))
             }
             val friend = bot.getFriendOrNull(uin) ?: return emptySequence()
-            return sequenceOf(FriendFaceChangedEvent(friend))
+            return sequenceOf(FriendAvatarChangedEvent(friend))
         }
 
 
