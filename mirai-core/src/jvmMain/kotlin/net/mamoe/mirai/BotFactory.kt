@@ -47,6 +47,8 @@ actual interface BotFactory {
 
 /**
  * 自动加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
+ *
+ * Java 调用方式: `BotFactoryJvm.newBot(...)`
  */
 @JvmName("newBot")
 @JvmOverloads
@@ -63,6 +65,8 @@ inline fun Bot(context: Context, qq: Long, password: String, configuration: (Bot
 
 /**
  * 自动加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
+ *
+ * Java 调用方式: `BotFactoryJvm.newBot(...)`
  */
 @JvmName("newBot")
 @JvmOverloads
@@ -79,6 +83,8 @@ inline fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -
 
 /**
  * 自动加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
+ *
+ * Java 调用方式: `BotFactoryJvm.newBot(...)`
  */
 @JvmName("newBot")
 @JvmOverloads
@@ -100,6 +106,8 @@ inline fun Bot(context: Context, qq: Long, passwordMd5: ByteArray, configuration
 
 /**
  * 自动加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
+ *
+ * Java 调用方式: `BotFactoryJvm.newBot(...)`
  */
 @JvmName("newBot")
 @JvmOverloads
@@ -112,9 +120,6 @@ fun Bot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration = BotC
 @JvmSynthetic
 inline fun Bot(qq: Long, passwordMd5: ByteArray, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(ContextImpl(), qq, passwordMd5, BotConfiguration().apply(configuration))
-
-
-
 
 
 // Do not use ServiceLoader. Probably not working on MPP
