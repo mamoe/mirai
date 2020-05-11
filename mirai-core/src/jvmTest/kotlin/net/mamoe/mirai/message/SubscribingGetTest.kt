@@ -26,12 +26,12 @@ internal class SubscribingGetTest {
         runBlockingWithTimeout(10000) {
             suspendCancellableCoroutine<Unit> { cont ->
                 launch {
-                    syncFromEvent(3000) { _: TestEvent ->
+                    syncFromEvent(8000) { _: TestEvent ->
                         cont.resume(Unit)
                     }
                 }
                 launch {
-                    delay(2000)
+                    delay(4000)
                     TestEvent().broadcast()
                 }
             }

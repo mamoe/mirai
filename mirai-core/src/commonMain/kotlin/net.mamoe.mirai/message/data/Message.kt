@@ -9,7 +9,8 @@
 
 @file:Suppress(
     "MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE",
-    "NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE"
+    "NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE",
+    "INAPPLICABLE_JVM_NAME", "WRONG_MODIFIER_CONTAINING_DECLARATION"
 )
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
@@ -23,10 +24,9 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message.Key
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.contracts.contract
-import kotlin.internal.HidesMembers
-import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -166,7 +166,8 @@ interface Message { // must be interface. Don't consider any changes.
      *
      * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
-    fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean = contentEqualsImpl(another, ignoreCase)
+    final fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
+        contentEqualsImpl(another, ignoreCase)
 
     /**
      * 判断内容是否与 [another] 相等.
@@ -177,7 +178,7 @@ interface Message { // must be interface. Don't consider any changes.
      *
      * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
-    fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
+    final fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
         if (!this.contentToString().equals(another, ignoreCase = ignoreCase)) return false
         return when (this) {
             is SingleMessage -> true
@@ -186,70 +187,25 @@ interface Message { // must be interface. Don't consider any changes.
         }
     }
 
-    @LowPriorityInOverloadResolution
-    @PlannedRemoval("1.2.0")
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    operator fun plus(another: Message): MessageChain = this.followedBy(another)
+    final operator fun plus(another: MessageChain): MessageChain = this + another as Message
+    final operator fun plus(another: Message): MessageChain = this.followedBy(another)
+    final operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
+    final operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
+    final operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
+    final operator fun plus(another: Iterable<Message>): MessageChain =
+        another.fold(this, Message::plus).asMessageChain()
 
-    @PlannedRemoval("1.2.0")
-    @LowPriorityInOverloadResolution
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
+    @JvmName("plusIterableString")
+    final operator fun plus(another: Iterable<String>): MessageChain =
+        another.fold(this, Message::plus).asMessageChain()
 
-    @PlannedRemoval("1.2.0")
-    @JvmSynthetic
-    @LowPriorityInOverloadResolution // won't be resolved
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
-
-    @PlannedRemoval("1.2.0")
-    @LowPriorityInOverloadResolution
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
+    final operator fun plus(another: Sequence<Message>): MessageChain =
+        another.fold(this, Message::plus).asMessageChain()
 }
 
+@MiraiExperimentalAPI
 @JvmSynthetic
-@HidesMembers
-inline operator fun Message.plus(another: Message): MessageChain = this.followedBy(another)
-
-@HidesMembers
-@JvmSynthetic
-inline operator fun Message.plus(another: SingleMessage): MessageChain = this.followedBy(another)
-
-@HidesMembers
-@JvmSynthetic
-inline operator fun Message.plus(another: String): MessageChain = this.followedBy(another.toMessage())
-
-@HidesMembers
-@JvmSynthetic
-inline operator fun Message.plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
-
-@HidesMembers
-@JvmSynthetic
-inline operator fun Message.plus(another: Iterable<Message>): MessageChain =
-    another.fold(this, Message::plus).asMessageChain()
-
-@JvmName("plus1")
-@HidesMembers
-@JvmSynthetic
-inline operator fun Message.plus(another: Iterable<String>): MessageChain =
-    another.fold(this, Message::plus).asMessageChain()
-
-@JvmSynthetic
-@HidesMembers
-inline operator fun Message.plus(another: Sequence<Message>): MessageChain =
-    another.fold(this, Message::plus).asMessageChain()
-
-@HidesMembers
-@JvmSynthetic
-inline operator fun Message.plus(another: MessageChain): MessageChain = this + another as Message
-
 @ExperimentalCoroutinesApi
-@HidesMembers
-@JvmSynthetic
 suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
     another.fold(this) { acc, it -> acc + it }.asMessageChain()
 
@@ -271,9 +227,6 @@ inline val Message.content: String
  * - [MessageChain] 所有元素都满足 [isContentEmpty]
  */
 fun Message.isContentEmpty(): Boolean {
-    contract {
-        returns(false) implies (this@isContentEmpty is MessageContent)
-    }
     return when (this) {
         is MessageMetadata -> true
         is PlainText -> this.content.isEmpty()
@@ -282,12 +235,7 @@ fun Message.isContentEmpty(): Boolean {
     }
 }
 
-inline fun Message.isContentNotEmpty(): Boolean {
-    contract {
-        returns(true) implies (this@isContentNotEmpty is MessageContent)
-    }
-    return !this.isContentEmpty()
-}
+inline fun Message.isContentNotEmpty(): Boolean = !this.isContentEmpty()
 
 inline fun Message.isPlain(): Boolean {
     contract {
@@ -364,7 +312,6 @@ interface MessageMetadata : SingleMessage {
     /**
      * 返回空字符串
      */
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
     final override fun contentToString(): String = ""
 }
 
