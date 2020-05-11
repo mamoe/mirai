@@ -35,6 +35,8 @@ import kotlin.jvm.Volatile
  *
  * @see [broadcast] 广播事件
  * @see [CoroutineScope.subscribe] 监听事件
+ *
+ * @see CancellableEvent 可被取消的事件
  */
 interface Event {
     /**
