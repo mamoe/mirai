@@ -7,245 +7,26 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("BotEventsKt")
 @file:Suppress("unused", "FunctionName")
-@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
-import net.mamoe.mirai.event.CancellableEvent
-import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
-import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.qqandroid.network.Packet
-import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.internal.runBlocking
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmSynthetic
+import kotlin.jvm.*
 
-
-@Suppress("unused")
-class EventCancelledException : RuntimeException {
-    constructor() : super()
-    constructor(message: String?) : super(message)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-    constructor(cause: Throwable?) : super(cause)
-}
-
-// note: 若你使用 IntelliJ IDEA, 按 alt + 7 可打开结构
-
-
-// region Bot 状态
-
-/**
- * [Bot] 登录完成, 好友列表, 群组列表初始化完成
- */
-data class BotOnlineEvent internal constructor(override val bot: Bot) : BotActiveEvent, AbstractEvent()
-
-/**
- * [Bot] 离线.
- */
-sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
-
-    /**
-     * 主动离线. 主动广播这个事件也可以让 [Bot] 关闭.
-     */
-    data class Active(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), BotActiveEvent
-
-    /**
-     * 被挤下线
-     */
-    data class Force internal constructor(override val bot: Bot, val title: String, val message: String) :
-        BotOfflineEvent(), Packet,
-        BotPassiveEvent
-
-    /**
-     * 被服务器断开或因网络问题而掉线
-     */
-    data class Dropped internal constructor(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), Packet,
-        BotPassiveEvent
-
-    /**
-     * 服务器主动要求更换另一个服务器
-     */
-    data class RequireReconnect internal constructor(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
-}
-
-/**
- * [Bot] 主动或被动重新登录. 在此事件广播前就已经登录完毕.
- */
-data class BotReloginEvent internal constructor(
-    override val bot: Bot,
-    val cause: Throwable?
-) : BotEvent, BotActiveEvent, AbstractEvent()
-
-/**
- * [Bot] 头像被修改（通过其他客户端修改了头像）. 在此事件广播前就已经修改完毕.
- */
-data class BotAvatarChangedEvent(
-    override val bot: Bot
-) : BotEvent, Packet, AbstractEvent()
-
-/**
- * [Friend] 头像被修改. 在此事件广播前就已经修改完毕.
- */
-data class FriendAvatarChangedEvent(
-    override val friend: Friend
-) : FriendEvent, Packet, AbstractEvent()
-
-// endregion
-
-// region 消息
-
-/**
- * 主动发送消息
- */
-sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
-    abstract val target: Contact
-    final override val bot: Bot
-        get() = target.bot
-
-    data class GroupMessageSendEvent(
-        override val target: Group,
-        var message: MessageChain
-    ) : MessageSendEvent(), CancellableEvent
-
-    data class FriendMessageSendEvent(
-        override val target: Friend,
-        var message: MessageChain
-    ) : MessageSendEvent(), CancellableEvent
-
-    // TODO: 2020/4/30 添加临时会话消息发送事件
-}
-
-/**
- * 消息撤回事件. 可是任意消息被任意人撤回.
- */
-sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
-    /**
-     * 消息原发送人
-     */
-    abstract val authorId: Long
-
-    /**
-     * 消息 id.
-     * @see MessageSource.id
-     */
-    abstract val messageId: Int
-
-    /**
-     * 消息内部 id.
-     * @see MessageSource.id
-     */
-    abstract val messageInternalId: Int
-
-    /**
-     * 原发送时间
-     */
-    abstract val messageTime: Int // seconds
-
-    /**
-     * 好友消息撤回事件, 暂不支持.
-     */ // TODO: 2020/4/22 支持好友消息撤回事件的解析和主动广播
-    data class FriendRecall(
-        override val bot: Bot,
-        override val messageId: Int,
-        override val messageInternalId: Int,
-        override val messageTime: Int,
-        /**
-         * 撤回操作人, 可能为 [Bot.id] 或好友的 [User.id]
-         */
-        val operator: Long
-    ) : MessageRecallEvent(), Packet {
-        override val authorId: Long
-            get() = bot.id
-    }
-
-    /**
-     * 群消息撤回事件.
-     */
-    data class GroupRecall(
-        override val bot: Bot,
-        override val authorId: Long,
-        override val messageId: Int,
-        override val messageInternalId: Int,
-        override val messageTime: Int,
-        /**
-         * 操作人. 为 null 时则为 [Bot] 操作.
-         */
-        override val operator: Member?,
-        override val group: Group
-    ) : MessageRecallEvent(), GroupOperableEvent, Packet
-}
-
-val MessageRecallEvent.GroupRecall.author: Member
-    get() = if (authorId == bot.id) group.botAsMember else group[authorId]
-
-val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
-// val MessageRecallEvent.GroupRecall.isByBot: Boolean get() = (this as GroupOperableEvent).isByBot
-// no need
-
-val MessageRecallEvent.isByBot: Boolean
-    get() = when (this) {
-        is MessageRecallEvent.FriendRecall -> this.isByBot
-        is MessageRecallEvent.GroupRecall -> (this as GroupOperableEvent).isByBot
-    }
-
-// endregion
-
-// region 图片
-
-/**
- * 图片上传前. 可以阻止上传
- */
-data class BeforeImageUploadEvent(
-    val target: Contact,
-    val source: ExternalImage
-) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
-    override val bot: Bot
-        get() = target.bot
-}
-
-/**
- * 图片上传完成
- *
- * @see Succeed
- * @see Failed
- */
-sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
-    abstract val target: Contact
-    abstract val source: ExternalImage
-    override val bot: Bot
-        get() = target.bot
-
-    data class Succeed(
-        override val target: Contact,
-        override val source: ExternalImage,
-        val image: Image
-    ) : ImageUploadEvent()
-
-    data class Failed(
-        override val target: Contact,
-        override val source: ExternalImage,
-        val errno: Int,
-        val message: String
-    ) : ImageUploadEvent()
-}
-
-// endregion
-
-// region 群
 
 /**
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
@@ -460,7 +241,7 @@ sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
 /**
  * [Bot] 被邀请加入一个群.
  */
-data class BotInvitedJoinGroupRequestEvent(
+data class BotInvitedJoinGroupRequestEvent internal constructor(
     override val bot: Bot,
     /**
      * 事件唯一识别号
@@ -502,7 +283,7 @@ data class BotInvitedJoinGroupRequestEvent(
 /**
  * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
  */
-data class MemberJoinRequestEvent(
+data class MemberJoinRequestEvent internal constructor(
     override val bot: Bot,
     /**
      * 事件唯一识别号
@@ -649,86 +430,3 @@ data class MemberUnmuteEvent(
 // endregion
 
 // endregion
-
-// endregion
-
-// region 好友
-
-/**
- * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
- */
-data class FriendRemarkChangeEvent(
-    override val friend: Friend,
-    val newName: String
-) : FriendEvent, Packet, AbstractEvent()
-
-/**
- * 成功添加了一个新好友的事件
- */
-data class FriendAddEvent(
-    /**
-     * 新好友. 已经添加到 [Bot.friends]
-     */
-    override val friend: Friend
-) : FriendEvent, Packet, AbstractEvent()
-
-/**
- * 好友已被删除的事件.
- */
-data class FriendDeleteEvent(
-    override val friend: Friend
-) : FriendEvent, Packet, AbstractEvent()
-
-/**
- * 一个账号请求添加机器人为好友的事件
- */
-data class NewFriendRequestEvent(
-    override val bot: Bot,
-    /**
-     * 事件唯一识别号
-     */
-    val eventId: Long,
-    /**
-     * 申请好友消息
-     */
-    val message: String,
-    /**
-     * 请求人 [User.id]
-     */
-    val fromId: Long,
-    /**
-     * 来自群 [Group.id], 其他途径时为 0
-     */
-    val fromGroupId: Long,
-    /**
-     * 群名片或好友昵称
-     */
-    val fromNick: String
-) : BotEvent, Packet, AbstractEvent() {
-    @JvmField
-    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
-
-    /**
-     * @return 申请人来自的群. 当申请人来自其他途径申请时为 `null`
-     */
-    val fromGroup: Group? = if (fromGroupId == 0L) null else bot.getGroup(fromGroupId)
-
-    @JvmSynthetic
-    suspend fun accept() = bot.acceptNewFriendRequest(this)
-
-    @JvmSynthetic
-    suspend fun reject(blackList: Boolean = false) = bot.rejectNewFriendRequest(this, blackList)
-
-
-    @JavaFriendlyAPI
-    @JvmName("accept")
-    fun __acceptBlockingForJava__() = runBlocking { accept() }
-
-    @JavaFriendlyAPI
-    @JvmOverloads
-    @JvmName("reject")
-    fun __rejectBlockingForJava__(blackList: Boolean = false) =
-        runBlocking { reject(blackList) }
-}
-
-// endregion 好友

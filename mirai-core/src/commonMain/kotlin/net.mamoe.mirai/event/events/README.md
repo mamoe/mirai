@@ -2,12 +2,11 @@
 
 ## 事件列表一览
 
-请在 [BotEvents.kt](BotEvents.kt) 中按事件名搜索:
 提示:
 - 在 IntelliJ 平台双击 shift 可输入类名进行全局搜索
 - 在 IntelliJ 平台, 按 alt + 7 可打开文件的结构, [效果图](/.github/EZSLAB`K@YFFOW47{090W8B.png)
 
-### Bot
+### [Bot](bot.kt)
 - Bot 登录完成: BotOnlineEvent
 - Bot 离线: BotOfflineEvent
   - 主动: Active
@@ -15,8 +14,9 @@
   - 被服务器断开或因网络问题而掉线: Dropped
   - 服务器主动要求更换另一个服务器: RequireReconnect
 - Bot 重新登录: BotReloginEvent
+- Bot 头像改变: BotAvatarChangedEvent
 
-### 消息
+### [消息](message.kt)
 - 主动发送消息: MessageSendEvent
   - 群消息: GroupMessageSendEvent
   - 好友消息: FriendMessageSendEvent
@@ -28,7 +28,7 @@
   - 图片上传成功: Succeed
   - 图片上传失败: Failed
 
-### 群
+### [群](group.kt)
 - 机器人被踢出群或在其他客户端主动退出一个群: BotLeaveEvent
   - 机器人主动退出一个群: Active
   - 机器人被管理员或群主踢出群: Kick
@@ -70,8 +70,9 @@
 - 群成员被禁言: MemberMuteEvent
 - 群成员被取消禁言: MemberUnmuteEvent
 
-## 好友
+### [好友](friend.kt)
 - 好友昵称改变: FriendRemarkChangeEvent
 - 成功添加了一个新好友: FriendAddEvent
 - 好友已被删除: FriendDeleteEvent
 - 一个账号请求添加机器人为好友: NewFriendRequestEvent
+- 好友头像改变: FriendAvatarChangedEvent
