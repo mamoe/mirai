@@ -47,7 +47,8 @@ abstract class PluginBase
     }
 
     /**
-     * 当所有插件全部被加载后被调用
+     * 当插件被启用时调用.
+     * 此时所有其他插件都已经被调用了 [onLoad]
      */
     open fun onEnable() {
 
