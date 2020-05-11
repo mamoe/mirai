@@ -33,6 +33,8 @@ dependencies {
     api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
     api("org.jsoup:jsoup:1.12.1")
 
+    api("org.jetbrains:annotations:19.0.0")
+
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
     testApi(kotlin("stdlib"))
 }
