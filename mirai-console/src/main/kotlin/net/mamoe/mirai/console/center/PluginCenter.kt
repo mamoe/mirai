@@ -4,10 +4,6 @@ import java.io.File
 
 interface PluginCenter {
 
-    companion object {
-        val Default: PluginCenter = CuiPluginCenter
-    }
-
     data class PluginInsight(
         val name: String,
         val version: String,

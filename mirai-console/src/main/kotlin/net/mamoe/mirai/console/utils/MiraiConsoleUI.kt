@@ -10,14 +10,23 @@
 package net.mamoe.mirai.console.utils
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.center.CuiPluginCenter
+import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 
 /**
  * 只需要实现一个这个传入 MiraiConsole 就可以绑定 UI 层与 Console 层
  * 需要保证线程安全
  */
+@MiraiInternalAPI
 interface MiraiConsoleUI {
+    /**
+     * 提供 [PluginCenter]
+     */
+    val pluginCenter: PluginCenter get() = CuiPluginCenter
+
     /**
      * 让 UI 层展示一条 log
      *

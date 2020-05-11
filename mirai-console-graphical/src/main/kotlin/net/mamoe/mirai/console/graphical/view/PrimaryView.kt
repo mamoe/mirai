@@ -57,7 +57,7 @@ class PrimaryView : View() {
                         buttonType = JFXButton.ButtonType.FLAT
                     }.action {
                         // select login pane
-                        mainTabPane.selectionModel.select(3)
+                        mainTabPane.selectionModel.selectLast()
                     }
                 }
 

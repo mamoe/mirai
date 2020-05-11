@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Bot.Companion.botInstances
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.addManager
 import net.mamoe.mirai.console.utils.checkManager
@@ -30,8 +29,7 @@ import java.util.*
 /**
  * Some defaults commands are recommend to be replaced by plugin provided commands
  */
-
-object DefaultCommands {
+internal object DefaultCommands {
     private val commandPrefix = "mirai.command.prefix".property() ?: "/"
     private suspend fun CommandSender.login(account: Long, password: String) {
         MiraiConsole.logger("[Bot Login]", 0, "login...")
@@ -58,8 +56,10 @@ object DefaultCommands {
                 }
             }
             bot.login()
-            bot.subscribeMessages {
+            MiraiConsole.subscribeMessages {
                 startsWith(commandPrefix) { message ->
+                    if (this.bot != bot) return@startsWith
+
                     if (bot.checkManager(this.sender.id)) {
                         val sender = if (this is GroupMessageEvent) {
                             GroupContactCommandSender(bot,this.sender, this.subject)
@@ -319,11 +319,11 @@ object DefaultCommands {
             usage = "/install [plugin-name] to install plugin or /install [page-num] to show list "
             onCommand { args ->
 
-                val center = PluginCenter.Default
+                val center = MiraiConsole.frontEnd.pluginCenter
 
                 suspend fun showPage(num: Int) {
                     sendMessage("正在连接 " + center.name)
-                    val list = PluginCenter.Default.fetchPlugin(num)
+                    val list = center.fetchPlugin(num)
                     if (list.isEmpty()) {
                         sendMessage("页码过大")
                         return

@@ -11,14 +11,13 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 object Versions {
     object Mirai {
-        const val core = "1.0-RC"
+        const val core = "1.0-RC2-1"
         const val console = "0.5.1"
         const val consoleGraphical = "0.0.7"
-        const val consoleWrapper = "1.1.0"
     }
 
     object Kotlin {
-        const val stdlib = "1.3.71"
+        const val stdlib = "1.3.72"
         const val coroutines = "1.3.5"
         const val serialization = "0.20.0"
         const val ktor = "1.3.2"

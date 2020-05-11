@@ -17,7 +17,6 @@ import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.events.EventListener
 import net.mamoe.mirai.console.scheduler.PluginScheduler
-import net.mamoe.mirai.console.scheduler.SchedulerTaskManagerInstance
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
@@ -30,12 +29,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 abstract class PluginBase
 @JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope {
-
-    private val supervisorJob = SupervisorJob()
-    final override val coroutineContext: CoroutineContext = coroutineContext + supervisorJob
-
-    private var loaded = false
-    private var enabled = false
+    final override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob()
 
     /**
      * 插件被分配的数据目录。数据目录会与插件名称同名。
@@ -53,7 +47,8 @@ abstract class PluginBase
     }
 
     /**
-     * 当所有插件全部被加载后被调用
+     * 当插件被启用时调用.
+     * 此时所有其他插件都已经被调用了 [onLoad]
      */
     open fun onEnable() {
 
@@ -83,6 +78,9 @@ abstract class PluginBase
         return Config.load(dataFolder.absolutePath + "/" + fileName)
     }
 
+    /**
+     * 插件的日志
+     */
     val logger: MiraiLogger by lazy {
         SimpleLogger("Plugin $pluginName") { priority, message, e ->
             val identityString = "[${pluginName}]"
@@ -111,13 +109,28 @@ abstract class PluginBase
      * 加载 resource 中的 [Config]
      * 这个 [Config] 是只读的
      */
+    @ToBeRemoved
     fun getResourcesConfig(fileName: String): Config {
         require(fileName.contains(".")) { "Unknown Config Type" }
         @OptIn(ToBeRemoved::class)
         return Config.load(getResources(fileName) ?: error("No such file: $fileName"), fileName.substringAfter('.'))
     }
 
+    /**
+     * Java API Scheduler
+     */
+    val scheduler: PluginScheduler? = PluginScheduler(this.coroutineContext)
+
+    /**
+     * Java API EventListener
+     */
+    val eventListener: EventListener = EventListener(@Suppress("LeakingThis") this)
+
+
     // internal
+
+    private var loaded = false
+    private var enabled = false
 
     internal fun load() {
         if (!loaded) {
@@ -146,33 +159,11 @@ abstract class PluginBase
     }
 
     internal var pluginName: String = ""
-
-    /**
-     * Java API Scheduler
-     */
-    private var scheduler: PluginScheduler? = null
-    fun getScheduler(): PluginScheduler {
-        if (scheduler === null) {
-            scheduler = SchedulerTaskManagerInstance.getPluginScheduler(this)
-        }
-        return scheduler!!
-    }
-
-    /**
-     * Java API EventListener
-     */
-    private var eventListener: EventListener? = null
-    fun getEventListener(): EventListener {
-        if (eventListener === null) {
-            eventListener = EventListener(this)
-        }
-        return eventListener!!
-    }
-
 }
 
 /**
  * 插件描述
+ * @see PluginBase.description
  */
 class PluginDescription(
     val file: File,

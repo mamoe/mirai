@@ -84,16 +84,17 @@ class StringArg:CommandArgImpl<String>(){
  * output: Bot
  * errors: String->Int convert, Bot Not Exist
  */
-class ExistBotArg:CommandArgImpl<Bot>(){
+
+class ExistBotArg : CommandArgImpl<Bot>() {
     override fun parse(s: String, commandSender: CommandSender): Bot {
-        val uin = try{
+        val uin = try {
             s.toLong()
-        }catch (e:Exception){
+        } catch (e: Exception) {
             error("无法识别QQ UIN$s")
         }
-        return try{
+        return try {
             Bot.getInstance(uin)
-        }catch (e:NoSuchElementException){
+        } catch (e: NoSuchElementException) {
             error("无法找到Bot $uin")
         }
     }

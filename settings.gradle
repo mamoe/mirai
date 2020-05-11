@@ -25,7 +25,6 @@ rootProject.name = 'mirai-console'
 
 include(':mirai-console')
 include(':mirai-console-terminal')
-include(':mirai-console-wrapper')
 
 try{
     def javaVersion = System.getProperty("java.version")
