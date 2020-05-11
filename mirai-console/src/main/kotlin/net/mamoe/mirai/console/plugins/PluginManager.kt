@@ -21,8 +21,6 @@ import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 import java.io.InputStream
-import java.lang.reflect.Constructor
-import java.lang.reflect.Method
 import java.net.JarURLConnection
 import java.net.URL
 import java.util.jar.JarFile
@@ -386,20 +384,3 @@ object PluginManager {
         return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
     }
 }
-
-
-private val trySetAccessibleMethod: Method? = runCatching {
-    Class.forName("java.lang.reflect.AccessibleObject").getMethod("trySetAccessible")
-}.getOrNull()
-
-
-private fun Constructor<out PluginBase>.againstPermission() {
-    kotlin.runCatching {
-        trySetAccessibleMethod?.let { it.invoke(this) }
-            ?: kotlin.runCatching {
-                @Suppress("DEPRECATED")
-                this.isAccessible = true
-            }
-    }
-}
-

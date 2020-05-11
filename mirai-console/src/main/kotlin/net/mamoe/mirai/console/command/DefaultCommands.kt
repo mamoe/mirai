@@ -29,8 +29,7 @@ import java.util.*
 /**
  * Some defaults commands are recommend to be replaced by plugin provided commands
  */
-
-object DefaultCommands {
+internal object DefaultCommands {
     private val commandPrefix = "mirai.command.prefix".property() ?: "/"
     private suspend fun CommandSender.login(account: Long, password: String) {
         MiraiConsole.logger("[Bot Login]", 0, "login...")
@@ -57,8 +56,10 @@ object DefaultCommands {
                 }
             }
             bot.login()
-            bot.subscribeMessages {
+            MiraiConsole.subscribeMessages {
                 startsWith(commandPrefix) { message ->
+                    if (this.bot != bot) return@startsWith
+
                     if (bot.checkManager(this.sender.id)) {
                         val sender = if (this is GroupMessageEvent) {
                             GroupContactCommandSender(this.sender, this.subject)

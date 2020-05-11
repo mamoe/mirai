@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
@@ -19,13 +20,15 @@ import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import net.mamoe.mirai.utils.WeakRef
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import kotlin.coroutines.EmptyCoroutineContext
 
 
-object MiraiConsole {
+object MiraiConsole : CoroutineScope by CoroutineScope(EmptyCoroutineContext) {
     /**
      * 发布的版本名
      */
     const val build = "Pkmon"
+
     lateinit var version: String
         internal set
 
@@ -102,7 +105,7 @@ object MiraiConsole {
         frontEnd: MiraiConsoleUI,
         coreVersion: String = "0.0.0",
         consoleVersion: String = "0.0.0",
-        path:String = System.getProperty("user.dir")
+        path: String = System.getProperty("user.dir")
     ) {
         if (started) {
             return
