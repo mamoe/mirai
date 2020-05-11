@@ -9,7 +9,6 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
 
 package net.mamoe.mirai.message.data
 
@@ -78,7 +77,7 @@ actual interface Image : Message, MessageContent {
     @Deprecated("""
         不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
     """, level = DeprecationLevel.HIDDEN)
-    @Suppress( "PropertyName", "unused")
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName", "unused")
     @get:JvmSynthetic
     internal actual val DoNotImplementThisClass: Nothing?
 }

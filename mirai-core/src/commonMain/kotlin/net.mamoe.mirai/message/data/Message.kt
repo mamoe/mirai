@@ -10,7 +10,7 @@
 @file:Suppress(
     "MemberVisibilityCanBePrivate", "unused", "EXPERIMENTAL_API_USAGE",
     "NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE",
-    "INAPPLICABLE_JVM_NAME", "WRONG_MODIFIER_CONTAINING_DECLARATION"
+    "INAPPLICABLE_JVM_NAME"
 )
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
@@ -166,7 +166,7 @@ interface Message { // must be interface. Don't consider any changes.
      *
      * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
-    final fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
+    /* final */ fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
         contentEqualsImpl(another, ignoreCase)
 
     /**
@@ -178,7 +178,7 @@ interface Message { // must be interface. Don't consider any changes.
      *
      * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
-    final fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
+    /* final */ fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
         if (!this.contentToString().equals(another, ignoreCase = ignoreCase)) return false
         return when (this) {
             is SingleMessage -> true
@@ -187,19 +187,19 @@ interface Message { // must be interface. Don't consider any changes.
         }
     }
 
-    final operator fun plus(another: MessageChain): MessageChain = this + another as Message
-    final operator fun plus(another: Message): MessageChain = this.followedBy(another)
-    final operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
-    final operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
-    final operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
-    final operator fun plus(another: Iterable<Message>): MessageChain =
+    /* final */ operator fun plus(another: MessageChain): MessageChain = this + another as Message
+    /* final */ operator fun plus(another: Message): MessageChain = this.followedBy(another)
+    /* final */ operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
+    /* final */ operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
+    /* final */ operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
+    /* final */ operator fun plus(another: Iterable<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
     @JvmName("plusIterableString")
-    final operator fun plus(another: Iterable<String>): MessageChain =
+    /* final */ operator fun plus(another: Iterable<String>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
-    final operator fun plus(another: Sequence<Message>): MessageChain =
+    /* final */ operator fun plus(another: Sequence<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 }
 
@@ -312,7 +312,7 @@ interface MessageMetadata : SingleMessage {
     /**
      * 返回空字符串
      */
-    final override fun contentToString(): String = ""
+    /* final */  override fun contentToString(): String = ""
 }
 
 /**
