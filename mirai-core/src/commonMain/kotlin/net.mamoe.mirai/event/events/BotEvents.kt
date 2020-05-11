@@ -93,14 +93,14 @@ data class BotReloginEvent internal constructor(
 /**
  * [Bot] 头像被修改（通过其他客户端修改了Bot的头像）
  */
-data class BotFaceChangedEvent(
+data class BotAvatarChangedEvent(
     override val bot: Bot
 ) : BotEvent, Packet, AbstractEvent()
 
 /**
  * [Friend] 头像被修改
  */
-data class FriendFaceChangedEvent(
+data class FriendAvatarChangedEvent(
     override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 

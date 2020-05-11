@@ -516,7 +516,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
         fun ModCustomFace.transform(bot: QQAndroidBot): Sequence<Packet> {
             if (uin == bot.id) {
-                return sequenceOf(BotFaceChangedEvent(bot))
+                return sequenceOf(BotAvatarChangedEvent(bot))
             }
             val friend = bot.getFriendOrNull(uin) ?: return emptySequence()
             return sequenceOf(FriendFaceChangedEvent(friend))
