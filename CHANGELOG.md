@@ -1,5 +1,47 @@
 # Version 1.x
 
+## `1.0-RC2` 2020/5/11
+主要内容:
+- 增强网络稳定性 (#298, #317), 修复 `Bot.close` 或 Bot 离线后没有从 `Bot.botInstances` 中删除的问题 (#317)
+- `subscribeMessages` 现在默认使用 `MONITOR` 优先级
+- `MessageChain` 现在继承 `List<SingleMessage>`
+- 新增 `messageChainOf(vararg Message)`
+- 支持 Bot 头像更改事件: `BotAvatarChangedEvent` (#271)
+- 支持好友头像更改事件: `FriendAvatarChangedEvent`
+- 新增 `nextEventOrNull`: 挂起当前协程, 直到监听到事件的广播, 返回这个事件实例. 超时时返回 `null`
+- **弃用 `Bot.subscribe.*`, `Bot.nextMessage`, `Bot.subscribe.*Messages`:  
+  为了更好的协程生命周期管理, 这些函数已经被隐藏, 保留二进制兼容到 1.3.0**.  
+  现有源代码不会被破坏, 但将不再筛选事件的 `Bot` 实例. 在 mirai 决定好替代的 API 前需要手动筛选. (即不影响目前单 Bot 运行的服务)
+- 支持在事件监听时使用 Kotlin 函数引用:
+  ```kotlin
+  suspend fun onMessage(event: GroupMessageEvent): ListeningStatus {
+      return ListeningStatus.LISTENING
+  }
+  scope.subscribe(::onMessage /*, priority=..., concurrency=... */)
+  ```
+- 支持反射式事件监听, 改善 Java 的事件监听体验. 示例查看 [JvmMethodEventsTest.kt: Line 22](mirai-core/src/jvmTest/kotlin/net/mamoe/mirai/event/JvmMethodEventsTest.kt#L22)
+- 添加 `typealias EventPriority = Listener.EventPriority`
+- 优化 `Face` 的构造器: 现在 `Face` 拥有一个参数为 `id` 的公开构造器
+- 让 `ContactList` 实现接口 `Collection`
+- 弃用 `QuoteReply.time` 等语意不明的扩展 (无法区分 `time` 是 `source` 的时间还是 `QuoteReply` 自身时间)
+
+优化 & 修复:
+- 删除 `FileCacheStrategy.newImageCache(URL, format: String)` 中的 `format` 参数
+- 隐藏 `MessageChain` 原有 `Iterable` 相关 API (兼容现有代码)
+- 修复 `Message.repeat`
+- 修复 `MemberJoinEvent` 比 `MemberJoinRequestEvent` 早广播的问题 (#288)
+- 修复 Bot 接受好友申请时 groupId 处理错误 (#309)
+- 修复 `MessageSubscribersBuilder` 一处 KDoc 错误 (#308 @wuxianucw)
+- 修复 Android 平台 `BufferedImage ClassNotDefFound` 的问题
+- 优化 `MessageSource.internalId` KDoc
+- 优化 重连时的计时显示 (#311 @Karlatemp)
+- 优化 `Bot.getInstance` 找不到相关 `Bot` 实例时的异常信息
+- 将 `MessageMetadata.contentToString` 定义为 `final`
+- 忽略了 732 类型同步消息 (原启动后会大量显示)
+- 忽略 'VIP 进群提示' 的群同步消息
+- 让随机设备信息更随机
+- 其他一些内部优化 (无公开 API 变更)
+
 ## `1.0-RC`  2020/5/6
 
 ### 事件优先级与拦截
