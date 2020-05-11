@@ -231,7 +231,9 @@ object PluginManager {
             lastPluginName = description.name
             val plugin: PluginBase =
                 subClass.kotlin.objectInstance ?: subClass.getDeclaredConstructor().apply {
-                    againstPermission()
+                    kotlin.runCatching {
+                        this.isAccessible = true
+                    }
                 }.newInstance()
             plugin.dataFolder // initialize right now
 
