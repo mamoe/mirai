@@ -92,8 +92,6 @@ expect interface Image : Message, MessageContent {
 /**
  * 群图片.
  *
- * 群拖
- *
  * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
  * @see Image 查看更多说明
  */
