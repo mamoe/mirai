@@ -4,31 +4,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.console.plugins.PluginBase
-import java.lang.Runnable
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.function.Supplier
 import kotlin.coroutines.CoroutineContext
-
-
-
-internal object SchedulerTaskManagerInstance{
-    private val schedulerTaskManagerInstance = mutableMapOf<PluginBase,PluginScheduler>()
-
-    private val mutex = Mutex()
-
-    fun getPluginScheduler(pluginBase: PluginBase):PluginScheduler{
-        runBlocking {
-            mutex.withLock {
-                if (!schedulerTaskManagerInstance.containsKey(pluginBase)) {
-                    schedulerTaskManagerInstance[pluginBase] = PluginScheduler(pluginBase.coroutineContext)
-                }
-            }
-        }
-        return schedulerTaskManagerInstance[pluginBase]!!
-    }
-}
 
 
 /**
@@ -39,23 +19,20 @@ internal object SchedulerTaskManagerInstance{
  * 你应该使用SchedulerTaskManager获取PluginScheduler, 或直接通过PluginBase获取
  */
 
-class PluginScheduler(_coroutineContext: CoroutineContext) :CoroutineScope{
-    override val coroutineContext: CoroutineContext = SupervisorJob() + _coroutineContext
+class PluginScheduler(_coroutineContext: CoroutineContext) : CoroutineScope {
+    override val coroutineContext: CoroutineContext = _coroutineContext + SupervisorJob(_coroutineContext[Job])
 
 
-    class RepeatTaskReceipt(@Volatile var cancelled:Boolean = false)
+    class RepeatTaskReceipt(@Volatile var cancelled: Boolean = false)
+
     /**
-     * 新增一个Repeat Task(定时任务)
+     * 新增一个 Repeat Task (定时任务)
      *
-     * 这个Runnable会被每intervalMs调用一次(不包含runnable执行时间)
+     * 这个 Runnable 会被每 [intervalMs] 调用一次(不包含 [runnable] 执行时间)
      *
-     * 作为Java使用者, 你要注意可见行, 原子性
-     *
-     * 在Runnable中使用Thread.sleep()不是一个明智的行为, 这会导致IO线程池的一个线程被锁死
-     *
-     * 使用返回的RepeatTaskReceipt, 你可以取消这个定时任务
+     * 使用返回的 [RepeatTaskReceipt], 可以取消这个定时任务
      */
-    fun repeat(runnable: Runnable, intervalMs: Long):RepeatTaskReceipt{
+    fun repeat(runnable: Runnable, intervalMs: Long): RepeatTaskReceipt {
         val receipt = RepeatTaskReceipt()
 
         this.launch {
@@ -71,15 +48,13 @@ class PluginScheduler(_coroutineContext: CoroutineContext) :CoroutineScope{
     }
 
     /**
-     * 新增一个Delay Task(倒计时任务)
+     * 新增一个 Delay Task (延迟任务)
      *
-     * 这个Runnable会被再intervalMs调用一次, 之后结束
+     * 在延迟 [delayMs] 后执行 [runnable]
      *
-     * 作为Java使用者, 你要注意可见行, 原子性
-     *
-     * 在Runnable中使用Thread.sleep()不是一个明智的行为, 这会导致IO线程池的一个线程被锁死
+     * 作为 Java 使用者, 你要注意可见性, 原子性
      */
-    fun delay(runnable: Runnable, delayMs: Long){
+    fun delay(runnable: Runnable, delayMs: Long) {
         this.launch {
             delay(delayMs)
             withContext(Dispatchers.IO) {
@@ -89,9 +64,9 @@ class PluginScheduler(_coroutineContext: CoroutineContext) :CoroutineScope{
     }
 
     /**
-     * 异步执行一个任务, 最终返回Future<T>, 与java使用方法无异, 但效率更高且可以在插件关闭时停止
+     * 异步执行一个任务, 最终返回 [Future], 与 Java 使用方法无异, 但效率更高且可以在插件关闭时停止
      */
-    fun <T> async(supplier: Supplier<T>):Future<T>{
+    fun <T> async(supplier: Supplier<T>): Future<T> {
         return AsyncResult(
             this.async {
                 withContext(Dispatchers.IO) {
@@ -104,9 +79,9 @@ class PluginScheduler(_coroutineContext: CoroutineContext) :CoroutineScope{
     /**
      * 异步执行一个任务, 没有返回
      */
-    fun async(runnable: Runnable){
+    fun async(runnable: Runnable) {
         this.launch {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 runnable.run()
             }
         }
@@ -115,17 +90,15 @@ class PluginScheduler(_coroutineContext: CoroutineContext) :CoroutineScope{
 }
 
 
-
 /**
- * 这个类作为java与kotlin的桥接
- * 用java的interface进行了kotlin的实现
- * 使得java开发者可以使用kotlin的协程async
- * 具体使用方法与java的@link Future没有区别
+ * 这个类作为 Java 与 Kotlin 的桥接
+ * 用 Java 的 interface 进行了 Kotlin 的实现
+ * 使得 Java 开发者可以使用 Kotlin 的协程 [CoroutineScope.async]
+ * 具体使用方法与 Java 的 [Future] 没有区别
  */
-
 class AsyncResult<T>(
     private val deferred: Deferred<T>
-): Future<T> {
+) : Future<T> {
 
     override fun isDone(): Boolean {
         return deferred.isCompleted
@@ -140,13 +113,9 @@ class AsyncResult<T>(
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun get(p0: Long, p1: TimeUnit): T {
         return runBlocking {
-            try{
-                withTimeout(p1.toMillis(p0)){
-                    deferred.await()
-                }
-            }catch (e:TimeoutCancellationException){
-                throw TimeoutException()
-            }
+            withTimeoutOrNull(p1.toMillis(p0)) {
+                deferred.await()
+            } ?: throw TimeoutException()
         }
     }
 
@@ -157,6 +126,24 @@ class AsyncResult<T>(
 
     override fun isCancelled(): Boolean {
         return deferred.isCancelled
+    }
+}
+
+
+internal object SchedulerTaskManagerInstance {
+    private val schedulerTaskManagerInstance = mutableMapOf<PluginBase, PluginScheduler>()
+
+    private val mutex = Mutex()
+
+    fun getPluginScheduler(pluginBase: PluginBase): PluginScheduler {
+        runBlocking {
+            mutex.withLock {
+                if (!schedulerTaskManagerInstance.containsKey(pluginBase)) {
+                    schedulerTaskManagerInstance[pluginBase] = PluginScheduler(pluginBase.coroutineContext)
+                }
+            }
+        }
+        return schedulerTaskManagerInstance[pluginBase]!!
     }
 }
 
