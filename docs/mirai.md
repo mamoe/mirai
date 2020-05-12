@@ -30,6 +30,8 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
   - 纯命令行: `mirai-console` 内置纯命令行前端.
   - 基于 JavaFX 的图形端: [`mirai-console-graphical`](https://github.com/mamoe/mirai-console/tree/master/mirai-console-graphical)
   - Unix 友好的终端: [`mirai-console-terminal`](https://github.com/mamoe/mirai-console/tree/master/mirai-console-terminal)
+  
+- [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid) 是`mirai-console`的Android前端程序，支持大部分mirai-console功能以及多种脚本api
 
 
 **注意**: `mirai-core` (将)于 2020 年 6 月发布的 `1.0.0` 版本正式进入稳定更新阶段,   
