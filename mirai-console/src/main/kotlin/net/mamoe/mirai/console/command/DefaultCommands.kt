@@ -30,7 +30,7 @@ import java.util.*
  * Some defaults commands are recommend to be replaced by plugin provided commands
  */
 internal object DefaultCommands {
-    private val commandPrefix = "mirai.command.prefix".property() ?: "/"
+    internal val commandPrefix = "mirai.command.prefix".property() ?: "/"
     private suspend fun CommandSender.login(account: Long, password: String) {
         MiraiConsole.logger("[Bot Login]", 0, "login...")
         try {
