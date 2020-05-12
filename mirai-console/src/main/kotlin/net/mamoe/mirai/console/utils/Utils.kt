@@ -1,4 +1,6 @@
 package net.mamoe.mirai.console.utils
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Member
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -55,5 +57,106 @@ internal fun Throwable.addSuppressedMirai(e: Throwable) {
     }
     kotlin.runCatching {
         this.addSuppressed(e)
+    }
+}
+
+
+/**
+ * 两个字符串的近似值
+ * 要求前面完全一致
+ * 如
+ *  XXXXXYYYYY.fuzzyCompare(XXXXXYYY)   = 0.8
+ *  XXXXXYYYYY.fuzzyCompare(XXXXXYYYZZ) = 0.8
+ */
+
+fun String.fuzzyCompare(target:String):Double{
+    var step = 0
+    if(this == target){
+        return 1.0
+    }
+    if(target.length > this.length){
+        return 0.0
+    }
+    for(i in this.indices){
+        if(target.length == i){
+            step--
+        }else {
+            if (this[i] != target[i]) {
+                break
+            }
+            step++
+        }
+    }
+
+    if(step == this.length-1){
+        return 1.0
+    }
+    return step.toDouble()/this.length
+}
+
+/**
+ * 模糊搜索一个List中index最接近target的东西
+ */
+inline fun <T:Any> Collection<T>.fuzzySearch(
+    target: String,
+    index: (T) -> String
+):T?{
+    if(this.isEmpty()){
+        return null
+    }
+    var potential:T? = null
+    var rate = 0.0
+    this.forEach {
+        val thisIndex = index(it)
+        if(thisIndex == target){
+            return it
+        }
+        with(thisIndex.fuzzyCompare(target)) {
+            if (this > rate) {
+                rate = this
+                potential = it
+            }
+        }
+    }
+    return potential
+}
+
+/**
+ * 模糊搜索一个List中index最接近target的东西
+ * 并且确保target是唯一的
+ * 如搜索index为XXXXYY list中同时存在XXXXYYY XXXXYYYY 将返回null
+ */
+inline fun <T:Any> Collection<T>.fuzzySearchOnly(
+    target: String,
+    index: (T) -> String
+):T?{
+    if(this.isEmpty()){
+        return null
+    }
+    var potential:T? = null
+    var rate = 0.0
+    var collide = 0
+    this.forEach {
+        with(index(it).fuzzyCompare(target)) {
+            println(index(it) + "->" + this)
+            if (this > rate) {
+                rate = this
+                potential = it
+            }
+            if(this == 1.0){
+                collide++
+            }
+            if(collide > 1){
+                return null//collide
+            }
+        }
+    }
+    return potential
+}
+
+
+fun Group.fuzzySearchMember(nameCardTarget:String):Member?{
+    return this.members.fuzzySearchOnly(nameCardTarget){
+        it.nameCard
     }
 }
