@@ -38,6 +38,12 @@ Unix 没有一键包提供. 请使用 wrapper 启动器.
 2. 下载 `mirai-console-wrapper-x.x.x.jar`
 3. 参照 [wrapper 命令行参数](https://github.com/mirai/mirai-console-wrapper/README.md#命令行参数), 运行 `$ java -jar mirai-console-wrapper-x.x.x.jar`
 
+#### Android
+
+[MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid) 提供了在Android平台使用mirai-console插件的能力，同时拥有一个便于使用的lua接口
+
+你可以点击这里查看[项目详细](https://github.com/mzdluo123/MiraiAndroid)
+
 ### 插件开发与获取
 
 mirai-console 支持 Jar 插件.

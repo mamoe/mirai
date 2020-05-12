@@ -150,7 +150,7 @@ object CommandManager : Job by {
 
     private suspend fun processCommandImpl(sender: CommandSender, fullCommand: String): Boolean {
         val blocks = fullCommand.split(" ")
-        val commandHead = blocks[0] //.replace("/", "")
+        val commandHead = blocks[0].removePrefix(DefaultCommands.commandPrefix)
         val args = blocks.drop(1)
         return registeredCommand[commandHead]?.run {
             try {
