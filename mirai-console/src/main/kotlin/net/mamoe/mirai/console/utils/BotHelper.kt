@@ -13,7 +13,15 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.*
 import net.mamoe.mirai.console.utils.BotManagers.BOT_MANAGERS
+import net.mamoe.mirai.contact.User
 import java.io.File
+
+
+/**
+ * 判断此用户是否为 console 管理员
+ */
+val User.isManager: Boolean
+    get() = this.bot.managers.contains(this.id)
 
 @OptIn(ToBeRemoved::class)
 internal object BotManagers {
