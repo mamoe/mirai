@@ -21,6 +21,8 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 
 console 由后端和前端一起工作. 使用时必须选择一个前端.
 
+**注意：`mirai-console` 后端和 pure 前端正在进行完全的重构，master 分支将不再维护。可以在 [reborn](https://github.com/mamoe/mirai-console/tree/reborn) 查看进度**
+
 - `mirai-console`: console 的后端, 包含插件管理, 指令系统, 配置系统. 还包含一个轻量命令行的前端 (因此可以独立启动 `mirai-console`).
 - `mirai-console-graphical`: console 的 JavaFX 图形化界面前端.
 - `mirai-console-terminal`: console 的 Unix 终端界面前端. (实验性)
