@@ -69,16 +69,16 @@ internal fun Throwable.addSuppressedMirai(e: Throwable) {
  *  XXXXXYYYYY.fuzzyCompare(XXXXXYYYZZ) = 0.8
  */
 
-fun String.fuzzyCompare(target:String):Double{
+internal fun String.fuzzyCompare(target: String): Double {
     var step = 0
-    if(this == target){
+    if (this == target) {
         return 1.0
     }
-    if(target.length > this.length){
+    if (target.length > this.length) {
         return 0.0
     }
-    for(i in this.indices){
-        if(target.length == i){
+    for (i in this.indices) {
+        if (target.length == i) {
             step--
         }else {
             if (this[i] != target[i]) {
@@ -97,14 +97,14 @@ fun String.fuzzyCompare(target:String):Double{
 /**
  * 模糊搜索一个List中index最接近target的东西
  */
-inline fun <T:Any> Collection<T>.fuzzySearch(
+internal inline fun <T : Any> Collection<T>.fuzzySearch(
     target: String,
     index: (T) -> String
-):T?{
-    if(this.isEmpty()){
+): T? {
+    if (this.isEmpty()) {
         return null
     }
-    var potential:T? = null
+    var potential: T? = null
     var rate = 0.0
     this.forEach {
         val thisIndex = index(it)
@@ -126,14 +126,14 @@ inline fun <T:Any> Collection<T>.fuzzySearch(
  * 并且确保target是唯一的
  * 如搜索index为XXXXYY list中同时存在XXXXYYY XXXXYYYY 将返回null
  */
-inline fun <T:Any> Collection<T>.fuzzySearchOnly(
+internal inline fun <T : Any> Collection<T>.fuzzySearchOnly(
     target: String,
     index: (T) -> String
-):T?{
-    if(this.isEmpty()){
+): T? {
+    if (this.isEmpty()) {
         return null
     }
-    var potential:T? = null
+    var potential: T? = null
     var rate = 0.0
     var collide = 0
     this.forEach {
@@ -154,8 +154,8 @@ inline fun <T:Any> Collection<T>.fuzzySearchOnly(
 }
 
 
-fun Group.fuzzySearchMember(nameCardTarget:String):Member?{
-    return this.members.fuzzySearchOnly(nameCardTarget){
+internal fun Group.fuzzySearchMember(nameCardTarget: String): Member? {
+    return this.members.fuzzySearchOnly(nameCardTarget) {
         it.nameCard
     }
 }
