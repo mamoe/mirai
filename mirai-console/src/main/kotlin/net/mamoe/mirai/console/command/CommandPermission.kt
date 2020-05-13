@@ -17,16 +17,27 @@ import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.contact.isOwner
 
-
 /**
  * 指令权限
+ *
+ * @see AnonymousCommandPermission
  */
 abstract class CommandPermission {
-
     /**
      * 判断 [this] 是否拥有这个指令的权限
      */
     abstract fun CommandSender.hasPermission(): Boolean
+
+
+    /**
+     * 满足两个权限其中一个即可使用指令
+     */ // no extension for Java
+    infix fun or(another: CommandPermission): CommandPermission = OrCommandPermission(this, another)
+
+    /**
+     * 同时拥有两个权限才能使用指令
+     */ // no extension for Java
+    infix fun and(another: CommandPermission): CommandPermission = AndCommandPermission(this, another)
 
 
     /**
@@ -149,6 +160,22 @@ abstract class CommandPermission {
     object Console : CommandPermission() {
         override fun CommandSender.hasPermission(): Boolean = false
     }
+
+    companion object {
+        @JvmStatic
+        val Default: CommandPermission = Manager or Console
+    }
+}
+
+/**
+ * 使用 [lambda][block] 快速构造 [CommandPermission]
+ */
+@JvmSynthetic
+@Suppress("FunctionName")
+inline fun AnonymousCommandPermission(crossinline block: CommandSender.() -> Boolean): CommandPermission {
+    return object : CommandPermission() {
+        override fun CommandSender.hasPermission(): Boolean = block()
+    }
 }
 
 inline fun CommandSender.hasPermission(permission: CommandPermission): Boolean =
@@ -156,17 +183,6 @@ inline fun CommandSender.hasPermission(permission: CommandPermission): Boolean =
 
 
 inline fun CommandPermission.hasPermission(sender: CommandSender): Boolean = this.run { sender.hasPermission() }
-
-
-/**
- * 满足两个权限其中一个即可使用指令
- */
-fun CommandPermission.or(another: CommandPermission): CommandPermission = OrCommandPermission(this, another)
-
-/**
- * 必须同时拥有两个权限才能使用这个指令
- */
-fun CommandPermission.and(another: CommandPermission): CommandPermission = AndCommandPermission(this, another)
 
 
 internal class OrCommandPermission(

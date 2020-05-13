@@ -16,11 +16,12 @@ import kotlin.contracts.contract
  * this output type of that arg
  * input is always String
  */
-abstract class CommandArgParser<T : Any> {
+abstract class CommandArgParser<out T : Any> {
     abstract fun parse(s: String, sender: CommandSender): T
     open fun parse(s: SingleMessage, sender: CommandSender): T = parse(s.content, sender)
 }
 
+@Suppress("unused")
 @JvmSynthetic
 inline fun CommandArgParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing {
     throw ParserException(message, cause)
