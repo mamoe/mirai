@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.AbstractCommandParserContext.Node
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -40,6 +41,7 @@ interface CommandParserContext {
 
         Member::class with ExistMemberArgParser
         Group::class with ExistGroupArgParser
+        Friend::class with ExistFriendArgParser
         Bot::class with ExistBotArgParser
     })
 }
