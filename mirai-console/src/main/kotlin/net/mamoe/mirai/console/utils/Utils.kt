@@ -138,7 +138,6 @@ inline fun <T:Any> Collection<T>.fuzzySearchOnly(
     var collide = 0
     this.forEach {
         with(index(it).fuzzyCompare(target)) {
-            println(index(it) + "->" + this)
             if (this > rate) {
                 rate = this
                 potential = it
