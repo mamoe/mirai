@@ -13,7 +13,7 @@ import net.mamoe.mirai.message.data.SingleMessage
  */
 class CommandDescriptor(
     /**
-     * 子指令列表
+     * 子指令列表. 第一个元素为默认值.
      */
     val subCommands: List<SubCommandDescriptor>,
     /**
@@ -25,8 +25,8 @@ class CommandDescriptor(
 ) {
     /** 子指令描述 */
     inner class SubCommandDescriptor(
-        /** 为空字符串时代表默认 */
-        val name: String,
+        /** 子指令名, 如 "/mute group add" 中的 "group add". 当表示默认指令时为父指令名. */
+        val subName: String,
         /** 用法说明 */
         val usage: String,
         /** 指令参数列表, 有顺序. */
@@ -40,14 +40,33 @@ class CommandDescriptor(
          * @see CommandPermission.or 要求其中一个权限
          * @see CommandPermission.and 同时要求两个权限
          */
-        val permission: CommandPermission = CommandPermission.Default
-    )
+        val permission: CommandPermission = CommandPermission.Default,
+        /** 指令执行器 */
+        val onCommand: suspend (sender: CommandSender, args: CommandArgs) -> Boolean
+    ) {
+        init {
+            require(!(subName.startsWith(' ') || subName.endsWith(' '))) { "subName mustn't start or end with a caret" }
+            require(subName.isValidSubName()) { "subName mustn't contain any of $ILLEGAL_SUB_NAME_CHARS" }
+        }
+
+        @JvmField
+        internal val bakedSubNames: Array<Array<String>> =
+            listOf(subName, *aliases).map { it.bakeSubName() }.toTypedArray()
+        internal inline val parent: CommandDescriptor get() = this@CommandDescriptor
+    }
 
     /**
      * 指令参数解析器环境.
      */
     val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
 }
+
+internal val CommandDescriptor.base: CommandDescriptor.SubCommandDescriptor get() = subCommands[0]
+
+
+internal val ILLEGAL_SUB_NAME_CHARS = "\\/!@#$%^&*()_+-={}[];':\",.<>?`~".toCharArray()
+internal fun String.isValidSubName(): Boolean = ILLEGAL_SUB_NAME_CHARS.none { it in this }
+internal fun String.bakeSubName(): Array<String> = split(' ').filterNot { it.isBlank() }.toTypedArray()
 
 
 /**
@@ -213,15 +232,16 @@ inline class ParamBlock internal constructor(@PublishedApi internal val list: Mu
 /// internal
 
 
-internal fun Any.flattenCommandComponents(): Sequence<String> = when (this) {
-    is Array<*> -> this.asSequence().flatMap {
-        it?.flattenCommandComponents() ?: throw java.lang.IllegalArgumentException("unexpected null value")
+internal fun Any.flattenCommandComponents(): List<String> {
+    val list = ArrayList<String>()
+    when (this) {
+        is String -> list.addAll(split(' ').filterNot { it.isBlank() })
+        is PlainText -> list.addAll(content.flattenCommandComponents())
+        is SingleMessage -> list.add(this.toString())
+        is MessageChain -> this.asSequence().forEach { list.addAll(it.flattenCommandComponents()) }
+        else -> throw IllegalArgumentException("Illegal component: $this")
     }
-    is String -> splitToSequence(' ').filterNot { it.isBlank() }
-    is PlainText -> content.flattenCommandComponents()
-    is SingleMessage -> sequenceOf(this.toString())
-    is MessageChain -> this.asSequence().flatMap { it.flattenCommandComponents() }
-    else -> throw IllegalArgumentException("Illegal component: $this")
+    return list
 }
 
 internal fun Any.checkFullName(errorHint: String): Array<String> {

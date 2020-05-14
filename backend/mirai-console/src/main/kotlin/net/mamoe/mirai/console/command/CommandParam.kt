@@ -41,4 +41,7 @@ fun <T : Any> CommandParam<T>.parserFrom(command: Command): CommandArgParser<T>?
 fun <T : Any> CommandParam<T>.parserFrom(descriptor: CommandDescriptor): CommandArgParser<T>? =
     descriptor.parserFor(this)
 
+fun <T : Any> CommandParam<T>.parserFrom(descriptor: CommandDescriptor.SubCommandDescriptor): CommandArgParser<T>? =
+    descriptor.parserFor(this)
+
 fun <T : Any> CommandParam<T>.parserFrom(context: CommandParserContext): CommandArgParser<T>? = context.parserFor(this)

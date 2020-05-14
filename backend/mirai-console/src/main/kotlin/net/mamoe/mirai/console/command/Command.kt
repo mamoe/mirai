@@ -11,12 +11,8 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugins.PluginBase
+import net.mamoe.mirai.console.command.CommandDescriptor.SubCommandDescriptor
 import net.mamoe.mirai.message.data.Message
-import java.lang.reflect.Member
 import kotlin.reflect.KProperty
 
 internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
@@ -42,14 +38,18 @@ interface Command {
      */
 }
 
+internal fun Command.matchChild(args: List<Any>): SubCommandDescriptor {
+
+}
+
 
 /**
- * 指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
+ * 解析完成的指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
  */
 class CommandArgs private constructor(
     @JvmField
     internal val values: List<Any>,
-    private val fromCommand: Command
+    private val fromCommand: SubCommandDescriptor
 ) : List<Any> by values {
     /**
      * 获取第一个类型为 [R] 的参数
@@ -71,7 +71,7 @@ class CommandArgs private constructor(
      * @throws NoSuchElementException 找不到这个名称的参数时抛出
      */
     operator fun get(name: String?): Any {
-        val index = fromCommand.descriptor.params.indexOfFirst { it.name == name }
+        val index = fromCommand.params.indexOfFirst { it.name == name }
         if (index == -1) {
             throw NoSuchElementException("Cannot find argument named $name")
         }
@@ -93,12 +93,12 @@ class CommandArgs private constructor(
     inline operator fun <reified R : Any> getValue(thisRef: Any?, property: KProperty<*>): R = getReified()
 
     companion object {
-        fun parseFrom(command: Command, sender: CommandSender, rawArgs: List<Any>): CommandArgs {
-            val params = command.descriptor.params
+        fun parseFrom(command: SubCommandDescriptor, sender: CommandSender, rawArgs: List<Any>): CommandArgs {
+            val params = command.params
 
             require(rawArgs.size >= params.size) { "No enough rawArgs: required ${params.size}, found only ${rawArgs.size}" }
 
-            command.descriptor.params.asSequence().zip(rawArgs.asSequence()).map { (commandParam, any) ->
+            command.params.asSequence().zip(rawArgs.asSequence()).map { (commandParam, any) ->
                 command.parserFor(commandParam)?.parse(any, sender)
                     ?: error("Could not find a parser for param named ${commandParam.name}, typed ${commandParam.type.qualifiedName}")
             }.toList().let { bakedArgs ->
@@ -106,44 +106,4 @@ class CommandArgs private constructor(
             }
         }
     }
-}
-
-inline val Command.fullName get() = descriptor.fullName
-inline val Command.usage get() = descriptor.usage
-inline val Command.params get() = descriptor.params
-inline val Command.description get() = descriptor.description
-inline val Command.context get() = descriptor.context
-inline val Command.aliases get() = descriptor.aliases
-inline val Command.permission get() = descriptor.permission
-inline val Command.allNames get() = descriptor.allNames
-
-abstract class PluginCommand(
-    final override val owner: PluginBase,
-    descriptor: CommandDescriptor
-) : AbstractCommand(descriptor)
-
-internal abstract class ConsoleCommand(
-    descriptor: CommandDescriptor
-) : AbstractCommand(descriptor) {
-    final override val owner: MiraiConsole get() = MiraiConsole
-}
-
-sealed class AbstractCommand(
-    final override val descriptor: CommandDescriptor
-) : Command
-
-
-/**
- * For Java
- */
-@Suppress("unused")
-abstract class BlockingCommand(
-    owner: PluginBase,
-    descriptor: CommandDescriptor
-) : PluginCommand(owner, descriptor) {
-    final override suspend fun CommandSender.onCommand(args: CommandArgs): Boolean {
-        return withContext(Dispatchers.IO) { onCommandBlocking(this@onCommand, args) }
-    }
-
-    abstract fun onCommandBlocking(sender: CommandSender, args: CommandArgs): Boolean
 }
