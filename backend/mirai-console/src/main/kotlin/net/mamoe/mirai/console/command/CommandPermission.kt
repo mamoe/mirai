@@ -22,11 +22,11 @@ import net.mamoe.mirai.contact.isOwner
  *
  * @see AnonymousCommandPermission
  */
-abstract class CommandPermission {
+interface CommandPermission {
     /**
      * 判断 [this] 是否拥有这个指令的权限
      */
-    abstract fun CommandSender.hasPermission(): Boolean
+    fun CommandSender.hasPermission(): Boolean
 
 
     /**
@@ -43,14 +43,14 @@ abstract class CommandPermission {
     /**
      * 任何人都可以使用这个指令
      */
-    object Any : CommandPermission() {
+    object Any : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean = true
     }
 
     /**
      * 任何人都不能使用这个指令. 指令只能通过代码在 [execute] 使用
      */
-    object None : CommandPermission() {
+    object None : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean = false
     }
 
@@ -62,7 +62,7 @@ abstract class CommandPermission {
          * 指定只有来自某个 [Bot] 的管理员或群主才可以使用这个指令
          */
         vararg val fromBot: Long
-    ) : CommandPermission() {
+    ) : CommandPermission {
         constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
 
         override fun CommandSender.hasPermission(): Boolean {
@@ -72,7 +72,7 @@ abstract class CommandPermission {
         /**
          * 来自任何 [Bot] 的任何一个管理员或群主都可以使用这个指令
          */
-        companion object Any : CommandPermission() {
+        companion object Any : CommandPermission {
             override fun CommandSender.hasPermission(): Boolean {
                 return this is MemberCommandSender && this.user.isOperator()
             }
@@ -87,7 +87,7 @@ abstract class CommandPermission {
          * 指定只有来自某个 [Bot] 的群主才可以使用这个指令
          */
         vararg val fromBot: Long
-    ) : CommandPermission() {
+    ) : CommandPermission {
         constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
 
         override fun CommandSender.hasPermission(): Boolean {
@@ -97,7 +97,7 @@ abstract class CommandPermission {
         /**
          * 来自任何 [Bot] 的任何一个群主都可以使用这个指令
          */
-        companion object Any : CommandPermission() {
+        companion object Any : CommandPermission {
             override fun CommandSender.hasPermission(): Boolean {
                 return this is MemberCommandSender && this.user.isOwner()
             }
@@ -112,7 +112,7 @@ abstract class CommandPermission {
          * 指定只有来自某个 [Bot] 的管理员 (不包含群主) 才可以使用这个指令
          */
         vararg val fromBot: Long
-    ) : CommandPermission() {
+    ) : CommandPermission {
         constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
 
         override fun CommandSender.hasPermission(): Boolean {
@@ -122,7 +122,7 @@ abstract class CommandPermission {
         /**
          * 来自任何 [Bot] 的任何一个管理员 (不包含群主) 都可以使用这个指令
          */
-        companion object Any : CommandPermission() {
+        companion object Any : CommandPermission {
             override fun CommandSender.hasPermission(): Boolean {
                 return this is MemberCommandSender && this.user.isAdministrator()
             }
@@ -137,7 +137,7 @@ abstract class CommandPermission {
          * 指定只有来自某个 [Bot] 的管理员或群主才可以使用这个指令
          */
         vararg val fromBot: Long
-    ) : CommandPermission() {
+    ) : CommandPermission {
         constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
 
         override fun CommandSender.hasPermission(): Boolean {
@@ -147,7 +147,7 @@ abstract class CommandPermission {
         /**
          * 任何 [Bot] 的 manager 都可以使用这个指令
          */
-        companion object Any : CommandPermission() {
+        companion object Any : CommandPermission {
             override fun CommandSender.hasPermission(): Boolean {
                 return this is MemberCommandSender && this.user.isManager
             }
@@ -157,7 +157,7 @@ abstract class CommandPermission {
     /**
      * 仅控制台能使用和这个指令
      */
-    object Console : CommandPermission() {
+    object Console : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean = false
     }
 
@@ -173,7 +173,7 @@ abstract class CommandPermission {
 @JvmSynthetic
 @Suppress("FunctionName")
 inline fun AnonymousCommandPermission(crossinline block: CommandSender.() -> Boolean): CommandPermission {
-    return object : CommandPermission() {
+    return object : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean = block()
     }
 }
@@ -188,7 +188,7 @@ inline fun CommandPermission.hasPermission(sender: CommandSender): Boolean = thi
 internal class OrCommandPermission(
     private val first: CommandPermission,
     private val second: CommandPermission
-) : CommandPermission() {
+) : CommandPermission {
     override fun CommandSender.hasPermission(): Boolean {
         return this.hasPermission(first) || this.hasPermission(second)
     }
@@ -197,7 +197,7 @@ internal class OrCommandPermission(
 internal class AndCommandPermission(
     private val first: CommandPermission,
     private val second: CommandPermission
-) : CommandPermission() {
+) : CommandPermission {
     override fun CommandSender.hasPermission(): Boolean {
         return this.hasPermission(first) && this.hasPermission(second)
     }

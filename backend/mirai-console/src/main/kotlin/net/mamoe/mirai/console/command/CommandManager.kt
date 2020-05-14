@@ -10,8 +10,6 @@ import net.mamoe.mirai.message.data.MessageChain
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
-typealias CommandFullName = Array<out Any>
-
 sealed class CommandOwner
 
 abstract class PluginCommandOwner(plugin: PluginBase) : CommandOwner()
@@ -20,6 +18,10 @@ abstract class PluginCommandOwner(plugin: PluginBase) : CommandOwner()
 internal abstract class ConsoleCommandOwner : CommandOwner()
 
 val CommandOwner.registeredCommands: List<Command> get() = InternalCommandManager.registeredCommands.filter { it.owner == this }
+
+@get:JvmName("getCommandPrefix")
+val CommandPrefix: String
+    get() = InternalCommandManager._commandPrefix
 
 fun CommandOwner.unregisterAllCommands() {
     for (registeredCommand in registeredCommands) {
@@ -112,7 +114,7 @@ internal suspend fun List<Any>.executeCommand(sender: CommandSender): Boolean {
     }
 }
 
-internal infix fun CommandFullName.matchesBeginning(list: List<Any>): Boolean {
+internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
     this.forEachIndexed { index, any ->
         if (list[index] != any) return false
     }
@@ -124,11 +126,12 @@ internal object InternalCommandManager {
     internal val registeredCommands: MutableList<Command> = mutableListOf()
 
     @JvmField
-    internal val nameToCommandMap: TreeMap<CommandFullName, Command> = TreeMap(Comparator.comparingInt { it.size })
+    internal val nameToCommandMap: TreeMap<Array<String>, Command> = TreeMap(Comparator.comparingInt { it.size })
 
     @JvmField
     internal val modifyLock = ReentrantLock()
 
+    internal var _commandPrefix: String = "/"
 
     internal fun matchCommand(splitted: List<Any>): Command? {
         nameToCommandMap.entries.forEach {

@@ -9,17 +9,15 @@ import kotlin.reflect.KClass
  */
 data class CommandParam<T : Any>(
     /**
-     * 参数名, 为 `null` 时即为匿名参数.
-     * 参数名允许重复 (尽管并不建议这样做).
-     * 参数名仅提供给 [CommandArgParser] 以发送更好的错误信息.
+     * 参数名. 不允许重复.
      */
-    val name: String?,
+    val name: String,
     /**
      * 参数类型. 将从 [CommandDescriptor.context] 中寻找 [CommandArgParser] 解析.
      */
     val type: KClass<T> // exact type
 ) {
-    constructor(name: String?, type: KClass<T>, parser: CommandArgParser<T>) : this(name, type) {
+    constructor(name: String, type: KClass<T>, parser: CommandArgParser<T>) : this(name, type) {
         this._overrideParser = parser
     }
 

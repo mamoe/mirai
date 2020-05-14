@@ -6,23 +6,13 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 
 package net.mamoe.mirai.console.plugins
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.description
-import net.mamoe.mirai.console.encodeToString
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import java.io.File
-import java.io.InputStream
-import java.net.JarURLConnection
-import java.net.URL
-import java.util.jar.JarFile
 
 
 sealed class JarPlugin : Plugin(), CoroutineScope {
@@ -62,7 +52,7 @@ object JarPluginLoader : PluginLoader<JarPlugin> {
     }
 }
 
-
+/*
 object PluginManagerOld {
     /**
      * 通过插件获取介绍
@@ -433,4 +423,4 @@ object PluginManagerOld {
             jar.entries().asSequence().filter { it.name == toFind }.firstOrNull() ?: return null
         return URL("jar:file:" + jarFile.absoluteFile + "!/" + toFindFile.name).openConnection().inputStream
     }
-}
+}*/
