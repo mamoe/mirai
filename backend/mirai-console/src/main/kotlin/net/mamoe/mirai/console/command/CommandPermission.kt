@@ -199,6 +199,6 @@ internal class AndCommandPermission(
     private val second: CommandPermission
 ) : CommandPermission() {
     override fun CommandSender.hasPermission(): Boolean {
-        return this.hasPermission(first) || this.hasPermission(second)
+        return this.hasPermission(first) && this.hasPermission(second)
     }
 }
