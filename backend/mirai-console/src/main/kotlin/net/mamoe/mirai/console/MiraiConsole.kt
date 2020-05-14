@@ -13,7 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
@@ -43,7 +42,7 @@ interface IMiraiConsole : CoroutineScope {
     val mainLogger: MiraiLogger
 }
 
-object MiraiConsole : CoroutineScope, IMiraiConsole, CommandOwner {
+object MiraiConsole : CoroutineScope, IMiraiConsole {
     private lateinit var instance: IMiraiConsole
 
     /** 由前端调用 */

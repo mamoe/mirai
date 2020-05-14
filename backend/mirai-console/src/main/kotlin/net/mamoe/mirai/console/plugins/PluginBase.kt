@@ -13,7 +13,6 @@ package net.mamoe.mirai.console.plugins
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.events.EventListener
 import net.mamoe.mirai.console.scheduler.PluginScheduler
@@ -27,7 +26,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * 所有插件的基类
  */
 abstract class PluginBase
-@JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope, CommandOwner {
+@JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope {
     final override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob()
 
     /**
@@ -165,65 +164,4 @@ abstract class PluginBase
     }
 
     internal var pluginName: String = ""
-}
-
-/**
- * 插件描述
- * @see PluginBase.description
- */
-class PluginDescription(
-    val file: File,
-    val name: String,
-    val author: String,
-    val basePath: String,
-    val version: String,
-    val info: String,
-    val depends: List<String>,//插件的依赖
-    internal var loaded: Boolean = false,
-    internal var noCircularDepend: Boolean = true
-) {
-    override fun toString(): String {
-        return "name: $name\nauthor: $author\npath: $basePath\nver: $version\ninfo: $info\ndepends: $depends"
-    }
-
-    companion object {
-        @OptIn(ToBeRemoved::class)
-        fun readFromContent(content_: String, file: File): PluginDescription {
-            with(Config.load(content_, "yml")) {
-                try {
-                    return PluginDescription(
-                        file = file,
-                        name = this.getString("name"),
-                        author = kotlin.runCatching {
-                            this.getString("author")
-                        }.getOrElse {
-                            "unknown"
-                        },
-                        basePath = kotlin.runCatching {
-                            this.getString("path")
-                        }.getOrElse {
-                            this.getString("main")
-                        },
-                        version = kotlin.runCatching {
-                            this.getString("version")
-                        }.getOrElse {
-                            "unknown"
-                        },
-                        info = kotlin.runCatching {
-                            this.getString("info")
-                        }.getOrElse {
-                            "unknown"
-                        },
-                        depends = kotlin.runCatching {
-                            this.getStringList("depends")
-                        }.getOrElse {
-                            listOf()
-                        }
-                    )
-                } catch (e: Exception) {
-                    error("Failed to read Plugin.YML")
-                }
-            }
-        }
-    }
 }

@@ -4,6 +4,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.atomicfu.locks.withLock
+import net.mamoe.mirai.console.plugins.PluginBase
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import java.util.*
@@ -11,7 +12,12 @@ import java.util.concurrent.locks.ReentrantLock
 
 typealias CommandFullName = Array<out Any>
 
-interface CommandOwner
+sealed class CommandOwner
+
+abstract class PluginCommandOwner(plugin: PluginBase) : CommandOwner()
+
+// 由前端实现
+internal abstract class ConsoleCommandOwner : CommandOwner()
 
 val CommandOwner.registeredCommands: List<Command> get() = InternalCommandManager.registeredCommands.filter { it.owner == this }
 
