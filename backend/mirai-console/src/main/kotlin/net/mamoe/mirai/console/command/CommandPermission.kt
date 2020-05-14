@@ -12,6 +12,10 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.utils.isManager
+import net.mamoe.mirai.contact.isAdministrator
+import net.mamoe.mirai.contact.isOperator
+import net.mamoe.mirai.contact.isOwner
 
 /**
  * 指令权限
@@ -44,7 +48,7 @@ abstract class CommandPermission {
     }
 
     /**
-     * 任何人都不能使用这个指令. 指令只能通过代码在 [CommandManager] 使用
+     * 任何人都不能使用这个指令. 指令只能通过代码在 [execute] 使用
      */
     object None : CommandPermission() {
         override fun CommandSender.hasPermission(): Boolean = false
@@ -62,7 +66,7 @@ abstract class CommandPermission {
         constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
 
         override fun CommandSender.hasPermission(): Boolean {
-            return this is MemberCommandSender && this.bot.id in fromBot && this.realSender.isOperator()
+            return this is MemberCommandSender && this.bot.id in fromBot && this.user.isOperator()
         }
 
         /**
@@ -70,7 +74,7 @@ abstract class CommandPermission {
          */
         companion object Any : CommandPermission() {
             override fun CommandSender.hasPermission(): Boolean {
-                return this is MemberCommandSender && this.realSender.isOperator()
+                return this is MemberCommandSender && this.user.isOperator()
             }
         }
     }
@@ -87,7 +91,7 @@ abstract class CommandPermission {
         constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
 
         override fun CommandSender.hasPermission(): Boolean {
-            return this is MemberCommandSender && this.bot.id in fromBot && this.realSender.isOwner()
+            return this is MemberCommandSender && this.bot.id in fromBot && this.user.isOwner()
         }
 
         /**
@@ -95,7 +99,7 @@ abstract class CommandPermission {
          */
         companion object Any : CommandPermission() {
             override fun CommandSender.hasPermission(): Boolean {
-                return this is MemberCommandSender && this.realSender.isOwner()
+                return this is MemberCommandSender && this.user.isOwner()
             }
         }
     }
@@ -112,7 +116,7 @@ abstract class CommandPermission {
         constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
 
         override fun CommandSender.hasPermission(): Boolean {
-            return this is MemberCommandSender && this.bot.id in fromBot && this.realSender.isAdministrator()
+            return this is MemberCommandSender && this.bot.id in fromBot && this.user.isAdministrator()
         }
 
         /**
@@ -120,7 +124,7 @@ abstract class CommandPermission {
          */
         companion object Any : CommandPermission() {
             override fun CommandSender.hasPermission(): Boolean {
-                return this is MemberCommandSender && this.realSender.isAdministrator()
+                return this is MemberCommandSender && this.user.isAdministrator()
             }
         }
     }
@@ -137,7 +141,7 @@ abstract class CommandPermission {
         constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
 
         override fun CommandSender.hasPermission(): Boolean {
-            return this is MemberCommandSender && this.bot.id in fromBot && this.realSender.isManager
+            return this is MemberCommandSender && this.bot.id in fromBot && this.user.isManager
         }
 
         /**
@@ -145,7 +149,7 @@ abstract class CommandPermission {
          */
         companion object Any : CommandPermission() {
             override fun CommandSender.hasPermission(): Boolean {
-                return this is MemberCommandSender && this.realSender.isManager
+                return this is MemberCommandSender && this.user.isManager
             }
         }
     }

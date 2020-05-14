@@ -105,7 +105,16 @@ class CommandDescriptor(
 }
 
 
+/**
+ * 检查指令参数数量是否足够, 类型是否匹配.
+ * @throws IllegalArgumentException
+ */
 fun Command.checkArgs(args: CommandArgs) = this.descriptor.checkArgs(args)
+
+/**
+ * 检查指令参数数量是否足够, 类型是否匹配.
+ * @throws IllegalArgumentException
+ */
 fun CommandDescriptor.checkArgs(args: CommandArgs) {
     require(args.size >= this.params.size) { "No enough args. Required ${params.size}, but given ${args.size}" }
     params.forEachIndexed { index, commandParam ->
@@ -115,22 +124,6 @@ fun CommandDescriptor.checkArgs(args: CommandArgs) {
     }
 }
 
-internal fun Any.flattenCommandComponents(): Sequence<Any> = when (this) {
-    is Array<*> -> this.asSequence().flatMap {
-        it?.flattenCommandComponents() ?: throw java.lang.IllegalArgumentException("unexpected null value")
-    }
-    is String -> splitToSequence(' ').filterNot { it.isBlank() }
-    is PlainText -> content.flattenCommandComponents()
-    is SingleMessage -> sequenceOf(this)
-    is MessageChain -> this.asSequence().flatMap { it.flattenCommandComponents() }
-    else -> throw IllegalArgumentException("Illegal component: $this")
-}
-
-internal fun CommandFullName.checkFullName(errorHint: String): CommandFullName {
-    return flattenCommandComponents().toList().also {
-        require(it.isNotEmpty()) { "$errorHint must not be empty" }
-    }.toTypedArray()
-}
 
 /**
  * 构建一个 [CommandDescriptor]
@@ -245,12 +238,12 @@ class CommandDescriptorBuilder(
     }
 
     @JvmSynthetic
-    fun param(type: KClass<*>): CommandDescriptorBuilder = apply {
-        this.params.add(CommandParam(null, type))
+    fun param(vararg types: KClass<*>): CommandDescriptorBuilder = apply {
+        types.forEach { type -> params.add(CommandParam(null, type)) }
     }
 
-    fun param(type: Class<*>): CommandDescriptorBuilder = apply {
-        this.params.add(CommandParam(null, type.kotlin))
+    fun param(vararg types: Class<*>): CommandDescriptorBuilder = apply {
+        types.forEach { type -> params.add(CommandParam(null, type.kotlin)) }
     }
 
     fun build(): CommandDescriptor =
@@ -270,4 +263,26 @@ inline class ParamBlock internal constructor(@PublishedApi internal val list: Mu
     /** 覆盖 [CommandArgParser] */
     inline infix fun <reified T : Any> String.using(parser: CommandArgParser<T>): CommandParam<T> =
         this typed T::class using parser
+}
+
+
+///////
+/// internal
+
+
+internal fun Any.flattenCommandComponents(): Sequence<Any> = when (this) {
+    is Array<*> -> this.asSequence().flatMap {
+        it?.flattenCommandComponents() ?: throw java.lang.IllegalArgumentException("unexpected null value")
+    }
+    is String -> splitToSequence(' ').filterNot { it.isBlank() }
+    is PlainText -> content.flattenCommandComponents()
+    is SingleMessage -> sequenceOf(this)
+    is MessageChain -> this.asSequence().flatMap { it.flattenCommandComponents() }
+    else -> throw IllegalArgumentException("Illegal component: $this")
+}
+
+internal fun CommandFullName.checkFullName(errorHint: String): CommandFullName {
+    return flattenCommandComponents().toList().also {
+        require(it.isNotEmpty()) { "$errorHint must not be empty" }
+    }.toTypedArray()
 }

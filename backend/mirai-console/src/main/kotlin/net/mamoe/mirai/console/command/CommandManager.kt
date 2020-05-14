@@ -1,4 +1,4 @@
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "unused")
 @file:JvmName("CommandManager")
 
 package net.mamoe.mirai.console.command
@@ -77,18 +77,33 @@ suspend fun MessageChain.executeAsCommand(sender: CommandSender): Boolean {
     return this.flattenCommandComponents().toList().executeCommand(sender)
 }
 
-suspend fun CommandSender.execute(command: Command, args: CommandArgs): Boolean = with(command) {
+/**
+ * 检查指令参数并直接执行一个指令.
+ */
+suspend inline fun CommandSender.execute(command: Command, args: CommandArgs): Boolean = with(command) {
     checkArgs(args)
-    return onCommand(this@execute, args)
+    return this@execute.onCommand(args)
 }
 
-suspend fun Command.execute(sender: CommandSender, args: CommandArgs): Boolean = sender.execute(this, args)
+/**
+ * 检查指令参数并直接执行一个指令.
+ */
+suspend inline fun Command.execute(sender: CommandSender, args: CommandArgs): Boolean = sender.execute(this, args)
+
+/**
+ * 解析并执行一个指令.
+ * @param args 接受 [String] 或 [Message]
+ */
 suspend fun CommandSender.execute(vararg args: Any): Boolean = args.toList().executeCommand(this)
 
 
 internal suspend fun List<Any>.executeCommand(sender: CommandSender): Boolean {
     val command = InternalCommandManager.matchCommand(this) ?: return false
-    return command.onCommand(sender, CommandArgs.parseFrom(command, sender, this.drop(command.fullName.size)))
+    return command.run {
+        sender.onCommand(
+            CommandArgs.parseFrom(command, sender, this@executeCommand.drop(command.fullName.size))
+        )
+    }
 }
 
 internal infix fun CommandFullName.matchesBeginning(list: List<Any>): Boolean {

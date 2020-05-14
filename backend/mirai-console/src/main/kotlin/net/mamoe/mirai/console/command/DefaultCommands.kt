@@ -9,15 +9,6 @@
 
 package net.mamoe.mirai.console.command
 
-suspend fun main() {
-
-    if (ConsoleCommandSender.execute("test")) {
-
-    }
-}
-
-internal object DefaultCommands
-
 /*
 
 /**
