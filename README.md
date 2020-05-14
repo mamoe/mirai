@@ -6,7 +6,7 @@
 
 ----
 
-[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Financial Contributors on Open Collective](https://opencollective.com/mirai/all/badge.svg?label=financial+contributors)](https://opencollective.com/mirai) [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ![Gradle CI](https://github.com/mamoe/mirai/workflows/Gradle%20CI/badge.svg?branch=master)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
@@ -175,3 +175,33 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
     
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/mamoe/mirai/graphs/contributors"><img src="https://opencollective.com/mirai/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/mirai/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/mirai"><img src="https://opencollective.com/mirai/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/mirai/contribute)]
+
+<a href="https://opencollective.com/mirai/organization/0/website"><img src="https://opencollective.com/mirai/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/1/website"><img src="https://opencollective.com/mirai/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/2/website"><img src="https://opencollective.com/mirai/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/3/website"><img src="https://opencollective.com/mirai/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/4/website"><img src="https://opencollective.com/mirai/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/5/website"><img src="https://opencollective.com/mirai/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/6/website"><img src="https://opencollective.com/mirai/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/7/website"><img src="https://opencollective.com/mirai/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/8/website"><img src="https://opencollective.com/mirai/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/mirai/organization/9/website"><img src="https://opencollective.com/mirai/organization/9/avatar.svg"></a>
