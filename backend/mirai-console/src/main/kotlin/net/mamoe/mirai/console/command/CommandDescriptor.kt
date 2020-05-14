@@ -13,13 +13,21 @@ class CommandDescriptor(
      */
     val fullName: String,
     /**
-     * 指令参数解析器环境.
+     * 用法说明
      */
-    val context: CommandParserContext,
+    val usage: String,
     /**
      * 指令参数列表, 有顺序.
      */
     val params: List<CommandParam<*>>,
+    /**
+     * 指令参数解析器环境.
+     */
+    val context: CommandParserContext = CommandParserContext.Builtins,
+    /**
+     * 指令别名
+     */
+    val aliases: Array<String> = arrayOf(),
     /**
      * 指令权限
      *
@@ -50,6 +58,12 @@ class CommandDescriptorBuilder(
     @PublishedApi
     internal var params: MutableList<CommandParam<*>> = mutableListOf()
 
+    @PublishedApi
+    internal var usage: String = "<no usage>"
+
+    @PublishedApi
+    internal var aliases: MutableList<String> = mutableListOf()
+
     /** 增加指令参数解析器列表 */
     @JvmSynthetic
     inline fun context(block: CommandParserContextBuilder.() -> Unit) {
@@ -71,6 +85,14 @@ class CommandDescriptorBuilder(
     @JvmSynthetic
     inline fun permission(crossinline block: CommandSender.() -> Boolean) {
         this.permission = AnonymousCommandPermission(block)
+    }
+
+    fun usage(message: String): CommandDescriptorBuilder = apply {
+        usage = message
+    }
+
+    fun alias(vararg name: String): CommandDescriptorBuilder = apply {
+        this.aliases.addAll(name)
     }
 
     fun param(vararg params: CommandParam<*>): CommandDescriptorBuilder = apply {
@@ -120,7 +142,8 @@ class CommandDescriptorBuilder(
         this.params.add(CommandParam(null, type.kotlin))
     }
 
-    fun build(): CommandDescriptor = CommandDescriptor(fullName, context, params, permission)
+    fun build(): CommandDescriptor =
+        CommandDescriptor(fullName, context, params, usage, aliases.toTypedArray(), permission)
 }
 
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
