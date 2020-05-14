@@ -14,6 +14,8 @@ object Versions {
         const val core = "1.0-RC2-1"
         const val console = "0.5.1"
         const val consoleGraphical = "0.0.7"
+        const val consoleTerminal = "0.1.0"
+        const val consolePure = "0.1.0"
     }
 
     object Kotlin {

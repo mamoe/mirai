@@ -24,7 +24,14 @@ pluginManagement {
 rootProject.name = 'mirai-console'
 
 include(':mirai-console')
+project(':mirai-console').dir = file("backend/mirai-console")
+
+
+include(':mirai-console-pure')
+project(':mirai-console-pure').dir = file("frontend/mirai-console-pure")
+
 include(':mirai-console-terminal')
+project(':mirai-console-terminal').dir = file("frontend/mirai-console-terminal")
 
 try{
     def javaVersion = System.getProperty("java.version")
@@ -43,6 +50,7 @@ try{
     }
     if (javaVersionNum >= 9) {
         include(':mirai-console-graphical')
+        project(':mirai-console-graphical').dir = file("frontend/mirai-console-graphical")
     } else {
         println("jdk版本为 "+ javaVersionNum)
         println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用JDK 9以上版本引入模块 `:mirai-console-graphical`\n")
