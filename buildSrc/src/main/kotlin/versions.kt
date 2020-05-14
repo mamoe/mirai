@@ -1,3 +1,4 @@
+import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 /*
@@ -31,3 +32,9 @@ fun DependencyHandlerScope.kotlinx(id: String, version: String) = "org.jetbrains
 
 @Suppress("unused")
 fun DependencyHandlerScope.ktor(id: String, version: String = Versions.Kotlin.ktor) = "io.ktor:ktor-$id:$version"
+
+@Suppress("unused")
+fun DependencyHandler.compileAndRuntime(any: Any) {
+    add("compileOnly", any)
+    add("runtimeOnly", any)
+}

@@ -3,7 +3,7 @@ import upload.Bintray
 import java.util.*
 
 plugins {
-    kotlin("jvm")
+    id("kotlin")
     kotlin("plugin.serialization")
     id("java")
     `maven-publish`
@@ -27,9 +27,10 @@ kotlin {
         }
     }
 }
+
 dependencies {
-    compileOnly("net.mamoe:mirai-core:${Versions.Mirai.core}")
-    compileOnly(kotlin("stdlib")) // embedded by core
+    compileAndRuntime("net.mamoe:mirai-core:${Versions.Mirai.core}")
+    compileAndRuntime(kotlin("stdlib"))
 
     api("com.google.code.gson:gson:2.8.6")
     api(group = "org.yaml", name = "snakeyaml", version = "1.25")
