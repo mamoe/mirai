@@ -15,6 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.PluginBase
+import net.mamoe.mirai.message.data.Message
+import java.lang.reflect.Member
 import kotlin.reflect.KProperty
 
 internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
@@ -28,17 +30,18 @@ interface Command {
     val owner: CommandOwner
     val descriptor: CommandDescriptor
 
-    /*
-    @Deprecated(FOR_BINARY_COMPATIBILITY, level = DeprecationLevel.HIDDEN)
-    suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
-        return true
-    }*/
+    /**
+     * 指令的默认执行方法
+     * 当所有的 sub 方法均不满足时, 原始参数将送到此方法调用
+     * 如果 arg 为 String, 他会被包装为 PlainText(AKA PlainMessage)
+     */
+    suspend fun CommandSender.onDefault(args: List<Message>): Boolean
 
     /**
-     * 执行这个指令.
+     * 在更多的情况下, 你应当使用 @SubCommand 来注册一共 sub 指令
      */
-    suspend fun CommandSender.onCommand(args: CommandArgs): Boolean
 }
+
 
 /**
  * 指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
