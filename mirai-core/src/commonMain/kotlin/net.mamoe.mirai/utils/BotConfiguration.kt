@@ -49,9 +49,9 @@ open class BotConfiguration {
 
     /**
      * 每次心跳时等待结果的时间.
-     * 一旦心跳超时, 整个网络服务将会重启 (将消耗约 5s). 除正在进行的任务 (如图片上传) 会被中断外, 事件和插件均不受影响.
+     * 一旦心跳超时, 整个网络服务将会重启 (将消耗约 1s). 除正在进行的任务 (如图片上传) 会被中断外, 事件和插件均不受影响.
      */
-    var heartbeatTimeoutMillis: Long = 2.secondsToMillis
+    var heartbeatTimeoutMillis: Long = 5.secondsToMillis
 
     /** 心跳失败后的第一次重连前的等待时间. */
     var firstReconnectDelayMillis: Long = 5.secondsToMillis
