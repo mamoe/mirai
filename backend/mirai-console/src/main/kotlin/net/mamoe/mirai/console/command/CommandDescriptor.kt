@@ -29,9 +29,9 @@ class CommandDescriptor(
      */
     description: String = "",
     /**
-     * 指令参数解析器环境.
+     * 覆盖内建的指令参数解析器环境.
      */
-    val context: CommandParserContext = CommandParserContext.Builtins,
+    overrideContext: CommandParserContext = CommandParserContext.Empty,
     /**
      * 指令别名
      */
@@ -44,6 +44,11 @@ class CommandDescriptor(
      */
     val permission: CommandPermission = CommandPermission.Default
 ) {
+    /**
+     * 指令参数解析器环境.
+     */
+    val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
+
     /**
      * 指令别名
      */
@@ -132,9 +137,12 @@ internal fun CommandFullName.checkFullName(errorHint: String): CommandFullName {
  */
 @Suppress("FunctionName")
 inline fun CommandDescriptor(
-    vararg fullName: Any,
+    /**
+     * 指令全名
+     */
+    vararg fullNameComponents: Any,
     block: CommandDescriptorBuilder.() -> Unit = {}
-): CommandDescriptor = CommandDescriptorBuilder(*fullName).apply(block).build()
+): CommandDescriptor = CommandDescriptorBuilder(*fullNameComponents).apply(block).build()
 
 class CommandDescriptorBuilder(
     vararg fullName: Any

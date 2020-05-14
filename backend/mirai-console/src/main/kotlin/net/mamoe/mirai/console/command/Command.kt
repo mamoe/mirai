@@ -97,7 +97,7 @@ class CommandArgs private constructor(
 
             command.descriptor.params.asSequence().zip(rawArgs.asSequence()).map { (commandParam, any) ->
                 command.parserFor(commandParam)?.parse(any, sender)
-                    ?: error("ICould not find a parser for param named ${commandParam.name}")
+                    ?: error("Could not find a parser for param named ${commandParam.name}, typed ${commandParam.type.qualifiedName}")
             }.toList().let { bakedArgs ->
                 return CommandArgs(bakedArgs, command)
             }

@@ -12,19 +12,27 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.AbstractCommandParserContext.ParserPair
+import net.mamoe.mirai.console.command.CommandParserContext.ParserPair
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 
 /**
  * [KClass] 到 [CommandArgParser] 的匹配
- * @see AbstractCommandParserContext
+ * @see CustomCommandParserContext 自定义
  */
 interface CommandParserContext {
-    operator fun <T : Any> get(klass: KClass<T>): CommandArgParser<T>?
+    data class ParserPair<T : Any>(
+        val klass: KClass<T>,
+        val parser: CommandArgParser<T>
+    )
+
+    operator fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>?
+
+    fun toList(): List<ParserPair<*>>
 
     /**
      * 内建的默认 [CommandArgParser]
@@ -43,6 +51,8 @@ interface CommandParserContext {
         Group::class with ExistGroupArgParser
         Bot::class with ExistBotArgParser
     })
+
+    object Empty : CommandParserContext by CustomCommandParserContext(listOf())
 }
 
 fun <T : Any> CommandParserContext.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
@@ -58,20 +68,38 @@ fun <T : Any> Command.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
  * 合并两个 [CommandParserContext], [replacer] 将会替换 [this] 中重复的 parser.
  */
 operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandParserContext {
+    if (replacer == CommandParserContext.Empty) return this
+    if (this == CommandParserContext.Empty) return replacer
     return object : CommandParserContext {
-        override fun <T : Any> get(klass: KClass<T>): CommandArgParser<T>? = replacer[klass] ?: this@plus[klass]
+        override fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>? = replacer[klass] ?: this@plus[klass]
+        override fun toList(): List<ParserPair<*>> = replacer.toList() + this@plus.toList()
+    }
+}
+
+/**
+ * 合并 [this] 与 [replacer], [replacer] 将会替换 [this] 中重复的 parser.
+ */
+operator fun CommandParserContext.plus(replacer: List<ParserPair<*>>): CommandParserContext {
+    if (replacer.isEmpty()) return this
+    if (this == CommandParserContext.Empty) return CustomCommandParserContext(replacer)
+    return object : CommandParserContext {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>? =
+            replacer.firstOrNull { klass.isSubclassOf(it.klass) }?.parser as CommandArgParser<T>? ?: this@plus[klass]
+
+        override fun toList(): List<ParserPair<*>> = replacer.toList() + this@plus.toList()
     }
 }
 
 @Suppress("UNCHECKED_CAST")
-open class AbstractCommandParserContext(val list: List<ParserPair<*>>) : CommandParserContext {
-    class ParserPair<T : Any>(
-        val klass: KClass<T>,
-        val parser: CommandArgParser<T>
-    )
+open class CustomCommandParserContext(val list: List<ParserPair<*>>) : CommandParserContext {
 
-    override fun <T : Any> get(klass: KClass<T>): CommandArgParser<T>? =
-        this.list.firstOrNull { it.klass == klass }?.parser as CommandArgParser<T>?
+    override fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>? =
+        this.list.firstOrNull { klass.isSubclassOf(it.klass) }?.parser as CommandArgParser<T>?
+
+    override fun toList(): List<ParserPair<*>> {
+        return list
+    }
 }
 
 /**
@@ -93,8 +121,7 @@ open class AbstractCommandParserContext(val list: List<ParserPair<*>>) : Command
 @Suppress("FunctionName")
 @JvmSynthetic
 inline fun CommandParserContext(block: CommandParserContextBuilder.() -> Unit): CommandParserContext {
-    return AbstractCommandParserContext(
-        CommandParserContextBuilder().apply(block).distinctByReversed { it.klass })
+    return CustomCommandParserContext(CommandParserContextBuilder().apply(block).distinctByReversed { it.klass })
 }
 
 /**
@@ -103,7 +130,7 @@ inline fun CommandParserContext(block: CommandParserContextBuilder.() -> Unit): 
 class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf() {
     @JvmName("add")
     inline infix fun <T : Any> KClass<T>.with(parser: CommandArgParser<T>): ParserPair<*> =
-        ParserPair(this, parser)
+        ParserPair(this, parser).also { add(it) }
 
     /**
      * 添加一个指令解析器
@@ -112,7 +139,7 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     @LowPriorityInOverloadResolution
     inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T
-    ): ParserPair<*> = ParserPair(this, CommandArgParser(parser))
+    ): ParserPair<*> = ParserPair(this, CommandArgParser(parser)).also { add(it) }
 
     /**
      * 添加一个指令解析器
@@ -120,16 +147,16 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     @JvmSynthetic
     inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgParser<T>.(s: String) -> T
-    ): ParserPair<*> = ParserPair(this, CommandArgParser { s: String, _: CommandSender -> parser(s) })
+    ): ParserPair<*> = ParserPair(this, CommandArgParser { s: String, _: CommandSender -> parser(s) }).also { add(it) }
 }
 
 
 @PublishedApi
-internal inline fun <T, K> Iterable<T>.distinctByReversed(selector: (T) -> K): List<T> {
+internal inline fun <T, K> List<T>.distinctByReversed(selector: (T) -> K): List<T> {
     val set = HashSet<K>()
     val list = ArrayList<T>()
-    for (i in list.indices.reversed()) {
-        val element = list[i]
+    for (i in this.indices.reversed()) {
+        val element = this[i]
         if (set.add(element.let(selector))) {
             list.add(element)
         }

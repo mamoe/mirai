@@ -11,10 +11,9 @@
 
 package net.mamoe.mirai.console.command
 
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.plugins.PluginBase
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.messageChainOf
-import net.mamoe.mirai.message.data.toMessage
+import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -69,6 +68,36 @@ internal class TestCommands {
                     return true
                 }
             }.register()
+        )
+    }
+
+    inline fun withSender(block: CommandSender.() -> Unit): MessageChain {
+        val result = MessageChainBuilder()
+        val sender: CommandSender = object : CommandSender {
+            override suspend fun sendMessage(message: Message) {
+                result.add(message)
+            }
+
+            override suspend fun sendMessage(message: String) {
+                result.add(message)
+            }
+
+            override fun appendMessage(message: String) {
+                result.add(message)
+            }
+        }
+        sender.let(block)
+        return result.asMessageChain()
+    }
+
+    @Test
+    fun testExecute() = runBlocking {
+        TestCommand.register()
+        assertEquals(
+            "ok",
+            withSender {
+                execute("test", "ok", "extra")
+            }.contentToString()
         )
     }
 }

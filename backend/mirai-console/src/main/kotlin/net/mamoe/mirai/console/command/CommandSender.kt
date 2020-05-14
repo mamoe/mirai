@@ -24,7 +24,7 @@ interface CommandSender {
     /**
      * 立刻发送一条消息
      */
-    suspend fun sendMessage(messageChain: Message)
+    suspend fun sendMessage(message: Message)
 
     suspend fun sendMessage(message: String)
 
@@ -56,7 +56,7 @@ abstract class AbstractCommandSender : CommandSender {
  * 控制台指令执行者. 代表由控制台执行指令
  */
 object ConsoleCommandSender : AbstractCommandSender() {
-    override suspend fun sendMessage(messageChain: Message) {
+    override suspend fun sendMessage(message: Message) {
         TODO()
         // MiraiConsole.logger("[Command]", 0, messageChain.toString())
     }
@@ -86,8 +86,8 @@ interface BotAware {
  */
 @Suppress("MemberVisibilityCanBePrivate")
 open class ContactCommandSender(override val bot: Bot, val contact: Contact) : AbstractCommandSender(), BotAware {
-    override suspend fun sendMessage(messageChain: Message) {
-        contact.sendMessage(messageChain)
+    override suspend fun sendMessage(message: Message) {
+        contact.sendMessage(message)
     }
 
     override suspend fun sendMessage(message: String) {
