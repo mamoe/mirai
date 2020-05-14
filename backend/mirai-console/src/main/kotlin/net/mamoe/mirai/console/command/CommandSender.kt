@@ -13,10 +13,8 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 
@@ -43,6 +41,13 @@ interface CommandSender {
 
     fun sendMessageBlocking(messageChain: Message) = runBlocking { sendMessage(messageChain) }
     fun sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
+}
+
+/**
+ * 可以知道其 [Bot] 的 [CommandSender]
+ */
+interface BotAwareCommandSender : CommandSender {
+    override val bot: Bot
 }
 
 suspend inline fun CommandSender.sendMessage(message: String) = sendMessage(PlainText(message))
@@ -95,13 +100,18 @@ inline fun User.asCommandSender(): UserCommandSender {
  * 代表一个用户私聊机器人执行指令
  * @see User.asCommandSender
  */
-sealed class UserCommandSender : AbstractCommandSender() {
+sealed class UserCommandSender : AbstractCommandSender(), BotAwareCommandSender {
     abstract val user: User
+
+    /**
+     * @see MessageEvent.subject
+     */
+    abstract val subject: Contact
 
     final override val bot: Bot get() = user.bot
 
     final override suspend fun sendMessage(message: Message) {
-        user.sendMessage(message)
+        subject.sendMessage(message)
     }
 }
 
@@ -109,7 +119,9 @@ sealed class UserCommandSender : AbstractCommandSender() {
  * 代表一个用户私聊机器人执行指令
  * @see Friend.asCommandSender
  */
-class FriendCommandSender(override val user: Friend) : UserCommandSender()
+class FriendCommandSender(override val user: Friend) : UserCommandSender() {
+    override val subject: Contact get() = user
+}
 
 /**
  * 代表一个群成员在群内执行指令.
@@ -117,4 +129,5 @@ class FriendCommandSender(override val user: Friend) : UserCommandSender()
  */
 class MemberCommandSender(override val user: Member) : UserCommandSender() {
     inline val group: Group get() = user.group
+    override val subject: Contact get() = group
 }
