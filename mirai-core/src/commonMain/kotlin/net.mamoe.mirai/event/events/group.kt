@@ -304,7 +304,7 @@ data class MemberJoinRequestEvent internal constructor(
      */
     val fromNick: String
 ) : BotEvent, Packet, AbstractEvent() {
-    val group: Group = this.bot.getGroup(groupId)
+    val group: Group get() = this.bot.getGroup(groupId)
 
     @JvmField
     internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
