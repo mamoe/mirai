@@ -71,34 +71,34 @@ internal class TestCommands {
         )
     }
 
-    inline fun withSender(block: CommandSender.() -> Unit): MessageChain {
-        val result = MessageChainBuilder()
-        val sender: CommandSender = object : CommandSender {
-            override suspend fun sendMessage(message: Message) {
-                result.add(message)
-            }
-
-            override suspend fun sendMessage(message: String) {
-                result.add(message)
-            }
-
-            override fun appendMessage(message: String) {
-                result.add(message)
-            }
-        }
-        sender.let(block)
-        return result.asMessageChain()
-    }
-
     @Test
     fun testExecute() = runBlocking {
         TestCommand.register()
         assertEquals(
             "ok",
             withSender {
-                execute("test", "ok", "extra")
+                execute("test", "arg")
             }.contentToString()
         )
     }
 }
 
+
+internal inline fun withSender(block: CommandSender.() -> Unit): MessageChain {
+    val result = MessageChainBuilder()
+    val sender: CommandSender = object : CommandSender {
+        override suspend fun sendMessage(message: Message) {
+            result.add(message)
+        }
+
+        override suspend fun sendMessage(message: String) {
+            result.add(message)
+        }
+
+        override fun appendMessage(message: String) {
+            result.add(message)
+        }
+    }
+    sender.let(block)
+    return result.asMessageChain()
+}

@@ -141,8 +141,8 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
                 illegalArgument("无法解析～作为默认")
             }
             val targetID = when (sender) {
-                is GroupContactCommandSender -> sender.realSender.id
-                is ContactCommandSender -> sender.contact.id
+                is MemberCommandSender -> sender.realSender.id
+                is UserCommandSender -> sender.user.id
                 else -> illegalArgument("无法解析～作为默认")
             }
             return try {
@@ -177,7 +177,7 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
 
     override fun parse(raw: SingleMessage, sender: CommandSender): Friend {
         if (raw is At) {
-            assert(sender is GroupContactCommandSender)
+            assert(sender is MemberCommandSender)
             return (sender as BotAware).bot.friends.getOrNull(raw.target) ?: illegalArgument("At的对象非Bot好友")
         } else {
             error("无法解析 $raw 为好友")
@@ -188,8 +188,8 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
 object ExistGroupArgParser : CommandArgParser<Group>() {
     override fun parse(raw: String, sender: CommandSender): Group {
         //by default
-        if ((raw == "" || raw == "~") && sender is GroupContactCommandSender) {
-            return sender.contact as Group
+        if ((raw == "" || raw == "~") && sender is MemberCommandSender) {
+            return sender.user as Group
         }
         //from bot to group
         if (sender is BotAware) {
@@ -255,8 +255,8 @@ object ExistMemberArgParser : CommandArgParser<Member>() {
             }
         } else {
             val bot = sender.bot
-            if (sender is GroupContactCommandSender) {
-                val group = sender.contact as Group
+            if (sender is MemberCommandSender) {
+                val group = sender.user as Group
                 return try {
                     group.members[raw.toLong()]
                 } catch (ignored: Exception) {
@@ -288,8 +288,8 @@ object ExistMemberArgParser : CommandArgParser<Member>() {
 
     override fun parse(raw: SingleMessage, sender: CommandSender): Member {
         return if (raw is At) {
-            checkArgument(sender is GroupContactCommandSender)
-            (sender.contact as Group).members[raw.target]
+            checkArgument(sender is MemberCommandSender)
+            (sender.user as Group).members[raw.target]
         } else {
             illegalArgument("无法识别Member" + raw.content)
         }

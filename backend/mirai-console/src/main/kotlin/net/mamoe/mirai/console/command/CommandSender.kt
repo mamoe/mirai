@@ -7,13 +7,18 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.PlainText
 
 /**
  * 指令发送者
@@ -22,11 +27,14 @@ import net.mamoe.mirai.message.data.Message
  */
 interface CommandSender {
     /**
+     * 与这个 [CommandSender] 相关的 [Bot]. 当通过控制台执行时为 null.
+     */
+    val bot: Bot?
+
+    /**
      * 立刻发送一条消息
      */
     suspend fun sendMessage(message: Message)
-
-    suspend fun sendMessage(message: String)
 
     /**
      * 写入要发送的内容 所有内容最后会被以一条发出
@@ -37,6 +45,7 @@ interface CommandSender {
     fun sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
 }
 
+suspend inline fun CommandSender.sendMessage(message: String) = sendMessage(PlainText(message))
 
 abstract class AbstractCommandSender : CommandSender {
     internal val builder = StringBuilder()
@@ -56,14 +65,11 @@ abstract class AbstractCommandSender : CommandSender {
  * 控制台指令执行者. 代表由控制台执行指令
  */
 object ConsoleCommandSender : AbstractCommandSender() {
+    override val bot: Nothing? get() = null
+
     override suspend fun sendMessage(message: Message) {
         TODO()
         // MiraiConsole.logger("[Command]", 0, messageChain.toString())
-    }
-
-    override suspend fun sendMessage(message: String) {
-        TODO()
-        //  MiraiConsole.logger("[Command]", 0, message)
     }
 
     override suspend fun flushMessage() {
@@ -72,34 +78,43 @@ object ConsoleCommandSender : AbstractCommandSender() {
     }
 }
 
-/**
- * 指向性CommandSender
- * 你可以获得用户在和哪个Bot说指令
- */
-interface BotAware {
-    val bot: Bot
-}
+inline fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
 
+inline fun Member.asCommandSender(): MemberCommandSender = MemberCommandSender(this)
 
-/**
- * 联系人指令执行者. 代表由一个 QQ 用户私聊执行指令
- */
-@Suppress("MemberVisibilityCanBePrivate")
-open class ContactCommandSender(override val bot: Bot, val contact: Contact) : AbstractCommandSender(), BotAware {
-    override suspend fun sendMessage(message: Message) {
-        contact.sendMessage(message)
-    }
-
-    override suspend fun sendMessage(message: String) {
-        contact.sendMessage(message)
+inline fun User.asCommandSender(): UserCommandSender {
+    return when (this) {
+        is Friend -> this.asCommandSender()
+        is Member -> this.asCommandSender()
+        else -> error("stub")
     }
 }
 
+
 /**
- * 联系人指令执行者. 代表由一个 QQ 用户 在群里执行指令
+ * 代表一个用户私聊机器人执行指令
+ * @see User.asCommandSender
  */
-open class GroupContactCommandSender(
-    bot: Bot,
-    val realSender: Member,
-    subject: Contact
-) : ContactCommandSender(bot, subject)
+sealed class UserCommandSender : AbstractCommandSender() {
+    abstract val user: User
+
+    final override val bot: Bot get() = user.bot
+
+    final override suspend fun sendMessage(message: Message) {
+        user.sendMessage(message)
+    }
+}
+
+/**
+ * 代表一个用户私聊机器人执行指令
+ * @see Friend.asCommandSender
+ */
+class FriendCommandSender(override val user: Friend) : UserCommandSender()
+
+/**
+ * 代表一个群成员在群内执行指令.
+ * @see Member.asCommandSender
+ */
+class MemberCommandSender(override val user: Member) : UserCommandSender() {
+    inline val group: Group get() = user.group
+}

@@ -37,7 +37,7 @@ interface Command {
     /**
      * 执行这个指令.
      */
-    suspend fun onCommand(sender: CommandSender, args: CommandArgs): Boolean
+    suspend fun CommandSender.onCommand(args: CommandArgs): Boolean
 }
 
 /**
@@ -138,8 +138,8 @@ abstract class BlockingCommand(
     owner: PluginBase,
     descriptor: CommandDescriptor
 ) : PluginCommand(owner, descriptor) {
-    final override suspend fun onCommand(sender: CommandSender, args: CommandArgs): Boolean {
-        return withContext(Dispatchers.IO) { onCommandBlocking(sender, args) }
+    final override suspend fun CommandSender.onCommand(args: CommandArgs): Boolean {
+        return withContext(Dispatchers.IO) { onCommandBlocking(this@onCommand, args) }
     }
 
     abstract fun onCommandBlocking(sender: CommandSender, args: CommandArgs): Boolean
