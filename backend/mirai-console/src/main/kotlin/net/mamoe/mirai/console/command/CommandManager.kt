@@ -25,16 +25,14 @@ fun CommandOwner.unregisterAllCommands() {
  * 注册一个指令. 若此指令已经注册或有已经注册的指令与 [allNames] 重名, 返回 `false`
  */
 fun Command.register(): Boolean = InternalCommandManager.modifyLock.withLock {
-    with(descriptor) {
-        if (findDuplicate() != null) {
-            return false
-        }
-        InternalCommandManager.registeredCommands.add(this@register)
-        for (name in this.allNames) {
-            InternalCommandManager.nameToCommandMap[name] = this@register
-        }
-        return true
+    if (findDuplicate() != null) {
+        return false
     }
+    InternalCommandManager.registeredCommands.add(this@register)
+    for (name in this.allNames) {
+        InternalCommandManager.nameToCommandMap[name] = this@register
+    }
+    return true
 }
 
 /**
@@ -85,8 +83,7 @@ suspend fun CommandSender.execute(command: Command, args: CommandArgs): Boolean 
 }
 
 suspend fun Command.execute(sender: CommandSender, args: CommandArgs): Boolean = sender.execute(this, args)
-suspend fun Command.execute(sender: CommandSender, vararg args: Any): Boolean = sender.execute(this, args)
-suspend fun CommandSender.execute(command: Command, vararg args: Any): Boolean = command.execute(this, args)
+suspend fun CommandSender.execute(vararg args: Any): Boolean = args.toList().executeCommand(this)
 
 
 internal suspend fun List<Any>.executeCommand(sender: CommandSender): Boolean {

@@ -68,7 +68,7 @@ class CommandDescriptor(
     /**
      * `fullName + aliases`
      */
-    val allNames = arrayOf(fullName, *aliases)
+    val allNames: Array<CommandFullName> = arrayOf(fullName, *aliases)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -117,7 +117,7 @@ internal fun Any.flattenCommandComponents(): Sequence<Any> = when (this) {
     is String -> splitToSequence(' ').filterNot { it.isBlank() }
     is PlainText -> content.flattenCommandComponents()
     is SingleMessage -> sequenceOf(this)
-    is MessageChain -> this.asSequence().map { it.flattenCommandComponents() }
+    is MessageChain -> this.asSequence().flatMap { it.flattenCommandComponents() }
     else -> throw IllegalArgumentException("Illegal component: $this")
 }
 
@@ -134,11 +134,14 @@ internal fun CommandFullName.checkFullName(errorHint: String): CommandFullName {
 inline fun CommandDescriptor(
     vararg fullName: Any,
     block: CommandDescriptorBuilder.() -> Unit = {}
-): CommandDescriptor = CommandDescriptorBuilder(fullName).apply(block).build()
+): CommandDescriptor = CommandDescriptorBuilder(*fullName).apply(block).build()
 
 class CommandDescriptorBuilder(
-    vararg val fullName: Any
+    vararg fullName: Any
 ) {
+    @PublishedApi
+    internal var fullName: CommandFullName = fullName.checkFullName("fullName")
+
     @PublishedApi
     internal var context: CommandParserContext = CommandParserContext.Builtins
 

@@ -10,23 +10,13 @@
 package net.mamoe.mirai.console.command
 
 suspend fun main() {
-    ConsoleCommandSender.execute(DefaultCommands.Test, "test")
-}
 
-internal object DefaultCommands {
-    
-    object Test : ConsoleCommand(
-        CommandDescriptor("test") {
-            param<String>()
-        }
-    ) {
-        override suspend fun onCommand(sender: CommandSender, args: CommandArgs): Boolean {
-            val s = args.getReified<String>()
-            sender.sendMessage(s)
-            return true
-        }
+    if (ConsoleCommandSender.execute("test")) {
+
     }
 }
+
+internal object DefaultCommands
 
 /*
 
