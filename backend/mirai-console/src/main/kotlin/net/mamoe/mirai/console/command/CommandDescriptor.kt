@@ -2,106 +2,51 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
-import kotlin.reflect.KClass
 
 /**
  * 指令描述. 包含名称, 权限要求, 参数解析器环境, 参数列表.
+ *
+ * 这是指令系统较低级的 API. 大部分情况下请使用 [Command]
  */
 class CommandDescriptor(
     /**
-     * 包含子命令的全名. 如 "`group kick`", 其中 `kick` 为 `group` 的子命令
+     * 子指令列表
      */
-    fullName: CommandFullName,
+    val subCommands: List<SubCommandDescriptor>,
     /**
-     * 用法说明
+     * 是否建议 console 将这个指令强制注册为需要带 [前缀][CommandPrefix] 的指令.
      */
-    usage: String,
-    /**
-     * 指令参数列表, 有顺序.
-     */
-    val params: List<CommandParam<*>>,
-    /**
-     * 指令说明
-     */
-    description: String = "",
-    /**
-     * 覆盖内建的指令参数解析器环境.
-     */
-    overrideContext: CommandParserContext = CommandParserContext.Empty,
-    /**
-     * 指令别名
-     */
-    aliases: Array<CommandFullName> = arrayOf(),
-    /**
-     * 指令权限
-     *
-     * @see CommandPermission.or 要求其中一个权限
-     * @see CommandPermission.and 同时要求两个权限
-     */
-    val permission: CommandPermission = CommandPermission.Default
+    val suggestForcePrefix: Boolean = true,
+    /** 覆盖内建的指令参数解析器环境. */
+    overrideContext: CommandParserContext = CommandParserContext.Empty
 ) {
+    /** 子指令描述 */
+    inner class SubCommandDescriptor(
+        /** 为空字符串时代表默认 */
+        val name: String,
+        /** 用法说明 */
+        val usage: String,
+        /** 指令参数列表, 有顺序. */
+        val params: List<CommandParam<*>>,
+        /** 指令说明 */
+        val description: String,
+        /** 指令别名 */
+        val aliases: Array<String> = arrayOf(),
+        /**
+         * 指令权限
+         * @see CommandPermission.or 要求其中一个权限
+         * @see CommandPermission.and 同时要求两个权限
+         */
+        val permission: CommandPermission = CommandPermission.Default
+    )
+
     /**
      * 指令参数解析器环境.
      */
     val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
-
-    /**
-     * 指令别名
-     */
-    val aliases: Array<CommandFullName> = aliases.map { it.checkFullName("alias") }.toTypedArray()
-
-    /**
-     * 指令说明
-     */
-    val description: String = description.trim()
-
-    /**
-     * 用法说明
-     */
-    val usage: String = usage.trim()
-
-    /**
-     * 包含子命令的全名. 如 "`group kick`", 其中 `kick` 为 `group` 的子命令
-     * 元素类型可以为 [Message] 或 [String]
-     */
-    val fullName: CommandFullName = fullName.checkFullName("fullName")
-
-    /**
-     * `fullName + aliases`
-     */
-    val allNames: Array<CommandFullName> = arrayOf(fullName, *aliases)
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as CommandDescriptor
-
-        if (!fullName.contentEquals(other.fullName)) return false
-        if (usage != other.usage) return false
-        if (params != other.params) return false
-        if (description != other.description) return false
-        if (context != other.context) return false
-        if (!aliases.contentEquals(other.aliases)) return false
-        if (permission != other.permission) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = fullName.hashCode()
-        result = 31 * result + usage.hashCode()
-        result = 31 * result + params.hashCode()
-        result = 31 * result + description.hashCode()
-        result = 31 * result + context.hashCode()
-        result = 31 * result + aliases.contentHashCode()
-        result = 31 * result + permission.hashCode()
-        return result
-    }
 }
 
 
@@ -109,13 +54,7 @@ class CommandDescriptor(
  * 检查指令参数数量是否足够, 类型是否匹配.
  * @throws IllegalArgumentException
  */
-fun Command.checkArgs(args: CommandArgs) = this.descriptor.checkArgs(args)
-
-/**
- * 检查指令参数数量是否足够, 类型是否匹配.
- * @throws IllegalArgumentException
- */
-fun CommandDescriptor.checkArgs(args: CommandArgs) {
+fun CommandDescriptor.SubCommandDescriptor.checkArgs(args: CommandArgs) {
     require(args.size >= this.params.size) { "No enough args. Required ${params.size}, but given ${args.size}" }
     params.forEachIndexed { index, commandParam ->
         require(commandParam.type.isInstance(args[index])) {
@@ -125,6 +64,7 @@ fun CommandDescriptor.checkArgs(args: CommandArgs) {
 }
 
 
+/*
 /**
  * 构建一个 [CommandDescriptor]
  */
@@ -133,15 +73,15 @@ inline fun CommandDescriptor(
     /**
      * 指令全名
      */
-    vararg fullNameComponents: Any,
+    vararg fullNameComponents: String,
     block: CommandDescriptorBuilder.() -> Unit = {}
 ): CommandDescriptor = CommandDescriptorBuilder(*fullNameComponents).apply(block).build()
 
 class CommandDescriptorBuilder(
-    vararg fullName: Any
+    vararg fullName: String
 ) {
     @PublishedApi
-    internal var fullName: CommandFullName = fullName.checkFullName("fullName")
+    internal var fullName: Array<String> = fullName.checkFullName("fullName")
 
     @PublishedApi
     internal var context: CommandParserContext = CommandParserContext.Builtins
@@ -156,7 +96,7 @@ class CommandDescriptorBuilder(
     internal var usage: String = "<no usage>"
 
     @PublishedApi
-    internal var aliases: MutableList<CommandFullName> = mutableListOf()
+    internal var aliases: MutableList<Array<String>> = mutableListOf()
 
     @PublishedApi
     internal var description: String = ""
@@ -194,9 +134,10 @@ class CommandDescriptorBuilder(
 
     /**
      * 添加一个别名
+     * @param fullName 全名称. 见 [CommandDescriptor.fullName]
      */
-    fun alias(vararg fullName: Any): CommandDescriptorBuilder = apply {
-        this.aliases.add(fullName)
+    fun alias(fullName: String): CommandDescriptorBuilder = apply {
+        this.aliases.add(fullName.checkFullName("fullName"))
     }
 
     fun param(vararg params: CommandParam<*>): CommandDescriptorBuilder = apply {
@@ -250,6 +191,7 @@ class CommandDescriptorBuilder(
         CommandDescriptor(fullName, usage, params, description, context, aliases.toTypedArray(), permission)
 }
 
+
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
 inline class ParamBlock internal constructor(@PublishedApi internal val list: MutableList<CommandParam<*>>) {
     /** 添加一个名称为 [this], 类型为 [klass] 的参数. 返回添加成功的对象 */
@@ -265,23 +207,24 @@ inline class ParamBlock internal constructor(@PublishedApi internal val list: Mu
         this typed T::class using parser
 }
 
+ */
 
 ///////
 /// internal
 
 
-internal fun Any.flattenCommandComponents(): Sequence<Any> = when (this) {
+internal fun Any.flattenCommandComponents(): Sequence<String> = when (this) {
     is Array<*> -> this.asSequence().flatMap {
         it?.flattenCommandComponents() ?: throw java.lang.IllegalArgumentException("unexpected null value")
     }
     is String -> splitToSequence(' ').filterNot { it.isBlank() }
     is PlainText -> content.flattenCommandComponents()
-    is SingleMessage -> sequenceOf(this)
+    is SingleMessage -> sequenceOf(this.toString())
     is MessageChain -> this.asSequence().flatMap { it.flattenCommandComponents() }
     else -> throw IllegalArgumentException("Illegal component: $this")
 }
 
-internal fun CommandFullName.checkFullName(errorHint: String): CommandFullName {
+internal fun Any.checkFullName(errorHint: String): Array<String> {
     return flattenCommandComponents().toList().also {
         require(it.isNotEmpty()) { "$errorHint must not be empty" }
     }.toTypedArray()
