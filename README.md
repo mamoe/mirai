@@ -1,5 +1,5 @@
 <div align="center">
-   <img width="160" src="http://img.mamoe.net/2020/02/16/a759783b42f72.png" alt="logo"></br>
+   <img width="160" src="https://tva1.sinaimg.cn/large/007kOCb2ly1ges6us0aqyj30u00u0tdq.jpg" alt="logo"></br>
 
 
    <img width="95" src="http://img.mamoe.net/2020/02/16/c4aece361224d.png" alt="title">
