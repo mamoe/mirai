@@ -121,12 +121,12 @@ object ExistBotArgParser : CommandArgParser<Bot>() {
         val uin = try {
             raw.toLong()
         } catch (e: Exception) {
-            error("无法识别QQ UIN$raw")
+            illegalArgument("无法识别QQ UIN$raw")
         }
         return try {
             Bot.getInstance(uin)
         } catch (e: NoSuchElementException) {
-            error("无法找到Bot $uin")
+            illegalArgument("无法找到Bot $uin")
         }
     }
 }
@@ -137,11 +137,10 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
     //~ = self
     override fun parse(raw: String, sender: CommandSender): Friend {
         if (raw == "~") {
-            if (sender !is BotAware) {
+            if (sender !is BotAwareCommandSender) {
                 illegalArgument("无法解析～作为默认")
             }
             val targetID = when (sender) {
-                is MemberCommandSender -> sender.realSender.id
                 is UserCommandSender -> sender.user.id
                 else -> illegalArgument("无法解析～作为默认")
             }
@@ -151,13 +150,13 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
                 illegalArgument("无法解析～作为默认")
             }
         }
-        if (sender is BotAware) {
+        if (sender is BotAwareCommandSender) {
             return try {
                 sender.bot.friends[raw.toLong()]
             } catch (e: NoSuchElementException) {
-                error("无法找到" + raw + "这个好友")
+                illegalArgument("无法找到" + raw + "这个好友")
             } catch (e: NumberFormatException) {
-                error("无法解析$raw")
+                illegalArgument("无法解析$raw")
             }
         } else {
             raw.split(".").let { args ->
@@ -178,9 +177,9 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
     override fun parse(raw: SingleMessage, sender: CommandSender): Friend {
         if (raw is At) {
             assert(sender is MemberCommandSender)
-            return (sender as BotAware).bot.friends.getOrNull(raw.target) ?: illegalArgument("At的对象非Bot好友")
+            return (sender as BotAwareCommandSender).bot.friends.getOrNull(raw.target) ?: illegalArgument("At的对象非Bot好友")
         } else {
-            error("无法解析 $raw 为好友")
+            illegalArgument("无法解析 $raw 为好友")
         }
     }
 }
@@ -189,32 +188,32 @@ object ExistGroupArgParser : CommandArgParser<Group>() {
     override fun parse(raw: String, sender: CommandSender): Group {
         //by default
         if ((raw == "" || raw == "~") && sender is MemberCommandSender) {
-            return sender.user as Group
+            return sender.group
         }
         //from bot to group
-        if (sender is BotAware) {
+        if (sender is BotAwareCommandSender) {
             val code = try {
                 raw.toLong()
             } catch (e: NoSuchElementException) {
-                error("无法识别Group Code$raw")
+                illegalArgument("无法识别Group Code$raw")
             }
             return try {
                 sender.bot.getGroup(code)
             } catch (e: NoSuchElementException) {
-                error("无法找到Group " + code + " from Bot " + sender.bot.id)
+                illegalArgument("无法找到Group " + code + " from Bot " + sender.bot.id)
             }
         }
         //from console/other
         return with(raw.split(".")) {
             if (this.size != 2) {
-                error("请使用BotQQ号.群号 来表示Bot的一个群")
+                illegalArgument("请使用BotQQ号.群号 来表示Bot的一个群")
             }
             try {
                 Bot.getInstance(this[0].toLong()).getGroup(this[1].toLong())
             } catch (e: NoSuchElementException) {
-                error("无法找到" + this[0] + "的" + this[1] + "群")
+                illegalArgument("无法找到" + this[0] + "的" + this[1] + "群")
             } catch (e: NumberFormatException) {
-                error("无法识别群号或机器人UIN")
+                illegalArgument("无法识别群号或机器人UIN")
             }
         }
     }
@@ -226,7 +225,7 @@ object ExistMemberArgParser : CommandArgParser<Member>() {
     //群内: Q号
     //群内: 名片
     override fun parse(raw: String, sender: CommandSender): Member {
-        if (sender !is BotAware) {
+        if (sender !is BotAwareCommandSender) {
             with(raw.split(".")) {
                 checkArgument(this.size >= 3) {
                     "无法识别Member, 请使用Bot.Group.Member[QQ/名片]的格式"
@@ -256,7 +255,7 @@ object ExistMemberArgParser : CommandArgParser<Member>() {
         } else {
             val bot = sender.bot
             if (sender is MemberCommandSender) {
-                val group = sender.user as Group
+                val group = sender.group
                 return try {
                     group.members[raw.toLong()]
                 } catch (ignored: Exception) {
@@ -289,7 +288,7 @@ object ExistMemberArgParser : CommandArgParser<Member>() {
     override fun parse(raw: SingleMessage, sender: CommandSender): Member {
         return if (raw is At) {
             checkArgument(sender is MemberCommandSender)
-            (sender.user as Group).members[raw.target]
+            (sender.group).members[raw.target]
         } else {
             illegalArgument("无法识别Member" + raw.content)
         }
