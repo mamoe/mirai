@@ -73,7 +73,8 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
 suspend fun CommandSender.executeCommand(vararg args: Any): Boolean {
     val command = InternalCommandManager.matchCommand(args[0].toString()) ?: return false
 
-    return args.flattenCommandComponents().executeCommand(this)
+    TODO()
+    //return args.flattenCommandComponents().executeCommand(this)
 }
 
 /**
@@ -81,7 +82,8 @@ suspend fun CommandSender.executeCommand(vararg args: Any): Boolean {
  * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
  */
 suspend fun MessageChain.executeAsCommand(sender: CommandSender): Boolean {
-    return this.flattenCommandComponents().executeCommand(sender)
+    TODO()
+///    return this.flattenCommandComponents().executeCommand(sender)
 }
 
 /**
@@ -95,7 +97,9 @@ suspend inline fun CommandSender.execute(command: CommandDescriptor.SubCommandDe
 /**
  * 检查指令参数并直接执行一个指令.
  */
-suspend inline fun Command.execute(sender: CommandSender, args: CommandArgs): Boolean = sender.execute(this, args)
+suspend inline fun Command.execute(sender: CommandSender, args: CommandArgs): Boolean =
+    TODO()
+//sender.execute(this, args)
 
 /**
  * 核心执行指令

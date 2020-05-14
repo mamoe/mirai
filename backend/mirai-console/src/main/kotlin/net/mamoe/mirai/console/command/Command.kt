@@ -38,10 +38,6 @@ interface Command {
      */
 }
 
-internal fun Command.matchChild(args: List<Any>): SubCommandDescriptor {
-
-}
-
 
 /**
  * 解析完成的指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
