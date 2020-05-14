@@ -105,6 +105,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     /**
      * [User.id] 与 [Bot.id] 相同的 [_lowLevelNewFriend] 实例
      */
+    @MiraiExperimentalAPI
     abstract val selfQQ: Friend
 
 

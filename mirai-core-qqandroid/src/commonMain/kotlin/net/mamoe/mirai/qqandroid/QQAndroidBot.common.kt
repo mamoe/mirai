@@ -484,7 +484,7 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
                     )
                 }
             }
@@ -518,9 +518,9 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id};" +
+                        "uin=o${id};" +
                                 " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${selfQQ.id};" +
+                                " p_uin=o${id};" +
                                 " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
                     )
                 }
@@ -546,9 +546,9 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id};" +
+                        "uin=o${id};" +
                                 " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${selfQQ.id};" +
+                                " p_uin=o${id};" +
                                 " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
                     )
                 }
@@ -575,7 +575,7 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
                     )
                 }
             }
@@ -599,7 +599,7 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
                     )
                 }
             }
