@@ -27,7 +27,7 @@ import java.util.jar.JarFile
 
 val PluginBase.description: PluginDescription get() = PluginManager.getPluginDescription(this)
 
-object PluginManager {
+object PluginManagerOld {
     /**
      * 通过插件获取介绍
      * @see description

@@ -10,7 +10,7 @@
 package net.mamoe.mirai.console.graphical
 
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
+import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalFrontEndController
 import net.mamoe.mirai.console.graphical.stylesheet.PrimaryStyleSheet
 import net.mamoe.mirai.console.graphical.view.Decorator
 import tornadofx.App
@@ -28,7 +28,11 @@ class MiraiGraphicalUI : App(Decorator::class, PrimaryStyleSheet::class) {
 
     override fun init() {
         super.init()
-        MiraiConsole.start(find<MiraiGraphicalUIController>(),MiraiConsoleGraphicalLoader.coreVersion,MiraiConsoleGraphicalLoader.consoleVersion)
+        MiraiConsole.start(
+            find<MiraiGraphicalFrontEndController>(),
+            MiraiConsoleGraphicalLoader.coreVersion,
+            MiraiConsoleGraphicalLoader.consoleVersion
+        )
     }
 
     override fun stop() {

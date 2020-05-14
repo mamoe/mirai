@@ -14,14 +14,14 @@ import javafx.scene.input.KeyCode
 import javafx.scene.layout.Priority
 import javafx.stage.FileChooser
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
+import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalFrontEndController
 import net.mamoe.mirai.console.graphical.model.BotModel
 import net.mamoe.mirai.console.graphical.util.*
 import tornadofx.*
 
 class PrimaryView : View() {
 
-    private val controller = find<MiraiGraphicalUIController>()
+    private val controller = find<MiraiGraphicalFrontEndController>()
     private lateinit var mainTabPane: TabPane
 
     override val root = borderpane {

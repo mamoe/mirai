@@ -19,12 +19,12 @@ import kotlinx.coroutines.io.jvm.nio.copyTo
 import kotlinx.coroutines.io.reader
 import kotlinx.io.core.use
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.cleanPage
-import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.drawLog
-import net.mamoe.mirai.console.MiraiConsoleTerminalUI.LoggerDrawer.redrawLogs
+import net.mamoe.mirai.console.MiraiConsoleTerminalFrontEnd.LoggerDrawer.cleanPage
+import net.mamoe.mirai.console.MiraiConsoleTerminalFrontEnd.LoggerDrawer.drawLog
+import net.mamoe.mirai.console.MiraiConsoleTerminalFrontEnd.LoggerDrawer.redrawLogs
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.utils.MiraiConsoleUI
+import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
 import java.awt.Image
@@ -72,7 +72,7 @@ val String.isChineseChar: Boolean
     }
 
 
-object MiraiConsoleTerminalUI : MiraiConsoleUI {
+object MiraiConsoleTerminalFrontEnd : MiraiConsoleFrontEnd {
     const val cacheLogSize = 50
     var mainTitle = "Mirai Console v0.01 Core v0.15"
 

@@ -28,6 +28,7 @@ interface CommandSender {
     suspend fun sendMessage(messageChain: Message)
 
     suspend fun sendMessage(message: String)
+
     /**
      * 写入要发送的内容 所有内容最后会被以一条发出
      */
@@ -74,8 +75,8 @@ object ConsoleCommandSender : AbstractCommandSender() {
  * 指向性CommandSender
  * 你可以获得用户在和哪个Bot说指令
  */
-interface BotAware{
-    val bot:Bot
+interface BotAware {
+    val bot: Bot
 }
 
 
@@ -83,7 +84,7 @@ interface BotAware{
  * 联系人指令执行者. 代表由一个 QQ 用户私聊执行指令
  */
 @Suppress("MemberVisibilityCanBePrivate")
-open class ContactCommandSender(override val bot: Bot, val contact: Contact) : AbstractCommandSender(), BotAware{
+open class ContactCommandSender(override val bot: Bot, val contact: Contact) : AbstractCommandSender(), BotAware {
     override suspend fun sendMessage(messageChain: Message) {
         contact.sendMessage(messageChain)
     }
@@ -100,4 +101,4 @@ open class GroupContactCommandSender(
     bot: Bot,
     val realSender: Member,
     subject: Contact
-):ContactCommandSender(bot,subject)
+) : ContactCommandSender(bot, subject)

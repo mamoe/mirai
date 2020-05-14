@@ -8,7 +8,7 @@ import javafx.scene.control.Button
 import javafx.scene.control.TreeTableCell
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
+import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalFrontEndController
 import net.mamoe.mirai.console.graphical.event.ReloadEvent
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.stylesheet.PluginViewStyleSheet
@@ -19,7 +19,7 @@ import tornadofx.*
 
 class PluginsCenterView : View() {
 
-    private val controller = find<MiraiGraphicalUIController>()
+    private val controller = find<MiraiGraphicalFrontEndController>()
     private val center get() = MiraiConsole.frontEnd.pluginCenter
     private val plugins: ObservableList<PluginModel> = observableListOf()
 

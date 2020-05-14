@@ -55,9 +55,3 @@ interface PluginCenter {
 
     val name:String
 }
-
-internal fun handleReplacement(
-
-){
-
-}

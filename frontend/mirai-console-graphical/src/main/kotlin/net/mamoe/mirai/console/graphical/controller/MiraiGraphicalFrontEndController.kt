@@ -16,16 +16,25 @@ import net.mamoe.mirai.console.graphical.model.*
 import net.mamoe.mirai.console.graphical.view.dialog.InputDialog
 import net.mamoe.mirai.console.graphical.view.dialog.VerificationCodeFragment
 import net.mamoe.mirai.console.plugins.PluginManager
-import net.mamoe.mirai.console.utils.MiraiConsoleUI
+import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
 import net.mamoe.mirai.network.CustomLoginFailedException
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.SimpleLogger
 import net.mamoe.mirai.utils.SimpleLogger.LogPriority
-import tornadofx.*
+import tornadofx.Controller
+import tornadofx.Scope
+import tornadofx.find
+import tornadofx.observableListOf
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.List
+import kotlin.collections.forEach
+import kotlin.collections.mutableMapOf
+import kotlin.collections.set
 import kotlin.coroutines.resume
 
-class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
+class MiraiGraphicalFrontEndController : Controller(), MiraiConsoleFrontEnd {
 
     private val settingModel = find<GlobalSettingModel>()
     private val loginSolver = GraphicalLoginSolver()
@@ -38,7 +47,7 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     private val consoleInfo = ConsoleInfo()
 
-    private val sdf by lazy { SimpleDateFormat("HH:mm:ss") }
+    internal val sdf by lazy { SimpleDateFormat("HH:mm:ss") }
 
     init {
         // 监听插件重载事件，以重新从console获取插件列表
@@ -65,26 +74,22 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
 
     fun sendCommand(command: String) = runCommand(ConsoleCommandSender, command)
 
-    override fun pushLog(identity: Long, message: String) = Platform.runLater {
-        this.pushLog(LogPriority.INFO, "", identity, message)
-    }
 
-    // 修改interface之后用来暂时占位
-    override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
+    private val mainLogger = SimpleLogger(null) { priority: LogPriority, message: String?, e: Throwable? ->
         Platform.runLater {
-
             val time = sdf.format(Date())
-
-            if (identity == 0L) {
-                mainLog
-            } else {
-                cache[identity]?.logHistory
-            }?.apply {
-                add("[$time] $identityStr $message" to priority.name)
+            mainLog.apply {
+                add("[$time] $message" to priority.name)
                 trim()
             }
         }
     }
+
+    override fun loggerFor(identity: Long): MiraiLogger {
+        return if (identity == 0L) return mainLogger
+        else cache[identity]?.logger ?: kotlin.error("bot not found: $identity")
+    }
+
 
     override fun prePushBot(identity: Long) = Platform.runLater {
         if (!cache.containsKey(identity)) {
@@ -123,13 +128,6 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
     private fun getPluginsFromConsole(): ObservableList<PluginModel> =
         PluginManager.getAllPluginDescriptions().map(::PluginModel).toObservable()
 
-
-    private fun ObservableList<*>.trim() {
-        while (size > settingModel.item.maxLongNum) {
-            this.removeAt(0)
-        }
-    }
-
     fun checkUpdate(plugin: PluginModel) {
         pluginList.forEach {
             if (it.name == plugin.name && it.author == plugin.author) {
@@ -151,6 +149,12 @@ class MiraiGraphicalUIController : Controller(), MiraiConsoleUI {
             }
         } ?: return false
         return false
+    }
+
+    internal fun ObservableList<*>.trim() {
+        while (size > settingModel.item.maxLongNum) {
+            this.removeAt(0)
+        }
     }
 
     fun reloadPlugins() {

@@ -1,7 +1,7 @@
 package net.mamoe.mirai.console.graphical.view
 
 import javafx.geometry.Pos
-import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
+import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalFrontEndController
 import net.mamoe.mirai.console.graphical.model.GlobalSettingModel
 import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxTextfield
@@ -12,7 +12,7 @@ import java.io.File
 
 class SettingsView : View() {
 
-    private val controller = find<MiraiGraphicalUIController>()
+    private val controller = find<MiraiGraphicalFrontEndController>()
     private val settingModel = find<GlobalSettingModel>()
 
     override val root = vbox {

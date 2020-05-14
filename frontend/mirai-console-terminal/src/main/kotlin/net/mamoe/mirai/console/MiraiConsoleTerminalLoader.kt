@@ -15,16 +15,16 @@ class MiraiConsoleTerminalLoader {
                 println("[MiraiConsoleTerminalLoader]: 将以Pure[兼容模式]启动Console")
                 MiraiConsole.start(MiraiConsoleUIPure())
             } else {
-                MiraiConsoleTerminalUI.start()
+                MiraiConsoleTerminalFrontEnd.start()
                 thread {
                     MiraiConsole.start(
-                        MiraiConsoleTerminalUI
+                        MiraiConsoleTerminalFrontEnd
                     )
                 }
             }
             Runtime.getRuntime().addShutdownHook(thread(start = false) {
                 MiraiConsole.stop()
-                MiraiConsoleTerminalUI.exit()
+                MiraiConsoleTerminalFrontEnd.exit()
             })
         }
     }

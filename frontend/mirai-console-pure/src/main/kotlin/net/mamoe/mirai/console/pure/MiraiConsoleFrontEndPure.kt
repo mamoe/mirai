@@ -13,16 +13,17 @@ import kotlinx.coroutines.delay
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.utils.MiraiConsoleUI
+import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
+import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.SimpleLogger.LogPriority
+import net.mamoe.mirai.utils.MiraiLogger
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.concurrent.thread
 
 
-class MiraiConsoleUIPure : MiraiConsoleUI {
+class MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
     private var requesting = false
     private var requestStr = ""
 
@@ -60,32 +61,10 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
         SimpleDateFormat("HH:mm:ss")
     }
 
-    override fun pushLog(identity: Long, message: String) {
+    override val logger: MiraiLogger = DefaultLogger("Console") // CLI logger from mirai-core
+
+    fun pushLog(identity: Long, message: String) {
         println("\u001b[0m " + sdf.format(Date()) + " $message")
-    }
-
-    override fun pushLog(priority: LogPriority, identityStr: String, identity: Long, message: String) {
-        var priorityStr = "[${priority.name}]"
-        /*
-         * 通过ANSI控制码添加颜色
-         * 更多的颜色定义在 [MiraiConsoleUIPure] 的  companion
-         */
-        priorityStr = when (priority) {
-            LogPriority.ERROR
-            -> COLOR_RED + priorityStr + COLOR_RESET
-
-            LogPriority.WARNING
-            -> COLOR_RED + priorityStr + COLOR_RESET
-
-            LogPriority.VERBOSE
-            -> COLOR_NAVY + priorityStr + COLOR_RESET
-
-            LogPriority.DEBUG
-            -> COLOR_PINK + priorityStr + COLOR_RESET
-
-            else -> priorityStr
-        }
-        println("\u001b[0m " + sdf.format(Date()) + " $priorityStr $identityStr ${message + COLOR_RESET}")
     }
 
     override fun prePushBot(identity: Long) {
@@ -100,8 +79,8 @@ class MiraiConsoleUIPure : MiraiConsoleUI {
 
     }
 
-    override suspend fun requestInput(hint:String): String {
-        if(hint.isNotEmpty()){
+    override suspend fun requestInput(hint: String): String {
+        if (hint.isNotEmpty()) {
             println("\u001b[0m " + sdf.format(Date()) + COLOR_PINK + " $hint")
         }
         requesting = true

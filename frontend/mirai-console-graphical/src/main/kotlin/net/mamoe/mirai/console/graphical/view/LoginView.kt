@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.geometry.Pos
 import javafx.scene.image.Image
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
+import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalFrontEndController
 import net.mamoe.mirai.console.graphical.stylesheet.LoginViewStyleSheet
 import net.mamoe.mirai.console.graphical.util.jfxButton
 import net.mamoe.mirai.console.graphical.util.jfxPasswordfield
@@ -13,7 +13,7 @@ import tornadofx.*
 
 class LoginView : View("CNM") {
 
-    private val controller = find<MiraiGraphicalUIController>()
+    private val controller = find<MiraiGraphicalFrontEndController>()
     private val qq = SimpleStringProperty("")
     private val psd = SimpleStringProperty("")
 

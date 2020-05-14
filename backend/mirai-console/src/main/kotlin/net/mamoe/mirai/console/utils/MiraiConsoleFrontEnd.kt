@@ -14,35 +14,20 @@ import net.mamoe.mirai.console.center.CuiPluginCenter
 import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.SimpleLogger.LogPriority
+import net.mamoe.mirai.utils.MiraiLogger
 
 /**
  * 只需要实现一个这个传入 MiraiConsole 就可以绑定 UI 层与 Console 层
  * 需要保证线程安全
  */
 @MiraiInternalAPI
-interface MiraiConsoleUI {
+interface MiraiConsoleFrontEnd {
     /**
      * 提供 [PluginCenter]
      */
     val pluginCenter: PluginCenter get() = CuiPluginCenter
 
-    /**
-     * 让 UI 层展示一条 log
-     *
-     * identity：log 所属的 screen, Main=0; Bot=Bot.uin
-     */
-    fun pushLog(
-        identity: Long,
-        message: String
-    )
-
-    fun pushLog(
-        priority: LogPriority,
-        identityStr: String,
-        identity: Long,
-        message: String
-    )
+    fun loggerFor(identity: Long): MiraiLogger
 
     /**
      * 让 UI 层准备接受新增的一个BOT

@@ -2,7 +2,7 @@ package net.mamoe.mirai.console.graphical.view
 
 import com.jfoenix.controls.JFXTreeTableColumn
 import javafx.scene.control.TreeTableCell
-import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalUIController
+import net.mamoe.mirai.console.graphical.controller.MiraiGraphicalFrontEndController
 import net.mamoe.mirai.console.graphical.model.PluginModel
 import net.mamoe.mirai.console.graphical.stylesheet.PluginViewStyleSheet
 import net.mamoe.mirai.console.graphical.util.jfxButton
@@ -13,7 +13,7 @@ import tornadofx.visibleWhen
 
 class PluginsView : View() {
 
-    private val controller = find<MiraiGraphicalUIController>()
+    private val controller = find<MiraiGraphicalFrontEndController>()
     val plugins = controller.pluginList
 
     override val root = jfxTreeTableView(plugins) {
