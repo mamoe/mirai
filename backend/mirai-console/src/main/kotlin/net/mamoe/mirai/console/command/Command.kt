@@ -13,6 +13,8 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandDescriptor.SubCommandDescriptor
 import net.mamoe.mirai.message.data.Message
+import java.lang.reflect.Member
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
@@ -31,14 +33,43 @@ interface Command {
      * 当所有的 sub 方法均不满足时, 原始参数将送到此方法调用
      * 如果 arg 为 String, 他会被包装为 PlainText(AKA PlainMessage)
      */
+    @Permission(CommandPermission.Console::class)
     suspend fun CommandSender.onDefault(args: List<Message>): Boolean
 
     /**
      * 在更多的情况下, 你应当使用 @SubCommand 来注册一共 sub 指令
      */
+
+    /**
+     * 这是个例子
+    @SubCommand("add")
+    @Permission(CommandPermission.Console::class)
+    @Usage("禁言一个群员")
+    suspend fun CommandSender.onMyMethod1(
+        @Name("被禁言的人") member: Member,
+        @Name("时间") time:Int
+    )
+    */
+
+    @Target(AnnotationTarget.FUNCTION)
+    annotation class Permission(val permission:KClass<*>)
+
+    @Target(AnnotationTarget.FUNCTION)
+    annotation class Usage(val usage:String)
+
+
+    @Target(AnnotationTarget.VALUE_PARAMETER)
+    annotation class Name(val name:String)
+
+
 }
 
+@Target(AnnotationTarget.FUNCTION)
+annotation class SubCommand(
+    val name:String
+){
 
+}
 /**
  * 解析完成的指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
  */
