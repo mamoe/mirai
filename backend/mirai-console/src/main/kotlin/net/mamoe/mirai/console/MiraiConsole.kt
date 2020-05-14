@@ -13,9 +13,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.plugins.PluginManager
+import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -42,7 +43,7 @@ interface IMiraiConsole : CoroutineScope {
     val mainLogger: MiraiLogger
 }
 
-object MiraiConsole : CoroutineScope, IMiraiConsole {
+object MiraiConsole : CoroutineScope, IMiraiConsole, CommandOwner {
     private lateinit var instance: IMiraiConsole
 
     /** 由前端调用 */
@@ -58,17 +59,19 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
     override val coroutineContext: CoroutineContext get() = instance.coroutineContext
 
     init {
+        DefaultLogger = {
+            this.newLogger(it)
+        }
         this.coroutineContext[Job]!!.invokeOnCompletion {
-            PluginManager.disablePlugins()
-            CommandManager.cancel()
             Bot.botInstances.forEach {
                 it.close()
             }
         }
     }
 
+    @MiraiExperimentalAPI
+    fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
 }
-
 
 internal val Throwable.stacktraceString: String
     get() =

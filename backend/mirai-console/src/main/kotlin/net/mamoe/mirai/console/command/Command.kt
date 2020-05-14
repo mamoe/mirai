@@ -13,129 +13,134 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.PluginBase
+import kotlin.reflect.KProperty
+
+internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
 
 /**
  * 指令
  *
  * @see register 注册这个指令
- * @see registerCommand 注册指令 DSL
  */
 interface Command {
-    /**
-     * 指令主名称
-     */
-    val name: String
+    val owner: CommandOwner
+    val descriptor: CommandDescriptor
+
+    /*
+    @Deprecated(FOR_BINARY_COMPATIBILITY, level = DeprecationLevel.HIDDEN)
+    suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
+        return true
+    }*/
 
     /**
-     * 别名
+     * 执行这个指令.
      */
-    val alias: List<String>
-
-    /**
-     * 描述, 将会显示在 "/help" 指令中
-     */
-    val description: String
-
-    /**
-     * 用法说明
-     */
-    val usage: String
-
-    suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean
-}
-
-abstract class AbstractCommand(
-    override val name: String,
-    override val alias: List<String>,
-    override val description: String,
-    override val usage: String
-) : Command
-
-/**
- * 注册这个指令
- */
-inline fun Command.register(commandOwner: CommandOwner) = CommandManager.register(commandOwner, this)
-
-internal inline fun registerConsoleCommands(builder: CommandBuilder.() -> Unit): Command {
-    return CommandBuilder().apply(builder).register(ConsoleCommandOwner)
+    suspend fun onCommand(sender: CommandSender, args: CommandArgs): Boolean
 }
 
 /**
- * 构造并注册一个指令
+ * 指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
  */
-inline fun PluginBase.registerCommand(builder: CommandBuilder.() -> Unit): Command {
-    return CommandBuilder().apply(builder).register(this.asCommandOwner())
-}
-
-
-// for java
-@Suppress("unused")
-abstract class BlockingCommand(
-    override val name: String,
-    override val alias: List<String> = listOf(),
-    override val description: String = "",
-    override val usage: String = ""
-) : Command {
+class CommandArgs private constructor(
+    @JvmField
+    internal val values: List<Any>,
+    private val fromCommand: Command
+) : List<Any> by values {
     /**
-     * 最高优先级监听器.
+     * 获取第一个类型为 [R] 的参数
+     */
+    @JvmSynthetic
+    inline fun <reified R> getReified(): R {
+        for (value in this) {
+            if (value is R) {
+                return value
+            }
+        }
+        error("Cannot find argument typed ${R::class.qualifiedName}")
+    }
+
+    /**
+     * 获取名称为 [name] 的参数.
      *
-     * 指令调用将优先触发 [Command.onCommand], 若该函数返回 `false`, 则不会调用 [PluginBase.onCommand]
-     * */
-    final override suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
-        return withContext(Dispatchers.IO) {
-            onCommandBlocking(sender, args)
+     * 若 [name] 为 `null` 则获取第一个匿名参数
+     * @throws NoSuchElementException 找不到这个名称的参数时抛出
+     */
+    operator fun get(name: String?): Any {
+        val index = fromCommand.descriptor.params.indexOfFirst { it.name == name }
+        if (index == -1) {
+            throw NoSuchElementException("Cannot find argument named $name")
+        }
+        return values[index]
+    }
+
+    /**
+     * 获取名称为 [name] 的参数. 并强转为 [R].
+     *
+     * 若 [name] 为 `null` 则获取第一个匿名参数
+     * @throws IllegalStateException 无法强转时抛出
+     */
+    fun <R> getAs(name: String?): R {
+        @Suppress("UNCHECKED_CAST")
+        return this[name] as? R ?: error("Argument $name has a type $")
+    }
+
+    /** 获取第一个类型为 [R] 的参数并提供委托 */
+    inline operator fun <reified R : Any> getValue(thisRef: Any?, property: KProperty<*>): R = getReified()
+
+    companion object {
+        fun parseFrom(command: Command, sender: CommandSender, rawArgs: List<Any>): CommandArgs {
+            val params = command.descriptor.params
+
+            require(rawArgs.size >= params.size) { "No enough rawArgs: required ${params.size}, found only ${rawArgs.size}" }
+
+            command.descriptor.params.asSequence().zip(rawArgs.asSequence()).map { (commandParam, any) ->
+                command.parserFor(commandParam)?.parse(any, sender)
+                    ?: error("ICould not find a parser for param named ${commandParam.name}")
+            }.toList().let { bakedArgs ->
+                return CommandArgs(bakedArgs, command)
+            }
         }
     }
-
-    abstract fun onCommandBlocking(sender: CommandSender, args: List<String>): Boolean
 }
+
+inline val Command.fullName get() = descriptor.fullName
+inline val Command.usage get() = descriptor.usage
+inline val Command.params get() = descriptor.params
+inline val Command.description get() = descriptor.description
+inline val Command.context get() = descriptor.context
+inline val Command.aliases get() = descriptor.aliases
+inline val Command.permission get() = descriptor.permission
+inline val Command.allNames get() = descriptor.allNames
+
+abstract class PluginCommand(
+    final override val owner: PluginBase,
+    descriptor: CommandDescriptor
+) : AbstractCommand(descriptor)
+
+internal abstract class ConsoleCommand(
+    descriptor: CommandDescriptor
+) : AbstractCommand(descriptor) {
+    final override val owner: MiraiConsole get() = MiraiConsole
+}
+
+sealed class AbstractCommand(
+    final override val descriptor: CommandDescriptor
+) : Command
+
 
 /**
- * @see registerCommand
+ * For Java
  */
-class CommandBuilder @PublishedApi internal constructor() {
-    var name: String? = null
-    var alias: List<String>? = null
-    var description: String = ""
-    var usage: String = "use /help for help"
-
-    internal var onCommand: (suspend CommandSender.(args: List<String>) -> Boolean)? = null
-
-    fun onCommand(commandProcess: suspend CommandSender.(args: List<String>) -> Boolean) {
-        onCommand = commandProcess
+@Suppress("unused")
+abstract class BlockingCommand(
+    owner: PluginBase,
+    descriptor: CommandDescriptor
+) : PluginCommand(owner, descriptor) {
+    final override suspend fun onCommand(sender: CommandSender, args: CommandArgs): Boolean {
+        return withContext(Dispatchers.IO) { onCommandBlocking(sender, args) }
     }
-}
 
-
-// internal
-
-
-internal class AnonymousCommand internal constructor(
-    override val name: String,
-    override val alias: List<String>,
-    override val description: String,
-    override val usage: String = "",
-    val onCommand: suspend CommandSender.(args: List<String>) -> Boolean
-) : Command {
-    override suspend fun onCommand(sender: CommandSender, args: List<String>): Boolean {
-        return onCommand.invoke(sender, args)
-    }
-}
-
-@PublishedApi
-internal fun CommandBuilder.register(commandOwner: CommandOwner): AnonymousCommand {
-    if (name == null || onCommand == null) {
-        error("CommandBuilder not complete")
-    }
-    if (alias == null) {
-        alias = listOf()
-    }
-    return AnonymousCommand(
-        name!!,
-        alias!!,
-        description,
-        usage,
-        onCommand!!
-    ).also { it.register(commandOwner) }
+    abstract fun onCommandBlocking(sender: CommandSender, args: CommandArgs): Boolean
 }

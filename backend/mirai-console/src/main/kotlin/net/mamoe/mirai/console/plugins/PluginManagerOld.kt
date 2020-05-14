@@ -14,18 +14,18 @@ package net.mamoe.mirai.console.plugins
 import kotlinx.coroutines.CancellationException
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.description
+import net.mamoe.mirai.console.command.unregisterAllCommands
 import net.mamoe.mirai.console.encodeToString
 import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 import java.io.InputStream
 import java.net.JarURLConnection
 import java.net.URL
 import java.util.jar.JarFile
 
-val PluginBase.description: PluginDescription get() = PluginManager.getPluginDescription(this)
+val PluginBase.description: PluginDescription get() = TODO()
 
 object PluginManagerOld {
     /**
@@ -53,9 +53,9 @@ object PluginManagerOld {
      */
     @JvmOverloads
     fun disablePlugins(throwable: CancellationException? = null) {
-        CommandManager.clearPluginsCommands()
-        pluginsSequence.forEach {
-            it.disable(throwable)
+        pluginsSequence.forEach { plugin ->
+            plugin.unregisterAllCommands()
+            plugin.disable(throwable)
         }
         nameToPluginBaseMap.clear()
         pluginDescriptions.clear()
@@ -87,10 +87,7 @@ object PluginManagerOld {
         File(it).mkdirs()
     }
 
-    private val logger = SimpleLogger("Plugin Manager") { p, message, e ->
-        MiraiConsole.logger(p, "[Plugin Manager]", 0, message)
-        MiraiConsole.logger(p, "[Plugin Manager]", 0, e)
-    }
+    private val logger = MiraiConsole.newLogger("Plugin Manager")
 
     /**
      * 加载成功的插件, 名字->插件
@@ -351,7 +348,7 @@ object PluginManagerOld {
         plugin: PluginBase,
         exception: CancellationException? = null
     ) {
-        CommandManager.clearPluginCommands(plugin)
+        plugin.unregisterAllCommands()
         plugin.disable(exception)
         nameToPluginBaseMap.remove(plugin.pluginName)
         pluginDescriptions.remove(plugin.pluginName)

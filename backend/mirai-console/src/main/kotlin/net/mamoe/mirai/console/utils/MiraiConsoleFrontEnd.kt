@@ -27,7 +27,7 @@ interface MiraiConsoleFrontEnd {
      */
     val pluginCenter: PluginCenter get() = CuiPluginCenter
 
-    fun loggerFor(identity: Long): MiraiLogger
+    fun loggerFor(identity: String?): MiraiLogger
 
     /**
      * 让 UI 层准备接受新增的一个BOT

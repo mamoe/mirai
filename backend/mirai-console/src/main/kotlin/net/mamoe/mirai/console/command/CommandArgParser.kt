@@ -17,8 +17,20 @@ import kotlin.contracts.contract
  * input is always String
  */
 abstract class CommandArgParser<out T : Any> {
-    abstract fun parse(s: String, sender: CommandSender): T
-    open fun parse(s: SingleMessage, sender: CommandSender): T = parse(s.content, sender)
+    abstract fun parse(raw: String, sender: CommandSender): T
+    open fun parse(raw: SingleMessage, sender: CommandSender): T = parse(raw.content, sender)
+}
+
+fun <T : Any> CommandArgParser<T>.parse(raw: Any, sender: CommandSender): T {
+    contract {
+        returns() implies (raw is String || raw is SingleMessage)
+    }
+
+    return when (raw) {
+        is String -> parse(raw, sender)
+        is SingleMessage -> parse(raw, sender)
+        else -> throw IllegalArgumentException("Illegal raw argument type: ${raw::class.qualifiedName}")
+    }
 }
 
 @Suppress("unused")
@@ -46,7 +58,7 @@ inline fun CommandArgParser<*>.checkArgument(
 inline fun <T : Any> CommandArgParser(
     crossinline parser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T
 ): CommandArgParser<T> = object : CommandArgParser<T>() {
-    override fun parse(s: String, sender: CommandSender): T = parser(s, sender)
+    override fun parse(raw: String, sender: CommandSender): T = parser(raw, sender)
 }
 
 
@@ -57,41 +69,41 @@ class ParserException(message: String, cause: Throwable? = null) : RuntimeExcept
 
 
 object IntArgParser : CommandArgParser<Int>() {
-    override fun parse(s: String, sender: CommandSender): Int =
-        s.toIntOrNull() ?: illegalArgument("无法解析 $s 为整数")
+    override fun parse(raw: String, sender: CommandSender): Int =
+        raw.toIntOrNull() ?: illegalArgument("无法解析 $raw 为整数")
 }
 
 object LongArgParser : CommandArgParser<Long>() {
-    override fun parse(s: String, sender: CommandSender): Long =
-        s.toLongOrNull() ?: illegalArgument("无法解析 $s 为长整数")
+    override fun parse(raw: String, sender: CommandSender): Long =
+        raw.toLongOrNull() ?: illegalArgument("无法解析 $raw 为长整数")
 }
 
 object ShortArgParser : CommandArgParser<Short>() {
-    override fun parse(s: String, sender: CommandSender): Short =
-        s.toShortOrNull() ?: illegalArgument("无法解析 $s 为短整数")
+    override fun parse(raw: String, sender: CommandSender): Short =
+        raw.toShortOrNull() ?: illegalArgument("无法解析 $raw 为短整数")
 }
 
 object ByteArgParser : CommandArgParser<Byte>() {
-    override fun parse(s: String, sender: CommandSender): Byte =
-        s.toByteOrNull() ?: illegalArgument("无法解析 $s 为字节")
+    override fun parse(raw: String, sender: CommandSender): Byte =
+        raw.toByteOrNull() ?: illegalArgument("无法解析 $raw 为字节")
 }
 
 object DoubleArgParser : CommandArgParser<Double>() {
-    override fun parse(s: String, sender: CommandSender): Double =
-        s.toDoubleOrNull() ?: illegalArgument("无法解析 $s 为小数")
+    override fun parse(raw: String, sender: CommandSender): Double =
+        raw.toDoubleOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
 
 object FloatArgParser : CommandArgParser<Float>() {
-    override fun parse(s: String, sender: CommandSender): Float =
-        s.toFloatOrNull() ?: illegalArgument("无法解析 $s 为小数")
+    override fun parse(raw: String, sender: CommandSender): Float =
+        raw.toFloatOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
 
 object StringArgParser : CommandArgParser<String>() {
-    override fun parse(s: String, sender: CommandSender): String = s
+    override fun parse(raw: String, sender: CommandSender): String = raw
 }
 
 object BooleanArgParser : CommandArgParser<Boolean>() {
-    override fun parse(s: String, sender: CommandSender): Boolean = s.trim().let { str ->
+    override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
         str.equals("true", ignoreCase = true)
                 || str.equals("yes", ignoreCase = true)
                 || str.equals("enabled", ignoreCase = true)
@@ -105,11 +117,11 @@ object BooleanArgParser : CommandArgParser<Boolean>() {
  * errors: String->Int convert, Bot Not Exist
  */
 object ExistBotArgParser : CommandArgParser<Bot>() {
-    override fun parse(s: String, sender: CommandSender): Bot {
+    override fun parse(raw: String, sender: CommandSender): Bot {
         val uin = try {
-            s.toLong()
+            raw.toLong()
         } catch (e: Exception) {
-            error("无法识别QQ UIN$s")
+            error("无法识别QQ UIN$raw")
         }
         return try {
             Bot.getInstance(uin)
@@ -123,8 +135,8 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
     //Bot.friend
     //friend
     //~ = self
-    override fun parse(s: String, sender: CommandSender): Friend {
-        if (s == "~") {
+    override fun parse(raw: String, sender: CommandSender): Friend {
+        if (raw == "~") {
             if (sender !is BotAware) {
                 illegalArgument("无法解析～作为默认")
             }
@@ -141,20 +153,20 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
         }
         if (sender is BotAware) {
             return try {
-                sender.bot.friends[s.toLong()]
+                sender.bot.friends[raw.toLong()]
             } catch (e: NoSuchElementException) {
-                error("无法找到" + s + "这个好友")
+                error("无法找到" + raw + "这个好友")
             } catch (e: NumberFormatException) {
-                error("无法解析$s")
+                error("无法解析$raw")
             }
         } else {
-            s.split(".").let { args ->
+            raw.split(".").let { args ->
                 if (args.size != 2) {
-                    illegalArgument("无法解析 $s, 格式应为 机器人账号.好友账号")
+                    illegalArgument("无法解析 $raw, 格式应为 机器人账号.好友账号")
                 }
                 return try {
                     Bot.getInstance(args[0].toLong()).friends.getOrNull(
-                        args[1].toLongOrNull() ?: illegalArgument("无法解析 $s 为好友")
+                        args[1].toLongOrNull() ?: illegalArgument("无法解析 $raw 为好友")
                     ) ?: illegalArgument("无法找到好友 ${args[1]}")
                 } catch (e: NoSuchElementException) {
                     illegalArgument("无法找到机器人账号 ${args[0]}")
@@ -163,28 +175,28 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
         }
     }
 
-    override fun parse(s: SingleMessage, sender: CommandSender): Friend {
-        if (s is At) {
+    override fun parse(raw: SingleMessage, sender: CommandSender): Friend {
+        if (raw is At) {
             assert(sender is GroupContactCommandSender)
-            return (sender as BotAware).bot.friends.getOrNull(s.target) ?: illegalArgument("At的对象非Bot好友")
+            return (sender as BotAware).bot.friends.getOrNull(raw.target) ?: illegalArgument("At的对象非Bot好友")
         } else {
-            error("无法解析 $s 为好友")
+            error("无法解析 $raw 为好友")
         }
     }
 }
 
 object ExistGroupArgParser : CommandArgParser<Group>() {
-    override fun parse(s: String, sender: CommandSender): Group {
+    override fun parse(raw: String, sender: CommandSender): Group {
         //by default
-        if ((s == "" || s == "~") && sender is GroupContactCommandSender) {
+        if ((raw == "" || raw == "~") && sender is GroupContactCommandSender) {
             return sender.contact as Group
         }
         //from bot to group
         if (sender is BotAware) {
             val code = try {
-                s.toLong()
+                raw.toLong()
             } catch (e: NoSuchElementException) {
-                error("无法识别Group Code$s")
+                error("无法识别Group Code$raw")
             }
             return try {
                 sender.bot.getGroup(code)
@@ -193,7 +205,7 @@ object ExistGroupArgParser : CommandArgParser<Group>() {
             }
         }
         //from console/other
-        return with(s.split(".")) {
+        return with(raw.split(".")) {
             if (this.size != 2) {
                 error("请使用BotQQ号.群号 来表示Bot的一个群")
             }
@@ -213,9 +225,9 @@ object ExistMemberArgParser : CommandArgParser<Member>() {
     //私聊: Group.Member[QQ/名片]
     //群内: Q号
     //群内: 名片
-    override fun parse(s: String, sender: CommandSender): Member {
+    override fun parse(raw: String, sender: CommandSender): Member {
         if (sender !is BotAware) {
-            with(s.split(".")) {
+            with(raw.split(".")) {
                 checkArgument(this.size >= 3) {
                     "无法识别Member, 请使用Bot.Group.Member[QQ/名片]的格式"
                 }
@@ -246,12 +258,12 @@ object ExistMemberArgParser : CommandArgParser<Member>() {
             if (sender is GroupContactCommandSender) {
                 val group = sender.contact as Group
                 return try {
-                    group.members[s.toLong()]
+                    group.members[raw.toLong()]
                 } catch (ignored: Exception) {
-                    group.fuzzySearchMember(s) ?: illegalArgument("无法找到成员$s")
+                    group.fuzzySearchMember(raw) ?: illegalArgument("无法找到成员$raw")
                 }
             } else {
-                with(s.split(".")) {
+                with(raw.split(".")) {
                     if (this.size < 2) {
                         illegalArgument("无法识别Member, 请使用Group.Member[QQ/名片]的格式")
                     }
@@ -274,12 +286,12 @@ object ExistMemberArgParser : CommandArgParser<Member>() {
         }
     }
 
-    override fun parse(s: SingleMessage, sender: CommandSender): Member {
-        return if (s is At) {
+    override fun parse(raw: SingleMessage, sender: CommandSender): Member {
+        return if (raw is At) {
             checkArgument(sender is GroupContactCommandSender)
-            (sender.contact as Group).members[s.target]
+            (sender.contact as Group).members[raw.target]
         } else {
-            illegalArgument("无法识别Member" + s.content)
+            illegalArgument("无法识别Member" + raw.content)
         }
     }
 }

@@ -1,7 +1,6 @@
 package net.mamoe.mirai.console.utils;
 
 import net.mamoe.mirai.Bot;
-import net.mamoe.mirai.console.MiraiConsole;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ import java.util.List;
 public class BotManager {
 
     public static List<Long> getManagers(long botAccount) {
-        Bot bot = MiraiConsole.INSTANCE.getBotOrThrow(botAccount);
+        Bot bot = Bot.getInstance(botAccount);
         return getManagers(bot);
     }
 

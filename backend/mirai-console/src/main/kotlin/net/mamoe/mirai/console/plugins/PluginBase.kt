@@ -12,13 +12,12 @@
 package net.mamoe.mirai.console.plugins
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.events.EventListener
 import net.mamoe.mirai.console.scheduler.PluginScheduler
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 import java.io.InputStream
 import kotlin.coroutines.CoroutineContext
@@ -28,15 +27,17 @@ import kotlin.coroutines.EmptyCoroutineContext
  * 所有插件的基类
  */
 abstract class PluginBase
-@JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope {
+@JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : CoroutineScope, CommandOwner {
     final override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob()
 
     /**
      * 插件被分配的数据目录。数据目录会与插件名称同名。
      */
     val dataFolder: File by lazy {
+        TODO()
+        /*
         File(PluginManager.pluginsPath + "/" + PluginManager.lastPluginName)
-            .also { it.mkdir() }
+            .also { it.mkdir() }*/
     }
 
     /**
@@ -82,13 +83,15 @@ abstract class PluginBase
      * 插件的日志
      */
     val logger: MiraiLogger by lazy {
+        TODO()
+        /*
         SimpleLogger("Plugin $pluginName") { priority, message, e ->
             val identityString = "[${pluginName}]"
             MiraiConsole.logger(priority, identityString, 0, message)
             if (e != null) {
                 MiraiConsole.logger(priority, identityString, 0, e)
             }
-        }
+        }*/
     }
 
     /**
@@ -98,10 +101,13 @@ abstract class PluginBase
         return try {
             this.javaClass.classLoader.getResourceAsStream(fileName)
         } catch (e: Exception) {
+            TODO()
+
+            /*
             PluginManager.getFileInJarByName(
                 this.pluginName,
                 fileName
-            )
+            )*/
         }
     }
 

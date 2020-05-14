@@ -7,15 +7,8 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import net.mamoe.mirai.console.plugins.PluginManager
 import net.mamoe.mirai.console.utils.retryCatching
-import net.mamoe.mirai.console.utils.tryNTimes
 import java.io.File
-import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 
 internal object CuiPluginCenter : PluginCenter {
 
@@ -96,6 +89,8 @@ internal object CuiPluginCenter : PluginCenter {
     }
 
     override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit): File {
+        TODO()
+        /*
         val info = findPlugin(name) ?: error("Plugin Not Found")
         val targetFile = File(PluginManager.pluginsPath, "$name-" + info.version + ".jar")
         withContext(Dispatchers.IO) {
@@ -116,6 +111,7 @@ internal object CuiPluginCenter : PluginCenter {
             }
         }
         return targetFile
+         */
     }
 
     override val name: String

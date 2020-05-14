@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.AbstractCommandParserContext.Node
+import net.mamoe.mirai.console.command.AbstractCommandParserContext.ParserPair
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -21,6 +21,7 @@ import kotlin.reflect.KClass
 
 /**
  * [KClass] 到 [CommandArgParser] 的匹配
+ * @see AbstractCommandParserContext
  */
 interface CommandParserContext {
     operator fun <T : Any> get(klass: KClass<T>): CommandArgParser<T>?
@@ -44,7 +45,14 @@ interface CommandParserContext {
     })
 }
 
-fun <T : Any> CommandParserContext.parserFor(param: CommandParam<T>): CommandArgParser<T>? = this[param.type]
+fun <T : Any> CommandParserContext.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
+    param.overrideParser ?: this[param.type]
+
+fun <T : Any> CommandDescriptor.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
+    param.overrideParser ?: this.context.parserFor(param)
+
+fun <T : Any> Command.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
+    param.overrideParser ?: this.descriptor.parserFor(param)
 
 /**
  * 合并两个 [CommandParserContext], [replacer] 将会替换 [this] 中重复的 parser.
@@ -56,8 +64,8 @@ operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandP
 }
 
 @Suppress("UNCHECKED_CAST")
-open class AbstractCommandParserContext(val list: List<Node<*>>) : CommandParserContext {
-    class Node<T : Any>(
+open class AbstractCommandParserContext(val list: List<ParserPair<*>>) : CommandParserContext {
+    class ParserPair<T : Any>(
         val klass: KClass<T>,
         val parser: CommandArgParser<T>
     )
@@ -92,10 +100,10 @@ inline fun CommandParserContext(block: CommandParserContextBuilder.() -> Unit): 
 /**
  * @see CommandParserContext
  */
-class CommandParserContextBuilder : MutableList<Node<*>> by mutableListOf() {
+class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf() {
     @JvmName("add")
-    inline infix fun <T : Any> KClass<T>.with(parser: CommandArgParser<T>): Node<*> =
-        Node(this, parser)
+    inline infix fun <T : Any> KClass<T>.with(parser: CommandArgParser<T>): ParserPair<*> =
+        ParserPair(this, parser)
 
     /**
      * 添加一个指令解析器
@@ -104,7 +112,7 @@ class CommandParserContextBuilder : MutableList<Node<*>> by mutableListOf() {
     @LowPriorityInOverloadResolution
     inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T
-    ): Node<*> = Node(this, CommandArgParser(parser))
+    ): ParserPair<*> = ParserPair(this, CommandArgParser(parser))
 
     /**
      * 添加一个指令解析器
@@ -112,7 +120,7 @@ class CommandParserContextBuilder : MutableList<Node<*>> by mutableListOf() {
     @JvmSynthetic
     inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgParser<T>.(s: String) -> T
-    ): Node<*> = Node(this, CommandArgParser { s: String, _: CommandSender -> parser(s) })
+    ): ParserPair<*> = ParserPair(this, CommandArgParser { s: String, _: CommandSender -> parser(s) })
 }
 
 

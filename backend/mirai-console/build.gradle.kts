@@ -40,6 +40,8 @@ dependencies {
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
     testApi(kotlin("stdlib"))
+    testApi(kotlin("test"))
+    testApi(kotlin("test-junit5"))
 }
 
 version = Versions.Mirai.console

@@ -9,22 +9,26 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.Bot.Companion.botInstances
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugins.PluginManager
-import net.mamoe.mirai.console.utils.addManager
-import net.mamoe.mirai.console.utils.checkManager
-import net.mamoe.mirai.console.utils.managers
-import net.mamoe.mirai.console.utils.removeManager
-import net.mamoe.mirai.event.subscribeMessages
-import net.mamoe.mirai.getFriendOrNull
-import net.mamoe.mirai.message.GroupMessageEvent
-import net.mamoe.mirai.utils.SimpleLogger
-import java.util.*
+suspend fun main() {
+    ConsoleCommandSender.execute(DefaultCommands.Test, "test")
+}
 
+internal object DefaultCommands {
+    
+    object Test : ConsoleCommand(
+        CommandDescriptor("test") {
+            param<String>()
+        }
+    ) {
+        override suspend fun onCommand(sender: CommandSender, args: CommandArgs): Boolean {
+            val s = args.getReified<String>()
+            sender.sendMessage(s)
+            return true
+        }
+    }
+}
+
+/*
 
 /**
  * Some defaults commands are recommend to be replaced by plugin provided commands
@@ -369,3 +373,5 @@ internal object DefaultCommands {
         }
     }
 }
+
+ */

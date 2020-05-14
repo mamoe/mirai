@@ -23,41 +23,46 @@ pluginManagement {
 
 rootProject.name = 'mirai-console'
 
+def onlyBackEnd = true
+
 include(':mirai-console')
 project(':mirai-console').dir = file("backend/mirai-console")
 
 
-include(':mirai-console-pure')
-project(':mirai-console-pure').dir = file("frontend/mirai-console-pure")
+if (!onlyBackEnd) {
 
-include(':mirai-console-terminal')
-project(':mirai-console-terminal').dir = file("frontend/mirai-console-terminal")
+    include(':mirai-console-pure')
+    project(':mirai-console-pure').dir = file("frontend/mirai-console-pure")
 
-try{
-    def javaVersion = System.getProperty("java.version")
-    def versionPos = javaVersion.indexOf(".")
-    def javaVersionNum = javaVersion.substring(0, 1).toInteger()
+    include(':mirai-console-terminal')
+    project(':mirai-console-terminal').dir = file("frontend/mirai-console-terminal")
 
-    if (javaVersion.startsWith("1.")) {
-        javaVersionNum = javaVersion.substring(2, 3).toInteger()
-    } else {
-        if (versionPos==-1) versionPos = javaVersion.indexOf("-")
-        if (versionPos==-1){
-            println("jdk version unknown")
-        }else{
-            javaVersionNum = javaVersion.substring(0, versionPos).toInteger()
+    try {
+        def javaVersion = System.getProperty("java.version")
+        def versionPos = javaVersion.indexOf(".")
+        def javaVersionNum = javaVersion.substring(0, 1).toInteger()
+
+        if (javaVersion.startsWith("1.")) {
+            javaVersionNum = javaVersion.substring(2, 3).toInteger()
+        } else {
+            if (versionPos == -1) versionPos = javaVersion.indexOf("-")
+            if (versionPos == -1) {
+                println("jdk version unknown")
+            } else {
+                javaVersionNum = javaVersion.substring(0, versionPos).toInteger()
+            }
         }
-    }
-    if (javaVersionNum >= 9) {
-        include(':mirai-console-graphical')
-        project(':mirai-console-graphical').dir = file("frontend/mirai-console-graphical")
-    } else {
-        println("jdk版本为 "+ javaVersionNum)
-        println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用JDK 9以上版本引入模块 `:mirai-console-graphical`\n")
-    }
+        if (javaVersionNum >= 9) {
+            include(':mirai-console-graphical')
+            project(':mirai-console-graphical').dir = file("frontend/mirai-console-graphical")
+        } else {
+            println("jdk版本为 " + javaVersionNum)
+            println("当前使用的 JDK 版本为 ${System.getProperty("java.version")},  请使用JDK 9以上版本引入模块 `:mirai-console-graphical`\n")
+        }
 
-}catch(Exception ignored){
-    println("无法确定 JDK 版本, 将不会引入 `:mirai-console-graphical`")
+    } catch (Exception ignored) {
+        println("无法确定 JDK 版本, 将不会引入 `:mirai-console-graphical`")
+    }
 }
 
 

@@ -11,7 +11,6 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.Message
@@ -58,11 +57,13 @@ abstract class AbstractCommandSender : CommandSender {
  */
 object ConsoleCommandSender : AbstractCommandSender() {
     override suspend fun sendMessage(messageChain: Message) {
-        MiraiConsole.logger("[Command]", 0, messageChain.toString())
+        TODO()
+        // MiraiConsole.logger("[Command]", 0, messageChain.toString())
     }
 
     override suspend fun sendMessage(message: String) {
-        MiraiConsole.logger("[Command]", 0, message)
+        TODO()
+        //  MiraiConsole.logger("[Command]", 0, message)
     }
 
     override suspend fun flushMessage() {

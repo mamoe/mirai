@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.plugins
 
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.utils.SimpleLogger
 import java.io.File
 import java.net.URLClassLoader
 
@@ -18,10 +17,7 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
     private val loggerName = "PluginsLoader"
     private val pluginLoaders = linkedMapOf<String, PluginClassLoader>()
     private val classesCache = mutableMapOf<String, Class<*>>()
-    private val logger = SimpleLogger(loggerName) { p, message, e ->
-        MiraiConsole.logger(p, "[${loggerName}]", 0, message)
-        MiraiConsole.logger(p, "[${loggerName}]", 0, e)
-    }
+    private val logger = MiraiConsole.newLogger(loggerName)
 
     /**
      * 清除所有插件加载器

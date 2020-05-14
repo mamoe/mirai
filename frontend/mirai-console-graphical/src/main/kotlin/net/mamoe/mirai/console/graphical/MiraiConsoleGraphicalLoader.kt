@@ -8,6 +8,7 @@
  */
 package net.mamoe.mirai.console.graphical
 
+import kotlinx.coroutines.cancel
 import net.mamoe.mirai.console.MiraiConsole
 import tornadofx.launch
 import kotlin.concurrent.thread
@@ -24,7 +25,7 @@ class MiraiConsoleGraphicalLoader {
             this.coreVersion    = coreVersion
             this.consoleVersion = consoleVersion
              Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                 MiraiConsole.stop()
+                 MiraiConsole.cancel()
              })
             launch<MiraiGraphicalUI>()
         }
