@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.plugins.PluginBase
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
@@ -30,9 +31,9 @@ internal object TestCommand : PluginCommand(
         param<String>()
     }
 ) {
-    override suspend fun onCommand(sender: CommandSender, args: CommandArgs): Boolean {
+    override suspend fun CommandSender.onCommand(args: CommandArgs): Boolean {
         val s = args.getReified<String>()
-        sender.sendMessage(s)
+        sendMessage(s)
         return true
     }
 }
@@ -62,9 +63,9 @@ internal class TestCommands {
                     param<String>()
                 }
             ) {
-                override suspend fun onCommand(sender: CommandSender, args: CommandArgs): Boolean {
+                override suspend fun CommandSender.onCommand(args: CommandArgs): Boolean {
                     val s = args.getReified<String>()
-                    sender.sendMessage(s)
+                    sendMessage(s)
                     return true
                 }
             }.register()
@@ -87,11 +88,10 @@ internal class TestCommands {
 internal inline fun withSender(block: CommandSender.() -> Unit): MessageChain {
     val result = MessageChainBuilder()
     val sender: CommandSender = object : CommandSender {
-        override suspend fun sendMessage(message: Message) {
-            result.add(message)
-        }
+        override val bot: Bot?
+            get() = null
 
-        override suspend fun sendMessage(message: String) {
+        override suspend fun sendMessage(message: Message) {
             result.add(message)
         }
 
