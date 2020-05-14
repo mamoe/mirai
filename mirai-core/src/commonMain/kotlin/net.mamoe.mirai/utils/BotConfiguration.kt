@@ -29,10 +29,16 @@ open class BotConfiguration {
     /** 日志记录器 */
     var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot(${it.id})") }
 
-    /** 网络层日志构造器 */
+    /**
+     * 网络层日志构造器
+     * @see noNetworkLog 不显示网络日志
+     */
     var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.id})") }
 
-    /** 设备信息覆盖. 默认使用随机的设备信息. */
+    /**
+     * 设备信息覆盖. 默认使用随机的设备信息.
+     * @see fileBasedDeviceInfo 使用文件
+     */
     var deviceInfo: ((Context) -> DeviceInfo)? = null
 
     /** 父 [CoroutineContext]. [Bot] 创建后会使用 [SupervisorJob] 覆盖其 [Job], 但会将这个 [Job] 作为父 [Job] */
@@ -60,7 +66,6 @@ open class BotConfiguration {
     var loginSolver: LoginSolver = LoginSolver.Default
 
     /** 使用协议类型 */
-    @SinceMirai("1.0.0")
     var protocol: MiraiProtocol = MiraiProtocol.ANDROID_PAD
 
     /** 缓存策略  */
@@ -68,7 +73,6 @@ open class BotConfiguration {
     @MiraiExperimentalAPI
     var fileCacheStrategy: FileCacheStrategy = FileCacheStrategy.PlatformDefault
 
-    @SinceMirai("1.0.0")
     enum class MiraiProtocol(
         /** 协议模块使用的 ID */
         @JvmField internal val id: Long
@@ -107,12 +111,13 @@ open class BotConfiguration {
     /**
      * 使用文件存储设备信息
      *
-     * 此函数只在 JVM 有效. 在其他平台将会导致一直使用默认的随机的设备信息.
+     * 此函数只在 JVM 和 Android 有效. 在其他平台将会抛出异常.
+     * @param filepath 文件路径. 可相对于程序运行路径 (`user.dir`), 也可以是绝对路径.
      */
     @ConfigurationDsl
     @JvmOverloads
-    fun fileBasedDeviceInfo(filename: String = "device.json") {
-        deviceInfo = getFileBasedDeviceInfoSupplier(filename)
+    fun fileBasedDeviceInfo(filepath: String = "device.json") {
+        deviceInfo = getFileBasedDeviceInfoSupplier(filepath)
     }
 
     /**
@@ -177,7 +182,6 @@ open class BotConfiguration {
     @DslMarker
     annotation class ConfigurationDsl
 
-    @SinceMirai("1.0.0")
     fun copy(): BotConfiguration {
         return BotConfiguration().also { new ->
             new.botLoggerSupplier = botLoggerSupplier

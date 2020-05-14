@@ -1,9 +1,7 @@
 package net.mamoe.mirai.utils.internal
 
 import io.ktor.utils.io.ByteWriteChannel
-import net.mamoe.mirai.utils.SinceMirai
 
-@SinceMirai("1.0.0")
 internal interface ReusableInput {
     val md5: ByteArray
     val size: Long

@@ -26,7 +26,6 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.subscribeInternal
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -97,7 +96,6 @@ interface Listener<in E : Event> : CompletableJob {
      *
      * 当事件被 [拦截][Event.intercept] 后, 优先级较低 (靠右) 的监听器将不会被调用.
      */
-    @SinceMirai("1.0.0")
     enum class EventPriority {
 
         HIGHEST, HIGH, NORMAL, LOW, LOWEST,

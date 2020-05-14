@@ -46,7 +46,6 @@ interface Event {
      *
      * @see intercept 拦截事件
      */
-    @SinceMirai("1.0.0")
     val isIntercepted: Boolean
 
     /**
@@ -75,7 +74,6 @@ interface Event {
  *
  * 在使用事件时应使用类型 [Event]. 在实现自定义事件时应继承 [AbstractEvent].
  */
-@SinceMirai("1.0.0")
 abstract class AbstractEvent : Event {
     @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName")
     @get:JvmSynthetic // so Java user won't see it
@@ -100,7 +98,6 @@ abstract class AbstractEvent : Event {
     /**
      * @see Event.intercept
      */
-    @SinceMirai("1.0.0")
     override fun intercept() {
         _intercepted = true
     }

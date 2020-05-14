@@ -52,6 +52,20 @@ import kotlin.reflect.jvm.kotlinFunction
  * fun T.onEvent(): ListeningStatus
  * ```
  *
+ * 使用示例:
+ * ```
+ * class MyEvents : ListenerHost {
+ *     @EventHandler
+ *     suspend fun MessageEvent.onMessage() {
+ *         reply("received")
+ *     }
+ * }
+ *
+ * MyEvents.registerEvents(CoroutineExceptionHandler { _, e -> println("Caught exception: $e") })
+ * // CoroutineExceptionHandler 可处理 MyEvents 的所有 @EventHandler 函数中未捕获的异常.
+ * // 也可以不提供 CoroutineExceptionHandler: MyEvents.registerEvents()
+ * ```
+ *
  * ### Java 方法
  * 所有 Java 方法都会在 [Dispatchers.IO] 中调用.
  *
@@ -59,6 +73,20 @@ import kotlin.reflect.jvm.kotlinFunction
  * ```
  * void onEvent(T)
  * ListeningStatus onEvent(T)
+ * ```
+ *
+ * 使用示例:
+ * ```
+ * class MyEvents : ListenerHost {
+ *     @EventHandler
+ *     suspend fun MessageEvent.onMessage() {
+ *         reply("received")
+ *     }
+ * }
+ *
+ * MyEvents.registerEvents(CoroutineExceptionHandler { _, e -> println("Caught exception: $e") })
+ * // CoroutineExceptionHandler 可处理 MyEvents 的所有 @EventHandler 函数中未捕获的异常.
+ * // 也可以不提供 CoroutineExceptionHandler: MyEvents.registerEvents()
  * ```
  *
  * @sample net.mamoe.mirai.event.JvmMethodEventsTest
@@ -109,7 +137,6 @@ fun CoroutineScope.registerEvents(host: ListenerHost, coroutineContext: Coroutin
         }
     }
 }
-
 
 
 @Suppress("UNCHECKED_CAST")
