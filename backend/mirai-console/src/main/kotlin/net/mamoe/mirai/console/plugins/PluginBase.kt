@@ -71,14 +71,6 @@ abstract class PluginBase
     }
 
     /**
-     * 加载一个 [dataFolder] 中的 [Config]
-     */
-    fun loadConfig(fileName: String): Config {
-        @OptIn(ToBeRemoved::class)
-        return Config.load(dataFolder.absolutePath + "/" + fileName)
-    }
-
-    /**
      * 插件的日志
      */
     val logger: MiraiLogger by lazy {
@@ -110,16 +102,6 @@ abstract class PluginBase
         }
     }
 
-    /**
-     * 加载 resource 中的 [Config]
-     * 这个 [Config] 是只读的
-     */
-    @ToBeRemoved
-    fun getResourcesConfig(fileName: String): Config {
-        require(fileName.contains(".")) { "Unknown Config Type" }
-        @OptIn(ToBeRemoved::class)
-        return Config.load(getResources(fileName) ?: error("No such file: $fileName"), fileName.substringAfter('.'))
-    }
 
     /**
      * Java API Scheduler

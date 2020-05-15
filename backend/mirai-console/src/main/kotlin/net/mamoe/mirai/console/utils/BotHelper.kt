@@ -12,7 +12,6 @@ package net.mamoe.mirai.console.utils
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.*
-import net.mamoe.mirai.console.utils.BotManagers.BOT_MANAGERS
 import net.mamoe.mirai.contact.User
 import java.io.File
 
@@ -23,12 +22,6 @@ import java.io.File
 val User.isManager: Boolean
     get() = this.bot.managers.contains(this.id)
 
-@OptIn(ToBeRemoved::class)
-internal object BotManagers {
-    val config = File("${MiraiConsole.path}/bot.yml").loadAsConfig()
-    val BOT_MANAGERS: ConfigSection by config.withDefaultWriteSave { ConfigSectionImpl() }
-}
-
 @JvmName("addManager")
 @JvmSynthetic
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
@@ -36,31 +29,18 @@ fun Bot.addManagerDeprecated(long: Long) {
     addManager(long)
 }
 
-@OptIn(ToBeRemoved::class)
 internal fun Bot.addManager(long: Long): Boolean {
-    BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
-    BOT_MANAGERS[this.id.toString()] =
-        (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply {
-            if (contains(long)) return@addManager false
-            add(long)
-        }
-    BotManagers.config.save()
+    TODO()
     return true
 }
 
-@OptIn(ToBeRemoved::class)
 fun Bot.removeManager(long: Long) {
-    BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
-    BOT_MANAGERS[this.id.toString()] =
-        (BOT_MANAGERS.getLongList(this.id.toString()) as MutableList<Long>).apply { remove(long) }
-    BotManagers.config.save()
+    TODO()
 }
 
 val Bot.managers: List<Long>
-    @OptIn(ToBeRemoved::class)
     get() {
-        BOT_MANAGERS.putIfAbsent(this.id.toString(), mutableListOf<Long>())
-        return BOT_MANAGERS.getLongList(this.id.toString())
+       TODO()
     }
 
 fun Bot.checkManager(long: Long): Boolean {

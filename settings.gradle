@@ -28,6 +28,9 @@ def onlyBackEnd = true
 include(':mirai-console')
 project(':mirai-console').dir = file("backend/mirai-console")
 
+include(':codegen')
+project(':codegen').dir = file("backend/codegen")
+
 
 if (!onlyBackEnd) {
 
