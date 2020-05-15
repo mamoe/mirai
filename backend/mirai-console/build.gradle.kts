@@ -32,9 +32,8 @@ dependencies {
     compileAndRuntime("net.mamoe:mirai-core:${Versions.Mirai.core}")
     compileAndRuntime(kotlin("stdlib"))
 
-    api("com.google.code.gson:gson:2.8.6")
-    api(group = "org.yaml", name = "snakeyaml", version = "1.25")
-    api(group = "com.moandjiezana.toml", name = "toml4j", version = "0.7.2")
+    api("moe.him188.yamlkt:yamlkt:0.2.0")
+
     api("org.jsoup:jsoup:1.12.1")
 
     api("org.jetbrains:annotations:19.0.0")
