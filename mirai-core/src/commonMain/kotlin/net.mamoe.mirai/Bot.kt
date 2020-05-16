@@ -21,7 +21,6 @@ import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
@@ -49,40 +48,56 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
 @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
 abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI, ContactOrBot {
     companion object {
+        @Suppress("ObjectPropertyName")
+        internal val _instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
+
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
         @PlannedRemoval("1.2.0")
-        @Deprecated("use botInstances instead", replaceWith = ReplaceWith("botInstances"))
+        @Deprecated(
+            "use botInstances instead",
+            replaceWith = ReplaceWith("botInstances"),
+            level = DeprecationLevel.ERROR
+        )
         @JvmStatic
         val instances: List<WeakRef<Bot>>
-            get() = BotImpl.instances.toList()
+            get() = _instances.toList()
 
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
         @JvmStatic
         val botInstances: List<Bot>
-            get() = BotImpl.instances.asSequence().mapNotNull { it.get() }.toList()
+            get() = _instances.asSequence().mapNotNull { it.get() }.toList()
 
         /**
          * 遍历每一个 [Bot] 实例
          */
         @JvmSynthetic
-        fun forEachInstance(block: (Bot) -> Unit) = BotImpl.forEachInstance(block)
+        fun forEachInstance(block: (Bot) -> Unit) = _instances.forEach { it.get()?.let(block) }
 
         /**
          * 获取一个 [Bot] 实例, 无对应实例时抛出 [NoSuchElementException]
          */
         @JvmStatic
         @Throws(NoSuchElementException::class)
-        fun getInstance(qq: Long): Bot = BotImpl.getInstance(qq = qq)
+        fun getInstance(qq: Long): Bot =
+            getInstanceOrNull(qq) ?: throw NoSuchElementException(qq.toString())
 
         /**
          * 获取一个 [Bot] 实例, 无对应实例时返回 `null`
          */
         @JvmStatic
-        fun getInstanceOrNull(qq: Long): Bot? = BotImpl.getInstanceOrNull(qq = qq)
+        fun getInstanceOrNull(qq: Long): Bot? =
+            _instances.asSequence().mapNotNull { it.get() }.firstOrNull { it.id == qq }
+    }
+
+    init {
+        _instances.addLast(this.weakRef())
+        supervisorJob.invokeOnCompletion {
+            _instances.removeIf { it.get()?.id == this.id }
+        }
     }
 
     /**
@@ -287,13 +302,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI,
     abstract fun close(cause: Throwable? = null)
 
     final override fun toString(): String = "Bot($id)"
-
-    /**
-     * 网络模块.
-     * 此为内部 API: 它可能在任意时刻被改动.
-     */
-    @MiraiInternalAPI
-    abstract val network: BotNetworkHandler
 }
 
 /**

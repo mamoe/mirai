@@ -9,7 +9,7 @@
 
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
-package net.mamoe.mirai.network
+package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableJob
@@ -40,17 +40,8 @@ import net.mamoe.mirai.utils.WeakRefProperty
  *
  * @suppress 此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
  */
-@MiraiInternalAPI
 @Suppress("PropertyName")
-abstract class BotNetworkHandler : CoroutineScope {
-
-    /*
-    此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
-    此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
-    此为**内部 API**, 可能在任意时刻被改动, 且不会给出任何警告.
-     */
-
-
+internal abstract class BotNetworkHandler : CoroutineScope {
     /**
      * 所属 [Bot]. 为弱引用
      */
@@ -123,8 +114,7 @@ abstract class BotNetworkHandler : CoroutineScope {
     }
 }
 
-@MiraiInternalAPI
-suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null) {
+internal suspend fun BotNetworkHandler.closeAndJoin(cause: Throwable? = null) {
     this.close(cause)
     this.supervisor.join()
 }

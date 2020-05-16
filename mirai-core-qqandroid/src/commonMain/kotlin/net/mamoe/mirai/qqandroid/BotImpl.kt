@@ -7,31 +7,30 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "OverridingDeprecatedMember")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "OverridingDeprecatedMember", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
-package net.mamoe.mirai
+package net.mamoe.mirai.qqandroid
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.closeAndJoin
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.ForceOfflineException
 import net.mamoe.mirai.network.LoginFailedException
-import net.mamoe.mirai.network.closeAndJoin
+import net.mamoe.mirai.qqandroid.network.BotNetworkHandler
+import net.mamoe.mirai.qqandroid.network.closeAndJoin
+import net.mamoe.mirai.supervisorJob
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.retryCatching
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-/*
- * 泛型 N 不需要向外(接口)暴露.
- */
-@MiraiInternalAPI
-abstract class BotImpl<N : BotNetworkHandler> constructor(
+internal abstract class BotImpl<N : BotNetworkHandler> constructor(
     context: Context,
     val configuration: BotConfiguration
 ) : Bot(), CoroutineScope {
@@ -49,44 +48,9 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
 
-    init {
-        instances.addLast(this.weakRef())
-    }
-
-    companion object {
-        @PublishedApi
-        internal val instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
-
-        fun forEachInstance(block: (Bot) -> Unit) = instances.forEach {
-            it.get()?.let(block)
-        }
-
-        fun getInstance(qq: Long): Bot {
-            instances.forEach {
-                it.get()?.let { bot ->
-                    if (bot.id == qq) {
-                        return bot
-                    }
-                }
-            }
-            throw NoSuchElementException(qq.toString())
-        }
-
-        fun getInstanceOrNull(qq: Long): Bot? {
-            instances.forEach {
-                it.get()?.let { bot ->
-                    if (bot.id == qq) {
-                        return bot
-                    }
-                }
-            }
-            return null
-        }
-    }
-
     // region network
 
-    final override val network: N get() = _network
+    val network: N get() = _network
 
     @Suppress("PropertyName")
     internal lateinit var _network: N
@@ -160,10 +124,11 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                     logger.info { "Reconnected successfully in ${time.asHumanReadable}" }
                 }
                 is BotOfflineEvent.Active -> {
-                    val msg = if (event.cause == null) {
+                    val cause = event.cause
+                    val msg = if (cause == null) {
                         ""
                     } else {
-                        " with exception: " + event.cause.message
+                        " with exception: " + cause.message
                     }
                     bot.logger.info { "Bot is closed manually$msg" }
                     closeAndJoin(CancellationException(event.toString()))
@@ -174,6 +139,7 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
                 }
             }
         }
+
 
     /**
      * **Exposed public API**
@@ -259,8 +225,6 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     init {
         coroutineContext[Job]!!.invokeOnCompletion { throwable ->
-            instances.removeIf { it.get()?.id == this.id }
-
             network.close(throwable)
             offlineListener.cancel(CancellationException("Bot cancelled", throwable))
 

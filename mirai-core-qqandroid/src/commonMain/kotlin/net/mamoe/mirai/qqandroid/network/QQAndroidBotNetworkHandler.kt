@@ -24,7 +24,6 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -54,7 +53,7 @@ import kotlin.jvm.Volatile
 internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bot: QQAndroidBot) : BotNetworkHandler() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(coroutineContext[Job])
-    override val logger: MiraiLogger get() = bot.configuration.networkLoggerSupplier(this)
+    override val logger: MiraiLogger get() = bot.configuration.networkLoggerSupplier(bot)
 
     override val coroutineContext: CoroutineContext = coroutineContext + CoroutineExceptionHandler { _, throwable ->
         logger.error("Exception in NetworkHandler", throwable)

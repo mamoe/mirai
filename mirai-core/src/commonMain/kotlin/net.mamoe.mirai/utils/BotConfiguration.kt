@@ -13,7 +13,6 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.network.BotNetworkHandler
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -33,7 +32,7 @@ open class BotConfiguration {
      * 网络层日志构造器
      * @see noNetworkLog 不显示网络日志
      */
-    var networkLoggerSupplier: ((BotNetworkHandler) -> MiraiLogger) = { DefaultLogger("Network(${it.bot.id})") }
+    var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Network(${it.id})") }
 
     /**
      * 设备信息覆盖. 默认使用随机的设备信息.
@@ -105,7 +104,7 @@ open class BotConfiguration {
      */
     @ConfigurationDsl
     fun noNetworkLog() {
-        networkLoggerSupplier = { _: BotNetworkHandler -> SilentLogger }
+        networkLoggerSupplier = { _ -> SilentLogger }
     }
 
     /**

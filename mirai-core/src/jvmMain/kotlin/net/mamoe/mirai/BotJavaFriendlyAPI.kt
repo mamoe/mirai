@@ -6,6 +6,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
+import net.mamoe.mirai.message.data.queryUrl
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiInternalAPI
@@ -29,6 +30,7 @@ internal actual interface BotJavaFriendlyAPI {
      *
      * @throws LoginFailedException
      */
+    @Throws(LoginFailedException::class)
     @JvmName("login")
     fun __loginBlockingForJava__() {
         runBlocking { login() }
@@ -94,7 +96,7 @@ internal actual interface BotJavaFriendlyAPI {
      */
     @JvmName("queryImageUrl")
     fun __queryImageUrlBlockingForJava__(image: Image): String {
-        return runBlocking { queryImageUrl(image) }
+        return runBlocking { image.queryUrl() }
     }
 
     /**
@@ -134,7 +136,7 @@ internal actual interface BotJavaFriendlyAPI {
      */
     @JvmName("queryImageUrlAsync")
     fun __queryImageUrlAsyncForJava__(image: Image): Future<String> {
-        return future { queryImageUrl(image) }
+        return future { image.queryUrl() }
     }
 }
 

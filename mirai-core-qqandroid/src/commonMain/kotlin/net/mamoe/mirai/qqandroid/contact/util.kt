@@ -22,7 +22,6 @@ import net.mamoe.mirai.qqandroid.asQQAndroidBot
 import net.mamoe.mirai.qqandroid.message.MessageSourceToFriendImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
-import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.utils.verbose
 
@@ -33,7 +32,8 @@ internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: M
     }
     event.message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
     lateinit var source: MessageSourceToFriendImpl
-    (bot.network as QQAndroidBotNetworkHandler).run {
+    val bot = bot.asQQAndroidBot()
+    bot.network.run {
         check(
             MessageSvcPbSendMsg.createToFriend(
                 bot.asQQAndroidBot().client,

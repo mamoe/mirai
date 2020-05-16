@@ -16,7 +16,6 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.BotImpl
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.utils.ExternalImage
@@ -188,7 +187,7 @@ suspend fun Image.queryUrl(): String {
     @Suppress("DEPRECATION")
     return when (this) {
         is OnlineImage -> this.originUrl
-        else -> BotImpl.instances.peekFirst().get()?.queryImageUrl(this)
+        else -> Bot._instances.peekFirst().get()?.queryImageUrl(this)
             ?: error("No Bot available to query image url")
     }
 }
@@ -243,7 +242,7 @@ interface OfflineImage : Image {
 )
 @JvmSynthetic
 suspend fun OfflineImage.queryUrl(): String {
-    return BotImpl.instances.peekFirst().get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
+    return Bot._instances.peekFirst().get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
 }
 
 /**

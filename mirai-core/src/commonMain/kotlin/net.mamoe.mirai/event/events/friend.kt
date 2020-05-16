@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
-@file:Suppress("FunctionName")
+@file:Suppress("FunctionName", "unused")
 
 package net.mamoe.mirai.event.events
 
@@ -53,6 +53,7 @@ data class FriendDeleteEvent(
 /**
  * 一个账号请求添加机器人为好友的事件
  */
+@Suppress("DEPRECATION")
 data class NewFriendRequestEvent(
     override val bot: Bot,
     /**
