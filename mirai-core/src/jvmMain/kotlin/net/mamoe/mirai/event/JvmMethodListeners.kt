@@ -34,7 +34,7 @@ import kotlin.reflect.jvm.kotlinFunction
  *
  * 所有 Kotlin 非 `suspend` 的函数都将会在 [Dispatchers.IO] 中调用
  *
- * 所有支持的函数类型:
+ * 支持的函数类型:
  * ```
  * suspend fun T.onEvent(T)
  * suspend fun T.onEvent(T): ListeningStatus
@@ -50,10 +50,29 @@ import kotlin.reflect.jvm.kotlinFunction
  * fun T.onEvent(): ListeningStatus
  * ```
  *
- * 使用示例:
+ * Kotlin 使用示例:
+ * - 独立 [CoroutineScope] 和 [ListenerHost]
  * ```
- * object MyEvents : ListenerHost, CoroutineScope {
+ * object MyEvents : ListenerHost {
  *     override val coroutineContext = SupervisorJob()
+ *
+ *     @EventHandler
+ *     suspend fun MessageEvent.onMessage() {
+ *         reply("received")
+ *     }
+ * }
+ *
+ * myCoroutineScope.registerEvents(MyEvents)
+ * ```
+ * `onMessage` 抛出的异常将会交给 `myCoroutineScope` 处理
+ *
+ *
+ * - 合并 [CoroutineScope] 和 [ListenerHost]: 使用 [SimpleListenerHost]
+ * ```
+ * object MyEvents : SimpleListenerHost( /* override coroutineContext here */ ) {
+ *     override fun handleException(context: CoroutineContext, exception: Throwable) {
+ *         // 处理 onMessage 中未捕获的异常
+ *     }
  *
  *     @EventHandler
  *     suspend fun MessageEvent.onMessage() {
@@ -64,6 +83,7 @@ import kotlin.reflect.jvm.kotlinFunction
  * MyEvents.registerEvents()
  * ```
  *
+ *
  * ### Java 方法
  * 所有 Java 方法都会在 [Dispatchers.IO] 中调用.
  *
@@ -73,7 +93,8 @@ import kotlin.reflect.jvm.kotlinFunction
  * ListeningStatus onEvent(T)
  * ```
  *
- * 使用示例:
+ *
+ * Java 使用示例:
  * ```
  * public class MyEventHandlers extends SimpleListenerHost {
  *     @Override
@@ -123,6 +144,8 @@ interface ListenerHost
 
 /**
  * 携带一个异常处理器的 [ListenerHost].
+ * @see ListenerHost 查看更多信息
+ * @see EventHandler 查看更多信息
  */
 abstract class SimpleListenerHost
 @JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : ListenerHost, CoroutineScope {
