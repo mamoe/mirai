@@ -126,13 +126,13 @@ internal expect class MiraiAtomicBoolean(initial: Boolean) {
 
 // inline: NO extra Continuation
 @Suppress("UNCHECKED_CAST")
-internal suspend inline fun Event.broadcastInternal() {
+internal suspend inline fun AbstractEvent.broadcastInternal() {
     if (EventDisabled) return
-    callAndRemoveIfRequired(this@broadcastInternal as? AbstractEvent ?: error("Events must extends AbstractEvent"))
+    callAndRemoveIfRequired(this@broadcastInternal)
 }
 
 @Suppress("DuplicatedCode")
-internal suspend fun <E : AbstractEvent> callAndRemoveIfRequired(
+internal suspend inline fun <E : AbstractEvent> callAndRemoveIfRequired(
     event: E
 ) {
     for (p in Listener.EventPriority.valuesExceptMonitor) {

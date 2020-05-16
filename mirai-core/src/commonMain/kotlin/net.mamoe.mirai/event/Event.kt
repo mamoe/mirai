@@ -12,11 +12,14 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlin.jvm.Volatile
@@ -27,6 +30,9 @@ import kotlin.jvm.Volatile
  * 若监听这个类, 监听器将会接收所有事件的广播.
  *
  * 所有 [Event] 都应继承 [AbstractEvent] 而不要直接实现 [Event]. 否则将无法广播也无法监听.
+ *
+ * ### 广播
+ * 广播事件的唯一方式为 [broadcast].
  *
  * @see subscribeAlways
  * @see subscribeOnce
@@ -53,7 +59,9 @@ interface Event {
      *
      * 当事件被 [拦截][Event.intercept] 后, 优先级较低 (靠右) 的监听器将不会被调用.
      *
-     * @see [Listener.EventPriority] 查看优先级相关信息
+     * 优先级为 [Listener.EventPriority.MONITOR] 的监听器不应该调用这个函数.
+     *
+     * @see Listener.EventPriority 查看优先级相关信息
      */
     @SinceMirai("1.0.0")
     fun intercept()
@@ -81,8 +89,13 @@ abstract class AbstractEvent : Event {
     final override val DoNotImplementThisClassButExtendAbstractEvent: Nothing
         get() = throw Error("Shouldn't be reached")
 
+    /** 限制一个事件实例不能并行广播. (适用于 object 广播的情况) */
+    @JvmField
+    internal val broadCastLock = Mutex()
+
+    @JvmField
     @Volatile
-    private var _intercepted = false
+    internal var _intercepted = false
 
     @Volatile
     private var _cancelled = false
@@ -142,14 +155,24 @@ interface CancellableEvent : Event {
 
 /**
  * 广播一个事件的唯一途径.
- * @see __broadcastJava
+ *
+ * 当事件被实现为 Kotlin `object` 时, 同一时刻只能有一个 [广播][broadcast] 存在. 较晚执行的 [广播][broadcast] 将会挂起协程并等待之前的广播任务结束.
+ *
+ * @see __broadcastJava Java 使用
  */
 @JvmSynthetic
 suspend fun <E : Event> E.broadcast(): E = apply {
+    check(this is AbstractEvent) {
+        "Events must extend AbstractEvent"
+    }
+
     if (this is BroadcastControllable && !this.shouldBroadcast) {
         return@apply
     }
-    this@broadcast.broadcastInternal() // inline, no extra cost
+    this.broadCastLock.withLock {
+        this._intercepted = false
+        this.broadcastInternal() // inline, no extra cost
+    }
 }
 
 /**
@@ -164,7 +187,7 @@ fun <E : Event> E.__broadcastJava(): E = apply {
     if (this is BroadcastControllable && !this.shouldBroadcast) {
         return@apply
     }
-    runBlocking { this@__broadcastJava.broadcastInternal() }
+    runBlocking { this@__broadcastJava.broadcast() }
 }
 
 /**

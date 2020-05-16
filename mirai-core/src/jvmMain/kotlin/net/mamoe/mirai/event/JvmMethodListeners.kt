@@ -28,9 +28,10 @@ import kotlin.reflect.jvm.kotlinFunction
  *
  * ### Kotlin 函数
  * Kotlin 函数要求:
- * - 接收者和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都有)
+ * - 接收者 (英 receiver) 和函数参数: 所标注的 Kotlin 函数必须至少拥有一个接收者或一个函数参数, 或二者都具有. 接收者和函数参数的类型必须相同 (如果二者都存在)
  *   接收者或函数参数的类型都必须为 [Event] 或其子类.
- * - 返回值: 为 [Unit] 或不指定返回值时将注册为 [CoroutineScope.subscribeAlways], 为 [ListeningStatus] 时将注册为 [CoroutineScope.subscribe]
+ * - 返回值: 为 [Unit] 或不指定返回值时将注册为 [CoroutineScope.subscribeAlways], 为 [ListeningStatus] 时将注册为 [CoroutineScope.subscribe].
+ *   任何其他类型的返回值将会在注册时抛出异常.
  *
  * 所有 Kotlin 非 `suspend` 的函数都将会在 [Dispatchers.IO] 中调用
  *
@@ -118,8 +119,8 @@ import kotlin.reflect.jvm.kotlinFunction
 annotation class EventHandler(
     /**
      * 监听器优先级
-     * @see Listener.EventPriority
-     * @see Event.intercept
+     * @see Listener.EventPriority 查看优先级相关信息
+     * @see Event.intercept 拦截事件
      */
     val priority: Listener.EventPriority = EventPriority.NORMAL,
     /**
