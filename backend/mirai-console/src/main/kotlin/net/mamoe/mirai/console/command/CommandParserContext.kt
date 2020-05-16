@@ -61,10 +61,13 @@ fun <T : Any> CommandParserContext.parserFor(param: CommandParam<T>): CommandArg
     param.overrideParser ?: this[param.type]
 
 fun <T : Any> CommandDescriptor.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    param.overrideParser ?: this.context.parserFor(param)
+    this.context.parserFor(param)
+
+fun <T : Any> CommandDescriptor.SubCommandDescriptor.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
+    this.parent.parserFor(param)
 
 fun <T : Any> Command.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    param.overrideParser ?: this.descriptor.parserFor(param)
+    this.descriptor.parserFor(param)
 
 /**
  * 合并两个 [CommandParserContext], [replacer] 将会替换 [this] 中重复的 parser.

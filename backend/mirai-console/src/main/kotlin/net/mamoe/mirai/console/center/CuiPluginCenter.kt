@@ -1,12 +1,10 @@
 package net.mamoe.mirai.console.center
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.serialization.json.*
 import net.mamoe.mirai.console.utils.retryCatching
 import java.io.File
 
@@ -26,20 +24,20 @@ internal object CuiPluginCenter : PluginCenter {
             if (plugins == null) {
                 refresh()
             }
-            if (it >= plugins!!.size()) {
+            if (it >= plugins!!.size) {
                 return@forEach
             }
             val info = plugins!![it]
-            with(info.asJsonObject) {
-                map[this.get("name").asString] = PluginCenter.PluginInsight(
-                    this.get("name")?.asString ?: "",
-                    this.get("version")?.asString ?: "",
-                    this.get("core")?.asString ?: "",
-                    this.get("console")?.asString ?: "",
-                    this.get("author")?.asString ?: "",
-                    this.get("description")?.asString ?: "",
-                    this.get("tags")?.asJsonArray?.map { it.asString } ?: arrayListOf(),
-                    this.get("commands")?.asJsonArray?.map { it.asString } ?: arrayListOf()
+            with(info.jsonObject) {
+                map[this["name"]!!.toString()] = PluginCenter.PluginInsight(
+                    this["name"]?.primitive?.content ?: "",
+                    this["version"]?.primitive?.content ?: "",
+                    this["core"]?.primitive?.content ?: "",
+                    this["console"]?.primitive?.content ?: "",
+                    this["author"]?.primitive?.content ?: "",
+                    this["description"]?.primitive?.content ?: "",
+                    this["tags"]?.jsonArray?.map { it.primitive.content } ?: arrayListOf(),
+                    this["commands"]?.jsonArray?.map { it.primitive.content } ?: arrayListOf()
                 )
             }
         }
@@ -62,18 +60,18 @@ internal object CuiPluginCenter : PluginCenter {
 
         return result.asJson().run {
             PluginCenter.PluginInfo(
-                this.get("name")?.asString ?: "",
-                this.get("version")?.asString ?: "",
-                this.get("core")?.asString ?: "",
-                this.get("console")?.asString ?: "",
-                this.get("tags")?.asJsonArray?.map { it.asString } ?: arrayListOf(),
-                this.get("author")?.asString ?: "",
-                this.get("contact")?.asString ?: "",
-                this.get("description")?.asString ?: "",
-                this.get("usage")?.asString ?: "",
-                this.get("vsc")?.asString ?: "",
-                this.get("commands")?.asJsonArray?.map { it.asString } ?: arrayListOf(),
-                this.get("changeLog")?.asJsonArray?.map { it.asString } ?: arrayListOf()
+                this["name"]?.primitive?.content ?: "",
+                this["version"]?.primitive?.content ?: "",
+                this["core"]?.primitive?.content ?: "",
+                this["console"]?.primitive?.content ?: "",
+                this["tags"]?.jsonArray?.map { it.primitive.content } ?: arrayListOf(),
+                this["author"]?.primitive?.content ?: "",
+                this["contact"]?.primitive?.content ?: "",
+                this["description"]?.primitive?.content ?: "",
+                this["usage"]?.primitive?.content ?: "",
+                this["vsc"]?.primitive?.content ?: "",
+                this["commands"]?.jsonArray?.map { it.primitive.content } ?: arrayListOf(),
+                this["changeLog"]?.jsonArray?.map { it.primitive.content } ?: arrayListOf()
             )
         }
 
@@ -82,10 +80,10 @@ internal object CuiPluginCenter : PluginCenter {
     override suspend fun refresh() {
         val results = Http.get<String>("https://miraiapi.jasonczc.cn/getPluginList").asJson()
 
-        if (!(results.has("success") && results["success"].asBoolean)) {
+        if (!(results.containsKey("success") && results["success"]?.boolean == true)) {
             error("Failed to fetch plugin list from Cui Cloud")
         }
-        plugins = results.get("result").asJsonArray//先不解析
+        plugins = results["result"]?.jsonArray//先不解析
     }
 
     override suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit): File {
@@ -118,8 +116,10 @@ internal object CuiPluginCenter : PluginCenter {
         get() = "崔云"
 
 
+    private val json = Json(JsonConfiguration.Stable)
+    
     private fun String.asJson(): JsonObject {
-        return JsonParser.parseString(this).asJsonObject
+        return json.parseJson(this).jsonObject
     }
 
 }

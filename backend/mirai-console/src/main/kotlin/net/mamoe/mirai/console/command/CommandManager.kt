@@ -7,7 +7,7 @@ import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.console.plugins.PluginBase
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
-import java.util.*
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.util.concurrent.locks.ReentrantLock
 
 sealed class CommandOwner
@@ -30,16 +30,13 @@ fun CommandOwner.unregisterAllCommands() {
 }
 
 /**
- * 注册一个指令. 若此指令已经注册或有已经注册的指令与 [allNames] 重名, 返回 `false`
+ * 注册一个指令. 若此指令已经注册或有已经注册的指令与 [SubCommandDescriptor] 重名, 返回 `false`
  */
 fun Command.register(): Boolean = InternalCommandManager.modifyLock.withLock {
     if (findDuplicate() != null) {
         return false
     }
     InternalCommandManager.registeredCommands.add(this@register)
-    for (name in this.allNames) {
-        InternalCommandManager.nameToCommandMap[name] = this@register
-    }
     return true
 }
 
@@ -47,25 +44,24 @@ fun Command.register(): Boolean = InternalCommandManager.modifyLock.withLock {
  * 查找是否有重名的指令. 返回重名的指令.
  */
 fun Command.findDuplicate(): Command? {
-    return InternalCommandManager.nameToCommandMap.entries.firstOrNull { (names, _) ->
-        this.allNames.any { it.contentEquals(names) }
-    }?.value
+    return InternalCommandManager.registeredCommands.firstOrNull {
+        it.descriptor.base.bakedSubNames intersects this.descriptor.base.bakedSubNames
+    }
+}
+
+private infix fun <T> Array<T>.intersects(other: Array<T>): Boolean {
+    val max = this.size.coerceAtMost(other.size)
+    for (i in 0 until max) {
+        if (this[i] == other[i]) return true
+    }
+    return false
 }
 
 /**
  * 取消注册这个指令. 若指令未注册, 返回 `false`
  */
 fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
-    if (!InternalCommandManager.registeredCommands.contains(this)) {
-        return false
-    }
-    InternalCommandManager.registeredCommands.remove(this)
-    for (name in this.allNames) {
-        InternalCommandManager.nameToCommandMap.entries.removeIf {
-            it.key.contentEquals(this.fullName)
-        }
-    }
-    return true
+    return InternalCommandManager.registeredCommands.remove(this)
 }
 
 /**
@@ -73,8 +69,12 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
  * @param args 接受 [String] 或 [Message]
  * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
  */
+@MiraiExperimentalAPI
 suspend fun CommandSender.executeCommand(vararg args: Any): Boolean {
-    return args.flattenCommandComponents().toList().executeCommand(this)
+    val command = InternalCommandManager.matchCommand(args[0].toString()) ?: return false
+
+    TODO()
+    //return args.flattenCommandComponents().executeCommand(this)
 }
 
 /**
@@ -82,36 +82,39 @@ suspend fun CommandSender.executeCommand(vararg args: Any): Boolean {
  * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
  */
 suspend fun MessageChain.executeAsCommand(sender: CommandSender): Boolean {
-    return this.flattenCommandComponents().toList().executeCommand(sender)
+    TODO()
+///    return this.flattenCommandComponents().executeCommand(sender)
 }
 
 /**
  * 检查指令参数并直接执行一个指令.
  */
-suspend inline fun CommandSender.execute(command: Command, args: CommandArgs): Boolean = with(command) {
-    checkArgs(args)
-    return this@execute.onCommand(args)
+suspend inline fun CommandSender.execute(command: CommandDescriptor.SubCommandDescriptor, args: CommandArgs): Boolean {
+    command.checkArgs(args)
+    return command.onCommand(this@execute, args)
 }
 
 /**
  * 检查指令参数并直接执行一个指令.
  */
-suspend inline fun Command.execute(sender: CommandSender, args: CommandArgs): Boolean = sender.execute(this, args)
+suspend inline fun Command.execute(sender: CommandSender, args: CommandArgs): Boolean =
+    TODO()
+//sender.execute(this, args)
 
 /**
- * 解析并执行一个指令.
- * @param args 接受 [String] 或 [Message]
+ * 核心执行指令
  */
-suspend fun CommandSender.execute(vararg args: Any): Boolean = args.toList().executeCommand(this)
-
-
-internal suspend fun List<Any>.executeCommand(sender: CommandSender): Boolean {
-    val command = InternalCommandManager.matchCommand(this) ?: return false
-    return command.run {
-        sender.onCommand(
+internal suspend fun List<Any>.executeCommand(origin: String, sender: CommandSender): Boolean {
+    if (this.isEmpty()) return false
+    val command = InternalCommandManager.matchCommand(origin) ?: return false
+    TODO()
+    /*
+    command.descriptor.subCommands.forEach { sub ->
+    }.run {
+        sender.onDefault(
             CommandArgs.parseFrom(command, sender, this@executeCommand.drop(command.fullName.size))
         )
-    }
+    }*/
 }
 
 internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
@@ -126,17 +129,15 @@ internal object InternalCommandManager {
     internal val registeredCommands: MutableList<Command> = mutableListOf()
 
     @JvmField
-    internal val nameToCommandMap: TreeMap<Array<String>, Command> = TreeMap(Comparator.comparingInt { it.size })
-
-    @JvmField
     internal val modifyLock = ReentrantLock()
 
     internal var _commandPrefix: String = "/"
 
-    internal fun matchCommand(splitted: List<Any>): Command? {
-        nameToCommandMap.entries.forEach {
-            if (it.key matchesBeginning splitted) return it.value
+    internal fun matchCommand(name: String): Command? {
+        return registeredCommands.firstOrNull { command ->
+            command.descriptor.base.bakedSubNames.any {
+                name.startsWith(it[0]) && (name.length <= it[0].length || name[it[0].length] == ' ') // 判断跟随空格
+            }
         }
-        return null
     }
 }
