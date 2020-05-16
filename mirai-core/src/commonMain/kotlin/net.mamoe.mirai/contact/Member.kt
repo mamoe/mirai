@@ -32,9 +32,9 @@ import kotlin.time.ExperimentalTime
  * ## 与好友相关的操作
  * [Member.isFriend] 判断此成员是否为好友
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
+@Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
 @OptIn(JavaFriendlyAPI::class)
-abstract class Member : MemberJavaFriendlyAPI() {
+abstract class Member : MemberJavaFriendlyAPI, User() {
     /**
      * 所在的群.
      */

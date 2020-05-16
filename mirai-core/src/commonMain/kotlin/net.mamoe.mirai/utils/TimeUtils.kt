@@ -82,19 +82,18 @@ inline val Int.weeksToSeconds: Long
 inline val Int.monthsToSeconds: Long
     get() = this * 30.daysToSeconds
 
+@MiraiExperimentalAPI
 @ExperimentalTime
 val Duration.asHumanReadable: String
     get() {
-        val builder = StringBuilder()
         val days = toInt(DurationUnit.DAYS)
         val hours = toInt(DurationUnit.HOURS) % 24
         val minutes = toInt(DurationUnit.MINUTES) % 60
         val s = floor(toDouble(DurationUnit.SECONDS) % 60 * 1000) / 1000
-        with(builder) {
+        return buildString {
             if (days != 0) append("${days}d ")
             if (hours != 0) append("${hours}h ")
             if (minutes != 0) append("${minutes}min ")
             append("${s}s")
         }
-        return builder.toString()
     }

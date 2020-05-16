@@ -71,6 +71,17 @@ abstract class BotImpl<N : BotNetworkHandler> constructor(
             }
             throw NoSuchElementException(qq.toString())
         }
+
+        fun getInstanceOrNull(qq: Long): Bot? {
+            instances.forEach {
+                it.get()?.let { bot ->
+                    if (bot.id == qq) {
+                        return bot
+                    }
+                }
+            }
+            return null
+        }
     }
 
     // region network

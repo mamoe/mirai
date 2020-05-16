@@ -10,12 +10,10 @@
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
 @file:Suppress("unused", "NOTHING_TO_INLINE", "WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
-@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass

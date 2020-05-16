@@ -8,7 +8,7 @@
  */
 
 @file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
+@file:OptIn(LowLevelAPI::class)
 
 package net.mamoe.mirai.qqandroid.contact
 

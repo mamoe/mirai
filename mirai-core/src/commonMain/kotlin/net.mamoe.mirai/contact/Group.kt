@@ -23,10 +23,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessage
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.get
+import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -103,6 +100,7 @@ abstract class Group : Contact(), CoroutineScope {
      * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException]
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
+    @Throws(NoSuchElementException::class)
     abstract operator fun get(id: Long): Member
 
     /**

@@ -17,7 +17,6 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.coroutines.EmptyCoroutineContext

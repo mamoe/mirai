@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
+@file:OptIn(LowLevelAPI::class)
 @file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.qqandroid.contact
@@ -35,7 +35,10 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.unsafeWeakRef
+import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -84,7 +87,6 @@ internal class FriendImpl(
     }
 
     @JvmSynthetic
-
     override suspend fun uploadImage(image: ExternalImage): Image = try {
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {

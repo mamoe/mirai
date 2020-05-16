@@ -6,7 +6,6 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file:OptIn(MiraiInternalAPI::class)
 
 package net.mamoe.mirai.event.internal
 
@@ -16,7 +15,6 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.coroutines.CoroutineContext

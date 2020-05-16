@@ -23,17 +23,15 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.uploadImage
 import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import java.io.File
 import java.io.InputStream
 import java.net.URL
 import java.util.concurrent.Future
 
-@MiraiInternalAPI
 @JavaFriendlyAPI
 @Suppress("INAPPLICABLE_JVM_NAME", "FunctionName", "unused")
-actual abstract class ContactJavaFriendlyAPI {
+internal actual abstract class ContactJavaFriendlyAPI {
 
     private inline fun <R> runBlocking(crossinline block: suspend Contact.() -> R): R {
         @Suppress("CAST_NEVER_SUCCEEDS")

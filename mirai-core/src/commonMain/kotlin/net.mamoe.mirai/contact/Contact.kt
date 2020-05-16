@@ -8,7 +8,7 @@
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE", "EXPERIMENTAL_OVERRIDE")
-@file:OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
+@file:OptIn(JavaFriendlyAPI::class)
 
 package net.mamoe.mirai.contact
 
@@ -25,7 +25,9 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recall
 import net.mamoe.mirai.recallIn
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmSynthetic
@@ -34,7 +36,8 @@ import kotlin.jvm.JvmSynthetic
 /**
  * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
  */
-abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot {
+@Suppress("EXPOSED_SUPER_CLASS")
+abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
     /**
      * 这个联系对象所属 [Bot].
      */
@@ -100,7 +103,6 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
 /**
  * @see Bot.recall
  */
-@MiraiExperimentalAPI
 @JvmSynthetic
 suspend inline fun Contact.recall(source: MessageChain) = this.bot.recall(source)
 
@@ -113,7 +115,6 @@ suspend inline fun Contact.recall(source: MessageSource) = this.bot.recall(sourc
 /**
  * @see Bot.recallIn
  */
-@MiraiExperimentalAPI
 @JvmSynthetic
 inline fun Contact.recallIn(
     message: MessageChain,

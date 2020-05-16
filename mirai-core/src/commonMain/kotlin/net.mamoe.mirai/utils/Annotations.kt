@@ -21,9 +21,7 @@ import kotlin.annotation.AnnotationTarget.*
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(
     CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
-    CLASS,
-    FUNCTION,
-    PROPERTY
+    CLASS, FUNCTION, PROPERTY
 )
 annotation class MiraiInternalAPI(
     val message: String = ""

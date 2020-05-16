@@ -17,7 +17,6 @@ import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
-import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
@@ -52,7 +51,6 @@ import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
@@ -60,7 +58,6 @@ import kotlin.math.absoluteValue
 import kotlin.random.Random
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
-@OptIn(ExperimentalContracts::class)
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
         returns() implies (this@asQQAndroidBot is QQAndroidBot)
@@ -775,10 +772,6 @@ internal abstract class QQAndroidBotBase constructor(
 }
 
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
-
-@Suppress("DEPRECATION")
-internal expect fun io.ktor.utils.io.ByteReadChannel.toKotlinByteReadChannel(): ByteReadChannel
-
 
 private fun RichMessage.Templates.longMessage(brief: String, resId: String, timeSeconds: Long): RichMessage {
     val limited: String = if (brief.length > 30) {

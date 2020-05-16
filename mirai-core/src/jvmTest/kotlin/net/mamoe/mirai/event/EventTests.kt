@@ -11,7 +11,6 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.internal.GlobalEventListeners
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.StepUtil
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.Executor

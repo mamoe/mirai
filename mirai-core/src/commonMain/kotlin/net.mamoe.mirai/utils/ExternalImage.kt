@@ -46,25 +46,16 @@ class ExternalImage internal constructor(
         const val defaultFormatName = "mirai"
 
 
+        @MiraiExperimentalAPI
         fun generateUUID(md5: ByteArray): String {
             return "${md5[0, 3]}-${md5[4, 5]}-${md5[6, 7]}-${md5[8, 9]}-${md5[10, 15]}"
         }
 
+        @MiraiExperimentalAPI
         fun generateImageId(md5: ByteArray): String {
             return """{${generateUUID(md5)}}.$defaultFormatName"""
         }
     }
-
-    /*
-     * ImgType:
-     *  JPG:    1000
-     *  PNG:    1001
-     *  WEBP:   1002
-     *  BMP:    1005
-     *  GIG:    2000 // gig? gif?
-     *  APNG:   2001
-     *  SHARPP: 1004
-     */
 
     override fun toString(): String {
         if (input is DeferredReusableInput) {
@@ -77,6 +68,17 @@ class ExternalImage internal constructor(
 
     internal fun calculateImageResourceId(): String = generateImageId(md5)
 }
+
+/*
+ * ImgType:
+ *  JPG:    1000
+ *  PNG:    1001
+ *  WEBP:   1002
+ *  BMP:    1005
+ *  GIG:    2000 // gig? gif?
+ *  APNG:   2001
+ *  SHARPP: 1004
+ */
 
 /**
  * 将图片作为单独的消息发送给指定联系人

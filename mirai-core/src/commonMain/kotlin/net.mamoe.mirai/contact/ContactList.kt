@@ -22,8 +22,9 @@ import kotlin.jvm.JvmField
  * @see ContactList.asSequence
  */
 @Suppress("unused")
-class ContactList<C : Contact> internal constructor(@JvmField internal val delegate: LockFreeLinkedList<C>) :
-    Iterable<C>, Collection<C> {
+class ContactList<C : Contact>
+internal constructor(@JvmField internal val delegate: LockFreeLinkedList<C>) : Collection<C> {
+
     operator fun get(id: Long): C =
         delegate.asSequence().firstOrNull { it.id == id } ?: throw NoSuchElementException("Contact id $id")
 

@@ -9,7 +9,6 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -17,9 +16,8 @@ import java.util.concurrent.TimeoutException
 /**
  * [Bot] 中为了让 Java 使用者调用更方便的 API 列表.
  */
-@MiraiInternalAPI
 @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME", "unused")
-actual abstract class BotJavaFriendlyAPI actual constructor() {
+internal actual interface BotJavaFriendlyAPI actual constructor() {
     init {
         @Suppress("LeakingThis")
         assert(this is Bot)

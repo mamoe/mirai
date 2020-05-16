@@ -33,11 +33,7 @@ import kotlin.jvm.JvmSynthetic
  */
 @Suppress("DEPRECATION_ERROR")
 abstract class Friend : User(), CoroutineScope {
-    /**
-     * 请求头像下载链接
-     */
-    // @MiraiExperimentalAPI
-    //suspend fun queryAvatar(): AvatarLink
+
     /**
      * QQ 号码
      */

@@ -16,7 +16,6 @@ import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.qqandroid.QQAndroid.Bot
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
-import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
  * QQ for Android

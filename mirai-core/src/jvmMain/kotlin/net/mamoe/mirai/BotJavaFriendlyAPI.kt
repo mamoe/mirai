@@ -16,21 +16,8 @@ import java.util.concurrent.TimeoutException
 /**
  * [Bot] 中为了让 Java 使用者调用更方便的 API 列表.
  */
-@MiraiInternalAPI
 @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME", "unused")
-actual abstract class BotJavaFriendlyAPI actual constructor() {
-    init {
-        @Suppress("LeakingThis")
-        assert(this is Bot)
-    }
-
-    private inline fun <R> runBlocking(crossinline block: suspend Bot.() -> R): R {
-        return kotlinx.coroutines.runBlocking { block(this@BotJavaFriendlyAPI as Bot) }
-    }
-
-    private inline fun <R> future(crossinline block: suspend Bot.() -> R): Future<R> {
-        return (this as Bot).run { future { block() } }
-    }
+internal actual interface BotJavaFriendlyAPI {
 
     /**
      * 登录, 或重新登录.
@@ -149,6 +136,14 @@ actual abstract class BotJavaFriendlyAPI actual constructor() {
     fun __queryImageUrlAsyncForJava__(image: Image): Future<String> {
         return future { queryImageUrl(image) }
     }
+}
+
+private inline fun <R> BotJavaFriendlyAPI.future(crossinline block: suspend Bot.() -> R): Future<R> {
+    return (this as CoroutineScope).run { future { block(this as Bot) } }
+}
+
+private inline fun <R> BotJavaFriendlyAPI.runBlocking(crossinline block: suspend Bot.() -> R): R {
+    return kotlinx.coroutines.runBlocking { block(this@runBlocking as Bot) }
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

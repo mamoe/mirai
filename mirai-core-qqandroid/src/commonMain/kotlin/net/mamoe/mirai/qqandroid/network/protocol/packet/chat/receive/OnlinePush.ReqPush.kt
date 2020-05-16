@@ -9,10 +9,7 @@
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @file:OptIn(
-    MiraiInternalAPI::class,
-    MiraiExperimentalAPI::class,
-    JavaFriendlyAPI::class,
-    ExperimentalUnsignedTypes::class
+    JavaFriendlyAPI::class
 )
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
@@ -54,8 +51,6 @@ import net.mamoe.mirai.qqandroid.utils.io.readString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.*
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
 

@@ -14,7 +14,6 @@ package net.mamoe.mirai.qqandroid
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmSynthetic
 
 internal data class BotAccount(
@@ -22,7 +21,6 @@ internal data class BotAccount(
     internal val id: Long,
     @JvmSynthetic
     @MiraiExperimentalAPI
-    @MiraiInternalAPI
     val passwordMd5: ByteArray // md5
 ) {
     constructor(id: Long, passwordPlainText: String) : this(id, MiraiPlatformUtils.md5(passwordPlainText.toByteArray()))

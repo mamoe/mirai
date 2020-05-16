@@ -18,7 +18,6 @@ import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.utils.io.encryptAndWrite
 import net.mamoe.mirai.qqandroid.utils.io.writeHex
 import net.mamoe.mirai.qqandroid.utils.io.writeIntLVPacket
-import net.mamoe.mirai.utils.MiraiInternalAPI
 
 internal class OutgoingPacket constructor(
     name: String?,
@@ -232,7 +231,6 @@ internal inline fun BytePacketBuilder.writeSsoPacket(
     writeIntLVPacket(lengthOffset = { it + 4 }, builder = body)
 }
 
-@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun BytePacketBuilder.writeOicqRequestPacket(
     client: QQAndroidClient,
     encryptMethod: EncryptMethod,

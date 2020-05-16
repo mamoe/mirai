@@ -10,21 +10,18 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
  * [Contact] 中为了让 `Java` 更容易调用的 API.
  * 不要用它作为一个类型, 只应使用其中的方法
  */
-@MiraiInternalAPI
 @JavaFriendlyAPI
-expect abstract class ContactJavaFriendlyAPI internal constructor()
+internal expect interface ContactJavaFriendlyAPI
 
 /**
  * [Member] 中为了让 `Java` 更容易调用的 API
  * 不要用它作为一个类型, 只应使用其中的方法
  */
 @Suppress("DEPRECATION_ERROR")
-@MiraiInternalAPI
 @JavaFriendlyAPI
-expect abstract class MemberJavaFriendlyAPI internal constructor() : User
+internal expect interface MemberJavaFriendlyAPI

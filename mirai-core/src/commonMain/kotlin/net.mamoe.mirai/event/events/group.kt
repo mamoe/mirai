@@ -241,6 +241,7 @@ sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
 /**
  * [Bot] 被邀请加入一个群.
  */
+@Suppress("DEPRECATION")
 data class BotInvitedJoinGroupRequestEvent internal constructor(
     override val bot: Bot,
     /**
@@ -283,6 +284,7 @@ data class BotInvitedJoinGroupRequestEvent internal constructor(
 /**
  * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
  */
+@Suppress("DEPRECATION")
 data class MemberJoinRequestEvent internal constructor(
     override val bot: Bot,
     /**

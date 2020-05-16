@@ -14,7 +14,6 @@
     "DECLARATION_CANT_BE_INLINED", "UNCHECKED_CAST", "NOTHING_TO_INLINE"
 )
 
-@file:OptIn(MiraiInternalAPI::class)
 @file:JvmMultifileClass
 @file:JvmName("MessageEventKt")
 
@@ -26,7 +25,10 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.network.Packet
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.utils.sendTo
+import net.mamoe.mirai.utils.upload
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -147,7 +149,7 @@ interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
      * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
     @JvmSynthetic
-    suspend inline fun Image.url(): String = bot.queryImageUrl(this@url)
+    suspend inline fun Image.url(): String = this@url.queryUrl()
 }
 
 /** 一个消息事件在各平台的相关扩展. 请使用 [MessageEventExtensions] */

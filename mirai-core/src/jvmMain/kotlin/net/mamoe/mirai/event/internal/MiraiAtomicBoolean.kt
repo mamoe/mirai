@@ -7,8 +7,6 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:OptIn(MiraiInternalAPI::class)
-
 package net.mamoe.mirai.event.internal
 
 import net.mamoe.mirai.event.Event

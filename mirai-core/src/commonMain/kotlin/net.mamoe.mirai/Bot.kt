@@ -46,8 +46,8 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  *
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
-abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(), ContactOrBot {
+@Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
+abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI, ContactOrBot {
     companion object {
         /**
          * 复制一份此时的 [Bot] 实例列表.
@@ -68,13 +68,21 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         /**
          * 遍历每一个 [Bot] 实例
          */
+        @JvmSynthetic
         fun forEachInstance(block: (Bot) -> Unit) = BotImpl.forEachInstance(block)
 
         /**
-         * 获取一个 [Bot] 实例, 找不到则 [NoSuchElementException]
+         * 获取一个 [Bot] 实例, 无对应实例时抛出 [NoSuchElementException]
          */
         @JvmStatic
+        @Throws(NoSuchElementException::class)
         fun getInstance(qq: Long): Bot = BotImpl.getInstance(qq = qq)
+
+        /**
+         * 获取一个 [Bot] 实例, 无对应实例时返回 `null`
+         */
+        @JvmStatic
+        fun getInstanceOrNull(qq: Long): Bot? = BotImpl.getInstanceOrNull(qq = qq)
     }
 
     /**
@@ -173,6 +181,10 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @see Image.queryUrl [Image] 的扩展函数
      */
+    @Deprecated(
+        "use extension.",
+        replaceWith = ReplaceWith("image.queryUrl()", imports = ["net.mamoe.mirai.message.data.queryUrl"])
+    )
     @JvmSynthetic
     abstract suspend fun queryImageUrl(image: Image): String
 
@@ -199,6 +211,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 好友验证的事件对象
      */
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
     @JvmSynthetic
     abstract suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent)
 
@@ -208,6 +221,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 好友验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.reject(blackList)"))
     @JvmSynthetic
     abstract suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean = false)
 
@@ -216,6 +230,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 加群验证的事件对象
      */
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
     @JvmSynthetic
     abstract suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent)
 
@@ -225,6 +240,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 加群验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.reject(blackList)"))
     @JvmSynthetic
     abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
@@ -234,6 +250,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 加群验证的事件对象
      * @param blackList 忽略后是否拉入黑名单
      */
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore(blackList)"))
     @JvmSynthetic
     abstract suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
@@ -242,6 +259,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 邀请入群的事件对象
      */
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept"))
     @JvmSynthetic
     abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
@@ -250,6 +268,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 邀请入群的事件对象
      */
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore"))
     @JvmSynthetic
     abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 

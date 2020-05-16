@@ -47,7 +47,6 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.soutv
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
@@ -95,7 +94,6 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
     /**
      * 不要直接 expect 这个 class. 它可能还没同步完成
      */
-    @MiraiInternalAPI
     open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) :
         AbstractEvent(),
         MultiPacket<Packet>,

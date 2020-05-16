@@ -18,7 +18,6 @@ import kotlinx.io.core.*
 import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.nio.ByteBuffer
 
 @Suppress("DEPRECATION")

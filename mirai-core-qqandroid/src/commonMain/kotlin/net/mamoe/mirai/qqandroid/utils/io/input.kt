@@ -19,7 +19,6 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
@@ -59,7 +58,6 @@ internal inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String
 }
 
 @Suppress("FunctionName")
-@MiraiInternalAPI
 internal inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap =
     _readTLVMap(true, tagSize, suppressDuplication)
 
