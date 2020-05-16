@@ -84,16 +84,16 @@ mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotl
    3. 接下来可按需阅读各类型消息 [各类型消息](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/). 一个文件包含一种消息.
 
 
-4. '事件'
-   mirai 支持异步的事件系统.
+4. '事件'  
+   mirai 支持异步的事件系统.  
    1. [事件接口 Event](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/Event.kt)
    2. [广播事件 Event.broadcast](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/Event.kt)
    3. - Kotlin: [函数式监听事件 subscribe](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/subscriber.kt)
       - Kotlin & Java: [方法反射监听事件 JvmMethodListeners](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/event/JvmMethodListeners.kt)
    4. 内建事件列表 [README](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/events/README.md).  
       **注意**: mirai 将接收到的消息事件独立放置在 `net.mamoe.mirai.message` 下, 并命名为 `MessageEvent`. 并为他们实现了一些扩展. 详见 [MessageEvent.kt](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/MessageEvent.kt)
-   5. 事件工具类和工具函数 (仅 Kotlin) (可以跳过本节):
-      标注 (*) 的几种处理方式可能需要比较好的 Kotlin 技能才能理解并正确使用. 建议在不熟悉时不要使用它们.
+   5. 事件工具类和工具函数 (仅 Kotlin) (可以跳过本节):  
+      标注 (*) 的几种处理方式可能需要比较好的 Kotlin 技能才能理解并正确使用. 建议在不熟悉时不要使用它们.  
       - 挂起当前协程, 直到返回下一个事件实例: [nextEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/nextEvent.kt)
       - 挂起当前协程, 并从一个事件中同步一个值: [syncFromEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/linear.kt)
       - (*) 消息事件监听 DSL: [subscribeMessages](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/subscribeMessages.kt)
@@ -117,7 +117,7 @@ mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotl
 
 #### 第三方依赖
 
-mirai 通过 gradle `api` 方式暴露了如下依赖库:
+mirai-core 通过 gradle 依赖的 `api` 方式暴露了如下依赖库:
 
 - `kotlin-stdlib`: Kotlin 标准库, 版本至少为 1.3.72
 - `kotlin-reflect`: Kotlin 反射, 版本至少为 1.3.72
@@ -135,4 +135,4 @@ mirai 通过 gradle `api` 方式暴露了如下依赖库:
 `mirai-core` 的实现部分. 不提供任何说明. 使用者无需考虑任何协议实现过程.
 
 ## `mirai-console`
-此模块处于实验性阶段, 可能没有很好地文档支持, 详见 [mirai-console](https://github.com/mamoe/mirai-console)
+控制台框架。此模块处于实验性阶段, 可能没有很好地文档支持, 详见 [mirai-console](https://github.com/mamoe/mirai-console)
