@@ -12,11 +12,8 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandDescriptor.SubCommandDescriptor
-import net.mamoe.mirai.message.data.Message
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
-
-internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
 
 /**
  * 指令
@@ -25,11 +22,12 @@ internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
  */
 interface Command {
     val descriptor: CommandDescriptor
+
     /**
      * Permission of the command
      */
     @Target(AnnotationTarget.FUNCTION)
-    annotation class Permission(val permission:KClass<*>)
+    annotation class Permission(val permission: KClass<out Permission>)
 
     /**
      * If a command is prefix optional
@@ -37,7 +35,7 @@ interface Command {
      *    mute work as (/mute) if prefix optional or vise versa
      */
     @Target(AnnotationTarget.CLASS)
-    annotation class PrefixOptional()
+    annotation class PrefixOptional
 }
 
 /**
@@ -49,12 +47,12 @@ interface Command {
  *  /mute addandremove  (sub is case insensitive, lowercase are recommend)
  *  /mute add and remove('add and remove' consider as a sub)
  */
-abstract class CompositeCommand(val name:String, val alias:Array<String> = arrayOf()):Command{
+abstract class CompositeCommand(val name: String, val alias: Array<String> = arrayOf()) : Command {
     /**
      * 你应当使用 @SubCommand 来注册 sub 指令
      */
     @Target(AnnotationTarget.FUNCTION)
-    annotation class SubCommand(val name:String)
+    annotation class SubCommand(val name: String)
 
 
     /**
@@ -62,7 +60,7 @@ abstract class CompositeCommand(val name:String, val alias:Array<String> = array
      * you should not include arg names, which will be insert automatically
      */
     @Target(AnnotationTarget.FUNCTION)
-    annotation class Usage(val usage:String)
+    annotation class Usage(val usage: String)
 
     /**
      * name of the parameter
@@ -71,7 +69,7 @@ abstract class CompositeCommand(val name:String, val alias:Array<String> = array
      *
      */
     @Target(AnnotationTarget.VALUE_PARAMETER)
-    annotation class Name(val name:String)
+    annotation class Name(val name: String)
 
 
     override val descriptor: CommandDescriptor by lazy {
@@ -80,8 +78,9 @@ abstract class CompositeCommand(val name:String, val alias:Array<String> = array
 }
 
 
-abstract class SimpleCommand(val name: String, val alias: Array<String> = arrayOf()
-):Command{
+abstract class SimpleCommand(
+    val name: String, val alias: Array<String> = arrayOf()
+) : Command {
     override val descriptor: CommandDescriptor by lazy {
         CommandDescriptor()
     }
@@ -91,13 +90,14 @@ abstract class SimpleCommand(val name: String, val alias: Array<String> = arrayO
      */
 }
 
-abstract class RawCommand(name:String, alias: Array<String> = arrayOf()):Command{
+abstract class RawCommand(name: String, alias: Array<String> = arrayOf()) : Command {
     override val descriptor: CommandDescriptor by lazy {
         CommandDescriptor()
     }
 
 
 }
+
 /**
  * 解析完成的指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
  */
