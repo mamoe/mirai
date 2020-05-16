@@ -12,9 +12,7 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.lang.reflect.Method
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -54,16 +52,16 @@ import kotlin.reflect.jvm.kotlinFunction
  *
  * 使用示例:
  * ```
- * class MyEvents : ListenerHost {
+ * object MyEvents : ListenerHost, CoroutineScope {
+ *     override val coroutineContext = SupervisorJob()
+ *
  *     @EventHandler
  *     suspend fun MessageEvent.onMessage() {
  *         reply("received")
  *     }
  * }
  *
- * MyEvents.registerEvents(CoroutineExceptionHandler { _, e -> println("Caught exception: $e") })
- * // CoroutineExceptionHandler 可处理 MyEvents 的所有 @EventHandler 函数中未捕获的异常.
- * // 也可以不提供 CoroutineExceptionHandler: MyEvents.registerEvents()
+ * MyEvents.registerEvents()
  * ```
  *
  * ### Java 方法
@@ -77,16 +75,19 @@ import kotlin.reflect.jvm.kotlinFunction
  *
  * 使用示例:
  * ```
- * class MyEvents : ListenerHost {
+ * public class MyEventHandlers extends SimpleListenerHost {
+ *     @Override
+ *     public void handleException(CoroutineContext context, Throwable exception){
+ *         // 处理事件处理时抛出的异常
+ *     }
+ *
  *     @EventHandler
- *     suspend fun MessageEvent.onMessage() {
- *         reply("received")
+ *     public void onMessage(MessageEvent event) throws Exception {
+ *         event.subject.sendMessage("received")
  *     }
  * }
  *
- * MyEvents.registerEvents(CoroutineExceptionHandler { _, e -> println("Caught exception: $e") })
- * // CoroutineExceptionHandler 可处理 MyEvents 的所有 @EventHandler 函数中未捕获的异常.
- * // 也可以不提供 CoroutineExceptionHandler: MyEvents.registerEvents()
+ * Events.registerEvents(new MyEventHandlers())
  * ```
  *
  * @sample net.mamoe.mirai.event.JvmMethodEventsTest
@@ -114,11 +115,48 @@ annotation class EventHandler(
 
 /**
  * 实现这个接口的对象可以通过 [EventHandler] 标注事件监听函数, 并通过 [registerEvents] 注册.
+ *
+ * @see SimpleListenerHost 简单的实现
+ * @see EventHandler 查看更多信息
  */
 interface ListenerHost
 
 /**
+ * 携带一个异常处理器的 [ListenerHost].
+ */
+abstract class SimpleListenerHost
+@JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : ListenerHost, CoroutineScope {
+
+    final override val coroutineContext: CoroutineContext =
+        SupervisorJob(coroutineContext[Job]) + CoroutineExceptionHandler(::handleException) + coroutineContext
+
+    /**
+     * 处理事件处理中未捕获的异常. 在构造器中的 [coroutineContext] 未提供 [CoroutineExceptionHandler] 情况下必须继承此函数.
+     */
+    open fun handleException(context: CoroutineContext, exception: Throwable) {
+        throw IllegalStateException(
+            """
+            未找到异常处理器. 请继承 SimpleListenerHost 中的 handleException 方法, 或在构造 SimpleListenerHost 时提供 CoroutineExceptionHandler
+            ------------
+            Cannot find exception handler from coroutineContext. 
+            Please extend SimpleListenerHost.handleException or provide a CoroutineExceptionHandler to the constructor of SimpleListenerHost
+        """.trimIndent(), exception
+        )
+    }
+
+    /**
+     * 停止所有事件监听
+     */
+    fun cancelAll() {
+        this.cancel()
+    }
+}
+
+/**
  * 反射得到所有标注了 [EventHandler] 的函数 (Java 为方法), 并注册为事件监听器
+ *
+ * Java 使用: `Events.registerEvents(listenerHost)`
+ *
  * @see EventHandler 获取更多信息
  */
 @JvmOverloads
@@ -127,6 +165,9 @@ fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineCont
 
 /**
  * 反射得到所有标注了 [EventHandler] 的函数 (Java 为方法), 并注册为事件监听器
+ *
+ * Java 使用: `Events.registerEvents(coroutineScope, host)`
+ *
  * @see EventHandler 获取更多信息
  */
 @JvmOverloads
