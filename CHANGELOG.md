@@ -1,8 +1,9 @@
 # Version 1.x
 
-## `1.0-RC2` 2020/5/11
-**(请使用 `1.0-RC2-1` 版本)**
+## `1.0-RC2-1` 2020/5/11
+修复一个 `VerifyError`
 
+## `1.0-RC2` 2020/5/11
 主要内容:
 - 增强网络稳定性 (#298, #317), 修复 `Bot.close` 或 Bot 离线后没有从 `Bot.botInstances` 中删除的问题 (#317)
 - `subscribeMessages` 现在默认使用 `MONITOR` 优先级
