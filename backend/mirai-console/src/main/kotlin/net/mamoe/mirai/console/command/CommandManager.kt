@@ -9,6 +9,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.reflect.KClass
 
 sealed class CommandOwner
 
@@ -20,8 +21,7 @@ internal abstract class ConsoleCommandOwner : CommandOwner()
 val CommandOwner.registeredCommands: List<Command> get() = InternalCommandManager.registeredCommands.filter { it.owner == this }
 
 @get:JvmName("getCommandPrefix")
-val CommandPrefix: String
-    get() = InternalCommandManager._commandPrefix
+val CommandPrefix: String get() = InternalCommandManager.COMMAND_PREFIX
 
 fun CommandOwner.unregisterAllCommands() {
     for (registeredCommand in registeredCommands) {
@@ -108,13 +108,6 @@ internal suspend fun List<Any>.executeCommand(origin: String, sender: CommandSen
     if (this.isEmpty()) return false
     val command = InternalCommandManager.matchCommand(origin) ?: return false
     TODO()
-    /*
-    command.descriptor.subCommands.forEach { sub ->
-    }.run {
-        sender.onDefault(
-            CommandArgs.parseFrom(command, sender, this@executeCommand.drop(command.fullName.size))
-        )
-    }*/
 }
 
 internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
@@ -125,19 +118,51 @@ internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
 }
 
 internal object InternalCommandManager {
+    const val COMMAND_PREFIX =  "/"
+
+    /**
+     * 全部注册的指令
+     * /mute -> MuteCommand
+     * /jinyan -> MuteCommand
+     */
     @JvmField
-    internal val registeredCommands: MutableList<Command> = mutableListOf()
+    internal val registeredCommands: MutableMap<String, Command> = mutableMapOf()
+    /**
+     * Command name of commands that are prefix optional
+     * mute -> MuteCommand
+     */
+    private val quickMatchCommands: MutableMap<String, Command> = mutableMapOf()
 
     @JvmField
     internal val modifyLock = ReentrantLock()
 
-    internal var _commandPrefix: String = "/"
 
-    internal fun matchCommand(name: String): Command? {
-        return registeredCommands.firstOrNull { command ->
-            command.descriptor.base.bakedSubNames.any {
-                name.startsWith(it[0]) && (name.length <= it[0].length || name[it[0].length] == ' ') // 判断跟随空格
-            }
+    /**
+     * 从原始的command中解析出Command对象
+     */
+    internal fun matchCommand(rawCommand: String): Command? {
+        if(!rawCommand.startsWith('/')){
+           return quickMatchCommands[rawCommand
+               .substringBefore(' ')
+               .trim()
+           ]
         }
+        return registeredCommands[rawCommand
+            .substringBefore(' ')
+            .trim()
+        ]
     }
+
+    /**
+     * 从解析好的第一个字节来获取Command对象
+     */
+    internal fun findCommand(name: String): Command? {
+        if(!name.startsWith('/')){
+            return quickMatchCommands[name]
+        }
+        return registeredCommands[name]
+    }
+
+
+
 }

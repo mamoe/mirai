@@ -20,32 +20,34 @@ internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
 
 /**
  * 指令
- *
+ * 通常情况下, 你的指令应继承 @see CompositeCommand/SimpleCommand
  * @see register 注册这个指令
  */
 interface Command {
-    val owner: CommandOwner
     val descriptor: CommandDescriptor
-
-    /**
-     * 指令的默认执行方法
-     * 当所有的 sub 方法均不满足时, 原始参数将送到此方法调用
-     * 如果 arg 为 String, 他会被包装为 PlainText(AKA PlainMessage)
-     */
-    @Permission(CommandPermission.Console::class)
-    suspend fun CommandSender.onDefault(args: List<Message>): Boolean
-
-    /**
-     * 在更多的情况下, 你应当使用 @SubCommand 来注册一共 sub 指令
-     */
-    @Target(AnnotationTarget.FUNCTION)
-    annotation class SubCommand(val name:String)
-
     /**
      * Permission of the command
      */
     @Target(AnnotationTarget.FUNCTION)
     annotation class Permission(val permission:KClass<*>)
+
+    /**
+     * If a command is prefix optional
+     * e.g
+     *    mute work as (/mute) if prefix optional or vise versa
+     */
+    @Target(AnnotationTarget.CLASS)
+    annotation class PrefixOptional()
+}
+
+
+abstract class CompositeCommand(val name:String, val alias:Array<String> = listOf()):Command{
+    /**
+     * 你应当使用 @SubCommand 来注册 sub 指令
+     */
+    @Target(AnnotationTarget.FUNCTION)
+    annotation class SubCommand(val name:String)
+
 
     /**
      * Usage of the sub command
@@ -64,16 +66,30 @@ interface Command {
     annotation class Name(val name:String)
 
 
-    /**
-     * If a command is prefix optional
-     * e.g
-     *    mute work as (/mute) if prefix optional or vise versa
-     */
-    @Target(AnnotationTarget.CLASS)
-    annotation class PrefixOptional()
+    override val descriptor: CommandDescriptor by lazy {
+        CommandDescriptor()
+    }
 }
 
 
+abstract class SimpleCommand(val name: String, val alias: Array<String> = arrayOf()
+):Command{
+    override val descriptor: CommandDescriptor by lazy {
+        CommandDescriptor()
+    }
+
+    /**
+     * 你必须实现onCommand方法
+     */
+}
+
+abstract class RawCommand(name:String, alias: Array<String> = arrayOf()):Command{
+    override val descriptor: CommandDescriptor by lazy {
+        CommandDescriptor()
+    }
+
+
+}
 /**
  * 解析完成的指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
  */
