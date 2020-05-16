@@ -6,8 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file:Suppress("ClassName")
-
+@file:Suppress("ClassName", "unused")
 package net.mamoe.mirai.console.codegen
 
 import org.intellij.lang.annotations.Language
@@ -194,6 +193,47 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
 
         appendln(template)
     }
+
+    appendln()
+
+    // FOR COMPLEX TYPES
+
+    appendln(
+        """
+            abstract class SettingValue<T : Setting> internal constructor() : Value<T>()
+
+            internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
+                return object : SettingValue<T>() {
+                    private var internalValue: T = default
+                    override var value: T
+                        get() = internalValue
+                        set(new) {
+                            if (new != internalValue) {
+                                internalValue = new
+                                onElementChanged(this)
+                            }
+                        }
+                    override val serializer = object : KSerializer<T>{
+                        override val descriptor: SerialDescriptor
+                            get() = internalValue.updaterSerializer.descriptor
+
+                        override fun deserialize(decoder: Decoder): T {
+                            internalValue.updaterSerializer.deserialize(decoder)
+                            return internalValue
+                        }
+
+                        override fun serialize(encoder: Encoder, value: T) {
+                            internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
+                        }
+
+                    }.bind(
+                        getter = { internalValue },
+                        setter = { internalValue = it }
+                    )
+                }
+            }
+        """
+    )
 
     appendln()
 }

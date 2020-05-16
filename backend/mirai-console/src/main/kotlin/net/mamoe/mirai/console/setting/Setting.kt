@@ -13,6 +13,9 @@ package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.*
 import net.mamoe.yamlkt.Yaml
+import net.mamoe.yamlkt.YamlConfiguration
+import net.mamoe.yamlkt.YamlConfiguration.ListSerialization.FLOW_SEQUENCE
+import net.mamoe.yamlkt.YamlConfiguration.MapSerialization.FLOW_MAP
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
@@ -57,17 +60,44 @@ abstract class Setting {
     internal var valueList: MutableList<Pair<Value<*>, KProperty<*>>> = mutableListOf()
     private var built: Boolean = false
 
-    internal val serializer: KSerializer<SettingSerializerMark> by lazy {
+    internal val updaterSerializer: KSerializer<SettingSerializerMark> by lazy {
         built = true
-        SettingSerializer(this)
+        SettingUpdaterSerializer(this)
+    }
+
+    internal val kotlinSerializer: KSerializer<Setting> by lazy {
+        object : KSerializer<Setting> {
+            override val descriptor: SerialDescriptor
+                get() = this@Setting.updaterSerializer.descriptor
+
+            override fun deserialize(decoder: Decoder): Setting {
+                this@Setting.updaterSerializer.deserialize(decoder)
+                return this@Setting
+            }
+
+            override fun serialize(encoder: Encoder, value: Setting) {
+                this@Setting.updaterSerializer.serialize(encoder, SettingSerializerMark)
+            }
+        }
     }
 
     internal fun onElementChanged(value: Value<*>) {
         println("my value changed!")
     }
+
+    companion object {
+        private val yaml =
+            Yaml(configuration = YamlConfiguration(classSerialization = FLOW_MAP, listSerialization = FLOW_SEQUENCE))
+    }
+
+    override fun toString(): String = yaml.stringify(this.serializer, this)
 }
 
-internal class SettingSerializer(
+@Suppress("UNCHECKED_CAST")
+val <T : Setting> T.serializer: KSerializer<T>
+    get() = kotlinSerializer as KSerializer<T>
+
+internal class SettingUpdaterSerializer(
     private val instance: Setting
 ) : KSerializer<SettingSerializerMark> {
     override val descriptor: SerialDescriptor by lazy {
@@ -121,3 +151,8 @@ internal class SettingSerializer(
 internal object SettingSerializerMark
 
 internal val KProperty<*>.serialNameOrPropertyName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
+
+
+fun <T : Setting> Setting.value(default: T): Value<T> = valueImpl(default)
+inline fun <T : Setting> Setting.value(default: T, crossinline initializer: T.() -> Unit): Value<T> =
+    value(default).also { it.value.apply(initializer) }
