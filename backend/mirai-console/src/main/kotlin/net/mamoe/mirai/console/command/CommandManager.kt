@@ -7,8 +7,11 @@ import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.console.plugins.PluginBase
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.SingleMessage
 
 sealed class CommandOwner
+
+object TestCommandOwner : CommandOwner()
 
 abstract class PluginCommandOwner(plugin: PluginBase) : CommandOwner()
 
@@ -36,6 +39,15 @@ fun CommandOwner.unregisterAllCommands() {
 fun Command.register(): Boolean = InternalCommandManager.modifyLock.withLock {
     if (findDuplicate() != null) return false
     InternalCommandManager.registeredCommands.add(this@register)
+    if (this.prefixOptional) {
+        for (name in this.names) {
+            InternalCommandManager.optionalPrefixCommandMap[name] = this
+        }
+    } else {
+        for (name in this.names) {
+            InternalCommandManager.requiredPrefixCommandMap[name] = this
+        }
+    }
     return true
 }
 
@@ -60,8 +72,12 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
  * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
  * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
  */
-suspend fun CommandSender.executeCommand(vararg messages: Any): Boolean =
-    executeCommandInternal(messages) { messages.getOrNull(it) }
+suspend fun CommandSender.executeCommand(vararg messages: Any): Boolean {
+    if (messages.isEmpty()) return false
+    return executeCommandInternal(
+        messages,
+        messages[0].let { if (it is SingleMessage) it.toString() else it.toString().substringBefore(' ') })
+}
 
 internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Array(size - n) { this[n + it] }
 
@@ -69,14 +85,16 @@ internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Arr
  * 解析并执行一个指令
  * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
  */
-suspend fun CommandSender.executeCommand(message: MessageChain): Boolean =
-    executeCommandInternal(message) { message.getOrNull(it) }
+suspend fun CommandSender.executeCommand(message: MessageChain): Boolean {
+    if (message.isEmpty()) return false
+    return executeCommandInternal(message, message[0].toString())
+}
 
 internal suspend inline fun CommandSender.executeCommandInternal(
     messages: Any,
-    iterator: (index: Int) -> Any?
+    commandName: String
 ): Boolean {
-    val command = InternalCommandManager.matchCommand(getCommandName(iterator)) ?: return false
+    val command = InternalCommandManager.matchCommand(commandName) ?: return false
     val rawInput = messages.flattenCommandComponents()
     command.onCommand(this, rawInput.dropToTypedArray(1))
     return true

@@ -54,7 +54,10 @@ object FloatArgParser : CommandArgParser<Float>() {
 }
 
 object StringArgParser : CommandArgParser<String>() {
-    override fun parse(raw: String, sender: CommandSender): String = raw
+    override fun parse(raw: String, sender: CommandSender): String {
+        println("STRING PARSER! $raw")
+        return raw
+    }
 }
 
 object BooleanArgParser : CommandArgParser<Boolean>() {

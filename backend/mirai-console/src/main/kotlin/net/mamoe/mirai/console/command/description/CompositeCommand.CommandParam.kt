@@ -3,14 +3,15 @@
 package net.mamoe.mirai.console.command.description
 
 import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.command.CompositeCommand
+import java.lang.reflect.Parameter
 import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
 
-internal fun KParameter.toCommandParam(): CommandParam<*> {
+internal fun Parameter.toCommandParam(): CommandParam<*> {
+    val name = getAnnotation(CompositeCommand.Name::class.java)
     return CommandParam(
-        this.name ?: throw IllegalArgumentException("Cannot construct CommandParam from a unnamed param"),
-        this.type.classifier as? KClass<*>
-            ?: throw IllegalArgumentException("Cannot construct CommandParam from a type parameter")
+        name?.name ?: this.name ?: throw IllegalArgumentException("Cannot construct CommandParam from a unnamed param"),
+        this.type.kotlin
     )
 }
 

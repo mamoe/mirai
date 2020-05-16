@@ -54,16 +54,16 @@ interface CommandParserContext {
         Bot::class with ExistBotArgParser
         Friend::class with ExistFriendArgParser
     })
-
-    object Empty : CommandParserContext by CustomCommandParserContext(listOf())
 }
+
+object EmptyCommandParserContext : CommandParserContext by CustomCommandParserContext(listOf())
 
 /**
  * 合并两个 [CommandParserContext], [replacer] 将会替换 [this] 中重复的 parser.
  */
 operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandParserContext {
-    if (replacer == CommandParserContext.Empty) return this
-    if (this == CommandParserContext.Empty) return replacer
+    if (replacer == EmptyCommandParserContext) return this
+    if (this == EmptyCommandParserContext) return replacer
     return object : CommandParserContext {
         override fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>? = replacer[klass] ?: this@plus[klass]
         override fun toList(): List<ParserPair<*>> = replacer.toList() + this@plus.toList()
@@ -75,7 +75,7 @@ operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandP
  */
 operator fun CommandParserContext.plus(replacer: List<ParserPair<*>>): CommandParserContext {
     if (replacer.isEmpty()) return this
-    if (this == CommandParserContext.Empty) return CustomCommandParserContext(replacer)
+    if (this == EmptyCommandParserContext) return CustomCommandParserContext(replacer)
     return object : CommandParserContext {
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>? =

@@ -19,23 +19,6 @@ internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
     return true
 }
 
-private val SYMBOL_MISSING_CARET = String(byteArrayOf())
-
-internal inline fun getCommandName(iterator: (index: Int) -> Any?): String = buildString {
-    repeat(Int.MAX_VALUE) { index ->
-        val next = iterator(index) ?: return@buildString
-
-        val str = next.toString()
-        val before = str.substringBefore(' ', SYMBOL_MISSING_CARET)
-        if (before === SYMBOL_MISSING_CARET) {
-            append(str)
-        } else {
-            append(before)
-            return@buildString
-        }
-    }
-}
-
 internal object InternalCommandManager {
     const val COMMAND_PREFIX = "/"
 
@@ -66,13 +49,13 @@ internal object InternalCommandManager {
      */
     internal fun matchCommand(rawCommand: String): Command? {
         if (rawCommand.startsWith(COMMAND_PREFIX)) {
-            return requiredPrefixCommandMap[rawCommand]
+            return requiredPrefixCommandMap[rawCommand.substringAfter(COMMAND_PREFIX)]
         }
         return optionalPrefixCommandMap[rawCommand]
     }
 }
 
-internal infix fun <T> Array<T>.intersects(other: Array<T>): Boolean {
+internal infix fun <T> Array<out T>.intersects(other: Array<out T>): Boolean {
     val max = this.size.coerceAtMost(other.size)
     for (i in 0 until max) {
         if (this[i] == other[i]) return true
