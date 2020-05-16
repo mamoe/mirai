@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.command.description.CommandParserContext.ParserPa
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -126,7 +127,7 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     inline infix fun <T : Any> KClass<T>.with(parser: CommandArgParser<T>): ParserPair<*> =
         ParserPair(this, parser).also { add(it) }
 
-    inline infix fun <reified T : Any> add(parser: CommandArgParser<T>): ParserPair<*> =
+    inline infix fun <reified T : Any> auto(parser: CommandArgParser<T>): ParserPair<*> =
         ParserPair(T::class, parser).also { add(it) }
 
     /**
@@ -149,17 +150,19 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     /**
      * 添加一个指令解析器
      */
+    @MiraiExperimentalAPI
     @JvmSynthetic
-    inline infix fun <reified T : Any> add(
+    inline infix fun <reified T : Any> auto(
         crossinline parser: CommandArgParser<*>.(s: String) -> T
     ): ParserPair<*> = T::class with CommandArgParser { s: String, _: CommandSender -> parser(s) }
 
     /**
      * 添加一个指令解析器
      */
+    @MiraiExperimentalAPI
     @JvmSynthetic
     @LowPriorityInOverloadResolution
-    inline infix fun <reified T : Any> add(
+    inline infix fun <reified T : Any> auto(
         crossinline parser: CommandArgParser<*>.(s: String, sender: CommandSender) -> T
     ): ParserPair<*> = T::class with CommandArgParser(parser)
 }
