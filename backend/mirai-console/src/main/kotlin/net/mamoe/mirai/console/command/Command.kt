@@ -40,8 +40,16 @@ interface Command {
     annotation class PrefixOptional()
 }
 
-
-abstract class CompositeCommand(val name:String, val alias:Array<String> = listOf()):Command{
+/**
+ * 功能最集中的Commend
+ * 支持且只支持有sub的指令
+ * 例:
+ *  /mute add
+ *  /mute remove
+ *  /mute addandremove  (sub is case insensitive, lowercase are recommend)
+ *  /mute add and remove('add and remove' consider as a sub)
+ */
+abstract class CompositeCommand(val name:String, val alias:Array<String> = arrayOf()):Command{
     /**
      * 你应当使用 @SubCommand 来注册 sub 指令
      */
