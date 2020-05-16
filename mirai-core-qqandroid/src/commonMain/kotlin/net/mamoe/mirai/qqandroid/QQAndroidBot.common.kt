@@ -22,7 +22,8 @@ import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.json.int
-import net.mamoe.mirai.*
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
@@ -31,6 +32,7 @@ import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
+import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
@@ -66,7 +68,7 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     return this as QQAndroidBot
 }
 
-@Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument")
+@Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
 internal class QQAndroidBot constructor(
     context: Context,
     account: BotAccount,
@@ -710,7 +712,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
     override suspend fun queryImageUrl(image: Image): String = when (image) {
         is OnlineFriendImageImpl -> image.originUrl
         is OnlineGroupImageImpl -> image.originUrl
