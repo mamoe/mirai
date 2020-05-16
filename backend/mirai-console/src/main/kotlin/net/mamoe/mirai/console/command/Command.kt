@@ -13,7 +13,6 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandDescriptor.SubCommandDescriptor
 import net.mamoe.mirai.message.data.Message
-import java.lang.reflect.Member
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
@@ -44,14 +43,13 @@ interface Command {
 
     /**
      * Permission of the command
-     *
      */
     @Target(AnnotationTarget.FUNCTION)
     annotation class Permission(val permission:KClass<*>)
 
     /**
      * Usage of the sub command
-     *
+     * you should not include arg names, which will be insert automatically
      */
     @Target(AnnotationTarget.FUNCTION)
     annotation class Usage(val usage:String)
@@ -64,6 +62,15 @@ interface Command {
      */
     @Target(AnnotationTarget.VALUE_PARAMETER)
     annotation class Name(val name:String)
+
+
+    /**
+     * If a command is prefix optional
+     * e.g
+     *    mute work as (/mute) if prefix optional or vise versa
+     */
+    @Target(AnnotationTarget.CLASS)
+    annotation class PrefixOptional()
 }
 
 
