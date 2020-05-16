@@ -55,102 +55,38 @@ interface CommandPermission {
     }
 
     /**
-     * 管理员或群主可以使用这个指令
+     * 来自任何 [Bot] 的任何一个管理员或群主都可以使用这个指令
      */
-    class Operator(
-        /**
-         * 指定只有来自某个 [Bot] 的管理员或群主才可以使用这个指令
-         */
-        vararg val fromBot: Long
-    ) : CommandPermission {
-        constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
-
+    object Operator : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean {
-            return this is MemberCommandSender && this.bot.id in fromBot && this.user.isOperator()
-        }
-
-        /**
-         * 来自任何 [Bot] 的任何一个管理员或群主都可以使用这个指令
-         */
-        companion object Any : CommandPermission {
-            override fun CommandSender.hasPermission(): Boolean {
-                return this is MemberCommandSender && this.user.isOperator()
-            }
+            return this is MemberCommandSender && this.user.isOperator()
         }
     }
 
     /**
-     * 群主可以使用这个指令
+     * 来自任何 [Bot] 的任何一个群主都可以使用这个指令
      */
-    class GroupOwner(
-        /**
-         * 指定只有来自某个 [Bot] 的群主才可以使用这个指令
-         */
-        vararg val fromBot: Long
-    ) : CommandPermission {
-        constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
-
+    object GroupOwner : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean {
-            return this is MemberCommandSender && this.bot.id in fromBot && this.user.isOwner()
-        }
-
-        /**
-         * 来自任何 [Bot] 的任何一个群主都可以使用这个指令
-         */
-        companion object Any : CommandPermission {
-            override fun CommandSender.hasPermission(): Boolean {
-                return this is MemberCommandSender && this.user.isOwner()
-            }
+            return this is MemberCommandSender && this.user.isOwner()
         }
     }
 
     /**
      * 管理员 (不包含群主) 可以使用这个指令
      */
-    class Administrator(
-        /**
-         * 指定只有来自某个 [Bot] 的管理员 (不包含群主) 才可以使用这个指令
-         */
-        vararg val fromBot: Long
-    ) : CommandPermission {
-        constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
-
+    object Administrator : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean {
-            return this is MemberCommandSender && this.bot.id in fromBot && this.user.isAdministrator()
-        }
-
-        /**
-         * 来自任何 [Bot] 的任何一个管理员 (不包含群主) 都可以使用这个指令
-         */
-        companion object Any : CommandPermission {
-            override fun CommandSender.hasPermission(): Boolean {
-                return this is MemberCommandSender && this.user.isAdministrator()
-            }
+            return this is MemberCommandSender && this.user.isAdministrator()
         }
     }
 
     /**
-     * console 管理员可以使用这个指令
+     * 任何 [Bot] 的 manager 都可以使用这个指令
      */
-    class Manager(
-        /**
-         * 指定只有来自某个 [Bot] 的管理员或群主才可以使用这个指令
-         */
-        vararg val fromBot: Long
-    ) : CommandPermission {
-        constructor(vararg fromBot: Bot) : this(*fromBot.map { it.id }.toLongArray())
-
+    object Manager : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean {
-            return this is MemberCommandSender && this.bot.id in fromBot && this.user.isManager
-        }
-
-        /**
-         * 任何 [Bot] 的 manager 都可以使用这个指令
-         */
-        companion object Any : CommandPermission {
-            override fun CommandSender.hasPermission(): Boolean {
-                return this is MemberCommandSender && this.user.isManager
-            }
+            return this is MemberCommandSender && this.user.isManager
         }
     }
 
