@@ -1,13 +1,24 @@
 @file:Suppress("unused")
 
-package net.mamoe.mirai.console.command
+package net.mamoe.mirai.console.command.description
 
+import net.mamoe.mirai.console.command.Command
 import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+
+internal fun KParameter.toCommandParam(): CommandParam<*> {
+    return CommandParam(
+        this.name ?: throw IllegalArgumentException("Cannot construct CommandParam from a unnamed param"),
+        this.type.classifier as? KClass<*>
+            ?: throw IllegalArgumentException("Cannot construct CommandParam from a type parameter")
+    )
+}
 
 /**
  * 指令形式参数.
+ * @see toCommandParam
  */
-data class CommandParam<T : Any>(
+internal data class CommandParam<T : Any>(
     /**
      * 参数名. 不允许重复.
      */
@@ -36,12 +47,3 @@ data class CommandParam<T : Any>(
     val overrideParser: CommandArgParser<T>? get() = _overrideParser
 }
 
-fun <T : Any> CommandParam<T>.parserFrom(command: Command): CommandArgParser<T>? = command.parserFor(this)
-
-fun <T : Any> CommandParam<T>.parserFrom(descriptor: CommandDescriptor): CommandArgParser<T>? =
-    descriptor.parserFor(this)
-
-fun <T : Any> CommandParam<T>.parserFrom(descriptor: CommandDescriptor.SubCommandDescriptor): CommandArgParser<T>? =
-    descriptor.parserFor(this)
-
-fun <T : Any> CommandParam<T>.parserFrom(context: CommandParserContext): CommandArgParser<T>? = context.parserFor(this)

@@ -97,10 +97,7 @@ interface CommandPermission {
         override fun CommandSender.hasPermission(): Boolean = false
     }
 
-    companion object {
-        @JvmStatic
-        val Default: CommandPermission = Manager or Console
-    }
+    object Default : CommandPermission by (Manager or Console)
 }
 
 /**
@@ -118,7 +115,7 @@ inline fun CommandSender.hasPermission(permission: CommandPermission): Boolean =
     permission.run { this@hasPermission.hasPermission() }
 
 
-inline fun CommandPermission.hasPermission(sender: CommandSender): Boolean = this.run { sender.hasPermission() }
+inline fun CommandPermission.testPermission(sender: CommandSender): Boolean = this.run { sender.hasPermission() }
 
 
 internal class OrCommandPermission(

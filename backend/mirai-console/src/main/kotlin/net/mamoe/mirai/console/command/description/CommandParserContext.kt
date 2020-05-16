@@ -9,10 +9,11 @@
 
 @file:Suppress("NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "unused", "MemberVisibilityCanBePrivate")
 
-package net.mamoe.mirai.console.command
+package net.mamoe.mirai.console.command.description
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.CommandParserContext.ParserPair
+import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.description.CommandParserContext.ParserPair
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -56,18 +57,6 @@ interface CommandParserContext {
 
     object Empty : CommandParserContext by CustomCommandParserContext(listOf())
 }
-
-fun <T : Any> CommandParserContext.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    param.overrideParser ?: this[param.type]
-
-fun <T : Any> CommandDescriptor.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    this.context.parserFor(param)
-
-fun <T : Any> CommandDescriptor.SubCommandDescriptor.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    this.parent.parserFor(param)
-
-fun <T : Any> Command.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    this.descriptor.parserFor(param)
 
 /**
  * 合并两个 [CommandParserContext], [replacer] 将会替换 [this] 中重复的 parser.

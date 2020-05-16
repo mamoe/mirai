@@ -1,4 +1,4 @@
-package net.mamoe.mirai.console.events;
+package net.mamoe.mirai.console.event;
 
 import net.mamoe.mirai.console.plugins.PluginBase;
 import net.mamoe.mirai.event.Event;

@@ -9,7 +9,7 @@
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package net.mamoe.mirai.console.events
+package net.mamoe.mirai.console.event
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
