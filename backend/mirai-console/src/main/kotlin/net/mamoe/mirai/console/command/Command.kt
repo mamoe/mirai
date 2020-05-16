@@ -42,37 +42,34 @@ interface Command {
     /**
      * 在更多的情况下, 你应当使用 @SubCommand 来注册一共 sub 指令
      */
+    @Target(AnnotationTarget.FUNCTION)
+    annotation class SubCommand(val name:String)
 
     /**
-     * 这是个例子
-    @SubCommand("add")
-    @Permission(CommandPermission.Console::class)
-    @Usage("禁言一个群员")
-    suspend fun CommandSender.onMyMethod1(
-        @Name("被禁言的人") member: Member,
-        @Name("时间") time:Int
-    )
-    */
-
+     * Permission of the command
+     *
+     */
     @Target(AnnotationTarget.FUNCTION)
     annotation class Permission(val permission:KClass<*>)
 
+    /**
+     * Usage of the sub command
+     *
+     */
     @Target(AnnotationTarget.FUNCTION)
     annotation class Usage(val usage:String)
 
-
+    /**
+     * name of the parameter
+     *
+     * by default available
+     *
+     */
     @Target(AnnotationTarget.VALUE_PARAMETER)
     annotation class Name(val name:String)
-
-
 }
 
-@Target(AnnotationTarget.FUNCTION)
-annotation class SubCommand(
-    val name:String
-){
 
-}
 /**
  * 指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
  */
