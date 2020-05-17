@@ -9,13 +9,15 @@
 
 @file:Suppress("NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "unused", "MemberVisibilityCanBePrivate")
 
-package net.mamoe.mirai.console.command
+package net.mamoe.mirai.console.command.description
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.CommandParserContext.ParserPair
+import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.description.CommandParserContext.ParserPair
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -53,28 +55,16 @@ interface CommandParserContext {
         Bot::class with ExistBotArgParser
         Friend::class with ExistFriendArgParser
     })
-
-    object Empty : CommandParserContext by CustomCommandParserContext(listOf())
 }
 
-fun <T : Any> CommandParserContext.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    param.overrideParser ?: this[param.type]
-
-fun <T : Any> CommandDescriptor.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    this.context.parserFor(param)
-
-fun <T : Any> CommandDescriptor.SubCommandDescriptor.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    this.parent.parserFor(param)
-
-fun <T : Any> Command.parserFor(param: CommandParam<T>): CommandArgParser<T>? =
-    this.descriptor.parserFor(param)
+object EmptyCommandParserContext : CommandParserContext by CustomCommandParserContext(listOf())
 
 /**
  * 合并两个 [CommandParserContext], [replacer] 将会替换 [this] 中重复的 parser.
  */
 operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandParserContext {
-    if (replacer == CommandParserContext.Empty) return this
-    if (this == CommandParserContext.Empty) return replacer
+    if (replacer == EmptyCommandParserContext) return this
+    if (this == EmptyCommandParserContext) return replacer
     return object : CommandParserContext {
         override fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>? = replacer[klass] ?: this@plus[klass]
         override fun toList(): List<ParserPair<*>> = replacer.toList() + this@plus.toList()
@@ -86,7 +76,7 @@ operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandP
  */
 operator fun CommandParserContext.plus(replacer: List<ParserPair<*>>): CommandParserContext {
     if (replacer.isEmpty()) return this
-    if (this == CommandParserContext.Empty) return CustomCommandParserContext(replacer)
+    if (this == EmptyCommandParserContext) return CustomCommandParserContext(replacer)
     return object : CommandParserContext {
         @Suppress("UNCHECKED_CAST")
         override fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>? =
@@ -137,6 +127,9 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     inline infix fun <T : Any> KClass<T>.with(parser: CommandArgParser<T>): ParserPair<*> =
         ParserPair(this, parser).also { add(it) }
 
+    inline infix fun <reified T : Any> auto(parser: CommandArgParser<T>): ParserPair<*> =
+        ParserPair(T::class, parser).also { add(it) }
+
     /**
      * 添加一个指令解析器
      */
@@ -153,6 +146,25 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgParser<T>.(s: String) -> T
     ): ParserPair<*> = ParserPair(this, CommandArgParser { s: String, _: CommandSender -> parser(s) }).also { add(it) }
+
+    /**
+     * 添加一个指令解析器
+     */
+    @MiraiExperimentalAPI
+    @JvmSynthetic
+    inline infix fun <reified T : Any> auto(
+        crossinline parser: CommandArgParser<*>.(s: String) -> T
+    ): ParserPair<*> = T::class with CommandArgParser { s: String, _: CommandSender -> parser(s) }
+
+    /**
+     * 添加一个指令解析器
+     */
+    @MiraiExperimentalAPI
+    @JvmSynthetic
+    @LowPriorityInOverloadResolution
+    inline infix fun <reified T : Any> auto(
+        crossinline parser: CommandArgParser<*>.(s: String, sender: CommandSender) -> T
+    ): ParserPair<*> = T::class with CommandArgParser(parser)
 }
 
 

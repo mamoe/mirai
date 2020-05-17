@@ -14,7 +14,7 @@ package net.mamoe.mirai.console.plugins
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.events.EventListener
+import net.mamoe.mirai.console.event.EventListener
 import net.mamoe.mirai.console.scheduler.PluginScheduler
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File

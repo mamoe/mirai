@@ -11,12 +11,17 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandDescriptor.SubCommandDescriptor
-import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.console.command.description.CommandParam
+import net.mamoe.mirai.console.command.description.CommandParserContext
+import net.mamoe.mirai.console.command.description.EmptyCommandParserContext
+import net.mamoe.mirai.console.command.description.plus
+import net.mamoe.mirai.console.plugins.MyArg
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.SingleMessage
+import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
-
-internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
+import kotlin.reflect.full.declaredFunctions
+import kotlin.reflect.full.findAnnotation
 
 /**
  * 指令
@@ -24,20 +29,15 @@ internal const val FOR_BINARY_COMPATIBILITY = "for binary compatibility"
  * @see register 注册这个指令
  */
 interface Command {
-    val descriptor: CommandDescriptor
-    /**
-     * Permission of the command
-     */
-    @Target(AnnotationTarget.FUNCTION)
-    annotation class Permission(val permission:KClass<*>)
+    val names: Array<out String>
+    val usage: String
+    val description: String
+    val permission: CommandPermission
+    val prefixOptional: Boolean
 
-    /**
-     * If a command is prefix optional
-     * e.g
-     *    mute work as (/mute) if prefix optional or vise versa
-     */
-    @Target(AnnotationTarget.CLASS)
-    annotation class PrefixOptional()
+    val owner: CommandOwner
+
+    suspend fun onCommand(sender: CommandSender, args: Array<out Any>)
 }
 
 /**
@@ -49,120 +49,188 @@ interface Command {
  *  /mute addandremove  (sub is case insensitive, lowercase are recommend)
  *  /mute add and remove('add and remove' consider as a sub)
  */
-abstract class CompositeCommand(val name:String, val alias:Array<String> = arrayOf()):Command{
-    /**
-     * 你应当使用 @SubCommand 来注册 sub 指令
-     */
+abstract class CompositeCommand @JvmOverloads constructor(
+    override val owner: CommandOwner,
+    vararg names: String,
+    override val description: String = "",
+    override val permission: CommandPermission = CommandPermission.Default,
+    override val prefixOptional: Boolean = false,
+    overrideContext: CommandParserContext = EmptyCommandParserContext
+) : Command {
+    override val names: Array<out String> =
+        names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).toTypedArray()
+    val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
+    override val usage: String by lazy { TODO() }
+
+    /** 指定子指令要求的权限 */
+    @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.FUNCTION)
-    annotation class SubCommand(val name:String)
+    annotation class Permission(val permission: KClass<out CommandPermission>)
 
-
-    /**
-     * Usage of the sub command
-     * you should not include arg names, which will be insert automatically
-     */
+    /** 标记一个函数为子指令 */
+    @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.FUNCTION)
-    annotation class Usage(val usage:String)
+    annotation class SubCommand(val name: String)
 
-    /**
-     * name of the parameter
-     *
-     * by default available
-     *
-     */
+    /** 指令描述 */
+    @Retention(AnnotationRetention.RUNTIME)
+    @Target(AnnotationTarget.FUNCTION)
+    annotation class Description(val description: String)
+
+    /** 参数名, 将参与构成 [usage] */
+    @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.VALUE_PARAMETER)
-    annotation class Name(val name:String)
+    annotation class Name(val name: String)
 
-
-    override val descriptor: CommandDescriptor by lazy {
-        CommandDescriptor()
-    }
-}
-
-
-abstract class SimpleCommand(val name: String, val alias: Array<String> = arrayOf()
-):Command{
-    override val descriptor: CommandDescriptor by lazy {
-        CommandDescriptor()
+    final override suspend fun onCommand(sender: CommandSender, args: Array<out Any>) {
+        matchSubCommand(args)?.parseAndExecute(sender, args) ?: kotlin.run {
+            defaultSubCommand.onCommand(sender, args)
+        }
+        subCommands
     }
 
-    /**
-     * 你必须实现onCommand方法
-     */
-}
-
-abstract class RawCommand(name:String, alias: Array<String> = arrayOf()):Command{
-    override val descriptor: CommandDescriptor by lazy {
-        CommandDescriptor()
+    internal val defaultSubCommand: DefaultSubCommandDescriptor by lazy {
+        DefaultSubCommandDescriptor(
+            "",
+            CommandPermission.Default,
+            onCommand = block { sender: CommandSender, args: Array<out Any> ->
+                println("default finally got args: ${args.joinToString()}")
+                true
+            }
+        )
     }
 
+    internal val subCommands: Array<SubCommandDescriptor> by lazy {
+        this::class.declaredFunctions.filter { it.hasAnnotation<SubCommand>() }.map { function ->
+            SubCommandDescriptor(
+                arrayOf(function.name),
+                arrayOf(CommandParam("p", MyArg::class)),
+                "",
+                CommandPermission.Default,
+                onCommand = block { sender: CommandSender, args: Array<out Any> ->
+                    println("subname finally gor args: ${args.joinToString()}")
+                    true
+                }
+            )
+        }.toTypedArray()
+    }
 
-    @Command.Permission(CommandPermission.Default::class)
-    abstract fun onCommand(list: List<Message>)
+    private fun block(block: suspend (CommandSender, Array<out Any>) -> Boolean): suspend (CommandSender, Array<out Any>) -> Boolean {
+        return block
+    }
 
-
-}
-/**
- * 解析完成的指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
- */
-class CommandArgs private constructor(
     @JvmField
-    internal val values: List<Any>,
-    private val fromCommand: SubCommandDescriptor
-) : List<Any> by values {
-    /**
-     * 获取第一个类型为 [R] 的参数
-     */
-    @JvmSynthetic
-    inline fun <reified R> getReified(): R {
-        for (value in this) {
-            if (value is R) {
-                return value
+    internal val bakedCommandNameToSubDescriptorArray: Map<Array<String>, SubCommandDescriptor> = kotlin.run {
+        val map = LinkedHashMap<Array<String>, SubCommandDescriptor>(subCommands.size * 2)
+        for (descriptor in subCommands) {
+            for (name in descriptor.bakedSubNames) {
+                map[name] = descriptor
             }
         }
-        error("Cannot find argument typed ${R::class.qualifiedName}")
+        map.toSortedMap(Comparator { o1, o2 -> o1!!.contentHashCode() - o2!!.contentHashCode() })
     }
 
-    /**
-     * 获取名称为 [name] 的参数.
-     *
-     * 若 [name] 为 `null` 则获取第一个匿名参数
-     * @throws NoSuchElementException 找不到这个名称的参数时抛出
-     */
-    operator fun get(name: String?): Any {
-        val index = fromCommand.params.indexOfFirst { it.name == name }
-        if (index == -1) {
-            throw NoSuchElementException("Cannot find argument named $name")
-        }
-        return values[index]
-    }
+    internal inner class DefaultSubCommandDescriptor(
+        val description: String,
+        val permission: CommandPermission,
+        val onCommand: suspend (sender: CommandSender, rawArgs: Array<out Any>) -> Boolean
+    )
 
-    /**
-     * 获取名称为 [name] 的参数. 并强转为 [R].
-     *
-     * 若 [name] 为 `null` 则获取第一个匿名参数
-     * @throws IllegalStateException 无法强转时抛出
-     */
-    fun <R> getAs(name: String?): R {
-        @Suppress("UNCHECKED_CAST")
-        return this[name] as? R ?: error("Argument $name has a type $")
-    }
-
-    /** 获取第一个类型为 [R] 的参数并提供委托 */
-    inline operator fun <reified R : Any> getValue(thisRef: Any?, property: KProperty<*>): R = getReified()
-
-    companion object {
-        fun parseFrom(command: SubCommandDescriptor, sender: CommandSender, rawArgs: List<Any>): CommandArgs {
-            val params = command.params
-
-            require(rawArgs.size >= params.size) { "No enough rawArgs: required ${params.size}, found only ${rawArgs.size}" }
-
-            command.params.asSequence().zip(rawArgs.asSequence()).map { (commandParam, any) ->
-                command.parserFor(commandParam)?.parse(any, sender)
-                    ?: error("Could not find a parser for param named ${commandParam.name}, typed ${commandParam.type.qualifiedName}")
-            }.toList().let { bakedArgs ->
-                return CommandArgs(bakedArgs, command)
+    internal inner class SubCommandDescriptor(
+        val names: Array<String>,
+        val params: Array<CommandParam<*>>,
+        val description: String,
+        val permission: CommandPermission,
+        val onCommand: suspend (sender: CommandSender, parsedArgs: Array<out Any>) -> Boolean
+    ) {
+        internal suspend inline fun parseAndExecute(
+            sender: CommandSender,
+            argsWithSubCommandNameNotRemoved: Array<out Any>
+        ) {
+            if (!onCommand(sender, parseArgs(sender, argsWithSubCommandNameNotRemoved, names.size))) {
+                sender.sendMessage(usage)
             }
         }
+
+        @JvmField
+        internal val bakedSubNames: Array<Array<String>> = names.map { it.bakeSubName() }.toTypedArray()
+        private fun parseArgs(sender: CommandSender, rawArgs: Array<out Any>, offset: Int): Array<out Any> {
+            require(rawArgs.size >= offset + this.params.size) { "No enough args. Required ${params.size}, but given ${rawArgs.size - offset}" }
+
+            return Array(this.params.size) { index ->
+                val param = params[index]
+                val rawArg = rawArgs[offset + index]
+                when (rawArg) {
+                    is String -> context[param.type]?.parse(rawArg, sender)
+                    is SingleMessage -> context[param.type]?.parse(rawArg, sender)
+                    else -> throw IllegalArgumentException("Illegal argument type: ${rawArg::class.qualifiedName}")
+                } ?: error("Cannot find a parser for $rawArg")
+            }
+        }
+    }
+
+    /**
+     * @param rawArgs 元素类型必须为 [SingleMessage] 或 [String], 且已经经过扁平化处理. 否则抛出异常 [IllegalArgumentException]
+     */
+    internal fun matchSubCommand(rawArgs: Array<out Any>): SubCommandDescriptor? {
+        val maxCount = rawArgs.size - 1
+        var cur = 0
+        bakedCommandNameToSubDescriptorArray.forEach { (name, descriptor) ->
+            if (name.size != cur) {
+                if (cur++ == maxCount) return null
+            }
+            if (name.contentEqualsOffset(rawArgs, length = cur)) {
+                return descriptor
+            }
+        }
+        return null
     }
 }
+
+
+abstract class SimpleCommand(
+    override val owner: CommandOwner,
+    val name: String,
+    val alias: Array<String> = arrayOf()
+) : Command {
+    abstract suspend fun CommandSender.onCommand(args: List<Any>)
+}
+
+abstract class RawCommand(
+    final override val owner: CommandOwner,
+    name: String,
+    alias: Array<String> = arrayOf()
+) : Command {
+    final override val names: Array<String> = arrayOf(name, *alias)
+}
+
+
+private fun <T> Array<T>.contentEqualsOffset(other: Array<out Any>, length: Int): Boolean {
+    repeat(length) { index ->
+        if (other[index].toString() != this[index]) {
+            return false
+        }
+    }
+    return true
+}
+
+internal val ILLEGAL_SUB_NAME_CHARS = "\\/!@#$%^&*()_+-={}[];':\",.<>?`~".toCharArray()
+internal fun String.isValidSubName(): Boolean = ILLEGAL_SUB_NAME_CHARS.none { it in this }
+internal fun String.bakeSubName(): Array<String> = split(' ').filterNot { it.isBlank() }.toTypedArray()
+
+internal fun Any.flattenCommandComponents(): ArrayList<Any> {
+    val list = ArrayList<Any>()
+    when (this::class.java) { // faster than is
+        String::class.java -> (this as String).splitToSequence(' ').filterNot { it.isBlank() }.forEach { list.add(it) }
+        PlainText::class.java -> (this as PlainText).content.splitToSequence(' ').filterNot { it.isBlank() }
+            .forEach { list.add(it) }
+        SingleMessage::class.java -> list.add(this as SingleMessage)
+        Array<Any>::class.java -> (this as Array<*>).forEach { if (it != null) list.addAll(it.flattenCommandComponents()) }
+        Iterable::class.java -> (this as Iterable<*>).forEach { if (it != null) list.addAll(it.flattenCommandComponents()) }
+        else -> list.add(this.toString())
+    }
+    return list
+}
+
+internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): Boolean =
+    findAnnotation<T>() != null
