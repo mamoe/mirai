@@ -51,19 +51,21 @@ interface Command {
  */
 abstract class CompositeCommand @JvmOverloads constructor(
     override val owner: CommandOwner,
-    override vararg val names: String,
-    override val description: String,
+    vararg names: String,
+    override val description: String = "",
     override val permission: CommandPermission = CommandPermission.Default,
     override val prefixOptional: Boolean = false,
     overrideContext: CommandParserContext = EmptyCommandParserContext
 ) : Command {
+    override val names: Array<out String> =
+        names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).toTypedArray()
     val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
     override val usage: String by lazy { TODO() }
 
     /** 指定子指令要求的权限 */
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.FUNCTION)
-    annotation class Permission(val permission: KClass<out Permission>)
+    annotation class Permission(val permission: KClass<out CommandPermission>)
 
     /** 标记一个函数为子指令 */
     @Retention(AnnotationRetention.RUNTIME)
@@ -146,7 +148,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
             argsWithSubCommandNameNotRemoved: Array<out Any>
         ) {
             if (!onCommand(sender, parseArgs(sender, argsWithSubCommandNameNotRemoved, names.size))) {
-                // TODO: 2020/5/16 SEND USAGE
+                sender.sendMessage(usage)
             }
         }
 
@@ -218,7 +220,7 @@ internal fun String.bakeSubName(): Array<String> = split(' ').filterNot { it.isB
 
 internal fun Any.flattenCommandComponents(): ArrayList<Any> {
     val list = ArrayList<Any>()
-    when (this::class.java) {
+    when (this::class.java) { // faster than is
         String::class.java -> (this as String).splitToSequence(' ').filterNot { it.isBlank() }.forEach { list.add(it) }
         PlainText::class.java -> (this as PlainText).content.splitToSequence(' ').filterNot { it.isBlank() }
             .forEach { list.add(it) }
