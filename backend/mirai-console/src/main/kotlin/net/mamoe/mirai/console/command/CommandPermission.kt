@@ -28,7 +28,6 @@ interface CommandPermission {
      */
     fun CommandSender.hasPermission(): Boolean
 
-
     /**
      * 满足两个权限其中一个即可使用指令
      */ // no extension for Java
@@ -38,7 +37,6 @@ interface CommandPermission {
      * 同时拥有两个权限才能使用指令
      */ // no extension for Java
     infix fun and(another: CommandPermission): CommandPermission = AndCommandPermission(this, another)
-
 
     /**
      * 任何人都可以使用这个指令
@@ -55,7 +53,7 @@ interface CommandPermission {
     }
 
     /**
-     * 来自任何 [Bot] 的任何一个管理员或群主都可以使用这个指令
+     * 来自任何 [Bot] 的任何一个群管理员或群主都可以使用这个指令
      */
     object Operator : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean {
@@ -117,9 +115,7 @@ inline fun AnonymousCommandPermission(crossinline block: CommandSender.() -> Boo
 inline fun CommandSender.hasPermission(permission: CommandPermission): Boolean =
     permission.run { this@hasPermission.hasPermission() }
 
-
 inline fun CommandPermission.hasPermission(sender: CommandSender): Boolean = this.run { sender.hasPermission() }
-
 
 internal class OrCommandPermission(
     private val first: CommandPermission,

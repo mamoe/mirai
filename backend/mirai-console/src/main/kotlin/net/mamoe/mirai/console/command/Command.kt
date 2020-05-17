@@ -97,6 +97,10 @@ abstract class RawCommand(name:String, alias: Array<String> = arrayOf()):Command
     }
 
 
+    @Command.Permission(CommandPermission.Default::class)
+    abstract fun onCommand(list: List<Message>)
+
+
 }
 /**
  * 解析完成的指令实际参数列表. 参数顺序与 [Command.descriptor] 的 [CommandDescriptor.params] 相同.
