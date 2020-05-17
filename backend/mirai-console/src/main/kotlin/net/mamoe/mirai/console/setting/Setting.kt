@@ -19,7 +19,7 @@ import kotlin.reflect.full.findAnnotation
 typealias SerialName = kotlinx.serialization.SerialName
 
 /**
- * 配置的基类
+ * 配置的基类. 所有配置必须拥有一个无参构造器, 以用于在 [MutableList] 与 [MutableMap] 中动态识别类型
  */
 @Suppress("EXPOSED_SUPER_CLASS")
 abstract class Setting : AbstractSetting() {
@@ -56,3 +56,14 @@ fun <T : Setting> Setting.value(default: T): Value<T> {
 
 inline fun <T : Setting> Setting.value(default: T, crossinline initializer: T.() -> Unit): Value<T> =
     value(default).also { it.value.apply(initializer) }
+
+inline fun <reified T : Setting> Setting.value(default: List<T>): SettingListValue<T> = valueImpl(default)
+
+@JvmName("valueMutable")
+inline fun <reified T : Setting> Setting.value(default: MutableList<T>): MutableSettingListValue<T> = valueImpl(default)
+
+
+inline fun <reified T : Setting> Setting.value(default: Set<T>): SettingSetValue<T> = valueImpl(default)
+
+@JvmName("valueMutable")
+inline fun <reified T : Setting> Setting.value(default: MutableSet<T>): MutableSettingSetValue<T> = valueImpl(default)

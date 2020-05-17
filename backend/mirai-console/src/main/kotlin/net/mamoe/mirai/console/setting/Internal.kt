@@ -78,10 +78,11 @@ internal class SettingUpdaterSerializer(
     override fun deserialize(decoder: Decoder): SettingSerializerMark = decoder.decodeStructure(descriptor) {
         if (this.decodeSequentially()) {
             instance.valueList.forEachIndexed { index, (value, _) ->
-                this.decodeSerializableElement(
+                val v = value as Value<Any>
+                v.value = this.decodeSerializableElement(
                     value.serializer.descriptor,
                     index,
-                    value.serializer as KSerializer<Any>
+                    v.serializer
                 )
             }
         } else {

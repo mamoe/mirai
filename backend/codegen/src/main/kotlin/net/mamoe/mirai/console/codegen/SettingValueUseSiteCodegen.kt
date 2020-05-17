@@ -63,9 +63,23 @@ fun genAllValueUseSite(): String = buildString {
         appendln(genValueUseSite("Array<${number}>", "Typed${number}Array"))
     }
 
-    // PRIMITIVE LISTS
-    for (number in NUMBERS + OTHER_PRIMITIVES) {
-        appendln(genValueUseSite("List<${number}>", "${number}List"))
+    // PRIMITIVE LISTS / PRIMITIVE SETS
+    for (collectionName in listOf("List", "Set")) {
+        for (number in NUMBERS + OTHER_PRIMITIVES) {
+            appendln(genValueUseSite("${collectionName}<${number}>", "${number}${collectionName}"))
+        }
+    }
+
+    // MUTABLE LIST / MUTABLE SET
+    for (collectionName in listOf("List", "Set")) {
+        for (number in NUMBERS + OTHER_PRIMITIVES) {
+            appendln(
+                """
+                @JvmName("valueMutable")
+                fun Setting.value(default: Mutable${collectionName}<${number}>): Mutable${number}${collectionName}Value = valueImpl(default)
+            """.trimIndent()
+            )
+        }
     }
 }
 

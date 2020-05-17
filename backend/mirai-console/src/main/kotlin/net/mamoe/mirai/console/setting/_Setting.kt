@@ -52,4 +52,67 @@ fun Setting.value(default: List<Double>): DoubleListValue = valueImpl(default)
 fun Setting.value(default: List<Boolean>): BooleanListValue = valueImpl(default)
 fun Setting.value(default: List<Char>): CharListValue = valueImpl(default)
 fun Setting.value(default: List<String>): StringListValue = valueImpl(default)
+fun Setting.value(default: Set<Int>): IntSetValue = valueImpl(default)
+fun Setting.value(default: Set<Short>): ShortSetValue = valueImpl(default)
+fun Setting.value(default: Set<Byte>): ByteSetValue = valueImpl(default)
+fun Setting.value(default: Set<Long>): LongSetValue = valueImpl(default)
+fun Setting.value(default: Set<Float>): FloatSetValue = valueImpl(default)
+fun Setting.value(default: Set<Double>): DoubleSetValue = valueImpl(default)
+fun Setting.value(default: Set<Boolean>): BooleanSetValue = valueImpl(default)
+fun Setting.value(default: Set<Char>): CharSetValue = valueImpl(default)
+fun Setting.value(default: Set<String>): StringSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<Int>): MutableIntListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<Short>): MutableShortListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<Byte>): MutableByteListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<Long>): MutableLongListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<Float>): MutableFloatListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<Double>): MutableDoubleListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<Boolean>): MutableBooleanListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<Char>): MutableCharListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableList<String>): MutableStringListValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<Int>): MutableIntSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<Short>): MutableShortSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<Byte>): MutableByteSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<Long>): MutableLongSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<Float>): MutableFloatSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<Double>): MutableDoubleSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<Boolean>): MutableBooleanSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<Char>): MutableCharSetValue = valueImpl(default)
+
+@JvmName("valueMutable")
+fun Setting.value(default: MutableSet<String>): MutableStringSetValue = valueImpl(default)
 
