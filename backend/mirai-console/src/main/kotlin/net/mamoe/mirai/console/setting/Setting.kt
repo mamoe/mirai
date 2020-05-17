@@ -45,25 +45,3 @@ abstract class Setting : AbstractSetting() {
 @Suppress("UNCHECKED_CAST")
 val <T : Setting> T.serializer: KSerializer<T>
     get() = kotlinSerializer as KSerializer<T>
-
-
-fun <T : Setting> Setting.value(default: T): Value<T> {
-    require(this::class != default::class) {
-        "Recursive nesting is prohibited"
-    }
-    return valueImpl(default)
-}
-
-inline fun <T : Setting> Setting.value(default: T, crossinline initializer: T.() -> Unit): Value<T> =
-    value(default).also { it.value.apply(initializer) }
-
-inline fun <reified T : Setting> Setting.value(default: List<T>): SettingListValue<T> = valueImpl(default)
-
-@JvmName("valueMutable")
-inline fun <reified T : Setting> Setting.value(default: MutableList<T>): MutableSettingListValue<T> = valueImpl(default)
-
-
-inline fun <reified T : Setting> Setting.value(default: Set<T>): SettingSetValue<T> = valueImpl(default)
-
-@JvmName("valueMutable")
-inline fun <reified T : Setting> Setting.value(default: MutableSet<T>): MutableSettingSetValue<T> = valueImpl(default)

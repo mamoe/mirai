@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -115,4 +114,25 @@ fun Setting.value(default: MutableSet<Char>): MutableCharSetValue = valueImpl(de
 
 @JvmName("valueMutable")
 fun Setting.value(default: MutableSet<String>): MutableStringSetValue = valueImpl(default)
+
+fun <T : Setting> Setting.value(default: T): Value<T> {
+    require(this::class != default::class) {
+        "Recursive nesting is prohibited"
+    }
+    return valueImpl(default)
+}
+
+inline fun <T : Setting> Setting.value(default: T, crossinline initializer: T.() -> Unit): Value<T> =
+    value(default).also { it.value.apply(initializer) }
+
+inline fun <reified T : Setting> Setting.value(default: List<T>): SettingListValue<T> = valueImpl(default)
+
+@JvmName("valueMutable")
+inline fun <reified T : Setting> Setting.value(default: MutableList<T>): MutableSettingListValue<T> = valueImpl(default)
+
+
+inline fun <reified T : Setting> Setting.value(default: Set<T>): SettingSetValue<T> = valueImpl(default)
+
+@JvmName("valueMutable")
+inline fun <reified T : Setting> Setting.value(default: MutableSet<T>): MutableSettingSetValue<T> = valueImpl(default)
 

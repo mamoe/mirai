@@ -21,7 +21,7 @@ fun main() {
     }.writeText(genPublicApi())
 }
 
-internal const val COPYRIGHT = """
+internal val COPYRIGHT = """
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -30,7 +30,7 @@ internal const val COPYRIGHT = """
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-"""
+""".trim()
 
 internal val NUMBERS = listOf(
     "Int",

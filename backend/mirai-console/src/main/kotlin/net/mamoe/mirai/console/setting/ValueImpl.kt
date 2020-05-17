@@ -33,6 +33,7 @@ internal inline fun <reified T : Setting> Setting.valueImpl(
 ): MutableSettingListValue<T> = valueImpl(default, T::class.createInstance().serializer)
 
 
+/*
 @PublishedApi
 @JvmName("valueImpl1")
 internal fun <T : Any> Setting.valueImpl(
@@ -40,7 +41,7 @@ internal fun <T : Any> Setting.valueImpl(
     valueMapper: (T) -> Value<T>,
     elementSerializer: KSerializer<T>
 ): MutableListValue<T> = valueImpl(default.mapTo(mutableListOf(), valueMapper), valueMapper, elementSerializer)
-
+*/
 internal fun <T : Any> Setting.valueImpl(
     default: MutableList<Value<T>>,
     valueMapper: (T) -> Value<T>,
@@ -225,7 +226,7 @@ internal inline fun <reified T : Setting> Setting.valueImpl(
     default: MutableSet<T>
 ): MutableSettingSetValue<T> = valueImpl(default, T::class.createInstance().serializer)
 
-
+/*
 @JvmName("valueImpl1")
 @PublishedApi
 internal fun <T : Any> Setting.valueImpl(
@@ -233,7 +234,7 @@ internal fun <T : Any> Setting.valueImpl(
     valueMapper: (T) -> Value<T>,
     elementSerializer: KSerializer<T>
 ): MutableSetValue<T> = valueImpl(default.mapTo(mutableSetOf(), valueMapper), valueMapper, elementSerializer)
-
+*/
 @JvmName("valueImplMutable")
 internal fun <T : Any> Setting.valueImpl(
     default: MutableSet<Value<T>>,

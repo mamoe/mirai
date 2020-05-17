@@ -62,31 +62,24 @@ sealed class PrimitiveArrayValue<T : Any> : ArrayValue<T>()
 abstract class IntArrayValue internal constructor() : PrimitiveArrayValue<IntArray>(), Iterable<Int> {
     override fun iterator(): Iterator<Int> = this.value.iterator()
 }
-
 abstract class ShortArrayValue internal constructor() : PrimitiveArrayValue<ShortArray>(), Iterable<Short> {
     override fun iterator(): Iterator<Short> = this.value.iterator()
 }
-
 abstract class ByteArrayValue internal constructor() : PrimitiveArrayValue<ByteArray>(), Iterable<Byte> {
     override fun iterator(): Iterator<Byte> = this.value.iterator()
 }
-
 abstract class LongArrayValue internal constructor() : PrimitiveArrayValue<LongArray>(), Iterable<Long> {
     override fun iterator(): Iterator<Long> = this.value.iterator()
 }
-
 abstract class FloatArrayValue internal constructor() : PrimitiveArrayValue<FloatArray>(), Iterable<Float> {
     override fun iterator(): Iterator<Float> = this.value.iterator()
 }
-
 abstract class DoubleArrayValue internal constructor() : PrimitiveArrayValue<DoubleArray>(), Iterable<Double> {
     override fun iterator(): Iterator<Double> = this.value.iterator()
 }
-
 abstract class BooleanArrayValue internal constructor() : PrimitiveArrayValue<BooleanArray>(), Iterable<Boolean> {
     override fun iterator(): Iterator<Boolean> = this.value.iterator()
 }
-
 abstract class CharArrayValue internal constructor() : PrimitiveArrayValue<CharArray>(), Iterable<Char> {
     override fun iterator(): Iterator<Char> = this.value.iterator()
 }
