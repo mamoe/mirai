@@ -65,10 +65,7 @@ fun genPublicApi() = buildString {
         """
             package net.mamoe.mirai.console.setting
 
-            import kotlinx.serialization.Decoder
-            import kotlinx.serialization.Encoder
             import kotlinx.serialization.KSerializer
-            import kotlinx.serialization.SerialDescriptor
             import kotlin.properties.ReadWriteProperty
             import kotlin.reflect.KProperty
         """
@@ -221,42 +218,11 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
         appendln()
     }
 
-    // FOR COMPLEX TYPES
+    // SETTING VALUE
 
     appendln(
         """
             abstract class SettingValue<T : Setting> internal constructor() : Value<T>()
-
-            internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
-                return object : SettingValue<T>() {
-                    private var internalValue: T = default
-                    override var value: T
-                        get() = internalValue
-                        set(new) {
-                            if (new != internalValue) {
-                                internalValue = new
-                                onElementChanged(this)
-                            }
-                        }
-                    override val serializer = object : KSerializer<T>{
-                        override val descriptor: SerialDescriptor
-                            get() = internalValue.updaterSerializer.descriptor
-
-                        override fun deserialize(decoder: Decoder): T {
-                            internalValue.updaterSerializer.deserialize(decoder)
-                            return internalValue
-                        }
-
-                        override fun serialize(encoder: Encoder, value: T) {
-                            internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
-                        }
-
-                    }.bind(
-                        getter = { internalValue },
-                        setter = { internalValue = it }
-                    )
-                }
-            }
         """
     )
 

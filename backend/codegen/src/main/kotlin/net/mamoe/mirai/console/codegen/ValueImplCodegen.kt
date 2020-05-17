@@ -57,11 +57,13 @@ fun genAllValueImpl(): String = buildString {
     // PRIMITIVE
     for (number in NUMBERS + OTHER_PRIMITIVES) {
         appendln(genValueImpl(number, number, "$number.serializer()", false))
+        appendln()
     }
 
     // PRIMITIVE ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES.filterNot { it == "String" }) {
         appendln(genValueImpl("${number}Array", "${number}Array", "${number}ArraySerializer()", true))
+        appendln()
     }
 
     // TYPED ARRAYS
@@ -74,6 +76,7 @@ fun genAllValueImpl(): String = buildString {
                 true
             )
         )
+        appendln()
     }
 
     // PRIMITIVE LISTS / SETS
@@ -87,6 +90,7 @@ fun genAllValueImpl(): String = buildString {
                     false
                 )
             )
+            appendln()
         }
     }
 
@@ -137,6 +141,40 @@ fun genAllValueImpl(): String = buildString {
             appendln()
         }
     }
+
+    appendln()
+
+
+    appendln(
+        """
+            internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
+                return object : SettingValue<T>() {
+                    private var internalValue: T = default
+                    override var value: T
+                        get() = internalValue
+                        set(new) {
+                            if (new != internalValue) {
+                                internalValue = new
+                                onElementChanged(this)
+                            }
+                        }
+                    override val serializer = object : KSerializer<T>{
+                        override val descriptor: SerialDescriptor
+                            get() = internalValue.updaterSerializer.descriptor
+
+                        override fun deserialize(decoder: Decoder): T {
+                            internalValue.updaterSerializer.deserialize(decoder)
+                            return internalValue
+                        }
+
+                        override fun serialize(encoder: Encoder, value: T) {
+                            internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
+                        }
+                    }
+                }
+            }
+        """
+    )
 }
 
 fun genValueImpl(kotlinTypeName: String, miraiValueName: String, serializer: String, isArray: Boolean): String =

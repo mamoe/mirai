@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -38,6 +37,7 @@ internal fun Setting.valueImpl(default: Int): IntValue {
         override val serializer = Int.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: Short): ShortValue {
     return object : ShortValue() {
         private var internalValue: Short = default
@@ -52,6 +52,7 @@ internal fun Setting.valueImpl(default: Short): ShortValue {
         override val serializer = Short.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: Byte): ByteValue {
     return object : ByteValue() {
         private var internalValue: Byte = default
@@ -66,6 +67,7 @@ internal fun Setting.valueImpl(default: Byte): ByteValue {
         override val serializer = Byte.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: Long): LongValue {
     return object : LongValue() {
         private var internalValue: Long = default
@@ -80,6 +82,7 @@ internal fun Setting.valueImpl(default: Long): LongValue {
         override val serializer = Long.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: Float): FloatValue {
     return object : FloatValue() {
         private var internalValue: Float = default
@@ -94,6 +97,7 @@ internal fun Setting.valueImpl(default: Float): FloatValue {
         override val serializer = Float.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: Double): DoubleValue {
     return object : DoubleValue() {
         private var internalValue: Double = default
@@ -108,6 +112,7 @@ internal fun Setting.valueImpl(default: Double): DoubleValue {
         override val serializer = Double.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: Boolean): BooleanValue {
     return object : BooleanValue() {
         private var internalValue: Boolean = default
@@ -122,6 +127,7 @@ internal fun Setting.valueImpl(default: Boolean): BooleanValue {
         override val serializer = Boolean.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: Char): CharValue {
     return object : CharValue() {
         private var internalValue: Char = default
@@ -136,6 +142,7 @@ internal fun Setting.valueImpl(default: Char): CharValue {
         override val serializer = Char.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: String): StringValue {
     return object : StringValue() {
         private var internalValue: String = default
@@ -150,6 +157,7 @@ internal fun Setting.valueImpl(default: String): StringValue {
         override val serializer = String.serializer()
     }
 }
+
 internal fun Setting.valueImpl(default: IntArray): IntArrayValue {
     return object : IntArrayValue() {
         private var internalValue: IntArray = default
@@ -164,6 +172,7 @@ internal fun Setting.valueImpl(default: IntArray): IntArrayValue {
         override val serializer = IntArraySerializer()
     }
 }
+
 internal fun Setting.valueImpl(default: ShortArray): ShortArrayValue {
     return object : ShortArrayValue() {
         private var internalValue: ShortArray = default
@@ -178,6 +187,7 @@ internal fun Setting.valueImpl(default: ShortArray): ShortArrayValue {
         override val serializer = ShortArraySerializer()
     }
 }
+
 internal fun Setting.valueImpl(default: ByteArray): ByteArrayValue {
     return object : ByteArrayValue() {
         private var internalValue: ByteArray = default
@@ -192,6 +202,7 @@ internal fun Setting.valueImpl(default: ByteArray): ByteArrayValue {
         override val serializer = ByteArraySerializer()
     }
 }
+
 internal fun Setting.valueImpl(default: LongArray): LongArrayValue {
     return object : LongArrayValue() {
         private var internalValue: LongArray = default
@@ -206,6 +217,7 @@ internal fun Setting.valueImpl(default: LongArray): LongArrayValue {
         override val serializer = LongArraySerializer()
     }
 }
+
 internal fun Setting.valueImpl(default: FloatArray): FloatArrayValue {
     return object : FloatArrayValue() {
         private var internalValue: FloatArray = default
@@ -220,6 +232,7 @@ internal fun Setting.valueImpl(default: FloatArray): FloatArrayValue {
         override val serializer = FloatArraySerializer()
     }
 }
+
 internal fun Setting.valueImpl(default: DoubleArray): DoubleArrayValue {
     return object : DoubleArrayValue() {
         private var internalValue: DoubleArray = default
@@ -234,6 +247,7 @@ internal fun Setting.valueImpl(default: DoubleArray): DoubleArrayValue {
         override val serializer = DoubleArraySerializer()
     }
 }
+
 internal fun Setting.valueImpl(default: BooleanArray): BooleanArrayValue {
     return object : BooleanArrayValue() {
         private var internalValue: BooleanArray = default
@@ -248,6 +262,7 @@ internal fun Setting.valueImpl(default: BooleanArray): BooleanArrayValue {
         override val serializer = BooleanArraySerializer()
     }
 }
+
 internal fun Setting.valueImpl(default: CharArray): CharArrayValue {
     return object : CharArrayValue() {
         private var internalValue: CharArray = default
@@ -262,6 +277,7 @@ internal fun Setting.valueImpl(default: CharArray): CharArrayValue {
         override val serializer = CharArraySerializer()
     }
 }
+
 internal fun Setting.valueImpl(default: Array<Int>): TypedIntArrayValue {
     return object : TypedIntArrayValue() {
         private var internalValue: Array<Int> = default
@@ -276,6 +292,7 @@ internal fun Setting.valueImpl(default: Array<Int>): TypedIntArrayValue {
         override val serializer = ArraySerializer(Int.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: Array<Short>): TypedShortArrayValue {
     return object : TypedShortArrayValue() {
         private var internalValue: Array<Short> = default
@@ -290,6 +307,7 @@ internal fun Setting.valueImpl(default: Array<Short>): TypedShortArrayValue {
         override val serializer = ArraySerializer(Short.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: Array<Byte>): TypedByteArrayValue {
     return object : TypedByteArrayValue() {
         private var internalValue: Array<Byte> = default
@@ -304,6 +322,7 @@ internal fun Setting.valueImpl(default: Array<Byte>): TypedByteArrayValue {
         override val serializer = ArraySerializer(Byte.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: Array<Long>): TypedLongArrayValue {
     return object : TypedLongArrayValue() {
         private var internalValue: Array<Long> = default
@@ -318,6 +337,7 @@ internal fun Setting.valueImpl(default: Array<Long>): TypedLongArrayValue {
         override val serializer = ArraySerializer(Long.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: Array<Float>): TypedFloatArrayValue {
     return object : TypedFloatArrayValue() {
         private var internalValue: Array<Float> = default
@@ -332,6 +352,7 @@ internal fun Setting.valueImpl(default: Array<Float>): TypedFloatArrayValue {
         override val serializer = ArraySerializer(Float.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: Array<Double>): TypedDoubleArrayValue {
     return object : TypedDoubleArrayValue() {
         private var internalValue: Array<Double> = default
@@ -346,6 +367,7 @@ internal fun Setting.valueImpl(default: Array<Double>): TypedDoubleArrayValue {
         override val serializer = ArraySerializer(Double.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: Array<Boolean>): TypedBooleanArrayValue {
     return object : TypedBooleanArrayValue() {
         private var internalValue: Array<Boolean> = default
@@ -360,6 +382,7 @@ internal fun Setting.valueImpl(default: Array<Boolean>): TypedBooleanArrayValue 
         override val serializer = ArraySerializer(Boolean.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: Array<Char>): TypedCharArrayValue {
     return object : TypedCharArrayValue() {
         private var internalValue: Array<Char> = default
@@ -374,6 +397,7 @@ internal fun Setting.valueImpl(default: Array<Char>): TypedCharArrayValue {
         override val serializer = ArraySerializer(Char.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: Array<String>): TypedStringArrayValue {
     return object : TypedStringArrayValue() {
         private var internalValue: Array<String> = default
@@ -388,6 +412,7 @@ internal fun Setting.valueImpl(default: Array<String>): TypedStringArrayValue {
         override val serializer = ArraySerializer(String.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<Int>): IntListValue {
     return object : IntListValue() {
         private var internalValue: List<Int> = default
@@ -402,6 +427,7 @@ internal fun Setting.valueImpl(default: List<Int>): IntListValue {
         override val serializer = ListSerializer(Int.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<Short>): ShortListValue {
     return object : ShortListValue() {
         private var internalValue: List<Short> = default
@@ -416,6 +442,7 @@ internal fun Setting.valueImpl(default: List<Short>): ShortListValue {
         override val serializer = ListSerializer(Short.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<Byte>): ByteListValue {
     return object : ByteListValue() {
         private var internalValue: List<Byte> = default
@@ -430,6 +457,7 @@ internal fun Setting.valueImpl(default: List<Byte>): ByteListValue {
         override val serializer = ListSerializer(Byte.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<Long>): LongListValue {
     return object : LongListValue() {
         private var internalValue: List<Long> = default
@@ -444,6 +472,7 @@ internal fun Setting.valueImpl(default: List<Long>): LongListValue {
         override val serializer = ListSerializer(Long.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<Float>): FloatListValue {
     return object : FloatListValue() {
         private var internalValue: List<Float> = default
@@ -458,6 +487,7 @@ internal fun Setting.valueImpl(default: List<Float>): FloatListValue {
         override val serializer = ListSerializer(Float.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<Double>): DoubleListValue {
     return object : DoubleListValue() {
         private var internalValue: List<Double> = default
@@ -472,6 +502,7 @@ internal fun Setting.valueImpl(default: List<Double>): DoubleListValue {
         override val serializer = ListSerializer(Double.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<Boolean>): BooleanListValue {
     return object : BooleanListValue() {
         private var internalValue: List<Boolean> = default
@@ -486,6 +517,7 @@ internal fun Setting.valueImpl(default: List<Boolean>): BooleanListValue {
         override val serializer = ListSerializer(Boolean.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<Char>): CharListValue {
     return object : CharListValue() {
         private var internalValue: List<Char> = default
@@ -500,6 +532,7 @@ internal fun Setting.valueImpl(default: List<Char>): CharListValue {
         override val serializer = ListSerializer(Char.serializer())
     }
 }
+
 internal fun Setting.valueImpl(default: List<String>): StringListValue {
     return object : StringListValue() {
         private var internalValue: List<String> = default
@@ -649,6 +682,7 @@ internal fun Setting.valueImpl(default: Set<String>): StringSetValue {
         override val serializer = SetSerializer(String.serializer())
     }
 }
+
 
 @JvmName("valueImplMutableIntList")
 internal fun Setting.valueImpl(
@@ -1280,4 +1314,31 @@ internal fun Setting.valueImpl(
     }
 }
 
+
+internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
+    return object : SettingValue<T>() {
+        private var internalValue: T = default
+        override var value: T
+            get() = internalValue
+            set(new) {
+                if (new != internalValue) {
+                    internalValue = new
+                    onElementChanged(this)
+                }
+            }
+        override val serializer = object : KSerializer<T> {
+            override val descriptor: SerialDescriptor
+                get() = internalValue.updaterSerializer.descriptor
+
+            override fun deserialize(decoder: Decoder): T {
+                internalValue.updaterSerializer.deserialize(decoder)
+                return internalValue
+            }
+
+            override fun serialize(encoder: Encoder, value: T) {
+                internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
+            }
+        }
+    }
+}
 

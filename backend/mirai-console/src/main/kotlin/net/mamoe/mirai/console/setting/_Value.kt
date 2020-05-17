@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.console.setting
 
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialDescriptor
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -65,29 +62,36 @@ sealed class PrimitiveArrayValue<T : Any> : ArrayValue<T>()
 abstract class IntArrayValue internal constructor() : PrimitiveArrayValue<IntArray>(), Iterable<Int> {
     override fun iterator(): Iterator<Int> = this.value.iterator()
 }
+
 abstract class ShortArrayValue internal constructor() : PrimitiveArrayValue<ShortArray>(), Iterable<Short> {
     override fun iterator(): Iterator<Short> = this.value.iterator()
 }
+
 abstract class ByteArrayValue internal constructor() : PrimitiveArrayValue<ByteArray>(), Iterable<Byte> {
     override fun iterator(): Iterator<Byte> = this.value.iterator()
 }
+
 abstract class LongArrayValue internal constructor() : PrimitiveArrayValue<LongArray>(), Iterable<Long> {
     override fun iterator(): Iterator<Long> = this.value.iterator()
 }
+
 abstract class FloatArrayValue internal constructor() : PrimitiveArrayValue<FloatArray>(), Iterable<Float> {
     override fun iterator(): Iterator<Float> = this.value.iterator()
 }
+
 abstract class DoubleArrayValue internal constructor() : PrimitiveArrayValue<DoubleArray>(), Iterable<Double> {
     override fun iterator(): Iterator<Double> = this.value.iterator()
 }
+
 abstract class BooleanArrayValue internal constructor() : PrimitiveArrayValue<BooleanArray>(), Iterable<Boolean> {
     override fun iterator(): Iterator<Boolean> = this.value.iterator()
 }
+
 abstract class CharArrayValue internal constructor() : PrimitiveArrayValue<CharArray>(), Iterable<Char> {
     override fun iterator(): Iterator<Char> = this.value.iterator()
 }
 
-sealed class TypedPrimitiveArrayValue<E> : ArrayValue<Array<E>>() , Iterable<E>{
+sealed class TypedPrimitiveArrayValue<E> : ArrayValue<Array<E>>(), Iterable<E> {
     override fun iterator() = this.value.iterator()
 }
 
@@ -101,7 +105,7 @@ abstract class TypedBooleanArrayValue internal constructor() : TypedPrimitiveArr
 abstract class TypedCharArrayValue internal constructor() : TypedPrimitiveArrayValue<Char>()
 abstract class TypedStringArrayValue internal constructor() : TypedPrimitiveArrayValue<String>()
 
-sealed class ListValue<E> : Value<List<E>>(), Iterable<E>{
+sealed class ListValue<E> : Value<List<E>>(), Iterable<E> {
     override fun iterator() = this.value.iterator()
 }
 
@@ -134,37 +138,6 @@ abstract class StringSetValue internal constructor() : SetValue<String>()
 abstract class SettingSetValue<T : Setting> internal constructor() : Value<Set<T>>(), Set<T>
 
 abstract class SettingValue<T : Setting> internal constructor() : Value<T>()
-
-internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
-    return object : SettingValue<T>() {
-        private var internalValue: T = default
-        override var value: T
-            get() = internalValue
-            set(new) {
-                if (new != internalValue) {
-                    internalValue = new
-                    onElementChanged(this)
-                }
-            }
-        override val serializer = object : KSerializer<T> {
-            override val descriptor: SerialDescriptor
-                get() = internalValue.updaterSerializer.descriptor
-
-            override fun deserialize(decoder: Decoder): T {
-                internalValue.updaterSerializer.deserialize(decoder)
-                return internalValue
-            }
-
-            override fun serialize(encoder: Encoder, value: T) {
-                internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
-            }
-
-        }.bind(
-            getter = { internalValue },
-            setter = { internalValue = it }
-        )
-    }
-}
 
 abstract class MutableListValue<T : Any> internal constructor() : Value<MutableList<Value<T>>>(), MutableList<T>
 
