@@ -7,6 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 @file:Suppress("ClassName", "unused")
+
 package net.mamoe.mirai.console.codegen
 
 import org.intellij.lang.annotations.Language
@@ -20,7 +21,7 @@ fun main() {
     }.writeText(genPublicApi())
 }
 
-internal const val COPYRIGHT = """
+internal val COPYRIGHT = """
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -29,7 +30,7 @@ internal const val COPYRIGHT = """
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-"""
+""".trim()
 
 internal val NUMBERS = listOf(
     "Int",
@@ -54,10 +55,10 @@ internal val OTHER_PRIMITIVES = listOf(
 )
 
 fun genPublicApi() = buildString {
-    fun appendln(@Language("kt") code: String){
+    fun appendln(@Language("kt") code: String) {
         this.appendln(code.trimIndent())
     }
-    
+
     appendln(COPYRIGHT.trim())
     appendln()
     appendln(
@@ -86,11 +87,23 @@ fun genPublicApi() = buildString {
 sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
     abstract var value: T
 
+    /**
+     * 用于更新 [value] 的序列化器
+     */
     abstract val serializer: KSerializer<T>
     override fun getValue(thisRef: Setting, property: KProperty<*>): T = value
     override fun setValue(thisRef: Setting, property: KProperty<*>, value: T) {
         this.value = value
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other==null)return false
+        if (other::class != this::class) return  false
+        other as Value<*>
+        return other.value == this.value
+    }
+
+    override fun hashCode(): Int = value.hashCode()
 }
         """
     )
@@ -176,64 +189,83 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
 
     appendln()
 
-    //   TYPED LISTS
+    //   TYPED LISTS / SETS
+    for (collectionName in listOf("List", "Set")) {
 
-    appendln(
-        """
-            sealed class ListValue<E> : Value<List<E>>(), Iterable<E>{
+        appendln(
+            """
+            sealed class ${collectionName}Value<E> : Value<${collectionName}<E>>(), Iterable<E>{
                 override fun iterator() = this.value.iterator()
             }
     """
-    )
+        )
 
-    for (number in (NUMBERS + OTHER_PRIMITIVES)) {
-        val template = """
-            abstract class ${number}ListValue internal constructor() : ListValue<${number}>()
+        for (number in (NUMBERS + OTHER_PRIMITIVES)) {
+            val template = """
+            abstract class ${number}${collectionName}Value internal constructor() : ${collectionName}Value<${number}>()
     """
 
-        appendln(template)
+            appendln(template)
+        }
+
+        appendln()
+        // SETTING
+        appendln(
+            """
+        abstract class Setting${collectionName}Value<T: Setting> internal constructor() : Value<${collectionName}<T>>(), ${collectionName}<T>
+    """
+        )
+        appendln()
     }
 
-    appendln()
-
-    // FOR COMPLEX TYPES
+    // SETTING VALUE
 
     appendln(
         """
             abstract class SettingValue<T : Setting> internal constructor() : Value<T>()
-
-            internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
-                return object : SettingValue<T>() {
-                    private var internalValue: T = default
-                    override var value: T
-                        get() = internalValue
-                        set(new) {
-                            if (new != internalValue) {
-                                internalValue = new
-                                onElementChanged(this)
-                            }
-                        }
-                    override val serializer = object : KSerializer<T>{
-                        override val descriptor: SerialDescriptor
-                            get() = internalValue.updaterSerializer.descriptor
-
-                        override fun deserialize(decoder: Decoder): T {
-                            internalValue.updaterSerializer.deserialize(decoder)
-                            return internalValue
-                        }
-
-                        override fun serialize(encoder: Encoder, value: T) {
-                            internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
-                        }
-
-                    }.bind(
-                        getter = { internalValue },
-                        setter = { internalValue = it }
-                    )
-                }
-            }
         """
     )
 
     appendln()
+
+    // MUTABLE LIST / MUTABLE SET
+    for (collectionName in listOf("List", "Set")) {
+        appendln(
+            """
+        abstract class Mutable${collectionName}Value<T : Any> internal constructor() : Value<Mutable${collectionName}<Value<T>>>(), Mutable${collectionName}<T>
+    """
+        )
+
+        appendln()
+
+        for (number in (NUMBERS + OTHER_PRIMITIVES)) {
+            appendln(
+                """
+        abstract class Mutable${number}${collectionName}Value internal constructor() : Value<Mutable${collectionName}<${number}>>(), Mutable${collectionName}<${number}>
+    """
+            )
+        }
+
+        appendln()
+        // SETTING
+        appendln(
+            """
+        abstract class MutableSetting${collectionName}Value<T: Setting> internal constructor() : Value<Mutable${collectionName}<T>>(), Mutable${collectionName}<T>
+    """
+        )
+        appendln()
+    }
+
+    appendln()
+    // DYNAMIC
+
+    appendln(
+        """
+        /**
+         * 只引用这个对象, 而不跟踪其成员.
+         * 仅适用于基础类型, 用于 mutable list/map 等情况; 或标注了 [Serializable] 的类.
+         */
+        abstract class DynamicReferenceValue<T : Any> internal constructor() : Value<T>()
+    """
+    )
 }

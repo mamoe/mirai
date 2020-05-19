@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.codegen
 
+import org.intellij.lang.annotations.Language
 import java.io.File
 
 
@@ -44,29 +45,136 @@ package net.mamoe.mirai.console.setting
 """.trimIndent()
 
 private val IMPORTS = """
+import kotlinx.serialization.*
 import kotlinx.serialization.builtins.*
 """.trimIndent()
 
 fun genAllValueImpl(): String = buildString {
+    fun appendln(@Language("kt") code: String) {
+        this.appendln(code.trimIndent())
+    }
+
     // PRIMITIVE
     for (number in NUMBERS + OTHER_PRIMITIVES) {
         appendln(genValueImpl(number, number, "$number.serializer()", false))
+        appendln()
     }
 
     // PRIMITIVE ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES.filterNot { it == "String" }) {
         appendln(genValueImpl("${number}Array", "${number}Array", "${number}ArraySerializer()", true))
+        appendln()
     }
 
     // TYPED ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES) {
-        appendln(genValueImpl("Array<${number}>", "Typed${number}Array", "ArraySerializer(${number}.serializer())", true))
+        appendln(
+            genValueImpl(
+                "Array<${number}>",
+                "Typed${number}Array",
+                "ArraySerializer(${number}.serializer())",
+                true
+            )
+        )
+        appendln()
     }
 
-    // PRIMITIVE LISTS
-    for (number in NUMBERS + OTHER_PRIMITIVES) {
-        appendln(genValueImpl("List<${number}>", "${number}List", "ListSerializer(${number}.serializer())", false))
+    // PRIMITIVE LISTS / SETS
+    for (collectionName in listOf("List", "Set")) {
+        for (number in NUMBERS + OTHER_PRIMITIVES) {
+            appendln(
+                genValueImpl(
+                    "${collectionName}<${number}>",
+                    "${number}${collectionName}",
+                    "${collectionName}Serializer(${number}.serializer())",
+                    false
+                )
+            )
+            appendln()
+        }
     }
+
+    appendln()
+
+    // MUTABLE LIST / MUTABLE SET
+
+    for (collectionName in listOf("List", "Set")) {
+        for (number in NUMBERS + OTHER_PRIMITIVES) {
+            appendln(
+                """
+                @JvmName("valueImplMutable${number}${collectionName}")
+                internal fun Setting.valueImpl(
+                    default: Mutable${collectionName}<${number}>
+                ): Mutable${number}${collectionName}Value {
+                    var internalValue: Mutable${collectionName}<${number}> = default
+
+                    return object : Mutable${number}${collectionName}Value(), Mutable${collectionName}<${number}> by dynamicMutable${collectionName}({ internalValue }) {
+                        override var value: Mutable${collectionName}<${number}>
+                            get() = internalValue
+                            set(new) {
+                                if (new != internalValue) {
+                                    internalValue = new
+                                    onElementChanged(this)
+                                }
+                            }
+                        
+                        private inline val `this` get() = this
+                        
+                        override val serializer: KSerializer<Mutable${collectionName}<${number}>> = object : KSerializer<Mutable${collectionName}<${number}>> {
+                            private val delegate = ${collectionName}Serializer(${number}.serializer())
+                            override val descriptor: SerialDescriptor = delegate.descriptor
+
+                            override fun deserialize(decoder: Decoder): Mutable${collectionName}<${number}> {
+                                return delegate.deserialize(decoder).toMutable${collectionName}().observable { 
+                                    onElementChanged(`this`)
+                                }
+                            }
+
+                            override fun serialize(encoder: Encoder, value: Mutable${collectionName}<${number}>) {
+                                delegate.serialize(encoder, value)
+                            }
+                        }
+                    }
+                }
+        """
+            )
+            appendln()
+        }
+    }
+
+    appendln()
+
+
+    appendln(
+        """
+            internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
+                return object : SettingValue<T>() {
+                    private var internalValue: T = default
+                    override var value: T
+                        get() = internalValue
+                        set(new) {
+                            if (new != internalValue) {
+                                internalValue = new
+                                onElementChanged(this)
+                            }
+                        }
+                    override val serializer = object : KSerializer<T>{
+                        override val descriptor: SerialDescriptor
+                            get() = internalValue.updaterSerializer.descriptor
+
+                        override fun deserialize(decoder: Decoder): T {
+                            internalValue.updaterSerializer.deserialize(decoder)
+                            return internalValue
+                        }
+
+                        override fun serialize(encoder: Encoder, value: T) {
+                            internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
+                        }
+                    }
+                }
+            }
+        """
+    )
 }
 
 fun genValueImpl(kotlinTypeName: String, miraiValueName: String, serializer: String, isArray: Boolean): String =
@@ -92,10 +200,7 @@ fun genValueImpl(kotlinTypeName: String, miraiValueName: String, serializer: Str
     """.trim()
     }
                     }
-                override val serializer = ${serializer}.bind(
-                    getter = { internalValue },
-                    setter = { internalValue = it }
-                )
+                override val serializer = $serializer
             }
         }
     """.trimIndent() + "\n"
