@@ -108,7 +108,8 @@ fun genAllValueImpl(): String = buildString {
                 ): Mutable${number}${collectionName}Value {
                     var internalValue: Mutable${collectionName}<${number}> = default
 
-                    return object : Mutable${number}${collectionName}Value(), Mutable${collectionName}<${number}> by dynamicMutable${collectionName}({ internalValue }) {
+                    val delegt = dynamicMutable${collectionName}{ internalValue }
+                    return object : Mutable${number}${collectionName}Value(), Mutable${collectionName}<${number}> by delegt {
                         override var value: Mutable${collectionName}<${number}>
                             get() = internalValue
                             set(new) {
@@ -118,7 +119,7 @@ fun genAllValueImpl(): String = buildString {
                                 }
                             }
                         
-                        private inline val `this` get() = this
+                        private val outerThis get() = this
                         
                         override val serializer: KSerializer<Mutable${collectionName}<${number}>> = object : KSerializer<Mutable${collectionName}<${number}>> {
                             private val delegate = ${collectionName}Serializer(${number}.serializer())
@@ -126,7 +127,7 @@ fun genAllValueImpl(): String = buildString {
 
                             override fun deserialize(decoder: Decoder): Mutable${collectionName}<${number}> {
                                 return delegate.deserialize(decoder).toMutable${collectionName}().observable { 
-                                    onElementChanged(`this`)
+                                    onElementChanged(outerThis)
                                 }
                             }
 
