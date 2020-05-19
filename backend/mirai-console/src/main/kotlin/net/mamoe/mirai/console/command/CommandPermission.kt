@@ -95,7 +95,7 @@ interface CommandPermission {
      */
     object Console : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean = false
-    }
+
 
     object Default : CommandPermission by (Manager or Console)
 }
@@ -117,7 +117,6 @@ inline fun CommandSender.hasPermission(permission: CommandPermission): Boolean =
 
 inline fun CommandPermission.testPermission(sender: CommandSender): Boolean = this.run { sender.hasPermission() }
 
-
 internal class OrCommandPermission(
     private val first: CommandPermission,
     private val second: CommandPermission
@@ -126,6 +125,7 @@ internal class OrCommandPermission(
         return this.hasPermission(first) || this.hasPermission(second)
     }
 }
+
 
 internal class AndCommandPermission(
     private val first: CommandPermission,
