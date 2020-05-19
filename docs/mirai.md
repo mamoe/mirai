@@ -56,8 +56,12 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
 要能看懂下文, 建议至少学习 Java, Kotlin 或 C# 其中一门语言.
 
 mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotlin 参考: [kotlincn.net](https://www.kotlincn.net/docs/reference/)  
-有关协程 (`suspend`)部分, mirai 做了大量的兼容性转换以让 Java 使用相同的 API 阻塞地调用一个协程函数.  
-因此, 对于函数如 `suspend fun sendMessage(Message)`, Java 使用者也可以直接调用它.
+
+有关协程 (`suspend` 修饰符)部分, mirai 做了大量的兼容性转换以让 Java 使用相同的 API 阻塞地调用一个协程函数。  
+对于 Kotlin 函数如 `suspend fun sendMessage(msg: Message)`,  
+Kotlin 编译后生成 Java 方法 `public Object sendMessage(Message msg, Continuation<Unit> cont)`  
+Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Message msg)` 使得 Java 使用者可无缝接入。
+
 
 ### 开始
 
