@@ -95,7 +95,7 @@ interface CommandPermission {
      */
     object Console : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean = false
-
+    }
 
     object Default : CommandPermission by (Manager or Console)
 }
