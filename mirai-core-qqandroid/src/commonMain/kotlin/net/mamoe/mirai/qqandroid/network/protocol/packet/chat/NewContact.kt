@@ -15,14 +15,17 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
+import net.mamoe.mirai.event.events.BotLeaveEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.message.contextualBugReportException
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 
@@ -145,36 +148,42 @@ internal class NewContact {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = groupmsgs?.firstOrNull()
 
-                return if (struct == null) null else {
-                    struct.msg?.run<Structmsg.SystemMsg, Packet> {
-                        when (c2cInviteJoinGroupFlag) {
-                            1 -> {
-                                // 被邀请入群
-                                BotInvitedJoinGroupRequestEvent(
-                                    bot,
-                                    struct.msgSeq,
-                                    actionUin,
-                                    groupCode,
-                                    groupName,
-                                    actionUinNick
+                return if (struct == null) null else struct.msg?.run<Structmsg.SystemMsg, Packet> {
+                    //this.soutv("SystemMsg")
+                    when (subType) {
+                        1 -> { //管理员邀请
+                            when (c2cInviteJoinGroupFlag) {
+                                1 -> {
+                                    // 被邀请入群
+                                    BotInvitedJoinGroupRequestEvent(
+                                        bot, struct.msgSeq, actionUin,
+                                        groupCode, groupName, actionUinNick
+                                    )
+                                }
+                                0 -> {
+                                    // 成员申请入群
+                                    MemberJoinRequestEvent(
+                                        bot, struct.msgSeq, msgAdditional,
+                                        struct.reqUin, groupCode, groupName, reqUinNick
+                                    )
+                                }
+                                else -> throw contextualBugReportException(
+                                    "parse SystemMsgNewGroup, subType=1",
+                                    forDebug = this._miraiContentToString()
                                 )
                             }
-                            0 -> {
-                                // 成员申请入群
-                                MemberJoinRequestEvent(
-                                    bot,
-                                    struct.msgSeq,
-                                    msgAdditional,
-                                    struct.reqUin,
-                                    groupCode,
-                                    groupName,
-                                    reqUinNick
-                                )
-                            }
-                            else -> throw IllegalStateException("Unknown c2cInviteJoinGroupFlag: $c2cInviteJoinGroupFlag in SystemMsgNewGroup packet")
                         }
-                    } as Packet // 没有 as Packet 垃圾 kotlin 会把类型推断为Any
-                }
+                        5 -> {
+                            val group = bot.getGroup(groupCode)
+                            val operator = group[actionUin]
+                            BotLeaveEvent.Kick(operator)
+                        }
+                        else -> throw contextualBugReportException(
+                            "parse SystemMsgNewGroup",
+                            forDebug = this._miraiContentToString()
+                        )
+                    }
+                } as Packet // 没有 as Packet 垃圾 kotlin 会把类型推断为Any
             }
         }
 

@@ -17,6 +17,7 @@ import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
@@ -55,6 +56,7 @@ import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -293,6 +295,8 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
+    @JvmField
+    val groupListModifyLock = Mutex()
 
     // internally visible only
     fun getGroupByUin(uin: Long): Group {

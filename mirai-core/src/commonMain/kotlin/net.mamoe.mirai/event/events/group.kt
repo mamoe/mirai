@@ -37,12 +37,18 @@ sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
     /**
      * 机器人主动退出一个群.
      */
-    data class Active(override val group: Group) : BotLeaveEvent()
+    data class Active(override val group: Group) : BotLeaveEvent() {
+        override fun toString(): String = "BotLeaveEvent.Active(group=${group.id})"
+    }
 
     /**
-     * 机器人被管理员或群主踢出群. 暂不支持获取操作人
+     * 机器人被管理员或群主踢出群.
      */
-    data class Kick(override val group: Group) : BotLeaveEvent()
+    data class Kick internal constructor(override val operator: Member) : BotLeaveEvent(), GroupOperableEvent {
+        override val group: Group get() = operator.group
+        override val bot: Bot get() = super<BotLeaveEvent>.bot
+        override fun toString(): String = "BotLeaveEvent.Kick(group=${group.id},operator=${operator.id})"
+    }
 
     override val bot: Bot get() = group.bot
 }
@@ -201,12 +207,16 @@ sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, Bo
     /**
      * 被邀请加入群
      */
-    data class Invite(override val member: Member) : MemberJoinEvent(member)
+    data class Invite(override val member: Member) : MemberJoinEvent(member) {
+        override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id})"
+    }
 
     /**
      * 成员主动加入群
      */
-    data class Active(override val member: Member) : MemberJoinEvent(member)
+    data class Active(override val member: Member) : MemberJoinEvent(member) {
+        override fun toString(): String = "MemberJoinEvent.Active(member=${member.id})"
+    }
 }
 
 /**
@@ -223,18 +233,14 @@ sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
          */
         override val operator: Member?
     ) : MemberLeaveEvent(), Packet, GroupOperableEvent {
-        override fun toString(): String {
-            return "MemberLeaveEvent.Kick(member=$member, operator=$operator)"
-        }
+        override fun toString(): String = "MemberLeaveEvent.Kick(member=${member.id}, operator=${operator?.id})"
     }
 
     /**
      * 成员主动离开
      */
     data class Quit(override val member: Member) : MemberLeaveEvent(), Packet {
-        override fun toString(): String {
-            return "MemberLeaveEvent.Quit(member=$member)"
-        }
+        override fun toString(): String = "MemberLeaveEvent.Quit(member=${member.id})"
     }
 }
 
@@ -259,7 +265,7 @@ data class BotInvitedJoinGroupRequestEvent internal constructor(
      */
     val invitorNick: String
 ) : BotEvent, Packet, AbstractEvent() {
-    val invitor: Friend = this.bot.getFriend(invitorId)
+    val invitor: Friend get() = this.bot.getFriend(invitorId)
 
     @JvmField
     internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
