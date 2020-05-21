@@ -12,6 +12,8 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancel
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUByte
@@ -116,12 +118,14 @@ internal object OnlinePushPbPushTransMsg :
                         0x82 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
                             val member = group.getOrNull(target) as? MemberImpl ?: return null
                             return MemberLeaveEvent.Quit(member.also {
+                                member.cancel(CancellationException("Leaved actively"))
                                 group.members.delegate.remove(member)
                             })
                         }
                         0x83 -> bot.getGroupByUin(groupUin).let { group ->
                             val member = group.getOrNull(target) as? MemberImpl ?: return null
                             return MemberLeaveEvent.Kick(member.also {
+                                member.cancel(CancellationException("Leaved actively"))
                                 group.members.delegate.remove(member)
                             }, group.members[operator])
                         }

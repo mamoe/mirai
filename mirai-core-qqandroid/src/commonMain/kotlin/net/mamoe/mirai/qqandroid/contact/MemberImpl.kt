@@ -13,9 +13,7 @@ package net.mamoe.mirai.qqandroid.contact
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
@@ -210,6 +208,7 @@ internal class MemberImpl constructor(
 
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             group.members.delegate.removeIf { it.id == this@MemberImpl.id }
+            this.cancel(CancellationException("Kicked by bot"))
             MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
     }
