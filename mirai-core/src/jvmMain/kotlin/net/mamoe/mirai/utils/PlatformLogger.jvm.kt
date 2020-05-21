@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.utils
 
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,35 +26,36 @@ actual open class PlatformLogger constructor(
     override fun verbose0(message: String?) = println(message, LoggerTextFormat.RESET)
     override fun verbose0(message: String?, e: Throwable?) {
         if (message != null) verbose(message.toString())
-        e?.printStackTrace()
+        e?.stackTraceString?.let(output)
     }
 
     override fun info0(message: String?) = println(message, LoggerTextFormat.LIGHT_GREEN)
     override fun info0(message: String?, e: Throwable?) {
         if (message != null) info(message.toString())
-        e?.printStackTrace()
+        e?.stackTraceString?.let(output)
     }
 
     override fun warning0(message: String?) = println(message, LoggerTextFormat.LIGHT_RED)
     override fun warning0(message: String?, e: Throwable?) {
         if (message != null) warning(message.toString())
-        e?.printStackTrace()
+        e?.stackTraceString?.let(output)
     }
 
     override fun error0(message: String?) = println(message, LoggerTextFormat.RED)
     override fun error0(message: String?, e: Throwable?) {
         if (message != null) error(message.toString())
-        e?.printStackTrace()
+        e?.stackTraceString?.let(output)
     }
 
     override fun debug0(message: String?) = println(message, LoggerTextFormat.LIGHT_CYAN)
     override fun debug0(message: String?, e: Throwable?) {
         if (message != null) debug(message.toString())
-        e?.printStackTrace()
+        e?.stackTraceString?.let(output)
     }
 
+    private val format = SimpleDateFormat("HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
     private fun println(value: String?, color: LoggerTextFormat) {
-        val time = SimpleDateFormat("HH:mm:ss", Locale.SIMPLIFIED_CHINESE).format(Date())
+        val time = format.format(Date())
 
         if (identity == null) {
             output("$color$time : $value")
@@ -60,6 +63,11 @@ actual open class PlatformLogger constructor(
             output("$color$identity $time : $value")
         }
     }
+}
+
+internal val Throwable.stackTraceString get() = ByteArrayOutputStream().run {
+    printStackTrace(PrintStream(this))
+    this.toByteArray().let(::String)
 }
 
 /**
