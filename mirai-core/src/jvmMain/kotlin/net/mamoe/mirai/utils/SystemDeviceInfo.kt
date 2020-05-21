@@ -12,6 +12,7 @@ package net.mamoe.mirai.utils
 import kotlinx.io.core.toByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import net.mamoe.mirai.utils.internal.md5
@@ -33,7 +34,14 @@ fun File.loadAsDeviceInfo(context: Context = ContextImpl()): DeviceInfo {
     }
 }
 
-private val JSON = Json(JsonConfiguration.Stable)
+@OptIn(UnstableDefault::class)
+private val JSON = Json(
+    JsonConfiguration(
+        ignoreUnknownKeys = true,
+        isLenient = true,
+        prettyPrint = true
+    )
+)
 
 @Serializable
 actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
