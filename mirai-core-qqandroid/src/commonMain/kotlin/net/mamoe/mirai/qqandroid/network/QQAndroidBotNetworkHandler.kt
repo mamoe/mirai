@@ -445,12 +445,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         return this.launch(
             start = CoroutineStart.ATOMIC
         ) {
-            try {
-                input.use { parsePacket(it) }
-            } catch (e: Exception) {
-                // 傻逼协程吞异常
-                logger.error(e)
-            }
+            input.use { parsePacket(it) }
         }
     }
 
@@ -619,8 +614,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         logger.verbose { "Send: ${this.commandName}" }
         channel.send(delegate)
     }
-
-    class TimeoutException(override val message: String?) : Exception()
 
     /**
      * 发送一个包, 挂起协程直到接收到指定的返回包或超时

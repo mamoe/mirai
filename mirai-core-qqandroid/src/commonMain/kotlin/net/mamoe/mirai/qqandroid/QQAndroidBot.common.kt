@@ -181,8 +181,10 @@ internal class QQAndroidBot constructor(
         val group = this.getGroupOrNull(eventGroup.id)
             ?: kotlin.run {
                 if (this == eventBot) {
-                    error("A ${eventName()} is outdated. Group ${eventGroup.id} not found for bot ${this.id}. " +
-                            "This is because bot isn't in the group anymore")
+                    error(
+                        "A ${eventName()} is outdated. Group ${eventGroup.id} not found for bot ${this.id}. " +
+                                "This is because bot isn't in the group anymore"
+                    )
                 } else {
                     error("A ${eventName()} is from bot ${eventBot.id}, but you are trying to respond it using bot ${this.id} who isn't a member of the group ${eventGroup.id}")
                 }
@@ -206,11 +208,11 @@ internal class QQAndroidBot constructor(
         }
     }
 
-    override suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
-        = solveInvitedJoinGroupRequest(event, accept = true)
+    override suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent) =
+        solveInvitedJoinGroupRequest(event, accept = true)
 
-    override suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
-        = solveInvitedJoinGroupRequest(event, accept = false)
+    override suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent) =
+        solveInvitedJoinGroupRequest(event, accept = false)
 
 
     private suspend fun solveInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent, accept: Boolean) {
@@ -295,6 +297,7 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
+
     @JvmField
     val groupListModifyLock = Mutex()
 
