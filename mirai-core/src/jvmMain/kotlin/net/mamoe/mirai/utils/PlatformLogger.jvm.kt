@@ -58,31 +58,31 @@ actual open class PlatformLogger @JvmOverloads constructor(
     override fun verbose0(message: String?) = out(message, "V", Color.RESET)
 
     override fun verbose0(message: String?, e: Throwable?) {
-        if (e != null) verbose(message ?: e.toString() + "\n${e.stackTraceString}")
+        if (e != null) verbose((message ?: e.toString()) + "\n${e.stackTraceString}")
         else verbose(message.toString())
     }
 
     override fun info0(message: String?) = out(message, "I", Color.LIGHT_GREEN)
     override fun info0(message: String?, e: Throwable?) {
-        if (e != null) info(message ?: e.toString() + "\n${e.stackTraceString}")
+        if (e != null) info((message ?: e.toString()) + "\n${e.stackTraceString}")
         else info(message.toString())
     }
 
     override fun warning0(message: String?) = out(message, "W", Color.LIGHT_RED)
     override fun warning0(message: String?, e: Throwable?) {
-        if (e != null) warning(message ?: e.toString() + "\n${e.stackTraceString}")
+        if (e != null) warning((message ?: e.toString()) + "\n${e.stackTraceString}")
         else warning(message.toString())
     }
 
     override fun error0(message: String?) = out(message, "E", Color.RED)
     override fun error0(message: String?, e: Throwable?) {
-        if (e != null) error(message ?: e.toString() + "\n${e.stackTraceString}")
+        if (e != null) error((message ?: e.toString()) + "\n${e.stackTraceString}")
         else error(message.toString())
     }
 
     override fun debug0(message: String?) = out(message, "D", Color.LIGHT_CYAN)
     override fun debug0(message: String?, e: Throwable?) {
-        if (e != null) debug(message ?: e.toString() + "\n${e.stackTraceString}")
+        if (e != null) debug((message ?: e.toString()) + "\n${e.stackTraceString}")
         else debug(message.toString())
     }
 
