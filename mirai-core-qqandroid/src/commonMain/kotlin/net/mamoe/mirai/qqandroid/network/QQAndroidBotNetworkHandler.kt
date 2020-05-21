@@ -531,34 +531,39 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         val cache = cachedPacket.value
         if (cache == null) {
-            // 没有缓存
-            var length: Int = rawInput.readInt() - 4
-            if (rawInput.remaining == length.toLong()) {
-                // 捷径: 当包长度正好, 直接传递剩余数据.
-                cachedPacketTimeoutJob?.cancel()
-                parsePacketAsync(rawInput)
-                return
-            }
-            // 循环所有完整的包
-            while (rawInput.remaining >= length) {
-                parsePacketAsync(rawInput.readPacketExact(length))
+            kotlin.runCatching {
+                // 没有缓存
+                var length: Int = rawInput.readInt() - 4
+                if (rawInput.remaining == length.toLong()) {
+                    // 捷径: 当包长度正好, 直接传递剩余数据.
+                    cachedPacketTimeoutJob?.cancel()
+                    parsePacketAsync(rawInput)
+                    return
+                }
+                // 循环所有完整的包
+                while (rawInput.remaining >= length) {
+                    parsePacketAsync(rawInput.readPacketExact(length))
 
-                if (rawInput.remaining == 0L) {
+                    if (rawInput.remaining == 0L) {
+                        cachedPacket.value = null // 表示包长度正好
+                        cachedPacketTimeoutJob?.cancel()
+                        return
+                    }
+                    length = rawInput.readInt() - 4
+                }
+
+                if (rawInput.remaining != 0L) {
+                    // 剩余的包长度不够, 缓存后接收下一个包
+                    expectingRemainingLength = length - rawInput.remaining
+                    cachedPacket.value = rawInput
+                } else {
                     cachedPacket.value = null // 表示包长度正好
                     cachedPacketTimeoutJob?.cancel()
                     return
                 }
-                length = rawInput.readInt() - 4
-            }
-
-            if (rawInput.remaining != 0L) {
-                // 剩余的包长度不够, 缓存后接收下一个包
-                expectingRemainingLength = length - rawInput.remaining
-                cachedPacket.value = rawInput
-            } else {
-                cachedPacket.value = null // 表示包长度正好
+            }.getOrElse {
+                cachedPacket.value = null
                 cachedPacketTimeoutJob?.cancel()
-                return
             }
         } else {
             // 有缓存
