@@ -61,6 +61,7 @@ kotlin {
                 api(kotlinx("serialization-protobuf-common", Versions.Kotlin.serialization))
                 api(kotlinx("io", Versions.Kotlin.io))
                 api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
+                api(kotlinx("coroutines-core-common", Versions.Kotlin.coroutines))
 
                 api("org.jetbrains.kotlinx:atomicfu-common:${Versions.Kotlin.atomicFU}")
 
@@ -85,6 +86,7 @@ kotlin {
                     api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
                     api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                     api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+                    api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
 
                     api(ktor("client-android", Versions.Kotlin.ktor))
                 }
@@ -111,6 +113,7 @@ kotlin {
                 api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
                 api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
 
                 api("org.bouncycastle:bcprov-jdk15on:1.64")
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
