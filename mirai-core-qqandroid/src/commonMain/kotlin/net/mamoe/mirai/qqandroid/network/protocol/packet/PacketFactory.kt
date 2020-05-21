@@ -239,7 +239,7 @@ internal object KnownPacketFactories {
         consumer: PacketConsumer<T>
     ) {
         if (it.packetFactory == null) {
-            bot.network.logger.debug("Received commandName: ${it.commandName}")
+            bot.network.logger.debug { "Received unknown commandName: ${it.commandName}" }
             PacketLogger.warning { "找不到 PacketFactory" }
             PacketLogger.verbose {
                 "传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length ->

@@ -17,22 +17,48 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
-import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmSynthetic
 
 /**
- * [Bot] 配置
+ * [Bot] 配置.
+ *
+ * Kotlin 使用方法:
+ * ```
+ * val bot = Bot(...) {
+ *    // 在这里配置 Bot
+ *
+ *    bogLoggerSupplier = { bot -> ... }
+ *    fileBasedDeviceInfo()
+ *    inheritCoroutineContext() // 使用 `coroutineScope` 的 Job 作为父 Job
+ * }
+ * ```
  */
 @Suppress("PropertyName")
 open class BotConfiguration {
-    /** 日志记录器 */
-    var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot(${it.id})") }
+    /**
+     * 日志记录器
+     *
+     * - 默认打印到标准输出, 通过 [DefaultLogger]
+     * - 忽略所有日志: `noNetworkLogger()`
+     * - 重定向到一个目录: `networkLoggerSupplier = { bot -> DirectoryLogger("Network ${it.id}") }`
+     * - 重定向到一个文件: `networkLoggerSupplier = { bot -> SingleFileLogger("Network ${it.id}") }`
+     *
+     * @see MiraiLogger
+     */
+    var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot ${it.id}") }
 
     /**
      * 网络层日志构造器
-     * @see noNetworkLog 不显示网络日志
+     *
+     * - 默认打印到标准输出, 通过 [DefaultLogger]
+     * - 忽略所有日志: `noNetworkLogger()`
+     * - 重定向到一个目录: `networkLoggerSupplier = { bot -> DirectoryLogger("Network ${it.id}") }`
+     * - 重定向到一个文件: `networkLoggerSupplier = { bot -> SingleFileLogger("Network ${it.id}") }`
+     *
+     * @see MiraiLogger
      */
-    var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Network(${it.id})") }
+    var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Network ${it.id}") }
 
     /**
      * 设备信息覆盖. 默认使用随机的设备信息.
@@ -99,24 +125,32 @@ open class BotConfiguration {
         val Default = BotConfiguration()
     }
 
-    /**
-     * 不显示网络日志
-     */
+    /** 不显示网络日志 */
     @ConfigurationDsl
     fun noNetworkLog() {
         networkLoggerSupplier = { _ -> SilentLogger }
     }
 
     /**
-     * 使用文件存储设备信息
+     * 使用文件存储设备信息.
      *
      * 此函数只在 JVM 和 Android 有效. 在其他平台将会抛出异常.
      * @param filepath 文件路径. 可相对于程序运行路径 (`user.dir`), 也可以是绝对路径.
+     * @see deviceInfo
      */
     @ConfigurationDsl
-    @JvmOverloads
     fun fileBasedDeviceInfo(filepath: String = "device.json") {
         deviceInfo = getFileBasedDeviceInfoSupplier(filepath)
+    }
+
+    /**
+     * 使用随机设备信息.
+     *
+     * @see deviceInfo
+     */
+    @ConfigurationDsl
+    fun randomDeviceInfo() {
+        deviceInfo = null
     }
 
     /**
@@ -171,6 +205,7 @@ open class BotConfiguration {
      *
      * @see parentCoroutineContext
      */
+    @JvmSynthetic
     @ConfigurationDsl
     suspend inline fun inheritCoroutineContext() {
         parentCoroutineContext = coroutineContext
