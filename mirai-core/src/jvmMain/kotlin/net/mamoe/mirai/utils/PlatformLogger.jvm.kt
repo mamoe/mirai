@@ -21,8 +21,6 @@ import java.util.*
 /**
  * JVM 控制台日志实现
  *
- * 不应该直接构造这个类的实例. 请使用 [DefaultLogger]
- *
  *
  * 单条日志格式 (正则) 为:
  * ```regex
@@ -41,6 +39,7 @@ import java.util.*
  *
  * @param isColored 是否添加 ANSI 颜色
  *
+ * @see DefaultLogger
  * @see SingleFileLogger 使用单一文件记录日志
  * @see DirectoryLogger 在一个目录中按日期存放文件记录日志, 自动清理过期日志
  */

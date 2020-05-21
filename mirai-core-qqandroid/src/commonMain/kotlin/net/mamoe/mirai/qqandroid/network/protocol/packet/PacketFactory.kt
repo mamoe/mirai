@@ -122,7 +122,9 @@ internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>,
  * 它默认是关闭的.
  */
 @PublishedApi
-internal val PacketLogger: MiraiLoggerWithSwitch = DefaultLogger("Packet").withSwitch(false)
+internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
+    DefaultLogger("Packet").withSwitch(false)
+}
 
 internal object KnownPacketFactories {
     object OutgoingFactories : List<OutgoingPacketFactory<*>> by mutableListOf(

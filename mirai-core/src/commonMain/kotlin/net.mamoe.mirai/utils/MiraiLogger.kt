@@ -211,17 +211,23 @@ inline fun MiraiLogger.error(lazyMessage: () -> String?, e: Throwable?) {
  * 在 _JVM 控制台_ 端的实现为 [println]
  * 在 _Android_ 端的实现为 `android.util.Log`
  *
- * 不应该直接构造这个类的实例. 请使用 [DefaultLogger]
- *
  *
  * 单条日志格式 (正则) 为:
  * ```regex
- * ^([\w-]*\s[\w:]*)\s\[(\w\])\s(.*?):\s(.+)$
+ * ^([\w-]*\s[\w:]*)\s(\w)\/(.*?):\s(.+)$
  * ```
  * 其中 group 分别为: 日期与时间, 严重程度, [identity], 消息内容.
  *
+ * 示例:
+ * ```log
+ * 2020-05-21 19:51:09 V/Bot 1994701021: Send: OidbSvc.0x88d_7
+ * ```
+ *
  * 日期时间格式为 `yyyy-MM-dd HH:mm:ss`,
+ *
  * 严重程度为 V, I, W, E. 分别对应 verbose, info, warning, error
+ *
+ * @see DefaultLogger
  */
 expect open class PlatformLogger @JvmOverloads constructor(identity: String? = "Mirai") : MiraiLoggerPlatformBase
 
