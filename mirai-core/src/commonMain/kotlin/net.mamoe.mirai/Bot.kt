@@ -46,7 +46,16 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
 @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
-abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI, ContactOrBot {
+abstract class Bot(
+    val configuration: BotConfiguration
+) : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI, ContactOrBot {
+    final override val coroutineContext: CoroutineContext =
+        configuration.parentCoroutineContext + SupervisorJob(configuration.parentCoroutineContext[Job]) +
+                (configuration.parentCoroutineContext[CoroutineExceptionHandler]
+                    ?: CoroutineExceptionHandler { _, e ->
+                        logger.error("An exception was thrown under a coroutine of Bot", e)
+                    })
+
     companion object {
         @Suppress("ObjectPropertyName")
         internal val _instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
@@ -106,6 +115,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI,
      * 在 JVM 的默认实现为 `class ContextImpl : Context`
      * 在 Android 实现为 `android.content.Context`
      */
+    @MiraiExperimentalAPI
     abstract val context: Context
 
     /**

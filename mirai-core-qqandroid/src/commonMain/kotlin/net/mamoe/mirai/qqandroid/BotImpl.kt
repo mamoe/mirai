@@ -32,18 +32,8 @@ import kotlin.time.measureTime
 
 internal abstract class BotImpl<N : BotNetworkHandler> constructor(
     context: Context,
-    val configuration: BotConfiguration
-) : Bot(), CoroutineScope {
-    final override val coroutineContext: CoroutineContext =
-        configuration.parentCoroutineContext + SupervisorJob(configuration.parentCoroutineContext[Job]) +
-                (configuration.parentCoroutineContext[CoroutineExceptionHandler]
-                    ?: CoroutineExceptionHandler { _, e ->
-                        logger.error(
-                            "An exception was thrown under a coroutine of Bot",
-                            e
-                        )
-                    })
-
+    configuration: BotConfiguration
+) : Bot(configuration), CoroutineScope {
     override val context: Context by context.unsafeWeakRef()
 
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
