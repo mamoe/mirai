@@ -22,6 +22,7 @@ import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
@@ -95,48 +96,54 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
         operator fun invoke(onEvent: MessageListener<M, R>): Ret = content(filter, onEvent)
     }
 
-    /** 启动这个监听器, 在满足条件时回复原消息 */
+    /** 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时回复原消息 */
     @MessageDsl
     open infix fun ListeningFilter.reply(toReply: String): Ret =
-        content(filter) { reply(toReply);this@MessageSubscribersBuilder.stub }
+        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) reply(toReply);this@MessageSubscribersBuilder.stub }
 
 
-    /** 启动这个监听器, 在满足条件时回复原消息 */
+    /** 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时回复原消息 */
     @MessageDsl
     open infix fun ListeningFilter.reply(message: Message): Ret =
-        content(filter) { reply(message);this@MessageSubscribersBuilder.stub }
+        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) reply(message);this@MessageSubscribersBuilder.stub }
 
-    /** 启动这个监听器, 在满足条件时回复原消息 */
-    @JvmName("reply3")
+    /**
+     * 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时执行 [replier] 并以其返回值回复.
+     * 返回值 [Unit] 将被忽略, [Message] 将被直接回复, 其他内容将会 [Any.toString] 后发送.
+     */
     @MessageDsl
-    open infix fun ListeningFilter.`->`(toReply: String): Ret = this.reply(toReply)
+    open infix fun ListeningFilter.reply(
+        replier: (@MessageDsl suspend M.(String) -> Any?)
+    ): Ret =
+        content(filter) {
+            if ((this as? GroupMessageEvent)?.group?.isBotMuted != true)
+                this@MessageSubscribersBuilder.executeAndReply(this, replier)
+            else this@MessageSubscribersBuilder.stub
+        }
 
-    /** 启动这个监听器, 在满足条件时回复原消息 */
-    @JvmName("reply3")
-    @MessageDsl
-    open infix fun ListeningFilter.`->`(message: Message): Ret = this.reply(message)
-
-    /** 启动这个监听器, 在满足条件时回复原消息 */
-    @MessageDsl
-    open infix fun ListeningFilter.reply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret =
-        content(filter) { this@MessageSubscribersBuilder.executeAndReply(this, replier) }
-
-    /** 启动这个监听器, 在满足条件时引用回复原消息 */
+    /** 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时引用回复原消息 */
     @MessageDsl
     open infix fun ListeningFilter.quoteReply(toReply: String): Ret =
-        content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
+        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) quoteReply(toReply); this@MessageSubscribersBuilder.stub }
 
-    /** 启动这个监听器, 在满足条件时引用回复原消息 */
+    /** 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时引用回复原消息 */
     @MessageDsl
     open infix fun ListeningFilter.quoteReply(toReply: Message): Ret =
-        content(filter) { quoteReply(toReply);this@MessageSubscribersBuilder.stub }
+        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) quoteReply(toReply);this@MessageSubscribersBuilder.stub }
 
-    /** 启动这个监听器, 在满足条件时执行 [replier] 并引用回复原消息 */
+    /**
+     * 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时执行 [replier] 并以其返回值回复原消息
+     * 返回值 [Unit] 将被忽略, [Message] 将被直接回复, 其他内容将会 [Any.toString] 后发送
+     */
     @MessageDsl
     open infix fun ListeningFilter.quoteReply(replier: (@MessageDsl suspend M.(String) -> Any?)): Ret =
-        content(filter) { this@MessageSubscribersBuilder.executeAndQuoteReply(this, replier) }
+        content(filter) {
+            if ((this as? GroupMessageEvent)?.group?.isBotMuted != true)
+                this@MessageSubscribersBuilder.executeAndQuoteReply(this, replier)
+            else this@MessageSubscribersBuilder.stub
+        }
 
-    /** 无任何触发条件, 每次收到消息都执行 [onEvent] */
+    /** 无触发条件, 每次收到消息都执行 [onEvent] */
     @MessageDsl
     open fun always(onEvent: MessageListener<M, RR>): Ret = subscriber({ true }, onEvent)
 
@@ -452,6 +459,20 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
     /////////////////////////////////
     //// DEPRECATED AND INTERNAL ////
     /////////////////////////////////
+
+    /** 启动这个监听器, 在满足条件时回复原消息 */
+    @PlannedRemoval("1.2.0")
+    @Deprecated("use reply instead", ReplaceWith("this.reply(message)"))
+    @JvmName("reply3")
+    @MessageDsl
+    open infix fun ListeningFilter.`->`(toReply: String): Ret = this.reply(toReply)
+
+    /** 启动这个监听器, 在满足条件时回复原消息 */
+    @PlannedRemoval("1.2.0")
+    @Deprecated("use reply instead", ReplaceWith("this.reply(message)"))
+    @JvmName("reply3")
+    @MessageDsl
+    open infix fun ListeningFilter.`->`(message: Message): Ret = this.reply(message)
 
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
     internal suspend inline fun executeAndReply(m: M, replier: suspend M.(String) -> Any?): RR {
