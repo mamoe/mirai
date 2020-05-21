@@ -17,6 +17,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
+import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -40,9 +41,9 @@ open class BotConfiguration {
      * 日志记录器
      *
      * - 默认打印到标准输出, 通过 [DefaultLogger]
-     * - 忽略所有日志: `noNetworkLogger()`
-     * - 重定向到一个目录: `networkLoggerSupplier = { bot -> DirectoryLogger("Network ${it.id}") }`
-     * - 重定向到一个文件: `networkLoggerSupplier = { bot -> SingleFileLogger("Network ${it.id}") }`
+     * - 忽略所有日志: [noBotLog]
+     * - 重定向到一个目录: `networkLoggerSupplier = { bot -> DirectoryLogger("Net ${it.id}") }`
+     * - 重定向到一个文件: `networkLoggerSupplier = { bot -> SingleFileLogger("Net ${it.id}") }`
      *
      * @see MiraiLogger
      */
@@ -52,19 +53,20 @@ open class BotConfiguration {
      * 网络层日志构造器
      *
      * - 默认打印到标准输出, 通过 [DefaultLogger]
-     * - 忽略所有日志: `noNetworkLogger()`
-     * - 重定向到一个目录: `networkLoggerSupplier = { bot -> DirectoryLogger("Network ${it.id}") }`
-     * - 重定向到一个文件: `networkLoggerSupplier = { bot -> SingleFileLogger("Network ${it.id}") }`
+     * - 忽略所有日志: [noNetworkLog]
+     * - 重定向到一个目录: `networkLoggerSupplier = { bot -> DirectoryLogger("Net ${it.id}") }`
+     * - 重定向到一个文件: `networkLoggerSupplier = { bot -> SingleFileLogger("Net ${it.id}") }`
      *
      * @see MiraiLogger
      */
-    var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Network ${it.id}") }
+    var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Net ${it.id}") }
 
     /**
-     * 设备信息覆盖. 默认使用随机的设备信息.
-     * @see fileBasedDeviceInfo 使用文件
+     * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
+     * @see fileBasedDeviceInfo 使用指定文件存储设备信息
+     * @see randomDeviceInfo 使用随机设备信息
      */
-    var deviceInfo: ((Context) -> DeviceInfo)? = null
+    var deviceInfo: ((Context) -> DeviceInfo)? = deviceInfoStub
 
     /** 父 [CoroutineContext]. [Bot] 创建后会使用 [SupervisorJob] 覆盖其 [Job], 但会将这个 [Job] 作为父 [Job] */
     var parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -125,10 +127,22 @@ open class BotConfiguration {
         val Default = BotConfiguration()
     }
 
-    /** 不显示网络日志 */
+    /**
+     * 不显示网络日志. 不推荐.
+     * @see networkLoggerSupplier 更多日志处理方式
+     */
     @ConfigurationDsl
     fun noNetworkLog() {
         networkLoggerSupplier = { _ -> SilentLogger }
+    }
+
+    /**
+     * 不显示 [Bot] 日志. 不推荐.
+     * @see botLoggerSupplier 更多日志处理方式
+     */
+    @ConfigurationDsl
+    fun noBotLog() {
+        botLoggerSupplier = { _ -> SilentLogger }
     }
 
     /**
@@ -138,6 +152,7 @@ open class BotConfiguration {
      * @param filepath 文件路径. 可相对于程序运行路径 (`user.dir`), 也可以是绝对路径.
      * @see deviceInfo
      */
+    @JvmOverloads
     @ConfigurationDsl
     fun fileBasedDeviceInfo(filepath: String = "device.json") {
         deviceInfo = getFileBasedDeviceInfoSupplier(filepath)
@@ -232,6 +247,14 @@ open class BotConfiguration {
             new.fileCacheStrategy = fileCacheStrategy
         }
     }
+}
+
+private val deviceInfoStub: (Context) -> DeviceInfo = {
+    @Suppress("DEPRECATION")
+    MiraiLogger.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
+    @Suppress("DEPRECATION")
+    MiraiLogger.warning("Device info isn't specified. Please refer to BotConfiguration.deviceInfo for more information")
+    SystemDeviceInfo()
 }
 
 @OptIn(ExperimentalMultiplatform::class)
