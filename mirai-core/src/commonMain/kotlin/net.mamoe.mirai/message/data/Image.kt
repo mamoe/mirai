@@ -71,6 +71,7 @@ expect interface Image : Message, MessageContent {
      * - [FRIEND_IMAGE_ID_REGEX_2], 示例: `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
      *
      * @see Image 使用 id 构造图片
+     * @see md5 得到图片文件 MD5
      */
     val imageId: String
 
@@ -80,9 +81,11 @@ expect interface Image : Message, MessageContent {
     final override fun contentToString(): String = "[图片]"
     */
 
-    @Deprecated("""
+    @Deprecated(
+        """
         不要自行实现 Image, 它必须由协议模块实现, 否则会无法发送也无法解析.
-    """, level = DeprecationLevel.HIDDEN)
+    """, level = DeprecationLevel.HIDDEN
+    )
     @Suppress("PropertyName")
     @get:JvmSynthetic
     internal val DoNotImplementThisClass: Nothing?
@@ -187,7 +190,7 @@ suspend fun Image.queryUrl(): String {
     @Suppress("DEPRECATION")
     return when (this) {
         is OnlineImage -> this.originUrl
-        else -> Bot._instances.peekFirst().get()?.queryImageUrl(this)
+        else -> Bot._instances.peekFirst()?.get()?.queryImageUrl(this)
             ?: error("No Bot available to query image url")
     }
 }
@@ -207,7 +210,8 @@ internal const val ONLINE_OFFLINE_DEPRECATION_MESSAGE = """
 
 
 @PlannedRemoval("1.2.0") // 改为 internal
-@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+@Deprecated(
+    ONLINE_OFFLINE_DEPRECATION_MESSAGE,
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
@@ -226,7 +230,8 @@ interface OnlineImage : Image {
  * 一般由 [Contact.uploadImage] 得到
  */
 @PlannedRemoval("1.2.0") // 改为 internal
-@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+@Deprecated(
+    ONLINE_OFFLINE_DEPRECATION_MESSAGE,
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
@@ -237,12 +242,13 @@ interface OfflineImage : Image {
 }
 
 @PlannedRemoval("1.2.0") // 删除
-@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+@Deprecated(
+    ONLINE_OFFLINE_DEPRECATION_MESSAGE,
     level = DeprecationLevel.HIDDEN
 )
 @JvmSynthetic
 suspend fun OfflineImage.queryUrl(): String {
-    return Bot._instances.peekFirst().get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
+    return Bot._instances.peekFirst()?.get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
 }
 
 /**
@@ -251,7 +257,8 @@ suspend fun OfflineImage.queryUrl(): String {
  * @param imageId 参考 [Image.imageId]
  */
 @PlannedRemoval("1.2.0") // 改为 internal
-@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+@Deprecated(
+    ONLINE_OFFLINE_DEPRECATION_MESSAGE,
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
@@ -271,7 +278,8 @@ data class OfflineGroupImage(
  * 接收消息时获取到的 [GroupImage]. 它可以直接获取下载链接 [originUrl]
  */
 @PlannedRemoval("1.2.0") // 改为 internal
-@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+@Deprecated(
+    ONLINE_OFFLINE_DEPRECATION_MESSAGE,
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
@@ -283,7 +291,8 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
  * @param imageId 参考 [Image.imageId]
  */
 @PlannedRemoval("1.2.0") // 改为 internal
-@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+@Deprecated(
+    ONLINE_OFFLINE_DEPRECATION_MESSAGE,
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
@@ -302,7 +311,8 @@ data class OfflineFriendImage(
  * 接收消息时获取到的 [FriendImage]. 它可以直接获取下载链接 [originUrl]
  */
 @PlannedRemoval("1.2.0") // 改为 internal
-@Deprecated(ONLINE_OFFLINE_DEPRECATION_MESSAGE,
+@Deprecated(
+    ONLINE_OFFLINE_DEPRECATION_MESSAGE,
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
@@ -322,9 +332,11 @@ abstract class OnlineFriendImage : FriendImage(), OnlineImage
 )
 @MiraiInternalAPI("Use Image instead")
 sealed class AbstractImage : Image {
-    @Deprecated("""
+    @Deprecated(
+        """
         不要自行实现 Image, 它必须由协议模块实现, 否则会无法发送也无法解析.
-    """, level = DeprecationLevel.HIDDEN)
+    """, level = DeprecationLevel.HIDDEN
+    )
     @Suppress("PropertyName", "DeprecatedCallableAddReplaceWith")
     @get:JvmSynthetic
     final override val DoNotImplementThisClass: Nothing?

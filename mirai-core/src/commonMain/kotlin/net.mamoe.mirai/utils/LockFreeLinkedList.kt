@@ -110,13 +110,12 @@ internal open class LockFreeLinkedList<E> {
         }
     }
 
-    open fun peekFirst(): E {
+    open fun peekFirst(): E? {
         return head
             .iterateBeforeFirst { it.isValidElementNode() }
             .takeUnless { it.isTail() }
             ?.nextNode
             ?.nodeValue
-            ?: throw NoSuchElementException()
     }
 
     open fun removeLast(): E {
