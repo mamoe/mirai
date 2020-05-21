@@ -38,12 +38,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.qqandroid.utils.NoRouteToHostException
-import net.mamoe.mirai.qqandroid.utils.PlatformSocket
-import net.mamoe.mirai.qqandroid.utils.SocketException
+import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
-import net.mamoe.mirai.qqandroid.utils.retryCatching
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmField
@@ -131,6 +128,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 channel.connect(coroutineContext + CoroutineName("Socket"), host, port)
                 break
             } catch (e: SocketException) {
+                if (e is NoRouteToHostException || e.message?.contains("Network is unreachable") == true) {
+                    logger.warning { "No route to host (Mostly due to no Internet connection). Retrying in 3s..." }
+                    delay(3000)
+                } else {
+                    throw e
+                }
+            } catch (e: UnknownHostException) {
                 if (e is NoRouteToHostException || e.message?.contains("Network is unreachable") == true) {
                     logger.warning { "No route to host (Mostly due to no Internet connection). Retrying in 3s..." }
                     delay(3000)
@@ -627,6 +631,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
+        check(channel.isOpen) { "network channel is closed" }
 
         suspend fun doSendAndReceive(handler: PacketListener, data: Any, length: Int): E {
             when (data) {
@@ -637,10 +642,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             logger.verbose { "Send: $commandName" }
 
             @Suppress("UNCHECKED_CAST")
-            return withTimeoutOrNull(timeoutMillis) {
+            return withTimeout(timeoutMillis) {
                 handler.await()
-                // 不要 `withTimeout`. timeout 的报错会不正常.
-            } as E? ?: throw TimeoutException("timeout receiving response of $commandName")
+            } as E
         }
 
         if (retry == 0) {

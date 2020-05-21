@@ -215,7 +215,9 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     init {
         coroutineContext[Job]!!.invokeOnCompletion { throwable ->
-            network.close(throwable)
+            kotlin.runCatching {
+                network.close(throwable)
+            }
             offlineListener.cancel(CancellationException("Bot cancelled", throwable))
 
             // help GC release instances

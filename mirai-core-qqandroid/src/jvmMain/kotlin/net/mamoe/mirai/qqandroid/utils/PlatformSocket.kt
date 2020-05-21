@@ -202,3 +202,4 @@ actual typealias NoRouteToHostException = java.net.NoRouteToHostException
 
 actual typealias SocketException = SocketException
  */
+actual typealias UnknownHostException = java.net.UnknownHostException
