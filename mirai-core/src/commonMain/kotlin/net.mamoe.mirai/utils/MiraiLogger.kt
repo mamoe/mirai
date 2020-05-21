@@ -240,12 +240,15 @@ class SimpleLogger(
     private val logger: (priority: LogPriority, message: String?, e: Throwable?) -> Unit
 ) : MiraiLoggerPlatformBase() {
 
-    enum class LogPriority {
-        VERBOSE,
-        DEBUG,
-        INFO,
-        WARNING,
-        ERROR
+    enum class LogPriority(
+        @MiraiExperimentalAPI val nameAligned: String,
+        @MiraiExperimentalAPI val simpleName: String
+    ) {
+        VERBOSE("VERBOSE", "VBSE"),
+        DEBUG(" DEBUG ", "DEBG"),
+        INFO("  INFO ", "INFO"),
+        WARNING("WARNING", "WARN"),
+        ERROR(" ERROR ", "EROR")
     }
 
     companion object {
