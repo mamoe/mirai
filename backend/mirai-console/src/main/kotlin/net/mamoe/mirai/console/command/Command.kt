@@ -15,7 +15,6 @@ import net.mamoe.mirai.console.command.description.CommandParam
 import net.mamoe.mirai.console.command.description.CommandParserContext
 import net.mamoe.mirai.console.command.description.EmptyCommandParserContext
 import net.mamoe.mirai.console.command.description.plus
-import net.mamoe.mirai.console.plugins.MyArg
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
 import kotlin.reflect.KAnnotatedElement
@@ -104,7 +103,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
         this::class.declaredFunctions.filter { it.hasAnnotation<SubCommand>() }.map { function ->
             SubCommandDescriptor(
                 arrayOf(function.name),
-                arrayOf(CommandParam("p", MyArg::class)),
+                arrayOf(),
                 "",
                 CommandPermission.Default,
                 onCommand = block { sender: CommandSender, args: Array<out Any> ->
