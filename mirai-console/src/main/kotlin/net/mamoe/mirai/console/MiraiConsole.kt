@@ -36,8 +36,13 @@ object MiraiConsole : CoroutineScope by CoroutineScope(EmptyCoroutineContext) {
      * 获取从Console登陆上的Bot, Bots
      * */
     @Suppress("DEPRECATION")
-    @Deprecated("use Bot.instances from mirai-core", replaceWith = ReplaceWith("Bot.instances", "net.mamoe.mirai.Bot"))
+    @Deprecated(
+        "use Bot.botInstances from mirai-core",
+        replaceWith = ReplaceWith("Bot.instances", "net.mamoe.mirai.Bot"),
+        level = DeprecationLevel.ERROR
+    )
     val bots: List<WeakRef<Bot>>
+        @Suppress("DEPRECATION_ERROR")
         get() = Bot.instances
 
     fun getBotOrNull(uin: Long): Bot? {
