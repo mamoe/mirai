@@ -212,7 +212,7 @@ private fun Method.registerEvent(
     coroutineContext: CoroutineContext
 ): Listener<Event> {
     this.isAccessible = true
-    val kotlinFunction = this.kotlinFunction
+    val kotlinFunction = kotlin.runCatching { this.kotlinFunction }.getOrNull()
     return if (kotlinFunction != null) {
         // kotlin functions
 
@@ -232,7 +232,9 @@ private fun Method.registerEvent(
             else -> error("function ${kotlinFunction.name} must have one Event param")
         }
         lateinit var listener: Listener<*>
-        kotlinFunction.isAccessible = true
+        kotlin.runCatching {
+            kotlinFunction.isAccessible = true
+        }
         suspend fun callFunction(event: Event): Any? {
             try {
                 return when (param.size) {
