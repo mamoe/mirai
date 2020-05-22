@@ -7,11 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.setting.SerialName
+import net.mamoe.mirai.console.setting.Setting
+import net.mamoe.mirai.console.setting.Value
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlConfiguration
 import kotlin.reflect.KProperty
@@ -41,7 +44,10 @@ internal abstract class SettingImpl {
             }
 
             override fun serialize(encoder: Encoder, value: Setting) {
-                this@SettingImpl.updaterSerializer.serialize(encoder, SettingSerializerMark)
+                this@SettingImpl.updaterSerializer.serialize(
+                    encoder,
+                    SettingSerializerMark
+                )
             }
         }
     }

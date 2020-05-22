@@ -7,13 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.builtins.*
+import net.mamoe.mirai.console.setting.*
 
 
 /**
@@ -1353,7 +1354,10 @@ internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
             }
 
             override fun serialize(encoder: Encoder, value: T) {
-                internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
+                internalValue.updaterSerializer.serialize(
+                    encoder,
+                    SettingSerializerMark
+                )
             }
         }
     }

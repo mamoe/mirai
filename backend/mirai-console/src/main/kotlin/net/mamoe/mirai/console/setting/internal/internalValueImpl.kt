@@ -7,11 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.SetSerializer
+import net.mamoe.mirai.console.setting.*
 import net.mamoe.yamlkt.YamlDynamicSerializer
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance

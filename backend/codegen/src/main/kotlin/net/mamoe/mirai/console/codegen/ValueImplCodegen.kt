@@ -16,7 +16,7 @@ import java.io.File
 fun main() {
     println(File("").absolutePath) // default project base dir
 
-    File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/setting/_ValueImpl.kt").apply {
+    File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/setting/internal/_ValueImpl.kt").apply {
         createNewFile()
     }.writeText(buildString {
         appendln(COPYRIGHT)

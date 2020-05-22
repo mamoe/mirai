@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.KSerializer
+import net.mamoe.mirai.console.setting.internal.SettingImpl
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
