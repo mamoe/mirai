@@ -59,6 +59,9 @@ abstract class Setting : SettingImpl() {
     override fun toString(): String = yamlForToString.stringify(this.serializer, this)
 }
 
+/**
+ * 用于更新或保存这个 [Value] 的序列化器.
+ */
 @Suppress("UNCHECKED_CAST")
 val <T : Setting> T.serializer: KSerializer<T>
     get() = kotlinSerializer as KSerializer<T>

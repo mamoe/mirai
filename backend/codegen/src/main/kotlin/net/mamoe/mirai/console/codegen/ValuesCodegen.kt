@@ -264,7 +264,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
          * 只引用这个对象, 而不跟踪其成员.
          * 仅适用于基础类型, 用于 mutable list/map 等情况; 或标注了 [Serializable] 的类.
          */
-        abstract class DynamicReferenceValue<T : Any> internal constructor() : Value<T>()
+        abstract class DynamicReferenceValue<T : Any> : Value<T>()
     """
     )
 }
