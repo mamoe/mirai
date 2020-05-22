@@ -1,7 +1,45 @@
 # Version 1.x
 
-## `1.0.0` 2020/5/21
+## `1.0.0` 2020/5/22
 
+- `ContactOrBot` 现在继承 `CoroutineScope`
+- 在没有手动指定 `deviceInfo` 时构建 Bot 将会发出警告, 须手动选择使用 `randomDeviceInfo` 或 `fileBasedDeviceInfo` 或自定义, 详见 [BotConfiguration.kt: Lines 69-72](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.kt#L69-L72)
+<br />
+
+- 引入 `SimpleListenerHost` 以帮助 Java 处理事件监听
+- 添加 Java 广播事件的方式: `EventKt.broadcast(Event)`
+- 添加 `Bot.getInstanceOrNull`
+- 改进 JVM 平台的 `PlatformLogger`, 添加 `DirectoryLogger`, `SingleFileLogger` 以提供重定向日志的快捷方式
+- 统一日志格式, 使用 (正则) `^([\w-]*\s[\w:]*)\s(\w)\/(.*?):\s(.+)$`. 详见 [PlatformLogger.jvm.kt: Line 46](mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/utils/PlatformLogger.jvm.kt#L46)
+
+<br />
+
+- 弃用 `Bot.queryUrl(Image)`, 改用 `image.queryUrl()` 扩展. (保留兼容到 1.2.0)
+- 弃用 `Bot.accept*`, `Bot.reject*` 等相应入群请求等事件的方法, 改用事件的成员函数. (保留兼容到 1.2.0)
+
+<br />
+
+- 修复 `Bot` 实例化时 `NPE` 问题
+- 修复网络状态差时 `Bot` 网络模块无法处理分包的问题
+- 修复当无 Bot 在线时调用 `image.queryUrl()` 抛出的异常与 KDoc 描述不符的问题
+- 修复 `BotJoinGroupEvent` 重复广播问题
+- 修复邀请 Bot 进群时事件处理异常的问题 (#319)
+- 修复当 `Event` 被实现为一个 Kotlin `object` 时无法正常拦截事件的问题
+- 修复图片链接获取为空的问题 (#318)
+- 修复成员被移除群后可能发生内存泄露的问题
+- 修复异常没有正确输出到日志的问题
+- 修复一些 `DefaultLogger` 的不恰当使用的问题
+- 修复 `UnknownHostException` 未被正常捕获的问题
+
+<br />
+
+- 在 Bot 被禁言时忽略 `reply` 方式创建的监听器 (`subscribeMessages` DSL)
+- 使用更宽松的方式读取 `device.json`
+- 将 `Bot.selfQQ` 标注 `@MiraiExperimentalAPI`
+- 提高默认心跳超时时间
+- 改进多处 KDoc
+- 更新 kotlinx-coroutines-core 到 1.3.7
+- ... 忽略了内部变动
 
 ## `1.0-RC2-1` 2020/5/11
 修复一个 `VerifyError`
