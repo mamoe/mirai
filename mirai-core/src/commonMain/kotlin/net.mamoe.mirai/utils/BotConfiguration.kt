@@ -42,8 +42,8 @@ open class BotConfiguration {
      *
      * - 默认打印到标准输出, 通过 [DefaultLogger]
      * - 忽略所有日志: [noBotLog]
-     * - 重定向到一个目录: `networkLoggerSupplier = { bot -> DirectoryLogger("Net ${it.id}") }`
-     * - 重定向到一个文件: `networkLoggerSupplier = { bot -> SingleFileLogger("Net ${it.id}") }`
+     * - 重定向到一个目录: `networkLoggerSupplier = { DirectoryLogger("Net ${it.id}") }`
+     * - 重定向到一个文件: `networkLoggerSupplier = { SingleFileLogger("Net ${it.id}") }`
      *
      * @see MiraiLogger
      */
@@ -54,8 +54,8 @@ open class BotConfiguration {
      *
      * - 默认打印到标准输出, 通过 [DefaultLogger]
      * - 忽略所有日志: [noNetworkLog]
-     * - 重定向到一个目录: `networkLoggerSupplier = { bot -> DirectoryLogger("Net ${it.id}") }`
-     * - 重定向到一个文件: `networkLoggerSupplier = { bot -> SingleFileLogger("Net ${it.id}") }`
+     * - 重定向到一个目录: `networkLoggerSupplier = { DirectoryLogger("Net ${it.id}") }`
+     * - 重定向到一个文件: `networkLoggerSupplier = { SingleFileLogger("Net ${it.id}") }`
      *
      * @see MiraiLogger
      */
