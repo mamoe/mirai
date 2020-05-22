@@ -10,12 +10,14 @@
 package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.*
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlConfiguration
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
 
-internal abstract class AbstractSetting {
+internal abstract class SettingImpl {
 
     @JvmField
     internal var valueList: MutableList<Pair<Value<*>, KProperty<*>>> = mutableListOf()
@@ -31,15 +33,15 @@ internal abstract class AbstractSetting {
     internal val kotlinSerializer: KSerializer<Setting> by lazy {
         object : KSerializer<Setting> {
             override val descriptor: SerialDescriptor
-                get() = this@AbstractSetting.updaterSerializer.descriptor
+                get() = this@SettingImpl.updaterSerializer.descriptor
 
             override fun deserialize(decoder: Decoder): Setting {
-                this@AbstractSetting.updaterSerializer.deserialize(decoder)
-                return this@AbstractSetting as Setting
+                this@SettingImpl.updaterSerializer.deserialize(decoder)
+                return this@SettingImpl as Setting
             }
 
             override fun serialize(encoder: Encoder, value: Setting) {
-                this@AbstractSetting.updaterSerializer.serialize(encoder, SettingSerializerMark)
+                this@SettingImpl.updaterSerializer.serialize(encoder, SettingSerializerMark)
             }
         }
     }
@@ -101,18 +103,40 @@ internal class SettingUpdaterSerializer(
         SettingSerializerMark
     }
 
-    override fun serialize(encoder: Encoder, value: SettingSerializerMark) = encoder.encodeStructure(descriptor) {
-        instance.valueList.forEachIndexed { index, (value, _) ->
-            @Suppress("UNCHECKED_CAST") // erased, no problem.
-            this.encodeSerializableElement(
-                descriptor,
-                index,
-                value.serializer as KSerializer<Any>,
-                value.value
-            )
+    private val emptyList = emptyList<String>()
+    private val emptyListSerializer = ListSerializer(String.serializer())
+
+    override fun serialize(encoder: Encoder, value: SettingSerializerMark) {
+        if (instance.valueList.isEmpty()) {
+            emptyListSerializer.serialize(encoder, emptyList)
+        } else encoder.encodeStructure(descriptor) {
+            instance.valueList.forEachIndexed { index, (value, _) ->
+                @Suppress("UNCHECKED_CAST") // erased, no problem.
+                this.encodeElementSmart(descriptor, index, value)
+            }
         }
     }
 
+}
+
+internal fun <T : Any> CompositeEncoder.encodeElementSmart(
+    descriptor: SerialDescriptor,
+    index: Int,
+    value: Value<T>
+) {
+    when (value.value::class) {
+        String::class -> this.encodeStringElement(descriptor, index, value.value as String)
+        Int::class -> this.encodeIntElement(descriptor, index, value.value as Int)
+        Byte::class -> this.encodeByteElement(descriptor, index, value.value as Byte)
+        Char::class -> this.encodeCharElement(descriptor, index, value.value as Char)
+        Long::class -> this.encodeLongElement(descriptor, index, value.value as Long)
+        Float::class -> this.encodeFloatElement(descriptor, index, value.value as Float)
+        Double::class -> this.encodeDoubleElement(descriptor, index, value.value as Double)
+        Boolean::class -> this.encodeBooleanElement(descriptor, index, value.value as Boolean)
+        else ->
+            @Suppress("UNCHECKED_CAST")
+            this.encodeSerializableElement(descriptor, index, value.serializer as KSerializer<Any>, value.value)
+    }
 }
 
 internal object SettingSerializerMark

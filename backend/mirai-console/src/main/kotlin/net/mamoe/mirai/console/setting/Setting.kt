@@ -22,7 +22,7 @@ typealias SerialName = kotlinx.serialization.SerialName
  * 配置的基类. 所有配置必须拥有一个无参构造器, 以用于在 [MutableList] 与 [MutableMap] 中动态识别类型
  */
 @Suppress("EXPOSED_SUPER_CLASS")
-abstract class Setting : AbstractSetting() {
+abstract class Setting : SettingImpl() {
     open val serialName: String
         get() = this::class.findAnnotation<SerialName>()?.value
             ?: this::class.qualifiedName
