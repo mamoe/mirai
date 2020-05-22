@@ -23,15 +23,15 @@ internal class SubscribingGetTest {
 
     @Test
     fun testSyncFromEvent() {
-        runBlockingWithTimeout(10000) {
+        runBlockingWithTimeout(30_000) {
             suspendCancellableCoroutine<Unit> { cont ->
                 launch {
-                    syncFromEvent(8000) { _: TestEvent ->
+                    syncFromEvent(20_000) { _: TestEvent ->
                         cont.resume(Unit)
                     }
                 }
                 launch {
-                    delay(4000)
+                    delay(5_000)
                     TestEvent().broadcast()
                 }
             }
