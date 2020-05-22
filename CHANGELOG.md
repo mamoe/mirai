@@ -116,11 +116,13 @@
   弃用 (兼容到 `1.2.0`):
   - `MessagePacket`
   - `MessagePacketBase`
+
   进行如下更名:
   - `ContactMessage` -> `MessageEvent`
   - `FriendMessage` -> `FriendMessageEvent`
   - `GroupMessage` -> `GroupMessageEvent`
   - `TempMessage` -> `TempMessageEvent`
+
   暂未决定是否提供 `UserMessageEvent` 作为 `TempMessageEvent` 和 `FriendMessageEvent` 的公共父类.
 
 - 优化扩展函数结构, 统一放置在 `MessageEventExtensions`, 以使 `MessageEvent` 结构清晰.
@@ -212,7 +214,7 @@
 
 新架构为:
 - 弃用 `QQ` 命名 (二进制兼容到 1.0.0)
-- 新增 `User` 继承 `Contact`, 作为 `Member` 和 `Friend`
+- 新增 `User` 继承 `Contact`, 作为 `Member` 和 `Friend` 的父类
 - `Member` 继承 `User`
 - `Friend` 继承 `User`
 
