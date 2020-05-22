@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.console.setting.internal
 
@@ -14,6 +15,7 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.SetSerializer
 import net.mamoe.mirai.console.setting.*
 import net.mamoe.yamlkt.YamlDynamicSerializer
+import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -290,6 +292,7 @@ internal fun <T : Any> Setting.valueImpl(
  * For primitives and serializable only
  */
 @PublishedApi
+@LowPriorityInOverloadResolution
 internal inline fun <reified T : Any> Setting.valueImpl(default: T): Value<T> =
     valueImpl(default, T::class)
 

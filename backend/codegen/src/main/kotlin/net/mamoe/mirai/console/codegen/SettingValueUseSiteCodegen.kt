@@ -21,11 +21,13 @@ fun main() {
     }.writeText(buildString {
         appendln(COPYRIGHT)
         appendln()
+        appendln(FILE_SUPPRESS)
+        appendln()
         appendln(PACKAGE)
         appendln()
-        // appendln(IMPORTS)
-        // appendln()
-        // appendln()
+        appendln(IMPORTS)
+        appendln()
+        appendln()
         appendln(DO_NOT_MODIFY)
         appendln()
         appendln()
@@ -44,8 +46,12 @@ private val PACKAGE = """
 package net.mamoe.mirai.console.setting
 """.trimIndent()
 
+private val FILE_SUPPRESS = """
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
+""".trimIndent()
 private val IMPORTS = """
-import kotlinx.serialization.builtins.*
+import net.mamoe.mirai.console.setting.internal.valueImpl
+import kotlin.internal.LowPriorityInOverloadResolution
 """.trimIndent()
 
 fun genAllValueUseSite(): String = buildString {
@@ -111,6 +117,26 @@ fun genAllValueUseSite(): String = buildString {
 
             @JvmName("valueMutable")
             inline fun <reified T : Setting> Setting.value(default: MutableSet<T>): MutableSettingSetValue<T> = valueImpl(default)
+            
+            /**
+             * 创建一个只引用对象而不跟踪其属性的值.
+             *
+             * @param T 类型. 必须拥有 [kotlinx.serialization.Serializable] 注解 (因此编译器会自动生成序列化器)
+             */
+            @DangerousReferenceOnlyValue
+            @JvmName("valueDynamic")
+            @LowPriorityInOverloadResolution
+            inline fun <reified T : Any> Setting.value(default: T): Value<T> = valueImpl(default)
+            
+            @RequiresOptIn(
+                ""${'"'}
+                这种只保存引用的 Value 可能会导致意料之外的结果, 在使用时须保持谨慎.
+                对值的改变不会触发自动保存, 也不会同步到 UI 中. 在 UI 中只能编辑序列化之后的值.
+            ""${'"'}, level = RequiresOptIn.Level.WARNING
+            )
+            @Retention(AnnotationRetention.BINARY)
+            @Target(AnnotationTarget.FUNCTION)
+            annotation class DangerousReferenceOnlyValue
         """
     )
 }
