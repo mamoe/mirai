@@ -28,7 +28,7 @@ jobs:
         run: ./gradlew build # if test's failed, don't publish
       - name: Gradle :mirai-console:cuiCloudUpload
         run: ./gradlew :mirai-console:cuiCloudUpload -Dcui_cloud_key=${{ secrets.CUI_CLOUD_KEY }} -Pcui_cloud_key=${{ secrets.CUI_CLOUD_KEY }} -Dcui_cloud_url=${{ secrets.CUI_CLOUD_URL }} -Pcui_cloud_url=${{ secrets.CUI_CLOUD_URL }}
-      - name: Gradle :mirai-console-qqandroid:cuiCloudUpload
+      - name: Gradle :mirai-console-graphical:cuiCloudUpload
         run: ./gradlew :mirai-console-graphical:cuiCloudUpload -Dcui_cloud_key=${{ secrets.CUI_CLOUD_KEY }} -Pcui_cloud_key=${{ secrets.CUI_CLOUD_KEY }} -Dcui_cloud_url=${{ secrets.CUI_CLOUD_URL }} -Pcui_cloud_url=${{ secrets.CUI_CLOUD_URL }}
 
 
