@@ -33,11 +33,11 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
 - [`mirai-console`](https://github.com/mamoe/mirai-console) 是基于 `mirai-core` 的, 支持插件加载, 指令系统, 和配置等的**控制台框架**.  
   **注意: 此模块正在重写, 短时间内不可用**  
   console 由 '后端' 和 '前端' 组成.  
-  [`backend/mirai-console`](https://github.com/mamoe/mirai-console/tree/master/backend/mirai-console) 为唯一的后端, 包含所有开发时需要用到的功能.  
+  [`backend/mirai-console`](https://github.com/mamoe/mirai-console/tree/reborn/backend/mirai-console) 为唯一的后端, 包含所有开发时需要用到的功能.  
   可用的官方（由 mirai 所属 [mamoe](https://github.com/mamoe) 组成员维护）前端:  
-  - 纯命令行: [`frontend/mirai-console-pure`](https://github.com/mamoe/mirai-console/tree/master/frontend/mirai-console-pure)
-  - 基于 JavaFX 的图形端: [`frontend/mirai-console-graphical`](https://github.com/mamoe/mirai-console/tree/master/frontend/mirai-console-graphical)
-  - Unix 友好的终端: [`frontend/mirai-console-terminal`](https://github.com/mamoe/mirai-console/tree/master/frontend/mirai-console-terminal)
+  - 纯命令行: [`frontend/mirai-console-pure`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-pure)
+  - 基于 JavaFX 的图形端: [`frontend/mirai-console-graphical`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-graphical)
+  - Unix 友好的终端: [`frontend/mirai-console-terminal`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-terminal)
   - Android APP: [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid) 额外支持多种脚本 API
 
 
