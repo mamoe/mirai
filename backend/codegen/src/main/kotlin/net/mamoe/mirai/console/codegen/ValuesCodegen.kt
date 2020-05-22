@@ -157,13 +157,14 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
     appendln()
 
     for (number in (NUMBERS + OTHER_PRIMITIVES).filterNot { it == "String" }) {
-        val template = """
+        appendln(
+            """
             abstract class ${number}ArrayValue internal constructor() : PrimitiveArrayValue<${number}Array>(), Iterable<${number}> {
                 override fun iterator(): Iterator<${number}> = this.value.iterator()
             }
     """
-
-        appendln(template)
+        )
+        appendln()
     }
 
     appendln()
@@ -180,11 +181,11 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
     appendln()
 
     for (number in (NUMBERS + OTHER_PRIMITIVES)) {
-        val template = """
+        appendln(
+            """
             abstract class Typed${number}ArrayValue internal constructor() : TypedPrimitiveArrayValue<${number}>()
     """
-
-        appendln(template)
+        )
     }
 
     appendln()
@@ -194,9 +195,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
 
         appendln(
             """
-            sealed class ${collectionName}Value<E> : Value<${collectionName}<E>>(), Iterable<E>{
-                override fun iterator() = this.value.iterator()
-            }
+            sealed class ${collectionName}Value<E> : Value<${collectionName}<E>>(), ${collectionName}<E>
     """
         )
 

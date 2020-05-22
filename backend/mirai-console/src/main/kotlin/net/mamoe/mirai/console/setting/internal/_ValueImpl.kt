@@ -414,8 +414,8 @@ internal fun Setting.valueImpl(default: Array<String>): TypedStringArrayValue {
 }
 
 internal fun Setting.valueImpl(default: List<Int>): IntListValue {
-    return object : IntListValue() {
-        private var internalValue: List<Int> = default
+    var internalValue: List<Int> = default
+    return object : IntListValue(), List<Int> by dynamicList({ internalValue }) {
         override var value: List<Int>
             get() = internalValue
             set(new) {
@@ -429,8 +429,8 @@ internal fun Setting.valueImpl(default: List<Int>): IntListValue {
 }
 
 internal fun Setting.valueImpl(default: List<Short>): ShortListValue {
-    return object : ShortListValue() {
-        private var internalValue: List<Short> = default
+    var internalValue: List<Short> = default
+    return object : ShortListValue(), List<Short> by dynamicList({ internalValue }) {
         override var value: List<Short>
             get() = internalValue
             set(new) {
@@ -444,8 +444,8 @@ internal fun Setting.valueImpl(default: List<Short>): ShortListValue {
 }
 
 internal fun Setting.valueImpl(default: List<Byte>): ByteListValue {
-    return object : ByteListValue() {
-        private var internalValue: List<Byte> = default
+    var internalValue: List<Byte> = default
+    return object : ByteListValue(), List<Byte> by dynamicList({ internalValue }) {
         override var value: List<Byte>
             get() = internalValue
             set(new) {
@@ -459,8 +459,8 @@ internal fun Setting.valueImpl(default: List<Byte>): ByteListValue {
 }
 
 internal fun Setting.valueImpl(default: List<Long>): LongListValue {
-    return object : LongListValue() {
-        private var internalValue: List<Long> = default
+    var internalValue: List<Long> = default
+    return object : LongListValue(), List<Long> by dynamicList({ internalValue }) {
         override var value: List<Long>
             get() = internalValue
             set(new) {
@@ -474,8 +474,8 @@ internal fun Setting.valueImpl(default: List<Long>): LongListValue {
 }
 
 internal fun Setting.valueImpl(default: List<Float>): FloatListValue {
-    return object : FloatListValue() {
-        private var internalValue: List<Float> = default
+    var internalValue: List<Float> = default
+    return object : FloatListValue(), List<Float> by dynamicList({ internalValue }) {
         override var value: List<Float>
             get() = internalValue
             set(new) {
@@ -489,8 +489,8 @@ internal fun Setting.valueImpl(default: List<Float>): FloatListValue {
 }
 
 internal fun Setting.valueImpl(default: List<Double>): DoubleListValue {
-    return object : DoubleListValue() {
-        private var internalValue: List<Double> = default
+    var internalValue: List<Double> = default
+    return object : DoubleListValue(), List<Double> by dynamicList({ internalValue }) {
         override var value: List<Double>
             get() = internalValue
             set(new) {
@@ -504,8 +504,8 @@ internal fun Setting.valueImpl(default: List<Double>): DoubleListValue {
 }
 
 internal fun Setting.valueImpl(default: List<Boolean>): BooleanListValue {
-    return object : BooleanListValue() {
-        private var internalValue: List<Boolean> = default
+    var internalValue: List<Boolean> = default
+    return object : BooleanListValue(), List<Boolean> by dynamicList({ internalValue }) {
         override var value: List<Boolean>
             get() = internalValue
             set(new) {
@@ -519,8 +519,8 @@ internal fun Setting.valueImpl(default: List<Boolean>): BooleanListValue {
 }
 
 internal fun Setting.valueImpl(default: List<Char>): CharListValue {
-    return object : CharListValue() {
-        private var internalValue: List<Char> = default
+    var internalValue: List<Char> = default
+    return object : CharListValue(), List<Char> by dynamicList({ internalValue }) {
         override var value: List<Char>
             get() = internalValue
             set(new) {
@@ -534,8 +534,8 @@ internal fun Setting.valueImpl(default: List<Char>): CharListValue {
 }
 
 internal fun Setting.valueImpl(default: List<String>): StringListValue {
-    return object : StringListValue() {
-        private var internalValue: List<String> = default
+    var internalValue: List<String> = default
+    return object : StringListValue(), List<String> by dynamicList({ internalValue }) {
         override var value: List<String>
             get() = internalValue
             set(new) {
@@ -549,8 +549,8 @@ internal fun Setting.valueImpl(default: List<String>): StringListValue {
 }
 
 internal fun Setting.valueImpl(default: Set<Int>): IntSetValue {
-    return object : IntSetValue() {
-        private var internalValue: Set<Int> = default
+    var internalValue: Set<Int> = default
+    return object : IntSetValue(), Set<Int> by dynamicSet({ internalValue }) {
         override var value: Set<Int>
             get() = internalValue
             set(new) {
@@ -564,8 +564,8 @@ internal fun Setting.valueImpl(default: Set<Int>): IntSetValue {
 }
 
 internal fun Setting.valueImpl(default: Set<Short>): ShortSetValue {
-    return object : ShortSetValue() {
-        private var internalValue: Set<Short> = default
+    var internalValue: Set<Short> = default
+    return object : ShortSetValue(), Set<Short> by dynamicSet({ internalValue }) {
         override var value: Set<Short>
             get() = internalValue
             set(new) {
@@ -579,8 +579,8 @@ internal fun Setting.valueImpl(default: Set<Short>): ShortSetValue {
 }
 
 internal fun Setting.valueImpl(default: Set<Byte>): ByteSetValue {
-    return object : ByteSetValue() {
-        private var internalValue: Set<Byte> = default
+    var internalValue: Set<Byte> = default
+    return object : ByteSetValue(), Set<Byte> by dynamicSet({ internalValue }) {
         override var value: Set<Byte>
             get() = internalValue
             set(new) {
@@ -594,8 +594,8 @@ internal fun Setting.valueImpl(default: Set<Byte>): ByteSetValue {
 }
 
 internal fun Setting.valueImpl(default: Set<Long>): LongSetValue {
-    return object : LongSetValue() {
-        private var internalValue: Set<Long> = default
+    var internalValue: Set<Long> = default
+    return object : LongSetValue(), Set<Long> by dynamicSet({ internalValue }) {
         override var value: Set<Long>
             get() = internalValue
             set(new) {
@@ -609,8 +609,8 @@ internal fun Setting.valueImpl(default: Set<Long>): LongSetValue {
 }
 
 internal fun Setting.valueImpl(default: Set<Float>): FloatSetValue {
-    return object : FloatSetValue() {
-        private var internalValue: Set<Float> = default
+    var internalValue: Set<Float> = default
+    return object : FloatSetValue(), Set<Float> by dynamicSet({ internalValue }) {
         override var value: Set<Float>
             get() = internalValue
             set(new) {
@@ -624,8 +624,8 @@ internal fun Setting.valueImpl(default: Set<Float>): FloatSetValue {
 }
 
 internal fun Setting.valueImpl(default: Set<Double>): DoubleSetValue {
-    return object : DoubleSetValue() {
-        private var internalValue: Set<Double> = default
+    var internalValue: Set<Double> = default
+    return object : DoubleSetValue(), Set<Double> by dynamicSet({ internalValue }) {
         override var value: Set<Double>
             get() = internalValue
             set(new) {
@@ -639,8 +639,8 @@ internal fun Setting.valueImpl(default: Set<Double>): DoubleSetValue {
 }
 
 internal fun Setting.valueImpl(default: Set<Boolean>): BooleanSetValue {
-    return object : BooleanSetValue() {
-        private var internalValue: Set<Boolean> = default
+    var internalValue: Set<Boolean> = default
+    return object : BooleanSetValue(), Set<Boolean> by dynamicSet({ internalValue }) {
         override var value: Set<Boolean>
             get() = internalValue
             set(new) {
@@ -654,8 +654,8 @@ internal fun Setting.valueImpl(default: Set<Boolean>): BooleanSetValue {
 }
 
 internal fun Setting.valueImpl(default: Set<Char>): CharSetValue {
-    return object : CharSetValue() {
-        private var internalValue: Set<Char> = default
+    var internalValue: Set<Char> = default
+    return object : CharSetValue(), Set<Char> by dynamicSet({ internalValue }) {
         override var value: Set<Char>
             get() = internalValue
             set(new) {
@@ -669,8 +669,8 @@ internal fun Setting.valueImpl(default: Set<Char>): CharSetValue {
 }
 
 internal fun Setting.valueImpl(default: Set<String>): StringSetValue {
-    return object : StringSetValue() {
-        private var internalValue: Set<String> = default
+    var internalValue: Set<String> = default
+    return object : StringSetValue(), Set<String> by dynamicSet({ internalValue }) {
         override var value: Set<String>
             get() = internalValue
             set(new) {
@@ -1354,10 +1354,7 @@ internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
             }
 
             override fun serialize(encoder: Encoder, value: T) {
-                internalValue.updaterSerializer.serialize(
-                    encoder,
-                    SettingSerializerMark
-                )
+                internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
             }
         }
     }
