@@ -11,9 +11,7 @@
 
 package net.mamoe.mirai.data
 
-import io.ktor.util.date.GMTDate
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-
+/*
 /**
  * 个人资料
  */
@@ -61,4 +59,4 @@ enum class Gender(val value: Byte) {
     SECRET(0),
     MALE(1),
     FEMALE(2)
-}
+}*/

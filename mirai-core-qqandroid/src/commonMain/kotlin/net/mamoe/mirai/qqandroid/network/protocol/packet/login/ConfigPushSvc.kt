@@ -12,6 +12,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoId
+import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -39,7 +40,7 @@ internal class ConfigPushSvc {
     ) {
         override val canBeCached: Boolean get() = false
 
-        sealed class PushReqResponse : Packet, Event {
+        sealed class PushReqResponse : Packet, Event, AbstractEvent() {
             class Success(
                 val struct: PushReqJceStruct
             ) : PushReqResponse() {
@@ -69,6 +70,7 @@ internal class ConfigPushSvc {
 
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): PushReqResponse? {
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             ByteArrayPool.useInstance(this.remaining.toInt()) { buffer ->
                 val length = this.readAvailable(buffer)
 

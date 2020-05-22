@@ -17,7 +17,6 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -31,10 +30,14 @@ import kotlin.jvm.JvmSynthetic
  */
 data class At
 @Suppress("DataClassPrivateConstructor")
-private constructor(val target: Long, val display: String) :
-    MessageContent,
-    CharSequence by display,
-    Comparable<String> by display {
+private constructor(
+    val target: Long,
+    /**
+     * "@群员名片"
+     */
+    val display: String
+) : // don't change
+    MessageContent {
 
     /**
      * 构造一个 [At] 实例. 这是唯一的公开的构造方式.
@@ -63,7 +66,7 @@ private constructor(val target: Long, val display: String) :
 
     // 自动为消息补充 " "
     override fun followedBy(tail: Message): MessageChain {
-        if (tail is PlainText && tail.stringValue.startsWith(' ')) {
+        if (tail is PlainText && tail.content.startsWith(' ')) {
             return super.followedBy(tail)
         }
         return super.followedBy(PlainText(" ")) + tail
@@ -75,15 +78,6 @@ private constructor(val target: Long, val display: String) :
         return result
     }
 
-
-    @OptIn(MiraiInternalAPI::class)
-    @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_FUNCTION_RETURN_TYPE")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmName("followedBy")
-    @JvmSynthetic
-    override fun followedBy1(tail: Message): CombinedMessage {
-        return followedByInternalForBinaryCompatibility(tail)
-    }
 }
 
 /**

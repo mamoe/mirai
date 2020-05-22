@@ -9,20 +9,23 @@
 
 object Versions {
     object Mirai {
-        const val version = "0.39.4"
+        const val version = "1.0.0"
     }
 
     object Kotlin {
         const val stdlib = "1.3.72"
-        const val coroutines = "1.3.5" // isn't used
+        const val coroutines = "1.3.7"
         const val atomicFU = "0.14.2"
         const val serialization = "0.20.0"
         const val ktor = "1.3.2"
+        const val binaryValidator = "0.2.3"
 
         const val io = "0.1.16"
         const val coroutinesIo = "0.1.16"
         const val dokka = "0.10.1"
     }
+
+    const val jcekt = "1.0.0"
 
     object Android {
         const val androidGradlePlugin = "3.5.3"

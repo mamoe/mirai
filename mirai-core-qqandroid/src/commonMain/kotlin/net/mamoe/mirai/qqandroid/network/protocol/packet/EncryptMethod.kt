@@ -19,7 +19,6 @@ import net.mamoe.mirai.qqandroid.utils.cryptor.ECDHKeyPair
 import net.mamoe.mirai.qqandroid.utils.io.encryptAndWrite
 import net.mamoe.mirai.qqandroid.utils.io.writeShortLVByteArray
 
-@OptIn(ExperimentalUnsignedTypes::class)
 internal interface EncryptMethod {
     val id: Int
 

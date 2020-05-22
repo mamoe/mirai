@@ -7,13 +7,15 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
+@file:OptIn(LowLevelAPI::class)
 @file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.qqandroid.contact
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Friend
@@ -23,22 +25,25 @@ import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.highway.postImage
+import net.mamoe.mirai.qqandroid.network.highway.sizeToString
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.unsafeWeakRef
+import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.roundToInt
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 internal inline class FriendInfoImpl(
@@ -59,10 +64,12 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
 
 internal class FriendImpl(
     bot: QQAndroidBot,
-    override val coroutineContext: CoroutineContext,
+    coroutineContext: CoroutineContext,
     override val id: Long,
     private val friendInfo: FriendInfo
 ) : Friend() {
+    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
+
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
 
@@ -80,8 +87,11 @@ internal class FriendImpl(
     }
 
     @JvmSynthetic
-    @OptIn(MiraiInternalAPI::class, ExperimentalStdlibApi::class, ExperimentalTime::class)
-    override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = try {
+    override suspend fun uploadImage(image: ExternalImage): Image = try {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
+            image.input.init(bot.configuration.fileCacheStrategy)
+        }
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -91,21 +101,23 @@ internal class FriendImpl(
                     srcUin = bot.id.toInt(),
                     dstUin = id.toInt(),
                     fileId = 0,
-                    fileMd5 = image.md5,
-                    fileSize = image.inputSize.toInt(),
-                    fileName = image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
+                    fileMd5 = @Suppress("INVISIBLE_MEMBER") image.md5,
+                    fileSize = @Suppress("INVISIBLE_MEMBER")
+                    image.input.size.toInt(),
+                    fileName = @Suppress("INVISIBLE_MEMBER") image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
                     imgOriginal = 1
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
 
-            @Suppress("UNCHECKED_CAST") // bug
+            @Suppress("UNCHECKED_CAST", "DEPRECATION", "INVISIBLE_MEMBER")
             return when (response) {
-                is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId).also {
-                    ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
-                }
+                is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId)
+                    .also {
+                        ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
+                    }
                 is LongConn.OffPicUp.Response.RequireUpload -> {
                     bot.network.logger.verbose {
-                        "[Http] Uploading friend image, size=${image.inputSize / 1024} KiB"
+                        "[Http] Uploading friend image, size=${image.input.size.sizeToString()}"
                     }
 
                     val time = measureTime {
@@ -114,13 +126,12 @@ internal class FriendImpl(
                             bot.id,
                             null,
                             imageInput = image.input,
-                            inputSize = image.inputSize,
                             uKeyHex = response.uKey.toUHexString("")
                         )
                     }
 
                     bot.network.logger.verbose {
-                        "[Http] Uploading friend image: succeed at ${(image.inputSize.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+                        "[Http] Uploading friend image: succeed at ${(image.input.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
                     }
 
                     /*
@@ -134,7 +145,7 @@ internal class FriendImpl(
                     )*/
                     // 为什么不能 ??
 
-                    return OfflineFriendImage(response.resourceId).also {
+                    return net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId).also {
                         ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                     }
                 }
@@ -145,6 +156,7 @@ internal class FriendImpl(
             }
         }
     } finally {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         (image.input as? Closeable)?.close()
     }
 }

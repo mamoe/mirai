@@ -9,115 +9,105 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("unused", "NOTHING_TO_INLINE")
+@file:Suppress("unused", "NOTHING_TO_INLINE", "WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.utils.PlannedRemoval
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KProperty
 
 /**
  * 消息链. 空的实现为 [EmptyMessageChain]
  *
- * 要获取更多信息, 请查看 [Message]
+ * 在发送消息时必须构造一个消息链, 可通过一系列扩展函数 [asMessageChain] 转换.
+ *
+ * 要获取更多消息相关的信息, 查看 [Message]
+ *
+ * ### 构造消息链
+ * - [buildMessageChain]: 使用构建器
+ * - [Message.plus]: 将两个消息相连成为一个消息链
+ * - [asMessageChain] 将 [Iterable], 等类型消息
+ * - [messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
+ *
+ * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
+ * @see getOrFail 获取消息链中一个类型的元素, 不存在时抛出异常 [NoSuchElementException]
+ * @see quote 引用这条消息
+ * @see recall 撤回这条消息 (
  *
  * @see buildMessageChain 构造一个 [MessageChain]
  * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
  * @see asMessageChain 将 [Iterable] 或 [Sequence] 委托为 [MessageChain]
  *
- * @see foreachContent 遍历内容
+ * @see forEachContent 遍历内容
+ * @see allContent 判断是否每一个 [MessageContent] 都满足条件
+ * @see noneContent 判断是否每一个 [MessageContent] 都不满足条件
  *
  * @see orNull 属性委托扩展
  * @see orElse 属性委托扩展
  * @see getValue 属性委托扩展
  * @see flatten 扁平化
  */
-interface MessageChain : Message, Iterable<SingleMessage> {
-    @PlannedRemoval("1.0.0")
-    @Deprecated(
-        "有歧义, 自行使用 contentToString() 比较",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("this.contentToString().contains(sub)")
-    )
-    /* final */ override operator fun contains(sub: String): Boolean = this.contentToString().contains(sub)
-
+@Suppress("FunctionName", "DeprecatedCallableAddReplaceWith", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+interface MessageChain : Message, List<SingleMessage>, RandomAccess {
     /**
      * 元素数量. [EmptyMessageChain] 不参加计数.
      */
-    @SinceMirai("0.31.1")
-    val size: Int
+    override val size: Int
 
     /**
-     * 获取第一个类型为 [key] 的 [Message] 实例
+     * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`
      *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
-     * @throws NoSuchElementException 当找不到这个类型的 [Message] 时
      */
-    @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("first")
-    /* final */ operator fun <M : Message> get(key: Message.Key<M>): M = first(key)
+    final operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
 
     /**
-     * 获取第一个类型为 [key] 的 [Message] 实例, 找不到则返回 `null`
-     *
-     * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
-     */
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @JvmName("firstOrNull")
-            /* final */ fun <M : Message> getOrNull(key: Message.Key<M>): M? = firstOrNull(key)
-
-    /**
-     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply].
+     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face] 等
      * 仅供 `Java` 使用
      */
-    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
-    @JsName("forEachContent")
     @JvmName("forEachContent")
-    @MiraiInternalAPI
-    fun `__forEachContent for Java__`(block: (Message) -> Unit) {
-        this.forEachContent(block)
-    }
+    @JavaFriendlyAPI
+    final fun __forEachContentForJava__(block: (Message) -> Unit) = this.forEachContent(block)
 
-    /**
-     * 遍历每一个消息, 即 [MessageSource] [At], [AtAll], [PlainText], [Image], [Face], [XmlMessage], [QuoteReply].
-     * 仅供 `Java` 使用
-     */
-    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
-    @JsName("forEach")
+
+    @PlannedRemoval("1.1.0")
+    @Deprecated("use Java 8 API", level = DeprecationLevel.HIDDEN)
     @JvmName("forEach")
-    @MiraiInternalAPI
-    fun `__forEach for Java__`(block: (Message) -> Unit) {
-        this.forEach(block)
-    }
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    @JavaFriendlyAPI
     @JvmSynthetic
-    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
-    @JvmName("get")
-    fun <M : Message> get2(key: Message.Key<M>): M = first(key)
+    @kotlin.internal.LowPriorityInOverloadResolution
+    final fun __forEachForJava__(block: (Message) -> Unit) = this.forEach(block)
 
-    @PlannedRemoval("1.0.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @JvmSynthetic
-    @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME")
-    @JvmName("getOrNull")
-    fun <M : Message> getOrNull2(key: Message.Key<M>): M? = getOrNull(key)
+    @PlannedRemoval("1.2.0")
+    @JvmName("firstOrNull")
+    @Deprecated("use get instead. This is going to be removed in mirai 1.2.0", ReplaceWith("get(key)"))
+    final fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
 }
 
 // region accessors
 
 /**
+ * 获取第一个类型为 [key] 的 [Message] 实例
+ *
+ * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
+ */
+@JvmOverloads
+inline fun <M : Message> MessageChain.getOrFail(
+    key: Message.Key<M>,
+    crossinline lazyMessage: (key: Message.Key<M>) -> String = { key.typeName }
+): M = firstOrNull(key) ?: throw NoSuchElementException(lazyMessage(key))
+
+
+/**
  * 遍历每一个 [消息内容][MessageContent]
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
 inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
     for (element in this) {
@@ -127,12 +117,6 @@ inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
         }
     }
 }
-
-@Deprecated("typo, use forEachContent",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith("forEachContent(block)"))
-@JvmSynthetic
-inline fun MessageChain.foreachContent(block: (MessageContent) -> Unit) = forEachContent(block)
 
 /**
  * 如果每一个 [消息内容][MessageContent] 都满足 [block], 返回 `true`
@@ -177,7 +161,7 @@ inline fun <reified M : Message?> MessageChain.firstIsInstanceOrNull(): M? = thi
 inline fun <reified M : Message> MessageChain.firstIsInstance(): M = this.first { it is M } as M
 
 /**
- * 获取第一个 [M] 类型的 [Message] 实例
+ * 判断 [this] 中是否存在 [Message] 的实例
  */
 @JvmSynthetic
 inline fun <reified M : Message> MessageChain.anyIsInstance(): Boolean = this.any { it is M }
@@ -186,7 +170,6 @@ inline fun <reified M : Message> MessageChain.anyIsInstance(): Boolean = this.an
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
-@OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = firstOrNullImpl(key)
@@ -273,7 +256,14 @@ inline fun <reified T : Message?> MessageChain.orElse(
 // endregion delegate
 
 
-// region converters
+// region asMessageChain
+
+/**
+ * 返回一个包含 [messages] 所有元素的消息链, 保留顺序.
+ */
+@JvmName("newChain")
+inline fun messageChainOf(vararg messages: Message): MessageChain = messages.asMessageChain()
+
 /**
  * 得到包含 [this] 的 [MessageChain].
  *
@@ -284,7 +274,6 @@ inline fun <reified T : Message?> MessageChain.orElse(
 @JvmName("newChain")
 @JsName("newChain")
 @Suppress("UNCHECKED_CAST")
-@OptIn(MiraiInternalAPI::class)
 fun Message.asMessageChain(): MessageChain = when (this) {
     is MessageChain -> this
     is CombinedMessage -> (this as Iterable<Message>).asMessageChain()
@@ -307,6 +296,18 @@ fun Collection<SingleMessage>.asMessageChain(): MessageChain =
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
  */
+@JvmSynthetic
+@JvmName("newChain1")
+// @JsName("newChain")
+fun Array<out Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
+
+@JvmSynthetic
+@JvmName("newChain2")
+fun Array<out SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.asSequence())
+
+/**
+ * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
+ */
 @JvmName("newChain")
 // @JsName("newChain")
 fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
@@ -319,7 +320,7 @@ fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
     MessageChainImplByCollection(this.constrainSingleMessages())
 
 @JvmSynthetic
-fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
+inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
@@ -341,15 +342,6 @@ fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplByS
 // @JsName("newChain")
 fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
-/**
- * 构造一个 [MessageChain]
- * 为提供更好的 Java API.
- */
-@Suppress("FunctionName")
-@JvmName("newChain")
-fun _____newChain______(vararg messages: Message): MessageChain {
-    return messages.asIterable().asMessageChain()
-}
 
 /**
  * 构造一个 [MessageChain]
@@ -399,6 +391,10 @@ inline fun Sequence<Message>.flatten(): Sequence<SingleMessage> = flatMap { it.f
 @JvmSynthetic
 inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // fast path
 
+inline fun Array<out Message>.flatten(): Sequence<SingleMessage> = this.asSequence().flatten()
+
+inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
+
 /**
  * 扁平化 [Message]
  *
@@ -408,7 +404,6 @@ inline fun Sequence<SingleMessage>.flatten(): Sequence<SingleMessage> = this // 
  * - 其他: 返回 `sequenceOf(this)`
  */
 fun Message.flatten(): Sequence<SingleMessage> {
-    @OptIn(MiraiInternalAPI::class)
     return when (this) {
         is MessageChain -> this.asSequence()
         is CombinedMessage -> this.asSequence() // already constrained single.
@@ -425,7 +420,7 @@ inline fun MessageChain.flatten(): Sequence<SingleMessage> = this.asSequence() /
 /**
  * 不含任何元素的 [MessageChain].
  */
-object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
+object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, List<SingleMessage> by emptyList() {
 
     override val size: Int get() = 0
     override fun toString(): String = ""
@@ -435,18 +430,4 @@ object EmptyMessageChain : MessageChain, Iterator<SingleMessage> {
     override fun iterator(): Iterator<SingleMessage> = this
     override fun hasNext(): Boolean = false
     override fun next(): SingleMessage = throw NoSuchElementException("EmptyMessageChain is empty.")
-}
-
-/**
- * Null 的 [MessageChain].
- * 它不包含任何元素, 也没有创建任何 list.
- */
-@PlannedRemoval("1.0.0")
-@Deprecated("ambiguous. use `null` or EmptyMessageChain instead", level = DeprecationLevel.ERROR)
-object NullMessageChain : MessageChain {
-    override fun toString(): String = "NullMessageChain"
-    override fun contentToString(): String = ""
-    override val size: Int get() = 0
-    override fun equals(other: Any?): Boolean = other === this
-    override fun iterator(): MutableIterator<SingleMessage> = error("accessing NullMessageChain")
 }

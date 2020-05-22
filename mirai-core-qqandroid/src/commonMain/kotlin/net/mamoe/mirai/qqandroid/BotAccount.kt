@@ -14,7 +14,6 @@ package net.mamoe.mirai.qqandroid
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmSynthetic
 
 internal data class BotAccount(
@@ -22,12 +21,9 @@ internal data class BotAccount(
     internal val id: Long,
     @JvmSynthetic
     @MiraiExperimentalAPI
-    @MiraiInternalAPI
     val passwordMd5: ByteArray // md5
 ) {
     constructor(id: Long, passwordPlainText: String) : this(id, MiraiPlatformUtils.md5(passwordPlainText.toByteArray()))
-
-    @OptIn(MiraiInternalAPI::class)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -40,7 +36,7 @@ internal data class BotAccount(
         return true
     }
 
-    @OptIn(MiraiInternalAPI::class)
+
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + passwordMd5.contentHashCode()

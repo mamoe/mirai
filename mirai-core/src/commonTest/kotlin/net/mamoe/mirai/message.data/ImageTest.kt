@@ -40,11 +40,6 @@ internal class ImageTest {
         )
 
         assertEquals(
-            "01E9451B-70ED-EAE3-B37C-101F1EEBF5B5".filterNot { it == '-' }.autoHexToBytes().contentToString(),
-            calculateImageMd5ByImageId("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.gif").contentToString()
-        )
-
-        assertEquals(
             "f8f1ab55-bf8e-4236-b55e-955848d7069f".filterNot { it == '-' }.autoHexToBytes().contentToString(),
             calculateImageMd5ByImageId("/f8f1ab55-bf8e-4236-b55e-955848d7069f").contentToString()
         )

@@ -1,20 +1,45 @@
 # Mirai
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)  
 
-Coroutine-based open-source multiplatform library of QQ protocol.  
-Some of the protocol came from the other open-source projects.  
+Mirai is a high-performance multi-platform library, as well as a framework, providing chatting protocol support for Tencent QQ.
 
-**The development is only for learning, DO NOT use it for illegal purposes.**
+Mirai is designed to handle all sorts of messaging jobs that can be automatically done by bots **in a perfect way**.
 
-## Changelog
+> Tencent QQ: A modern messaging software used by all Chinese netizens.
 
-You can inspect supported protocols at [Project](https://github.com/mamoe/mirai/projects/1)  
-and logs of updates at [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md)
+## Start
+**Development document**： [docs/mirai.md](docs/mirai.md)
 
-## Use as a library
+[CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md)
+
+### Use as a framework
+
+Mirai is able to run as plugin-supported framework.  
+Mirai is building a community (with `mirai-console`) that allows developers to share their plugins, and for users to install plugins quickly.
+
+- （Official） `Java` or `Kotlin`： Make Jar plugin for [mirai-console](https://github.com/mamoe/mirai-console) directly and share with other developers through the plugin center.
+- （Official） `Kotlin Script`： [mirai-kts](https://github.com/iTXTech/mirai-kts) supports plugins using Kotlin Scripts (`kts`)（**OpenJDK 8+ only，except Android**）
+- （Official） Native languages like `C`, `C++`： [mirai-native](https://github.com/iTXTech/mirai-native) supports plugins from CoolQ **(`Windows JREx86` only / with `Wine`)**
+- （Official） `JavaScript`： [mirai-js](https://github.com/iTXTech/mirai-js) supports plugins using `JavaScript` and inter-operate with **mirai** on JVM directly.
+- （Official） Any language：Use HTTP API from [mirai-api-http](https://github.com/mamoe/mirai-api-http)
+
+**Though only Jar plugins are supported officially, you can use these bridges that are created and maintained by the community**:
+
+- （Community）`Python`: [python-mirai](https://github.com/NatriumLab/python-mirai) A Bot framework based on `mirai-api-http`.
+- （Community）`JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) The Node.js SDK for mirai.
+- （Community）`Go`: [gomirai](https://github.com/Logiase/gomirai) The GoLang SDK for mirai.
+- （Community）`Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk) The Mozilla Rhino (JavaScript) SDK for mirai.
+- （Community）`Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) The Lua SDK for mirai-core, supporting Java extensions that act as a bridge between Java and natrive Lua.
+- （Community）`C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) A simple C++ SDK using `mirai-api-http` for ALL platforms.
+- （Community）`C++`: [miraipp](https://github.com/Chlorie/miraipp-template) A sophisticated, modern mapping for `mirai-http-api` to C++, providing development documents.
+- （Community）`Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) The Rust mapping for `mirai-http-api`.
+
+### Use as a library
 You can install mirai as a library into your project.
 
-Mirai is only published on `jcenter`, therefore please ensure you have the `jcenter()` repository in your `build.gradle`.
+#### Import with Gradle
+
+Mirai is only published on `jcenter`, therefore please ensure you have the `jcenter()` repository added in your `build.gradle`.
 
 ```kotlin
 repositories{
@@ -22,88 +47,59 @@ repositories{
 }
 ```
 
-If your project is a multiplatform project, you should add dependencies for each platform respectively.  
-If your project is not a multiplatform project, you just need to add the platform-specific dependency.  
+Then add dependency to `dependencies` block, following:  
+If your project is a multiplatform project, you need to add dependencies for each platform respectively.  
+If your project is not a multiplatform project, add the platform-specific dependency only.
 
-`VERSION` should be replaced with the newest version, say [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/) 
+Replace `VERSION` with the newest version, say [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)
 
-Mirai is still under experimental stage, it is suggested to keep the version newest.
-
+**jvm**
+```kotlin
+implementation("net.mamoe:mirai-core:VERSION")
+```
 **common**
 ```kotlin
 implementation("net.mamoe:mirai-core-common:VERSION")
-```
-**jvm**
-```kotlin
-implementation("net.mamoe:mirai-core-jvm:VERSION")
 ```
 **android**
 ```kotlin
 implementation("net.mamoe:mirai-core-android:VERSION")
 ```
 
-## Try
+#### Import with Maven
 
-### On JVM or Android
-
-Mirai is now available to work.
-
-```kotlin
-val bot = Bot(qqId, password).alsoLogin()
-bot.subscribeMessages {
-  "Hello" reply "World!"
-  "profile" reply { sender.queryProfile() }
-  contains("img"){ File(imagePath).send() }
-}
-bot.subscribeAlways<MemberPermissionChangedEvent> {
-  if (it.kind == BECOME_OPERATOR)
-    reply("${it.member.id} has become a operator")
-}
+```xml
+<repositories>
+    <repository>
+        <id>jcenter</id>
+        <url>https://jcenter.bintray.com/</url>
+    </repository>
+</repositories>
 ```
 
-1. Clone this GitHub project
-2. Import as Gradle project
-3. Run demo main functions: [mirai-demo](#mirai-demo)
+```xml
+<dependencies>
+    <dependency>
+        <groupId>net.mamoe</groupId>
+        <artifactId>mirai-core-qqandroid</artifactId>
+        <version>0.23.0</version> <!-- 替换版本为最新版本 -->
+    </dependency>
+</dependencies>
+```
 
 ## Contribution
-Any kinds of contribution is welcomed. If you hold a interest in helping us implementing Mirai on JS, iOS or Native platforms, please email me `Him188@mamoe.net`
-If you meet any problem or have any questions, be free to open a issue. Our goal is to make Mirai easy to use.
-
-## Requirements
-
-Kotlin 1.3.61  
-
-On JVM: Java 6  
-
-On Android: SDK 15
-
-### Using java
-Q: Can I use Mirai without Kotlin?  
-
-A: Calling from java is not yet supported. Coroutines, extensions and inlines, which are difficult to use from Java, are generally used in Mirai. Therefore you should have the skill of Kotlin before you use Mirai.
+**All kinds of contributions are welcomed.**  
+If you hold a interest in helping us implementing Mirai on JS, iOS or Native platforms, please email us `support@mamoe.net`.  
+If you meet any problem or have any questions, feel free to file an issue. Our goal is to make Mirai easy to use.
 
 ## Acknowledgements
 
 Thanks to [JetBrains](https://www.jetbrains.com/?from=mirai) for allocating free open-source licences for IDEs such as [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai).  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
 
-### Third Party Libraries
-
-- [kotlin-stdlib](https://github.com/JetBrains/kotlin)
-- [kotlinx-coroutines](https://github.com/Kotlin/kotlinx.coroutines)
-- [kotlinx-io](https://github.com/Kotlin/kotlinx-io)
-- [kotlin-reflect](https://github.com/JetBrains/kotlin)
-- [pcap4j](https://github.com/kaitoy/pcap4j)
-- [atomicfu](https://github.com/Kotlin/kotlinx.atomicfu)
-- [ktor](https://github.com/ktorio/ktor)
-- [klock](https://github.com/korlibs/klock)
-- [tornadofx](https://github.com/edvin/tornadofx)
-- [javafx](https://github.com/openjdk/jfx)
-- [kotlinx-serialization](https://github.com/Kotlin/kotlinx.serialization)
-
 ## License
 
-    Copyright (C) 2019-2020 mamoe and Mirai contributors
+    Copyright (C) 2019-2020 Mamoe Technologies and mirai contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as

@@ -7,29 +7,24 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE", "UnusedImport",
-    "EXPERIMENTAL_OVERRIDE")
+@file:Suppress(
+    "EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE", "UnusedImport",
+    "EXPERIMENTAL_OVERRIDE"
+)
 
 package net.mamoe.mirai
 
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.io.ByteReadChannel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.data.AddFriendResult
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.network.BotNetworkHandler
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -38,47 +33,80 @@ import kotlin.jvm.JvmSynthetic
  */
 @JvmSynthetic
 suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
-// 任何人都能看到这个方法
 
 /**
  * 机器人对象. 一个机器人实例登录一个 QQ 账号.
  * Mirai 为多账号设计, 可同时维护多个机器人.
  *
- * 注: Bot 为全协程实现, 没有其他任务时若不使用 [join], 主线程将会退出.
+ * 有关 [Bot] 生命管理, 请查看 [BotConfiguration.inheritCoroutineContext]
  *
  * @see Contact 联系人
  * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
+ *
+ * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
-@OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
-abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(), ContactOrBot {
+@Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
+abstract class Bot(
+    val configuration: BotConfiguration
+) : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI, ContactOrBot {
+    final override val coroutineContext: CoroutineContext =
+        configuration.parentCoroutineContext + SupervisorJob(configuration.parentCoroutineContext[Job]) +
+                (configuration.parentCoroutineContext[CoroutineExceptionHandler]
+                    ?: CoroutineExceptionHandler { _, e ->
+                        logger.error("An exception was thrown under a coroutine of Bot", e)
+                    })
+
     companion object {
-        /**
-         * 复制一份此时的 [Bot] 实例列表.
-         */
-        @Deprecated("use botInstances instead", replaceWith = ReplaceWith("botInstances"))
-        @JvmStatic
-        val instances: List<WeakRef<Bot>>
-            get() = BotImpl.instances.toList()
+        @Suppress("ObjectPropertyName")
+        internal val _instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
 
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
-        @SinceMirai("0.39.1")
+        @PlannedRemoval("1.2.0")
+        @Deprecated(
+            "use botInstances instead",
+            replaceWith = ReplaceWith("botInstances"),
+            level = DeprecationLevel.ERROR
+        )
+        @JvmStatic
+        val instances: List<WeakRef<Bot>>
+            get() = _instances.toList()
+
+        /**
+         * 复制一份此时的 [Bot] 实例列表.
+         */
         @JvmStatic
         val botInstances: List<Bot>
-            get() = BotImpl.instances.asSequence().mapNotNull { it.get() }.toList()
+            get() = _instances.asSequence().mapNotNull { it.get() }.toList()
 
         /**
          * 遍历每一个 [Bot] 实例
          */
-        inline fun forEachInstance(block: (Bot) -> Unit) = BotImpl.forEachInstance(block)
+        @JvmSynthetic
+        fun forEachInstance(block: (Bot) -> Unit) = _instances.forEach { it.get()?.let(block) }
 
         /**
-         * 获取一个 [Bot] 实例, 找不到则 [NoSuchElementException]
+         * 获取一个 [Bot] 实例, 无对应实例时抛出 [NoSuchElementException]
          */
         @JvmStatic
-        fun getInstance(qq: Long): Bot = BotImpl.getInstance(qq = qq)
+        @Throws(NoSuchElementException::class)
+        fun getInstance(qq: Long): Bot =
+            getInstanceOrNull(qq) ?: throw NoSuchElementException(qq.toString())
+
+        /**
+         * 获取一个 [Bot] 实例, 无对应实例时返回 `null`
+         */
+        @JvmStatic
+        fun getInstanceOrNull(qq: Long): Bot? =
+            _instances.asSequence().mapNotNull { it.get() }.firstOrNull { it.id == qq }
+    }
+
+    init {
+        _instances.addLast(this.weakRef())
+        supervisorJob.invokeOnCompletion {
+            _instances.removeIf { it.get()?.id == this.id }
+        }
     }
 
     /**
@@ -87,22 +115,17 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * 在 JVM 的默认实现为 `class ContextImpl : Context`
      * 在 Android 实现为 `android.content.Context`
      */
+    @MiraiExperimentalAPI
     abstract val context: Context
-
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use id instead", replaceWith = ReplaceWith("id"))
-    abstract val uin: Long
 
     /**
      * QQ 号码. 实际类型为 uint
      */
-    @SinceMirai("0.32.0")
     abstract override val id: Long
 
     /**
      * 昵称
      */
-    @SinceMirai("0.33.1")
     abstract val nick: String
 
     /**
@@ -113,8 +136,9 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
     // region contacts
 
     /**
-     * [QQ.id] 与 [Bot.uin] 相同的 [_lowLevelNewFriend] 实例
+     * [User.id] 与 [Bot.id] 相同的 [_lowLevelNewFriend] 实例
      */
+    @MiraiExperimentalAPI
     abstract val selfQQ: Friend
 
 
@@ -179,7 +203,13 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
 
     /**
      * 获取图片下载链接
+     *
+     * @see Image.queryUrl [Image] 的扩展函数
      */
+    @Deprecated(
+        "use extension.",
+        replaceWith = ReplaceWith("image.queryUrl()", imports = ["net.mamoe.mirai.message.data.queryUrl"])
+    )
     @JvmSynthetic
     abstract suspend fun queryImageUrl(image: Image): String
 
@@ -193,7 +223,6 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
      */
     @MiraiExperimentalAPI
-    @SinceMirai("0.39.0")
     abstract fun constructMessageSource(
         kind: OfflineMessageSource.Kind,
         fromUin: Long, targetUin: Long,
@@ -201,35 +230,13 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
         originalMessage: MessageChain
     ): OfflineMessageSource
 
-    /**
-     * 获取图片下载链接并开始下载.
-     *
-     * @see ByteReadChannel.copyAndClose
-     * @see ByteReadChannel.copyTo
-     */
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
-    @MiraiExperimentalAPI
-    @JvmSynthetic
-    abstract suspend fun openChannel(image: Image): ByteReadChannel
-
-    /**
-     * 添加一个好友
-     *
-     * @param message 若需要验证请求时的验证消息.
-     * @param remark 好友备注
-     */
-    @JvmSynthetic
-    @MiraiExperimentalAPI("未支持")
-    abstract suspend fun addFriend(id: Long, message: String? = null, remark: String? = null): AddFriendResult
-
 
     /**
      * 通过好友验证
      *
      * @param event 好友验证的事件对象
      */
-    @SinceMirai("0.35.0")
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
     @JvmSynthetic
     abstract suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent)
 
@@ -239,7 +246,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 好友验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
-    @SinceMirai("0.35.0")
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.reject(blackList)"))
     @JvmSynthetic
     abstract suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean = false)
 
@@ -248,7 +255,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 加群验证的事件对象
      */
-    @SinceMirai("0.35.0")
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
     @JvmSynthetic
     abstract suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent)
 
@@ -258,7 +265,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 加群验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
-    @SinceMirai("0.35.0")
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.reject(blackList)"))
     @JvmSynthetic
     abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
@@ -268,7 +275,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      * @param event 加群验证的事件对象
      * @param blackList 忽略后是否拉入黑名单
      */
-    @SinceMirai("0.35.0")
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore(blackList)"))
     @JvmSynthetic
     abstract suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
@@ -277,7 +284,7 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 邀请入群的事件对象
      */
-    @SinceMirai("0.40.0")
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept"))
     @JvmSynthetic
     abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
@@ -286,8 +293,8 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      *
      * @param event 邀请入群的事件对象
      */
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore"))
     @JvmSynthetic
-    @SinceMirai("0.40.0")
     abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
     // endregion
@@ -304,29 +311,15 @@ abstract class Bot : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI(
      */
     abstract fun close(cause: Throwable? = null)
 
-    @OptIn(LowLevelAPI::class, MiraiExperimentalAPI::class)
     final override fun toString(): String = "Bot($id)"
-
-    /**
-     * 网络模块.
-     * 此为内部 API: 它可能在任意时刻被改动.
-     */
-    @MiraiInternalAPI
-    abstract val network: BotNetworkHandler
-
-    @PlannedRemoval("1.0.0.")
-    @get:JvmName("getSelfQQ")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    val selfQQDeprecated: QQ
-        get() = selfQQ
-
-    @PlannedRemoval("1.0.0.")
-    @JvmName("getFriend")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    fun getFriendDeprecated(id: Long): QQ = this.getFriend(id)
 }
+
+/**
+ * 获取 [Job] 的协程 [Job]. 此 [Job] 为一个 [SupervisorJob]
+ */
+@get:JvmSynthetic
+inline val Bot.supervisorJob: CompletableJob
+    get() = this.coroutineContext[Job] as CompletableJob
 
 /**
  * 挂起协程直到 [Bot] 下线.
@@ -355,13 +348,13 @@ suspend inline fun Bot.recall(message: MessageChain) =
  * @see recall
  */
 @JvmSynthetic
-inline fun Bot.recallIn(
+inline fun CoroutineScope.recallIn(
     source: MessageSource,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    kotlinx.coroutines.delay(millis)
-    recall(source)
+    delay(millis)
+    source.recall()
 }
 
 /**
@@ -372,13 +365,13 @@ inline fun Bot.recallIn(
  * @see recall
  */
 @JvmSynthetic
-inline fun Bot.recallIn(
+inline fun CoroutineScope.recallIn(
     message: MessageChain,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    kotlinx.coroutines.delay(millis)
-    recall(message)
+    delay(millis)
+    message.recall()
 }
 
 /**

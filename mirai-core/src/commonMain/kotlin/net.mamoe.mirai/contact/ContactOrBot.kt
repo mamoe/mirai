@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.contact
 
+import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 拥有 [id] 的对象.
@@ -19,8 +19,7 @@ import net.mamoe.mirai.utils.SinceMirai
  * @see Contact
  * @see Bot
  */
-@SinceMirai("0.39.0")
-interface ContactOrBot {
+interface ContactOrBot : CoroutineScope {
     /**
      * QQ 号或群号.
      */

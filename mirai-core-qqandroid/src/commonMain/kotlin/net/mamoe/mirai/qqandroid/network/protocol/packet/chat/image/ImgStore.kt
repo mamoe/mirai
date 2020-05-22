@@ -17,6 +17,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.toLongUnsigned
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import kotlin.random.Random
@@ -26,9 +27,6 @@ internal fun getRandomString(length: Int): String =
     getRandomString(length, *defaultRanges)
 
 private val defaultRanges: Array<CharRange> = arrayOf('a'..'z', 'A'..'Z', '0'..'9')
-
-internal fun getRandomString(length: Int, charRange: CharRange): String =
-    String(CharArray(length) { charRange.random() })
 
 internal fun getRandomString(length: Int, vararg charRanges: CharRange): String =
     String(CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() })
@@ -41,7 +39,7 @@ internal class ImgStore {
             uin: Long,
             groupCode: Long,
             md5: ByteArray,
-            size: Long,
+            size: Int,
             picWidth: Int = 0, // not orthodox
             picHeight: Int = 0, // not orthodox
             picType: Int = 1000,
@@ -63,7 +61,7 @@ internal class ImgStore {
                             groupCode = groupCode,
                             srcUin = uin,
                             fileMd5 = md5,
-                            fileSize = size,
+                            fileSize = size.toLongUnsigned(),
                             fileId = fileId,
                             fileName = filename,
                             picWidth = picWidth,

@@ -15,7 +15,6 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.MessageSendEvent
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.message.data.LongMessage
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.asMessageChain
@@ -23,14 +22,9 @@ import net.mamoe.mirai.qqandroid.asQQAndroidBot
 import net.mamoe.mirai.qqandroid.message.MessageSourceToFriendImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
-import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
-import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.utils.verbose
 
-@OptIn(MiraiInternalAPI::class)
 internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: Message): MessageReceipt<T> {
     val event = MessageSendEvent.FriendMessageSendEvent(this, message.asMessageChain()).broadcast()
     if (event.isCancelled) {
@@ -38,69 +32,44 @@ internal suspend fun <T : Contact> Friend.sendMessageImpl(generic: T, message: M
     }
     event.message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
     lateinit var source: MessageSourceToFriendImpl
-    (bot.network as QQAndroidBotNetworkHandler).run {
+    val bot = bot.asQQAndroidBot()
+    bot.network.run {
         check(
-            MessageSvc.PbSendMsg.createToFriend(
+            MessageSvcPbSendMsg.createToFriend(
                 bot.asQQAndroidBot().client,
                 this@sendMessageImpl,
                 event.message
             ) {
                 source = it
-            }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+            }.sendAndExpect<MessageSvcPbSendMsg.Response>() is MessageSvcPbSendMsg.Response.SUCCESS
         ) { "send message failed" }
     }
     return MessageReceipt(source, generic, null)
 }
 
-@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun Contact.logMessageSent(message: Message) {
-    if (message !is LongMessage) {
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    if (message !is net.mamoe.mirai.message.data.LongMessage) {
         bot.logger.verbose("$this <- ${message.toString().singleLine()}")
     }
 }
 
-@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
-internal fun ContactMessage.logMessageReceived() {
+internal fun MessageEvent.logMessageReceived() {
     when (this) {
-        is GroupMessage -> bot.logger.verbose {
+        is GroupMessageEvent -> bot.logger.verbose {
             "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(${sender.id}) -> ${message.toString()
                 .singleLine()}"
         }
-        is TempMessage -> bot.logger.verbose {
+        is TempMessageEvent -> bot.logger.verbose {
             "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(Temp ${sender.id}) -> ${message.toString()
                 .singleLine()}"
         }
-        is FriendMessage -> bot.logger.verbose {
+        is FriendMessageEvent -> bot.logger.verbose {
             "${sender.nick.singleLine()}(${sender.id}) -> ${message.toString().singleLine()}"
         }
     }
 }
 
-
 internal fun String.singleLine(): String {
     return this.replace("\n", """\n""").replace("\r", "")
-}
-
-
-/**
- * Size management isn't atomic.
- */
-internal class LockFreeCacheList<E>(private val maxSize: Int) : LockFreeLinkedList<E>() {
-    override fun addLast(element: E) {
-        if (size >= maxSize) {
-            this.removeFirst()
-        }
-
-        super.addLast(element)
-    }
-
-    @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    override fun addAll(iterable: Iterable<E>) {
-        super.addAll(iterable)
-    }
-
-    @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    override fun addAll(iterable: Sequence<E>) {
-        super.addAll(iterable)
-    }
 }

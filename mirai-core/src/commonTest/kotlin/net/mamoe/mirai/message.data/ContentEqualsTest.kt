@@ -19,7 +19,7 @@ internal class ContentEqualsTest {
     @Test
     fun testContentEquals() {
         val mySource = TestConstrainSingleMessage()
-        val image = Image("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.png")
+        val image = Image("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai")
 
         assertTrue {
             buildMessageChain {

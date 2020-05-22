@@ -12,12 +12,10 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 快速链接的两个消息 (避免构造新的 list).
@@ -33,31 +31,28 @@ internal class CombinedMessage
 internal constructor(
     @JvmField internal val left: Message, // 必须已经完成 constrain single
     @JvmField internal val tail: Message
-) : Message, MessageChain {
+) : Message, MessageChain, List<SingleMessage> by (left.flatten() + tail.flatten()).toList() {
 
-    fun asSequence(): Sequence<SingleMessage> = sequence {
-        yieldCombinedOrElementsFlatten(this@CombinedMessage)
-    }
-
-    override fun iterator(): Iterator<SingleMessage> {
-        return asSequence().iterator()
-    }
-
-    override val size: Int
-        get() = kotlin.run {
-            var size = 0
-            size += if (left is MessageChain) left.size else 1
-            size += if (tail is MessageChain) tail.size else 1
-            size
-        }
+    @PlannedRemoval("1.2.0")
+    @Deprecated(
+        "use asSequence from stdlib",
+        ReplaceWith("(this as List<SingleMessage>).asSequence()"),
+        level = DeprecationLevel.HIDDEN
+    )
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    @kotlin.internal.LowPriorityInOverloadResolution // resolve to extension from stdlib
+    fun asSequence(): Sequence<SingleMessage> = (this as List<SingleMessage>).asSequence()
 
     override fun equals(other: Any?): Boolean {
-        return other is CombinedMessage && other.left == this.left && other.tail == this.tail
+        if (other == null) return false
+        if (other::class != CombinedMessage::class) return false
+        other as CombinedMessage
+        return other.left == this.left && other.tail == this.tail
     }
 
     private var toStringCache: String? = null
 
-    @OptIn(MiraiExperimentalAPI::class)
+
     override fun toString(): String = toStringCache ?: (left.toString() + tail.toString()).also { toStringCache = it }
 
     private var contentToStringCache: String? = null
@@ -71,9 +66,10 @@ internal constructor(
     }
 }
 
+/*
 @JvmSynthetic
 // 不要把它用作 local function, 会编译错误
-@OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
+
 private suspend fun SequenceScope<SingleMessage>.yieldCombinedOrElementsFlatten(message: Message) {
     when (message) {
         is CombinedMessage -> {
@@ -93,3 +89,4 @@ private suspend fun SequenceScope<SingleMessage>.yieldCombinedOrElementsFlatten(
         }
     }
 }
+*/

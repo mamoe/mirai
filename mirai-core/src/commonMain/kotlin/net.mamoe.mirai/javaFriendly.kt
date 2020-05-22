@@ -9,26 +9,24 @@
 
 package net.mamoe.mirai
 
-import net.mamoe.mirai.utils.MiraiInternalAPI
-
 /**
  * 表明这个 API 是为了让 Java 使用者调用更方便.
+ *
  * 一般有一定的性能损失, 且不能在 JVM/Android 以外平台使用. 不要在 Kotlin 调用它.
  */
-@MiraiInternalAPI
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION, AnnotationTarget.TYPE, AnnotationTarget.CLASS)
-annotation class JavaFriendlyAPI
+internal annotation class JavaFriendlyAPI
 
 /**
  * [Bot] 中为了让 Java 使用者调用更方便的 API 列表.
+ *
+ * **注意**: 不应该把这个类作为一个类型, 只应使用其中的方法
  */
-@MiraiInternalAPI
 @Suppress("FunctionName", "INAPPLICABLE_JVM_NAME", "unused")
-expect abstract class BotJavaFriendlyAPI() { // 不要使用 interface, 会无法添加默认实现
-}
+internal expect interface BotJavaFriendlyAPI
 
-// 保留多平台结构, 以避免在 Android 和 JVM 都定义这个类 ---- 这会造成代码重复.
+// 保留多平台结构, 以避免在 Android 和 JVM 都定义这个类
 // 待 https://youtrack.jetbrains.com/issue/KT-27801 实现后修改为 hierarchical MPP 架构
 
 // 待 https://youtrack.jetbrains.com/issue/KT-36740 修复后添加 Future 相关 API 到 hierarchical MPP 架构中

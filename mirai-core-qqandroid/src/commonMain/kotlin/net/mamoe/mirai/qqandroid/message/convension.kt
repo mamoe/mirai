@@ -6,11 +6,12 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file: OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class, LowLevelAPI::class, ExperimentalUnsignedTypes::class)
+@file:OptIn(LowLevelAPI::class)
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package net.mamoe.mirai.qqandroid.message
 
+import kotlinx.io.core.String
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import kotlinx.io.core.toByteArray
@@ -23,8 +24,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -35,12 +34,11 @@ private val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最�
 private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版手机QQ查看闪照。")
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
-    val elements = mutableListOf<ImMsgBody.Elem>()
+    val elements = ArrayList<ImMsgBody.Elem>(this.size)
 
     if (this.anyIsInstance<QuoteReply>()) {
-        when (val source = this[QuoteReply].source) {
+        when (val source = this[QuoteReply]!!.source) {
             is MessageSourceInternal -> elements.add(ImMsgBody.Elem(srcMsg = source.toJceData()))
             else -> error("unsupported MessageSource implementation: ${source::class.simpleName}. Don't implement your own MessageSource.")
         }
@@ -98,7 +96,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
         }
 
         when (it) {
-            is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.stringValue)))
+            is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.content)))
             is CustomMessage -> {
                 @Suppress("UNCHECKED_CAST")
                 elements.add(
@@ -120,17 +118,23 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                             businessType = it.type,
                             pbElem = HummerCommelem.MsgElemInfoServtype2(
                                 pokeType = it.type,
-                                vaspokeId = it.id
+                                vaspokeId = it.id,
+                                vaspokeMinver = "7.2.0",
+                                vaspokeName = it.name
                             ).toByteArray(HummerCommelem.MsgElemInfoServtype2.serializer())
                         )
                     )
                 )
                 transformOneMessage(UNSUPPORTED_POKE_MESSAGE_PLAIN)
             }
-            is OfflineGroupImage -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
+            is @Suppress("DEPRECATION")
+            OfflineGroupImage
+            -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
-            is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
+            is @Suppress("DEPRECATION")
+            OfflineFriendImage
+            -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is GroupFlashImage -> elements.add(it.toJceData())
                 .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is FriendFlashImage -> elements.add(it.toJceData())
@@ -147,6 +151,10 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     }
                 }
             }
+            is VipFace -> {
+                transformOneMessage(PlainText(it.contentToString()))
+            }
+            is PttMessage,
             is ForwardMessage,
             is MessageSource, // mirai metadata only
             is RichMessage // already transformed above
@@ -178,6 +186,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             this.anyIsInstance<FlashImage>() -> {
                 elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_DOUTU)))
             }
+            this.anyIsInstance<PttMessage>() -> {
+                elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_PTT)))
+            }
             else -> elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_ELSE)))
         }
     }
@@ -188,11 +199,13 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
 private val PB_RESERVE_FOR_RICH_MESSAGE =
     "08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00".hexToBytes()
 
+private val PB_RESERVE_FOR_PTT =
+    "78 00 F8 01 00 C8 02 00 AA 03 26 08 22 12 22 41 20 41 3B 25 3E 16 45 3F 43 2F 29 3E 44 24 14 18 46 3D 2B 4A 44 3A 18 2E 19 29 1B 26 32 31 31 29 43".hexToBytes()
+
 @Suppress("SpellCheckingInspection")
 private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".hexToBytes()
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
-@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun MsgComm.Msg.toMessageChain(
     bot: Bot,
     groupIdOrZero: Long,
@@ -200,8 +213,16 @@ internal fun MsgComm.Msg.toMessageChain(
     isTemp: Boolean = false
 ): MessageChain {
     val elements = this.msgBody.richText.elems
+    val ptt = this.msgBody.richText.ptt
 
-    return buildMessageChain(elements.size + 1) {
+    val pptMsg = ptt?.run {
+        when(fileType) {
+            4 -> Voice(String(fileName), fileMd5, String(downPara))
+            else -> null
+        }
+    }
+
+    return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {
         if (onlineSource) {
             when {
                 isTemp -> +MessageSourceFromTempImpl(bot, this@toMessageChain)
@@ -212,12 +233,12 @@ internal fun MsgComm.Msg.toMessageChain(
             +OfflineMessageSourceImplByMsg(this@toMessageChain, bot)
         }
         elements.joinToMessageChain(groupIdOrZero, bot, this)
+        pptMsg?.let(::add)
     }.cleanupRubbishMessageElements()
 }
 
 // These two functions have difference method signature, don't combine.
 
-@OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
 internal fun ImMsgBody.SourceMsg.toMessageChain(bot: Bot, groupIdOrZero: Long): MessageChain {
     val elements = this.elems!!
 
@@ -231,6 +252,7 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
     var last: SingleMessage? = null
     return buildMessageChain(initialSize = this.count()) {
         this@cleanupRubbishMessageElements.forEach { element ->
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             if (last is LongMessage && element is PlainText) {
                 if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
                     last = element
@@ -239,6 +261,13 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
             }
             if (last is PokeMessage && element is PlainText) {
                 if (element == UNSUPPORTED_POKE_MESSAGE_PLAIN) {
+                    last = element
+                    return@forEach
+                }
+            }
+            if (last is VipFace && element is PlainText) {
+                val l = last as VipFace
+                if (element.content.length == 4 + (l.count / 10) + l.kind.name.length) {
                     last = element
                     return@forEach
                 }
@@ -268,7 +297,6 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
 internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@OptIn(MiraiInternalAPI::class, LowLevelAPI::class, ExperimentalStdlibApi::class)
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, list: MessageChainBuilder) {
     // (this._miraiContentToString())
     this.forEach { element ->
@@ -324,9 +352,10 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
 ="" a_actionData="" url=""/></msg>
                      */
                     /**
-                     * [JsonMessage]
+                     * json?
                      */
-                    1 -> list.add(JsonMessage(content))
+                    1 -> @Suppress("DEPRECATION_ERROR")
+                    list.add(ServiceMessage(1, content))
                     /**
                      * [LongMessage], [ForwardMessage]
                      */
@@ -334,16 +363,19 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                         val resId = this.firstIsInstanceOrNull<ImMsgBody.GeneralFlags>()?.longTextResid
 
                         if (resId != null) {
-                            list.add(LongMessage(content, resId))
+                            // TODO: 2020/4/29 解析长消息
+                            list.add(ServiceMessage(35, content)) // resId
                         } else {
-                            list.add(ForwardMessageInternal(content))
+                            // TODO: 2020/4/29 解析合并转发
+                            list.add(ServiceMessage(35, content))
                         }
                     }
 
                     // 104 新群员入群的消息
                     else -> {
                         if (element.richMsg.serviceId == 60 || content.startsWith("<?")) {
-                            list.add(XmlMessage(element.richMsg.serviceId, content))
+                            @Suppress("DEPRECATION_ERROR") // bin comp
+                            list.add(ServiceMessage(element.richMsg.serviceId, content))
                         } else list.add(ServiceMessage(element.richMsg.serviceId, content))
                     }
                 }
@@ -381,9 +413,19 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
             }
             element.commonElem != null -> {
                 when (element.commonElem.serviceType) {
+                    23 -> {
+                        val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype23.serializer())
+                        list.add(VipFace(VipFace.Kind(proto.faceType, proto.faceSummary), proto.faceBubbleCount))
+                    }
                     2 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype2.serializer())
-                        list.add(PokeMessage(proto.pokeType, proto.vaspokeId))
+                        list.add(PokeMessage(
+                            proto.vaspokeName.takeIf { it.isNotEmpty() }
+                                ?: PokeMessage.values.firstOrNull { it.id == proto.vaspokeId && it.type == proto.pokeType }?.name
+                                    .orEmpty(),
+                            proto.pokeType,
+                            proto.vaspokeId
+                        ))
                     }
                     3 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())

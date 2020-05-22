@@ -12,14 +12,12 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
-import kotlin.experimental.ExperimentalTypeInference
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
@@ -29,7 +27,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * 创建的所有事件监听器都会判断发送人信息 ([isContextIdenticalWith]), 监听之后的所有消息.
  *
- * [selectBuilder] DSL 类似于 [subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
+ * [selectBuilder] DSL 类似于 [CoroutineScope.subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
  *
  * ```kotlin
  * reply("开启复读模式")
@@ -59,26 +57,25 @@ import kotlin.jvm.JvmSynthetic
  * @see subscribeMessages
  * @see nextMessage 挂起协程并等待下一条消息
  */
-@SinceMirai("0.29.0")
 @Suppress("unused")
-suspend inline fun <reified T : ContactMessage> T.whileSelectMessages(
+suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
-) = whileSelectMessagesImpl(timeoutMillis, filterContext, selectBuilder)
+) = whileSelectMessagesImpl(timeoutMillis, filterContext, priority, selectBuilder)
 
 /**
  * [selectMessages] 的 [Unit] 返回值捷径 (由于 Kotlin 无法推断 [Unit] 类型)
  */
-@OptIn(ExperimentalTypeInference::class)
 @MiraiExperimentalAPI
-@SinceMirai("0.29.0")
 @JvmName("selectMessages1")
-suspend inline fun <reified T : ContactMessage> T.selectMessagesUnit(
+suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, Unit>.() -> Unit
-) = selectMessagesImpl(timeoutMillis, true, filterContext, selectBuilder)
+) = selectMessagesImpl(timeoutMillis, true, filterContext, priority, selectBuilder)
 
 
 /**
@@ -86,7 +83,7 @@ suspend inline fun <reified T : ContactMessage> T.selectMessagesUnit(
  *
  * 创建的所有事件监听器都会判断发送人信息 ([isContextIdenticalWith]), 监听之后的所有消息.
  *
- * [selectBuilder] DSL 类似于 [subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
+ * [selectBuilder] DSL 类似于 [CoroutineScope.subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
  *
  * ```kotlin
  * val value: String = selectMessages {
@@ -101,27 +98,29 @@ suspend inline fun <reified T : ContactMessage> T.selectMessagesUnit(
  *
  * @see nextMessage 挂起协程并等待下一条消息
  */
-@SinceMirai("0.29.0")
 @Suppress("unused") // false positive
 // @BuilderInference // https://youtrack.jetbrains.com/issue/KT-37716
-suspend inline fun <reified T : ContactMessage, R> T.selectMessages(
+suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     // @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, R>.() -> Unit
 ): R =
-    selectMessagesImpl(timeoutMillis, false, filterContext) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
+    selectMessagesImpl(timeoutMillis,
+        false,
+        filterContext,
+        priority) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
 
 /**
  * [selectMessages] 时的 DSL 构建器.
  *
- * 它是特殊化的消息监听 ([subscribeMessages]) DSL, 屏蔽了一些 `reply` DSL 以确保作用域安全性
+ * 它是特殊化的消息监听 ([CoroutineScope.subscribeMessages]) DSL, 屏蔽了一些 `reply` DSL 以确保作用域安全性
  *
  * @see MessageSelectBuilderUnit 查看上层 API
  */
 @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-@SinceMirai("0.29.0")
-abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi internal constructor(
+abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal constructor(
     ownerMessagePacket: M,
     stub: Any?,
     subscriber: (M.(String) -> Boolean, MessageListener<M, Any?>) -> Unit
@@ -186,9 +185,6 @@ abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi interna
     override fun Regex.findingReply(replier: suspend M.(MatchResult) -> Any?) = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun String.startsWithReply(replier: suspend M.(String) -> Any?) = error("prohibited")
-
-    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override fun String.endsWithReply(replier: suspend M.(String) -> Any?) = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
@@ -234,12 +230,11 @@ abstract class MessageSelectBuilder<M : ContactMessage, R> @PublishedApi interna
 /**
  * [selectMessagesUnit] 或 [selectMessages] 时的 DSL 构建器.
  *
- * 它是特殊化的消息监听 ([subscribeMessages]) DSL
+ * 它是特殊化的消息监听 ([CoroutineScope.subscribeMessages]) DSL
  *
  * @see MessageSubscribersBuilder 查看上层 API
  */
-@SinceMirai("0.29.0")
-abstract class MessageSelectBuilderUnit<M : ContactMessage, R> @PublishedApi internal constructor(
+abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi internal constructor(
     private val ownerMessagePacket: M,
     stub: Any?,
     subscriber: (M.(String) -> Boolean, MessageListener<M, Any?>) -> Unit
@@ -443,19 +438,14 @@ inline class MessageSelectionTimeoutChecker internal constructor(val timeoutMill
 class MessageSelectionTimeoutException : RuntimeException()
 
 
-
-
-
 /////////////////////////
 //// implementations ////
 /////////////////////////
 
 
-
-
 @JvmSynthetic
 @PublishedApi
-internal suspend inline fun <R> withTimeoutOrCoroutineScope(
+internal suspend inline fun <R> withSilentTimeoutOrCoroutineScope(
     timeoutMillis: Long,
     noinline block: suspend CoroutineScope.() -> R
 ): R {
@@ -482,14 +472,14 @@ internal val ExceptionHandlerIgnoringCancellationException = CoroutineExceptionH
 
 @PublishedApi
 @BuilderInference
-@OptIn(ExperimentalTypeInference::class)
-internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl(
+internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
     timeoutMillis: Long = -1,
     isUnit: Boolean,
     filterContext: Boolean = true,
+    priority: Listener.EventPriority,
     @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, R>.() -> Unit
-): R = withTimeoutOrCoroutineScope(timeoutMillis) {
+): R = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
     var deferred: CompletableDeferred<R>? = CompletableDeferred()
     coroutineContext[Job]!!.invokeOnCompletion {
         deferred?.cancel()
@@ -509,7 +499,7 @@ internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl
             SELECT_MESSAGE_STUB,
             outside
         ) {
-            override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
+            override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withSilentTimeoutOrCoroutineScope
             override fun obtainCurrentDeferred(): CompletableDeferred<R>? = deferred
             override fun default(onEvent: MessageListener<T, R>) {
                 defaultListeners += onEvent
@@ -525,7 +515,7 @@ internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl
             SELECT_MESSAGE_STUB,
             outside
         ) {
-            override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
+            override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withSilentTimeoutOrCoroutineScope
             override fun obtainCurrentDeferred(): CompletableDeferred<R>? = deferred
             override fun default(onEvent: MessageListener<T, R>) {
                 defaultListeners += onEvent
@@ -535,7 +525,10 @@ internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl
 
     // we don't have any way to reduce duplication yet,
     // until local functions are supported in inline functions
-    @Suppress("DuplicatedCode") val subscribeAlways = subscribeAlways<T> { event ->
+    @Suppress("DuplicatedCode") val subscribeAlways = subscribeAlways<T>(
+        concurrency = Listener.ConcurrencyKind.LOCKED,
+        priority = priority
+    ) { event ->
         if (filterContext && !this.isContextIdenticalWith(this@selectMessagesImpl))
             return@subscribeAlways
 
@@ -582,11 +575,12 @@ internal suspend inline fun <reified T : ContactMessage, R> T.selectMessagesImpl
 
 @Suppress("unused")
 @PublishedApi
-internal suspend inline fun <reified T : ContactMessage> T.whileSelectMessagesImpl(
-    timeoutMillis: Long = -1,
-    filterContext: Boolean = true,
+internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl(
+    timeoutMillis: Long,
+    filterContext: Boolean,
+    priority: Listener.EventPriority,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
-) = withTimeoutOrCoroutineScope(timeoutMillis) {
+) = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
     var deferred: CompletableDeferred<Boolean>? = CompletableDeferred()
     coroutineContext[Job]!!.invokeOnCompletion {
         deferred?.cancel()
@@ -605,7 +599,7 @@ internal suspend inline fun <reified T : ContactMessage> T.whileSelectMessagesIm
         SELECT_MESSAGE_STUB,
         outside
     ) {
-        override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withTimeoutOrCoroutineScope
+        override fun obtainCurrentCoroutineScope(): CoroutineScope = this@withSilentTimeoutOrCoroutineScope
         override fun obtainCurrentDeferred(): CompletableDeferred<Boolean>? = deferred
         override fun default(onEvent: MessageListener<T, Boolean>) {
             defaultListeners += onEvent
@@ -613,7 +607,10 @@ internal suspend inline fun <reified T : ContactMessage> T.whileSelectMessagesIm
     }.apply(selectBuilder)
 
     // ensure atomic completing
-    val subscribeAlways = subscribeAlways<T>(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
+    val subscribeAlways = subscribeAlways<T>(
+        concurrency = Listener.ConcurrencyKind.LOCKED,
+        priority = priority
+    ) { event ->
         if (filterContext && !this.isContextIdenticalWith(this@whileSelectMessagesImpl))
             return@subscribeAlways
 

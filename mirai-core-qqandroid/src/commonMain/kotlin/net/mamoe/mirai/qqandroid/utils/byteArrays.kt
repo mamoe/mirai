@@ -18,7 +18,6 @@ import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlinx.io.core.use
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
@@ -29,7 +28,6 @@ import kotlin.jvm.JvmSynthetic
 
 @JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
-@OptIn(ExperimentalUnsignedTypes::class)
 internal fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
     require(offset >= 0) { "offset shouldn't be negative: $offset" }
     require(length >= 0) { "length shouldn't be negative: $length" }
@@ -53,7 +51,6 @@ internal fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, l
 
 @JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
-@OptIn(ExperimentalUnsignedTypes::class)
 internal fun ByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {
     this.checkOffsetAndLength(offset, length)
     if (length == 0) {
@@ -100,7 +97,6 @@ internal inline fun ByteArray.encodeToString(offset: Int = 0, charset: Charset =
 internal inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) =
     ByteReadPacket(this, offset = offset, length = length)
 
-@OptIn(ExperimentalContracts::class)
 internal inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
     contract {
         callsInPlace(t, InvocationKind.EXACTLY_ONCE)

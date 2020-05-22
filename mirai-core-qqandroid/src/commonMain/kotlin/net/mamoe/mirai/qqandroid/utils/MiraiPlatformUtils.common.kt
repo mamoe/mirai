@@ -1,7 +1,6 @@
 package net.mamoe.mirai.qqandroid.utils
 
 import io.ktor.client.HttpClient
-import net.mamoe.mirai.utils.MiraiInternalAPI
 
 internal expect object MiraiPlatformUtils {
     fun unzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
@@ -22,7 +21,6 @@ internal expect object MiraiPlatformUtils {
     /**
      * Ktor HttpClient. 不同平台使用不同引擎.
      */
-    @MiraiInternalAPI
     val Http: HttpClient
 }
 

@@ -15,6 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+/*
 
 internal class AtomicResizeCacheListTest {
     @Test
@@ -38,4 +39,4 @@ internal class AtomicResizeCacheListTest {
             assertTrue { list.ensureNoDuplication(1) }
         }
     }
-}
+}*/

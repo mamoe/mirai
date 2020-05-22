@@ -29,7 +29,6 @@ import java.net.URL
     message = "use ContactMessage",
     replaceWith = ReplaceWith("ContactMessage", "net.mamoe.mirai.message.ContactMessage")
 )
-@OptIn(MiraiInternalAPI::class)
 actual abstract class MessagePacket<TSender : QQ, TSubject : Contact> actual constructor() :
     MessagePacketBase<TSender, TSubject>() {
 

@@ -16,26 +16,24 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessage
 import kotlin.jvm.JvmSynthetic
 
 /**
- * 好友 对象.
- * 注意: 一个 [Friend] 实例并不是独立的, 它属于一个 [Bot].
- * 它不能被直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
+ * 代表一位好友.
  *
- * 对于同一个 [Bot] 任何一个人的 [Friend] 实例都是单一的.
- * 它不能被直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
+ * 一个 [Friend] 实例并不是独立的, 它属于一个 [Bot].
+ * 对于同一个 [Bot], 任何一个人的 [Friend] 实例都是单一的.
+ * [Friend] 无法通过任何方式直接构造. 任何时候都应从 [Bot.getFriend] 或事件中获取.
+ *
+ * @see FriendMessageEvent
  */
 @Suppress("DEPRECATION_ERROR")
-abstract class Friend : QQ(), CoroutineScope {
-    /**
-     * 请求头像下载链接
-     */
-    // @MiraiExperimentalAPI
-    //suspend fun queryAvatar(): AvatarLink
+abstract class Friend : User(), CoroutineScope {
+
     /**
      * QQ 号码
      */

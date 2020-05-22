@@ -20,10 +20,8 @@ import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
 import net.mamoe.mirai.utils.withSwitch
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -35,7 +33,6 @@ internal inline fun ByteArray.debugPrintThis(name: String): ByteArray {
     return this
 }
 
-@OptIn(ExperimentalContracts::class, MiraiInternalAPI::class)
 internal inline fun <R> Input.debugIfFail(
     name: String = "",
     onFail: (ByteArray) -> ByteReadPacket = { it.toReadPacket() },

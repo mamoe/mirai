@@ -1,0 +1,13 @@
+apiValidation {
+    ignoredPackages += [
+            "net.mamoe.mirai.event.internal",
+            "net.mamoe.mirai.utils.internal"
+    ]
+
+    ignoredPackages += [
+            "net.mamoe.mirai.qqandroid.contact",
+            "net.mamoe.mirai.qqandroid.message",
+            "net.mamoe.mirai.qqandroid.network",
+            "net.mamoe.mirai.qqandroid.utils"
+    ]
+}

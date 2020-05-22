@@ -43,7 +43,6 @@ inline operator fun <T> UnsafeSoftRef<T>.getValue(thisRef: Any?, property: KProp
  * @see softRef provides a SoftRef
  * @see unsafeSoftRef provides a UnsafeSoftRef
  */
-@SinceMirai("0.32.0")
 expect class SoftRef<T>(referent: T) {
     fun get(): T?
     fun clear()

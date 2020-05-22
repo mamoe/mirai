@@ -10,9 +10,9 @@
 package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 
 import kotlinx.serialization.Serializable
+import moe.him188.jcekt.JceId
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
-import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import kotlin.jvm.JvmField
 
 @Serializable

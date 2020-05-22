@@ -1,11 +1,10 @@
 package compatibility
 
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(MiraiInternalAPI::class)
+
 internal class CombinedMessageTest {
 
 

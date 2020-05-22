@@ -6,7 +6,7 @@ import kotlin.math.pow
 buildscript {
     repositories {
         mavenLocal()
-        maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         jcenter()
         google()
@@ -18,6 +18,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.stdlib}")
         classpath("org.jetbrains.kotlin:kotlin-serialization:${Versions.Kotlin.stdlib}")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.Kotlin.atomicFU}")
+        classpath("org.jetbrains.kotlinx:binary-compatibility-validator:${Versions.Kotlin.binaryValidator}")
     }
 }
 
@@ -25,6 +26,10 @@ plugins {
     id("org.jetbrains.dokka") version Versions.Kotlin.dokka apply false
     // id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
 }
+
+// https://github.com/kotlin/binary-compatibility-validator
+//apply(plugin = "binary-compatibility-validator")
+
 
 project.ext.set("isAndroidSDKAvailable", false)
 
@@ -51,7 +56,7 @@ allprojects {
     version = Versions.Mirai.version
 
     repositories {
-        maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         jcenter()
         google()
@@ -139,17 +144,20 @@ subprojects {
 }
 
 
-fun Project.findLatestFile(): Map.Entry<String, File>? {
+fun Project.findLatestFile(): Map.Entry<String, File> {
     return File(projectDir, "build/libs").walk()
         .filter { it.isFile }
         .onEach { println("all files=$it") }
-        .filter { it.name.matches(Regex("""${project.name}-([0-9]|\.)*\.jar""")) }
+        .filter { it.name.matches(Regex("""${project.name}-[0-9][0-9]*(\.[0-9]*)*.*\.jar""")) }
         .onEach { println("matched file: ${it.name}") }
         .associateBy { it.nameWithoutExtension.substringAfterLast('-') }
         .onEach { println("versions: $it") }
-        .maxBy {
-            it.key.split('.').foldRightIndexed(0) { index: Int, s: String, acc: Int ->
-                acc + 100.0.pow(2 - index).toInt() * (s.toIntOrNull() ?: 0)
+        .maxBy { (version, file) ->
+            version.split('.').let {
+                if (it.size == 2) it + "0"
+                else it
+            }.reversed().foldIndexed(0) { index: Int, acc: Int, s: String ->
+                acc + 100.0.pow(index).toInt() * (s.toIntOrNull() ?: 0)
             }
-        }
+        } ?: error("cannot find any file to upload")
 }

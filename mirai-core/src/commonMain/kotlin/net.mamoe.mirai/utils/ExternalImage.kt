@@ -11,19 +11,15 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.coroutines.io.ByteReadChannel
-import kotlinx.io.InputStream
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.Input
-import kotlinx.serialization.InternalSerializationApi
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.OfflineImage
 import net.mamoe.mirai.message.data.sendTo
-import net.mamoe.mirai.message.data.toLongUnsigned
+import net.mamoe.mirai.utils.internal.DeferredReusableInput
+import net.mamoe.mirai.utils.internal.ReusableInput
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -34,67 +30,55 @@ import kotlin.jvm.JvmSynthetic
  * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
-class ExternalImage private constructor(
-    val md5: ByteArray,
-    val input: Any, // Input from kotlinx.io, InputStream from kotlinx.io MPP, ByteReadChannel from ktor
-    val inputSize: Long // dont be greater than Int.MAX
+class ExternalImage internal constructor(
+    @JvmField
+    internal val input: ReusableInput
 ) {
-    constructor(
-        md5: ByteArray,
-        input: ByteReadChannel,
-        inputSize: Long // dont be greater than Int.MAX
-    ) : this(md5, input as Any, inputSize)
-
-    constructor(
-        md5: ByteArray,
-        input: Input,
-        inputSize: Long // dont be greater than Int.MAX
-    ) : this(md5, input as Any, inputSize)
-
-    constructor(
-        md5: ByteArray,
-        input: ByteReadPacket
-    ) : this(md5, input as Any, input.remaining)
-
-    @OptIn(InternalSerializationApi::class)
-    constructor(
-        md5: ByteArray,
-        input: InputStream
-    ) : this(md5, input as Any, input.available().toLongUnsigned())
+    internal val md5: ByteArray get() = this.input.md5
 
     init {
-        require(inputSize < 30L * 1024 * 1024) { "file is too big. Maximum is about 20MB" }
+        if (input !is DeferredReusableInput) {
+            require(input.size < 30L * 1024 * 1024) { "Image file is too big. Maximum is 30 MiB, but recommended to be 20 MiB" }
+        }
     }
 
     companion object {
         const val defaultFormatName = "mirai"
 
 
+        @MiraiExperimentalAPI
         fun generateUUID(md5: ByteArray): String {
             return "${md5[0, 3]}-${md5[4, 5]}-${md5[6, 7]}-${md5[8, 9]}-${md5[10, 15]}"
         }
 
+        @MiraiExperimentalAPI
         fun generateImageId(md5: ByteArray): String {
             return """{${generateUUID(md5)}}.$defaultFormatName"""
         }
     }
 
-    /*
-     * ImgType:
-     *  JPG:    1000
-     *  PNG:    1001
-     *  WEBP:   1002
-     *  BMP:    1005
-     *  GIG:    2000 // gig? gif?
-     *  APNG:   2001
-     *  SHARPP: 1004
-     */
+    override fun toString(): String {
+        if (input is DeferredReusableInput) {
+            if (!input.initialized) {
+                return "ExternalImage(uninitialized)"
+            }
+        }
+        return "ExternalImage(${generateUUID(md5)})"
+    }
 
-
-    override fun toString(): String = "[ExternalImage(${generateUUID(md5)})]"
-
-    fun calculateImageResourceId(): String = generateImageId(md5)
+    internal fun calculateImageResourceId(): String = generateImageId(md5)
 }
+
+/*
+ * ImgType:
+ *  JPG:    1000
+ *  PNG:    1001
+ *  WEBP:   1002
+ *  BMP:    1005
+ *  GIG:    2000 // gig? gif?
+ *  APNG:   2001
+ *  SHARPP: 1004
+ */
 
 /**
  * 将图片作为单独的消息发送给指定联系人
@@ -113,7 +97,7 @@ suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = 
  * @see contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
  */
 @JvmSynthetic
-suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact) {
+suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
     is Group -> contact.uploadImage(this)
     is User -> contact.uploadImage(this)
     else -> error("unreachable")
@@ -125,6 +109,8 @@ suspend fun ExternalImage.upload(contact: Contact): OfflineImage = when (contact
 @JvmSynthetic
 suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
 
+
+@JvmSynthetic
 internal operator fun ByteArray.get(rangeStart: Int, rangeEnd: Int): String = buildString {
     for (it in rangeStart..rangeEnd) {
         append(this@get[it].fixToString())

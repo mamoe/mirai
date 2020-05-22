@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
@@ -14,9 +16,6 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 有关一个 [Bot] 的事件
@@ -69,8 +68,6 @@ interface GroupOperableEvent : GroupEvent {
 /**
  * 是否由 [Bot] 操作
  */
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-@kotlin.internal.HidesMembers // necessary until 1.0.0
 val GroupOperableEvent.isByBot: Boolean
     get() = operator == null
 
@@ -78,7 +75,6 @@ val GroupOperableEvent.isByBot: Boolean
  * 当操作人为 [Member] 时获取这个 [Member],
  * 当操作人为 [Bot] 时获取 [Group.botAsMember]
  */
-@OptIn(MiraiExperimentalAPI::class)
 val GroupOperableEvent.operatorOrBot: Member
     get() = this.operator ?: this.group.botAsMember
 
@@ -88,13 +84,5 @@ val GroupOperableEvent.operatorOrBot: Member
  */
 interface FriendEvent : BotEvent {
     val friend: Friend
-    override val bot: Bot
-        get() = friend.bot
-
-    @Deprecated("", level = DeprecationLevel.HIDDEN)
-    @get:JvmSynthetic
-    @get:JvmName("getFriend")
-    @Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
-    val friendDeprecated: net.mamoe.mirai.contact.QQ
-        get() = friend
+    final override val bot: Bot get() = friend.bot
 }

@@ -8,10 +8,12 @@
  */
 
 @file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@file:OptIn(MiraiInternalAPI::class, LowLevelAPI::class)
+@file:OptIn(LowLevelAPI::class)
 
 package net.mamoe.mirai.qqandroid.contact
 
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
@@ -28,21 +30,17 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceToGroupImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
-import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.utils.*
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalContracts::class)
 internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     contract {
         returns() implies (instance is GroupImpl)
@@ -50,7 +48,6 @@ internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
     check(instance is GroupImpl) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
 }
 
-@OptIn(ExperimentalContracts::class)
 internal fun Group.checkIsGroupImpl() {
     contract {
         returns() implies (this@checkIsGroupImpl is GroupImpl)
@@ -58,15 +55,17 @@ internal fun Group.checkIsGroupImpl() {
     GroupImpl.checkIsInstance(this)
 }
 
-@OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
 @Suppress("PropertyName")
 internal class GroupImpl(
-    bot: QQAndroidBot, override val coroutineContext: CoroutineContext,
+    bot: QQAndroidBot,
+    coroutineContext: CoroutineContext,
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
 ) : Group() {
     companion object;
+
+    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
 
@@ -106,7 +105,8 @@ internal class GroupImpl(
     override var name: String
         get() = _name
         set(newValue) {
-            checkBotPermissionOperator()
+
+            checkBotPermission(MemberPermission.ADMINISTRATOR)
             if (_name != newValue) {
                 val oldValue = _name
                 _name = newValue
@@ -128,7 +128,7 @@ internal class GroupImpl(
         override var entranceAnnouncement: String
             get() = _announcement
             set(newValue) {
-                checkBotPermissionOperator()
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
                 if (_announcement != newValue) {
                     val oldValue = _announcement
                     _announcement = newValue
@@ -149,7 +149,7 @@ internal class GroupImpl(
         override var isAllowMemberInvite: Boolean
             get() = _allowMemberInvite
             set(newValue) {
-                checkBotPermissionOperator()
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
                 if (_allowMemberInvite != newValue) {
                     val oldValue = _allowMemberInvite
                     _allowMemberInvite = newValue
@@ -183,7 +183,8 @@ internal class GroupImpl(
         override var isConfessTalkEnabled: Boolean
             get() = _confessTalk
             set(newValue) {
-                checkBotPermissionOperator()
+
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
                 if (_confessTalk != newValue) {
                     val oldValue = _confessTalk
                     _confessTalk = newValue
@@ -204,7 +205,8 @@ internal class GroupImpl(
         override var isMuteAll: Boolean
             get() = _muteAll
             set(newValue) {
-                checkBotPermissionOperator()
+
+                checkBotPermission(MemberPermission.ADMINISTRATOR)
                 if (_muteAll != newValue) {
                     val oldValue = _muteAll
                     _muteAll = newValue
@@ -243,10 +245,8 @@ internal class GroupImpl(
         return true
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
     override fun newMember(memberInfo: MemberInfo): Member {
         return MemberImpl(
-            @OptIn(LowLevelAPI::class)
             bot._lowLevelNewFriend(memberInfo) as FriendImpl,
             this,
             this.coroutineContext,
@@ -284,7 +284,6 @@ internal class GroupImpl(
         return members.firstOrNull { it.id == id }
     }
 
-    @OptIn(MiraiExperimentalAPI::class, LowLevelAPI::class)
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         require(message.isContentNotEmpty()) { "message is empty" }
@@ -295,7 +294,6 @@ internal class GroupImpl(
         }
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
     private suspend fun sendMessageImpl(message: Message, isForward: Boolean): MessageReceipt<Group> {
         if (message is MessageChain) {
             if (message.anyIsInstance<ForwardMessage>()) {
@@ -352,7 +350,7 @@ internal class GroupImpl(
 
         lateinit var source: MessageSourceToGroupImpl
         bot.network.run {
-            val response: MessageSvc.PbSendMsg.Response = MessageSvc.PbSendMsg.createToGroup(
+            val response: MessageSvcPbSendMsg.Response = MessageSvcPbSendMsg.createToGroup(
                 bot.client,
                 this@GroupImpl,
                 msg,
@@ -360,7 +358,7 @@ internal class GroupImpl(
             ) {
                 source = it
             }.sendAndExpect()
-            if (response is MessageSvc.PbSendMsg.Response.Failed) {
+            if (response is MessageSvcPbSendMsg.Response.Failed) {
                 when (response.resultType) {
                     120 -> throw BotIsBeingMutedException(this@GroupImpl)
                     34 -> {
@@ -396,9 +394,14 @@ internal class GroupImpl(
         return MessageReceipt(source, this, botAsMember)
     }
 
+    @Suppress("DEPRECATION")
     @OptIn(ExperimentalTime::class)
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
+            image.input.init(bot.configuration.fileCacheStrategy)
+        }
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -408,7 +411,7 @@ internal class GroupImpl(
                 uin = bot.id,
                 groupCode = id,
                 md5 = image.md5,
-                size = image.inputSize
+                size = image.input.size.toInt()
             ).sendAndExpect()
 
             @Suppress("UNCHECKED_CAST") // bug
@@ -428,7 +431,7 @@ internal class GroupImpl(
                         bot,
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
-                        image,
+                        image.input,
                         kind = "group image",
                         commandId = 2
                     )

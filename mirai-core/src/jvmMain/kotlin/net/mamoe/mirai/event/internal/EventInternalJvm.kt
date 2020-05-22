@@ -17,7 +17,6 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.ListeningStatus
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.coroutines.EmptyCoroutineContext
@@ -29,8 +28,8 @@ internal fun <E : Event> Class<E>._subscribeEventForJaptOnly(
 ): Listener<E> {
     return this.kotlin.subscribeInternal(
         scope.Handler(
-            EmptyCoroutineContext,
-            Listener.ConcurrencyKind.CONCURRENT
+            scope.coroutineContext,
+            Listener.ConcurrencyKind.LOCKED
         ) { withContext(Dispatchers.IO) { onEvent.apply(it) } })
 }
 
@@ -39,6 +38,6 @@ internal fun <E : Event> Class<E>._subscribeEventForJaptOnly(scope: CoroutineSco
     return this.kotlin.subscribeInternal(
         scope.Handler(
             EmptyCoroutineContext,
-            Listener.ConcurrencyKind.CONCURRENT
+            Listener.ConcurrencyKind.LOCKED
         ) { withContext(Dispatchers.IO) { onEvent.accept(it) }; ListeningStatus.LISTENING; })
 }
