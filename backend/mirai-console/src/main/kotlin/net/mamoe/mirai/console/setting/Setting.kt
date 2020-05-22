@@ -56,7 +56,7 @@ abstract class Setting : SettingImpl() {
         return this
     }
 
-    override fun toString(): String = yaml.stringify(this.serializer, this)
+    override fun toString(): String = yamlForToString.stringify(this.serializer, this)
 }
 
 @Suppress("UNCHECKED_CAST")

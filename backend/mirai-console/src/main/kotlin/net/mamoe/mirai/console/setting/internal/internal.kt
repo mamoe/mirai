@@ -15,6 +15,7 @@ import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.setting.SerialName
 import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.Value
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlConfiguration
 import kotlin.reflect.KProperty
@@ -58,7 +59,7 @@ internal abstract class SettingImpl {
 
     companion object {
         @JvmStatic
-        internal val yaml =
+        internal val yamlForToString =
             Yaml(
                 configuration = YamlConfiguration(
                     nonStrictNullability = true,
@@ -75,6 +76,7 @@ internal class SettingUpdaterSerializer(
     private val instance: Setting
 ) : KSerializer<SettingSerializerMark> {
     override val descriptor: SerialDescriptor by lazy {
+        @OptIn(MiraiExperimentalAPI::class)
         SerialDescriptor(instance.serialName) {
             for ((value, property) in instance.valueList) {
                 element(property.serialNameOrPropertyName, value.serializer.descriptor, annotations, true)
@@ -97,9 +99,8 @@ internal class SettingUpdaterSerializer(
             while (true) {
                 val index = this.decodeElementIndex(descriptor)
                 if (index == CompositeDecoder.READ_DONE) return@decodeStructure SettingSerializerMark
-                val value = instance.valueList[index].first
-
-                this.decodeSerializableElement(
+                val value = instance.valueList[index].first as Value<Any>
+                value.value = this.decodeSerializableElement(
                     descriptor,
                     index,
                     value.serializer
@@ -125,6 +126,7 @@ internal class SettingUpdaterSerializer(
 
 }
 
+// until https://github.com/Him188/yamlkt/issues/2 fixed
 internal fun <T : Any> CompositeEncoder.encodeElementSmart(
     descriptor: SerialDescriptor,
     index: Int,
