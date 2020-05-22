@@ -1,6 +1,3 @@
-import org.gradle.api.artifacts.dsl.DependencyHandler
-import org.gradle.kotlin.dsl.DependencyHandlerScope
-
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -12,7 +9,7 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 object Versions {
     object Mirai {
-        const val core = "1.0-RC2-1"
+        const val core = "1.0.0"
         const val console = "0.5.1"
         const val consoleGraphical = "0.0.7"
         const val consoleTerminal = "0.1.0"
@@ -21,20 +18,8 @@ object Versions {
 
     object Kotlin {
         const val stdlib = "1.3.72"
-        const val coroutines = "1.3.5"
+        const val coroutines = "1.3.7"
         const val serialization = "0.20.0"
         const val ktor = "1.3.2"
     }
-}
-
-@Suppress("unused")
-fun DependencyHandlerScope.kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
-
-@Suppress("unused")
-fun DependencyHandlerScope.ktor(id: String, version: String = Versions.Kotlin.ktor) = "io.ktor:ktor-$id:$version"
-
-@Suppress("unused")
-fun DependencyHandler.compileAndRuntime(any: Any) {
-    add("compileOnly", any)
-    add("runtimeOnly", any)
 }

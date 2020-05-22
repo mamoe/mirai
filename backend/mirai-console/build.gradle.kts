@@ -32,7 +32,7 @@ dependencies {
     compileAndRuntime("net.mamoe:mirai-core:${Versions.Mirai.core}")
     compileAndRuntime(kotlin("stdlib"))
 
-    api("net.mamoe.yamlkt:yamlkt:0.3.0")
+    api("net.mamoe.yamlkt:yamlkt:0.3.1")
 
     api("org.jsoup:jsoup:1.12.1")
 
