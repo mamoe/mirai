@@ -75,7 +75,7 @@ abstract class KotlinPlugin @JvmOverloads constructor(
     // that's it
 }
 
-internal abstract class JvmPluginImpl(
+internal sealed class JvmPluginImpl(
     parentCoroutineContext: CoroutineContext
 ) : JvmPlugin, CoroutineScope {
     /**
