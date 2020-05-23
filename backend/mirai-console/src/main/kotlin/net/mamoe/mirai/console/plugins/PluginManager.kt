@@ -5,12 +5,10 @@ package net.mamoe.mirai.console.plugins
 import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.console.MiraiConsole
 import java.io.File
-import java.util.*
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.ArrayList
 
-val Plugin.description: PluginDescription get() = TODO()
-val <P : Plugin> P.loader: PluginLoader<P, *> get() = TODO()
+val Plugin.description: PluginDescription
+    get() = PluginManager.resolvedPlugins.firstOrNull { it == this }?.description ?: error("Plugin is unloaded")
 
 inline fun PluginLoader<*, *>.register() = PluginManager.registerPluginLoader(this)
 inline fun PluginLoader<*, *>.unregister() = PluginManager.unregisterPluginLoader(this)
@@ -18,19 +16,18 @@ inline fun PluginLoader<*, *>.unregister() = PluginManager.unregisterPluginLoade
 object PluginManager {
     val pluginsDir = File(MiraiConsole.rootDir, "plugins").apply { mkdir() }
 
-    class LoaderNode<P : Plugin, D : PluginDescription>(
-        val loader: PluginLoader<P, D>,
-        val loadedPlugins: MutableList<P> = mutableListOf()
-    )
-
-    private val _pluginLoaders: MutableSet<LoaderNode<*, *>> = mutableSetOf()
+    private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()
     private val loadersLock: ReentrantLock = ReentrantLock()
 
-    private val resolvedPlugins: LinkedList<Plugin> = LinkedList()
+    @JvmField
+    internal val resolvedPlugins: MutableList<Plugin> = mutableListOf()
 
+    /**
+     * 已加载的插件列表
+     */
     @JvmStatic
     val plugins: List<Plugin>
-        get() = _pluginLoaders.flatMap { it.loadedPlugins }
+        get() = resolvedPlugins.toList()
 
     /**
      * 内建的插件加载器列表. 由 [MiraiConsole] 初始化
@@ -42,16 +39,21 @@ object PluginManager {
     /**
      * 由插件创建的 [PluginLoader]
      */
-    val pluginLoaders: List<PluginLoader<*, *>> get() = _pluginLoaders.map { it.loader }
+    @JvmStatic
+    val pluginLoaders: List<PluginLoader<*, *>>
+        get() = _pluginLoaders.toList()
 
     @JvmStatic
     fun registerPluginLoader(loader: PluginLoader<*, *>): Boolean = loadersLock.withLock {
-        _pluginLoaders.add(LoaderNode(loader))
+        if (_pluginLoaders.any { it::class == loader }) {
+            return false
+        }
+        _pluginLoaders.add(loader)
     }
 
     @JvmStatic
     fun unregisterPluginLoader(loader: PluginLoader<*, *>) = loadersLock.withLock {
-        _pluginLoaders.removeAll { it.loader == loader }
+        _pluginLoaders.remove(loader)
     }
 
 
@@ -80,7 +82,7 @@ object PluginManager {
     @Suppress("UNCHECKED_CAST")
     @Throws(PluginMissingDependencyException::class)
     internal fun loadEnablePlugins() {
-        val all = loadAndEnableLoaderProviders() + pluginLoaders.listAllPlugins().flatMap { it.second }
+        val all = loadAndEnableLoaderProviders() + _pluginLoaders.listAllPlugins().flatMap { it.second }
 
         for ((loader, desc) in all.sortByDependencies()) {
             loader.loadPluginAndEnable(desc)
@@ -116,7 +118,7 @@ object PluginManager {
     private fun <D : PluginDescription> List<D>.sortByDependencies(): List<D> {
         val resolved = ArrayList<D>(this.size)
 
-        fun D.canBeLoad(): Boolean = this.dependencies.all { it in resolved }
+        fun D.canBeLoad(): Boolean = this.dependencies.all { it.isOptional || it in resolved }
 
         fun List<D>.consumeLoadable(): List<D> {
             val (canBeLoad, cannotBeLoad) = this.partition { it.canBeLoad() }
@@ -124,7 +126,8 @@ object PluginManager {
             return cannotBeLoad
         }
 
-        fun List<PluginDependency>.filterIsMissing(): List<PluginDependency> = this.filterNot { it in resolved }
+        fun List<PluginDependency>.filterIsMissing(): List<PluginDependency> =
+            this.filterNot { it.isOptional || it in resolved }
 
         tailrec fun List<D>.doSort() {
             if (this.isEmpty()) return
@@ -147,6 +150,21 @@ object PluginManager {
     // endregion
 }
 
+class PluginMissingDependencyException : PluginResolutionException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+}
+
+open class PluginResolutionException : Exception {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+}
+
+
 internal data class PluginDescriptionWithLoader(
     @JvmField val loader: PluginLoader<*, PluginDescription>, // easier type
     @JvmField val delegate: PluginDescription
@@ -164,17 +182,3 @@ internal fun PluginDescription.wrapWith(loader: PluginLoader<*, *>): PluginDescr
 
 internal operator fun List<PluginDescription>.contains(dependency: PluginDependency): Boolean =
     any { it.name == dependency.name }
-
-class PluginMissingDependencyException : Exception {
-    constructor() : super()
-    constructor(message: String?) : super(message)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-    constructor(cause: Throwable?) : super(cause)
-}
-
-open class PluginResolutionException : Exception {
-    constructor() : super()
-    constructor(message: String?) : super(message)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-    constructor(cause: Throwable?) : super(cause)
-}

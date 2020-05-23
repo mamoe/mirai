@@ -61,6 +61,7 @@ dependencies {
 
     api("net.mamoe.yamlkt:yamlkt:0.3.1")
     api("org.jetbrains:annotations:19.0.0")
+    api(kotlinx("coroutines-jdk8", Versions.Kotlin.coroutines))
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
     testApi(kotlin("stdlib-jdk8"))

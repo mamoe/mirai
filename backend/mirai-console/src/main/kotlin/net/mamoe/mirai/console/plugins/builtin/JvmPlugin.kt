@@ -17,6 +17,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.Plugin
+import net.mamoe.mirai.console.plugins.PluginLoader
 import net.mamoe.mirai.console.utils.JavaPluginScheduler
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.coroutines.CoroutineContext
@@ -36,6 +37,9 @@ interface JvmPlugin : Plugin, CoroutineScope {
     /** 插件描述 */
     val description: JvmPluginDescription
 
+    /** 所属插件加载器实例 */
+    override val loader: PluginLoader<*, *> get() = JarPluginLoader
+
     @JvmDefault
     fun onLoad() {
     }
@@ -53,8 +57,8 @@ interface JvmPlugin : Plugin, CoroutineScope {
  * Java 插件的父类
  */
 abstract class JavaPlugin @JvmOverloads constructor(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, JvmPluginImpl(coroutineContext) {
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
 
     /**
      * Java API Scheduler
@@ -64,8 +68,8 @@ abstract class JavaPlugin @JvmOverloads constructor(
 }
 
 abstract class KotlinPlugin @JvmOverloads constructor(
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, JvmPluginImpl(coroutineContext) {
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
     // that's it
 }
 

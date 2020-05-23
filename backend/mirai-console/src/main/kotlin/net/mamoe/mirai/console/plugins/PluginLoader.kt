@@ -2,7 +2,6 @@
 
 package net.mamoe.mirai.console.plugins
 
-import net.mamoe.mirai.console.MiraiConsole
 import java.io.File
 
 /**

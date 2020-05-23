@@ -13,8 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.plugins.JarPluginLoader
 import net.mamoe.mirai.console.plugins.PluginLoader
+import net.mamoe.mirai.console.plugins.builtin.JarPluginLoader
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
@@ -22,6 +22,38 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
 import kotlin.coroutines.CoroutineContext
+
+/**
+ * mirai 控制台实例.
+ */
+object MiraiConsole : CoroutineScope, IMiraiConsole {
+    private lateinit var instance: IMiraiConsole
+
+    /** 由前端调用 */
+    internal fun init(instance: IMiraiConsole) {
+        this.instance = instance
+    }
+
+    override val build: String get() = instance.build
+    override val version: String get() = instance.version
+    override val rootDir: File get() = instance.rootDir
+    override val frontEnd: MiraiConsoleFrontEnd get() = instance.frontEnd
+    override val mainLogger: MiraiLogger get() = instance.mainLogger
+    override val coroutineContext: CoroutineContext get() = instance.coroutineContext
+
+    override val builtInPluginLoaders: List<PluginLoader<*, *>> = instance.builtInPluginLoaders
+
+    init {
+        DefaultLogger = { identity -> this.newLogger(identity) }
+        this.coroutineContext[Job]!!.invokeOnCompletion {
+            Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
+        }
+    }
+
+    @MiraiExperimentalAPI
+    fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
+}
+
 
 // 前端使用
 internal interface IMiraiConsole : CoroutineScope {
@@ -47,36 +79,6 @@ internal interface IMiraiConsole : CoroutineScope {
      * 内建加载器列表, 一般需要包含 [JarPluginLoader]
      */
     val builtInPluginLoaders: List<PluginLoader<*, *>>
-}
-
-object MiraiConsole : CoroutineScope, IMiraiConsole {
-    private lateinit var instance: IMiraiConsole
-
-    /** 由前端调用 */
-    internal fun init(instance: IMiraiConsole) {
-        this.instance = instance
-    }
-
-    override val build: String get() = instance.build
-    override val version: String get() = instance.version
-    override val rootDir: File get() = instance.rootDir
-    override val frontEnd: MiraiConsoleFrontEnd get() = instance.frontEnd
-    override val mainLogger: MiraiLogger get() = instance.mainLogger
-    override val coroutineContext: CoroutineContext get() = instance.coroutineContext
-
-    override val builtInPluginLoaders: List<PluginLoader<*, *>> = instance.builtInPluginLoaders
-
-    init {
-        DefaultLogger = { identity ->
-            this.newLogger(identity)
-        }
-        this.coroutineContext[Job]!!.invokeOnCompletion {
-            Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
-        }
-    }
-
-    @MiraiExperimentalAPI
-    fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
 }
 
 /**
