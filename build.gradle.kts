@@ -56,6 +56,7 @@ allprojects {
     version = Versions.Mirai.version
 
     repositories {
+        mavenLocal()
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         jcenter()
