@@ -224,7 +224,8 @@ fun genCollectionValueImpl(
     """
         internal fun Setting.valueImpl(default: ${kotlinTypeName}): ${miraiValueName}Value {
             var internalValue: $kotlinTypeName = default
-            return object : ${miraiValueName}Value(), $kotlinTypeName by dynamic$collectionName({ internalValue }) {
+            val delegt = dynamic$collectionName { internalValue }
+            return object : ${miraiValueName}Value(), $kotlinTypeName by delegt {
                 override var value: $kotlinTypeName
                     get() = internalValue
                     set(new) {

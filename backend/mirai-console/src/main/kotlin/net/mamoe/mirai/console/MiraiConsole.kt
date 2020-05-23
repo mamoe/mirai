@@ -13,33 +13,40 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
+import net.mamoe.mirai.console.plugins.JarPluginLoader
+import net.mamoe.mirai.console.plugins.PluginLoader
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.PrintStream
 import kotlin.coroutines.CoroutineContext
 
 // 前端使用
-interface IMiraiConsole : CoroutineScope {
+internal interface IMiraiConsole : CoroutineScope {
     val build: String
     val version: String
 
     /**
-     * Console运行路径
+     * Console 运行路径
      */
-    val path: String
+    val rootDir: File
 
     /**
-     * Console前端接口
+     * Console 前端接口
      */
     val frontEnd: MiraiConsoleFrontEnd
 
     /**
-     * 与前端交互所使用的Logger
+     * 与前端交互所使用的 Logger
      */
     val mainLogger: MiraiLogger
+
+    /**
+     * 内建加载器列表, 一般需要包含 [JarPluginLoader]
+     */
+    val builtInPluginLoaders: List<PluginLoader<*, *>>
 }
 
 object MiraiConsole : CoroutineScope, IMiraiConsole {
@@ -52,19 +59,19 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
 
     override val build: String get() = instance.build
     override val version: String get() = instance.version
-    override val path: String get() = instance.path
+    override val rootDir: File get() = instance.rootDir
     override val frontEnd: MiraiConsoleFrontEnd get() = instance.frontEnd
     override val mainLogger: MiraiLogger get() = instance.mainLogger
     override val coroutineContext: CoroutineContext get() = instance.coroutineContext
 
+    override val builtInPluginLoaders: List<PluginLoader<*, *>> = instance.builtInPluginLoaders
+
     init {
-        DefaultLogger = {
-            this.newLogger(it)
+        DefaultLogger = { identity ->
+            this.newLogger(identity)
         }
         this.coroutineContext[Job]!!.invokeOnCompletion {
-            Bot.botInstances.forEach {
-                it.close()
-            }
+            Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
         }
     }
 
@@ -72,6 +79,9 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
     fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
 }
 
+/**
+ * Included in kotlin stdlib 1.4
+ */
 internal val Throwable.stacktraceString: String
     get() =
         ByteArrayOutputStream().apply {

@@ -10,11 +10,7 @@
 package net.mamoe.mirai.console.command.description
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.BotAwareCommandSender
-import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.MemberCommandSender
-import net.mamoe.mirai.console.command.UserCommandSender
-import net.mamoe.mirai.console.utils.fuzzySearchMember
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member

@@ -1,5 +1,5 @@
-import net.mamoe.mirai.console.utils.fuzzySearch
-import net.mamoe.mirai.console.utils.fuzzySearchOnly
+import net.mamoe.mirai.console.command.fuzzySearch
+import net.mamoe.mirai.console.command.fuzzySearchOnly
 
 class Him188(val name:String){
     override fun toString(): String {

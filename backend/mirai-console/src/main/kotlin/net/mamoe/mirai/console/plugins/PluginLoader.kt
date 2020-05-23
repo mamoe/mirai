@@ -1,29 +1,68 @@
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.plugins
 
+import net.mamoe.mirai.console.MiraiConsole
+import java.io.File
+
 /**
- * 插件加载器
+ * 插件加载器.
  *
+ * 插件加载器只实现寻找插件列表, 加载插件, 启用插件, 关闭插件这四个功能.
+ *
+ * 有关插件的依赖和已加载的插件列表由 [PluginManager] 维护.
+ */
+interface PluginLoader<P : Plugin, D : PluginDescription> {
+    /**
+     * 扫描并返回可以被加载的插件的 [描述][PluginDescription] 列表. 此函数只会被调用一次
+     */
+    fun listPlugins(): List<D>
+
+    /**
+     * 获取此插件的描述
+     */
+    @Throws(PluginLoadException::class)
+    fun getPluginDescription(plugin: P): D
+
+    /**
+     * 加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的实例
+     *
+     * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
+     */
+    @Throws(PluginLoadException::class)
+    fun load(description: D): P
+
+    fun enable(plugin: P)
+    fun disable(plugin: P)
+}
+
+open class PluginLoadException : RuntimeException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+}
+
+/**
+ * '/plugins' 目录中的插件的加载器. 每个加载器需绑定一个后缀.
+ *
+ * @see AbstractFilePluginLoader
  * @see JarPluginLoader 内建的 Jar (JVM) 插件加载器.
  */
-interface PluginLoader<P : Plugin> {
-    val list: List<P>
+interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoader<P, D> {
+    /**
+     * 所支持的插件文件后缀, 不含 '.'. 如 [JarPluginLoader] 为 "jar"
+     */
+    val fileSuffix: String
+}
 
-    fun loadAll() = list.forEach(::load)
-    fun enableAll() = list.forEach(::enable)
-    fun unloadAll() = list.forEach(::unload)
-    fun reloadAll() = list.forEach(::reload)
+abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
+    override val fileSuffix: String
+) : FilePluginLoader<P, D> {
+    private fun pluginsFilesSequence(): Sequence<File> =
+        PluginManager.pluginsDir.walk().filter { it.isFile && it.name.endsWith(fileSuffix, ignoreCase = true) }
 
-    val isUnloadSupported: Boolean
-        get() = false
+    protected abstract fun Sequence<File>.mapToDescription(): List<D>
 
-    fun load(plugin: P)
-    fun enable(plugin: P)
-    fun unload(plugin: P) {
-        error("NotImplemented")
-    }
-
-    fun reload(plugin: P) {
-        unload(plugin)
-        load(plugin)
-    }
+    final override fun listPlugins(): List<D> = pluginsFilesSequence().mapToDescription()
 }

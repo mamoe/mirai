@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import upload.Bintray
 import java.util.*
 
@@ -12,19 +11,46 @@ plugins {
 
 apply(plugin = "com.github.johnrengelman.shadow")
 
-kotlin {
-    sourceSets {
-        all {
-            languageSettings.enableLanguageFeature("InlineClasses")
+version = Versions.Mirai.console
+description = "Console backend for mirai"
 
-            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
-            languageSettings.progressiveMode = true
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
-            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
-            languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
-            languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType(JavaCompile::class.java) {
+    options.encoding = "UTF8"
+}
+
+kotlin {
+    sourceSets.all {
+        target.compilations.all {
+            kotlinOptions {
+                freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=enable"
+                jvmTarget = "1.8"
+            }
+        }
+        languageSettings.apply {
+            enableLanguageFeature("InlineClasses")
+            progressiveMode = true
+
+            useExperimentalAnnotation("kotlin.Experimental")
+            useExperimentalAnnotation("kotlin.OptIn")
+
+            useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
+            useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
+            useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
+            useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
+            useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+        }
+    }
+
+    sourceSets {
+        getByName("test") {
+            languageSettings.apply {
+                languageVersion = "1.4"
+            }
         }
     }
 }
@@ -34,36 +60,15 @@ dependencies {
     compileAndRuntime(kotlin("stdlib"))
 
     api("net.mamoe.yamlkt:yamlkt:0.3.1")
-
     api("org.jetbrains:annotations:19.0.0")
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
-    testApi(kotlin("stdlib"))
+    testApi(kotlin("stdlib-jdk8"))
     testApi(kotlin("test"))
     testApi(kotlin("test-junit5"))
 }
 
-version = Versions.Mirai.console
-
-description = "Console backend for mirai"
-
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-tasks.withType(JavaCompile::class.java) {
-    options.encoding = "UTF8"
-}
-
-
+// region PUBLISHING
 
 tasks.register("ensureBintrayAvailable") {
     doLast {
@@ -129,3 +134,5 @@ if (Bintray.isBintrayAvailable(project)) {
         }
     }
 } else println("bintray isn't available. NO PUBLICATIONS WILL BE SET")
+
+// endregion

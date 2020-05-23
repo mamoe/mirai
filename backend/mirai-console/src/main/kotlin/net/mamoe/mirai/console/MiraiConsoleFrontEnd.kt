@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.utils
+package net.mamoe.mirai.console
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.center.CuiPluginCenter

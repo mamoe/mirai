@@ -9,45 +9,82 @@
 
 package net.mamoe.mirai.console.plugins
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiLogger
-import kotlin.coroutines.CoroutineContext
+import kotlinx.serialization.Serializable
+import java.io.File
+
+/** 插件类型 */
+enum class PluginKind {
+    /** 表示此插件提供一个 [PluginLoader], 应在加载其他 [NORMAL] 类型插件前加载 */
+    LOADER,
+
+    /** 表示此插件为一个通常的插件, 按照正常的依赖关系加载. */
+    NORMAL
+}
 
 /**
- * 插件信息
+ * 插件描述
  */
 interface PluginDescription {
+    val kind: PluginKind
+
     val name: String
     val author: String
     val version: String
     val info: String
-    val depends: List<String>
+
+    /** 指定此插件需要在这些插件之前加载 */
+    val loadBefore: List<String>
+
+    /** 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件 */
+    val dependencies: List<PluginDependency>
+}
+
+/** 插件的一个依赖的信息 */
+@Serializable
+data class PluginDependency(
+    /** 依赖插件名 */
+    val name: String,
+    /**
+     * 依赖版本号
+     * @see versionKind 版本号类型
+     */
+    val version: String,
+    /** 版本号类型 */
+    val versionKind: VersionKind
+) {
+    enum class VersionKind {
+        /** 要求依赖精确的版本 */
+        EXACT,
+
+        /** 要求依赖最低版本 */
+        AT_LEAST,
+
+        /** 要求依赖最高版本 */
+        AT_MOST
+    }
+
+    override fun toString(): String {
+        return "$name ${versionKind.toEnglishString()}v$version"
+    }
+}
+
+
+internal fun PluginDependency.VersionKind.toEnglishString(): String = when (this) {
+    PluginDependency.VersionKind.EXACT -> ""
+    PluginDependency.VersionKind.AT_LEAST -> "at least "
+    PluginDependency.VersionKind.AT_MOST -> "at most "
 }
 
 /**
- * 插件基类.
- *
- * 内建的插件类型:
- * - [JarPlugin]
+ * 基于文件的插件的描述
  */
-abstract class Plugin : CoroutineScope {
-    abstract val description: PluginDescription
-    abstract val loader: PluginLoader<*>
-
-    @OptIn(MiraiExperimentalAPI::class)
-    val logger: MiraiLogger by lazy { MiraiConsole.newLogger(description.name) }
-
-    override val coroutineContext: CoroutineContext
-        get() = SupervisorJob(MiraiConsole.coroutineContext[Job]) + CoroutineExceptionHandler { _, throwable ->
-            logger.error(throwable)
-        }
-
-    open fun onLoaded() {}
-    open fun onDisabled() {}
-    open fun onEnabled() {}
+interface FilePluginDescription : PluginDescription {
+    val file: File
 }
+
+/**
+ * 表示一个 mirai-console 插件.
+ *
+ * @see JvmPlugin
+ */
+interface Plugin
