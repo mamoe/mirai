@@ -6,7 +6,10 @@ import net.mamoe.mirai.console.plugins.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugins.PluginLoadException
 import net.mamoe.mirai.console.plugins.PluginsLoader
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.error
+import net.mamoe.yamlkt.Yaml
 import java.io.File
+import java.net.URL
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.full.createInstance
 
@@ -38,14 +41,19 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
 
     override fun Sequence<File>.mapToDescription(): List<JvmPluginDescription> {
-        TODO(
-            """
-            CHECK IS JAR FILE AND CAN BE READ
-            READ JAR FILE, EXTRACT PLUGIN DESCRIPTION
-            SET JvmPluginDescription._file
-            RETURN PLUGIN 
-        """.trimIndent()
-        )
+        return this.associateWith { URL("jar:${it.absolutePath}!/plugin.yml") }.mapNotNull { (file, url) ->
+            kotlin.runCatching {
+                url.readText()
+            }.fold(
+                onSuccess = { yaml ->
+                    Yaml.nonStrict.parse(JvmPluginDescription.serializer(), yaml)
+                },
+                onFailure = {
+                    logger.error("Cannot load plugin file ${file.name}", it)
+                    null
+                }
+            )?.also { it._file = file }
+        }
     }
 
     @Throws(PluginLoadException::class)
@@ -68,10 +76,7 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
         } else main.onLoad()
         main
     }.getOrElse {
-        throw PluginLoadException(
-            "Exception while loading ${description.name}",
-            it
-        )
+        throw PluginLoadException("Exception while loading ${description.name}", it)
     }
 
     override fun enable(plugin: JvmPlugin) {

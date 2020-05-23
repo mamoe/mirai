@@ -15,9 +15,10 @@ class JvmPluginDescription internal constructor(
     override val name: String,
     @SerialName("main")
     val mainClassName: String,
-    override val author: String,
+    override val author: String = "",
     override val version: String,
-    override val info: String,
+    override val info: String = "",
+    @SerialName("depends")
     override val dependencies: List<PluginDependency>
 ) : PluginDescription, FilePluginDescription {
 

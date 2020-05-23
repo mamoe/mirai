@@ -60,6 +60,7 @@ object PluginManager {
     // region LOADING
 
     private fun <P : Plugin, D : PluginDescription> PluginLoader<P, D>.loadPluginNoEnable(description: D): P {
+        // TODO: 2020/5/23 HANDLE INITIALIZATION EXCEPTION
         return this.load(description).also { resolvedPlugins.add(it) }
     }
 

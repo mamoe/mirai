@@ -9,17 +9,32 @@
 
 package net.mamoe.mirai.console.plugins
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.builtins.serializer
 import java.io.File
 
 
 /** 插件类型 */
+@Serializable(with = PluginKind.Serializer::class)
 enum class PluginKind {
     /** 表示此插件提供一个 [PluginLoader], 应在加载其他 [NORMAL] 类型插件前加载 */
     LOADER,
 
     /** 表示此插件为一个通常的插件, 按照正常的依赖关系加载. */
-    NORMAL
+    NORMAL;
+
+    companion object Serializer : KSerializer<PluginKind> {
+        override val descriptor: SerialDescriptor get() = String.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): PluginKind {
+            val name = String.serializer().deserialize(decoder)
+            return values().firstOrNull { it.name.equals(name, ignoreCase = true) } ?: NORMAL
+        }
+
+        override fun serialize(encoder: Encoder, value: PluginKind) {
+            return String.serializer().serialize(encoder, value.toString())
+        }
+    }
 }
 
 /**
