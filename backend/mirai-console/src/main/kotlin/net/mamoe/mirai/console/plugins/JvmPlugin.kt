@@ -18,6 +18,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.scheduler.PluginScheduler
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import kotlin.coroutines.CoroutineContext
@@ -45,7 +46,11 @@ interface JvmPlugin : Plugin, CoroutineScope {
 abstract class JavaPlugin @JvmOverloads constructor(
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, JvmPluginImpl(coroutineContext) {
-    // TODO: 2020/5/23 scheduler, event listener(?)
+
+    /**
+     * Java API Scheduler
+     */
+    val scheduler: PluginScheduler? = PluginScheduler(this.coroutineContext)
 }
 
 abstract class KotlinPlugin @JvmOverloads constructor(
@@ -102,9 +107,9 @@ internal abstract class JvmPluginImpl(
     final override val logger: MiraiLogger by lazy { MiraiConsole.newLogger(this._description.name) }
 
     final override val coroutineContext: CoroutineContext by lazy {
-        SupervisorJob(parentCoroutineContext[Job]) + CoroutineExceptionHandler { _, throwable ->
-            logger.error(throwable)
-        }
+        CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
+            .plus(parentCoroutineContext)
+            .plus(SupervisorJob(parentCoroutineContext[Job]))
     }
 }
 
