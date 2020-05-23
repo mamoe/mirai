@@ -54,7 +54,7 @@ data class FriendDeleteEvent(
  * 一个账号请求添加机器人为好友的事件
  */
 @Suppress("DEPRECATION")
-data class NewFriendRequestEvent(
+data class NewFriendRequestEvent internal constructor(
     override val bot: Bot,
     /**
      * 事件唯一识别号
