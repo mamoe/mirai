@@ -1,9 +1,6 @@
 package net.mamoe.mirai.console.plugins.builtin
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugins.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugins.PluginLoadException
@@ -16,8 +13,7 @@ import kotlin.reflect.full.createInstance
 /**
  * 内建的 Jar (JVM) 插件加载器
  */
-object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>("jar"),
-    CoroutineScope {
+object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>("jar"), CoroutineScope {
     private val logger: MiraiLogger by lazy {
         MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
     }
@@ -29,9 +25,15 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
             logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
         }
     }
+    private val supervisor: Job = coroutineContext[Job]!!
 
-    private val classLoader: PluginsLoader =
-        PluginsLoader(this.javaClass.classLoader)
+    private val classLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
+
+    init {
+        supervisor.invokeOnCompletion {
+            classLoader.clear()
+        }
+    }
 
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
 
@@ -48,6 +50,7 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
 
     @Throws(PluginLoadException::class)
     override fun load(description: JvmPluginDescription): JvmPlugin = description.runCatching {
+        ensureActive()
         val main = classLoader.loadPluginMainClassByJarFile(name, mainClassName, file).kotlin.run {
             objectInstance
                 ?: kotlin.runCatching { createInstance() }.getOrNull()
@@ -61,16 +64,9 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
 
         if (main is JvmPluginImpl) {
             main._description = description
-        }
-
-        TODO(
-            """
-            FIND PLUGIN MAIN, THEN LOAD
-            SET JvmPluginImpl._description
-            SET JvmPluginImpl._intrinsicCoroutineContext
-        """.trimIndent()
-        )
-        // no need to check dependencies
+            main.internalOnLoad()
+        } else main.onLoad()
+        main
     }.getOrElse {
         throw PluginLoadException(
             "Exception while loading ${description.name}",
@@ -78,6 +74,16 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
         )
     }
 
-    override fun enable(plugin: JvmPlugin) = plugin.onEnable()
-    override fun disable(plugin: JvmPlugin) = plugin.onDisable()
+    override fun enable(plugin: JvmPlugin) {
+        ensureActive()
+        if (plugin is JvmPluginImpl) {
+            plugin.internalOnEnable()
+        } else plugin.onEnable()
+    }
+
+    override fun disable(plugin: JvmPlugin) {
+        if (plugin is JvmPluginImpl) {
+            plugin.internalOnDisable()
+        } else plugin.onDisable()
+    }
 }
