@@ -9,24 +9,31 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS")
 
 
-package net.mamoe.mirai.console.plugins
+package net.mamoe.mirai.console.plugins.builtin
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.scheduler.PluginScheduler
+import net.mamoe.mirai.console.plugins.Plugin
+import net.mamoe.mirai.console.utils.JavaPluginScheduler
 import net.mamoe.mirai.utils.MiraiLogger
-import java.io.File
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 
+/**
+ * Java 或 Kotlin Jar 插件
+ *
+ * @see JavaPlugin Java 插件
+ * @see KotlinPlugin Kotlin 插件
+ */
 interface JvmPlugin : Plugin, CoroutineScope {
+    /** 日志 */
     val logger: MiraiLogger
+
+    /** 插件描述 */
     val description: JvmPluginDescription
 
     @JvmDefault
@@ -42,7 +49,9 @@ interface JvmPlugin : Plugin, CoroutineScope {
     }
 }
 
-
+/**
+ * Java 插件的父类
+ */
 abstract class JavaPlugin @JvmOverloads constructor(
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, JvmPluginImpl(coroutineContext) {
@@ -50,48 +59,14 @@ abstract class JavaPlugin @JvmOverloads constructor(
     /**
      * Java API Scheduler
      */
-    val scheduler: PluginScheduler? = PluginScheduler(this.coroutineContext)
+    val scheduler: JavaPluginScheduler =
+        JavaPluginScheduler(this.coroutineContext)
 }
 
 abstract class KotlinPlugin @JvmOverloads constructor(
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, JvmPluginImpl(coroutineContext) {
     // that's it
-}
-
-@Serializable
-data class JvmPluginDescription internal constructor( // serializer 可以用这个构造器
-    override val kind: PluginKind,
-    override val name: String,
-    override val author: String,
-    override val version: String,
-    override val info: String,
-    override val loadBefore: List<String>,
-    override val dependencies: List<PluginDependency>
-) : PluginDescription, FilePluginDescription {
-    /**
-     * 在手动实现时使用这个构造器.
-     */
-    @Suppress("unused")
-    constructor(
-        kind: PluginKind,
-        name: String,
-        author: String,
-        version: String,
-        info: String,
-        loadBefore: List<String>,
-        depends: List<PluginDependency>,
-        file: File
-    ) : this(kind, name, author, version, info, loadBefore, depends) {
-        this._file = file
-    }
-
-    @Suppress("PropertyName")
-    @Transient
-    internal var _file: File? = null
-
-    override val file: File
-        get() = _file ?: error("Internal error: JvmPluginDescription(name=$name)._file == null")
 }
 
 internal abstract class JvmPluginImpl(
@@ -102,6 +77,11 @@ internal abstract class JvmPluginImpl(
      */
     @Suppress("PropertyName")
     internal lateinit var _description: JvmPluginDescription
+
+    // for future use
+    @Suppress("PropertyName")
+    internal var _intrinsicCoroutineContext: CoroutineContext = EmptyCoroutineContext
+
     override val description: JvmPluginDescription get() = _description
 
     final override val logger: MiraiLogger by lazy { MiraiConsole.newLogger(this._description.name) }
@@ -109,35 +89,8 @@ internal abstract class JvmPluginImpl(
     final override val coroutineContext: CoroutineContext by lazy {
         CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
             .plus(parentCoroutineContext)
-            .plus(SupervisorJob(parentCoroutineContext[Job]))
+            .plus(SupervisorJob(parentCoroutineContext[Job])) + _intrinsicCoroutineContext
     }
-}
-
-/**
- * 内建的 Jar (JVM) 插件加载器
- */
-object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>("jar") {
-    override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
-
-    override fun Sequence<File>.mapToDescription(): List<JvmPluginDescription> {
-        TODO(
-            """
-            CHECK IS JAR FILE AND CAN BE READ
-            READ JAR FILE, EXTRACT PLUGIN DESCRIPTION
-            SET JvmPluginDescription._file
-            RETURN PLUGIN 
-        """.trimIndent()
-        )
-    }
-
-    @Throws(PluginLoadException::class)
-    override fun load(description: JvmPluginDescription): JvmPlugin {
-        TODO("FIND PLUGIN MAIN, THEN LOAD")
-        // no need to check dependencies
-    }
-
-    override fun enable(plugin: JvmPlugin) = plugin.onEnable()
-    override fun disable(plugin: JvmPlugin) = plugin.onDisable()
 }
 
 /*
