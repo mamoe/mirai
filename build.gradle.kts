@@ -150,13 +150,15 @@ subprojects {
                     }
                     .forEach { file ->
                         if (file.endsWith(".md")) {
-                            file.writeText(file.readText().replace(Regex("""```\n([\s\S]*?)```""")) {
-                                "\n" + """
+                            file.writeText(
+                                file.readText().replace("index.md", "README.md", ignoreCase = true)
+                                    .replace(Regex("""```\n([\s\S]*?)```""")) {
+                                        "\n" + """
                                     ```kotlin
                                     $it
                                     ```
                                 """.trimIndent()
-                            })
+                                    })
                         } /* else if (file.name == "README.md") {
                             file.writeText(file.readText().replace(Regex("""(\n\n\|\s)""")) {
                                 "\n\n" + """"
