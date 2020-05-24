@@ -45,6 +45,9 @@ import java.util.*
  */
 actual open class PlatformLogger @JvmOverloads constructor(
     override val identity: String? = "Mirai",
+    /**
+     * 日志输出. 不会自动添加换行
+     */
     open val output: (String) -> Unit,
     val isColored: Boolean = true
 ) : MiraiLoggerPlatformBase() {
