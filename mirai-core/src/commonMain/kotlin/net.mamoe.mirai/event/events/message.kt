@@ -81,7 +81,7 @@ sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 好友消息撤回事件, 暂不支持.
      */ // TODO: 2020/4/22 支持好友消息撤回事件的解析和主动广播
-    data class FriendRecall(
+    data class FriendRecall internal constructor(
         override val bot: Bot,
         override val messageId: Int,
         override val messageInternalId: Int,
@@ -98,7 +98,7 @@ sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 群消息撤回事件.
      */
-    data class GroupRecall(
+    data class GroupRecall internal constructor(
         override val bot: Bot,
         override val authorId: Long,
         override val messageId: Int,
@@ -129,7 +129,7 @@ val MessageRecallEvent.isByBot: Boolean
 /**
  * 图片上传前. 可以阻止上传
  */
-data class BeforeImageUploadEvent(
+data class BeforeImageUploadEvent internal constructor(
     val target: Contact,
     val source: ExternalImage
 ) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
@@ -149,13 +149,13 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
     override val bot: Bot
         get() = target.bot
 
-    data class Succeed(
+    data class Succeed internal constructor(
         override val target: Contact,
         override val source: ExternalImage,
         val image: Image
     ) : ImageUploadEvent()
 
-    data class Failed(
+    data class Failed internal constructor(
         override val target: Contact,
         override val source: ExternalImage,
         val errno: Int,

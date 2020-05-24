@@ -27,7 +27,6 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.*
 
-
 /**
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
  */
@@ -37,7 +36,7 @@ sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
     /**
      * 机器人主动退出一个群.
      */
-    data class Active(override val group: Group) : BotLeaveEvent() {
+    data class Active internal constructor(override val group: Group) : BotLeaveEvent() {
         override fun toString(): String = "BotLeaveEvent.Active(group=${group.id})"
     }
 
@@ -56,7 +55,7 @@ sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
 /**
  * Bot 在群里的权限被改变. 操作人一定是群主
  */
-data class BotGroupPermissionChangeEvent(
+data class BotGroupPermissionChangeEvent internal constructor(
     override val group: Group,
     val origin: MemberPermission,
     val new: MemberPermission
@@ -65,7 +64,7 @@ data class BotGroupPermissionChangeEvent(
 /**
  * Bot 被禁言
  */
-data class BotMuteEvent(
+data class BotMuteEvent internal constructor(
     val durationSeconds: Int,
     /**
      * 操作人.
@@ -79,7 +78,7 @@ data class BotMuteEvent(
 /**
  * Bot 被取消禁言
  */
-data class BotUnmuteEvent(
+data class BotUnmuteEvent internal constructor(
     /**
      * 操作人.
      */
@@ -93,7 +92,7 @@ data class BotUnmuteEvent(
  * Bot 成功加入了一个新群
  */
 @MiraiExperimentalAPI
-data class BotJoinGroupEvent(
+data class BotJoinGroupEvent internal constructor(
     override val group: Group
 ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent()
 
@@ -113,7 +112,7 @@ interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent, BroadcastCon
 /**
  * 群名改变. 此事件广播前修改就已经完成.
  */
-data class GroupNameChangeEvent(
+data class GroupNameChangeEvent internal constructor(
     override val origin: String,
     override val new: String,
     override val group: Group,
@@ -130,7 +129,7 @@ data class GroupNameChangeEvent(
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
  */
-data class GroupEntranceAnnouncementChangeEvent(
+data class GroupEntranceAnnouncementChangeEvent internal constructor(
     override val origin: String,
     override val new: String,
     override val group: Group,
@@ -144,7 +143,7 @@ data class GroupEntranceAnnouncementChangeEvent(
 /**
  * 群 "全员禁言" 功能状态改变. 此事件广播前修改就已经完成.
  */
-data class GroupMuteAllEvent(
+data class GroupMuteAllEvent internal constructor(
     override val origin: Boolean,
     override val new: Boolean,
     override val group: Group,
@@ -158,7 +157,7 @@ data class GroupMuteAllEvent(
 /**
  * 群 "匿名聊天" 功能状态改变. 此事件广播前修改就已经完成.
  */
-data class GroupAllowAnonymousChatEvent(
+data class GroupAllowAnonymousChatEvent internal constructor(
     override val origin: Boolean,
     override val new: Boolean,
     override val group: Group,
@@ -172,7 +171,7 @@ data class GroupAllowAnonymousChatEvent(
 /**
  * 群 "坦白说" 功能状态改变. 此事件广播前修改就已经完成.
  */
-data class GroupAllowConfessTalkEvent(
+data class GroupAllowConfessTalkEvent internal constructor(
     override val origin: Boolean,
     override val new: Boolean,
     override val group: Group,
@@ -182,7 +181,7 @@ data class GroupAllowConfessTalkEvent(
 /**
  * 群 "允许群员邀请好友加群" 功能状态改变. 此事件广播前修改就已经完成.
  */
-data class GroupAllowMemberInviteEvent(
+data class GroupAllowMemberInviteEvent internal constructor(
     override val origin: Boolean,
     override val new: Boolean,
     override val group: Group,
@@ -207,14 +206,14 @@ sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, Bo
     /**
      * 被邀请加入群
      */
-    data class Invite(override val member: Member) : MemberJoinEvent(member) {
+    data class Invite internal constructor(override val member: Member) : MemberJoinEvent(member) {
         override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id})"
     }
 
     /**
      * 成员主动加入群
      */
-    data class Active(override val member: Member) : MemberJoinEvent(member) {
+    data class Active internal constructor(override val member: Member) : MemberJoinEvent(member) {
         override fun toString(): String = "MemberJoinEvent.Active(member=${member.id})"
     }
 }
@@ -351,7 +350,7 @@ data class MemberJoinRequestEvent internal constructor(
 /**
  * 成员群名片改动. 此事件广播前修改就已经完成.
  */
-data class MemberCardChangeEvent(
+data class MemberCardChangeEvent internal constructor(
     /**
      * 修改前
      */
@@ -368,7 +367,7 @@ data class MemberCardChangeEvent(
 /**
  * 成员群头衔改动. 一定为群主操作
  */
-data class MemberSpecialTitleChangeEvent(
+data class MemberSpecialTitleChangeEvent internal constructor(
     /**
      * 修改前
      */
@@ -397,7 +396,7 @@ data class MemberSpecialTitleChangeEvent(
 /**
  * 成员权限改变的事件. 成员不可能是机器人自己.
  */
-data class MemberPermissionChangeEvent(
+data class MemberPermissionChangeEvent internal constructor(
     override val member: Member,
     val origin: MemberPermission,
     val new: MemberPermission
@@ -413,7 +412,7 @@ data class MemberPermissionChangeEvent(
  *
  * @see BotMuteEvent 机器人被禁言的事件
  */
-data class MemberMuteEvent(
+data class MemberMuteEvent internal constructor(
     override val member: Member,
     val durationSeconds: Int,
     /**
@@ -427,7 +426,7 @@ data class MemberMuteEvent(
  *
  * @see BotUnmuteEvent 机器人被取消禁言的事件
  */
-data class MemberUnmuteEvent(
+data class MemberUnmuteEvent internal constructor(
     override val member: Member,
     /**
      * 操作人. 为 null 则为机器人操作

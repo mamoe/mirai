@@ -28,7 +28,7 @@ import kotlin.jvm.*
 /**
  * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
  */
-data class FriendRemarkChangeEvent(
+data class FriendRemarkChangeEvent internal constructor(
     override val friend: Friend,
     val newName: String
 ) : FriendEvent, Packet, AbstractEvent()
@@ -36,7 +36,7 @@ data class FriendRemarkChangeEvent(
 /**
  * 成功添加了一个新好友的事件
  */
-data class FriendAddEvent(
+data class FriendAddEvent internal constructor(
     /**
      * 新好友. 已经添加到 [Bot.friends]
      */
@@ -46,7 +46,7 @@ data class FriendAddEvent(
 /**
  * 好友已被删除的事件.
  */
-data class FriendDeleteEvent(
+data class FriendDeleteEvent internal constructor(
     override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
@@ -107,7 +107,7 @@ data class NewFriendRequestEvent internal constructor(
 /**
  * [Friend] 头像被修改. 在此事件广播前就已经修改完毕.
  */
-data class FriendAvatarChangedEvent(
+data class FriendAvatarChangedEvent internal constructor(
     override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
