@@ -260,7 +260,7 @@ data class Face(val id: Int) : // used in delegation
  */
 @Suppress("SpellCheckingInspection")
 private object faceName {
-    private val names = Array<String>(256, { "[表情]" })
+    val names = Array<String>(256, { "[表情]" })
 
     init {
         names[Face.jingya] = "[惊讶]"
