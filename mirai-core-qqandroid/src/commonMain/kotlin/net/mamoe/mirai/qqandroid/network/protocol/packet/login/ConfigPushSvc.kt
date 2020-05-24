@@ -40,7 +40,7 @@ internal class ConfigPushSvc {
     ) {
         override val canBeCached: Boolean get() = false
 
-        sealed class PushReqResponse : Packet, Event, AbstractEvent() {
+        sealed class PushReqResponse : Packet, Event, AbstractEvent(), Packet.NoEventLog {
             class Success(
                 val struct: PushReqJceStruct
             ) : PushReqResponse() {

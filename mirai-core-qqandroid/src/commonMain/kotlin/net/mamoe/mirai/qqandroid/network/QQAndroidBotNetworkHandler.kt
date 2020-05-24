@@ -487,12 +487,14 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     ) {
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
-            when (packet) {
-                is Packet.NoLog -> {
+            when {
+                packet is Packet.NoLog -> {
                     // nothing to do
                 }
-                is MessageEvent -> packet.logMessageReceived()
-                is Event -> bot.logger.verbose { "Event: ${packet.toString().singleLine()}" }
+                packet is MessageEvent -> packet.logMessageReceived()
+                packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
+                    "Event: ${packet.toString().singleLine()}"
+                }
                 else -> logger.verbose { "Recv: ${packet.toString().singleLine()}" }
             }
         }
