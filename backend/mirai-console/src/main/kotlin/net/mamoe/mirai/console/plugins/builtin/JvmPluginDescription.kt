@@ -20,7 +20,7 @@ import java.io.File
 
 @Serializable
 class JvmPluginDescription internal constructor(
-    override val kind: PluginKind,
+    override val kind: PluginKind = PluginKind.NORMAL,
     override val name: String,
     @SerialName("main")
     val mainClassName: String,
@@ -28,7 +28,7 @@ class JvmPluginDescription internal constructor(
     override val version: String,
     override val info: String = "",
     @SerialName("depends")
-    override val dependencies: List<PluginDependency>
+    override val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency> = listOf()
 ) : PluginDescription, FilePluginDescription {
 
     /**

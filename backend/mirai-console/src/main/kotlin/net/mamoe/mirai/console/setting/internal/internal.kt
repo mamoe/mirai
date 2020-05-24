@@ -164,3 +164,14 @@ internal inline fun <E> KSerializer<E>.bind(
             this@bind.serialize(encoder, getter())
     }
 }
+
+internal inline fun <E, R> KSerializer<E>.map(
+    crossinline serializer: (R) -> E,
+    crossinline deserializer: (E) -> R
+): KSerializer<R> {
+    return object : KSerializer<R> {
+        override val descriptor: SerialDescriptor get() = this@map.descriptor
+        override fun deserialize(decoder: Decoder): R = this@map.deserialize(decoder).let(deserializer)
+        override fun serialize(encoder: Encoder, value: R) = this@map.serialize(encoder, value.let(serializer))
+    }
+}
