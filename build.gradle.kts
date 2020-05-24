@@ -150,12 +150,21 @@ subprojects {
                         else old
                     }
                     .forEach { file ->
+                        if (file.endsWith(".md")) {
+                            file.writeText(file.readText().replace(Regex("""```\n([\s\S]*?)```""")) {
+                                """
+                                    ```kotlin
+                                    $it
+                                    ```
+                                """.trimIndent()
+                            })
+                        }
                         val filename = file.toRelativeString(baseDir)
                         println("Uploading file $filename")
                         runCatching {
                             upload.GitHub.upload(
                                 file,
-                                "https://api.github.com/repos/mamoe/mirai-doc/contents/${project.name}/$filename",
+                                "https://api.github.com/repos/mamoe/mirai-doc/contents/$filename",
                                 project,
                                 "mirai-doc",
                                 ""

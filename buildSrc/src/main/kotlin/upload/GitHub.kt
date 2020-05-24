@@ -73,9 +73,16 @@ object GitHub {
     fun upload(file: File, url: String, project: Project, repo: String, baseFilePath: String) = runBlocking {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
-        retryCatching(1000) {
+        retryCatching(10) {
             Http.put<String>("$url?access_token=$token") {
-                val sha = getGithubSha(repo, "$baseFilePath${project.name}/${file.name}", "master", project)
+                val sha = retryCatching(3) {
+                    getGithubSha(
+                        repo,
+                        "$baseFilePath${project.name}/${file.name}",
+                        "master",
+                        project
+                    )
+                }.getOrNull()
                 println("sha=$sha")
                 val content = String(Base64.getEncoder().encode(file.readBytes()))
                 body = """
