@@ -137,12 +137,12 @@ subprojects {
         val dokkaGitHubUpload by tasks.creating {
             group = "mirai"
 
-            dependsOn(tasks.getByName("dokkaMarkdown"))
+            dependsOn(tasks.getByName("dokkaGfm"))
             doFirst {
-                val baseDir = file("./build/dokka-markdown/${project.name}")
+                val baseDir = file("./build/dokka-gfm/${project.name}")
 
                 timeout.set(Duration.ofHours(6))
-                file("build/dokka-markdown/").walk()
+                file("build/dokka-gfm/").walk()
                     .filter { it.isFile }
                     .map { old ->
                         if (old.name == "index.md") File(old.parentFile, "README.md").also { new -> old.renameTo(new) }
@@ -157,7 +157,7 @@ subprojects {
                                     ```
                                 """.trimIndent()
                             })
-                        } else if (file.name == "README.md") {
+                        } /* else if (file.name == "README.md") {
                             file.writeText(file.readText().replace(Regex("""(\n\n\|\s)""")) {
                                 "\n\n" + """"
                                     |||
@@ -165,7 +165,7 @@ subprojects {
                                     | 
                                 """.trimIndent()
                             })
-                        }
+                        }*/
                         val filename = file.toRelativeString(baseDir)
                         println("Uploading file $filename")
                         runCatching {

@@ -75,9 +75,9 @@ object GitHub {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
         val url = "https://api.github.com/repos/mamoe/$repo/contents/$targetFilePath"
-        retryCatching(10, onFailure = { delay(10_000) }) { // 403 forbidden?
+        retryCatching(100, onFailure = { delay(30_000) }) { // 403 forbidden?
             Http.put<String>("$url?access_token=$token") {
-                val sha = retryCatching(3, onFailure = { delay(10_000) }) {
+                val sha = retryCatching(3, onFailure = { delay(30_000) }) {
                     getGithubSha(
                         repo,
                         targetFilePath,
@@ -97,6 +97,7 @@ object GitHub {
             }.let {
                 println("Upload response: $it")
             }
+            delay(1000)
         }.getOrThrow()
     }
 
