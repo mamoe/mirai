@@ -1,1 +1,0 @@
-gradle :mirai-debug:run
