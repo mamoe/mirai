@@ -14,6 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
@@ -25,20 +26,18 @@ import kotlin.reflect.KProperty
 /**
  * 消息链. 空的实现为 [EmptyMessageChain]
  *
- * 在发送消息时必须构造一个消息链, 可通过一系列扩展函数 [asMessageChain] 转换.
- *
  * 要获取更多消息相关的信息, 查看 [Message]
  *
  * ### 构造消息链
  * - [buildMessageChain]: 使用构建器
  * - [Message.plus]: 将两个消息相连成为一个消息链
- * - [asMessageChain] 将 [Iterable], 等类型消息
+ * - [asMessageChain] 将 [Iterable], [Array] 等类型消息转换为 [MessageChain]
  * - [messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
  *
  * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
  * @see getOrFail 获取消息链中一个类型的元素, 不存在时抛出异常 [NoSuchElementException]
  * @see quote 引用这条消息
- * @see recall 撤回这条消息 (
+ * @see recall 撤回这条消息 (仅限来自 [MessageEvent] 的消息)
  *
  * @see buildMessageChain 构造一个 [MessageChain]
  * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
