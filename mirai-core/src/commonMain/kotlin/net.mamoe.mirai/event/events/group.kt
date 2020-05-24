@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
-@file:Suppress("unused", "FunctionName")
+@file:Suppress("unused", "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.event.events
 
@@ -25,6 +25,7 @@ import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.internal.runBlocking
+import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.jvm.*
 
 /**
@@ -91,10 +92,44 @@ data class BotUnmuteEvent internal constructor(
 /**
  * Bot 成功加入了一个新群
  */
-@MiraiExperimentalAPI
-data class BotJoinGroupEvent internal constructor(
-    override val group: Group
-) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent()
+sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
+    abstract override val group: Group
+
+    /**
+     * 不确定. 可能是主动加入
+     */
+    @MiraiExperimentalAPI
+    data class Active internal constructor(
+        override val group: Group
+    ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent() {
+        override fun toString(): String {
+            return "BotJoinGroupEvent.Active(group=$group)"
+        }
+    }
+
+    /**
+     * Bot 被一个群内的成员直接邀请加入了群.
+     *
+     * 此时服务器基于 Bot 的 QQ 设置自动同意了请求.
+     */
+    @MiraiExperimentalAPI
+    data class Invite internal constructor(
+        /**
+         * 邀请人昵称 (可能为备注或群名片)
+         */
+        val invitorName: String,
+        /**
+         * 邀请人
+         */
+        val invitor: Member
+    ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent() {
+        override val group: Group get() = invitor.group
+
+        override fun toString(): String {
+            return "BotJoinGroupEvent.Invite(invitorName='$invitorName', invitor=$invitor)"
+        }
+    }
+}
 
 // region 群设置
 
@@ -121,6 +156,7 @@ data class GroupNameChangeEvent internal constructor(
      */
     override val operator: Member?
 ) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent() {
+    @LowPriorityInOverloadResolution
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     val isByBot: Boolean
         get() = operator == null
@@ -202,7 +238,8 @@ data class GroupAllowMemberInviteEvent internal constructor(
 /**
  * 成员已经加入群的事件
  */
-sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent() {
+sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet,
+    AbstractEvent() {
     /**
      * 被邀请加入群
      */

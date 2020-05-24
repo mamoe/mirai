@@ -450,9 +450,10 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
 internal fun contextualBugReportException(
     context: String,
     forDebug: String,
-    e: Throwable? = null
+    e: Throwable? = null,
+    additional: String = ""
 ): IllegalStateException {
-    return IllegalStateException("在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai. 调试信息: $forDebug", e)
+    return IllegalStateException("在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai. $additional 调试信息: $forDebug", e)
 }
 
 @OptIn(ExperimentalContracts::class)

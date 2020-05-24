@@ -174,6 +174,7 @@ abstract class Group : Contact(), CoroutineScope {
 
     companion object {
         /**
+         * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
         @JvmStatic
@@ -181,6 +182,7 @@ abstract class Group : Contact(), CoroutineScope {
             CommonGroupCalculations.calculateGroupUinByGroupCode(groupCode)
 
         /**
+         * 使用 groupUin 计算 groupCode. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
         @JvmStatic

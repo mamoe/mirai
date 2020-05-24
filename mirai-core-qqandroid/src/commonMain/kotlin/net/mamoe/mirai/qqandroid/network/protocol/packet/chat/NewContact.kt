@@ -14,10 +14,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.BotLeaveEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.contextualBugReportException
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -25,6 +22,7 @@ import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Structmsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.getNewGroup
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
@@ -169,9 +167,18 @@ internal class NewContact {
                                 }
                                 else -> throw contextualBugReportException(
                                     "parse SystemMsgNewGroup, subType=1",
-                                    forDebug = this._miraiContentToString()
+                                    this._miraiContentToString(),
+                                    additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
                                 )
                             }
+                        }
+                        2 -> {
+                            // 被邀请入群, 自动同意
+
+                            val group = bot.getNewGroup(groupCode) ?: return null
+                            val invitor = group[actionUin]
+
+                            BotJoinGroupEvent.Invite(reqUinNick, invitor)
                         }
                         5 -> {
                             val group = bot.getGroup(groupCode)
@@ -180,7 +187,8 @@ internal class NewContact {
                         }
                         else -> throw contextualBugReportException(
                             "parse SystemMsgNewGroup",
-                            forDebug = this._miraiContentToString()
+                            forDebug = this._miraiContentToString(),
+                            additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
                         )
                     }
                 } as Packet // 没有 as Packet 垃圾 kotlin 会把类型推断为Any
