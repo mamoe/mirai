@@ -11,17 +11,15 @@
 
 package net.mamoe.mirai.console.command
 
+import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.command.description.CommandParam
-import net.mamoe.mirai.console.command.description.CommandParserContext
-import net.mamoe.mirai.console.command.description.EmptyCommandParserContext
-import net.mamoe.mirai.console.command.description.plus
-import net.mamoe.mirai.console.plugins.MyArg
+import net.mamoe.mirai.console.command.hasAnnotation
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
+import java.lang.Exception
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
-import kotlin.reflect.full.declaredFunctions
-import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.*
 
 /**
  * 指令
@@ -30,6 +28,9 @@ import kotlin.reflect.full.findAnnotation
  */
 interface Command {
     val names: Array<out String>
+
+    fun getPrimaryName():String = names[0]
+
     val usage: String
     val description: String
     val permission: CommandPermission
@@ -57,6 +58,10 @@ abstract class CompositeCommand @JvmOverloads constructor(
     override val prefixOptional: Boolean = false,
     overrideContext: CommandParserContext = EmptyCommandParserContext
 ) : Command {
+
+    class IllegalParameterException(message:String): Exception(message)
+
+
     override val names: Array<out String> =
         names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).toTypedArray()
     val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
@@ -70,7 +75,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
     /** 标记一个函数为子指令 */
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.FUNCTION)
-    annotation class SubCommand(val name: String)
+    annotation class SubCommand(vararg val name: String)
 
     /** 指令描述 */
     @Retention(AnnotationRetention.RUNTIME)
@@ -102,14 +107,54 @@ abstract class CompositeCommand @JvmOverloads constructor(
 
     internal val subCommands: Array<SubCommandDescriptor> by lazy {
         this::class.declaredFunctions.filter { it.hasAnnotation<SubCommand>() }.map { function ->
+
+            val overridePermission = function.findAnnotation<Permission>()//optional
+
+            val subDescription = function.findAnnotation<Description>()?.description
+            if(subDescription == null && owner is PluginCommandOwner){
+                (owner as PluginCommandOwner).plugin.logger.warning("A description for sub commend is recommend for command " + this.getPrimaryName())
+            }
+
+            if((function.returnType.classifier as? KClass<*>)?.isSubclassOf(Boolean::class) != true){
+                throw IllegalParameterException("Return Type of SubCommand must be Boolean")
+            }
+
+            val parameter = function.parameters
+            if (
+                parameter.isEmpty() ||
+                parameter[0].isVararg ||
+                ((parameter[0].type.classifier as? KClass<*>)?.isSubclassOf(CommandSender::class)!=true)
+            ){
+                throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.getPrimaryName() + " should be <out CommandSender>")
+            }
+
+            val commandName = function.findAnnotation<SubCommand>()!!.name.map {
+                if(!it.isValidSubName()){
+                    error("SubName $it is not valid")
+                }
+                it
+            }.toTypedArray()
+
+            //map parameter
+            val parms = parameter.subList(1,parameter.size).map {
+                if(it.isVararg){
+                    throw IllegalParameterException("parameter for sub commend " + function.name + " from " + this.getPrimaryName() + " should not be var arg")
+                }
+                if(it.isOptional){
+                    throw IllegalParameterException("parameter for sub commend " + function.name + " from " + this.getPrimaryName() + " should not be var optional")
+                }
+                CommandParam(
+                    it.findAnnotation<Name>()?.name?:it.name?:"unknown",
+                    (parameter[0].type.classifier as? KClass<*>)?: throw IllegalParameterException("unsolved type reference from param " + it.name + " in " + function.name + " from " + this.getPrimaryName()))
+            }.toTypedArray()
+
             SubCommandDescriptor(
-                arrayOf(function.name),
-                arrayOf(CommandParam("p", MyArg::class)),
-                "",
-                CommandPermission.Default,
+                commandName,
+                parms,
+                subDescription?:"unknown",
+                overridePermission?.permission?.getInstance() ?: permission,
                 onCommand = block { sender: CommandSender, args: Array<out Any> ->
-                    println("subname finally gor args: ${args.joinToString()}")
-                    true
+                    function.callSuspend(sender,*args) as Boolean
                 }
             )
         }.toTypedArray()
@@ -234,3 +279,7 @@ internal fun Any.flattenCommandComponents(): ArrayList<Any> {
 
 internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): Boolean =
     findAnnotation<T>() != null
+
+internal inline fun <T:Any> KClass<out T>.getInstance():T {
+    return this.objectInstance ?: this.createInstance()
+}

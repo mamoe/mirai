@@ -13,7 +13,7 @@ sealed class CommandOwner
 
 object TestCommandOwner : CommandOwner()
 
-abstract class PluginCommandOwner(plugin: PluginBase) : CommandOwner()
+abstract class PluginCommandOwner(val plugin: PluginBase) : CommandOwner()
 
 // 由前端实现
 internal abstract class ConsoleCommandOwner : CommandOwner()
