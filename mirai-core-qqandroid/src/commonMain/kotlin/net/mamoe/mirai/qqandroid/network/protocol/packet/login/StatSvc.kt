@@ -136,12 +136,9 @@ internal class StatSvc {
                                 strDevName = client.device.model.encodeToString(),
                                 strDevType = client.device.model.encodeToString(),
                                 strOSVer = client.device.version.release.encodeToString(),
-
                                 uOldSSOIp = 0,
-                                uNewSSOIp = MiraiPlatformUtils.localIpAddress().split(".")
-                                    .foldIndexed(0L) { index: Int, acc: Long, s: String ->
-                                        acc or ((s.toLong() shl (index * 16)))
-                                    },
+                                uNewSSOIp = MiraiPlatformUtils.localIpAddress().runCatching { ipToLong() }
+                                    .getOrElse { "192.168.1.123".ipToLong() },
                                 strVendorName = "MIUI",
                                 strVendorOSName = "?ONEPLUS A5000_23_17",
                                 // register 时还需要
@@ -170,6 +167,12 @@ internal class StatSvc {
                         )
                     )
                 )
+            }
+        }
+
+        private fun String.ipToLong(): Long {
+            return split('.').foldIndexed(0L) { index: Int, acc: Long, s: String ->
+                acc or (((s.toLongOrNull() ?: 0) shl (index * 16)))
             }
         }
 
