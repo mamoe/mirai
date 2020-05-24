@@ -65,28 +65,30 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
         }
     }
 
+    @Suppress("RemoveExplicitTypeArguments") // until Kotlin 1.4 NI
     @Throws(PluginLoadException::class)
-    override fun load(description: JvmPluginDescription): JvmPlugin = description.runCatching {
-        ensureActive()
-        val main = classLoader.loadPluginMainClassByJarFile(name, mainClassName, file).kotlin.run {
-            objectInstance
-                ?: kotlin.runCatching { createInstance() }.getOrNull()
-                ?: (java.constructors + java.declaredConstructors)
-                    .firstOrNull { it.parameterCount == 0 }
-                    ?.apply { kotlin.runCatching { isAccessible = true } }
-                    ?.newInstance()
-        } ?: error("No Kotlin object or public no-arg constructor found")
+    override fun load(description: JvmPluginDescription): JvmPlugin =
+        description.runCatching<JvmPluginDescription, JvmPlugin> {
+            ensureActive()
+            val main = classLoader.loadPluginMainClassByJarFile(name, mainClassName, file).kotlin.run {
+                objectInstance
+                    ?: kotlin.runCatching { createInstance() }.getOrNull()
+                    ?: (java.constructors + java.declaredConstructors)
+                        .firstOrNull { it.parameterCount == 0 }
+                        ?.apply { kotlin.runCatching { isAccessible = true } }
+                        ?.newInstance()
+            } ?: error("No Kotlin object or public no-arg constructor found")
 
-        check(main is JvmPlugin) { "The main class of Jar plugin must extend JvmPlugin, recommending JavaPlugin or KotlinPlugin" }
+            check(main is JvmPlugin) { "The main class of Jar plugin must extend JvmPlugin, recommending JavaPlugin or KotlinPlugin" }
 
-        if (main is JvmPluginImpl) {
-            main._description = description
-            main.internalOnLoad()
-        } else main.onLoad()
-        main
-    }.getOrElse {
-        throw PluginLoadException("Exception while loading ${description.name}", it)
-    }
+            if (main is JvmPluginImpl) {
+                main._description = description
+                main.internalOnLoad()
+            } else main.onLoad()
+            main
+        }.getOrElse<JvmPlugin, JvmPlugin> {
+            throw PluginLoadException("Exception while loading ${description.name}", it)
+        }
 
     override fun enable(plugin: JvmPlugin) {
         ensureActive()
