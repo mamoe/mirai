@@ -4,7 +4,6 @@ plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
-    id("org.jetbrains.dokka")
     id("signing")
     `maven-publish`
     id("com.jfrog.bintray") version Versions.Publishing.bintray
@@ -129,21 +128,6 @@ kotlin {
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
-    }
-}
-
-tasks {
-    val dokka by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
-        outputFormat = "html"
-        outputDirectory = "$buildDir/dokka"
-    }
-    val dokkaMarkdown by creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
-        outputFormat = "markdown"
-        outputDirectory = "$buildDir/dokka-markdown"
-    }
-    val dokkaGfm by creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
-        outputFormat = "gfm"
-        outputDirectory = "$buildDir/dokka-gfm"
     }
 }
 

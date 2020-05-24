@@ -61,6 +61,7 @@ mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotl
 Kotlin 编译后生成 Java 方法 `public Object sendMessage(Message msg, Continuation<Unit> cont)`  
 Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Message msg)` 使得 Java 使用者可无缝接入。
 
+建议在 IDE 内打开本文件 (位置 /docs/mirai.md), 可以进行源码内跳转.
 
 ### 开始
 
@@ -81,7 +82,7 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
 3. '消息'
    1. [消息对象 Message](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/Message.kt)  
       特别注意, `Message` 分为 单个消息(`SingleMessage`) 和 多个消息, 即消息链(`MessageChain` ).  
-      // TODO 此处还有更详细的扩展 API 解释, 待更新
+      - 
    2. [消息链 MessageChain](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/MessageChain.kt)  
       // TODO 此处还有更详细的扩展 API 解释, 待更新
    3. 接下来可按需阅读各类型消息 [各类型消息](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/). 一个文件包含一种消息.
@@ -96,7 +97,7 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
    4. 内建事件列表 [README](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/events/README.md).  
       **注意**: mirai 将接收到的消息事件独立放置在 `net.mamoe.mirai.message` 下, 并命名为 `MessageEvent`. 并为他们实现了一些扩展. 详见 [MessageEvent.kt](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/MessageEvent.kt)
    5. 事件工具类和工具函数 (仅 Kotlin) (可以跳过本节):  
-      标注 (*) 的几种处理方式可能需要比较好的 Kotlin 技能才能理解并正确使用. 建议在不熟悉时不要使用它们.  
+      标注 (*) 代表需要比较好的 Kotlin 技能才能理解.
       - 挂起当前协程, 直到返回下一个事件实例: [nextEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/nextEvent.kt)
       - 挂起当前协程, 并从一个事件中同步一个值: [syncFromEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/linear.kt)
       - (*) 消息事件监听 DSL: [subscribeMessages](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/subscribeMessages.kt)

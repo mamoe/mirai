@@ -70,23 +70,25 @@ object GitHub {
         )
     }
 
-    fun upload(file: File, url: String, project: Project) = runBlocking {
+    fun upload(file: File, url: String, project: Project, repo: String, baseFilePath: String) = runBlocking {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
-        Http.put<String>("$url?access_token=$token") {
-            val sha = getGithubSha("mirai-repo", "shadow/${project.name}/${file.name}", "master", project)
-            println("sha=$sha")
-            val content = String(Base64.getEncoder().encode(file.readBytes()))
-            body = """
+        retryCatching(1000) {
+            Http.put<String>("$url?access_token=$token") {
+                val sha = getGithubSha(repo, "$baseFilePath${project.name}/${file.name}", "master", project)
+                println("sha=$sha")
+                val content = String(Base64.getEncoder().encode(file.readBytes()))
+                body = """
                     {
                       "message": "automatically upload on release",
                       "content": "$content"
                       ${if (sha == null) "" else """, "sha": "$sha" """}
                     }
                 """.trimIndent()
-        }.let {
-            println("Upload response: $it")
-        }
+            }.let {
+                println("Upload response: $it")
+            }
+        }.getOrThrow()
     }
 
 
