@@ -15,6 +15,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.contextualBugReportException
 import net.mamoe.mirai.qqandroid.network.Packet
@@ -178,10 +179,10 @@ internal class NewContact {
                             val group = bot.getNewGroup(groupCode) ?: return null
                             val invitor = group[actionUin]
 
-                            BotJoinGroupEvent.Invite(reqUinNick, invitor)
+                            BotJoinGroupEvent.Invite(invitor)
                         }
                         5 -> {
-                            val group = bot.getGroup(groupCode)
+                            val group = bot.getGroupOrNull(groupCode) ?: return null
                             val operator = group[actionUin]
                             BotLeaveEvent.Kick(operator)
                         }

@@ -115,10 +115,6 @@ sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
     @MiraiExperimentalAPI
     data class Invite internal constructor(
         /**
-         * 邀请人昵称 (可能为备注或群名片)
-         */
-        val invitorName: String,
-        /**
          * 邀请人
          */
         val invitor: Member
@@ -126,7 +122,7 @@ sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
         override val group: Group get() = invitor.group
 
         override fun toString(): String {
-            return "BotJoinGroupEvent.Invite(invitorName='$invitorName', invitor=$invitor)"
+            return "BotJoinGroupEvent.Invite(invitor=$invitor)"
         }
     }
 }
