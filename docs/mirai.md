@@ -1,7 +1,7 @@
 # mirai
 欢迎来到 mirai 文档.
 
-本文档基于 mirai 1.0-RC2-1, 最后修改时间为 2020/5/16
+本文档基于 mirai 1.0.0, 最后修改时间为 2020/5/22
 
 ## 声明
 1. mirai 为完全免费的开源项目，使用 AGPLv3 开源协议. mirai 项目维护者和贡献者 (下文简称 '我们') 不通过任何方式收取费用。所有人都可以免费获取并使用这个项目。
@@ -31,18 +31,17 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
 
 
 - [`mirai-console`](https://github.com/mamoe/mirai-console) 是基于 `mirai-core` 的, 支持插件加载, 指令系统, 和配置等的**控制台框架**.  
-  **注意: 此模块正在重写, 短时间内可能不可用**  
+  **注意: 此模块正在重写, 短时间内不可用**  
   console 由 '后端' 和 '前端' 组成.  
-  `mirai-console` 即为后端, 包含所有开发时需要用到的功能.  
-  可用的前端:
-  - 纯命令行: `mirai-console` 内置纯命令行前端.
-  - 基于 JavaFX 的图形端: [`mirai-console-graphical`](https://github.com/mamoe/mirai-console/tree/master/mirai-console-graphical)
-  - Unix 友好的终端: [`mirai-console-terminal`](https://github.com/mamoe/mirai-console/tree/master/mirai-console-terminal)
-  
-- [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid) 是`mirai-console`的Android前端程序，支持大部分mirai-console功能以及多种脚本api
+  [`backend/mirai-console`](https://github.com/mamoe/mirai-console/tree/reborn/backend/mirai-console) 为唯一的后端, 包含所有开发时需要用到的功能.  
+  可用的官方（由 mirai 所属 [mamoe](https://github.com/mamoe) 组成员维护）前端:  
+  - 纯命令行: [`frontend/mirai-console-pure`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-pure)
+  - 基于 JavaFX 的图形端: [`frontend/mirai-console-graphical`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-graphical)
+  - Unix 友好的终端: [`frontend/mirai-console-terminal`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-terminal)
+  - Android APP: [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid) 额外支持多种脚本 API
 
 
-**注意**: `mirai-core` (将)于 2020 年 6 月发布的 `1.0.0` 版本正式进入稳定更新阶段,   
+**注意**: `mirai-core` 于 2020 年 5 月发布的 `1.0.0` 版本正式进入稳定更新阶段,   
 **而 `mirai-console` 仍处于快速迭代阶段, 任何 API 都有可能在不经过警告的情况下改动, 任何 API 都不具有任何稳定性.**
 
 ## `mirai-core`

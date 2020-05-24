@@ -18,16 +18,13 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.MemberCardChangeEvent
-import net.mamoe.mirai.event.events.MemberLeaveEvent
-import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.asMessageChain
-import net.mamoe.mirai.message.data.isContentNotEmpty
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
+import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
+import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
@@ -66,6 +63,12 @@ internal class MemberImpl constructor(
     }
 
     private suspend fun sendMessageImpl(message: Message): MessageReceipt<Member> {
+        val event = MessageSendEvent.TempMessageSendEvent(this, message.asMessageChain()).broadcast()
+        if (event.isCancelled) {
+            throw EventCancelledException("cancelled by TempMessageSendEvent")
+        }
+        event.message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+
         lateinit var source: MessageSourceToTempImpl
         bot.network.run {
             check(

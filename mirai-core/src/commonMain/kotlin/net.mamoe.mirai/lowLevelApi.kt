@@ -13,6 +13,9 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.data.*
+import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
+import net.mamoe.mirai.event.events.MemberJoinRequestEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.WeakRef
 
@@ -113,4 +116,60 @@ interface LowLevelBotAPIAccessor {
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData
+
+
+    /**
+     * 构造一个账号请求添加机器人为好友的事件
+     */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    fun _lowLevelGetNewFriendRequestEvent(
+        eventId: Long,
+        fromId: Long,
+        groupId: Long
+    ) = NewFriendRequestEvent(
+        bot = this as Bot,
+        eventId = eventId,
+        message = "",
+        fromId = fromId,
+        fromGroupId = groupId,
+        fromNick = ""
+    )
+
+    /**
+     * 构造被邀请加入一个群请求事件
+     */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    fun _lowLevelGetBotInvitedJoinGroupRequestEvent(
+        eventId: Long,
+        groupId: Long,
+        invitorId: Long
+    ) = BotInvitedJoinGroupRequestEvent(
+        bot = this as Bot,
+        eventId = eventId,
+        invitorId = invitorId,
+        groupId = groupId,
+        groupName = "",
+        invitorNick = ""
+    )
+
+    /**
+     * 构造账号请求加入群事件
+     */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    fun _lowLevelGetMemberJoinRequestEvent(
+        eventId: Long,
+        groupId: Long,
+        fromId: Long
+    ) = MemberJoinRequestEvent(
+        bot = this as Bot,
+        eventId = eventId,
+        fromId = fromId,
+        groupId = groupId,
+        groupName = "",
+        fromNick = "",
+        message = ""
+    )
 }
