@@ -6,8 +6,8 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS")
 
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS")
 
 package net.mamoe.mirai.console.plugins.builtin
 
