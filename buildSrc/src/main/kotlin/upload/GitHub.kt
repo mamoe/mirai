@@ -18,6 +18,7 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.HttpTimeout
 import io.ktor.client.request.put
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.gradle.api.Project
@@ -70,12 +71,20 @@ object GitHub {
         )
     }
 
-    fun upload(file: File, url: String, project: Project, repo: String, baseFilePath: String) = runBlocking {
+    fun upload(file: File, project: Project, repo: String, targetFilePath: String) = runBlocking {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
-        retryCatching(1000) {
+        val url = "https://api.github.com/repos/mamoe/$repo/contents/$targetFilePath"
+        retryCatching(100, onFailure = { delay(30_000) }) { // 403 forbidden?
             Http.put<String>("$url?access_token=$token") {
-                val sha = getGithubSha(repo, "$baseFilePath${project.name}/${file.name}", "master", project)
+                val sha = retryCatching(3, onFailure = { delay(30_000) }) {
+                    getGithubSha(
+                        repo,
+                        targetFilePath,
+                        "master",
+                        project
+                    )
+                }.getOrNull()
                 println("sha=$sha")
                 val content = String(Base64.getEncoder().encode(file.readBytes()))
                 body = """
@@ -88,6 +97,7 @@ object GitHub {
             }.let {
                 println("Upload response: $it")
             }
+            delay(1000)
         }.getOrThrow()
     }
 

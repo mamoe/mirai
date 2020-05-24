@@ -105,10 +105,9 @@ subprojects {
                     runCatching {
                         upload.GitHub.upload(
                             file,
-                            "https://api.github.com/repos/mamoe/mirai-repo/contents/shadow/${project.name}/$filename",
                             project,
                             "mirai-repo",
-                            "shadow/"
+                            "shadow/${project.name}/$filename"
                         )
                     }.exceptionOrNull()?.let {
                         System.err.println("GitHub Upload failed")
@@ -138,27 +137,45 @@ subprojects {
         val dokkaGitHubUpload by tasks.creating {
             group = "mirai"
 
-            dependsOn(tasks.getByName("dokkaMarkdown"))
+            dependsOn(tasks.getByName("dokkaGfm"))
             doFirst {
-                val baseDir = file("./build/dokka-markdown")
+                val baseDir = file("./build/dokka-gfm/${project.name}")
 
                 timeout.set(Duration.ofHours(6))
-                file("build/dokka-markdown/").walk()
+                file("build/dokka-gfm/").walk()
                     .filter { it.isFile }
                     .map { old ->
                         if (old.name == "index.md") File(old.parentFile, "README.md").also { new -> old.renameTo(new) }
                         else old
                     }
                     .forEach { file ->
+                        if (file.endsWith(".md")) {
+                            file.writeText(
+                                file.readText().replace("index.md", "README.md", ignoreCase = true)
+                                    .replace(Regex("""```\n([\s\S]*?)```""")) {
+                                        "\n" + """
+                                    ```kotlin
+                                    $it
+                                    ```
+                                """.trimIndent()
+                                    })
+                        } /* else if (file.name == "README.md") {
+                            file.writeText(file.readText().replace(Regex("""(\n\n\|\s)""")) {
+                                "\n\n" + """"
+                                    |||
+                                    |:----------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+                                    | 
+                                """.trimIndent()
+                            })
+                        }*/
                         val filename = file.toRelativeString(baseDir)
                         println("Uploading file $filename")
                         runCatching {
                             upload.GitHub.upload(
                                 file,
-                                "https://api.github.com/repos/mamoe/mirai-doc/contents/${project.name}/$filename",
                                 project,
                                 "mirai-doc",
-                                ""
+                                "${project.name}/${project.version}/$filename"
                             )
                         }.exceptionOrNull()?.let {
                             System.err.println("GitHub Upload failed")
