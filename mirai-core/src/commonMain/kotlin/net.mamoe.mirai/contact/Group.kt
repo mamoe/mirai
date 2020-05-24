@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport")
 
 package net.mamoe.mirai.contact
 
