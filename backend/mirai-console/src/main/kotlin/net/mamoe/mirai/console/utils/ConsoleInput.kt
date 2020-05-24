@@ -11,7 +11,6 @@ package net.mamoe.mirai.console.utils
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugins.PluginBase
 import java.util.concurrent.Executors
 
 @Suppress("unused")
@@ -25,30 +24,28 @@ object ConsoleInput {
      * 如弹出框，或一行字
      */
     suspend fun requestInput(
-        hint:String
-    ):String{
+        hint: String
+    ): String {
         return withContext(inputDispatcher) {
             MiraiConsole.frontEnd.requestInput(hint)
         }
     }
 
-    fun requestInputBlocking(hint:String):String = runBlocking { requestInput(hint) }
+    fun requestInputBlocking(hint: String): String = runBlocking { requestInput(hint) }
 
     /**
      * asnyc获取
      */
     fun requestInputAsync(
-        pluginBase: PluginBase,
+        scope: CoroutineScope,
         hint: String
-    ):Deferred<String>{
-        return pluginBase.async {
+    ): Deferred<String> {
+        return scope.async {
             requestInput(hint)
         }
     }
 
-    suspend fun MiraiConsole.requestInput(hint:String):String = requestInput(hint)
-
-    suspend fun PluginBase.requestInputAsync(hint:String):Deferred<String> = requestInputAsync(hint)
+    suspend fun MiraiConsole.requestInput(hint: String): String = requestInput(hint)
 }
 
 

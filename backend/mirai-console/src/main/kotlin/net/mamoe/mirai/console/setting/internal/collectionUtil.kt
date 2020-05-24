@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.serializer

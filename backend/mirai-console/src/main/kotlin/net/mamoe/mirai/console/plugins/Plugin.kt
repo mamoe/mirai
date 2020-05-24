@@ -9,45 +9,17 @@
 
 package net.mamoe.mirai.console.plugins
 
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiLogger
-import kotlin.coroutines.CoroutineContext
+import net.mamoe.mirai.console.plugins.builtin.JvmPlugin
 
 /**
- * 插件信息
- */
-interface PluginDescription {
-    val name: String
-    val author: String
-    val version: String
-    val info: String
-    val depends: List<String>
-}
-
-/**
- * 插件基类.
+ * 表示一个 mirai-console 插件.
  *
- * 内建的插件类型:
- * - [JarPlugin]
+ * @see JvmPlugin
+ * @see PluginDescription 插件描述
  */
-abstract class Plugin : CoroutineScope {
-    abstract val description: PluginDescription
-    abstract val loader: PluginLoader<*>
-
-    @OptIn(MiraiExperimentalAPI::class)
-    val logger: MiraiLogger by lazy { MiraiConsole.newLogger(description.name) }
-
-    override val coroutineContext: CoroutineContext
-        get() = SupervisorJob(MiraiConsole.coroutineContext[Job]) + CoroutineExceptionHandler { _, throwable ->
-            logger.error(throwable)
-        }
-
-    open fun onLoaded() {}
-    open fun onDisabled() {}
-    open fun onEnabled() {}
+interface Plugin {
+    /**
+     * 所属插件加载器实例
+     */
+    val loader: PluginLoader<*, *>
 }

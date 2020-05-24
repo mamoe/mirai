@@ -7,15 +7,21 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.*
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.setting.SerialName
+import net.mamoe.mirai.console.setting.Setting
+import net.mamoe.mirai.console.setting.Value
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlConfiguration
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
 
-internal abstract class AbstractSetting {
+internal abstract class SettingImpl {
 
     @JvmField
     internal var valueList: MutableList<Pair<Value<*>, KProperty<*>>> = mutableListOf()
@@ -31,15 +37,18 @@ internal abstract class AbstractSetting {
     internal val kotlinSerializer: KSerializer<Setting> by lazy {
         object : KSerializer<Setting> {
             override val descriptor: SerialDescriptor
-                get() = this@AbstractSetting.updaterSerializer.descriptor
+                get() = this@SettingImpl.updaterSerializer.descriptor
 
             override fun deserialize(decoder: Decoder): Setting {
-                this@AbstractSetting.updaterSerializer.deserialize(decoder)
-                return this@AbstractSetting as Setting
+                this@SettingImpl.updaterSerializer.deserialize(decoder)
+                return this@SettingImpl as Setting
             }
 
             override fun serialize(encoder: Encoder, value: Setting) {
-                this@AbstractSetting.updaterSerializer.serialize(encoder, SettingSerializerMark)
+                this@SettingImpl.updaterSerializer.serialize(
+                    encoder,
+                    SettingSerializerMark
+                )
             }
         }
     }
@@ -50,7 +59,7 @@ internal abstract class AbstractSetting {
 
     companion object {
         @JvmStatic
-        internal val yaml =
+        internal val yamlForToString =
             Yaml(
                 configuration = YamlConfiguration(
                     nonStrictNullability = true,
@@ -67,6 +76,7 @@ internal class SettingUpdaterSerializer(
     private val instance: Setting
 ) : KSerializer<SettingSerializerMark> {
     override val descriptor: SerialDescriptor by lazy {
+        @OptIn(MiraiExperimentalAPI::class)
         SerialDescriptor(instance.serialName) {
             for ((value, property) in instance.valueList) {
                 element(property.serialNameOrPropertyName, value.serializer.descriptor, annotations, true)
@@ -89,9 +99,8 @@ internal class SettingUpdaterSerializer(
             while (true) {
                 val index = this.decodeElementIndex(descriptor)
                 if (index == CompositeDecoder.READ_DONE) return@decodeStructure SettingSerializerMark
-                val value = instance.valueList[index].first
-
-                this.decodeSerializableElement(
+                val value = instance.valueList[index].first as Value<Any>
+                value.value = this.decodeSerializableElement(
                     descriptor,
                     index,
                     value.serializer
@@ -101,18 +110,41 @@ internal class SettingUpdaterSerializer(
         SettingSerializerMark
     }
 
-    override fun serialize(encoder: Encoder, value: SettingSerializerMark) = encoder.encodeStructure(descriptor) {
-        instance.valueList.forEachIndexed { index, (value, _) ->
-            @Suppress("UNCHECKED_CAST") // erased, no problem.
-            this.encodeSerializableElement(
-                descriptor,
-                index,
-                value.serializer as KSerializer<Any>,
-                value.value
-            )
+    private val emptyList = emptyList<String>()
+    private val emptyListSerializer = ListSerializer(String.serializer())
+
+    override fun serialize(encoder: Encoder, value: SettingSerializerMark) {
+        if (instance.valueList.isEmpty()) {
+            emptyListSerializer.serialize(encoder, emptyList)
+        } else encoder.encodeStructure(descriptor) {
+            instance.valueList.forEachIndexed { index, (value, _) ->
+                @Suppress("UNCHECKED_CAST") // erased, no problem.
+                this.encodeElementSmart(descriptor, index, value)
+            }
         }
     }
 
+}
+
+// until https://github.com/Him188/yamlkt/issues/2 fixed
+internal fun <T : Any> CompositeEncoder.encodeElementSmart(
+    descriptor: SerialDescriptor,
+    index: Int,
+    value: Value<T>
+) {
+    when (value.value::class) {
+        String::class -> this.encodeStringElement(descriptor, index, value.value as String)
+        Int::class -> this.encodeIntElement(descriptor, index, value.value as Int)
+        Byte::class -> this.encodeByteElement(descriptor, index, value.value as Byte)
+        Char::class -> this.encodeCharElement(descriptor, index, value.value as Char)
+        Long::class -> this.encodeLongElement(descriptor, index, value.value as Long)
+        Float::class -> this.encodeFloatElement(descriptor, index, value.value as Float)
+        Double::class -> this.encodeDoubleElement(descriptor, index, value.value as Double)
+        Boolean::class -> this.encodeBooleanElement(descriptor, index, value.value as Boolean)
+        else ->
+            @Suppress("UNCHECKED_CAST")
+            this.encodeSerializableElement(descriptor, index, value.serializer as KSerializer<Any>, value.value)
+    }
 }
 
 internal object SettingSerializerMark
@@ -130,5 +162,16 @@ internal inline fun <E> KSerializer<E>.bind(
         @Suppress("UNCHECKED_CAST")
         override fun serialize(encoder: Encoder, value: E) =
             this@bind.serialize(encoder, getter())
+    }
+}
+
+internal inline fun <E, R> KSerializer<E>.map(
+    crossinline serializer: (R) -> E,
+    crossinline deserializer: (E) -> R
+): KSerializer<R> {
+    return object : KSerializer<R> {
+        override val descriptor: SerialDescriptor get() = this@map.descriptor
+        override fun deserialize(decoder: Decoder): R = this@map.deserialize(decoder).let(deserializer)
+        override fun serialize(encoder: Encoder, value: R) = this@map.serialize(encoder, value.let(serializer))
     }
 }

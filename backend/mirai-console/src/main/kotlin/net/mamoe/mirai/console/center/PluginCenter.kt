@@ -1,13 +1,29 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 package net.mamoe.mirai.console.center
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.io.File
 
+@MiraiExperimentalAPI
 interface PluginCenter {
 
+    @Serializable
     data class PluginInsight(
         val name: String,
         val version: String,
+        @SerialName("core")
         val coreVersion: String,
+        @SerialName("console")
         val consoleVersion: String,
         val author: String,
         val description: String,
@@ -15,10 +31,13 @@ interface PluginCenter {
         val commands: List<String>
     )
 
+    @Serializable
     data class PluginInfo(
         val name: String,
         val version: String,
+        @SerialName("core")
         val coreVersion: String,
+        @SerialName("console")
         val consoleVersion: String,
         val tags: List<String>,
         val author: String,
@@ -32,7 +51,7 @@ interface PluginCenter {
 
     /**
      * 获取一些中心的插件基本信息,
-     * 能获取到多少由实际的PluginCenter决定
+     * 能获取到多少由实际的 [PluginCenter] 决定
      * 返回 插件名->Insight
      */
     suspend fun fetchPlugin(page: Int): Map<String, PluginInsight>
@@ -41,17 +60,18 @@ interface PluginCenter {
      * 尝试获取到某个插件 by 全名, case sensitive
      * null 则没有
      */
-    suspend fun findPlugin(name:String):PluginInfo?
+    suspend fun findPlugin(name: String): PluginInfo?
 
 
-    suspend fun <T:Any> T.downloadPlugin(name:String, progressListener:T.(Float) -> Unit): File
+    suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit): File
 
-    suspend fun downloadPlugin(name:String, progressListener:PluginCenter.(Float) -> Unit): File = downloadPlugin<PluginCenter>(name,progressListener)
+    suspend fun downloadPlugin(name: String, progressListener: PluginCenter.(Float) -> Unit): File =
+        downloadPlugin<PluginCenter>(name, progressListener)
 
     /**
      * 刷新
      */
     suspend fun refresh()
 
-    val name:String
+    val name: String
 }

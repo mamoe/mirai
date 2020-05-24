@@ -16,7 +16,7 @@ import java.io.File
 fun main() {
     println(File("").absolutePath) // default project base dir
 
-    File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/setting/_ValueImpl.kt").apply {
+    File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/setting/internal/_ValueImpl.kt").apply {
         createNewFile()
     }.writeText(buildString {
         appendln(COPYRIGHT)
@@ -41,12 +41,13 @@ private val DO_NOT_MODIFY = """
 """.trimIndent()
 
 private val PACKAGE = """
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.setting.internal
 """.trimIndent()
 
 private val IMPORTS = """
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.*
+import net.mamoe.mirai.console.setting.*
 """.trimIndent()
 
 fun genAllValueImpl(): String = buildString {
@@ -56,20 +57,20 @@ fun genAllValueImpl(): String = buildString {
 
     // PRIMITIVE
     for (number in NUMBERS + OTHER_PRIMITIVES) {
-        appendln(genValueImpl(number, number, "$number.serializer()", false))
+        appendln(genPrimitiveValueImpl(number, number, "$number.serializer()", false))
         appendln()
     }
 
     // PRIMITIVE ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES.filterNot { it == "String" }) {
-        appendln(genValueImpl("${number}Array", "${number}Array", "${number}ArraySerializer()", true))
+        appendln(genPrimitiveValueImpl("${number}Array", "${number}Array", "${number}ArraySerializer()", true))
         appendln()
     }
 
     // TYPED ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES) {
         appendln(
-            genValueImpl(
+            genPrimitiveValueImpl(
                 "Array<${number}>",
                 "Typed${number}Array",
                 "ArraySerializer(${number}.serializer())",
@@ -83,7 +84,8 @@ fun genAllValueImpl(): String = buildString {
     for (collectionName in listOf("List", "Set")) {
         for (number in NUMBERS + OTHER_PRIMITIVES) {
             appendln(
-                genValueImpl(
+                genCollectionValueImpl(
+                    collectionName,
                     "${collectionName}<${number}>",
                     "${number}${collectionName}",
                     "${collectionName}Serializer(${number}.serializer())",
@@ -108,7 +110,8 @@ fun genAllValueImpl(): String = buildString {
                 ): Mutable${number}${collectionName}Value {
                     var internalValue: Mutable${collectionName}<${number}> = default
 
-                    return object : Mutable${number}${collectionName}Value(), Mutable${collectionName}<${number}> by dynamicMutable${collectionName}({ internalValue }) {
+                    val delegt = dynamicMutable${collectionName}{ internalValue }
+                    return object : Mutable${number}${collectionName}Value(), Mutable${collectionName}<${number}> by delegt {
                         override var value: Mutable${collectionName}<${number}>
                             get() = internalValue
                             set(new) {
@@ -118,7 +121,7 @@ fun genAllValueImpl(): String = buildString {
                                 }
                             }
                         
-                        private inline val `this` get() = this
+                        private val outerThis get() = this
                         
                         override val serializer: KSerializer<Mutable${collectionName}<${number}>> = object : KSerializer<Mutable${collectionName}<${number}>> {
                             private val delegate = ${collectionName}Serializer(${number}.serializer())
@@ -126,7 +129,7 @@ fun genAllValueImpl(): String = buildString {
 
                             override fun deserialize(decoder: Decoder): Mutable${collectionName}<${number}> {
                                 return delegate.deserialize(decoder).toMutable${collectionName}().observable { 
-                                    onElementChanged(`this`)
+                                    onElementChanged(outerThis)
                                 }
                             }
 
@@ -177,11 +180,52 @@ fun genAllValueImpl(): String = buildString {
     )
 }
 
-fun genValueImpl(kotlinTypeName: String, miraiValueName: String, serializer: String, isArray: Boolean): String =
+fun genPrimitiveValueImpl(
+    kotlinTypeName: String,
+    miraiValueName: String,
+    serializer: String,
+    isArray: Boolean
+): String =
     """
         internal fun Setting.valueImpl(default: ${kotlinTypeName}): ${miraiValueName}Value {
             return object : ${miraiValueName}Value() {
                 private var internalValue: $kotlinTypeName = default
+                override var value: $kotlinTypeName
+                    get() = internalValue
+                    set(new) {
+                        ${
+    if (isArray) """
+                        if (!new.contentEquals(internalValue)) {
+                            internalValue = new
+                            onElementChanged(this)
+                        }
+    """.trim()
+    else """
+                        if (new != internalValue) {
+                            internalValue = new
+                            onElementChanged(this)
+                        }
+    """.trim()
+    }
+                    }
+                override val serializer = $serializer
+            }
+        }
+    """.trimIndent() + "\n"
+
+
+fun genCollectionValueImpl(
+    collectionName: String,
+    kotlinTypeName: String,
+    miraiValueName: String,
+    serializer: String,
+    isArray: Boolean
+): String =
+    """
+        internal fun Setting.valueImpl(default: ${kotlinTypeName}): ${miraiValueName}Value {
+            var internalValue: $kotlinTypeName = default
+            val delegt = dynamic$collectionName { internalValue }
+            return object : ${miraiValueName}Value(), $kotlinTypeName by delegt {
                 override var value: $kotlinTypeName
                     get() = internalValue
                     set(new) {

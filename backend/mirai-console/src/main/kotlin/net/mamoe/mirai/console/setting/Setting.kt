@@ -12,23 +12,40 @@
 package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.KSerializer
+import net.mamoe.mirai.console.setting.internal.SettingImpl
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
 
+/**
+ * 在配置文件和图像界面中保存的名称.
+ */
 typealias SerialName = kotlinx.serialization.SerialName
+
+/**
+ * 在配置文件和图像界面中显示的说明.
+ */
+typealias Comment = net.mamoe.yamlkt.Comment
 
 /**
  * 配置的基类. 所有配置必须拥有一个无参构造器, 以用于在 [MutableList] 与 [MutableMap] 中动态识别类型
  */
 @Suppress("EXPOSED_SUPER_CLASS")
-abstract class Setting : AbstractSetting() {
+abstract class Setting : SettingImpl() {
+    /**
+     * 这个配置的名称, 仅对于顶层配置有效.
+     */
+    @MiraiExperimentalAPI
     open val serialName: String
         get() = this::class.findAnnotation<SerialName>()?.value
             ?: this::class.qualifiedName
             ?: error("Names should be assigned to anonymous classes manually by overriding serialName")
 
 
+    /**
+     * 提供属性委托, 并添加这个对象的自动保存跟踪.
+     */
     @JvmSynthetic
     operator fun <T : Any> Value<T>.provideDelegate(
         thisRef: Setting,
@@ -39,9 +56,12 @@ abstract class Setting : AbstractSetting() {
         return this
     }
 
-    override fun toString(): String = yaml.stringify(this.serializer, this)
+    override fun toString(): String = yamlForToString.stringify(this.serializer, this)
 }
 
+/**
+ * 用于更新或保存这个 [Value] 的序列化器.
+ */
 @Suppress("UNCHECKED_CAST")
 val <T : Setting> T.serializer: KSerializer<T>
     get() = kotlinSerializer as KSerializer<T>

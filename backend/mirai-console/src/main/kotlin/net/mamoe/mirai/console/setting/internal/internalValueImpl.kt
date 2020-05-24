@@ -6,13 +6,16 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.SetSerializer
+import net.mamoe.mirai.console.setting.*
 import net.mamoe.yamlkt.YamlDynamicSerializer
+import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
@@ -53,7 +56,10 @@ internal fun <T : Any> Setting.valueImpl(
         internalValue.shadowMap(transform = { it.value }, transformBack = { valueMapper(it) })
 
     var shadowed: MutableList<T> = updateShadow()
-    return object : MutableListValue<T>(), MutableList<T> by dynamicMutableList({ shadowed }) {
+
+
+    val delegt = dynamicMutableList { shadowed }
+    return object : MutableListValue<T>(), MutableList<T> by delegt {
         override var value: MutableList<Value<T>>
             get() = internalValue
             set(new) {
@@ -86,7 +92,8 @@ internal fun <T : Setting> Setting.valueImpl(
 ): MutableSettingListValue<T> {
     var internalValue: MutableList<T> = default
 
-    return object : MutableSettingListValue<T>(), MutableList<T> by dynamicMutableList({ internalValue }) {
+    val delegt = dynamicMutableList { internalValue }
+    return object : MutableSettingListValue<T>(), MutableList<T> by delegt {
         override var value: MutableList<T>
             get() = internalValue
             set(new) {
@@ -118,7 +125,8 @@ internal fun <T : Setting> Setting.valueImpl(
 ): SettingListValue<T> {
     var internalValue: List<T> = default
 
-    return object : SettingListValue<T>(), List<T> by dynamicList({ internalValue }) {
+    val delegt = dynamicList { internalValue }
+    return object : SettingListValue<T>(), List<T> by delegt {
         override var value: List<T>
             get() = internalValue
             set(new) {
@@ -150,7 +158,8 @@ internal fun <T : Setting> Setting.valueImpl(
 ): SettingSetValue<T> {
     var internalValue: Set<T> = default
 
-    return object : SettingSetValue<T>(), Set<T> by dynamicSet({ internalValue }) {
+    val delegt = dynamicSet { internalValue }
+    return object : SettingSetValue<T>(), Set<T> by delegt {
         override var value: Set<T>
             get() = internalValue
             set(new) {
@@ -182,7 +191,8 @@ internal fun <T : Setting> Setting.valueImpl(
 ): MutableSettingSetValue<T> {
     var internalValue: MutableSet<T> = default
 
-    return object : MutableSettingSetValue<T>(), MutableSet<T> by dynamicMutableSet({ internalValue }) {
+    val delegt = dynamicMutableSet { internalValue }
+    return object : MutableSettingSetValue<T>(), MutableSet<T> by delegt {
         override var value: MutableSet<T>
             get() = internalValue
             set(new) {
@@ -247,7 +257,9 @@ internal fun <T : Any> Setting.valueImpl(
         internalValue.shadowMap(transform = { it.value }, transformBack = { valueMapper(it) })
 
     var shadowed: MutableSet<T> = updateShadow()
-    return object : MutableSetValue<T>(), MutableSet<T> by dynamicMutableSet({ shadowed }) {
+
+    val delegt = dynamicMutableSet { shadowed }
+    return object : MutableSetValue<T>(), MutableSet<T> by delegt {
         override var value: MutableSet<Value<T>>
             get() = internalValue
             set(new) {
@@ -280,6 +292,7 @@ internal fun <T : Any> Setting.valueImpl(
  * For primitives and serializable only
  */
 @PublishedApi
+@LowPriorityInOverloadResolution
 internal inline fun <reified T : Any> Setting.valueImpl(default: T): Value<T> =
     valueImpl(default, T::class)
 
@@ -293,20 +306,15 @@ internal fun <T : Any> Setting.valueImpl(default: T, clazz: KClass<out T>): Valu
     }
     return object : DynamicReferenceValue<T>() {
         override var value: T = default
-        override val serializer: KSerializer<T>
-            get() = object : KSerializer<T> {
-                override val descriptor: SerialDescriptor
-                    get() = YamlDynamicSerializer.descriptor
+        override val serializer: KSerializer<T> = object : KSerializer<T> {
+            override val descriptor: SerialDescriptor
+                get() = YamlDynamicSerializer.descriptor
 
-                override fun deserialize(decoder: Decoder): T {
-                    return YamlDynamicSerializer.deserialize(decoder).smartCastPrimitive(clazz)
-                }
+            override fun deserialize(decoder: Decoder): T =
+                YamlDynamicSerializer.deserialize(decoder).smartCastPrimitive(clazz)
 
-                @OptIn(ImplicitReflectionSerializer::class)
-                override fun serialize(encoder: Encoder, value: T) {
-                    YamlDynamicSerializer.serialize(encoder, value)
-                }
-            }
+            override fun serialize(encoder: Encoder, value: T) = YamlDynamicSerializer.serialize(encoder, value)
+        }
     }
 }
 

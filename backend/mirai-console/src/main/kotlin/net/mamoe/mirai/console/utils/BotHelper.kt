@@ -22,13 +22,6 @@ import java.io.File
 val User.isManager: Boolean
     get() = this.bot.managers.contains(this.id)
 
-@JvmName("addManager")
-@JvmSynthetic
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-fun Bot.addManagerDeprecated(long: Long) {
-    addManager(long)
-}
-
 internal fun Bot.addManager(long: Long): Boolean {
     TODO()
     return true

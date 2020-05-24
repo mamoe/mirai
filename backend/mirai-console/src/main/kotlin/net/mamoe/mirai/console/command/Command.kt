@@ -13,7 +13,9 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.command.description.CommandParam
-import net.mamoe.mirai.console.command.hasAnnotation
+import net.mamoe.mirai.console.command.description.CommandParserContext
+import net.mamoe.mirai.console.command.description.EmptyCommandParserContext
+import net.mamoe.mirai.console.command.description.plus
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
 import java.lang.Exception
