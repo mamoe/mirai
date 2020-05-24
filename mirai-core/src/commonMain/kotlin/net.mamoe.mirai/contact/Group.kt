@@ -163,6 +163,8 @@ abstract class Group : Contact(), CoroutineScope {
     /**
      * 上传一个图片以备发送.
      *
+     * @see Image 查看有关图片的更多信息, 如上传图片
+     *
      * @see BeforeImageUploadEvent 图片上传前事件, cancellable
      * @see ImageUploadEvent 图片上传完成事件
      *
