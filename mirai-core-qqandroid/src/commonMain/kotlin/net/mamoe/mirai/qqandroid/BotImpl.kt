@@ -45,6 +45,8 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
     @Suppress("PropertyName")
     internal lateinit var _network: N
 
+    override val isOnline: Boolean get() = _network.areYouOk()
+
     /**
      * Close server connection, resend login packet, BUT DOESN'T [BotNetworkHandler.init]
      */

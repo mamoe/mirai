@@ -25,6 +25,7 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -41,22 +42,25 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  * 有关 [Bot] 生命管理, 请查看 [BotConfiguration.inheritCoroutineContext]
  *
  * @see Contact 联系人
- * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (在线, 且没有被 [close])
+ * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (协程正常运行) (但不能判断是否在线, 需使用 [isOnline])
  *
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
 @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
-abstract class Bot(
+abstract class Bot internal constructor(
     val configuration: BotConfiguration
 ) : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI, ContactOrBot {
     final override val coroutineContext: CoroutineContext =
-        configuration.parentCoroutineContext + SupervisorJob(configuration.parentCoroutineContext[Job]) +
-                (configuration.parentCoroutineContext[CoroutineExceptionHandler]
-                    ?: CoroutineExceptionHandler { _, e ->
-                        logger.error("An exception was thrown under a coroutine of Bot", e)
-                    })
+        configuration.parentCoroutineContext
+            .plus(SupervisorJob(configuration.parentCoroutineContext[Job]))
+            .plus(configuration.parentCoroutineContext[CoroutineExceptionHandler]
+                ?: CoroutineExceptionHandler { _, e ->
+                    logger.error("An exception was thrown under a coroutine of Bot", e)
+                }
+            )
 
     companion object {
+        @JvmField
         @Suppress("ObjectPropertyName")
         internal val _instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
 
@@ -133,6 +137,12 @@ abstract class Bot(
      */
     abstract val logger: MiraiLogger
 
+    /**
+     * 判断 Bot 是否在线 (可正常收发消息)
+     */
+    @SinceMirai("1.0.1")
+    abstract val isOnline: Boolean
+
     // region contacts
 
     /**
@@ -206,6 +216,7 @@ abstract class Bot(
      *
      * @see Image.queryUrl [Image] 的扩展函数
      */
+    @PlannedRemoval("1.2.0")
     @Deprecated(
         "use extension.",
         replaceWith = ReplaceWith("image.queryUrl()", imports = ["net.mamoe.mirai.message.data.queryUrl"])
@@ -236,6 +247,7 @@ abstract class Bot(
      *
      * @param event 好友验证的事件对象
      */
+    @PlannedRemoval("1.2.0")
     @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
     @JvmSynthetic
     abstract suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent)
@@ -246,6 +258,7 @@ abstract class Bot(
      * @param event 好友验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
+    @PlannedRemoval("1.2.0")
     @Deprecated("use member function.", replaceWith = ReplaceWith("event.reject(blackList)"))
     @JvmSynthetic
     abstract suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean = false)
@@ -255,6 +268,7 @@ abstract class Bot(
      *
      * @param event 加群验证的事件对象
      */
+    @PlannedRemoval("1.2.0")
     @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
     @JvmSynthetic
     abstract suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent)
@@ -265,6 +279,7 @@ abstract class Bot(
      * @param event 加群验证的事件对象
      * @param blackList 拒绝后是否拉入黑名单
      */
+    @PlannedRemoval("1.2.0")
     @Deprecated("use member function.", replaceWith = ReplaceWith("event.reject(blackList)"))
     @JvmSynthetic
     abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
@@ -275,6 +290,7 @@ abstract class Bot(
      * @param event 加群验证的事件对象
      * @param blackList 忽略后是否拉入黑名单
      */
+    @PlannedRemoval("1.2.0")
     @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore(blackList)"))
     @JvmSynthetic
     abstract suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
@@ -284,6 +300,7 @@ abstract class Bot(
      *
      * @param event 邀请入群的事件对象
      */
+    @PlannedRemoval("1.2.0")
     @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept"))
     @JvmSynthetic
     abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
@@ -293,6 +310,7 @@ abstract class Bot(
      *
      * @param event 邀请入群的事件对象
      */
+    @PlannedRemoval("1.2.0")
     @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore"))
     @JvmSynthetic
     abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
@@ -322,7 +340,8 @@ inline val Bot.supervisorJob: CompletableJob
     get() = this.coroutineContext[Job] as CompletableJob
 
 /**
- * 挂起协程直到 [Bot] 下线.
+ * 挂起协程直到 [Bot] 协程被关闭 ([Bot.close]).
+ * 即使 [Bot] 离线, 也会等待直到协程关闭.
  */
 @JvmSynthetic
 suspend inline fun Bot.join() = this.coroutineContext[Job]!!.join()

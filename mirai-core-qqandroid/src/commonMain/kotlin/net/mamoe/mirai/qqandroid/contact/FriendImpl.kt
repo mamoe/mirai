@@ -8,7 +8,13 @@
  */
 
 @file:OptIn(LowLevelAPI::class)
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "NOTHING_TO_INLINE")
+@file:Suppress(
+    "EXPERIMENTAL_API_USAGE",
+    "DEPRECATION_ERROR",
+    "NOTHING_TO_INLINE",
+    "INVISIBLE_MEMBER",
+    "INVISIBLE_REFERENCE"
+)
 
 package net.mamoe.mirai.qqandroid.contact
 

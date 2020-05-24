@@ -64,8 +64,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private val packetReceiveLock: Mutex = Mutex()
 
     override fun areYouOk(): Boolean {
-        return this.isActive && ::channel.isInitialized && channel.isOpen
-                && heartbeatJob?.isActive == true && _packetReceiverJob?.isActive == true
+        return kotlin.runCatching {
+            this.isActive && ::channel.isInitialized && channel.isOpen
+                    && heartbeatJob?.isActive == true && _packetReceiverJob?.isActive == true
+        }.getOrElse { false }
     }
 
     private suspend fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
