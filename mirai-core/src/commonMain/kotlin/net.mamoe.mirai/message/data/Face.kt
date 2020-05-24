@@ -26,7 +26,7 @@ data class Face(val id: Int) : // used in delegation
     override fun toString(): String = "[mirai:face:$id]"
     override fun contentToString(): String =
             if (id >= 0 && id <= 255)
-                faceName.faceNameArray[id]
+                faceName.names[id]
             else "[表情]"
 
     override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
