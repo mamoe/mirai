@@ -46,7 +46,10 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
 
-    // TODO: 2020/4/30 添加临时会话消息发送事件
+    data class TempMessageSendEvent(
+        override val target: Member,
+        var message: MessageChain
+    ) : MessageSendEvent(), CancellableEvent
 }
 
 /**
