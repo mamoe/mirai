@@ -36,17 +36,17 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
     final override val bot: Bot
         get() = target.bot
 
-    data class GroupMessageSendEvent(
+    data class GroupMessageSendEvent internal constructor(
         override val target: Group,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
 
-    data class FriendMessageSendEvent(
+    data class FriendMessageSendEvent internal constructor(
         override val target: Friend,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
 
-    data class TempMessageSendEvent(
+    data class TempMessageSendEvent internal constructor(
         override val target: Member,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
