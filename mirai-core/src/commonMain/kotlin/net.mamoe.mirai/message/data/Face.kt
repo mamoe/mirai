@@ -24,9 +24,6 @@ data class Face(val id: Int) : // used in delegation
     MessageContent {
 
     override fun toString(): String = "[mirai:face:$id]"
-    override fun contentToString(): String = "[表情]"
-    override fun toString(): String = stringValue
-
     override fun contentToString(): String =
             if (id >= 0 && id <= 255)
                 faceName.faceNameArray[id]
