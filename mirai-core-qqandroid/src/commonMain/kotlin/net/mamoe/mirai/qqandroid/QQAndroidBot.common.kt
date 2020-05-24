@@ -15,16 +15,16 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
-import kotlinx.coroutines.io.ByteReadChannel
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.json.int
-import net.mamoe.mirai.*
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.broadcast
@@ -33,6 +33,7 @@ import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
+import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
@@ -51,18 +52,16 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
-import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.utils.*
 import kotlin.collections.asSequence
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
-@OptIn(ExperimentalContracts::class)
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     contract {
         returns() implies (this@asQQAndroidBot is QQAndroidBot)
@@ -71,8 +70,7 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     return this as QQAndroidBot
 }
 
-@Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument")
-@OptIn(MiraiInternalAPI::class)
+@Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
 internal class QQAndroidBot constructor(
     context: Context,
     account: BotAccount,
@@ -183,14 +181,16 @@ internal class QQAndroidBot constructor(
         val group = this.getGroupOrNull(eventGroup.id)
             ?: kotlin.run {
                 if (this == eventBot) {
-                    error("A ${eventName()} is outdated. Group ${eventGroup.id} not found for bot ${this.id}. " +
-                            "This is because bot isn't in the group anymore")
+                    error(
+                        "A ${eventName()} is outdated. Group ${eventGroup.id} not found for bot ${this.id}. " +
+                                "This is because bot isn't in the group anymore"
+                    )
                 } else {
                     error("A ${eventName()} is from bot ${eventBot.id}, but you are trying to respond it using bot ${this.id} who isn't a member of the group ${eventGroup.id}")
                 }
             }
 
-        group.checkBotPermissionOperator()
+        group.checkBotPermission(MemberPermission.ADMINISTRATOR)
     }
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
@@ -208,11 +208,11 @@ internal class QQAndroidBot constructor(
         }
     }
 
-    override suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
-        = solveInvitedJoinGroupRequest(event, accept = true)
+    override suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent) =
+        solveInvitedJoinGroupRequest(event, accept = true)
 
-    override suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
-        = solveInvitedJoinGroupRequest(event, accept = false)
+    override suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent) =
+        solveInvitedJoinGroupRequest(event, accept = false)
 
 
     private suspend fun solveInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent, accept: Boolean) {
@@ -234,7 +234,7 @@ internal class QQAndroidBot constructor(
     }
 }
 
-@OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
+
 internal abstract class QQAndroidBotBase constructor(
     context: Context,
     private val account: BotAccount,
@@ -298,6 +298,9 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
 
+    @JvmField
+    val groupListModifyLock = Mutex()
+
     // internally visible only
     fun getGroupByUin(uin: Long): Group {
         return getGroupByUinOrNull(uin)
@@ -351,10 +354,6 @@ internal abstract class QQAndroidBotBase constructor(
             return sequence
         }
 
-    override suspend fun addFriend(id: Long, message: String?, remark: String?): AddFriendResult {
-        TODO("not implemented")
-    }
-
     @Suppress("RemoveExplicitTypeArguments") // false positive
     override suspend fun recall(source: MessageSource) {
         check(source is MessageSourceInternal)
@@ -375,7 +374,7 @@ internal abstract class QQAndroidBotBase constructor(
                     else -> error("stub")
                 }
                 if (this.id != source.fromId) {
-                    group.checkBotPermissionOperator()
+                    group.checkBotPermission(MemberPermission.ADMINISTRATOR)
                 }
                 MessageRecallEvent.GroupRecall(
                     this,
@@ -491,7 +490,7 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
                     )
                 }
             }
@@ -525,9 +524,9 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id};" +
+                        "uin=o${id};" +
                                 " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${selfQQ.id};" +
+                                " p_uin=o${id};" +
                                 " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
                     )
                 }
@@ -553,9 +552,9 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id};" +
+                        "uin=o${id};" +
                                 " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
-                                " p_uin=o${selfQQ.id};" +
+                                " p_uin=o${id};" +
                                 " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
                     )
                 }
@@ -582,7 +581,7 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
                     )
                 }
             }
@@ -606,7 +605,7 @@ internal abstract class QQAndroidBotBase constructor(
                 headers {
                     append(
                         "cookie",
-                        "uin=o${selfQQ.id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${selfQQ.id};"
+                        "uin=o${id}; skey=${client.wLoginSigInfo.sKey.data.encodeToString()}; p_uin=o${id};"
                     )
                 }
             }
@@ -679,8 +678,8 @@ internal abstract class QQAndroidBotBase constructor(
                         response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
                         response.proto.msgSig,
                         MiraiPlatformUtils.md5(body),
-                        body.toReadPacket(),
-                        body.size.toLong().and(0xFFFF_FFFF), // don't use toLongUnsigned: Overload resolution ambiguity
+                        @Suppress("INVISIBLE_REFERENCE")
+                        net.mamoe.mirai.utils.internal.asReusableInput0(body), // don't use toLongUnsigned: Overload resolution ambiguity
                         "group long message",
                         27
                     )
@@ -720,12 +719,20 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
+    @Suppress("DEPRECATION", "OverridingDeprecatedMember")
     override suspend fun queryImageUrl(image: Image): String = when (image) {
         is OnlineFriendImageImpl -> image.originUrl
         is OnlineGroupImageImpl -> image.originUrl
-        is OfflineGroupImage -> "http://gchat.qpic.cn/gchatpic_new/${id}/0-0-${image.imageId.substring(1..36).replace("-", "")}/0?term=2"
-        is OfflineFriendImage -> "http://c2cpicdw.qpic.cn/offpic_new/${id}/${image.imageId}/0?term=2"
-        else -> error("unsupported image class: ${image::class.simpleName}")
+        is OfflineGroupImage -> constructOfflineImageUrl(image)
+        is OfflineFriendImage -> constructOfflineImageUrl(image)
+        else -> error("Internal error: unsupported image class: ${image::class.simpleName}")
+    }
+
+    private fun constructOfflineImageUrl(image: Image): String = when (image) {
+        is GroupImage -> "http://gchat.qpic.cn/gchatpic_new/${id}/0-0-${image.imageId.substring(1..36)
+            .replace("-", "")}/0?term=2"
+        is FriendImage -> "http://c2cpicdw.qpic.cn/offpic_new/${id}/${image.imageId}/0?term=2"
+        else -> error("Internal error: unsupported image class: ${image::class.simpleName}")
     }
 
     override fun constructMessageSource(
@@ -765,13 +772,6 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @PlannedRemoval("1.0.0")
-    @Deprecated("use your own Http clients, this is going to be removed in 1.0.0", level = DeprecationLevel.WARNING)
-    override suspend fun openChannel(image: Image): ByteReadChannel {
-        return MiraiPlatformUtils.Http.get<HttpResponse>(queryImageUrl(image)).content.toKotlinByteReadChannel()
-    }
-
     /**
      * 获取 获取群公告 所需的 bkn 参数
      * */
@@ -782,12 +782,6 @@ internal abstract class QQAndroidBotBase constructor(
 
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-@Suppress("DEPRECATION")
-@OptIn(MiraiInternalAPI::class)
-internal expect fun io.ktor.utils.io.ByteReadChannel.toKotlinByteReadChannel(): ByteReadChannel
-
-
-@OptIn(MiraiInternalAPI::class)
 private fun RichMessage.Templates.longMessage(brief: String, resId: String, timeSeconds: Long): RichMessage {
     val limited: String = if (brief.length > 30) {
         brief.take(30) + "…"

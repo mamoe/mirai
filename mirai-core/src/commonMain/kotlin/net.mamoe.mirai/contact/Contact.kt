@@ -8,7 +8,7 @@
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE", "EXPERIMENTAL_OVERRIDE")
-@file:OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
+@file:OptIn(JavaFriendlyAPI::class)
 
 package net.mamoe.mirai.contact
 
@@ -25,18 +25,21 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.recall
 import net.mamoe.mirai.recallIn
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmSynthetic
 
 
 /**
- * 联系人. 虽然叫做联系人, 但他的子类有 [用户][User], 和 [群][Group].
+ * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
  */
-abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot {
+@Suppress("EXPOSED_SUPER_CLASS")
+abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
     /**
-     * 这个联系人所属 [Bot].
+     * 这个联系对象所属 [Bot].
      */
     @WeakRefProperty
     abstract val bot: Bot
@@ -44,10 +47,7 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
     /**
      * 可以是 QQ 号码或者群号码.
      *
-     * 对于 [QQ], `uin` 与 `id` 是相同的意思.
-     * 对于 [Group], `groupCode` 与 `id` 是相同的意思.
-     *
-     * @see QQ.id
+     * @see User.id
      * @see Group.id
      */
     abstract override val id: Long
@@ -80,7 +80,7 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
     /**
      * 上传一个图片以备发送.
      *
-     * @see Image 查看有关图片的更多信息
+     * @see Image 查看有关图片的更多信息, 如上传图片
      *
      * @see BeforeImageUploadEvent 图片发送前事件, 可拦截.
      * @see ImageUploadEvent 图片发送完成事件, 不可拦截.
@@ -89,7 +89,7 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     @JvmSynthetic
-    abstract suspend fun uploadImage(image: ExternalImage): OfflineImage
+    abstract suspend fun uploadImage(image: ExternalImage): Image
 
     final override fun equals(other: Any?): Boolean = super.equals(other)
     final override fun hashCode(): Int = super.hashCode()
@@ -103,7 +103,6 @@ abstract class Contact : CoroutineScope, ContactJavaFriendlyAPI(), ContactOrBot 
 /**
  * @see Bot.recall
  */
-@MiraiExperimentalAPI
 @JvmSynthetic
 suspend inline fun Contact.recall(source: MessageChain) = this.bot.recall(source)
 
@@ -116,7 +115,6 @@ suspend inline fun Contact.recall(source: MessageSource) = this.bot.recall(sourc
 /**
  * @see Bot.recallIn
  */
-@MiraiExperimentalAPI
 @JvmSynthetic
 inline fun Contact.recallIn(
     message: MessageChain,

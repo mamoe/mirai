@@ -19,8 +19,8 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
@@ -84,6 +84,8 @@ abstract class User : Contact(), CoroutineScope {
     /**
      * 上传一个图片以备发送.
      *
+     * @see Image 查看有关图片的更多信息, 如上传图片
+     *
      * @see BeforeImageUploadEvent 图片发送前事件, cancellable
      * @see ImageUploadEvent 图片发送完成事件
      *
@@ -91,7 +93,7 @@ abstract class User : Contact(), CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     @JvmSynthetic
-    abstract override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage
+    abstract override suspend fun uploadImage(image: ExternalImage): Image
 
     abstract override fun toString(): String
 }

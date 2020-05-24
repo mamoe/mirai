@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "UnusedImport")
 
 package net.mamoe.mirai.contact
 
@@ -18,24 +18,23 @@ import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.toMessage
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.PlannedRemoval
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 /**
- * 群成员.
+ * 代表一位群成员.
  *
  * 群成员可能也是好友, 但他们在对象类型上不同.
  * 群成员可以通过 [asFriend] 得到相关好友对象.
+ *
+ * ## 与好友相关的操作
+ * [Member.isFriend] 判断此成员是否为好友
  */
-@Suppress("INAPPLICABLE_JVM_NAME")
-@OptIn(MiraiInternalAPI::class, JavaFriendlyAPI::class)
-abstract class Member : MemberJavaFriendlyAPI() {
+@Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
+@OptIn(JavaFriendlyAPI::class)
+abstract class Member : MemberJavaFriendlyAPI, User() {
     /**
      * 所在的群.
      */
@@ -95,12 +94,16 @@ abstract class Member : MemberJavaFriendlyAPI() {
      * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 机器人无权限时返回 `false`
      *
+     * @see Member.isMuted 判断此成员是否正处于禁言状态中
+     * @see unmute 取消禁言此成员
+     *
      * @see Int.minutesToSeconds
      * @see Int.hoursToSeconds
      * @see Int.daysToSeconds
      *
      * @see MemberMuteEvent 成员被禁言事件
-     * @throws PermissionDeniedException 无权限修改时
+     *
+     * @throws PermissionDeniedException 无权限修改时抛出
      */
     @JvmSynthetic
     abstract suspend fun mute(durationSeconds: Int)
@@ -110,8 +113,11 @@ abstract class Member : MemberJavaFriendlyAPI() {
      *
      * 管理员可解除成员的禁言, 群主可解除管理员和群员的禁言.
      *
-     * @see MemberUnmuteEvent 成员被取消禁言事件.
-     * @throws PermissionDeniedException 无权限修改时
+     * @see Member.isMuted 判断此成员是否正处于禁言状态中
+     *
+     * @see MemberUnmuteEvent 成员被取消禁言事件
+     *
+     * @throws PermissionDeniedException 无权限修改时抛出
      */
     @JvmSynthetic
     abstract suspend fun unmute()
@@ -164,26 +170,22 @@ abstract class Member : MemberJavaFriendlyAPI() {
  *
  * @throws IllegalStateException 当此成员不是好友时抛出
  */
-@SinceMirai("0.39.0")
 fun Member.asFriend(): Friend = this.bot.getFriendOrNull(this.id) ?: error("$this is not a friend")
 
 /**
- * 得到此成员作为好友的对象.
+ * 得到此成员作为好友的对象, 当此成员不是好友时返回 `null`
  */
-@SinceMirai("0.39.0")
 fun Member.asFriendOrNull(): Friend? = this.bot.getFriendOrNull(this.id)
 
 /**
  * 判断此成员是否为好友
  */
-@SinceMirai("0.39.0")
 inline val Member.isFriend: Boolean
     get() = this.bot.friends.contains(this.id)
 
 /**
  * 如果此成员是好友, 则执行 [block] 并返回其返回值. 否则返回 `null`
  */
-@SinceMirai("0.39.0")
 inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
     return this.asFriendOrNull()?.let(block)
 }
@@ -191,7 +193,7 @@ inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
 /**
  * 获取非空群名片或昵称.
  *
- * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [QQ.nick]
+ * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [User.nick]
  */
 val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
 
@@ -202,7 +204,6 @@ val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty()
  *
  * 否则返回 [Member.nick]
  */
-@SinceMirai("0.39.0")
 val User.nameCardOrNick: String
     get() = when (this) {
         is Member -> this.nameCardOrNick
@@ -210,19 +211,8 @@ val User.nameCardOrNick: String
     }
 
 /**
- * 判断改成员是否处于禁言状态.
- */
-@JvmName("isMuted2") // make compiler happy
-@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@kotlin.internal.InlineOnly // val Member.isMuted 编译在 JVM 也会产生 `public boolean isMuted(Member receive)`
-@PlannedRemoval("1.0.0")
-@Deprecated("use property instead", ReplaceWith("this.isMuted"))
-inline fun Member.isMuted(): Boolean = this.isMuted
-
-/**
  * 判断群成员是否处于禁言状态.
  */
-@SinceMirai("0.39.0")
 val Member.isMuted: Boolean
     get() = muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
 

@@ -12,7 +12,6 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmSynthetic
@@ -25,25 +24,29 @@ import kotlin.reflect.KClass
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  *
  * @see asyncFromEvent 本函数的异步版本
+ * @see subscribe 普通地监听一个事件
+ * @see nextEvent 挂起当前协程, 并获取下一个事件实例
+ *
+ * @see syncFromEventOrNull 本函数的在超时后返回 `null` 的版本
  *
  * @throws TimeoutCancellationException 在超时后抛出.
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-@SinceMirai("0.39.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     timeoutMillis: Long = -1,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): R {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
 
     return if (timeoutMillis == -1L) {
         coroutineScope {
-            syncFromEventImpl<E, R>(E::class, this, mapper)
+            syncFromEventImpl<E, R>(E::class, this, priority, mapper)
         }
     } else {
         withTimeout(timeoutMillis) {
-            syncFromEventImpl<E, R>(E::class, this, mapper)
+            syncFromEventImpl<E, R>(E::class, this, priority, mapper)
         }
     }
 }
@@ -57,18 +60,21 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
  * @return 超时返回 `null`, 否则返回 [mapper] 返回的第一个非 `null` 值.
  *
  * @see asyncFromEvent 本函数的异步版本
+ * @see subscribe 普通地监听一个事件
+ * @see nextEvent 挂起当前协程, 并获取下一个事件实例
+ *
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-@SinceMirai("0.39.0")
 suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): R? {
     require(timeoutMillis > 0) { "timeoutMillis must be > 0" }
 
     return withTimeoutOrNull(timeoutMillis) {
-        syncFromEventImpl<E, R>(E::class, this, mapper)
+        syncFromEventImpl<E, R>(E::class, this, priority, mapper)
     }
 }
 
@@ -80,18 +86,23 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param coroutineContext 额外的 [CoroutineContext]
  * @param mapper 过滤转换器. 返回非 `null` 则代表得到了需要的值. [syncFromEvent] 会返回这个值
+ *
+ * @see syncFromEvent
+ * @see asyncFromEvent
+ * @see subscribe 普通地监听一个事件
+ * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
-@SinceMirai("0.39.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): Deferred<R?> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return this.async(coroutineContext) {
-        syncFromEventOrNull(timeoutMillis, mapper)
+        syncFromEventOrNull(timeoutMillis, priority, mapper)
     }
 }
 
@@ -104,18 +115,23 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制
  * @param coroutineContext 额外的 [CoroutineContext]
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
+ *
+ * @see syncFromEvent
+ * @see asyncFromEventOrNull
+ * @see subscribe 普通地监听一个事件
+ * @see nextEvent 挂起当前协程, 并获取下一个事件实例
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
-@SinceMirai("0.39.0")
 inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
 ): Deferred<R> {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return this.async(coroutineContext) {
-        syncFromEvent(timeoutMillis, mapper)
+        syncFromEvent(timeoutMillis, priority, mapper)
     }
 }
 
@@ -129,12 +145,16 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
 internal suspend inline fun <E : Event, R> syncFromEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
+    priority: Listener.EventPriority,
     crossinline mapper: suspend E.(E) -> R?
 ): R = suspendCancellableCoroutine { cont ->
-    coroutineScope.subscribe(eventClass) {
-        cont.resumeWith(kotlin.runCatching {
-            mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING
-        })
+    coroutineScope.subscribe(eventClass, priority = priority) {
+        try {
+            cont.resumeWith(kotlin.runCatching {
+                mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING
+            })
+        } catch (e: Exception) {
+        }
         return@subscribe ListeningStatus.STOPPED
     }
 }

@@ -10,10 +10,10 @@
 package net.mamoe.mirai.qqandroid.network.protocol.data.jce
 
 import kotlinx.serialization.Serializable
+import moe.him188.jcekt.JceId
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
-import net.mamoe.mirai.qqandroid.utils.io.serialization.jce.JceId
 import kotlin.jvm.JvmField
 
 @Suppress("ArrayInDataClass")
@@ -33,7 +33,7 @@ internal class RequestPushNotify(
     @JceId(11) @JvmField val serverBuf: ByteArray?,
     @JceId(12) @JvmField val pingFlag: Long?,
     @JceId(13) @JvmField val svrip: Int?
-) : JceStruct, Packet
+) : JceStruct, Packet, Packet.NoLog
 
 @Serializable
 internal class MsgInfo(

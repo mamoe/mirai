@@ -7,33 +7,31 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package net.mamoe.mirai.qqandroid.contact
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.MemberCardChangeEvent
-import net.mamoe.mirai.event.events.MemberLeaveEvent
-import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineFriendImage
-import net.mamoe.mirai.message.data.asMessageChain
-import net.mamoe.mirai.message.data.isContentNotEmpty
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
+import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
+import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -65,23 +63,29 @@ internal class MemberImpl constructor(
     }
 
     private suspend fun sendMessageImpl(message: Message): MessageReceipt<Member> {
+        val event = MessageSendEvent.TempMessageSendEvent(this, message.asMessageChain()).broadcast()
+        if (event.isCancelled) {
+            throw EventCancelledException("cancelled by TempMessageSendEvent")
+        }
+        event.message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+
         lateinit var source: MessageSourceToTempImpl
         bot.network.run {
             check(
-                MessageSvc.PbSendMsg.createToTemp(
+                MessageSvcPbSendMsg.createToTemp(
                     bot.client,
                     this@MemberImpl,
                     message.asMessageChain()
                 ) {
                     source = it
-                }.sendAndExpect<MessageSvc.PbSendMsg.Response>() is MessageSvc.PbSendMsg.Response.SUCCESS
+                }.sendAndExpect<MessageSvcPbSendMsg.Response>() is MessageSvcPbSendMsg.Response.SUCCESS
             ) { "send message failed" }
         }
         return MessageReceipt(source, this, null)
     }
 
     @JvmSynthetic
-    override suspend fun uploadImage(image: ExternalImage): OfflineFriendImage = qq.uploadImage(image)
+    override suspend fun uploadImage(image: ExternalImage): Image = qq.uploadImage(image)
 
     override var permission: MemberPermission = memberInfo.permission
 
@@ -105,7 +109,7 @@ internal class MemberImpl constructor(
         get() = _nameCard
         set(newValue) {
             if (id != bot.id) {
-                group.checkBotPermissionOperator()
+                group.checkBotPermission(MemberPermission.ADMINISTRATOR)
             }
             if (_nameCard != newValue) {
                 val oldValue = _nameCard
@@ -118,7 +122,7 @@ internal class MemberImpl constructor(
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberCardChangeEvent(oldValue, newValue, this@MemberImpl, null).broadcast()
+                    MemberCardChangeEvent(oldValue, newValue, this@MemberImpl).broadcast()
                 }
             }
         }
@@ -189,7 +193,7 @@ internal class MemberImpl constructor(
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
     }
 
-    @OptIn(MiraiInternalAPI::class)
+
     @JvmSynthetic
     override suspend fun kick(message: String) {
         checkBotPermissionHigherThanThis()
@@ -205,7 +209,9 @@ internal class MemberImpl constructor(
 
             check(response.success) { "kick failed: ${response.ret}" }
 
+            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             group.members.delegate.removeIf { it.id == this@MemberImpl.id }
+            this.cancel(CancellationException("Kicked by bot"))
             MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
     }

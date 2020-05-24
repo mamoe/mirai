@@ -12,11 +12,13 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
@@ -25,7 +27,7 @@ import kotlin.jvm.JvmSynthetic
 /**
  * 合并转发消息
  *
- * @param [displayStrategy] 卡片显示方案
+ *
  *
  * ### 显示方案
  *
@@ -70,19 +72,22 @@ import kotlin.jvm.JvmSynthetic
  * 咕咕咕
  * ```
  *
+ *
  * ### 构造
  * - 使用 [DSL][buildForwardMessage]
- * - 通过 [ContactMessage] 集合转换: [toForwardMessage]
+ * - 通过 [MessageEvent] 集合转换: [toForwardMessage]
+ *
+ *
+ * @param [displayStrategy] 卡片显示方案
  *
  * @see buildForwardMessage
  */
-@SinceMirai("0.39.0")
 class ForwardMessage @JvmOverloads constructor(
     /**
      * 消息列表
      */
     val nodeList: Collection<INode>,
-    val displayStrategy: DisplayStrategy = DisplayStrategy
+    val displayStrategy: DisplayStrategy = DisplayStrategy.Default
 ) : MessageContent {
     init {
         require(nodeList.isNotEmpty()) {
@@ -178,30 +183,25 @@ class ForwardMessage @JvmOverloads constructor(
 
     @MiraiExperimentalAPI
     override fun contentToString(): String = contentToString
-    override val length: Int get() = contentToString.length
-    override fun get(index: Int): Char = contentToString[length]
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
-        contentToString.subSequence(startIndex, endIndex)
-
-    override fun compareTo(other: String): Int = contentToString.compareTo(other)
 }
 
 
 /**
  * 转换为 [ForwardMessage]
  */
-@SinceMirai("0.39.0")
 @JvmOverloads
-fun Iterable<ContactMessage>.toForwardMessage(displayStrategy: DisplayStrategy = DisplayStrategy): ForwardMessage {
+fun Iterable<MessageEvent>.toForwardMessage(displayStrategy: DisplayStrategy = DisplayStrategy): ForwardMessage {
     val iterator = this.iterator()
     if (!iterator.hasNext()) return ForwardMessage(emptyList(), displayStrategy)
     return ForwardMessage(
-        this.map { ForwardMessage.Node(it.sender.id, it.time, it.senderName, it.message) }, displayStrategy)
+        this.map { ForwardMessage.Node(it.sender.id, it.time, it.senderName, it.message) }, displayStrategy
+    )
 }
 
 /**
  * 转换为 [ForwardMessage]
  */
+@JvmOverloads
 fun Message.toForwardMessage(
     sender: User,
     time: Int = currentTimeSeconds.toInt(),
@@ -211,7 +211,6 @@ fun Message.toForwardMessage(
 /**
  * 转换为 [ForwardMessage]
  */
-@SinceMirai("0.39.0")
 @JvmOverloads
 fun Message.toForwardMessage(
     senderId: Long,
@@ -226,7 +225,6 @@ fun Message.toForwardMessage(
  * @see ForwardMessageBuilder 查看 DSL 帮助
  * @see ForwardMessage 查看转发消息说明
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
 inline fun buildForwardMessage(
     context: Contact,
@@ -240,9 +238,8 @@ inline fun buildForwardMessage(
  * @see ForwardMessageBuilder 查看 DSL 帮助
  * @see ForwardMessage 查看转发消息说明
  */
-@SinceMirai("0.39.0")
 @JvmSynthetic
-inline fun ContactMessage.buildForwardMessage(
+inline fun MessageEvent.buildForwardMessage(
     context: Contact = this.subject,
     displayStrategy: DisplayStrategy = DisplayStrategy,
     block: ForwardMessageBuilder.() -> Unit
@@ -253,7 +250,6 @@ inline fun ContactMessage.buildForwardMessage(
 /**
  * 标记转发消息 DSL
  */
-@SinceMirai("0.39.0")
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
 @DslMarker
 annotation class ForwardMessageDsl
@@ -282,6 +278,7 @@ annotation class ForwardMessageDsl
  * # 语法
  *
  * 下文中 `S` 代表消息发送人. 可接受: 发送人账号 id([Long] 或 [Int]) 或 [User]
+ *
  * 下文中 `M` 代表消息内容. 可接受: [String], [Message], 或 [构造消息链][MessageChainBuilder] 的 DSL 代码块
  *
  * ## 陈述一条消息
@@ -317,7 +314,6 @@ annotation class ForwardMessageDsl
  *
  * `S named "name1" named "name2" says M` 最终的发送人名称为 `"name2"`
  */
-@SinceMirai("0.39.0")
 class ForwardMessageBuilder private constructor(
     /**
      * 消息语境. 可为 [Group] 或 [User]
@@ -552,8 +548,6 @@ class ForwardMessageBuilder private constructor(
 
     /** 构造 [ForwardMessage] */
     fun build(): ForwardMessage = ForwardMessage(container.toList(), this.displayStrategy)
-
-    @OptIn(MiraiExperimentalAPI::class)
     internal fun Bot.smartName(): String = when (val c = this@ForwardMessageBuilder.context) {
         is Group -> c.botAsMember.nameCardOrNick
         else -> nick

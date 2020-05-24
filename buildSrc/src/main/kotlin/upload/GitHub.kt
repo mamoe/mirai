@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
 package upload
@@ -61,23 +70,25 @@ object GitHub {
         )
     }
 
-    fun upload(file: File, url: String, project: Project) = runBlocking {
+    fun upload(file: File, url: String, project: Project, repo: String, baseFilePath: String) = runBlocking {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
-        Http.put<String>("$url?access_token=$token") {
-            val sha = getGithubSha("mirai-repo", "shadow/${project.name}/${file.name}", "master", project)
-            println("sha=$sha")
-            val content = String(Base64.getEncoder().encode(file.readBytes()))
-            body = """
+        retryCatching(1000) {
+            Http.put<String>("$url?access_token=$token") {
+                val sha = getGithubSha(repo, "$baseFilePath${project.name}/${file.name}", "master", project)
+                println("sha=$sha")
+                val content = String(Base64.getEncoder().encode(file.readBytes()))
+                body = """
                     {
                       "message": "automatically upload on release",
                       "content": "$content"
                       ${if (sha == null) "" else """, "sha": "$sha" """}
                     }
                 """.trimIndent()
-        }.let {
-            println("Upload response: $it")
-        }
+            }.let {
+                println("Upload response: $it")
+            }
+        }.getOrThrow()
     }
 
 
@@ -94,7 +105,7 @@ object GitHub {
         /*
         * 只能获取1M以内/branch为master的sha
         * */
-        class TargetTooLargeException() : Exception("Target TOO Large")
+        class TargetTooLargeException : Exception("Target TOO Large")
 
         suspend fun getShaSmart(repo: String, filePath: String, project: Project): String? {
             return withContext(Dispatchers.IO) {

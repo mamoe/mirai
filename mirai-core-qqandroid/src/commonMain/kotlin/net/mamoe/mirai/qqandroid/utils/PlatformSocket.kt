@@ -44,3 +44,4 @@ internal expect class PlatformSocket() : Closeable {
 
 expect open class SocketException : IOException
 expect class NoRouteToHostException : SocketException
+expect class UnknownHostException : IOException

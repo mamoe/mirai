@@ -21,19 +21,21 @@ import kotlin.jvm.JvmOverloads
 
 /**
  * 用于创建默认的日志记录器. 在一些需要使用日志的 Mirai 的组件, 如 [Bot], 都会通过这个函数构造日志记录器.
+ *
  * 可直接修改这个变量的值来重定向日志输出.
  *
  * **注意:** 请务必将所有的输出定向到日志记录系统, 否则在某些情况下 (如 web 控制台中) 将无法接收到输出
  *
  * **注意:** 请为日志做好分类, 即不同的模块使用不同的 [MiraiLogger].
- * 如, [Bot] 中使用 identity 为 "Bot(qqId)" 的 [MiraiLogger]
- * 而 [Bot] 的网络处理中使用 identity 为 "BotNetworkHandler" 的.
+ * 如, [Bot] 中使用 `identity` 为 "Bot(qqId)" 的 [MiraiLogger]
+ * 而 [Bot] 的网络处理中使用 `identity` 为 "BotNetworkHandler".
+ *
+ * Java 调用: `Utils.getDefaultLogger().invoke(identity)`
  */
 var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger(it) }
 
 /**
  * 给这个 logger 添加一个开关, 用于控制是否记录 log
- *
  */
 @JvmOverloads
 fun MiraiLogger.withSwitch(default: Boolean = true): MiraiLoggerWithSwitch = MiraiLoggerWithSwitch(this, default)
@@ -52,7 +54,7 @@ fun MiraiLogger.withSwitch(default: Boolean = true): MiraiLoggerWithSwitch = Mir
  * @see PlatformLogger 各个平台下的默认日志记录实现.
  * @see SilentLogger 忽略任何日志记录操作的 logger 实例.
  *
- * @see MiraiLoggerPlatformBase 平台通用基础实现. 若
+ * @see MiraiLoggerPlatformBase 平台通用基础实现. 若 Mirai 自带的日志系统无法满足需求, 请继承这个类并实现其抽象函数.
  */
 interface MiraiLogger {
     /**
@@ -86,10 +88,10 @@ interface MiraiLogger {
      * [follower] 的存在可以让一次日志被多个日志记录器记录.
      *
      * 一般不建议直接修改这个属性. 请通过 [plus] 来连接两个日志记录器.
-     * 如: `val logger = bot.logger + MyOwnLogger()`
-     * 这样, 当调用 `logger.info()` 时, bot.logger 会首先记录, MyOwnLogger 会随后记录.
+     * 如: `val logger = bot.logger + MyLogger()`
+     * 当调用 `logger.info()` 时, `bot.logger` 会首先记录, `MyLogger` 会随后记录.
      *
-     * 当然, 多个 logger 也可以加在一起: `val logger = bot.logger + MyOwnLogger() + MyOwnLogger2()`
+     * 当然, 多个 logger 也可以加在一起: `val logger = bot.logger + MynLogger() + MyLogger2()`
      */
     var follower: MiraiLogger?
 
@@ -137,6 +139,9 @@ interface MiraiLogger {
     fun error(e: Throwable?) = error(null, e)
     fun error(message: String?, e: Throwable?)
 
+    /** 根据优先级调用对应函数 */
+    fun call(priority: SimpleLogger.LogPriority, message: String? = null, e: Throwable? = null) =
+        priority.correspondingFunction(this, message, e)
 
     /**
      * 添加一个 [follower], 返回 [follower]
@@ -206,7 +211,23 @@ inline fun MiraiLogger.error(lazyMessage: () -> String?, e: Throwable?) {
  * 在 _JVM 控制台_ 端的实现为 [println]
  * 在 _Android_ 端的实现为 `android.util.Log`
  *
- * 不应该直接构造这个类的实例. 请使用 [DefaultLogger], 或使用默认的顶层日志记录 [MiraiLogger.Companion]
+ *
+ * 单条日志格式 (正则) 为:
+ * ```regex
+ * ^([\w-]*\s[\w:]*)\s(\w)\/(.*?):\s(.+)$
+ * ```
+ * 其中 group 分别为: 日期与时间, 严重程度, [identity], 消息内容.
+ *
+ * 示例:
+ * ```log
+ * 2020-05-21 19:51:09 V/Bot 1994701021: Send: OidbSvc.0x88d_7
+ * ```
+ *
+ * 日期时间格式为 `yyyy-MM-dd HH:mm:ss`,
+ *
+ * 严重程度为 V, I, W, E. 分别对应 verbose, info, warning, error
+ *
+ * @see DefaultLogger
  */
 expect open class PlatformLogger @JvmOverloads constructor(identity: String? = "Mirai") : MiraiLoggerPlatformBase
 
@@ -223,22 +244,32 @@ object SilentLogger : PlatformLogger() {
     override fun warning0(message: String?) = Unit
     override fun verbose0(message: String?) = Unit
     override fun info0(message: String?) = Unit
+
+    override fun verbose0(message: String?, e: Throwable?) = Unit
+    override fun debug0(message: String?, e: Throwable?) = Unit
+    override fun info0(message: String?, e: Throwable?) = Unit
+    override fun warning0(message: String?, e: Throwable?) = Unit
+    override fun error0(message: String?, e: Throwable?) = Unit
 }
 
 /**
  * 简易日志记录, 所有类型日志都会被重定向 [logger]
  */
-class SimpleLogger(
-    override val identity: String?,
-    private val logger: (priority: LogPriority, message: String?, e: Throwable?) -> Unit
+open class SimpleLogger(
+    final override val identity: String?,
+    protected open val logger: (priority: LogPriority, message: String?, e: Throwable?) -> Unit
 ) : MiraiLoggerPlatformBase() {
 
-    enum class LogPriority {
-        VERBOSE,
-        DEBUG,
-        INFO,
-        WARNING,
-        ERROR
+    enum class LogPriority(
+        @MiraiExperimentalAPI val nameAligned: String,
+        @MiraiExperimentalAPI val simpleName: String,
+        @MiraiExperimentalAPI val correspondingFunction: MiraiLogger.(message: String?, e: Throwable?) -> Unit
+    ) {
+        VERBOSE("VERBOSE", "V", MiraiLogger::verbose),
+        DEBUG(" DEBUG ", "D", MiraiLogger::debug),
+        INFO("  INFO ", "I", MiraiLogger::info),
+        WARNING("WARNING", "W", MiraiLogger::warning),
+        ERROR(" ERROR ", "E", MiraiLogger::error)
     }
 
     companion object {
@@ -310,10 +341,13 @@ class MiraiLoggerWithSwitch internal constructor(private val delegate: MiraiLogg
 
 /**
  * 日志基类. 实现了 [follower] 的调用传递.
- * 若 Mirai 自带的日志系统无法满足需求, 请继承这个类并实现其抽象函数.
+ * 若 Mirai 自带的日志系统无法满足需求, 请继承这个类或 [PlatformLogger] 并实现其抽象函数.
  *
  * 这个类不应该被用作变量的类型定义. 只应被作为继承对象.
  * 在定义 logger 变量时, 请一直使用 [MiraiLogger] 或者 [MiraiLoggerWithSwitch].
+ *
+ * @see PlatformLogger
+ * @see SimpleLogger
  */
 abstract class MiraiLoggerPlatformBase : MiraiLogger {
     override val isEnabled: Boolean get() = true
@@ -379,15 +413,15 @@ abstract class MiraiLoggerPlatformBase : MiraiLogger {
         error0(message, e)
     }
 
-    protected abstract fun verbose0(message: String?)
+    protected open fun verbose0(message: String?) = verbose0(message, null)
     protected abstract fun verbose0(message: String?, e: Throwable?)
-    protected abstract fun debug0(message: String?)
+    protected open fun debug0(message: String?) = debug0(message, null)
     protected abstract fun debug0(message: String?, e: Throwable?)
-    protected abstract fun info0(message: String?)
+    protected open fun info0(message: String?) = info0(message, null)
     protected abstract fun info0(message: String?, e: Throwable?)
-    protected abstract fun warning0(message: String?)
+    protected open fun warning0(message: String?) = warning0(message, null)
     protected abstract fun warning0(message: String?, e: Throwable?)
-    protected abstract fun error0(message: String?)
+    protected open fun error0(message: String?) = error0(message, null)
     protected abstract fun error0(message: String?, e: Throwable?)
 
     override operator fun <T : MiraiLogger> plus(follower: T): T {

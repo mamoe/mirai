@@ -11,7 +11,6 @@ package net.mamoe.mirai.qqandroid.utils.cryptor
 
 import android.annotation.SuppressLint
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils.md5
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -85,7 +84,6 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
                 .genKeyPair())
         }
 
-        @OptIn(MiraiInternalAPI::class)
         actual fun calculateShareKey(
             privateKey: ECDHPrivateKey,
             publicKey: ECDHPublicKey

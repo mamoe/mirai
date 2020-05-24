@@ -10,7 +10,6 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.login
 
 
-import io.ktor.util.InternalAPI
 import kotlinx.io.core.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.*
@@ -20,8 +19,6 @@ import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.qqandroid.utils.guidFlag
 import net.mamoe.mirai.qqandroid.utils.io.*
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.error
 
@@ -30,10 +27,7 @@ internal class WtLogin {
      * OicqRequest
      */
     @Suppress("FunctionName")
-    @OptIn(ExperimentalUnsignedTypes::class, MiraiInternalAPI::class)
     internal object Login : OutgoingPacketFactory<Login.LoginPacketResponse>("wtlogin.login") {
-        private const val subAppId = 537062845L
-
         /**
          * 提交验证码
          */
@@ -42,7 +36,7 @@ internal class WtLogin {
                 client: QQAndroidClient,
                 ticket: String
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-                writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeSsoPacket(client, client.subAppId, commandName, sequenceId = sequenceId) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(2) // subCommand
                         writeShort(4) // count of TLVs
@@ -59,7 +53,7 @@ internal class WtLogin {
                 captchaSign: ByteArray,
                 captchaAnswer: String
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-                writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeSsoPacket(client, client.subAppId, commandName, sequenceId = sequenceId) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(2) // subCommand
                         writeShort(4) // count of TLVs
@@ -78,7 +72,7 @@ internal class WtLogin {
                 client: QQAndroidClient,
                 t402: ByteArray
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-                writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeSsoPacket(client, client.subAppId, commandName, sequenceId = sequenceId) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(20) // subCommand
                         writeShort(4) // count of TLVs, probably ignored by server?
@@ -100,7 +94,7 @@ internal class WtLogin {
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(
                     client,
-                    subAppId,
+                    client.subAppId,
                     commandName,
                     sequenceId = sequenceId,
                     unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00"
@@ -126,13 +120,11 @@ internal class WtLogin {
          */
         object SubCommand9 {
             private const val appId = 16L
-            private const val subAppId = 537062845L
 
-            @OptIn(MiraiInternalAPI::class, MiraiExperimentalAPI::class)
             operator fun invoke(
                 client: QQAndroidClient
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
-                writeSsoPacket(client, subAppId, commandName, sequenceId = sequenceId) {
+                writeSsoPacket(client, client.subAppId, commandName, sequenceId = sequenceId) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(9) // subCommand
                         writeShort(17) // count of TLVs, probably ignored by server?
@@ -142,7 +134,7 @@ internal class WtLogin {
                         t1(client.uin, client.device.ipAddress)
                         t106(
                             appId,
-                            subAppId /* maybe 1*/,
+                            client.subAppId /* maybe 1*/,
                             client.appClientVersion,
                             client.uin,
                             1,
@@ -166,7 +158,7 @@ internal class WtLogin {
                         if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
                         */
                         t116(client.miscBitMap, client.subSigMap)
-                        t100(appId, subAppId, client.appClientVersion)
+                        t100(appId, client.subAppId, client.appClientVersion)
                         t107(0)
 
                         // t108(byteArrayOf())
@@ -309,7 +301,6 @@ internal class WtLogin {
             }
         }
 
-        @InternalAPI
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): LoginPacketResponse {
 
             discardExact(2) // subCommand
@@ -367,7 +358,6 @@ internal class WtLogin {
             }
         }
 
-        @InternalAPI
         private fun onSolveLoginCaptcha(tlvMap: TlvMap, bot: QQAndroidBot): LoginPacketResponse.Captcha {
             /*
             java.lang.IllegalStateException: UNKNOWN CAPTCHA QUESTION:

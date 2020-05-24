@@ -25,7 +25,7 @@ import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SourceMsg
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePush
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg.SendGroupMessageReceipt
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 
 
@@ -117,7 +117,7 @@ internal class MessageSourceToGroupImpl(
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     private val sequenceIdDeferred: Deferred<Int?> =
-        coroutineScope.asyncFromEventOrNull<OnlinePush.PbPushGroupMsg.SendGroupMessageReceipt, Int>(
+        coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, Int>(
             timeoutMillis = 3000
         ) {
             if (it.messageRandom == this@MessageSourceToGroupImpl.internalId) {
@@ -146,7 +146,7 @@ internal class MessageSourceToGroupImpl(
             type = 0,
             time = time,
             pbReserve = SourceMsg.ResvAttr(
-                origUids = id.toLong() and 0xffFFffFF // id is actually messageRandom
+                origUids = internalId.toLong() and 0xffFFffFF // id is actually messageRandom
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
@@ -156,7 +156,7 @@ internal class MessageSourceToGroupImpl(
                     c2cCmd = 1,
                     msgSeq = sequenceId,
                     msgTime = time,
-                    msgUid = id.toLong() and 0xffFFffFF, // ok
+                    msgUid = internalId.toLong() and 0xffFFffFF, // ok
                     groupInfo = MsgComm.GroupInfo(groupCode = targetId),
                     isSrcMsg = true
                 ),

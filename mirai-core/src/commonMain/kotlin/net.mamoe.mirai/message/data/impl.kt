@@ -14,7 +14,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -23,9 +22,6 @@ import kotlin.native.concurrent.SharedImmutable
 /////////////////////////
 //// IMPLEMENTATIONS ////
 /////////////////////////
-
-
-@OptIn(MiraiInternalAPI::class)
 private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
     return when (this) {
         is SingleMessage -> (this as? ConstrainSingle<*>)?.key == key
@@ -35,13 +31,6 @@ private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
         is MessageChainImplBySequence -> this.any { (it as? ConstrainSingle<*>)?.key == key }
         else -> error("stub")
     }
-}
-
-@OptIn(MiraiInternalAPI::class)
-@JvmSynthetic
-@Suppress("DEPRECATION_ERROR")
-internal fun Message.followedByInternalForBinaryCompatibility(tail: Message): CombinedMessage {
-    return CombinedMessage(EmptyMessageChain, this.followedBy(tail))
 }
 
 @JvmSynthetic
@@ -136,7 +125,6 @@ internal fun Message.followedByImpl(tail: Message): MessageChain {
 }
 
 
-@OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
 internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
     val iterator = this.iterator()
@@ -176,7 +164,7 @@ internal inline fun constrainSingleMessagesImpl(iterator: () -> SingleMessage?):
 }
 
 @JvmSynthetic
-@OptIn(MiraiExperimentalAPI::class)
+
 internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> {
     val iterator = this.iterator()
     return constrainSingleMessagesImpl supplier@{
@@ -196,9 +184,8 @@ internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Bool
 }
 
 
-@OptIn(MiraiExperimentalAPI::class)
 @JvmSynthetic
-@Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR", "DEPRECATION")
 internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M? = when (key) {
     At -> firstIsInstanceOrNull<At>()
     AtAll -> firstIsInstanceOrNull<AtAll>()
@@ -220,8 +207,7 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     OnlineMessageSource.Incoming.FromGroup -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromGroup>()
     OnlineMessageSource.Incoming.FromFriend -> firstIsInstanceOrNull<OnlineMessageSource.Incoming.FromFriend>()
     OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
-    XmlMessage -> firstIsInstanceOrNull<XmlMessage>()
-    JsonMessage -> firstIsInstanceOrNull<JsonMessage>()
+    LongMessage -> firstIsInstanceOrNull()
     RichMessage -> firstIsInstanceOrNull<RichMessage>()
     LightApp -> firstIsInstanceOrNull<LightApp>()
     PokeMessage -> firstIsInstanceOrNull<PokeMessage>()
@@ -232,6 +218,8 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     CustomMessage -> firstIsInstanceOrNull()
     CustomMessageMetadata -> firstIsInstanceOrNull()
     ForwardMessage -> firstIsInstanceOrNull()
+    PttMessage -> firstIsInstanceOrNull<PttMessage>()
+    Voice -> firstIsInstanceOrNull<Voice>()
     else -> {
         this.forEach { message ->
             if (message is CustomMessage) {
@@ -251,8 +239,8 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
 internal class MessageChainImplByCollection constructor(
-    internal val delegate: Collection<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
-) : Message, Iterable<SingleMessage>, MessageChain {
+    internal val delegate: List<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
+) : Message, MessageChain, List<SingleMessage> by delegate {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
 
@@ -272,15 +260,7 @@ internal class MessageChainImplByCollection constructor(
  */
 internal class MessageChainImplBySequence constructor(
     delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
-) : Message, Iterable<SingleMessage>, MessageChain {
-    override val size: Int by lazy { collected.size }
-
-    /**
-     * [Sequence] 可能只能消耗一遍, 因此需要先转为 [List]
-     */
-    private val collected: List<SingleMessage> by lazy { delegate.constrainSingleMessages() }
-    override fun iterator(): Iterator<SingleMessage> = collected.iterator()
-
+) : Message, Iterable<SingleMessage>, MessageChain, List<SingleMessage> by delegate.constrainSingleMessages() {
     private var toStringTemp: String? = null
         get() = field ?: this.joinToString("") { it.toString() }.also { field = it }
 
@@ -297,11 +277,9 @@ internal class MessageChainImplBySequence constructor(
  */
 internal class SingleMessageChainImpl constructor(
     internal val delegate: SingleMessage
-) : Message, Iterable<SingleMessage>, MessageChain {
-    override val size: Int get() = 1
+) : Message, MessageChain, List<SingleMessage> by listOf(delegate) {
     override fun toString(): String = this.delegate.toString()
     override fun contentToString(): String = this.delegate.contentToString()
-    override fun iterator(): Iterator<SingleMessage> = iterator { yield(delegate) }
 }
 
 
@@ -322,7 +300,7 @@ internal inline fun Char.hexDigitToByte(): Int {
         in '0'..'9' -> this - '0'
         in 'A'..'F' -> 10 + (this - 'A')
         in 'a'..'f' -> 10 + (this - 'a')
-        else -> throw IllegalArgumentException("illegal hex digit: $this")
+        else -> throw IllegalArgumentException("Illegal hex digit: $this")
     }
 }
 
@@ -332,7 +310,7 @@ internal fun String.skipToSecondHyphen(): Int {
     this.forEachIndexed { index, c ->
         if (c == '-' && ++count == 2) return index
     }
-    error("cannot find two hyphens")
+    error("Internal error: failed skipToSecondHyphen, cannot find two hyphens. Input=$this")
 }
 
 @JvmSynthetic
@@ -353,7 +331,7 @@ internal fun String.imageIdToMd5(offset: Int): ByteArray {
             hasCurrent = true
         }
     }
-    error("No enough chars")
+    error("Internal error: failed imageIdToMd5, no enough chars. Input=$this, offset=$offset")
 }
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -363,7 +341,6 @@ internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
         imageId matches FRIEND_IMAGE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
         imageId matches FRIEND_IMAGE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
         imageId matches GROUP_IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
-        imageId matches GROUP_IMAGE_ID_REGEX_OLD -> imageId.imageIdToMd5(1)
 
         else -> error(
             "illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE"
@@ -372,7 +349,7 @@ internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
 }
 
 internal val ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE =
-    "ImageId must matches Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
+    "ImageId must match Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
             "`${FRIEND_IMAGE_ID_REGEX_2.pattern}` or " +
             "`${GROUP_IMAGE_ID_REGEX.pattern}`"
 

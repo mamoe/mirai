@@ -33,7 +33,6 @@ import net.mamoe.mirai.utils.*
  *
  * @see CustomMessageMetadata 自定义消息元数据
  */
-@SinceMirai("0.38.0")
 @MiraiExperimentalAPI
 sealed class CustomMessage : SingleMessage {
     /**
@@ -115,7 +114,6 @@ sealed class CustomMessage : SingleMessage {
         override val typeName: String get() = "CustomMessage"
         private val factories: LockFreeLinkedList<Factory<*>> = LockFreeLinkedList()
 
-        @OptIn(MiraiInternalAPI::class)
         internal fun register(factory: Factory<out CustomMessage>) {
             factories.removeIf { it::class == factory::class }
             val exist = factories.asSequence().firstOrNull { it.typeName == factory.typeName }
@@ -136,7 +134,6 @@ sealed class CustomMessage : SingleMessage {
         class CustomMessageFullDataDeserializeUserException(val body: ByteArray, cause: Throwable?) :
             RuntimeException(cause)
 
-        @OptIn(MiraiInternalAPI::class)
         internal fun deserialize(fullData: ByteReadPacket): CustomMessage? {
             val msg = kotlin.runCatching {
                 val length = fullData.readInt()
@@ -181,7 +178,6 @@ sealed class CustomMessage : SingleMessage {
  * @see CustomMessage 查看更多信息
  * @see ConstrainSingle 可实现此接口以保证消息链中只存在一个元素
  */
-@SinceMirai("0.38.0")
 @MiraiExperimentalAPI
 abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
     companion object Key : Message.Key<CustomMessageMetadata> {
@@ -192,13 +188,10 @@ abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
 
     final override fun toString(): String =
         "[mirai:custom:${getFactory().typeName}:${String(customToString())}]"
-
-    final override fun contentToString(): String = ""
 }
 
 
 @Suppress("NOTHING_TO_INLINE")
-@OptIn(MiraiExperimentalAPI::class)
 internal inline fun <T : CustomMessageMetadata> T.customToStringImpl(factory: CustomMessage.Factory<*>): ByteArray {
     @Suppress("UNCHECKED_CAST")
     return (factory as CustomMessage.Factory<T>).serialize(this)

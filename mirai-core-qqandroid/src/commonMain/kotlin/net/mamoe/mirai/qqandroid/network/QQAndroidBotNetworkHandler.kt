@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package net.mamoe.mirai.qqandroid.network
 
 import kotlinx.atomicfu.AtomicRef
@@ -20,41 +22,35 @@ import kotlinx.io.core.use
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
-import net.mamoe.mirai.message.ContactMessage
-import net.mamoe.mirai.network.BotNetworkHandler
+import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.*
-import net.mamoe.mirai.qqandroid.event.PacketReceivedEvent
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.WtLogin
-import net.mamoe.mirai.qqandroid.utils.NoRouteToHostException
-import net.mamoe.mirai.qqandroid.utils.PlatformSocket
-import net.mamoe.mirai.qqandroid.utils.SocketException
+import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
 import net.mamoe.mirai.qqandroid.utils.io.useBytes
-import net.mamoe.mirai.qqandroid.utils.retryCatching
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.jvm.Volatile
-import kotlin.random.Random
-import kotlin.time.ExperimentalTime
 
 @Suppress("MemberVisibilityCanBePrivate")
-@OptIn(MiraiInternalAPI::class)
 internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bot: QQAndroidBot) : BotNetworkHandler() {
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val supervisor: CompletableJob = SupervisorJob(coroutineContext[Job])
-    override val logger: MiraiLogger get() = bot.configuration.networkLoggerSupplier(this)
+    override val logger: MiraiLogger get() = bot.configuration.networkLoggerSupplier(bot)
 
     override val coroutineContext: CoroutineContext = coroutineContext + CoroutineExceptionHandler { _, throwable ->
         logger.error("Exception in NetworkHandler", throwable)
@@ -68,8 +64,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private val packetReceiveLock: Mutex = Mutex()
 
     override fun areYouOk(): Boolean {
-        return this.isActive && ::channel.isInitialized && channel.isOpen
-                && heartbeatJob?.isActive == true && _packetReceiverJob?.isActive == true
+        return kotlin.runCatching {
+            this.isActive && ::channel.isInitialized && channel.isOpen
+                    && heartbeatJob?.isActive == true && _packetReceiverJob?.isActive == true
+        }.getOrElse { false }
     }
 
     private suspend fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
@@ -111,7 +109,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }.also { heartbeatJob = it }
     }
 
-    @OptIn(MiraiExperimentalAPI::class)
+
     override suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable?) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
@@ -132,6 +130,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 channel.connect(coroutineContext + CoroutineName("Socket"), host, port)
                 break
             } catch (e: SocketException) {
+                if (e is NoRouteToHostException || e.message?.contains("Network is unreachable") == true) {
+                    logger.warning { "No route to host (Mostly due to no Internet connection). Retrying in 3s..." }
+                    delay(3000)
+                } else {
+                    throw e
+                }
+            } catch (e: UnknownHostException) {
                 if (e is NoRouteToHostException || e.message?.contains("Network is unreachable") == true) {
                     logger.warning { "No route to host (Mostly due to no Internet connection). Retrying in 3s..." }
                     delay(3000)
@@ -206,6 +211,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private val _pendingEnabled = atomic(true)
     internal val pendingEnabled get() = _pendingEnabled.value
 
+    @JvmField
     @Volatile
     internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
         LockFreeLinkedList()
@@ -310,7 +316,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         initGroupOk = true
     }
 
-    @OptIn(MiraiExperimentalAPI::class, ExperimentalTime::class)
+
     override suspend fun init(): Unit = coroutineScope {
         check(bot.isActive) { "bot is dead therefore network can't init" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
@@ -331,21 +337,12 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         coroutineScope {
             launch { reloadFriendList() }
-            launch {
-                if (Random.nextInt() > 50) {
-                    error("boom")
-                }
-                reloadGroupList()
-            }
+            launch { reloadGroupList() }
         }
 
-        this@QQAndroidBotNetworkHandler.launch {
+        this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
             logger.info { "Awaiting ConfigPushSvc.PushReq" }
-            val resp =
-                syncFromEventOrNull<ConfigPushSvc.PushReq.PushReqResponse, ConfigPushSvc.PushReq.PushReqResponse>(
-                    10_000) { it }
-
-            when (resp) {
+            when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(10_000)) {
                 null -> logger.info { "Missing ConfigPushSvc.PushReq." }
                 is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
                     logger.info { "ConfigPushSvc.PushReq: Success" }
@@ -363,12 +360,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             }
         }
 
-        logger.info { "Syncing friend message history..." }
-        withTimeoutOrNull(30000) {
-            launch { syncFromEvent<MessageSvc.PbGetMsg.GetMsgSuccess, Unit> { Unit } }
-            MessageSvc.PbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
-        } ?: error("timeout syncing friend message history")
-        logger.info { "Syncing friend message history: Success" }
+        syncMessageSvc()
 
         bot.firstLoginSucceed = true
 
@@ -399,27 +391,33 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         Unit // dont remove. can help type inference
     }
 
-    private suspend fun doHeartBeat(): Exception? {
-        val lastException: Exception?
-        try {
-            kotlin.runCatching {
-                Heartbeat.Alive(bot.client)
-                    .sendAndExpect<Heartbeat.Alive.Response>(
-                        timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
-                        retry = 2
-                    )
-                return null
-            }
+    init {
+        @Suppress("RemoveRedundantQualifierName")
+        val listener = bot.subscribeAlways<BotReloginEvent>(priority = Listener.EventPriority.MONITOR) {
+            if (bot != this.bot) return@subscribeAlways
+            this@QQAndroidBotNetworkHandler.launch { syncMessageSvc() }
+        }
+        supervisor.invokeOnCompletion { listener.cancel() }
+    }
+
+    private suspend fun syncMessageSvc() {
+        logger.info { "Syncing friend message history..." }
+        withTimeoutOrNull(30000) {
+            launch(CoroutineName("Syncing friend message history")) { syncFromEvent<MessageSvcPbGetMsg.GetMsgSuccess, Unit> { Unit } }
+            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
+        } ?: error("timeout syncing friend message history")
+        logger.info { "Syncing friend message history: Success" }
+    }
+
+    private suspend fun doHeartBeat(): Throwable? {
+        return retryCatching(2) {
             Heartbeat.Alive(bot.client)
                 .sendAndExpect<Heartbeat.Alive.Response>(
                     timeoutMillis = bot.configuration.heartbeatTimeoutMillis,
                     retry = 2
                 )
             return null
-        } catch (e: Exception) {
-            lastException = e
-        }
-        return lastException
+        }.exceptionOrNull()
     }
 
     /**
@@ -449,12 +447,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         return this.launch(
             start = CoroutineStart.ATOMIC
         ) {
-            try {
-                input.use { parsePacket(it) }
-            } catch (e: Exception) {
-                // 傻逼协程吞异常
-                logger.error(e)
-            }
+            input.use { parsePacket(it) }
         }
     }
 
@@ -494,13 +487,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     ) {
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
-            when (packet) {
-                is Packet.NoLog -> {
+            when {
+                packet is Packet.NoLog -> {
                     // nothing to do
                 }
-                is ContactMessage -> packet.logMessageReceived()
-                is Event -> bot.logger.verbose { "Event: ${packet.toString().singleLine()}" }
-                else -> logger.verbose { "Packet: ${packet.toString().singleLine()}" }
+                packet is MessageEvent -> packet.logMessageReceived()
+                packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
+                    "Event: ${packet.toString().singleLine()}"
+                }
+                else -> logger.verbose { "Recv: ${packet.toString().singleLine()}" }
             }
         }
 
@@ -515,10 +510,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 is OutgoingPacketFactory<P> -> bot.handle(packet)
                 is IncomingPacketFactory<P> -> bot.handle(packet, sequenceId)?.sendWithoutExpect()
             }
-        }
-
-        if (packet != null && PacketReceivedEvent(packet).broadcast().isCancelled) {
-            return
         }
 
         if (packet is Event) {
@@ -543,34 +534,39 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         val cache = cachedPacket.value
         if (cache == null) {
-            // 没有缓存
-            var length: Int = rawInput.readInt() - 4
-            if (rawInput.remaining == length.toLong()) {
-                // 捷径: 当包长度正好, 直接传递剩余数据.
-                cachedPacketTimeoutJob?.cancel()
-                parsePacketAsync(rawInput)
-                return
-            }
-            // 循环所有完整的包
-            while (rawInput.remaining >= length) {
-                parsePacketAsync(rawInput.readPacketExact(length))
+            kotlin.runCatching {
+                // 没有缓存
+                var length: Int = rawInput.readInt() - 4
+                if (rawInput.remaining == length.toLong()) {
+                    // 捷径: 当包长度正好, 直接传递剩余数据.
+                    cachedPacketTimeoutJob?.cancel()
+                    parsePacketAsync(rawInput)
+                    return
+                }
+                // 循环所有完整的包
+                while (rawInput.remaining >= length) {
+                    parsePacketAsync(rawInput.readPacketExact(length))
 
-                if (rawInput.remaining == 0L) {
+                    if (rawInput.remaining == 0L) {
+                        cachedPacket.value = null // 表示包长度正好
+                        cachedPacketTimeoutJob?.cancel()
+                        return
+                    }
+                    length = rawInput.readInt() - 4
+                }
+
+                if (rawInput.remaining != 0L) {
+                    // 剩余的包长度不够, 缓存后接收下一个包
+                    expectingRemainingLength = length - rawInput.remaining
+                    cachedPacket.value = rawInput
+                } else {
                     cachedPacket.value = null // 表示包长度正好
                     cachedPacketTimeoutJob?.cancel()
                     return
                 }
-                length = rawInput.readInt() - 4
-            }
-
-            if (rawInput.remaining != 0L) {
-                // 剩余的包长度不够, 缓存后接收下一个包
-                expectingRemainingLength = length - rawInput.remaining
-                cachedPacket.value = rawInput
-            } else {
-                cachedPacket.value = null // 表示包长度正好
+            }.getOrElse {
+                cachedPacket.value = null
                 cachedPacketTimeoutJob?.cancel()
-                return
             }
         } else {
             // 有缓存
@@ -623,8 +619,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         channel.send(delegate)
     }
 
-    class TimeoutException(override val message: String?) : Exception()
-
     /**
      * 发送一个包, 挂起协程直到接收到指定的返回包或超时
      */
@@ -634,6 +628,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
+        check(channel.isOpen) { "network channel is closed" }
 
         suspend fun doSendAndReceive(handler: PacketListener, data: Any, length: Int): E {
             when (data) {
@@ -644,10 +639,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             logger.verbose { "Send: $commandName" }
 
             @Suppress("UNCHECKED_CAST")
-            return withTimeoutOrNull(timeoutMillis) {
+            return withTimeout(timeoutMillis) {
                 handler.await()
-                // 不要 `withTimeout`. timeout 的报错会不正常.
-            } as E? ?: throw TimeoutException("timeout receiving response of $commandName")
+            } as E
         }
 
         if (retry == 0) {

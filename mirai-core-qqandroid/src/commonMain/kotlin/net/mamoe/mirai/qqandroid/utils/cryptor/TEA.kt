@@ -14,7 +14,6 @@ import kotlinx.io.pool.useInstance
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.toByteArray
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.experimental.and
 import kotlin.experimental.xor
 import kotlin.jvm.JvmStatic
@@ -33,7 +32,6 @@ internal class DecryptionFailedException : Exception {
  *
  * **注意**: 此为 Mirai 内部 API. 它可能会在任何时刻被改变.
  */
-@MiraiInternalAPI
 internal object TEA {
     // TODO: 2020/2/28 使用 stream 式输入以避免缓存
 

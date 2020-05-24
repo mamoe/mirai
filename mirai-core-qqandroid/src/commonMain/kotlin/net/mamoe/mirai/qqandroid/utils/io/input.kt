@@ -19,14 +19,13 @@ import kotlinx.io.core.*
 import net.mamoe.mirai.qqandroid.utils.ByteArrayPool
 import net.mamoe.mirai.qqandroid.utils.toReadPacket
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal inline fun <R> ByteReadPacket.useBytes(
     n: Int = remaining.toInt(),//not that safe but adequate
     block: (data: ByteArray, length: Int) -> R
@@ -39,7 +38,6 @@ internal inline fun ByteReadPacket.readPacketExact(
     n: Int = remaining.toInt()//not that safe but adequate
 ): ByteReadPacket = this.readBytes(n).toReadPacket()
 
-@OptIn(ExperimentalContracts::class)
 internal inline fun <C : Closeable, R> C.withUse(block: C.() -> R): R {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
@@ -60,7 +58,6 @@ internal inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String
 }
 
 @Suppress("FunctionName")
-@MiraiInternalAPI
 internal inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boolean = true): TlvMap =
     _readTLVMap(true, tagSize, suppressDuplication)
 

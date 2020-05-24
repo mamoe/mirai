@@ -108,8 +108,6 @@ actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
             (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).connectionInfo.ssid.orEmpty()
                 .toByteArray()
         }.getOrEmpty()
-
-    @OptIn(MiraiInternalAPI::class)
     override val imsiMd5: ByteArray
         @SuppressLint("HardwareIds")
         get() = kotlin.runCatching {

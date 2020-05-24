@@ -9,15 +9,12 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 
-@OptIn(MiraiExperimentalAPI::class)
 internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleMessage>, Any() {
     companion object Key : Message.Key<TestConstrainSingleMessage> {
         override val typeName: String
@@ -26,32 +23,14 @@ internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleM
 
     override fun toString(): String = "<TestConstrainSingleMessage#${super.hashCode()}>"
 
-    override fun contentToString(): String {
-        return ""
-    }
-
     override val key: Message.Key<TestConstrainSingleMessage>
         get() = Key
-    override val length: Int
-        get() = TODO("Not yet implemented")
-
-    override fun get(index: Int): Char {
-        TODO("Not yet implemented")
-    }
-
-    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence {
-        TODO("Not yet implemented")
-    }
-
-    override fun compareTo(other: String): Int {
-        TODO("Not yet implemented")
-    }
 }
 
-@OptIn(MiraiExperimentalAPI::class)
+
 internal class ConstrainSingleTest {
 
-    @OptIn(MiraiInternalAPI::class)
+
     @Test
     fun testCombine() {
         val result = PlainText("te") + PlainText("st")

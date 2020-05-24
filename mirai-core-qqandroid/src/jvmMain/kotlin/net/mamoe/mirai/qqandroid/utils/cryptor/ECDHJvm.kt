@@ -10,7 +10,6 @@
 package net.mamoe.mirai.qqandroid.utils.cryptor
 
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -71,7 +70,6 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
                 .genKeyPair())
         }
 
-        @OptIn(MiraiInternalAPI::class)
         actual fun calculateShareKey(
             privateKey: ECDHPrivateKey,
             publicKey: ECDHPublicKey

@@ -13,8 +13,10 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.data.*
+import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
+import net.mamoe.mirai.event.events.MemberJoinRequestEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRef
 
 /**
@@ -31,6 +33,10 @@ annotation class LowLevelAPI
 
 /**
  * [Bot] 相关协议层低级 API.
+ *
+ * **注意**: 不应该把这个类作为一个类型, 只应使用其中的方法
+ *
+ * **警告**: 所有的低级 API 都可能在任意时刻不经过任何警告和迭代就被修改. 因此非常不建议在任何情况下使用这些 API.
  */
 @MiraiExperimentalAPI
 @Suppress("FunctionName", "unused")
@@ -73,7 +79,6 @@ interface LowLevelBotAPIAccessor {
      * 获取群公告列表
      * @param page 页码
      */
-    @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int = 1, amount: Int = 10): GroupAnnouncementList
@@ -83,7 +88,6 @@ interface LowLevelBotAPIAccessor {
      *
      * @return 公告的fid
      */
-    @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String
@@ -93,7 +97,6 @@ interface LowLevelBotAPIAccessor {
      * 删除群公告
      * @param fid [GroupAnnouncement.fid]
      */
-    @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String)
@@ -102,7 +105,6 @@ interface LowLevelBotAPIAccessor {
      * 获取一条群公告
      * @param fid [GroupAnnouncement.fid]
      */
-    @SinceMirai("0.28.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement
@@ -111,8 +113,63 @@ interface LowLevelBotAPIAccessor {
     /**
      * 获取群活跃信息
      */
-    @SinceMirai("0.29.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData
+
+
+    /**
+     * 构造一个账号请求添加机器人为好友的事件
+     */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    fun _lowLevelGetNewFriendRequestEvent(
+        eventId: Long,
+        fromId: Long,
+        groupId: Long
+    ) = NewFriendRequestEvent(
+        bot = this as Bot,
+        eventId = eventId,
+        message = "",
+        fromId = fromId,
+        fromGroupId = groupId,
+        fromNick = ""
+    )
+
+    /**
+     * 构造被邀请加入一个群请求事件
+     */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    fun _lowLevelGetBotInvitedJoinGroupRequestEvent(
+        eventId: Long,
+        groupId: Long,
+        invitorId: Long
+    ) = BotInvitedJoinGroupRequestEvent(
+        bot = this as Bot,
+        eventId = eventId,
+        invitorId = invitorId,
+        groupId = groupId,
+        groupName = "",
+        invitorNick = ""
+    )
+
+    /**
+     * 构造账号请求加入群事件
+     */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    fun _lowLevelGetMemberJoinRequestEvent(
+        eventId: Long,
+        groupId: Long,
+        fromId: Long
+    ) = MemberJoinRequestEvent(
+        bot = this as Bot,
+        eventId = eventId,
+        fromId = fromId,
+        groupId = groupId,
+        groupName = "",
+        fromNick = "",
+        message = ""
+    )
 }

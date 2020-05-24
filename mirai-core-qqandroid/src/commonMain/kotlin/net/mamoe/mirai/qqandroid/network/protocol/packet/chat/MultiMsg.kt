@@ -31,9 +31,8 @@ import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.utils.MiraiInternalAPI
 
-internal class MessageValidationData @OptIn(MiraiInternalAPI::class) constructor(
+internal class MessageValidationData(
     val data: ByteArray,
     val md5: ByteArray = MiraiPlatformUtils.md5(data)
 ) {
@@ -44,8 +43,6 @@ internal class MessageValidationData @OptIn(MiraiInternalAPI::class) constructor
 
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)
-
-@OptIn(MiraiInternalAPI::class)
 internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
     sequenceId: Int,
     random: Int,

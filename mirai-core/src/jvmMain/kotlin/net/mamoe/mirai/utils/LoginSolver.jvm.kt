@@ -145,7 +145,7 @@ actual abstract class LoginSolver {
 
     actual companion object {
         actual val Default: LoginSolver =
-            @OptIn(MiraiExperimentalAPI::class)
+
             DefaultLoginSolver({ readLine() ?: throw NoStandardInputForCaptchaException(null) })
     }
 }

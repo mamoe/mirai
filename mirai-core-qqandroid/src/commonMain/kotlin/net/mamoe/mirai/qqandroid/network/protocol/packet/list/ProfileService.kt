@@ -24,11 +24,8 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeJceStruct
 import net.mamoe.mirai.qqandroid.utils.toByteArray
-import net.mamoe.mirai.utils.SinceMirai
 
 internal class ProfileService {
-
-    @SinceMirai("0.37.0")
     object GroupMngReq : OutgoingPacketFactory<GroupMngReq.GroupMngReqResponse>("ProfileService.GroupMngReq") {
         data class GroupMngReqResponse(val errorCode: Int, val errorMessage: String) : Packet
 

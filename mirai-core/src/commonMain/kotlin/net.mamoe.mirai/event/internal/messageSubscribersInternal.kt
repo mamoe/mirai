@@ -12,7 +12,7 @@ package net.mamoe.mirai.event.internal
 import net.mamoe.mirai.event.MessageDsl
 import net.mamoe.mirai.event.MessageListener
 import net.mamoe.mirai.event.MessageSubscribersBuilder
-import net.mamoe.mirai.message.ContactMessage
+import net.mamoe.mirai.message.MessageEvent
 
 
 /*
@@ -20,13 +20,13 @@ import net.mamoe.mirai.message.ContactMessage
  */
 
 @MessageDsl
-internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.content(
+internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.content(
     filter: M.(String) -> Boolean,
     onEvent: MessageListener<M, RR>
 ): Ret =
     subscriber(filter) { onEvent(this, it) }
 
-internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.endsWithImpl(
+internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.endsWithImpl(
     suffix: String,
     removeSuffix: Boolean = true,
     trim: Boolean = true,
@@ -46,7 +46,7 @@ internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, 
     }
 }
 
-internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.startsWithImpl(
+internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.startsWithImpl(
     prefix: String,
     removePrefix: Boolean = true,
     trim: Boolean = true,
@@ -64,7 +64,7 @@ internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, 
     }
 }
 
-internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.containsAllImpl(
+internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.containsAllImpl(
     sub: Array<out String>,
     ignoreCase: Boolean = false,
     trim: Boolean = true
@@ -76,7 +76,7 @@ internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, 
         content { sub.all { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } }
     }
 
-internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.containsAnyImpl(
+internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.containsAnyImpl(
     vararg sub: String,
     ignoreCase: Boolean = false,
     trim: Boolean = true
@@ -86,7 +86,7 @@ internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, 
         content { list.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } }
     } else content { sub.any { toCheck -> it.contains(toCheck, ignoreCase = ignoreCase) } }
 
-internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.caseImpl(
+internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.caseImpl(
     equals: String,
     ignoreCase: Boolean = false,
     trim: Boolean = true
@@ -99,7 +99,7 @@ internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, 
     }
 }
 
-internal fun <M : ContactMessage, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.containsImpl(
+internal fun <M : MessageEvent, Ret, R : RR, RR> MessageSubscribersBuilder<M, Ret, R, RR>.containsImpl(
     sub: String,
     ignoreCase: Boolean = false,
     trim: Boolean = true,

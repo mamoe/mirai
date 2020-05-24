@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport")
 
 package net.mamoe.mirai.contact
 
@@ -20,8 +20,8 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
 import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.OfflineGroupImage
 import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.runBlocking
@@ -47,7 +47,6 @@ abstract class Group : Contact(), CoroutineScope {
     /**
      * 群设置
      */
-    @SinceMirai("0.30.0")
     abstract val settings: GroupSettings
 
     /**
@@ -80,7 +79,6 @@ abstract class Group : Contact(), CoroutineScope {
      * 机器人在这个群里的权限
      *
      * @see Group.checkBotPermission 检查 [Bot] 在这个群里的权限
-     * @see Group.checkBotPermissionOperator 要求 [Bot] 在这个群里的权限为 [管理员或群主][MemberPermission.isOperator]
      *
      * @see BotGroupPermissionChangeEvent 机器人群员修改
      */
@@ -102,6 +100,7 @@ abstract class Group : Contact(), CoroutineScope {
      * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException]
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
+    @Throws(NoSuchElementException::class)
     abstract operator fun get(id: Long): Member
 
     /**
@@ -123,7 +122,6 @@ abstract class Group : Contact(), CoroutineScope {
      * @return 退出成功时 true; 已经退出时 false
      */
     @JvmSynthetic
-    @SinceMirai("0.37.0")
     abstract suspend fun quit(): Boolean
 
     /**
@@ -165,6 +163,8 @@ abstract class Group : Contact(), CoroutineScope {
     /**
      * 上传一个图片以备发送.
      *
+     * @see Image 查看有关图片的更多信息, 如上传图片
+     *
      * @see BeforeImageUploadEvent 图片上传前事件, cancellable
      * @see ImageUploadEvent 图片上传完成事件
      *
@@ -172,10 +172,11 @@ abstract class Group : Contact(), CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     @JvmSynthetic
-    abstract override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage
+    abstract override suspend fun uploadImage(image: ExternalImage): Image
 
     companion object {
         /**
+         * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
         @JvmStatic
@@ -183,6 +184,7 @@ abstract class Group : Contact(), CoroutineScope {
             CommonGroupCalculations.calculateGroupUinByGroupCode(groupCode)
 
         /**
+         * 使用 groupUin 计算 groupCode. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
         @JvmStatic
@@ -193,11 +195,9 @@ abstract class Group : Contact(), CoroutineScope {
     /**
      * @see quit
      */
-    @OptIn(MiraiInternalAPI::class)
     @Suppress("FunctionName")
     @JvmName("quit")
     @JavaFriendlyAPI
-    @SinceMirai("0.39.4")
     fun __quitBlockingForJava__(): Boolean = runBlocking { quit() }
 }
 
@@ -206,7 +206,6 @@ abstract class Group : Contact(), CoroutineScope {
  *
  * @see Group.settings 获取群设置
  */
-@SinceMirai("0.30.0")
 interface GroupSettings {
     /**
      * 入群公告, 没有时为空字符串.

@@ -92,7 +92,6 @@ abstract class DeviceInfo {
     }
 }
 
-@OptIn(MiraiInternalAPI::class)
 @Serializable
 class DeviceInfoData(
     override val display: ByteArray,

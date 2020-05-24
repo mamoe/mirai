@@ -16,7 +16,6 @@ package net.mamoe.mirai.qqandroid.utils.io
 import kotlinx.io.core.*
 import net.mamoe.mirai.qqandroid.utils.coerceAtMostOrFail
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -66,6 +65,6 @@ internal fun BytePacketBuilder.writeHex(uHex: String) {
     }
 }
 
-@OptIn(MiraiInternalAPI::class)
+
 internal inline fun BytePacketBuilder.encryptAndWrite(key: ByteArray, encoder: BytePacketBuilder.() -> Unit) =
     TEA.encrypt(BytePacketBuilder().apply(encoder).build(), key) { decrypted -> writeFully(decrypted) }

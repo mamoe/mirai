@@ -35,7 +35,6 @@ internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddre
  * Defaults "%4;7t>;28<fc.5*6".toByteArray()
  */
 @Suppress("RemoveRedundantQualifierName") // bug
-@OptIn(MiraiInternalAPI::class)
 private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
     net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils.md5(androidId + macAddress)
 
@@ -68,7 +67,6 @@ internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
  DOMAINS
  Pskey: "openmobile.qq.com"
  */
-@OptIn(MiraiExperimentalAPI::class, MiraiInternalAPI::class)
 @PublishedApi
 internal open class QQAndroidClient(
     context: Context,
@@ -77,6 +75,10 @@ internal open class QQAndroidClient(
     val device: DeviceInfo = SystemDeviceInfo(context),
     bot: QQAndroidBot
 ) {
+    @Suppress("INVISIBLE_MEMBER")
+    val subAppId: Long
+        get() = bot.configuration.protocol.id
+
     internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
 
     val keys: Map<String, ByteArray> by lazy {
@@ -266,7 +268,6 @@ internal open class QQAndroidClient(
 }
 
 @Suppress("RemoveRedundantQualifierName") // bug
-@OptIn(MiraiInternalAPI::class)
 internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
     net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils.md5(getRandomByteArray(16) + guid)
 
@@ -368,7 +369,7 @@ internal class WLoginSigInfo(
     val deviceToken: ByteArray
 ) {
     override fun toString(): String {
-        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, G=${G.toUHexString()}, dpwd=${dpwd.toUHexString()}, randSeed=${randSeed.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=${psKeyMap.toString()}, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
+        return "WLoginSigInfo(uin=$uin, encryptA1=${encryptA1?.toUHexString()}, noPicSig=${noPicSig?.toUHexString()}, G=${G.toUHexString()}, dpwd=${dpwd.toUHexString()}, randSeed=${randSeed.toUHexString()}, simpleInfo=$simpleInfo, appPri=$appPri, a2ExpiryTime=$a2ExpiryTime, loginBitmap=$loginBitmap, tgt=${tgt.toUHexString()}, a2CreationTime=$a2CreationTime, tgtKey=${tgtKey.toUHexString()}, userStSig=$userStSig, userStKey=${userStKey.toUHexString()}, userStWebSig=$userStWebSig, userA5=$userA5, userA8=$userA8, lsKey=$lsKey, sKey=$sKey, userSig64=$userSig64, openId=${openId.toUHexString()}, openKey=$openKey, vKey=$vKey, accessToken=$accessToken, d2=$d2, d2Key=${d2Key.toUHexString()}, sid=$sid, aqSig=$aqSig, psKey=$psKeyMap, superKey=${superKey.toUHexString()}, payToken=${payToken.toUHexString()}, pf=${pf.toUHexString()}, pfKey=${pfKey.toUHexString()}, da2=${da2.toUHexString()}, wtSessionTicket=$wtSessionTicket, wtSessionTicketKey=${wtSessionTicketKey.toUHexString()}, deviceToken=${deviceToken.toUHexString()})"
     }
 }
 
