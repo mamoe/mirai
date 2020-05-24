@@ -105,10 +105,9 @@ subprojects {
                     runCatching {
                         upload.GitHub.upload(
                             file,
-                            "https://api.github.com/repos/mamoe/mirai-repo/contents/shadow/${project.name}/$filename",
                             project,
                             "mirai-repo",
-                            "shadow/"
+                            "shadow/${project.name}/$filename"
                         )
                     }.exceptionOrNull()?.let {
                         System.err.println("GitHub Upload failed")
@@ -140,7 +139,7 @@ subprojects {
 
             dependsOn(tasks.getByName("dokkaMarkdown"))
             doFirst {
-                val baseDir = file("./build/dokka-markdown")
+                val baseDir = file("./build/dokka-markdown/${project.name}")
 
                 timeout.set(Duration.ofHours(6))
                 file("build/dokka-markdown/").walk()
@@ -158,16 +157,23 @@ subprojects {
                                     ```
                                 """.trimIndent()
                             })
+                        } else if (file.name == "README.md") {
+                            file.writeText(file.readText().replace(Regex("""(\n\|\s)""")) {
+                                """
+                                    |||
+                                    |:----------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+                                    | 
+                                """.trimIndent()
+                            })
                         }
                         val filename = file.toRelativeString(baseDir)
                         println("Uploading file $filename")
                         runCatching {
                             upload.GitHub.upload(
                                 file,
-                                "https://api.github.com/repos/mamoe/mirai-doc/contents/$filename",
                                 project,
                                 "mirai-doc",
-                                ""
+                                "${project.name}/${project.version}/$filename"
                             )
                         }.exceptionOrNull()?.let {
                             System.err.println("GitHub Upload failed")
