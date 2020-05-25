@@ -67,7 +67,8 @@ abstract class CompositeCommand @JvmOverloads constructor(
     override val names: Array<out String> =
         names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).toTypedArray()
     val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
-    override val usage: String by lazy { TODO() }
+
+    override lateinit var usage: String
 
     /** 指定子指令要求的权限 */
     @Retention(AnnotationRetention.RUNTIME)
@@ -108,14 +109,15 @@ abstract class CompositeCommand @JvmOverloads constructor(
     }
 
     internal val subCommands: Array<SubCommandDescriptor> by lazy {
+
+        val buildUsage = StringBuilder(this.description).append(": \n")
+
+
         this::class.declaredFunctions.filter { it.hasAnnotation<SubCommand>() }.map { function ->
 
             val overridePermission = function.findAnnotation<Permission>()//optional
 
-            val subDescription = function.findAnnotation<Description>()?.description
-            if(subDescription == null && owner is PluginCommandOwner){
-                (owner as PluginCommandOwner).plugin.logger.warning("A description for sub commend is recommend for command " + this.getPrimaryName())
-            }
+            val subDescription = function.findAnnotation<Description>()?.description?:"no description available"
 
             if((function.returnType.classifier as? KClass<*>)?.isSubclassOf(Boolean::class) != true){
                 throw IllegalParameterException("Return Type of SubCommand must be Boolean")
@@ -139,26 +141,34 @@ abstract class CompositeCommand @JvmOverloads constructor(
 
             //map parameter
             val parms = parameter.subList(1,parameter.size).map {
+                buildUsage.append("/" + getPrimaryName() + " ")
+
                 if(it.isVararg){
                     throw IllegalParameterException("parameter for sub commend " + function.name + " from " + this.getPrimaryName() + " should not be var arg")
                 }
                 if(it.isOptional){
                     throw IllegalParameterException("parameter for sub commend " + function.name + " from " + this.getPrimaryName() + " should not be var optional")
                 }
+
+                val argName = it.findAnnotation<Name>()?.name?:it.name?:"unknown"
+                buildUsage.append("<").append(argName).append("> ").append(" ")
                 CommandParam(
-                    it.findAnnotation<Name>()?.name?:it.name?:"unknown",
+                    argName,
                     (parameter[0].type.classifier as? KClass<*>)?: throw IllegalParameterException("unsolved type reference from param " + it.name + " in " + function.name + " from " + this.getPrimaryName()))
             }.toTypedArray()
+
+            buildUsage.append(subDescription).append("\n")
 
             SubCommandDescriptor(
                 commandName,
                 parms,
-                subDescription?:"unknown",
+                subDescription,
                 overridePermission?.permission?.getInstance() ?: permission,
                 onCommand = block { sender: CommandSender, args: Array<out Any> ->
                     function.callSuspend(sender,*args) as Boolean
                 }
             )
+
         }.toTypedArray()
     }
 
