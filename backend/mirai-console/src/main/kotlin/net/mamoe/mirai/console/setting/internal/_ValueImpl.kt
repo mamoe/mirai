@@ -9,7 +9,10 @@
 
 package net.mamoe.mirai.console.setting.internal
 
-import kotlinx.serialization.*
+import kotlinx.serialization.Decoder
+import kotlinx.serialization.Encoder
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.builtins.*
 import net.mamoe.mirai.console.setting.*
 
@@ -705,7 +708,7 @@ internal fun Setting.valueImpl(
 ): MutableIntListValue {
     var internalValue: MutableList<Int> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableIntListValue(), MutableList<Int> by delegt {
         override var value: MutableList<Int>
             get() = internalValue
@@ -715,15 +718,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<Int>> = object : KSerializer<MutableList<Int>> {
             private val delegate = ListSerializer(Int.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<Int> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -741,7 +744,7 @@ internal fun Setting.valueImpl(
 ): MutableShortListValue {
     var internalValue: MutableList<Short> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableShortListValue(), MutableList<Short> by delegt {
         override var value: MutableList<Short>
             get() = internalValue
@@ -751,15 +754,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<Short>> = object : KSerializer<MutableList<Short>> {
             private val delegate = ListSerializer(Short.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<Short> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -777,7 +780,7 @@ internal fun Setting.valueImpl(
 ): MutableByteListValue {
     var internalValue: MutableList<Byte> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableByteListValue(), MutableList<Byte> by delegt {
         override var value: MutableList<Byte>
             get() = internalValue
@@ -787,15 +790,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<Byte>> = object : KSerializer<MutableList<Byte>> {
             private val delegate = ListSerializer(Byte.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<Byte> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -813,7 +816,7 @@ internal fun Setting.valueImpl(
 ): MutableLongListValue {
     var internalValue: MutableList<Long> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableLongListValue(), MutableList<Long> by delegt {
         override var value: MutableList<Long>
             get() = internalValue
@@ -823,15 +826,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<Long>> = object : KSerializer<MutableList<Long>> {
             private val delegate = ListSerializer(Long.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<Long> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -849,7 +852,7 @@ internal fun Setting.valueImpl(
 ): MutableFloatListValue {
     var internalValue: MutableList<Float> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableFloatListValue(), MutableList<Float> by delegt {
         override var value: MutableList<Float>
             get() = internalValue
@@ -859,15 +862,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<Float>> = object : KSerializer<MutableList<Float>> {
             private val delegate = ListSerializer(Float.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<Float> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -885,7 +888,7 @@ internal fun Setting.valueImpl(
 ): MutableDoubleListValue {
     var internalValue: MutableList<Double> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableDoubleListValue(), MutableList<Double> by delegt {
         override var value: MutableList<Double>
             get() = internalValue
@@ -895,15 +898,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<Double>> = object : KSerializer<MutableList<Double>> {
             private val delegate = ListSerializer(Double.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<Double> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -921,7 +924,7 @@ internal fun Setting.valueImpl(
 ): MutableBooleanListValue {
     var internalValue: MutableList<Boolean> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableBooleanListValue(), MutableList<Boolean> by delegt {
         override var value: MutableList<Boolean>
             get() = internalValue
@@ -931,15 +934,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<Boolean>> = object : KSerializer<MutableList<Boolean>> {
             private val delegate = ListSerializer(Boolean.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<Boolean> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -957,7 +960,7 @@ internal fun Setting.valueImpl(
 ): MutableCharListValue {
     var internalValue: MutableList<Char> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableCharListValue(), MutableList<Char> by delegt {
         override var value: MutableList<Char>
             get() = internalValue
@@ -967,15 +970,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<Char>> = object : KSerializer<MutableList<Char>> {
             private val delegate = ListSerializer(Char.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<Char> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -993,7 +996,7 @@ internal fun Setting.valueImpl(
 ): MutableStringListValue {
     var internalValue: MutableList<String> = default
 
-    val delegt = dynamicMutableList{ internalValue }
+    val delegt = dynamicMutableList { internalValue }
     return object : MutableStringListValue(), MutableList<String> by delegt {
         override var value: MutableList<String>
             get() = internalValue
@@ -1003,15 +1006,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableList<String>> = object : KSerializer<MutableList<String>> {
             private val delegate = ListSerializer(String.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableList<String> {
-                return delegate.deserialize(decoder).toMutableList().observable { 
+                return delegate.deserialize(decoder).toMutableList().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1029,7 +1032,7 @@ internal fun Setting.valueImpl(
 ): MutableIntSetValue {
     var internalValue: MutableSet<Int> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableIntSetValue(), MutableSet<Int> by delegt {
         override var value: MutableSet<Int>
             get() = internalValue
@@ -1039,15 +1042,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<Int>> = object : KSerializer<MutableSet<Int>> {
             private val delegate = SetSerializer(Int.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<Int> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1065,7 +1068,7 @@ internal fun Setting.valueImpl(
 ): MutableShortSetValue {
     var internalValue: MutableSet<Short> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableShortSetValue(), MutableSet<Short> by delegt {
         override var value: MutableSet<Short>
             get() = internalValue
@@ -1075,15 +1078,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<Short>> = object : KSerializer<MutableSet<Short>> {
             private val delegate = SetSerializer(Short.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<Short> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1101,7 +1104,7 @@ internal fun Setting.valueImpl(
 ): MutableByteSetValue {
     var internalValue: MutableSet<Byte> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableByteSetValue(), MutableSet<Byte> by delegt {
         override var value: MutableSet<Byte>
             get() = internalValue
@@ -1111,15 +1114,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<Byte>> = object : KSerializer<MutableSet<Byte>> {
             private val delegate = SetSerializer(Byte.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<Byte> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1137,7 +1140,7 @@ internal fun Setting.valueImpl(
 ): MutableLongSetValue {
     var internalValue: MutableSet<Long> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableLongSetValue(), MutableSet<Long> by delegt {
         override var value: MutableSet<Long>
             get() = internalValue
@@ -1147,15 +1150,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<Long>> = object : KSerializer<MutableSet<Long>> {
             private val delegate = SetSerializer(Long.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<Long> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1173,7 +1176,7 @@ internal fun Setting.valueImpl(
 ): MutableFloatSetValue {
     var internalValue: MutableSet<Float> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableFloatSetValue(), MutableSet<Float> by delegt {
         override var value: MutableSet<Float>
             get() = internalValue
@@ -1183,15 +1186,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<Float>> = object : KSerializer<MutableSet<Float>> {
             private val delegate = SetSerializer(Float.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<Float> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1209,7 +1212,7 @@ internal fun Setting.valueImpl(
 ): MutableDoubleSetValue {
     var internalValue: MutableSet<Double> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableDoubleSetValue(), MutableSet<Double> by delegt {
         override var value: MutableSet<Double>
             get() = internalValue
@@ -1219,15 +1222,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<Double>> = object : KSerializer<MutableSet<Double>> {
             private val delegate = SetSerializer(Double.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<Double> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1245,7 +1248,7 @@ internal fun Setting.valueImpl(
 ): MutableBooleanSetValue {
     var internalValue: MutableSet<Boolean> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableBooleanSetValue(), MutableSet<Boolean> by delegt {
         override var value: MutableSet<Boolean>
             get() = internalValue
@@ -1255,15 +1258,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<Boolean>> = object : KSerializer<MutableSet<Boolean>> {
             private val delegate = SetSerializer(Boolean.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<Boolean> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1281,7 +1284,7 @@ internal fun Setting.valueImpl(
 ): MutableCharSetValue {
     var internalValue: MutableSet<Char> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableCharSetValue(), MutableSet<Char> by delegt {
         override var value: MutableSet<Char>
             get() = internalValue
@@ -1291,15 +1294,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<Char>> = object : KSerializer<MutableSet<Char>> {
             private val delegate = SetSerializer(Char.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<Char> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1317,7 +1320,7 @@ internal fun Setting.valueImpl(
 ): MutableStringSetValue {
     var internalValue: MutableSet<String> = default
 
-    val delegt = dynamicMutableSet{ internalValue }
+    val delegt = dynamicMutableSet { internalValue }
     return object : MutableStringSetValue(), MutableSet<String> by delegt {
         override var value: MutableSet<String>
             get() = internalValue
@@ -1327,15 +1330,15 @@ internal fun Setting.valueImpl(
                     onElementChanged(this)
                 }
             }
-        
+
         private val outerThis get() = this
-        
+
         override val serializer: KSerializer<MutableSet<String>> = object : KSerializer<MutableSet<String>> {
             private val delegate = SetSerializer(String.serializer())
             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
             override fun deserialize(decoder: Decoder): MutableSet<String> {
-                return delegate.deserialize(decoder).toMutableSet().observable { 
+                return delegate.deserialize(decoder).toMutableSet().observable {
                     onElementChanged(outerThis)
                 }
             }
@@ -1359,7 +1362,7 @@ internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
                     onElementChanged(this)
                 }
             }
-        override val serializer = object : KSerializer<T>{
+        override val serializer = object : KSerializer<T> {
             override val descriptor: SerialDescriptor
                 get() = internalValue.updaterSerializer.descriptor
 

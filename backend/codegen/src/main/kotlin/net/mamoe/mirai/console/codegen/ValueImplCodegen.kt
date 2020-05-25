@@ -110,7 +110,7 @@ fun genAllValueImpl(): String = buildString {
                 ): Mutable${number}${collectionName}Value {
                     var internalValue: Mutable${collectionName}<${number}> = default
 
-                    val delegt = dynamicMutable${collectionName}{ internalValue }
+                    val delegt = dynamicMutable${collectionName} { internalValue }
                     return object : Mutable${number}${collectionName}Value(), Mutable${collectionName}<${number}> by delegt {
                         override var value: Mutable${collectionName}<${number}>
                             get() = internalValue
@@ -128,7 +128,7 @@ fun genAllValueImpl(): String = buildString {
                             override val descriptor: SerialDescriptor get() = delegate.descriptor
 
                             override fun deserialize(decoder: Decoder): Mutable${collectionName}<${number}> {
-                                return delegate.deserialize(decoder).toMutable${collectionName}().observable { 
+                                return delegate.deserialize(decoder).toMutable${collectionName}().observable {
                                     onElementChanged(outerThis)
                                 }
                             }
