@@ -53,7 +53,7 @@ internal abstract class SettingImpl {
         }
     }
 
-    protected abstract fun onElementChanged(value: Value<*>)
+    abstract fun onElementChanged(value: Value<*>)
 
     companion object {
         @JvmStatic
