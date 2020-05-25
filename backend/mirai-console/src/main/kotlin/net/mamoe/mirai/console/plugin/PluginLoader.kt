@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.console.plugin
 
-import net.mamoe.mirai.console.plugin.builtin.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import java.io.File
 
 /**

@@ -7,13 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugin.builtin
+package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
-import net.mamoe.mirai.console.plugin.PluginsLoader
+import net.mamoe.mirai.console.plugin.internal.JvmPluginImpl
+import net.mamoe.mirai.console.plugin.internal.PluginsLoader
 import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
@@ -39,7 +40,8 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
     }
     private val supervisor: Job = coroutineContext[Job]!!
 
-    private val classLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
+    private val classLoader: PluginsLoader =
+        PluginsLoader(this.javaClass.classLoader)
 
     init {
         supervisor.invokeOnCompletion {

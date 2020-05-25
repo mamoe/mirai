@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.plugin.builtin.KotlinPlugin
+import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.setting.value
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test

@@ -14,8 +14,8 @@ import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.plugin.PluginLoader
-import net.mamoe.mirai.console.plugin.builtin.JarPluginLoader
-import net.mamoe.mirai.console.plugin.builtin.JvmPlugin
+import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiExperimentalAPI

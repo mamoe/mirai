@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.plugin
 
-import net.mamoe.mirai.console.plugin.builtin.JvmPlugin
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import java.io.File
 
 /**

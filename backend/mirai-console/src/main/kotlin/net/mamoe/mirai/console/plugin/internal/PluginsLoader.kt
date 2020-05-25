@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugin
+package net.mamoe.mirai.console.plugin.internal
 
 import net.mamoe.mirai.console.MiraiConsole
 import java.io.File
@@ -50,7 +50,13 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
     fun loadPluginMainClassByJarFile(pluginName: String, mainClass: String, jarFile: File): Class<*> {
         try {
             if (!pluginLoaders.containsKey(pluginName)) {
-                pluginLoaders[pluginName] = PluginClassLoader(pluginName, jarFile, this, parentClassLoader)
+                pluginLoaders[pluginName] =
+                    PluginClassLoader(
+                        pluginName,
+                        jarFile,
+                        this,
+                        parentClassLoader
+                    )
             }
             return pluginLoaders[pluginName]!!.loadClass(mainClass)
         } catch (e: ClassNotFoundException) {
