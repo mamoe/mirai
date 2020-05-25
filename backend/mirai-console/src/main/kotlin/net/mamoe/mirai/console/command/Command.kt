@@ -295,3 +295,20 @@ internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): 
 internal inline fun <T:Any> KClass<out T>.getInstance():T {
     return this.objectInstance ?: this.createInstance()
 }
+
+
+fun main(){
+    val mute = object:CompositeCommand(
+        TestCommandOwner,
+        "mute"
+    ){
+        @SubCommand("add")
+        fun CommandSender.onMute1(@Name("参数名1") target: String):Boolean{
+            return true
+        }
+    }
+
+    mute.subCommands
+
+    println(mute.usage)
+}
