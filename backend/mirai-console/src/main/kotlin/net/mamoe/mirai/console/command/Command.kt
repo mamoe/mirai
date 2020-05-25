@@ -55,7 +55,7 @@ interface Command {
 abstract class CompositeCommand @JvmOverloads constructor(
     override val owner: CommandOwner,
     vararg names: String,
-    override val description: String = "",
+    override val description: String = "no description available",
     override val permission: CommandPermission = CommandPermission.Default,
     override val prefixOptional: Boolean = false,
     overrideContext: CommandParserContext = EmptyCommandParserContext
@@ -112,8 +112,16 @@ abstract class CompositeCommand @JvmOverloads constructor(
 
         val buildUsage = StringBuilder(this.description).append(": \n")
 
+        this@CompositeCommand::class.declaredFunctions.filter { it.hasAnnotation<SubCommand>() }.map { function ->
 
-        this::class.declaredFunctions.filter { it.hasAnnotation<SubCommand>() }.map { function ->
+            function.parameters.forEach {
+                println(it)
+                println(it.type.classifier)
+                println()
+                println()
+            }
+
+            val notStatic = function.findAnnotation<JvmStatic>()==null
 
             val overridePermission = function.findAnnotation<Permission>()//optional
 
@@ -123,13 +131,24 @@ abstract class CompositeCommand @JvmOverloads constructor(
                 throw IllegalParameterException("Return Type of SubCommand must be Boolean")
             }
 
-            val parameter = function.parameters
-            if (
-                parameter.isEmpty() ||
-                parameter[0].isVararg ||
-                ((parameter[0].type.classifier as? KClass<*>)?.isSubclassOf(CommandSender::class)!=true)
-            ){
+            val parameter = function.parameters.toMutableList()
+
+            if (parameter.isEmpty()){
                 throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.getPrimaryName() + " should be <out CommandSender>")
+            }
+
+            if(notStatic){
+                parameter.removeAt(0)
+            }
+
+            (parameter.removeAt(0)).let {receiver ->
+                if (
+                    receiver.isVararg ||
+                    ((receiver.type.classifier as? KClass<*>).also { print(it) }
+                        ?.isSubclassOf(CommandSender::class) != true)
+                ) {
+                    throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.getPrimaryName() + " should be <out CommandSender>")
+                }
             }
 
             val commandName = function.findAnnotation<SubCommand>()!!.name.map {
@@ -140,7 +159,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
             }.toTypedArray()
 
             //map parameter
-            val parms = parameter.subList(1,parameter.size).map {
+            val parms = parameter.map {
                 buildUsage.append("/" + getPrimaryName() + " ")
 
                 if(it.isVararg){
@@ -154,7 +173,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
                 buildUsage.append("<").append(argName).append("> ").append(" ")
                 CommandParam(
                     argName,
-                    (parameter[0].type.classifier as? KClass<*>)?: throw IllegalParameterException("unsolved type reference from param " + it.name + " in " + function.name + " from " + this.getPrimaryName()))
+                    (it.type.classifier as? KClass<*>)?: throw IllegalParameterException("unsolved type reference from param " + it.name + " in " + function.name + " from " + this.getPrimaryName()))
             }.toTypedArray()
 
             buildUsage.append(subDescription).append("\n")
@@ -165,11 +184,17 @@ abstract class CompositeCommand @JvmOverloads constructor(
                 subDescription,
                 overridePermission?.permission?.getInstance() ?: permission,
                 onCommand = block { sender: CommandSender, args: Array<out Any> ->
-                    function.callSuspend(sender,*args) as Boolean
+                    if(notStatic) {
+                        function.callSuspend(this,sender, *args) as Boolean
+                    }else{
+                        function.callSuspend(sender, *args) as Boolean
+                    }
                 }
             )
 
-        }.toTypedArray()
+        }.toTypedArray().also {
+            usage = buildUsage.toString()
+        }
     }
 
     private fun block(block: suspend (CommandSender, Array<out Any>) -> Boolean): suspend (CommandSender, Array<out Any>) -> Boolean {
@@ -296,19 +321,3 @@ internal inline fun <T:Any> KClass<out T>.getInstance():T {
     return this.objectInstance ?: this.createInstance()
 }
 
-
-fun main(){
-    val mute = object:CompositeCommand(
-        TestCommandOwner,
-        "mute"
-    ){
-        @SubCommand("add")
-        fun CommandSender.onMute1(@Name("参数名1") target: String):Boolean{
-            return true
-        }
-    }
-
-    mute.subCommands
-
-    println(mute.usage)
-}
