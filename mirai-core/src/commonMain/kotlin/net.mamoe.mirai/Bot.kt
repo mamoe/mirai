@@ -301,7 +301,7 @@ abstract class Bot internal constructor(
      * @param event 邀请入群的事件对象
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept"))
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
     @JvmSynthetic
     abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
@@ -311,7 +311,7 @@ abstract class Bot internal constructor(
      * @param event 邀请入群的事件对象
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore"))
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore()"))
     @JvmSynthetic
     abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
