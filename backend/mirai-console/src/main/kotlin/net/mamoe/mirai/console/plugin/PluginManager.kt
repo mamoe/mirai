@@ -24,6 +24,7 @@ inline fun PluginLoader<*, *>.unregister() = PluginManager.unregisterPluginLoade
 
 object PluginManager {
     val pluginsDir = File(MiraiConsole.rootDir, "plugins").apply { mkdir() }
+    val pluginsDataFolder = File(MiraiConsole.rootDir, "data").apply { mkdir() }
 
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()
     private val loadersLock: ReentrantLock = ReentrantLock()

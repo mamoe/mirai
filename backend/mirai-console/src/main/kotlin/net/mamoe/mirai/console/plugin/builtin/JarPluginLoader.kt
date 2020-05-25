@@ -14,6 +14,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.PluginsLoader
+import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
 import java.io.File
@@ -24,7 +25,7 @@ import kotlin.reflect.full.createInstance
 /**
  * 内建的 Jar (JVM) 插件加载器
  */
-object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>("jar"), CoroutineScope {
+object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"), CoroutineScope {
     private val logger: MiraiLogger by lazy {
         MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
     }
@@ -45,6 +46,8 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
             classLoader.clear()
         }
     }
+
+    val settingStorage: SettingStorage = MiraiConsole.jvmSettingStorage
 
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
 

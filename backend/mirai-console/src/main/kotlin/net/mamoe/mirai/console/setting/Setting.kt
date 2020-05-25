@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.console.setting.internal.SettingImpl
+import net.mamoe.mirai.console.setting.internal.serialNameOrPropertyName
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -33,6 +34,12 @@ typealias Comment = net.mamoe.yamlkt.Comment
  */
 @Suppress("EXPOSED_SUPER_CLASS")
 abstract class Setting : SettingImpl() {
+
+    data class PropertyInfo(
+        val serialName: String,
+        val annotations: List<Annotation>
+    )
+
     /**
      * 这个配置的名称, 仅对于顶层配置有效.
      */
@@ -43,6 +50,16 @@ abstract class Setting : SettingImpl() {
             ?: error("Names should be assigned to anonymous classes manually by overriding serialName")
 
 
+    // for Java only
+    fun <T : Any> addProperty(
+        propertyInfo: PropertyInfo,
+        value: Value<*>
+    ): Value<*> {
+        if (built) error("The Setting is already serialized so it's structure is immutable.")
+        valueList.add(value to propertyInfo)
+        return value
+    }
+
     /**
      * 提供属性委托, 并添加这个对象的自动保存跟踪.
      */
@@ -52,9 +69,11 @@ abstract class Setting : SettingImpl() {
         property: KProperty<*>
     ): ReadWriteProperty<Setting, T> {
         if (built) error("The Setting is already serialized so it's structure is immutable.")
-        valueList.add(this to property)
+        valueList.add(this to PropertyInfo(property.serialNameOrPropertyName, property.annotations))
         return this
     }
+
+    abstract override fun onElementChanged(value: Value<*>)
 
     override fun toString(): String = yamlForToString.stringify(this.serializer, this)
 }

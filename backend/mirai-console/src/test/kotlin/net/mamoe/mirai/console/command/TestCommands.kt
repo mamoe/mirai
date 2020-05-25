@@ -13,13 +13,19 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.plugin.builtin.KotlinPlugin
+import net.mamoe.mirai.console.setting.value
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 
-val plugin: KotlinPlugin = object : KotlinPlugin() {
+val plugin = MyPlugin()
 
+class MyPlugin : KotlinPlugin() {
+
+    inner class MySetting : PluginSetting() {
+        val int by value(1)
+    }
 }
 
 /*

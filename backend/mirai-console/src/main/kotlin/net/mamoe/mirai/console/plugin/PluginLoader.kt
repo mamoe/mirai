@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.plugin
 
+import net.mamoe.mirai.console.plugin.builtin.JarPluginLoader
 import java.io.File
 
 /**
@@ -59,7 +60,7 @@ open class PluginLoadException : RuntimeException {
  */
 interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoader<P, D> {
     /**
-     * 所支持的插件文件后缀, 不含 '.'. 如 [JarPluginLoader] 为 "jar"
+     * 所支持的插件文件后缀, 含 '.'. 如 [JarPluginLoader] 为 ".jar"
      */
     val fileSuffix: String
 }
@@ -70,6 +71,9 @@ abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
     private fun pluginsFilesSequence(): Sequence<File> =
         PluginManager.pluginsDir.walk().filter { it.isFile && it.name.endsWith(fileSuffix, ignoreCase = true) }
 
+    /**
+     * 读取扫描到的后缀与 [fileSuffix] 相同的文件中的 [PluginDescription]
+     */
     protected abstract fun Sequence<File>.mapToDescription(): List<D>
 
     final override fun listPlugins(): List<D> = pluginsFilesSequence().mapToDescription()

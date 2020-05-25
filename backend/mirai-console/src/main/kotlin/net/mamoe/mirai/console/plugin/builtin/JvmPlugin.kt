@@ -12,18 +12,20 @@
 package net.mamoe.mirai.console.plugin.builtin
 
 import kotlinx.atomicfu.locks.withLock
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginLoader
+import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.setting.*
 import net.mamoe.mirai.console.utils.JavaPluginScheduler
 import net.mamoe.mirai.utils.MiraiLogger
+import java.io.File
+import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KProperty
 
 
 /**
@@ -40,7 +42,7 @@ interface JvmPlugin : Plugin, CoroutineScope {
     val description: JvmPluginDescription
 
     /** 所属插件加载器实例 */
-    override val loader: PluginLoader<*, *> get() = JarPluginLoader
+    override val loader: JarPluginLoader get() = JarPluginLoader
 
     @JvmDefault
     fun onLoad() {
@@ -72,35 +74,45 @@ abstract class JavaPlugin @JvmOverloads constructor(
 abstract class KotlinPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
-    // that's it
+
+    abstract inner class PluginSetting : Setting() {
+        private val track =
+            @Suppress("LeakingThis")
+            loader.settingStorage.trackOn(this)
+
+        init {
+            this@KotlinPlugin.job.invokeOnCompletion {
+                track.close()
+            }
+        }
+
+        override fun onElementChanged(value: Value<*>) {
+            TODO()
+        }
+    }
 }
+
+internal val <T> T.job: Job where T : CoroutineScope, T : Plugin get() = this.coroutineContext[Job]!!
 
 internal sealed class JvmPluginImpl(
     parentCoroutineContext: CoroutineContext
 ) : JvmPlugin, CoroutineScope {
+    // region JvmPlugin
     /**
      * Initialized immediately after construction of [JvmPluginImpl] instance
      */
     @Suppress("PropertyName")
     internal lateinit var _description: JvmPluginDescription
 
-    // for future use
-    @Suppress("PropertyName")
-    @JvmField
-    internal var _intrinsicCoroutineContext: CoroutineContext = EmptyCoroutineContext
-
     override val description: JvmPluginDescription get() = _description
 
     final override val logger: MiraiLogger by lazy { MiraiConsole.newLogger(this._description.name) }
 
-    @JvmField
-    internal val coroutineContextInitializer = {
-        CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
-            .plus(parentCoroutineContext)
-            .plus(SupervisorJob(parentCoroutineContext[Job])) + _intrinsicCoroutineContext
-    }
-
     private var firstRun = true
+
+    override val dataFolder: File by lazy {
+        File(PluginManager.pluginsDataFolder, description.name).apply { mkdir() }
+    }
 
     internal fun internalOnDisable() {
         firstRun = false
@@ -116,6 +128,22 @@ internal sealed class JvmPluginImpl(
         this.onEnable()
     }
 
+    // endregion
+
+    // region CoroutineScope
+
+    // for future use
+    @Suppress("PropertyName")
+    @JvmField
+    internal var _intrinsicCoroutineContext: CoroutineContext = EmptyCoroutineContext
+
+    @JvmField
+    internal val coroutineContextInitializer = {
+        CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
+            .plus(parentCoroutineContext)
+            .plus(SupervisorJob(parentCoroutineContext[Job])) + _intrinsicCoroutineContext
+    }
+
     private fun refreshCoroutineContext(): CoroutineContext {
         return coroutineContextInitializer().also { _coroutineContext = it }
     }
@@ -126,4 +154,5 @@ internal sealed class JvmPluginImpl(
         get() = _coroutineContext
             ?: contextUpdateLock.withLock { _coroutineContext ?: refreshCoroutineContext() }
 
+    // endregion
 }

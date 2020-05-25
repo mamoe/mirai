@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.plugin.builtin.JvmPlugin
+import java.io.File
 
 /**
  * 表示一个 mirai-console 插件.
@@ -22,4 +23,9 @@ interface Plugin {
      * 所属插件加载器实例
      */
     val loader: PluginLoader<*, *>
+
+    /**
+     * 插件数据目录
+     */
+    val dataFolder: File
 }
