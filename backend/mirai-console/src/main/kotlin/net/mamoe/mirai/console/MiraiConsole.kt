@@ -36,11 +36,37 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
         this.instance = instance
     }
 
-    override val build: String get() = instance.build
-    override val version: String get() = instance.version
+    /**
+     * `mirai-console` build 号
+     */
+    @MiraiExperimentalAPI
+    override val build: String
+        get() = instance.build
+
+    /**
+     * `mirai-console` 版本
+     */
+    @MiraiExperimentalAPI
+    override val version: String
+        get() = instance.version
+
+    /**
+     * Console 运行路径
+     */
     override val rootDir: File get() = instance.rootDir
+
+    /**
+     * Console 前端接口
+     */
     override val frontEnd: MiraiConsoleFrontEnd get() = instance.frontEnd
-    override val mainLogger: MiraiLogger get() = instance.mainLogger
+
+    /**
+     * 与前端交互所使用的 Logger
+     */
+    @MiraiExperimentalAPI
+    override val mainLogger: MiraiLogger
+        get() = instance.mainLogger
+
     override val coroutineContext: CoroutineContext get() = instance.coroutineContext
 
     override val builtInPluginLoaders: List<PluginLoader<*, *>> get() = instance.builtInPluginLoaders
