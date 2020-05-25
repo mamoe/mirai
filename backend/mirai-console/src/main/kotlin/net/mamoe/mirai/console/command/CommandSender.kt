@@ -7,22 +7,26 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "INAPPLICABLE_JVM_NAME")
 
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.utils.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
+import org.jetbrains.annotations.Contract
 
 /**
  * 指令发送者
  *
  * @see AbstractCommandSender 请继承于该抽象类
  */
+@Suppress("FunctionName")
 interface CommandSender {
     /**
      * 与这个 [CommandSender] 相关的 [Bot]. 当通过控制台执行时为 null.
@@ -32,15 +36,18 @@ interface CommandSender {
     /**
      * 立刻发送一条消息
      */
+    @JvmSynthetic
     suspend fun sendMessage(message: Message)
 
-    /**
-     * 写入要发送的内容 所有内容最后会被以一条发出
-     */
-    fun appendMessage(message: String)
+    @JvmDefault
+    @JavaFriendlyAPI
+    @JvmName("sendMessage")
+    fun __sendMessageBlocking(messageChain: Message) = runBlocking { sendMessage(messageChain) }
 
-    fun sendMessageBlocking(messageChain: Message) = runBlocking { sendMessage(messageChain) }
-    fun sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
+    @JvmDefault
+    @JavaFriendlyAPI
+    @JvmName("sendMessage")
+    fun __sendMessageBlocking(message: String) = runBlocking { sendMessage(message) }
 }
 
 /**
@@ -52,42 +59,19 @@ interface BotAwareCommandSender : CommandSender {
 
 suspend inline fun CommandSender.sendMessage(message: String) = sendMessage(PlainText(message))
 
-abstract class AbstractCommandSender : CommandSender {
-    internal val builder = StringBuilder()
-
-    override fun appendMessage(message: String) {
-        builder.appendln(message)
-    }
-
-    internal open suspend fun flushMessage() {
-        if (builder.isNotEmpty()) {
-            sendMessage(builder.toString().removeSuffix("\n"))
-        }
-    }
-}
-
 /**
  * 控制台指令执行者. 代表由控制台执行指令
  */
-object ConsoleCommandSender : AbstractCommandSender() {
-    override val bot: Nothing? get() = null
-
-    override suspend fun sendMessage(message: Message) {
-        TODO()
-        // MiraiConsole.logger("[Command]", 0, messageChain.toString())
-    }
-
-    override suspend fun flushMessage() {
-        super.flushMessage()
-        builder.clear()
-    }
+// 前端实现
+abstract class ConsoleCommandSender internal constructor() : CommandSender {
+    final override val bot: Nothing? get() = null
 }
 
-inline fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
+fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
 
-inline fun Member.asCommandSender(): MemberCommandSender = MemberCommandSender(this)
+fun Member.asCommandSender(): MemberCommandSender = MemberCommandSender(this)
 
-inline fun User.asCommandSender(): UserCommandSender {
+fun User.asCommandSender(): UserCommandSender {
     return when (this) {
         is Friend -> this.asCommandSender()
         is Member -> this.asCommandSender()
@@ -100,7 +84,10 @@ inline fun User.asCommandSender(): UserCommandSender {
  * 代表一个用户私聊机器人执行指令
  * @see User.asCommandSender
  */
-sealed class UserCommandSender : AbstractCommandSender(), BotAwareCommandSender {
+sealed class UserCommandSender : CommandSender, BotAwareCommandSender {
+    /**
+     * @see MessageEvent.sender
+     */
     abstract val user: User
 
     /**
