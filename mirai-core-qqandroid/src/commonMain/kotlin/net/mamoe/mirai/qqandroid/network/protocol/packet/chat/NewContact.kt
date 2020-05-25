@@ -13,7 +13,6 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat
 
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.readBytes
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -58,17 +57,15 @@ internal class NewContact {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): NewFriendRequestEvent? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = friendmsgs?.firstOrNull()
-                return if (struct == null) null else {
-                    struct.msg?.run {
-                        NewFriendRequestEvent(
-                            bot,
-                            struct.msgSeq,
-                            msgAdditional,
-                            struct.reqUin,
-                            groupCode,
-                            reqUinNick
-                        )
-                    }
+                return struct?.msg?.run {
+                    NewFriendRequestEvent(
+                        bot,
+                        struct.msgSeq,
+                        msgAdditional,
+                        struct.reqUin,
+                        groupCode,
+                        reqUinNick
+                    )
                 }
             }
         }
@@ -77,7 +74,8 @@ internal class NewContact {
 
             operator fun invoke(
                 client: QQAndroidClient,
-                event: NewFriendRequestEvent,
+                eventId: Long,
+                fromId: Long,
                 accept: Boolean,
                 blackList: Boolean = false
             ) =
@@ -92,8 +90,8 @@ internal class NewContact {
                                 remark = "",
                                 blacklist = !accept && blackList
                             ),
-                            msgSeq = event.eventId,
-                            reqUin = event.fromId,
+                            msgSeq = eventId,
+                            reqUin = fromId,
                             srcId = 6,
                             subSrcId = 7,
                             subType = 1
@@ -147,7 +145,7 @@ internal class NewContact {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = groupmsgs?.firstOrNull()
 
-                return if (struct == null) null else struct.msg?.run<Structmsg.SystemMsg, Packet> {
+                return struct?.msg?.run<Structmsg.SystemMsg, Packet> {
                     //this.soutv("SystemMsg")
                     when (subType) {
                         1 -> { //管理员邀请
@@ -200,7 +198,10 @@ internal class NewContact {
 
             operator fun invoke(
                 client: QQAndroidClient,
-                event: MemberJoinRequestEvent,
+                eventId: Long,
+                fromId: Long,
+                groupId: Long,
+                isInvited: Boolean,
                 accept: Boolean?,
                 blackList: Boolean = false
             ) =
@@ -214,41 +215,17 @@ internal class NewContact {
                                     true -> 11 // accept
                                     false -> 12 // reject
                                 },
-                                groupCode = event.groupId,
+                                groupCode = groupId,
                                 msg = "",
                                 remark = "",
                                 blacklist = blackList
                             ),
-                            groupMsgType = 1,
+                            groupMsgType = if (isInvited) 2 else 1,
                             language = 1000,
-                            msgSeq = event.eventId,
-                            reqUin = event.fromId,
+                            msgSeq = eventId,
+                            reqUin = fromId,
                             srcId = 3,
-                            subSrcId = 31,
-                            subType = 1
-                        )
-                    )
-                }
-
-            operator fun invoke(
-                client: QQAndroidClient,
-                event: BotInvitedJoinGroupRequestEvent,
-                accept: Boolean
-            ) =
-                buildOutgoingUniPacket(client) {
-                    writeProtoBuf(
-                        Structmsg.ReqSystemMsgAction.serializer(),
-                        Structmsg.ReqSystemMsgAction(
-                            actionInfo = Structmsg.SystemMsgActionInfo(
-                                type = if (accept) 11 else 12,
-                                groupCode = Group.calculateGroupCodeByGroupUin(event.groupId)
-                            ),
-                            groupMsgType = 2,
-                            language = 1000,
-                            msgSeq = event.eventId,
-                            reqUin = event.invitorId,
-                            srcId = 3,
-                            subSrcId = 10016,
+                            subSrcId = if (isInvited) 10016 else 31,
                             subType = 1
                         )
                     )
