@@ -23,6 +23,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.collections.AbstractCollection
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.reflect.KProperty
@@ -58,30 +59,16 @@ interface JvmPlugin : Plugin, CoroutineScope {
 }
 
 /**
- * Java 插件的父类
+ * [JavaPlugin] 和 [KotlinPlugin] 的父类
  */
-abstract class JavaPlugin @JvmOverloads constructor(
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
-
-    /**
-     * Java API Scheduler
-     */
-    val scheduler: JavaPluginScheduler =
-        JavaPluginScheduler(this.coroutineContext)
-}
-
-abstract class KotlinPlugin @JvmOverloads constructor(
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
-
+sealed class AbstractJvmPlugin(parentCoroutineContext: CoroutineContext) : JvmPluginImpl(parentCoroutineContext) {
     abstract inner class PluginSetting : Setting() {
         private val track =
             @Suppress("LeakingThis")
             loader.settingStorage.trackOn(this)
 
         init {
-            this@KotlinPlugin.job.invokeOnCompletion {
+            this@AbstractJvmPlugin.job.invokeOnCompletion {
                 track.close()
             }
         }
@@ -91,6 +78,27 @@ abstract class KotlinPlugin @JvmOverloads constructor(
         }
     }
 }
+
+/**
+ * Java 插件的父类
+ */
+abstract class JavaPlugin @JvmOverloads constructor(
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
+
+    /**
+     * Java API Scheduler
+     */
+    val scheduler: JavaPluginScheduler =
+        JavaPluginScheduler(this.coroutineContext)
+}
+
+/**
+ * Kotlin 插件的父类
+ */
+abstract class KotlinPlugin @JvmOverloads constructor(
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext)
 
 internal val <T> T.job: Job where T : CoroutineScope, T : Plugin get() = this.coroutineContext[Job]!!
 
