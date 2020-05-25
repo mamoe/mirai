@@ -10,10 +10,7 @@
 package net.mamoe.mirai.console.utils
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugins.*
 import net.mamoe.mirai.contact.User
-import java.io.File
 
 
 /**

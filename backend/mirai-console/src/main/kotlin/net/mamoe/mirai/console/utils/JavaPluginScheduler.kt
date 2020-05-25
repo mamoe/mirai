@@ -11,7 +11,7 @@ package net.mamoe.mirai.console.utils
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.future
-import net.mamoe.mirai.console.plugins.builtin.JavaPlugin
+import net.mamoe.mirai.console.plugin.builtin.JavaPlugin
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future

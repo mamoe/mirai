@@ -7,15 +7,15 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugins.builtin
+package net.mamoe.mirai.console.plugin.builtin
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import net.mamoe.mirai.console.plugins.FilePluginDescription
-import net.mamoe.mirai.console.plugins.PluginDependency
-import net.mamoe.mirai.console.plugins.PluginDescription
-import net.mamoe.mirai.console.plugins.PluginKind
+import net.mamoe.mirai.console.plugin.FilePluginDescription
+import net.mamoe.mirai.console.plugin.PluginDependency
+import net.mamoe.mirai.console.plugin.PluginDescription
+import net.mamoe.mirai.console.plugin.PluginKind
 import java.io.File
 
 @Serializable

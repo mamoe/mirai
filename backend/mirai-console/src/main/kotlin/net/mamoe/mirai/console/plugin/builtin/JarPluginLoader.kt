@@ -7,15 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugins.builtin
+package net.mamoe.mirai.console.plugin.builtin
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugins.AbstractFilePluginLoader
-import net.mamoe.mirai.console.plugins.PluginLoadException
-import net.mamoe.mirai.console.plugins.PluginsLoader
+import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
+import net.mamoe.mirai.console.plugin.PluginLoadException
+import net.mamoe.mirai.console.plugin.PluginsLoader
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.error
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 import java.net.URL

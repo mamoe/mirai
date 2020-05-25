@@ -13,7 +13,7 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.atomicfu.locks.withLock
-import net.mamoe.mirai.console.plugins.Plugin
+import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage

@@ -13,8 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.plugins.PluginLoader
-import net.mamoe.mirai.console.plugins.builtin.JarPluginLoader
+import net.mamoe.mirai.console.plugin.PluginLoader
+import net.mamoe.mirai.console.plugin.builtin.JarPluginLoader
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger

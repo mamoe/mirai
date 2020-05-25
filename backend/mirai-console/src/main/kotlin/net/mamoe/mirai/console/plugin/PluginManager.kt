@@ -9,7 +9,7 @@
 
 @file:Suppress("NOTHING_TO_INLINE")
 
-package net.mamoe.mirai.console.plugins
+package net.mamoe.mirai.console.plugin
 
 import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.console.MiraiConsole

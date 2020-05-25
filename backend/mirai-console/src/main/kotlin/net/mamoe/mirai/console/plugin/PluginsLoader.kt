@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugins
+package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.MiraiConsole
 import java.io.File

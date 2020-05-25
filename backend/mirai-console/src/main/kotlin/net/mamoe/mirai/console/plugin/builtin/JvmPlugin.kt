@@ -9,7 +9,7 @@
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS")
 
-package net.mamoe.mirai.console.plugins.builtin
+package net.mamoe.mirai.console.plugin.builtin
 
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -17,8 +17,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugins.Plugin
-import net.mamoe.mirai.console.plugins.PluginLoader
+import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.utils.JavaPluginScheduler
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.locks.ReentrantLock

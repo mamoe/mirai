@@ -9,7 +9,7 @@
 
 @file:Suppress("unused")
 
-package net.mamoe.mirai.console.plugins
+package net.mamoe.mirai.console.plugin
 
 import java.io.File
 

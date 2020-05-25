@@ -7,9 +7,9 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugins
+package net.mamoe.mirai.console.plugin
 
-import net.mamoe.mirai.console.plugins.builtin.JvmPlugin
+import net.mamoe.mirai.console.plugin.builtin.JvmPlugin
 
 /**
  * 表示一个 mirai-console 插件.
