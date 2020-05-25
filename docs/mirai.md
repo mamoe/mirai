@@ -82,7 +82,6 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
 3. '消息'
    1. [消息对象 Message](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/Message.kt)  
       特别注意, `Message` 分为 单个消息(`SingleMessage`) 和 多个消息, 即消息链(`MessageChain` ).  
-      - 
    2. [消息链 MessageChain](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/MessageChain.kt)  
       // TODO 此处还有更详细的扩展 API 解释, 待更新
    3. 接下来可按需阅读各类型消息 [各类型消息](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/). 一个文件包含一种消息.
