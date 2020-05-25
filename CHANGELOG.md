@@ -1,5 +1,16 @@
 # Version 1.x
 
+## `1.0.1` 2020/5/25
+- 新增临时会话消息发送事件: `TempMessageSendEvent` (#338)
+- 新增 `Bot.isOnline` (#342)
+<br />
+
+- 修复日志重定向到文件后无换行的问题
+- 修复 Bot 被邀请入群事件的解析, 添加 `BotJoinGroupEvent.Invite` (#344)
+- 修复 IPv6 地址支持 (#334)
+- 修复一些 KDoc (#337)
+- 优化一些内部的日志的显示
+``
 ## `1.0.0` 2020/5/22
 
 - `ContactOrBot` 现在继承 `CoroutineScope`
