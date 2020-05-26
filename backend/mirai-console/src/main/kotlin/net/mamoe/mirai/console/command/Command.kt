@@ -12,13 +12,8 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.description.*
-import net.mamoe.mirai.console.command.description.CommandParam
-import net.mamoe.mirai.console.command.description.CommandParserContext
-import net.mamoe.mirai.console.command.description.EmptyCommandParserContext
-import net.mamoe.mirai.console.command.description.plus
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
-import java.lang.Exception
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.full.*
@@ -29,19 +24,36 @@ import kotlin.reflect.full.*
  * @see register 注册这个指令
  */
 interface Command {
+    /**
+     * 指令名. 需要至少有一个元素. 所有元素都不能带有空格
+     */
     val names: Array<out String>
-
-    fun getPrimaryName():String = names[0]
 
     val usage: String
     val description: String
+
+    /**
+     * 指令权限
+     */
     val permission: CommandPermission
+
+    /**
+     * 为 `true` 时表示 [指令前缀][CommandPrefix] 可选
+     */
     val prefixOptional: Boolean
 
     val owner: CommandOwner
 
+    /**
+     * @param args 指令参数. 可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
+     */
     suspend fun onCommand(sender: CommandSender, args: Array<out Any>)
 }
+
+/**
+ * 主要指令名. 为 [Command.names] 的第一个元素.
+ */
+val Command.primaryName: String get() = names[0]
 
 /**
  * 功能最集中的Commend
@@ -55,20 +67,26 @@ interface Command {
 abstract class CompositeCommand @JvmOverloads constructor(
     override val owner: CommandOwner,
     vararg names: String,
-    override val description: String = "no description available",
+    description: String = "no description available",
     override val permission: CommandPermission = CommandPermission.Default,
     override val prefixOptional: Boolean = false,
     overrideContext: CommandParserContext = EmptyCommandParserContext
 ) : Command {
-
-    class IllegalParameterException(message:String): Exception(message)
-
-
+    override val description = description.trimIndent()
     override val names: Array<out String> =
-        names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).toTypedArray()
+        names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).also { list ->
+            list.firstOrNull { !it.isValidSubName() }?.let {
+                error("Name is not valid: $it")
+            }
+        }.toTypedArray()
+
+    /**
+     * [CommandArgParser] 的环境
+     */
     val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
 
-    override lateinit var usage: String
+    override var usage: String = "<command build failed>" // initialized by subCommand reflection
+        internal set
 
     /** 指定子指令要求的权限 */
     @Retention(AnnotationRetention.RUNTIME)
@@ -108,6 +126,9 @@ abstract class CompositeCommand @JvmOverloads constructor(
         )
     }
 
+
+    class IllegalParameterException internal constructor(message: String) : Exception(message)
+
     internal val subCommands: Array<SubCommandDescriptor> by lazy {
 
         val buildUsage = StringBuilder(this.description).append(": \n")
@@ -121,38 +142,38 @@ abstract class CompositeCommand @JvmOverloads constructor(
                 println()
             }
 
-            val notStatic = function.findAnnotation<JvmStatic>()==null
+            val notStatic = function.findAnnotation<JvmStatic>() == null
 
             val overridePermission = function.findAnnotation<Permission>()//optional
 
-            val subDescription = function.findAnnotation<Description>()?.description?:"no description available"
+            val subDescription = function.findAnnotation<Description>()?.description ?: "no description available"
 
-            if((function.returnType.classifier as? KClass<*>)?.isSubclassOf(Boolean::class) != true){
+            if ((function.returnType.classifier as? KClass<*>)?.isSubclassOf(Boolean::class) != true) {
                 throw IllegalParameterException("Return Type of SubCommand must be Boolean")
             }
 
             val parameter = function.parameters.toMutableList()
 
-            if (parameter.isEmpty()){
-                throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.getPrimaryName() + " should be <out CommandSender>")
+            if (parameter.isEmpty()) {
+                throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.primaryName + " should be <out CommandSender>")
             }
 
-            if(notStatic){
+            if (notStatic) {
                 parameter.removeAt(0)
             }
 
-            (parameter.removeAt(0)).let {receiver ->
+            (parameter.removeAt(0)).let { receiver ->
                 if (
                     receiver.isVararg ||
                     ((receiver.type.classifier as? KClass<*>).also { print(it) }
                         ?.isSubclassOf(CommandSender::class) != true)
                 ) {
-                    throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.getPrimaryName() + " should be <out CommandSender>")
+                    throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.primaryName + " should be <out CommandSender>")
                 }
             }
 
             val commandName = function.findAnnotation<SubCommand>()!!.name.map {
-                if(!it.isValidSubName()){
+                if (!it.isValidSubName()) {
                     error("SubName $it is not valid")
                 }
                 it
@@ -160,20 +181,22 @@ abstract class CompositeCommand @JvmOverloads constructor(
 
             //map parameter
             val parms = parameter.map {
-                buildUsage.append("/" + getPrimaryName() + " ")
+                buildUsage.append("/$primaryName ")
 
-                if(it.isVararg){
-                    throw IllegalParameterException("parameter for sub commend " + function.name + " from " + this.getPrimaryName() + " should not be var arg")
+                if (it.isVararg) {
+                    throw IllegalParameterException("parameter for sub commend " + function.name + " from " + this.primaryName + " should not be var arg")
                 }
-                if(it.isOptional){
-                    throw IllegalParameterException("parameter for sub commend " + function.name + " from " + this.getPrimaryName() + " should not be var optional")
+                if (it.isOptional) {
+                    throw IllegalParameterException("parameter for sub commend " + function.name + " from " + this.primaryName + " should not be var optional")
                 }
 
-                val argName = it.findAnnotation<Name>()?.name?:it.name?:"unknown"
+                val argName = it.findAnnotation<Name>()?.name ?: it.name ?: "unknown"
                 buildUsage.append("<").append(argName).append("> ").append(" ")
                 CommandParam(
                     argName,
-                    (it.type.classifier as? KClass<*>)?: throw IllegalParameterException("unsolved type reference from param " + it.name + " in " + function.name + " from " + this.getPrimaryName()))
+                    (it.type.classifier as? KClass<*>)
+                        ?: throw IllegalParameterException("unsolved type reference from param " + it.name + " in " + function.name + " from " + this.primaryName)
+                )
             }.toTypedArray()
 
             buildUsage.append(subDescription).append("\n")
@@ -184,9 +207,9 @@ abstract class CompositeCommand @JvmOverloads constructor(
                 subDescription,
                 overridePermission?.permission?.getInstance() ?: permission,
                 onCommand = block { sender: CommandSender, args: Array<out Any> ->
-                    if(notStatic) {
-                        function.callSuspend(this,sender, *args) as Boolean
-                    }else{
+                    if (notStatic) {
+                        function.callSuspend(this, sender, *args) as Boolean
+                    } else {
                         function.callSuspend(sender, *args) as Boolean
                     }
                 }
@@ -317,7 +340,7 @@ internal fun Any.flattenCommandComponents(): ArrayList<Any> {
 internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): Boolean =
     findAnnotation<T>() != null
 
-internal inline fun <T:Any> KClass<out T>.getInstance():T {
+internal inline fun <T : Any> KClass<out T>.getInstance(): T {
     return this.objectInstance ?: this.createInstance()
 }
 
