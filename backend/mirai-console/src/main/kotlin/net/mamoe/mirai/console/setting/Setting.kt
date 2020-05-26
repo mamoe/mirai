@@ -36,6 +36,16 @@ typealias Comment = net.mamoe.yamlkt.Comment
 @Suppress("EXPOSED_SUPER_CLASS")
 abstract class Setting : SettingImpl() {
 
+    /**
+     * 表示这个配置的嵌套对象, 自动绑定数据更新.
+     */
+    abstract inner class Inner : Setting() {
+        internal lateinit var attachedValue: Value<*>
+        override fun onElementChanged(value: Value<*>) {
+            this@Setting.onElementChanged(attachedValue)
+        }
+    }
+
     data class PropertyInfo(
         val serialName: String,
         val annotations: List<Annotation>,

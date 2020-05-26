@@ -101,7 +101,11 @@ fun genAllValueUseSite(): String = buildString {
                 require(this::class != default::class) {
                     "Recursive nesting is prohibited"
                 }
-                return valueImpl(default)
+                return valueImpl(default).also {
+                    if (default is Setting.NestedSetting) {
+                        default.attachedValue = it
+                    }
+                }
             }
 
             inline fun <T : Setting> Setting.value(default: T, crossinline initializer: T.() -> Unit): Value<T> =

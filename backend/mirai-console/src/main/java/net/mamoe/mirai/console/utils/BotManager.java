@@ -25,7 +25,7 @@ public class BotManager {
     }
 
     public static List<Long> getManagers(Bot bot) {
-        return BotHelperKt.getBotManagers(bot);
+        return BotManagers.getManagers(bot);
     }
 
     public static boolean isManager(Bot bot, long target) {
