@@ -100,9 +100,6 @@ internal inline fun withSender(block: CommandSender.() -> Unit): MessageChain {
             result.add(message)
         }
 
-        override fun appendMessage(message: String) {
-            result.add(message)
-        }
     }
     sender.let(block)
     return result.asMessageChain()
