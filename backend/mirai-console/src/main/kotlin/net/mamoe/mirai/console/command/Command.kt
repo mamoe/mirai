@@ -144,7 +144,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
 
             val parameter = function.parameters.toMutableList()
             if (parameter.isEmpty()){
-                throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.getPrimaryName() + " should be <out CommandSender>")
+                throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.primaryName + " should be <out CommandSender>")
             }
 
             if (notStatic) {
