@@ -15,7 +15,6 @@ package net.mamoe.mirai.console.command
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
@@ -89,6 +88,7 @@ fun CommandOwner.unregisterAllCommands() {
  * 若已有重名指令, 且 [override] 为 `false`, 返回 `false`;
  * 若已有重名指令, 但 [override] 为 `true`, 覆盖原有指令并返回 `true`.
  *
+ * @see JCommandManager.register Java 方法
  */
 @JvmOverloads
 fun Command.register(override: Boolean = false): Boolean = InternalCommandManager.modifyLock.withLock {
@@ -111,12 +111,16 @@ fun Command.register(override: Boolean = false): Boolean = InternalCommandManage
 
 /**
  * 查找并返回重名的指令. 返回重名指令.
+ *
+ * @see JCommandManager.findDuplicate Java 方法
  */
 fun Command.findDuplicate(): Command? =
     InternalCommandManager.registeredCommands.firstOrNull { it.names intersects this.names }
 
 /**
  * 取消注册这个指令. 若指令未注册, 返回 `false`.
+ *
+ * @see JCommandManager.unregister Java 方法
  */
 fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
     InternalCommandManager.registeredCommands.remove(this)
@@ -131,6 +135,8 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
  *
  * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
  * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
+ *
+ * @see JCommandManager.executeCommand Java 方法
  */
 suspend fun CommandSender.executeCommand(vararg messages: Any): Boolean {
     if (messages.isEmpty()) return false
@@ -145,6 +151,8 @@ internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Arr
 /**
  * 解析并执行一个指令
  * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
+ *
+ * @see JCommandManager.executeCommand Java 方法
  */
 suspend fun CommandSender.executeCommand(message: MessageChain): Boolean {
     if (message.isEmpty()) return false
