@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "unused")
 
 package net.mamoe.mirai.console.setting
 
@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.setting.internal.serialNameOrPropertyName
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
 import kotlin.reflect.full.findAnnotation
 
 /**
@@ -37,7 +38,8 @@ abstract class Setting : SettingImpl() {
 
     data class PropertyInfo(
         val serialName: String,
-        val annotations: List<Annotation>
+        val annotations: List<Annotation>,
+        val propertyOriginalName: String?
     )
 
     /**
@@ -61,6 +63,23 @@ abstract class Setting : SettingImpl() {
     }
 
     /**
+     * 获取这个属性的真实 [Value] 委托
+     */
+    @get:JvmSynthetic
+    val <R : Any> KProperty0<R>.correspondingValue: Value<R>
+        @Suppress("UNCHECKED_CAST")
+        get() = findCorrespondingValue(this)
+            ?: throw NoSuchElementException("No corresponding Value found for property $this")
+
+    /**
+     * 获取这个属性的真实 [Value] 委托
+     */
+    fun <R : Any> findCorrespondingValue(property: KProperty0<R>): Value<R>? {
+        @Suppress("UNCHECKED_CAST")
+        return this@Setting.valueList.firstOrNull { it.second.propertyOriginalName == property.name }?.first as Value<R>?
+    }
+
+    /**
      * 提供属性委托, 并添加这个对象的自动保存跟踪.
      */
     @JvmSynthetic
@@ -69,7 +88,7 @@ abstract class Setting : SettingImpl() {
         property: KProperty<*>
     ): ReadWriteProperty<Setting, T> {
         if (built) error("The Setting is already serialized so it's structure is immutable.")
-        valueList.add(this to PropertyInfo(property.serialNameOrPropertyName, property.annotations))
+        valueList.add(this to PropertyInfo(property.serialNameOrPropertyName, property.annotations, property.name))
         return this
     }
 
