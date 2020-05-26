@@ -124,7 +124,11 @@ fun <T : Setting> Setting.value(default: T): Value<T> {
     require(this::class != default::class) {
         "Recursive nesting is prohibited"
     }
-    return valueImpl(default)
+    return valueImpl(default).also {
+        if (default is Setting.Inner) {
+            default.attachedValue = it
+        }
+    }
 }
 
 inline fun <T : Setting> Setting.value(default: T, crossinline initializer: T.() -> Unit): Value<T> =

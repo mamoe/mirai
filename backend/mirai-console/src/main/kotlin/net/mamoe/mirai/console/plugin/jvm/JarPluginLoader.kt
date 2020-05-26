@@ -7,15 +7,16 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugins.builtin
+package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugins.AbstractFilePluginLoader
-import net.mamoe.mirai.console.plugins.PluginLoadException
-import net.mamoe.mirai.console.plugins.PluginsLoader
+import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
+import net.mamoe.mirai.console.plugin.PluginLoadException
+import net.mamoe.mirai.console.plugin.internal.JvmPluginImpl
+import net.mamoe.mirai.console.plugin.internal.PluginsLoader
+import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.error
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 import java.net.URL
@@ -25,7 +26,7 @@ import kotlin.reflect.full.createInstance
 /**
  * 内建的 Jar (JVM) 插件加载器
  */
-object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>("jar"), CoroutineScope {
+object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"), CoroutineScope {
     private val logger: MiraiLogger by lazy {
         MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
     }
@@ -39,13 +40,16 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
     }
     private val supervisor: Job = coroutineContext[Job]!!
 
-    private val classLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
+    private val classLoader: PluginsLoader =
+        PluginsLoader(this.javaClass.classLoader)
 
     init {
         supervisor.invokeOnCompletion {
             classLoader.clear()
         }
     }
+
+    val settingStorage: SettingStorage = MiraiConsole.jvmSettingStorage
 
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
 

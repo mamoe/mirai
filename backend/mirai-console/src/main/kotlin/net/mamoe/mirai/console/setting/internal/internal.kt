@@ -24,7 +24,7 @@ import kotlin.reflect.full.findAnnotation
 internal abstract class SettingImpl {
 
     @JvmField
-    internal var valueList: MutableList<Pair<Value<*>, KProperty<*>>> = mutableListOf()
+    internal var valueList: MutableList<Pair<Value<*>, Setting.PropertyInfo>> = mutableListOf()
 
     @JvmField
     internal var built: Boolean = false
@@ -53,9 +53,7 @@ internal abstract class SettingImpl {
         }
     }
 
-    internal fun onElementChanged(value: Value<*>) {
-        println("my value changed!")
-    }
+    abstract fun onElementChanged(value: Value<*>)
 
     companion object {
         @JvmStatic
@@ -78,8 +76,9 @@ internal class SettingUpdaterSerializer(
     override val descriptor: SerialDescriptor by lazy {
         @OptIn(MiraiExperimentalAPI::class)
         SerialDescriptor(instance.serialName) {
-            for ((value, property) in instance.valueList) {
-                element(property.serialNameOrPropertyName, value.serializer.descriptor, annotations, true)
+            for ((value, prop) in instance.valueList) {
+                val (serialName, annotations) = prop
+                element(serialName, value.serializer.descriptor, annotations, true)
             }
         }
     }

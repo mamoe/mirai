@@ -12,14 +12,20 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.plugins.builtin.KotlinPlugin
+import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.console.setting.value
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 
-val plugin: KotlinPlugin = object : KotlinPlugin() {
+val plugin = MyPlugin()
 
+class MyPlugin : KotlinPlugin() {
+
+    inner class MySetting : PluginSetting() {
+        val int by value(1)
+    }
 }
 
 /*
@@ -94,9 +100,6 @@ internal inline fun withSender(block: CommandSender.() -> Unit): MessageChain {
             result.add(message)
         }
 
-        override fun appendMessage(message: String) {
-            result.add(message)
-        }
     }
     sender.let(block)
     return result.asMessageChain()

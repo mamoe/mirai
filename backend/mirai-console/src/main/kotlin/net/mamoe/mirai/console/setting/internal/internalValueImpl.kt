@@ -17,7 +17,9 @@ import net.mamoe.mirai.console.setting.*
 import net.mamoe.yamlkt.YamlDynamicSerializer
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
 import kotlin.reflect.full.createInstance
+import kotlin.reflect.typeOf
 
 /// region MUTABLE LIST
 
@@ -291,6 +293,7 @@ internal fun <T : Any> Setting.valueImpl(
 /**
  * For primitives and serializable only
  */
+@OptIn(ExperimentalStdlibApi::class)
 @PublishedApi
 @LowPriorityInOverloadResolution
 internal inline fun <reified T : Any> Setting.valueImpl(default: T): Value<T> =

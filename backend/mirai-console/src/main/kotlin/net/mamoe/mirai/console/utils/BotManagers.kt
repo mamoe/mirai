@@ -6,14 +6,21 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+@file:JvmName("BotManagers")
 
 package net.mamoe.mirai.console.utils
 
+import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugins.*
+import net.mamoe.mirai.console.setting.Value
+import net.mamoe.mirai.console.setting.internal.ConsoleBuiltInSetting
+import net.mamoe.mirai.console.setting.value
 import net.mamoe.mirai.contact.User
-import java.io.File
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.properties.ReadWriteProperty
 
 
 /**
@@ -32,15 +39,4 @@ fun Bot.removeManager(long: Long) {
 }
 
 val Bot.managers: List<Long>
-    get() {
-       TODO()
-    }
-
-fun Bot.checkManager(long: Long): Boolean {
-    return this.managers.contains(long)
-}
-
-
-fun getBotManagers(bot: Bot): List<Long> {
-    return bot.managers
-}
+    get() = TODO()
