@@ -102,8 +102,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
             "",
             CommandPermission.Default,
             onCommand = block { sender: CommandSender, args: Array<out Any> ->
-                println("default finally got args: ${args.joinToString()}")
-                true
+                false//not supported yet
             }
         )
     }
@@ -114,17 +113,8 @@ abstract class CompositeCommand @JvmOverloads constructor(
 
         this@CompositeCommand::class.declaredFunctions.filter { it.hasAnnotation<SubCommand>() }.map { function ->
 
-            function.parameters.forEach {
-                println(it)
-                println(it.type.classifier)
-                println()
-                println()
-            }
-
             val notStatic = function.findAnnotation<JvmStatic>()==null
-
             val overridePermission = function.findAnnotation<Permission>()//optional
-
             val subDescription = function.findAnnotation<Description>()?.description?:"no description available"
 
             if((function.returnType.classifier as? KClass<*>)?.isSubclassOf(Boolean::class) != true){
@@ -132,7 +122,6 @@ abstract class CompositeCommand @JvmOverloads constructor(
             }
 
             val parameter = function.parameters.toMutableList()
-
             if (parameter.isEmpty()){
                 throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.getPrimaryName() + " should be <out CommandSender>")
             }
@@ -170,7 +159,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
                 }
 
                 val argName = it.findAnnotation<Name>()?.name?:it.name?:"unknown"
-                buildUsage.append("<").append(argName).append("> ").append(" ")
+                buildUsage.append("<").append(argName).append("> ")
                 CommandParam(
                     argName,
                     (it.type.classifier as? KClass<*>)?: throw IllegalParameterException("unsolved type reference from param " + it.name + " in " + function.name + " from " + this.getPrimaryName()))
