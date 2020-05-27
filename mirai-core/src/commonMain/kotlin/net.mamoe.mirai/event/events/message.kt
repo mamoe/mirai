@@ -30,6 +30,8 @@ import kotlin.jvm.JvmName
 
 /**
  * 主动发送消息
+ *
+ * @see Contact.sendMessage 发送消息. 为广播这个事件的唯一途径
  */
 sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
     abstract val target: Contact
@@ -54,6 +56,8 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
 
 /**
  * 消息撤回事件. 可是任意消息被任意人撤回.
+ *
+ * @see Contact.recall 撤回消息. 为广播这个事件的唯一途径
  */
 sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
@@ -127,7 +131,12 @@ val MessageRecallEvent.isByBot: Boolean
 
 
 /**
- * 图片上传前. 可以阻止上传
+ * 图片上传前. 可以阻止上传.
+ *
+ * 此事件总是在 [ImageUploadEvent] 之前广播.
+ * 若此事件被取消, [ImageUploadEvent] 不会广播.
+ *
+ * @see Contact.uploadImage 上传图片. 为广播这个事件的唯一途径
  */
 data class BeforeImageUploadEvent internal constructor(
     val target: Contact,
@@ -138,7 +147,12 @@ data class BeforeImageUploadEvent internal constructor(
 }
 
 /**
- * 图片上传完成
+ * 图片上传完成.
+ *
+ * 此事件总是在 [BeforeImageUploadEvent] 之后广播.
+ * 若 [BeforeImageUploadEvent] 被取消, 此事件不会广播.
+ *
+ * @see Contact.uploadImage 上传图片. 为广播这个事件的唯一途径
  *
  * @see Succeed
  * @see Failed
