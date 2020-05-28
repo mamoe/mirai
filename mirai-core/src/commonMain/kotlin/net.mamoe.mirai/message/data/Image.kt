@@ -24,9 +24,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiInternalAPI
-import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.utils.*
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -97,19 +95,32 @@ expect interface Image : Message, MessageContent {
     internal val DoNotImplementThisClass: Nothing?
 }
 
+internal interface ConstOriginUrlAware : Image {
+    val originUrl: String
+}
+
+internal interface DeferredOriginUrlAware : Image {
+    fun getUrl(bot: Bot): String
+}
+
+internal interface SuspendDeferredOriginUrlAware : Image {
+    suspend fun getUrl(bot: Bot): String
+}
+
 /**
- * 群图片.
- *
- * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
- * @see Image 查看更多说明
+ * 由 [ExternalImage] 委托的 [Image] 类型. 用于 [ExternalImage.plus]
  */
-@PlannedRemoval("1.2.0") // make internal
+@SinceMirai("1.1.0")
+@MiraiExperimentalAPI("Will be renamed to OfflineImage on 1.2.0")
 @Suppress("DEPRECATION_ERROR")
-// CustomFace
-sealed class GroupImage : AbstractImage() {
-    companion object Key : Message.Key<GroupImage> {
-        override val typeName: String get() = "GroupImage"
+internal class ExperimentalDeferredImage internal constructor(
+    val externalImage: ExternalImage
+) : AbstractImage(), SuspendDeferredOriginUrlAware {
+    override suspend fun getUrl(bot: Bot): String {
+        TODO()
     }
+
+    override val imageId: String = externalImage.calculateImageResourceId()
 }
 
 /**
@@ -221,12 +232,13 @@ internal const val ONLINE_OFFLINE_DEPRECATION_MESSAGE = """
     level = DeprecationLevel.WARNING,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
-interface OnlineImage : Image {
+@Suppress("EXPOSED_SUPER_INTERFACE")
+interface OnlineImage : Image, ConstOriginUrlAware {
     companion object Key : Message.Key<OnlineImage> {
         override val typeName: String get() = "OnlineImage"
     }
 
-    val originUrl: String
+    override val originUrl: String
 }
 
 /**
@@ -271,7 +283,12 @@ suspend fun OfflineImage.queryUrl(): String {
 @Serializable
 data class OfflineGroupImage(
     override val imageId: String
-) : GroupImage(), OfflineImage {
+) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
+    override fun getUrl(bot: Bot): String {
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.id}/0-0-${imageId.substring(1..36)
+            .replace("-", "")}/0?term=2"
+    }
+
     init {
         @Suppress("DEPRECATION")
         require(imageId matches GROUP_IMAGE_ID_REGEX) {
@@ -305,7 +322,11 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
 @Serializable
 data class OfflineFriendImage(
     override val imageId: String
-) : FriendImage(), OfflineImage {
+) : FriendImage(), OfflineImage, DeferredOriginUrlAware {
+    override fun getUrl(bot: Bot): String {
+        return "http://c2cpicdw.qpic.cn/offpic_new/${bot.id}/${this.imageId}/0?term=2"
+    }
+
     init {
         require(imageId matches FRIEND_IMAGE_ID_REGEX_1 || imageId matches FRIEND_IMAGE_ID_REGEX_2) {
             "Illegal imageId. It must matches either FRIEND_IMAGE_ID_REGEX_1 or FRIEND_IMAGE_ID_REGEX_2"
@@ -324,6 +345,21 @@ data class OfflineFriendImage(
 )
 abstract class OnlineFriendImage : FriendImage(), OnlineImage
 
+
+/**
+ * 群图片.
+ *
+ * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
+ * @see Image 查看更多说明
+ */
+@PlannedRemoval("1.2.0") // make internal
+@Suppress("DEPRECATION_ERROR")
+// CustomFace
+sealed class GroupImage : AbstractImage() {
+    companion object Key : Message.Key<GroupImage> {
+        override val typeName: String get() = "GroupImage"
+    }
+}
 // endregion
 
 

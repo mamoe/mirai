@@ -721,17 +721,9 @@ internal abstract class QQAndroidBotBase constructor(
 
     @Suppress("DEPRECATION", "OverridingDeprecatedMember")
     override suspend fun queryImageUrl(image: Image): String = when (image) {
-        is OnlineFriendImageImpl -> image.originUrl
-        is OnlineGroupImageImpl -> image.originUrl
-        is OfflineGroupImage -> constructOfflineImageUrl(image)
-        is OfflineFriendImage -> constructOfflineImageUrl(image)
-        else -> error("Internal error: unsupported image class: ${image::class.simpleName}")
-    }
-
-    private fun constructOfflineImageUrl(image: Image): String = when (image) {
-        is GroupImage -> "http://gchat.qpic.cn/gchatpic_new/${id}/0-0-${image.imageId.substring(1..36)
-            .replace("-", "")}/0?term=2"
-        is FriendImage -> "http://c2cpicdw.qpic.cn/offpic_new/${id}/${image.imageId}/0?term=2"
+        is ConstOriginUrlAware -> image.originUrl
+        is DeferredOriginUrlAware -> image.getUrl(this)
+        is SuspendDeferredOriginUrlAware -> image.getUrl(this)
         else -> error("Internal error: unsupported image class: ${image::class.simpleName}")
     }
 
