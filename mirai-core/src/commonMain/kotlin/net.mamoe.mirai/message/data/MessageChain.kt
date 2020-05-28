@@ -62,7 +62,22 @@ interface MessageChain : Message, List<SingleMessage>, RandomAccess {
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`
      *
+     * ### Kotlin 使用方法
+     * ```
+     * val chain: MessageChain = ...
+     *
+     * val at = Message[At] // At 为伴生对象
+     * ```
+     *
+     * ### Java 使用方法
+     * ```java
+     * MessageChain chain = ...
+     * chain.first(At.Key)
+     * ```
+     *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
+     *
+     * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
     @JvmName("first")
     final operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
@@ -93,7 +108,7 @@ interface MessageChain : Message, List<SingleMessage>, RandomAccess {
 // region accessors
 
 /**
- * 获取第一个类型为 [key] 的 [Message] 实例
+ * 获取第一个类型为 [key] 的 [Message] 实例, 在找不到此类型的元素时抛出 [NoSuchElementException]
  *
  * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
  */

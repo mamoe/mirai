@@ -49,7 +49,7 @@ import kotlin.jvm.JvmSynthetic
  * - 连接 [Message] 与 [Message], [String], (使用操作符 [Message.plus]):
  *  ```
  * val text = PlainText("Hello ") + PlainText("world") + "!"
- * friend.sendMessage(text)
+ * friend.sendMessage(text) // "Hello world!"
  *  ```
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *
@@ -177,18 +177,31 @@ interface Message { // must be interface. Don't consider any changes.
         }
     }
 
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     /* final */ operator fun plus(another: MessageChain): MessageChain = this + another as Message
+
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     /* final */ operator fun plus(another: Message): MessageChain = this.followedBy(another)
+
+    /** 将 [another] 连接到这个消息的尾部. */
     /* final */ operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
+
+    /** 将 [another] 作为 [PlainText] 连接到这个消息的尾部. */
     /* final */ operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
+
+    /** 将 [another] 作为 [PlainText] 连接到这个消息的尾部. */
     /* final */ operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
+
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     /* final */ operator fun plus(another: Iterable<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     @JvmName("plusIterableString")
     /* final */ operator fun plus(another: Iterable<String>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     /* final */ operator fun plus(another: Sequence<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 }
