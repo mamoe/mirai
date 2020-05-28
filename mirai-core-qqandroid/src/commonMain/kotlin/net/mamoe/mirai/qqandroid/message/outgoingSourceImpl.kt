@@ -128,8 +128,8 @@ internal class MessageSourceToGroupImpl(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val sequenceId: Int
         get() = when {
-            sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: 0
-            !sequenceIdDeferred.isActive -> 0
+            sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: -1
+            !sequenceIdDeferred.isActive -> -1
             else -> error("sequenceId not yet available")
         }
 
