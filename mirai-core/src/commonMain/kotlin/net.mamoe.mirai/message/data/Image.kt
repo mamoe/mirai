@@ -20,6 +20,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.io.core.copyTo
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
@@ -185,8 +186,8 @@ fun Image(imageId: String): OfflineImage = when {
 /**
  * 查询原图下载链接.
  *
- * 当图片为从服务器接收的消息中的图片时, 可以直接获取下载链接, 本函数不会挂起协程.
- * 其他情况下协程可能会挂起并向服务器查询下载链接, 或不挂起并拼接一个链接.
+ * - 当图片为从服务器接收的消息中的图片时, 可以直接获取下载链接, 本函数不会挂起协程.
+ * - 其他情况下协程可能会挂起并向服务器查询下载链接, 或不挂起并拼接一个链接.
  *
  * @return 原图 HTTP 下载链接 (非 HTTPS)
  * @throws IllegalStateException 当无任何 [Bot] 在线时抛出 (因为无法获取相关协议)
@@ -195,11 +196,14 @@ fun Image(imageId: String): OfflineImage = when {
 suspend fun Image.queryUrl(): String {
     @Suppress("DEPRECATION")
     return when (this) {
-        is OnlineImage -> this.originUrl
-        else -> Bot._instances.peekFirst()?.get()?.queryImageUrl(this)
-            ?: error("No Bot available to query image url")
+        is ConstOriginUrlAware -> this.originUrl
+        is DeferredOriginUrlAware -> this.getUrl(firstOnlineBotInstance)
+        is SuspendDeferredOriginUrlAware -> this.getUrl(firstOnlineBotInstance)
+        else -> error("Internal error: unsupported Image class: ${this::class}")
     }
 }
+
+internal val firstOnlineBotInstance: Bot get() = Bot.botInstancesSequence.firstOrNull() ?: error("No Bot available")
 
 
 /////////////////////////

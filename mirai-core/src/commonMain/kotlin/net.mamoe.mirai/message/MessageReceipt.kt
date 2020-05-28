@@ -41,7 +41,7 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageReceipt.sourceId 源 id
  * @see MessageReceipt.sourceTime 源时间
  */
-open class MessageReceipt<out C : Contact>(
+open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructor is subject to change.") constructor(
     /**
      * 指代发送出去的消息.
      */
@@ -51,38 +51,68 @@ open class MessageReceipt<out C : Contact>(
      */
     val target: C,
 
-    @MiraiExperimentalAPI
+    /**
+     * @see Group.botAsMember
+     */
+    @MiraiExperimentalAPI("This is subject to change.")
     val botAsMember: Member?
 ) {
     /**
      * 是否为发送给群的消息的回执
      */
-    val isToGroup: Boolean = target is Group
+    val isToGroup: Boolean get() = target is Group
 
+    /**
+     * 引用这条消息并回复.
+     *
+     * 仅供 Java 使用.
+     *
+     * 仅供 Java 使用: `MessageReceipt.quoteReply(message)`
+     */
     @JavaFriendlyAPI
     @JvmName("quoteReply")
     fun __quoteReplyBlockingForJava__(message: Message): MessageReceipt<C> {
         return runBlocking { return@runBlocking quoteReply(message) }
     }
 
+    /**
+     * 引用这条消息并回复.
+     *
+     * 仅供 Java 使用: `MessageReceipt.quoteReply(message)`
+     */
     @JavaFriendlyAPI
     @JvmName("quoteReply")
     fun __quoteReplyBlockingForJava__(message: String): MessageReceipt<C> {
         return runBlocking { quoteReply(message) }
     }
 
+    /**
+     * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
+     *
+     * 仅供 Java 使用: `MessageReceipt.recall()`
+     */
     @JavaFriendlyAPI
     @JvmName("recall")
     fun __recallBlockingForJava__() {
         return runBlocking { recall() }
     }
 
+    /**
+     * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
+     *
+     * 仅供 Java 使用: `MessageReceipt.recallIn(timeMillis)`
+     */
     @JavaFriendlyAPI
     @JvmName("recallIn")
     fun __recallInBlockingForJava__(timeMillis: Long): Job {
         return recallIn(timeMillis = timeMillis)
     }
 
+    /**
+     * 引用这条消息.
+     *
+     * 仅供 Java 使用: `MessageReceipt.quote()`
+     */
     @JavaFriendlyAPI
     @JvmName("quote")
     fun __quoteBlockingForJava__(): QuoteReply {

@@ -200,13 +200,13 @@ abstract class Bot internal constructor(
      * [Bot] 撤回自己的消息不需要权限.
      * [Bot] 撤回群员的消息需要管理员权限.
      *
-     * @param source 消息源. 可从 [MessageReceipt.source] 获得, 或从消息事件中的 [MessageChain] 获得.
+     * @param source 消息源. 可从 [MessageReceipt.source] 获得, 或从消息事件中的 [MessageChain] 获得, 或通过 [buildMessageSource] 构建.
      *
-     * @throws PermissionDeniedException 当 [Bot] 无权限操作时
-     * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
+     * @throws PermissionDeniedException 当 [Bot] 无权限操作时抛出
+     * @throws IllegalStateException 当这条消息已经被撤回时抛出 (仅同步主动操作)
      *
      * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
-     * @see MessageSource.recall
+     * @see MessageSource.recall 撤回消息扩展
      */
     @JvmSynthetic
     abstract suspend fun recall(source: MessageSource)
@@ -233,7 +233,7 @@ abstract class Bot internal constructor(
      * @param fromUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
      * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalAPI("This is very experimental and is subject to change.")
     abstract fun constructMessageSource(
         kind: OfflineMessageSource.Kind,
         fromUin: Long, targetUin: Long,
@@ -336,7 +336,7 @@ abstract class Bot internal constructor(
  * 获取 [Job] 的协程 [Job]. 此 [Job] 为一个 [SupervisorJob]
  */
 @get:JvmSynthetic
-inline val Bot.supervisorJob: CompletableJob
+val Bot.supervisorJob: CompletableJob
     get() = this.coroutineContext[Job] as CompletableJob
 
 /**

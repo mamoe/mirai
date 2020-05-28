@@ -13,6 +13,8 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.Input
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.utils.internal.DeferredReusableInput
 import net.mamoe.mirai.utils.internal.asReusableInput
 import java.awt.image.BufferedImage
@@ -64,21 +66,26 @@ fun Input.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput
 
 
 @PlannedRemoval("1.2.0")
+@Suppress("RedundantSuspendModifier")
 @Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun Input.suspendToExternalImage(): ExternalImage = toExternalImage()
+suspend fun Input.suspendToExternalImage(): ExternalImage = toExternalImage()
 
+@Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
 @Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun InputStream.suspendToExternalImage(): ExternalImage = toExternalImage()
+suspend fun InputStream.suspendToExternalImage(): ExternalImage = toExternalImage()
 
+@Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
 @Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun URL.suspendToExternalImage(): ExternalImage = toExternalImage()
+suspend fun URL.suspendToExternalImage(): ExternalImage = toExternalImage()
 
+@Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
 @Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun File.suspendToExternalImage(): ExternalImage = toExternalImage()
+suspend fun File.suspendToExternalImage(): ExternalImage = toExternalImage()
 
+@Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
 @Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun BufferedImage.suspendToExternalImage(): ExternalImage = toExternalImage()
+suspend fun BufferedImage.suspendToExternalImage(): ExternalImage = toExternalImage()
