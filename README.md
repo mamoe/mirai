@@ -21,17 +21,28 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 
 console 由后端和前端一起工作. 使用时必须选择一个前端.
 
-**注意：`mirai-console` 后端和 pure 前端正在进行完全的重构，master 分支将不再维护。**
-**`mirai-console` 将在短时间内不可用。`
+**注意：`mirai-console` 后端和 pure 前端正在进行完全的重构，master 分支将不再维护。**  
+**`mirai-console` 将在短时间内不可用。**
 
-- `mirai-console`: console 的后端, 包含插件管理, 指令系统, 配置系统. 还包含一个轻量命令行的前端 (因此可以独立启动 `mirai-console`).
-- `mirai-console-graphical`: console 的 JavaFX 图形化界面前端.
-- `mirai-console-terminal`: console 的 Unix 终端界面前端. (实验性)
+后端:
+- [`mirai-console`](backend/mirai-console/): console 的后端, 包含插件管理, 指令系统, 配置系统. 没有入口程序. 
+
+前端:
+- [`mirai-console-pure`](frontend/mirai-console-pure): console 的轻量命令行前端
+- [`mirai-console-graphical`](frontend/mirai-console-graphical): console 的 JavaFX 图形化界面前端. (实验性)
+- [`mirai-console-terminal`](frontend/mirai-console-terminal): console 的 Unix 终端界面前端. (实验性)
+- [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid): console 的 Android APP 前端.
 
 
 [`mirai-console-wrapper`](https://github.com/mamoe/mirai-console-wrapper): console 启动器. 可根据用户选择从服务器下载 console 后端, mirai-core, 和指定的前端并启动.
 
 ### 使用
+
+#### Android
+
+[MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid) 提供在 Android 平台使用 mirai-console 插件的能力，同时拥有一个便于使用的 Lua 接口
+
+[项目详细](https://github.com/mzdluo123/MiraiAndroid)
 
 #### Windows
 
@@ -46,26 +57,20 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 若你不愿意简单地启动, 你可以往下阅读复杂的启动方式.
 
-#### Unix
+#### Linux / Mac
 
-Unix 没有一键包提供. 请使用 wrapper 启动器.
+使用 mirai-console-wrapper 启动器.
 
 1. 安装 JRE (Java 运行环境):
    -  若使用图形界面, 至少需要 JRE 11 并带有 JavaFX 11, 且不推荐使用 12 或更高版本.
    -  若使用命令行或终端, 至少需要 JRE 8.
-   -  可以在 [华为镜像源](https://repo.huaweicloud.com/java/jdk/) 下载 JDK (JDK 包含 JRE 和开发工具)
+   -  可以在 [华为镜像源](https://repo.huaweicloud.com/java/jdk/) 下载 JDK 安装. (JDK 包含 JRE 和开发工具)
 2. 下载 `mirai-console-wrapper-x.x.x.jar`
 3. 参照 [wrapper 命令行参数](https://github.com/mirai/mirai-console-wrapper/README.md#命令行参数), 运行 `$ java -jar mirai-console-wrapper-x.x.x.jar`
 
-#### Android
-
-[MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid) 提供了在Android平台使用mirai-console插件的能力，同时拥有一个便于使用的lua接口
-
-你可以点击这里查看[项目详细](https://github.com/mzdluo123/MiraiAndroid)
-
 ### 插件开发与获取
 
-mirai-console 支持 Jar 插件.
+mirai-console 内建 Jar 插件支持.
 
 **mirai-console 目前仍为实验性阶段, 任何功能和 API 都不保证稳定性. 任何 API 都可能在没有警告的情况下修改.**
 
