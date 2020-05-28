@@ -1,8 +1,11 @@
 package net.mamoe.mirai.utils
 
+import kotlinx.io.core.Closeable
 import kotlinx.io.core.Input
+import kotlinx.io.core.use
 import kotlinx.io.errors.IOException
-import net.mamoe.mirai.utils.internal.InputStream
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * 缓存策略.
@@ -18,14 +21,6 @@ expect interface FileCacheStrategy {
     @MiraiExperimentalAPI
     @Throws(IOException::class)
     fun newImageCache(input: Input): ExternalImage
-
-    /**
-     * 将 [input] 缓存为 [ExternalImage].
-     * 此函数应 close 这个 [InputStream]
-     */
-    @MiraiExperimentalAPI
-    @Throws(IOException::class)
-    fun newImageCache(input: InputStream): ExternalImage
 
     /**
      * 将 [input] 缓存为 [ExternalImage].
@@ -51,10 +46,13 @@ expect interface FileCacheStrategy {
 
         @MiraiExperimentalAPI
         @Throws(IOException::class)
-        override fun newImageCache(input: InputStream): ExternalImage
-
-        @MiraiExperimentalAPI
-        @Throws(IOException::class)
         override fun newImageCache(input: ByteArray): ExternalImage
     }
+}
+
+internal inline fun <I : Closeable, O : Closeable, R> I.withOut(output: O, block: I.(output: O) -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return use { output.use { block(this, output) } }
 }

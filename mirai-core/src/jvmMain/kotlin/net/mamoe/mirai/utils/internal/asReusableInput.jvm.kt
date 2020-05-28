@@ -4,6 +4,9 @@ import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.streams.asInput
 import net.mamoe.mirai.message.data.toLongUnsigned
 import java.io.File
 import java.io.InputStream
@@ -28,6 +31,10 @@ internal actual fun ByteArray.asReusableInput(): ReusableInput {
             out.flush()
             return this@asReusableInput.size.toLongUnsigned()
         }
+
+        override fun asInput(): Input {
+            return ByteReadPacket(this@asReusableInput)
+        }
     }
 }
 
@@ -50,6 +57,10 @@ internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
         override suspend fun writeTo(out: ByteWriteChannel): Long {
             return inputStream().use { it.copyTo(out) }
         }
+
+        override fun asInput(): Input {
+            return inputStream().asInput()
+        }
     }
 }
 
@@ -71,6 +82,10 @@ internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): Reusa
 
         override suspend fun writeTo(out: ByteWriteChannel): Long {
             return inputStream().use { it.copyTo(out) }
+        }
+
+        override fun asInput(): Input {
+            return inputStream().asInput()
         }
     }
 }

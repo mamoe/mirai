@@ -5,7 +5,7 @@ package net.mamoe.mirai.utils.internal
 import kotlinx.io.pool.DefaultPool
 import kotlinx.io.pool.ObjectPool
 
-expect abstract class InputStream {
+internal expect abstract class InputStream {
     open fun available(): Int
     open fun close()
     abstract fun read(): Int
