@@ -85,6 +85,15 @@ abstract class Bot internal constructor(
             get() = _instances.asSequence().mapNotNull { it.get() }.toList()
 
         /**
+         * 复制一份此时的 [Bot] 实例列表.
+         */
+        @MiraiExperimentalAPI
+        @SinceMirai("1.1.0")
+        @JvmStatic
+        val botInstancesSequence: Sequence<Bot>
+            get() = _instances.asSequence().mapNotNull { it.get() }
+
+        /**
          * 遍历每一个 [Bot] 实例
          */
         @JvmSynthetic
