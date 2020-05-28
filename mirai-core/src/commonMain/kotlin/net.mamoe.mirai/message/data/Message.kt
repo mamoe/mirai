@@ -17,7 +17,6 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import net.mamoe.mirai.contact.Contact
@@ -208,7 +207,6 @@ interface Message { // must be interface. Don't consider any changes.
 
 @MiraiExperimentalAPI
 @JvmSynthetic
-@ExperimentalCoroutinesApi
 suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
     another.fold(this) { acc, it -> acc + it }.asMessageChain()
 
