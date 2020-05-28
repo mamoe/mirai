@@ -76,7 +76,7 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
     abstract val bot: Bot
 
     /**
-     * 消息 id (序列号).
+     * 消息 id (序列号). 在获取失败时 (概率很低) 为 `-1`.
      **
      * #### 值域
      * 值的范围约为 [UShort] 的范围.
