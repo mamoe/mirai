@@ -86,7 +86,7 @@ bot.subscribeAlways<GroupMessageEvent> { event ->
   if (event.message.content.contains("你好")) {
     reply("你好!")
   } else if (event.message.content.contains("你好")) {
-     File("C:\\image.png").uploadAsImage()
+     File("C:\\image.png").sendAsImage()
   } 
 }
 
