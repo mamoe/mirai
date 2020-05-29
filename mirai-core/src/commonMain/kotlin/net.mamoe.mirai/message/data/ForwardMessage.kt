@@ -22,6 +22,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
+import kotlin.jvm.Transient
 
 
 /**
@@ -87,7 +88,7 @@ class ForwardMessage @JvmOverloads constructor(
      * 消息列表
      */
     val nodeList: Collection<INode>,
-    val displayStrategy: DisplayStrategy = DisplayStrategy.Default
+    @Transient val displayStrategy: DisplayStrategy = DisplayStrategy.Default
 ) : MessageContent {
     init {
         require(nodeList.isNotEmpty()) {

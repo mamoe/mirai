@@ -13,7 +13,6 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.message.data.VipFace.Companion
 import net.mamoe.mirai.utils.PlannedRemoval
@@ -235,7 +234,6 @@ data class VipFace internal constructor(
  *
  * @see Image 查看图片相关信息
  */
-@Serializable
 sealed class FlashImage : MessageContent, HummerMessage() {
     companion object Key : Message.Key<FlashImage> {
         /**
@@ -290,7 +288,6 @@ inline fun Image.flash(): FlashImage = FlashImage(this)
  * @see FlashImage.invoke
  */
 @PlannedRemoval("1.3.0") // internal
-@Serializable
 @Suppress("DEPRECATION", "DEPRECATION_ERROR")
 @Deprecated(
     "use FlashImage instead",
@@ -329,7 +326,6 @@ constructor(override val image: Image) : FlashImage() {
  * @see FlashImage.invoke
  */
 @PlannedRemoval("1.3.0") // internal
-@Serializable
 @Suppress("DEPRECATION", "DEPRECATION_ERROR")
 @Deprecated(
     "use FlashImage instead",

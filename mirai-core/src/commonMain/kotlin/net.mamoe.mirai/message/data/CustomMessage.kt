@@ -12,8 +12,9 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.io.core.*
-import kotlinx.serialization.*
-import kotlinx.serialization.builtins.ByteArraySerializer
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -35,7 +36,6 @@ import kotlin.jvm.JvmOverloads
  *
  * @see CustomMessageMetadata 自定义消息元数据
  */
-@Serializable(with = CustomMessage.MessageSerializer::class)
 @MiraiExperimentalAPI
 sealed class CustomMessage : SingleMessage {
     /**
