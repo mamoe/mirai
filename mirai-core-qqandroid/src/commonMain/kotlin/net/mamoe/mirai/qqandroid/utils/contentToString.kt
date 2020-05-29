@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.qqandroid.utils
 
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.debug
 import kotlin.reflect.KClass
@@ -210,5 +211,13 @@ private fun Any.allMembersFromSuperClassesMatching(classFilter: (KClass<out Any>
         .map { it.members }
         .flatMap { it.asSequence() }
         .filterIsInstance<KProperty1<*, *>>()
+        .filterNot { it.hasAnnotation<Transient>() }
+        .filterNot { it.isTransient() }
         .mapNotNull { it as KProperty1<Any, *> }
 }
+
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+internal expect inline fun <reified T : Annotation> KProperty<*>.hasAnnotation(): Boolean
+
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+internal expect fun KProperty<*>.isTransient(): Boolean
