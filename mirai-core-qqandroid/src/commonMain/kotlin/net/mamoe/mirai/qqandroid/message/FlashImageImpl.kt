@@ -1,11 +1,6 @@
-package net.mamoe.mirai.qqandroid.message
+@file:Suppress("DEPRECATION_ERROR")
 
-import net.mamoe.mirai.message.data.FriendFlashImage
-import net.mamoe.mirai.message.data.GroupFlashImage
-import net.mamoe.mirai.message.data.md5
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.HummerCommelem
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
+package net.mamoe.mirai.qqandroid.message
 
 
 internal fun GroupFlashImage.toJceData() = ImMsgBody.Elem(

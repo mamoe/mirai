@@ -132,7 +132,7 @@ data class PokeMessage internal constructor(
     }
 
 
-    private val stringValue = "[mirai:poke:$type,$id]"
+    private val stringValue = "[mirai:poke:$name,$type,$id]"
 
     override fun toString(): String = stringValue
     override fun contentToString(): String = "[戳一戳]"
@@ -163,7 +163,11 @@ data class VipFace internal constructor(
     data class Kind(
         val id: Int,
         val name: String
-    )
+    ) {
+        override fun toString(): String {
+            return "($id,$name)"
+        }
+    }
 
     @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     companion object : Message.Key<VipFace> {

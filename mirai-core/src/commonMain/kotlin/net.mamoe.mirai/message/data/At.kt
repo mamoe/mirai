@@ -48,7 +48,7 @@ private constructor(
         return other is At && other.target == this.target && other.display == this.display
     }
 
-    override fun toString(): String = "[mirai:at:$target]"
+    override fun toString(): String = "[mirai:at:$target,$display]"
     override fun contentToString(): String = this.display
 
     companion object Key : Message.Key<At> {
