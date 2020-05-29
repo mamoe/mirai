@@ -68,8 +68,9 @@ subprojects {
     afterEvaluate {
         apply(plugin = "com.github.johnrengelman.shadow")
         val kotlin =
-            (this as ExtensionAware).extensions.getByName("kotlin") as? org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-                ?: return@afterEvaluate
+            runCatching {
+                (this as ExtensionAware).extensions.getByName("kotlin") as? org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+            }.getOrNull() ?: return@afterEvaluate
 
         val shadowJvmJar by tasks.creating(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
             group = "mirai"
