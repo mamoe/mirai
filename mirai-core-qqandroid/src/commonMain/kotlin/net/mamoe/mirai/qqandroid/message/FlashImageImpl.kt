@@ -2,6 +2,8 @@
 
 package net.mamoe.mirai.qqandroid.message
 
+import net.mamoe.mirai.message.data.FriendFlashImage
+import net.mamoe.mirai.message.data.GroupFlashImage
 import net.mamoe.mirai.message.data.md5
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
