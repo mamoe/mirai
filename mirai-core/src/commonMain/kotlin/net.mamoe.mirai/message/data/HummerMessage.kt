@@ -13,8 +13,10 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.message.data.VipFace.Companion
+import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.jvm.*
 
 /**
@@ -233,6 +235,7 @@ data class VipFace internal constructor(
  *
  * @see Image 查看图片相关信息
  */
+@Serializable
 sealed class FlashImage : MessageContent, HummerMessage() {
     companion object Key : Message.Key<FlashImage> {
         /**
@@ -241,7 +244,7 @@ sealed class FlashImage : MessageContent, HummerMessage() {
         @JvmStatic
         @JvmName("from")
         operator fun invoke(image: Image): FlashImage {
-
+            @Suppress("DEPRECATION", "DEPRECATION_ERROR")
             return when (image) {
                 is GroupImage -> GroupFlashImage(image)
                 is FriendImage -> FriendFlashImage(image)
@@ -280,30 +283,93 @@ sealed class FlashImage : MessageContent, HummerMessage() {
     override fun toString(): String = stringValue!!
     override fun contentToString(): String = "[闪照]"
 }
+
 inline fun Image.flash(): FlashImage = FlashImage(this)
-
-@JvmSynthetic
-inline fun GroupImage.flash(): GroupFlashImage = FlashImage(this) as GroupFlashImage
-
-@JvmSynthetic
-inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFlashImage
 
 /**
  * @see FlashImage.invoke
  */
-data class GroupFlashImage(override val image: GroupImage) : FlashImage() {
+@PlannedRemoval("1.3.0") // internal
+@Serializable
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
+@Deprecated(
+    "use FlashImage instead",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("FlashImage", "net.mamoe.mirai.message.data.FlashImage")
+)
+data class GroupFlashImage
+@Deprecated(
+    "use FlashImage instead",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("FlashImage(image)", "net.mamoe.mirai.message.data.FlashImage")
+)
+constructor(override val image: Image) : FlashImage() {
     companion object Key : Message.Key<GroupFlashImage> {
         override val typeName: String
             get() = "GroupFlashImage"
     }
+
+
+    @Suppress("WRONG_ANNOTATION_TARGET", "DEPRECATION")
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    constructor(image: GroupImage) : this(image as Image)
+
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun getImage(): GroupImage = image as? GroupImage ?: error(
+        """
+        GroupFlashImage is changed since mirai 1.1.0.
+        GroupFlashImage.image returns Image instead of GroupImage now. Please recompile your application(plugin). 
+    """.trimIndent()
+    )
 }
 
 /**
  * @see FlashImage.invoke
  */
-data class FriendFlashImage(override val image: FriendImage) : FlashImage() {
+@PlannedRemoval("1.3.0") // internal
+@Serializable
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
+@Deprecated(
+    "use FlashImage instead",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("FlashImage", "net.mamoe.mirai.message.data.FlashImage")
+)
+data class FriendFlashImage
+@Deprecated(
+    "use FlashImage instead",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("FlashImage(image)", "net.mamoe.mirai.message.data.FlashImage")
+)
+constructor(override val image: Image) : FlashImage() {
     companion object Key : Message.Key<FriendFlashImage> {
         override val typeName: String
             get() = "FriendFlashImage"
     }
+
+
+    @Suppress("WRONG_ANNOTATION_TARGET", "DEPRECATION")
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    constructor(image: FriendImage) : this(image as Image)
+
+    @JvmSynthetic
+    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun getImage(): FriendImage = image as? FriendImage ?: error(
+        """
+        FriendFlashImage is changed since mirai 1.1.0.
+        FriendFlashImage.image returns Image instead of FriendImage now. Please recompile your application(plugin). 
+    """.trimIndent()
+    )
 }
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@JvmSynthetic
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
+inline fun GroupImage.flash(): GroupFlashImage = FlashImage(this) as GroupFlashImage
+
+@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
+@JvmSynthetic
+@Suppress("DEPRECATION", "DEPRECATION_ERROR")
+inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFlashImage
