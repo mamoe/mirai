@@ -282,7 +282,7 @@ sealed class FlashImage : MessageContent, HummerMessage() {
             }
         }
 
-    override fun toString(): String = stringValue!!
+    final override fun toString(): String = stringValue!!
     override fun contentToString(): String = "[闪照]"
 }
 
