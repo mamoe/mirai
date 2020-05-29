@@ -1,4 +1,4 @@
-@file:Suppress("DEPRECATION_ERROR")
+@file:Suppress("DEPRECATION_ERROR", "UnusedImport")
 
 package net.mamoe.mirai.qqandroid.message
 
