@@ -1,5 +1,11 @@
 # Version 1.x
 
+## `1.0.2` 2020/6/1
+- 新增 `Bot.botInstancesSequence`
+- 修复日志中的时间未更新的问题
+- 修复在某些情况下，Bot登录的时候无限重连 (#361)
+- 优化一些文档注释
+
 ## `1.0.1` 2020/5/25
 - 新增临时会话消息发送事件: `TempMessageSendEvent` (#338)
 - 新增 `Bot.isOnline` (#342)
