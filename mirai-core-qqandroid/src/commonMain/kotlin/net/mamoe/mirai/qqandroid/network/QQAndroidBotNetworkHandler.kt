@@ -123,7 +123,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             channel.close()
         }
         channel = PlatformSocket()
-        // TODO: 2020/2/14 连接多个服务器, #52
 
         while (isActive) {
             try {

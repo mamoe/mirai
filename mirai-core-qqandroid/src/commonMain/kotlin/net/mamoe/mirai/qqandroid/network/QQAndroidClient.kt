@@ -137,7 +137,10 @@ internal open class QQAndroidClient(
                 return@retryCatching
             }.getOrElse {
                 bot.client.serverList.remove(pair)
-                bot.logger.warning(it)
+                if (it !is LoginFailedException) {
+                    // 不要重复打印.
+                    bot.logger.warning(it)
+                }
                 throw it
             }
         }.getOrElse {
