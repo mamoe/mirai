@@ -94,7 +94,6 @@ subprojects {
             this.manifest {
                 this.attributes(
                     "Manifest-Version" to 1,
-                    "Name" to this@afterEvaluate.name.toString(),
                     "Implementation-Vendor" to "Mamoe Technologies",
                     "Implementation-Title" to this@afterEvaluate.name.toString(),
                     "Implementation-Version" to this@afterEvaluate.version.toString()
