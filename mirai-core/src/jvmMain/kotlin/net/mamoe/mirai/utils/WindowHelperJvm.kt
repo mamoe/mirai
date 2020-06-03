@@ -28,7 +28,7 @@ import javax.swing.SwingUtilities
 internal object WindowHelperJvm {
     internal val isDesktopSupported: Boolean =
         kotlin.runCatching {
-            Desktop.isDesktopSupported()
+            System.getProperty("mirai.no-desktop") === null && Desktop.isDesktopSupported()
         }.getOrElse {
             false
         }
