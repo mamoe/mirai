@@ -145,7 +145,7 @@ internal class NewContact {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = groupmsgs?.firstOrNull()
 
-                return struct?.msg?.run<Structmsg.SystemMsg, Packet> {
+                return struct?.msg?.run {
                     //this.soutv("SystemMsg")
                     when (subType) {
                         1 -> { //管理员邀请
@@ -179,6 +179,10 @@ internal class NewContact {
 
                             BotJoinGroupEvent.Invite(invitor)
                         }
+                        3 -> {
+                            // 已被请他管理员处理
+                            null
+                        }
                         5 -> {
                             val group = bot.getGroupOrNull(groupCode) ?: return null
                             val operator = group[actionUin]
@@ -190,7 +194,7 @@ internal class NewContact {
                             additional = "并尽量描述此时机器人是否正被邀请加入群, 或者是有有新群员加入此群"
                         )
                     }
-                } as Packet // 没有 as Packet 垃圾 kotlin 会把类型推断为Any
+                }
             }
         }
 
