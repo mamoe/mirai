@@ -88,7 +88,7 @@ abstract class Group : Contact(), CoroutineScope {
      * 群头像下载链接.
      */
     val avatarUrl: String
-        get() = "https://p.qlogo.cn/gh/$id/${id}_1/640"
+        get() = "https://p.qlogo.cn/gh/$id/${id}/640"
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
