@@ -52,7 +52,7 @@ private inline fun String.forEachMiraiCode(crossinline block: (origin: String, n
     for (result in codeRegex.findAll(this)) {
         if (result.range.first != lastIndex) {
             // skipped string
-            block(result.value, null, substring(lastIndex, result.range.first))
+            block(substring(lastIndex, result.range.first), null, "")
         }
 
         lastIndex = result.range.last + 1
