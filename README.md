@@ -116,16 +116,6 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 - 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`Mirai-CQ-Adapter` 正在进行中
 - [MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid) 让mirai-console的插件在Android运行 **实验性**
 
-## 我想马上开始使用它
-
-请下载这里的一键安装包[下载地址](https://suihou-my.sharepoint.com/:f:/g/personal/user18_5tb_site/ErWGr97FpPVDjkboIDmDAJkBID-23ZMNbTPggGajf1zvGw?e=51NZWM)，它可以让你快速在你的服务器/个人电脑上运行mirai-console
-
-**请注意**
-* 使用时请留意安装包里的说明文字
-* 目前本安装包只支持Windows系统，且mirai-console仍在开发中，可能会存在一些bug
-* 关于安装包本身的一切问题请到QQ群内反馈
-* 如果上面的链接下载过慢，你可以到QQ群内高速下载
-
 ## 更新日志
 
 * 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
