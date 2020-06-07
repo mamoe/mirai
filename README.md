@@ -46,16 +46,7 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 #### Windows
 
-建议任何人都使用一键安装包来快速启动 mirai-console (因此你无需解决 JavaFX 和兼容等相关问题)  
-**[下载地址](https://suihou-my.sharepoint.com/:f:/g/personal/user18_5tb_site/ErWGr97FpPVDjkboIDmDAJkBID-23ZMNbTPggGajf1zvGw?e=51NZWM)**
-
-**请注意**
-* 使用时请留意安装包里的说明文字
-* 目前本安装包只支持Windows系统，**且 mirai-console 仍在开发中，可能会存在一些bug**
-* 关于安装包本身的一切问题请到 QQ 群内反馈 (推荐), 或 [邮件联系](mailto:support@mamoe.net)
-* 如果上面的链接下载过慢，你可以到QQ群内高速下载
-
-若你不愿意简单地启动, 你可以往下阅读复杂的启动方式.
+同下Linux启动方式
 
 #### Linux / Mac
 
