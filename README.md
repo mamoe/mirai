@@ -46,9 +46,13 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 #### Windows
 
+**推荐使用 [LXY1226/MiraiOK](https://github.com/LXY1226/miraiOK) 一键启动器**
+
 同下Linux启动方式
 
 #### Linux / Mac
+
+**推荐使用 [LXY1226/MiraiOK](https://github.com/LXY1226/miraiOK) 一键启动器**
 
 使用 mirai-console-wrapper 启动器.
 
