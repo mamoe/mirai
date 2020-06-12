@@ -90,7 +90,7 @@ actual open class PlatformLogger @JvmOverloads constructor(
     }
 
     private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
-    private val currentTimeFormatted = timeFormat.format(Date())
+    private val currentTimeFormatted get() = timeFormat.format(Date())
 
     /**
      * @author NaturalHG

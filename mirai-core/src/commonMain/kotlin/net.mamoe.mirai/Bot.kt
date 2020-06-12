@@ -50,7 +50,7 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
 abstract class Bot internal constructor(
     val configuration: BotConfiguration
 ) : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI, ContactOrBot {
-    final override val coroutineContext: CoroutineContext =
+    final override val coroutineContext: CoroutineContext = // for id
         configuration.parentCoroutineContext
             .plus(SupervisorJob(configuration.parentCoroutineContext[Job]))
             .plus(configuration.parentCoroutineContext[CoroutineExceptionHandler]
@@ -58,6 +58,8 @@ abstract class Bot internal constructor(
                     logger.error("An exception was thrown under a coroutine of Bot", e)
                 }
             )
+            .plus(CoroutineName("Mirai Bot"))
+
 
     companion object {
         @JvmField

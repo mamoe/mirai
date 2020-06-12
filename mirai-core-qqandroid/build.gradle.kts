@@ -94,7 +94,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
-                //    api(kotlinx("coroutines-debug", "1.3.5"))
+                //    api(kotlinx("coroutines-debug", Versions.Kotlin.coroutines))
                 api("moe.him188:jcekt:${Versions.jcekt}")
                 api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
                 //api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
