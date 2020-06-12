@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -21,7 +22,7 @@ import kotlin.jvm.JvmSynthetic
  * QQ 自带表情
  */
 data class Face(val id: Int) : // used in delegation
-    MessageContent {
+    MessageContent, CodableMessage {
 
     override fun toString(): String = "[mirai:face:$id]"
     override fun contentToString(): String = "[表情]"

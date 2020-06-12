@@ -25,6 +25,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.*
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
@@ -57,7 +58,7 @@ import kotlin.jvm.JvmSynthetic
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-expect interface Image : Message, MessageContent {
+expect interface Image : Message, MessageContent, CodableMessage {
     companion object Key : Message.Key<Image> {
         override val typeName: String
     }

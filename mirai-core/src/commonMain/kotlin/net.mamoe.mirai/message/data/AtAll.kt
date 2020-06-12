@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.message.code.CodableMessage
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -26,7 +27,7 @@ private const val displayA = "@全体成员"
  */
 object AtAll :
     Message.Key<AtAll>,
-    MessageContent {
+    MessageContent, CodableMessage {
     const val display = displayA
     override val typeName: String
         get() = "AtAll"
@@ -45,8 +46,8 @@ object AtAll :
     // 自动为消息补充 " "
     override fun followedBy(tail: Message): MessageChain {
         if (tail is PlainText && tail.content.startsWith(' ')) {
-            return super.followedBy(tail)
+            return super<MessageContent>.followedBy(tail)
         }
-        return super.followedBy(PlainText(" ")) + tail
+        return super<MessageContent>.followedBy(PlainText(" ")) + tail
     }
 }

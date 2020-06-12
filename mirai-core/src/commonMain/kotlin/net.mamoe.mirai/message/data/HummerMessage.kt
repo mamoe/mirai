@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.message.data.VipFace.Companion
 import net.mamoe.mirai.utils.PlannedRemoval
@@ -49,7 +50,7 @@ data class PokeMessage internal constructor(
 
     val type: Int,
     val id: Int
-) : HummerMessage() {
+) : HummerMessage(), CodableMessage {
     @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     companion object Types : Message.Key<PokeMessage> {
         override val typeName: String
@@ -159,7 +160,7 @@ data class VipFace internal constructor(
      */
     val kind: Kind,
     val count: Int
-) : HummerMessage() {
+) : HummerMessage(), CodableMessage {
     data class Kind(
         val id: Int,
         val name: String
@@ -238,7 +239,7 @@ data class VipFace internal constructor(
  *
  * @see Image 查看图片相关信息
  */
-sealed class FlashImage : MessageContent, HummerMessage() {
+sealed class FlashImage : MessageContent, HummerMessage(), CodableMessage {
     companion object Key : Message.Key<FlashImage> {
         /**
          * 将普通图片转换为闪照.

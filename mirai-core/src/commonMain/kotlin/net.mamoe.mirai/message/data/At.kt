@@ -17,6 +17,7 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.message.code.CodableMessage
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -36,8 +37,7 @@ private constructor(
      * "@群员名片"
      */
     val display: String
-) : // don't change
-    MessageContent {
+) : MessageContent, CodableMessage {
 
     /**
      * 构造一个 [At] 实例. 这是唯一的公开的构造方式.
@@ -67,9 +67,9 @@ private constructor(
     // 自动为消息补充 " "
     override fun followedBy(tail: Message): MessageChain {
         if (tail is PlainText && tail.content.startsWith(' ')) {
-            return super.followedBy(tail)
+            return super<MessageContent>.followedBy(tail)
         }
-        return super.followedBy(PlainText(" ")) + tail
+        return super<MessageContent>.followedBy(PlainText(" ")) + tail
     }
 
     override fun hashCode(): Int {
