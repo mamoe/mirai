@@ -24,13 +24,3 @@ import kotlin.jvm.JvmName
  */
 @SinceMirai("1.1.0")
 fun String.parseMiraiCode(): MessageChain = parseMiraiCodeImpl()
-
-/**
- * 将消息转为 'mirai 码' 表示形式.
- *
- * 各类型消息对应的格式:
- *
- *
- */
-@SinceMirai("1.1.0")
-fun Message.toMiraiCode(): String = this.toString()
