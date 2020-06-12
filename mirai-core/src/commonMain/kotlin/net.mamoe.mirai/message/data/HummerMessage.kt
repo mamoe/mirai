@@ -166,7 +166,7 @@ data class VipFace internal constructor(
         val name: String
     ) {
         override fun toString(): String {
-            return "($id,$name)"
+            return "$id,$name"
         }
     }
 

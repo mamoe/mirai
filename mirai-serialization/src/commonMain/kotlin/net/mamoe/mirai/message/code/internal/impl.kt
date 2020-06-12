@@ -65,7 +65,7 @@ internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     "poke" to MiraiCodeParser(Regex("(.*)?,(\\d*),(-?\\d*)")) { (name, type, id) ->
         PokeMessage(name, type.toInt(), id.toInt())
     },
-    "vipface" to MiraiCodeParser(Regex("""\((\d*),(.*)\),(\d*)""")) { (id, name, count) ->
+    "vipface" to MiraiCodeParser(Regex("""(\d*),(.*),(\d*)""")) { (id, name, count) ->
         VipFace(VipFace.Kind(id.toInt(), name), count.toInt())
     },
     "face" to MiraiCodeParser(Regex("""(\d*)""")) { (id) ->
