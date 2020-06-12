@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.message.code
 
-import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 
@@ -18,7 +18,18 @@ import net.mamoe.mirai.utils.SinceMirai
  *
  * 使用 `mirai-serialization` 中 `String.parseMiraiCode()` 转回 [Message].
  *
+ * ## 规范
+ * 可在 [mirai-code-specification.md](https://github.com/mamoe/mirai/blob/dev/docs/mirai-code-specification.md) 查看 mirai 码规范.
+ *
  * @suppress 警告: 此 API 可能在任何时刻被改变
+ *
+ * @see At
+ * @see AtAll
+ * @see VipFace
+ * @see Face
+ * @see Image
+ * @see FlashImage
+ * @see PokeMessage
  */
 @MiraiExperimentalAPI
 @SinceMirai("1.1.0")

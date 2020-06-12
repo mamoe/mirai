@@ -55,10 +55,13 @@ import kotlin.jvm.JvmSynthetic
  *
  * 查看平台 `actual` 定义以获取上传方式扩展.
  *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:image:*[Image.imageId]*&#93;
+ *
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-expect interface Image : Message, MessageContent, CodableMessage {
+expect interface Image : Message, MessageContent, @SinceMirai("1.1.0") CodableMessage {
     companion object Key : Message.Key<Image> {
         override val typeName: String
     }

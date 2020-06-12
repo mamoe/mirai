@@ -20,6 +20,9 @@ import kotlin.jvm.JvmSynthetic
 
 /**
  * QQ 自带表情
+ *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:face:*[id]*&#93;
  */
 data class Face(val id: Int) : // used in delegation
     MessageContent, CodableMessage {

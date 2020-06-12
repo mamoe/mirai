@@ -16,7 +16,9 @@ package net.mamoe.mirai.message.data
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.message.data.VipFace.Companion
+import net.mamoe.mirai.message.data.VipFace.Kind
 import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.*
 
 /**
@@ -40,6 +42,9 @@ sealed class HummerMessage : MessageContent {
 /**
  * 戳一戳. 可以发送给好友或群.
  *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:poke:*[name]*,*[type]*,*[id]*&#93;
+ *
  * @see Types 使用伴生对象中的常量
  */
 data class PokeMessage internal constructor(
@@ -50,7 +55,7 @@ data class PokeMessage internal constructor(
 
     val type: Int,
     val id: Int
-) : HummerMessage(), CodableMessage {
+) : HummerMessage(), @SinceMirai("1.1.0") CodableMessage {
     @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     companion object Types : Message.Key<PokeMessage> {
         override val typeName: String
@@ -152,6 +157,9 @@ data class PokeMessage internal constructor(
  *
  * 不支持发送.
  *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:vipface:*[Kind.id]*,*[Kind.name]*,*[count]*&#93;
+ *
  * @see Types 使用伴生对象中的常量
  */
 data class VipFace internal constructor(
@@ -160,7 +168,7 @@ data class VipFace internal constructor(
      */
     val kind: Kind,
     val count: Int
-) : HummerMessage(), CodableMessage {
+) : HummerMessage(), @SinceMirai("1.1.0") CodableMessage {
     data class Kind(
         val id: Int,
         val name: String
@@ -235,11 +243,14 @@ data class VipFace internal constructor(
 /**
  * 闪照
  *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:flash:*[Image.imageId]*&#93;
+ *
  * @see Image.flash 转换普通图片为闪照
  *
  * @see Image 查看图片相关信息
  */
-sealed class FlashImage : MessageContent, HummerMessage(), CodableMessage {
+sealed class FlashImage : MessageContent, HummerMessage(), @SinceMirai("1.1.0") CodableMessage {
     companion object Key : Message.Key<FlashImage> {
         /**
          * 将普通图片转换为闪照.

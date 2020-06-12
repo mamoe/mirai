@@ -18,6 +18,7 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -26,6 +27,9 @@ import kotlin.jvm.JvmSynthetic
 
 /**
  * At 一个群成员. 只能发送给一个群.
+ *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:at:*[target]*,*[display]*&#93;
  *
  * @see AtAll 全体成员
  */
@@ -37,7 +41,7 @@ private constructor(
      * "@群员名片"
      */
     val display: String
-) : MessageContent, CodableMessage {
+) : MessageContent, @SinceMirai("1.1.0") CodableMessage {
 
     /**
      * 构造一个 [At] 实例. 这是唯一的公开的构造方式.

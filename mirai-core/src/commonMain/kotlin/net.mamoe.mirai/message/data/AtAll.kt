@@ -13,6 +13,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -23,11 +24,14 @@ private const val displayA = "@全体成员"
  *
  * 非会员每天只能发送 10 次 [AtAll]. 超出部分会被以普通文字看待.
  *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:atall&#93;
+ *
  * @see At at 单个群成员
  */
 object AtAll :
     Message.Key<AtAll>,
-    MessageContent, CodableMessage {
+    MessageContent, @SinceMirai("1.1.0") CodableMessage {
     const val display = displayA
     override val typeName: String
         get() = "AtAll"
