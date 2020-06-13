@@ -127,6 +127,13 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 ### 使用者
 
 - [mirai-console](https://github.com/mamoe/mirai-console) 支持插件的控制台服务端，支持PC和Android平台 **本模块正在开发中**
+- 快速上手
+```bash
+wget https://github.com/mamoe/mirai-console-wrapper/releases/download/1.3.0/mirai-console-wrapper-1.3.0-all.jar | java -jar mirai-console-wrapper-1.3.0-all.jar
+```
+- 无需编译、可以从以下repo中直接下载编译好的jar文件:
+- [mirai-repo](https://github.com/mamoe/mirai-repo) 
+- [mirai-console-wrapper](https://github.com/mamoe/mirai-console) (其功能是整合以上repo的jar包)
 
 #### 从其他平台迁移
 
