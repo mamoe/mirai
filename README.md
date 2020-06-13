@@ -133,6 +133,7 @@ wget https://github.com/mamoe/mirai-console-wrapper/releases/download/1.3.0/mira
 ```
 - 无需编译、可以从以下repo中直接下载编译好的jar文件:
 - [mirai-repo](https://github.com/mamoe/mirai-repo) 
+- [mirai-api-http](https://github.com/mamoe/mirai-api-http/releases)
 - [mirai-console-wrapper](https://github.com/mamoe/mirai-console) (其功能是整合以上repo的jar包)
 
 #### 从其他平台迁移
