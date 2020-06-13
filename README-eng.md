@@ -88,7 +88,8 @@ implementation("net.mamoe:mirai-core-android:VERSION")
 ```
 ## quickstart
 ```bash
-wget https://github.com/mamoe/mirai-console-wrapper/releases/download/1.3.0/mirai-console-wrapper-1.3.0-all.jar | java -jar mirai-console-wrapper-1.3.0-all.jar
+wget https://github.com/mamoe/mirai-console-wrapper/releases/download/1.3.0/mirai-console-wrapper-1.3.0-all.jar 
+java -jar mirai-console-wrapper-1.3.0-all.jar
 ```
 - without compiling,you can download jar directly:
 - [mirai-repo](https://github.com/mamoe/mirai-repo) (release for mirai)
