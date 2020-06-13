@@ -92,6 +92,7 @@ wget https://github.com/mamoe/mirai-console-wrapper/releases/download/1.3.0/mira
 ```
 - without compiling,you can download jar directly:
 - [mirai-repo](https://github.com/mamoe/mirai-repo) (release for mirai)
+- [mirai-api-http](https://github.com/mamoe/mirai-api-http/releases)
 - [mirai-console-wrapper](https://github.com/mamoe/mirai-console) (used to wrapper jar above)
 
 ## Contribution
