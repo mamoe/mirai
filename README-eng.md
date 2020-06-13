@@ -86,8 +86,16 @@ implementation("net.mamoe:mirai-core-android:VERSION")
     </dependency>
 </dependencies>
 ```
+## quickstart
+```bash
+wget https://github.com/mamoe/mirai-console-wrapper/releases/download/1.3.0/mirai-console-wrapper-1.3.0-all.jar | java -jar mirai-console-wrapper-1.3.0-all.jar
+```
+- without compiling,you can download jar directly:
+- [mirai-repo](https://github.com/mamoe/mirai-repo) (release for mirai)
+- [mirai-console-wrapper](https://github.com/mamoe/mirai-console) (used to wrapper jar above)
 
 ## Contribution
+
 **All kinds of contributions are welcomed.**  
 If you hold a interest in helping us implementing Mirai on JS, iOS or Native platforms, please email us `support@mamoe.net`.  
 If you meet any problem or have any questions, feel free to file an issue. Our goal is to make Mirai easy to use.
