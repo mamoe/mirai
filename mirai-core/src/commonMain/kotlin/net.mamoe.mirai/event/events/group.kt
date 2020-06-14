@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
-@file:Suppress("unused", "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("unused", "FunctionName", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.event.events
 

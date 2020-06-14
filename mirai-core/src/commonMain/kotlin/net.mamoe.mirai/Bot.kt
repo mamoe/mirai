@@ -42,7 +42,7 @@ suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  * 有关 [Bot] 生命管理, 请查看 [BotConfiguration.inheritCoroutineContext]
  *
  * @see Contact 联系人
- * @see kotlinx.coroutines.isActive 判断 [Bot] 是否正常运行中. (协程正常运行) (但不能判断是否在线, 需使用 [isOnline])
+ * @see isActive 判断 [Bot] 是否正常运行中. (协程正常运行) (但不能判断是否在线, 需使用 [isOnline])
  *
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
@@ -66,15 +66,8 @@ abstract class Bot internal constructor(
         @Suppress("ObjectPropertyName")
         internal val _instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
 
-        /**
-         * 复制一份此时的 [Bot] 实例列表.
-         */
         @PlannedRemoval("1.2.0")
-        @Deprecated(
-            "use botInstances instead",
-            replaceWith = ReplaceWith("botInstances"),
-            level = DeprecationLevel.ERROR
-        )
+        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
         @JvmStatic
         val instances: List<WeakRef<Bot>>
             get() = _instances.toList()
@@ -230,7 +223,8 @@ abstract class Bot internal constructor(
     @PlannedRemoval("1.2.0")
     @Deprecated(
         "use extension.",
-        replaceWith = ReplaceWith("image.queryUrl()", imports = ["net.mamoe.mirai.message.data.queryUrl"])
+        replaceWith = ReplaceWith("image.queryUrl()", imports = ["net.mamoe.mirai.message.data.queryUrl"]),
+        level = DeprecationLevel.ERROR
     )
     @JvmSynthetic
     abstract suspend fun queryImageUrl(image: Image): String
@@ -259,7 +253,7 @@ abstract class Bot internal constructor(
      * @param event 好友验证的事件对象
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"), level = DeprecationLevel.ERROR)
     @JvmSynthetic
     abstract suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent)
 
@@ -270,7 +264,11 @@ abstract class Bot internal constructor(
      * @param blackList 拒绝后是否拉入黑名单
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.reject(blackList)"))
+    @Deprecated(
+        "use member function.",
+        replaceWith = ReplaceWith("event.reject(blackList)"),
+        level = DeprecationLevel.ERROR
+    )
     @JvmSynthetic
     abstract suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean = false)
 
@@ -280,7 +278,7 @@ abstract class Bot internal constructor(
      * @param event 加群验证的事件对象
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"), level = DeprecationLevel.ERROR)
     @JvmSynthetic
     abstract suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent)
 
@@ -291,7 +289,11 @@ abstract class Bot internal constructor(
      * @param blackList 拒绝后是否拉入黑名单
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.reject(blackList)"))
+    @Deprecated(
+        "use member function.",
+        replaceWith = ReplaceWith("event.reject(blackList)"),
+        level = DeprecationLevel.ERROR
+    )
     @JvmSynthetic
     abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
@@ -302,7 +304,11 @@ abstract class Bot internal constructor(
      * @param blackList 忽略后是否拉入黑名单
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore(blackList)"))
+    @Deprecated(
+        "use member function.",
+        replaceWith = ReplaceWith("event.ignore(blackList)"),
+        level = DeprecationLevel.ERROR
+    )
     @JvmSynthetic
     abstract suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
 
@@ -312,7 +318,7 @@ abstract class Bot internal constructor(
      * @param event 邀请入群的事件对象
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"))
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"), level = DeprecationLevel.ERROR)
     @JvmSynthetic
     abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
@@ -322,15 +328,15 @@ abstract class Bot internal constructor(
      * @param event 邀请入群的事件对象
      */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore()"))
+    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore()"), level = DeprecationLevel.ERROR)
     @JvmSynthetic
     abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
     // endregion
 
     /**
-     * 关闭这个 [Bot], 立即取消 [Bot] 的 [kotlinx.coroutines.SupervisorJob].
-     * 之后 [kotlinx.coroutines.isActive] 将会返回 `false`.
+     * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob].
+     * 之后 [isActive] 将会返回 `false`.
      *
      * **注意:** 不可重新登录. 必须重新实例化一个 [Bot].
      *

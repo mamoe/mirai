@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("DEPRECATION_ERROR")
+
 package net.mamoe.mirai.qqandroid.message
 
 import net.mamoe.mirai.message.data.*
