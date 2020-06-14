@@ -34,6 +34,8 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.utils.currentTimeSeconds
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -52,34 +54,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         }
     }
 
-    inline fun createToFriend(
-        client: QQAndroidClient,
-        qq: Friend,
-        message: MessageChain,
-        crossinline sourceCallback: (MessageSourceToFriendImpl) -> Unit
-    ): OutgoingPacket {
-        val rand = Random.nextInt().absoluteValue
-        val source = MessageSourceToFriendImpl(
-            internalId = rand,
-            sender = client.bot,
-            target = qq,
-            time = currentTimeSeconds.toInt(),
-            sequenceId = client.nextFriendSeq(),
-            originalMessage = message
-        )
-        sourceCallback(source)
-        return createToFriend(
-            client,
-            qq.id,
-            message,
-            source)
-    }
-
     /**
      * 发送好友消息
      */
     @Suppress("FunctionName")
-    private fun createToFriend(
+    internal fun createToFriendImpl(
         client: QQAndroidClient,
         toUin: Long,
         message: MessageChain,
@@ -106,33 +85,10 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     }
 
 
-    inline fun createToTemp(
-        client: QQAndroidClient,
-        member: Member,
-        message: MessageChain,
-        sourceCallback: (MessageSourceToTempImpl) -> Unit
-    ): OutgoingPacket {
-        val source = MessageSourceToTempImpl(
-            internalId = Random.nextInt().absoluteValue,
-            sender = client.bot,
-            target = member,
-            time = currentTimeSeconds.toInt(),
-            sequenceId = client.atomicNextMessageSequenceId(),
-            originalMessage = message
-        )
-        sourceCallback(source)
-        return createToTemp(
-            client,
-            (member.group as GroupImpl).uin,
-            member.id,
-            message,
-            source)
-    }
-
     /**
      * 发送临时消息
      */
-    private fun createToTemp(
+    internal fun createToTempImpl(
         client: QQAndroidClient,
         groupUin: Long,
         toUin: Long,
@@ -158,37 +114,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     }
 
 
-    inline fun createToGroup(
-        client: QQAndroidClient,
-        group: Group,
-        message: MessageChain,
-        isForward: Boolean,
-        sourceCallback: (MessageSourceToGroupImpl) -> Unit
-    ): OutgoingPacket {
-
-        val source = MessageSourceToGroupImpl(
-            group,
-            internalId = Random.nextInt().absoluteValue,
-            sender = client.bot,
-            target = group,
-            time = currentTimeSeconds.toInt(),
-            originalMessage = message//,
-            //   sourceMessage = message
-        )
-        sourceCallback(source)
-        return createToGroup(
-            client,
-            group.id,
-            message,
-            isForward,
-            source)
-    }
-
     /**
      * 发送群消息
      */
     @Suppress("FunctionName")
-    private fun createToGroup(
+    internal fun createToGroupImpl(
         client: QQAndroidClient,
         groupCode: Long,
         message: MessageChain,
@@ -231,7 +161,91 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             Response.Failed(
                 response.result,
                 response.errtype,
-                response.errmsg)
+                response.errmsg
+            )
         }
     }
+}
+
+internal inline fun MessageSvcPbSendMsg.createToTemp(
+    client: QQAndroidClient,
+    member: Member,
+    message: MessageChain,
+    crossinline sourceCallback: (MessageSourceToTempImpl) -> Unit
+): OutgoingPacket {
+    contract {
+        callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
+    }
+    val source = MessageSourceToTempImpl(
+        internalId = Random.nextInt().absoluteValue,
+        sender = client.bot,
+        target = member,
+        time = currentTimeSeconds.toInt(),
+        sequenceId = client.atomicNextMessageSequenceId(),
+        originalMessage = message
+    )
+    sourceCallback(source)
+    return createToTempImpl(
+        client,
+        (member.group as GroupImpl).uin,
+        member.id,
+        message,
+        source
+    )
+}
+
+internal inline fun MessageSvcPbSendMsg.createToFriend(
+    client: QQAndroidClient,
+    qq: Friend,
+    message: MessageChain,
+    crossinline sourceCallback: (MessageSourceToFriendImpl) -> Unit
+): OutgoingPacket {
+    contract {
+        callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
+    }
+    val rand = Random.nextInt().absoluteValue
+    val source = MessageSourceToFriendImpl(
+        internalId = rand,
+        sender = client.bot,
+        target = qq,
+        time = currentTimeSeconds.toInt(),
+        sequenceId = client.nextFriendSeq(),
+        originalMessage = message
+    )
+    sourceCallback(source)
+    return createToFriendImpl(
+        client,
+        qq.id,
+        message,
+        source
+    )
+}
+
+internal inline fun MessageSvcPbSendMsg.createToGroup(
+    client: QQAndroidClient,
+    group: Group,
+    message: MessageChain,
+    isForward: Boolean,
+    crossinline sourceCallback: (MessageSourceToGroupImpl) -> Unit
+): OutgoingPacket {
+    contract {
+        callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
+    }
+    val source = MessageSourceToGroupImpl(
+        group,
+        internalId = Random.nextInt().absoluteValue,
+        sender = client.bot,
+        target = group,
+        time = currentTimeSeconds.toInt(),
+        originalMessage = message//,
+        //   sourceMessage = message
+    )
+    sourceCallback(source)
+    return createToGroupImpl(
+        client,
+        group.id,
+        message,
+        isForward,
+        source
+    )
 }

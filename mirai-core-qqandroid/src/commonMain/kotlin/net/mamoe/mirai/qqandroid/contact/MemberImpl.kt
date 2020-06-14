@@ -28,6 +28,7 @@ import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.createToTemp
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.getValue
@@ -54,34 +55,59 @@ internal class MemberImpl constructor(
     override val id: Long = qq.id
     override val nick: String = qq.nick
 
+    @Suppress("UNCHECKED_CAST")
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
         require(message.isContentNotEmpty()) { "message is empty" }
 
-        return (this.asFriendOrNull()?.sendMessageImpl(this, message) ?: sendMessageImpl(message))
-            .also { logMessageSent(message) }
+        val asFriend = this.asFriendOrNull()
+
+        return (asFriend?.sendMessageImpl(
+            message,
+            friendReceiptConstructor = { MessageReceipt(it, asFriend, null) },
+            tReceiptConstructor = { MessageReceipt(it, this, null) }
+        ) ?: sendMessageImpl(message)).also { logMessageSent(message) }
     }
 
     private suspend fun sendMessageImpl(message: Message): MessageReceipt<Member> {
-        val event = MessageSendEvent.TempMessageSendEvent(this, message.asMessageChain()).broadcast()
-        if (event.isCancelled) {
-            throw EventCancelledException("cancelled by TempMessageSendEvent")
-        }
-        event.message.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+        val chain = kotlin.runCatching {
+            TempMessagePreSendEvent(this, message).broadcast()
+        }.onSuccess {
+            check(!it.isCancelled) {
+                throw EventCancelledException("cancelled by TempMessagePreSendEvent")
+            }
+        }.getOrElse {
+            throw EventCancelledException("exception thrown when broadcasting TempMessagePreSendEvent", it)
+        }.message.asMessageChain()
 
-        lateinit var source: MessageSourceToTempImpl
-        bot.network.run {
-            check(
-                MessageSvcPbSendMsg.createToTemp(
-                    bot.client,
-                    this@MemberImpl,
-                    message.asMessageChain()
-                ) {
-                    source = it
-                }.sendAndExpect<MessageSvcPbSendMsg.Response>() is MessageSvcPbSendMsg.Response.SUCCESS
-            ) { "send message failed" }
+        chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+
+        val result = bot.network.runCatching {
+            val source: MessageSourceToTempImpl
+            MessageSvcPbSendMsg.createToTemp(
+                bot.client,
+                this@MemberImpl,
+                chain
+            ) {
+                source = it
+            }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
+                check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
+                    "Send temp message failed: $it"
+                }
+            }
+            MessageReceipt(source, this@MemberImpl, null)
         }
-        return MessageReceipt(source, this, null)
+
+        result.fold(
+            onSuccess = {
+                TempMessagePostSendEvent(this, chain, null, it)
+            },
+            onFailure = {
+                TempMessagePostSendEvent(this, chain, it, null)
+            }
+        ).broadcast()
+
+        return result.getOrThrow()
     }
 
     @JvmSynthetic
