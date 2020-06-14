@@ -78,6 +78,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 ## 开始
 
 ### 文档
+- **快速上手**：[quickstart](docs/guide_quick_start.md)
 - **开发文档**：[docs/mirai.md](docs/mirai.md)
 - **常见问题**: [docs/FAQ.md](docs/FAQ.md)
 - **更新日志**: [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 或 [release](https://github.com/mamoe/mirai/releases)
