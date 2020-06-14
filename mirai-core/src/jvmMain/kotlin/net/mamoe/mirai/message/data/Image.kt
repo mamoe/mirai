@@ -52,7 +52,7 @@ import java.net.URL
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-actual interface Image : Message, MessageContent, @SinceMirai("1.1.0") CodableMessage {
+actual interface Image : Message, MessageContent, CodableMessage {
     actual companion object Key : Message.Key<Image> {
         actual override val typeName: String get() = "Image"
     }

@@ -61,7 +61,7 @@ import kotlin.jvm.JvmSynthetic
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-expect interface Image : Message, MessageContent, @SinceMirai("1.1.0") CodableMessage {
+expect interface Image : Message, MessageContent, CodableMessage {
     companion object Key : Message.Key<Image> {
         override val typeName: String
     }

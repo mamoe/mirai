@@ -18,7 +18,6 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.code.CodableMessage
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
@@ -41,7 +40,7 @@ private constructor(
      * "@群员名片"
      */
     val display: String
-) : MessageContent, @SinceMirai("1.1.0") CodableMessage {
+) : MessageContent, CodableMessage {
 
     /**
      * 构造一个 [At] 实例. 这是唯一的公开的构造方式.
