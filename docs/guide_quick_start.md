@@ -21,7 +21,10 @@
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
 ### 添加依赖
-
+#### 直接导入jar包
+您可以从以下repo下载已经编译好的jar包:
+- [mirai-core](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core)
+- [mirai-qqandriod](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core-qqandroid)
 #### Maven
 
 Kotlin 在 Maven 上只支持 JVM 平台.
