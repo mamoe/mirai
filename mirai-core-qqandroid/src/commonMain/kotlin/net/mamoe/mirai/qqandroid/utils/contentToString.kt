@@ -149,6 +149,12 @@ private fun Any.canBeIgnored(): Boolean {
         is ByteArray -> this.isEmpty()
         is Array<*> -> this.isEmpty()
         is Number -> this == 0
+        is Int -> this == 0
+        is Float -> this == 0
+        is Double -> this == 0
+        is Byte -> this == 0
+        is Short -> this == 0
+        is Long -> this == 0
         else -> false
     }
 }

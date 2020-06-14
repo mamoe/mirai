@@ -390,6 +390,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     },
     // bot 在其他客户端被踢或主动退出而同步情况
     0xD4L to lambda528 { bot ->
+        // this.soutv("0x210")
         @Serializable
         data class SubD4(
             // ok
