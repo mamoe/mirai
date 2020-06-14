@@ -185,8 +185,24 @@ internal class NewContact {
                         }
                         5 -> {
                             val group = bot.getGroupOrNull(groupCode) ?: return null
-                            val operator = group[actionUin]
-                            BotLeaveEvent.Kick(operator)
+                            when (groupMsgType) {
+                                13 -> { // 成员主动退出, 机器人是管理员, 接到通知
+                                    // 但无法获取是哪个成员.
+                                    null
+                                }
+                                7 -> { // 机器人被踢
+                                    val operator = group[actionUin]
+                                    BotLeaveEvent.Kick(operator)
+                                }
+                                else -> {
+                                    throw contextualBugReportException(
+                                        "解析 NewContact.SystemMsgNewGroup, subType=5",
+                                        this._miraiContentToString(),
+                                        null,
+                                        "并描述此时机器人是否被踢出群等"
+                                    )
+                                }
+                            }
                         }
                         else -> throw contextualBugReportException(
                             "parse SystemMsgNewGroup",
