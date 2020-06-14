@@ -23,6 +23,7 @@ import kotlin.annotation.AnnotationTarget.*
     CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
     CLASS, FUNCTION, PROPERTY
 )
+@MustBeDocumented
 annotation class MiraiInternalAPI(
     val message: String = ""
 )
@@ -36,6 +37,7 @@ annotation class MiraiInternalAPI(
 @Retention(AnnotationRetention.SOURCE)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
+@MustBeDocumented
 annotation class MiraiExperimentalAPI(
     val message: String = ""
 )
