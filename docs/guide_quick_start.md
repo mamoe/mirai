@@ -3,7 +3,7 @@
 由于 mirai 项目在快速推进中，因此内容时有变动，本文档的最后更新日期为```2020/5/11```，对应版本```1.0-RC2-1```
 
 本文适用于对 Kotlin 较熟悉的开发者,  
-使用 mirai 作为第三方依赖库引用任意一个 Kotlin, Java 或其他 JVM 平台的项目
+使用 mirai 作为第三方依赖库引用到任意一个 Kotlin, Java 或其他 JVM 平台的项目
 
 **若你希望一份更基础的教程**, 请参阅: [mirai-guide-getting-started](guide_getting_started.md)
 
