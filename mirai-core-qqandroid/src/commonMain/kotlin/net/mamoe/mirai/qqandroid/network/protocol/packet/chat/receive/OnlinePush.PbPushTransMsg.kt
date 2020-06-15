@@ -27,11 +27,13 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.MemberImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
+import net.mamoe.mirai.qqandroid.message.contextualBugReportException
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildResponseUniPacket
+import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.read
 
@@ -130,6 +132,14 @@ internal object OnlinePushPbPushTransMsg :
                             }, group.members[operator])
                         }
                     }
+                }
+                else -> {
+                    throw contextualBugReportException(
+                        "解析 OnlinePush.PbPushTransMsg, msgType=${content.msgType}",
+                        content._miraiContentToString(),
+                        null,
+                        "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作."
+                    )
                 }
             }
         }

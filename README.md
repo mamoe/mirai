@@ -77,28 +77,47 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 
 ## 开始
 
+### 文档
+- **快速上手**：[quickstart](docs/guide_quick_start.md)
+- **开发文档**：[docs/mirai.md](docs/mirai.md)
+- **常见问题**: [docs/FAQ.md](docs/FAQ.md)
+- **更新日志**: [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 或 [release](https://github.com/mamoe/mirai/releases)
+- **开发计划**: [milestones](https://github.com/mamoe/mirai/milestones)
+- **贡献**: [CONTRIBUTING](CONTRIBUTING.md)
+
 ### 开发者
 
-#### **开发文档**： [docs/mirai.md](docs/mirai.md)
+#### 使用 mirai-console 服务端，为 mirai-console 开发插件
 
-#### 使用 mirai 作为服务器，为 mirai 开发插件
+官方支持 SDK 列表:
 
-- （官方）`Java` 或 `Kotlin`： 为 [mirai-console](https://github.com/mamoe/mirai-console) 直接编写插件并与其他插件开发者合作共享
-- （官方）`Kotlin Script`： [mirai-kts](https://github.com/iTXTech/mirai-kts) 支持使用`kts`编写插件，享受`Kotlin`带来的一切便利（**仅支持OpenJDK 8以上环境，不支持Android**）
-- （官方）`C`, `C++` 等原生语言： [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷Q插件在mirai上运行 **(仅限`Windows 32位JRE`/支持`Wine`)**
-- （官方）`JavaScript`： [mirai-js](https://github.com/iTXTech/mirai-js) 支持使用`JavaScript`编写插件并**直接**与`Mirai`交互
-- （社区）`Python`: [python-mirai](https://github.com/NatriumLab/python-mirai) 基于 `mirai-api-http` 的机器人开发框架
-- （社区）`JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) mirai 的 Node.js SDK
-- （社区）`Go`: [gomirai](https://github.com/Logiase/gomirai) 基于 mirai-api-http 的 GoLang SDK
-- （社区）`Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk) 为基于 Rhino(如 Auto.js 等安卓 app 或运行环境)的 JavaScript 提供简单易用的 SDK
-- （社区）`Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) 基于mirai-core 的Lua SDK，并提供了java扩展支持，可在lua中调用java代码开发机器人
-- （社区）`C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) mirai-http-api 的 C++ 封装，方便使用 C++ 开发 mirai-http-api 插件
-- （社区）`C++`: [miraipp](https://github.com/Chlorie/miraipp-template) mirai-http-api 的另一个 C++ 封装，使用现代 C++ 特性，并提供了较完善的说明文档
-- （社区）`C#`: [Mirai-CSharp](https://github.com/Executor-Cheng/Mirai-CSharp) 基于 mirai-api-http 的 C# SDK
-- （社区）`Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) mirai-http-api 的 Rust 封装
-- （官方）其他任意语言：使用由 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 提供的 http 接口进行接入
+- `Java`, `Kotlin` 等 JVM 语言： 为 [mirai-console](https://github.com/mamoe/mirai-console) 直接编写插件并与其他插件开发者合作共享
+- `Kotlin Script`： [mirai-kts](https://github.com/iTXTech/mirai-kts) 支持使用 `kts` 编写插件，享受 `Kotlin` 带来的一切便利（**仅 OpenJDK 8 以上环境，不支持 Android**）
+- `C`, `C++` 等原生语言： [mirai-native](https://github.com/iTXTech/mirai-native) 支持酷 Q 插件在 mirai 上运行 **(仅限 `Windows 32 位 JRE`/支持 `Wine`)**
+- `JavaScript`： [mirai-js](https://github.com/iTXTech/mirai-js) 支持使用 `JavaScript` 编写插件并**直接**与 mirai 交互
+- *Http*：使用由 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 提供的 http 接口进行接入
 
-#### 使用 mirai 为第三方依赖库引入项目
+<details>
+  <summary>社区支持的 SDK 列表</summary>
+
+基于 `mirai-core` (独立使用):
+- `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) 基于 mirai-core 的 Lua SDK，并提供了 Java 扩展支持，可在 Lua 中调用 Java 代码开发机器人
+
+
+基于 `mirai-http-api` (配合 [mirai-console](https://github.com/mamoe/mirai-console)):
+
+- `Python`: [python-mirai](https://github.com/NatriumLab/python-mirai) 基于 `mirai-api-http` 的机器人开发框架
+- `JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) mirai 的 Node.js SDK
+- `Go`: [gomirai](https://github.com/Logiase/gomirai) 基于 mirai-api-http 的 GoLang SDK
+- `Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk) 为基于 Rhino(如 Auto.js 等安卓 app 或运行环境)的 JavaScript 提供简单易用的 SDK
+- `C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) mirai-http-api 的 C++ 封装，方便使用 C++ 开发 mirai-http-api 插件
+- `C++`: [miraipp](https://github.com/Chlorie/miraipp-template) mirai-http-api 的另一个 C++ 封装，使用现代 C++ 特性，并提供了较完善的说明文档
+- `C#`: [Mirai-CSharp](https://github.com/Executor-Cheng/Mirai-CSharp) 基于 mirai-api-http 的 C# SDK
+- `Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) mirai-http-api 的 Rust 封装
+
+</details>
+
+#### 使用 mirai-core 为第三方依赖库引入项目
 
 Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
@@ -108,29 +127,13 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 ### 使用者
 
-- [mirai-console](https://github.com/mamoe/mirai-console) 支持插件 **本模块正在完善**
+- [mirai-console](https://github.com/mamoe/mirai-console) 支持插件的控制台服务端，支持PC和Android平台 **本模块正在开发中**
 
-### 其他平台的使用者
+#### 从其他平台迁移
 
 - 酷Q的插件可以在 mirai 中加载, 详见 [Mirai-Native](https://github.com/iTXTech/mirai-native)
 - 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`Mirai-CQ-Adapter` 正在进行中
-- [MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid) 让mirai-console的插件在Android运行 **实验性**
 
-## 我想马上开始使用它
-
-请下载这里的一键安装包
-[下载地址](https://suihou-my.sharepoint.com/:f:/g/personal/user18_5tb_site/ErWGr97FpPVDjkboIDmDAJkBID-23ZMNbTPggGajf1zvGw?e=51NZWM)
-，它可以让你快速在你的服务器/个人电脑上运行mirai-console
-
-**请注意**
-* 使用时请留意安装包里的说明文字
-* 目前本安装包只支持Windows系统，且mirai-console仍在开发中，可能会存在一些bug
-* 关于安装包本身的一切问题请到QQ群内反馈
-* 如果上面的链接下载过慢，你可以到QQ群内高速下载
-
-## 更新日志
-
-* 在 [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 查看版本更新记录 (仅发布的版本)
 
 ## [贡献](CONTRIBUTING.md)
 
@@ -142,6 +145,8 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
 
 ## 鸣谢
+
+> IntelliJ IDEA 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE, 适用于 JVM 平台语言。
 
 特别感谢 [JetBrains](https://www.jetbrains.com/?from=mirai) 为开源项目提供免费的 [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=mirai) 等 IDE 的授权  
 [<img src=".github/jetbrains-variant-3.png" width="200"/>](https://www.jetbrains.com/?from=mirai)
@@ -159,7 +164,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 ------
 
-    Copyright (C) 2019-2020 mamoe and Mirai contributors
+    Copyright (C) 2019-2020 Mamoe Technologies and mirai contributors
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as

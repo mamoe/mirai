@@ -17,7 +17,6 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import net.mamoe.mirai.contact.Contact
@@ -108,6 +107,8 @@ interface Message { // must be interface. Don't consider any changes.
      * println(c) // "Hello world!"
      * ```
      *
+     * 在 Java 使用 [plus]
+     *
      * @see plus `+` 操作符重载
      */
     @JvmSynthetic // in java they should use `plus` instead
@@ -119,11 +120,11 @@ interface Message { // must be interface. Don't consider any changes.
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString]
      *
      * 各个 [SingleMessage] 的转换示例:
-     * - [PlainText]: "Hello"
-     * - [GroupImage]: "[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"
-     * - [FriendImage]: "[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"
-     * - [PokeMessage]: "[mirai:poke:1,-1]"
-     * - [MessageChain]: 无间隔地连接所有元素 (`joinToString("")`)
+     * - [PlainText] : `"Hello"`
+     * - [GroupImage] : `"[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"`
+     * - [FriendImage] : `"[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"`
+     * - [PokeMessage] : `"[mirai:poke:1,-1]"`
+     * - [MessageChain] : 无间隔地连接所有元素 (`joinToString("")`)
      * - ...
      *
      * @see contentToString 转为最接近官方格式的字符串
@@ -136,10 +137,10 @@ interface Message { // must be interface. Don't consider any changes.
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用 [contentToString] 而不是 [toString]
      *
      * 各个 [SingleMessage] 的转换示例:
-     * - [PlainText]: "Hello"
-     * - [Image]: "\[图片\]"
-     * - [PokeMessage]: "\[戳一戳\]"
-     * - [MessageChain]: 无间隔地连接所有元素 (`joinToString("", transformer=Message::contentToString)`)
+     * - [PlainText] : `"Hello"`
+     * - [Image] : `"[图片]"`
+     * - [PokeMessage] : `"[戳一戳]"`
+     * - [MessageChain] : 无间隔地连接所有元素 (`joinToString("", transformer=Message::contentToString)`)
      * - ...
      *
      * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
@@ -153,8 +154,6 @@ interface Message { // must be interface. Don't consider any changes.
      * 若本函数返回 `true`, 则表明:
      * - `this` 与 [another] 的 [contentToString] 相等
      * - `this` 为 [another] 的所有 [MessageContent] 都 [相等][Message.equals] 且有同样的排列顺序.
-     *
-     * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
     /* final */ fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
         contentEqualsImpl(another, ignoreCase)
@@ -165,8 +164,6 @@ interface Message { // must be interface. Don't consider any changes.
      * 若本函数返回 `true`, 则表明:
      * - [contentToString] 与 [another] 相等
      * - 若 `this` 为 [MessageChain], 则只包含 [MessageMetadata] 和 [PlainText]
-     *
-     * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
     /* final */ fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
         if (!this.contentToString().equals(another, ignoreCase = ignoreCase)) return false
@@ -208,7 +205,6 @@ interface Message { // must be interface. Don't consider any changes.
 
 @MiraiExperimentalAPI
 @JvmSynthetic
-@ExperimentalCoroutinesApi
 suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
     another.fold(this) { acc, it -> acc + it }.asMessageChain()
 

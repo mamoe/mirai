@@ -413,8 +413,8 @@ inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.as
  * 扁平化 [Message]
  *
  * 对于不同类型的接收者（receiver）:
- * - `CombinedMessage(A, B)` 返回 `A <- B`
- * - `MessageChain(E, F, G)` 返回 `E <- F <- G`
+ * - [CombinedMessage]`(A, B)` 返回 `A <- B`
+ * - `[MessageChain](E, F, G)` 返回 `E <- F <- G`
  * - 其他: 返回 `sequenceOf(this)`
  */
 fun Message.flatten(): Sequence<SingleMessage> {

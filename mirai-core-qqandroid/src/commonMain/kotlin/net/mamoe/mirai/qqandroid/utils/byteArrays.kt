@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "NOTHING_TO_INLINE")
+@file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "NOTHING_TO_INLINE", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 @file:JvmMultifileClass
 @file:JvmName("Utils")
 
@@ -49,6 +49,7 @@ internal fun List<Byte>.toUHexString(separator: String = " ", offset: Int = 0, l
     }
 }
 
+@kotlin.internal.LowPriorityInOverloadResolution
 @JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 internal fun ByteArray.toUHexString(separator: String = " ", offset: Int = 0, length: Int = this.size - offset): String {

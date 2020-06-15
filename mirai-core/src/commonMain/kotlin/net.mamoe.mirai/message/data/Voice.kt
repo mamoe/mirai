@@ -1,8 +1,11 @@
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+
 /**
  * 需要通过上传到服务器的消息，如语音、文件
  */
+@MiraiExperimentalAPI
 abstract class PttMessage : MessageContent {
 
     companion object Key : Message.Key<PttMessage> {
@@ -18,6 +21,7 @@ abstract class PttMessage : MessageContent {
 /**
  * 语音消息, 目前只支持接收和转发
  */
+@MiraiExperimentalAPI
 class Voice(
     override val fileName: String,
     override val md5: ByteArray,

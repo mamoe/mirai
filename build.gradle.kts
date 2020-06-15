@@ -1,5 +1,6 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE")
 
+import org.jetbrains.dokka.gradle.DokkaTask
 import java.time.Duration
 import kotlin.math.pow
 
@@ -68,8 +69,9 @@ subprojects {
     afterEvaluate {
         apply(plugin = "com.github.johnrengelman.shadow")
         val kotlin =
-            (this as ExtensionAware).extensions.getByName("kotlin") as? org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-                ?: return@afterEvaluate
+            runCatching {
+                (this as ExtensionAware).extensions.getByName("kotlin") as? org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+            }.getOrNull() ?: return@afterEvaluate
 
         val shadowJvmJar by tasks.creating(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
             group = "mirai"
@@ -128,15 +130,15 @@ subprojects {
 
         apply(plugin = "org.jetbrains.dokka")
         this.tasks {
-            val dokka by getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
+            val dokka by getting(DokkaTask::class) {
                 outputFormat = "html"
                 outputDirectory = "$buildDir/dokka"
             }
-            val dokkaMarkdown by creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
+            val dokkaMarkdown by creating(DokkaTask::class) {
                 outputFormat = "markdown"
                 outputDirectory = "$buildDir/dokka-markdown"
             }
-            val dokkaGfm by creating(org.jetbrains.dokka.gradle.DokkaTask::class) {
+            val dokkaGfm by creating(DokkaTask::class) {
                 outputFormat = "gfm"
                 outputDirectory = "$buildDir/dokka-gfm"
             }
@@ -145,17 +147,20 @@ subprojects {
         val dokkaGitHubUpload by tasks.creating {
             group = "mirai"
 
-            dependsOn(tasks.getByName("dokkaGfm"))
+            val dokkaTaskName = "dokka"
+
+            dependsOn(tasks.getByName(dokkaTaskName))
             doFirst {
-                val baseDir = file("./build/dokka-gfm/${project.name}")
+                val baseDir = file("./build/$dokkaTaskName/${project.name}")
 
                 timeout.set(Duration.ofHours(6))
-                file("build/dokka-gfm/").walk()
+                file("build/$dokkaTaskName/").walk()
                     .filter { it.isFile }
                     .map { old ->
                         if (old.name == "index.md") File(old.parentFile, "README.md").also { new -> old.renameTo(new) }
                         else old
                     }
+                    // optimize md
                     .forEach { file ->
                         if (file.endsWith(".md")) {
                             file.writeText(
@@ -220,7 +225,7 @@ subprojects {
     }
 
     afterEvaluate {
-        tasks.filterIsInstance<org.jetbrains.dokka.gradle.DokkaTask>().forEach { task ->
+        tasks.filterIsInstance<DokkaTask>().forEach { task ->
             with(task) {
                 configuration {
                     perPackageOption {

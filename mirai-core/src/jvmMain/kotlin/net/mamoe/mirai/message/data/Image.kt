@@ -14,7 +14,9 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.SinceMirai
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -50,7 +52,7 @@ import java.net.URL
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-actual interface Image : Message, MessageContent {
+actual interface Image : Message, MessageContent, CodableMessage {
     actual companion object Key : Message.Key<Image> {
         actual override val typeName: String get() = "Image"
     }

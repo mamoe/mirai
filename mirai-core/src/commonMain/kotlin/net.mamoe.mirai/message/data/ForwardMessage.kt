@@ -22,6 +22,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
+import kotlin.jvm.Transient
 
 
 /**
@@ -29,9 +30,9 @@ import kotlin.jvm.JvmSynthetic
  *
  *
  *
- * ### 显示方案
+ * ## 显示方案
  *
- * #### 移动端
+ * ### 移动端
  * 在移动客户端将会显示为卡片
  *
  * `<title>`: [DisplayStrategy.generateTitle]
@@ -61,7 +62,7 @@ import kotlin.jvm.JvmSynthetic
  * |-------------------------|
  * ```
  *
- * #### PC 端
+ * ### PC 端
  * 在部分 PC 端显示为类似移动端的卡片, 在其他 PC 端显示为以下格式
  * ```
  * 鸽子 A 2020/04/23 11:27:54
@@ -73,7 +74,7 @@ import kotlin.jvm.JvmSynthetic
  * ```
  *
  *
- * ### 构造
+ * ## 构造
  * - 使用 [DSL][buildForwardMessage]
  * - 通过 [MessageEvent] 集合转换: [toForwardMessage]
  *
@@ -87,7 +88,7 @@ class ForwardMessage @JvmOverloads constructor(
      * 消息列表
      */
     val nodeList: Collection<INode>,
-    val displayStrategy: DisplayStrategy = DisplayStrategy.Default
+    @Transient val displayStrategy: DisplayStrategy = DisplayStrategy.Default
 ) : MessageContent {
     init {
         require(nodeList.isNotEmpty()) {

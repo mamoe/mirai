@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
-@file:Suppress("FunctionName", "unused")
+@file:Suppress("FunctionName", "unused", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.event.events
 

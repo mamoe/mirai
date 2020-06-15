@@ -12,6 +12,8 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.utils.asHumanReadable
+import kotlin.time.seconds
 
 /**
  * 发送消息时消息过长抛出的异常.
@@ -38,6 +40,6 @@ class MessageTooLargeException(
  */
 class BotIsBeingMutedException(
     val target: Group
-) : RuntimeException("bot is being muted, remaining ${target.botMuteRemaining} seconds")
+) : RuntimeException("bot is being muted, remaining ${target.botMuteRemaining.seconds.asHumanReadable} seconds")
 
 inline val BotIsBeingMutedException.botMuteRemaining: Int get() = target.botMuteRemaining

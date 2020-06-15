@@ -261,7 +261,7 @@ private fun Method.registerEvent(
             }
         }
         when (kotlinFunction.returnType.classifier) {
-            Unit::class -> {
+            Unit::class, Nothing::class -> {
                 scope.subscribeAlways(
                     param[1].type.classifier as KClass<out Event>,
                     priority = annotation.priority,
@@ -289,7 +289,7 @@ private fun Method.registerEvent(
                     } else callFunction(this) as ListeningStatus
                 }.also { listener = it }
             }
-            else -> error("Illegal method return type. Required Void or ListeningStatus, found ${kotlinFunction.returnType.classifier}")
+            else -> error("Illegal method return type. Required Void, Nothing or ListeningStatus, found ${kotlinFunction.returnType.classifier}")
         }
     } else {
         // java methods
@@ -299,7 +299,7 @@ private fun Method.registerEvent(
             "Illegal method parameter. Required one exact Event subclass. found $paramType"
         }
         when (this.returnType) {
-            Void::class.java -> {
+            Void::class.java, Void.TYPE -> {
                 scope.subscribeAlways(
                     paramType.kotlin as KClass<out Event>,
                     priority = annotation.priority,
