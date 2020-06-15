@@ -47,14 +47,6 @@ import kotlin.jvm.JvmName
 //
 //
 
-@PlannedRemoval("1.1.0")
-@Deprecated(
-    "use AbstractEvent and implement CancellableEvent",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith("AbstractEvent", "net.mamoe.mirai.event.AbstractEvent")
-)
-abstract class AbstractCancellableEvent : AbstractEvent(), CancellableEvent
-
 
 @PlannedRemoval("1.3.0")
 @Suppress("DeprecatedCallableAddReplaceWith")

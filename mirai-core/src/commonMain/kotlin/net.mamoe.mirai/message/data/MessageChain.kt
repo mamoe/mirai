@@ -80,7 +80,7 @@ interface MessageChain : Message, List<SingleMessage>, RandomAccess {
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
     @JvmName("first")
-    final operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
+    operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
 
     /**
      * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face] 等
@@ -88,21 +88,16 @@ interface MessageChain : Message, List<SingleMessage>, RandomAccess {
      */
     @JvmName("forEachContent")
     @JavaFriendlyAPI
-    final fun __forEachContentForJava__(block: (Message) -> Unit) = this.forEachContent(block)
-
-
-    @PlannedRemoval("1.1.0")
-    @Deprecated("use Java 8 API", level = DeprecationLevel.HIDDEN)
-    @JvmName("forEach")
-    @JavaFriendlyAPI
-    @JvmSynthetic
-    @kotlin.internal.LowPriorityInOverloadResolution
-    final fun __forEachForJava__(block: (Message) -> Unit) = this.forEach(block)
+    fun __forEachContentForJava__(block: (Message) -> Unit) = this.forEachContent(block)
 
     @PlannedRemoval("1.2.0")
     @JvmName("firstOrNull")
-    @Deprecated("use get instead. This is going to be removed in mirai 1.2.0", ReplaceWith("get(key)"))
-    final fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
+    @Deprecated(
+        "use get instead. This is going to be removed in mirai 1.2.0",
+        ReplaceWith("get(key)"),
+        level = DeprecationLevel.ERROR
+    )
+    fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
 }
 
 // region accessors

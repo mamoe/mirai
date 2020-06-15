@@ -30,7 +30,7 @@ data class PlainText(
     @PlannedRemoval("1.2.0")
     @Deprecated(
         "use content instead for clearer semantics",
-        level = DeprecationLevel.WARNING,
+        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("content")
     )
     val stringValue: String
