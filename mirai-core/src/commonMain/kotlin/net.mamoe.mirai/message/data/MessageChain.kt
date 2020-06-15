@@ -17,10 +17,7 @@ import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.js.JsName
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmSynthetic
+import kotlin.jvm.*
 import kotlin.reflect.KProperty
 
 /**
@@ -222,7 +219,8 @@ inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, p
  * 可空的委托
  * @see orNull
  */
-inline class OrNullDelegate<out R : Message?>(private val value: Any?) {
+@Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
+inline class OrNullDelegate<out R> @PublishedApi internal constructor(@JvmField @PublishedApi internal val value: Any?) {
     @Suppress("UNCHECKED_CAST")
     operator fun getValue(thisRef: Any?, property: KProperty<*>): R = value as R
 }
@@ -257,10 +255,9 @@ inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> =
  */
 @Suppress("RemoveExplicitTypeArguments")
 @JvmSynthetic
-inline fun <reified T : Message?> MessageChain.orElse(
-    lazyDefault: () -> T
-): OrNullDelegate<T> =
-    OrNullDelegate<T>(this.firstIsInstanceOrNull<T>() ?: lazyDefault())
+inline fun <reified T : R, R : Message?> MessageChain.orElse(
+    lazyDefault: () -> R
+): OrNullDelegate<R> = OrNullDelegate<R>(this.firstIsInstanceOrNull<T>() ?: lazyDefault())
 
 // endregion delegate
 
