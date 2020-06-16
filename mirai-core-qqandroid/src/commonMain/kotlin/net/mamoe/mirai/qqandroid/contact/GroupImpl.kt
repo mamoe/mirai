@@ -129,7 +129,7 @@ internal class GroupImpl(
             get() = _announcement
             set(newValue) {
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
-                if (_announcement != newValue) {
+                //if (_announcement != newValue) {
                     val oldValue = _announcement
                     _announcement = newValue
                     launch {
@@ -142,7 +142,7 @@ internal class GroupImpl(
                         }
                         GroupEntranceAnnouncementChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                }
+                //}
             }
 
 
@@ -150,7 +150,7 @@ internal class GroupImpl(
             get() = _allowMemberInvite
             set(newValue) {
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
-                if (_allowMemberInvite != newValue) {
+                //if (_allowMemberInvite != newValue) {
                     val oldValue = _allowMemberInvite
                     _allowMemberInvite = newValue
                     launch {
@@ -163,7 +163,7 @@ internal class GroupImpl(
                         }
                         GroupAllowMemberInviteEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                }
+                //}
             }
 
         override var isAutoApproveEnabled: Boolean
@@ -180,34 +180,34 @@ internal class GroupImpl(
                 TODO()
             }
 
+        @Suppress("OverridingDeprecatedMember")
         override var isConfessTalkEnabled: Boolean
             get() = _confessTalk
             set(newValue) {
 
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
-                if (_confessTalk != newValue) {
-                    val oldValue = _confessTalk
-                    _confessTalk = newValue
-                    launch {
-                        bot.network.run {
-                            TroopManagement.GroupOperation.confessTalk(
-                                client = bot.client,
-                                groupCode = id,
-                                switch = newValue
-                            ).sendWithoutExpect()
-                        }
-                        GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
+                //if (_confessTalk != newValue) {
+                val oldValue = _confessTalk
+                _confessTalk = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.confessTalk(
+                            client = bot.client,
+                            groupCode = id,
+                            switch = newValue
+                        ).sendWithoutExpect()
                     }
+                    GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
                 }
+                // }
             }
 
 
         override var isMuteAll: Boolean
             get() = _muteAll
             set(newValue) {
-
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
-                if (_muteAll != newValue) {
+                //if (_muteAll != newValue) {
                     val oldValue = _muteAll
                     _muteAll = newValue
                     launch {
@@ -220,7 +220,7 @@ internal class GroupImpl(
                         }
                         GroupMuteAllEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                }
+                //}
             }
     }
 
