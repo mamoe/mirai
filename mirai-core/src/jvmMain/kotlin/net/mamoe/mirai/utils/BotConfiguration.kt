@@ -100,7 +100,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     @ConfigurationDsl
     @SinceMirai("1.1.0")
     fun redirectBotLogToDirectory(
-        dir: File,
+        dir: File = File("logs"),
         retain: Long = 1.weeksToMillis,
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
     ) {
@@ -119,7 +119,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     @ConfigurationDsl
     @SinceMirai("1.1.0")
     fun redirectBotLogToFile(
-        file: File,
+        file: File = File("mirai.log"),
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
     ) {
         require(!file.isDirectory) { "file must not be a dir" }
