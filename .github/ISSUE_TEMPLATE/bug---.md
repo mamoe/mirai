@@ -2,7 +2,7 @@
 name: Bug 报告
 about: 提交一个 bug
 title: ''
-labels: "　bug　"
+labels: "　problem　"
 assignees: ''
 
 ---
