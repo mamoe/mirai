@@ -37,6 +37,7 @@ sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
     /**
      * 机器人主动退出一个群.
      */
+    @MiraiExperimentalAPI("目前此事件类型不一定正确. 部分被踢出情况也会广播此事件.")
     data class Active internal constructor(override val group: Group) : BotLeaveEvent() {
         override fun toString(): String = "BotLeaveEvent.Active(group=${group.id})"
     }
@@ -44,6 +45,7 @@ sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
     /**
      * 机器人被管理员或群主踢出群.
      */
+    @MiraiExperimentalAPI("BotLeaveEvent 的子类可能在将来改动. 使用 BotLeaveEvent 以保证兼容性.")
     data class Kick internal constructor(override val operator: Member) : BotLeaveEvent(), GroupOperableEvent {
         override val group: Group get() = operator.group
         override val bot: Bot get() = super<BotLeaveEvent>.bot
