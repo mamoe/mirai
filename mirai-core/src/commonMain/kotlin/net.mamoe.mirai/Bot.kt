@@ -82,7 +82,6 @@ abstract class Bot internal constructor(
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
-        @MiraiExperimentalAPI
         @SinceMirai("1.1.0")
         @JvmStatic
         val botInstancesSequence: Sequence<Bot>
