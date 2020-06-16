@@ -36,25 +36,19 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 [`mirai-console-wrapper`](https://github.com/mamoe/mirai-console-wrapper): console 启动器. 可根据用户选择从服务器下载 console 后端, mirai-core, 和指定的前端并启动.
 
-### 使用
+## 使用
 
-#### Android
+### Android
 
 [MiraiAndroid](https://github.com/mzdluo123/MiraiAndroid) 提供在 Android 平台使用 mirai-console 插件的能力，同时拥有一个便于使用的 Lua 接口
 
 [项目详细](https://github.com/mzdluo123/MiraiAndroid)
 
-#### Windows
+### Windows / Linux / Mac
 
-**推荐使用 [LXY1226/MiraiOK](https://github.com/LXY1226/miraiOK) 一键启动器**
+**推荐任何人都使用全自动的 [LXY1226/MiraiOK](https://github.com/LXY1226/miraiOK) 一键启动器**
 
-同下Linux启动方式
-
-#### Linux / Mac
-
-**推荐使用 [LXY1226/MiraiOK](https://github.com/LXY1226/miraiOK) 一键启动器**
-
-使用 mirai-console-wrapper 启动器.
+也可以使用不推荐的 mirai-console-wrapper 启动器.
 
 1. 安装 JRE (Java 运行环境):
    -  若使用图形界面, 至少需要 JRE 11 并带有 JavaFX 11, 且不推荐使用 12 或更高版本.
