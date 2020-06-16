@@ -179,6 +179,7 @@ abstract class Group : Contact(), CoroutineScope {
          * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
+        @MiraiExperimentalAPI
         @JvmStatic
         fun calculateGroupUinByGroupCode(groupCode: Long): Long =
             CommonGroupCalculations.calculateGroupUinByGroupCode(groupCode)
@@ -187,6 +188,7 @@ abstract class Group : Contact(), CoroutineScope {
          * 使用 groupUin 计算 groupCode. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
+        @MiraiExperimentalAPI
         @JvmStatic
         fun calculateGroupCodeByGroupUin(groupUin: Long): Long =
             CommonGroupCalculations.calculateGroupCodeByGroupUin(groupUin)
@@ -235,6 +237,8 @@ interface GroupSettings {
      * @see GroupAllowConfessTalkEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
+    @PlannedRemoval("1.3.0")
+    @Deprecated("mirai 将不再支持此用例较少的设置", level = DeprecationLevel.WARNING)
     var isConfessTalkEnabled: Boolean
 
     /**
@@ -250,6 +254,7 @@ interface GroupSettings {
     /**
      * 自动加群审批
      */
+    @MiraiExperimentalAPI
     val isAutoApproveEnabled: Boolean
 
     /**
