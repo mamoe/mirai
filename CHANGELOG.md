@@ -1,5 +1,23 @@
 # Version 1.x
 
+## `1.1-EA` 2020/6/16
+** 1.1.0 Early Access** / ** 1.1.0 预览版 **  
+** 此版本新增的 API 可能不稳定, 且可能在下一个版本中删除. **
+
+**主要**:
+- 支持 mirai 码解析, 添加 [mirai 码规范](docs\mirai-code-specification.md)
+- 新模块 `mirai-serialization`
+
+**不兼容变更**:
+- 将 `PttMessage` 与 `Voice` 标注 `@MiraiExperimentalAPI` (missing)
+
+**优化**:
+
+- 删除 `Message.plus(another: Flow<Message>)` 的 `@ExperimentalCoroutinesApi`
+- 提升发送群消息的稳定性
+- 分离一些公开 API 与内部实现
+- 其他内部优化
+
 ## `1.0.2` 2020/6/1
 - 新增 `Bot.botInstancesSequence`
 - 修复日志中的时间未更新的问题
@@ -20,7 +38,7 @@
 ## `1.0.0` 2020/5/22
 
 - `ContactOrBot` 现在继承 `CoroutineScope`
-- 在没有手动指定 `deviceInfo` 时构建 Bot 将会发出警告, 须手动选择使用 `randomDeviceInfo` 或 `fileBasedDeviceInfo` 或自定义, 详见 [BotConfiguration.kt: Lines 69-72](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.kt#L69-L72)
+- 在没有手动指定 `deviceInfo` 时构建 Bot 将会发出警告, 须手动选择使用 `randomDeviceInfo` 或 `fileBasedDeviceInfo` 或自定义, 详见 [BotConfiguration.kt: Lines 69-72](mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.common.kt#L69-L72)
 <br />
 
 - 引入 `SimpleListenerHost` 以帮助 Java 处理事件监听

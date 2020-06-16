@@ -29,6 +29,8 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
 
 - `mirai-core-qqandroid` 继承 `mirai-core`, 是 Android QQ 协议的实现. 在使用时只需参考 `mirai-core` 的 API.
 
+- `mirai-serialization` 依赖 `mirai-core`, 是 mirai-core 的序列化支持模块. 提供 `Message` 类型的序列化支持与相关 [mirai 码](mirai-code-specification.md) 支持.  
+  此模块自 mirai `1.1.0` 起可用, 引用方法同 `mirai-core`.
 
 - [`mirai-console`](https://github.com/mamoe/mirai-console) 是基于 `mirai-core` 的, 支持插件加载, 指令系统, 和配置等的**控制台框架**.  
   **注意: 此模块正在重写, 短时间内不可用**  
@@ -107,7 +109,7 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
 <br><br>
 一切准备就绪. 现在开始构造 `Bot` 实例:
 
-1. `Bot` 的配置: [BotConfiguration](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.kt)
+1. `Bot` 的配置: [BotConfiguration](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.common.kt)
    可大致了解或跳过. 一般使用默认属性即可.
 2. 构造 `Bot` 实例: [BotFactory](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/BotFactory.kt#L23), [newBot](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/BotFactory.kt#L53)
 

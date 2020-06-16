@@ -6,6 +6,8 @@
 mirai 的部分 [消息](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/Message.kt) 可以表示为形如 `[mirai:atall]` 的字符串.  
 模块 `mirai-core` 包含消息到 mirai 码的单向转换; 模块 `mirai-serialization` 提供 mirai 码的解析.
 
+运行时: [mirai-serialization](../mirai-serialization/)
+
 ## 变更记录
 - `1.1.0`: 引入 mirai 码于 `mirai-serialization` 模块
 
