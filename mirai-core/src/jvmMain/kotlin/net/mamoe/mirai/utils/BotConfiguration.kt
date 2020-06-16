@@ -86,7 +86,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
         file: File = File("mirai.log"),
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
     ) {
-        require(!file.isFile) { "file must not be a dir" }
+        require(!file.isDirectory) { "file must not be a dir" }
         file.createNewFile()
         networkLoggerSupplier = { SingleFileLogger(identity(it), file) }
     }
@@ -122,7 +122,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
         file: File,
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
     ) {
-        require(!file.isFile) { "file must not be a dir" }
+        require(!file.isDirectory) { "file must not be a dir" }
         file.createNewFile()
         botLoggerSupplier = { SingleFileLogger(identity(it), file) }
     }
