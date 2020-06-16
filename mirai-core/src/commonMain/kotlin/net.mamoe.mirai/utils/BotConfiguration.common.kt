@@ -6,7 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file:Suppress("unused", "DEPRECATION_ERROR")
+@file:Suppress("unused", "DEPRECATION_ERROR", "EXPOSED_SUPER_CLASS")
 
 package net.mamoe.mirai.utils
 
@@ -17,7 +17,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.JvmField
-import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -35,8 +34,34 @@ import kotlin.jvm.JvmSynthetic
  * }
  * ```
  */
+expect open class BotConfiguration() : BotConfigurationBase {
+    /**
+     * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
+     * @see randomDeviceInfo 使用随机设备信息
+     */
+    var deviceInfo: ((Context) -> DeviceInfo)?
+
+    /**
+     * 使用随机设备信息.
+     *
+     * @see deviceInfo
+     */
+    @ConfigurationDsl
+    fun randomDeviceInfo()
+
+    companion object {
+        /** 默认的配置实例. 可以进行修改 */
+        @JvmStatic
+        val Default: BotConfiguration
+    }
+
+    fun copy(): BotConfiguration
+}
+
+@MiraiInternalAPI
 @Suppress("PropertyName")
-open class BotConfiguration {
+@SinceMirai("1.1.0")
+internal open class BotConfigurationBase internal constructor() {
     /**
      * 日志记录器
      *
@@ -60,13 +85,6 @@ open class BotConfiguration {
      * @see MiraiLogger
      */
     var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Net ${it.id}") }
-
-    /**
-     * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
-     * @see fileBasedDeviceInfo 使用指定文件存储设备信息
-     * @see randomDeviceInfo 使用随机设备信息
-     */
-    var deviceInfo: ((Context) -> DeviceInfo)? = deviceInfoStub
 
     /** 父 [CoroutineContext]. [Bot] 创建后会使用 [SupervisorJob] 覆盖其 [Job], 但会将这个 [Job] 作为父 [Job] */
     var parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -121,12 +139,6 @@ open class BotConfiguration {
         ANDROID_PAD(537062409)
     }
 
-    companion object {
-        /** 默认的配置实例. 可以进行修改 */
-        @JvmStatic
-        val Default = BotConfiguration()
-    }
-
     /**
      * 不显示网络日志. 不推荐.
      * @see networkLoggerSupplier 更多日志处理方式
@@ -143,29 +155,6 @@ open class BotConfiguration {
     @ConfigurationDsl
     fun noBotLog() {
         botLoggerSupplier = { _ -> SilentLogger }
-    }
-
-    /**
-     * 使用文件存储设备信息.
-     *
-     * 此函数只在 JVM 和 Android 有效. 在其他平台将会抛出异常.
-     * @param filepath 文件路径. 可相对于程序运行路径 (`user.dir`), 也可以是绝对路径.
-     * @see deviceInfo
-     */
-    @JvmOverloads
-    @ConfigurationDsl
-    fun fileBasedDeviceInfo(filepath: String = "device.json") {
-        deviceInfo = getFileBasedDeviceInfoSupplier(filepath)
-    }
-
-    /**
-     * 使用随机设备信息.
-     *
-     * @see deviceInfo
-     */
-    @ConfigurationDsl
-    fun randomDeviceInfo() {
-        deviceInfo = null
     }
 
     /**
@@ -230,32 +219,12 @@ open class BotConfiguration {
     @Target(AnnotationTarget.FUNCTION)
     @DslMarker
     annotation class ConfigurationDsl
-
-    fun copy(): BotConfiguration {
-        return BotConfiguration().also { new ->
-            new.botLoggerSupplier = botLoggerSupplier
-            new.networkLoggerSupplier = networkLoggerSupplier
-            new.deviceInfo = deviceInfo
-            new.parentCoroutineContext = parentCoroutineContext
-            new.heartbeatPeriodMillis = heartbeatPeriodMillis
-            new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
-            new.firstReconnectDelayMillis = firstReconnectDelayMillis
-            new.reconnectPeriodMillis = reconnectPeriodMillis
-            new.reconnectionRetryTimes = reconnectionRetryTimes
-            new.loginSolver = loginSolver
-            new.protocol = protocol
-            new.fileCacheStrategy = fileCacheStrategy
-        }
-    }
 }
 
-private val deviceInfoStub: (Context) -> DeviceInfo = {
+internal val deviceInfoStub: (Context) -> DeviceInfo = {
     @Suppress("DEPRECATION")
     MiraiLogger.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
     @Suppress("DEPRECATION")
     MiraiLogger.warning("Device info isn't specified. Please refer to BotConfiguration.deviceInfo for more information")
     SystemDeviceInfo()
 }
-
-@OptIn(ExperimentalMultiplatform::class)
-internal expect fun getFileBasedDeviceInfoSupplier(filename: String): ((Context) -> DeviceInfo)?
