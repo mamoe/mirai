@@ -1,8 +1,8 @@
 # Version 1.x
 
 ## `1.1-EA` 2020/6/16
-** 1.1.0 Early Access** / ** 1.1.0 预览版 **  
-** 此版本新增的 API 可能不稳定, 且可能在下一个版本中删除. **
+**1.1.0 Early Access** / **1.1.0 预览版**  
+**此版本新增的 API 可能不稳定, 且可能在下一个版本中删除.**
 
 **主要**:
 - 添加实验性 `CodableMessage` 作为支持 mirai 码的 `Message` 的接口.
@@ -14,7 +14,7 @@
 - 重命名实验性 API `CustomMessage.Factory.deserialize` 到 `CustomMessage.Factory.load`
 - 弃用 `MessageSendEvent` (#339). 迁移计划: WARNING in 1.1.0, ERROR in 1.2.0, REMOVE in 1.3.0
 - 调整 `VipFace` 的 mirai 码表示, 详见 mirai 码规范
-- `Face.toString()` 现在返回表情名称, 如 "\[偷笑\]", 而不是 "\[表情\]" (#345)
+- `Face.toString()` 现在返回表情名称, 如 "\[偷笑\]", 而不是 "\[表情\]" (#345 @goldimax)
 
 **优化和修复**:
 
@@ -22,10 +22,10 @@
 - 将 `PttMessage` 与 `Voice` 标注 `@MiraiExperimentalAPI` (missing)
 - 删除 `Message.plus(another: Flow<Message>)` 的 `@ExperimentalCoroutinesApi`
 - 提升发送群消息的稳定性
-- 分离一些公开 API 与内部实现
 - 一些文档优化
 - 其他内部优化
 - 提升在上个版本中弃用的 API 的弃用等级
+
 
 ## `1.0.2` 2020/6/1
 - 新增 `Bot.botInstancesSequence`
