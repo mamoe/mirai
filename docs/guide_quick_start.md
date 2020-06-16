@@ -21,10 +21,13 @@
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
 ### 添加依赖
-#### 直接导入jar包
-您可以从以下repo下载已经编译好的jar包:
+可通过以下三种方法之一添加 mirai 依赖.
+
+#### 直接导入jar包 (不推荐)
+下载已经编译好的 Jar 包, 并添加 Jar 依赖:
 - [mirai-core](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core)
 - [mirai-qqandriod](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core-qqandroid)
+
 #### Maven
 
 Kotlin 在 Maven 上只支持 JVM 平台.
@@ -48,7 +51,7 @@ Kotlin 在 Maven 上只支持 JVM 平台.
 </dependencies>
 ```
 
-#### Gradle
+#### Gradle (推荐)
 
 Mirai 只发布在 `jcenter`, 因此请确保添加 `jcenter()` 仓库：
 
@@ -87,7 +90,7 @@ implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
 val bot = Bot(qqId, password).alsoLogin()
 bot.subscribeAlways<GroupMessageEvent> { event ->
   if (event.message.content.contains("你好")) {
-    reply("你好!")
+     reply("你好!")
   } else if (event.message.content.contains("你好")) {
      File("C:\\image.png").sendAsImage()
   } 
