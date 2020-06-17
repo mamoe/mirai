@@ -120,8 +120,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
             "",
             CommandPermission.Default,
             onCommand = block { sender: CommandSender, args: Array<out Any> ->
-                println("default finally got args: ${args.joinToString()}")
-                true
+                false//not supported yet
             }
         )
     }
@@ -135,26 +134,16 @@ abstract class CompositeCommand @JvmOverloads constructor(
 
         this@CompositeCommand::class.declaredFunctions.filter { it.hasAnnotation<SubCommand>() }.map { function ->
 
-            function.parameters.forEach {
-                println(it)
-                println(it.type.classifier)
-                println()
-                println()
-            }
-
-            val notStatic = function.findAnnotation<JvmStatic>() == null
-
+            val notStatic = function.findAnnotation<JvmStatic>()==null
             val overridePermission = function.findAnnotation<Permission>()//optional
-
-            val subDescription = function.findAnnotation<Description>()?.description ?: "no description available"
+            val subDescription = function.findAnnotation<Description>()?.description?:"no description available"
 
             if ((function.returnType.classifier as? KClass<*>)?.isSubclassOf(Boolean::class) != true) {
                 throw IllegalParameterException("Return Type of SubCommand must be Boolean")
             }
 
             val parameter = function.parameters.toMutableList()
-
-            if (parameter.isEmpty()) {
+            if (parameter.isEmpty()){
                 throw IllegalParameterException("First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.primaryName + " should be <out CommandSender>")
             }
 
@@ -162,7 +151,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
                 parameter.removeAt(0)
             }
 
-            (parameter.removeAt(0)).let { receiver ->
+            (parameter.removeAt(0)).let {receiver ->
                 if (
                     receiver.isVararg ||
                     ((receiver.type.classifier as? KClass<*>).also { print(it) }
