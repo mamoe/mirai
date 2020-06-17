@@ -9,15 +9,19 @@
 
 package net.mamoe.mirai.console.command
 
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.message.data.Image
 import org.junit.jupiter.api.Test
 
 object TestCompositeCommand : CompositeCommand(
     TestCommandOwner,
-    "name1", "name2",
-    description = """
-        desc
-    """.trimIndent()
-)
+    "groupManagement", "grpMgn"
+) {
+    @SubCommand
+    suspend fun CommandSender.mute(image: Image, target: Member, seconds: Int) {
+        target.mute(seconds)
+    }
+}
 
 
 internal class TestComposite {

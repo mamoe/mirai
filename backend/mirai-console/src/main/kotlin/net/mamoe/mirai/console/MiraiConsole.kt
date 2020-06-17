@@ -16,8 +16,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.setting.SettingStorage
-import net.mamoe.mirai.console.setting.internal.ConsoleBuiltInSetting
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
@@ -72,14 +70,6 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
 
     override val builtInPluginLoaders: List<PluginLoader<*, *>> get() = instance.builtInPluginLoaders
 
-    @Suppress("CANNOT_WEAKEN_ACCESS_PRIVILEGE")
-    internal override val jvmSettingStorage: SettingStorage
-        get() = instance.jvmSettingStorage
-
-    @Suppress("CANNOT_WEAKEN_ACCESS_PRIVILEGE")
-    override val consoleBuiltIntSettingStorage: SettingStorage
-        get() = instance.consoleBuiltIntSettingStorage
-
     init {
         DefaultLogger = { identity -> this.newLogger(identity) }
         this.coroutineContext[Job]!!.invokeOnCompletion {
@@ -116,16 +106,6 @@ internal interface IMiraiConsole : CoroutineScope {
      * 内建加载器列表, 一般需要包含 [JarPluginLoader]
      */
     val builtInPluginLoaders: List<PluginLoader<*, *>>
-
-    /**
-     * 内建的供 [JvmPlugin] 使用的 [SettingStorage]
-     */
-    val jvmSettingStorage: SettingStorage
-
-    /**
-     * 内建的供 [ConsoleBuiltInSetting] 使用的 [SettingStorage]
-     */
-    val consoleBuiltIntSettingStorage: SettingStorage
 }
 
 /**

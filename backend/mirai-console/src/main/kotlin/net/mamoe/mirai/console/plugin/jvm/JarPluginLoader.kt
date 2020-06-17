@@ -15,7 +15,6 @@ import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.internal.JvmPluginImpl
 import net.mamoe.mirai.console.plugin.internal.PluginsLoader
-import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
 import java.io.File
@@ -48,8 +47,6 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
             classLoader.clear()
         }
     }
-
-    val settingStorage: SettingStorage = MiraiConsole.jvmSettingStorage
 
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
 
