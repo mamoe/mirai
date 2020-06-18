@@ -46,7 +46,7 @@ private val PACKAGE = """
 package net.mamoe.mirai.console.setting
 """.trimIndent()
 
-private val FILE_SUPPRESS = """
+internal val FILE_SUPPRESS = """
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
 """.trimIndent()
 private val IMPORTS = """
