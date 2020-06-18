@@ -12,9 +12,6 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import net.mamoe.mirai.console.plugin.internal.JvmPluginImpl
-import net.mamoe.mirai.console.plugin.internal.job
-import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.setting.Value
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -23,20 +20,4 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 abstract class KotlinPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
-    abstract inner class PluginSetting : Setting() {
-        private val track =
-            @Suppress("LeakingThis")
-            JarPluginLoader.settingStorage.trackOn(this)
-
-        init {
-            this@KotlinPlugin.job.invokeOnCompletion {
-                track.close()
-            }
-        }
-
-        override fun onElementChanged(value: Value<*>) {
-            TODO()
-        }
-    }
-}
+) : JvmPlugin, JvmPluginImpl(parentCoroutineContext)

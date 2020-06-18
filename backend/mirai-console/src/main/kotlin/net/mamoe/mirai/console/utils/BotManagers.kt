@@ -10,17 +10,8 @@
 
 package net.mamoe.mirai.console.utils
 
-import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.setting.Value
-import net.mamoe.mirai.console.setting.internal.ConsoleBuiltInSetting
-import net.mamoe.mirai.console.setting.value
 import net.mamoe.mirai.contact.User
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.Condition
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.properties.ReadWriteProperty
 
 
 /**
