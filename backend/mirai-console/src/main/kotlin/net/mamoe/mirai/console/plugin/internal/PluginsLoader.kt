@@ -16,7 +16,7 @@ import java.net.URLClassLoader
 internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
     private val loggerName = "PluginsLoader"
     private val pluginLoaders = linkedMapOf<String, PluginClassLoader>()
-    private val classesCache = mutableMapOf<String, Class<*>>()
+    private val classesCache = mutableMapOf<String,Class<*>>()
     private val logger = MiraiConsole.newLogger(loggerName)
 
     /**
@@ -52,7 +52,6 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
             if (!pluginLoaders.containsKey(pluginName)) {
                 pluginLoaders[pluginName] =
                     PluginClassLoader(
-                        pluginName,
                         jarFile,
                         this,
                         parentClassLoader
@@ -72,23 +71,12 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
     /**
      *  尝试加载插件的依赖,无则返回null
      */
-    fun loadDependentClass(name: String): Class<*>? {
-        var c: Class<*>? = null
-        // 尝试从缓存中读取
-        if (classesCache.containsKey(name)) {
-            c = classesCache[name]
-        }
-        // 然后再交给插件的classloader来加载依赖
-        if (c == null) {
-            pluginLoaders.values.forEach {
-                try {
-                    c = it.findClass(name, false)
-                    return@forEach
-                } catch (e: ClassNotFoundException) {/*nothing*/
-                }
-            }
-        }
-        return c
+    fun findClassByName(name: String): Class<*>? {
+        return classesCache[name] ?: pluginLoaders.values.asSequence().mapNotNull {
+            kotlin.runCatching {
+                it.findClass(name, false)
+            }.getOrNull()
+        }.firstOrNull()
     }
 
     fun addClassCache(name: String, clz: Class<*>) {
@@ -100,59 +88,71 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
     }
 }
 
-internal class PluginClassLoader(
-    private val pluginName: String,
-    files: File,
-    private val pluginsLoader: PluginsLoader,
-    parent: ClassLoader
-) {
-    private val classesCache = mutableMapOf<String, Class<*>?>()
-    private var classLoader: ClassLoader
 
-    init {
-        classLoader = try {
-            //兼容Android
+/**
+ * A Adapted URL Class Loader that supports Android and JVM for single URL(File) Class Load
+ */
+
+internal open class AdaptiveURLClassLoader(file: File, parent: ClassLoader):ClassLoader(){
+
+    private val internalClassLoader:ClassLoader by lazy {
+        kotlin.runCatching {
             val loaderClass = Class.forName("dalvik.system.PathClassLoader")
             loaderClass.getConstructor(String::class.java, ClassLoader::class.java)
-                .newInstance(files.absolutePath, parent) as ClassLoader
-        } catch (e: ClassNotFoundException) {
-            URLClassLoader(arrayOf((files.toURI().toURL())), parent)
+                .newInstance(file.absolutePath, parent) as ClassLoader
+        }.getOrElse {
+            URLClassLoader(arrayOf((file.toURI().toURL())), parent)
         }
     }
 
-    fun loadClass(className: String): Class<*> = classLoader.loadClass(className)!!
-
-
-    fun findClass(name: String, isSearchDependent: Boolean = true): Class<*>? {
-        var clz: Class<*>? = null
-        // 缓存中找
-        if (classesCache.containsKey(name)) {
-
-            return classesCache[name]
-        }
-        // 是否寻找依赖
-        if (isSearchDependent) {
-            clz = pluginsLoader.loadDependentClass(name)
-        }
-        // 好像没有findClass，直接load
-        if (clz == null) {
-            clz = classLoader.loadClass(name)
-        }
-        // 加入缓存
-        if (clz != null) {
-            pluginsLoader.addClassCache(name, clz)
-        }
-        // 加入缓存
-        synchronized(classesCache) {
-            classesCache[name] = clz
-        }
-        return clz
+    override fun loadClass(name: String?): Class<*> {
+        return internalClassLoader.loadClass(name)
     }
 
-    fun close() {
-        if (classLoader is URLClassLoader) {
-            (classLoader as URLClassLoader).close()
+
+    private val internalClassCache = mutableMapOf<String,Class<*>>()
+
+    internal val classesCache:Map<String,Class<*>>
+        get() = internalClassCache
+
+    internal fun addClassCache(string: String, clazz: Class<*>){
+        synchronized(internalClassCache){
+            internalClassCache[string] = clazz
         }
-        classesCache.clear()
+    }
+
+
+    fun close(){
+        if (internalClassLoader is URLClassLoader) {
+            (internalClassLoader as URLClassLoader).close()
+        }
+        internalClassCache.clear()
+    }
+
+}
+
+internal class PluginClassLoader(
+    file: File,
+    private val pluginsLoader: PluginsLoader,
+    parent: ClassLoader
+) :AdaptiveURLClassLoader(file,parent){
+
+    override fun findClass(name: String): Class<*> {
+        return findClass(name,true)
+    }
+
+    fun findClass(name: String, global: Boolean = true): Class<*>{
+        return classesCache[name]?: kotlin.run {
+            var clazz: Class<*>? = null
+            if (global) {
+                clazz = pluginsLoader.findClassByName(name)
+            }
+            if(clazz == null) {
+                clazz = loadClass(name)//这里应该是find, 如果不行就要改
+            }
+            pluginsLoader.addClassCache(name, clazz)
+            this.addClassCache(name, clazz)
+            clazz
+        }
     }
 }
