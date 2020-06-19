@@ -1,8 +1,8 @@
 # Mirai Guide - Subscribe Events
 
-由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为`2020-04-01`，对应版本`0.31.4`
+由于Mirai项目在快速推进中，因此内容时有变动，本文档的最后更新日期为`2020-06-19`，对应版本`1.1-EA`
 
-本页面采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-japt](https://github.com/mamoe/mirai-japt)
+本页面采用Kotlin作为开发语言，**若你希望使用 Java 开发**, 请参阅: [mirai-demos](https://github.com/project-mirai/mirai-demos/blob/master/mirai-demo-kotlin/src/main/java/demo/subscribe/SubscribeSamples.kt)
 
 本页面是[Mirai Guide - Getting Started](/docs/guide_getting_started.md)的后续Guide
 
@@ -18,11 +18,11 @@ suspend fun main() {
     miraiBot.subscribeMessages {
         "你好" reply "你好!"
         case("at me") {
-            reply(sender.at() + " 给爷爬 ")
+            reply(At(sender as Member) + " 给爷爬 ")
         }
 
         (contains("舔") or contains("刘老板")) {
-            "刘老板太强了".reply()
+            reply("刘老板太强了")
         }
     }
     miraiBot.join() // 等待 Bot 离线, 避免主线程退出
@@ -81,6 +81,8 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.event.events.MemberMuteEvent
 import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.data.PlainText
 
@@ -91,11 +93,11 @@ suspend fun main() {
     miraiBot.subscribeMessages {
         "你好" reply "你好!"
         case("at me") {
-            reply(sender.at() + " 给爷爬 ")
+            reply(At(sender as Member) + " 给爷爬 ")
         }
 
         (contains("舔") or contains("刘老板")) {
-            "刘老板太强了".reply()
+            reply("刘老板太强了")
         }
     }
     miraiBot.subscribeAlways<MemberJoinEvent> {
