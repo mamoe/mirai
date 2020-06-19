@@ -31,7 +31,7 @@ suspend fun main() {
 
 在本例中，`miraiBot`是一个Bot对象，让其登录，然后对`Message Event`进行了监听。
 
-对于`Message Event`，`Mirai`提供了较其他Event更强大的[MessageSubscribersBuilder](https://github.com/mamoe/mirai/wiki/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/MessageSubscribers.kt#L140)，本例也采用了[MessageSubscribersBuilder](https://github.com/mamoe/mirai/wiki/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/MessageSubscribers.kt#L140)。其他具体使用方法可以参考[Wiki:Message Event](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin#Message-Event)部分。
+对于`Message Event`，`Mirai`提供了较其他Event更强大的[MessageSubscribersBuilder](https://github.com/mamoe/mirai/blob/master/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/MessageSubscribersBuilder.kt)，本例也采用了[MessageSubscribersBuilder](https://github.com/mamoe/mirai/blob/master/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/MessageSubscribersBuilder.kt)。其他具体使用方法可以参考[Wiki:Message Event](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin#Message-Event)部分。
 
 ## 事件-Event
 
