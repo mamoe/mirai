@@ -19,9 +19,6 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.UnstableDefault
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.json.int
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelAPI
@@ -241,10 +238,7 @@ internal abstract class QQAndroidBotBase constructor(
     override val id: Long
         get() = account.id
 
-    companion object {
-        @OptIn(UnstableDefault::class)
-        val json = Json(JsonConfiguration(ignoreUnknownKeys = true, encodeDefaults = true))
-    }
+    private inline val json get() = configuration.json
 
     override val friends: ContactList<Friend> = ContactList(LockFreeLinkedList())
 

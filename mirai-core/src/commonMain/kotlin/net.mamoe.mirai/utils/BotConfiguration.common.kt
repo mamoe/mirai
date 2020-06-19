@@ -12,6 +12,9 @@ package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import net.mamoe.mirai.Bot
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -117,6 +120,16 @@ internal open class BotConfigurationBase internal constructor() {
     @SinceMirai("1.0.0")
     @MiraiExperimentalAPI
     var fileCacheStrategy: FileCacheStrategy = FileCacheStrategy.PlatformDefault
+
+    /**
+     * Json 序列化器, 使用 'kotlinx.serialization'
+     */
+    @SinceMirai("1.1.0")
+    @MiraiExperimentalAPI
+    var json: Json = kotlin.runCatching {
+        @OptIn(UnstableDefault::class)
+        Json(JsonConfiguration(isLenient = true, ignoreUnknownKeys = true))
+    }.getOrElse { Json(JsonConfiguration.Stable) }
 
     enum class MiraiProtocol(
         /** 协议模块使用的 ID */
