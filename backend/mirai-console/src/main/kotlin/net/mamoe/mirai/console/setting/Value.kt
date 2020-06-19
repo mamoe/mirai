@@ -43,7 +43,7 @@ typealias ValueSerializer<T> = KSerializer<Value<T>>
  * - [Char], [String]
  *
  * Note: The values are actually *boxed* because of the generic type T.
- * *Primitive* indicates only it is one of the 8 types mentioned above.
+ * *Primitive* indicates only it is one of the 9 types mentioned above.
  */
 interface PrimitiveValue<T> : Value<T>
 
