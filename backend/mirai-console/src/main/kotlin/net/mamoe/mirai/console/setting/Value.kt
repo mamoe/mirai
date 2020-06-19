@@ -3,11 +3,7 @@
 package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.KSerializer
-import net.mamoe.mirai.console.setting.internal.cast
-import net.mamoe.mirai.console.setting.internal.valueFromKTypeImpl
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import kotlin.internal.LowPriorityInOverloadResolution
-import kotlin.reflect.typeOf
 
 /**
  * Represents a observable, immutable value wrapping.
@@ -31,7 +27,7 @@ typealias ValueSerializer<T> = KSerializer<Value<T>>
 /**
  * Represents a observable *primitive* value wrapping.
  *
- * 8 types that are considered *primitive*:
+ * 9 types that are considered *primitive*:
  * - Integers: [Byte], [Short], [Int], [Long]
  * - Floating: [Float], [Double]
  * - [Boolean]
@@ -41,8 +37,6 @@ typealias ValueSerializer<T> = KSerializer<Value<T>>
  * *Primitive* indicates only it is one of the 8 types mentioned above.
  */
 interface PrimitiveValue<T> : Value<T>
-
-interface MutablePrimitiveValue<T> : Value<T>
 
 
 //// region PrimitiveValue CODEGEN START ////
