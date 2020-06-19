@@ -58,7 +58,7 @@
 
   ```groovy
   dependencies {
-      implementation 'net.mamoe:mirai-core-qqandroid:0.32.0'//此处版本应替换为当前最新
+      implementation 'net.mamoe:mirai-core-qqandroid:1.1-EA'//此处版本应替换为当前最新
       implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
       testCompile group: 'junit', name: 'junit', version: '4.12'
   }
