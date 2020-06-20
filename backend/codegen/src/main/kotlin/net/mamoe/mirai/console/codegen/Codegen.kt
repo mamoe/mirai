@@ -53,14 +53,14 @@ class CodegenScope : MutableList<Replacer> by mutableListOf() {
     @RegionCodegenDsl
     operator fun RegionCodegen.invoke(ktTypes: Collection<KtType>) {
         add(Replacer {
-            it.replace(Regex("""//// region $regionName CODEGEN START ////([\s\S]*?)//// endregion $regionName CODEGEN END ////""")) {
+            it.replace(Regex("""//// region $regionName CODEGEN ////([\s\S]*?)//// endregion $regionName CODEGEN ////""")) {
                 val code = CodegenScope().apply { (this@invoke as Codegen).invoke(*ktTypes.toTypedArray()) }.applyTo("")
                 """
-                        |//// region $regionName CODEGEN START ////
+                        |//// region $regionName CODEGEN ////
                         |
                         |$code
                         |
-                        |//// endregion $regionName CODEGEN END ////
+                        |//// endregion $regionName CODEGEN ////
                     """.trimMargin()
             }
         })

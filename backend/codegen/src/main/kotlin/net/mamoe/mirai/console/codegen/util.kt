@@ -92,8 +92,8 @@ val KtType.lowerCaseName: String get() = this.standardName.toLowerCase()
 inline fun kCode(@Language("kt") source: String) = source.trimIndent()
 
 fun codegen(targetFile: String, block: CodegenScope.() -> Unit) {
-    //// region PrimitiveValue CODEGEN START ////
-    //// region PrimitiveValue CODEGEN END ////
+    //// region PrimitiveValue CODEGEN ////
+    //// region PrimitiveValue CODEGEN ////
 
     targetFile.findFileSmart().also {
         println("Codegen target: ${it.absolutePath}")

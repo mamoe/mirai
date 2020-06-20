@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
 
 package net.mamoe.mirai.console.setting
 
@@ -48,7 +48,7 @@ typealias ValueSerializer<T> = KSerializer<Value<T>>
 interface PrimitiveValue<T> : Value<T>
 
 
-//// region PrimitiveValues CODEGEN START ////
+//// region PrimitiveValues CODEGEN ////
 
 /**
  * Represents a non-null [Byte] value.
@@ -96,7 +96,7 @@ interface BooleanValue : PrimitiveValue<Boolean>
 interface StringValue : PrimitiveValue<String>
 
 
-//// endregion PrimitiveValues CODEGEN END ////
+//// endregion PrimitiveValues CODEGEN ////
 
 
 @MiraiExperimentalAPI
@@ -120,13 +120,13 @@ interface CompositeListValue<T> : ListValue<Value<T>>
 interface PrimitiveListValue<T> : ListValue<T>
 
 
-//// region PrimitiveListValue CODEGEN START ////
+//// region PrimitiveListValue CODEGEN ////
 
 interface PrimitiveIntListValue<T> : PrimitiveListValue<T>
 interface PrimitiveLongListValue<T> : PrimitiveListValue<T>
 // TODO + codegen
 
-//// endregion PrimitiveListValue CODEGEN END ////
+//// endregion PrimitiveListValue CODEGEN ////
 
 
 /**
@@ -147,13 +147,13 @@ interface CompositeSetValue<T> : SetValue<Value<T>>
 interface PrimitiveSetValue<T> : SetValue<T>
 
 
-//// region PrimitiveSetValue CODEGEN START ////
+//// region PrimitiveSetValue CODEGEN ////
 
 interface PrimitiveIntSetValue<T> : PrimitiveSetValue<T>
 interface PrimitiveLongSetValue<T> : PrimitiveSetValue<T>
 // TODO + codegen
 
-//// endregion PrimitiveSetValue CODEGEN END ////
+//// endregion PrimitiveSetValue CODEGEN ////
 
 
 /**
@@ -166,13 +166,13 @@ interface CompositeMapValue<K, V> : MapValue<Value<K>, Value<V>>
 interface PrimitiveMapValue<K, V> : MapValue<K, V>
 
 
-//// region PrimitiveMapValue CODEGEN START ////
+//// region PrimitiveMapValue CODEGEN ////
 
 interface PrimitiveIntIntMapValue : PrimitiveMapValue<Int, Int>
 interface PrimitiveIntLongMapValue : PrimitiveMapValue<Int, Long>
 // TODO + codegen
 
-//// endregion PrimitiveSetValue CODEGEN END ////
+//// endregion PrimitiveSetValue CODEGEN ////
 
 
 

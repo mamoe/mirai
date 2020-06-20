@@ -40,13 +40,13 @@ internal abstract class SettingImpl {
 }
 
 
-//// region Setting.value primitives CODEGEN START ////
+//// region Setting.value primitives CODEGEN ////
 
 // TODO: 2020/6/19 CODEGEN
 
 fun Setting.value(value: Int): IntValue = TODO("codegen")
 
-//// endregion Setting.value primitives CODEGEN END ////
+//// endregion Setting.value primitives CODEGEN ////
 
 
 /**
