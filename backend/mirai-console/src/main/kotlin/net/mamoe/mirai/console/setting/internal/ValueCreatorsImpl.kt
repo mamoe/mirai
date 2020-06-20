@@ -19,6 +19,7 @@ import kotlin.reflect.full.isSubclassOf
 
 
 @PublishedApi
+@Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE")
 internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
     require(type.classifier is KClass<*>)
 
