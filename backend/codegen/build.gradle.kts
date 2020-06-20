@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     kotlin("jvm") version "1.4-M2"
     kotlin("plugin.serialization") version "1.4-M2"
@@ -23,21 +21,5 @@ kotlin {
 }
 
 dependencies {
-    api(kotlin("stdlib-jdk8", "1.4-M2"))
-}
-
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-tasks.withType(JavaCompile::class.java) {
-    options.encoding = "UTF8"
+    api(kotlin("stdlib-jdk8"))
 }
