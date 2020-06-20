@@ -19,19 +19,19 @@ fun main() {
     File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/setting/_Setting.kt").apply {
         createNewFile()
     }.writeText(buildString {
-        appendln(COPYRIGHT)
-        appendln()
-        appendln(FILE_SUPPRESS)
-        appendln()
-        appendln(PACKAGE)
-        appendln()
-        appendln(IMPORTS)
-        appendln()
-        appendln()
-        appendln(DO_NOT_MODIFY)
-        appendln()
-        appendln()
-        appendln(genAllValueUseSite())
+        appendLine(COPYRIGHT)
+        appendLine()
+        appendLine(FILE_SUPPRESS)
+        appendLine()
+        appendLine(PACKAGE)
+        appendLine()
+        appendLine(IMPORTS)
+        appendLine()
+        appendLine()
+        appendLine(DO_NOT_MODIFY)
+        appendLine()
+        appendLine()
+        appendLine(genAllValueUseSite())
     })
 }
 
@@ -56,7 +56,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
 
 fun genAllValueUseSite(): String = buildString {
     fun appendln(@Language("kt") code: String) {
-        this.appendln(code.trimIndent())
+        this.appendLine(code.trimIndent())
     }
     // PRIMITIVE
     for (number in NUMBERS + OTHER_PRIMITIVES) {
@@ -83,7 +83,7 @@ fun genAllValueUseSite(): String = buildString {
     // MUTABLE LIST / MUTABLE SET
     for (collectionName in listOf("List", "Set")) {
         for (number in NUMBERS + OTHER_PRIMITIVES) {
-            appendln()
+            appendLine()
             appendln(
                 """
                 @JvmName("valueMutable")
@@ -94,7 +94,7 @@ fun genAllValueUseSite(): String = buildString {
     }
 
     // SPECIAL
-    appendln()
+    appendLine()
     appendln(
         """
             fun <T : Setting> Setting.value(default: T): Value<T> {
