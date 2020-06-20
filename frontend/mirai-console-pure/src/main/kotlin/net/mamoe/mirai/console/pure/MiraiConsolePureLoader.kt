@@ -7,68 +7,72 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress(
+    "INVISIBLE_MEMBER",
+    "INVISIBLE_REFERENCE",
+    "CANNOT_OVERRIDE_INVISIBLE_MEMBER",
+    "INVISIBLE_SETTER",
+    "INVISIBLE_GETTER",
+    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
+    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPE_WARNING"
+)
+
 package net.mamoe.mirai.console.pure
 
-import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.DefaultCommands
-import net.mamoe.mirai.console.plugins.PluginManager
-import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
+import net.mamoe.mirai.console.MiraiConsoleInitializer
+import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.command.executeCommand
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.PlatformLogger
+import org.fusesource.jansi.Ansi
 import kotlin.concurrent.thread
 
-class MiraiConsolePureLoader {
-    companion object {
-        @JvmStatic
-        fun load(
-            coreVersion: String,
-            consoleVersion: String
-        ) {
-            start(
-                MiraiConsoleFrontEndPure(),
-                coreVersion,
-                consoleVersion
-            )
-            Runtime.getRuntime().addShutdownHook(thread(start = false) {
-                MiraiConsole.stop()
-            })
+object MiraiConsolePureLoader {
+    @JvmStatic
+    fun main(args: Array<String>?) {
+        startup()
+    }
+}
+
+private val ANSI_RESET = Ansi().reset().toString()
+
+internal fun overrideLoggingSystem() {
+    DefaultLogger = {
+        PlatformLogger(identity = it, output = { line ->
+            ConsoleUtils.lineReader.printAbove(line + ANSI_RESET)
+        })
+    }
+}
+
+internal fun startup() {
+    overrideLoggingSystem()
+    MiraiConsoleInitializer.init(MiraiConsolePure)
+    startConsoleThread()
+}
+
+internal fun startConsoleThread() {
+    thread(name = "Console", isDaemon = false) {
+        val consoleLogger = DefaultLogger("Console")
+        kotlinx.coroutines.runBlocking {
+            while (true) {
+                val next = MiraiConsoleFrontEndPure.requestInput("")
+                consoleLogger.debug("INPUT> $next")
+                kotlin.runCatching {
+                    if (!ConsoleCS.executeCommand(PlainText(next))) { // No such command
+                        consoleLogger.warning("Unknown command: " + next.split(' ')[0])
+                    }
+                }.onFailure {
+                    consoleLogger.error("Exception in executing command: $next", it)
+                }
+            }
         }
     }
 }
 
-/**
- * 启动 Console
- */
-@JvmOverloads
-internal fun start(
-    frontEnd: MiraiConsoleFrontEnd,
-    coreVersion: String = "0.0.0",
-    consoleVersion: String = "0.0.0",
-    path: String = System.getProperty("user.dir")
-) {
-    if (MiraiConsole.started) {
-        return
+object ConsoleCS : ConsoleCommandSender() {
+    override suspend fun sendMessage(message: Message) {
+        ConsoleUtils.lineReader.printAbove(message.contentToString())
     }
-    MiraiConsole.started = true
-    this.path = path
-    /* 初始化前端 */
-    this.version = consoleVersion
-    this.frontEnd = frontEnd
-    this.frontEnd.pushVersion(consoleVersion, MiraiConsole.build, coreVersion)
-    logger("Mirai-console now running under $path")
-    logger("Get news in github: https://github.com/mamoe/mirai")
-    logger("Mirai为开源项目，请自觉遵守开源项目协议")
-    logger("Powered by Mamoe Technologies and contributors")
-
-    /* 依次启用功能 */
-    DefaultCommands()
-    PluginManager.loadPlugins()
-    CommandManager.start()
-
-    /* 通知启动完成 */
-    logger("Mirai-console 启动完成")
-    logger("\"login qqnumber qqpassword \" to login a bot")
-    logger("\"login qq号 qq密码 \" 来登录一个BOT")
-
-    /* 尝试从系统配置自动登录 */
-    DefaultCommands.tryLoginAuto()
 }
