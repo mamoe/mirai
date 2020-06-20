@@ -25,10 +25,23 @@ kotlin {
         }
     }
 }
+
+var debugging = true
+
 dependencies {
-    compileOnly(project(":mirai-console"))
-    compileOnly("net.mamoe:mirai-core:${Versions.Mirai.core}")
-    compileOnly(kotlin("stdlib")) // embedded by core
+    fun import0(dep: Any) {
+        if (debugging) {
+            implementation(dep)
+        } else {
+            compileOnly(dep)
+        }
+    }
+    import0("org.jline:jline:3.15.0")
+    import0("org.fusesource.jansi:jansi:1.18")
+
+    import0(project(":mirai-console"))
+    import0("net.mamoe:mirai-core:${Versions.Mirai.core}")
+    import0(kotlin("stdlib")) // embedded by core
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
     testApi(project(":mirai-console"))
