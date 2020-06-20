@@ -15,32 +15,32 @@ import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.Value
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.full.isSubclassOf
 
 
 @PublishedApi
 internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
-    require(type.classifier is KClass<*>)
+    val classifier = type.classifier
+    require(classifier is KClass<*>)
 
-    if (type.classifier.isPrimitiveOrBuiltInSerializableValue()) {
+    if (classifier.isPrimitiveOrBuiltInSerializableValue()) {
         TODO("是基础类型, 可以直接创建 ValueImpl. ")
     }
 
     // 复合类型
 
     when {
-        type.classifier.isSubclassOf(Map::class) -> {
+        classifier == Map::class -> {
 
             TODO()
         }
-        type.classifier.isSubclassOf(List::class) -> {
+        classifier == List::class -> {
 
             TODO()
         }
-        type.classifier.isSubclassOf(Set::class) -> {
+        classifier == Set::class -> {
             TODO()
         }
-        else -> error("Custom composite value is not supported yet (${type.classifier.qualifiedName})")
+        else -> error("Custom composite value is not supported yet (${classifier.qualifiedName})")
     }
 }
 
