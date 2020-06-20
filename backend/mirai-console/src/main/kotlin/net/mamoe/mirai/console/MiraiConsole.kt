@@ -15,7 +15,6 @@ import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
@@ -24,16 +23,22 @@ import java.io.File
 import java.io.PrintStream
 import kotlin.coroutines.CoroutineContext
 
-/**
- * mirai 控制台实例.
- */
-object MiraiConsole : CoroutineScope, IMiraiConsole {
-    private lateinit var instance: IMiraiConsole
+internal object MiraiConsoleInitializer {
+    internal lateinit var instance: IMiraiConsole
 
     /** 由前端调用 */
     internal fun init(instance: IMiraiConsole) {
         this.instance = instance
     }
+
+}
+
+/**
+ * mirai 控制台实例.
+ */
+object MiraiConsole : CoroutineScope, IMiraiConsole {
+    private val instance: IMiraiConsole
+        get() = MiraiConsoleInitializer.instance
 
     /**
      * `mirai-console` build 号
