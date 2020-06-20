@@ -48,16 +48,55 @@ typealias ValueSerializer<T> = KSerializer<Value<T>>
 interface PrimitiveValue<T> : Value<T>
 
 
-//// region PrimitiveValue CODEGEN START ////
+//// region PrimitiveValues CODEGEN START ////
 
-// TODO: 2020/6/19 CODEGEN
+/**
+ * Represents a non-null [Byte] value.
+ */
+interface ByteValue : PrimitiveValue<Byte>
+
+/**
+ * Represents a non-null [Short] value.
+ */
+interface ShortValue : PrimitiveValue<Short>
 
 /**
  * Represents a non-null [Int] value.
  */
 interface IntValue : PrimitiveValue<Int>
 
-//// endregion PrimitiveValue CODEGEN END ////
+/**
+ * Represents a non-null [Long] value.
+ */
+interface LongValue : PrimitiveValue<Long>
+
+/**
+ * Represents a non-null [Float] value.
+ */
+interface FloatValue : PrimitiveValue<Float>
+
+/**
+ * Represents a non-null [Double] value.
+ */
+interface DoubleValue : PrimitiveValue<Double>
+
+/**
+ * Represents a non-null [Char] value.
+ */
+interface CharValue : PrimitiveValue<Char>
+
+/**
+ * Represents a non-null [Boolean] value.
+ */
+interface BooleanValue : PrimitiveValue<Boolean>
+
+/**
+ * Represents a non-null [String] value.
+ */
+interface StringValue : PrimitiveValue<String>
+
+
+//// endregion PrimitiveValues CODEGEN END ////
 
 
 @MiraiExperimentalAPI
