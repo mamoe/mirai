@@ -153,6 +153,6 @@ internal class PluginClassLoader(
             pluginsLoader.addClassCache(name, clazz)
             this.addClassCache(name, clazz)
             clazz
-        }
+        }!!
     }
 }
