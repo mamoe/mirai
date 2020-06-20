@@ -27,10 +27,10 @@ kotlin {
 }
 dependencies {
     compileOnly(project(":mirai-console"))
-    compileOnly("net.mamoe:mirai-core:${Versions.Mirai.core}")
+    compileOnly("net.mamoe:mirai-core:${Versions.core}")
     compileOnly(kotlin("stdlib")) // embedded by core
 
-    testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
+    testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(project(":mirai-console"))
 }
 

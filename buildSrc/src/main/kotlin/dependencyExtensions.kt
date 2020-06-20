@@ -5,7 +5,7 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
 fun DependencyHandlerScope.kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
 
 @Suppress("unused")
-fun DependencyHandlerScope.ktor(id: String, version: String = Versions.Kotlin.ktor) = "io.ktor:ktor-$id:$version"
+fun DependencyHandlerScope.ktor(id: String, version: String = Versions.ktor) = "io.ktor:ktor-$id:$version"
 
 @Suppress("unused")
 fun DependencyHandler.compileAndRuntime(any: Any) {

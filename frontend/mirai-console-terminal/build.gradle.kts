@@ -28,7 +28,7 @@ kotlin {
 }
 
 dependencies {
-    compileOnly("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
+    compileOnly("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     api(project(":mirai-console"))
     api(group = "com.googlecode.lanterna", name = "lanterna", version = "3.0.2")
 }

@@ -3,7 +3,10 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     jcenter()
+    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
+    mavenCentral()
 }
 
 kotlin {
@@ -24,4 +27,9 @@ dependencies {
     api(ktor("client-core", "1.3.2"))
     api(ktor("client-cio", "1.3.2"))
     api(ktor("client-json", "1.3.2"))
+
+    api(gradleApi())
+    compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72")
+
+    api("com.github.jengelman.gradle.plugins:shadow:6.0.0")
 }

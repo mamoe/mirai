@@ -2,16 +2,14 @@ import upload.Bintray
 import java.util.*
 
 plugins {
-    id("kotlin")
-    kotlin("plugin.serialization")
+    kotlin("jvm") version Versions.kotlin
+    kotlin("plugin.serialization") version Versions.kotlin
     id("java")
     `maven-publish`
-    id("com.jfrog.bintray")
+    id("com.jfrog.bintray") version Versions.bintray
 }
 
-apply(plugin = "com.github.johnrengelman.shadow")
-
-version = Versions.Mirai.console
+version = Versions.console
 description = "Console backend for mirai"
 
 java {
@@ -56,14 +54,14 @@ kotlin {
 }
 
 dependencies {
-    compileAndRuntime("net.mamoe:mirai-core:${Versions.Mirai.core}")
+    compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
     compileAndRuntime(kotlin("stdlib"))
 
     api("net.mamoe.yamlkt:yamlkt:0.3.1")
     api("org.jetbrains:annotations:19.0.0")
-    api(kotlinx("coroutines-jdk8", Versions.Kotlin.coroutines))
+    api(kotlinx("coroutines-jdk8", Versions.coroutines))
 
-    testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
+    testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))
     testApi(kotlin("test"))
     testApi(kotlin("test-junit5"))

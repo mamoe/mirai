@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("kotlin")
-    kotlin("plugin.serialization")
+    kotlin("jvm") version "1.4-M2"
+    kotlin("plugin.serialization") version "1.4-M2"
     id("java")
 }
 
@@ -12,6 +12,8 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
             languageSettings.useExperimentalAnnotation("kotlin.OptIn")
             languageSettings.progressiveMode = true
+            languageSettings.languageVersion = "1.4"
+            languageSettings.apiVersion = "1.4"
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
@@ -21,7 +23,7 @@ kotlin {
 }
 
 dependencies {
-    api(kotlin("stdlib"))
+    api(kotlin("stdlib-jdk8", "1.4-M2"))
 }
 
 val compileKotlin: KotlinCompile by tasks
