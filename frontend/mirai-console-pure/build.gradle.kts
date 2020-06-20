@@ -1,14 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
+    kotlin("jvm") version Versions.kotlin
+    kotlin("plugin.serialization") version Versions.kotlin
     id("java")
     `maven-publish`
-    id("com.jfrog.bintray")
+    id("com.jfrog.bintray") version Versions.bintray
 }
-
-apply(plugin = "com.github.johnrengelman.shadow")
 
 kotlin {
     sourceSets {
@@ -25,10 +23,23 @@ kotlin {
         }
     }
 }
+
+var debugging = true
+
 dependencies {
-    compileOnly(project(":mirai-console"))
-    compileOnly("net.mamoe:mirai-core:${Versions.core}")
-    compileOnly(kotlin("stdlib")) // embedded by core
+    fun import0(dep: Any) {
+        if (debugging) {
+            implementation(dep)
+        } else {
+            compileOnly(dep)
+        }
+    }
+    import0("org.jline:jline:3.15.0")
+    import0("org.fusesource.jansi:jansi:1.18")
+
+    import0(project(":mirai-console"))
+    import0("net.mamoe:mirai-core:${Versions.core}")
+    import0(kotlin("stdlib")) // embedded by core
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(project(":mirai-console"))

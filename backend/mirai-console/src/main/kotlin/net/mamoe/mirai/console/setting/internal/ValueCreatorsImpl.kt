@@ -18,6 +18,7 @@ import kotlin.reflect.KType
 
 
 @PublishedApi
+@Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE")
 internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
     val classifier = type.classifier
     require(classifier is KClass<*>)

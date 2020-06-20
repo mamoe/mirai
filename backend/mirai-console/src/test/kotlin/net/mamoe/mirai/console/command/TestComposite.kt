@@ -18,8 +18,9 @@ object TestCompositeCommand : CompositeCommand(
     "groupManagement", "grpMgn"
 ) {
     @SubCommand
-    suspend fun CommandSender.mute(image: Image, target: Member, seconds: Int) {
+    suspend fun CommandSender.mute(image: Image, target: Member, seconds: Int): Boolean {
         target.mute(seconds)
+        return true
     }
 }
 
