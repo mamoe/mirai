@@ -8,7 +8,7 @@ kotlin {
     sourceSets {
         all {
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
+            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
             languageSettings.progressiveMode = true
             languageSettings.languageVersion = "1.4"
             languageSettings.apiVersion = "1.4"

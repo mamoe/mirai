@@ -12,7 +12,7 @@ kotlin {
             languageSettings.enableLanguageFeature("InlineClasses")
 
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
+            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
             languageSettings.progressiveMode = true
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
