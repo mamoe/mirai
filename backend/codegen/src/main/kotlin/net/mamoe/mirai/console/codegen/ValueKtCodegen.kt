@@ -9,27 +9,28 @@
 
 package net.mamoe.mirai.console.codegen
 
-object SettingCodegen {
-    object PrimitiveValuesCodegen : RegionCodegen(), DefaultInvoke {
-        override val defaultInvokeArgs: List<KtType>
-            get() = KtType.Primitives + KtString
 
-        override fun StringBuilder.apply(ktType: KtType) {
-            @Suppress("ClassName")
-            appendKCode(
-                """
+object ValueKtCodegen {
+    object SettingCodegen {
+        object PrimitiveValuesCodegen : RegionCodegen(), DefaultInvoke {
+            override val defaultInvokeArgs: List<KtType>
+                get() = KtType.Primitives + KtString
+
+            override fun StringBuilder.apply(ktType: KtType) {
+                @Suppress("ClassName")
+                appendKCode(
+                    """
                     /**
                      * Represents a non-null [$ktType] value.
                      */
                     interface ${ktType}Value : PrimitiveValue<$ktType>
                 """
-            )
+                )
+            }
         }
+
     }
 
-}
-
-object ValueKtCodegen {
     @JvmStatic
     fun main(args: Array<String>) {
         codegen("Value.kt") {

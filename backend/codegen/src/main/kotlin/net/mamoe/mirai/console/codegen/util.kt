@@ -120,9 +120,3 @@ fun String.findFileSmart(): File = kotlin.run {
 }.also {
     require(it.exists()) { "file doesn't exist" }
 }
-
-fun main() {
-    codegen("Value.kt") {
-        SettingCodegen.PrimitiveValuesCodegen()
-    }
-}
