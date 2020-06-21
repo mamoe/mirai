@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.setting.internal
 
 import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.Value
+import net.mamoe.mirai.console.setting.valueFromKType
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
@@ -31,21 +32,53 @@ internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
 
     when {
         classifier == Map::class -> {
+            val keyClass = type.arguments[0].type?.classifier
+            require(keyClass is KClass<*>)
 
-            TODO()
+            val valueClass = type.arguments[1].type?.classifier
+            require(valueClass is KClass<*>)
+
+            if (keyClass.isPrimitiveOrBuiltInSerializableValue() && valueClass.isPrimitiveOrBuiltInSerializableValue()) {
+                // PrimitiveIntIntMap
+                // ...
+                TODO()
+            } else {
+                return createCompositeMapValueImpl<Any?, Any?>(
+                    kToValue = { valueFromKType(type.arguments[0].type!!) },
+                    vToValue = { valueFromKType(type.arguments[1].type!!) }
+                )
+            }
         }
         classifier == List::class -> {
+            val elementClass = type.arguments[0].type?.classifier
+            require(elementClass is KClass<*>)
 
-            TODO()
+            if (elementClass.isPrimitiveOrBuiltInSerializableValue()) {
+                // PrimitiveIntList
+                // ...
+                TODO()
+            } else {
+                return createCompositeListValueImpl<Any?> { valueFromKType(type.arguments[0].type!!) }
+            }
         }
         classifier == Set::class -> {
-            TODO()
+            val elementClass = type.arguments[0].type?.classifier
+            require(elementClass is KClass<*>)
+
+            if (elementClass.isPrimitiveOrBuiltInSerializableValue()) {
+                // PrimitiveIntSet
+                // ...
+                TODO()
+            } else {
+                return createCompositeSetValueImpl<Any?> { valueFromKType(type.arguments[0].type!!) }
+            }
         }
         else -> error("Custom composite value is not supported yet (${classifier.qualifiedName})")
     }
 }
 
 internal fun KClass<*>.isPrimitiveOrBuiltInSerializableValue(): Boolean {
+    return false // debug
     when (this) {
         Byte::class, Short::class, Int::class, Long::class,
         Boolean::class,

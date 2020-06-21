@@ -38,7 +38,7 @@ internal object MiraiConsoleInitializer {
 
 internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mirai-console:fillBuildConstants)
     @JvmStatic
-    val buildDate: Date = Date(1592720608995) // 2020-06-21 14:23:28
+    val buildDate: Date = Date(1592723625351) // 2020-06-21 15:13:45
     const val version: String = "0.5.1"
 }
 

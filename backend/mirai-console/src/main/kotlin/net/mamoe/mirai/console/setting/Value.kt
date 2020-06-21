@@ -102,28 +102,29 @@ interface StringValue : PrimitiveValue<String>
 @MiraiExperimentalAPI
 interface CompositeValue<T> : Value<T>
 
+
 /**
  * Superclass of [CompositeListValue], [PrimitiveListValue].
  */
-interface ListValue<T> : CompositeValue<List<T>>
+interface ListValue<E> : CompositeValue<List<E>>
 
 /**
  * Elements can by anything, wrapped as [Value].
- * @param T is not primitive types.
+ * @param E is not primitive types.
  */
-interface CompositeListValue<T> : ListValue<Value<T>>
+interface CompositeListValue<E> : ListValue<E>
 
 /**
  * Elements can only be primitives, not wrapped.
- * @param T is not primitive types.
+ * @param E is not primitive types.
  */
-interface PrimitiveListValue<T> : ListValue<T>
+interface PrimitiveListValue<E> : ListValue<E>
 
 
 //// region PrimitiveListValue CODEGEN ////
 
-interface PrimitiveIntListValue<T> : PrimitiveListValue<T>
-interface PrimitiveLongListValue<T> : PrimitiveListValue<T>
+interface PrimitiveIntListValue : PrimitiveListValue<Int>
+interface PrimitiveLongListValue : PrimitiveListValue<Long>
 // TODO + codegen
 
 //// endregion PrimitiveListValue CODEGEN ////
@@ -132,25 +133,25 @@ interface PrimitiveLongListValue<T> : PrimitiveListValue<T>
 /**
  * Superclass of [CompositeSetValue], [PrimitiveSetValue].
  */
-interface SetValue<T> : CompositeValue<Set<T>>
+interface SetValue<E> : CompositeValue<Set<E>>
 
 /**
  * Elements can by anything, wrapped as [Value].
- * @param T is not primitive types.
+ * @param E is not primitive types.
  */
-interface CompositeSetValue<T> : SetValue<Value<T>>
+interface CompositeSetValue<E> : SetValue<E>
 
 /**
  * Elements can only be primitives, not wrapped.
- * @param T is not primitive types.
+ * @param E is not primitive types.
  */
-interface PrimitiveSetValue<T> : SetValue<T>
+interface PrimitiveSetValue<E> : SetValue<E>
 
 
 //// region PrimitiveSetValue CODEGEN ////
 
-interface PrimitiveIntSetValue<T> : PrimitiveSetValue<T>
-interface PrimitiveLongSetValue<T> : PrimitiveSetValue<T>
+interface PrimitiveIntSetValue : PrimitiveSetValue<Int>
+interface PrimitiveLongSetValue : PrimitiveSetValue<Long>
 // TODO + codegen
 
 //// endregion PrimitiveSetValue CODEGEN ////
@@ -161,7 +162,7 @@ interface PrimitiveLongSetValue<T> : PrimitiveSetValue<T>
  */
 interface MapValue<K, V> : CompositeValue<Map<K, V>>
 
-interface CompositeMapValue<K, V> : MapValue<Value<K>, Value<V>>
+interface CompositeMapValue<K, V> : MapValue<K, V>
 
 interface PrimitiveMapValue<K, V> : MapValue<K, V>
 

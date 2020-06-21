@@ -13,11 +13,14 @@ package net.mamoe.mirai.console.setting
 
 import net.mamoe.mirai.console.setting.internal.cast
 import net.mamoe.mirai.console.setting.internal.valueFromKTypeImpl
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
+import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 
+// TODO: 2020/6/21 move to JvmPlugin to inherit SettingStorage and CoroutineScope for saving
 // Shows public APIs such as deciding when to auto-save.
 abstract class Setting : SettingImpl()
 
@@ -37,6 +40,13 @@ internal abstract class SettingImpl {
     private val valueNodes: List<Node<*>> = kotlin.run {
         TODO("reflection")
     }
+
+    /**
+     * flatten
+     */
+    internal fun onValueChanged(value: Value<*>) {
+
+    }
 }
 
 
@@ -50,7 +60,7 @@ fun Setting.value(value: Int): IntValue = TODO("codegen")
 
 
 /**
- * Creates a [Value] with [default].
+ * Creates a [Value] with reified type.
  *
  * @param T reified param type T.
  * Supports only primitives, Kotlin built-in collections,
@@ -59,4 +69,7 @@ fun Setting.value(value: Int): IntValue = TODO("codegen")
  */
 @LowPriorityInOverloadResolution
 @OptIn(ExperimentalStdlibApi::class) // stable in 1.4
-inline fun <reified T> Setting.value(default: T): Value<T> = valueFromKTypeImpl(typeOf<T>()).cast()
+inline fun <reified T> Setting.valueReified(default: T): Value<T> = valueFromKTypeImpl(typeOf<T>()).cast()
+
+@MiraiExperimentalAPI
+fun <T> Setting.valueFromKType(type: KType): Value<T> = valueFromKTypeImpl(type).cast()
