@@ -13,6 +13,12 @@ import org.junit.jupiter.api.Test
 
 internal class SettingTest {
 
+    class MySetting : Setting() {
+        val int by value(1)
+        val map by valueReified(mapOf("" to ""))
+        val map2 by valueReified(mapOf("" to mapOf("" to mapOf("" to ""))))
+    }
+
     @Test
     fun testPrimitive() {
 

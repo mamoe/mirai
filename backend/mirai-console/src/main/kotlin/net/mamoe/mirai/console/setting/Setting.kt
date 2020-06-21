@@ -23,7 +23,15 @@ import kotlin.reflect.typeOf
 
 // TODO: 2020/6/21 move to JvmPlugin to inherit SettingStorage and CoroutineScope for saving
 // Shows public APIs such as deciding when to auto-save.
-abstract class Setting : SettingImpl()
+abstract class Setting : SettingImpl() {
+
+    operator fun <T> Value<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): Value<T> {
+        @Suppress("UNCHECKED_CAST")
+        valueNodes.add(Node(property as KProperty<T>, value as Value<T>, TODO()))
+        // TODO: 2020/6/21 track on
+        return this
+    }
+}
 
 /**
  * Internal implementation for [Setting] including:
@@ -32,13 +40,13 @@ abstract class Setting : SettingImpl()
  */
 // TODO move to internal package.
 internal abstract class SettingImpl {
-    private class Node<T>(
+    internal class Node<T>(
         val property: KProperty<T>,
         val value: Value<T>,
         val serializer: ValueSerializer<T>
     )
 
-    private val valueNodes: List<Node<*>> = kotlin.run {
+    internal val valueNodes: MutableList<Node<*>> = kotlin.run {
         TODO("reflection")
     }
 

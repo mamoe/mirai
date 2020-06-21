@@ -7,12 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused")
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import kotlin.reflect.KProperty
 
 /**
  * Represents a observable, immutable value wrapping.
@@ -26,6 +27,11 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
  */
 interface Value<T> {
     var value: T
+}
+
+inline operator fun <T> Value<T>.getValue(mySetting: Any?, property: KProperty<*>): T = value
+inline operator fun <T> Value<T>.setValue(mySetting: Any?, property: KProperty<*>, value: T) {
+    this.value = value
 }
 
 /**
