@@ -35,15 +35,12 @@ import kotlin.coroutines.EmptyCoroutineContext
 private val delegateScope = CoroutineScope(EmptyCoroutineContext)
 
 object MiraiConsolePure : IMiraiConsole {
-    override val build: String = "UNKNOWN"
     override val builtInPluginLoaders: List<PluginLoader<*, *>> = LinkedList()
     override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure
     override val mainLogger: MiraiLogger = DefaultLogger("Console")
     override val rootDir: File = File("./test/console").also {
         it.mkdirs()
     }
-    override val version: String
-        get() = "UNKNOWN"
     override val coroutineContext: CoroutineContext
         get() = delegateScope.coroutineContext
 }

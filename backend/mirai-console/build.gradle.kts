@@ -1,4 +1,6 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import upload.Bintray
+import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
@@ -73,6 +75,33 @@ dependencies {
 tasks {
     "test"(Test::class) {
         useJUnitPlatform()
+    }
+
+    val compileKotlin by getting {}
+
+    val fillBuildConstants by registering {
+        doLast {
+            (compileKotlin as KotlinCompile).source.filter { it.name == "MiraiConsole.kt" }.single().let { file ->
+                file.writeText(file.readText()
+                    .replace(Regex("""val buildDate: Date = Date\((.*)\) //(.*)""")) {
+                        """
+                        val buildDate: Date = Date(${System.currentTimeMillis()}) // ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
+                            timeZone = TimeZone.getTimeZone("GMT+8")
+                        }.format(Date())}
+                    """.trimIndent()
+                    }
+                    .replace(Regex("""const val version: String = "(.*)"""")) {
+                        """
+                        const val version: String = "${Versions.console}"
+                    """.trimIndent()
+                    }
+                )
+            }
+        }
+    }
+
+    "compileKotlin" {
+        dependsOn(fillBuildConstants)
     }
 }
 

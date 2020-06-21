@@ -60,9 +60,6 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
     override fun pushBot(bot: Bot) {
     }
 
-    override fun pushVersion(consoleVersion: String, consoleBuild: String, coreVersion: String) {
-    }
-
     override suspend fun requestInput(hint: String): String {
         if (hint.isNotEmpty()) {
             ConsoleUtils.lineReader.printAbove(

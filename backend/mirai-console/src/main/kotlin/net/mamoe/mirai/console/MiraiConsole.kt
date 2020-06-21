@@ -13,6 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.center.CuiPluginCenter
+import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.utils.DefaultLogger
@@ -21,6 +23,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 
 internal object MiraiConsoleInitializer {
@@ -33,26 +36,34 @@ internal object MiraiConsoleInitializer {
 
 }
 
+internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mirai-console:fillBuildConstants)
+    @JvmStatic
+    val buildDate: Date = Date(1592720608995) // 2020-06-21 14:23:28
+    const val version: String = "0.5.1"
+}
+
 /**
  * mirai 控制台实例.
  */
 object MiraiConsole : CoroutineScope, IMiraiConsole {
+    val pluginCenter: PluginCenter get() = CuiPluginCenter
+
     private val instance: IMiraiConsole
         get() = MiraiConsoleInitializer.instance
 
     /**
      * `mirai-console` build 号
+     *
+     * UTC+8 时间
      */
-    @MiraiExperimentalAPI
-    override val build: String
-        get() = instance.build
+    @JvmStatic
+    val buildDate: Date
+        get() = MiraiConsoleBuildConstants.buildDate
 
     /**
      * `mirai-console` 版本
      */
-    @MiraiExperimentalAPI
-    override val version: String
-        get() = instance.version
+    const val version: String = MiraiConsoleBuildConstants.version
 
     /**
      * Console 运行路径
@@ -89,9 +100,6 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
 
 // 前端使用
 internal interface IMiraiConsole : CoroutineScope {
-    val build: String
-    val version: String
-
     /**
      * Console 运行路径
      */
