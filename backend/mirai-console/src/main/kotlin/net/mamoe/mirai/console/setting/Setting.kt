@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.setting
 
 import net.mamoe.mirai.console.setting.internal.cast
 import net.mamoe.mirai.console.setting.internal.valueFromKTypeImpl
+import net.mamoe.mirai.console.setting.internal.valueImpl
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
@@ -54,7 +55,7 @@ internal abstract class SettingImpl {
 
 // TODO: 2020/6/19 CODEGEN
 
-fun Setting.value(value: Int): IntValue = TODO("codegen")
+fun Setting.value(default: Int): IntValue = valueImpl(default)
 
 //// endregion Setting.value primitives CODEGEN ////
 

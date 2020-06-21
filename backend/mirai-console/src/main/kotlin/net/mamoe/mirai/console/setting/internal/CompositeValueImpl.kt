@@ -13,25 +13,6 @@ package net.mamoe.mirai.console.setting.internal
 
 import net.mamoe.mirai.console.setting.*
 
-internal abstract class IntValueImpl : IntValue {
-    constructor()
-    constructor(default: Int) {
-        _value = default
-    }
-
-    private var _value: Int? = null
-
-    override var value: Int
-        get() = _value ?: throw IllegalStateException("IntValue should be initialized before get.")
-        set(v) {
-            if (v != this._value) {
-                this._value = v
-                onChanged()
-            }
-        }
-
-    protected abstract fun onChanged()
-}
 
 // type inference bug
 internal fun <T> Setting.createCompositeSetValueImpl(tToValue: (T) -> Value<T>): CompositeSetValueImpl<T> {
