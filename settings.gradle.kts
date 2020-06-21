@@ -28,7 +28,7 @@ fun includeProject(projectPath: String, path: String? = null) {
 }
 
 includeProject(":mirai-console", "backend/mirai-console")
-includeProject(":codegen", "backend/codegen")
+includeProject(":mirai-console.codegen", "backend/codegen")
 includeProject(":mirai-console-pure", "frontend/mirai-console-pure")
 
 @Suppress("ConstantConditionIf")
