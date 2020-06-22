@@ -13,18 +13,26 @@ package net.mamoe.mirai.console.pure
 //import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleFrontEnd
-import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.PlatformLogger
 import org.fusesource.jansi.Ansi
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
+private val ANSI_RESET = Ansi().reset().toString()
+
+internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
+    PlatformLogger(identity = it, output = { line ->
+        ConsoleUtils.lineReader.printAbove(line + ANSI_RESET)
+    })
+}
+
 @Suppress("unused")
 object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
-    private val globalLogger = DefaultLogger("Mirai")
+    private val globalLogger = LoggerCreator("Mirai")
     private val cachedLoggers = ConcurrentHashMap<String, MiraiLogger>()
 
     // companion object {
@@ -49,7 +57,7 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
 
     override fun loggerFor(identity: String?): MiraiLogger {
         identity?.apply {
-            return cachedLoggers.computeIfAbsent(this, DefaultLogger)
+            return cachedLoggers.computeIfAbsent(this, LoggerCreator)
         }
         return globalLogger
     }
@@ -82,7 +90,6 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
             }
         )
     }
-
 }
 
 /*

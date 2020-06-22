@@ -36,18 +36,8 @@ object MiraiConsolePureLoader {
     }
 }
 
-private val ANSI_RESET = Ansi().reset().toString()
-
-internal fun overrideLoggingSystem() {
-    DefaultLogger = {
-        PlatformLogger(identity = it, output = { line ->
-            ConsoleUtils.lineReader.printAbove(line + ANSI_RESET)
-        })
-    }
-}
 
 internal fun startup() {
-    overrideLoggingSystem()
     MiraiConsoleInitializer.init(MiraiConsolePure)
     startConsoleThread()
 }
