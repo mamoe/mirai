@@ -10,9 +10,11 @@
 @file:Suppress("UnstableApiUsage")
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.attributes
 import org.gradle.kotlin.dsl.creating
 import java.io.File
 import kotlin.math.pow
@@ -26,22 +28,17 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
         }
 
         tasks.getByName("shadowJar") {
-            doLast {
-                this.outputs.files.forEach {
-                    if (it.nameWithoutExtension.endsWith("-all")) {
-                        val output = File(
-                            it.path.substringBeforeLast(File.separator) + File.separator + it.nameWithoutExtension.substringBeforeLast(
-                                "-all"
-                            ) + "." + it.extension
-                        )
-
-                        println("Renaming to ${output.path}")
-                        if (output.exists()) {
-                            output.delete()
-                        }
-
-                        it.renameTo(output)
-                    }
+            with(this as ShadowJar) {
+                archiveFileName.set(
+                    "${target.name}-${target.version}.jar"
+                )
+                manifest {
+                    attributes(
+                        "Manifest-Version" to "1",
+                        "Implementation-Vendor" to "Mamoe Technologies",
+                        "Implementation-Title" to target.name.toString(),
+                        "Implementation-Version" to target.version.toString() + "-" + gitVersion
+                    )
                 }
             }
         }
@@ -112,4 +109,17 @@ fun Project.findLatestFile(): Map.Entry<String, File> {
                 acc + 100.0.pow(index).toInt() * (s.toIntOrNull() ?: 0)
             }
         } ?: error("cannot find any file to upload")
+}
+
+val gitVersion: String by lazy {
+    runCatching {
+        val exec = Runtime.getRuntime().exec("git rev-parse HEAD")
+        exec.waitFor()
+        exec.inputStream.readBytes().toString(Charsets.UTF_8).trim().also {
+            println("Git commit id: $it")
+        }
+    }.onFailure {
+        it.printStackTrace()
+        return@lazy "UNKNOWN"
+    }.getOrThrow()
 }
