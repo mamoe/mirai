@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.console.setting.internal
 
-import net.mamoe.mirai.console.setting.IntValue
+import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.setting.SerializableValue
 import net.mamoe.mirai.console.setting.Setting
 
 
@@ -17,8 +18,14 @@ import net.mamoe.mirai.console.setting.Setting
 
 // TODO: 2020/6/21 CODEGEN
 
-internal fun Setting.valueImpl(default: Int): IntValue = object : IntValueImpl(default) {
-    override fun onChanged() = this@valueImpl.onValueChanged(this)
+internal fun Setting.valueImpl(default: Int): SerializableValue<Int> {
+    val instance = object : IntValueImpl(default) {
+        override fun onChanged() = this@valueImpl.onValueChanged(this)
+    }
+    return SerializableValue(instance, Int.serializer().map(
+        serializer = { instance.value },
+        deserializer = { instance.value = it }
+    ))
 }
 
 //// endregion Setting.value primitives impl CODEGEN ////

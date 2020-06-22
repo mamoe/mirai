@@ -11,10 +11,12 @@
 
 package net.mamoe.mirai.console.setting
 
+import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.console.setting.internal.cast
 import net.mamoe.mirai.console.setting.internal.valueFromKTypeImpl
 import net.mamoe.mirai.console.setting.internal.valueImpl
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import java.util.*
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
@@ -25,10 +27,12 @@ import kotlin.reflect.typeOf
 // Shows public APIs such as deciding when to auto-save.
 abstract class Setting : SettingImpl() {
 
-    operator fun <T> Value<T>.provideDelegate(thisRef: Any?, property: KProperty<*>): Value<T> {
+    operator fun <T> SerializerAwareValue<T>.provideDelegate(
+        thisRef: Any?,
+        property: KProperty<*>
+    ): SerializerAwareValue<T> {
         @Suppress("UNCHECKED_CAST")
-        valueNodes.add(Node(property as KProperty<T>, value as Value<T>, TODO()))
-        // TODO: 2020/6/21 track on
+        valueNodes.add(Node(property as KProperty<T>, this, this.serializer))
         return this
     }
 }
@@ -43,18 +47,16 @@ internal abstract class SettingImpl {
     internal class Node<T>(
         val property: KProperty<T>,
         val value: Value<T>,
-        val serializer: ValueSerializer<T>
+        val updaterSerializer: KSerializer<Unit>
     )
 
-    internal val valueNodes: MutableList<Node<*>> = kotlin.run {
-        TODO("reflection")
-    }
+    internal val valueNodes: MutableList<Node<*>> = Collections.synchronizedList(mutableListOf())
 
     /**
      * flatten
      */
     internal fun onValueChanged(value: Value<*>) {
-
+        // TODO: 2020/6/22
     }
 }
 
@@ -63,7 +65,7 @@ internal abstract class SettingImpl {
 
 // TODO: 2020/6/19 CODEGEN
 
-fun Setting.value(default: Int): IntValue = valueImpl(default)
+fun Setting.value(default: Int): SerializableValue<Int> = valueImpl(default)
 
 //// endregion Setting.value primitives CODEGEN ////
 

@@ -29,6 +29,24 @@ interface Value<T> {
     var value: T
 }
 
+/**
+ * Typically returned by [Setting.value] functions.
+ */
+class SerializableValue<T>(
+    delegate: Value<T>,
+    /**
+     * The serializer used to update and dump [delegate]
+     */
+    override val serializer: KSerializer<Unit>
+) : Value<T> by delegate, SerializerAwareValue<T>
+
+/**
+ * @see SerializableValue
+ */
+interface SerializerAwareValue<T> : Value<T> {
+    val serializer: KSerializer<Unit>
+}
+
 inline operator fun <T> Value<T>.getValue(mySetting: Any?, property: KProperty<*>): T = value
 inline operator fun <T> Value<T>.setValue(mySetting: Any?, property: KProperty<*>, value: T) {
     this.value = value

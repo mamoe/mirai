@@ -13,8 +13,6 @@ import kotlinx.serialization.*
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
 
-internal object SettingSerializerMark
-
 internal val KProperty<*>.serialNameOrPropertyName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
 
 internal inline fun <E> KSerializer<E>.bind(
