@@ -34,7 +34,7 @@ internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
             } catch (e: Throwable) {
                 logger.error("Plugin(${plugin.key}) can't not close its ClassLoader(${cl})", e)
             }
-        }
+        } 
         classesCache.clear()
     }
 
@@ -151,7 +151,7 @@ internal class PluginClassLoader(
                 clazz = loadClass(name)//这里应该是find, 如果不行就要改
             }
             pluginsLoader.addClassCache(name, clazz)
-            this.addClassCache(name, clazz)
+            this.addClassCache(name, clazz)  
             clazz
         }
     }
