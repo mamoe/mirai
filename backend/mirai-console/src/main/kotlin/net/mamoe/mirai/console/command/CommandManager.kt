@@ -138,8 +138,10 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
  *
  * @see JCommandManager.executeCommand Java 方法
  */
-suspend fun CommandSender.executeCommand(vararg messages: Any): Boolean {
-    if (messages.isEmpty()) return false
+suspend fun CommandSender.executeCommand(vararg messages: Any): CommandExecuteResult {
+    if (messages.isEmpty()) return CommandExecuteResult(
+        status = CommandExecuteStatus.EMPTY_COMMAND
+    )
     return executeCommandInternal(
         messages,
         messages[0].let { if (it is SingleMessage) it.toString() else it.toString().substringBefore(' ') })
@@ -154,8 +156,10 @@ internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Arr
  *
  * @see JCommandManager.executeCommand Java 方法
  */
-suspend fun CommandSender.executeCommand(message: MessageChain): Boolean {
-    if (message.isEmpty()) return false
+suspend fun CommandSender.executeCommand(message: MessageChain): CommandExecuteResult {
+    if (message.isEmpty()) return CommandExecuteResult(
+        status = CommandExecuteStatus.EMPTY_COMMAND
+    )
     return executeCommandInternal(message, message[0].toString())
 }
 
@@ -163,9 +167,44 @@ suspend fun CommandSender.executeCommand(message: MessageChain): Boolean {
 internal suspend inline fun CommandSender.executeCommandInternal(
     messages: Any,
     commandName: String
-): Boolean {
-    val command = InternalCommandManager.matchCommand(commandName) ?: return false
+): CommandExecuteResult {
+    val command = InternalCommandManager.matchCommand(commandName) ?: return CommandExecuteResult(
+        status = CommandExecuteStatus.COMMAND_NOT_FOUND,
+        commandName = commandName
+    )
     val rawInput = messages.flattenCommandComponents()
-    command.onCommand(this, rawInput.dropToTypedArray(1))
-    return true
+    kotlin.runCatching {
+        command.onCommand(this, rawInput.dropToTypedArray(1))
+    }.onFailure {
+        return CommandExecuteResult(
+            status = CommandExecuteStatus.FAILED,
+            commandName = commandName,
+            command = command,
+            exception = it
+        )
+    }
+    return CommandExecuteResult(
+        status = CommandExecuteStatus.SUCCESSFUL,
+        commandName = commandName,
+        command = command
+    )
 }
+
+/**
+ * 命令的执行返回
+ */
+class CommandExecuteResult(
+    val status: CommandExecuteStatus,
+    val exception: Throwable? = null,
+    val command: Command? = null,
+    val commandName: String? = null
+) {
+    /**
+     * 命令的执行状态
+     */
+    enum class CommandExecuteStatus {
+        SUCCESSFUL, FAILED, COMMAND_NOT_FOUND, EMPTY_COMMAND
+    }
+
+}
+typealias CommandExecuteStatus = CommandExecuteResult.CommandExecuteStatus

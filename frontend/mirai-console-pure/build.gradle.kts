@@ -22,22 +22,13 @@ kotlin {
     }
 }
 
-var debugging = true
-
 dependencies {
-    fun import0(dep: Any) {
-        if (debugging) {
-            implementation(dep)
-        } else {
-            compileOnly(dep)
-        }
-    }
-    import0("org.jline:jline:3.15.0")
-    import0("org.fusesource.jansi:jansi:1.18")
+    implementation("org.jline:jline:3.15.0")
+    implementation("org.fusesource.jansi:jansi:1.18")
 
-    import0(project(":mirai-console"))
-    import0("net.mamoe:mirai-core:${Versions.core}")
-    import0(kotlin("stdlib")) // embedded by core
+    compileAndRuntime(project(":mirai-console"))
+    compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
+    compileAndRuntime(kotlin("stdlib")) // embedded by core
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(project(":mirai-console"))
