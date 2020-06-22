@@ -11,7 +11,9 @@
 
 package net.mamoe.mirai.console.setting
 
+import kotlinx.serialization.BinaryFormat
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.StringFormat
 import net.mamoe.mirai.console.setting.internal.map
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.reflect.KProperty
@@ -52,6 +54,14 @@ fun <T> Value<T>.serializableValueWith(
  */
 interface SerializerAwareValue<T> : Value<T> {
     val serializer: KSerializer<Unit>
+}
+
+fun <T> SerializerAwareValue<T>.serialize(format: StringFormat): String {
+    return format.stringify(this.serializer, Unit)
+}
+
+fun <T> SerializerAwareValue<T>.serialize(format: BinaryFormat): ByteArray {
+    return format.dump(this.serializer, Unit)
 }
 
 inline operator fun <T> Value<T>.getValue(mySetting: Any?, property: KProperty<*>): T = value
