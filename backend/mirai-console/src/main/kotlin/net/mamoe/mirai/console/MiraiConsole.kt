@@ -32,6 +32,7 @@ internal object MiraiConsoleInitializer {
     /** 由前端调用 */
     internal fun init(instance: IMiraiConsole) {
         this.instance = instance
+        MiraiConsole.initialize()
     }
 
 }
@@ -95,6 +96,10 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
 
     @MiraiExperimentalAPI
     fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
+
+    internal fun initialize() {
+        // Only for initialize
+    }
 }
 
 
