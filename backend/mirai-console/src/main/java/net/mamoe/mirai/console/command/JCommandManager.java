@@ -105,10 +105,10 @@ public final class JCommandManager {
      * 解析并执行一个指令
      *
      * @param args 接受 {@link String} 或 {@link Message} , 其他对象将会被 {@link Object#toString()}
-     * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
+     * @see CommandExecuteResult
      * @see #executeCommandAsync(CoroutineScope, CommandSender, Object...)
      */
-    public static boolean executeCommand(final @NotNull CommandSender sender, final @NotNull Object... args) throws InterruptedException {
+    public static CommandExecuteResult executeCommand(final @NotNull CommandSender sender, final @NotNull Object... args) throws InterruptedException {
         Objects.requireNonNull(sender, "sender");
         Objects.requireNonNull(args, "args");
         for (Object arg : args) {
@@ -123,10 +123,10 @@ public final class JCommandManager {
      *
      * @param scope 协程作用域 (用于管理协程生命周期). 一般填入 {@link JavaPlugin} 实例.
      * @param args  接受 {@link String} 或 {@link Message} , 其他对象将会被 {@link Object#toString()}
-     * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
+     * @see CommandExecuteResult
      * @see #executeCommand(CommandSender, Object...)
      */
-    public static CompletableFuture<Boolean> executeCommandAsync(final @NotNull CoroutineScope scope, final @NotNull CommandSender sender, final @NotNull Object... args) {
+    public static CompletableFuture<CommandExecuteResult> executeCommandAsync(final @NotNull CoroutineScope scope, final @NotNull CommandSender sender, final @NotNull Object... args) {
         Objects.requireNonNull(sender, "sender");
         Objects.requireNonNull(args, "args");
         Objects.requireNonNull(scope, "scope");

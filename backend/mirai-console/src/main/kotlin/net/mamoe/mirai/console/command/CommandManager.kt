@@ -134,7 +134,7 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
  * Java 调用方式: `<static> CommandManager.executeCommand(Command)`
  *
  * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
- * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
+ * @see CommandExecuteResult
  *
  * @see JCommandManager.executeCommand Java 方法
  */
@@ -152,7 +152,7 @@ internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Arr
 
 /**
  * 解析并执行一个指令
- * @return 是否成功解析到指令. 返回 `false` 代表无任何指令匹配
+ * @see CommandExecuteResult
  *
  * @see JCommandManager.executeCommand Java 方法
  */
@@ -192,6 +192,14 @@ internal suspend inline fun CommandSender.executeCommandInternal(
 
 /**
  * 命令的执行返回
+ *
+ * @param status 命令最终执行状态
+ * @param exception 命令执行时发生的错误(如果有)
+ * @param command 尝试执行的命令 (status = SUCCESSFUL | FAILED)
+ * @param commandName 尝试执行的命令的名字 (status != EMPTY_COMMAND)
+ *
+ *
+ * @see CommandExecuteStatus
  */
 class CommandExecuteResult(
     val status: CommandExecuteStatus,
@@ -201,10 +209,21 @@ class CommandExecuteResult(
 ) {
     /**
      * 命令的执行状态
+     *
+     * 当为 [SUCCESSFUL] 的时候，代表命令执行成功
+     *
+     * 当为 [FAILED] 的时候, 代表命令执行出现了错误
+     *
+     * 当为 [COMMAND_NOT_FOUND] 的时候，代表没有匹配的命令
+     *
+     * 当为 [EMPTY_COMMAND] 的时候, 代表尝试执行 ""
+     *
      */
     enum class CommandExecuteStatus {
         SUCCESSFUL, FAILED, COMMAND_NOT_FOUND, EMPTY_COMMAND
     }
 
 }
+
+@Suppress("RemoveRedundantQualifierName")
 typealias CommandExecuteStatus = CommandExecuteResult.CommandExecuteStatus
