@@ -85,7 +85,7 @@ tasks {
                 file.writeText(file.readText()
                     .replace(Regex("""val buildDate: Date = Date\((.*)\) //(.*)""")) {
                         """
-                        val buildDate: Date = Date(${System.currentTimeMillis()}) // ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
+                        val buildDate: Date = Date(${System.currentTimeMillis()}L) // ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
                             timeZone = TimeZone.getTimeZone("GMT+8")
                         }.format(Date())}
                     """.trimIndent()
