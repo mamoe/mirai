@@ -29,17 +29,17 @@ version = Versions.Mirai.consoleGraphical
 description = "Graphical frontend for mirai-console"
 
 dependencies {
-    compileOnly("net.mamoe:mirai-core:${Versions.Mirai.core}")
+    compileOnly("net.mamoe:mirai-core:${Versions.core}")
     implementation(project(":mirai-console"))
 
     api(group = "no.tornado", name = "tornadofx", version = "1.7.19")
     api(group = "com.jfoenix", name = "jfoenix", version = "9.0.8")
 
     testApi(project(":mirai-console"))
-    testApi(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
+    testApi(kotlinx("coroutines-core", Versions.coroutines))
     testApi(group = "org.yaml", name = "snakeyaml", version = "1.25")
-    testApi("net.mamoe:mirai-core:${Versions.Mirai.core}")
-    testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
+    testApi("net.mamoe:mirai-core:${Versions.core}")
+    testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
 }
 
 kotlin {
@@ -47,7 +47,7 @@ kotlin {
         all {
 
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
+            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
             languageSettings.progressiveMode = true
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
         }

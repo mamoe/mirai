@@ -56,11 +56,11 @@ internal val OTHER_PRIMITIVES = listOf(
 
 fun genPublicApi() = buildString {
     fun appendln(@Language("kt") code: String) {
-        this.appendln(code.trimIndent())
+        this.appendLine(code.trimIndent())
     }
 
     appendln(COPYRIGHT.trim())
-    appendln()
+    appendLine()
     appendln(
         """
             package net.mamoe.mirai.console.setting
@@ -70,7 +70,7 @@ fun genPublicApi() = buildString {
             import kotlin.reflect.KProperty
         """
     )
-    appendln()
+    appendLine()
     appendln(
         """
             /**
@@ -80,7 +80,7 @@ fun genPublicApi() = buildString {
              */
         """
     )
-    appendln()
+    appendLine()
 
     appendln(
         """
@@ -107,7 +107,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
 }
         """
     )
-    appendln()
+    appendLine()
 
     // PRIMITIVES
 
@@ -127,7 +127,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
         appendln(template)
     }
 
-    appendln()
+    appendLine()
 
     for (number in OTHER_PRIMITIVES) {
         val template = """
@@ -137,7 +137,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
         appendln(template)
     }
 
-    appendln()
+    appendLine()
 
     // ARRAYS
 
@@ -154,7 +154,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
             sealed class PrimitiveArrayValue<T : Any> : ArrayValue<T>()
         """
     )
-    appendln()
+    appendLine()
 
     for (number in (NUMBERS + OTHER_PRIMITIVES).filterNot { it == "String" }) {
         appendln(
@@ -164,10 +164,10 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
             }
     """
         )
-        appendln()
+        appendLine()
     }
 
-    appendln()
+    appendLine()
 
     //   TYPED ARRAYS
 
@@ -178,7 +178,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
             }
     """
     )
-    appendln()
+    appendLine()
 
     for (number in (NUMBERS + OTHER_PRIMITIVES)) {
         appendln(
@@ -188,7 +188,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
         )
     }
 
-    appendln()
+    appendLine()
 
     //   TYPED LISTS / SETS
     for (collectionName in listOf("List", "Set")) {
@@ -207,14 +207,14 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
             appendln(template)
         }
 
-        appendln()
+        appendLine()
         // SETTING
         appendln(
             """
         abstract class Setting${collectionName}Value<T: Setting> internal constructor() : Value<${collectionName}<T>>(), ${collectionName}<T>
     """
         )
-        appendln()
+        appendLine()
     }
 
     // SETTING VALUE
@@ -225,7 +225,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
         """
     )
 
-    appendln()
+    appendLine()
 
     // MUTABLE LIST / MUTABLE SET
     for (collectionName in listOf("List", "Set")) {
@@ -235,7 +235,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
     """
         )
 
-        appendln()
+        appendLine()
 
         for (number in (NUMBERS + OTHER_PRIMITIVES)) {
             appendln(
@@ -245,17 +245,17 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
             )
         }
 
-        appendln()
+        appendLine()
         // SETTING
         appendln(
             """
         abstract class MutableSetting${collectionName}Value<T: Setting> internal constructor() : Value<Mutable${collectionName}<T>>(), Mutable${collectionName}<T>
     """
         )
-        appendln()
+        appendLine()
     }
 
-    appendln()
+    appendLine()
     // DYNAMIC
 
     appendln(

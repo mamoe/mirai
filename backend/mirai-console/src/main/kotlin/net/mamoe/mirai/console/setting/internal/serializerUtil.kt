@@ -10,15 +10,8 @@
 package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.*
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.serializer
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.yamlkt.Yaml
-import net.mamoe.yamlkt.YamlConfiguration
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
-
-internal object SettingSerializerMark
 
 internal val KProperty<*>.serialNameOrPropertyName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
 

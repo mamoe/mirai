@@ -13,41 +13,58 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.center.CuiPluginCenter
+import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
+import java.util.*
 import kotlin.coroutines.CoroutineContext
+
+internal object MiraiConsoleInitializer {
+    internal lateinit var instance: IMiraiConsole
+
+    /** 由前端调用 */
+    internal fun init(instance: IMiraiConsole) {
+        this.instance = instance
+        MiraiConsole.initialize()
+    }
+
+}
+
+internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mirai-console:fillBuildConstants)
+    @JvmStatic
+    val buildDate: Date = Date(1592799753404L) // 2020-06-22 12:22:33
+    const val version: String = "0.5.1"
+}
 
 /**
  * mirai 控制台实例.
  */
 object MiraiConsole : CoroutineScope, IMiraiConsole {
-    private lateinit var instance: IMiraiConsole
+    val pluginCenter: PluginCenter get() = CuiPluginCenter
 
-    /** 由前端调用 */
-    internal fun init(instance: IMiraiConsole) {
-        this.instance = instance
-    }
+    private val instance: IMiraiConsole
+        get() = MiraiConsoleInitializer.instance
 
     /**
      * `mirai-console` build 号
+     *
+     * UTC+8 时间
      */
-    @MiraiExperimentalAPI
-    override val build: String
-        get() = instance.build
+    @JvmStatic
+    val buildDate: Date
+        get() = MiraiConsoleBuildConstants.buildDate
 
     /**
      * `mirai-console` 版本
      */
-    @MiraiExperimentalAPI
-    override val version: String
-        get() = instance.version
+    const val version: String = MiraiConsoleBuildConstants.version
 
     /**
      * Console 运行路径
@@ -79,14 +96,15 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
 
     @MiraiExperimentalAPI
     fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
+
+    internal fun initialize() {
+        // Only for initialize
+    }
 }
 
 
 // 前端使用
 internal interface IMiraiConsole : CoroutineScope {
-    val build: String
-    val version: String
-
     /**
      * Console 运行路径
      */

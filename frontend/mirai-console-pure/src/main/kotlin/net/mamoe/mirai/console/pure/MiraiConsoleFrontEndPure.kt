@@ -9,20 +9,90 @@
 
 package net.mamoe.mirai.console.pure
 
-import kotlinx.coroutines.delay
+//import net.mamoe.mirai.console.command.CommandManager
+//import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
-import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.console.MiraiConsoleFrontEnd
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.PlatformLogger
+import org.fusesource.jansi.Ansi
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.concurrent.thread
+import java.util.concurrent.ConcurrentHashMap
+
+private val ANSI_RESET = Ansi().reset().toString()
+
+internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
+    PlatformLogger(identity = it, output = { line ->
+        ConsoleUtils.lineReader.printAbove(line + ANSI_RESET)
+    })
+}
+
+@Suppress("unused")
+object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
+    private val globalLogger = LoggerCreator("Mirai")
+    private val cachedLoggers = ConcurrentHashMap<String, MiraiLogger>()
+
+    // companion object {
+    // ANSI color codes
+    const val COLOR_RED = "\u001b[38;5;196m"
+    const val COLOR_CYAN = "\u001b[38;5;87m"
+    const val COLOR_GREEN = "\u001b[38;5;82m"
+
+    // use a dark yellow(more like orange) instead of light one to save Solarized-light users
+    const val COLOR_YELLOW = "\u001b[38;5;220m"
+    const val COLOR_GREY = "\u001b[38;5;244m"
+    const val COLOR_BLUE = "\u001b[38;5;27m"
+    const val COLOR_NAVY = "\u001b[38;5;24m" // navy uniform blue
+    const val COLOR_PINK = "\u001b[38;5;207m"
+    const val COLOR_RESET = "\u001b[39;49m"
+    // }
+
+    val sdf by lazy {
+        SimpleDateFormat("HH:mm:ss")
+    }
 
 
+    override fun loggerFor(identity: String?): MiraiLogger {
+        identity?.apply {
+            return cachedLoggers.computeIfAbsent(this, LoggerCreator)
+        }
+        return globalLogger
+    }
+
+    override fun prePushBot(identity: Long) {
+    }
+
+    override fun pushBot(bot: Bot) {
+    }
+
+    override suspend fun requestInput(hint: String): String {
+        if (hint.isNotEmpty()) {
+            ConsoleUtils.lineReader.printAbove(
+                Ansi.ansi()
+                    .fgCyan().a(sdf.format(Date()))
+                    .fgMagenta().a(hint)
+                    .toString()
+            )
+        }
+        return ConsoleUtils.lineReader.readLine("> ")
+    }
+
+    override fun pushBotAdminStatus(identity: Long, admins: List<Long>) {
+    }
+
+    override fun createLoginSolver(): LoginSolver {
+        return DefaultLoginSolver(
+            input = suspend {
+                requestInput("")
+            }
+        )
+    }
+}
+
+/*
 class MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
     private var requesting = false
     private var requestStr = ""
@@ -106,4 +176,4 @@ class MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
 
 }
 
-
+*/

@@ -20,7 +20,7 @@ kotlin {
         all {
 
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
+            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
             languageSettings.progressiveMode = true
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
         }
@@ -28,7 +28,7 @@ kotlin {
 }
 
 dependencies {
-    compileOnly("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
+    compileOnly("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     api(project(":mirai-console"))
     api(group = "com.googlecode.lanterna", name = "lanterna", version = "3.0.2")
 }

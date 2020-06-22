@@ -10,8 +10,6 @@
 package net.mamoe.mirai.console
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.center.CuiPluginCenter
-import net.mamoe.mirai.console.center.PluginCenter
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
@@ -22,11 +20,6 @@ import net.mamoe.mirai.utils.MiraiLogger
  */
 @MiraiInternalAPI
 interface MiraiConsoleFrontEnd {
-    /**
-     * 提供 [PluginCenter]
-     */
-    val pluginCenter: PluginCenter get() = CuiPluginCenter
-
     fun loggerFor(identity: String?): MiraiLogger
 
     /**
@@ -41,12 +34,6 @@ interface MiraiConsoleFrontEnd {
      * */
     fun pushBot(
         bot: Bot
-    )
-
-    fun pushVersion(
-        consoleVersion: String,
-        consoleBuild: String,
-        coreVersion: String
     )
 
     /**

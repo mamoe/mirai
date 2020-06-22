@@ -1,14 +1,10 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.serialization")
+    kotlin("jvm") version Versions.kotlin
+    kotlin("plugin.serialization") version Versions.kotlin
     id("java")
     `maven-publish`
-    id("com.jfrog.bintray")
+    id("com.jfrog.bintray") version Versions.bintray
 }
-
-apply(plugin = "com.github.johnrengelman.shadow")
 
 kotlin {
     sourceSets {
@@ -16,7 +12,7 @@ kotlin {
             languageSettings.enableLanguageFeature("InlineClasses")
 
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("kotlin.OptIn")
+            languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
             languageSettings.progressiveMode = true
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
@@ -25,31 +21,19 @@ kotlin {
         }
     }
 }
-dependencies {
-    compileOnly(project(":mirai-console"))
-    compileOnly("net.mamoe:mirai-core:${Versions.Mirai.core}")
-    compileOnly(kotlin("stdlib")) // embedded by core
 
-    testApi("net.mamoe:mirai-core-qqandroid:${Versions.Mirai.core}")
+dependencies {
+    implementation("org.jline:jline:3.15.0")
+    implementation("org.fusesource.jansi:jansi:1.18")
+
+    compileAndRuntime(project(":mirai-console"))
+    compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
+    compileAndRuntime(kotlin("stdlib")) // embedded by core
+
+    testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(project(":mirai-console"))
 }
 
-version = Versions.Mirai.consolePure
+version = Versions.consolePure
 
 description = "Console Pure CLI frontend for mirai"
-
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-tasks.withType(JavaCompile::class.java) {
-    options.encoding = "UTF8"
-}

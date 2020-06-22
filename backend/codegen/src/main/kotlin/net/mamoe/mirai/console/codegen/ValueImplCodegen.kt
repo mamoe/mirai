@@ -19,17 +19,17 @@ fun main() {
     File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/setting/internal/_ValueImpl.kt").apply {
         createNewFile()
     }.writeText(buildString {
-        appendln(COPYRIGHT)
-        appendln()
-        appendln(PACKAGE)
-        appendln()
-        appendln(IMPORTS)
-        appendln()
-        appendln()
-        appendln(DO_NOT_MODIFY)
-        appendln()
-        appendln()
-        appendln(genAllValueImpl())
+        appendLine(COPYRIGHT)
+        appendLine()
+        appendLine(PACKAGE)
+        appendLine()
+        appendLine(IMPORTS)
+        appendLine()
+        appendLine()
+        appendLine(DO_NOT_MODIFY)
+        appendLine()
+        appendLine()
+        appendLine(genAllValueImpl())
     })
 }
 
@@ -52,19 +52,19 @@ import net.mamoe.mirai.console.setting.*
 
 fun genAllValueImpl(): String = buildString {
     fun appendln(@Language("kt") code: String) {
-        this.appendln(code.trimIndent())
+        this.appendLine(code.trimIndent())
     }
 
     // PRIMITIVE
     for (number in NUMBERS + OTHER_PRIMITIVES) {
         appendln(genPrimitiveValueImpl(number, number, "$number.serializer()", false))
-        appendln()
+        appendLine()
     }
 
     // PRIMITIVE ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES.filterNot { it == "String" }) {
         appendln(genPrimitiveValueImpl("${number}Array", "${number}Array", "${number}ArraySerializer()", true))
-        appendln()
+        appendLine()
     }
 
     // TYPED ARRAYS
@@ -77,7 +77,7 @@ fun genAllValueImpl(): String = buildString {
                 true
             )
         )
-        appendln()
+        appendLine()
     }
 
     // PRIMITIVE LISTS / SETS
@@ -92,11 +92,11 @@ fun genAllValueImpl(): String = buildString {
                     false
                 )
             )
-            appendln()
+            appendLine()
         }
     }
 
-    appendln()
+    appendLine()
 
     // MUTABLE LIST / MUTABLE SET
 
@@ -141,11 +141,11 @@ fun genAllValueImpl(): String = buildString {
                 }
         """
             )
-            appendln()
+            appendLine()
         }
     }
 
-    appendln()
+    appendLine()
 
 
     appendln(
