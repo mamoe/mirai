@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.KSerializer
+import net.mamoe.mirai.console.setting.internal.map
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.reflect.KProperty
 
@@ -39,6 +40,12 @@ class SerializableValue<T>(
      */
     override val serializer: KSerializer<Unit>
 ) : Value<T> by delegate, SerializerAwareValue<T>
+
+fun <T> Value<T>.serializableValueWith(
+    serializer: KSerializer<T>
+): SerializableValue<T> {
+    return SerializableValue(this, serializer.map(serializer = { this.value }, deserializer = { this.value = it }))
+}
 
 /**
  * @see SerializableValue

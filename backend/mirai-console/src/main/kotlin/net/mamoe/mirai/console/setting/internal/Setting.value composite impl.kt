@@ -11,16 +11,21 @@
 
 package net.mamoe.mirai.console.setting.internal
 
+import kotlinx.serialization.*
+import kotlinx.serialization.builtins.*
+import net.mamoe.mirai.console.setting.SerializableValue
 import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.setting.Value
+import net.mamoe.mirai.console.setting.serializableValueWith
 import net.mamoe.mirai.console.setting.valueFromKType
+import net.mamoe.yamlkt.YamlDynamicSerializer
+import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
 
 @PublishedApi
-@Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE")
-internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
+@Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE", "UNCHECKED_CAST")
+internal fun Setting.valueFromKTypeImpl(type: KType): SerializableValue<*> {
     val classifier = type.classifier
     require(classifier is KClass<*>)
 
@@ -30,8 +35,8 @@ internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
 
     // 复合类型
 
-    when {
-        classifier == Map::class -> {
+    when (classifier) {
+        Map::class -> {
             val keyClass = type.arguments[0].type?.classifier
             require(keyClass is KClass<*>)
 
@@ -46,10 +51,10 @@ internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
                 return createCompositeMapValueImpl<Any?, Any?>(
                     kToValue = { valueFromKType(type.arguments[0].type!!) },
                     vToValue = { valueFromKType(type.arguments[1].type!!) }
-                )
+                ).serializableValueWith(serializerMirai(type) as KSerializer<Map<Any?, Any?>>) // erased
             }
         }
-        classifier == List::class -> {
+        List::class -> {
             val elementClass = type.arguments[0].type?.classifier
             require(elementClass is KClass<*>)
 
@@ -59,9 +64,10 @@ internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
                 TODO()
             } else {
                 return createCompositeListValueImpl<Any?> { valueFromKType(type.arguments[0].type!!) }
+                    .serializableValueWith(serializerMirai(type) as KSerializer<List<Any?>>)
             }
         }
-        classifier == Set::class -> {
+        Set::class -> {
             val elementClass = type.arguments[0].type?.classifier
             require(elementClass is KClass<*>)
 
@@ -71,6 +77,7 @@ internal fun Setting.valueFromKTypeImpl(type: KType): Value<*> {
                 TODO()
             } else {
                 return createCompositeSetValueImpl<Any?> { valueFromKType(type.arguments[0].type!!) }
+                    .serializableValueWith(serializerMirai(type) as KSerializer<Set<Any?>>)
             }
         }
         else -> error("Custom composite value is not supported yet (${classifier.qualifiedName})")
@@ -93,3 +100,52 @@ internal fun KClass<*>.isPrimitiveOrBuiltInSerializableValue(): Boolean {
 @PublishedApi
 @Suppress("UNCHECKED_CAST")
 internal inline fun <R, T> T.cast(): R = this as R
+
+/**
+ * Copied from kotlinx.serialization, modifications are marked with "/* mamoe modify */"
+ * Copyright 2017-2020 JetBrains s.r.o.
+ */
+@Suppress("UNCHECKED_CAST", "NO_REFLECTION_IN_CLASS_PATH", "UNSUPPORTED", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@OptIn(ImplicitReflectionSerializer::class)
+internal fun serializerMirai(type: KType): KSerializer<Any?> {
+    fun serializerByKTypeImpl(type: KType): KSerializer<Any> {
+        val rootClass = when (val t = type.classifier) {
+            is KClass<*> -> t
+            else -> error("Only KClass supported as classifier, got $t")
+        } as KClass<Any>
+
+        val typeArguments = type.arguments
+            .map { requireNotNull(it.type) { "Star projections are not allowed, had $it instead" } }
+        return when {
+            typeArguments.isEmpty() -> rootClass.serializer()
+            else -> {
+                val serializers = typeArguments
+                    .map(::serializer)
+                // Array is not supported, see KT-32839
+                when (rootClass) {
+                    List::class, MutableList::class, ArrayList::class -> ListSerializer(serializers[0])
+                    HashSet::class -> SetSerializer(serializers[0])
+                    Set::class, MutableSet::class, LinkedHashSet::class -> SetSerializer(serializers[0])
+                    HashMap::class -> MapSerializer(serializers[0], serializers[1])
+                    Map::class, MutableMap::class, LinkedHashMap::class -> MapSerializer(serializers[0], serializers[1])
+                    Map.Entry::class -> MapEntrySerializer(serializers[0], serializers[1])
+                    Pair::class -> PairSerializer(serializers[0], serializers[1])
+                    Triple::class -> TripleSerializer(serializers[0], serializers[1], serializers[2])
+                    /* mamoe modify */ Any::class -> if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer
+                    else -> {
+                        if (isReferenceArray(type, rootClass)) {
+                            return ArraySerializer(typeArguments[0].classifier as KClass<Any>, serializers[0]).cast()
+                        }
+                        requireNotNull(rootClass.constructSerializerForGivenTypeArgs(*serializers.toTypedArray())) {
+                            "Can't find a method to construct serializer for type ${rootClass.simpleName()}. " +
+                                    "Make sure this class is marked as @Serializable or provide serializer explicitly."
+                        }
+                    }
+                }
+            }
+        }.cast()
+    }
+
+    val result = serializerByKTypeImpl(type)
+    return if (type.isMarkedNullable) result.nullable else result.cast()
+}

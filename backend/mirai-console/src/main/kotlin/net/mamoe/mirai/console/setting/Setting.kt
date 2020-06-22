@@ -80,7 +80,7 @@ fun Setting.value(default: Int): SerializableValue<Int> = valueImpl(default)
  */
 @LowPriorityInOverloadResolution
 @OptIn(ExperimentalStdlibApi::class) // stable in 1.4
-inline fun <reified T> Setting.valueReified(default: T): Value<T> = valueFromKTypeImpl(typeOf<T>()).cast()
+inline fun <reified T> Setting.valueReified(default: T): SerializableValue<T> = valueFromKTypeImpl(typeOf<T>()).cast()
 
 @MiraiExperimentalAPI
-fun <T> Setting.valueFromKType(type: KType): Value<T> = valueFromKTypeImpl(type).cast()
+fun <T> Setting.valueFromKType(type: KType): SerializableValue<T> = valueFromKTypeImpl(type).cast()
