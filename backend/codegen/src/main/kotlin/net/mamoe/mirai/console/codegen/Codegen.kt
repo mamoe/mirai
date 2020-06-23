@@ -89,9 +89,15 @@ abstract class Codegen {
     protected abstract fun StringBuilder.apply(ktType: KtType)
 }
 
-abstract class RegionCodegen(regionName: String? = null) : Codegen() {
+abstract class RegionCodegen(private val targetFile: String, regionName: String? = null) : Codegen() {
     val regionName: String by lazy {
         regionName ?: this::class.simpleName!!.substringBefore("Codegen")
+    }
+
+    fun startIndependent() {
+        codegen(targetFile) {
+            this@RegionCodegen.invoke()
+        }
     }
 }
 
