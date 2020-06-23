@@ -17,10 +17,13 @@ object _Setting_value_ktCodegen {
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
-            appendKCode(
-                """
+            appendLine(
+                kCode(
+                    """
+                @JvmStatic
                 val ${ktType.standardName}SerializerDescriptor = ${ktType.standardName}.serializer().descriptor 
             """
+                ).lines().joinToString("\n") { "    $it" }
             )
         }
     }

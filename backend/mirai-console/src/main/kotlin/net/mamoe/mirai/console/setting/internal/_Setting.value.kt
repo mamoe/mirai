@@ -16,19 +16,37 @@ import net.mamoe.mirai.console.setting.Setting
 
 
 internal object BuiltInSerializerConstants {
-    //// region BuiltInSerializerConstants primitives CODEGEN ////
+//// region BuiltInSerializerConstants primitives CODEGEN ////
 
+    @JvmStatic
     val ByteSerializerDescriptor = Byte.serializer().descriptor
+
+    @JvmStatic
     val ShortSerializerDescriptor = Short.serializer().descriptor
+
+    @JvmStatic
     val IntSerializerDescriptor = Int.serializer().descriptor
+
+    @JvmStatic
     val LongSerializerDescriptor = Long.serializer().descriptor
+
+    @JvmStatic
     val FloatSerializerDescriptor = Float.serializer().descriptor
+
+    @JvmStatic
     val DoubleSerializerDescriptor = Double.serializer().descriptor
+
+    @JvmStatic
     val CharSerializerDescriptor = Char.serializer().descriptor
+
+    @JvmStatic
     val BooleanSerializerDescriptor = Boolean.serializer().descriptor
+
+    @JvmStatic
     val StringSerializerDescriptor = String.serializer().descriptor
 
-    //// endregion BuiltInSerializerConstants primitives CODEGEN ////
+
+//// endregion BuiltInSerializerConstants primitives CODEGEN ////
 }
 
 //// region Setting.value primitives impl CODEGEN ////
