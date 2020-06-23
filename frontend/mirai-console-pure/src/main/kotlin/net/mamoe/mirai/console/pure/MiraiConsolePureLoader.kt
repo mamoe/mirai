@@ -56,6 +56,9 @@ internal fun startConsoleThread() {
                     CommandExecuteStatus.COMMAND_NOT_FOUND -> {
                         consoleLogger.warning("Unknown command: ${result.commandName}")
                     }
+                    CommandExecuteStatus.PERMISSION_DENIED -> {
+                        consoleLogger.warning("Permission denied.")
+                    }
                 }
             }
         }
