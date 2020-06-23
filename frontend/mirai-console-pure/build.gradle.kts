@@ -35,6 +35,21 @@ dependencies {
     testApi(project(":mirai-console"))
 }
 
+ext {
+    // 傻逼 compileAndRuntime 没 exclude 掉
+    // 傻逼 gradle 第二次配置 task 会覆盖掉第一次的配置
+    val x: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar.() -> Unit = {
+        dependencyFilter.include {
+            when ("${it.moduleGroup}:${it.moduleName}") {
+                "org.jline:jline" -> true
+                "org.fusesource.jansi:jansi" -> true
+                else -> false
+            }
+        }
+    }
+    this.set("shadowJar", x)
+}
+
 version = Versions.consolePure
 
 description = "Console Pure CLI frontend for mirai"

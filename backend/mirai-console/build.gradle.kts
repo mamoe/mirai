@@ -71,6 +71,20 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 }
+ext {
+    // 傻逼 compileAndRuntime 没 exclude 掉
+    // 傻逼 gradle 第二次配置 task 会覆盖掉第一次的配置
+    val x: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar.() -> Unit = {
+        dependencyFilter.exclude {
+            when ("${it.moduleGroup}:${it.moduleName}") {
+                "net.mamoe:mirai-core" -> true
+                "net.mamoe:mirai-core-qqandroid" -> true
+                else -> false
+            }
+        }
+    }
+    this.set("shadowJar", x)
+}
 
 tasks {
     "test"(Test::class) {

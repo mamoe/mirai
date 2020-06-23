@@ -22,6 +22,7 @@ import kotlin.math.pow
 class MiraiConsoleBuildPlugin : Plugin<Project> {
     override fun apply(target: Project) = target.run {
         apply<ShadowPlugin>()
+        val ext = target.extensions.getByName("ext") as org.gradle.api.plugins.ExtraPropertiesExtension
 
         if (tasks.none { it.name == "shadowJar" }) {
             return@run
@@ -39,6 +40,10 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
                         "Implementation-Title" to target.name.toString(),
                         "Implementation-Version" to target.version.toString() + "-" + gitVersion
                     )
+                }
+                @Suppress("UNCHECKED_CAST")
+                kotlin.runCatching {
+                    (ext["shadowJar"] as? ShadowJar.() -> Unit)?.invoke(this)
                 }
             }
         }
