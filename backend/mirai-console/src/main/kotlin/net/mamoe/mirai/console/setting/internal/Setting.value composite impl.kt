@@ -44,7 +44,9 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
 
     when (classifier) {
         MutableMap::class,
-        Map::class
+        Map::class,
+        LinkedHashMap::class,
+        HashMap::class
         -> {
             val keyClass = type.arguments[0].type?.classifier
             require(keyClass is KClass<*>)
@@ -63,10 +65,9 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
                 ).serializableValueWith(serializerMirai(type) as KSerializer<Map<Any?, Any?>>) // erased
             }
         }
-        Collection::class,
-        MutableCollection::class,
         MutableList::class,
-        List::class
+        List::class,
+        ArrayList::class
         -> {
             val elementClass = type.arguments[0].type?.classifier
             require(elementClass is KClass<*>)
@@ -81,7 +82,9 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
             }
         }
         MutableSet::class,
-        Set::class
+        Set::class,
+        LinkedHashSet::class,
+        HashSet::class
         -> {
             val elementClass = type.arguments[0].type?.classifier
             require(elementClass is KClass<*>)
