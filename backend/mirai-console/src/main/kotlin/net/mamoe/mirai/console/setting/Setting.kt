@@ -146,13 +146,19 @@ internal abstract class SettingImpl {
 }
 
 
-//// region Setting.value primitives CODEGEN ////
+//// region Setting_value_primitives CODEGEN ////
 
-// TODO: 2020/6/19 CODEGEN
-
+fun Setting.value(default: Byte): SerializerAwareValue<Byte> = valueImpl(default)
+fun Setting.value(default: Short): SerializerAwareValue<Short> = valueImpl(default)
 fun Setting.value(default: Int): SerializerAwareValue<Int> = valueImpl(default)
+fun Setting.value(default: Long): SerializerAwareValue<Long> = valueImpl(default)
+fun Setting.value(default: Float): SerializerAwareValue<Float> = valueImpl(default)
+fun Setting.value(default: Double): SerializerAwareValue<Double> = valueImpl(default)
+fun Setting.value(default: Char): SerializerAwareValue<Char> = valueImpl(default)
+fun Setting.value(default: Boolean): SerializerAwareValue<Boolean> = valueImpl(default)
+fun Setting.value(default: String): SerializerAwareValue<String> = valueImpl(default)
 
-//// endregion Setting.value primitives CODEGEN ////
+//// endregion Setting_value_primitives CODEGEN ////
 
 
 /**
@@ -171,3 +177,5 @@ inline fun <reified T> Setting.valueReified(default: T): SerializerAwareValue<T>
 
 @MiraiExperimentalAPI
 fun <T> Setting.valueFromKType(type: KType): SerializerAwareValue<T> = valueFromKTypeImpl(type).cast()
+
+// TODO: 2020/6/24 Introduce class TypeToken for compound types for Java.

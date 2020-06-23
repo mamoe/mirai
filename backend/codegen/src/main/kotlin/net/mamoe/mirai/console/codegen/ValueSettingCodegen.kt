@@ -136,6 +136,22 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
         }
     }
 
+    object Setting_value_primitivesCodegen : RegionCodegen("Setting.kt"), DefaultInvoke {
+        @JvmStatic
+        fun main(args: Array<String>) = super.startIndependent()
+        override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
+
+        override fun StringBuilder.apply(ktType: KtType) {
+            @Suppress("unused")
+            appendKCode(
+                """
+                fun Setting.value(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = valueImpl(default)
+                """
+            )
+        }
+
+    }
+
     /**
      * 运行本 object 中所有嵌套 object Codegen
      */
