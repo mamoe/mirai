@@ -17,7 +17,9 @@ import net.mamoe.mirai.utils.MiraiLogger
 
 
 /**
- * Java 或 Kotlin Jar 插件
+ * Java, Kotlin 或其他 JVM 平台插件
+ *
+ * @see AbstractJvmPlugin 默认实现
  *
  * @see JavaPlugin Java 插件
  * @see KotlinPlugin Kotlin 插件

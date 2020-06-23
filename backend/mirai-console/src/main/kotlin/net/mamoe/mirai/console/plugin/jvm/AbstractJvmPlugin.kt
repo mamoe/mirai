@@ -11,20 +11,18 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
-import net.mamoe.mirai.console.utils.JavaPluginScheduler
+import net.mamoe.mirai.console.plugin.internal.JvmPluginImpl
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Java 插件的父类
+ * [JavaPlugin] 和 [KotlinPlugin] 的父类
+ *
+ * @see JavaPlugin
+ * @see KotlinPlugin
  */
-abstract class JavaPlugin @JvmOverloads constructor(
+abstract class AbstractJvmPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
-
-    /**
-     * Java API Scheduler
-     */
-    val scheduler: JavaPluginScheduler =
-        JavaPluginScheduler(this.coroutineContext)
+) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
+    // TODO: 2020/6/24 添加 PluginSetting 继承 Setting, 实现 onValueChanged 并绑定自动保存.
 }

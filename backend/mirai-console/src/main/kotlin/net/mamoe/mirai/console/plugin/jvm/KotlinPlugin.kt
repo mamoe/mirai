@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
-import net.mamoe.mirai.console.plugin.internal.JvmPluginImpl
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -20,4 +19,4 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 abstract class KotlinPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, JvmPluginImpl(parentCoroutineContext)
+) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext)
