@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("FunctionName", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:Suppress("FunctionName", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "PRE_RELEASE_CLASS")
 
 package net.mamoe.mirai.console.codegen
 

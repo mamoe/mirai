@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE", "MemberVisibilityCanBePrivate", "unused")
+@file:Suppress("NOTHING_TO_INLINE", "MemberVisibilityCanBePrivate", "unused","PRE_RELEASE_CLASS")
 
 package net.mamoe.mirai.console.codegen
 
