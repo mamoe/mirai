@@ -705,7 +705,13 @@ internal abstract class QQAndroidBotBase constructor(
 
     @LowLevelAPI
     @MiraiExperimentalAPI
-    override suspend fun _lowLevelSolveNewFriendRequestEvent(eventId: Long, fromId: Long, fromNick: String, accept: Boolean, blackList: Boolean) {
+    override suspend fun _lowLevelSolveNewFriendRequestEvent(
+        eventId: Long,
+        fromId: Long,
+        fromNick: String,
+        accept: Boolean,
+        blackList: Boolean
+    ) {
         network.apply {
             NewContact.SystemMsgNewFriend.Action(
                 bot.client,
@@ -761,16 +767,17 @@ internal abstract class QQAndroidBotBase constructor(
                 accept = accept,
                 blackList = blackList
             ).sendWithoutExpect()
-            groups[groupId].apply {
-                members.delegate.addLast(newMember(object : MemberInfo {
-                    override val nameCard: String get() = ""
-                    override val permission: MemberPermission get() = MemberPermission.MEMBER
-                    override val specialTitle: String get() = ""
-                    override val muteTimestamp: Int get() = 0
-                    override val uin: Long get() = fromId
-                    override val nick: String get() = fromNick
-                }))
-            }
+            if (accept ?: return)
+                groups[groupId].apply {
+                    members.delegate.addLast(newMember(object : MemberInfo {
+                        override val nameCard: String get() = ""
+                        override val permission: MemberPermission get() = MemberPermission.MEMBER
+                        override val specialTitle: String get() = ""
+                        override val muteTimestamp: Int get() = 0
+                        override val uin: Long get() = fromId
+                        override val nick: String get() = fromNick
+                    }))
+                }
         }
     }
 
