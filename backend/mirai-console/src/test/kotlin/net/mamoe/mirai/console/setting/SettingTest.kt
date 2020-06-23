@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.setting
 
+import net.mamoe.yamlkt.Yaml
 import org.junit.jupiter.api.Test
 
 internal class SettingTest {
@@ -21,6 +22,8 @@ internal class SettingTest {
 
     @Test
     fun testPrimitive() {
-
+        val setting = MySetting()
+        val string = Yaml.nonStrict.stringify(setting.updaterSerializer, Unit)
+        println(string)
     }
 }

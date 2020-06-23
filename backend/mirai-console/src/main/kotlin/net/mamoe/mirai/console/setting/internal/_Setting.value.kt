@@ -9,23 +9,36 @@
 
 package net.mamoe.mirai.console.setting.internal
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
-import net.mamoe.mirai.console.setting.SerializableValue
+import net.mamoe.mirai.console.setting.SerializerAwareValue
 import net.mamoe.mirai.console.setting.Setting
 
+
+internal object BuiltInSerializerConstants {
+    //// region BuiltInSerializerConstants primitives CODEGEN ////
+
+    val ByteSerializerDescriptor = Byte.serializer().descriptor
+    val ShortSerializerDescriptor = Short.serializer().descriptor
+    val IntSerializerDescriptor = Int.serializer().descriptor
+    val LongSerializerDescriptor = Long.serializer().descriptor
+    val FloatSerializerDescriptor = Float.serializer().descriptor
+    val DoubleSerializerDescriptor = Double.serializer().descriptor
+    val CharSerializerDescriptor = Char.serializer().descriptor
+    val BooleanSerializerDescriptor = Boolean.serializer().descriptor
+    val StringSerializerDescriptor = String.serializer().descriptor
+
+    //// endregion BuiltInSerializerConstants primitives CODEGEN ////
+}
 
 //// region Setting.value primitives impl CODEGEN ////
 
 // TODO: 2020/6/21 CODEGEN
 
-internal fun Setting.valueImpl(default: Int): SerializableValue<Int> {
-    val instance = object : IntValueImpl(default) {
+internal fun Setting.valueImpl(default: Int): SerializerAwareValue<Int> {
+    return object : IntValueImpl(default), SerializerAwareValue<Int>, KSerializer<Unit> {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
-    return SerializableValue(instance, Int.serializer().map(
-        serializer = { instance.value },
-        deserializer = { instance.value = it }
-    ))
 }
 
 //// endregion Setting.value primitives impl CODEGEN ////

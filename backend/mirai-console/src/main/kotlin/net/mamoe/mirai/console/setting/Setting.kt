@@ -12,14 +12,16 @@
 package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.*
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.MapEntrySerializer
+import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.setting.internal.cast
 import net.mamoe.mirai.console.setting.internal.valueFromKTypeImpl
 import net.mamoe.mirai.console.setting.internal.valueImpl
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.yamlkt.Yaml
+import net.mamoe.yamlkt.YamlConfiguration
+import net.mamoe.yamlkt.YamlConfiguration.ListSerialization.FLOW_SEQUENCE
+import net.mamoe.yamlkt.YamlConfiguration.MapSerialization.FLOW_MAP
 import java.util.*
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
@@ -36,8 +38,8 @@ abstract class Setting : SettingImpl() {
         thisRef: Any?,
         property: KProperty<*>
     ): SerializerAwareValue<T> {
-        @Suppress("UNCHECKED_CAST")
-        valueNodes.add(Node(property.serialName, this, this.serializer))
+        val name = property.serialName
+        valueNodes.put(name, Node(name, this, this.serializer))
         return this
     }
 
@@ -53,7 +55,7 @@ internal val KProperty<*>.serialName: String get() = this.findAnnotation<SerialN
  */
 // TODO move to internal package.
 internal abstract class SettingImpl {
-    internal fun findNodeInstance(name: String): Node<*>? = valueNodes.firstOrNull { it.serialName == name }
+    internal fun findNodeInstance(name: String): Node<*>? = valueNodes[name]
 
     internal class Node<T>(
         val serialName: String,
@@ -61,67 +63,10 @@ internal abstract class SettingImpl {
         val updaterSerializer: KSerializer<Unit>
     )
 
-    /**
-     * Serializing like a [Map.Entry] but with higher performance
-     */
-    internal inner class NodeSerializer : KSerializer<Node<*>?> {
-        override val descriptor: SerialDescriptor
-            get() = MapEntrySerializer(String.serializer(), String.serializer()).descriptor
-
-        private val keySerializer = String.serializer()
-        private val valueSerializer = String.serializer()
-
-        override fun deserialize(decoder: Decoder): Node<*>? =
-            with(decoder.beginStructure(descriptor, keySerializer, valueSerializer)) {
-                if (decodeSequentially()) {
-                    val name = decodeStringElement(descriptor, 0)
-                    val value = decodeStringElement(descriptor, 1)
-
-                    val node = findNodeInstance(name) ?: return@with null
-                    Yaml.nonStrict.parse(node.updaterSerializer, value)
-                    return@with node
-                }
-
-                var name: String? = null
-                var value: String? = null
-
-                loop@ while (true) {
-                    when (decodeElementIndex(descriptor)) {
-                        0 -> name = decodeStringElement(descriptor, 0)
-                        1 -> value = decodeStringElement(descriptor, 1)
-                        CompositeDecoder.READ_DONE -> break@loop
-                    }
-                }
-
-                requireNotNull(name) { throw MissingFieldException("name") }
-                requireNotNull(value) { throw MissingFieldException("value") }
-
-                endStructure(descriptor)
-
-                val node = findNodeInstance(name) ?: return@with null
-                Yaml.nonStrict.parse(node.updaterSerializer, value)
-                return@with node
-            }
-
-        override fun serialize(encoder: Encoder, value: Node<*>?) {
-            if (value == null) {
-                encoder.encodeNull()
-            } else {
-                val structuredEncoder = encoder.beginStructure(descriptor, keySerializer, valueSerializer)
-                structuredEncoder.encodeStringElement(descriptor, 0, value.serialName)
-                structuredEncoder.encodeStringElement(
-                    descriptor, 1,
-                    Yaml.nonStrict.stringify(value.updaterSerializer, Unit)
-                )
-                structuredEncoder.endStructure(descriptor)
-            }
-        }
-    }
-
-    internal val valueNodes: MutableList<Node<*>> = Collections.synchronizedList(mutableListOf())
+    internal val valueNodes: MutableMap<String, Node<*>> = Collections.synchronizedMap(mutableMapOf())
 
     internal open val updaterSerializer: KSerializer<Unit> by lazy {
-        val actual = ListSerializer(NodeSerializer())
+        val actual = MapSerializer(String.serializer(), String.serializer())
 
         object : KSerializer<Unit> {
             override val descriptor: SerialDescriptor
@@ -132,7 +77,7 @@ internal abstract class SettingImpl {
             }
 
             override fun serialize(encoder: Encoder, value: Unit) {
-                actual.serialize(encoder, valueNodes)
+                TODO()
             }
 
         }
@@ -144,6 +89,18 @@ internal abstract class SettingImpl {
     internal fun onValueChanged(value: Value<*>) {
         // TODO: 2020/6/22
     }
+
+    companion object {
+        val allFlow = Yaml(
+            YamlConfiguration(
+                nonStrictNullability = true,
+                nonStrictNumber = true,
+                mapSerialization = FLOW_MAP,
+                listSerialization = FLOW_SEQUENCE,
+                classSerialization = FLOW_MAP
+            )
+        )
+    }
 }
 
 
@@ -151,7 +108,7 @@ internal abstract class SettingImpl {
 
 // TODO: 2020/6/19 CODEGEN
 
-fun Setting.value(default: Int): SerializableValue<Int> = valueImpl(default)
+fun Setting.value(default: Int): SerializerAwareValue<Int> = valueImpl(default)
 
 //// endregion Setting.value primitives CODEGEN ////
 
@@ -165,6 +122,7 @@ fun Setting.value(default: Int): SerializableValue<Int> = valueImpl(default)
  * (typically annotated with [kotlinx.serialization.Serializable])
  */
 @LowPriorityInOverloadResolution
+@MiraiExperimentalAPI
 @OptIn(ExperimentalStdlibApi::class) // stable in 1.4
 inline fun <reified T> Setting.valueReified(default: T): SerializableValue<T> = valueFromKTypeImpl(typeOf<T>()).cast()
 

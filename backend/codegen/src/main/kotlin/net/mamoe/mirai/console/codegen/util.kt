@@ -71,17 +71,15 @@ sealed class KtType {
     object KtMap : KtType() {
         override val standardName: String get() = "Map"
     }
-
-    companion object {
-        val PrimitiveIntegers = listOf(KtByte, KtShort, KtInt, KtLong)
-        val PrimitiveFloatings = listOf(KtFloat, KtDouble)
-
-        val PrimitiveNumbers = PrimitiveIntegers + PrimitiveFloatings
-        val PrimitiveNonNumbers = listOf(KtChar, KtBoolean)
-
-        val Primitives = PrimitiveNumbers + PrimitiveNonNumbers
-    }
 }
+
+val KtPrimitiveIntegers = listOf(KtByte, KtShort, KtInt, KtLong)
+val KtPrimitiveFloatings = listOf(KtFloat, KtDouble)
+
+val KtPrimitiveNumbers = KtPrimitiveIntegers + KtPrimitiveFloatings
+val KtPrimitiveNonNumbers = listOf(KtChar, KtBoolean)
+
+val KtPrimitives = KtPrimitiveNumbers + KtPrimitiveNonNumbers
 
 operator fun KtType.plus(type: KtType): List<KtType> {
     return listOf(this, type)

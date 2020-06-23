@@ -9,14 +9,20 @@
 
 package net.mamoe.mirai.console.setting.internal
 
+import kotlinx.serialization.Decoder
+import kotlinx.serialization.Encoder
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.setting.IntValue
+import net.mamoe.mirai.console.setting.SerializerAwareValue
 
 
 //// region PrimitiveValues CODEGEN ////
 
 // TODO: 2020/6/21 CODEGEN
 
-internal abstract class IntValueImpl : IntValue {
+internal abstract class IntValueImpl : IntValue, SerializerAwareValue<Int>, KSerializer<Unit> {
     constructor()
     constructor(default: Int) {
         _value = default
@@ -24,8 +30,8 @@ internal abstract class IntValueImpl : IntValue {
 
     private var _value: Int? = null
 
-    override var value: Int
-        get() = _value ?: throw IllegalStateException("IntValue should be initialized before get.")
+    final override var value: Int
+        get() = _value ?: error("IntValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
                 this._value = v
@@ -34,6 +40,13 @@ internal abstract class IntValueImpl : IntValue {
         }
 
     protected abstract fun onChanged()
+
+    final override val serializer: KSerializer<Unit> get() = this
+    final override val descriptor: SerialDescriptor get() = BuiltInSerializerConstants.IntSerializerDescriptor
+    final override fun serialize(encoder: Encoder, value: Unit) = Int.serializer().serialize(encoder, this.value)
+    final override fun deserialize(decoder: Decoder) {
+        value = Int.serializer().deserialize(decoder)
+    }
 }
 
 //// endregion PrimitiveValues CODEGEN ////

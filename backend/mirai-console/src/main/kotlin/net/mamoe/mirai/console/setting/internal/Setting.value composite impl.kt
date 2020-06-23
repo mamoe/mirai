@@ -134,7 +134,11 @@ internal fun serializerMirai(type: KType): KSerializer<Any?> {
                     /* mamoe modify */ Any::class -> if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer
                     else -> {
                         if (isReferenceArray(type, rootClass)) {
-                            return ArraySerializer(typeArguments[0].classifier as KClass<Any>, serializers[0]).cast()
+                            @Suppress("RemoveExplicitTypeArguments")
+                            return ArraySerializer<Any, Any?>(
+                                typeArguments[0].classifier as KClass<Any>,
+                                serializers[0]
+                            ).cast()
                         }
                         requireNotNull(rootClass.constructSerializerForGivenTypeArgs(*serializers.toTypedArray())) {
                             "Can't find a method to construct serializer for type ${rootClass.simpleName()}. " +

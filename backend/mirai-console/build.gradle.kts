@@ -81,6 +81,7 @@ tasks {
 
     val fillBuildConstants by registering {
         doLast {
+            return@doLast //
             (compileKotlin as KotlinCompile).source.filter { it.name == "MiraiConsole.kt" }.single().let { file ->
                 file.writeText(file.readText()
                     .replace(Regex("""val buildDate: Date = Date\((.*)\) //(.*)""")) {

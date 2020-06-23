@@ -16,7 +16,7 @@ object ValueKtCodegen {
     object SettingCodegen {
         object PrimitiveValuesCodegen : RegionCodegen(), DefaultInvoke {
             override val defaultInvokeArgs: List<KtType>
-                get() = KtType.Primitives + KtString
+                get() = KtPrimitives + KtString
 
             override fun StringBuilder.apply(ktType: KtType) {
                 @Suppress("ClassName")
