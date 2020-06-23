@@ -22,9 +22,8 @@ package net.mamoe.mirai.console.pure
 import net.mamoe.mirai.console.MiraiConsoleInitializer
 import net.mamoe.mirai.console.command.CommandExecuteStatus
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.command.executeCommand
+import net.mamoe.mirai.console.command.executeCommandDetailed
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.utils.DefaultLogger
 import kotlin.concurrent.thread
 
@@ -48,14 +47,11 @@ internal fun startConsoleThread() {
             while (true) {
                 val next = MiraiConsoleFrontEndPure.requestInput("")
                 consoleLogger.debug("INPUT> $next")
-                val result = ConsoleCS.executeCommand(PlainText(next))
+                val result = ConsoleCS.executeCommandDetailed(next)
                 when (result.status) {
                     CommandExecuteStatus.SUCCESSFUL -> {
                     }
-                    CommandExecuteStatus.EMPTY_COMMAND -> {
-                    }
-                    CommandExecuteStatus.FAILED -> {
-                        consoleLogger.error("An error occurred while executing the command: $next", result.exception)
+                    CommandExecuteStatus.EXECUTION_EXCEPTION -> {
                     }
                     CommandExecuteStatus.COMMAND_NOT_FOUND -> {
                         consoleLogger.warning("Unknown command: ${result.commandName}")

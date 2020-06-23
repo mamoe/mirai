@@ -1,6 +1,7 @@
 package net.mamoe.mirai.console.command;
 
 import kotlin.NotImplementedError;
+import kotlin.coroutines.Continuation;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlinx.coroutines.BuildersKt;
 import kotlinx.coroutines.CoroutineScope;
@@ -18,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Java 适配的 {@link CommandManagerKt}
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public final class JCommandManager {
     private JCommandManager() {
         throw new NotImplementedError();
@@ -101,14 +102,17 @@ public final class JCommandManager {
         CommandManagerKt.unregisterAllCommands(owner);
     }
 
+
     /**
      * 解析并执行一个指令
      *
      * @param args 接受 {@link String} 或 {@link Message} , 其他对象将会被 {@link Object#toString()}
-     * @see CommandExecuteResult
+     * @return 成功执行的指令, 在无匹配指令时返回 <code>null</code>
+     * @throws CommandExecutionException 当 {@link Command#onCommand(CommandSender, Object[], Continuation)} 抛出异常时包装并附带相关指令信息抛出
      * @see #executeCommandAsync(CoroutineScope, CommandSender, Object...)
      */
-    public static CommandExecuteResult executeCommand(final @NotNull CommandSender sender, final @NotNull Object... args) throws InterruptedException {
+    @Nullable
+    public static Command executeCommand(final @NotNull CommandSender sender, final @NotNull Object... args) throws CommandExecutionException, InterruptedException {
         Objects.requireNonNull(sender, "sender");
         Objects.requireNonNull(args, "args");
         for (Object arg : args) {
@@ -123,10 +127,11 @@ public final class JCommandManager {
      *
      * @param scope 协程作用域 (用于管理协程生命周期). 一般填入 {@link JavaPlugin} 实例.
      * @param args  接受 {@link String} 或 {@link Message} , 其他对象将会被 {@link Object#toString()}
-     * @see CommandExecuteResult
+     * @return 成功执行的指令, 在无匹配指令时返回 <code>null</code>
      * @see #executeCommand(CommandSender, Object...)
      */
-    public static CompletableFuture<CommandExecuteResult> executeCommandAsync(final @NotNull CoroutineScope scope, final @NotNull CommandSender sender, final @NotNull Object... args) {
+    @NotNull
+    public static CompletableFuture<@Nullable Command> executeCommandAsync(final @NotNull CoroutineScope scope, final @NotNull CommandSender sender, final @NotNull Object... args) {
         Objects.requireNonNull(sender, "sender");
         Objects.requireNonNull(args, "args");
         Objects.requireNonNull(scope, "scope");
@@ -135,5 +140,47 @@ public final class JCommandManager {
         }
 
         return FutureKt.future(scope, EmptyCoroutineContext.INSTANCE, CoroutineStart.DEFAULT, (sc, completion) -> CommandManagerKt.executeCommand(sender, args, completion));
+    }
+
+
+    /**
+     * 解析并执行一个指令, 获取详细的指令参数等信息.
+     * <br />
+     * 执行过程中产生的异常将不会直接抛出, 而会包装为 {@link CommandExecuteResult.ExecutionException}
+     *
+     * @param args 接受 {@link String} 或 {@link Message} , 其他对象将会被 {@link Object#toString()}
+     * @return 执行结果
+     * @see #executeCommandDetailedAsync(CoroutineScope, CommandSender, Object...)
+     */
+    @NotNull
+    public static CommandExecuteResult executeCommandDetailed(final @NotNull CommandSender sender, final @NotNull Object... args) throws InterruptedException {
+        Objects.requireNonNull(sender, "sender");
+        Objects.requireNonNull(args, "args");
+        for (Object arg : args) {
+            Objects.requireNonNull(arg, "element of args");
+        }
+
+        return BuildersKt.runBlocking(EmptyCoroutineContext.INSTANCE, (scope, completion) -> CommandManagerKt.executeCommandDetailed(sender, args, completion));
+    }
+
+    /**
+     * 异步 (在 Kotlin 协程线程池) 解析并执行一个指令, 获取详细的指令参数等信息
+     *
+     * @param scope 协程作用域 (用于管理协程生命周期). 一般填入 {@link JavaPlugin} 实例.
+     * @param args  接受 {@link String} 或 {@link Message} , 其他对象将会被 {@link Object#toString()}
+     * @return 执行结果
+     * @see #executeCommandDetailed(CommandSender, Object...)
+     */
+    @NotNull
+    public static CompletableFuture<@NotNull CommandExecuteResult>
+    executeCommandDetailedAsync(final @NotNull CoroutineScope scope, final @NotNull CommandSender sender, final @NotNull Object... args) {
+        Objects.requireNonNull(sender, "sender");
+        Objects.requireNonNull(args, "args");
+        Objects.requireNonNull(scope, "scope");
+        for (Object arg : args) {
+            Objects.requireNonNull(arg, "element of args");
+        }
+
+        return FutureKt.future(scope, EmptyCoroutineContext.INSTANCE, CoroutineStart.DEFAULT, (sc, completion) -> CommandManagerKt.executeCommandDetailed(sender, args, completion));
     }
 }

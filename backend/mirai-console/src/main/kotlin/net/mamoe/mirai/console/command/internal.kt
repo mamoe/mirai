@@ -157,3 +157,32 @@ internal fun Group.fuzzySearchMember(nameCardTarget: String): Member? {
         it.nameCard
     }
 }
+
+
+//// internal
+
+@JvmSynthetic
+internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Array(size - n) { this[n + it] }
+
+@JvmSynthetic
+@Throws(CommandExecutionException::class)
+internal suspend inline fun CommandSender.executeCommandInternal(
+    messages: Any,
+    commandName: String
+): Command? {
+    val command = InternalCommandManager.matchCommand(commandName) ?: return null
+    val rawInput = messages.flattenCommandComponents()
+
+    val loweredArgs = rawInput.dropToTypedArray(1)
+
+    kotlin.runCatching {
+        command.onCommand(this, loweredArgs)
+    }.fold(
+        onSuccess = {
+            return command
+        },
+        onFailure = {
+            throw CommandExecutionException(command, commandName, loweredArgs, it)
+        }
+    )
+}

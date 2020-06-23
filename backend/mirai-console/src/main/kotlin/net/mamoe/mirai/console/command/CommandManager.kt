@@ -7,7 +7,10 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE", "unused")
+@file:Suppress(
+    "NOTHING_TO_INLINE", "unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE",
+    "MemberVisibilityCanBePrivate"
+)
 @file:JvmName("CommandManagerKt")
 
 package net.mamoe.mirai.console.command
@@ -18,7 +21,6 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
@@ -126,104 +128,119 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
     InternalCommandManager.registeredCommands.remove(this)
 }
 
-//// executing
+//// executing without detailed result (faster)
 
 /**
  * 解析并执行一个指令
- *
- * Java 调用方式: `<static> CommandManager.executeCommand(Command)`
  *
  * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
- * @see CommandExecuteResult
+ *
+ * @return 成功执行的指令, 在无匹配指令时返回 `null`
+ * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
  *
  * @see JCommandManager.executeCommand Java 方法
  */
-suspend fun CommandSender.executeCommand(vararg messages: Any): CommandExecuteResult {
-    if (messages.isEmpty()) return CommandExecuteResult(
-        status = CommandExecuteStatus.EMPTY_COMMAND
-    )
-    return executeCommandInternal(
-        messages,
-        messages[0].let { if (it is SingleMessage) it.toString() else it.toString().substringBefore(' ') })
+suspend fun CommandSender.executeCommand(vararg messages: Any): Command? {
+    if (messages.isEmpty()) return null
+    return executeCommandInternal(messages, messages[0].toString().substringBefore(' '))
 }
-
-@JvmSynthetic
-internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Array(size - n) { this[n + it] }
 
 /**
  * 解析并执行一个指令
- * @see CommandExecuteResult
+ *
+ * @return 成功执行的指令, 在无匹配指令时返回 `null`
+ * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
  *
  * @see JCommandManager.executeCommand Java 方法
  */
-suspend fun CommandSender.executeCommand(message: MessageChain): CommandExecuteResult {
-    if (message.isEmpty()) return CommandExecuteResult(
-        status = CommandExecuteStatus.EMPTY_COMMAND
-    )
+@Throws(CommandExecutionException::class)
+suspend fun CommandSender.executeCommand(message: MessageChain): Command? {
+    if (message.isEmpty()) return null
     return executeCommandInternal(message, message[0].toString())
 }
 
-@JvmSynthetic
-internal suspend inline fun CommandSender.executeCommandInternal(
-    messages: Any,
-    commandName: String
-): CommandExecuteResult {
-    val command = InternalCommandManager.matchCommand(commandName) ?: return CommandExecuteResult(
-        status = CommandExecuteStatus.COMMAND_NOT_FOUND,
-        commandName = commandName
-    )
-    val rawInput = messages.flattenCommandComponents()
-    kotlin.runCatching {
-        command.onCommand(this, rawInput.dropToTypedArray(1))
-    }.onFailure {
-        return CommandExecuteResult(
-            status = CommandExecuteStatus.FAILED,
-            commandName = commandName,
-            command = command,
-            exception = it
-        )
-    }
-    return CommandExecuteResult(
-        status = CommandExecuteStatus.SUCCESSFUL,
-        commandName = commandName,
-        command = command
-    )
+
+/**
+ * 在 [executeCommand] 中, [Command.onCommand] 抛出异常时包装的异常.
+ */
+class CommandExecutionException(
+    /**
+     * 执行过程发生异常的指令
+     */
+    val command: Command,
+    /**
+     * 匹配到的指令名
+     */
+    val name: String,
+    /**
+     * 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String]
+     */
+    val args: Array<out Any>,
+    cause: Throwable
+) : RuntimeException(
+    "Exception while executing command '${command.primaryName}' with args ${args.joinToString { "'$it'" }}",
+    cause
+) {
+    override fun toString(): String =
+        "CommandExecutionException(command=$command, name='$name', args=${args.contentToString()})"
+}
+
+
+//// execution with detailed result
+
+/**
+ * 解析并执行一个指令, 获取详细的指令参数等信息
+ *
+ * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
+ *
+ * @return 执行结果
+ *
+ * @see JCommandManager.executeCommandDetailed Java 方法
+ */
+suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): CommandExecuteResult {
+    if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
+    return executeCommandDetailedInternal(messages, messages[0].toString().substringBefore(' '))
 }
 
 /**
- * 命令的执行返回
+ * 解析并执行一个指令, 获取详细的指令参数等信息
  *
- * @param status 命令最终执行状态
- * @param exception 命令执行时发生的错误(如果有)
- * @param command 尝试执行的命令 (status = SUCCESSFUL | FAILED)
- * @param commandName 尝试执行的命令的名字 (status != EMPTY_COMMAND)
+ * 执行过程中产生的异常将不会直接抛出, 而会包装为 [CommandExecuteResult.ExecutionException]
  *
+ * @return 执行结果
  *
- * @see CommandExecuteStatus
+ * @see JCommandManager.executeCommandDetailed Java 方法
  */
-class CommandExecuteResult(
-    val status: CommandExecuteStatus,
-    val exception: Throwable? = null,
-    val command: Command? = null,
-    val commandName: String? = null
-) {
-    /**
-     * 命令的执行状态
-     *
-     * 当为 [SUCCESSFUL] 的时候，代表命令执行成功
-     *
-     * 当为 [FAILED] 的时候, 代表命令执行出现了错误
-     *
-     * 当为 [COMMAND_NOT_FOUND] 的时候，代表没有匹配的命令
-     *
-     * 当为 [EMPTY_COMMAND] 的时候, 代表尝试执行 ""
-     *
-     */
-    enum class CommandExecuteStatus {
-        SUCCESSFUL, FAILED, COMMAND_NOT_FOUND, EMPTY_COMMAND
-    }
-
+suspend fun CommandSender.executeCommandDetailed(messages: MessageChain): CommandExecuteResult {
+    if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
+    return executeCommandDetailedInternal(messages, messages[0].toString())
 }
 
-@Suppress("RemoveRedundantQualifierName")
-typealias CommandExecuteStatus = CommandExecuteResult.CommandExecuteStatus
+@JvmSynthetic
+internal suspend inline fun CommandSender.executeCommandDetailedInternal(
+    messages: Any,
+    commandName: String
+): CommandExecuteResult {
+    val command =
+        InternalCommandManager.matchCommand(commandName) ?: return CommandExecuteResult.CommandNotFound(commandName)
+    val args = messages.flattenCommandComponents().dropToTypedArray(1)
+    kotlin.runCatching {
+        command.onCommand(this, args)
+    }.fold(
+        onSuccess = {
+            return CommandExecuteResult.Success(
+                commandName = commandName,
+                command = command,
+                args = args
+            )
+        },
+        onFailure = {
+            return CommandExecuteResult.ExecutionException(
+                commandName = commandName,
+                command = command,
+                exception = it,
+                args = args
+            )
+        }
+    )
+}
