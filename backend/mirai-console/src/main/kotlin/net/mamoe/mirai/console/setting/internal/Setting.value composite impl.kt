@@ -21,6 +21,7 @@ import net.mamoe.yamlkt.YamlDynamicSerializer
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.full.createInstance as createInstanceKotlin
 
 private val primitiveCollectionsImplemented by lazy {
     false
@@ -40,7 +41,7 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
         return valueImplPrimitive(classifier) as SerializerAwareValue<*>
     }
 
-    // 复合类型
+    // TODO: 2020/6/24 优化性能: 预先根据类型生成 V -> Value<V> 的 mapper
 
     when (classifier) {
         MutableMap::class,
@@ -102,12 +103,36 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
     }
 }
 
+@PublishedApi
+internal fun KClass<*>.createInstance(): Any? {
+    return when (this) {
+        MutableMap::class,
+        Map::class,
+        LinkedHashMap::class,
+        HashMap::class
+        -> mutableMapOf<Any?, Any?>()
+
+        MutableList::class,
+        List::class,
+        ArrayList::class
+        -> mutableListOf<Any?>()
+
+        MutableSet::class,
+        Set::class,
+        LinkedHashSet::class,
+        HashSet::class
+        -> mutableSetOf<Any?>()
+
+        else -> createInstanceKotlin()
+    }
+}
+
 internal fun KClass<*>.isPrimitiveOrBuiltInSerializableValue(): Boolean {
     when (this) {
         Byte::class, Short::class, Int::class, Long::class,
         Boolean::class,
         Char::class, String::class,
-        Pair::class, Triple::class
+        Pair::class, Triple::class // TODO: 2020/6/24 支持 PairValue, TripleValue
         -> return true
     }
 

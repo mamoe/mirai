@@ -14,16 +14,12 @@ package net.mamoe.mirai.console.setting
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import net.mamoe.mirai.console.setting.internal.isOdd
-import net.mamoe.mirai.console.setting.internal.typeOf0
-import net.mamoe.mirai.console.setting.internal.valueFromKTypeImpl
-import net.mamoe.mirai.console.setting.internal.valueImpl
+import net.mamoe.mirai.console.setting.internal.*
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.jvm.isAccessible
 
 
 // TODO: 2020/6/21 move to JvmPlugin to inherit SettingStorage and CoroutineScope for saving
@@ -170,9 +166,7 @@ fun Setting.value(default: String): SerializerAwareValue<String> = valueImpl(def
  */
 @Suppress("UNCHECKED_CAST")
 @LowPriorityInOverloadResolution
-inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T> =
-    value<T>().apply { value = default }
-
+inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T> = valueFromKType(typeOf0<T>(), default)
 
 /**
  * Creates a [Value] with reified type, and set default value by reflection to its no-arg public constructor.
@@ -183,11 +177,7 @@ inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T> =
  * (typically annotated with [kotlinx.serialization.Serializable])
  */
 @LowPriorityInOverloadResolution
-inline fun <reified T> Setting.value(): SerializerAwareValue<T> =
-    value(
-        T::class.constructors.find { it.parameters.isEmpty() && it.isAccessible }?.call()
-            ?: throw IllegalArgumentException("Cannot construct a default value for given type ${typeOf0<T>()}")
-    )
+inline fun <reified T> Setting.value(): SerializerAwareValue<T> = value(T::class.createInstance() as T)
 
 /**
  * Creates a [Value] with specified [KType], and set default value.
