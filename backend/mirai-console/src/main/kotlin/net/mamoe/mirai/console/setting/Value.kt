@@ -15,6 +15,7 @@ import kotlinx.serialization.BinaryFormat
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
 import net.mamoe.mirai.console.setting.internal.map
+import net.mamoe.mirai.console.setting.internal.setValueBySerializer
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.reflect.KProperty
 
@@ -36,17 +37,22 @@ interface Value<T> {
  * Typically returned by [Setting.value] functions.
  */
 class SerializableValue<T>(
-    delegate: Value<T>,
+    private val delegate: Value<T>,
     /**
      * The serializer used to update and dump [delegate]
      */
     override val serializer: KSerializer<Unit>
-) : Value<T> by delegate, SerializerAwareValue<T>
+) : Value<T> by delegate, SerializerAwareValue<T> {
+    override fun toString(): String = delegate.toString()
+}
 
 fun <T> Value<T>.serializableValueWith(
     serializer: KSerializer<T>
 ): SerializableValue<T> {
-    return SerializableValue(this, serializer.map(serializer = { this.value }, deserializer = { this.value = it }))
+    return SerializableValue(
+        this,
+        serializer.map(serializer = { this.value }, deserializer = { this.setValueBySerializer(it) })
+    )
 }
 
 /**
@@ -135,7 +141,6 @@ interface BooleanValue : PrimitiveValue<Boolean>
  * Represents a non-null [String] value.
  */
 interface StringValue : PrimitiveValue<String>
-
 
 //// endregion PrimitiveValues CODEGEN ////
 

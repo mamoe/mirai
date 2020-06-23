@@ -25,7 +25,7 @@ internal fun <T> Setting.createCompositeSetValueImpl(tToValue: (T) -> Value<T>):
 
 internal abstract class CompositeSetValueImpl<T>(
     tToValue: (T) -> Value<T> // should override onChanged
-) : CompositeSetValue<T> {
+) : CompositeSetValue<T>, AbstractValueImpl<Set<T>>() {
     private val internalSet: MutableSet<Value<T>> = mutableSetOf()
 
     private var _value: Set<T> = internalSet.shadowMap({ it.value }, tToValue).observable { onChanged() }
@@ -34,12 +34,30 @@ internal abstract class CompositeSetValueImpl<T>(
         get() = _value
         set(v) {
             if (_value != v) {
+                @Suppress("LocalVariableName")
+                val _value = _value as MutableSet<T>
+                _value.clear()
+                _value.addAll(v)
                 onChanged()
-                _value = v
             }
         }
 
+    override fun setValueBySerializer(value: Set<T>) {
+        val thisValue = this.value
+        if (!thisValue.tryPatch(value)) {
+            this.value = value // deep set
+        }
+    }
+
     protected abstract fun onChanged()
+    override fun toString(): String = _value.toString()
+    override fun equals(other: Any?): Boolean =
+        other is CompositeSetValueImpl<*> && other::class.java == this::class.java && other._value == this._value
+
+    override fun hashCode(): Int {
+        val value = _value
+        return value.hashCode() * 31 + super.hashCode()
+    }
 }
 
 
@@ -54,21 +72,39 @@ internal fun <T> Setting.createCompositeListValueImpl(tToValue: (T) -> Value<T>)
 
 internal abstract class CompositeListValueImpl<T>(
     tToValue: (T) -> Value<T> // should override onChanged
-) : CompositeListValue<T> {
+) : CompositeListValue<T>, AbstractValueImpl<List<T>>() {
     private val internalList: MutableList<Value<T>> = mutableListOf()
 
-    private var _value: List<T> = internalList.shadowMap({ it.value }, tToValue).observable { onChanged() }
+    private val _value: List<T> = internalList.shadowMap({ it.value }, tToValue).observable { onChanged() }
 
     override var value: List<T>
         get() = _value
         set(v) {
             if (_value != v) {
+                @Suppress("LocalVariableName")
+                val _value = _value as MutableList<T>
+                _value.clear()
+                _value.addAll(v)
                 onChanged()
-                _value = v
             }
         }
 
+    override fun setValueBySerializer(value: List<T>) {
+        val thisValue = this.value
+        if (!thisValue.tryPatch(value)) {
+            this.value = value // deep set
+        }
+    }
+
     protected abstract fun onChanged()
+    override fun toString(): String = _value.toString()
+    override fun equals(other: Any?): Boolean =
+        other is CompositeListValueImpl<*> && other::class.java == this::class.java && other._value == this._value
+
+    override fun hashCode(): Int {
+        val value = _value
+        return value.hashCode() * 31 + super.hashCode()
+    }
 }
 
 // workaround to a type inference bug
@@ -77,28 +113,85 @@ internal fun <K, V> Setting.createCompositeMapValueImpl(
     vToValue: (V) -> Value<V>
 ): CompositeMapValueImpl<K, V> {
     return object : CompositeMapValueImpl<K, V>(kToValue, vToValue) {
-        override fun onChanged() {
-            this@createCompositeMapValueImpl.onValueChanged(this)
-        }
+        override fun onChanged() = this@createCompositeMapValueImpl.onValueChanged(this)
     }
 }
 
 internal abstract class CompositeMapValueImpl<K, V>(
     kToValue: (K) -> Value<K>, // should override onChanged
     vToValue: (V) -> Value<V> // should override onChanged
-) : CompositeMapValue<K, V> {
+) : CompositeMapValue<K, V>, AbstractValueImpl<Map<K, V>>() {
     private val internalList: MutableMap<Value<K>, Value<V>> = mutableMapOf()
 
-    private var _value: Map<K, V> =
+    private var _value: MutableMap<K, V> =
         internalList.shadowMap({ it.value }, kToValue, { it.value }, vToValue).observable { onChanged() }
     override var value: Map<K, V>
         get() = _value
         set(v) {
             if (_value != v) {
+                @Suppress("LocalVariableName")
+                val _value = _value
+                _value.clear()
+                _value.putAll(v)
                 onChanged()
-                _value = v
             }
         }
 
+    override fun setValueBySerializer(value: Map<K, V>) {
+        val thisValue = this.value as MutableMap<K, V>
+        if (!thisValue.tryPatch(value)) {
+            this.value = value // deep set
+        }
+    }
+
     protected abstract fun onChanged()
+    override fun toString(): String = _value.toString()
+    override fun equals(other: Any?): Boolean =
+        other is CompositeMapValueImpl<*, *> && other::class.java == this::class.java && other._value == this._value
+
+    override fun hashCode(): Int {
+        val value = _value
+        return value.hashCode() * 31 + super.hashCode()
+    }
+}
+
+internal fun <K, V> MutableMap<K, V>.patchImpl(_new: Map<K, V>) {
+    val new = _new.toMutableMap()
+    val iterator = this.iterator()
+    for (entry in iterator) {
+        val newValue = new.remove(entry.key)
+
+        if (newValue != null) {
+            // has replacer
+            if (entry.value?.tryPatch(newValue) != true) {
+                // patch not supported, or old value is null
+                entry.setValue(newValue)
+            } // else: patched, no remove
+        } else {
+            // no replacer
+            iterator.remove()
+        }
+    }
+    putAll(new)
+}
+
+internal fun <C : MutableCollection<E>, E> C.patchImpl(_new: Collection<E>) {
+    this.retainAll(_new)
+}
+
+/**
+ * True if successfully patched
+ */
+@Suppress("UNCHECKED_CAST")
+internal fun Any.tryPatch(any: Any): Boolean = when {
+    this is MutableCollection<*> && any is Collection<*> -> {
+        (this as MutableCollection<Any?>).patchImpl(any as Collection<Any?>)
+        true
+    }
+    this is MutableMap<*, *> && any is Map<*, *> -> {
+        (this as MutableMap<Any?, Any?>).patchImpl(any as Map<Any?, Any?>)
+        true
+    }
+    this is Value<*> && any is Value<*> -> any.value?.let { otherValue -> this.value?.tryPatch(otherValue) } == true
+    else -> false
 }

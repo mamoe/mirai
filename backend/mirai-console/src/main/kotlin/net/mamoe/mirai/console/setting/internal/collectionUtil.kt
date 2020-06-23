@@ -16,6 +16,8 @@ import kotlinx.serialization.serializer
 import net.mamoe.yamlkt.Yaml
 import kotlin.reflect.KClass
 
+// TODO: 2020/6/24 优化性能: 引入一个 comparator 之类来替代将 Int 包装为 Value<Int> 后进行 containsKey 比较的方法
+
 internal inline fun <K, V, KR, VR> MutableMap<K, V>.shadowMap(
     crossinline kTransform: (K) -> KR,
     crossinline kTransformBack: (KR) -> K,
@@ -37,6 +39,13 @@ internal inline fun <K, V, KR, VR> MutableMap<K, V>.shadowMap(
                         override val value: VR get() = entry.value.let(vTransform)
                         override fun setValue(newValue: VR): VR =
                             entry.setValue(newValue.let(vTransformBack)).let(vTransform)
+
+                        override fun hashCode(): Int = 17 * 31 + (key?.hashCode() ?: 0) + (value?.hashCode() ?: 0)
+                        override fun toString(): String = "$key=$value"
+                        override fun equals(other: Any?): Boolean {
+                            if (other == null || other !is Map.Entry<*, *>) return false
+                            return other.key == key && other.value == value
+                        }
                     }
                 } as ((MutableMap.MutableEntry<K, V>) -> MutableMap.MutableEntry<KR, VR>), // type inference bug
                 transformBack = { entry ->
@@ -45,6 +54,13 @@ internal inline fun <K, V, KR, VR> MutableMap<K, V>.shadowMap(
                         override val value: V get() = entry.value.let(vTransformBack)
                         override fun setValue(newValue: V): V =
                             entry.setValue(newValue.let(vTransform)).let(vTransformBack)
+
+                        override fun hashCode(): Int = 17 * 31 + (key?.hashCode() ?: 0) + (value?.hashCode() ?: 0)
+                        override fun toString(): String = "$key=$value"
+                        override fun equals(other: Any?): Boolean {
+                            if (other == null || other !is Map.Entry<*, *>) return false
+                            return other.key == key && other.value == value
+                        }
                     }
                 }
             )
@@ -64,6 +80,8 @@ internal inline fun <K, V, KR, VR> MutableMap<K, V>.shadowMap(
         }
 
         override fun remove(key: KR): VR? = this@shadowMap.remove(key.let(kTransformBack))?.let(vTransform)
+        override fun toString(): String = this@shadowMap.toString()
+        override fun hashCode(): Int = this@shadowMap.hashCode()
     }
 }
 
@@ -82,6 +100,8 @@ internal inline fun <E, R> MutableCollection<E>.shadowMap(
             override fun hasNext(): Boolean = delegate.hasNext()
             override fun next(): R = delegate.next().let(transform)
             override fun remove() = delegate.remove()
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun add(element: R): Boolean = this@shadowMap.add(element.let(transformBack))
@@ -92,6 +112,8 @@ internal inline fun <E, R> MutableCollection<E>.shadowMap(
         override fun remove(element: R): Boolean = this@shadowMap.removeIf { it.let(transform) == element }
         override fun removeAll(elements: Collection<R>): Boolean = elements.all(::remove)
         override fun retainAll(elements: Collection<R>): Boolean = this@shadowMap.retainAll(elements.map(transformBack))
+        override fun toString(): String = this@shadowMap.toString()
+        override fun hashCode(): Int = this@shadowMap.hashCode()
     }
 }
 
@@ -112,6 +134,8 @@ internal inline fun <E, R> MutableList<E>.shadowMap(
             override fun hasNext(): Boolean = delegate.hasNext()
             override fun next(): R = delegate.next().let(transform)
             override fun remove() = delegate.remove()
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun lastIndexOf(element: R): Int = this@shadowMap.indexOfLast { it.let(transform) == element }
@@ -134,6 +158,8 @@ internal inline fun <E, R> MutableList<E>.shadowMap(
             override fun next(): R = delegate.next().let(transform)
             override fun remove() = delegate.remove()
             override fun set(element: R) = delegate.set(element.let(transformBack))
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun listIterator(index: Int): MutableListIterator<R> = object : MutableListIterator<R> {
@@ -147,6 +173,8 @@ internal inline fun <E, R> MutableList<E>.shadowMap(
             override fun next(): R = delegate.next().let(transform)
             override fun remove() = delegate.remove()
             override fun set(element: R) = delegate.set(element.let(transformBack))
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun remove(element: R): Boolean = this@shadowMap.removeIf { it.let(transform) == element }
@@ -158,6 +186,9 @@ internal inline fun <E, R> MutableList<E>.shadowMap(
 
         override fun subList(fromIndex: Int, toIndex: Int): MutableList<R> =
             this@shadowMap.subList(fromIndex, toIndex).map(transform).toMutableList()
+
+        override fun toString(): String = this@shadowMap.toString()
+        override fun hashCode(): Int = this@shadowMap.hashCode()
     }
 }
 
@@ -177,6 +208,8 @@ internal inline fun <E, R> MutableSet<E>.shadowMap(
             override fun hasNext(): Boolean = delegate.hasNext()
             override fun next(): R = delegate.next().let(transform)
             override fun remove() = delegate.remove()
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun add(element: R): Boolean = this@shadowMap.add(element.let(transformBack))
@@ -186,6 +219,8 @@ internal inline fun <E, R> MutableSet<E>.shadowMap(
         override fun remove(element: R): Boolean = this@shadowMap.removeIf { it.let(transform) == element }
         override fun removeAll(elements: Collection<R>): Boolean = elements.all(::remove)
         override fun retainAll(elements: Collection<R>): Boolean = this@shadowMap.retainAll(elements.map(transformBack))
+        override fun toString(): String = this@shadowMap.toString()
+        override fun hashCode(): Int = this@shadowMap.hashCode()
     }
 }
 
@@ -202,6 +237,8 @@ internal inline fun <T> dynamicList(crossinline supplier: () -> List<T>): List<T
         override fun listIterator(): ListIterator<T> = supplier().listIterator()
         override fun listIterator(index: Int): ListIterator<T> = supplier().listIterator(index)
         override fun subList(fromIndex: Int, toIndex: Int): List<T> = supplier().subList(fromIndex, toIndex)
+        override fun toString(): String = supplier().toString()
+        override fun hashCode(): Int = supplier().hashCode()
     }
 }
 
@@ -212,6 +249,8 @@ internal inline fun <T> dynamicSet(crossinline supplier: () -> Set<T>): Set<T> {
         override fun containsAll(elements: Collection<T>): Boolean = supplier().containsAll(elements)
         override fun isEmpty(): Boolean = supplier().isEmpty()
         override fun iterator(): Iterator<T> = supplier().iterator()
+        override fun toString(): String = supplier().toString()
+        override fun hashCode(): Int = supplier().hashCode()
     }
 }
 
@@ -239,6 +278,8 @@ internal inline fun <T> dynamicMutableList(crossinline supplier: () -> MutableLi
         override fun retainAll(elements: Collection<T>): Boolean = supplier().retainAll(elements)
         override fun set(index: Int, element: T): T = supplier().set(index, element)
         override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> = supplier().subList(fromIndex, toIndex)
+        override fun toString(): String = supplier().toString()
+        override fun hashCode(): Int = supplier().hashCode()
     }
 }
 
@@ -256,6 +297,8 @@ internal inline fun <T> dynamicMutableSet(crossinline supplier: () -> MutableSet
         override fun remove(element: T): Boolean = supplier().remove(element)
         override fun removeAll(elements: Collection<T>): Boolean = supplier().removeAll(elements)
         override fun retainAll(elements: Collection<T>): Boolean = supplier().retainAll(elements)
+        override fun toString(): String = supplier().toString()
+        override fun hashCode(): Int = supplier().hashCode()
     }
 }
 
@@ -273,6 +316,8 @@ internal inline fun <K, V> MutableMap<K, V>.observable(crossinline onChanged: ()
         override fun put(key: K, value: V): V? = this@observable.put(key, value).also { onChanged() }
         override fun putAll(from: Map<out K, V>) = this@observable.putAll(from).also { onChanged() }
         override fun remove(key: K): V? = this@observable.remove(key).also { onChanged() }
+        override fun toString(): String = this@observable.toString()
+        override fun hashCode(): Int = this@observable.hashCode()
     }
 }
 
@@ -289,6 +334,8 @@ internal inline fun <T> MutableList<T>.observable(crossinline onChanged: () -> U
             override fun hasNext(): Boolean = delegate.hasNext()
             override fun next(): T = delegate.next()
             override fun remove() = delegate.remove().also { onChanged() }
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun lastIndexOf(element: T): Int = this@observable.lastIndexOf(element)
@@ -310,6 +357,8 @@ internal inline fun <T> MutableList<T>.observable(crossinline onChanged: () -> U
             override fun next(): T = delegate.next()
             override fun remove() = delegate.remove().also { onChanged() }
             override fun set(element: T) = delegate.set(element).also { onChanged() }
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun listIterator(index: Int): MutableListIterator<T> = object : MutableListIterator<T> {
@@ -323,6 +372,8 @@ internal inline fun <T> MutableList<T>.observable(crossinline onChanged: () -> U
             override fun next(): T = delegate.next()
             override fun remove() = delegate.remove().also { onChanged() }
             override fun set(element: T) = delegate.set(element).also { onChanged() }
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun remove(element: T): Boolean = this@observable.remove(element).also { onChanged() }
@@ -335,6 +386,8 @@ internal inline fun <T> MutableList<T>.observable(crossinline onChanged: () -> U
 
         override fun set(index: Int, element: T): T = this@observable.set(index, element).also { onChanged() }
         override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> = this@observable.subList(fromIndex, toIndex)
+        override fun toString(): String = this@observable.toString()
+        override fun hashCode(): Int = this@observable.hashCode()
     }
 }
 
@@ -349,6 +402,8 @@ internal inline fun <T> MutableCollection<T>.observable(crossinline onChanged: (
             override fun hasNext(): Boolean = delegate.hasNext()
             override fun next(): T = delegate.next()
             override fun remove() = delegate.remove().also { onChanged() }
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun add(element: T): Boolean = this@observable.add(element).also { onChanged() }
@@ -360,6 +415,9 @@ internal inline fun <T> MutableCollection<T>.observable(crossinline onChanged: (
 
         override fun retainAll(elements: Collection<T>): Boolean =
             this@observable.retainAll(elements).also { onChanged() }
+
+        override fun toString(): String = this@observable.toString()
+        override fun hashCode(): Int = this@observable.hashCode()
     }
 }
 
@@ -374,6 +432,8 @@ internal inline fun <T> MutableSet<T>.observable(crossinline onChanged: () -> Un
             override fun hasNext(): Boolean = delegate.hasNext()
             override fun next(): T = delegate.next()
             override fun remove() = delegate.remove().also { onChanged() }
+            override fun toString(): String = delegate.toString()
+            override fun hashCode(): Int = delegate.hashCode()
         }
 
         override fun add(element: T): Boolean = this@observable.add(element).also { onChanged() }
@@ -385,6 +445,9 @@ internal inline fun <T> MutableSet<T>.observable(crossinline onChanged: () -> Un
 
         override fun retainAll(elements: Collection<T>): Boolean =
             this@observable.retainAll(elements).also { onChanged() }
+
+        override fun toString(): String = this@observable.toString()
+        override fun hashCode(): Int = this@observable.hashCode()
     }
 }
 

@@ -15,6 +15,8 @@ import kotlin.reflect.full.findAnnotation
 
 internal val KProperty<*>.serialNameOrPropertyName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
 
+internal fun Int.isOdd() = this and 0b1 != 0
+
 internal inline fun <E> KSerializer<E>.bind(
     crossinline setter: (E) -> Unit,
     crossinline getter: () -> E

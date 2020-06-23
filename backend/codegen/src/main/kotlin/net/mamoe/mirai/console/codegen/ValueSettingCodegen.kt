@@ -22,9 +22,7 @@ object ValueSettingCodegen {
     object PrimitiveValuesCodegen : RegionCodegen("Value.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependent()
-
-        override val defaultInvokeArgs: List<KtType>
-            get() = KtPrimitives + KtString
+        override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
             @Suppress("ClassName")
@@ -42,7 +40,6 @@ object ValueSettingCodegen {
     object BuiltInSerializerConstantsPrimitivesCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependent()
-
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
@@ -60,14 +57,12 @@ object ValueSettingCodegen {
     object PrimitiveValuesImplCodegen : RegionCodegen("_PrimitiveValueDeclarations.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependent()
-
-        override val defaultInvokeArgs: List<KtType>
-            get() = KtPrimitives + KtString
+        override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
             appendKCode(
                 """
-internal abstract class ${ktType.standardName}ValueImpl : ${ktType.standardName}Value, SerializerAwareValue<${ktType.standardName}>, KSerializer<Unit> {
+internal abstract class ${ktType.standardName}ValueImpl : ${ktType.standardName}Value, SerializerAwareValue<${ktType.standardName}>, KSerializer<Unit>, AbstractValueImpl<${ktType.standardName}> {
     constructor()
     constructor(default: ${ktType.standardName}) {
         _value = default
@@ -89,8 +84,13 @@ internal abstract class ${ktType.standardName}ValueImpl : ${ktType.standardName}
     final override val serializer: KSerializer<Unit> get() = this
     final override val descriptor: SerialDescriptor get() = BuiltInSerializerConstants.${ktType.standardName}SerializerDescriptor
     final override fun serialize(encoder: Encoder, value: Unit) = ${ktType.standardName}.serializer().serialize(encoder, this.value)
-    final override fun deserialize(decoder: Decoder) {
-        value = ${ktType.standardName}.serializer().deserialize(decoder)
+    final override fun deserialize(decoder: Decoder) = setValueBySerializer(${ktType.standardName}.serializer().deserialize(decoder))
+    override fun toString(): String = _value${if (ktType != KtString) "?.toString()" else ""} ?: "${ktType.standardName}Value.value not yet initialized."
+    override fun equals(other: Any?): Boolean = other is ${ktType.standardName}ValueImpl && other::class.java == this::class.java && other._value == this._value
+    override fun hashCode(): Int {
+        val value = _value
+        return if (value == null) 1
+        else value.hashCode() * 31
     }
 }
                 """
@@ -102,9 +102,7 @@ internal abstract class ${ktType.standardName}ValueImpl : ${ktType.standardName}
     object Setting_value_PrimitivesImplCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependent()
-
-        override val defaultInvokeArgs: List<KtType>
-            get() = KtPrimitives + KtString
+        override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
             appendKCode(
@@ -127,9 +125,7 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
     object Setting_valueImplPrimitiveCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependent()
-
-        override val defaultInvokeArgs: List<KtType>
-            get() = KtPrimitives + KtString
+        override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
             appendKCode(

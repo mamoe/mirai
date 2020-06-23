@@ -13,7 +13,7 @@ package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.*
-import net.mamoe.mirai.console.setting.SerializableValue
+import net.mamoe.mirai.console.setting.SerializerAwareValue
 import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.serializableValueWith
 import net.mamoe.mirai.console.setting.valueFromKType
@@ -22,43 +22,52 @@ import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
+private val primitiveCollectionsImplemented by lazy {
+    false
+}
 
 @PublishedApi
 @Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE", "UNCHECKED_CAST")
-internal fun Setting.valueFromKTypeImpl(type: KType): SerializableValue<*> {
+internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
     val classifier = type.classifier
     require(classifier is KClass<*>)
 
     if (classifier.isPrimitiveOrBuiltInSerializableValue()) {
-        TODO("是基础类型, 可以直接创建 ValueImpl. ")
+        return valueImplPrimitive(classifier) as SerializerAwareValue<*>
     }
 
     // 复合类型
 
     when (classifier) {
-        Map::class -> {
+        MutableMap::class,
+        Map::class
+        -> {
             val keyClass = type.arguments[0].type?.classifier
             require(keyClass is KClass<*>)
 
             val valueClass = type.arguments[1].type?.classifier
             require(valueClass is KClass<*>)
 
-            if (keyClass.isPrimitiveOrBuiltInSerializableValue() && valueClass.isPrimitiveOrBuiltInSerializableValue()) {
+            if (primitiveCollectionsImplemented && keyClass.isPrimitiveOrBuiltInSerializableValue() && valueClass.isPrimitiveOrBuiltInSerializableValue()) {
                 // PrimitiveIntIntMap
                 // ...
                 TODO()
             } else {
                 return createCompositeMapValueImpl<Any?, Any?>(
-                    kToValue = { valueFromKType(type.arguments[0].type!!) },
-                    vToValue = { valueFromKType(type.arguments[1].type!!) }
+                    kToValue = { k -> valueFromKType<Any?>(type.arguments[0].type!!).also { it.value = k } },
+                    vToValue = { v -> valueFromKType<Any?>(type.arguments[1].type!!).also { it.value = v } }
                 ).serializableValueWith(serializerMirai(type) as KSerializer<Map<Any?, Any?>>) // erased
             }
         }
-        List::class -> {
+        Collection::class,
+        MutableCollection::class,
+        MutableList::class,
+        List::class
+        -> {
             val elementClass = type.arguments[0].type?.classifier
             require(elementClass is KClass<*>)
 
-            if (elementClass.isPrimitiveOrBuiltInSerializableValue()) {
+            if (primitiveCollectionsImplemented && elementClass.isPrimitiveOrBuiltInSerializableValue()) {
                 // PrimitiveIntList
                 // ...
                 TODO()
@@ -67,11 +76,13 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializableValue<*> {
                     .serializableValueWith(serializerMirai(type) as KSerializer<List<Any?>>)
             }
         }
-        Set::class -> {
+        MutableSet::class,
+        Set::class
+        -> {
             val elementClass = type.arguments[0].type?.classifier
             require(elementClass is KClass<*>)
 
-            if (elementClass.isPrimitiveOrBuiltInSerializableValue()) {
+            if (primitiveCollectionsImplemented && elementClass.isPrimitiveOrBuiltInSerializableValue()) {
                 // PrimitiveIntSet
                 // ...
                 TODO()
@@ -85,7 +96,6 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializableValue<*> {
 }
 
 internal fun KClass<*>.isPrimitiveOrBuiltInSerializableValue(): Boolean {
-    return false // debug
     when (this) {
         Byte::class, Short::class, Int::class, Long::class,
         Boolean::class,
