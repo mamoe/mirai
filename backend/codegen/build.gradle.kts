@@ -22,4 +22,5 @@ kotlin {
 
 dependencies {
     api(kotlin("stdlib-jdk8"))
+    implementation(kotlin("reflect"))
 }

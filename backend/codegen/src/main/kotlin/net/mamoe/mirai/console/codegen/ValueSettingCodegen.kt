@@ -11,6 +11,10 @@
 
 package net.mamoe.mirai.console.codegen
 
+import kotlin.reflect.full.functions
+import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.full.isSubclassOf
+
 object ValueSettingCodegen {
     /**
      * The interface
@@ -110,6 +114,11 @@ internal fun Setting.valueImpl(default: ${ktType.standardName}): SerializerAware
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
+internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${ktType.standardName}> {
+    return object : ${ktType.standardName}ValueImpl() {
+        override fun onChanged() = this@${ktType.lowerCaseName}ValueImpl.onValueChanged(this)
+    }
+}
                 """
             )
         }
@@ -125,11 +134,27 @@ internal fun Setting.valueImpl(default: ${ktType.standardName}): SerializerAware
         override fun StringBuilder.apply(ktType: KtType) {
             appendKCode(
                 """
-                ${ktType.standardName}::class -> valueImpl(default as ${ktType.standardName})
+                ${ktType.standardName}::class -> ${ktType.lowerCaseName}ValueImpl()
                 """.trimIndent()
             )
         }
     }
 
-
+    /**
+     * 运行本 object 中所有嵌套 object Codegen
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    @JvmStatic
+    fun main(args: Array<String>) {
+        ValueSettingCodegen::class.nestedClasses
+            .filter { it.isSubclassOf(RegionCodegen::class) }
+            .associateWith { kClass -> kClass.functions.find { it.name == "main" && it.hasAnnotation<JvmStatic>() } }
+            .filter { it.value != null }
+            .forEach { (kClass, entryPoint) ->
+                println("---------------------------------------------")
+                println("Running Codegen: ${kClass.simpleName}")
+                entryPoint!!.call(kClass.objectInstance, arrayOf<String>())
+                println("---------------------------------------------")
+            }
+    }
 }

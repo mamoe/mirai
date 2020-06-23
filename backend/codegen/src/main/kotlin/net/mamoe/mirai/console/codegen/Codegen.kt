@@ -56,13 +56,14 @@ class CodegenScope : MutableList<Replacer> by mutableListOf() {
             content.replace(Regex("""//// region $regionName CODEGEN ////([\s\S]*?)( *)//// endregion $regionName CODEGEN ////""")) { result ->
                 val indent = result.groups[2]!!.value
                 val indentedCode = CodegenScope()
-                    .apply { (this@invoke as Codegen).invoke(*ktTypes.toTypedArray()) }
-                    .applyTo("")
-                    .mapLine { "${indent}$it" }
+                    .apply { (this@invoke as Codegen).invoke(*ktTypes.toTypedArray()) } // add codegen task
+                    .applyTo("") // perform codegen
+                    .lines().dropLastWhile(String::isBlank).joinToString("\n") // remove blank following lines
+                    .mapLine { "${indent}$it" } // indent
                 """
                         |//// region $regionName CODEGEN ////
                         |
-                        |$indentedCode
+                        |${indentedCode}
                         |
                         |${indent}//// endregion $regionName CODEGEN ////
                     """.trimMargin()
