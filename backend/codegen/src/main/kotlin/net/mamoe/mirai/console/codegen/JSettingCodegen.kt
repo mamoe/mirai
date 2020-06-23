@@ -1,3 +1,5 @@
+@file:Suppress("PRE_RELEASE_CLASS")
+
 package net.mamoe.mirai.console.codegen
 
 /**
@@ -5,46 +7,44 @@ package net.mamoe.mirai.console.codegen
  */
 
 
-
-
-open class JClazz(val primitiveName:String,val packageName:String){
-    open val funName:String = "value"
+open class JClazz(val primitiveName: String, val packageName: String) {
+    open val funName: String = "value"
 }
 
-class JListClazz(val item:JClazz):JClazz("List<${item.packageName}>","List<${item.packageName}>"){
+class JListClazz(val item: JClazz) : JClazz("List<${item.packageName}>", "List<${item.packageName}>") {
     override val funName = item.primitiveName.toLowerCase() + "List"
 }
 
-class JArrayClazz(item:JClazz):JClazz(item.primitiveName + "[]",item.primitiveName + "[]")
+class JArrayClazz(item: JClazz) : JClazz(item.primitiveName + "[]", item.primitiveName + "[]")
 
-class JMapClazz(key:JClazz,value:JClazz):JClazz("Map<${key.packageName},${value.packageName}>","Map<${key.packageName},${value.packageName}>")
-
+class JMapClazz(key: JClazz, value: JClazz) :
+    JClazz("Map<${key.packageName},${value.packageName}>", "Map<${key.packageName},${value.packageName}>")
 
 
 internal val J_NUMBERS = listOf(
-    JClazz("int","Integer"),
-    JClazz("short","Short"),
-    JClazz("byte","Byte"),
-    JClazz("long","Long"),
-    JClazz("float","Float"),
-    JClazz("double","Double")
+    JClazz("int", "Integer"),
+    JClazz("short", "Short"),
+    JClazz("byte", "Byte"),
+    JClazz("long", "Long"),
+    JClazz("float", "Float"),
+    JClazz("double", "Double")
 )
 
 internal val J_EXTRA = listOf(
-    JClazz("String","String"),
-    JClazz("boolean","Boolean"),
-    JClazz("char","Char")
+    JClazz("String", "String"),
+    JClazz("boolean", "Boolean"),
+    JClazz("char", "Char")
 )
 
 
-fun JClazz.getTemplate():String = """
+fun JClazz.getTemplate(): String = """
         @NotNull default Value<${this.packageName}> $funName(${this.primitiveName} defaultValue){
             return _SettingKt.value(this,defaultValue);
         }
     """
 
 
-fun main(){
+fun main() {
     println(buildString {
         appendLine(COPYRIGHT)
         appendLine()
@@ -74,7 +74,7 @@ fun main(){
             appendLine(JArrayClazz(it).getTemplate())
         }
 
-        (J_EXTRA + J_NUMBERS).forEach {key ->
+        (J_EXTRA + J_NUMBERS).forEach { key ->
             (J_EXTRA + J_NUMBERS).forEach { value ->
                 appendLine(JMapClazz(key, value).getTemplate())
             }

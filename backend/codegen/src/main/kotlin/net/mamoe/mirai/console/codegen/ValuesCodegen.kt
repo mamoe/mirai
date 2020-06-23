@@ -6,7 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-@file:Suppress("ClassName", "unused")
+@file:Suppress("ClassName", "unused", "PRE_RELEASE_CLASS")
 
 package net.mamoe.mirai.console.codegen
 

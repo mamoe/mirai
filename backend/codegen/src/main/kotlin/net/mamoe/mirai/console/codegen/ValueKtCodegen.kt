@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("PRE_RELEASE_CLASS")
+
 package net.mamoe.mirai.console.codegen
 
 
