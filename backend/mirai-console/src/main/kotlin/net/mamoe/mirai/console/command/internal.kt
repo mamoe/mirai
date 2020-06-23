@@ -171,18 +171,19 @@ internal suspend inline fun CommandSender.executeCommandInternal(
     commandName: String
 ): Command? {
     val command = InternalCommandManager.matchCommand(commandName) ?: return null
-    val rawInput = messages.flattenCommandComponents()
 
-    val loweredArgs = rawInput.dropToTypedArray(1)
+    if (!command.testPermission(this)) {
+        throw CommandExecutionException(command, commandName, CommandPermissionDeniedException(command))
+    }
 
     kotlin.runCatching {
-        command.onCommand(this, loweredArgs)
+        command.onCommand(this, messages.flattenCommandComponents().dropToTypedArray(1))
     }.fold(
         onSuccess = {
             return command
         },
         onFailure = {
-            throw CommandExecutionException(command, commandName, loweredArgs, it)
+            throw CommandExecutionException(command, commandName, it)
         }
     )
 }

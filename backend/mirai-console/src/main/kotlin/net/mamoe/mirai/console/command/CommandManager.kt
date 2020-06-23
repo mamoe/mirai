@@ -131,7 +131,7 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
 //// executing without detailed result (faster)
 
 /**
- * 解析并执行一个指令
+ * 解析并执行一个指令. 将会检查指令权限, 在无权限时抛出
  *
  * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
  *
@@ -157,32 +157,6 @@ suspend fun CommandSender.executeCommand(vararg messages: Any): Command? {
 suspend fun CommandSender.executeCommand(message: MessageChain): Command? {
     if (message.isEmpty()) return null
     return executeCommandInternal(message, message[0].toString())
-}
-
-
-/**
- * 在 [executeCommand] 中, [Command.onCommand] 抛出异常时包装的异常.
- */
-class CommandExecutionException(
-    /**
-     * 执行过程发生异常的指令
-     */
-    val command: Command,
-    /**
-     * 匹配到的指令名
-     */
-    val name: String,
-    /**
-     * 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String]
-     */
-    val args: Array<out Any>,
-    cause: Throwable
-) : RuntimeException(
-    "Exception while executing command '${command.primaryName}' with args ${args.joinToString { "'$it'" }}",
-    cause
-) {
-    override fun toString(): String =
-        "CommandExecutionException(command=$command, name='$name', args=${args.contentToString()})"
 }
 
 
@@ -224,6 +198,10 @@ internal suspend inline fun CommandSender.executeCommandDetailedInternal(
     val command =
         InternalCommandManager.matchCommand(commandName) ?: return CommandExecuteResult.CommandNotFound(commandName)
     val args = messages.flattenCommandComponents().dropToTypedArray(1)
+
+    if (!command.testPermission(this)) {
+        return CommandExecuteResult.PermissionDenied(command, commandName)
+    }
     kotlin.runCatching {
         command.onCommand(this, args)
     }.fold(

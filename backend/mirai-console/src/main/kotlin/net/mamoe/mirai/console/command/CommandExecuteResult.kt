@@ -1,3 +1,12 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 @file:Suppress("unused")
 
 package net.mamoe.mirai.console.command
@@ -78,6 +87,23 @@ sealed class CommandExecuteResult {
         override val status: CommandExecuteStatus get() = CommandExecuteStatus.COMMAND_NOT_FOUND
     }
 
+    /** 权限不足 */
+    class PermissionDenied(
+        /** 尝试执行的指令 */
+        override val command: Command,
+        /** 尝试执行的指令名 */
+        override val commandName: String
+    ) : CommandExecuteResult() {
+        /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
+        override val args: Nothing? get() = null
+
+        /** 指令执行时发生的错误, 总是 `null` */
+        override val exception: Nothing? get() = null
+
+        /** 指令最终执行状态, 总是 [CommandExecuteStatus.PERMISSION_DENIED] */
+        override val status: CommandExecuteStatus get() = CommandExecuteStatus.PERMISSION_DENIED
+    }
+
     /**
      * 指令的执行状态
      */
@@ -89,7 +115,10 @@ sealed class CommandExecuteResult {
         EXECUTION_EXCEPTION,
 
         /** 没有匹配的指令 */
-        COMMAND_NOT_FOUND
+        COMMAND_NOT_FOUND,
+
+        /** 权限不足 */
+        PERMISSION_DENIED
     }
 }
 
@@ -119,6 +148,18 @@ fun CommandExecuteResult.isExecutionException(): Boolean {
         returns(false) implies (this@isExecutionException !is CommandExecuteResult.ExecutionException)
     }
     return this is CommandExecuteResult.ExecutionException
+}
+
+/**
+ * 当 [this] 为 [CommandExecuteResult.ExecutionException] 时返回 `true`
+ */
+@JvmSynthetic
+fun CommandExecuteResult.isPermissionDenied(): Boolean {
+    contract {
+        returns(true) implies (this@isPermissionDenied is CommandExecuteResult.PermissionDenied)
+        returns(false) implies (this@isPermissionDenied !is CommandExecuteResult.PermissionDenied)
+    }
+    return this is CommandExecuteResult.PermissionDenied
 }
 
 /**

@@ -25,6 +25,9 @@ import net.mamoe.mirai.contact.isOwner
 interface CommandPermission {
     /**
      * 判断 [this] 是否拥有这个指令的权限
+     *
+     * @see CommandSender.hasPermission
+     * @see CommandPermission.testPermission
      */
     fun CommandSender.hasPermission(): Boolean
 
@@ -32,11 +35,13 @@ interface CommandPermission {
     /**
      * 满足两个权限其中一个即可使用指令
      */ // no extension for Java
+    @JvmDefault
     infix fun or(another: CommandPermission): CommandPermission = OrCommandPermission(this, another)
 
     /**
      * 同时拥有两个权限才能使用指令
      */ // no extension for Java
+    @JvmDefault
     infix fun and(another: CommandPermission): CommandPermission = AndCommandPermission(this, another)
 
 
@@ -48,7 +53,7 @@ interface CommandPermission {
     }
 
     /**
-     * 任何人都不能使用这个指令. 指令只能通过代码在 [execute] 使用
+     * 任何人都不能使用这个指令. 指令只能通过调用 [Command.onCommand] 执行.
      */
     object None : CommandPermission {
         override fun CommandSender.hasPermission(): Boolean = false
@@ -94,7 +99,7 @@ interface CommandPermission {
      * 仅控制台能使用和这个指令
      */
     object Console : CommandPermission {
-        override fun CommandSender.hasPermission(): Boolean = false
+        override fun CommandSender.hasPermission(): Boolean = this is ConsoleCommandSender
     }
 
     object Default : CommandPermission by (Manager or Console)
@@ -116,6 +121,8 @@ inline fun CommandSender.hasPermission(permission: CommandPermission): Boolean =
 
 
 inline fun CommandPermission.testPermission(sender: CommandSender): Boolean = this.run { sender.hasPermission() }
+
+inline fun Command.testPermission(sender: CommandSender): Boolean = sender.hasPermission(this.permission)
 
 internal class OrCommandPermission(
     private val first: CommandPermission,
