@@ -147,7 +147,14 @@ internal inline fun <R, T> T.cast(): R = this as R
  * Copied from kotlinx.serialization, modifications are marked with "/* mamoe modify */"
  * Copyright 2017-2020 JetBrains s.r.o.
  */
-@Suppress("UNCHECKED_CAST", "NO_REFLECTION_IN_CLASS_PATH", "UNSUPPORTED", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@Suppress(
+    "UNCHECKED_CAST",
+    "NO_REFLECTION_IN_CLASS_PATH",
+    "UNSUPPORTED",
+    "INVISIBLE_MEMBER",
+    "INVISIBLE_REFERENCE",
+    "IMPLICIT_CAST_TO_ANY"
+)
 @OptIn(ImplicitReflectionSerializer::class)
 internal fun serializerMirai(type: KType): KSerializer<Any?> {
     fun serializerByKTypeImpl(type: KType): KSerializer<Any> {

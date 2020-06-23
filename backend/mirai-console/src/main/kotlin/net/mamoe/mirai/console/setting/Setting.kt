@@ -17,7 +17,6 @@ import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 
-// TODO: 2020/6/21 move to JvmPlugin to inherit SettingStorage and CoroutineScope for saving
 // Shows public APIs such as deciding when to auto-save.
 abstract class Setting : SettingImpl() {
     operator fun <T> SerializerAwareValue<T>.provideDelegate(

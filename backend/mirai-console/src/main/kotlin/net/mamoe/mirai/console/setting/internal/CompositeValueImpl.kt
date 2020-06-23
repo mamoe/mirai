@@ -117,6 +117,8 @@ internal fun <K, V> Setting.createCompositeMapValueImpl(
     }
 }
 
+// TODO: 2020/6/24 在一个 Value 被删除后停止追踪其更新.
+
 internal abstract class CompositeMapValueImpl<K, V>(
     kToValue: (K) -> Value<K>, // should override onChanged
     vToValue: (V) -> Value<V> // should override onChanged

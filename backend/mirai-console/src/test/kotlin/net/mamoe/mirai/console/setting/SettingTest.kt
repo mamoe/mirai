@@ -20,8 +20,12 @@ internal class SettingTest {
 
     class MySetting : Setting() {
         var int by value(1)
-        val map by value(mapOf("" to ""))
-        val map2 by value(mutableMapOf("" to mutableMapOf("" to "")))
+        val map by value<MutableMap<String, String>>()
+        val map2 by value<MutableMap<String, MutableMap<String, String>>>()
+
+        override fun onValueChanged(value: Value<*>) {
+
+        }
     }
 
     @OptIn(UnstableDefault::class)
@@ -65,7 +69,7 @@ internal class SettingTest {
         val refBefore = setting.map
         fun reference() = refBefore
 
-        assertEquals(mapOf(), delegation()) // delegation
+        assertEquals(mutableMapOf(), delegation()) // delegation
 
         json.parse(
             setting.updaterSerializer, """

@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.setting.internal
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.Value
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.reflect.KProperty
@@ -26,7 +27,6 @@ internal val KProperty<*>.serialName: String get() = this.findAnnotation<SerialN
  * - Reflection on Kotlin properties and Java fields
  * - Auto-saving
  */
-// TODO move to internal package.
 internal abstract class SettingImpl {
     internal fun findNodeInstance(name: String): Node<*>? = valueNodes.firstOrNull { it.serialName == name }
 
@@ -110,9 +110,7 @@ internal abstract class SettingImpl {
     /**
      * flatten
      */
-    internal fun onValueChanged(value: Value<*>) {
-        // TODO: 2020/6/22
-    }
+    abstract fun onValueChanged(value: Value<*>)
 
     companion object {
         private val settingUpdaterSerializerTypeArguments = arrayOf(String.serializer(), YamlNullableDynamicSerializer)
