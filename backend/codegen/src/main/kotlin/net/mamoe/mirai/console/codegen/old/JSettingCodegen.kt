@@ -8,7 +8,7 @@
  */
 @file:Suppress("PRE_RELEASE_CLASS")
 
-package net.mamoe.mirai.console.codegen
+package net.mamoe.mirai.console.codegen.old
 
 /**
  * used to generate Java Setting

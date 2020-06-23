@@ -9,7 +9,7 @@
 
 @file:Suppress("ClassName", "unused", "PRE_RELEASE_CLASS")
 
-package net.mamoe.mirai.console.codegen
+package net.mamoe.mirai.console.codegen.old
 
 import org.intellij.lang.annotations.Language
 import java.io.File

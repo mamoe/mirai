@@ -9,7 +9,7 @@
 
 @file:Suppress("PRE_RELEASE_CLASS")
 
-package net.mamoe.mirai.console.codegen
+package net.mamoe.mirai.console.codegen.old
 
 import org.intellij.lang.annotations.Language
 import java.io.File
@@ -59,13 +59,27 @@ fun genAllValueImpl(): String = buildString {
 
     // PRIMITIVE
     for (number in NUMBERS + OTHER_PRIMITIVES) {
-        appendln(genPrimitiveValueImpl(number, number, "$number.serializer()", false))
+        appendln(
+            genPrimitiveValueImpl(
+                number,
+                number,
+                "$number.serializer()",
+                false
+            )
+        )
         appendLine()
     }
 
     // PRIMITIVE ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES.filterNot { it == "String" }) {
-        appendln(genPrimitiveValueImpl("${number}Array", "${number}Array", "${number}ArraySerializer()", true))
+        appendln(
+            genPrimitiveValueImpl(
+                "${number}Array",
+                "${number}Array",
+                "${number}ArraySerializer()",
+                true
+            )
+        )
         appendLine()
     }
 

@@ -9,7 +9,7 @@
 
 @file:Suppress("PRE_RELEASE_CLASS")
 
-package net.mamoe.mirai.console.codegen
+package net.mamoe.mirai.console.codegen.old
 
 import org.intellij.lang.annotations.Language
 import java.io.File
@@ -67,18 +67,33 @@ fun genAllValueUseSite(): String = buildString {
 
     // PRIMITIVE ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES.filterNot { it == "String" }) {
-        appendln(genValueUseSite("${number}Array", "${number}Array"))
+        appendln(
+            genValueUseSite(
+                "${number}Array",
+                "${number}Array"
+            )
+        )
     }
 
     // TYPED ARRAYS
     for (number in NUMBERS + OTHER_PRIMITIVES) {
-        appendln(genValueUseSite("Array<${number}>", "Typed${number}Array"))
+        appendln(
+            genValueUseSite(
+                "Array<${number}>",
+                "Typed${number}Array"
+            )
+        )
     }
 
     // PRIMITIVE LISTS / PRIMITIVE SETS
     for (collectionName in listOf("List", "Set")) {
         for (number in NUMBERS + OTHER_PRIMITIVES) {
-            appendln(genValueUseSite("${collectionName}<${number}>", "${number}${collectionName}"))
+            appendln(
+                genValueUseSite(
+                    "${collectionName}<${number}>",
+                    "${number}${collectionName}"
+                )
+            )
         }
     }
 
