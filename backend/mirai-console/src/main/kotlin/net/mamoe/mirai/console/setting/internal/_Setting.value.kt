@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.setting.internal
 
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.setting.SerializerAwareValue
 import net.mamoe.mirai.console.setting.Setting
@@ -54,7 +53,7 @@ internal object BuiltInSerializerConstants {
 // TODO: 2020/6/21 CODEGEN
 
 internal fun Setting.valueImpl(default: Int): SerializerAwareValue<Int> {
-    return object : IntValueImpl(default), SerializerAwareValue<Int>, KSerializer<Unit> {
+    return object : IntValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
