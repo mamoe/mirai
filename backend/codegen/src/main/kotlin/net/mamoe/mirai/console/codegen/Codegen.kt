@@ -52,15 +52,19 @@ class CodegenScope : MutableList<Replacer> by mutableListOf() {
 
     @RegionCodegenDsl
     operator fun RegionCodegen.invoke(ktTypes: Collection<KtType>) {
-        add(Replacer {
-            it.replace(Regex("""//// region $regionName CODEGEN ////([\s\S]*?)//// endregion $regionName CODEGEN ////""")) {
-                val code = CodegenScope().apply { (this@invoke as Codegen).invoke(*ktTypes.toTypedArray()) }.applyTo("")
+        add(Replacer { content ->
+            content.replace(Regex("""//// region $regionName CODEGEN ////([\s\S]*?)( *)//// endregion $regionName CODEGEN ////""")) { result ->
+                val indent = result.groups[2]!!.value
+                val indentedCode = CodegenScope()
+                    .apply { (this@invoke as Codegen).invoke(*ktTypes.toTypedArray()) }
+                    .applyTo("")
+                    .mapLine { "${indent}$it" }
                 """
                         |//// region $regionName CODEGEN ////
                         |
-                        |$code
+                        |$indentedCode
                         |
-                        |//// endregion $regionName CODEGEN ////
+                        |${indent}//// endregion $regionName CODEGEN ////
                     """.trimMargin()
             }
         })
@@ -69,6 +73,8 @@ class CodegenScope : MutableList<Replacer> by mutableListOf() {
     @DslMarker
     annotation class CodegenDsl
 }
+
+internal fun String.mapLine(mapper: (String) -> CharSequence) = this.lines().joinToString("\n", transform = mapper)
 
 @DslMarker
 annotation class RegionCodegenDsl
