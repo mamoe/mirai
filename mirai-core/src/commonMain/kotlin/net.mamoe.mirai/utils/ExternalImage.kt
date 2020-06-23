@@ -11,15 +11,18 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.io.core.readBytes
+import kotlinx.io.core.use
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.sendTo
+import net.mamoe.mirai.message.data.toUHexString
 import net.mamoe.mirai.utils.internal.DeferredReusableInput
 import net.mamoe.mirai.utils.internal.ReusableInput
 import kotlin.jvm.JvmField
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -35,6 +38,12 @@ class ExternalImage internal constructor(
     internal val input: ReusableInput
 ) {
     internal val md5: ByteArray get() = this.input.md5
+    val formatName: String by lazy {
+        val hex = input.asInput().use {
+            it.readBytes(8).toUHexString("")
+        }
+        return@lazy hex.detectFormatName()
+    }
 
     init {
         if (input !is DeferredReusableInput) {
@@ -67,6 +76,14 @@ class ExternalImage internal constructor(
     }
 
     internal fun calculateImageResourceId(): String = generateImageId(md5)
+
+    private fun String.detectFormatName(): String = when {
+        startsWith("FFD8") -> "jpg"
+        startsWith("89504E47") -> "png"
+        startsWith("47494638") -> "gif"
+        startsWith("424D") -> "bmp"
+        else -> defaultFormatName
+    }
 }
 
 /*

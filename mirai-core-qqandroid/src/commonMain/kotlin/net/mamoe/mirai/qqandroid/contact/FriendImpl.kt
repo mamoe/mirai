@@ -114,7 +114,7 @@ internal class FriendImpl(
                     fileId = 0,
                     fileMd5 = image.md5,
                     fileSize = image.input.size.toInt(),
-                    fileName = image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
+                    fileName = image.md5.toUHexString("") + "." + image.formatName,
                     imgOriginal = 1
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
