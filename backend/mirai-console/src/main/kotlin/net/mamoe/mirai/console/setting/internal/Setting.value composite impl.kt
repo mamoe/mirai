@@ -27,6 +27,10 @@ private val primitiveCollectionsImplemented by lazy {
 }
 
 @PublishedApi
+@OptIn(ExperimentalStdlibApi::class)
+internal inline fun <reified T> typeOf0(): KType = kotlin.reflect.typeOf<T>()
+
+@PublishedApi
 @Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE", "UNCHECKED_CAST")
 internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
     val classifier = type.classifier
@@ -54,8 +58,8 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
                 TODO()
             } else {
                 return createCompositeMapValueImpl<Any?, Any?>(
-                    kToValue = { k -> valueFromKType<Any?>(type.arguments[0].type!!).also { it.value = k } },
-                    vToValue = { v -> valueFromKType<Any?>(type.arguments[1].type!!).also { it.value = v } }
+                    kToValue = { k -> valueFromKType(type.arguments[0].type!!, k) },
+                    vToValue = { v -> valueFromKType(type.arguments[1].type!!, v) }
                 ).serializableValueWith(serializerMirai(type) as KSerializer<Map<Any?, Any?>>) // erased
             }
         }
@@ -72,7 +76,7 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
                 // ...
                 TODO()
             } else {
-                return createCompositeListValueImpl<Any?> { valueFromKType(type.arguments[0].type!!) }
+                return createCompositeListValueImpl<Any?> { v -> valueFromKType(type.arguments[0].type!!, v) }
                     .serializableValueWith(serializerMirai(type) as KSerializer<List<Any?>>)
             }
         }
@@ -87,7 +91,7 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
                 // ...
                 TODO()
             } else {
-                return createCompositeSetValueImpl<Any?> { valueFromKType(type.arguments[0].type!!) }
+                return createCompositeSetValueImpl<Any?> { v -> valueFromKType(type.arguments[0].type!!, v) }
                     .serializableValueWith(serializerMirai(type) as KSerializer<Set<Any?>>)
             }
         }

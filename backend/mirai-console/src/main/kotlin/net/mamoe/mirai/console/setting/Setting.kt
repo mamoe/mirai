@@ -14,17 +14,16 @@ package net.mamoe.mirai.console.setting
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import net.mamoe.mirai.console.setting.internal.cast
 import net.mamoe.mirai.console.setting.internal.isOdd
+import net.mamoe.mirai.console.setting.internal.typeOf0
 import net.mamoe.mirai.console.setting.internal.valueFromKTypeImpl
 import net.mamoe.mirai.console.setting.internal.valueImpl
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.typeOf
+import kotlin.reflect.jvm.isAccessible
 
 
 // TODO: 2020/6/21 move to JvmPlugin to inherit SettingStorage and CoroutineScope for saving
@@ -162,7 +161,21 @@ fun Setting.value(default: String): SerializerAwareValue<String> = valueImpl(def
 
 
 /**
- * Creates a [Value] with reified type.
+ * Creates a [Value] with reified type, and set default value.
+ *
+ * @param T reified param type T.
+ * Supports only primitives, Kotlin built-in collections,
+ * and classes that are serializable with Kotlinx.serialization
+ * (typically annotated with [kotlinx.serialization.Serializable])
+ */
+@Suppress("UNCHECKED_CAST")
+@LowPriorityInOverloadResolution
+inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T> =
+    value<T>().apply { value = default }
+
+
+/**
+ * Creates a [Value] with reified type, and set default value by reflection to its no-arg public constructor.
  *
  * @param T reified param type T.
  * Supports only primitives, Kotlin built-in collections,
@@ -170,12 +183,17 @@ fun Setting.value(default: String): SerializerAwareValue<String> = valueImpl(def
  * (typically annotated with [kotlinx.serialization.Serializable])
  */
 @LowPriorityInOverloadResolution
-@MiraiExperimentalAPI
-@OptIn(ExperimentalStdlibApi::class) // stable in 1.4
-inline fun <reified T> Setting.valueReified(default: T): SerializerAwareValue<T> =
-    valueFromKTypeImpl(typeOf<T>()).cast()
+inline fun <reified T> Setting.value(): SerializerAwareValue<T> =
+    value(
+        T::class.constructors.find { it.parameters.isEmpty() && it.isAccessible }?.call()
+            ?: throw IllegalArgumentException("Cannot construct a default value for given type ${typeOf0<T>()}")
+    )
 
-@MiraiExperimentalAPI
-fun <T> Setting.valueFromKType(type: KType): SerializerAwareValue<T> = valueFromKTypeImpl(type).cast()
+/**
+ * Creates a [Value] with specified [KType], and set default value.
+ */
+@Suppress("UNCHECKED_CAST")
+fun <T> Setting.valueFromKType(type: KType, default: T): SerializerAwareValue<T> =
+    (valueFromKTypeImpl(type) as SerializerAwareValue<Any?>).apply { this.value = default } as SerializerAwareValue<T>
 
 // TODO: 2020/6/24 Introduce class TypeToken for compound types for Java.

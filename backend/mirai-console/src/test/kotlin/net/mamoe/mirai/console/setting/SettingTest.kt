@@ -20,8 +20,8 @@ internal class SettingTest {
 
     class MySetting : Setting() {
         var int by value(1)
-        val map by valueReified(mapOf("" to ""))
-        val map2 by valueReified(mutableMapOf("" to mutableMapOf("" to "")))
+        val map by value(mapOf("" to ""))
+        val map2 by value(mutableMapOf("" to mutableMapOf("" to "")))
     }
 
     @OptIn(UnstableDefault::class)
