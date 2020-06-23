@@ -19,10 +19,6 @@ import net.mamoe.mirai.console.setting.internal.isOdd
 import net.mamoe.mirai.console.setting.internal.valueFromKTypeImpl
 import net.mamoe.mirai.console.setting.internal.valueImpl
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.yamlkt.Yaml
-import net.mamoe.yamlkt.YamlConfiguration
-import net.mamoe.yamlkt.YamlConfiguration.ListSerialization.FLOW_SEQUENCE
-import net.mamoe.yamlkt.YamlConfiguration.MapSerialization.FLOW_MAP
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
@@ -66,75 +62,73 @@ internal abstract class SettingImpl {
 
     internal val valueNodes: MutableList<Node<*>> = mutableListOf()
 
-    internal open val updaterSerializer: KSerializer<Unit> by lazy {
-        object : KSerializer<Unit> {
-            override val descriptor: SerialDescriptor get() = settingUpdaterSerializerDescriptor
+    internal open val updaterSerializer: KSerializer<Unit> = object : KSerializer<Unit> {
+        override val descriptor: SerialDescriptor get() = settingUpdaterSerializerDescriptor
 
-            @Suppress("UNCHECKED_CAST")
-            override fun deserialize(decoder: Decoder) {
-                val descriptor = descriptor
-                with(decoder.beginStructure(descriptor, *settingUpdaterSerializerTypeArguments)) {
-                    if (decodeSequentially()) {
-                        var index = 0
-                        repeat(decodeCollectionSize(descriptor)) {
-                            val serialName = decodeSerializableElement(descriptor, index++, String.serializer())
-                            val node = findNodeInstance(serialName)
-                            if (node == null) {
-                                decodeSerializableElement(descriptor, index++, YamlNullableDynamicSerializer)
-                            } else {
-                                decodeSerializableElement(descriptor, index++, node.updaterSerializer)
-                            }
-                        }
-                    } else {
-                        outerLoop@ while (true) {
-                            var serialName: String? = null
-                            innerLoop@ while (true) {
-                                val index = decodeElementIndex(descriptor)
-                                if (index == CompositeDecoder.READ_DONE) {
-                                    check(serialName == null) { "name must be null at this moment." }
-                                    break@outerLoop
-                                }
-
-                                if (!index.isOdd()) { // key
-                                    check(serialName == null) { "name must be null at this moment" }
-                                    serialName = decodeSerializableElement(descriptor, index, String.serializer())
-                                } else {
-                                    check(serialName != null) { "name must not be null at this moment" }
-
-                                    val node = findNodeInstance(serialName)
-                                    if (node == null) {
-                                        decodeSerializableElement(descriptor, index, YamlNullableDynamicSerializer)
-                                    } else {
-                                        decodeSerializableElement(descriptor, index, node.updaterSerializer)
-                                    }
-
-
-                                    break@innerLoop
-                                }
-                            }
-
-                        }
-                    }
-                    endStructure(descriptor)
-                }
-            }
-
-            @Suppress("UNCHECKED_CAST")
-            override fun serialize(encoder: Encoder, value: Unit) {
-                val descriptor = descriptor
-                with(encoder.beginCollection(descriptor, valueNodes.size, *settingUpdaterSerializerTypeArguments)) {
+        @Suppress("UNCHECKED_CAST")
+        override fun deserialize(decoder: Decoder) {
+            val descriptor = descriptor
+            with(decoder.beginStructure(descriptor, *settingUpdaterSerializerTypeArguments)) {
+                if (decodeSequentially()) {
                     var index = 0
-
-                    // val vSerializer = settingUpdaterSerializerTypeArguments[1] as KSerializer<Any?>
-                    valueNodes.forEach { (serialName, _, valueSerializer) ->
-                        encodeSerializableElement(descriptor, index++, String.serializer(), serialName)
-                        encodeSerializableElement(descriptor, index++, valueSerializer, Unit)
+                    repeat(decodeCollectionSize(descriptor)) {
+                        val serialName = decodeSerializableElement(descriptor, index++, String.serializer())
+                        val node = findNodeInstance(serialName)
+                        if (node == null) {
+                            decodeSerializableElement(descriptor, index++, YamlNullableDynamicSerializer)
+                        } else {
+                            decodeSerializableElement(descriptor, index++, node.updaterSerializer)
+                        }
                     }
-                    endStructure(descriptor)
-                }
-            }
+                } else {
+                    outerLoop@ while (true) {
+                        var serialName: String? = null
+                        innerLoop@ while (true) {
+                            val index = decodeElementIndex(descriptor)
+                            if (index == CompositeDecoder.READ_DONE) {
+                                check(serialName == null) { "name must be null at this moment." }
+                                break@outerLoop
+                            }
 
+                            if (!index.isOdd()) { // key
+                                check(serialName == null) { "name must be null at this moment" }
+                                serialName = decodeSerializableElement(descriptor, index, String.serializer())
+                            } else {
+                                check(serialName != null) { "name must not be null at this moment" }
+
+                                val node = findNodeInstance(serialName)
+                                if (node == null) {
+                                    decodeSerializableElement(descriptor, index, YamlNullableDynamicSerializer)
+                                } else {
+                                    decodeSerializableElement(descriptor, index, node.updaterSerializer)
+                                }
+
+
+                                break@innerLoop
+                            }
+                        }
+
+                    }
+                }
+                endStructure(descriptor)
+            }
         }
+
+        @Suppress("UNCHECKED_CAST")
+        override fun serialize(encoder: Encoder, value: Unit) {
+            val descriptor = descriptor
+            with(encoder.beginCollection(descriptor, valueNodes.size, *settingUpdaterSerializerTypeArguments)) {
+                var index = 0
+
+                // val vSerializer = settingUpdaterSerializerTypeArguments[1] as KSerializer<Any?>
+                valueNodes.forEach { (serialName, _, valueSerializer) ->
+                    encodeSerializableElement(descriptor, index++, String.serializer(), serialName)
+                    encodeSerializableElement(descriptor, index++, valueSerializer, Unit)
+                }
+                endStructure(descriptor)
+            }
+        }
+
     }
 
     /**
@@ -145,22 +139,9 @@ internal abstract class SettingImpl {
     }
 
     companion object {
-
-        private val ABSENT_STUB = Any()
-
         private val settingUpdaterSerializerTypeArguments = arrayOf(String.serializer(), YamlNullableDynamicSerializer)
         private val settingUpdaterSerializerDescriptor =
             MapSerializer(settingUpdaterSerializerTypeArguments[0], settingUpdaterSerializerTypeArguments[1]).descriptor
-
-        val allFlow = Yaml(
-            YamlConfiguration(
-                nonStrictNullability = true,
-                nonStrictNumber = true,
-                mapSerialization = FLOW_MAP,
-                listSerialization = FLOW_SEQUENCE,
-                classSerialization = FLOW_MAP
-            )
-        )
     }
 }
 
