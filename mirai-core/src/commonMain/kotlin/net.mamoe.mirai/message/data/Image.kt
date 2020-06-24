@@ -73,7 +73,7 @@ expect interface Image : Message, MessageContent, CodableMessage {
      *
      * ### 格式
      * 群图片:
-     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
+     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext` (ext系扩展名)
      *
      * 好友图片:
      * - [FRIEND_IMAGE_ID_REGEX_1], 示例: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
@@ -125,7 +125,7 @@ abstract class FriendImage internal constructor() : AbstractImage() { // change 
 /**
  * 群图片.
  *
- * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 `".mirai"`)
+ * @property imageId 形如 `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext` (ext系扩展名)
  * @see Image 查看更多说明
  */
 // CustomFace
@@ -156,11 +156,11 @@ val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
 /**
  * 群图片 ID 正则表达式
  *
- * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai`
+ * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext`
  */
 @Suppress("RegExpRedundantEscape") // This is required on Android
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
-val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\.mirai""")
+val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
 
 /**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
