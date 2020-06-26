@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.center
+package net.mamoe.mirai.console.plugin.center
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

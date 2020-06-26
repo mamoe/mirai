@@ -9,7 +9,7 @@
 
 @file:OptIn(MiraiExperimentalAPI::class)
 
-package net.mamoe.mirai.console.center
+package net.mamoe.mirai.console.plugin.center
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -24,7 +24,9 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.io.File
 
 @OptIn(UnstableDefault::class)
-internal val json = Json(JsonConfiguration(isLenient = true, ignoreUnknownKeys = true))
+internal val json = runCatching {
+    Json(JsonConfiguration(isLenient = true, ignoreUnknownKeys = true))
+}.getOrElse { Json(JsonConfiguration.Stable) }
 
 @OptIn(KtorExperimentalAPI::class)
 internal val Http = HttpClient(CIO)
