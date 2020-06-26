@@ -137,5 +137,5 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSolveMemberJoinRequestEvent(eventId: Long, fromId: Long, fromNick: String, groupId: Long, accept: Boolean?, blackList: Boolean)
+    suspend fun _lowLevelSolveMemberJoinRequestEvent(eventId: Long, fromId: Long, fromNick: String, groupId: Long, accept: Boolean?, blackList: Boolean, message: String = "")
 }

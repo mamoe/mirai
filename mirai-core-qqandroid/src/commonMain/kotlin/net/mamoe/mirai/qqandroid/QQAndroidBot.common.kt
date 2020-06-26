@@ -146,7 +146,7 @@ internal class QQAndroidBot constructor(
 
     @Suppress("DuplicatedCode")
     @OptIn(LowLevelAPI::class)
-    override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
+    override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean, message: String) {
         checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
@@ -162,7 +162,8 @@ internal class QQAndroidBot constructor(
             fromNick = event.fromNick,
             groupId = event.groupId,
             accept = false,
-            blackList = blackList
+            blackList = blackList,
+            message = message
         )
     }
 
@@ -755,7 +756,8 @@ internal abstract class QQAndroidBotBase constructor(
         fromNick: String,
         groupId: Long,
         accept: Boolean?,
-        blackList: Boolean
+        blackList: Boolean,
+        message: String
     ) {
         network.apply {
             NewContact.SystemMsgNewGroup.Action(
@@ -765,7 +767,8 @@ internal abstract class QQAndroidBotBase constructor(
                 groupId = groupId,
                 isInvited = false,
                 accept = accept,
-                blackList = blackList
+                blackList = blackList,
+                message = message
             ).sendWithoutExpect()
             groups[groupId].apply {
                 members.delegate.addLast(newMember(object : MemberInfo {

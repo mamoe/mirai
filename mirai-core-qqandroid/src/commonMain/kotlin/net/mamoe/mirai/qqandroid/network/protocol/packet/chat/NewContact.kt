@@ -223,7 +223,8 @@ internal class NewContact {
                 groupId: Long,
                 isInvited: Boolean,
                 accept: Boolean?,
-                blackList: Boolean = false
+                blackList: Boolean = false,
+                message: String = ""
             ) =
                 buildOutgoingUniPacket(client) {
                     writeProtoBuf(
@@ -236,7 +237,7 @@ internal class NewContact {
                                     false -> 12 // reject
                                 },
                                 groupCode = groupId,
-                                msg = "",
+                                msg = message,
                                 remark = "",
                                 blacklist = blackList
                             ),
