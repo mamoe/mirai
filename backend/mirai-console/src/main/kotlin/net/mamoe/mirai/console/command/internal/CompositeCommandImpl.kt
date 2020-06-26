@@ -114,15 +114,16 @@ internal abstract class CompositeCommandImpl : Command {
         return block
     }
 
-    @JvmField
-    internal val bakedCommandNameToSubDescriptorArray: Map<Array<String>, SubCommandDescriptor> = kotlin.run {
-        val map = LinkedHashMap<Array<String>, SubCommandDescriptor>(subCommands.size * 2)
-        for (descriptor in subCommands) {
-            for (name in descriptor.bakedSubNames) {
-                map[name] = descriptor
+    internal val bakedCommandNameToSubDescriptorArray: Map<Array<String>, SubCommandDescriptor> by lazy {
+        kotlin.run {
+            val map = LinkedHashMap<Array<String>, SubCommandDescriptor>(subCommands.size * 2)
+            for (descriptor in subCommands) {
+                for (name in descriptor.bakedSubNames) {
+                    map[name] = descriptor
+                }
             }
+            map.toSortedMap(Comparator { o1, o2 -> o1!!.contentHashCode() - o2!!.contentHashCode() })
         }
-        map.toSortedMap(Comparator { o1, o2 -> o1!!.contentHashCode() - o2!!.contentHashCode() })
     }
 
     internal class DefaultSubCommandDescriptor(

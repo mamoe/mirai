@@ -34,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
  *
  * @see INSTANCE
  */
-interface MiraiConsole {
+interface MiraiConsole : CoroutineScope {
     /**
      * Console 运行路径
      */

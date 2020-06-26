@@ -23,44 +23,44 @@ import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
 
 
-object IntArgParser : CommandArgParser<Int>() {
+object IntArgParser : CommandArgParser<Int> {
     override fun parse(raw: String, sender: CommandSender): Int =
         raw.toIntOrNull() ?: illegalArgument("无法解析 $raw 为整数")
 }
 
-object LongArgParser : CommandArgParser<Long>() {
+object LongArgParser : CommandArgParser<Long> {
     override fun parse(raw: String, sender: CommandSender): Long =
         raw.toLongOrNull() ?: illegalArgument("无法解析 $raw 为长整数")
 }
 
-object ShortArgParser : CommandArgParser<Short>() {
+object ShortArgParser : CommandArgParser<Short> {
     override fun parse(raw: String, sender: CommandSender): Short =
         raw.toShortOrNull() ?: illegalArgument("无法解析 $raw 为短整数")
 }
 
-object ByteArgParser : CommandArgParser<Byte>() {
+object ByteArgParser : CommandArgParser<Byte> {
     override fun parse(raw: String, sender: CommandSender): Byte =
         raw.toByteOrNull() ?: illegalArgument("无法解析 $raw 为字节")
 }
 
-object DoubleArgParser : CommandArgParser<Double>() {
+object DoubleArgParser : CommandArgParser<Double> {
     override fun parse(raw: String, sender: CommandSender): Double =
         raw.toDoubleOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
 
-object FloatArgParser : CommandArgParser<Float>() {
+object FloatArgParser : CommandArgParser<Float> {
     override fun parse(raw: String, sender: CommandSender): Float =
         raw.toFloatOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
 
-object StringArgParser : CommandArgParser<String>() {
+object StringArgParser : CommandArgParser<String> {
     override fun parse(raw: String, sender: CommandSender): String {
         println("STRING PARSER! $raw")
         return raw
     }
 }
 
-object BooleanArgParser : CommandArgParser<Boolean>() {
+object BooleanArgParser : CommandArgParser<Boolean> {
     override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
         str.equals("true", ignoreCase = true)
                 || str.equals("yes", ignoreCase = true)
@@ -74,7 +74,7 @@ object BooleanArgParser : CommandArgParser<Boolean>() {
  * output: Bot
  * errors: String->Int convert, Bot Not Exist
  */
-object ExistBotArgParser : CommandArgParser<Bot>() {
+object ExistBotArgParser : CommandArgParser<Bot> {
     override fun parse(raw: String, sender: CommandSender): Bot {
         val uin = try {
             raw.toLong()
@@ -89,7 +89,7 @@ object ExistBotArgParser : CommandArgParser<Bot>() {
     }
 }
 
-object ExistFriendArgParser : CommandArgParser<Friend>() {
+object ExistFriendArgParser : CommandArgParser<Friend> {
     //Bot.friend
     //friend
     //~ = self
@@ -142,7 +142,7 @@ object ExistFriendArgParser : CommandArgParser<Friend>() {
     }
 }
 
-object ExistGroupArgParser : CommandArgParser<Group>() {
+object ExistGroupArgParser : CommandArgParser<Group> {
     override fun parse(raw: String, sender: CommandSender): Group {
         //by default
         if ((raw == "" || raw == "~") && sender is MemberCommandSender) {
@@ -177,7 +177,7 @@ object ExistGroupArgParser : CommandArgParser<Group>() {
     }
 }
 
-object ExistMemberArgParser : CommandArgParser<Member>() {
+object ExistMemberArgParser : CommandArgParser<Member> {
     //后台: Bot.Group.Member[QQ/名片]
     //私聊: Group.Member[QQ/名片]
     //群内: Q号

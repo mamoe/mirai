@@ -21,8 +21,8 @@ import kotlin.reflect.KClass
 
 
 /**
- * 功能最集中的Commend
- * 支持且只支持有sub的指令
+ * 功能最集中的 Commend
+ * 只支持有sub的指令
  * 例:
  *  /mute add
  *  /mute remove
@@ -40,9 +40,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
     final override val description = description.trimIndent()
     final override val names: Array<out String> =
         names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).also { list ->
-            list.firstOrNull { !it.isValidSubName() }?.let {
-                error("Name is not valid: $it")
-            }
+            list.firstOrNull { !it.isValidSubName() }?.let { error("Name is not valid: $it") }
         }.toTypedArray()
 
     /**
@@ -72,9 +70,9 @@ abstract class CompositeCommand @JvmOverloads constructor(
     @Target(AnnotationTarget.VALUE_PARAMETER)
     annotation class Name(val name: String)
 
-    final override suspend fun onCommand(sender: CommandSender, args: Array<out Any>) {
-        matchSubCommand(args)?.parseAndExecute(sender, args) ?: kotlin.run {
-            defaultSubCommand.onCommand(sender, args)
+    final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+        matchSubCommand(args)?.parseAndExecute(this, args) ?: kotlin.run {
+            defaultSubCommand.onCommand(this, args)
         }
     }
 }
