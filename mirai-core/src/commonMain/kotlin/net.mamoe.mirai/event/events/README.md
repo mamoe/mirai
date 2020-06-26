@@ -6,6 +6,12 @@
 - 在 IntelliJ 平台双击 shift 可输入类名进行全局搜索
 - 在 IntelliJ 平台, 按 alt + 7 可打开文件的结构, [效果图](/.github/EZSLAB`K@YFFOW47{090W8B.png)
 
+注释:
+- 此列表自 mirai `1.0.0` 起开始维护, 故在 `1.0.0` 前的变更将不做记录.
+- 支持某事件的 mirai 版本号将会显式标注, 通过数学区间形式表示, 如 `[1.1.0, 1.3.0)`, 但有简便表示方法:
+  - (`1.1.0+`) 等注释表示在 `1.1.0` 及更新版本才支持, 区间表示为 `[1.1.0, +∞)`
+  - (`1.1.0-`) 等注释表示在早于 `1.1.0` 的版本才支持, 区间表示为 `[1.0.0, 1.1.0)`
+
 ### [Bot](bot.kt)
 - Bot 登录完成: BotOnlineEvent
 - Bot 离线: BotOfflineEvent
@@ -17,12 +23,21 @@
 - Bot 头像改变: BotAvatarChangedEvent
 
 ### [消息](message.kt)
-- 主动发送消息: MessageSendEvent
+- (`1.1.0-`) 主动发送消息: MessageSendEvent
   - 群消息: GroupMessageSendEvent
   - 好友消息: FriendMessageSendEvent
+- (`1.1.0+`) 主动发送消息前: MessagePreSendEvent
+  - 群消息: GroupMessagePreSendEvent
+  - 好友消息: FriendMessagePreSendEvent
+  - 群临时会话消息: TempMessagePreSendEvent
+- (`1.1.0+`) 主动发送消息后: MessagePostSendEvent
+  - 群消息: GroupMessagePostSendEvent
+  - 好友消息: FriendMessagePostSendEvent
+  - 群临时会话消息: TempMessagePostSendEvent
 - 消息撤回: MessageRecallEvent
   - 好友撤回: FriendRecall
   - 群撤回: GroupRecall
+  - 群撤回: TempRecall
 - 图片上传前: BeforeImageUploadEvent
 - 图片上传完成: ImageUploadEvent
   - 图片上传成功: Succeed
