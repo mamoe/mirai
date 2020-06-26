@@ -9,6 +9,13 @@
 
 package net.mamoe.mirai.console.command
 
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+
+interface BuiltInCommand : Command
+
+@MiraiExperimentalAPI
+object BuiltInCommands
+
 /*
 
 /**
