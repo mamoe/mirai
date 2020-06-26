@@ -17,9 +17,23 @@ import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 
-// Shows public APIs such as deciding when to auto-save.
-abstract class Setting : SettingImpl() {
-    operator fun <T> SerializerAwareValue<T>.provideDelegate(
+
+/**
+ * 序列化之后的名称.
+ *
+ * 例:
+ * ```
+ * class MySetting : Setting() {
+ *
+ * }
+ * ```
+ */
+// TODO: 2020/6/26 document
+typealias SerialName = kotlinx.serialization.SerialName
+
+// TODO: 2020/6/26 document
+abstract class AbstractSetting : Setting, SettingImpl() {
+    final override operator fun <T> SerializerAwareValue<T>.provideDelegate(
         thisRef: Any?,
         property: KProperty<*>
     ): SerializerAwareValue<T> {
@@ -28,7 +42,19 @@ abstract class Setting : SettingImpl() {
         return this
     }
 
-    public override val updaterSerializer: KSerializer<Unit> get() = super.updaterSerializer
+    final override val updaterSerializer: KSerializer<Unit> get() = super.updaterSerializer
+}
+
+// TODO: 2020/6/26 document
+interface Setting {
+    // TODO: 2020/6/26 document
+    operator fun <T> SerializerAwareValue<T>.provideDelegate(
+        thisRef: Any?,
+        property: KProperty<*>
+    ): SerializerAwareValue<T>
+
+    // TODO: 2020/6/26 document
+    val updaterSerializer: KSerializer<Unit>
 }
 
 //// region Setting_value_primitives CODEGEN ////

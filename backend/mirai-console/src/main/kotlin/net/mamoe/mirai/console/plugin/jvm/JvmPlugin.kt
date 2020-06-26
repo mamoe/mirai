@@ -13,7 +13,12 @@ package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.PluginFileExtensions
+import net.mamoe.mirai.console.setting.Setting
+import net.mamoe.mirai.console.setting.SettingHolder
+import net.mamoe.mirai.console.utils.ResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
+import kotlin.reflect.KClass
 
 
 /**
@@ -23,8 +28,11 @@ import net.mamoe.mirai.utils.MiraiLogger
  *
  * @see JavaPlugin Java 插件
  * @see KotlinPlugin Kotlin 插件
+ *
+ * @see JvmPlugin 支持文件系统扩展
+ * @see ResourceContainer 支持资源获取 (如 Jar 中的资源文件)
  */
-interface JvmPlugin : Plugin, CoroutineScope {
+interface JvmPlugin : Plugin, CoroutineScope, PluginFileExtensions, ResourceContainer, SettingHolder {
     /** 日志 */
     val logger: MiraiLogger
 
@@ -33,6 +41,11 @@ interface JvmPlugin : Plugin, CoroutineScope {
 
     /** 所属插件加载器实例 */
     override val loader: JarPluginLoader get() = JarPluginLoader
+
+    /**
+     * 获取一个 [Setting] 实例
+     */
+    fun <T : Setting> getSetting(clazz: Class<T>): T
 
     @JvmDefault
     fun onLoad() {
@@ -47,4 +60,5 @@ interface JvmPlugin : Plugin, CoroutineScope {
     }
 }
 
-
+fun <T : Setting> JvmPlugin.getSetting(clazz: KClass<T>) = this.getSetting(clazz.java)
+inline fun <reified T : Setting> JvmPlugin.getSetting() = this.getSetting(T::class)

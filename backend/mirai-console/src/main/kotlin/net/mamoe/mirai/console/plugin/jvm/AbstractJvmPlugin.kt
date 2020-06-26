@@ -11,7 +11,10 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
-import net.mamoe.mirai.console.plugin.internal.JvmPluginImpl
+import net.mamoe.mirai.console.plugin.internal.JvmPluginInternal
+import net.mamoe.mirai.console.setting.Setting
+import net.mamoe.mirai.console.setting.getValue
+import net.mamoe.mirai.console.setting.value
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -23,8 +26,16 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 abstract class AbstractJvmPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
-    // TODO: 2020/6/24 添加 PluginSetting 继承 Setting, 实现 onValueChanged 并绑定自动保存.
+) : JvmPlugin, JvmPluginInternal(parentCoroutineContext) {
+    final override val name: String get() = this.description.name
 
-    abstract class PluginSetting
+    override fun <T : Setting> getSetting(clazz: Class<T>): T = loader.settingStorage.load(this, clazz)
+}
+
+
+object MyPlugin : KotlinPlugin()
+
+object TestSetting : Setting by MyPlugin.getSetting() {
+    val account by value("123456")
+    val password by value("123")
 }

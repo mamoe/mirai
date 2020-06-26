@@ -18,7 +18,7 @@ import kotlin.test.assertSame
 
 internal class SettingTest {
 
-    class MySetting : Setting() {
+    class MySetting : AbstractSetting() {
         var int by value(1)
         val map by value<MutableMap<String, String>>()
         val map2 by value<MutableMap<String, MutableMap<String, String>>>()

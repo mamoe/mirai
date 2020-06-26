@@ -13,8 +13,10 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
-import net.mamoe.mirai.console.plugin.internal.JvmPluginImpl
+import net.mamoe.mirai.console.plugin.internal.JvmPluginInternal
 import net.mamoe.mirai.console.plugin.internal.PluginsLoader
+import net.mamoe.mirai.console.setting.SettingStorage
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
 import java.io.File
@@ -29,6 +31,9 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
     private val logger: MiraiLogger by lazy {
         MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
     }
+
+    @MiraiExperimentalAPI
+    val settingStorage: SettingStorage = TODO()
 
     override val coroutineContext: CoroutineContext by lazy {
         MiraiConsole.coroutineContext + SupervisorJob(
@@ -48,7 +53,9 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
         }
     }
 
-    override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
+    @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
+    override val JvmPlugin.description: JvmPluginDescription
+        get() = this.description
 
     override fun Sequence<File>.mapToDescription(): List<JvmPluginDescription> {
         return this.associateWith { URL("jar:${it.absolutePath}!/plugin.yml") }.mapNotNull { (file, url) ->
@@ -82,7 +89,7 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
 
             check(main is JvmPlugin) { "The main class of Jar plugin must extend JvmPlugin, recommending JavaPlugin or KotlinPlugin" }
 
-            if (main is JvmPluginImpl) {
+            if (main is JvmPluginInternal) {
                 main._description = description
                 main.internalOnLoad()
             } else main.onLoad()
@@ -93,13 +100,13 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
 
     override fun enable(plugin: JvmPlugin) {
         ensureActive()
-        if (plugin is JvmPluginImpl) {
+        if (plugin is JvmPluginInternal) {
             plugin.internalOnEnable()
         } else plugin.onEnable()
     }
 
     override fun disable(plugin: JvmPlugin) {
-        if (plugin is JvmPluginImpl) {
+        if (plugin is JvmPluginInternal) {
             plugin.internalOnDisable()
         } else plugin.onDisable()
     }

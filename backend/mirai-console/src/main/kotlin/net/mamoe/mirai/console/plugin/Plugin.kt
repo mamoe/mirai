@@ -10,22 +10,44 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.io.File
 
 /**
  * 表示一个 mirai-console 插件.
  *
- * @see JvmPlugin
  * @see PluginDescription 插件描述
+ * @see JvmPlugin Java, Kotlin 或其他 JVM 平台插件
+ * @see PluginFileExtensions 支持文件系统存储的扩展
+ *
+ * @see PluginLoader 插件加载器
  */
 interface Plugin {
     /**
-     * 所属插件加载器实例
+     * 所属插件加载器实例, 此加载器必须能加载这个 [Plugin].
      */
     val loader: PluginLoader<*, *>
+}
 
+@Suppress("UNCHECKED_CAST")
+inline val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
+    get() = this.loader as PluginLoader<P, PluginDescription>
+
+/**
+ * 支持文件系统存储的扩展.
+ *
+ * @see JvmPlugin
+ */
+@MiraiExperimentalAPI("classname is subject to change")
+interface PluginFileExtensions {
     /**
-     * 插件数据目录
+     * 数据目录
      */
     val dataFolder: File
+
+    /**
+     * 从数据目录获取一个文件, 若不存在则创建文件.
+     */
+    @JvmDefault
+    fun file(relativePath: String): File = File(dataFolder, relativePath).apply { createNewFile() }
 }

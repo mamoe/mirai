@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.plugin.internal
 
+import kotlinx.atomicfu.AtomicLong
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -19,8 +20,10 @@ import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
+import net.mamoe.mirai.console.utils.asResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
+import java.io.InputStream
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -31,13 +34,17 @@ internal val <T> T.job: Job where T : CoroutineScope, T : Plugin get() = this.co
  * Hides implementations from [JvmPlugin]
  */
 @PublishedApi
-internal abstract class JvmPluginImpl(
+internal abstract class JvmPluginInternal(
     parentCoroutineContext: CoroutineContext
 ) : JvmPlugin,
     CoroutineScope {
+
+    private val resourceConsoleDelegate by lazy { this::class.asResourceContainer() }
+    override fun getResourceAsStream(name: String): InputStream = resourceConsoleDelegate.getResourceAsStream(name)
+
     // region JvmPlugin
     /**
-     * Initialized immediately after construction of [JvmPluginImpl] instance
+     * Initialized immediately after construction of [JvmPluginInternal] instance
      */
     @Suppress("PropertyName")
     internal lateinit var _description: JvmPluginDescription
@@ -102,4 +109,16 @@ internal abstract class JvmPluginImpl(
             ?: contextUpdateLock.withLock { _coroutineContext ?: refreshCoroutineContext() }
 
     // endregion
+}
+
+internal inline fun AtomicLong.updateWhen(condition: (Long) -> Boolean, update: (Long) -> Long): Boolean {
+    while (true) {
+        val current = value
+        if (condition(current)) {
+            if (compareAndSet(0, update(current))) {
+                return true
+            } else continue
+        }
+        return false
+    }
 }

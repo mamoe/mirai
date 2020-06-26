@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.setting.internal
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.setting.SerializerAwareValue
 import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.Value
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
@@ -35,6 +36,14 @@ internal abstract class SettingImpl {
         val value: Value<T>,
         val updaterSerializer: KSerializer<Unit>
     )
+
+    internal fun <T> SerializerAwareValue<T>.provideDelegateImpl(
+        property: KProperty<*>
+    ): SerializerAwareValue<T> {
+        val name = property.serialName
+        valueNodes.add(Node(name, this, this.serializer))
+        return this
+    }
 
     internal val valueNodes: MutableList<Node<*>> = mutableListOf()
 

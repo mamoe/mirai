@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "INAPPLICABLE_JVM_NAME")
 
 package net.mamoe.mirai.console.plugin
 
@@ -20,6 +20,8 @@ import java.io.File
  * 插件加载器只实现寻找插件列表, 加载插件, 启用插件, 关闭插件这四个功能.
  *
  * 有关插件的依赖和已加载的插件列表由 [PluginManager] 维护.
+ *
+ * @see JarPluginLoader Jar 插件加载器
  */
 interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
@@ -29,12 +31,15 @@ interface PluginLoader<P : Plugin, D : PluginDescription> {
 
     /**
      * 获取此插件的描述
+     *
+     * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如无法读取插件信息等).
      */
-    @Throws(PluginLoadException::class)
-    fun getPluginDescription(plugin: P): D
+    @get:JvmName("getPluginDescription")
+    @get:Throws(PluginLoadException::class)
+    val P.description: D
 
     /**
-     * 加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的实例
+     * 加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的主类实例
      *
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
      */
@@ -55,7 +60,7 @@ open class PluginLoadException : RuntimeException {
 /**
  * '/plugins' 目录中的插件的加载器. 每个加载器需绑定一个后缀.
  *
- * @see AbstractFilePluginLoader
+ * @see AbstractFilePluginLoader 默认基础实现
  * @see JarPluginLoader 内建的 Jar (JVM) 插件加载器.
  */
 interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoader<P, D> {
@@ -65,6 +70,9 @@ interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoader<P, 
     val fileSuffix: String
 }
 
+/**
+ * [FilePluginLoader] 的默认基础实现
+ */
 abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
     override val fileSuffix: String
 ) : FilePluginLoader<P, D> {
