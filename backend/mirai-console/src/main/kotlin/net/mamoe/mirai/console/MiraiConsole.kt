@@ -13,6 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsole.INSTANCE
+import net.mamoe.mirai.console.command.ConsoleCommandOwner
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.center.CuiPluginCenter
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -26,15 +28,57 @@ import java.io.PrintStream
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
+
+/**
+ * mirai-console 实例
+ *
+ * @see INSTANCE
+ */
+interface MiraiConsole {
+    /**
+     * Console 运行路径
+     */
+    val rootDir: File
+
+    /**
+     * Console 前端接口
+     */
+    val frontEnd: MiraiConsoleFrontEnd
+
+    /**
+     * 与前端交互所使用的 Logger
+     */
+    val mainLogger: MiraiLogger
+
+    /**
+     * 内建加载器列表, 一般需要包含 [JarPluginLoader]
+     */
+    val builtInPluginLoaders: List<PluginLoader<*, *>>
+
+    val buildDate: Date
+
+    val version: String
+
+    val pluginCenter: PluginCenter
+
+    @MiraiExperimentalAPI
+    fun newLogger(identity: String?): MiraiLogger
+
+    companion object INSTANCE : MiraiConsole by MiraiConsoleImpl
+}
+
+
+//// internal
+
+
 internal object MiraiConsoleInitializer {
     internal lateinit var instance: IMiraiConsole
 
     /** 由前端调用 */
     internal fun init(instance: IMiraiConsole) {
         this.instance = instance
-        MiraiConsole.initialize()
+        MiraiConsoleImpl.initialize()
     }
-
 }
 
 internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mirai-console:fillBuildConstants)
@@ -46,8 +90,8 @@ internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mira
 /**
  * mirai 控制台实例.
  */
-object MiraiConsole : CoroutineScope, IMiraiConsole {
-    val pluginCenter: PluginCenter get() = CuiPluginCenter
+internal object MiraiConsoleImpl : CoroutineScope, IMiraiConsole, MiraiConsole {
+    override val pluginCenter: PluginCenter get() = CuiPluginCenter
 
     private val instance: IMiraiConsole
         get() = MiraiConsoleInitializer.instance
@@ -57,14 +101,13 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
      *
      * UTC+8 时间
      */
-    @JvmStatic
-    val buildDate: Date
+    override val buildDate: Date
         get() = MiraiConsoleBuildConstants.buildDate
 
     /**
      * `mirai-console` 版本
      */
-    const val version: String = MiraiConsoleBuildConstants.version
+    override val version: String get() = MiraiConsoleBuildConstants.version
 
     /**
      * Console 运行路径
@@ -87,6 +130,9 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
 
     override val builtInPluginLoaders: List<PluginLoader<*, *>> get() = instance.builtInPluginLoaders
 
+    override val consoleCommandOwner: ConsoleCommandOwner
+        get() = instance.consoleCommandOwner
+
     init {
         DefaultLogger = { identity -> this.newLogger(identity) }
         this.coroutineContext[Job]!!.invokeOnCompletion {
@@ -95,7 +141,7 @@ object MiraiConsole : CoroutineScope, IMiraiConsole {
     }
 
     @MiraiExperimentalAPI
-    fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
+    override fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
 
     internal fun initialize() {
         // Only for initialize
@@ -124,6 +170,9 @@ internal interface IMiraiConsole : CoroutineScope {
      * 内建加载器列表, 一般需要包含 [JarPluginLoader]
      */
     val builtInPluginLoaders: List<PluginLoader<*, *>>
+
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+    internal val consoleCommandOwner: ConsoleCommandOwner
 }
 
 /**
