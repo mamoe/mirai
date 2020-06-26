@@ -64,7 +64,7 @@ interface MiraiConsole {
     @MiraiExperimentalAPI
     fun newLogger(identity: String?): MiraiLogger
 
-    companion object INSTANCE : MiraiConsole by MiraiConsoleImpl
+    companion object INSTANCE : MiraiConsole by MiraiConsoleInternal
 }
 
 
@@ -77,7 +77,7 @@ internal object MiraiConsoleInitializer {
     /** 由前端调用 */
     internal fun init(instance: IMiraiConsole) {
         this.instance = instance
-        MiraiConsoleImpl.initialize()
+        MiraiConsoleInternal.initialize()
     }
 }
 
@@ -90,7 +90,7 @@ internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mira
 /**
  * mirai 控制台实例.
  */
-internal object MiraiConsoleImpl : CoroutineScope, IMiraiConsole, MiraiConsole {
+internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConsole {
     override val pluginCenter: PluginCenter get() = CuiPluginCenter
 
     private val instance: IMiraiConsole

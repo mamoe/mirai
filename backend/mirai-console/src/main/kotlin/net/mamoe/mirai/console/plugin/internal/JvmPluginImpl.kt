@@ -27,6 +27,9 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 internal val <T> T.job: Job where T : CoroutineScope, T : Plugin get() = this.coroutineContext[Job]!!
 
+/**
+ * Hides implementations from [JvmPlugin]
+ */
 @PublishedApi
 internal abstract class JvmPluginImpl(
     parentCoroutineContext: CoroutineContext

@@ -25,4 +25,6 @@ abstract class AbstractJvmPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, JvmPluginImpl(parentCoroutineContext) {
     // TODO: 2020/6/24 添加 PluginSetting 继承 Setting, 实现 onValueChanged 并绑定自动保存.
+
+    abstract class PluginSetting
 }

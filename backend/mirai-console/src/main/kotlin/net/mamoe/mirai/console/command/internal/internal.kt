@@ -7,8 +7,9 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.command
+package net.mamoe.mirai.console.command.internal
 
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import java.util.concurrent.locks.ReentrantLock
@@ -51,7 +52,9 @@ internal object InternalCommandManager {
      */
     internal fun matchCommand(rawCommand: String): Command? {
         if (rawCommand.startsWith(COMMAND_PREFIX)) {
-            return requiredPrefixCommandMap[rawCommand.substringAfter(COMMAND_PREFIX)]
+            return requiredPrefixCommandMap[rawCommand.substringAfter(
+                COMMAND_PREFIX
+            )]
         }
         return optionalPrefixCommandMap[rawCommand]
     }
@@ -170,10 +173,16 @@ internal suspend inline fun CommandSender.executeCommandInternal(
     messages: Any,
     commandName: String
 ): Command? {
-    val command = InternalCommandManager.matchCommand(commandName) ?: return null
+    val command = InternalCommandManager.matchCommand(
+        commandName
+    ) ?: return null
 
     if (!command.testPermission(this)) {
-        throw CommandExecutionException(command, commandName, CommandPermissionDeniedException(command))
+        throw CommandExecutionException(
+            command,
+            commandName,
+            CommandPermissionDeniedException(command)
+        )
     }
 
     kotlin.runCatching {

@@ -20,9 +20,11 @@ import kotlin.contracts.contract
  * this output type of that arg
  * input is always String
  */
-abstract class CommandArgParser<out T : Any> {
-    abstract fun parse(raw: String, sender: CommandSender): T
-    open fun parse(raw: SingleMessage, sender: CommandSender): T = parse(raw.content, sender)
+interface CommandArgParser<out T : Any> {
+    fun parse(raw: String, sender: CommandSender): T
+
+    @JvmDefault
+    fun parse(raw: SingleMessage, sender: CommandSender): T = parse(raw.content, sender)
 }
 
 fun <T : Any> CommandArgParser<T>.parse(raw: Any, sender: CommandSender): T {
@@ -61,7 +63,7 @@ inline fun CommandArgParser<*>.checkArgument(
 @JvmSynthetic
 inline fun <T : Any> CommandArgParser(
     crossinline parser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T
-): CommandArgParser<T> = object : CommandArgParser<T>() {
+): CommandArgParser<T> = object : CommandArgParser<T> {
     override fun parse(raw: String, sender: CommandSender): T = parser(raw, sender)
 }
 

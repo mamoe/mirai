@@ -13,18 +13,17 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.utils.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
-import org.jetbrains.annotations.Contract
 
 /**
  * 指令发送者
  *
- * @see AbstractCommandSender 请继承于该抽象类
+ * @see ConsoleCommandSender
+ * @see UserCommandSender
  */
 @Suppress("FunctionName")
 interface CommandSender {
