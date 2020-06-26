@@ -13,8 +13,6 @@ package net.mamoe.mirai.console.plugin.jvm
 
 import net.mamoe.mirai.console.plugin.internal.JvmPluginInternal
 import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.setting.getValue
-import net.mamoe.mirai.console.setting.value
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -30,12 +28,4 @@ abstract class AbstractJvmPlugin @JvmOverloads constructor(
     final override val name: String get() = this.description.name
 
     override fun <T : Setting> getSetting(clazz: Class<T>): T = loader.settingStorage.load(this, clazz)
-}
-
-
-object MyPlugin : KotlinPlugin()
-
-object TestSetting : Setting by MyPlugin.getSetting() {
-    val account by value("123456")
-    val password by value("123")
 }

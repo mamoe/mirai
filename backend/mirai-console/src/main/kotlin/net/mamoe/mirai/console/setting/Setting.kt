@@ -55,6 +55,8 @@ interface Setting {
 
     // TODO: 2020/6/26 document
     val updaterSerializer: KSerializer<Unit>
+
+    fun onValueChanged(value: Value<*>)
 }
 
 //// region Setting_value_primitives CODEGEN ////
