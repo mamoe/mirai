@@ -14,7 +14,7 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.CancellableEvent
 
-data class CommandExecutionEvent(
+data class CommandExecutionEvent( // TODO: 2020/6/26  impl CommandExecutionEvent
     val sender: CommandSender,
     val command: Command,
     val rawArgs: Array<Any>
