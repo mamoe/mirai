@@ -33,22 +33,20 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
     }
 
     @MiraiExperimentalAPI
-    val settingStorage: SettingStorage = TODO()
+    val settingStorage: SettingStorage by lazy { TODO() }
 
     override val coroutineContext: CoroutineContext by lazy {
         MiraiConsole.coroutineContext + SupervisorJob(
             MiraiConsole.coroutineContext[Job]
         ) + CoroutineExceptionHandler { _, throwable ->
             logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
-        }
+        }.also { init() }
     }
-    private val supervisor: Job = coroutineContext[Job]!!
 
-    private val classLoader: PluginsLoader =
-        PluginsLoader(this.javaClass.classLoader)
+    private val classLoader: PluginsLoader by lazy { PluginsLoader(this.javaClass.classLoader) }
 
-    init {
-        supervisor.invokeOnCompletion {
+    private fun init() { // delayed
+        coroutineContext[Job]!!.invokeOnCompletion {
             classLoader.clear()
         }
     }

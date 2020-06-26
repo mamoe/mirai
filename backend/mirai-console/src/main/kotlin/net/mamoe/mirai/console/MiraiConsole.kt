@@ -15,6 +15,7 @@ import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.command.ConsoleCommandOwner
+import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.center.CuiPluginCenter
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -93,60 +94,41 @@ internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mira
 internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConsole {
     override val pluginCenter: PluginCenter get() = CuiPluginCenter
 
-    private val instance: IMiraiConsole
-        get() = MiraiConsoleInitializer.instance
-
-    /**
-     * `mirai-console` build 号
-     *
-     * UTC+8 时间
-     */
-    override val buildDate: Date
-        get() = MiraiConsoleBuildConstants.buildDate
-
-    /**
-     * `mirai-console` 版本
-     */
+    private val instance: IMiraiConsole get() = MiraiConsoleInitializer.instance
+    override val buildDate: Date get() = MiraiConsoleBuildConstants.buildDate
     override val version: String get() = MiraiConsoleBuildConstants.version
-
-    /**
-     * Console 运行路径
-     */
     override val rootDir: File get() = instance.rootDir
-
-    /**
-     * Console 前端接口
-     */
     override val frontEnd: MiraiConsoleFrontEnd get() = instance.frontEnd
 
-    /**
-     * 与前端交互所使用的 Logger
-     */
     @MiraiExperimentalAPI
     override val mainLogger: MiraiLogger
         get() = instance.mainLogger
-
     override val coroutineContext: CoroutineContext get() = instance.coroutineContext
-
     override val builtInPluginLoaders: List<PluginLoader<*, *>> get() = instance.builtInPluginLoaders
-
-    override val consoleCommandOwner: ConsoleCommandOwner
-        get() = instance.consoleCommandOwner
+    override val consoleCommandOwner: ConsoleCommandOwner get() = instance.consoleCommandOwner
+    override val consoleCommandSender: ConsoleCommandSender get() = instance.consoleCommandSender
 
     init {
         DefaultLogger = { identity -> this.newLogger(identity) }
-        this.coroutineContext[Job]!!.invokeOnCompletion {
-            Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
-        }
     }
 
     @MiraiExperimentalAPI
     override fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
 
     internal fun initialize() {
+        if (coroutineContext[Job] == null) {
+            throw IllegalMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
+        }
+        this.coroutineContext[Job]!!.invokeOnCompletion {
+            Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
+        }
         // Only for initialize
     }
 }
+
+class IllegalMiraiConsoleImplementationError(
+    override val message: String?
+) : Error()
 
 
 // 前端使用
@@ -173,6 +155,9 @@ internal interface IMiraiConsole : CoroutineScope {
 
     @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
     internal val consoleCommandOwner: ConsoleCommandOwner
+
+    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+    internal val consoleCommandSender: ConsoleCommandSender
 }
 
 /**

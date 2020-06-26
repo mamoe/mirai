@@ -23,13 +23,6 @@ interface MiraiConsoleFrontEnd {
     fun loggerFor(identity: String?): MiraiLogger
 
     /**
-     * 让 UI 层准备接受新增的一个BOT
-     */
-    fun prePushBot(
-        identity: Long
-    )
-
-    /**
      * 让 UI 层接受一个新的bot
      * */
     fun pushBot(
@@ -41,18 +34,8 @@ interface MiraiConsoleFrontEnd {
      */
     suspend fun requestInput(hint: String): String
 
-
-    /**
-     * 让 UI 层更新 bot 管理员的数据
-     */
-    fun pushBotAdminStatus(
-        identity: Long,
-        admins: List<Long>
-    )
-
     /**
      * 由 UI 层创建一个 [LoginSolver]
      */
     fun createLoginSolver(): LoginSolver
-
 }
