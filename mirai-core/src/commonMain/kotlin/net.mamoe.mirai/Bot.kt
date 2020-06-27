@@ -294,7 +294,7 @@ abstract class Bot internal constructor(
         level = DeprecationLevel.ERROR
     )
     @JvmSynthetic
-    abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
+    abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false, message: String = "")
 
     /**
      * 忽略加群验证（需管理员权限）
