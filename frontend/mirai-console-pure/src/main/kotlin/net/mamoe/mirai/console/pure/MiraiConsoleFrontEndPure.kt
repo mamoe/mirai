@@ -62,9 +62,6 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
         return globalLogger
     }
 
-    override fun prePushBot(identity: Long) {
-    }
-
     override fun pushBot(bot: Bot) {
     }
 
@@ -78,9 +75,6 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
             )
         }
         return ConsoleUtils.lineReader.readLine("> ")
-    }
-
-    override fun pushBotAdminStatus(identity: Long, admins: List<Long>) {
     }
 
     override fun createLoginSolver(): LoginSolver {

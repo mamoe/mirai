@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+
 package net.mamoe.mirai.console
 
 import kotlinx.coroutines.CoroutineScope
@@ -153,10 +155,8 @@ internal interface IMiraiConsole : CoroutineScope {
      */
     val builtInPluginLoaders: List<PluginLoader<*, *>>
 
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
     internal val consoleCommandOwner: ConsoleCommandOwner
 
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
     internal val consoleCommandSender: ConsoleCommandSender
 }
 

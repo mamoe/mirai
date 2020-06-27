@@ -55,10 +55,10 @@ abstract class CompositeCommand @JvmOverloads constructor(
     @Target(AnnotationTarget.FUNCTION)
     annotation class Permission(val permission: KClass<out CommandPermission>)
 
-    /** 标记一个函数为子指令 */
+    /** 标记一个函数为子指令, 当 [names] 为空时使用函数名. */
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.FUNCTION)
-    annotation class SubCommand(vararg val name: String)
+    annotation class SubCommand(vararg val names: String)
 
     /** 指令描述 */
     @Retention(AnnotationRetention.RUNTIME)
@@ -69,6 +69,10 @@ abstract class CompositeCommand @JvmOverloads constructor(
     @Retention(AnnotationRetention.RUNTIME)
     @Target(AnnotationTarget.VALUE_PARAMETER)
     annotation class Name(val name: String)
+
+    public override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
+        sendMessage(usage)
+    }
 
     final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
         matchSubCommand(args)?.parseAndExecute(this, args) ?: kotlin.run {

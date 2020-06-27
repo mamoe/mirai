@@ -27,90 +27,136 @@ internal abstract class CompositeCommandImpl : Command {
     override val usage: String  // initialized by subCommand reflection
         get() = _usage
 
+    internal abstract suspend fun CommandSender.onDefault(rawArgs: Array<out Any>)
+
     internal val defaultSubCommand: DefaultSubCommandDescriptor by lazy {
         DefaultSubCommandDescriptor(
             "",
             CommandPermission.Default,
-            onCommand = block { sender: CommandSender, args: Array<out Any> ->
-                false//not supported yet
+            onCommand = block2 { sender: CommandSender, args: Array<out Any> ->
+                sender.onDefault(args)
             }
         )
     }
 
     internal val subCommands: Array<SubCommandDescriptor> by lazy {
-        @Suppress("CAST_NEVER_SUCCEEDS")
-        this as CompositeCommand
+        this@CompositeCommandImpl as CompositeCommand
 
         val buildUsage = StringBuilder(this.description).append(": \n")
 
-        this::class.declaredFunctions.filter { it.hasAnnotation<CompositeCommand.SubCommand>() }.map { function ->
-            val notStatic = !function.hasAnnotation<JvmStatic>()
-            val overridePermission = function.findAnnotation<CompositeCommand.Permission>()//optional
-            val subDescription =
-                function.findAnnotation<CompositeCommand.Description>()?.description ?: "no description available"
-
-            if ((function.returnType.classifier as? KClass<*>)?.isSubclassOf(Boolean::class) != true) {
-                error("Return Type of SubCommand must be Boolean")
-            }
-
-            val parameters = function.parameters.toMutableList()
-            check(parameters.isNotEmpty()) {
-                "First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.primaryName + " should be <out CommandSender>"
-            }
-
-            if (notStatic) parameters.removeAt(0) // instance
-
-            (parameters.removeAt(0)).let { receiver ->
-                check(!receiver.isVararg && !((receiver.type.classifier as? KClass<*>).also { print(it) }
-                    ?.isSubclassOf(CommandSender::class) != true)) {
-                    "First parameter (receiver for kotlin) for sub commend " + function.name + " from " + this.primaryName + " should be <out CommandSender>"
+        this::class.declaredFunctions.filter { it.hasAnnotation<CompositeCommand.SubCommand>() }
+            .also { subCommandFunctions ->
+                // overloading not yet supported
+                val overloadFunction = subCommandFunctions.groupBy { it.name }.entries.firstOrNull { it.value.size > 1 }
+                if (overloadFunction != null) {
+                    error("Sub command overloading is not yet supported. (at ${this::class.qualifiedNameOrTip}.${overloadFunction.key})")
                 }
-            }
+            }.map { function ->
+                val notStatic = !function.hasAnnotation<JvmStatic>()
+                val overridePermission = function.findAnnotation<CompositeCommand.Permission>()//optional
+                val subDescription =
+                    function.findAnnotation<CompositeCommand.Description>()?.description ?: "<no description available>"
 
-            val commandName = function.findAnnotation<CompositeCommand.SubCommand>()!!.name.map {
-                if (!it.isValidSubName()) {
-                    error("SubName $it is not valid")
-                }
-                it
-            }.toTypedArray()
-
-            //map parameter
-            val params = parameters.map { param ->
-                buildUsage.append("/$primaryName ")
-
-                if (param.isVararg) error("parameter for sub commend " + function.name + " from " + this.primaryName + " should not be var arg")
-                if (param.isOptional) error("parameter for sub commend " + function.name + " from " + this.primaryName + " should not be var optional")
-
-                val argName = param.findAnnotation<CompositeCommand.Name>()?.name ?: param.name ?: "unknown"
-                buildUsage.append("<").append(argName).append("> ").append(" ")
-                CommandParam(
-                    argName,
-                    (param.type.classifier as? KClass<*>)
-                        ?: throw IllegalArgumentException("unsolved type reference from param " + param.name + " in " + function.name + " from " + this.primaryName)
-                )
-            }.toTypedArray()
-
-            buildUsage.append(subDescription).append("\n")
-
-            SubCommandDescriptor(
-                commandName,
-                params,
-                subDescription,
-                overridePermission?.permission?.getInstance() ?: permission,
-                onCommand = block { sender: CommandSender, args: Array<out Any> ->
-                    if (notStatic) {
-                        function.callSuspend(this, sender, *args) as Boolean
-                    } else {
-                        function.callSuspend(sender, *args) as Boolean
+                fun KClass<*>.isValidReturnType(): Boolean {
+                    return when (this) {
+                        Boolean::class, Void::class, Unit::class, Nothing::class -> true
+                        else -> false
                     }
                 }
-            )
-        }.toTypedArray().also {
-            _usage = buildUsage.toString()
-        }
+
+                check((function.returnType.classifier as? KClass<*>)?.isValidReturnType() == true) {
+                    error("Return type of sub command ${function.name} must be one of the following: kotlin.Boolean, java.lang.Boolean, kotlin.Unit (including implicit), kotlin.Nothing, boolean or void (at ${this::class.qualifiedNameOrTip}.${function.name})")
+                }
+
+                check(!function.returnType.isMarkedNullable) {
+                    error("Return type of sub command ${function.name} must not be marked nullable in Kotlin, and must be marked with @NotNull or @NonNull explicitly in Java. (at ${this::class.qualifiedNameOrTip}.${function.name})")
+                }
+
+                val parameters = function.parameters.toMutableList()
+
+                if (notStatic) parameters.removeAt(0) // instance
+
+                var hasSenderParam = false
+                check(parameters.isNotEmpty()) {
+                    "Parameters of sub command ${function.name} must not be empty. (Must have CommandSender as its receiver or first parameter or absent, followed by naturally typed params) (at ${this::class.qualifiedNameOrTip}.${function.name})"
+                }
+
+                parameters.forEach { param ->
+                    check(!param.isVararg) {
+                        "Parameter $param must not be vararg. (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)"
+                    }
+                }
+
+                (parameters.first()).let { receiver ->
+                    if ((receiver.type.classifier as? KClass<*>)?.isSubclassOf(CommandSender::class) == true) {
+                        hasSenderParam = true
+                        parameters.removeAt(0)
+                    }
+                }
+
+                val commandName =
+                    function.findAnnotation<CompositeCommand.SubCommand>()!!.names
+                        .let { namesFromAnnotation ->
+                            if (namesFromAnnotation.isNotEmpty()) {
+                                namesFromAnnotation
+                            } else arrayOf(function.name)
+                        }.also { names ->
+                            names.forEach {
+                                check(it.isValidSubName()) {
+                                    "Name of sub command ${function.name} is invalid"
+                                }
+                            }
+                        }
+
+                //map parameter
+                val params = parameters.map { param ->
+                    buildUsage.append("/$primaryName ")
+
+                    if (param.isOptional) error("optional parameters are not yet supported. (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)")
+
+                    val argName = param.findAnnotation<CompositeCommand.Name>()?.name ?: param.name ?: "unknown"
+                    buildUsage.append("<").append(argName).append("> ").append(" ")
+                    CommandParam(
+                        argName,
+                        (param.type.classifier as? KClass<*>)
+                            ?: throw IllegalArgumentException("unsolved type reference from param " + param.name + ". (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)")
+                    )
+                }.toTypedArray()
+
+                buildUsage.append(subDescription).append("\n")
+
+                SubCommandDescriptor(
+                    commandName,
+                    params,
+                    subDescription,
+                    overridePermission?.permission?.getInstance() ?: permission,
+                    onCommand = block { sender: CommandSender, args: Array<out Any> ->
+                        val result = if (notStatic) {
+                            if (hasSenderParam) {
+                                function.isSuspend
+                                function.callSuspend(this, sender, *args)
+                            } else function.callSuspend(this, *args)
+                        } else {
+                            if (hasSenderParam) {
+                                function.callSuspend(sender, *args)
+                            } else function.callSuspend(*args)
+                        }
+
+                        checkNotNull(result) { "sub command return value is null (at ${this::class.qualifiedName}.${function.name})" }
+
+                        result as? Boolean ?: true // Unit, void is considered as true.
+                    }
+                )
+            }.toTypedArray().also {
+                _usage = buildUsage.toString()
+            }
     }
 
     private fun block(block: suspend (CommandSender, Array<out Any>) -> Boolean): suspend (CommandSender, Array<out Any>) -> Boolean {
+        return block
+    }
+
+    private fun block2(block: suspend (CommandSender, Array<out Any>) -> Unit): suspend (CommandSender, Array<out Any>) -> Unit {
         return block
     }
 
@@ -129,11 +175,11 @@ internal abstract class CompositeCommandImpl : Command {
     internal class DefaultSubCommandDescriptor(
         val description: String,
         val permission: CommandPermission,
-        val onCommand: suspend (sender: CommandSender, rawArgs: Array<out Any>) -> Boolean
+        val onCommand: suspend (sender: CommandSender, rawArgs: Array<out Any>) -> Unit
     )
 
     internal inner class SubCommandDescriptor(
-        val names: Array<String>,
+        val names: Array<out String>,
         val params: Array<CommandParam<*>>,
         val description: String,
         val permission: CommandPermission,
@@ -151,8 +197,7 @@ internal abstract class CompositeCommandImpl : Command {
         @JvmField
         internal val bakedSubNames: Array<Array<String>> = names.map { it.bakeSubName() }.toTypedArray()
         private fun parseArgs(sender: CommandSender, rawArgs: Array<out Any>, offset: Int): Array<out Any> {
-            @Suppress("CAST_NEVER_SUCCEEDS")
-            this as CompositeCommand
+            this@CompositeCommandImpl as CompositeCommand
             require(rawArgs.size >= offset + this.params.size) { "No enough args. Required ${params.size}, but given ${rawArgs.size - offset}" }
 
             return Array(this.params.size) { index ->
@@ -200,13 +245,13 @@ internal fun String.bakeSubName(): Array<String> = split(' ').filterNot { it.isB
 
 internal fun Any.flattenCommandComponents(): ArrayList<Any> {
     val list = ArrayList<Any>()
-    when (this::class.java) { // faster than is
-        String::class.java -> (this as String).splitToSequence(' ').filterNot { it.isBlank() }.forEach { list.add(it) }
-        PlainText::class.java -> (this as PlainText).content.splitToSequence(' ').filterNot { it.isBlank() }
+    when (this) {
+        is PlainText -> this.content.splitToSequence(' ').filterNot { it.isBlank() }
             .forEach { list.add(it) }
-        SingleMessage::class.java -> list.add(this as SingleMessage)
-        Array<Any>::class.java -> (this as Array<*>).forEach { if (it != null) list.addAll(it.flattenCommandComponents()) }
-        Iterable::class.java -> (this as Iterable<*>).forEach { if (it != null) list.addAll(it.flattenCommandComponents()) }
+        is CharSequence -> this.splitToSequence(' ').filterNot { it.isBlank() }.forEach { list.add(it) }
+        is SingleMessage -> list.add(this)
+        is Array<*> -> this.forEach { if (it != null) list.addAll(it.flattenCommandComponents()) }
+        is Iterable<*> -> this.forEach { if (it != null) list.addAll(it.flattenCommandComponents()) }
         else -> list.add(this.toString())
     }
     return list
@@ -218,3 +263,5 @@ internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): 
 internal inline fun <T : Any> KClass<out T>.getInstance(): T {
     return this.objectInstance ?: this.createInstance()
 }
+
+internal val KClass<*>.qualifiedNameOrTip: String get() = this.qualifiedName ?: "<anonymous class>"

@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsoleInternal
 import net.mamoe.mirai.console.utils.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.MessageEvent
@@ -64,6 +65,10 @@ suspend inline fun CommandSender.sendMessage(message: String) = sendMessage(Plai
 // 前端实现
 abstract class ConsoleCommandSender internal constructor() : CommandSender {
     final override val bot: Nothing? get() = null
+
+    companion object {
+        internal val instance get() = MiraiConsoleInternal.consoleCommandSender
+    }
 }
 
 fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)

@@ -18,7 +18,7 @@ import net.mamoe.mirai.message.data.SingleMessage
  * 通常情况下, 你的指令应继承 @see CompositeCommand/SimpleCommand
  * @see register 注册这个指令
  *
- * @see SimpleCommand
+ * @see RawCommand
  * @see CompositeCommand
  */
 interface Command {

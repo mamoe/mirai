@@ -62,9 +62,22 @@ inline fun CommandArgParser<*>.checkArgument(
 @Suppress("FunctionName")
 @JvmSynthetic
 inline fun <T : Any> CommandArgParser(
-    crossinline parser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T
+    crossinline stringParser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T
 ): CommandArgParser<T> = object : CommandArgParser<T> {
-    override fun parse(raw: String, sender: CommandSender): T = parser(raw, sender)
+    override fun parse(raw: String, sender: CommandSender): T = stringParser(raw, sender)
+}
+
+/**
+ * 创建匿名 [CommandArgParser]
+ */
+@Suppress("FunctionName")
+@JvmSynthetic
+inline fun <T : Any> CommandArgParser(
+    crossinline stringParser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T,
+    crossinline messageParser: CommandArgParser<T>.(m: SingleMessage, sender: CommandSender) -> T
+): CommandArgParser<T> = object : CommandArgParser<T> {
+    override fun parse(raw: String, sender: CommandSender): T = stringParser(raw, sender)
+    override fun parse(raw: SingleMessage, sender: CommandSender): T = messageParser(raw, sender)
 }
 
 

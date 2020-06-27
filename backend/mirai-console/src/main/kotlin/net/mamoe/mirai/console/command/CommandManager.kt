@@ -23,16 +23,12 @@ import net.mamoe.mirai.console.command.internal.*
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
  * 指令的所有者.
  * @see PluginCommandOwner
  */
 sealed class CommandOwner
-
-@MiraiInternalAPI
-object TestCommandOwner : CommandOwner()
 
 /**
  * 插件指令所有者. 插件只能通过 [PluginCommandOwner] 管理指令.
@@ -99,22 +95,29 @@ fun CommandOwner.unregisterAllCommands() {
  * @see JCommandManager.register Java 方法
  */
 @JvmOverloads
-fun Command.register(override: Boolean = false): Boolean = InternalCommandManager.modifyLock.withLock {
-    if (!override) {
-        if (findDuplicate() != null) return false
-    }
-    InternalCommandManager.registeredCommands.add(this@register)
-    if (this.prefixOptional) {
-        for (name in this.names) {
-            InternalCommandManager.optionalPrefixCommandMap[name] = this
+fun Command.register(override: Boolean = false): Boolean {
+    if (this is CompositeCommand) this.subCommands // init
+
+    InternalCommandManager.modifyLock.withLock {
+        if (!override) {
+            if (findDuplicate() != null) return false
         }
-    } else {
-        for (name in this.names) {
-            InternalCommandManager.optionalPrefixCommandMap.remove(name) // ensure resolution consistency
-            InternalCommandManager.requiredPrefixCommandMap[name] = this
+        InternalCommandManager.registeredCommands.add(this@register)
+        if (this.prefixOptional) {
+            for (name in this.names) {
+                val lowerCaseName = name.toLowerCase()
+                InternalCommandManager.optionalPrefixCommandMap[lowerCaseName] = this
+                InternalCommandManager.requiredPrefixCommandMap[lowerCaseName] = this
+            }
+        } else {
+            for (name in this.names) {
+                val lowerCaseName = name.toLowerCase()
+                InternalCommandManager.optionalPrefixCommandMap.remove(lowerCaseName) // ensure resolution consistency
+                InternalCommandManager.requiredPrefixCommandMap[lowerCaseName] = this
+            }
         }
+        return true
     }
-    return true
 }
 
 /**
@@ -123,7 +126,7 @@ fun Command.register(override: Boolean = false): Boolean = InternalCommandManage
  * @see JCommandManager.findDuplicate Java 方法
  */
 fun Command.findDuplicate(): Command? =
-    InternalCommandManager.registeredCommands.firstOrNull { it.names intersects this.names }
+    InternalCommandManager.registeredCommands.firstOrNull { it.names intersectsIgnoringCase this.names }
 
 /**
  * 取消注册这个指令. 若指令未注册, 返回 `false`.
@@ -131,8 +134,21 @@ fun Command.findDuplicate(): Command? =
  * @see JCommandManager.unregister Java 方法
  */
 fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
+    if (this.prefixOptional) {
+        this.names.forEach {
+            InternalCommandManager.optionalPrefixCommandMap.remove(it)
+        }
+    }
+    this.names.forEach {
+        InternalCommandManager.requiredPrefixCommandMap.remove(it)
+    }
     InternalCommandManager.registeredCommands.remove(this)
 }
+
+/**
+ * 当 [this] 已经 [注册][register] 后返回 `true`
+ */
+fun Command.isRegistered(): Boolean = this in InternalCommandManager.registeredCommands
 
 //// executing without detailed result (faster)
 
@@ -148,7 +164,7 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
  */
 suspend fun CommandSender.executeCommand(vararg messages: Any): Command? {
     if (messages.isEmpty()) return null
-    return executeCommandInternal(messages, messages[0].toString().substringBefore(' '))
+    return matchAndExecuteCommandInternal(messages, messages[0].toString().substringBefore(' '))
 }
 
 /**
@@ -162,9 +178,46 @@ suspend fun CommandSender.executeCommand(vararg messages: Any): Command? {
 @Throws(CommandExecutionException::class)
 suspend fun CommandSender.executeCommand(message: MessageChain): Command? {
     if (message.isEmpty()) return null
-    return executeCommandInternal(message, message[0].toString())
+    return matchAndExecuteCommandInternal(message, message[0].toString().substringBefore(' '))
 }
 
+/**
+ * 执行一个指令
+ *
+ * @return 成功执行的指令, 在无匹配指令时返回 `null`
+ * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
+ *
+ * @see JCommandManager.executeCommand Java 方法
+ */
+@JvmOverloads
+@Throws(CommandExecutionException::class)
+suspend fun Command.execute(sender: CommandSender, args: MessageChain, checkPermission: Boolean = true) {
+    sender.executeCommandInternal(
+        this,
+        args.flattenCommandComponents().toTypedArray(),
+        this.primaryName,
+        checkPermission
+    )
+}
+
+/**
+ * 执行一个指令
+ *
+ * @return 成功执行的指令, 在无匹配指令时返回 `null`
+ * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
+ *
+ * @see JCommandManager.executeCommand Java 方法
+ */
+@JvmOverloads
+@Throws(CommandExecutionException::class)
+suspend fun Command.execute(sender: CommandSender, vararg args: Any, checkPermission: Boolean = true) {
+    sender.executeCommandInternal(
+        this,
+        args.flattenCommandComponents().toTypedArray(),
+        this.primaryName,
+        checkPermission
+    )
+}
 
 //// execution with detailed result
 

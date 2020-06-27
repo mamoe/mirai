@@ -52,23 +52,19 @@ internal object InternalCommandManager {
      */
     internal fun matchCommand(rawCommand: String): Command? {
         if (rawCommand.startsWith(COMMAND_PREFIX)) {
-            return requiredPrefixCommandMap[rawCommand.substringAfter(
-                COMMAND_PREFIX
-            )]
+            return requiredPrefixCommandMap[rawCommand.substringAfter(COMMAND_PREFIX).toLowerCase()]
         }
-        return optionalPrefixCommandMap[rawCommand]
+        return optionalPrefixCommandMap[rawCommand.toLowerCase()]
     }
 }
 
-internal infix fun <T> Array<out T>.intersects(other: Array<out T>): Boolean {
+internal infix fun Array<out String>.intersectsIgnoringCase(other: Array<out String>): Boolean {
     val max = this.size.coerceAtMost(other.size)
     for (i in 0 until max) {
-        if (this[i] == other[i]) return true
+        if (this[i].equals(other[i], ignoreCase = true)) return true
     }
     return false
 }
-
-
 
 internal fun String.fuzzyCompare(target: String): Double {
     var step = 0
@@ -169,7 +165,7 @@ internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Arr
 
 @JvmSynthetic
 @Throws(CommandExecutionException::class)
-internal suspend inline fun CommandSender.executeCommandInternal(
+internal suspend inline fun CommandSender.matchAndExecuteCommandInternal(
     messages: Any,
     commandName: String
 ): Command? {
@@ -177,7 +173,19 @@ internal suspend inline fun CommandSender.executeCommandInternal(
         commandName
     ) ?: return null
 
-    if (!command.testPermission(this)) {
+    this.executeCommandInternal(command, messages.flattenCommandComponents().dropToTypedArray(1), commandName, true)
+    return command
+}
+
+@JvmSynthetic
+@Throws(CommandExecutionException::class)
+internal suspend inline fun CommandSender.executeCommandInternal(
+    command: Command,
+    args: Array<out Any>,
+    commandName: String,
+    checkPermission: Boolean
+) {
+    if (checkPermission && !command.testPermission(this)) {
         throw CommandExecutionException(
             command,
             commandName,
@@ -186,13 +194,8 @@ internal suspend inline fun CommandSender.executeCommandInternal(
     }
 
     kotlin.runCatching {
-        command.onCommand(this, messages.flattenCommandComponents().dropToTypedArray(1))
-    }.fold(
-        onSuccess = {
-            return command
-        },
-        onFailure = {
-            throw CommandExecutionException(command, commandName, it)
-        }
-    )
+        command.onCommand(this, args)
+    }.onFailure {
+        throw CommandExecutionException(command, commandName, it)
+    }
 }

@@ -127,9 +127,6 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     inline infix fun <T : Any> KClass<T>.with(parser: CommandArgParser<T>): ParserPair<*> =
         ParserPair(this, parser).also { add(it) }
 
-    inline infix fun <reified T : Any> auto(parser: CommandArgParser<T>): ParserPair<*> =
-        ParserPair(T::class, parser).also { add(it) }
-
     /**
      * 添加一个指令解析器
      */
@@ -147,12 +144,16 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
         crossinline parser: CommandArgParser<T>.(s: String) -> T
     ): ParserPair<*> = ParserPair(this, CommandArgParser { s: String, _: CommandSender -> parser(s) }).also { add(it) }
 
+    @JvmSynthetic
+    inline fun <reified T : Any> add(parser: CommandArgParser<T>): ParserPair<*> =
+        ParserPair(T::class, parser).also { add(it) }
+
     /**
      * 添加一个指令解析器
      */
     @MiraiExperimentalAPI
     @JvmSynthetic
-    inline infix fun <reified T : Any> auto(
+    inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgParser<*>.(s: String) -> T
     ): ParserPair<*> = T::class with CommandArgParser { s: String, _: CommandSender -> parser(s) }
 
@@ -162,7 +163,7 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     @MiraiExperimentalAPI
     @JvmSynthetic
     @LowPriorityInOverloadResolution
-    inline infix fun <reified T : Any> auto(
+    inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgParser<*>.(s: String, sender: CommandSender) -> T
     ): ParserPair<*> = T::class with CommandArgParser(parser)
 }
