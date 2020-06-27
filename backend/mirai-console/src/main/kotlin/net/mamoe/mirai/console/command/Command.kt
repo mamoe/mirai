@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.command
 
+import net.mamoe.mirai.console.command.internal.isValidSubName
 import net.mamoe.mirai.message.data.SingleMessage
 
 /**
@@ -45,8 +46,26 @@ interface Command {
 
     /**
      * @param args 指令参数. 可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
-     */
+     */ // TODO: 2020/6/28 Java-friendly bridges
     suspend fun CommandSender.onCommand(args: Array<out Any>)
+}
+
+/**
+ * [Command] 的基础实现
+ */
+abstract class AbstractCommand @JvmOverloads constructor(
+    final override val owner: CommandOwner,
+    vararg names: String,
+    description: String = "<no description available>",
+    final override val permission: CommandPermission = CommandPermission.Default,
+    final override val prefixOptional: Boolean = false
+) : Command {
+    final override val description = description.trimIndent()
+    final override val names: Array<out String> =
+        names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).also { list ->
+            list.firstOrNull { !it.isValidSubName() }?.let { error("Invalid name: $it") }
+        }.toTypedArray()
+
 }
 
 suspend inline fun Command.onCommand(sender: CommandSender, args: Array<out Any>) = sender.run { onCommand(args) }

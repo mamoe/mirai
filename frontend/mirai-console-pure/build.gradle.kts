@@ -16,6 +16,7 @@ kotlin {
             languageSettings.progressiveMode = true
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
+            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.console.utils.ConsoleExperimentalAPI")
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")

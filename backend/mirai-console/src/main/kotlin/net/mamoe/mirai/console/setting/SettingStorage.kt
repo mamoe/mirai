@@ -1,6 +1,6 @@
 package net.mamoe.mirai.console.setting
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import kotlin.reflect.KClass
 
 interface SettingStorage {
@@ -9,11 +9,11 @@ interface SettingStorage {
 
     fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T
 
-    @MiraiExperimentalAPI
+    @ConsoleExperimentalAPI
     fun store(holder: SettingHolder, setting: Setting)
 }
 
-@MiraiExperimentalAPI
+@ConsoleExperimentalAPI
 interface SettingHolder {
     val name: String
 }

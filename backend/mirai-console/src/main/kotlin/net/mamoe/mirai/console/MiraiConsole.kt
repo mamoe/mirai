@@ -22,8 +22,8 @@ import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.center.CuiPluginCenter
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -64,7 +64,7 @@ interface MiraiConsole : CoroutineScope {
 
     val pluginCenter: PluginCenter
 
-    @MiraiExperimentalAPI
+    @ConsoleExperimentalAPI
     fun newLogger(identity: String?): MiraiLogger
 
     companion object INSTANCE : MiraiConsole by MiraiConsoleInternal
@@ -102,7 +102,7 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
     override val rootDir: File get() = instance.rootDir
     override val frontEnd: MiraiConsoleFrontEnd get() = instance.frontEnd
 
-    @MiraiExperimentalAPI
+    @ConsoleExperimentalAPI
     override val mainLogger: MiraiLogger
         get() = instance.mainLogger
     override val coroutineContext: CoroutineContext get() = instance.coroutineContext
@@ -114,7 +114,7 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
         DefaultLogger = { identity -> this.newLogger(identity) }
     }
 
-    @MiraiExperimentalAPI
+    @ConsoleExperimentalAPI
     override fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
 
     internal fun initialize() {

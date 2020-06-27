@@ -36,6 +36,7 @@ object TestCompositeCommand : CompositeCommand(
     }
 }
 
+
 object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
     override suspend fun CommandSender.onCommand(args: Array<out Any>) {
         Testing.ok(args)
@@ -63,7 +64,7 @@ internal class TestCommand {
             assertEquals(1, ConsoleCommandOwner.instance.registeredCommands.size)
 
             assertEquals(1, InternalCommandManager.registeredCommands.size)
-            assertEquals(1, InternalCommandManager.requiredPrefixCommandMap.size)
+            assertEquals(2, InternalCommandManager.requiredPrefixCommandMap.size)
         } finally {
             TestCompositeCommand.unregister()
         }
@@ -112,11 +113,11 @@ internal class TestCommand {
     @Test
     fun `executing command by string command`() = runBlocking {
         TestCompositeCommand.register()
-        val result = withTesting<Array<String>> {
-            assertNotNull(sender.executeCommand("testComposite", "test"))
+        val result = withTesting<Int> {
+            assertNotNull(sender.executeCommand("/testComposite", "mute 1"))
         }
 
-        assertEquals("test", result.single())
+        assertEquals(1, result)
     }
 
     @Test

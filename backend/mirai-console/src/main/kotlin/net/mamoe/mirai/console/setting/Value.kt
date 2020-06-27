@@ -16,7 +16,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
 import net.mamoe.mirai.console.setting.internal.map
 import net.mamoe.mirai.console.setting.internal.setValueBySerializer
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import kotlin.reflect.KProperty
 
 /**
@@ -145,7 +145,7 @@ interface StringValue : PrimitiveValue<String>
 //// endregion PrimitiveValues CODEGEN ////
 
 
-@MiraiExperimentalAPI
+@ConsoleExperimentalAPI
 interface CompositeValue<T> : Value<T>
 
 

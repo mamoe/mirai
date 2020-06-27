@@ -7,70 +7,66 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPOSED_SUPER_CLASS", "NOTHING_TO_INLINE")
+@file:Suppress(
+    "EXPOSED_SUPER_CLASS",
+    "NOTHING_TO_INLINE",
+    "unused",
+    "WRONG_MODIFIER_TARGET",
+    "WRONG_MODIFIER_CONTAINING_DECLARATION"
+)
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.description.CommandArgParser
-import net.mamoe.mirai.console.command.description.CommandParserContext
-import net.mamoe.mirai.console.command.description.EmptyCommandParserContext
-import net.mamoe.mirai.console.command.description.plus
-import net.mamoe.mirai.console.command.internal.CompositeCommandImpl
-import net.mamoe.mirai.console.command.internal.isValidSubName
+import net.mamoe.mirai.console.command.description.*
+import net.mamoe.mirai.console.command.internal.AbstractReflectionCommand
+import net.mamoe.mirai.console.command.internal.CompositeCommandSubCommandAnnotationResolver
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import kotlin.annotation.AnnotationRetention.RUNTIME
+import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.reflect.KClass
 
-
 /**
- * 功能最集中的 Commend
- * 只支持有sub的指令
- * 例:
- *  /mute add
- *  /mute remove
- *  /mute addandremove  (sub is case insensitive, lowercase are recommend)
- *  /mute add and remove('add and remove' consider as a sub)
+ * 复合指令.
  */
+@ConsoleExperimentalAPI
 abstract class CompositeCommand @JvmOverloads constructor(
-    final override val owner: CommandOwner,
+    owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
-    final override val permission: CommandPermission = CommandPermission.Default,
-    final override val prefixOptional: Boolean = false,
+    permission: CommandPermission = CommandPermission.Default,
+    prefixOptional: Boolean = false,
     overrideContext: CommandParserContext = EmptyCommandParserContext
-) : Command, CompositeCommandImpl() {
-    final override val description = description.trimIndent()
-    final override val names: Array<out String> =
-        names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).also { list ->
-            list.firstOrNull { !it.isValidSubName() }?.let { error("Name is not valid: $it") }
-        }.toTypedArray()
-
+) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
+    CommandParserContextAware {
     /**
      * [CommandArgParser] 的环境
      */
-    val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
+    final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
 
-    final override val usage: String get() = super.usage
+    /**
+     * 标记一个函数为子指令, 当 [value] 为空时使用函数名.
+     * @param value 子指令名
+     */
+    @Retention(RUNTIME)
+    @Target(FUNCTION)
+    protected annotation class SubCommand(vararg val value: String)
 
     /** 指定子指令要求的权限 */
-    @Retention(AnnotationRetention.RUNTIME)
-    @Target(AnnotationTarget.FUNCTION)
-    annotation class Permission(val permission: KClass<out CommandPermission>)
-
-    /** 标记一个函数为子指令, 当 [names] 为空时使用函数名. */
-    @Retention(AnnotationRetention.RUNTIME)
-    @Target(AnnotationTarget.FUNCTION)
-    annotation class SubCommand(vararg val names: String)
+    @Retention(RUNTIME)
+    @Target(FUNCTION)
+    protected annotation class Permission(val value: KClass<out CommandPermission>)
 
     /** 指令描述 */
-    @Retention(AnnotationRetention.RUNTIME)
-    @Target(AnnotationTarget.FUNCTION)
-    annotation class Description(val description: String)
+    @Retention(RUNTIME)
+    @Target(FUNCTION)
+    protected annotation class Description(val value: String)
 
     /** 参数名, 将参与构成 [usage] */
-    @Retention(AnnotationRetention.RUNTIME)
+    @Retention(RUNTIME)
     @Target(AnnotationTarget.VALUE_PARAMETER)
-    annotation class Name(val name: String)
+    protected annotation class Name(val value: String)
 
-    public override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
+    override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
         sendMessage(usage)
     }
 
@@ -79,4 +75,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
             defaultSubCommand.onCommand(this, args)
         }
     }
+
+    final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
+        get() = CompositeCommandSubCommandAnnotationResolver
 }

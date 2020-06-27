@@ -10,7 +10,7 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import java.io.File
 
 /**
@@ -38,7 +38,7 @@ inline val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
  *
  * @see JvmPlugin
  */
-@MiraiExperimentalAPI("classname is subject to change")
+@ConsoleExperimentalAPI("classname is subject to change")
 interface PluginFileExtensions {
     /**
      * 数据目录

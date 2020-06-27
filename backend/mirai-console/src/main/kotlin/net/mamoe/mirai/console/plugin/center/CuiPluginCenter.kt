@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:OptIn(MiraiExperimentalAPI::class)
+@file:OptIn(ConsoleExperimentalAPI::class)
 
 package net.mamoe.mirai.console.plugin.center
 
@@ -19,8 +19,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.utils.retryCatching
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.io.File
 
 @OptIn(UnstableDefault::class)

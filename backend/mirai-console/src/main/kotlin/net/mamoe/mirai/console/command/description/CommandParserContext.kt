@@ -14,10 +14,10 @@ package net.mamoe.mirai.console.command.description
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.description.CommandParserContext.ParserPair
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -55,6 +55,16 @@ interface CommandParserContext {
         Bot::class with ExistBotArgParser
         Friend::class with ExistFriendArgParser
     })
+}
+
+/**
+ * 拥有 [CommandParserContext] 的类
+ */
+interface CommandParserContextAware {
+    /**
+     * [CommandArgParser] 的环境
+     */
+    val context: CommandParserContext
 }
 
 object EmptyCommandParserContext : CommandParserContext by CustomCommandParserContext(listOf())
@@ -151,7 +161,7 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     /**
      * 添加一个指令解析器
      */
-    @MiraiExperimentalAPI
+    @ConsoleExperimentalAPI
     @JvmSynthetic
     inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgParser<*>.(s: String) -> T
@@ -160,7 +170,7 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     /**
      * 添加一个指令解析器
      */
-    @MiraiExperimentalAPI
+    @ConsoleExperimentalAPI
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     inline infix fun <reified T : Any> add(

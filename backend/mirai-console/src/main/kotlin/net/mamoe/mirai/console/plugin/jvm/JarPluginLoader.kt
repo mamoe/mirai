@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.internal.JvmPluginInternal
 import net.mamoe.mirai.console.plugin.internal.PluginsLoader
 import net.mamoe.mirai.console.setting.SettingStorage
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
 import java.io.File
@@ -32,7 +32,7 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
         MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
     }
 
-    @MiraiExperimentalAPI
+    @ConsoleExperimentalAPI
     val settingStorage: SettingStorage by lazy { TODO() }
 
     override val coroutineContext: CoroutineContext by lazy {

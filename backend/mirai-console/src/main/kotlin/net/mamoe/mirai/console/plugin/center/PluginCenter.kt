@@ -11,10 +11,10 @@ package net.mamoe.mirai.console.plugin.center
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import java.io.File
 
-@MiraiExperimentalAPI
+@ConsoleExperimentalAPI
 interface PluginCenter {
 
     @Serializable

@@ -7,11 +7,10 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.console.command.description
 
-import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CompositeCommand
 import java.lang.reflect.Parameter
 import kotlin.reflect.KClass
@@ -19,7 +18,8 @@ import kotlin.reflect.KClass
 internal fun Parameter.toCommandParam(): CommandParam<*> {
     val name = getAnnotation(CompositeCommand.Name::class.java)
     return CommandParam(
-        name?.name ?: this.name ?: throw IllegalArgumentException("Cannot construct CommandParam from a unnamed param"),
+        name?.value ?: this.name
+        ?: throw IllegalArgumentException("Cannot construct CommandParam from a unnamed param"),
         this.type.kotlin
     )
 }
@@ -34,7 +34,7 @@ internal data class CommandParam<T : Any>(
      */
     val name: String,
     /**
-     * 参数类型. 将从 [CommandDescriptor.context] 中寻找 [CommandArgParser] 解析.
+     * 参数类型. 将从 [CompositeCommand.context] 中寻找 [CommandArgParser] 解析.
      */
     val type: KClass<T> // exact type
 ) {
@@ -51,8 +51,6 @@ internal data class CommandParam<T : Any>(
      * 覆盖的 [CommandArgParser].
      *
      * 如果非 `null`, 将不会从 [CommandParserContext] 寻找 [CommandArgParser]
-     *
-     * @see Command.parserFor
      */
     val overrideParser: CommandArgParser<T>? get() = _overrideParser
 }
