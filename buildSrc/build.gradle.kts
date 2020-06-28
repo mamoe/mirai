@@ -28,10 +28,10 @@ dependencies {
     api(ktor("client-cio", "1.3.2"))
     api(ktor("client-json", "1.3.2"))
 
-    //api(gradleApi())
+    compileOnly(gradleApi())
     //compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72")
     compileOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72")
     //runtimeOnly("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72")
-
+    compileOnly("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5")
     api("com.github.jengelman.gradle.plugins:shadow:6.0.0")
 }

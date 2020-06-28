@@ -3,7 +3,7 @@ plugins {
     kotlin("plugin.serialization") version Versions.kotlin
     id("java")
     `maven-publish`
-    id("com.jfrog.bintray") version Versions.bintray
+    id("com.jfrog.bintray")
 }
 
 kotlin {
@@ -54,3 +54,7 @@ ext {
 version = Versions.consolePure
 
 description = "Console Pure CLI frontend for mirai"
+
+setupPublishing("mirai-console-pure", bintrayPkgName = "mirai-console-pure")
+
+// endregion

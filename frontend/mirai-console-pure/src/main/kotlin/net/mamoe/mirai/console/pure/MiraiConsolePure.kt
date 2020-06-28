@@ -48,7 +48,7 @@ class MiraiConsolePure @JvmOverloads constructor(
     override val rootDir: File = File("."),
     override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JarPluginLoader }),
     override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure,
-    override val mainLogger: MiraiLogger = frontEnd.loggerFor("Console"),
+    override val mainLogger: MiraiLogger = frontEnd.loggerFor("main"),
     override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
     override val settingStorage: SettingStorage = MultiFileSettingStorage(rootDir)
 ) : IMiraiConsole, CoroutineScope by CoroutineScope(SupervisorJob()) {

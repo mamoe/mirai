@@ -21,5 +21,5 @@ object Versions {
 
     const val androidGradle = "3.6.2"
 
-    const val bintray = "1.8.4"
+    const val bintray = "1.8.5"
 }
