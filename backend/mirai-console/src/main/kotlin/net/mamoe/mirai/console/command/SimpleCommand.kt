@@ -41,8 +41,8 @@ abstract class SimpleCommand @JvmOverloads constructor(
 
     final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
 
-    override fun checkSubCommand() {
-        super.checkSubCommand()
+    override fun checkSubCommand(subCommands: Array<SubCommandDescriptor>) {
+        super.checkSubCommand(subCommands)
         check(subCommands.size == 1) { "There can only be exactly one function annotated with Handler at this moment as overloading is not yet supported." }
     }
 

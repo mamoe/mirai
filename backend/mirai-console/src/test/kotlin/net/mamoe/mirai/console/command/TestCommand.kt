@@ -193,4 +193,22 @@ internal class TestCommand {
             }
         }
     }
+
+    @Test
+    fun `test simple command`() {
+        runBlocking {
+
+            val simple = object : SimpleCommand(owner, "test") {
+                @Handler
+                fun onCommand(string: String) {
+                    Testing.ok(string)
+                }
+            }
+
+            simple.withRegistration {
+                assertEquals("xxx", withTesting { simple.execute(sender, "xxx") })
+                assertEquals("xxx", withTesting { sender.executeCommand("/test xxx") })
+            }
+        }
+    }
 }

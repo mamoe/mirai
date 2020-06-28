@@ -69,7 +69,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
         )
     }
 
-    internal open fun checkSubCommand() {
+    internal open fun checkSubCommand(subCommands: Array<SubCommandDescriptor>) {
 
     }
 
@@ -90,7 +90,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
                 createSubCommand(function, context)
             }.toTypedArray().also {
                 _usage = it.firstOrNull()?.usage ?: description
-            }.also { checkSubCommand() }
+            }.also { checkSubCommand(it) }
     }
 
     internal val bakedCommandNameToSubDescriptorArray: Map<Array<String>, SubCommandDescriptor> by lazy {
@@ -252,7 +252,7 @@ internal fun AbstractReflectionCommand.createSubCommand(
     }
 
     val commandName =
-        function.findAnnotation<CompositeCommand.SubCommand>()!!.value
+        subCommandAnnotationResolver.getSubCommandNames(function)
             .let { namesFromAnnotation ->
                 if (namesFromAnnotation.isNotEmpty()) {
                     namesFromAnnotation

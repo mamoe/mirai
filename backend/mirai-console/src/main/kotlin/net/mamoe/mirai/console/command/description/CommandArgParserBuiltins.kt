@@ -55,7 +55,6 @@ object FloatArgParser : CommandArgParser<Float> {
 
 object StringArgParser : CommandArgParser<String> {
     override fun parse(raw: String, sender: CommandSender): String {
-        println("STRING PARSER! $raw")
         return raw
     }
 }
@@ -76,16 +75,8 @@ object BooleanArgParser : CommandArgParser<Boolean> {
  */
 object ExistBotArgParser : CommandArgParser<Bot> {
     override fun parse(raw: String, sender: CommandSender): Bot {
-        val uin = try {
-            raw.toLong()
-        } catch (e: Exception) {
-            illegalArgument("无法识别QQ UIN$raw")
-        }
-        return try {
-            Bot.getInstance(uin)
-        } catch (e: NoSuchElementException) {
-            illegalArgument("无法找到Bot $uin")
-        }
+        val uin = raw.toLongOrNull() ?: illegalArgument("无法识别 QQ ID: $raw")
+        return Bot.getInstanceOrNull(uin) ?: illegalArgument("无法找到 Bot $uin")
     }
 }
 
@@ -102,20 +93,12 @@ object ExistFriendArgParser : CommandArgParser<Friend> {
                 is UserCommandSender -> sender.user.id
                 else -> illegalArgument("无法解析～作为默认")
             }
-            return try {
-                sender.bot.friends[targetID]
-            } catch (e: NoSuchElementException) {
-                illegalArgument("无法解析～作为默认")
-            }
+
+            return sender.bot.friends.getOrNull(targetID) ?: illegalArgument("无法解析～作为默认")
         }
         if (sender is BotAwareCommandSender) {
-            return try {
-                sender.bot.friends[raw.toLong()]
-            } catch (e: NoSuchElementException) {
-                illegalArgument("无法找到" + raw + "这个好友")
-            } catch (e: NumberFormatException) {
-                illegalArgument("无法解析$raw")
-            }
+            return sender.bot.friends.getOrNull(raw.toLongOrNull() ?: illegalArgument("无法解析 $raw 为整数"))
+                ?: illegalArgument("无法找到" + raw + "这个好友")
         } else {
             raw.split(".").let { args ->
                 if (args.size != 2) {
