@@ -140,7 +140,6 @@ internal class NewContact {
             )
         }
 
-
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
                 val struct = groupmsgs?.firstOrNull()
@@ -149,20 +148,29 @@ internal class NewContact {
                     //this.soutv("SystemMsg")
                     when (subType) {
                         1 -> { //管理员邀请
+                            fun getBotInvitedJoinGroupRequestEvent(): BotInvitedJoinGroupRequestEvent {
+                                return BotInvitedJoinGroupRequestEvent(
+                                    bot, struct.msgSeq, actionUin,
+                                    groupCode, groupName, actionUinNick
+                                )
+                            }
+
                             when (c2cInviteJoinGroupFlag) {
                                 1 -> {
                                     // 被邀请入群
-                                    BotInvitedJoinGroupRequestEvent(
-                                        bot, struct.msgSeq, actionUin,
-                                        groupCode, groupName, actionUinNick
-                                    )
+                                    getBotInvitedJoinGroupRequestEvent()
                                 }
                                 0 -> {
-                                    // 成员申请入群
-                                    MemberJoinRequestEvent(
-                                        bot, struct.msgSeq, msgAdditional,
-                                        struct.reqUin, groupCode, groupName, reqUinNick
-                                    )
+                                    if (groupMsgType == 2 && actionUin != 0L && struct.reqUin == bot.id) {
+                                        // 被邀请入群
+                                        getBotInvitedJoinGroupRequestEvent() as Packet?
+                                    } else {
+                                        // 成员申请入群
+                                        MemberJoinRequestEvent(
+                                            bot, struct.msgSeq, msgAdditional,
+                                            struct.reqUin, groupCode, groupName, reqUinNick
+                                        )
+                                    }
                                 }
                                 else -> throw contextualBugReportException(
                                     "parse SystemMsgNewGroup, subType=1",
