@@ -14,10 +14,12 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.ConsoleCommandOwner
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.setting.MemorySettingStorage
+import net.mamoe.mirai.console.setting.SettingStorage
+import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.LoginSolver
@@ -28,6 +30,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.test.assertNotNull
 
+@OptIn(ConsoleInternalAPI::class)
 fun initTestEnvironment() {
     MiraiConsoleInitializer.init(object : IMiraiConsole {
         override val rootDir: File = createTempDir()
@@ -39,10 +42,10 @@ fun initTestEnvironment() {
         }
         override val mainLogger: MiraiLogger = DefaultLogger("main")
         override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(JarPluginLoader)
-        override val consoleCommandOwner: ConsoleCommandOwner = object : ConsoleCommandOwner() {}
         override val consoleCommandSender: ConsoleCommandSender = object : ConsoleCommandSender() {
             override suspend fun sendMessage(message: Message) = println(message)
         }
+        override val settingStorage: SettingStorage get() = MemorySettingStorage
         override val coroutineContext: CoroutineContext = SupervisorJob()
     })
 }

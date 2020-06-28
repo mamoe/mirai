@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.*
 
 object TestCompositeCommand : CompositeCommand(
-    ConsoleCommandOwner.instance,
+    ConsoleCommandOwner,
     "testComposite", "tsC"
 ) {
     @SubCommand
@@ -44,7 +44,7 @@ object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
 }
 
 internal val sender by lazy { ConsoleCommandSender.instance }
-internal val owner by lazy { ConsoleCommandOwner.instance }
+internal val owner by lazy { ConsoleCommandOwner }
 
 internal class TestCommand {
     companion object {
@@ -61,7 +61,7 @@ internal class TestCommand {
             assertTrue(TestCompositeCommand.register())
             assertFalse(TestCompositeCommand.register())
 
-            assertEquals(1, ConsoleCommandOwner.instance.registeredCommands.size)
+            assertEquals(1, ConsoleCommandOwner.registeredCommands.size)
 
             assertEquals(1, InternalCommandManager.registeredCommands.size)
             assertEquals(2, InternalCommandManager.requiredPrefixCommandMap.size)
@@ -131,14 +131,16 @@ internal class TestCommand {
     fun `composite sub command resolution conflict`() {
         runBlocking {
             val composite = object : CompositeCommand(
-                ConsoleCommandOwner.instance,
+                ConsoleCommandOwner,
                 "tr"
             ) {
+                @Suppress("UNUSED_PARAMETER")
                 @SubCommand
                 fun mute(seconds: Int) {
                     Testing.ok(1)
                 }
 
+                @Suppress("UNUSED_PARAMETER")
                 @SubCommand
                 fun mute(seconds: Int, arg2: Int) {
                     Testing.ok(2)
@@ -164,7 +166,7 @@ internal class TestCommand {
             )
 
             val composite = object : CompositeCommand(
-                ConsoleCommandOwner.instance,
+                ConsoleCommandOwner,
                 "test",
                 overrideContext = CommandParserContext {
                     add(object : CommandArgParser<MyClass> {

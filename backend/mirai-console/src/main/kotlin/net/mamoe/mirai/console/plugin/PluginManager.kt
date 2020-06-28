@@ -7,12 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "unused")
 
 package net.mamoe.mirai.console.plugin
 
 import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.utils.info
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 
@@ -26,8 +27,10 @@ object PluginManager {
     val pluginsDir = File(MiraiConsole.rootDir, "plugins").apply { mkdir() }
     val pluginsDataFolder = File(MiraiConsole.rootDir, "data").apply { mkdir() }
 
+    @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()
     private val loadersLock: ReentrantLock = ReentrantLock()
+    private val logger = MiraiConsole.newLogger("PluginManager")
 
     @JvmField
     internal val resolvedPlugins: MutableList<Plugin> = mutableListOf()
@@ -70,13 +73,33 @@ object PluginManager {
     // region LOADING
 
     private fun <P : Plugin, D : PluginDescription> PluginLoader<P, D>.loadPluginNoEnable(description: D): P {
-        // TODO: 2020/5/23 HANDLE INITIALIZATION EXCEPTION
-        return this.load(description).also { resolvedPlugins.add(it) }
+        return kotlin.runCatching {
+            this.load(description).also { resolvedPlugins.add(it) }
+        }.fold(
+            onSuccess = {
+                logger.info { "Successfully loaded plugin ${description.name}" }
+                it
+            },
+            onFailure = {
+                logger.info { "Cannot load plugin ${description.name}" }
+                throw it
+            }
+        )
     }
 
-    private fun <P : Plugin, D : PluginDescription> PluginLoader<P, D>.loadPluginAndEnable(description: D) {
-        @Suppress("UNCHECKED_CAST")
-        return this.enable(loadPluginNoEnable(description.unwrap()))
+    private fun <P : Plugin, D : PluginDescription> PluginLoader<P, D>.enablePlugin(plugin: Plugin) {
+        kotlin.runCatching {
+            @Suppress("UNCHECKED_CAST")
+            this.enable(plugin as P)
+        }.fold(
+            onSuccess = {
+                logger.info { "Successfully enabled plugin ${plugin.description.name}" }
+            },
+            onFailure = {
+                logger.info { "Cannot enable plugin ${plugin.description.name}" }
+                throw it
+            }
+        )
     }
 
     /**
@@ -93,10 +116,15 @@ object PluginManager {
     @Suppress("UNCHECKED_CAST")
     @Throws(PluginMissingDependencyException::class)
     internal fun loadEnablePlugins() {
-        val all = loadAndEnableLoaderProviders() + _pluginLoaders.listAllPlugins().flatMap { it.second }
+        (loadAndEnableLoaderProviders() + _pluginLoaders.listAllPlugins().flatMap { it.second })
+            .sortByDependencies().loadAndEnableAllInOrder()
+    }
 
-        for ((loader, desc) in all.sortByDependencies()) {
-            loader.loadPluginAndEnable(desc)
+    private fun List<PluginDescriptionWithLoader>.loadAndEnableAllInOrder() {
+        return this.map { (loader, desc) ->
+            loader to loader.loadPluginNoEnable(desc)
+        }.forEach { (loader, plugin) ->
+            loader.enablePlugin(plugin)
         }
     }
 
@@ -112,9 +140,7 @@ object PluginManager {
                 .onEach { (loader, descriptions) ->
                     loader as PluginLoader<Plugin, PluginDescription>
 
-                    for (it in descriptions.filter { it.kind == PluginKind.LOADER }.sortByDependencies()) {
-                        loader.loadPluginAndEnable(it)
-                    }
+                    descriptions.filter { it.kind == PluginKind.LOADER }.sortByDependencies().loadAndEnableAllInOrder()
                 }
                 .flatMap { it.second.asSequence() }
 
@@ -161,12 +187,7 @@ object PluginManager {
     // endregion
 }
 
-class PluginMissingDependencyException : PluginResolutionException {
-    constructor() : super()
-    constructor(message: String?) : super(message)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-    constructor(cause: Throwable?) : super(cause)
-}
+class PluginMissingDependencyException(message: String?) : PluginResolutionException(message)
 
 open class PluginResolutionException : Exception {
     constructor() : super()

@@ -7,12 +7,26 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress(
+    "INVISIBLE_MEMBER",
+    "INVISIBLE_REFERENCE",
+    "CANNOT_OVERRIDE_INVISIBLE_MEMBER",
+    "INVISIBLE_SETTER",
+    "INVISIBLE_GETTER",
+    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
+    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
+    "EXPOSED_SUPER_CLASS"
+)
+
 package net.mamoe.mirai.console.pure
 
 //import net.mamoe.mirai.console.command.CommandManager
 //import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
+import kotlinx.coroutines.suspendCancellableCoroutine
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsoleBuildConstants
 import net.mamoe.mirai.console.MiraiConsoleFrontEnd
+import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.utils.DefaultLoginSolver
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
@@ -21,6 +35,7 @@ import org.fusesource.jansi.Ansi
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.resume
 
 private val ANSI_RESET = Ansi().reset().toString()
 
@@ -30,6 +45,13 @@ internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
     })
 }
 
+/**
+ * mirai-console-pure 前端实现
+ *
+ * @see MiraiConsolePure 后端实现
+ * @see MiraiConsolePureLoader CLI 入口点
+ */
+@ConsoleInternalAPI
 @Suppress("unused")
 object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
     private val globalLogger = LoggerCreator("Mirai")
@@ -53,7 +75,10 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
     val sdf by lazy {
         SimpleDateFormat("HH:mm:ss")
     }
-
+    override val name: String
+        get() = "Pure"
+    override val version: String
+        get() = MiraiConsoleBuildConstants.version
 
     override fun loggerFor(identity: String?): MiraiLogger {
         identity?.apply {
@@ -74,7 +99,9 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
                     .toString()
             )
         }
-        return ConsoleUtils.lineReader.readLine("> ")
+        return suspendCancellableCoroutine {
+            it.resume(ConsoleUtils.lineReader.readLine("> "))
+        }
     }
 
     override fun createLoginSolver(): LoginSolver {

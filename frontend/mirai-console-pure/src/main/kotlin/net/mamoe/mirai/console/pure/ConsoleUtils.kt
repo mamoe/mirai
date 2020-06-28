@@ -16,7 +16,7 @@ import org.jline.reader.impl.completer.NullCompleter
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
 
-object ConsoleUtils {
+internal object ConsoleUtils {
 
     val lineReader: LineReader
     val terminal: Terminal
@@ -24,10 +24,10 @@ object ConsoleUtils {
     init {
 
         val dumb = System.getProperty("java.class.path")
-            .contains("idea_rt.jar") || System.getProperty("mirai.idea") !== null
+            .contains("idea_rt.jar") || System.getProperty("mirai.idea") !== null || System.getenv("mirai.idea") !== null
 
         terminal = TerminalBuilder.builder()
-            .dumb(dumb)
+            .jansi(true)
             .build()
         lineReader = LineReaderBuilder.builder()
             .terminal(terminal)

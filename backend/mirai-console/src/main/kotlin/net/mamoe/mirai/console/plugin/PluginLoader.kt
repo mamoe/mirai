@@ -86,3 +86,17 @@ abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
 
     final override fun listPlugins(): List<D> = pluginsFilesSequence().mapToDescription()
 }
+
+
+// Not yet decided to make public API
+internal class DeferredPluginLoader<P : Plugin, D : PluginDescription>(
+    initializer: () -> PluginLoader<P, D>
+) : PluginLoader<P, D> {
+    private val instance by lazy(initializer)
+
+    override fun listPlugins(): List<D> = instance.listPlugins()
+    override val P.description: D get() = instance.run { description }
+    override fun load(description: D): P = instance.load(description)
+    override fun enable(plugin: P) = instance.enable(plugin)
+    override fun disable(plugin: P) = instance.disable(plugin)
+}

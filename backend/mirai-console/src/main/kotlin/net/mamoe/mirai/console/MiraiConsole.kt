@@ -8,6 +8,7 @@
  */
 
 @file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+@file:OptIn(ConsoleInternalAPI::class)
 
 package net.mamoe.mirai.console
 
@@ -16,18 +17,22 @@ import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
-import net.mamoe.mirai.console.command.ConsoleCommandOwner
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.plugin.PluginLoader
+import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.CuiPluginCenter
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.info
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
@@ -80,14 +85,14 @@ internal object MiraiConsoleInitializer {
     /** 由前端调用 */
     internal fun init(instance: IMiraiConsole) {
         this.instance = instance
-        MiraiConsoleInternal.initialize()
+        MiraiConsoleInternal.doStart()
     }
 }
 
 internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mirai-console:fillBuildConstants)
     @JvmStatic
     val buildDate: Date = Date(1592799753404L) // 2020-06-22 12:22:33
-    const val version: String = "0.5.1"
+    const val version: String = "1.0-M1"
 }
 
 /**
@@ -107,8 +112,9 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
         get() = instance.mainLogger
     override val coroutineContext: CoroutineContext get() = instance.coroutineContext
     override val builtInPluginLoaders: List<PluginLoader<*, *>> get() = instance.builtInPluginLoaders
-    override val consoleCommandOwner: ConsoleCommandOwner get() = instance.consoleCommandOwner
     override val consoleCommandSender: ConsoleCommandSender get() = instance.consoleCommandSender
+
+    override val settingStorage: SettingStorage get() = instance.settingStorage
 
     init {
         DefaultLogger = { identity -> this.newLogger(identity) }
@@ -117,13 +123,23 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
     @ConsoleExperimentalAPI
     override fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
 
-    internal fun initialize() {
+    internal fun doStart() {
+        val buildDateFormatted = SimpleDateFormat("yyyy-MM-dd").format(buildDate)
+        mainLogger.info { "Starting mirai-console..." }
+        mainLogger.info { "Backend: version $version, built on $buildDateFormatted." }
+        mainLogger.info { "Frontend ${frontEnd.name}: version $version." }
+
         if (coroutineContext[Job] == null) {
             throw IllegalMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
         }
         this.coroutineContext[Job]!!.invokeOnCompletion {
             Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
         }
+
+        mainLogger.info { "Loading plugins..." }
+        PluginManager.loadEnablePlugins()
+        mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
+        mainLogger.info { "mirai-console started successfully." }
         // Only for initialize
     }
 }
@@ -155,9 +171,9 @@ internal interface IMiraiConsole : CoroutineScope {
      */
     val builtInPluginLoaders: List<PluginLoader<*, *>>
 
-    internal val consoleCommandOwner: ConsoleCommandOwner
+    val consoleCommandSender: ConsoleCommandSender
 
-    internal val consoleCommandSender: ConsoleCommandSender
+    val settingStorage: SettingStorage
 }
 
 /**

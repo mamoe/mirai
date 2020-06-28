@@ -15,32 +15,58 @@
     "INVISIBLE_SETTER",
     "INVISIBLE_GETTER",
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
-    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPE_WARNING"
+    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
+    "EXPOSED_SUPER_CLASS"
 )
+@file:OptIn(ConsoleInternalAPI::class)
 
 package net.mamoe.mirai.console.pure
 
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.console.IMiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEnd
+import net.mamoe.mirai.console.MiraiConsoleInitializer
+import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
-import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.setting.MultiFileSettingStorage
+import net.mamoe.mirai.console.setting.SettingStorage
+import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
-import java.util.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
-private val delegateScope = CoroutineScope(EmptyCoroutineContext)
-
-object MiraiConsolePure : IMiraiConsole {
-    override val builtInPluginLoaders: List<PluginLoader<*, *>> = LinkedList()
-    override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure
-    override val mainLogger: MiraiLogger = DefaultLogger("Console")
-    override val rootDir: File = File("./test/console").also {
-        it.mkdirs()
+/**
+ * mirai-console-pure 后端实现
+ *
+ * @see MiraiConsoleFrontEndPure 前端实现
+ * @see MiraiConsolePureLoader CLI 入口点
+ */
+class MiraiConsolePure @JvmOverloads constructor(
+    override val rootDir: File = File("."),
+    override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JarPluginLoader }),
+    override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure,
+    override val mainLogger: MiraiLogger = frontEnd.loggerFor("Console"),
+    override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
+    override val settingStorage: SettingStorage = MultiFileSettingStorage(rootDir)
+) : IMiraiConsole, CoroutineScope by CoroutineScope(SupervisorJob()) {
+    init {
+        rootDir.mkdir()
+        require(rootDir.isDirectory) { "rootDir ${rootDir.absolutePath} is not a directory" }
     }
-    override val coroutineContext: CoroutineContext
-        get() = delegateScope.coroutineContext
+
+    companion object {
+        @Volatile
+        @JvmStatic
+        private var started: Boolean = false
+
+        @JvmStatic
+        fun MiraiConsolePure.start() = synchronized(this) {
+            check(!started) { "mirai-console is already started and can't be restarted." }
+            MiraiConsoleInitializer.init(MiraiConsolePure())
+            started = true
+        }
+    }
 }

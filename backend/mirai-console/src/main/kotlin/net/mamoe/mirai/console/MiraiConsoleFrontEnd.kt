@@ -11,15 +11,23 @@ package net.mamoe.mirai.console
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.MiraiInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
  * 只需要实现一个这个传入 MiraiConsole 就可以绑定 UI 层与 Console 层
  * 需要保证线程安全
  */
-@MiraiInternalAPI
 interface MiraiConsoleFrontEnd {
+    /**
+     * 名称
+     */
+    val name: String
+
+    /**
+     * 版本
+     */
+    val version: String
+
     fun loggerFor(identity: String?): MiraiLogger
 
     /**

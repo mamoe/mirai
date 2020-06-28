@@ -16,17 +16,23 @@
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPE_WARNING"
 )
+@file:OptIn(ConsoleInternalAPI::class)
 
 package net.mamoe.mirai.console.pure
 
-import net.mamoe.mirai.console.MiraiConsoleInitializer
+import kotlinx.coroutines.isActive
 import net.mamoe.mirai.console.command.CommandExecuteStatus
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.executeCommandDetailed
+import net.mamoe.mirai.console.pure.MiraiConsolePure.Companion.start
+import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
 import kotlin.concurrent.thread
 
+/**
+ * mirai-console-pure CLI 入口点
+ */
 object MiraiConsolePureLoader {
     @JvmStatic
     fun main(args: Array<String>?) {
@@ -36,18 +42,21 @@ object MiraiConsolePureLoader {
 
 
 internal fun startup() {
-    MiraiConsoleInitializer.init(MiraiConsolePure)
     startConsoleThread()
+    MiraiConsolePure().start()
 }
 
 internal fun startConsoleThread() {
     thread(name = "Console", isDaemon = false) {
         val consoleLogger = DefaultLogger("Console")
         kotlinx.coroutines.runBlocking {
-            while (true) {
+            while (isActive) {
                 val next = MiraiConsoleFrontEndPure.requestInput("")
+                if (next.isBlank()) {
+                    continue
+                }
                 consoleLogger.debug("INPUT> $next")
-                val result = ConsoleCS.executeCommandDetailed(next)
+                val result = ConsoleCommandSenderImpl.executeCommandDetailed(next)
                 when (result.status) {
                     CommandExecuteStatus.SUCCESSFUL -> {
                     }
@@ -65,7 +74,7 @@ internal fun startConsoleThread() {
     }
 }
 
-object ConsoleCS : ConsoleCommandSender() {
+internal object ConsoleCommandSenderImpl : ConsoleCommandSender() {
     override suspend fun sendMessage(message: Message) {
         ConsoleUtils.lineReader.printAbove(message.contentToString())
     }
