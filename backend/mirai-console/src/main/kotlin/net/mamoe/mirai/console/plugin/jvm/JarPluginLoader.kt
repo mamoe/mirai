@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleInternal
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.internal.JvmPluginInternal
@@ -28,24 +29,21 @@ import kotlin.reflect.full.createInstance
  * 内建的 Jar (JVM) 插件加载器
  */
 object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"), CoroutineScope {
-    private val logger: MiraiLogger by lazy {
-        MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
-    }
+    private val logger: MiraiLogger = MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
 
     @ConsoleExperimentalAPI
-    val settingStorage: SettingStorage by lazy { TODO() }
+    val settingStorage: SettingStorage = MiraiConsoleInternal.settingStorage
 
-    override val coroutineContext: CoroutineContext by lazy {
-        MiraiConsole.coroutineContext + SupervisorJob(
-            MiraiConsole.coroutineContext[Job]
-        ) + CoroutineExceptionHandler { _, throwable ->
-            logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
-        }.also { init() }
-    }
+    override val coroutineContext: CoroutineContext =
+        MiraiConsole.coroutineContext +
+                SupervisorJob(MiraiConsole.coroutineContext[Job]) +
+                CoroutineExceptionHandler { _, throwable ->
+                    logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
+                }
 
-    private val classLoader: PluginsLoader by lazy { PluginsLoader(this.javaClass.classLoader) }
+    private val classLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
 
-    private fun init() { // delayed
+    init { // delayed
         coroutineContext[Job]!!.invokeOnCompletion {
             classLoader.clear()
         }

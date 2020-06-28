@@ -9,7 +9,7 @@
 
 object Versions {
     const val core = "1.1-EA"
-    const val console = "0.5.1"
+    const val console = "1.1-dev-1"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = "0.1.0"
     const val consolePure = "0.1.0"

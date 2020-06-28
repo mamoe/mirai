@@ -11,12 +11,44 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
+import net.mamoe.mirai.console.setting.Setting
+import net.mamoe.mirai.console.setting.getValue
+import net.mamoe.mirai.console.setting.value
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Kotlin 插件的父类
+ * Kotlin 插件的父类.
+ *
+ * 必须通过 "plugin.yml" 指定主类并由 [JarPluginLoader] 加载.
  */
 abstract class KotlinPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext)
+
+
+/**
+ * 在内存动态加载的插件.
+ */
+@ConsoleExperimentalAPI
+abstract class KotlinMemoryPlugin @JvmOverloads constructor(
+    description: JvmPluginDescription,
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
+    final override var _description: JvmPluginDescription
+        get() = super._description
+        set(value) {
+            super._description = value
+        }
+
+    init {
+        _description = description
+    }
+}
+
+object MyPlugin : KotlinPlugin()
+
+object AccountSetting : Setting by MyPlugin.getSetting() {
+    val s by value(1)
+}

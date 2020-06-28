@@ -14,8 +14,8 @@ package net.mamoe.mirai.console.plugin.jvm
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
+import net.mamoe.mirai.console.setting.AutoSaveSettingHolder
 import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.setting.SettingHolder
 import net.mamoe.mirai.console.utils.ResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.reflect.KClass
@@ -32,7 +32,7 @@ import kotlin.reflect.KClass
  * @see JvmPlugin 支持文件系统扩展
  * @see ResourceContainer 支持资源获取 (如 Jar 中的资源文件)
  */
-interface JvmPlugin : Plugin, CoroutineScope, PluginFileExtensions, ResourceContainer, SettingHolder {
+interface JvmPlugin : Plugin, CoroutineScope, PluginFileExtensions, ResourceContainer, AutoSaveSettingHolder {
     /** 日志 */
     val logger: MiraiLogger
 
@@ -46,6 +46,7 @@ interface JvmPlugin : Plugin, CoroutineScope, PluginFileExtensions, ResourceCont
      * 获取一个 [Setting] 实例
      */
     fun <T : Setting> getSetting(clazz: Class<T>): T
+
 
     @JvmDefault
     fun onLoad() {

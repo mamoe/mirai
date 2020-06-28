@@ -47,7 +47,7 @@ internal abstract class JvmPluginInternal(
      * Initialized immediately after construction of [JvmPluginInternal] instance
      */
     @Suppress("PropertyName")
-    internal lateinit var _description: JvmPluginDescription
+    internal open lateinit var _description: JvmPluginDescription
 
     override val description: JvmPluginDescription get() = _description
 
