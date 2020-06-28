@@ -18,7 +18,6 @@ package net.mamoe.mirai.console.command
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import net.mamoe.mirai.console.MiraiConsoleInternal
 import net.mamoe.mirai.console.command.internal.*
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.message.data.Message
@@ -45,14 +44,8 @@ abstract class PluginCommandOwner(val plugin: Plugin) : CommandOwner() {
 
 /**
  * 代表控制台所有者. 所有的 mirai-console 内建的指令都属于 [ConsoleCommandOwner].
- *
- * 由前端实现
  */
-internal abstract class ConsoleCommandOwner : CommandOwner() {
-    companion object {
-        internal val instance get() = MiraiConsoleInternal.consoleCommandOwner
-    }
-}
+object ConsoleCommandOwner : CommandOwner()
 
 /**
  * 获取已经注册了的属于这个 [CommandOwner] 的指令列表.
