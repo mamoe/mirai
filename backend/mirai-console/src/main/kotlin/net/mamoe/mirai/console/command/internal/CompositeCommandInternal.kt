@@ -52,7 +52,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
 
     @JvmField
     @Suppress("PropertyName")
-    internal var _usage: String = "<command build failed>"
+    internal var _usage: String = "<not yet initialized>"
 
     final override val usage: String  // initialized by subCommand reflection
         get() = _usage
@@ -62,11 +62,15 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     internal val defaultSubCommand: DefaultSubCommandDescriptor by lazy {
         DefaultSubCommandDescriptor(
             "",
-            CommandPermission.Default,
+            permission,
             onCommand = block2 { sender: CommandSender, args: Array<out Any> ->
                 sender.onDefault(args)
             }
         )
+    }
+
+    internal open fun checkSubCommand() {
+
     }
 
     interface SubCommandAnnotationResolver {
@@ -86,7 +90,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
                 createSubCommand(function, context)
             }.toTypedArray().also {
                 _usage = it.firstOrNull()?.usage ?: description
-            }
+            }.also { checkSubCommand() }
     }
 
     internal val bakedCommandNameToSubDescriptorArray: Map<Array<String>, SubCommandDescriptor> by lazy {
@@ -118,9 +122,14 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     ) {
         internal suspend inline fun parseAndExecute(
             sender: CommandSender,
-            argsWithSubCommandNameNotRemoved: Array<out Any>
+            argsWithSubCommandNameNotRemoved: Array<out Any>,
+            removeSubName: Boolean
         ) {
-            if (!onCommand(sender, parseArgs(sender, argsWithSubCommandNameNotRemoved, names.size))) {
+            if (!onCommand(
+                    sender,
+                    parseArgs(sender, argsWithSubCommandNameNotRemoved, if (removeSubName) names.size else 0)
+                )
+            ) {
                 sender.sendMessage(usage)
             }
         }

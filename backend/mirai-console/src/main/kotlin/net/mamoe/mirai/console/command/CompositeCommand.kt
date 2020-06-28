@@ -71,7 +71,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
     }
 
     final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
-        matchSubCommand(args)?.parseAndExecute(this, args) ?: kotlin.run {
+        matchSubCommand(args)?.parseAndExecute(this, args, true) ?: kotlin.run {
             defaultSubCommand.onCommand(this, args)
         }
     }

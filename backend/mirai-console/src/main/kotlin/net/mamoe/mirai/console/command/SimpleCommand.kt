@@ -20,6 +20,7 @@ package net.mamoe.mirai.console.command
 import net.mamoe.mirai.console.command.description.CommandParserContext
 import net.mamoe.mirai.console.command.description.CommandParserContextAware
 import net.mamoe.mirai.console.command.description.EmptyCommandParserContext
+import net.mamoe.mirai.console.command.description.plus
 import net.mamoe.mirai.console.command.internal.AbstractReflectionCommand
 import net.mamoe.mirai.console.command.internal.SimpleCommandSubCommandAnnotationResolver
 
@@ -38,11 +39,18 @@ abstract class SimpleCommand @JvmOverloads constructor(
      */
     protected annotation class Handler
 
-    final override val context: CommandParserContext
-        get() = TODO("Not yet implemented")
+    final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
+
+    override fun checkSubCommand() {
+        super.checkSubCommand()
+        check(subCommands.size == 1) { "There can only be exactly one function annotated with Handler at this moment as overloading is not yet supported." }
+    }
+
+    @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
+    final override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) = error("shouldn't be reached")
 
     final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
-
+        subCommands.single().parseAndExecute(this, args, false)
     }
 
     final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
