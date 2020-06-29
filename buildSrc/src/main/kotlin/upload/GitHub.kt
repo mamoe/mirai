@@ -74,7 +74,7 @@ object GitHub {
     fun upload(file: File, project: Project, repo: String, targetFilePath: String) = runBlocking {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
-        val url = "https://api.github.com/repos/mamoe/$repo/contents/$targetFilePath"
+        val url = "https://api.github.com/repos/project-mirai/$repo/contents/$targetFilePath"
         retryCatching(100, onFailure = { delay(30_000) }) { // 403 forbidden?
             Http.put<String>("$url?access_token=$token") {
                 val sha = retryCatching(3, onFailure = { delay(30_000) }) {
@@ -121,7 +121,7 @@ object GitHub {
             return withContext(Dispatchers.IO) {
                 val response = Jsoup
                     .connect(
-                        "https://api.github.com/repos/mamoe/$repo/contents/$filePath?access_token=" + getGithubToken(
+                        "https://api.github.com/repos/project-mirai/$repo/contents/$filePath?access_token=" + getGithubToken(
                             project
                         )
                     )
@@ -150,7 +150,7 @@ object GitHub {
             val resp = withContext(Dispatchers.IO) {
                 Jsoup
                     .connect(
-                        "https://api.github.com/repos/mamoe/$repo/git/ref/heads/$branch?access_token=" + getGithubToken(
+                        "https://api.github.com/repos/project-mirai/$repo/git/ref/heads/$branch?access_token=" + getGithubToken(
                             project
                         )
                     )
