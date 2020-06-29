@@ -21,9 +21,12 @@
 package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.isActive
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandExecuteStatus
+import net.mamoe.mirai.console.command.CommandPrefix
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.command.executeCommandDetailed
+import net.mamoe.mirai.console.job
 import net.mamoe.mirai.console.pure.MiraiConsolePure.Companion.start
 import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
@@ -42,8 +45,8 @@ object MiraiConsolePureLoader {
 
 
 internal fun startup() {
-    startConsoleThread()
     MiraiConsolePure().start()
+    startConsoleThread()
 }
 
 internal fun startConsoleThread() {
@@ -51,7 +54,11 @@ internal fun startConsoleThread() {
         val consoleLogger = DefaultLogger("Console")
         kotlinx.coroutines.runBlocking {
             while (isActive) {
-                val next = MiraiConsoleFrontEndPure.requestInput("")
+                val next = MiraiConsoleFrontEndPure.requestInput("").let {
+                    if (it.startsWith(CommandPrefix)) {
+                        it
+                    } else CommandPrefix + it
+                }
                 if (next.isBlank()) {
                     continue
                 }
@@ -70,6 +77,10 @@ internal fun startConsoleThread() {
                     }
                 }
             }
+        }
+    }.let { thread ->
+        MiraiConsole.job.invokeOnCompletion {
+            thread.interrupt()
         }
     }
 }

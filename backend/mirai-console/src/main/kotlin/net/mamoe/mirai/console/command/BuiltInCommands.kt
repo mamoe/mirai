@@ -48,7 +48,7 @@ object BuiltInCommands {
     }
 
     object Help : SimpleCommand(
-        ConsoleCommandOwner, "help", "?",
+        ConsoleCommandOwner, "help",
         description = "Gets help about the console."
     ) {
         init {

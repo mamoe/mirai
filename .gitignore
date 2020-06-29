@@ -44,3 +44,6 @@ keys.properties
 
 bintray.user.txt
 bintray.key.txt
+
+token.txt
+/*/token.txt
