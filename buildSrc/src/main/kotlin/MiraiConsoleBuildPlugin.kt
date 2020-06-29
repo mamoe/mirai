@@ -15,7 +15,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.attributes
-import org.gradle.kotlin.dsl.creating
 import java.io.File
 import kotlin.math.pow
 
@@ -48,7 +47,7 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
             }
         }
 
-        tasks.creating {
+        tasks.create("githubUpload") {
             group = "mirai"
             dependsOn(tasks.getByName("shadowJar"))
 
@@ -72,7 +71,7 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
             }
         }
 
-        tasks.creating {
+        tasks.create("cuiCloudUpload") {
             group = "mirai"
             dependsOn(tasks.getByName("shadowJar"))
 
