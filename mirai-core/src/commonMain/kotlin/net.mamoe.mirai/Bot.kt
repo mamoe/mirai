@@ -291,8 +291,10 @@ abstract class Bot internal constructor(
     @Deprecated(
         "use member function.",
         replaceWith = ReplaceWith("event.reject(blackList)"),
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.HIDDEN
     )
+    abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
+
     @JvmSynthetic
     abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false, message: String = "")
 

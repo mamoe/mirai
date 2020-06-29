@@ -143,6 +143,12 @@ internal class QQAndroidBot constructor(
 
     @Suppress("DuplicatedCode")
     @OptIn(LowLevelAPI::class)
+    override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
+        rejectMemberJoinRequest(event, blackList,"")
+    }
+
+    @Suppress("DuplicatedCode")
+    @OptIn(LowLevelAPI::class)
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean, message: String) {
         checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         check(event.responded.compareAndSet(false, true)) {
