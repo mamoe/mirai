@@ -353,6 +353,7 @@ data class MemberJoinRequestEvent internal constructor(
     suspend fun accept() = bot.acceptMemberJoinRequest(this)
 
     @JvmSynthetic
+    @JvmOverloads
     suspend fun reject(blackList: Boolean = false, message: String = "") = bot.rejectMemberJoinRequest(this, blackList, message)
 
     @JvmSynthetic
