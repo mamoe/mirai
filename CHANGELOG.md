@@ -1,5 +1,8 @@
 # Version 1.x
 
+## `1.0.3` 2020/6/29
+- 修复 friendlist.GetTroopListReqV2：java.lang.IllegalStateException: type mismatch 10 (#405)
+
 ## `1.0.2` 2020/6/1
 - 新增 `Bot.botInstancesSequence`
 - 修复日志中的时间未更新的问题
