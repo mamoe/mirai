@@ -34,8 +34,6 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 - [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid): console 的 Android APP 前端.
 
 
-[`mirai-console-wrapper`](https://github.com/mamoe/mirai-console-wrapper): console 启动器. 可根据用户选择从服务器下载 console 后端, mirai-core, 和指定的前端并启动.
-
 ## 使用
 
 ### Android
