@@ -59,7 +59,7 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
                     runCatching {
                         upload.GitHub.upload(
                             file,
-                            "https://api.github.com/repos/mamoe/mirai-repo/contents/shadow/${project.name}/$filename",
+                            "https://api.github.com/repos/project-mirai/mirai-repo/contents/shadow/${project.name}/$filename",
                             project
                         )
                     }.exceptionOrNull()?.let {
