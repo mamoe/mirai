@@ -54,7 +54,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     @Suppress("PropertyName")
     internal var _usage: String = "<not yet initialized>"
 
-    final override val usage: String  // initialized by subCommand reflection
+    override val usage: String  // initialized by subCommand reflection
         get() = _usage
 
     abstract suspend fun CommandSender.onDefault(rawArgs: Array<out Any>)
@@ -125,9 +125,10 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
             argsWithSubCommandNameNotRemoved: Array<out Any>,
             removeSubName: Boolean
         ) {
-            if (!onCommand(
+            val args = parseArgs(sender, argsWithSubCommandNameNotRemoved, if (removeSubName) names.size else 0)
+            if (args == null || !onCommand(
                     sender,
-                    parseArgs(sender, argsWithSubCommandNameNotRemoved, if (removeSubName) names.size else 0)
+                    args
                 )
             ) {
                 sender.sendMessage(usage)
@@ -136,8 +137,10 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
 
         @JvmField
         internal val bakedSubNames: Array<Array<String>> = names.map { it.bakeSubName() }.toTypedArray()
-        private fun parseArgs(sender: CommandSender, rawArgs: Array<out Any>, offset: Int): Array<out Any> {
-            require(rawArgs.size >= offset + this.params.size) { "No enough args. Required ${params.size}, but given ${rawArgs.size - offset}" }
+        private fun parseArgs(sender: CommandSender, rawArgs: Array<out Any>, offset: Int): Array<out Any>? {
+            if (rawArgs.size < offset + this.params.size)
+                return null
+            //require(rawArgs.size >= offset + this.params.size) { "No enough args. Required ${params.size}, but given ${rawArgs.size - offset}" }
 
             return Array(this.params.size) { index ->
                 val param = params[index]

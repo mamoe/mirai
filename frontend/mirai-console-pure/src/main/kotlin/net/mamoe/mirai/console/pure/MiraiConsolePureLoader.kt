@@ -22,14 +22,12 @@ package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.CommandExecuteStatus
-import net.mamoe.mirai.console.command.CommandPrefix
-import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.command.executeCommandDetailed
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.job
 import net.mamoe.mirai.console.pure.MiraiConsolePure.Companion.start
 import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.DefaultLogger
 import kotlin.concurrent.thread
 
@@ -50,43 +48,63 @@ internal fun startup() {
 }
 
 internal fun startConsoleThread() {
-    thread(name = "Console", isDaemon = false) {
+    thread(name = "Console Input") {
         val consoleLogger = DefaultLogger("Console")
-        kotlinx.coroutines.runBlocking {
-            while (isActive) {
-                val next = MiraiConsoleFrontEndPure.requestInput("").let {
-                    if (it.startsWith(CommandPrefix)) {
-                        it
-                    } else CommandPrefix + it
-                }
-                if (next.isBlank()) {
-                    continue
-                }
-                consoleLogger.debug("INPUT> $next")
-                val result = ConsoleCommandSenderImpl.executeCommandDetailed(next)
-                when (result.status) {
-                    CommandExecuteStatus.SUCCESSFUL -> {
+        try {
+            kotlinx.coroutines.runBlocking {
+                while (isActive) {
+                    val next = MiraiConsoleFrontEndPure.requestInput("").let {
+                        when {
+                            it.startsWith(CommandPrefix) -> {
+                                it
+                            }
+                            it == "?" -> CommandPrefix + BuiltInCommands.Help.primaryName
+                            else -> CommandPrefix + it
+                        }
                     }
-                    CommandExecuteStatus.EXECUTION_EXCEPTION -> {
+                    if (next.isBlank()) {
+                        continue
                     }
-                    CommandExecuteStatus.COMMAND_NOT_FOUND -> {
-                        consoleLogger.warning("Unknown command: ${result.commandName}")
-                    }
-                    CommandExecuteStatus.PERMISSION_DENIED -> {
-                        consoleLogger.warning("Permission denied.")
+                    consoleLogger.debug("INPUT> $next")
+                    val result = ConsoleCommandSenderImpl.executeCommandDetailed(next)
+                    when (result.status) {
+                        CommandExecuteStatus.SUCCESSFUL -> {
+                        }
+                        CommandExecuteStatus.EXECUTION_EXCEPTION -> {
+                            result.exception?.printStackTrace()
+                        }
+                        CommandExecuteStatus.COMMAND_NOT_FOUND -> {
+                            consoleLogger.warning("Unknown command: ${result.commandName}")
+                        }
+                        CommandExecuteStatus.PERMISSION_DENIED -> {
+                            consoleLogger.warning("Permission denied.")
+                        }
+
                     }
                 }
             }
+        } catch (e: InterruptedException) {
+            return@thread
         }
     }.let { thread ->
         MiraiConsole.job.invokeOnCompletion {
-            thread.interrupt()
+            runCatching {
+                thread.interrupt()
+            }.exceptionOrNull()?.printStackTrace()
+            runCatching {
+                ConsoleUtils.terminal.close()
+            }.exceptionOrNull()?.printStackTrace()
         }
     }
 }
 
 internal object ConsoleCommandSenderImpl : ConsoleCommandSender() {
     override suspend fun sendMessage(message: Message) {
-        ConsoleUtils.lineReader.printAbove(message.contentToString())
+        kotlin.runCatching {
+            ConsoleUtils.lineReader.printAbove(message.contentToString())
+        }.onFailure {
+            println(message.content)
+            it.printStackTrace()
+        }
     }
 }

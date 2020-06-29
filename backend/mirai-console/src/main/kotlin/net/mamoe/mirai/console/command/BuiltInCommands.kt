@@ -9,13 +9,20 @@
 
 package net.mamoe.mirai.console.command
 
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.job
 import net.mamoe.mirai.console.stacktraceString
 import net.mamoe.mirai.event.selectMessagesUnit
+import net.mamoe.mirai.utils.DirectoryLogger
+import net.mamoe.mirai.utils.weeksToMillis
+import java.io.File
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
@@ -24,15 +31,44 @@ import kotlin.system.exitProcess
  */
 fun MiraiConsole.addBot(id: Long, password: String): Bot {
     return Bot(id, password) {
+
+        /**
+         * 重定向 [网络日志][networkLoggerSupplier] 到指定目录. 若目录不存在将会自动创建 ([File.mkdirs])
+         * @see DirectoryLogger
+         * @see redirectNetworkLogToDirectory
+         */
+        fun redirectNetworkLogToDirectory(
+            dir: File = File("logs"),
+            retain: Long = 1.weeksToMillis,
+            identity: (bot: Bot) -> String = { "Net ${it.id}" }
+        ) {
+            require(!dir.isFile) { "dir must not be a file" }
+            dir.mkdirs()
+            networkLoggerSupplier = { DirectoryLogger(identity(it), dir, retain) }
+        }
+
+        fun redirectBotLogToDirectory(
+            dir: File = File("logs"),
+            retain: Long = 1.weeksToMillis,
+            identity: (bot: Bot) -> String = { "Net ${it.id}" }
+        ) {
+            require(!dir.isFile) { "dir must not be a file" }
+            dir.mkdirs()
+            botLoggerSupplier = { DirectoryLogger(identity(it), dir, retain) }
+        }
+
         fileBasedDeviceInfo()
         this.loginSolver = this@addBot.frontEnd.createLoginSolver()
         redirectNetworkLogToDirectory()
-        redirectBotLogToDirectory()
+        //   redirectBotLogToDirectory()
     }
 }
 
-interface BuiltInCommand : Command
+@Suppress("EXPOSED_SUPER_INTERFACE")
+interface BuiltInCommand : Command, BuiltInCommandInternal
 
+// for identification
+internal interface BuiltInCommandInternal : Command
 
 @Suppress("unused")
 object BuiltInCommands {
@@ -50,7 +86,7 @@ object BuiltInCommands {
     object Help : SimpleCommand(
         ConsoleCommandOwner, "help",
         description = "Gets help about the console."
-    ) {
+    ), BuiltInCommand {
         init {
             Runtime.getRuntime().addShutdownHook(thread(false) {
                 runBlocking { Stop.execute(ConsoleCommandSender.instance) }
@@ -67,18 +103,23 @@ object BuiltInCommands {
     object Stop : SimpleCommand(
         ConsoleCommandOwner, "stop", "shutdown", "exit",
         description = "Stop the whole world."
-    ) {
+    ), BuiltInCommand {
         init {
             Runtime.getRuntime().addShutdownHook(thread(false) {
+                if (!MiraiConsole.isActive) {
+                    return@thread
+                }
                 runBlocking { Stop.execute(ConsoleCommandSender.instance) }
             })
         }
 
+        private val closingLock = Mutex()
+
         @Handler
-        suspend fun CommandSender.handle() {
+        suspend fun CommandSender.handle(): Unit = closingLock.withLock {
             sendMessage("Stopping mirai-console")
             kotlin.runCatching {
-                MiraiConsole.job.cancel()
+                MiraiConsole.job.cancelAndJoin()
             }.fold(
                 onSuccess = { sendMessage("mirai-console stopped successfully.") },
                 onFailure = {
@@ -93,26 +134,27 @@ object BuiltInCommands {
     object Login : SimpleCommand(
         ConsoleCommandOwner, "login",
         description = "Log in a bot account."
-    ) {
+    ), BuiltInCommand {
         @Handler
         suspend fun CommandSender.handle(id: Long, password: String) {
-            sendMessage(
-                kotlin.runCatching {
-                    MiraiConsole.addBot(id, password).alsoLogin()
-                }.fold(
-                    onSuccess = { "${it.nick} ($id) Login succeed" },
-                    onFailure = { throwable ->
-                        "Login failed: ${throwable.localizedMessage ?: throwable.message}" +
-                                if (this is MessageEventContextAware<*>) {
-                                    this.fromEvent.selectMessagesUnit {
-                                        "stacktrace" reply {
-                                            throwable.stacktraceString
-                                        }
+
+            kotlin.runCatching {
+                MiraiConsole.addBot(id, password).alsoLogin()
+            }.fold(
+                onSuccess = { sendMessage("${it.nick} ($id) Login succeed") },
+                onFailure = { throwable ->
+                    sendMessage("Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
+                            if (this is MessageEventContextAware<*>) {
+                                this.fromEvent.selectMessagesUnit {
+                                    "stacktrace" reply {
+                                        throwable.stacktraceString
                                     }
-                                    "test"
-                                } else ""
-                    }
-                )
+                                }
+                                "test"
+                            } else "")
+
+                    throw throwable
+                }
             )
         }
     }

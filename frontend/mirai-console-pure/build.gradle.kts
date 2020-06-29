@@ -32,6 +32,7 @@ dependencies {
     compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
     compileAndRuntime(kotlin("stdlib")) // embedded by core
 
+    runtimeOnly("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(project(":mirai-console"))
 }

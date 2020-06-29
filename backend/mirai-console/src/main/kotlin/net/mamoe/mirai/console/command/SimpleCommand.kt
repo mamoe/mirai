@@ -34,6 +34,9 @@ abstract class SimpleCommand @JvmOverloads constructor(
 ) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
     CommandParserContextAware {
 
+    override val usage: String
+        get() = super.usage
+
     /**
      * 标注指令处理器
      */
@@ -47,7 +50,7 @@ abstract class SimpleCommand @JvmOverloads constructor(
     }
 
     @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    final override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) = error("shouldn't be reached")
+    override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) = sendMessage(usage)
 
     final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
         subCommands.single().parseAndExecute(this, args, false)
