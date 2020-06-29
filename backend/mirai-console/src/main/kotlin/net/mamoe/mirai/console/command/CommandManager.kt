@@ -54,6 +54,12 @@ object ConsoleCommandOwner : CommandOwner()
 val CommandOwner.registeredCommands: List<Command> get() = InternalCommandManager.registeredCommands.filter { it.owner == this }
 
 /**
+ * 获取所有已经注册了指令列表.
+ * @see JCommandManager.getRegisteredCommands Java 方法
+ */
+val allRegisteredCommands: List<Command> get() = InternalCommandManager.registeredCommands.toList() // copy
+
+/**
  * 指令前缀, 如 '/'
  * @see JCommandManager.getCommandPrefix Java 方法
  */

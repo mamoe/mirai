@@ -9,9 +9,15 @@
 
 package net.mamoe.mirai.console.command.internal
 
+import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.job
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.event.Listener
+import net.mamoe.mirai.event.subscribeAlways
+import net.mamoe.mirai.message.MessageEvent
 import java.util.concurrent.locks.ReentrantLock
 
 
@@ -22,7 +28,7 @@ internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
     return true
 }
 
-internal object InternalCommandManager {
+internal object InternalCommandManager : CoroutineScope by CoroutineScope(MiraiConsole.job) {
     const val COMMAND_PREFIX = "/"
 
     @JvmField
@@ -55,6 +61,18 @@ internal object InternalCommandManager {
             return requiredPrefixCommandMap[rawCommand.substringAfter(COMMAND_PREFIX).toLowerCase()]
         }
         return optionalPrefixCommandMap[rawCommand.toLowerCase()]
+    }
+
+    internal val commandListener: Listener<MessageEvent> by lazy {
+        @Suppress("RemoveExplicitTypeArguments")
+        subscribeAlways<MessageEvent>(
+            concurrency = Listener.ConcurrencyKind.CONCURRENT,
+            priority = Listener.EventPriority.HIGH
+        ) {
+            if (this.sender.asCommandSender().executeCommand(message) != null) {
+                intercept()
+            }
+        }
     }
 }
 

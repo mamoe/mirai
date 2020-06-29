@@ -9,12 +9,114 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.alsoLogin
+import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.job
+import net.mamoe.mirai.console.stacktraceString
+import net.mamoe.mirai.event.selectMessagesUnit
+import kotlin.concurrent.thread
+import kotlin.system.exitProcess
+
+/**
+ * 添加一个 [Bot] 实例到全局 Bot 列表, 但不登录.
+ */
+fun MiraiConsole.addBot(id: Long, password: String): Bot {
+    return Bot(id, password) {
+        fileBasedDeviceInfo()
+        this.loginSolver = this@addBot.frontEnd.createLoginSolver()
+        redirectNetworkLogToDirectory()
+        redirectBotLogToDirectory()
+    }
+}
 
 interface BuiltInCommand : Command
 
-@ConsoleExperimentalAPI
-object BuiltInCommands
+
+@Suppress("unused")
+object BuiltInCommands {
+
+    val all: Array<out Command> by lazy {
+        this::class.nestedClasses.mapNotNull { it.objectInstance as? Command }.toTypedArray()
+    }
+
+    internal fun registerAll() {
+        BuiltInCommands::class.nestedClasses.forEach {
+            (it.objectInstance as? Command)?.register()
+        }
+    }
+
+    object Help : SimpleCommand(
+        ConsoleCommandOwner, "help", "?",
+        description = "Gets help about the console."
+    ) {
+        init {
+            Runtime.getRuntime().addShutdownHook(thread(false) {
+                runBlocking { Stop.execute(ConsoleCommandSender.instance) }
+            })
+        }
+
+        @Handler
+        suspend fun CommandSender.handle() {
+            sendMessage("现在有指令: ${allRegisteredCommands.joinToString { it.primaryName }}")
+            sendMessage("帮助还没写, 将就一下")
+        }
+    }
+
+    object Stop : SimpleCommand(
+        ConsoleCommandOwner, "stop", "shutdown", "exit",
+        description = "Stop the whole world."
+    ) {
+        init {
+            Runtime.getRuntime().addShutdownHook(thread(false) {
+                runBlocking { Stop.execute(ConsoleCommandSender.instance) }
+            })
+        }
+
+        @Handler
+        suspend fun CommandSender.handle() {
+            sendMessage("Stopping mirai-console")
+            kotlin.runCatching {
+                MiraiConsole.job.cancel()
+            }.fold(
+                onSuccess = { sendMessage("mirai-console stopped successfully.") },
+                onFailure = {
+                    MiraiConsole.mainLogger.error(it)
+                    sendMessage(it.localizedMessage ?: it.message ?: it.toString())
+                }
+            )
+            exitProcess(0)
+        }
+    }
+
+    object Login : SimpleCommand(
+        ConsoleCommandOwner, "login",
+        description = "Log in a bot account."
+    ) {
+        @Handler
+        suspend fun CommandSender.handle(id: Long, password: String) {
+            sendMessage(
+                kotlin.runCatching {
+                    MiraiConsole.addBot(id, password).alsoLogin()
+                }.fold(
+                    onSuccess = { "${it.nick} ($id) Login succeed" },
+                    onFailure = { throwable ->
+                        "Login failed: ${throwable.localizedMessage ?: throwable.message}" +
+                                if (this is MessageEventContextAware<*>) {
+                                    this.fromEvent.selectMessagesUnit {
+                                        "stacktrace" reply {
+                                            throwable.stacktraceString
+                                        }
+                                    }
+                                    "test"
+                                } else ""
+                    }
+                )
+            )
+        }
+    }
+}
 
 /*
 

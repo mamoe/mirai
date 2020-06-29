@@ -17,7 +17,10 @@ import kotlinx.coroutines.Job
 import kotlinx.io.charsets.Charset
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
+import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.command.internal.InternalCommandManager
+import net.mamoe.mirai.console.command.primaryName
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.CuiPluginCenter
@@ -75,6 +78,11 @@ interface MiraiConsole : CoroutineScope {
     companion object INSTANCE : MiraiConsole by MiraiConsoleInternal
 }
 
+/**
+ * 获取 [MiraiConsole] 的 [Job]
+ */
+val MiraiConsole.job: Job
+    get() = this.coroutineContext[Job] ?: error("Internal error: Job not found in MiraiConsole.coroutineContext")
 
 //// internal
 
@@ -132,9 +140,13 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
         if (coroutineContext[Job] == null) {
             throw IllegalMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
         }
-        this.coroutineContext[Job]!!.invokeOnCompletion {
+        job.invokeOnCompletion {
             Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
         }
+
+        BuiltInCommands.registerAll()
+        mainLogger.info { "Preparing built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
+        InternalCommandManager.commandListener // start
 
         mainLogger.info { "Loading plugins..." }
         PluginManager.loadEnablePlugins()

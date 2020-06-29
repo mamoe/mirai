@@ -14,9 +14,10 @@ package net.mamoe.mirai.console.command
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleInternal
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.utils.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 
@@ -83,6 +84,12 @@ fun User.asCommandSender(): UserCommandSender {
     }
 }
 
+/**
+ * 表示由 [MessageEvent] 触发的指令
+ */
+interface MessageEventContextAware<E : MessageEvent> : MessageEventExtensions<User, Contact> {
+    val fromEvent: E
+}
 
 /**
  * 代表一个用户私聊机器人执行指令
@@ -99,7 +106,7 @@ sealed class UserCommandSender : CommandSender, BotAwareCommandSender {
      */
     abstract val subject: Contact
 
-    final override val bot: Bot get() = user.bot
+    override val bot: Bot get() = user.bot
 
     final override suspend fun sendMessage(message: Message) {
         subject.sendMessage(message)
@@ -110,15 +117,46 @@ sealed class UserCommandSender : CommandSender, BotAwareCommandSender {
  * 代表一个用户私聊机器人执行指令
  * @see Friend.asCommandSender
  */
-class FriendCommandSender(override val user: Friend) : UserCommandSender() {
+open class FriendCommandSender(final override val user: Friend) : UserCommandSender() {
     override val subject: Contact get() = user
+}
+
+/**
+ * 代表一个用户私聊机器人执行指令
+ * @see Friend.asCommandSender
+ */
+class FriendCommandSenderOnMessage(override val fromEvent: FriendMessageEvent) : FriendCommandSender(fromEvent.sender),
+    MessageEventContextAware<FriendMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
+    override val subject: Contact get() = super.subject
+    override val bot: Bot get() = super.bot
+}
+
+/**
+ * 代表一个群成员执行指令.
+ * @see Member.asCommandSender
+ */
+open class MemberCommandSender(final override val user: Member) : UserCommandSender() {
+    inline val group: Group get() = user.group
+    override val subject: Contact get() = group
 }
 
 /**
  * 代表一个群成员在群内执行指令.
  * @see Member.asCommandSender
  */
-class MemberCommandSender(override val user: Member) : UserCommandSender() {
-    inline val group: Group get() = user.group
-    override val subject: Contact get() = group
+class MemberCommandSenderOnMessage(override val fromEvent: GroupMessageEvent) : MemberCommandSender(fromEvent.sender),
+    MessageEventContextAware<GroupMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
+    override val subject: Contact get() = super.subject
+    override val bot: Bot get() = super.bot
+}
+
+/**
+ * 代表一个群成员通过临时会话私聊机器人执行指令.
+ * @see Member.asCommandSender
+ */
+@ConsoleExperimentalAPI
+class TempCommandSenderOnMessage(override val fromEvent: TempMessageEvent) : MemberCommandSender(fromEvent.sender),
+    MessageEventContextAware<TempMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
+    override val subject: Contact get() = super.subject
+    override val bot: Bot get() = super.bot
 }
