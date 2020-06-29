@@ -22,7 +22,8 @@ package net.mamoe.mirai.console.pure
 
 //import net.mamoe.mirai.console.command.CommandManager
 //import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleBuildConstants
 import net.mamoe.mirai.console.MiraiConsoleFrontEnd
@@ -35,7 +36,6 @@ import org.fusesource.jansi.Ansi
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.coroutines.resume
 
 private val ANSI_RESET = Ansi().reset().toString()
 
@@ -99,8 +99,8 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
                     .toString()
             )
         }
-        return suspendCancellableCoroutine {
-            it.resume(ConsoleUtils.lineReader.readLine("> "))
+        return withContext(Dispatchers.IO) {
+            ConsoleUtils.lineReader.readLine("> ")
         }
     }
 

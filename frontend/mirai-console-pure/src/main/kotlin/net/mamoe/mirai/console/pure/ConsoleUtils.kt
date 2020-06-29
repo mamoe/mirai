@@ -26,9 +26,20 @@ internal object ConsoleUtils {
         val dumb = System.getProperty("java.class.path")
             .contains("idea_rt.jar") || System.getProperty("mirai.idea") !== null || System.getenv("mirai.idea") !== null
 
-        terminal = TerminalBuilder.builder()
-            .jansi(true)
-            .build()
+        terminal = kotlin.runCatching {
+            TerminalBuilder.builder()
+                .dumb(dumb)
+                .build()
+        }.recoverCatching {
+            TerminalBuilder.builder()
+                .jansi(true)
+                .build()
+        }.recoverCatching {
+            TerminalBuilder.builder()
+                .system(true)
+                .build()
+        }.getOrThrow()
+
         lineReader = LineReaderBuilder.builder()
             .terminal(terminal)
             .completer(NullCompleter())
