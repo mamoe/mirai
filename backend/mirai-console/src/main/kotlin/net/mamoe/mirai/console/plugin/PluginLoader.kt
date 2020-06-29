@@ -50,6 +50,8 @@ interface PluginLoader<P : Plugin, D : PluginDescription> {
     fun disable(plugin: P)
 }
 
+fun <D : PluginDescription, P : Plugin> PluginLoader<P, D>.getDescription(plugin: P): D = plugin.description
+
 open class PluginLoadException : RuntimeException {
     constructor() : super()
     constructor(message: String?) : super(message)

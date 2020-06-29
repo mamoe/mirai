@@ -13,12 +13,16 @@ package net.mamoe.mirai.console.plugin
 
 import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.setting.internal.cast
 import net.mamoe.mirai.utils.info
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 
 val Plugin.description: PluginDescription
-    get() = PluginManager.resolvedPlugins.firstOrNull { it == this }?.description ?: error("Plugin is unloaded")
+    get() = PluginManager.resolvedPlugins.firstOrNull { it == this }?.loader?.cast<PluginLoader<Plugin, PluginDescription>>()
+        ?.getDescription(
+            this
+        ) ?: error("Plugin is unloaded")
 
 inline fun PluginLoader<*, *>.register() = PluginManager.registerPluginLoader(this)
 inline fun PluginLoader<*, *>.unregister() = PluginManager.unregisterPluginLoader(this)

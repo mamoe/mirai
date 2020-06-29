@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
 import java.io.File
-import java.net.URL
+import java.net.URI
 import kotlin.coroutines.CoroutineContext
 import kotlin.reflect.full.createInstance
 
@@ -54,17 +54,18 @@ object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescriptio
         get() = this.description
 
     override fun Sequence<File>.mapToDescription(): List<JvmPluginDescription> {
-        return this.associateWith { URL("jar:${it.absolutePath}!/plugin.yml") }.mapNotNull { (file, url) ->
-            kotlin.runCatching {
-                url.readText()
-            }.fold(
-                onSuccess = { yaml ->
-                    Yaml.nonStrict.parse(JvmPluginDescription.serializer(), yaml)
-                },
-                onFailure = {
-                    logger.error("Cannot load plugin file ${file.name}", it)
-                    null
-                }
+        return this.associateWith { URI("jar:file:${it.absolutePath.replace('\\', '/')}!/plugin.yml").toURL() }
+            .mapNotNull { (file, url) ->
+                kotlin.runCatching {
+                    url.readText()
+                }.fold(
+                    onSuccess = { yaml ->
+                        Yaml.nonStrict.parse(JvmPluginDescription.serializer(), yaml)
+                    },
+                    onFailure = {
+                        logger.error("Cannot load plugin file ${file.name}", it)
+                        null
+                    }
             )?.also { it._file = file }
         }
     }

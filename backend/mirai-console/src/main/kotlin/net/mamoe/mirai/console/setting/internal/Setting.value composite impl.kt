@@ -141,7 +141,7 @@ internal fun KClass<*>.isPrimitiveOrBuiltInSerializableValue(): Boolean {
 
 @PublishedApi
 @Suppress("UNCHECKED_CAST")
-internal inline fun <R, T> T.cast(): R = this as R
+internal inline fun <R> Any.cast(): R = this as R
 
 /**
  * Copied from kotlinx.serialization, modifications are marked with "/* mamoe modify */"
