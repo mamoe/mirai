@@ -11,6 +11,8 @@ import net.mamoe.mirai.message.data.toLongUnsigned
 import java.io.File
 import java.io.InputStream
 
+internal const val DEFAULT_REUSABLE_INPUT_BUFFER_SIZE = 8192
+
 internal actual fun ByteArray.asReusableInput(): ReusableInput {
     return object : ReusableInput {
         override val md5: ByteArray = md5()
@@ -18,9 +20,11 @@ internal actual fun ByteArray.asReusableInput(): ReusableInput {
 
         override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
             return object : ChunkedFlowSession<ChunkedInput> {
-                override val flow: Flow<ChunkedInput> = inputStream().chunkedFlow(sizePerPacket)
+                private val stream = inputStream()
+                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket, ByteArray(DEFAULT_REUSABLE_INPUT_BUFFER_SIZE.coerceAtLeast(sizePerPacket)))
 
                 override fun close() {
+                    stream.close()
                     // nothing to do
                 }
             }
@@ -46,7 +50,7 @@ internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
         override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
             val stream = inputStream()
             return object : ChunkedFlowSession<ChunkedInput> {
-                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket)
+                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket, ByteArray(DEFAULT_REUSABLE_INPUT_BUFFER_SIZE.coerceAtLeast(sizePerPacket)))
                 override fun close() {
                     stream.close()
                     if (deleteOnClose) this@asReusableInput.delete()
@@ -72,7 +76,7 @@ internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): Reusa
         override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
             val stream = inputStream()
             return object : ChunkedFlowSession<ChunkedInput> {
-                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket)
+                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket, ByteArray(DEFAULT_REUSABLE_INPUT_BUFFER_SIZE.coerceAtLeast(sizePerPacket)))
                 override fun close() {
                     stream.close()
                     if (deleteOnClose) this@asReusableInput.delete()
