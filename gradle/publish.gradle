@@ -24,7 +24,7 @@ bintray {
 
     pkg {
         repo = 'mirai'
-        name = project.name
+        name = "mirai-core"
         licenses = ['AGPL']
         vcsUrl = miraiGitHubUrl
         websiteUrl = miraiGitHubUrl
