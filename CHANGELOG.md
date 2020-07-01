@@ -1,8 +1,17 @@
 # Version 1.x
 
+## `1.1-EA2` 2020/7/2
+
+- 添加 `BotConfiguration.json`, 作为序列化时使用的 Json format, 修复潜在的因 kotlinx.serialization 进行不兼容更新而导致的不兼容.
+
+**不兼容变更**:
+- Image.imageId 后缀由 `.mirai` 变为图片文件实际类型, 如 `.png`, `.jpg`. 兼容原 `.mirai` 后缀.
+
+**修复**:
+- ([1.0.4](https://github.com/mamoe/mirai/releases/tag/1.0.4) 中修复的问题)
+- ([1.0.3](https://github.com/mamoe/mirai/releases/tag/1.0.3) 中修复的问题)
+
 ## `1.1-EA` 2020/6/16
-**1.1.0 Early Access** / **1.1.0 预览版**  
-**此版本新增的 API 可能不稳定, 且可能在下一个版本中删除.**
 
 **主要**:
 - 添加实验性 `CodableMessage` 作为支持 mirai 码的 `Message` 的接口.
