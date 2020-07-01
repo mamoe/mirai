@@ -1,5 +1,12 @@
 # Version 1.x
 
+## `1.0.4` 2020/7/2
+- 修复上传图片失败时内存泄露的问题 (#385)
+- 修复大量图片同时上传时出错的问题 (#387)
+- 修复在一些情况下 BotOfflineEvent 没有正常处理而无法继续接收消息的问题 (#376)
+- 修复 Bot 在某个群 T 出某个人导致 Bot 终止的问题 (#372)
+- 修复 `@PlannedRemoval` 的文档
+
 ## `1.0.3` 2020/6/29
 - 修复 friendlist.GetTroopListReqV2：java.lang.IllegalStateException: type mismatch 10 (#405)
 
