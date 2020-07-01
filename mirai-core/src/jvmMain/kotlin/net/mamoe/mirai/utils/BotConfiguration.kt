@@ -127,6 +127,27 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
         botLoggerSupplier = { SingleFileLogger(identity(it), file) }
     }
 
+    actual enum class MiraiProtocol actual constructor(
+        /** 协议模块使用的 ID */
+        @JvmField actual internal val id: Long
+    ) {
+        /**
+         * Android 手机.
+         *
+         * - 与手机冲突
+         * - 与平板和电脑不冲突
+         */
+        ANDROID_PHONE(537062845),
+
+        /**
+         * Android 平板.
+         *
+         * - 与平板冲突
+         * - 与手机和电脑不冲突
+         */
+        ANDROID_PAD(537062409)
+    }
+
     actual companion object {
         /** 默认的配置实例. 可以进行修改 */
         @JvmStatic

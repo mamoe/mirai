@@ -16,10 +16,10 @@ import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmField
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
 
@@ -51,6 +51,24 @@ expect open class BotConfiguration() : BotConfigurationBase {
      */
     @ConfigurationDsl
     fun randomDeviceInfo()
+
+    enum class MiraiProtocol {
+        /**
+         * Android 手机.
+         *
+         * - 与手机冲突
+         * - 与平板和电脑不冲突
+         */
+        ANDROID_PHONE,
+
+        /**
+         * Android 平板.
+         *
+         * - 与平板冲突
+         * - 与手机和电脑不冲突
+         */
+        ANDROID_PAD
+    }
 
     companion object {
         /** 默认的配置实例. 可以进行修改 */
@@ -128,27 +146,6 @@ open class BotConfigurationBase internal constructor() {
         @OptIn(UnstableDefault::class)
         Json(JsonConfiguration(isLenient = true, ignoreUnknownKeys = true))
     }.getOrElse { Json(JsonConfiguration.Stable) }
-
-    enum class MiraiProtocol(
-        /** 协议模块使用的 ID */
-        @JvmField internal val id: Long
-    ) {
-        /**
-         * Android 手机.
-         *
-         * - 与手机冲突
-         * - 与平板和电脑不冲突
-         */
-        ANDROID_PHONE(537062845),
-
-        /**
-         * Android 平板.
-         *
-         * - 与平板冲突
-         * - 与手机和电脑不冲突
-         */
-        ANDROID_PAD(537062409)
-    }
 
     /**
      * 不显示网络日志. 不推荐.
