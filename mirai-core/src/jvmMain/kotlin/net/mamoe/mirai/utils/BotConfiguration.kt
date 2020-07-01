@@ -127,6 +127,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
         botLoggerSupplier = { SingleFileLogger(identity(it), file) }
     }
 
+    @Suppress("ACTUAL_WITHOUT_EXPECT")
     actual enum class MiraiProtocol actual constructor(
         /** 协议模块使用的 ID */
         @JvmField actual internal val id: Long

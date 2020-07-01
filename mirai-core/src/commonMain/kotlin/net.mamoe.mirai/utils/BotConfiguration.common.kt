@@ -67,7 +67,9 @@ expect open class BotConfiguration() : BotConfigurationBase {
          * - 与平板冲突
          * - 与手机和电脑不冲突
          */
-        ANDROID_PAD
+        ANDROID_PAD;
+
+        internal val id: Long
     }
 
     companion object {
