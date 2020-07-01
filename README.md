@@ -14,7 +14,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 这个项目的名字来源于
      <p><a href = "http://www.kyotoanimation.co.jp/">京都动画</a>作品<a href = "https://zh.moegirl.org/zh-hans/%E5%A2%83%E7%95%8C%E7%9A%84%E5%BD%BC%E6%96%B9">《境界的彼方》</a>的<a href = "https://zh.moegirl.org/zh-hans/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5">栗山未来(Kuriyama <b>Mirai</b>)</a></p>
      <p><a href = "https://www.crypton.co.jp/">CRYPTON</a>以<a href = "https://www.crypton.co.jp/miku_eng">初音未来</a>为代表的创作与活动<a href = "https://magicalmirai.com/2019/index_en.html">(Magical <b>Mirai</b>)</a></p>
-图标以及形象由画师<a href = "">DazeCake</a>绘制
+图标以及形象由画师<a href = "https://github.com/DazeCake">DazeCake</a>绘制
 </div>
 
 ## Mirai
@@ -114,6 +114,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 - `C++`: [miraipp](https://github.com/Chlorie/miraipp-template) mirai-http-api 的另一个 C++ 封装，使用现代 C++ 特性，并提供了较完善的说明文档
 - `C#`: [Mirai-CSharp](https://github.com/Executor-Cheng/Mirai-CSharp) 基于 mirai-api-http 的 C# SDK
 - `Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) mirai-http-api 的 Rust 封装
+- `TypeScript`: [mirai-ts](https://github.com/YunYouJun/mirai-ts) mirai-api-http 的 TypeScript SDK，附带声明文件，拥有良好的注释和类型提示，也可作为 JavaScript SDK 使用。
 
 </details>
 

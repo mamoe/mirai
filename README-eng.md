@@ -33,6 +33,7 @@ Mirai is building a community (with `mirai-console`) that allows developers to s
 - （Community）`C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) A simple C++ SDK using `mirai-api-http` for ALL platforms.
 - （Community）`C++`: [miraipp](https://github.com/Chlorie/miraipp-template) A sophisticated, modern mapping for `mirai-http-api` to C++, providing development documents.
 - （Community）`Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) The Rust mapping for `mirai-http-api`.
+- （Community）`TypeScript`: [mirai-ts](https://github.com/YunYouJun/mirai-ts) TypeScript SDK comes with a declaration file, has good code hints, and can also be used as a JavaScript SDK.
 
 ### Use as a library
 You can install mirai as a library into your project.
