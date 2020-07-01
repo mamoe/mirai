@@ -16,6 +16,9 @@ package net.mamoe.mirai.event.events
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.qqandroid.network.Packet
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 
@@ -35,7 +38,8 @@ sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
      * 主动离线. 主动广播这个事件也可以让 [Bot] 关闭.
      */
-    data class Active(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), BotActiveEvent
+    data class Active(override val bot: Bot, override val cause: Throwable?) : BotOfflineEvent(), BotActiveEvent,
+        CauseAware
 
     /**
      * 被挤下线
@@ -45,15 +49,31 @@ sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         BotPassiveEvent
 
     /**
-     * 被服务器断开或因网络问题而掉线
+     * 被服务器断开
      */
-    data class Dropped internal constructor(override val bot: Bot, val cause: Throwable?) : BotOfflineEvent(), Packet,
-        BotPassiveEvent
+    @SinceMirai("1.1.0")
+    @MiraiInternalAPI("This is very experimental and might be changed")
+    data class MsfOffline internal constructor(override val bot: Bot, override val cause: Throwable?) :
+        BotOfflineEvent(), Packet,
+        BotPassiveEvent, CauseAware
+
+    /**
+     * 因网络问题而掉线
+     */
+    data class Dropped internal constructor(override val bot: Bot, override val cause: Throwable?) : BotOfflineEvent(),
+        Packet,
+        BotPassiveEvent, CauseAware
 
     /**
      * 服务器主动要求更换另一个服务器
      */
+    @MiraiInternalAPI
     data class RequireReconnect internal constructor(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
+
+    @MiraiExperimentalAPI
+    interface CauseAware {
+        val cause: Throwable?
+    }
 }
 
 /**

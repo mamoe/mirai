@@ -74,11 +74,13 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
                 // bot 还未登录就被 close
                 return@subscribeAlways
             }
-            if (network.areYouOk() && event !is BotOfflineEvent.Force) {
+            /*
+            if (network.areYouOk() && event !is BotOfflineEvent.Force && event !is BotOfflineEvent.MsfOffline) {
                 // network 运行正常
                 return@subscribeAlways
-            }
+            }*/
             when (event) {
+                is BotOfflineEvent.MsfOffline,
                 is BotOfflineEvent.Dropped,
                 is BotOfflineEvent.RequireReconnect
                 -> {
@@ -105,7 +107,12 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
                                     @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
                                     relogin((event as? BotOfflineEvent.Dropped)?.cause)
                                 }
-                                launch { BotReloginEvent(bot, (event as? BotOfflineEvent.Dropped)?.cause).broadcast() }
+                                launch {
+                                    BotReloginEvent(
+                                        bot,
+                                        (event as? BotOfflineEvent.CauseAware)?.cause
+                                    ).broadcast()
+                                }
                                 return
                             }.getOrElse {
                                 if (it is LoginFailedException && !it.killBot) {
