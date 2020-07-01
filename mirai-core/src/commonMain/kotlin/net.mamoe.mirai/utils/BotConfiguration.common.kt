@@ -61,10 +61,8 @@ expect open class BotConfiguration() : BotConfigurationBase {
     fun copy(): BotConfiguration
 }
 
-@MiraiInternalAPI
-@Suppress("PropertyName")
 @SinceMirai("1.1.0")
-internal open class BotConfigurationBase internal constructor() {
+open class BotConfigurationBase internal constructor() {
     /**
      * 日志记录器
      *
