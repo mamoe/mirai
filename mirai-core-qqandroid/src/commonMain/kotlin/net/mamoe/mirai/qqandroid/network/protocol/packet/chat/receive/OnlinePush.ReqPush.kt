@@ -257,6 +257,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     }
                 }
 
+                @Suppress("DEPRECATION")
                 if (group.settings.isConfessTalkEnabled == new) {
                     return@lambda732 emptySequence()
                 }
