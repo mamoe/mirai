@@ -9,28 +9,20 @@
 
 ## 构建需求
 
-- Kotlin 1.3.72 (必须)
-- JDK 6 或更高 (必须)
+- JDK 6 或更高
 
 ## 获取 Demo
 可在 [mirai-demos](https://github.com/mamoe/mirai-demos) 中获取已经配置好依赖的示例项目.
 
 ## Quick Start
 
-请将 `VERSION` 替换为 `mirai-core` 的最新版本号(如 `0.23.0`):
+请将 `VERSION` 替换为 `mirai-core` 的最新版本号(如 `1.0.4`):
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
 ### 添加依赖
 可通过以下三种方法之一添加 mirai 依赖.
 
-#### 直接导入jar包 (不推荐)
-下载已经编译好的 Jar 包, 并添加 Jar 依赖:
-- [mirai-core](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core)
-- [mirai-qqandriod](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core-qqandroid)
-
 #### Maven
-
-Kotlin 在 Maven 上只支持 JVM 平台.
 
 ```xml
 <repositories>
@@ -83,6 +75,12 @@ implementation("net.mamoe:mirai-core-qqandroid-common:VERSION")
 ```kotlin
 implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
 ```
+
+#### 直接导入jar包 (不推荐)
+下载已经编译好的 Jar 包, 并添加 Jar 依赖:
+- [mirai-core](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core)
+- [mirai-qqandriod](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core-qqandroid)
+
 
 ### 开始使用
 
