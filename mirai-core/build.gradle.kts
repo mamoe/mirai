@@ -35,7 +35,7 @@ kotlin {
     }
 
     jvm() {
-        withJava()
+        // withJava() // https://youtrack.jetbrains.com/issue/KT-39991
     }
 
     sourceSets {
