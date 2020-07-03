@@ -115,6 +115,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 - `C#`: [Mirai-CSharp](https://github.com/Executor-Cheng/Mirai-CSharp) 基于 mirai-api-http 的 C# SDK
 - `Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) mirai-http-api 的 Rust 封装
 - `TypeScript`: [mirai-ts](https://github.com/YunYouJun/mirai-ts) mirai-api-http 的 TypeScript SDK，附带声明文件，拥有良好的注释和类型提示，也可作为 JavaScript SDK 使用。
+- `易语言`: [e-mirai](https://github.com/only52607/e-mirai) mirai-api-http 的 易语言 SDK，使用全中文环境开发插件，适合编程新手使用。
 
 </details>
 
