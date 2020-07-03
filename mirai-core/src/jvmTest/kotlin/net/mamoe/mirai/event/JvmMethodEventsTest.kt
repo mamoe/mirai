@@ -46,6 +46,13 @@ internal class JvmMethodEventsTest {
                 called.getAndIncrement()
             }
 
+            @Suppress("unused")
+            @EventHandler
+            suspend fun `suspend param Void`(event: TestEvent): Void? {
+                called.getAndIncrement()
+                return null
+            }
+
             @EventHandler
             @Suppress("unused")
             fun TestEvent.`receiver param Unit`(event: TestEvent) {
@@ -88,7 +95,7 @@ internal class JvmMethodEventsTest {
                 TestEvent().broadcast()
             }
 
-            assertEquals(8, this.getCalled())
+            assertEquals(9, this.getCalled())
         }
     }
 

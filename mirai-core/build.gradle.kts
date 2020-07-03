@@ -34,7 +34,9 @@ kotlin {
         )
     }
 
-    jvm()
+    jvm() {
+        withJava()
+    }
 
     sourceSets {
         all {
