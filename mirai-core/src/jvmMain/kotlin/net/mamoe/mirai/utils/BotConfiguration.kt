@@ -146,7 +146,12 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
          * - 与平板冲突
          * - 与手机和电脑不冲突
          */
-        ANDROID_PAD(537062409)
+        ANDROID_PAD(537062409),
+
+        /**
+         * Android 手表.
+         * */
+        ANDROID_WATCH(537061176)
     }
 
     actual companion object {
