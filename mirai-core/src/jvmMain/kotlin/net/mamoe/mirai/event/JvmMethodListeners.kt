@@ -152,7 +152,7 @@ abstract class SimpleListenerHost
 @JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : ListenerHost, CoroutineScope {
 
     final override val coroutineContext: CoroutineContext =
-        SupervisorJob(coroutineContext[Job]) + CoroutineExceptionHandler(::handleException) + coroutineContext
+        CoroutineExceptionHandler(::handleException) + coroutineContext + SupervisorJob(coroutineContext[Job])
 
     /**
      * 处理事件处理中未捕获的异常. 在构造器中的 [coroutineContext] 未提供 [CoroutineExceptionHandler] 情况下必须继承此函数.
