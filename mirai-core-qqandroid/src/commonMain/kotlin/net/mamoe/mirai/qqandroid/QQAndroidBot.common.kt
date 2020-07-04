@@ -144,7 +144,7 @@ internal class QQAndroidBot constructor(
     @Suppress("DuplicatedCode")
     @OptIn(LowLevelAPI::class)
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
-        rejectMemberJoinRequest(event, blackList,"")
+        rejectMemberJoinRequest(event, blackList, "")
     }
 
     @Suppress("DuplicatedCode")
@@ -585,13 +585,15 @@ internal abstract class QQAndroidBotBase constructor(
 
     @LowLevelAPI
     @MiraiExperimentalAPI
-    override suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData {
+    override suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int): GroupActiveData {
         val data = network.async {
             HttpClient().get<String> {
                 url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                 parameter("bkn", bkn)
                 parameter("gc", groupId)
-
+                if (page != -1) {
+                    parameter("page", page)
+                }
                 headers {
                     append(
                         "cookie",
