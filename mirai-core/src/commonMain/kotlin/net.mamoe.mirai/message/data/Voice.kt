@@ -15,6 +15,9 @@ abstract class PttMessage : MessageContent {
 
     abstract val fileName: String
     abstract val md5: ByteArray
+    abstract val fileSize: Long
+    abstract val fileKey:ByteArray
+
 }
 
 
@@ -25,6 +28,8 @@ abstract class PttMessage : MessageContent {
 class Voice(
     override val fileName: String,
     override val md5: ByteArray,
+    override val fileSize: Long,
+    override val fileKey: ByteArray,
     private val _url: String
 ) : PttMessage() {
 

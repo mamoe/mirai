@@ -29,6 +29,7 @@ import kotlinx.io.core.use
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.CSDataHighwayHead
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.qqandroid.utils.PlatformSocket
 import net.mamoe.mirai.qqandroid.utils.SocketException
 import net.mamoe.mirai.qqandroid.utils.addSuppressedMirai

@@ -42,6 +42,7 @@ import net.mamoe.mirai.qqandroid.message.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*

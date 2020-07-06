@@ -219,7 +219,7 @@ internal fun MsgComm.Msg.toMessageChain(
 
     val pptMsg = ptt?.run {
         when(fileType) {
-            4 -> Voice(String(fileName), fileMd5, String(downPara))
+            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),fileKey,String(downPara))
             else -> null
         }
     }
