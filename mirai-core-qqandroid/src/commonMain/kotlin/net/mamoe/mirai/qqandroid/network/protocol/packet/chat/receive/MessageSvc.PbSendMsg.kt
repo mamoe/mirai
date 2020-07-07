@@ -145,7 +145,6 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                                 boolValid = true,
                                 fileSize = fileSize.toInt(),
                                 fileType = 4,
-                                time = voiceLength,
                                 pbReserve = byteArrayOf(0)
                             )
                         }
