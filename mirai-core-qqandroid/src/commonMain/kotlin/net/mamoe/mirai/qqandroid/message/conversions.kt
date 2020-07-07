@@ -164,6 +164,11 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                         extraInfo = ImMsgBody.ExtraInfo(flags = 16,groupMask = 1)
                     )
                 )
+                elements.add(ImMsgBody.Elem(
+                    elemFlags2 = ImMsgBody.ElemFlags2(
+                        vipStatus = 1
+                    )
+                ))
             }
             is ForwardMessage,
             is MessageSource, // mirai metadata only
