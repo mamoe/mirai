@@ -33,6 +33,8 @@ private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持�
 private val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最新版手机QQ体验新功能。")
 private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版手机QQ查看闪照。")
 
+
+@OptIn(ExperimentalStdlibApi::class)
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = ArrayList<ImMsgBody.Elem>(this.size)
@@ -156,7 +158,13 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             is VipFace -> {
                 transformOneMessage(PlainText(it.contentToString()))
             }
-            is PttMessage,
+            is PttMessage -> {
+                elements.add(
+                    ImMsgBody.Elem(
+                        extraInfo = ImMsgBody.ExtraInfo(flags = 16,groupMask = 1)
+                    )
+                )
+            }
             is ForwardMessage,
             is MessageSource, // mirai metadata only
             is RichMessage // already transformed above
@@ -218,8 +226,8 @@ internal fun MsgComm.Msg.toMessageChain(
     val ptt = this.msgBody.richText.ptt
 
     val pptMsg = ptt?.run {
-        when(fileType) {
-            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),fileKey,String(downPara))
+        when (fileType) {
+            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(), time, String(downPara))
             else -> null
         }
     }
@@ -431,7 +439,8 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                                     .orEmpty(),
                             proto.pokeType,
                             proto.vaspokeId
-                        ))
+                        )
+                        )
                     }
                     3 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())

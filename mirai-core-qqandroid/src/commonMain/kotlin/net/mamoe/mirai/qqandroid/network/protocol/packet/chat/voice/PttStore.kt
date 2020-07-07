@@ -11,6 +11,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.getRandomString
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
+import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.utils.toUHexString
@@ -77,6 +78,9 @@ internal class PttStore {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
             resp0.msgTryupPttRsp ?: error("cannot find `msgTryupPttRsp` from `Cmd0x388.RspBody`")
             val resp = resp0.msgTryupPttRsp.first()
+            if (resp.failMsg != null) {
+                throw IllegalStateException(resp.failMsg.encodeToString())
+            }
             return Response.RequireUpload(
                 fileId = resp.fileid,
                 uKey = resp.upUkey,

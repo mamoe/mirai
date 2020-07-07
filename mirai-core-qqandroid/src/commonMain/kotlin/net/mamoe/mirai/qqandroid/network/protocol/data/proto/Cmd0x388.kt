@@ -273,7 +273,7 @@ internal class TryUpPttReq(
 internal class TryUpPttRsp(
         @ProtoId(1) @JvmField val fileId: Long = 0L,
         @ProtoId(2) @JvmField val result: Int = 0,
-        @ProtoId(3) @JvmField val failMsg: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoId(3) @JvmField val failMsg: ByteArray? = null,
         @ProtoId(4) @JvmField val boolFileExit: Boolean = false,
         @ProtoId(5) @JvmField val uint32UpIp: List<Int>? = null,
         @ProtoId(6) @JvmField val uint32UpPort: List<Int>? = null,

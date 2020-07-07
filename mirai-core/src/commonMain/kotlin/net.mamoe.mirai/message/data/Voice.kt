@@ -16,7 +16,7 @@ abstract class PttMessage : MessageContent {
     abstract val fileName: String
     abstract val md5: ByteArray
     abstract val fileSize: Long
-    abstract val fileKey:ByteArray
+    abstract val voiceLength:Int
 
 }
 
@@ -29,7 +29,7 @@ class Voice(
     override val fileName: String,
     override val md5: ByteArray,
     override val fileSize: Long,
-    override val fileKey: ByteArray,
+    override val voiceLength: Int,
     private val _url: String
 ) : PttMessage() {
 
@@ -44,7 +44,7 @@ class Voice(
 
     private var _stringValue: String? = null
         get() = field ?: kotlin.run {
-            field = "[mirai:voice:$fileName]"
+            field = "[mirai:voice:$fileName,url:$url]"
             field
         }
 
