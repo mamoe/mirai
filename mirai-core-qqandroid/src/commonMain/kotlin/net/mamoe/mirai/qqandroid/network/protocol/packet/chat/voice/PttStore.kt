@@ -8,48 +8,31 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.getRandomString
 import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 
 internal class PttStore {
     object GroupPttUp : OutgoingPacketFactory<GroupPttUp.Response>("PttStore.GroupPttUp") {
 
         sealed class Response : Packet {
 
-            class Resp(
-                val resp: Cmd0x388.RspBody
+            class RequireUpload(
+                val fileId: Long,
+                val uKey: ByteArray,
+                val uploadIpList: List<Int>,
+                val uploadPortList: List<Int>,
+                val fileKey: ByteArray
             ) : Response() {
                 override fun toString(): String {
-                    return resp._miraiContentToString()
+                    return "RequireUpload(fileId=$fileId, uKey=${uKey.contentToString()})"
                 }
             }
         }
 
-        /**
-         * 发语音
-         * 收到请求后可以通过下面的代码来上传到服务器
-         *
-        val up_rsp = response.resp.msgTryupPttRsp!![0]
-        if (!up_rsp.boolFileExit) {
-        val server = up_rsp.uint32UpIp!![0].toIpV4AddressString()
-        val port = up_rsp.uint32UpPort?.get(0)
-        val id = up_rsp.fileid
-
-        HttpClient().post<String> {
-        url("http://$server:$port")
-        parameter("ver", 4679)
-        parameter("ukey", up_rsp.upUkey.toUHexString(""))
-        parameter("filekey", up_rsp.fileKey.toUHexString(""))
-        parameter("filesize", size)
-        parameter("bmd5", md5)
-        parameter("mType", "pttDu")
-        parameter("voice_encodec", 0)
-        body = file.readBytes()
-        }
-
-         * */
 
         @ExperimentalStdlibApi
         operator fun invoke(
@@ -71,7 +54,7 @@ internal class PttStore {
                         fileId = fileId,
                         fileSize = size,
                         fileMd5 = md5,
-                        fileName = getRandomString(16).encodeToByteArray(),
+                        fileName = md5,
                         srcTerm = 5,
                         platformType = 9,
                         buType = 4,
@@ -92,7 +75,16 @@ internal class PttStore {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
-            return Response.Resp(resp0)
+            resp0.msgTryupPttRsp ?: error("cannot find `msgTryupPttRsp` from `Cmd0x388.RspBody`")
+            val resp = resp0.msgTryupPttRsp.first()
+            return Response.RequireUpload(
+                fileId = resp.fileid,
+                uKey = resp.upUkey,
+                uploadIpList = resp.uint32UpIp!!,
+                uploadPortList = resp.uint32UpPort!!,
+                fileKey = resp.fileKey
+            )
+
         }
 
     }

@@ -148,7 +148,8 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                                 fileType = 4,
                                 // 不知道能不能解决tim无法收听的问题
                                 reserve = "16 36 20 38 36 65 41 31 04 37 61 39 35 37 37 61 33 62 37 30 33 66 65 33 31 20 20 20 20 20 20 35 30 55 49 30 E3 3F 8F 9F FB CA 1D 79 60 6C F4 74 F2 35 35 34 39 33 30 45 33 33 46 38 46 39 46 46 42 43 41 31 44 37 39 36 30 36 43 46 34 37 34 46 32 2E 61 6D 72 41".hexToBytes(),
-                                pbReserve = "08 00".hexToBytes()
+                                pbReserve = "08 00".hexToBytes(),
+                                time = 2
                             )
                         }
                     )
