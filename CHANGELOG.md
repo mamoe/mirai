@@ -1,7 +1,7 @@
 # Version 1.x
 
 ## `1.1.0`  2020/7/9
-- 支持 Android 手表协议 (`BotConfiguration.MiraiProtocol.ANDROID_PAD`)
+- 支持 Android 手表协议 (`BotConfiguration.MiraiProtocol.ANDROID_WATCH`)
 - `EventHandler` 现在支持 `Nothing` 类型.
 - 修复无需同意直接进群时，在加载新群信息完成前收到消息过早处理的问题 (#370)
 - 修复在某些情况下，管理员邀请群Bot加群会被误判为群成员申请加群的问题 (#402 by [@kenvix](https://github.com/kenvix))
