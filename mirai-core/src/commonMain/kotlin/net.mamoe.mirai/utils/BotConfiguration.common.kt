@@ -52,26 +52,24 @@ expect open class BotConfiguration() : BotConfigurationBase {
     @ConfigurationDsl
     fun randomDeviceInfo()
 
+    /**
+     * 协议类型, 服务器仅允许使用不同协议同时登录.
+     */
     enum class MiraiProtocol {
         /**
          * Android 手机.
-         *
-         * - 与手机冲突
-         * - 与平板和电脑不冲突
          */
         ANDROID_PHONE,
 
         /**
          * Android 平板.
-         *
-         * - 与平板冲突
-         * - 与手机和电脑不冲突
          */
         ANDROID_PAD,
 
         /**
          * Android 手表.
          * */
+        @SinceMirai("1.1.0")
         ANDROID_WATCH;
 
 

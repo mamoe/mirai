@@ -134,23 +134,18 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     ) {
         /**
          * Android 手机.
-         *
-         * - 与手机冲突
-         * - 与平板和电脑不冲突
          */
         ANDROID_PHONE(537062845),
 
         /**
          * Android 平板.
-         *
-         * - 与平板冲突
-         * - 与手机和电脑不冲突
          */
         ANDROID_PAD(537062409),
 
         /**
          * Android 手表.
          * */
+        @SinceMirai("1.1.0")
         ANDROID_WATCH(537061176)
     }
 
