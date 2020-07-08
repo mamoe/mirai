@@ -262,7 +262,7 @@ open class SimpleLogger(
 
     enum class LogPriority(
         @MiraiExperimentalAPI val nameAligned: String,
-        @MiraiExperimentalAPI val simpleName: String,
+        val simpleName: String,
         @MiraiExperimentalAPI val correspondingFunction: MiraiLogger.(message: String?, e: Throwable?) -> Unit
     ) {
         VERBOSE("VERBOSE", "V", MiraiLogger::verbose),

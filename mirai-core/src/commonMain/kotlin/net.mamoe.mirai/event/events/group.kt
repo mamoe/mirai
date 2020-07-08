@@ -355,7 +355,8 @@ data class MemberJoinRequestEvent internal constructor(
     suspend fun accept() = bot.acceptMemberJoinRequest(this)
 
     @JvmSynthetic
-    suspend fun reject(blackList: Boolean = false) = bot.rejectMemberJoinRequest(this, blackList)
+    @JvmOverloads
+    suspend fun reject(blackList: Boolean = false, message: String = "") = bot.rejectMemberJoinRequest(this, blackList, message)
 
     @JvmSynthetic
     suspend fun ignore(blackList: Boolean = false) = bot.ignoreMemberJoinRequest(this, blackList)
@@ -368,8 +369,8 @@ data class MemberJoinRequestEvent internal constructor(
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("reject")
-    fun __rejectBlockingForJava__(blackList: Boolean = false) =
-        runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
+    fun __rejectBlockingForJava__(blackList: Boolean = false, message: String = "") =
+        runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList, message) }
 
     @JavaFriendlyAPI
     @JvmOverloads

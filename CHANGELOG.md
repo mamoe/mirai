@@ -1,8 +1,37 @@
 # Version 1.x
 
+## `1.1.0`  2020/7/9
+- 支持 Android 手表协议 (`BotConfiguration.MiraiProtocol.ANDROID_PAD`)
+- `EventHandler` 现在支持 `Nothing` 类型.
+- 修复无需同意直接进群时，在加载新群信息完成前收到消息过早处理的问题 (#370)
+- 修复在某些情况下，管理员邀请群Bot加群会被误判为群成员申请加群的问题 (#402 by [@kenvix](https://github.com/kenvix))
+- 修复从其他客户端加群时未同步的问题 (#404, #410)
+- 修复 `ConfigPushSvc.PushReq` 解析失败的问题 (#417)
+- 修复 `_lowLevelGetGroupActiveData`
+- 修复 `SimpleListenerHost.coroutineScope` 潜在的 Job 被覆盖的问题
+
+## `1.0.4` 2020/7/2
+- 修复上传图片失败时内存泄露的问题 (#385)
+- 修复大量图片同时上传时出错的问题 (#387)
+- 修复在一些情况下 BotOfflineEvent 没有正常处理而无法继续接收消息的问题 (#376)
+- 修复 Bot 在某个群 T 出某个人导致 Bot 终止的问题 (#372)
+- 修复 `@PlannedRemoval` 的文档
+
+## `1.1-EA2` 2020/7/2
+
+- 添加 `BotConfiguration.json`, 作为序列化时使用的 Json format, 修复潜在的因 kotlinx.serialization 进行不兼容更新而导致的不兼容.
+
+**不兼容变更**:
+- Image.imageId 后缀由 `.mirai` 变为图片文件实际类型, 如 `.png`, `.jpg`. 兼容原 `.mirai` 后缀.
+
+**修复**:
+- ([1.0.4](https://github.com/mamoe/mirai/releases/tag/1.0.4) 中修复的问题)
+- ([1.0.3](https://github.com/mamoe/mirai/releases/tag/1.0.3) 中修复的问题)
+
+## `1.0.3` 2020/6/29
+- 修复 friendlist.GetTroopListReqV2：java.lang.IllegalStateException: type mismatch 10 (#405)
+
 ## `1.1-EA` 2020/6/16
-**1.1.0 Early Access** / **1.1.0 预览版**  
-**此版本新增的 API 可能不稳定, 且可能在下一个版本中删除.**
 
 **主要**:
 - 添加实验性 `CodableMessage` 作为支持 mirai 码的 `Message` 的接口.

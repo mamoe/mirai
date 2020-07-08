@@ -112,10 +112,12 @@ interface LowLevelBotAPIAccessor {
 
     /**
      * 获取群活跃信息
+     * 不传page可得到趋势图
+     * page从0开始传入可以得到发言列表
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData
+    suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int = -1): GroupActiveData
 
 
     /**
@@ -123,19 +125,38 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSolveNewFriendRequestEvent(eventId: Long, fromId: Long, fromNick: String, accept: Boolean, blackList: Boolean)
+    suspend fun _lowLevelSolveNewFriendRequestEvent(
+        eventId: Long,
+        fromId: Long,
+        fromNick: String,
+        accept: Boolean,
+        blackList: Boolean
+    )
 
     /**
      * 处理被邀请加入一个群请求事件
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSolveBotInvitedJoinGroupRequestEvent(eventId: Long, invitorId: Long, groupId: Long, accept: Boolean)
+    suspend fun _lowLevelSolveBotInvitedJoinGroupRequestEvent(
+        eventId: Long,
+        invitorId: Long,
+        groupId: Long,
+        accept: Boolean
+    )
 
     /**
      * 处理账号请求加入群事件
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSolveMemberJoinRequestEvent(eventId: Long, fromId: Long, fromNick: String, groupId: Long, accept: Boolean?, blackList: Boolean)
+    suspend fun _lowLevelSolveMemberJoinRequestEvent(
+        eventId: Long,
+        fromId: Long,
+        fromNick: String,
+        groupId: Long,
+        accept: Boolean?,
+        blackList: Boolean,
+        message: String = ""
+    )
 }

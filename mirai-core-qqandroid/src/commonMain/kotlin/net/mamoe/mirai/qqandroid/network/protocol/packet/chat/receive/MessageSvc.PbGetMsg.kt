@@ -44,6 +44,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
@@ -189,6 +190,20 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 
                     34 -> { // 与 33 重复
                         return@mapNotNull null
+                    }
+
+                    85 -> bot.groupListModifyLock.withLock { // 其他客户端入群
+                        val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
+                        if (msg.msgHead.toUin == bot.id && group == null) {
+
+                            val newGroup = bot.getNewGroup(Group.calculateGroupCodeByGroupUin(msg.msgHead.fromUin))
+                                ?: return@mapNotNull null
+                            bot.groups.delegate.addLast(newGroup)
+                            return@mapNotNull BotJoinGroupEvent.Active(newGroup)
+                        } else {
+                            // unknown
+                            return@mapNotNull null
+                        }
                     }
                     /*
                     34 -> { // 主动入群

@@ -237,7 +237,7 @@ internal class MemberImpl constructor(
 
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             group.members.delegate.removeIf { it.id == this@MemberImpl.id }
-            this.cancel(CancellationException("Kicked by bot"))
+            this@MemberImpl.cancel(CancellationException("Kicked by bot"))
             MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
     }

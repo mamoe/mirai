@@ -148,20 +148,20 @@ internal class NewContact {
                 return struct?.msg?.run {
                     //this.soutv("SystemMsg")
                     when (subType) {
-                        1 -> { //管理员邀请
-                            when (c2cInviteJoinGroupFlag) {
+                        1 -> { // 处理被邀请入群 或 处理成员入群申请
+                            when (groupMsgType) {
                                 1 -> {
-                                    // 被邀请入群
-                                    BotInvitedJoinGroupRequestEvent(
-                                        bot, struct.msgSeq, actionUin,
-                                        groupCode, groupName, actionUinNick
-                                    )
-                                }
-                                0 -> {
                                     // 成员申请入群
                                     MemberJoinRequestEvent(
                                         bot, struct.msgSeq, msgAdditional,
                                         struct.reqUin, groupCode, groupName, reqUinNick
+                                    )
+                                }
+                                2 -> {
+                                    // 被邀请入群
+                                    BotInvitedJoinGroupRequestEvent(
+                                        bot, struct.msgSeq, actionUin,
+                                        groupCode, groupName, actionUinNick
                                     )
                                 }
                                 else -> throw contextualBugReportException(
@@ -171,16 +171,14 @@ internal class NewContact {
                                 )
                             }
                         }
-                        2 -> {
-                            // 被邀请入群, 自动同意
+                        2 -> { // 被邀请入群, 自动同意, 不需处理
 
                             val group = bot.getNewGroup(groupCode) ?: return null
                             val invitor = group[actionUin]
 
                             BotJoinGroupEvent.Invite(invitor)
                         }
-                        3 -> {
-                            // 已被请他管理员处理
+                        3 -> { // 已被请他管理员处理
                             null
                         }
                         5 -> {
@@ -223,7 +221,8 @@ internal class NewContact {
                 groupId: Long,
                 isInvited: Boolean,
                 accept: Boolean?,
-                blackList: Boolean = false
+                blackList: Boolean = false,
+                message: String = ""
             ) =
                 buildOutgoingUniPacket(client) {
                     writeProtoBuf(
@@ -236,7 +235,7 @@ internal class NewContact {
                                     false -> 12 // reject
                                 },
                                 groupCode = groupId,
-                                msg = "",
+                                msg = message,
                                 remark = "",
                                 blacklist = blackList
                             ),

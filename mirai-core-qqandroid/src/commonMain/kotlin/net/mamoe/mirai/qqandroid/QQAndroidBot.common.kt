@@ -144,6 +144,12 @@ internal class QQAndroidBot constructor(
     @Suppress("DuplicatedCode")
     @OptIn(LowLevelAPI::class)
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
+        rejectMemberJoinRequest(event, blackList, "")
+    }
+
+    @Suppress("DuplicatedCode")
+    @OptIn(LowLevelAPI::class)
+    override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean, message: String) {
         checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
@@ -159,7 +165,8 @@ internal class QQAndroidBot constructor(
             fromNick = event.fromNick,
             groupId = event.groupId,
             accept = false,
-            blackList = blackList
+            blackList = blackList,
+            message = message
         )
     }
 
@@ -578,13 +585,15 @@ internal abstract class QQAndroidBotBase constructor(
 
     @LowLevelAPI
     @MiraiExperimentalAPI
-    override suspend fun _lowLevelGetGroupActiveData(groupId: Long): GroupActiveData {
+    override suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int): GroupActiveData {
         val data = network.async {
             HttpClient().get<String> {
                 url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                 parameter("bkn", bkn)
                 parameter("gc", groupId)
-
+                if (page != -1) {
+                    parameter("page", page)
+                }
                 headers {
                     append(
                         "cookie",
@@ -755,7 +764,8 @@ internal abstract class QQAndroidBotBase constructor(
         fromNick: String,
         groupId: Long,
         accept: Boolean?,
-        blackList: Boolean
+        blackList: Boolean,
+        message: String
     ) {
         network.apply {
             NewContact.SystemMsgNewGroup.Action(
@@ -765,7 +775,8 @@ internal abstract class QQAndroidBotBase constructor(
                 groupId = groupId,
                 isInvited = false,
                 accept = accept,
-                blackList = blackList
+                blackList = blackList,
+                message = message
             ).sendWithoutExpect()
             if (accept ?: return)
                 groups[groupId].apply {

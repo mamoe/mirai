@@ -53,50 +53,67 @@ actual open class PlatformLogger @JvmOverloads constructor(
 ) : MiraiLoggerPlatformBase() {
     actual constructor(identity: String?) : this(identity, ::println)
 
-    private fun out(message: String?, priority: String, color: Color) {
-        if (isColored) output("$color$currentTimeFormatted $priority/$identity: $message")
-        else output("$currentTimeFormatted $priority/$identity: $message")
+    /**
+     * 输出一条日志. [message] 末尾可能不带换行符.
+     */
+    @SinceMirai("1.1.0")
+    protected open fun printLog(message: String?, priority: SimpleLogger.LogPriority) {
+        if (isColored) output("${priority.color}$currentTimeFormatted ${priority.simpleName}/$identity: $message")
+        else output("$currentTimeFormatted ${priority.simpleName}/$identity: $message")
     }
 
-    override fun verbose0(message: String?) = out(message, "V", Color.RESET)
+    /**
+     * 获取指定 [SimpleLogger.LogPriority] 的颜色
+     */
+    @SinceMirai("1.1.0")
+    protected open val SimpleLogger.LogPriority.color: Color
+        get() = when (this) {
+            SimpleLogger.LogPriority.VERBOSE -> Color.RESET
+            SimpleLogger.LogPriority.INFO -> Color.LIGHT_GREEN
+            SimpleLogger.LogPriority.WARNING -> Color.LIGHT_RED
+            SimpleLogger.LogPriority.ERROR -> Color.RED
+            SimpleLogger.LogPriority.DEBUG -> Color.LIGHT_CYAN
+        }
+
+    override fun verbose0(message: String?) = printLog(message, SimpleLogger.LogPriority.VERBOSE)
 
     override fun verbose0(message: String?, e: Throwable?) {
         if (e != null) verbose((message ?: e.toString()) + "\n${e.stackTraceString}")
         else verbose(message.toString())
     }
 
-    override fun info0(message: String?) = out(message, "I", Color.LIGHT_GREEN)
+    override fun info0(message: String?) = printLog(message, SimpleLogger.LogPriority.INFO)
     override fun info0(message: String?, e: Throwable?) {
         if (e != null) info((message ?: e.toString()) + "\n${e.stackTraceString}")
         else info(message.toString())
     }
 
-    override fun warning0(message: String?) = out(message, "W", Color.LIGHT_RED)
+    override fun warning0(message: String?) = printLog(message, SimpleLogger.LogPriority.WARNING)
     override fun warning0(message: String?, e: Throwable?) {
         if (e != null) warning((message ?: e.toString()) + "\n${e.stackTraceString}")
         else warning(message.toString())
     }
 
-    override fun error0(message: String?) = out(message, "E", Color.RED)
+    override fun error0(message: String?) = printLog(message, SimpleLogger.LogPriority.ERROR)
     override fun error0(message: String?, e: Throwable?) {
         if (e != null) error((message ?: e.toString()) + "\n${e.stackTraceString}")
         else error(message.toString())
     }
 
-    override fun debug0(message: String?) = out(message, "D", Color.LIGHT_CYAN)
+    override fun debug0(message: String?) = printLog(message, SimpleLogger.LogPriority.DEBUG)
     override fun debug0(message: String?, e: Throwable?) {
         if (e != null) debug((message ?: e.toString()) + "\n${e.stackTraceString}")
         else debug(message.toString())
     }
 
-    private val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
+    @SinceMirai("1.1.0")
+    protected open val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
+
     private val currentTimeFormatted get() = timeFormat.format(Date())
 
-    /**
-     * @author NaturalHG
-     */
-    @Suppress("unused")
-    private enum class Color(private val format: String) {
+    @MiraiExperimentalAPI("This is subject to change.")
+    @SinceMirai("1.1.0")
+    protected enum class Color(private val format: String) {
         RESET("\u001b[0m"),
 
         WHITE("\u001b[30m"),
