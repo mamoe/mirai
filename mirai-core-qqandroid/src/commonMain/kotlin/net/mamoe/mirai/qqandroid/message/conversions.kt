@@ -32,7 +32,7 @@ import kotlin.contracts.contract
 private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
 private val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最新版手机QQ体验新功能。")
 private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版手机QQ查看闪照。")
-
+private val UNSUPPORTED_VOICE_MESSAGE_PLAIN = PlainText("收到语音消息，你需要升级到最新版QQ才能接收，升级地址https://im.qq.com")
 
 @OptIn(ExperimentalStdlibApi::class)
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -161,14 +161,16 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             is PttMessage -> {
                 elements.add(
                     ImMsgBody.Elem(
-                        extraInfo = ImMsgBody.ExtraInfo(flags = 16,groupMask = 1)
+                        extraInfo = ImMsgBody.ExtraInfo(flags = 16, groupMask = 1)
                     )
                 )
-                elements.add(ImMsgBody.Elem(
-                    elemFlags2 = ImMsgBody.ElemFlags2(
-                        vipStatus = 1
+                elements.add(
+                    ImMsgBody.Elem(
+                        elemFlags2 = ImMsgBody.ElemFlags2(
+                            vipStatus = 1
+                        )
                     )
-                ))
+                )
             }
             is ForwardMessage,
             is MessageSource, // mirai metadata only
@@ -231,10 +233,11 @@ internal fun MsgComm.Msg.toMessageChain(
     val ptt = this.msgBody.richText.ptt
 
     val pptMsg = ptt?.run {
-        when (fileType) {
-            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
-            else -> null
-        }
+//        when (fileType) {
+//            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
+//            else -> null
+//        }
+        Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
     }
 
     return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {
@@ -287,13 +290,13 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     return@forEach
                 }
             }
-            if (last is FlashImage && element is PlainText) {
-                if (element == UNSUPPORTED_FLASH_MESSAGE_PLAIN) {
+            // 解决tim发送的语音无法正常识别
+            if (element is PlainText) {
+                if (element == UNSUPPORTED_VOICE_MESSAGE_PLAIN) {
                     last = element
                     return@forEach
                 }
             }
-
             add(element)
             last = element
         }
