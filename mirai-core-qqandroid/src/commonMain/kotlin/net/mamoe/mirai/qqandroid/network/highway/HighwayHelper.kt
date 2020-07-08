@@ -205,7 +205,7 @@ internal object HighwayHelper {
         md5: ByteArray,
         uKey: ByteArray, fileKey: ByteArray
     ) {
-        HttpClient().post<String> {
+        MiraiPlatformUtils.Http.post<String> {
             url("http://$serverIp:$serverPort")
             parameter("ver", 4679)
             parameter("ukey", uKey.toUHexString(""))
