@@ -1,6 +1,7 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice
 
 import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.qqandroid.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -27,7 +28,7 @@ internal class PttStore {
                 val uploadIpList: List<Int>,
                 val uploadPortList: List<Int>,
                 val fileKey: ByteArray
-            ) : Response() {
+            ) : GroupPttUp.Response() {
                 override fun toString(): String {
                     return "RequireUpload(fileId=$fileId, uKey=${uKey.contentToString()})"
                 }
@@ -91,6 +92,69 @@ internal class PttStore {
 
         }
 
+    }
+
+    object GroupPttDown : OutgoingPacketFactory<GroupPttDown.Response>("PttStore.GroupPttDown") {
+
+        sealed class Response() : Packet {
+            class DownLoadInfo(
+                val downDomain: ByteArray,
+                val downPara:ByteArray,
+                val strDomain:String,
+                val uint32DownIp:List<Int>,
+                val uint32DownPort:List<Int>
+            ) : GroupPttDown.Response() {
+                override fun toString(): String {
+                     return "GroupPttDown(downPara=${downPara.encodeToString()},strDomain=$strDomain})"
+                }
+            }
+
+        }
+
+        @ExperimentalStdlibApi
+        operator fun invoke(
+            client: QQAndroidClient,
+            groupCode: Long,
+            dstUin:Long,
+            md5: ByteArray
+
+        ): OutgoingPacket = buildOutgoingUniPacket(client) {
+            writeProtoBuf(
+                Cmd0x388.ReqBody.serializer(), Cmd0x388.ReqBody(
+                    netType = 3, // wifi
+                    subcmd = 4,
+                    msgGetpttUrlReq = listOf(
+                        Cmd0x388.GetPttUrlReq(
+                            groupCode = groupCode,
+                            fileMd5 = md5,
+                            dstUin = dstUin,
+                            buType = 4,
+                            innerIp = 0,
+                            buildVer = "6.5.5.663".encodeToByteArray(),
+                            codec = 0,
+                            reqTerm = 5,
+                            reqPlatformType = 9
+                        )
+                    )
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
+            resp0.msgGetpttUrlRsp ?: error("cannot find `msgGetpttUrlRsp` from `Cmd0x388.RspBody`")
+            val resp = resp0.msgGetpttUrlRsp.first()
+            if (!resp.failMsg.contentEquals(EMPTY_BYTE_ARRAY)){
+                throw IllegalStateException(resp.failMsg.encodeToString())
+            }
+            return Response.DownLoadInfo(
+                downDomain = resp.downDomain,
+                downPara = resp.downPara,
+                uint32DownIp = resp.uint32DownIp!!,
+                uint32DownPort = resp.uint32DownPort!!,
+                strDomain = resp.strDomain
+            )
+        }
     }
 
 }

@@ -141,6 +141,7 @@ internal object KnownPacketFactories {
         FriendList.GetTroopMemberList,
         ImgStore.GroupPicUp,
         PttStore.GroupPttUp,
+        PttStore.GroupPttDown,
         LongConn.OffPicUp,
         LongConn.OffPicDown,
         TroopManagement.EditSpecialTitle,

@@ -35,13 +35,13 @@ class Voice(
             get() = "Voice"
     }
 
-    val url: String
+    val url: String?
         get() = if (_url.startsWith("http")) _url
-        else "http://grouptalk.c2c.qq.com$_url"
+        else null
 
     private var _stringValue: String? = null
         get() = field ?: kotlin.run {
-            field = "[mirai:voice:$fileName,url:$url]"
+            field = "[mirai:voice:$fileName]"
             field
         }
 
