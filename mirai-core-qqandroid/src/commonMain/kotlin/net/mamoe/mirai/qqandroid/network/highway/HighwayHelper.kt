@@ -186,6 +186,7 @@ internal object HighwayHelper {
     }
 
     suspend fun uploadPttToServers(
+        bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         content: ByteArray,
         md5: ByteArray,
@@ -194,8 +195,18 @@ internal object HighwayHelper {
         servers.retryWithServers(10 * 1000, {
             throw IllegalStateException("cannot upload ptt, failed on all servers.", it)
         }, { s: String, i: Int ->
-            uploadPttToServer(s, i, content, md5, uKey, fileKey)
+            bot.network.logger.verbose {
+                "[Highway] Uploading ptt to ${s}:$i, size=${content.size.toLong().sizeToString()}"
+            }
+            val time = measureTime {
+                uploadPttToServer(s, i, content, md5, uKey, fileKey)
+            }
+            bot.network.logger.verbose {
+                "[Highway] Uploading ptt: succeed at ${(content.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+            }
+
         })
+
     }
 
     private suspend fun uploadPttToServer(
