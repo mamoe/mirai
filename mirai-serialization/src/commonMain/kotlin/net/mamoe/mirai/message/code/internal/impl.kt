@@ -53,6 +53,9 @@ internal inline fun String.forEachMiraiCode(crossinline block: (origin: String, 
             block(result.value, result.groups[3]!!.value, "")
         } else block(result.value, result.groups[1]!!.value, result.groups[2]?.value ?: "")
     }
+    if (lastIndex != this.length) {
+        block(substring(lastIndex, this.length), null, "")
+    }
 }
 
 internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
