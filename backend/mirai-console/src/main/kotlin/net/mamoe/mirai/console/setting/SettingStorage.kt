@@ -112,9 +112,11 @@ public interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
      */
     public open class AutoSaveSetting(private val owner: AutoSaveSettingHolder, private val storage: SettingStorage) :
         AbstractSetting() {
+        @JvmField
         @Volatile
         internal var lastAutoSaveJob: Job? = null
 
+        @JvmField
         @Volatile
         internal var currentFirstStartTime = atomic(0L)
 
@@ -137,7 +139,7 @@ public interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
             }
         }
 
-        final override fun onValueChanged(value: Value<*>) {
+        public final override fun onValueChanged(value: Value<*>) {
             lastAutoSaveJob = owner.launch(block = updaterBlock)
         }
 
