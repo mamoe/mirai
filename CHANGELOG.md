@@ -1,5 +1,8 @@
 # Version 1.x
 
+## `1.1.1`  2020/7/11
+- 修复最后一个 mirai 码之后的消息无法解析的问题 (#431 [@cxy654849388](https://github.com/cxy654849388))
+
 ## `1.1.0`  2020/7/9
 - 支持 Android 手表协议 (`BotConfiguration.MiraiProtocol.ANDROID_WATCH`)
 - `EventHandler` 现在支持 `Nothing` 类型.
