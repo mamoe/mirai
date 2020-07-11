@@ -21,7 +21,7 @@ object ValueSettingCodegen {
      */
     object PrimitiveValuesCodegen : RegionCodegen("Value.kt"), DefaultInvoke {
         @JvmStatic
-        fun main(args: Array<String>) = super.startIndependent()
+        fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
@@ -39,7 +39,7 @@ object ValueSettingCodegen {
 
     object BuiltInSerializerConstantsPrimitivesCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
         @JvmStatic
-        fun main(args: Array<String>) = super.startIndependent()
+        fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
@@ -56,7 +56,7 @@ object ValueSettingCodegen {
 
     object PrimitiveValuesImplCodegen : RegionCodegen("_PrimitiveValueDeclarations.kt"), DefaultInvoke {
         @JvmStatic
-        fun main(args: Array<String>) = super.startIndependent()
+        fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
@@ -101,7 +101,7 @@ internal abstract class ${ktType.standardName}ValueImpl : ${ktType.standardName}
 
     object Setting_value_PrimitivesImplCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
         @JvmStatic
-        fun main(args: Array<String>) = super.startIndependent()
+        fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
@@ -124,7 +124,7 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
 
     object Setting_valueImplPrimitiveCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
         @JvmStatic
-        fun main(args: Array<String>) = super.startIndependent()
+        fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {
@@ -138,7 +138,7 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
 
     object Setting_value_primitivesCodegen : RegionCodegen("Setting.kt"), DefaultInvoke {
         @JvmStatic
-        fun main(args: Array<String>) = super.startIndependent()
+        fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
 
         override fun StringBuilder.apply(ktType: KtType) {

@@ -95,7 +95,7 @@ abstract class RegionCodegen(private val targetFile: String, regionName: String?
         regionName ?: this::class.simpleName!!.substringBefore("Codegen")
     }
 
-    fun startIndependent() {
+    fun startIndependently() {
         codegen(targetFile) {
             this@RegionCodegen.invoke()
         }
