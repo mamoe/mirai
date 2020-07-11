@@ -25,6 +25,22 @@ internal class MiraiCodeParserTest {
     }
 
     @Test
+    fun testAfter() {
+        val str = "sadvass][ [mirai:at:1,test]]vdsavs [mirai:atall]last"
+        val parse = str.parseMiraiCode()
+        assertEquals(str, parse.toString())
+        assertEquals("last", (parse.last() as? PlainText)?.content)
+    }
+
+    @Test
+    fun testBefore() {
+        val str = "sadvass][ [mirai:at:1,test]]vdsavs [mirai:atall]last"
+        val parse = str.parseMiraiCode()
+        assertEquals(str, parse.toString())
+        assertEquals("sadvass][ ", (parse.first() as? PlainText)?.content)
+    }
+
+    @Test
     fun at() {
         val str = "[mirai:at:1,test]"
         assertEquals(At._lowLevelConstructAtInstance(1, "test"), str.parseMiraiCode()[0])
