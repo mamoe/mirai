@@ -7,13 +7,10 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS")
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS", "RedundantVisibilityModifier")
 
 package net.mamoe.mirai.console.plugin.jvm
 
-import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.setting.getValue
-import net.mamoe.mirai.console.setting.value
 import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -23,7 +20,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * 必须通过 "plugin.yml" 指定主类并由 [JarPluginLoader] 加载.
  */
-abstract class KotlinPlugin @JvmOverloads constructor(
+public abstract class KotlinPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext)
 
@@ -32,11 +29,11 @@ abstract class KotlinPlugin @JvmOverloads constructor(
  * 在内存动态加载的插件.
  */
 @ConsoleExperimentalAPI
-abstract class KotlinMemoryPlugin @JvmOverloads constructor(
+public abstract class KotlinMemoryPlugin @JvmOverloads constructor(
     description: JvmPluginDescription,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
-    final override var _description: JvmPluginDescription
+    internal final override var _description: JvmPluginDescription
         get() = super._description
         set(value) {
             super._description = value
@@ -47,8 +44,11 @@ abstract class KotlinMemoryPlugin @JvmOverloads constructor(
     }
 }
 
-object MyPlugin : KotlinPlugin()
+/*
 
-object AccountSetting : Setting by MyPlugin.getSetting() {
-    val s by value(1)
+public object MyPlugin : KotlinPlugin()
+
+public object AccountSetting : Setting by MyPlugin.getSetting() {
+    public val s by value(1)
 }
+*/

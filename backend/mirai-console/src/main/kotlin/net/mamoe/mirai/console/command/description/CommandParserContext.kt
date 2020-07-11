@@ -27,20 +27,20 @@ import kotlin.reflect.full.isSubclassOf
  * [KClass] 到 [CommandArgParser] 的匹配
  * @see CustomCommandParserContext 自定义
  */
-interface CommandParserContext {
-    data class ParserPair<T : Any>(
+public interface CommandParserContext {
+    public data class ParserPair<T : Any>(
         val klass: KClass<T>,
         val parser: CommandArgParser<T>
     )
 
-    operator fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>?
+    public operator fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>?
 
-    fun toList(): List<ParserPair<*>>
+    public fun toList(): List<ParserPair<*>>
 
     /**
      * 内建的默认 [CommandArgParser]
      */
-    object Builtins : CommandParserContext by (CommandParserContext {
+    public object Builtins : CommandParserContext by (CommandParserContext {
         Int::class with IntArgParser
         Byte::class with ByteArgParser
         Short::class with ShortArgParser
@@ -60,19 +60,19 @@ interface CommandParserContext {
 /**
  * 拥有 [CommandParserContext] 的类
  */
-interface CommandParserContextAware {
+public interface CommandParserContextAware {
     /**
      * [CommandArgParser] 的环境
      */
-    val context: CommandParserContext
+    public val context: CommandParserContext
 }
 
-object EmptyCommandParserContext : CommandParserContext by CustomCommandParserContext(listOf())
+public object EmptyCommandParserContext : CommandParserContext by CustomCommandParserContext(listOf())
 
 /**
  * 合并两个 [CommandParserContext], [replacer] 将会替换 [this] 中重复的 parser.
  */
-operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandParserContext {
+public operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandParserContext {
     if (replacer == EmptyCommandParserContext) return this
     if (this == EmptyCommandParserContext) return replacer
     return object : CommandParserContext {
@@ -84,7 +84,7 @@ operator fun CommandParserContext.plus(replacer: CommandParserContext): CommandP
 /**
  * 合并 [this] 与 [replacer], [replacer] 将会替换 [this] 中重复的 parser.
  */
-operator fun CommandParserContext.plus(replacer: List<ParserPair<*>>): CommandParserContext {
+public operator fun CommandParserContext.plus(replacer: List<ParserPair<*>>): CommandParserContext {
     if (replacer.isEmpty()) return this
     if (this == EmptyCommandParserContext) return CustomCommandParserContext(replacer)
     return object : CommandParserContext {
@@ -97,7 +97,7 @@ operator fun CommandParserContext.plus(replacer: List<ParserPair<*>>): CommandPa
 }
 
 @Suppress("UNCHECKED_CAST")
-open class CustomCommandParserContext(val list: List<ParserPair<*>>) : CommandParserContext {
+public open class CustomCommandParserContext(public val list: List<ParserPair<*>>) : CommandParserContext {
 
     override fun <T : Any> get(klass: KClass<out T>): CommandArgParser<T>? =
         this.list.firstOrNull { klass.isSubclassOf(it.klass) }?.parser as CommandArgParser<T>?
@@ -125,16 +125,16 @@ open class CustomCommandParserContext(val list: List<ParserPair<*>>) : CommandPa
  */
 @Suppress("FunctionName")
 @JvmSynthetic
-inline fun CommandParserContext(block: CommandParserContextBuilder.() -> Unit): CommandParserContext {
+public inline fun CommandParserContext(block: CommandParserContextBuilder.() -> Unit): CommandParserContext {
     return CustomCommandParserContext(CommandParserContextBuilder().apply(block).distinctByReversed { it.klass })
 }
 
 /**
  * @see CommandParserContext
  */
-class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf() {
+public class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf() {
     @JvmName("add")
-    inline infix fun <T : Any> KClass<T>.with(parser: CommandArgParser<T>): ParserPair<*> =
+    public inline infix fun <T : Any> KClass<T>.with(parser: CommandArgParser<T>): ParserPair<*> =
         ParserPair(this, parser).also { add(it) }
 
     /**
@@ -142,7 +142,7 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
      */
     @JvmSynthetic
     @LowPriorityInOverloadResolution
-    inline infix fun <T : Any> KClass<T>.with(
+    public inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T
     ): ParserPair<*> = ParserPair(this, CommandArgParser(parser)).also { add(it) }
 
@@ -150,12 +150,12 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
      * 添加一个指令解析器
      */
     @JvmSynthetic
-    inline infix fun <T : Any> KClass<T>.with(
+    public inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgParser<T>.(s: String) -> T
     ): ParserPair<*> = ParserPair(this, CommandArgParser { s: String, _: CommandSender -> parser(s) }).also { add(it) }
 
     @JvmSynthetic
-    inline fun <reified T : Any> add(parser: CommandArgParser<T>): ParserPair<*> =
+    public inline fun <reified T : Any> add(parser: CommandArgParser<T>): ParserPair<*> =
         ParserPair(T::class, parser).also { add(it) }
 
     /**
@@ -163,7 +163,7 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
      */
     @ConsoleExperimentalAPI
     @JvmSynthetic
-    inline infix fun <reified T : Any> add(
+    public inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgParser<*>.(s: String) -> T
     ): ParserPair<*> = T::class with CommandArgParser { s: String, _: CommandSender -> parser(s) }
 
@@ -173,7 +173,7 @@ class CommandParserContextBuilder : MutableList<ParserPair<*>> by mutableListOf(
     @ConsoleExperimentalAPI
     @JvmSynthetic
     @LowPriorityInOverloadResolution
-    inline infix fun <reified T : Any> add(
+    public inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgParser<*>.(s: String, sender: CommandSender) -> T
     ): ParserPair<*> = T::class with CommandArgParser(parser)
 }

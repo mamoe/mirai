@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleInternal
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
+import net.mamoe.mirai.console.plugin.FilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.internal.JvmPluginInternal
 import net.mamoe.mirai.console.plugin.internal.PluginsLoader
@@ -28,11 +29,24 @@ import kotlin.reflect.full.createInstance
 /**
  * 内建的 Jar (JVM) 插件加载器
  */
-object JarPluginLoader : AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"), CoroutineScope {
+public interface JarPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
+    @ConsoleExperimentalAPI
+    public val settingStorage: SettingStorage
+
+    public companion object INSTANCE : JarPluginLoader by JarPluginLoaderImpl
+}
+
+
+internal object JarPluginLoaderImpl :
+    AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
+    CoroutineScope,
+    JarPluginLoader {
+
     private val logger: MiraiLogger = MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
 
     @ConsoleExperimentalAPI
-    val settingStorage: SettingStorage = MiraiConsoleInternal.settingStorage
+    override val settingStorage: SettingStorage
+        get() = MiraiConsoleInternal.settingStorage
 
     override val coroutineContext: CoroutineContext =
         MiraiConsole.coroutineContext +

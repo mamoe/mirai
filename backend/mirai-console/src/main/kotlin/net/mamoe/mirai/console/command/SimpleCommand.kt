@@ -11,8 +11,8 @@
     "EXPOSED_SUPER_CLASS",
     "NOTHING_TO_INLINE",
     "unused",
-    "WRONG_MODIFIER_TARGET",
-    "WRONG_MODIFIER_CONTAINING_DECLARATION"
+    "WRONG_MODIFIER_TARGET", "CANNOT_WEAKEN_ACCESS_PRIVILEGE",
+    "WRONG_MODIFIER_CONTAINING_DECLARATION", "RedundantVisibilityModifier"
 )
 
 package net.mamoe.mirai.console.command
@@ -24,7 +24,7 @@ import net.mamoe.mirai.console.command.description.plus
 import net.mamoe.mirai.console.command.internal.AbstractReflectionCommand
 import net.mamoe.mirai.console.command.internal.SimpleCommandSubCommandAnnotationResolver
 
-abstract class SimpleCommand @JvmOverloads constructor(
+public abstract class SimpleCommand @JvmOverloads constructor(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
@@ -34,7 +34,7 @@ abstract class SimpleCommand @JvmOverloads constructor(
 ) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
     CommandParserContextAware {
 
-    override val usage: String
+    public override val usage: String
         get() = super.usage
 
     /**
@@ -42,20 +42,20 @@ abstract class SimpleCommand @JvmOverloads constructor(
      */
     protected annotation class Handler
 
-    final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
+    public final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
 
-    override fun checkSubCommand(subCommands: Array<SubCommandDescriptor>) {
+    internal override fun checkSubCommand(subCommands: Array<SubCommandDescriptor>) {
         super.checkSubCommand(subCommands)
         check(subCommands.size == 1) { "There can only be exactly one function annotated with Handler at this moment as overloading is not yet supported." }
     }
 
     @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) = sendMessage(usage)
+    internal override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) = sendMessage(usage)
 
-    final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+    public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
         subCommands.single().parseAndExecute(this, args, false)
     }
 
-    final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
+    internal final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
         get() = SimpleCommandSubCommandAnnotationResolver
 }

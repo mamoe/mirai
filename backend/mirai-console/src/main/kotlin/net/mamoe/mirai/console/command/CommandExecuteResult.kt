@@ -20,94 +20,94 @@ import kotlin.contracts.contract
  *
  * @see CommandExecuteStatus
  */
-sealed class CommandExecuteResult {
+public sealed class CommandExecuteResult {
     /** 指令最终执行状态 */
-    abstract val status: CommandExecuteStatus
+    public abstract val status: CommandExecuteStatus
 
     /** 指令执行时发生的错误 (如果有) */
-    abstract val exception: Throwable?
+    public abstract val exception: Throwable?
 
     /** 尝试执行的指令 (如果匹配到) */
-    abstract val command: Command?
+    public abstract val command: Command?
 
     /** 尝试执行的指令名 (如果匹配到) */
-    abstract val commandName: String?
+    public abstract val commandName: String?
 
     /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-    abstract val args: Array<out Any>?
+    public abstract val args: Array<out Any>?
 
     // abstract val to allow smart casting
 
     /** 指令执行成功 */
-    class Success(
+    public class Success(
         /** 尝试执行的指令 */
-        override val command: Command,
+        public override val command: Command,
         /** 尝试执行的指令名 */
-        override val commandName: String,
+        public override val commandName: String,
         /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        override val args: Array<out Any>
+        public override val args: Array<out Any>
     ) : CommandExecuteResult() {
         /** 指令执行时发生的错误, 总是 `null` */
-        override val exception: Nothing? get() = null
+        public override val exception: Nothing? get() = null
 
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.SUCCESSFUL] */
-        override val status: CommandExecuteStatus get() = CommandExecuteStatus.SUCCESSFUL
+        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.SUCCESSFUL
     }
 
     /** 指令执行过程出现了错误 */
-    class ExecutionException(
+    public class ExecutionException(
         /** 指令执行时发生的错误 */
-        override val exception: Throwable,
+        public override val exception: Throwable,
         /** 尝试执行的指令 */
-        override val command: Command,
+        public override val command: Command,
         /** 尝试执行的指令名 */
-        override val commandName: String,
+        public override val commandName: String,
         /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        override val args: Array<out Any>
+        public override val args: Array<out Any>
     ) : CommandExecuteResult() {
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.EXECUTION_EXCEPTION] */
-        override val status: CommandExecuteStatus get() = CommandExecuteStatus.EXECUTION_EXCEPTION
+        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.EXECUTION_EXCEPTION
     }
 
     /** 没有匹配的指令 */
-    class CommandNotFound(
+    public class CommandNotFound(
         /** 尝试执行的指令名 */
-        override val commandName: String
+        public override val commandName: String
     ) : CommandExecuteResult() {
         /** 指令执行时发生的错误, 总是 `null` */
-        override val exception: Nothing? get() = null
+        public override val exception: Nothing? get() = null
 
         /** 尝试执行的指令, 总是 `null` */
-        override val command: Nothing? get() = null
+        public override val command: Nothing? get() = null
 
         /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        override val args: Nothing? get() = null
+        public override val args: Nothing? get() = null
 
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.COMMAND_NOT_FOUND] */
-        override val status: CommandExecuteStatus get() = CommandExecuteStatus.COMMAND_NOT_FOUND
+        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.COMMAND_NOT_FOUND
     }
 
     /** 权限不足 */
-    class PermissionDenied(
+    public class PermissionDenied(
         /** 尝试执行的指令 */
-        override val command: Command,
+        public override val command: Command,
         /** 尝试执行的指令名 */
-        override val commandName: String
+        public override val commandName: String
     ) : CommandExecuteResult() {
         /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        override val args: Nothing? get() = null
+        public override val args: Nothing? get() = null
 
         /** 指令执行时发生的错误, 总是 `null` */
-        override val exception: Nothing? get() = null
+        public override val exception: Nothing? get() = null
 
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.PERMISSION_DENIED] */
-        override val status: CommandExecuteStatus get() = CommandExecuteStatus.PERMISSION_DENIED
+        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.PERMISSION_DENIED
     }
 
     /**
      * 指令的执行状态
      */
-    enum class CommandExecuteStatus {
+    public enum class CommandExecuteStatus {
         /** 指令执行成功 */
         SUCCESSFUL,
 
@@ -124,13 +124,13 @@ sealed class CommandExecuteResult {
 
 
 @Suppress("RemoveRedundantQualifierName")
-typealias CommandExecuteStatus = CommandExecuteResult.CommandExecuteStatus
+public typealias CommandExecuteStatus = CommandExecuteResult.CommandExecuteStatus
 
 /**
  * 当 [this] 为 [CommandExecuteResult.Success] 时返回 `true`
  */
 @JvmSynthetic
-fun CommandExecuteResult.isSuccess(): Boolean {
+public fun CommandExecuteResult.isSuccess(): Boolean {
     contract {
         returns(true) implies (this@isSuccess is CommandExecuteResult.Success)
         returns(false) implies (this@isSuccess !is CommandExecuteResult.Success)
@@ -142,7 +142,7 @@ fun CommandExecuteResult.isSuccess(): Boolean {
  * 当 [this] 为 [CommandExecuteResult.ExecutionException] 时返回 `true`
  */
 @JvmSynthetic
-fun CommandExecuteResult.isExecutionException(): Boolean {
+public fun CommandExecuteResult.isExecutionException(): Boolean {
     contract {
         returns(true) implies (this@isExecutionException is CommandExecuteResult.ExecutionException)
         returns(false) implies (this@isExecutionException !is CommandExecuteResult.ExecutionException)
@@ -154,7 +154,7 @@ fun CommandExecuteResult.isExecutionException(): Boolean {
  * 当 [this] 为 [CommandExecuteResult.ExecutionException] 时返回 `true`
  */
 @JvmSynthetic
-fun CommandExecuteResult.isPermissionDenied(): Boolean {
+public fun CommandExecuteResult.isPermissionDenied(): Boolean {
     contract {
         returns(true) implies (this@isPermissionDenied is CommandExecuteResult.PermissionDenied)
         returns(false) implies (this@isPermissionDenied !is CommandExecuteResult.PermissionDenied)
@@ -166,7 +166,7 @@ fun CommandExecuteResult.isPermissionDenied(): Boolean {
  * 当 [this] 为 [CommandExecuteResult.ExecutionException] 时返回 `true`
  */
 @JvmSynthetic
-fun CommandExecuteResult.isCommandNotFound(): Boolean {
+public fun CommandExecuteResult.isCommandNotFound(): Boolean {
     contract {
         returns(true) implies (this@isCommandNotFound is CommandExecuteResult.CommandNotFound)
         returns(false) implies (this@isCommandNotFound !is CommandExecuteResult.CommandNotFound)
@@ -178,7 +178,7 @@ fun CommandExecuteResult.isCommandNotFound(): Boolean {
  * 当 [this] 为 [CommandExecuteResult.ExecutionException] 或 [CommandExecuteResult.CommandNotFound] 时返回 `true`
  */
 @JvmSynthetic
-fun CommandExecuteResult.isFailure(): Boolean {
+public fun CommandExecuteResult.isFailure(): Boolean {
     contract {
         returns(true) implies (this@isFailure !is CommandExecuteResult.Success)
         returns(false) implies (this@isFailure is CommandExecuteResult.Success)

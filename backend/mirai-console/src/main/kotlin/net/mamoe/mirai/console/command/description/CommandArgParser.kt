@@ -20,14 +20,14 @@ import kotlin.contracts.contract
  * this output type of that arg
  * input is always String
  */
-interface CommandArgParser<out T : Any> {
-    fun parse(raw: String, sender: CommandSender): T
+public interface CommandArgParser<out T : Any> {
+    public fun parse(raw: String, sender: CommandSender): T
 
     @JvmDefault
-    fun parse(raw: SingleMessage, sender: CommandSender): T = parse(raw.content, sender)
+    public fun parse(raw: SingleMessage, sender: CommandSender): T = parse(raw.content, sender)
 }
 
-fun <T : Any> CommandArgParser<T>.parse(raw: Any, sender: CommandSender): T {
+public fun <T : Any> CommandArgParser<T>.parse(raw: Any, sender: CommandSender): T {
     contract {
         returns() implies (raw is String || raw is SingleMessage)
     }
@@ -41,12 +41,12 @@ fun <T : Any> CommandArgParser<T>.parse(raw: Any, sender: CommandSender): T {
 
 @Suppress("unused")
 @JvmSynthetic
-inline fun CommandArgParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing {
+public inline fun CommandArgParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing {
     throw ParserException(message, cause)
 }
 
 @JvmSynthetic
-inline fun CommandArgParser<*>.checkArgument(
+public inline fun CommandArgParser<*>.checkArgument(
     condition: Boolean,
     crossinline message: () -> String = { "Check failed." }
 ) {
@@ -61,7 +61,7 @@ inline fun CommandArgParser<*>.checkArgument(
  */
 @Suppress("FunctionName")
 @JvmSynthetic
-inline fun <T : Any> CommandArgParser(
+public inline fun <T : Any> CommandArgParser(
     crossinline stringParser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T
 ): CommandArgParser<T> = object : CommandArgParser<T> {
     override fun parse(raw: String, sender: CommandSender): T = stringParser(raw, sender)
@@ -72,7 +72,7 @@ inline fun <T : Any> CommandArgParser(
  */
 @Suppress("FunctionName")
 @JvmSynthetic
-inline fun <T : Any> CommandArgParser(
+public inline fun <T : Any> CommandArgParser(
     crossinline stringParser: CommandArgParser<T>.(s: String, sender: CommandSender) -> T,
     crossinline messageParser: CommandArgParser<T>.(m: SingleMessage, sender: CommandSender) -> T
 ): CommandArgParser<T> = object : CommandArgParser<T> {
@@ -84,4 +84,4 @@ inline fun <T : Any> CommandArgParser(
 /**
  * 在解析参数时遇到的 _正常_ 错误. 如参数不符合规范.
  */
-class ParserException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
+public class ParserException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)

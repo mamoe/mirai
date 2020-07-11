@@ -18,18 +18,68 @@ import net.mamoe.mirai.utils.info
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 
-val Plugin.description: PluginDescription
-    get() = PluginManager.resolvedPlugins.firstOrNull { it == this }?.loader?.cast<PluginLoader<Plugin, PluginDescription>>()
-        ?.getDescription(
-            this
-        ) ?: error("Plugin is unloaded")
+// TODO: 2020/7/11 top-level or in PluginManager.companion?
+public val Plugin.description: PluginDescription
+    get() = PluginManagerImpl.resolvedPlugins.firstOrNull { it == this }
+        ?.loader?.cast<PluginLoader<Plugin, PluginDescription>>()
+        ?.getDescription(this)
+        ?: error("Plugin is unloaded")
 
-inline fun PluginLoader<*, *>.register() = PluginManager.registerPluginLoader(this)
-inline fun PluginLoader<*, *>.unregister() = PluginManager.unregisterPluginLoader(this)
+@JvmSynthetic
+public inline fun PluginLoader<*, *>.register(): Boolean = PluginManager.registerPluginLoader(this)
 
-object PluginManager {
-    val pluginsDir = File(MiraiConsole.rootDir, "plugins").apply { mkdir() }
-    val pluginsDataFolder = File(MiraiConsole.rootDir, "data").apply { mkdir() }
+@JvmSynthetic
+public inline fun PluginLoader<*, *>.unregister(): Boolean = PluginManager.unregisterPluginLoader(this)
+
+// TODO: 2020/7/11 document
+public interface PluginManager {
+    public val pluginsDir: File
+
+    public val pluginsDataFolder: File
+
+    /**
+     * 已加载的插件列表
+     */
+    public val plugins: List<Plugin>
+
+    /**
+     * 内建的插件加载器列表. 由 [MiraiConsole] 初始化
+     */
+    public val builtInLoaders: List<PluginLoader<*, *>>
+
+    /**
+     * 由插件创建的 [PluginLoader]
+     */
+    public val pluginLoaders: List<PluginLoader<*, *>>
+
+    public fun registerPluginLoader(loader: PluginLoader<*, *>): Boolean
+
+    public fun unregisterPluginLoader(loader: PluginLoader<*, *>): Boolean
+
+    public companion object INSTANCE : PluginManager by PluginManagerImpl
+}
+
+public class PluginMissingDependencyException : PluginResolutionException {
+    public constructor() : super()
+    public constructor(message: String?) : super(message)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(cause: Throwable?) : super(cause)
+}
+
+public open class PluginResolutionException : Exception {
+    public constructor() : super()
+    public constructor(message: String?) : super(message)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(cause: Throwable?) : super(cause)
+}
+
+
+// internal
+
+
+internal object PluginManagerImpl : PluginManager {
+    override val pluginsDir = File(MiraiConsole.rootDir, "plugins").apply { mkdir() }
+    override val pluginsDataFolder = File(MiraiConsole.rootDir, "data").apply { mkdir() }
 
     @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()
@@ -38,38 +88,21 @@ object PluginManager {
 
     @JvmField
     internal val resolvedPlugins: MutableList<Plugin> = mutableListOf()
-
-    /**
-     * 已加载的插件列表
-     */
-    @JvmStatic
-    val plugins: List<Plugin>
+    override val plugins: List<Plugin>
         get() = resolvedPlugins.toList()
-
-    /**
-     * 内建的插件加载器列表. 由 [MiraiConsole] 初始化
-     */
-    @JvmStatic
-    val builtInLoaders: List<PluginLoader<*, *>>
+    override val builtInLoaders: List<PluginLoader<*, *>>
         get() = MiraiConsole.builtInPluginLoaders
-
-    /**
-     * 由插件创建的 [PluginLoader]
-     */
-    @JvmStatic
-    val pluginLoaders: List<PluginLoader<*, *>>
+    override val pluginLoaders: List<PluginLoader<*, *>>
         get() = _pluginLoaders.toList()
 
-    @JvmStatic
-    fun registerPluginLoader(loader: PluginLoader<*, *>): Boolean = loadersLock.withLock {
+    override fun registerPluginLoader(loader: PluginLoader<*, *>): Boolean = loadersLock.withLock {
         if (_pluginLoaders.any { it::class == loader }) {
             return false
         }
         _pluginLoaders.add(loader)
     }
 
-    @JvmStatic
-    fun unregisterPluginLoader(loader: PluginLoader<*, *>) = loadersLock.withLock {
+    override fun unregisterPluginLoader(loader: PluginLoader<*, *>) = loadersLock.withLock {
         _pluginLoaders.remove(loader)
     }
 
@@ -177,8 +210,10 @@ object PluginManager {
             this.consumeLoadable().also { resultPlugins ->
                 check(resultPlugins.size < beforeSize) {
                     throw PluginMissingDependencyException(resultPlugins.joinToString("\n") { badPlugin ->
-                        "Cannot load plugin ${badPlugin.name}, missing dependencies: ${badPlugin.dependencies.filterIsMissing()
-                            .joinToString()}"
+                        "Cannot load plugin ${badPlugin.name}, missing dependencies: ${
+                            badPlugin.dependencies.filterIsMissing()
+                                .joinToString()
+                        }"
                     })
                 }
             }.doSort()
@@ -190,16 +225,6 @@ object PluginManager {
 
     // endregion
 }
-
-class PluginMissingDependencyException(message: String?) : PluginResolutionException(message)
-
-open class PluginResolutionException : Exception {
-    constructor() : super()
-    constructor(message: String?) : super(message)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-    constructor(cause: Throwable?) : super(cause)
-}
-
 
 internal data class PluginDescriptionWithLoader(
     @JvmField val loader: PluginLoader<*, PluginDescription>, // easier type

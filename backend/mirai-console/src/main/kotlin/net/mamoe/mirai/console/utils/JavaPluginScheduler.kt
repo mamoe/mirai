@@ -25,8 +25,8 @@ import kotlin.coroutines.CoroutineContext
  *
  * @see JavaPlugin.scheduler 获取实例
  */
-class JavaPluginScheduler internal constructor(parentCoroutineContext: CoroutineContext) : CoroutineScope {
-    override val coroutineContext: CoroutineContext =
+public class JavaPluginScheduler internal constructor(parentCoroutineContext: CoroutineContext) : CoroutineScope {
+    public override val coroutineContext: CoroutineContext =
         parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job])
 
     /**
@@ -36,7 +36,7 @@ class JavaPluginScheduler internal constructor(parentCoroutineContext: Coroutine
      *
      * @see Future.cancel 取消这个任务
      */
-    fun repeating(intervalMs: Long, runnable: Runnable): Future<Void?> {
+    public fun repeating(intervalMs: Long, runnable: Runnable): Future<Void?> {
         return this.future {
             while (isActive) {
                 withContext(Dispatchers.IO) { runnable.run() }
@@ -51,7 +51,7 @@ class JavaPluginScheduler internal constructor(parentCoroutineContext: Coroutine
      *
      * 在延迟 [delayMillis] 后执行 [runnable]
      */
-    fun delayed(delayMillis: Long, runnable: Runnable): CompletableFuture<Void?> {
+    public fun delayed(delayMillis: Long, runnable: Runnable): CompletableFuture<Void?> {
         return future {
             delay(delayMillis)
             withContext(Dispatchers.IO) {
@@ -66,7 +66,7 @@ class JavaPluginScheduler internal constructor(parentCoroutineContext: Coroutine
      *
      * 在延迟 [delayMillis] 后执行 [runnable]
      */
-    fun <R> delayed(delayMillis: Long, runnable: Callable<R>): CompletableFuture<Void?> {
+    public fun <R> delayed(delayMillis: Long, runnable: Callable<R>): CompletableFuture<Void?> {
         return future {
             delay(delayMillis)
             withContext(Dispatchers.IO) { runnable.call() }
@@ -77,7 +77,7 @@ class JavaPluginScheduler internal constructor(parentCoroutineContext: Coroutine
     /**
      * 异步执行一个任务, 最终返回 [Future], 与 Java 使用方法无异, 但效率更高且可以在插件关闭时停止
      */
-    fun <R> async(supplier: Callable<R>): Future<R> {
+    public fun <R> async(supplier: Callable<R>): Future<R> {
         return future {
             withContext(Dispatchers.IO) { supplier.call() }
         }
@@ -86,7 +86,7 @@ class JavaPluginScheduler internal constructor(parentCoroutineContext: Coroutine
     /**
      * 异步执行一个任务, 没有返回
      */
-    fun async(runnable: Runnable): Future<Void?> {
+    public fun async(runnable: Runnable): Future<Void?> {
         return future {
             withContext(Dispatchers.IO) { runnable.run() }
             null

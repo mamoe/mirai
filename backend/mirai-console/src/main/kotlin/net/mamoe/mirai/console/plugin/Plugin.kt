@@ -22,15 +22,16 @@ import java.io.File
  *
  * @see PluginLoader 插件加载器
  */
-interface Plugin {
+public interface Plugin {
     /**
      * 所属插件加载器实例, 此加载器必须能加载这个 [Plugin].
      */
-    val loader: PluginLoader<*, *>
+    public val loader: PluginLoader<*, *>
 }
 
+@get:JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-inline val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
+public inline val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
     get() = this.loader as PluginLoader<P, PluginDescription>
 
 /**
@@ -39,15 +40,17 @@ inline val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
  * @see JvmPlugin
  */
 @ConsoleExperimentalAPI("classname is subject to change")
-interface PluginFileExtensions {
+public interface PluginFileExtensions {
     /**
      * 数据目录
      */
-    val dataFolder: File
+    public val dataFolder: File
 
     /**
      * 从数据目录获取一个文件, 若不存在则创建文件.
      */
     @JvmDefault
-    fun file(relativePath: String): File = File(dataFolder, relativePath).apply { createNewFile() }
+    public fun file(relativePath: String): File = File(dataFolder, relativePath).apply { createNewFile() }
+
+    // TODO: 2020/7/11  add `fun path(...): Path` ?
 }

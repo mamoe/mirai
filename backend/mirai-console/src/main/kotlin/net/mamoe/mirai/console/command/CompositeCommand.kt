@@ -11,8 +11,8 @@
     "EXPOSED_SUPER_CLASS",
     "NOTHING_TO_INLINE",
     "unused",
-    "WRONG_MODIFIER_TARGET",
-    "WRONG_MODIFIER_CONTAINING_DECLARATION"
+    "WRONG_MODIFIER_TARGET", "CANNOT_WEAKEN_ACCESS_PRIVILEGE",
+    "WRONG_MODIFIER_CONTAINING_DECLARATION", "RedundantVisibilityModifier"
 )
 
 package net.mamoe.mirai.console.command
@@ -29,7 +29,7 @@ import kotlin.reflect.KClass
  * 复合指令.
  */
 @ConsoleExperimentalAPI
-abstract class CompositeCommand @JvmOverloads constructor(
+public abstract class CompositeCommand @JvmOverloads constructor(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
@@ -41,7 +41,7 @@ abstract class CompositeCommand @JvmOverloads constructor(
     /**
      * [CommandArgParser] 的环境
      */
-    final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
+    public final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
 
     /**
      * 标记一个函数为子指令, 当 [value] 为空时使用函数名.
@@ -66,16 +66,17 @@ abstract class CompositeCommand @JvmOverloads constructor(
     @Target(AnnotationTarget.VALUE_PARAMETER)
     protected annotation class Name(val value: String)
 
-    override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
-        sendMessage(usage)
-    }
-
-    final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+    public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
         matchSubCommand(args)?.parseAndExecute(this, args, true) ?: kotlin.run {
             defaultSubCommand.onCommand(this, args)
         }
     }
 
-    final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
+
+    internal override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
+        sendMessage(usage)
+    }
+
+    internal final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
         get() = CompositeCommandSubCommandAnnotationResolver
 }

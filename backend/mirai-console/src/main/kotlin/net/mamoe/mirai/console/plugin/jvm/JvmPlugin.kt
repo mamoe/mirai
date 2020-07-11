@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS")
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.console.plugin.jvm
 
@@ -32,34 +32,39 @@ import kotlin.reflect.KClass
  * @see JvmPlugin 支持文件系统扩展
  * @see ResourceContainer 支持资源获取 (如 Jar 中的资源文件)
  */
-interface JvmPlugin : Plugin, CoroutineScope, PluginFileExtensions, ResourceContainer, AutoSaveSettingHolder {
+public interface JvmPlugin : Plugin, CoroutineScope,
+    PluginFileExtensions, ResourceContainer, AutoSaveSettingHolder {
     /** 日志 */
-    val logger: MiraiLogger
+    public val logger: MiraiLogger
 
     /** 插件描述 */
-    val description: JvmPluginDescription
+    public val description: JvmPluginDescription
 
     /** 所属插件加载器实例 */
-    override val loader: JarPluginLoader get() = JarPluginLoader
+    public override val loader: JarPluginLoader get() = JarPluginLoader
 
     /**
      * 获取一个 [Setting] 实例
      */
-    fun <T : Setting> getSetting(clazz: Class<T>): T
+    public fun <T : Setting> getSetting(clazz: Class<T>): T
 
 
+    // TODO: 2020/7/11 document onLoad, onEnable, onDisable
     @JvmDefault
-    fun onLoad() {
+    public fun onLoad() {
     }
 
     @JvmDefault
-    fun onEnable() {
+    public fun onEnable() {
     }
 
     @JvmDefault
-    fun onDisable() {
+    public fun onDisable() {
     }
 }
 
-fun <T : Setting> JvmPlugin.getSetting(clazz: KClass<T>) = this.getSetting(clazz.java)
-inline fun <reified T : Setting> JvmPlugin.getSetting() = this.getSetting(T::class)
+@JvmSynthetic
+public inline fun <T : Setting> JvmPlugin.getSetting(clazz: KClass<T>): T = this.getSetting(clazz.java)
+
+@JvmSynthetic
+public inline fun <reified T : Setting> JvmPlugin.getSetting(): T = this.getSetting(T::class)

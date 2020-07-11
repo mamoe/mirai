@@ -17,33 +17,33 @@ import net.mamoe.mirai.utils.MiraiLogger
  * 只需要实现一个这个传入 MiraiConsole 就可以绑定 UI 层与 Console 层
  * 需要保证线程安全
  */
-interface MiraiConsoleFrontEnd {
+public interface MiraiConsoleFrontEnd {
     /**
      * 名称
      */
-    val name: String
+    public val name: String
 
     /**
      * 版本
      */
-    val version: String
+    public val version: String
 
-    fun loggerFor(identity: String?): MiraiLogger
+    public fun loggerFor(identity: String?): MiraiLogger
 
     /**
      * 让 UI 层接受一个新的bot
      * */
-    fun pushBot(
+    public fun pushBot(
         bot: Bot
     )
 
     /**
      * 让 UI 层提供一个输入, 相当于 [readLine]
      */
-    suspend fun requestInput(hint: String): String
+    public suspend fun requestInput(hint: String): String
 
     /**
      * 由 UI 层创建一个 [LoginSolver]
      */
-    fun createLoginSolver(): LoginSolver
+    public fun createLoginSolver(): LoginSolver
 }

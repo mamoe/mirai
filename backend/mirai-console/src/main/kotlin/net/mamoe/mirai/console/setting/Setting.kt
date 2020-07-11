@@ -29,11 +29,11 @@ import kotlin.reflect.KType
  * ```
  */
 // TODO: 2020/6/26 document
-typealias SerialName = kotlinx.serialization.SerialName
+public typealias SerialName = kotlinx.serialization.SerialName
 
 // TODO: 2020/6/26 document
-abstract class AbstractSetting : Setting, SettingImpl() {
-    final override operator fun <T> SerializerAwareValue<T>.provideDelegate(
+public abstract class AbstractSetting : Setting, SettingImpl() {
+    public final override operator fun <T> SerializerAwareValue<T>.provideDelegate(
         thisRef: Any?,
         property: KProperty<*>
     ): SerializerAwareValue<T> {
@@ -42,34 +42,34 @@ abstract class AbstractSetting : Setting, SettingImpl() {
         return this
     }
 
-    final override val updaterSerializer: KSerializer<Unit> get() = super.updaterSerializer
+    public final override val updaterSerializer: KSerializer<Unit> get() = super.updaterSerializer
 }
 
 // TODO: 2020/6/26 document
-interface Setting {
+public interface Setting {
     // TODO: 2020/6/26 document
-    operator fun <T> SerializerAwareValue<T>.provideDelegate(
+    public operator fun <T> SerializerAwareValue<T>.provideDelegate(
         thisRef: Any?,
         property: KProperty<*>
     ): SerializerAwareValue<T>
 
     // TODO: 2020/6/26 document
-    val updaterSerializer: KSerializer<Unit>
+    public val updaterSerializer: KSerializer<Unit>
 
-    fun onValueChanged(value: Value<*>)
+    public fun onValueChanged(value: Value<*>)
 }
 
 //// region Setting_value_primitives CODEGEN ////
 
-fun Setting.value(default: Byte): SerializerAwareValue<Byte> = valueImpl(default)
-fun Setting.value(default: Short): SerializerAwareValue<Short> = valueImpl(default)
-fun Setting.value(default: Int): SerializerAwareValue<Int> = valueImpl(default)
-fun Setting.value(default: Long): SerializerAwareValue<Long> = valueImpl(default)
-fun Setting.value(default: Float): SerializerAwareValue<Float> = valueImpl(default)
-fun Setting.value(default: Double): SerializerAwareValue<Double> = valueImpl(default)
-fun Setting.value(default: Char): SerializerAwareValue<Char> = valueImpl(default)
-fun Setting.value(default: Boolean): SerializerAwareValue<Boolean> = valueImpl(default)
-fun Setting.value(default: String): SerializerAwareValue<String> = valueImpl(default)
+public fun Setting.value(default: Byte): SerializerAwareValue<Byte> = valueImpl(default)
+public fun Setting.value(default: Short): SerializerAwareValue<Short> = valueImpl(default)
+public fun Setting.value(default: Int): SerializerAwareValue<Int> = valueImpl(default)
+public fun Setting.value(default: Long): SerializerAwareValue<Long> = valueImpl(default)
+public fun Setting.value(default: Float): SerializerAwareValue<Float> = valueImpl(default)
+public fun Setting.value(default: Double): SerializerAwareValue<Double> = valueImpl(default)
+public fun Setting.value(default: Char): SerializerAwareValue<Char> = valueImpl(default)
+public fun Setting.value(default: Boolean): SerializerAwareValue<Boolean> = valueImpl(default)
+public fun Setting.value(default: String): SerializerAwareValue<String> = valueImpl(default)
 
 //// endregion Setting_value_primitives CODEGEN ////
 
@@ -84,7 +84,7 @@ fun Setting.value(default: String): SerializerAwareValue<String> = valueImpl(def
  */
 @Suppress("UNCHECKED_CAST")
 @LowPriorityInOverloadResolution
-inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T> = valueFromKType(typeOf0<T>(), default)
+public inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T> = valueFromKType(typeOf0<T>(), default)
 
 /**
  * Creates a [Value] with reified type, and set default value by reflection to its no-arg public constructor.
@@ -95,13 +95,13 @@ inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T> = valu
  * (typically annotated with [kotlinx.serialization.Serializable])
  */
 @LowPriorityInOverloadResolution
-inline fun <reified T> Setting.value(): SerializerAwareValue<T> = value(T::class.createInstance() as T)
+public inline fun <reified T> Setting.value(): SerializerAwareValue<T> = value(T::class.createInstance() as T)
 
 /**
  * Creates a [Value] with specified [KType], and set default value.
  */
 @Suppress("UNCHECKED_CAST")
-fun <T> Setting.valueFromKType(type: KType, default: T): SerializerAwareValue<T> =
+public fun <T> Setting.valueFromKType(type: KType, default: T): SerializerAwareValue<T> =
     (valueFromKTypeImpl(type) as SerializerAwareValue<Any?>).apply { this.value = default } as SerializerAwareValue<T>
 
 // TODO: 2020/6/24 Introduce class TypeToken for compound types for Java.

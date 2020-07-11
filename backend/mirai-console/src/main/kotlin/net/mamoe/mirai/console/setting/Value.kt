@@ -29,14 +29,14 @@ import kotlin.reflect.KProperty
  * @see PrimitiveValue
  * @see CompositeValue
  */
-interface Value<T> {
-    var value: T
+public interface Value<T> {
+    public var value: T
 }
 
 /**
  * Typically returned by [Setting.value] functions.
  */
-class SerializableValue<T>(
+public class SerializableValue<T>(
     private val delegate: Value<T>,
     /**
      * The serializer used to update and dump [delegate]
@@ -46,7 +46,7 @@ class SerializableValue<T>(
     override fun toString(): String = delegate.toString()
 }
 
-fun <T> Value<T>.serializableValueWith(
+public fun <T> Value<T>.serializableValueWith(
     serializer: KSerializer<T>
 ): SerializableValue<T> {
     return SerializableValue(
@@ -58,27 +58,30 @@ fun <T> Value<T>.serializableValueWith(
 /**
  * @see SerializableValue
  */
-interface SerializerAwareValue<T> : Value<T> {
-    val serializer: KSerializer<Unit>
+public interface SerializerAwareValue<T> : Value<T> {
+    public val serializer: KSerializer<Unit>
 }
 
-fun <T> SerializerAwareValue<T>.serialize(format: StringFormat): String {
+public fun <T> SerializerAwareValue<T>.serialize(format: StringFormat): String {
     return format.stringify(this.serializer, Unit)
 }
 
-fun <T> SerializerAwareValue<T>.serialize(format: BinaryFormat): ByteArray {
+public fun <T> SerializerAwareValue<T>.serialize(format: BinaryFormat): ByteArray {
     return format.dump(this.serializer, Unit)
 }
 
-inline operator fun <T> Value<T>.getValue(mySetting: Any?, property: KProperty<*>): T = value
-inline operator fun <T> Value<T>.setValue(mySetting: Any?, property: KProperty<*>, value: T) {
+@JvmSynthetic
+public inline operator fun <T> Value<T>.getValue(mySetting: Any?, property: KProperty<*>): T = value
+
+@JvmSynthetic
+public inline operator fun <T> Value<T>.setValue(mySetting: Any?, property: KProperty<*>, value: T) {
     this.value = value
 }
 
 /**
  * The serializer for a specific kind of [Value].
  */
-typealias ValueSerializer<T> = KSerializer<Value<T>>
+public typealias ValueSerializer<T> = KSerializer<Value<T>>
 
 /**
  * Represents a observable *primitive* value wrapping.
@@ -92,7 +95,7 @@ typealias ValueSerializer<T> = KSerializer<Value<T>>
  * Note: The values are actually *boxed* because of the generic type T.
  * *Primitive* indicates only it is one of the 9 types mentioned above.
  */
-interface PrimitiveValue<T> : Value<T>
+public interface PrimitiveValue<T> : Value<T>
 
 
 //// region PrimitiveValues CODEGEN ////
@@ -100,77 +103,77 @@ interface PrimitiveValue<T> : Value<T>
 /**
  * Represents a non-null [Byte] value.
  */
-interface ByteValue : PrimitiveValue<Byte>
+public interface ByteValue : PrimitiveValue<Byte>
 
 /**
  * Represents a non-null [Short] value.
  */
-interface ShortValue : PrimitiveValue<Short>
+public interface ShortValue : PrimitiveValue<Short>
 
 /**
  * Represents a non-null [Int] value.
  */
-interface IntValue : PrimitiveValue<Int>
+public interface IntValue : PrimitiveValue<Int>
 
 /**
  * Represents a non-null [Long] value.
  */
-interface LongValue : PrimitiveValue<Long>
+public interface LongValue : PrimitiveValue<Long>
 
 /**
  * Represents a non-null [Float] value.
  */
-interface FloatValue : PrimitiveValue<Float>
+public interface FloatValue : PrimitiveValue<Float>
 
 /**
  * Represents a non-null [Double] value.
  */
-interface DoubleValue : PrimitiveValue<Double>
+public interface DoubleValue : PrimitiveValue<Double>
 
 /**
  * Represents a non-null [Char] value.
  */
-interface CharValue : PrimitiveValue<Char>
+public interface CharValue : PrimitiveValue<Char>
 
 /**
  * Represents a non-null [Boolean] value.
  */
-interface BooleanValue : PrimitiveValue<Boolean>
+public interface BooleanValue : PrimitiveValue<Boolean>
 
 /**
  * Represents a non-null [String] value.
  */
-interface StringValue : PrimitiveValue<String>
+public interface StringValue : PrimitiveValue<String>
 
 //// endregion PrimitiveValues CODEGEN ////
 
 
 @ConsoleExperimentalAPI
-interface CompositeValue<T> : Value<T>
+public interface CompositeValue<T> : Value<T>
 
 
 /**
  * Superclass of [CompositeListValue], [PrimitiveListValue].
  */
-interface ListValue<E> : CompositeValue<List<E>>
+public interface ListValue<E> : CompositeValue<List<E>>
 
 /**
  * Elements can by anything, wrapped as [Value].
  * @param E is not primitive types.
  */
-interface CompositeListValue<E> : ListValue<E>
+public interface CompositeListValue<E> : ListValue<E>
 
 /**
  * Elements can only be primitives, not wrapped.
  * @param E is not primitive types.
  */
-interface PrimitiveListValue<E> : ListValue<E>
+public interface PrimitiveListValue<E> : ListValue<E>
 
 
 //// region PrimitiveListValue CODEGEN ////
 
-interface PrimitiveIntListValue : PrimitiveListValue<Int>
-interface PrimitiveLongListValue : PrimitiveListValue<Long>
+public interface PrimitiveIntListValue : PrimitiveListValue<Int>
+public interface PrimitiveLongListValue : PrimitiveListValue<Long>
 // TODO + codegen
 
 //// endregion PrimitiveListValue CODEGEN ////
@@ -179,25 +182,25 @@ interface PrimitiveLongListValue : PrimitiveListValue<Long>
 /**
  * Superclass of [CompositeSetValue], [PrimitiveSetValue].
  */
-interface SetValue<E> : CompositeValue<Set<E>>
+public interface SetValue<E> : CompositeValue<Set<E>>
 
 /**
  * Elements can by anything, wrapped as [Value].
  * @param E is not primitive types.
  */
-interface CompositeSetValue<E> : SetValue<E>
+public interface CompositeSetValue<E> : SetValue<E>
 
 /**
  * Elements can only be primitives, not wrapped.
  * @param E is not primitive types.
  */
-interface PrimitiveSetValue<E> : SetValue<E>
+public interface PrimitiveSetValue<E> : SetValue<E>
 
 
 //// region PrimitiveSetValue CODEGEN ////
 
-interface PrimitiveIntSetValue : PrimitiveSetValue<Int>
-interface PrimitiveLongSetValue : PrimitiveSetValue<Long>
+public interface PrimitiveIntSetValue : PrimitiveSetValue<Int>
+public interface PrimitiveLongSetValue : PrimitiveSetValue<Long>
 // TODO + codegen
 
 //// endregion PrimitiveSetValue CODEGEN ////
@@ -206,17 +209,17 @@ interface PrimitiveLongSetValue : PrimitiveSetValue<Long>
 /**
  * Superclass of [CompositeMapValue], [PrimitiveMapValue].
  */
-interface MapValue<K, V> : CompositeValue<Map<K, V>>
+public interface MapValue<K, V> : CompositeValue<Map<K, V>>
 
-interface CompositeMapValue<K, V> : MapValue<K, V>
+public interface CompositeMapValue<K, V> : MapValue<K, V>
 
-interface PrimitiveMapValue<K, V> : MapValue<K, V>
+public interface PrimitiveMapValue<K, V> : MapValue<K, V>
 
 
 //// region PrimitiveMapValue CODEGEN ////
 
-interface PrimitiveIntIntMapValue : PrimitiveMapValue<Int, Int>
-interface PrimitiveIntLongMapValue : PrimitiveMapValue<Int, Long>
+public interface PrimitiveIntIntMapValue : PrimitiveMapValue<Int, Int>
+public interface PrimitiveIntLongMapValue : PrimitiveMapValue<Int, Long>
 // TODO + codegen
 
 //// endregion PrimitiveSetValue CODEGEN ////

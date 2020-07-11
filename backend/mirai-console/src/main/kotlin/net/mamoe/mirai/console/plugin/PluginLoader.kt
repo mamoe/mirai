@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused", "INAPPLICABLE_JVM_NAME")
+@file:Suppress("unused", "INAPPLICABLE_JVM_NAME", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.console.plugin
 
@@ -23,11 +23,11 @@ import java.io.File
  *
  * @see JarPluginLoader Jar 插件加载器
  */
-interface PluginLoader<P : Plugin, D : PluginDescription> {
+public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
      * 扫描并返回可以被加载的插件的 [描述][PluginDescription] 列表. 此函数只会被调用一次
      */
-    fun listPlugins(): List<D>
+    public fun listPlugins(): List<D>
 
     /**
      * 获取此插件的描述
@@ -36,7 +36,7 @@ interface PluginLoader<P : Plugin, D : PluginDescription> {
      */
     @get:JvmName("getPluginDescription")
     @get:Throws(PluginLoadException::class)
-    val P.description: D
+    public val P.description: D // Java signature: `public P getDescription(P)`
 
     /**
      * 加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的主类实例
@@ -44,19 +44,20 @@ interface PluginLoader<P : Plugin, D : PluginDescription> {
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
      */
     @Throws(PluginLoadException::class)
-    fun load(description: D): P
+    public fun load(description: D): P
 
-    fun enable(plugin: P)
-    fun disable(plugin: P)
+    public fun enable(plugin: P)
+    public fun disable(plugin: P)
 }
 
-fun <D : PluginDescription, P : Plugin> PluginLoader<P, D>.getDescription(plugin: P): D = plugin.description
+public inline fun <D : PluginDescription, P : Plugin> PluginLoader<P, D>.getDescription(plugin: P): D =
+    plugin.description
 
-open class PluginLoadException : RuntimeException {
-    constructor() : super()
-    constructor(message: String?) : super(message)
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-    constructor(cause: Throwable?) : super(cause)
+public open class PluginLoadException : RuntimeException {
+    public constructor() : super()
+    public constructor(message: String?) : super(message)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(cause: Throwable?) : super(cause)
 }
 
 /**
@@ -65,18 +66,18 @@ open class PluginLoadException : RuntimeException {
  * @see AbstractFilePluginLoader 默认基础实现
  * @see JarPluginLoader 内建的 Jar (JVM) 插件加载器.
  */
-interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoader<P, D> {
+public interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoader<P, D> {
     /**
      * 所支持的插件文件后缀, 含 '.'. 如 [JarPluginLoader] 为 ".jar"
      */
-    val fileSuffix: String
+    public val fileSuffix: String
 }
 
 /**
  * [FilePluginLoader] 的默认基础实现
  */
-abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
-    override val fileSuffix: String
+public abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
+    public override val fileSuffix: String
 ) : FilePluginLoader<P, D> {
     private fun pluginsFilesSequence(): Sequence<File> =
         PluginManager.pluginsDir.walk().filter { it.isFile && it.name.endsWith(fileSuffix, ignoreCase = true) }
@@ -86,7 +87,7 @@ abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
      */
     protected abstract fun Sequence<File>.mapToDescription(): List<D>
 
-    final override fun listPlugins(): List<D> = pluginsFilesSequence().mapToDescription()
+    public final override fun listPlugins(): List<D> = pluginsFilesSequence().mapToDescription()
 }
 
 

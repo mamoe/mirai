@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.console.plugin
 
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.setting.internal.map
 import net.mamoe.yamlkt.Yaml
@@ -19,14 +20,14 @@ import java.io.File
 
 /** 插件类型 */
 @Serializable(with = PluginKind.AsStringSerializer::class)
-enum class PluginKind {
+public enum class PluginKind {
     /** 表示此插件提供一个 [PluginLoader], 应在加载其他 [NORMAL] 类型插件前加载 */
     LOADER,
 
     /** 表示此插件为一个通常的插件, 按照正常的依赖关系加载. */
     NORMAL;
 
-    object AsStringSerializer : KSerializer<PluginKind> by String.serializer().map(
+    public object AsStringSerializer : KSerializer<PluginKind> by String.serializer().map(
         serializer = { it.name },
         deserializer = { str ->
             values().firstOrNull {
@@ -39,38 +40,38 @@ enum class PluginKind {
 /**
  * 插件描述
  */
-interface PluginDescription {
-    val kind: PluginKind
+public interface PluginDescription {
+    public val kind: PluginKind
 
-    val name: String
-    val author: String
-    val version: String
-    val info: String
+    public val name: String
+    public val author: String
+    public val version: String
+    public val info: String
 
     /** 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件 */
-    val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency>
+    public val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency>
 }
 
 /** 插件的一个依赖的信息 */
 @Serializable
-data class PluginDependency(
+public data class PluginDependency(
     /** 依赖插件名 */
-    val name: String,
+    public val name: String,
     /**
      * 依赖版本号. 为 null 时则为不限制版本.
      * @see versionKind 版本号类型
      */
-    val version: String? = null,
+    public val version: String? = null,
     /** 版本号类型 */
-    val versionKind: VersionKind = VersionKind.AT_LEAST,
+    public val versionKind: VersionKind = VersionKind.AT_LEAST,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */
-    val isOptional: Boolean = false
+    public val isOptional: Boolean = false
 ) {
     /** 版本号类型 */
     @Serializable(with = VersionKind.AsStringSerializer::class)
-    enum class VersionKind(
+    public enum class VersionKind(
         private vararg val serialNames: String
     ) {
         /** 要求依赖精确的版本 */
@@ -82,7 +83,7 @@ data class PluginDependency(
         /** 要求依赖最高版本 */
         AT_MOST("at_most", "AtMost", "most", "highest", "-");
 
-        object AsStringSerializer : KSerializer<VersionKind> by String.serializer().map(
+        public object AsStringSerializer : KSerializer<VersionKind> by String.serializer().map(
             serializer = { it.serialNames.first() },
             deserializer = { str ->
                 values().firstOrNull {
@@ -92,7 +93,7 @@ data class PluginDependency(
         )
     }
 
-    override fun toString(): String {
+    public override fun toString(): String {
         return "$name ${versionKind.toEnglishString()}v$version"
     }
 
@@ -100,7 +101,7 @@ data class PluginDependency(
     /**
      * 可支持解析 [String] 作为 [PluginDependency.version] 或单个 [PluginDependency]
      */
-    object SmartSerializer : KSerializer<PluginDependency> by YamlDynamicSerializer.map(
+    public object SmartSerializer : KSerializer<PluginDependency> by YamlDynamicSerializer.map(
         serializer = { it },
         deserializer = { any ->
             when (any) {
@@ -112,10 +113,10 @@ data class PluginDependency(
 }
 
 /**
- * 基于文件的插件的描述
+ * 基于文件的插件 的描述
  */
-interface FilePluginDescription : PluginDescription {
-    val file: File
+public interface FilePluginDescription : PluginDescription {
+    public val file: File
 }
 
 internal fun PluginDependency.VersionKind.toEnglishString(): String = when (this) {

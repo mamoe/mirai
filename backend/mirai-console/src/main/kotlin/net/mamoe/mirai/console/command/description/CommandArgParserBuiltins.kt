@@ -23,44 +23,44 @@ import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
 
 
-object IntArgParser : CommandArgParser<Int> {
-    override fun parse(raw: String, sender: CommandSender): Int =
+public object IntArgParser : CommandArgParser<Int> {
+    public override fun parse(raw: String, sender: CommandSender): Int =
         raw.toIntOrNull() ?: illegalArgument("无法解析 $raw 为整数")
 }
 
-object LongArgParser : CommandArgParser<Long> {
-    override fun parse(raw: String, sender: CommandSender): Long =
+public object LongArgParser : CommandArgParser<Long> {
+    public override fun parse(raw: String, sender: CommandSender): Long =
         raw.toLongOrNull() ?: illegalArgument("无法解析 $raw 为长整数")
 }
 
-object ShortArgParser : CommandArgParser<Short> {
-    override fun parse(raw: String, sender: CommandSender): Short =
+public object ShortArgParser : CommandArgParser<Short> {
+    public override fun parse(raw: String, sender: CommandSender): Short =
         raw.toShortOrNull() ?: illegalArgument("无法解析 $raw 为短整数")
 }
 
-object ByteArgParser : CommandArgParser<Byte> {
-    override fun parse(raw: String, sender: CommandSender): Byte =
+public object ByteArgParser : CommandArgParser<Byte> {
+    public override fun parse(raw: String, sender: CommandSender): Byte =
         raw.toByteOrNull() ?: illegalArgument("无法解析 $raw 为字节")
 }
 
-object DoubleArgParser : CommandArgParser<Double> {
-    override fun parse(raw: String, sender: CommandSender): Double =
+public object DoubleArgParser : CommandArgParser<Double> {
+    public override fun parse(raw: String, sender: CommandSender): Double =
         raw.toDoubleOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
 
-object FloatArgParser : CommandArgParser<Float> {
-    override fun parse(raw: String, sender: CommandSender): Float =
+public object FloatArgParser : CommandArgParser<Float> {
+    public override fun parse(raw: String, sender: CommandSender): Float =
         raw.toFloatOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
 
-object StringArgParser : CommandArgParser<String> {
-    override fun parse(raw: String, sender: CommandSender): String {
+public object StringArgParser : CommandArgParser<String> {
+    public override fun parse(raw: String, sender: CommandSender): String {
         return raw
     }
 }
 
-object BooleanArgParser : CommandArgParser<Boolean> {
-    override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
+public object BooleanArgParser : CommandArgParser<Boolean> {
+    public override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
         str.equals("true", ignoreCase = true)
                 || str.equals("yes", ignoreCase = true)
                 || str.equals("enabled", ignoreCase = true)
@@ -73,18 +73,18 @@ object BooleanArgParser : CommandArgParser<Boolean> {
  * output: Bot
  * errors: String->Int convert, Bot Not Exist
  */
-object ExistBotArgParser : CommandArgParser<Bot> {
-    override fun parse(raw: String, sender: CommandSender): Bot {
+public object ExistBotArgParser : CommandArgParser<Bot> {
+    public override fun parse(raw: String, sender: CommandSender): Bot {
         val uin = raw.toLongOrNull() ?: illegalArgument("无法识别 QQ ID: $raw")
         return Bot.getInstanceOrNull(uin) ?: illegalArgument("无法找到 Bot $uin")
     }
 }
 
-object ExistFriendArgParser : CommandArgParser<Friend> {
+public object ExistFriendArgParser : CommandArgParser<Friend> {
     //Bot.friend
     //friend
     //~ = self
-    override fun parse(raw: String, sender: CommandSender): Friend {
+    public override fun parse(raw: String, sender: CommandSender): Friend {
         if (raw == "~") {
             if (sender !is BotAwareCommandSender) {
                 illegalArgument("无法解析～作为默认")
@@ -115,7 +115,7 @@ object ExistFriendArgParser : CommandArgParser<Friend> {
         }
     }
 
-    override fun parse(raw: SingleMessage, sender: CommandSender): Friend {
+    public override fun parse(raw: SingleMessage, sender: CommandSender): Friend {
         if (raw is At) {
             assert(sender is MemberCommandSender)
             return (sender as BotAwareCommandSender).bot.friends.getOrNull(raw.target) ?: illegalArgument("At的对象非Bot好友")
@@ -125,8 +125,8 @@ object ExistFriendArgParser : CommandArgParser<Friend> {
     }
 }
 
-object ExistGroupArgParser : CommandArgParser<Group> {
-    override fun parse(raw: String, sender: CommandSender): Group {
+public object ExistGroupArgParser : CommandArgParser<Group> {
+    public override fun parse(raw: String, sender: CommandSender): Group {
         //by default
         if ((raw == "" || raw == "~") && sender is MemberCommandSender) {
             return sender.group
@@ -160,12 +160,12 @@ object ExistGroupArgParser : CommandArgParser<Group> {
     }
 }
 
-object ExistMemberArgParser : CommandArgParser<Member> {
+public object ExistMemberArgParser : CommandArgParser<Member> {
     //后台: Bot.Group.Member[QQ/名片]
     //私聊: Group.Member[QQ/名片]
     //群内: Q号
     //群内: 名片
-    override fun parse(raw: String, sender: CommandSender): Member {
+    public override fun parse(raw: String, sender: CommandSender): Member {
         if (sender !is BotAwareCommandSender) {
             with(raw.split(".")) {
                 checkArgument(this.size >= 3) {
@@ -226,7 +226,7 @@ object ExistMemberArgParser : CommandArgParser<Member> {
         }
     }
 
-    override fun parse(raw: SingleMessage, sender: CommandSender): Member {
+    public override fun parse(raw: SingleMessage, sender: CommandSender): Member {
         return if (raw is At) {
             checkArgument(sender is MemberCommandSender)
             (sender.group).members[raw.target]

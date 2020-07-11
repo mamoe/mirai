@@ -18,14 +18,12 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * Java 插件的父类
  */
-abstract class JavaPlugin @JvmOverloads constructor(
+public abstract class JavaPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
-
 
     /**
      * Java API Scheduler
      */
-    val scheduler: JavaPluginScheduler =
-        JavaPluginScheduler(this.coroutineContext)
+    public val scheduler: JavaPluginScheduler = JavaPluginScheduler(this.coroutineContext)
 }

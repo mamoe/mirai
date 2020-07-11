@@ -19,31 +19,31 @@ internal object BuiltInSerializerConstants {
     //// region BuiltInSerializerConstantsPrimitives CODEGEN ////
 
     @JvmStatic
-    val ByteSerializerDescriptor = Byte.serializer().descriptor
+    internal val ByteSerializerDescriptor = Byte.serializer().descriptor
 
     @JvmStatic
-    val ShortSerializerDescriptor = Short.serializer().descriptor
+    internal val ShortSerializerDescriptor = Short.serializer().descriptor
 
     @JvmStatic
-    val IntSerializerDescriptor = Int.serializer().descriptor
+    internal val IntSerializerDescriptor = Int.serializer().descriptor
 
     @JvmStatic
-    val LongSerializerDescriptor = Long.serializer().descriptor
+    internal val LongSerializerDescriptor = Long.serializer().descriptor
 
     @JvmStatic
-    val FloatSerializerDescriptor = Float.serializer().descriptor
+    internal val FloatSerializerDescriptor = Float.serializer().descriptor
 
     @JvmStatic
-    val DoubleSerializerDescriptor = Double.serializer().descriptor
+    internal val DoubleSerializerDescriptor = Double.serializer().descriptor
 
     @JvmStatic
-    val CharSerializerDescriptor = Char.serializer().descriptor
+    internal val CharSerializerDescriptor = Char.serializer().descriptor
 
     @JvmStatic
-    val BooleanSerializerDescriptor = Boolean.serializer().descriptor
+    internal val BooleanSerializerDescriptor = Boolean.serializer().descriptor
 
     @JvmStatic
-    val StringSerializerDescriptor = String.serializer().descriptor
+    internal val StringSerializerDescriptor = String.serializer().descriptor
 
     //// endregion BuiltInSerializerConstantsPrimitives CODEGEN ////
 }
@@ -76,103 +76,86 @@ internal fun Setting.valueImpl(default: Byte): SerializerAwareValue<Byte> {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.byteValueImpl(): SerializerAwareValue<Byte> {
     return object : ByteValueImpl() {
         override fun onChanged() = this@byteValueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.valueImpl(default: Short): SerializerAwareValue<Short> {
     return object : ShortValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.shortValueImpl(): SerializerAwareValue<Short> {
     return object : ShortValueImpl() {
         override fun onChanged() = this@shortValueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.valueImpl(default: Int): SerializerAwareValue<Int> {
     return object : IntValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.intValueImpl(): SerializerAwareValue<Int> {
     return object : IntValueImpl() {
         override fun onChanged() = this@intValueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.valueImpl(default: Long): SerializerAwareValue<Long> {
     return object : LongValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.longValueImpl(): SerializerAwareValue<Long> {
     return object : LongValueImpl() {
         override fun onChanged() = this@longValueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.valueImpl(default: Float): SerializerAwareValue<Float> {
     return object : FloatValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.floatValueImpl(): SerializerAwareValue<Float> {
     return object : FloatValueImpl() {
         override fun onChanged() = this@floatValueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.valueImpl(default: Double): SerializerAwareValue<Double> {
     return object : DoubleValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.doubleValueImpl(): SerializerAwareValue<Double> {
     return object : DoubleValueImpl() {
         override fun onChanged() = this@doubleValueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.valueImpl(default: Char): SerializerAwareValue<Char> {
     return object : CharValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.charValueImpl(): SerializerAwareValue<Char> {
     return object : CharValueImpl() {
         override fun onChanged() = this@charValueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.valueImpl(default: Boolean): SerializerAwareValue<Boolean> {
     return object : BooleanValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.booleanValueImpl(): SerializerAwareValue<Boolean> {
     return object : BooleanValueImpl() {
         override fun onChanged() = this@booleanValueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.valueImpl(default: String): SerializerAwareValue<String> {
     return object : StringValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-
 internal fun Setting.stringValueImpl(): SerializerAwareValue<String> {
     return object : StringValueImpl() {
         override fun onChanged() = this@stringValueImpl.onValueChanged(this)

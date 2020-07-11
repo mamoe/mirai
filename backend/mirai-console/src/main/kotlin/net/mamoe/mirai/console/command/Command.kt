@@ -22,55 +22,58 @@ import net.mamoe.mirai.message.data.SingleMessage
  * @see RawCommand
  * @see CompositeCommand
  */
-interface Command {
+public interface Command {
     /**
      * 指令名. 需要至少有一个元素. 所有元素都不能带有空格
      */
-    val names: Array<out String>
+    public val names: Array<out String>
 
-    val usage: String
+    public val usage: String
 
-    val description: String
+    public val description: String
 
     /**
      * 指令权限
      */
-    val permission: CommandPermission
+    public val permission: CommandPermission
 
     /**
      * 为 `true` 时表示 [指令前缀][CommandPrefix] 可选
      */
-    val prefixOptional: Boolean
+    public val prefixOptional: Boolean
 
-    val owner: CommandOwner
+    public val owner: CommandOwner
 
     /**
      * @param args 指令参数. 可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
+     *
+     * @see Command.execute
      */ // TODO: 2020/6/28 Java-friendly bridges
-    suspend fun CommandSender.onCommand(args: Array<out Any>)
+    public suspend fun CommandSender.onCommand(args: Array<out Any>)
 }
 
 /**
  * [Command] 的基础实现
  */
-abstract class AbstractCommand @JvmOverloads constructor(
-    final override val owner: CommandOwner,
+public abstract class AbstractCommand @JvmOverloads constructor(
+    public final override val owner: CommandOwner,
     vararg names: String,
     description: String = "<no description available>",
-    final override val permission: CommandPermission = CommandPermission.Default,
-    final override val prefixOptional: Boolean = false
+    public final override val permission: CommandPermission = CommandPermission.Default,
+    public final override val prefixOptional: Boolean = false
 ) : Command {
-    final override val description = description.trimIndent()
-    final override val names: Array<out String> =
+    public final override val description: String = description.trimIndent()
+    public final override val names: Array<out String> =
         names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).also { list ->
             list.firstOrNull { !it.isValidSubName() }?.let { error("Invalid name: $it") }
         }.toTypedArray()
 
 }
 
-suspend inline fun Command.onCommand(sender: CommandSender, args: Array<out Any>) = sender.run { onCommand(args) }
+public suspend inline fun Command.onCommand(sender: CommandSender, args: Array<out Any>): Unit =
+    sender.run { onCommand(args) }
 
 /**
  * 主要指令名. 为 [Command.names] 的第一个元素.
  */
-val Command.primaryName: String get() = names[0]
+public val Command.primaryName: String get() = names[0]

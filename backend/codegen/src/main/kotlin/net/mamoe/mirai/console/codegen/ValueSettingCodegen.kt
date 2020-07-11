@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("PRE_RELEASE_CLASS", "ClassName")
+@file:Suppress("PRE_RELEASE_CLASS", "ClassName", "RedundantVisibilityModifier")
 
 package net.mamoe.mirai.console.codegen
 
@@ -15,7 +15,7 @@ import kotlin.reflect.full.functions
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
-object ValueSettingCodegen {
+internal object ValueSettingCodegen {
     /**
      * The interface
      */
@@ -31,7 +31,7 @@ object ValueSettingCodegen {
                     /**
                      * Represents a non-null [$ktType] value.
                      */
-                    interface ${ktType}Value : PrimitiveValue<$ktType>
+                    public interface ${ktType}Value : PrimitiveValue<$ktType>
                 """
             )
         }
@@ -47,7 +47,7 @@ object ValueSettingCodegen {
                 kCode(
                     """
                 @JvmStatic
-                val ${ktType.standardName}SerializerDescriptor = ${ktType.standardName}.serializer().descriptor 
+                internal val ${ktType.standardName}SerializerDescriptor = ${ktType.standardName}.serializer().descriptor 
             """
                 ).lines().joinToString("\n") { "    $it" }
             )
@@ -145,7 +145,7 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
             @Suppress("unused")
             appendKCode(
                 """
-                fun Setting.value(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = valueImpl(default)
+                public fun Setting.value(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = valueImpl(default)
                 """
             )
         }

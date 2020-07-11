@@ -7,47 +7,45 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("INAPPLICABLE_JVM_NAME", "unused")
+
 package net.mamoe.mirai.console.utils
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.console.MiraiConsole
-import java.util.concurrent.Executors
 
-@Suppress("unused")
-object ConsoleInput {
-    private val inputDispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+/**
+ * Console 输入. 由于 console 接管了 stdin, [readLine] 等操作需要在这里进行.
+ */
+public interface ConsoleInput {
+    /**
+     * 以 [提示][hint] 向用户索要一个输入
+     */
+    @JvmSynthetic
+    public suspend fun requestInput(hint: String): String
 
     /**
-     * 向用户索要一个Input
-     * 你需要提供一个hint（提示）并等待获取一个结果
-     * 具体索要方式将根据frontend不同而不同
-     * 如弹出框，或一行字
+     * 以 [提示][hint] 向用户索要一个输入. 仅供 Java 调用者使用
      */
-    suspend fun requestInput(
-        hint: String
-    ): String {
-        return withContext(inputDispatcher) {
-            MiraiConsole.frontEnd.requestInput(hint)
-        }
+    @JvmName("requestInput")
+    @JavaFriendlyAPI
+    public fun requestInputBlocking(hint: String): String
+
+    public companion object INSTANCE : ConsoleInput by ConsoleInputImpl {
+        public suspend inline fun MiraiConsole.requestInput(hint: String): String = ConsoleInput.requestInput(hint)
     }
-
-    fun requestInputBlocking(hint: String): String = runBlocking { requestInput(hint) }
-
-    /**
-     * asnyc获取
-     */
-    fun requestInputAsync(
-        scope: CoroutineScope,
-        hint: String
-    ): Deferred<String> {
-        return scope.async {
-            requestInput(hint)
-        }
-    }
-
-    suspend fun MiraiConsole.requestInput(hint: String): String = requestInput(hint)
 }
 
+@Suppress("unused")
+internal object ConsoleInputImpl : ConsoleInput {
+    private val inputLock = Mutex()
 
+    override suspend fun requestInput(
+        hint: String
+    ): String = inputLock.withLock { MiraiConsole.frontEnd.requestInput(hint) }
 
-
+    @JavaFriendlyAPI
+    override fun requestInputBlocking(hint: String): String = runBlocking { requestInput(hint) }
+}

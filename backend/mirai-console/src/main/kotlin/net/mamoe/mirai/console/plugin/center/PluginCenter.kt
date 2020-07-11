@@ -15,10 +15,11 @@ import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import java.io.File
 
 @ConsoleExperimentalAPI
-interface PluginCenter {
+public interface PluginCenter {
 
     @Serializable
-    data class PluginInsight(
+    @ConsoleExperimentalAPI
+    public data class PluginInsight(
         val name: String,
         val version: String,
         @SerialName("core")
@@ -31,8 +32,9 @@ interface PluginCenter {
         val commands: List<String>
     )
 
+    @ConsoleExperimentalAPI
     @Serializable
-    data class PluginInfo(
+    public data class PluginInfo(
         val name: String,
         val version: String,
         @SerialName("core")
@@ -54,24 +56,24 @@ interface PluginCenter {
      * 能获取到多少由实际的 [PluginCenter] 决定
      * 返回 插件名->Insight
      */
-    suspend fun fetchPlugin(page: Int): Map<String, PluginInsight>
+    public suspend fun fetchPlugin(page: Int): Map<String, PluginInsight>
 
     /**
      * 尝试获取到某个插件 by 全名, case sensitive
      * null 则没有
      */
-    suspend fun findPlugin(name: String): PluginInfo?
+    public suspend fun findPlugin(name: String): PluginInfo?
 
 
-    suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit): File
+    public suspend fun <T : Any> T.downloadPlugin(name: String, progressListener: T.(Float) -> Unit): File
 
-    suspend fun downloadPlugin(name: String, progressListener: PluginCenter.(Float) -> Unit): File =
+    public suspend fun downloadPlugin(name: String, progressListener: PluginCenter.(Float) -> Unit): File =
         downloadPlugin<PluginCenter>(name, progressListener)
 
     /**
      * 刷新
      */
-    suspend fun refresh()
+    public suspend fun refresh()
 
-    val name: String
+    public val name: String
 }

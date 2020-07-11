@@ -14,12 +14,12 @@ package net.mamoe.mirai.console.command
  *
  * 总是作为 [CommandExecutionException.cause].
  */
-class CommandPermissionDeniedException(
+public class CommandPermissionDeniedException(
     /**
      * 执行过程发生异常的指令
      */
-    val command: Command
+    public val command: Command
 ) : RuntimeException("Permission denied while executing command '${command.primaryName}'") {
-    override fun toString(): String =
+    public override fun toString(): String =
         "CommandPermissionDeniedException(command=$command)"
 }

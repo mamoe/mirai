@@ -29,7 +29,7 @@ import kotlin.system.exitProcess
 /**
  * 添加一个 [Bot] 实例到全局 Bot 列表, 但不登录.
  */
-fun MiraiConsole.addBot(id: Long, password: String): Bot {
+public fun MiraiConsole.addBot(id: Long, password: String): Bot {
     return Bot(id, password) {
 
         /**
@@ -65,15 +65,15 @@ fun MiraiConsole.addBot(id: Long, password: String): Bot {
 }
 
 @Suppress("EXPOSED_SUPER_INTERFACE")
-interface BuiltInCommand : Command, BuiltInCommandInternal
+public interface BuiltInCommand : Command, BuiltInCommandInternal
 
 // for identification
 internal interface BuiltInCommandInternal : Command
 
 @Suppress("unused")
-object BuiltInCommands {
+public object BuiltInCommands {
 
-    val all: Array<out Command> by lazy {
+    public val all: Array<out Command> by lazy {
         this::class.nestedClasses.mapNotNull { it.objectInstance as? Command }.toTypedArray()
     }
 
@@ -83,7 +83,7 @@ object BuiltInCommands {
         }
     }
 
-    object Help : SimpleCommand(
+    public object Help : SimpleCommand(
         ConsoleCommandOwner, "help",
         description = "Gets help about the console."
     ), BuiltInCommand {
@@ -94,13 +94,13 @@ object BuiltInCommands {
         }
 
         @Handler
-        suspend fun CommandSender.handle() {
+        public suspend fun CommandSender.handle() {
             sendMessage("现在有指令: ${allRegisteredCommands.joinToString { it.primaryName }}")
             sendMessage("帮助还没写, 将就一下")
         }
     }
 
-    object Stop : SimpleCommand(
+    public object Stop : SimpleCommand(
         ConsoleCommandOwner, "stop", "shutdown", "exit",
         description = "Stop the whole world."
     ), BuiltInCommand {
@@ -116,7 +116,7 @@ object BuiltInCommands {
         private val closingLock = Mutex()
 
         @Handler
-        suspend fun CommandSender.handle(): Unit = closingLock.withLock {
+        public suspend fun CommandSender.handle(): Unit = closingLock.withLock {
             sendMessage("Stopping mirai-console")
             kotlin.runCatching {
                 MiraiConsole.job.cancelAndJoin()
@@ -131,27 +131,28 @@ object BuiltInCommands {
         }
     }
 
-    object Login : SimpleCommand(
+    public object Login : SimpleCommand(
         ConsoleCommandOwner, "login",
         description = "Log in a bot account."
     ), BuiltInCommand {
         @Handler
-        suspend fun CommandSender.handle(id: Long, password: String) {
+        public suspend fun CommandSender.handle(id: Long, password: String) {
 
             kotlin.runCatching {
                 MiraiConsole.addBot(id, password).alsoLogin()
             }.fold(
                 onSuccess = { sendMessage("${it.nick} ($id) Login succeed") },
                 onFailure = { throwable ->
-                    sendMessage("Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
-                            if (this is MessageEventContextAware<*>) {
-                                this.fromEvent.selectMessagesUnit {
-                                    "stacktrace" reply {
-                                        throwable.stacktraceString
+                    sendMessage(
+                        "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
+                                if (this is MessageEventContextAware<*>) {
+                                    this.fromEvent.selectMessagesUnit {
+                                        "stacktrace" reply {
+                                            throwable.stacktraceString
+                                        }
                                     }
-                                }
-                                "test"
-                            } else "")
+                                    "test"
+                                } else "")
 
                     throw throwable
                 }

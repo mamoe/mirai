@@ -27,12 +27,12 @@ import net.mamoe.mirai.message.data.MessageChain
  * 指令的所有者.
  * @see PluginCommandOwner
  */
-sealed class CommandOwner
+public sealed class CommandOwner
 
 /**
  * 插件指令所有者. 插件只能通过 [PluginCommandOwner] 管理指令.
  */
-abstract class PluginCommandOwner(val plugin: Plugin) : CommandOwner() {
+public abstract class PluginCommandOwner(public val plugin: Plugin) : CommandOwner() {
     init {
         if (plugin is CoroutineScope) { // JVM Plugin
             plugin.coroutineContext[Job]?.invokeOnCompletion {
@@ -45,33 +45,33 @@ abstract class PluginCommandOwner(val plugin: Plugin) : CommandOwner() {
 /**
  * 代表控制台所有者. 所有的 mirai-console 内建的指令都属于 [ConsoleCommandOwner].
  */
-object ConsoleCommandOwner : CommandOwner()
+public object ConsoleCommandOwner : CommandOwner()
 
 /**
  * 获取已经注册了的属于这个 [CommandOwner] 的指令列表.
  * @see JCommandManager.getRegisteredCommands Java 方法
  */
-val CommandOwner.registeredCommands: List<Command> get() = InternalCommandManager.registeredCommands.filter { it.owner == this }
+public val CommandOwner.registeredCommands: List<Command> get() = InternalCommandManager.registeredCommands.filter { it.owner == this }
 
 /**
  * 获取所有已经注册了指令列表.
  * @see JCommandManager.getRegisteredCommands Java 方法
  */
-val allRegisteredCommands: List<Command> get() = InternalCommandManager.registeredCommands.toList() // copy
+public val allRegisteredCommands: List<Command> get() = InternalCommandManager.registeredCommands.toList() // copy
 
 /**
  * 指令前缀, 如 '/'
  * @see JCommandManager.getCommandPrefix Java 方法
  */
 @get:JvmName("getCommandPrefix")
-val CommandPrefix: String
+public val CommandPrefix: String
     get() = InternalCommandManager.COMMAND_PREFIX
 
 /**
  * 取消注册所有属于 [this] 的指令
  * @see JCommandManager.unregisterAllCommands Java 方法
  */
-fun CommandOwner.unregisterAllCommands() {
+public fun CommandOwner.unregisterAllCommands() {
     for (registeredCommand in registeredCommands) {
         registeredCommand.unregister()
     }
@@ -94,7 +94,7 @@ fun CommandOwner.unregisterAllCommands() {
  * @see JCommandManager.register Java 方法
  */
 @JvmOverloads
-fun Command.register(override: Boolean = false): Boolean {
+public fun Command.register(override: Boolean = false): Boolean {
     if (this is CompositeCommand) this.subCommands // init
 
     InternalCommandManager.modifyLock.withLock {
@@ -124,7 +124,7 @@ fun Command.register(override: Boolean = false): Boolean {
  *
  * @see JCommandManager.findDuplicate Java 方法
  */
-fun Command.findDuplicate(): Command? =
+public fun Command.findDuplicate(): Command? =
     InternalCommandManager.registeredCommands.firstOrNull { it.names intersectsIgnoringCase this.names }
 
 /**
@@ -132,7 +132,7 @@ fun Command.findDuplicate(): Command? =
  *
  * @see JCommandManager.unregister Java 方法
  */
-fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
+public fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
     if (this.prefixOptional) {
         this.names.forEach {
             InternalCommandManager.optionalPrefixCommandMap.remove(it)
@@ -147,7 +147,7 @@ fun Command.unregister(): Boolean = InternalCommandManager.modifyLock.withLock {
 /**
  * 当 [this] 已经 [注册][register] 后返回 `true`
  */
-fun Command.isRegistered(): Boolean = this in InternalCommandManager.registeredCommands
+public fun Command.isRegistered(): Boolean = this in InternalCommandManager.registeredCommands
 
 //// executing without detailed result (faster)
 
@@ -161,7 +161,7 @@ fun Command.isRegistered(): Boolean = this in InternalCommandManager.registeredC
  *
  * @see JCommandManager.executeCommand Java 方法
  */
-suspend fun CommandSender.executeCommand(vararg messages: Any): Command? {
+public suspend fun CommandSender.executeCommand(vararg messages: Any): Command? {
     if (messages.isEmpty()) return null
     return matchAndExecuteCommandInternal(messages, messages[0].toString().substringBefore(' '))
 }
@@ -175,7 +175,7 @@ suspend fun CommandSender.executeCommand(vararg messages: Any): Command? {
  * @see JCommandManager.executeCommand Java 方法
  */
 @Throws(CommandExecutionException::class)
-suspend fun CommandSender.executeCommand(message: MessageChain): Command? {
+public suspend fun CommandSender.executeCommand(message: MessageChain): Command? {
     if (message.isEmpty()) return null
     return matchAndExecuteCommandInternal(message, message[0].toString().substringBefore(' '))
 }
@@ -190,7 +190,7 @@ suspend fun CommandSender.executeCommand(message: MessageChain): Command? {
  */
 @JvmOverloads
 @Throws(CommandExecutionException::class)
-suspend fun Command.execute(sender: CommandSender, args: MessageChain, checkPermission: Boolean = true) {
+public suspend fun Command.execute(sender: CommandSender, args: MessageChain, checkPermission: Boolean = true) {
     sender.executeCommandInternal(
         this,
         args.flattenCommandComponents().toTypedArray(),
@@ -209,7 +209,7 @@ suspend fun Command.execute(sender: CommandSender, args: MessageChain, checkPerm
  */
 @JvmOverloads
 @Throws(CommandExecutionException::class)
-suspend fun Command.execute(sender: CommandSender, vararg args: Any, checkPermission: Boolean = true) {
+public suspend fun Command.execute(sender: CommandSender, vararg args: Any, checkPermission: Boolean = true) {
     sender.executeCommandInternal(
         this,
         args.flattenCommandComponents().toTypedArray(),
@@ -229,7 +229,7 @@ suspend fun Command.execute(sender: CommandSender, vararg args: Any, checkPermis
  *
  * @see JCommandManager.executeCommandDetailed Java 方法
  */
-suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): CommandExecuteResult {
+public suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): CommandExecuteResult {
     if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
     return executeCommandDetailedInternal(messages, messages[0].toString().substringBefore(' '))
 }
@@ -243,7 +243,7 @@ suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): CommandE
  *
  * @see JCommandManager.executeCommandDetailed Java 方法
  */
-suspend fun CommandSender.executeCommandDetailed(messages: MessageChain): CommandExecuteResult {
+public suspend fun CommandSender.executeCommandDetailed(messages: MessageChain): CommandExecuteResult {
     if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
     return executeCommandDetailedInternal(messages, messages[0].toString())
 }

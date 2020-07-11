@@ -23,6 +23,8 @@ tasks.withType(JavaCompile::class.java) {
 }
 
 kotlin {
+    explicitApiWarning()
+
     sourceSets.all {
         target.compilations.all {
             kotlinOptions {
@@ -46,10 +48,15 @@ kotlin {
         }
     }
 
-    sourceSets {
+    sourceSets.invoke {
         getByName("test") {
             languageSettings.apply {
                 languageVersion = "1.4"
+            }
+        }
+        getByName("main") {
+            languageSettings.apply {
+                languageVersion = "1.3"
             }
         }
     }
@@ -71,7 +78,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 }
-ext {
+ext.apply {
     // 傻逼 compileAndRuntime 没 exclude 掉
     // 傻逼 gradle 第二次配置 task 会覆盖掉第一次的配置
     val x: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar.() -> Unit = {
@@ -83,7 +90,7 @@ ext {
             }
         }
     }
-    this.set("shadowJar", x)
+    set("shadowJar", x)
 }
 
 tasks {

@@ -39,8 +39,8 @@ internal abstract class JvmPluginInternal(
 ) : JvmPlugin,
     CoroutineScope {
 
-    private val resourceConsoleDelegate by lazy { this::class.asResourceContainer() }
-    override fun getResourceAsStream(name: String): InputStream = resourceConsoleDelegate.getResourceAsStream(name)
+    private val resourceContainerDelegate by lazy { this::class.asResourceContainer() }
+    override fun getResourceAsStream(name: String): InputStream = resourceContainerDelegate.getResourceAsStream(name)
 
     // region JvmPlugin
     /**

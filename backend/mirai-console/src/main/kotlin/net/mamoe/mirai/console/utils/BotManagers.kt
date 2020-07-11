@@ -17,7 +17,7 @@ import net.mamoe.mirai.contact.User
 /**
  * 判断此用户是否为 console 管理员
  */
-val User.isManager: Boolean
+public val User.isManager: Boolean
     get() = this.bot.managers.contains(this.id)
 
 internal fun Bot.addManager(long: Long): Boolean {
@@ -25,9 +25,9 @@ internal fun Bot.addManager(long: Long): Boolean {
     return true
 }
 
-fun Bot.removeManager(long: Long) {
+public fun Bot.removeManager(long: Long) {
     TODO()
 }
 
-val Bot.managers: List<Long>
+public val Bot.managers: List<Long>
     get() = TODO()

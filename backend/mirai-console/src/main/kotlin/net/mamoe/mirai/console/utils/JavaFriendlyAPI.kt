@@ -19,7 +19,7 @@ internal annotation class JavaFriendlyAPI
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR, CLASS, FUNCTION, PROPERTY)
 @MustBeDocumented
-annotation class ConsoleInternalAPI(
+public annotation class ConsoleInternalAPI(
     val message: String = ""
 )
 
@@ -33,6 +33,6 @@ annotation class ConsoleInternalAPI(
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
-annotation class ConsoleExperimentalAPI(
+public annotation class ConsoleExperimentalAPI(
     val message: String = ""
 )

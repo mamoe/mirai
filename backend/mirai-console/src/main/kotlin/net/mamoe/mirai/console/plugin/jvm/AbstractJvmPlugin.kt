@@ -22,10 +22,10 @@ import kotlin.coroutines.EmptyCoroutineContext
  * @see JavaPlugin
  * @see KotlinPlugin
  */
-abstract class AbstractJvmPlugin @JvmOverloads constructor(
+public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, JvmPluginInternal(parentCoroutineContext) {
-    final override val name: String get() = this.description.name
+    public final override val name: String get() = this.description.name
 
-    override fun <T : Setting> getSetting(clazz: Class<T>): T = loader.settingStorage.load(this, clazz)
+    public override fun <T : Setting> getSetting(clazz: Class<T>): T = loader.settingStorage.load(this, clazz)
 }

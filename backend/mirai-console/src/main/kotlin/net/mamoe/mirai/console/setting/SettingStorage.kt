@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package net.mamoe.mirai.console.setting
 
 import kotlinx.atomicfu.atomic
@@ -22,19 +24,20 @@ import kotlin.reflect.full.findAnnotation
 /**
  * [Setting] 存储容器
  */
-interface SettingStorage {
+public interface SettingStorage {
     /**
      * 读取一个实例
      */
-    fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T
+    public fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T
 
     /**
      * 保存一个实例
      */
-    fun store(holder: SettingHolder, setting: Setting)
+    public fun store(holder: SettingHolder, setting: Setting)
 }
 
-fun <T : Setting> SettingStorage.load(holder: SettingHolder, settingClass: KClass<T>): T =
+// TODO: 2020/7/11 here or companion?
+public inline fun <T : Setting> SettingStorage.load(holder: SettingHolder, settingClass: KClass<T>): T =
     this.load(holder, settingClass.java)
 
 /**
@@ -45,17 +48,19 @@ fun <T : Setting> SettingStorage.load(holder: SettingHolder, settingClass: KClas
  *
  * @see AutoSaveSettingHolder 自动保存
  */
-interface SettingHolder {
+public interface SettingHolder {
     /**
      * 保存时使用的分类名
      */
-    val name: String
+    public val name: String
 }
 
 /**
  * 可以持有相关 [AutoSaveSetting] 的对象.
+ *
+ * @see net.mamoe.mirai.console.plugin.jvm.JvmPlugin
  */
-interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
+public interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
     /**
      * [AutoSaveSetting] 每次自动保存时间间隔
      *
@@ -63,8 +68,11 @@ interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
      * - 区间的右端点为最大间隔, 一个 [Value] 被修改后, 最多不超过这个时间段后就会被保存.
      *
      * 若 [coroutineContext] 含有 [Job], 则 [AutoSaveSetting] 会通过 [Job.invokeOnCompletion] 在 Job 完结时触发自动保存.
+     *
+     * @see LongRange Java 用户使用 [LongRange] 的构造器创建
+     * @see Long.rangeTo Kotlin 用户使用 [Long.rangeTo] 创建, 如 `3000..50000`
      */
-    val autoSaveIntervalMillis: LongRange
+    public val autoSaveIntervalMillis: LongRange
         get() = 30.secondsToMillis..10.minutesToSeconds
 
     /**
@@ -75,7 +83,7 @@ interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
      *
      * @see getSetting
      */
-    open class AutoSaveSetting(private val owner: AutoSaveSettingHolder, private val storage: SettingStorage) :
+    public open class AutoSaveSetting(private val owner: AutoSaveSettingHolder, private val storage: SettingStorage) :
         AbstractSetting() {
         @Volatile
         internal var lastAutoSaveJob: Job? = null
@@ -111,7 +119,26 @@ interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
 
 }
 
-object MemorySettingStorage : SettingStorage {
+// TODO: 2020/7/11 document
+public interface MemorySettingStorage : SettingStorage {
+    public companion object INSTANCE : MemorySettingStorage by MemorySettingStorageImpl
+}
+
+// TODO: 2020/7/11 document
+public interface MultiFileSettingStorage : SettingStorage {
+    public val directory: File
+
+    public companion object {
+        @JvmStatic
+        @JvmName("create")
+        public operator fun invoke(directory: File): MultiFileSettingStorage = MultiFileSettingStorageImpl(directory)
+    }
+}
+
+
+// internal
+
+internal object MemorySettingStorageImpl : SettingStorage, MemorySettingStorage {
     private val list = mutableMapOf<Class<out Setting>, Setting>()
 
     internal class MemorySettingImpl : AbstractSetting() {
@@ -146,9 +173,9 @@ object MemorySettingStorage : SettingStorage {
     }
 }
 
-class MultiFileSettingStorage(
-    private val directory: File
-) : SettingStorage {
+internal class MultiFileSettingStorageImpl(
+    override val directory: File
+) : SettingStorage, MultiFileSettingStorage {
     override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T = with(settingClass.kotlin) {
         val file = settingFile(holder, settingClass::class)
 
@@ -161,7 +188,7 @@ class MultiFileSettingStorage(
                 )
             }
             if (holder is AutoSaveSettingHolder) {
-                AutoSaveSetting(holder, this@MultiFileSettingStorage) as T?
+                AutoSaveSetting(holder, this@MultiFileSettingStorageImpl) as T?
             } else null
         } ?: throw IllegalArgumentException(
             "Cannot create Setting instance. Make sure 'holder' is a AutoSaveSettingHolder, " +
@@ -189,7 +216,7 @@ class MultiFileSettingStorage(
     }
 
     @ConsoleExperimentalAPI
-    override fun store(holder: SettingHolder, setting: Setting) = with(setting::class) {
+    override fun store(holder: SettingHolder, setting: Setting): Unit = with(setting::class) {
         val file = settingFile(holder, this)
 
         if (file.exists() && file.isFile && file.canRead()) {

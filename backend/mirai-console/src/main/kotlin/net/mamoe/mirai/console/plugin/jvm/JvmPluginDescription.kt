@@ -19,23 +19,23 @@ import net.mamoe.mirai.console.plugin.PluginKind
 import java.io.File
 
 @Serializable
-class JvmPluginDescription internal constructor(
-    override val kind: PluginKind = PluginKind.NORMAL,
-    override val name: String,
+public class JvmPluginDescription internal constructor(
+    public override val kind: PluginKind = PluginKind.NORMAL,
+    public override val name: String,
     @SerialName("main")
-    val mainClassName: String,
-    override val author: String = "",
-    override val version: String,
-    override val info: String = "",
+    public val mainClassName: String,
+    public override val author: String = "",
+    public override val version: String,
+    public override val info: String = "",
     @SerialName("depends")
-    override val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency> = listOf()
+    public override val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency> = listOf()
 ) : PluginDescription, FilePluginDescription {
 
     /**
      * 在手动实现时使用这个构造器.
      */
     @Suppress("unused")
-    constructor(
+    public constructor(
         kind: PluginKind, name: String, mainClassName: String, author: String,
         version: String, info: String, depends: List<PluginDependency>,
         file: File
@@ -43,7 +43,7 @@ class JvmPluginDescription internal constructor(
         this._file = file
     }
 
-    override val file: File
+    public override val file: File
         get() = _file ?: error("Internal error: JvmPluginDescription(name=$name)._file == null")
 
 
@@ -52,7 +52,7 @@ class JvmPluginDescription internal constructor(
     @JvmField
     internal var _file: File? = null
 
-    override fun toString(): String {
+    public override fun toString(): String {
         return "JvmPluginDescription(kind=$kind, name='$name', mainClassName='$mainClassName', author='$author', version='$version', info='$info', dependencies=$dependencies, _file=$_file)"
     }
 }

@@ -14,21 +14,21 @@ package net.mamoe.mirai.console.command
 /**
  * 在 [executeCommand] 中, [Command.onCommand] 抛出异常时包装的异常.
  */
-class CommandExecutionException(
+public class CommandExecutionException(
     /**
      * 执行过程发生异常的指令
      */
-    val command: Command,
+    public val command: Command,
     /**
      * 匹配到的指令名
      */
-    val name: String,
+    public val name: String,
     cause: Throwable
 ) : RuntimeException(
     "Exception while executing command '${command.primaryName}'",
     cause
 ) {
-    override fun toString(): String =
+    public override fun toString(): String =
         "CommandExecutionException(command=$command, name='$name')"
 }
 

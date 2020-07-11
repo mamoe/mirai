@@ -23,6 +23,7 @@ import net.mamoe.mirai.console.command.internal.InternalCommandManager
 import net.mamoe.mirai.console.command.primaryName
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.plugin.center.CuiPluginCenter
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
@@ -45,43 +46,47 @@ import kotlin.coroutines.CoroutineContext
  *
  * @see INSTANCE
  */
-interface MiraiConsole : CoroutineScope {
+public interface MiraiConsole : CoroutineScope {
     /**
      * Console 运行路径
      */
-    val rootDir: File
+    public val rootDir: File
 
     /**
      * Console 前端接口
      */
-    val frontEnd: MiraiConsoleFrontEnd
+    public val frontEnd: MiraiConsoleFrontEnd
 
     /**
      * 与前端交互所使用的 Logger
      */
-    val mainLogger: MiraiLogger
+    public val mainLogger: MiraiLogger
 
     /**
      * 内建加载器列表, 一般需要包含 [JarPluginLoader]
      */
-    val builtInPluginLoaders: List<PluginLoader<*, *>>
+    public val builtInPluginLoaders: List<PluginLoader<*, *>>
 
-    val buildDate: Date
+    public val buildDate: Date
 
-    val version: String
+    public val version: String
 
-    val pluginCenter: PluginCenter
+    public val pluginCenter: PluginCenter
 
     @ConsoleExperimentalAPI
-    fun newLogger(identity: String?): MiraiLogger
+    public fun newLogger(identity: String?): MiraiLogger
 
-    companion object INSTANCE : MiraiConsole by MiraiConsoleInternal
+    public companion object INSTANCE : MiraiConsole by MiraiConsoleInternal
 }
+
+public class IllegalMiraiConsoleImplementationError(
+    override val message: String?
+) : Error()
 
 /**
  * 获取 [MiraiConsole] 的 [Job]
  */
-val MiraiConsole.job: Job
+public val MiraiConsole.job: Job
     get() = this.coroutineContext[Job] ?: error("Internal error: Job not found in MiraiConsole.coroutineContext")
 
 //// internal
@@ -149,16 +154,12 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
         InternalCommandManager.commandListener // start
 
         mainLogger.info { "Loading plugins..." }
-        PluginManager.loadEnablePlugins()
+        PluginManagerImpl.loadEnablePlugins()
         mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
         mainLogger.info { "mirai-console started successfully." }
         // Only for initialize
     }
 }
-
-class IllegalMiraiConsoleImplementationError(
-    override val message: String?
-) : Error()
 
 
 // 前端使用
