@@ -65,7 +65,7 @@ class MiraiConsolePure @JvmOverloads constructor(
         @JvmStatic
         fun MiraiConsolePure.start() = synchronized(this) {
             check(!started) { "mirai-console is already started and can't be restarted." }
-            MiraiConsoleInitializer.init(MiraiConsolePure())
+            MiraiConsoleInitializer.init(this)
             started = true
         }
     }

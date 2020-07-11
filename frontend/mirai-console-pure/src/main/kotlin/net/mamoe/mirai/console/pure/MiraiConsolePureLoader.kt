@@ -29,6 +29,7 @@ import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.DefaultLogger
+import java.io.PrintStream
 import kotlin.concurrent.thread
 
 /**
@@ -43,8 +44,27 @@ object MiraiConsolePureLoader {
 
 
 internal fun startup() {
+    DefaultLogger = { MiraiConsoleFrontEndPure.loggerFor(it) }
+    overrideSTD()
     MiraiConsolePure().start()
     startConsoleThread()
+}
+
+internal fun overrideSTD() {
+    System.setOut(
+        PrintStream(
+            BufferedOutputStream(
+                logger = DefaultLogger("sout").run { ({ line: String? -> info(line) }) }
+            )
+        )
+    )
+    System.setErr(
+        PrintStream(
+            BufferedOutputStream(
+                logger = DefaultLogger("serr").run { ({ line: String? -> warning(line) }) }
+            )
+        )
+    )
 }
 
 internal fun startConsoleThread() {
