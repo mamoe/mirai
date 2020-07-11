@@ -49,7 +49,8 @@ fun initTestEnvironment() {
         override val consoleCommandSender: ConsoleCommandSender = object : ConsoleCommandSender() {
             override suspend fun sendMessage(message: Message) = println(message)
         }
-        override val settingStorage: SettingStorage get() = MemorySettingStorage
+        override val settingStorageForJarPluginLoader: SettingStorage get() = MemorySettingStorage()
+        override val settingStorageForBuiltIns: SettingStorage get() = MemorySettingStorage()
         override val coroutineContext: CoroutineContext = SupervisorJob()
     })
 }

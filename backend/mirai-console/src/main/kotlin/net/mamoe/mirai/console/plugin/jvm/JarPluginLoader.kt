@@ -46,7 +46,7 @@ internal object JarPluginLoaderImpl :
 
     @ConsoleExperimentalAPI
     override val settingStorage: SettingStorage
-        get() = MiraiConsoleInternal.settingStorage
+        get() = MiraiConsoleInternal.settingStorageForJarPluginLoader
 
     override val coroutineContext: CoroutineContext =
         MiraiConsole.coroutineContext +

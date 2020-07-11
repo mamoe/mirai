@@ -57,6 +57,7 @@ kotlin {
         getByName("main") {
             languageSettings.apply {
                 languageVersion = "1.3"
+                apiVersion = "1.3"
             }
         }
     }
@@ -101,8 +102,8 @@ tasks {
     val compileKotlin by getting {}
 
     val fillBuildConstants by registering {
+        group = "mirai"
         doLast {
-            return@doLast //
             (compileKotlin as KotlinCompile).source.filter { it.name == "MiraiConsole.kt" }.single().let { file ->
                 file.writeText(file.readText()
                     .replace(Regex("""val buildDate: Date = Date\((.*)\) //(.*)""")) {
@@ -120,10 +121,6 @@ tasks {
                 )
             }
         }
-    }
-
-    "compileKotlin" {
-        dependsOn(fillBuildConstants)
     }
 }
 

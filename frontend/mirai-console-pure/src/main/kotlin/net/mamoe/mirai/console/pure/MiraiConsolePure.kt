@@ -50,18 +50,18 @@ class MiraiConsolePure @JvmOverloads constructor(
     override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure,
     override val mainLogger: MiraiLogger = frontEnd.loggerFor("main"),
     override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
-    override val settingStorage: SettingStorage = MultiFileSettingStorage(rootDir)
+    override val settingStorageForJarPluginLoader: SettingStorage = MultiFileSettingStorage(rootDir),
+    override val settingStorageForBuiltIns: SettingStorage = MultiFileSettingStorage(rootDir)
 ) : IMiraiConsole, CoroutineScope by CoroutineScope(SupervisorJob()) {
     init {
         rootDir.mkdir()
         require(rootDir.isDirectory) { "rootDir ${rootDir.absolutePath} is not a directory" }
     }
 
-    companion object {
-        @Volatile
-        @JvmStatic
-        private var started: Boolean = false
+    @JvmField
+    internal var started: Boolean = false
 
+    companion object {
         @JvmStatic
         fun MiraiConsolePure.start() = synchronized(this) {
             check(!started) { "mirai-console is already started and can't be restarted." }

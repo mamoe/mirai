@@ -28,6 +28,7 @@ import net.mamoe.mirai.console.plugin.center.CuiPluginCenter
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.setting.SettingStorage
+import net.mamoe.mirai.console.utils.ConsoleBuiltInSettingStorage
 import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.utils.DefaultLogger
@@ -127,7 +128,8 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
     override val builtInPluginLoaders: List<PluginLoader<*, *>> get() = instance.builtInPluginLoaders
     override val consoleCommandSender: ConsoleCommandSender get() = instance.consoleCommandSender
 
-    override val settingStorage: SettingStorage get() = instance.settingStorage
+    override val settingStorageForJarPluginLoader: SettingStorage get() = instance.settingStorageForJarPluginLoader
+    override val settingStorageForBuiltIns: SettingStorage get() = instance.settingStorageForBuiltIns
 
     init {
         DefaultLogger = { identity -> this.newLogger(identity) }
@@ -157,6 +159,8 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
         PluginManagerImpl.loadEnablePlugins()
         mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
         mainLogger.info { "mirai-console started successfully." }
+
+        ConsoleBuiltInSettingStorage // init
         // Only for initialize
     }
 }
@@ -186,7 +190,8 @@ internal interface IMiraiConsole : CoroutineScope {
 
     val consoleCommandSender: ConsoleCommandSender
 
-    val settingStorage: SettingStorage
+    val settingStorageForJarPluginLoader: SettingStorage
+    val settingStorageForBuiltIns: SettingStorage
 }
 
 /**

@@ -10,24 +10,49 @@
 
 package net.mamoe.mirai.console.utils
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleInternal
+import net.mamoe.mirai.console.setting.*
 import net.mamoe.mirai.contact.User
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 
 /**
  * 判断此用户是否为 console 管理员
  */
-public val User.isManager: Boolean
-    get() = this.bot.managers.contains(this.id)
+public val User.isManager: Boolean get() = this.id in this.bot.managers
 
-internal fun Bot.addManager(long: Long): Boolean {
-    TODO()
-    return true
-}
-
-public fun Bot.removeManager(long: Long) {
-    TODO()
+public fun Bot.removeManager(id: Long): Boolean {
+    return ManagersConfig[this].remove(id)
 }
 
 public val Bot.managers: List<Long>
-    get() = TODO()
+    get() = ManagersConfig[this].toList()
+
+internal fun Bot.addManager(id: Long): Boolean {
+    return ManagersConfig[this].add(id)
+}
+
+
+internal object ManagersConfig : Setting by (ConsoleBuiltInSettingStorage.load(ConsoleBuiltInSettingHolder)) {
+    private val managers: MutableMap<Long, MutableSet<Long>> by value()
+
+    internal operator fun get(bot: Bot): MutableSet<Long> = managers.getOrPut(bot.id, ::mutableSetOf)
+}
+
+
+internal fun CoroutineContext.overrideWithSupervisorJob(): CoroutineContext = this + SupervisorJob(this[Job])
+internal fun CoroutineScope.childScope(context: CoroutineContext = EmptyCoroutineContext): CoroutineScope =
+    CoroutineScope(this.coroutineContext.overrideWithSupervisorJob() + context)
+
+internal object ConsoleBuiltInSettingHolder : AutoSaveSettingHolder,
+    CoroutineScope by MiraiConsole.childScope() {
+    override val name: String get() = "ConsoleBuiltIns"
+}
+
+internal object ConsoleBuiltInSettingStorage : SettingStorage by MiraiConsoleInternal.settingStorageForJarPluginLoader

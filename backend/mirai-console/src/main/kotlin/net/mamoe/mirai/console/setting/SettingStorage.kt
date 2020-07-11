@@ -23,6 +23,8 @@ import kotlin.reflect.full.findAnnotation
 
 /**
  * [Setting] 存储容器
+ *
+ * @see SettingHolder
  */
 public interface SettingStorage {
     /**
@@ -36,9 +38,34 @@ public interface SettingStorage {
     public fun store(holder: SettingHolder, setting: Setting)
 }
 
+// TODO: 2020/7/11 document
+public interface MemorySettingStorage : SettingStorage {
+    public companion object {
+        @JvmStatic
+        @JvmName("create")
+        public operator fun invoke(): MemorySettingStorage = MemorySettingStorageImpl()
+    }
+}
+
+// TODO: 2020/7/11 document
+public interface MultiFileSettingStorage : SettingStorage {
+    public val directory: File
+
+    public companion object {
+        @JvmStatic
+        @JvmName("create")
+        public operator fun invoke(directory: File): MultiFileSettingStorage = MultiFileSettingStorageImpl(directory)
+    }
+}
+
+
 // TODO: 2020/7/11 here or companion?
 public inline fun <T : Setting> SettingStorage.load(holder: SettingHolder, settingClass: KClass<T>): T =
     this.load(holder, settingClass.java)
+
+// TODO: 2020/7/11 here or companion?
+public inline fun <reified T : Setting> SettingStorage.load(holder: SettingHolder): T =
+    this.load(holder, T::class)
 
 /**
  * 可以持有相关 [Setting] 的对象.
@@ -119,26 +146,9 @@ public interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
 
 }
 
-// TODO: 2020/7/11 document
-public interface MemorySettingStorage : SettingStorage {
-    public companion object INSTANCE : MemorySettingStorage by MemorySettingStorageImpl
-}
-
-// TODO: 2020/7/11 document
-public interface MultiFileSettingStorage : SettingStorage {
-    public val directory: File
-
-    public companion object {
-        @JvmStatic
-        @JvmName("create")
-        public operator fun invoke(directory: File): MultiFileSettingStorage = MultiFileSettingStorageImpl(directory)
-    }
-}
-
-
 // internal
 
-internal object MemorySettingStorageImpl : SettingStorage, MemorySettingStorage {
+internal class MemorySettingStorageImpl : SettingStorage, MemorySettingStorage {
     private val list = mutableMapOf<Class<out Setting>, Setting>()
 
     internal class MemorySettingImpl : AbstractSetting() {
@@ -173,34 +183,35 @@ internal object MemorySettingStorageImpl : SettingStorage, MemorySettingStorage 
     }
 }
 
-internal class MultiFileSettingStorageImpl(
-    override val directory: File
+public open class MultiFileSettingStorageImpl(
+    public final override val directory: File
 ) : SettingStorage, MultiFileSettingStorage {
-    override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T = with(settingClass.kotlin) {
-        val file = settingFile(holder, settingClass::class)
+    public override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T =
+        with(settingClass.kotlin) {
+            val file = getSettingFile(holder, settingClass::class)
 
-        @Suppress("UNCHECKED_CAST")
-        val instance = objectInstance ?: this.createInstanceOrNull() ?: kotlin.run {
-            if (settingClass != Setting::class.java) {
-                throw IllegalArgumentException(
-                    "Cannot create Setting instance. Make sure settingClass is Setting::class.java or a Kotlin's object, " +
-                            "or has a constructor which either has no parameters or all parameters of which are optional"
-                )
+            @Suppress("UNCHECKED_CAST")
+            val instance = objectInstance ?: this.createInstanceOrNull() ?: kotlin.run {
+                if (settingClass != Setting::class.java) {
+                    throw IllegalArgumentException(
+                        "Cannot create Setting instance. Make sure settingClass is Setting::class.java or a Kotlin's object, " +
+                                "or has a constructor which either has no parameters or all parameters of which are optional"
+                    )
+                }
+                if (holder is AutoSaveSettingHolder) {
+                    AutoSaveSetting(holder, this@MultiFileSettingStorageImpl) as T?
+                } else null
+            } ?: throw IllegalArgumentException(
+                "Cannot create Setting instance. Make sure 'holder' is a AutoSaveSettingHolder, " +
+                        "or 'setting' is an object or has a constructor which either has no parameters or all parameters of which are optional"
+            )
+            if (file.exists() && file.isFile && file.canRead()) {
+                Yaml.default.parse(instance.updaterSerializer, file.readText())
             }
-            if (holder is AutoSaveSettingHolder) {
-                AutoSaveSetting(holder, this@MultiFileSettingStorageImpl) as T?
-            } else null
-        } ?: throw IllegalArgumentException(
-            "Cannot create Setting instance. Make sure 'holder' is a AutoSaveSettingHolder, " +
-                    "or 'setting' is an object or has a constructor which either has no parameters or all parameters of which are optional"
-        )
-        if (file.exists() && file.isFile && file.canRead()) {
-            Yaml.default.parse(instance.updaterSerializer, file.readText())
+            instance
         }
-        instance
-    }
 
-    private fun settingFile(holder: SettingHolder, clazz: KClass<*>): File = with(clazz) {
+    protected open fun getSettingFile(holder: SettingHolder, clazz: KClass<*>): File = with(clazz) {
         val name = findASerialName()
 
         val dir = File(directory, holder.name)
@@ -216,8 +227,8 @@ internal class MultiFileSettingStorageImpl(
     }
 
     @ConsoleExperimentalAPI
-    override fun store(holder: SettingHolder, setting: Setting): Unit = with(setting::class) {
-        val file = settingFile(holder, this)
+    public override fun store(holder: SettingHolder, setting: Setting): Unit = with(setting::class) {
+        val file = getSettingFile(holder, this)
 
         if (file.exists() && file.isFile && file.canRead()) {
             file.writeText(Yaml.default.stringify(setting.updaterSerializer, Unit))
@@ -225,14 +236,14 @@ internal class MultiFileSettingStorageImpl(
     }
 }
 
-private fun <T : Any> KClass<T>.createInstanceOrNull(): T? {
+internal fun <T : Any> KClass<T>.createInstanceOrNull(): T? {
     val noArgsConstructor = constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }
         ?: return null
 
     return noArgsConstructor.callBy(emptyMap())
 }
 
-private fun KClass<*>.findASerialName(): String =
+internal fun KClass<*>.findASerialName(): String =
     findAnnotation<SerialName>()?.value
         ?: qualifiedName
         ?: throw IllegalArgumentException("Cannot find a serial name for $this")

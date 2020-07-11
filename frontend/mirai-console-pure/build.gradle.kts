@@ -37,7 +37,7 @@ dependencies {
     testApi(project(":mirai-console"))
 }
 
-ext {
+ext.apply {
     // 傻逼 compileAndRuntime 没 exclude 掉
     // 傻逼 gradle 第二次配置 task 会覆盖掉第一次的配置
     val x: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar.() -> Unit = {
