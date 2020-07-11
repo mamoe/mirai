@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.qqandroid
 
-import io.ktor.client.HttpClient
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
@@ -45,6 +44,7 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
@@ -56,6 +56,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.absoluteValue
+import kotlin.math.log
 import kotlin.random.Random
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
@@ -560,7 +561,7 @@ internal abstract class QQAndroidBotBase constructor(
     @MiraiExperimentalAPI
     override suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement {
         val data = network.async {
-            HttpClient().post<String> {
+            MiraiPlatformUtils.Http.post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
@@ -587,7 +588,7 @@ internal abstract class QQAndroidBotBase constructor(
     @MiraiExperimentalAPI
     override suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int): GroupActiveData {
         val data = network.async {
-            HttpClient().get<String> {
+           MiraiPlatformUtils.Http.get<String> {
                 url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                 parameter("bkn", bkn)
                 parameter("gc", groupId)
@@ -789,6 +790,21 @@ internal abstract class QQAndroidBotBase constructor(
                         override val nick: String get() = fromNick
                     }))
                 }
+        }
+    }
+
+    @ExperimentalStdlibApi
+    @MiraiExperimentalAPI
+    @LowLevelAPI
+    override suspend fun _lowLevelQueryGroupVoiceDownloadUrl(
+        md5: ByteArray,
+        groupId: Long,
+        dstUin: Long
+    ): String {
+          network.run {
+            val response: PttStore.GroupPttDown.Response.DownLoadInfo =
+                PttStore.GroupPttDown(client, groupId, dstUin,md5).sendAndExpect()
+            return "http://${response.strDomain}${response.downPara.encodeToString()}"
         }
     }
 

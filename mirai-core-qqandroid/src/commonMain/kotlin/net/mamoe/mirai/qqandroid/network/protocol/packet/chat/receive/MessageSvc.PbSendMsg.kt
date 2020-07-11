@@ -30,6 +30,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.qqandroid.utils.hexToBytes
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
@@ -138,7 +139,14 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                     richText = ImMsgBody.RichText(
                         elems = message.toRichTextElems(forGroup = true, withGeneralFlags = true),
                         ptt = message.firstOrNull(PttMessage)?.run {
-                            ImMsgBody.Ptt(fileName = fileName.toByteArray(), fileMd5 = md5)
+                            ImMsgBody.Ptt(
+                                fileName = fileName.toByteArray(),
+                                fileMd5 = md5,
+                                boolValid = true,
+                                fileSize = fileSize.toInt(),
+                                fileType = 4,
+                                pbReserve = byteArrayOf(0)
+                            )
                         }
                     )
                 ),

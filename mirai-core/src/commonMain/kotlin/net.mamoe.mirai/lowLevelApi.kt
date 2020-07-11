@@ -16,6 +16,7 @@ import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.WeakRef
 
@@ -159,4 +160,13 @@ interface LowLevelBotAPIAccessor {
         blackList: Boolean,
         message: String = ""
     )
+
+    /**
+     * 查询语音的下载连接
+     *
+     * */
+
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    suspend fun _lowLevelQueryGroupVoiceDownloadUrl(md5: ByteArray, groupId: Long, dstUin: Long): String
 }
