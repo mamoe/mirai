@@ -80,8 +80,8 @@ internal object JarPluginLoaderImpl :
                         logger.error("Cannot load plugin file ${file.name}", it)
                         null
                     }
-            )?.also { it._file = file }
-        }
+                )?.also { it._file = file }
+            }
     }
 
     @Suppress("RemoveExplicitTypeArguments") // until Kotlin 1.4 NI
