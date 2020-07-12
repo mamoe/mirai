@@ -456,23 +456,23 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                            var85.troopface = var3;
                            var85.hasSetNewTroopHead = true;
                          */
-                        bot.logger.debug(
-                            contextualBugReportException(
-                                "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
-                                forDebug = "this=${this._miraiContentToString()}"
-                            )
-                        )
+//                        bot.logger.debug(
+//                            contextualBugReportException(
+//                                "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
+//                                forDebug = "this=${this._miraiContentToString()}"
+//                            )
+//                        )
                         null
                     }
                     3 -> { // troop.credit.data
                         // top_package/akkz.java:3475
                         // top_package/akkz.java:3498
-                        bot.logger.debug(
-                            contextualBugReportException(
-                                "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
-                                forDebug = "this=${this._miraiContentToString()}"
-                            )
-                        )
+//                        bot.logger.debug(
+//                            contextualBugReportException(
+//                                "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
+//                                forDebug = "this=${this._miraiContentToString()}"
+//                            )
+//                        )
                         null
                     }
 
