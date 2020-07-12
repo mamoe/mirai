@@ -44,7 +44,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
@@ -147,21 +146,32 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             } // 删除消息
             .mapNotNull<MsgComm.Msg, Packet> { msg ->
 
-                when (msg.msgHead.msgType) {
-                    33 -> bot.groupListModifyLock.withLock { // 邀请入群
-                        val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
-                        if (msg.msgHead.authUin == bot.id) {
-                            if (group != null) {
-                                return@mapNotNull null
-                            }
-                            // 新群
+                suspend fun createGroupForBot(groupUin: Long): Group? {
+                    val group = bot.getGroupByUinOrNull(groupUin)
+                    if (group != null) {
+                        return null
+                    }
 
-                            val newGroup = bot.getNewGroup(Group.calculateGroupCodeByGroupUin(msg.msgHead.fromUin))
-                                ?: return@mapNotNull null
-                            bot.groups.delegate.addLast(newGroup)
-                            return@mapNotNull BotJoinGroupEvent.Active(newGroup)
+                    return bot.getNewGroup(Group.calculateGroupCodeByGroupUin(groupUin))?.apply {
+                        bot.groups.delegate.addLast(this)
+                    }
+                }
+
+                when (msg.msgHead.msgType) {
+                    33 -> bot.groupListModifyLock.withLock {
+
+                        if (msg.msgHead.authUin == bot.id) {
+                            // 邀请入群
+                            return@mapNotNull createGroupForBot(msg.msgHead.fromUin)?.let {
+                                // TODO： 这里被邀请入群应该是Invite()，但是没有获取邀请人的信息，邀请人的信息在msg.msgContent里，未解包
+                                // BotJoinGroupEvent.Invite()
+                                BotJoinGroupEvent.Active(it)
+                            }
                         } else {
-                            group ?: return@mapNotNull null
+
+                            // 成员申请入群
+                            val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
+                                ?: return@mapNotNull null
 
                             // 主动入群, 直接加入: msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 42 39 41 30 33 45 38 34 30 39 34 42 46 30 45 32 45 38 42 31 43 43 41 34 32 42 38 42 44 42 35 34 44 42 31 44 32 32 30 46 30 38 39 46 46 35 41 38
                             // 主动直接加入                  27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 33 30 45 38 42 31 33 46 41 41 31 33 46 38 31 35 34 41 38 33 32 37 31 43 34 34 38 35 33 35 46 45 31 38 32 43 39 42 43 46 46 32 44 39 39 46 41 37
@@ -192,19 +202,20 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         return@mapNotNull null
                     }
 
-                    85 -> bot.groupListModifyLock.withLock { // 其他客户端入群
-                        val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
-                        if (msg.msgHead.toUin == bot.id && group == null) {
+                    38 -> bot.groupListModifyLock.withLock { // 建群
+                        return@mapNotNull createGroupForBot(msg.msgHead.fromUin)
+                            ?.let { BotJoinGroupEvent.Active(it) }
+                    }
 
-                            val newGroup = bot.getNewGroup(Group.calculateGroupCodeByGroupUin(msg.msgHead.fromUin))
-                                ?: return@mapNotNull null
-                            bot.groups.delegate.addLast(newGroup)
-                            return@mapNotNull BotJoinGroupEvent.Active(newGroup)
+                    85 -> bot.groupListModifyLock.withLock { // 其他客户端入群
+                        return@mapNotNull if (msg.msgHead.toUin == bot.id) {
+                            createGroupForBot(msg.msgHead.fromUin)
+                                ?.let { BotJoinGroupEvent.Active(it) }
                         } else {
-                            // unknown
-                            return@mapNotNull null
+                            null
                         }
                     }
+
                     /*
                     34 -> { // 主动入群
 
