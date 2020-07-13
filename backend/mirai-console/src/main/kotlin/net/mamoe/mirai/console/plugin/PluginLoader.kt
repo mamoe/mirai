@@ -50,7 +50,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     public fun disable(plugin: P)
 }
 
-public inline fun <D : PluginDescription, P : Plugin> PluginLoader<P, D>.getDescription(plugin: P): D =
+public inline fun <D : PluginDescription, P : Plugin> PluginLoader<in P, out D>.getDescription(plugin: P): D =
     plugin.description
 
 public open class PluginLoadException : RuntimeException {
