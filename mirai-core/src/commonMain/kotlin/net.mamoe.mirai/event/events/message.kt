@@ -296,14 +296,14 @@ sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
 
     /**
      * 好友消息撤回事件, 暂不支持.
-     */ // TODO: 2020/4/22 支持好友消息撤回事件的解析和主动广播
+     */
     data class FriendRecall internal constructor(
         override val bot: Bot,
         override val messageId: Int,
         override val messageInternalId: Int,
         override val messageTime: Int,
         /**
-         * 撤回操作人, 可能为 [Bot.id] 或好友的 [User.id]
+         * 撤回操作人, 好友的 [User.id]
          */
         val operator: Long
     ) : MessageRecallEvent(), Packet {

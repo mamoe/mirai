@@ -21,6 +21,7 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.events.*
@@ -353,6 +354,47 @@ internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot) -> 
  */
 internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
+    0x8AL to lambda528 { bot ->
+        @Serializable
+        data class Sub8AInner(
+            @ProtoId(1) val fromUin: Long,
+            @ProtoId(2) val botUin: Long,
+            @ProtoId(3) val srcId: Int,
+            @ProtoId(4) val srcInternalId: Int,
+            @ProtoId(5) val time: Int,
+            @ProtoId(6) val random: Int, // 同srcInternalId
+            @ProtoId(7) val flag1: Boolean, // true
+            @ProtoId(8) val flag2: Boolean, // false
+            @ProtoId(9) val flag3: Boolean, // false
+            @ProtoId(12) val flag4: Boolean // true
+        ) : ProtoBuf
+
+        @Serializable
+        data class Sub8A(
+            @ProtoId(1) val inner: Sub8AInner,
+            @ProtoId(2) val v2: Boolean, // true
+            @ProtoId(3) val v3: Boolean, // true
+            @ProtoId(4) val v4: Boolean, // false
+            @ProtoId(5) val v5: ByteArray? = null // struct{ boolean(1), boolean(2) }
+        ) : ProtoBuf
+
+        val sub8A = vProtobuf.loadAs(Sub8A.serializer()).inner
+
+        if (sub8A.botUin == bot.id) {
+            return@lambda528 sequenceOf(
+                MessageRecallEvent.FriendRecall(
+                    bot = bot,
+                    messageId = sub8A.srcId,
+                    messageInternalId = sub8A.srcInternalId,
+                    messageTime = sub8A.time,
+                    operator = sub8A.fromUin
+                )
+            )
+        }
+
+        return@lambda528 emptySequence()
+    },
+
     // Network(1994701021) 16:03:54 : unknown group 528 type 0x0000000000000026, data: 08 01 12 40 0A 06 08 F4 EF BB 8F 04 10 E7 C1 AD B8 02 18 01 22 2C 10 01 1A 1A 18 B4 DC F8 9B 0C 20 E7 C1 AD B8 02 28 06 30 02 A2 01 04 08 93 D6 03 A8 01 08 20 00 28 00 32 08 18 01 20 FE AF AF F5 05 28 00
     // VIP 进群提示
     0x26L to ignoredLambda528,
@@ -456,23 +498,23 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                            var85.troopface = var3;
                            var85.hasSetNewTroopHead = true;
                          */
-                        bot.logger.debug(
-                            contextualBugReportException(
-                                "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
-                                forDebug = "this=${this._miraiContentToString()}"
-                            )
-                        )
+//                        bot.logger.debug(
+//                            contextualBugReportException(
+//                                "解析 Transformers528 0x27L ModGroupProfile 群头像修改",
+//                                forDebug = "this=${this._miraiContentToString()}"
+//                            )
+//                        )
                         null
                     }
                     3 -> { // troop.credit.data
                         // top_package/akkz.java:3475
                         // top_package/akkz.java:3498
-                        bot.logger.debug(
-                            contextualBugReportException(
-                                "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
-                                forDebug = "this=${this._miraiContentToString()}"
-                            )
-                        )
+//                        bot.logger.debug(
+//                            contextualBugReportException(
+//                                "解析 Transformers528 0x27L ModGroupProfile 群 troop.credit.data",
+//                                forDebug = "this=${this._miraiContentToString()}"
+//                            )
+//                        )
                         null
                     }
 
