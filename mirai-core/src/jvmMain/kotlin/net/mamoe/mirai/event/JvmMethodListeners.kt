@@ -250,15 +250,15 @@ private fun Method.registerEvent(
 
         val param = kotlinFunction.parameters
         when (param.size) {
-            3 -> { // ownerClass, receiver, event
+            3 -> { // dispatch receiver, extension receiver, param #0 event
                 check(param[1].type == param[2].type) { "Illegal kotlin function ${kotlinFunction.name}. Receiver and param must have same type" }
                 check((param[1].type.classifier as? KClass<*>)?.isSubclassOf(Event::class) == true) {
-                    "Illegal kotlin function ${kotlinFunction.name}. First param or receiver must be subclass of Event, but found ${param[1].type.classifier}"
+                    "Illegal kotlin function ${kotlinFunction.name}. First param or extension receiver must be subclass of Event, but found ${param[1].type.classifier}"
                 }
             }
-            2 -> { // ownerClass, event
+            2 -> { // dispatch receiver, param #0 event
                 check((param[1].type.classifier as? KClass<*>)?.isSubclassOf(Event::class) == true) {
-                    "Illegal kotlin function ${kotlinFunction.name}. First param or receiver must be subclass of Event, but found ${param[1].type.classifier}"
+                    "Illegal kotlin function ${kotlinFunction.name}. First param or extension receiver must be subclass of Event, but found ${param[1].type.classifier}"
                 }
             }
             else -> error("function ${kotlinFunction.name} must have one Event param")
@@ -295,7 +295,7 @@ private fun Method.registerEvent(
         require(!kotlinFunction.returnType.isMarkedNullable) {
             "Kotlin event handlers cannot have nullable return type."
         }
-        require(kotlinFunction.parameters.any { it.type.isMarkedNullable }) {
+        require(kotlinFunction.parameters.none { it.type.isMarkedNullable }) {
             "Kotlin event handlers cannot have nullable parameter type."
         }
         when (kotlinFunction.returnType.classifier) {
