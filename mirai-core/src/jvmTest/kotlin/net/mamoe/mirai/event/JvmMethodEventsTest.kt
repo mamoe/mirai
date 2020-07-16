@@ -11,12 +11,13 @@
 
 package net.mamoe.mirai.event
 
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.utils.internal.runBlocking
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.annotations.NotNull
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.test.assertEquals
 
 
 internal class JvmMethodEventsTest {
@@ -44,13 +45,6 @@ internal class JvmMethodEventsTest {
             @EventHandler
             suspend fun `suspend param Unit`(event: TestEvent) {
                 called.getAndIncrement()
-            }
-
-            @Suppress("unused")
-            @EventHandler
-            suspend fun `suspend param Void`(event: TestEvent): Void? {
-                called.getAndIncrement()
-                return null
             }
 
             @EventHandler
@@ -82,21 +76,28 @@ internal class JvmMethodEventsTest {
 
             @EventHandler
             @Suppress("unused")
+            private fun TestEvent.`test annotations`(@NotNull event: TestEvent): ListeningStatus {
+                called.getAndIncrement()
+                return ListeningStatus.STOPPED
+            }
+
+            @EventHandler
+            @Suppress("unused")
             fun TestEvent.`receiver param LS`(event: TestEvent): ListeningStatus {
                 called.getAndIncrement()
                 return ListeningStatus.STOPPED
             }
         }
 
-//        TestClass().run {
-//            this.registerEvents()
-//
-//            runBlocking {
-//                TestEvent().broadcast()
-//            }
-//
-//            assertEquals(9, this.getCalled())
-//        }
+        TestClass().run {
+            this.registerEvents()
+
+            runBlocking {
+                TestEvent().broadcast()
+            }
+
+            assertEquals(9, this.getCalled())
+        }
     }
 
     @Test

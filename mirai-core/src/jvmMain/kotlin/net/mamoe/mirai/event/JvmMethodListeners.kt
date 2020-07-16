@@ -144,7 +144,7 @@ import kotlin.reflect.jvm.kotlinFunction
  * Events.registerEvents(new MyEventHandlers())
  * ```
  *
- * @sample net.mamoe.mirai.event.JvmMethodEventsTest
+ * //@sample net.mamoe.mirai.event.JvmMethodEventsTest
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
