@@ -45,7 +45,7 @@ class NoStandardInputForCaptchaException(override val cause: Throwable?) :
 /**
  * 需要短信验证时抛出. mirai 目前还不支持短信验证.
  */
-@MiraiExperimentalAPI
+@MiraiExperimentalAPI("Will be removed when SMS login is supported")
 class UnsupportedSMSLoginException(message: String?) : LoginFailedException(true, message)
 
 /**
