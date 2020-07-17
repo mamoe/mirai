@@ -332,7 +332,7 @@ private fun Method.registerEvent(
     } else {
         // java methods
         check(this.parameterCount == 1) {
-            "Illegal method parameter. Required one paramter"
+            "Illegal method parameter. Only one parameter is required."
         }
         val paramType = this.parameters[0].type
         check(Event::class.java.isAssignableFrom(paramType)) {
