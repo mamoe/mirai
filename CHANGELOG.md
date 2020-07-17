@@ -1,5 +1,8 @@
 # Version 1.x
 
+## `1.1.3`  2020/7/17
+- JvmMethodEvents 支持匿名内部类 (#443, #446 by [@Karlatemp](https://github.com/Karlatemp))
+
 ## `1.1.2`  2020/7/16
 - 修复 JvmMethodEvents `T.registerEvents` 注册时错误判断 `@NotNull` 注解的问题 (#436)
 
