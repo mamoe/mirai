@@ -331,9 +331,11 @@ private fun Method.registerEvent(
         }
     } else {
         // java methods
-
+        check(this.parameterCount == 1) {
+            "Illegal method parameter. Only one parameter is required."
+        }
         val paramType = this.parameters[0].type
-        check(this.parameterCount == 1 && Event::class.java.isAssignableFrom(paramType)) {
+        check(Event::class.java.isAssignableFrom(paramType)) {
             "Illegal method parameter. Required one exact Event subclass. found $paramType"
         }
         when (this.returnType) {
@@ -347,11 +349,11 @@ private fun Method.registerEvent(
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
                             withContext(Dispatchers.IO) {
-                                this@registerEvent.invoke(owner, this)
+                                this@registerEvent.invoke(owner, this@subscribeAlways)
                             }
                         }
                     } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invoke(owner, this)
+                        this@registerEvent.invoke(owner, this@subscribeAlways)
                     }
                 }
             }
@@ -365,11 +367,11 @@ private fun Method.registerEvent(
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
                             withContext(Dispatchers.IO) {
-                                this@registerEvent.invoke(owner, this) as ListeningStatus
+                                this@registerEvent.invoke(owner, this@subscribe) as ListeningStatus
                             }
                         } else ListeningStatus.LISTENING
                     } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invoke(owner, this) as ListeningStatus
+                        this@registerEvent.invoke(owner, this@subscribe) as ListeningStatus
                     }
 
                 }

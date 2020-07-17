@@ -24,6 +24,7 @@ rootProject.name = 'mirai'
 include(':mirai-core')
 include(':mirai-core-qqandroid')
 include(':mirai-serialization')
+include(':java-test')
 //include(':compatibility-validator') // THIS WILL CAUSE A DEPENDENCY RESOLUTION BUG
 //include(':java-compatibility-validator')
 
