@@ -66,6 +66,9 @@ allprojects {
 }
 
 subprojects {
+    if (this@subprojects.name == "java-test") {
+        return@subprojects
+    }
     afterEvaluate {
         apply(plugin = "com.github.johnrengelman.shadow")
         val kotlin =

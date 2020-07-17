@@ -1,0 +1,51 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
+
+plugins {
+    id 'java'
+}
+
+
+def kotlinx = { id, version -> "org.jetbrains.kotlinx:kotlinx-$id:$version" }
+def ktor = { id, version -> "io.ktor:ktor-$id:$version" }
+
+def kotlin = { name, version ->
+    if (version == null) {
+        version = "1.3.72"
+    }
+    "org.jetbrains.kotlin:kotlin-$name:$version"
+}
+
+
+dependencies {
+
+    compile project(':mirai-core')
+
+    compile project(':mirai-serialization')
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    compile(kotlin("stdlib", null))
+    compile(kotlin("serialization", null))
+    compile(kotlin("reflect", null))
+
+//
+//    compile(kotlinx("serialization-runtime-common", Versions.Kotlin.serialization))
+//    compile(kotlinx("serialization-protobuf-common", Versions.Kotlin.serialization))
+//    compile(kotlinx("io", Versions.Kotlin.io))
+//    compile(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
+//    compile(kotlinx("coroutines-core-common", Versions.Kotlin.coroutines))
+//
+//    compile("org.jetbrains.kotlinx:atomicfu-common:${Versions.Kotlin.atomicFU}")
+//
+//    compile(ktor("client-cio", Versions.Kotlin.ktor))
+//    compile(ktor("client-core", Versions.Kotlin.ktor))
+//    compile(ktor("network", Versions.Kotlin.ktor))
+
+}
