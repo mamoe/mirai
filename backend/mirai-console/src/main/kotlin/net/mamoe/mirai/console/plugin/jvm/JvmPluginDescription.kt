@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
+import com.vdurmont.semver4j.Semver
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -16,6 +17,7 @@ import net.mamoe.mirai.console.plugin.FilePluginDescription
 import net.mamoe.mirai.console.plugin.PluginDependency
 import net.mamoe.mirai.console.plugin.PluginDescription
 import net.mamoe.mirai.console.plugin.PluginKind
+import net.mamoe.mirai.console.utils.SemverAsStringSerializerLoose
 import java.io.File
 
 @Serializable
@@ -25,7 +27,7 @@ public class JvmPluginDescription internal constructor(
     @SerialName("main")
     public val mainClassName: String,
     public override val author: String = "",
-    public override val version: String,
+    public override val version: @Serializable(with = SemverAsStringSerializerLoose::class) Semver,
     public override val info: String = "",
     @SerialName("depends")
     public override val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency> = listOf()
@@ -37,7 +39,7 @@ public class JvmPluginDescription internal constructor(
     @Suppress("unused")
     public constructor(
         kind: PluginKind, name: String, mainClassName: String, author: String,
-        version: String, info: String, depends: List<PluginDependency>,
+        version: Semver, info: String, depends: List<PluginDependency>,
         file: File
     ) : this(kind, name, mainClassName, author, version, info, depends) {
         this._file = file

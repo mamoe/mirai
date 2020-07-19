@@ -9,10 +9,12 @@
 
 package net.mamoe.mirai.console.plugin
 
+import com.vdurmont.semver4j.Semver
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.setting.internal.map
+import net.mamoe.mirai.console.utils.SemverAsStringSerializerIvy
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlDynamicSerializer
 import java.io.File
@@ -45,7 +47,7 @@ public interface PluginDescription {
 
     public val name: String
     public val author: String
-    public val version: String
+    public val version: Semver
     public val info: String
 
     /** 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件 */
@@ -59,42 +61,21 @@ public data class PluginDependency(
     public val name: String,
     /**
      * 依赖版本号. 为 null 时则为不限制版本.
+     *
+     * 版本遵循 [语义化版本 2.0 规范](https://semver.org/lang/zh-CN/),
+     *
+     * 允许 [Apache Ivy 格式版本号](http://ant.apache.org/ivy/history/latest-milestone/ivyfile/dependency.html)
+     *
      * @see versionKind 版本号类型
      */
-    public val version: String? = null,
-    /** 版本号类型 */
-    public val versionKind: VersionKind = VersionKind.AT_LEAST,
+    public val version: @Serializable(SemverAsStringSerializerIvy::class) Semver? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */
     public val isOptional: Boolean = false
 ) {
-    /** 版本号类型 */
-    @Serializable(with = VersionKind.AsStringSerializer::class)
-    public enum class VersionKind(
-        private vararg val serialNames: String
-    ) {
-        /** 要求依赖精确的版本 */
-        EXACT("exact"),
-
-        /** 要求依赖最低版本 */
-        AT_LEAST("at_least", "AtLeast", "least", "lowest", "+"),
-
-        /** 要求依赖最高版本 */
-        AT_MOST("at_most", "AtMost", "most", "highest", "-");
-
-        public object AsStringSerializer : KSerializer<VersionKind> by String.serializer().map(
-            serializer = { it.serialNames.first() },
-            deserializer = { str ->
-                values().firstOrNull {
-                    it.serialNames.any { name -> name.equals(str, ignoreCase = true) }
-                } ?: AT_LEAST
-            }
-        )
-    }
-
     public override fun toString(): String {
-        return "$name ${versionKind.toEnglishString()}v$version"
+        return "$name v$version"
     }
 
 
@@ -117,10 +98,4 @@ public data class PluginDependency(
  */
 public interface FilePluginDescription : PluginDescription {
     public val file: File
-}
-
-internal fun PluginDependency.VersionKind.toEnglishString(): String = when (this) {
-    PluginDependency.VersionKind.EXACT -> ""
-    PluginDependency.VersionKind.AT_LEAST -> "at least "
-    PluginDependency.VersionKind.AT_MOST -> "at most "
 }

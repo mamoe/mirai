@@ -66,11 +66,13 @@ kotlin {
 
 dependencies {
     compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
-    compileAndRuntime(kotlin("stdlib", Versions.kotlinStdlib))
+    compileAndRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib))
 
     api("net.mamoe.yamlkt:yamlkt:0.3.1")
     api("org.jetbrains:annotations:19.0.0")
     api(kotlinx("coroutines-jdk8", Versions.coroutines))
+
+    api("com.vdurmont:semver4j:3.1.0")
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))
@@ -80,6 +82,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 }
+
 ext.apply {
     // 傻逼 compileAndRuntime 没 exclude 掉
     // 傻逼 gradle 第二次配置 task 会覆盖掉第一次的配置
@@ -109,9 +112,11 @@ tasks {
                 file.writeText(file.readText()
                     .replace(Regex("""val buildDate: Date = Date\((.*)\) //(.*)""")) {
                         """
-                        val buildDate: Date = Date(${System.currentTimeMillis()}L) // ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
-                            timeZone = TimeZone.getTimeZone("GMT+8")
-                        }.format(Date())}
+                        val buildDate: Date = Date(${System.currentTimeMillis()}L) // ${
+                            SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
+                                timeZone = TimeZone.getTimeZone("GMT+8")
+                            }.format(Date())
+                        }
                     """.trimIndent()
                     }
                     .replace(Regex("""const val version: String = "(.*)"""")) {

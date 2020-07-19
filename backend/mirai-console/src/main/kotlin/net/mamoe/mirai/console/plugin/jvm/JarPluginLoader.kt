@@ -89,7 +89,11 @@ internal object JarPluginLoaderImpl :
     override fun load(description: JvmPluginDescription): JvmPlugin =
         description.runCatching<JvmPluginDescription, JvmPlugin> {
             ensureActive()
-            val main = classLoader.loadPluginMainClassByJarFile(name, mainClassName, file).kotlin.run {
+            val main = classLoader.loadPluginMainClassByJarFile(
+                pluginName = name,
+                mainClass = mainClassName,
+                jarFile = file
+            ).kotlin.run {
                 objectInstance
                     ?: kotlin.runCatching { createInstance() }.getOrNull()
                     ?: (java.constructors + java.declaredConstructors)
