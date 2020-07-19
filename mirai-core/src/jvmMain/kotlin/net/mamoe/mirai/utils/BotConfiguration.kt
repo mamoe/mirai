@@ -168,6 +168,20 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
         deviceInfo = getFileBasedDeviceInfoSupplier(filepath)
     }
 
+    /**
+     * 使用字符串设备信息
+     *
+     * 此函数旨在 Jvm 和 Android 有效，在其他平台将会抛出异常
+     * @param content 符合 DeviceInfoData 格式的 Json 字符串
+     * @see DeviceInfoData
+     * @see DeviceInfo
+     */
+    @ConfigurationDsl
+    fun stringBasedDeviceInfo(content: String) {
+        deviceInfo = getStringBasedDeviceInfoSupplier(content)
+    }
+
+
     actual fun copy(): BotConfiguration {
         return BotConfiguration().also { new ->
             new.botLoggerSupplier = botLoggerSupplier

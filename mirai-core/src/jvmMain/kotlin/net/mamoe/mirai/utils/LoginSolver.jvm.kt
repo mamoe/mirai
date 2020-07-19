@@ -160,6 +160,12 @@ internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(filename: String): 
     }
 }
 
+internal fun BotConfiguration.getStringBasedDeviceInfoSupplier(content: String): ((Context) -> DeviceInfo)? {
+    return {
+        content.loadAsDeviceInfo(json, it)
+    }
+}
+
 // Copied from Ktor CIO
 private fun File.writeChannel(
     coroutineContext: CoroutineContext = Dispatchers.IO

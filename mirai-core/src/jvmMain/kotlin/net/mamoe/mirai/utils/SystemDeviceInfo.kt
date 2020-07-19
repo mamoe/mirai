@@ -34,6 +34,18 @@ fun File.loadAsDeviceInfo(json: Json, context: Context = ContextImpl()): DeviceI
     }
 }
 
+/**
+ * 加载一个设备信息，若字符串不符合json规范则创建一个设备信息
+ */
+fun String.loadAsDeviceInfo(json: Json, context: Context = ContextImpl()): DeviceInfo {
+    if (this.isBlank() || this.isEmpty() || !this.startsWith("{") || !this.endsWith("}")) {
+        return SystemDeviceInfo(context)
+    }
+    return json.parse(DeviceInfoData.serializer(), this).also {
+        it.context = context
+    }
+}
+
 @Serializable
 actual open class SystemDeviceInfo actual constructor() : DeviceInfo() {
     actual constructor(context: Context) : this() {
