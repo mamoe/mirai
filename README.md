@@ -13,8 +13,9 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 图标以及形象由画师<a href = "">DazeCake</a>绘制
 </div>
 
-
 # mirai-console
+[ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-console/)
+
 高效率插件支持 QQ 机器人框架, 机器人核心来自 [mirai](https://github.com/mamoe/mirai)
 
 ## 模块说明
@@ -22,7 +23,7 @@ Mirai 是一个在全平台下运行，提供 QQ Android 和 TIM PC 协议支持
 console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 **注意：`mirai-console` 后端和 pure 前端正在进行完全的重构，master 分支将不再维护。**  
-**`mirai-console` 将在短时间内不可用。**
+**`mirai-console` 将在短时间内只提供 dev 版本。**
 
 后端:
 - [`mirai-console`](backend/mirai-console/): console 的后端, 包含插件管理, 指令系统, 配置系统. 没有入口程序. 
