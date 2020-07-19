@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm") version Versions.kotlin
-    kotlin("plugin.serialization") version Versions.kotlin
+    kotlin("jvm") version Versions.kotlinCompiler
+    kotlin("plugin.serialization") version Versions.kotlinCompiler
     id("java")
     `maven-publish`
     id("com.jfrog.bintray")
@@ -30,7 +30,7 @@ dependencies {
 
     compileAndRuntime(project(":mirai-console"))
     compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
-    compileAndRuntime(kotlin("stdlib")) // embedded by core
+    compileAndRuntime(kotlin("stdlib", Versions.kotlinStdlib)) // embedded by core
 
     runtimeOnly("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")

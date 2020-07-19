@@ -3,8 +3,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 plugins {
-    kotlin("jvm") version Versions.kotlin
-    kotlin("plugin.serialization") version Versions.kotlin
+    kotlin("jvm") version Versions.kotlinCompiler
+    kotlin("plugin.serialization") version Versions.kotlinCompiler
     id("java")
     `maven-publish`
     id("com.jfrog.bintray")
@@ -66,7 +66,7 @@ kotlin {
 
 dependencies {
     compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
-    compileAndRuntime(kotlin("stdlib"))
+    compileAndRuntime(kotlin("stdlib", Versions.kotlinStdlib))
 
     api("net.mamoe.yamlkt:yamlkt:0.3.1")
     api("org.jetbrains:annotations:19.0.0")
