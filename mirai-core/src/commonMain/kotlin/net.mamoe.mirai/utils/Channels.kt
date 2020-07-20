@@ -30,7 +30,7 @@ import kotlin.jvm.JvmName
  */
 @OptIn(InternalSerializationApi::class)
 @MiraiExperimentalAPI
-suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
+public suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
     val buffer = ByteArray(2048)
     var size: Int
     while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -42,7 +42,7 @@ suspend fun ByteReadChannel.copyTo(dst: OutputStream) {
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
 @MiraiExperimentalAPI
-suspend fun ByteReadChannel.copyTo(dst: Output) {
+public suspend fun ByteReadChannel.copyTo(dst: Output) {
     val buffer = ByteArray(2048)
     var size: Int
     while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -54,7 +54,7 @@ suspend fun ByteReadChannel.copyTo(dst: Output) {
  * 从接收者管道读取所有数据并写入 [dst]. 不会关闭 [dst]
  */
 @MiraiExperimentalAPI
-suspend fun ByteReadChannel.copyTo(dst: ByteWriteChannel) {
+public suspend fun ByteReadChannel.copyTo(dst: ByteWriteChannel) {
     val buffer = ByteArray(2048)
     var size: Int
     while (this.readAvailable(buffer).also { size = it } > 0) {
@@ -70,7 +70,7 @@ suspend fun ByteReadChannel.copyTo(dst: ByteWriteChannel) {
  */
 @MiraiExperimentalAPI
 @OptIn(InternalSerializationApi::class)
-suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) { // 在 JVM 这个 API 不是 internal 的
+public suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) { // 在 JVM 这个 API 不是 internal 的
     try {
         val buffer = ByteArray(2048)
         var size: Int
@@ -86,7 +86,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: OutputStream) { // 在 JVM 这个 
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
 @MiraiExperimentalAPI
-suspend fun ByteReadChannel.copyAndClose(dst: Output) {
+public suspend fun ByteReadChannel.copyAndClose(dst: Output) {
     try {
         val buffer = ByteArray(2048)
         var size: Int
@@ -102,7 +102,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: Output) {
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
 @MiraiExperimentalAPI
-suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
+public suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
     @Suppress("DuplicatedCode")
     try {
         val buffer = ByteArray(2048)
@@ -120,7 +120,7 @@ suspend fun ByteReadChannel.copyAndClose(dst: ByteWriteChannel) {
  * 从接收者管道读取所有数据并写入 [dst], 最终关闭 [dst]
  */
 @MiraiExperimentalAPI
-suspend fun ByteReadChannel.copyAndClose(dst: io.ktor.utils.io.ByteWriteChannel) {
+public suspend fun ByteReadChannel.copyAndClose(dst: io.ktor.utils.io.ByteWriteChannel) {
     @Suppress("DuplicatedCode")
     try {
         val buffer = ByteArray(2048)

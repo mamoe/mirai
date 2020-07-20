@@ -29,31 +29,31 @@ import kotlin.jvm.JvmSynthetic
  * @see LightApp 小程序 (JSON)
  */
 // not using sealed class for customized implementations
-interface RichMessage : MessageContent {
+public interface RichMessage : MessageContent {
 
     /**
      * **注意**: 富文本消息的 [RichMessage.contentEquals] 和 [RichMessage.toString] 都不稳定. 将来可能在没有任何警告的情况下改变格式.
      */
     @MiraiExperimentalAPI
-    override fun contentToString(): String = this.content
+    public override fun contentToString(): String = this.content
 
     /**
      * 消息内容. 可为 JSON 文本或 XML 文本
      */
-    val content: String
+    public val content: String
 
     /**
      * 一些模板
      * @suppress 此 API 不稳定, 可能在任意时刻被删除
      */
     @MiraiExperimentalAPI
-    companion object Templates : Message.Key<RichMessage> {
+    public companion object Templates : Message.Key<RichMessage> {
 
         /**
          * @suppress 此 API 不稳定, 可能在任意时刻被删除
          */
         @MiraiExperimentalAPI
-        fun share(
+        public fun share(
             url: String,
             title: String? = null,
             content: String? = null,
@@ -93,12 +93,12 @@ interface RichMessage : MessageContent {
  *
  * @see ServiceMessage 服务消息
  */
-data class LightApp(override val content: String) : RichMessage {
-    companion object Key : Message.Key<LightApp> {
-        override val typeName: String get() = "LightApp"
+public data class LightApp(override val content: String) : RichMessage {
+    public companion object Key : Message.Key<LightApp> {
+        public override val typeName: String get() = "LightApp"
     }
 
-    override fun toString(): String = "[mirai:app:$content]"
+    public override fun toString(): String = "[mirai:app:$content]"
 }
 
 /**
@@ -111,21 +111,24 @@ data class LightApp(override val content: String) : RichMessage {
  *
  * @see LightApp 小程序类型消息
  */
-open class ServiceMessage(val serviceId: Int, final override val content: String) : RichMessage {
-    companion object Key : Message.Key<ServiceMessage> {
-        override val typeName: String get() = "ServiceMessage"
+public open class ServiceMessage(
+    public val serviceId: Int,
+    public final override val content: String
+) : RichMessage {
+    public companion object Key : Message.Key<ServiceMessage> {
+        public override val typeName: String get() = "ServiceMessage"
     }
 
-    final override fun toString(): String = "[mirai:service:$serviceId,$content]"
+    public final override fun toString(): String = "[mirai:service:$serviceId,$content]"
 
-    final override fun equals(other: Any?): Boolean {
+    public final override fun equals(other: Any?): Boolean {
         if (other == null) return false
         if (other::class != this::class) return false
         other as ServiceMessage
         return other.serviceId == this.serviceId && other.content == this.content
     }
 
-    final override fun hashCode(): Int {
+    public final override fun hashCode(): Int {
         var result = serviceId
         result = 31 * result + content.hashCode()
         return result
@@ -148,40 +151,40 @@ commonElem=CommonElem#750141174 {
 @Suppress("DEPRECATION_ERROR")
 @JvmSynthetic
 @MiraiExperimentalAPI
-inline fun buildXmlMessage(serviceId: Int, block: @XmlMessageDsl XmlMessageBuilder.() -> Unit): ServiceMessage =
+public inline fun buildXmlMessage(serviceId: Int, block: @XmlMessageDsl XmlMessageBuilder.() -> Unit): ServiceMessage =
     ServiceMessage(serviceId, XmlMessageBuilder().apply(block).text)
 
 @MiraiExperimentalAPI
 @Target(CLASS, FUNCTION, TYPE)
 @DslMarker
-annotation class XmlMessageDsl
+public annotation class XmlMessageDsl
 
 /**
  * @suppress 此 API 不稳定
  */
 @MiraiExperimentalAPI
 @XmlMessageDsl
-class XmlMessageBuilder(
-    var templateId: Int = 1,
-    var serviceId: Int = 1,
-    var action: String = "plugin",
+public class XmlMessageBuilder(
+    public var templateId: Int = 1,
+    public var serviceId: Int = 1,
+    public var action: String = "plugin",
     /**
      * 一般为点击这条消息后跳转的链接
      */
-    var actionData: String = "",
+    public var actionData: String = "",
     /**
      * 摘要, 在官方客户端内消息列表中显示
      */
-    var brief: String = "",
-    var flag: Int = 3,
-    var url: String = "", // TODO: 2019/12/3 unknown
-    var sourceName: String = "",
-    var sourceIconURL: String = ""
+    public var brief: String = "",
+    public var flag: Int = 3,
+    public var url: String = "", // TODO: 2019/12/3 unknown
+    public var sourceName: String = "",
+    public var sourceIconURL: String = ""
 ) {
     @PublishedApi
     internal val builder: StringBuilder = StringBuilder()
 
-    val text: String
+    public val text: String
         get() = "<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>" +
                 "<msg templateID='$templateId' serviceID='$serviceId' action='$action' actionData='$actionData' brief='$brief' flag='$flag' url='$url'>" +
                 builder.toString() +
@@ -190,36 +193,38 @@ class XmlMessageBuilder(
 
     @JvmOverloads
     @XmlMessageDsl
-    inline fun item(bg: Int = 0, layout: Int = 4, block: @XmlMessageDsl ItemBuilder.() -> Unit) {
+    public inline fun item(bg: Int = 0, layout: Int = 4, block: @XmlMessageDsl ItemBuilder.() -> Unit) {
         builder.append(ItemBuilder(bg, layout).apply(block).text)
     }
 
-    fun source(name: String, iconURL: String = "") {
+    public fun source(name: String, iconURL: String = "") {
         sourceName = name
         sourceIconURL = iconURL
     }
+
     @XmlMessageDsl
-    class ItemBuilder @PublishedApi internal constructor(
-        var bg: Int = 0,
-        var layout: Int = 4
+    public class ItemBuilder @PublishedApi internal constructor(
+        public var bg: Int = 0,
+        public var layout: Int = 4
     ) {
         @PublishedApi
         internal val builder: StringBuilder = StringBuilder()
-        val text: String get() = "<item bg='$bg' layout='$layout'>$builder</item>"
+        public val text: String get() = "<item bg='$bg' layout='$layout'>$builder</item>"
 
-        fun summary(text: String, color: String = "#000000") {
+        public fun summary(text: String, color: String = "#000000") {
             this.builder.append("<summary color='$color'>$text</summary>")
         }
 
-        fun title(text: String, size: Int = 25, color: String = "#000000") {
+        public fun title(text: String, size: Int = 25, color: String = "#000000") {
             this.builder.append("<title size='$size' color='$color'>$text</title>")
         }
 
-        fun picture(coverUrl: String) {
+        public fun picture(coverUrl: String) {
             this.builder.append("<picture cover='$coverUrl'/>")
         }
     }
 }
+
 @MiraiExperimentalAPI
 internal class LongMessage internal constructor(content: String, val resId: String) : ServiceMessage(35, content) {
     companion object Key : Message.Key<LongMessage> {

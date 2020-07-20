@@ -13,6 +13,7 @@ object Versions {
     }
 
     object Kotlin {
+        const val compiler = "1.4-M3"
         const val stdlib = "1.3.72"
         const val coroutines = "1.3.7"
         const val atomicFU = "0.14.2"

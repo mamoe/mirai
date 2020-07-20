@@ -52,12 +52,12 @@ internal const val ONLINE_OFFLINE_DEPRECATION_MESSAGE = """
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
 @Suppress("EXPOSED_SUPER_INTERFACE")
-interface OnlineImage : Image, ConstOriginUrlAware {
-    companion object Key : Message.Key<OnlineImage> {
-        override val typeName: String get() = "OnlineImage"
+public interface OnlineImage : Image, ConstOriginUrlAware {
+    public companion object Key : Message.Key<OnlineImage> {
+        public override val typeName: String get() = "OnlineImage"
     }
 
-    override val originUrl: String
+    public override val originUrl: String
 }
 
 /**
@@ -72,9 +72,9 @@ interface OnlineImage : Image, ConstOriginUrlAware {
     level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
-interface OfflineImage : Image {
-    companion object Key : Message.Key<OfflineImage> {
-        override val typeName: String get() = "OfflineImage"
+public interface OfflineImage : Image {
+    public companion object Key : Message.Key<OfflineImage> {
+        public override val typeName: String get() = "OfflineImage"
     }
 }
 
@@ -84,7 +84,7 @@ interface OfflineImage : Image {
     level = DeprecationLevel.HIDDEN
 )
 @JvmSynthetic
-suspend fun OfflineImage.queryUrl(): String {
+public suspend fun OfflineImage.queryUrl(): String {
     return Bot._instances.peekFirst()?.get()?.queryImageUrl(this) ?: error("No Bot available to query image url")
 }
 
@@ -100,12 +100,14 @@ suspend fun OfflineImage.queryUrl(): String {
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
 @Serializable
-data class OfflineGroupImage(
-    override val imageId: String
+public data class OfflineGroupImage(
+    public override val imageId: String
 ) : GroupImage(), OfflineImage, DeferredOriginUrlAware {
-    override fun getUrl(bot: Bot): String {
-        return "http://gchat.qpic.cn/gchatpic_new/${bot.id}/0-0-${imageId.substring(1..36)
-            .replace("-", "")}/0?term=2"
+    public override fun getUrl(bot: Bot): String {
+        return "http://gchat.qpic.cn/gchatpic_new/${bot.id}/0-0-${
+            imageId.substring(1..36)
+                .replace("-", "")
+        }/0?term=2"
     }
 
     init {
@@ -125,7 +127,7 @@ data class OfflineGroupImage(
     level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
-abstract class OnlineGroupImage : GroupImage(), OnlineImage
+public abstract class OnlineGroupImage : GroupImage(), OnlineImage
 
 /**
  * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [Bot.queryImageUrl]
@@ -139,10 +141,10 @@ abstract class OnlineGroupImage : GroupImage(), OnlineImage
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
 @Serializable
-data class OfflineFriendImage(
-    override val imageId: String
+public data class OfflineFriendImage(
+    public override val imageId: String
 ) : FriendImage(), OfflineImage, DeferredOriginUrlAware {
-    override fun getUrl(bot: Bot): String {
+    public override fun getUrl(bot: Bot): String {
         return "http://c2cpicdw.qpic.cn/offpic_new/${bot.id}/${this.imageId}/0?term=2"
     }
 
@@ -162,6 +164,6 @@ data class OfflineFriendImage(
     level = DeprecationLevel.ERROR,
     replaceWith = ReplaceWith("Image", "net.mamoe.mirai.message.data.Image")
 )
-abstract class OnlineFriendImage : FriendImage(), OnlineImage
+public abstract class OnlineFriendImage : FriendImage(), OnlineImage
 
 // endregion

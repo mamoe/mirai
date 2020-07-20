@@ -144,27 +144,27 @@ import kotlin.reflect.jvm.kotlinFunction
  * Events.registerEvents(new MyEventHandlers())
  * ```
  *
- * @sample net.mamoe.mirai.event.JvmMethodEventsTest
+ * //@sample net.mamoe.mirai.event.JvmMethodEventsTest
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class EventHandler(
+public annotation class EventHandler(
     /**
      * 监听器优先级
      * @see Listener.EventPriority 查看优先级相关信息
      * @see Event.intercept 拦截事件
      */
-    val priority: Listener.EventPriority = EventPriority.NORMAL,
+    public  val priority: Listener.EventPriority = EventPriority.NORMAL,
     /**
      * 是否自动忽略被 [取消][CancellableEvent.isCancelled]
      * @see CancellableEvent
      */
-    val ignoreCancelled: Boolean = true,
+    public  val ignoreCancelled: Boolean = true,
     /**
      * 并发类型
      * @see Listener.ConcurrencyKind
      */
-    val concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT
+    public  val concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT
 )
 
 /**
@@ -173,23 +173,23 @@ annotation class EventHandler(
  * @see SimpleListenerHost 简单的实现
  * @see EventHandler 查看更多信息
  */
-interface ListenerHost
+public interface ListenerHost
 
 /**
  * 携带一个异常处理器的 [ListenerHost].
  * @see ListenerHost 查看更多信息
  * @see EventHandler 查看更多信息
  */
-abstract class SimpleListenerHost
+public abstract class SimpleListenerHost
 @JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : ListenerHost, CoroutineScope {
 
-    final override val coroutineContext: CoroutineContext =
+    public final override val coroutineContext: CoroutineContext =
         CoroutineExceptionHandler(::handleException) + coroutineContext + SupervisorJob(coroutineContext[Job])
 
     /**
      * 处理事件处理中未捕获的异常. 在构造器中的 [coroutineContext] 未提供 [CoroutineExceptionHandler] 情况下必须继承此函数.
      */
-    open fun handleException(context: CoroutineContext, exception: Throwable) {
+    public open fun handleException(context: CoroutineContext, exception: Throwable) {
         throw IllegalStateException(
             """
             未找到异常处理器. 请继承 SimpleListenerHost 中的 handleException 方法, 或在构造 SimpleListenerHost 时提供 CoroutineExceptionHandler
@@ -203,7 +203,7 @@ abstract class SimpleListenerHost
     /**
      * 停止所有事件监听
      */
-    fun cancelAll() {
+    public fun cancelAll() {
         this.cancel()
     }
 }
@@ -216,7 +216,7 @@ abstract class SimpleListenerHost
  * @see EventHandler 获取更多信息
  */
 @JvmOverloads
-fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext)
+public fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext): Unit
         where T : CoroutineScope, T : ListenerHost = this.registerEvents(this, coroutineContext)
 
 /**
@@ -227,7 +227,7 @@ fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineCont
  * @see EventHandler 获取更多信息
  */
 @JvmOverloads
-fun CoroutineScope.registerEvents(host: ListenerHost, coroutineContext: CoroutineContext = EmptyCoroutineContext) {
+public fun CoroutineScope.registerEvents(host: ListenerHost, coroutineContext: CoroutineContext = EmptyCoroutineContext) {
     for (method in host.javaClass.declaredMethods) {
         method.getAnnotation(EventHandler::class.java)?.let {
             method.registerEvent(host, this, it, coroutineContext)

@@ -33,12 +33,12 @@ import net.mamoe.mirai.utils.SinceMirai
  */
 @MiraiExperimentalAPI
 @SinceMirai("1.1.0")
-interface CodableMessage : Message {
+public interface CodableMessage : Message {
     /**
      * 转换为 mirai 码.
      *
      * @suppress 警告: 此 API 可能在任何时刻被改变
      */
     @MiraiExperimentalAPI
-    fun toMiraiCode(): String = this.toString()
+    public fun toMiraiCode(): String = this.toString()
 }

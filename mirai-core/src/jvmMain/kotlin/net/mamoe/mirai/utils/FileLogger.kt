@@ -21,7 +21,7 @@ private val currentDate get() = SimpleDateFormat("yyyy-MM-dd").format(Date())
  *
  * @see PlatformLogger 查看格式信息
  */
-class SingleFileLogger @JvmOverloads constructor(identity: String, file: File = File("$identity-$currentDate.log")) :
+public class SingleFileLogger @JvmOverloads constructor(identity: String, file: File = File("$identity-$currentDate.log")) :
     PlatformLogger(identity, { file.appendText(it + "\n") }, false) {
 
     init {
@@ -39,7 +39,7 @@ private val STUB: (priority: SimpleLogger.LogPriority, message: String?, e: Thro
  *
  * @see PlatformLogger 查看格式信息
  */
-class DirectoryLogger @JvmOverloads constructor(
+public class DirectoryLogger @JvmOverloads constructor(
     identity: String,
     private val directory: File = File(identity),
     /**
