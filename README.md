@@ -34,7 +34,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 ## 协议支持
 
 <details>
-  <summary>支持的协议协议列表</summary>
+  <summary>已支持的协议列表</summary>
 
 | 消息相关                    | 支持              |
 |:----------------------|:----------------|
@@ -106,7 +106,7 @@ mirai 既可以作为项目中的 QQ 协议支持库, 也可以作为单独的�
 
 基于 `mirai-http-api` (配合 [mirai-console](https://github.com/mamoe/mirai-console)):
 
-- `Python`: [python-mirai](https://github.com/NatriumLab/python-mirai) 基于 `mirai-api-http` 的机器人开发框架
+- `Python`: [python-mirai](https://github.com/NatriumLab/python-mirai) 基于 `mirai-api-http` 的机器人开发框架(已停止更新, 不推荐使用)
 - `JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) mirai 的 Node.js SDK
 - `Go`: [gomirai](https://github.com/Logiase/gomirai) 基于 mirai-api-http 的 GoLang SDK
 - `Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk) 为基于 Rhino(如 Auto.js 等安卓 app 或运行环境)的 JavaScript 提供简单易用的 SDK
