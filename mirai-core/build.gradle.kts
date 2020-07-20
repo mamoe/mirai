@@ -58,7 +58,7 @@ kotlin {
             languageSettings.progressiveMode = true
         }
 
-        commonMain {
+        val commonMain by getting {
             dependencies {
                 api(kotlin("stdlib", Versions.Kotlin.stdlib))
                 api(kotlin("serialization"))
@@ -72,11 +72,12 @@ kotlin {
 
                 api("org.jetbrains.kotlinx:atomicfu-common:${Versions.Kotlin.atomicFU}")
 
-                api(ktor("client-cio", Versions.Kotlin.ktor))
-                api(ktor("client-core", Versions.Kotlin.ktor))
-                api(ktor("network", Versions.Kotlin.ktor))
+                api(ktor("client-cio"))
+                api(ktor("client-core"))
+                api(ktor("network"))
             }
         }
+
         commonTest {
             dependencies {
                 implementation(kotlin("test-annotations-common"))
