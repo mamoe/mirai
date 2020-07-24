@@ -12,7 +12,6 @@ package net.mamoe.mirai.console.command.internal
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.job
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.Listener

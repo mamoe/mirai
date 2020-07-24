@@ -20,7 +20,7 @@ import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
-import net.mamoe.mirai.console.utils.asResourceContainer
+import net.mamoe.mirai.console.utils.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.io.InputStream

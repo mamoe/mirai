@@ -15,9 +15,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.MiraiConsoleInternal
+import net.mamoe.mirai.console.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.setting.*
+import net.mamoe.mirai.console.setting.SettingStorage.Companion.load
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.utils.minutesToMillis
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -52,7 +54,10 @@ internal fun CoroutineScope.childScope(context: CoroutineContext = EmptyCoroutin
 
 internal object ConsoleBuiltInSettingHolder : AutoSaveSettingHolder,
     CoroutineScope by MiraiConsole.childScope() {
+    override val autoSaveIntervalMillis: LongRange
+        get() = 30.minutesToMillis..60.minutesToMillis
     override val name: String get() = "ConsoleBuiltIns"
 }
 
-internal object ConsoleBuiltInSettingStorage : SettingStorage by MiraiConsoleInternal.settingStorageForJarPluginLoader
+internal object ConsoleBuiltInSettingStorage :
+    SettingStorage by MiraiConsoleImplementationBridge.settingStorageForJarPluginLoader

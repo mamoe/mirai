@@ -41,18 +41,22 @@ public class SerializableValue<T>(
     /**
      * The serializer used to update and dump [delegate]
      */
-    override val serializer: KSerializer<Unit>
+    public override val serializer: KSerializer<Unit>
 ) : Value<T> by delegate, SerializerAwareValue<T> {
-    override fun toString(): String = delegate.toString()
-}
+    public override fun toString(): String = delegate.toString()
 
-public fun <T> Value<T>.serializableValueWith(
-    serializer: KSerializer<T>
-): SerializableValue<T> {
-    return SerializableValue(
-        this,
-        serializer.map(serializer = { this.value }, deserializer = { this.setValueBySerializer(it) })
-    )
+    public companion object {
+        @JvmStatic
+        @JvmName("create")
+        public fun <T> Value<T>.serializableValueWith(
+            serializer: KSerializer<T>
+        ): SerializableValue<T> {
+            return SerializableValue(
+                this,
+                serializer.map(serializer = { this.value }, deserializer = { this.setValueBySerializer(it) })
+            )
+        }
+    }
 }
 
 /**
@@ -60,14 +64,32 @@ public fun <T> Value<T>.serializableValueWith(
  */
 public interface SerializerAwareValue<T> : Value<T> {
     public val serializer: KSerializer<Unit>
-}
 
-public fun <T> SerializerAwareValue<T>.serialize(format: StringFormat): String {
-    return format.stringify(this.serializer, Unit)
-}
+    public companion object {
+        @JvmStatic
+        @ConsoleExperimentalAPI("will be changed due to reconstruction of kotlinx.serialization")
+        public fun <T> SerializerAwareValue<T>.serialize(format: StringFormat): String {
+            return format.stringify(this.serializer, Unit)
+        }
 
-public fun <T> SerializerAwareValue<T>.serialize(format: BinaryFormat): ByteArray {
-    return format.dump(this.serializer, Unit)
+        @JvmStatic
+        @ConsoleExperimentalAPI("will be changed due to reconstruction of kotlinx.serialization")
+        public fun <T> SerializerAwareValue<T>.serialize(format: BinaryFormat): ByteArray {
+            return format.dump(this.serializer, Unit)
+        }
+
+        @JvmStatic
+        @ConsoleExperimentalAPI("will be changed due to reconstruction of kotlinx.serialization")
+        public fun <T> SerializerAwareValue<T>.deserialize(format: StringFormat, value: String) {
+            format.parse(this.serializer, value)
+        }
+
+        @JvmStatic
+        @ConsoleExperimentalAPI("will be changed due to reconstruction of kotlinx.serialization")
+        public fun <T> SerializerAwareValue<T>.deserialize(format: BinaryFormat, value: ByteArray) {
+            format.load(this.serializer, value)
+        }
+    }
 }
 
 @JvmSynthetic

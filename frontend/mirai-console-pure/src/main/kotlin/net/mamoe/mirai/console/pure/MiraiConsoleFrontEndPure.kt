@@ -48,7 +48,7 @@ internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
 /**
  * mirai-console-pure 前端实现
  *
- * @see MiraiConsolePure 后端实现
+ * @see MiraiConsoleImplementationPure 后端实现
  * @see MiraiConsolePureLoader CLI 入口点
  */
 @ConsoleInternalAPI

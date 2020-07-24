@@ -17,7 +17,6 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.job
 import net.mamoe.mirai.console.stacktraceString
 import net.mamoe.mirai.event.selectMessagesUnit
 import net.mamoe.mirai.utils.DirectoryLogger

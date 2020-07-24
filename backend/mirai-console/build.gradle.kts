@@ -42,6 +42,7 @@ kotlin {
 
             useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
             useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
+            useExperimentalAnnotation("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
             useExperimentalAnnotation("net.mamoe.mirai.console.utils.ConsoleExperimentalAPI")
             useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")

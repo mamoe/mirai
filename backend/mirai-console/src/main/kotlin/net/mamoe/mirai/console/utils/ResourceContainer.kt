@@ -3,12 +3,18 @@
 package net.mamoe.mirai.console.utils
 
 import net.mamoe.mirai.console.encodeToString
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.utils.ResourceContainer.Companion.asResourceContainer
 import java.io.InputStream
 import java.nio.charset.Charset
 import kotlin.reflect.KClass
 
 /**
  * 资源容器.
+ *
+ * 资源容器可能使用 [Class.getResourceAsStream], 也可能使用其他方式, 取决于实现方式.
+ *
+ * @see JvmPlugin [JvmPlugin] 实现 [ResourceContainer], 使用 [ResourceContainer.asResourceContainer]
  */
 public interface ResourceContainer {
     /**
@@ -32,27 +38,21 @@ public interface ResourceContainer {
     public companion object {
         /**
          * 使用 [Class.getResourceAsStream] 读取资源文件
-         *
-         * @see asResourceContainer Kotlin 使用
          */
         @JvmStatic
-        @JavaFriendlyAPI
-        public fun byClass(clazz: Class<*>): ResourceContainer = clazz.asResourceContainer()
+        @JvmName("byClass")
+        public fun KClass<*>.asResourceContainer(): ResourceContainer = this.java.asResourceContainer()
+
+        /**
+         * 使用 [Class.getResourceAsStream] 读取资源文件
+         */
+        @JvmStatic
+        @JvmName("byClass")
+        public fun Class<*>.asResourceContainer(): ResourceContainer = ClassAsResourceContainer(this)
     }
 }
 
-/**
- * 使用 [Class.getResourceAsStream] 读取资源文件
- */
-public fun KClass<*>.asResourceContainer(): ResourceContainer = ClassAsResourceContainer(this.java)
-
-/**
- * 使用 [Class.getResourceAsStream] 读取资源文件
- */
-public fun Class<*>.asResourceContainer(): ResourceContainer = ClassAsResourceContainer(this)
-
-
-internal class ClassAsResourceContainer(
+private class ClassAsResourceContainer(
     private val clazz: Class<*>
 ) : ResourceContainer {
     override fun getResourceAsStream(name: String): InputStream = clazz.getResourceAsStream(name)

@@ -10,13 +10,17 @@
 package net.mamoe.mirai.console
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
 
 /**
  * 只需要实现一个这个传入 MiraiConsole 就可以绑定 UI 层与 Console 层
+ *
  * 需要保证线程安全
  */
+@ConsoleExperimentalAPI
+@ConsoleFrontEndImplementation
 public interface MiraiConsoleFrontEnd {
     /**
      * 名称

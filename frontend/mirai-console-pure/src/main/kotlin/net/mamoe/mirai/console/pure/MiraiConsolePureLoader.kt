@@ -22,9 +22,8 @@ package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.job
-import net.mamoe.mirai.console.pure.MiraiConsolePure.Companion.start
 import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.content
@@ -46,7 +45,7 @@ object MiraiConsolePureLoader {
 internal fun startup() {
     DefaultLogger = { MiraiConsoleFrontEndPure.loggerFor(it) }
     overrideSTD()
-    MiraiConsolePure().start()
+    MiraiConsoleImplementationPure().start()
     startConsoleThread()
 }
 

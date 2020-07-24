@@ -12,7 +12,8 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import net.mamoe.mirai.console.plugin.internal.JvmPluginInternal
-import net.mamoe.mirai.console.setting.Setting
+import net.mamoe.mirai.utils.minutesToSeconds
+import net.mamoe.mirai.utils.secondsToMillis
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -27,5 +28,5 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
 ) : JvmPlugin, JvmPluginInternal(parentCoroutineContext) {
     public final override val name: String get() = this.description.name
 
-    public override fun <T : Setting> getSetting(clazz: Class<T>): T = loader.settingStorage.load(this, clazz)
+    public override val autoSaveIntervalMillis: LongRange = 30.secondsToMillis..10.minutesToSeconds
 }

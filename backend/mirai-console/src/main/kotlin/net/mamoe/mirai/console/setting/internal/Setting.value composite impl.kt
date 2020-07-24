@@ -13,9 +13,9 @@ package net.mamoe.mirai.console.setting.internal
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.*
+import net.mamoe.mirai.console.setting.SerializableValue.Companion.serializableValueWith
 import net.mamoe.mirai.console.setting.SerializerAwareValue
 import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.setting.serializableValueWith
 import net.mamoe.mirai.console.setting.valueFromKType
 import net.mamoe.yamlkt.YamlDynamicSerializer
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer

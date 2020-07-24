@@ -1,34 +1,31 @@
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST", "unused")
 
 package net.mamoe.mirai.console.setting
 
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import net.mamoe.mirai.console.command.internal.qualifiedNameOrTip
-import net.mamoe.mirai.console.plugin.internal.updateWhen
-import net.mamoe.mirai.console.plugin.jvm.getSetting
-import net.mamoe.mirai.console.setting.AutoSaveSettingHolder.AutoSaveSetting
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
-import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.minutesToSeconds
-import net.mamoe.mirai.utils.secondsToMillis
-import net.mamoe.yamlkt.Yaml
+import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.setting.SettingStorage.Companion.load
+import net.mamoe.mirai.console.setting.internal.*
 import java.io.File
 import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
-import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 
 /**
- * [Setting] 存储容器
+ * [Setting] 存储容器.
+ *
+ * 此为较低层的 API, 一般插件开发者不会接触.
+ *
+ * [JarPluginLoader] 实现一个 [SettingStorage], 用于管理所有 [JvmPlugin] 的 [Setting] 实例.
  *
  * @see SettingHolder
+ * @see JarPluginLoader.settingStorage
  */
 public interface SettingStorage {
     /**
-     * 读取一个实例
+     * 读取一个实例. 在 [T] 实例创建后 [设置 [SettingStorage]][Setting.setStorage]
      */
     public fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T
 
@@ -36,39 +33,82 @@ public interface SettingStorage {
      * 保存一个实例
      */
     public fun store(holder: SettingHolder, setting: Setting)
-}
 
-// TODO: 2020/7/11 document
-public interface MemorySettingStorage : SettingStorage {
     public companion object {
+        /**
+         * 读取一个实例. 在 [T] 实例创建后 [设置 [SettingStorage]][Setting.setStorage]
+         */
         @JvmStatic
-        @JvmName("create")
-        public operator fun invoke(): MemorySettingStorage = MemorySettingStorageImpl()
+        public fun <T : Setting> SettingStorage.load(holder: SettingHolder, settingClass: KClass<T>): T =
+            this.load(holder, settingClass.java)
+
+        /**
+         * 读取一个实例. 在 [T] 实例创建后 [设置 [SettingStorage]][Setting.setStorage]
+         */
+        @JvmSynthetic
+        public inline fun <reified T : Setting> SettingStorage.load(holder: SettingHolder): T =
+            this.load(holder, T::class)
     }
 }
 
-// TODO: 2020/7/11 document
+/**
+ * 在内存存储所有 [Setting] 实例的 [SettingStorage]. 在内存数据丢失后相关 [Setting] 实例也会丢失.
+ */
+public interface MemorySettingStorage : SettingStorage, Map<Class<out Setting>, Setting> {
+    /**
+     * 当任一 [Setting] 实例拥有的 [Value] 的值被改变后调用的回调函数.
+     */
+    public /* fun */ interface OnChangedCallback { // TODO: 2020/7/24 make `fun` in 1.4
+        public fun onChanged(storage: MemorySettingStorage, value: Value<*>)
+
+        /**
+         * 无任何操作的 [OnChangedCallback]
+         * @see OnChangedCallback
+         */
+        public object NoOp : OnChangedCallback {
+            public override fun onChanged(storage: MemorySettingStorage, value: Value<*>) {
+                // no-op
+            }
+        }
+    }
+
+    public companion object {
+        /**
+         * 创建一个 [MemorySettingStorage] 实例.
+         *
+         * @param onChanged 当任一 [Setting] 实例拥有的 [Value] 的值被改变后调用的回调函数.
+         */
+        @JvmStatic
+        @JvmName("create")
+        @JvmOverloads
+        public operator fun invoke(onChanged: OnChangedCallback = OnChangedCallback.NoOp): MemorySettingStorage =
+            MemorySettingStorageImpl(onChanged)
+    }
+}
+
+/**
+ * 在内存存储所有 [Setting] 实例的 [SettingStorage].
+ */
 public interface MultiFileSettingStorage : SettingStorage {
+    /**
+     * 存放 [Setting] 的目录.
+     */
     public val directory: File
 
     public companion object {
+        /**
+         * 创建一个 [MultiFileSettingStorage] 实例.
+         *
+         * @see directory 存放 [Setting] 的目录.
+         */
         @JvmStatic
         @JvmName("create")
         public operator fun invoke(directory: File): MultiFileSettingStorage = MultiFileSettingStorageImpl(directory)
     }
 }
 
-
-// TODO: 2020/7/11 here or companion?
-public inline fun <T : Setting> SettingStorage.load(holder: SettingHolder, settingClass: KClass<T>): T =
-    this.load(holder, settingClass.java)
-
-// TODO: 2020/7/11 here or companion?
-public inline fun <reified T : Setting> SettingStorage.load(holder: SettingHolder): T =
-    this.load(holder, T::class)
-
 /**
- * 可以持有相关 [Setting] 的对象.
+ * 可以持有相关 [Setting] 实例的对象, 作为 [Setting] 实例的拥有者.
  *
  * @see SettingStorage.load
  * @see SettingStorage.store
@@ -80,6 +120,28 @@ public interface SettingHolder {
      * 保存时使用的分类名
      */
     public val name: String
+
+    /**
+     * 创建一个 [Setting] 实例.
+     *
+     * @see Companion.newSettingInstance
+     * @see KClass.createType
+     */
+    @JvmDefault
+    public fun <T : Setting> newSettingInstance(type: KType): T =
+        newSettingInstanceUsingReflection<Setting>(type) as T
+
+    public companion object {
+        /**
+         * 创建一个 [Setting] 实例.
+         *
+         * @see SettingHolder.newSettingInstance
+         */
+        @JvmSynthetic
+        public inline fun <reified T : Setting> SettingHolder.newSettingInstance(): T {
+            return this.newSettingInstance(typeOf0<T>())
+        }
+    }
 }
 
 /**
@@ -94,158 +156,23 @@ public interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
      * - 区间的左端点为最小间隔, 一个 [Value] 被修改后, 若此时间段后无其他修改, 将触发自动保存; 若有, 将重新开始计时.
      * - 区间的右端点为最大间隔, 一个 [Value] 被修改后, 最多不超过这个时间段后就会被保存.
      *
-     * 若 [coroutineContext] 含有 [Job], 则 [AutoSaveSetting] 会通过 [Job.invokeOnCompletion] 在 Job 完结时触发自动保存.
+     * 若 [AutoSaveSettingHolder.coroutineContext] 含有 [Job],
+     * 则 [AutoSaveSetting] 会通过 [Job.invokeOnCompletion] 在 Job 完结时触发自动保存.
      *
      * @see LongRange Java 用户使用 [LongRange] 的构造器创建
      * @see Long.rangeTo Kotlin 用户使用 [Long.rangeTo] 创建, 如 `3000..50000`
      */
     public val autoSaveIntervalMillis: LongRange
-        get() = 30.secondsToMillis..10.minutesToSeconds
 
     /**
-     * 链接自动保存的 [Setting].
-     * 当任一相关 [Value] 的值被修改时, 将在一段时间无其他修改时保存
-     *
-     * 若 [AutoSaveSettingHolder.coroutineContext] 含有 [Job], 则 [AutoSaveSetting] 会通过 [Job.invokeOnCompletion] 在 Job 完结时触发自动保存.
-     *
-     * @see getSetting
+     * 仅支持确切的 [Setting] 类型
      */
-    public open class AutoSaveSetting(private val owner: AutoSaveSettingHolder, private val storage: SettingStorage) :
-        AbstractSetting() {
-        @JvmField
-        @Volatile
-        internal var lastAutoSaveJob: Job? = null
-
-        @JvmField
-        @Volatile
-        internal var currentFirstStartTime = atomic(0L)
-
-        init {
-            owner.coroutineContext[Job]?.invokeOnCompletion { doSave() }
+    @JvmDefault
+    public override fun <T : Setting> newSettingInstance(type: KType): T {
+        val classifier = type.classifier?.cast<KClass<*>>()?.java
+        require(classifier == Setting::class.java) {
+            "Cannot create Setting instance. AutoSaveSettingHolder supports only Setting type."
         }
-
-        private val updaterBlock: suspend CoroutineScope.() -> Unit = {
-            currentFirstStartTime.updateWhen({ it == 0L }, { currentTimeMillis })
-
-            delay(owner.autoSaveIntervalMillis.first.coerceAtLeast(1000)) // for safety
-
-            if (lastAutoSaveJob == this.coroutineContext[Job]) {
-                doSave()
-            } else {
-                if (currentFirstStartTime.updateWhen(
-                        { currentTimeMillis - it >= owner.autoSaveIntervalMillis.last },
-                        { 0 })
-                ) doSave()
-            }
-        }
-
-        public final override fun onValueChanged(value: Value<*>) {
-            lastAutoSaveJob = owner.launch(block = updaterBlock)
-        }
-
-        private fun doSave() = storage.store(owner, this)
-    }
-
-}
-
-// internal
-
-internal class MemorySettingStorageImpl : SettingStorage, MemorySettingStorage {
-    private val list = mutableMapOf<Class<out Setting>, Setting>()
-
-    internal class MemorySettingImpl : AbstractSetting() {
-        override fun onValueChanged(value: Value<*>) {
-            // nothing to do
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T {
-        return synchronized(list) {
-            list.getOrPut(settingClass) {
-                settingClass.kotlin.run {
-                    objectInstance ?: createInstanceOrNull() ?: kotlin.run {
-                        if (settingClass != Setting::class.java) {
-                            throw IllegalArgumentException(
-                                "Cannot create Setting instance. Make sure settingClass is Setting::class.java or a Kotlin's object, " +
-                                        "or has a constructor which either has no parameters or all parameters of which are optional"
-                            )
-                        }
-                        MemorySettingImpl()
-                    }
-                }
-            }
-        } as T
-    }
-
-    override fun store(holder: SettingHolder, setting: Setting) {
-        synchronized(list) {
-            list[setting::class.java] = setting
-        }
+        return AutoSaveSetting(this) as T // T is always Setting
     }
 }
-
-public open class MultiFileSettingStorageImpl(
-    public final override val directory: File
-) : SettingStorage, MultiFileSettingStorage {
-    public override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T =
-        with(settingClass.kotlin) {
-            val file = getSettingFile(holder, settingClass::class)
-
-            @Suppress("UNCHECKED_CAST")
-            val instance = objectInstance ?: this.createInstanceOrNull() ?: kotlin.run {
-                if (settingClass != Setting::class.java) {
-                    throw IllegalArgumentException(
-                        "Cannot create Setting instance. Make sure settingClass is Setting::class.java or a Kotlin's object, " +
-                                "or has a constructor which either has no parameters or all parameters of which are optional"
-                    )
-                }
-                if (holder is AutoSaveSettingHolder) {
-                    AutoSaveSetting(holder, this@MultiFileSettingStorageImpl) as T?
-                } else null
-            } ?: throw IllegalArgumentException(
-                "Cannot create Setting instance. Make sure 'holder' is a AutoSaveSettingHolder, " +
-                        "or 'setting' is an object or has a constructor which either has no parameters or all parameters of which are optional"
-            )
-            if (file.exists() && file.isFile && file.canRead()) {
-                Yaml.default.parse(instance.updaterSerializer, file.readText())
-            }
-            instance
-        }
-
-    protected open fun getSettingFile(holder: SettingHolder, clazz: KClass<*>): File = with(clazz) {
-        val name = findASerialName()
-
-        val dir = File(directory, holder.name)
-        if (dir.isFile) {
-            error("Target directory ${dir.path} for holder $holder is occupied by a file therefore setting $qualifiedNameOrTip can't be saved.")
-        }
-
-        val file = File(directory, name)
-        if (file.isDirectory) {
-            error("Target file $file is occupied by a directory therefore setting $qualifiedNameOrTip can't be saved.")
-        }
-        return file
-    }
-
-    @ConsoleExperimentalAPI
-    public override fun store(holder: SettingHolder, setting: Setting): Unit = with(setting::class) {
-        val file = getSettingFile(holder, this)
-
-        if (file.exists() && file.isFile && file.canRead()) {
-            file.writeText(Yaml.default.stringify(setting.updaterSerializer, Unit))
-        }
-    }
-}
-
-internal fun <T : Any> KClass<T>.createInstanceOrNull(): T? {
-    val noArgsConstructor = constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }
-        ?: return null
-
-    return noArgsConstructor.callBy(emptyMap())
-}
-
-internal fun KClass<*>.findASerialName(): String =
-    findAnnotation<SerialName>()?.value
-        ?: qualifiedName
-        ?: throw IllegalArgumentException("Cannot find a serial name for $this")

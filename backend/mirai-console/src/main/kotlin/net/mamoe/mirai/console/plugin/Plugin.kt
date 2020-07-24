@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
@@ -29,6 +31,23 @@ public interface Plugin {
     public val loader: PluginLoader<*, *>
 }
 
+/**
+ * 禁用这个插件
+ *
+ * @see PluginLoader.disable
+ */
+public fun Plugin.disable(): Unit = safeLoader.disable(this)
+
+/**
+ * 启用这个插件
+ *
+ * @see PluginLoader.enable
+ */
+public fun Plugin.enable(): Unit = safeLoader.enable(this)
+
+/**
+ * 经过泛型类型转换的 [PluginLoader]
+ */
 @get:JvmSynthetic
 @Suppress("UNCHECKED_CAST")
 public inline val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>

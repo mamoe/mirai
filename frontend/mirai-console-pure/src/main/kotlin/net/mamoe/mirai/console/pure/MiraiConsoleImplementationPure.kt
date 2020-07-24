@@ -18,16 +18,16 @@
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
     "EXPOSED_SUPER_CLASS"
 )
-@file:OptIn(ConsoleInternalAPI::class)
+@file:OptIn(ConsoleInternalAPI::class, ConsoleFrontEndImplementation::class)
 
 package net.mamoe.mirai.console.pure
 
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import net.mamoe.mirai.console.IMiraiConsole
+import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsoleFrontEnd
-import net.mamoe.mirai.console.MiraiConsoleInitializer
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
@@ -44,7 +44,8 @@ import java.io.File
  * @see MiraiConsoleFrontEndPure 前端实现
  * @see MiraiConsolePureLoader CLI 入口点
  */
-class MiraiConsolePure @JvmOverloads constructor(
+class MiraiConsoleImplementationPure
+@JvmOverloads constructor(
     override val rootDir: File = File("."),
     override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JarPluginLoader }),
     override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure,
@@ -52,21 +53,9 @@ class MiraiConsolePure @JvmOverloads constructor(
     override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
     override val settingStorageForJarPluginLoader: SettingStorage = MultiFileSettingStorage(rootDir),
     override val settingStorageForBuiltIns: SettingStorage = MultiFileSettingStorage(rootDir)
-) : IMiraiConsole, CoroutineScope by CoroutineScope(SupervisorJob()) {
+) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(SupervisorJob()) {
     init {
         rootDir.mkdir()
         require(rootDir.isDirectory) { "rootDir ${rootDir.absolutePath} is not a directory" }
-    }
-
-    @JvmField
-    internal var started: Boolean = false
-
-    companion object {
-        @JvmStatic
-        fun MiraiConsolePure.start() = synchronized(this) {
-            check(!started) { "mirai-console is already started and can't be restarted." }
-            MiraiConsoleInitializer.init(this)
-            started = true
-        }
     }
 }

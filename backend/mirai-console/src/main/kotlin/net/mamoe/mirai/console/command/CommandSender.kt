@@ -13,7 +13,7 @@ package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsoleInternal
+import net.mamoe.mirai.console.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.utils.JavaFriendlyAPI
 import net.mamoe.mirai.contact.*
@@ -68,7 +68,7 @@ public abstract class ConsoleCommandSender internal constructor() : CommandSende
     public final override val bot: Nothing? get() = null
 
     public companion object {
-        internal val instance get() = MiraiConsoleInternal.consoleCommandSender
+        internal val instance get() = MiraiConsoleImplementationBridge.consoleCommandSender
     }
 }
 

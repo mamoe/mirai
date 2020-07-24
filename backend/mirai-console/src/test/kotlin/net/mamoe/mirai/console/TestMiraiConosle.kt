@@ -14,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
@@ -34,7 +35,7 @@ import kotlin.test.assertNotNull
 
 @OptIn(ConsoleInternalAPI::class)
 fun initTestEnvironment() {
-    MiraiConsoleInitializer.init(object : IMiraiConsole {
+    object : MiraiConsoleImplementation {
         override val rootDir: File = createTempDir()
         override val frontEnd: MiraiConsoleFrontEnd = object : MiraiConsoleFrontEnd {
             override val name: String get() = "Test"
@@ -52,7 +53,7 @@ fun initTestEnvironment() {
         override val settingStorageForJarPluginLoader: SettingStorage get() = MemorySettingStorage()
         override val settingStorageForBuiltIns: SettingStorage get() = MemorySettingStorage()
         override val coroutineContext: CoroutineContext = SupervisorJob()
-    })
+    }.start()
 }
 
 internal object Testing {

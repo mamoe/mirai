@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+@file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "unused")
 @file:OptIn(ConsoleInternalAPI::class)
 
 package net.mamoe.mirai.console
@@ -77,31 +77,21 @@ public interface MiraiConsole : CoroutineScope {
     @ConsoleExperimentalAPI
     public fun newLogger(identity: String?): MiraiLogger
 
-    public companion object INSTANCE : MiraiConsole by MiraiConsoleInternal
-}
-
-public class IllegalMiraiConsoleImplementationError(
-    override val message: String?
-) : Error()
-
-/**
- * 获取 [MiraiConsole] 的 [Job]
- */
-public val MiraiConsole.job: Job
-    get() = this.coroutineContext[Job] ?: error("Internal error: Job not found in MiraiConsole.coroutineContext")
-
-//// internal
-
-
-internal object MiraiConsoleInitializer {
-    internal lateinit var instance: IMiraiConsole
-
-    /** 由前端调用 */
-    internal fun init(instance: IMiraiConsole) {
-        this.instance = instance
-        MiraiConsoleInternal.doStart()
+    public companion object INSTANCE : MiraiConsole by MiraiConsoleImplementationBridge {
+        /**
+         * 获取 [MiraiConsole] 的 [Job]
+         */ // MiraiConsole.INSTANCE.getJob()
+        public val job: Job
+            get() = MiraiConsole.coroutineContext[Job]
+                ?: error("Internal error: Job not found in MiraiConsole.coroutineContext")
     }
 }
+
+public class IllegalMiraiConsoleImplementationError @JvmOverloads constructor(
+    public override val message: String? = null,
+    public override val cause: Throwable? = null
+) : Error()
+
 
 internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mirai-console:fillBuildConstants)
     @JvmStatic
@@ -110,12 +100,13 @@ internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mira
 }
 
 /**
- * mirai 控制台实例.
+ * [MiraiConsole] 公开 API 与前端实现的连接桥.
  */
-internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConsole {
+internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleImplementation,
+    MiraiConsole {
     override val pluginCenter: PluginCenter get() = CuiPluginCenter
 
-    private val instance: IMiraiConsole get() = MiraiConsoleInitializer.instance
+    private val instance: MiraiConsoleImplementation get() = MiraiConsoleImplementation.instance
     override val buildDate: Date get() = MiraiConsoleBuildConstants.buildDate
     override val version: String get() = MiraiConsoleBuildConstants.version
     override val rootDir: File get() = instance.rootDir
@@ -147,7 +138,7 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
         if (coroutineContext[Job] == null) {
             throw IllegalMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
         }
-        job.invokeOnCompletion {
+        MiraiConsole.job.invokeOnCompletion {
             Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
         }
 
@@ -163,35 +154,6 @@ internal object MiraiConsoleInternal : CoroutineScope, IMiraiConsole, MiraiConso
         ConsoleBuiltInSettingStorage // init
         // Only for initialize
     }
-}
-
-
-// 前端使用
-internal interface IMiraiConsole : CoroutineScope {
-    /**
-     * Console 运行路径
-     */
-    val rootDir: File
-
-    /**
-     * Console 前端接口
-     */
-    val frontEnd: MiraiConsoleFrontEnd
-
-    /**
-     * 与前端交互所使用的 Logger
-     */
-    val mainLogger: MiraiLogger
-
-    /**
-     * 内建加载器列表, 一般需要包含 [JarPluginLoader]
-     */
-    val builtInPluginLoaders: List<PluginLoader<*, *>>
-
-    val consoleCommandSender: ConsoleCommandSender
-
-    val settingStorageForJarPluginLoader: SettingStorage
-    val settingStorageForBuiltIns: SettingStorage
 }
 
 /**

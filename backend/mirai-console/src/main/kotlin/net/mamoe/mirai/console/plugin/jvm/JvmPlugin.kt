@@ -41,13 +41,15 @@ public interface JvmPlugin : Plugin, CoroutineScope,
     public val description: JvmPluginDescription
 
     /** 所属插件加载器实例 */
-    public override val loader: JarPluginLoader get() = JarPluginLoader
+    @JvmDefault
+    public override val loader: JarPluginLoader
+        get() = JarPluginLoader
 
     /**
      * 获取一个 [Setting] 实例
      */
-    public fun <T : Setting> getSetting(clazz: Class<T>): T
-
+    @JvmDefault
+    public fun <T : Setting> loadSetting(clazz: Class<T>): T = loader.settingStorage.load(this, clazz)
 
     // TODO: 2020/7/11 document onLoad, onEnable, onDisable
     @JvmDefault
@@ -64,7 +66,7 @@ public interface JvmPlugin : Plugin, CoroutineScope,
 }
 
 @JvmSynthetic
-public inline fun <T : Setting> JvmPlugin.getSetting(clazz: KClass<T>): T = this.getSetting(clazz.java)
+public inline fun <T : Setting> JvmPlugin.loadSetting(clazz: KClass<T>): T = this.loadSetting(clazz.java)
 
 @JvmSynthetic
-public inline fun <reified T : Setting> JvmPlugin.getSetting(): T = this.getSetting(T::class)
+public inline fun <reified T : Setting> JvmPlugin.loadSetting(): T = this.loadSetting(T::class)
