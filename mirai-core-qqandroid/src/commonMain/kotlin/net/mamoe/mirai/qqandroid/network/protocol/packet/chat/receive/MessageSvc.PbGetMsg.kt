@@ -37,7 +37,6 @@ import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.SyncCookie
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
@@ -45,7 +44,6 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toInt
@@ -59,15 +57,21 @@ import net.mamoe.mirai.utils.warning
  * 获取好友消息和消息记录
  */
 internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Response>("MessageSvc.PbGetMsg") {
+    private var firstSyncPackets = 0  // 启动时候仅将所有好友信息设为已读的包
     @Suppress("SpellCheckingInspection")
     operator fun invoke(
         client: QQAndroidClient,
         syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
-        msgTime: Long //PbPushMsg.msg.msgHead.msgTime
+        msgTime: Long, //PbPushMsg.msg.msgHead.msgTime
+        syncCookie: ByteArray?,
+        firstSync: Boolean = false
     ): OutgoingPacket = buildOutgoingUniPacket(
         client
     ) {
         //println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
+        if (firstSync) {
+            firstSyncPackets++
+        }
         writeProtoBuf(
             MsgSvc.PbGetMsgReq.serializer(),
             MsgSvc.PbGetMsgReq(
@@ -80,8 +84,8 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                 whisperSessionId = 0,
                 syncFlag = syncFlag,
                 //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
-                syncCookie = client.c2cMessageSync.syncCookie
-                    ?: SyncCookie(time = msgTime).toByteArray(SyncCookie.serializer())//.also { client.c2cMessageSync.syncCookie = it },
+                syncCookie = syncCookie ?: client.c2cMessageSync.syncCookie
+                ?: byteArrayOf()//.also { client.c2cMessageSync.syncCookie = it },
                 // syncFlag = client.c2cMessageSync.syncFlag,
                 //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
                 //pubaccountCookie = client.c2cMessageSync.pubAccountCookie
@@ -89,7 +93,10 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         )
     }
 
-    open class GetMsgSuccess(delegate: List<Packet>) : Response(MsgSvc.SyncFlag.STOP, delegate), Event,
+    open class GetMsgSuccess(delegate: List<Packet>, syncCookie: ByteArray?) : Response(
+        MsgSvc.SyncFlag.STOP, delegate,
+        syncCookie
+    ), Event,
         Packet.NoLog {
         override fun toString(): String = "MessageSvcPbGetMsg.GetMsgSuccess(messages=<Iterable>))"
     }
@@ -97,7 +104,11 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
     /**
      * 不要直接 expect 这个 class. 它可能还没同步完成
      */
-    open class Response(internal val syncFlagFromServer: MsgSvc.SyncFlag, delegate: List<Packet>) :
+    open class Response(
+        internal val syncFlagFromServer: MsgSvc.SyncFlag,
+        delegate: List<Packet>,
+        val syncCookie: ByteArray?
+    ) :
         AbstractEvent(),
         MultiPacket<Packet>,
         Iterable<Packet> by (delegate) {
@@ -106,7 +117,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             "MessageSvcPbGetMsg.Response(syncFlagFromServer=$syncFlagFromServer, messages=<Iterable>))"
     }
 
-    object EmptyResponse : GetMsgSuccess(emptyList())
+    object EmptyResponse : GetMsgSuccess(emptyList(), null)
 
     private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
         return object : MemberInfo {
@@ -268,7 +279,9 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     */
 
                     166 -> {
-
+                        if (firstSyncPackets != 0) {
+                            return@mapNotNull null
+                        }
                         if (msg.msgHead.fromUin == bot.id) {
                             loop@ while (true) {
                                 val instance = bot.client.getFriendSeq()
@@ -361,27 +374,41 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     }
                 }
             }
-
         val list: List<Packet> = messages.toList()
         if (resp.syncFlag == MsgSvc.SyncFlag.STOP) {
-            return GetMsgSuccess(list)
+            return GetMsgSuccess(list, resp.syncCookie)
         }
-        return Response(resp.syncFlag, list)
+        return Response(resp.syncFlag, list, resp.syncCookie)
     }
 
     override suspend fun QQAndroidBot.handle(packet: Response) {
         when (packet.syncFlagFromServer) {
-            MsgSvc.SyncFlag.STOP -> return
+            MsgSvc.SyncFlag.STOP -> {
+                if (firstSyncPackets != 0) {
+                    firstSyncPackets--
+                }
+            }
+
             MsgSvc.SyncFlag.START -> {
                 network.run {
-                    MessageSvcPbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds).sendAndExpect<Packet>()
+                    MessageSvcPbGetMsg(
+                        client,
+                        MsgSvc.SyncFlag.CONTINUE,
+                        currentTimeSeconds,
+                        packet.syncCookie
+                    ).sendAndExpect<Packet>()
                 }
                 return
             }
 
             MsgSvc.SyncFlag.CONTINUE -> {
                 network.run {
-                    MessageSvcPbGetMsg(client, MsgSvc.SyncFlag.CONTINUE, currentTimeSeconds).sendAndExpect<Packet>()
+                    MessageSvcPbGetMsg(
+                        client,
+                        MsgSvc.SyncFlag.CONTINUE,
+                        currentTimeSeconds,
+                        packet.syncCookie
+                    ).sendAndExpect<Packet>()
                 }
                 return
             }
