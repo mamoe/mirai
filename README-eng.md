@@ -83,7 +83,7 @@ implementation("net.mamoe:mirai-core-android:VERSION")
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-qqandroid</artifactId>
-        <version>0.23.0</version> <!-- 替换版本为最新版本 -->
+        <version>0.23.0</version> <!-- Replace to the newest -->
     </dependency>
 </dependencies>
 ```
