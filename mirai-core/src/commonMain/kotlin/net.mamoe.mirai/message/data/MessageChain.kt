@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("unused", "NOTHING_TO_INLINE", "WRONG_MODIFIER_CONTAINING_DECLARATION", "INAPPLICABLE_JVM_NAME")
+@file:Suppress("unused", "NOTHING_TO_INLINE", "INAPPLICABLE_JVM_NAME")
 
 package net.mamoe.mirai.message.data
 

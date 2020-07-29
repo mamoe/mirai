@@ -13,7 +13,6 @@
 @file:Suppress(
     "EXPERIMENTAL_API_USAGE",
     "unused",
-    "WRONG_MODIFIER_CONTAINING_DECLARATION",
     "DEPRECATION",
     "UnusedImport",
     "EXPOSED_SUPER_CLASS",
