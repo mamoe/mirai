@@ -51,8 +51,18 @@ public actual open class BotConfiguration : BotConfigurationBase() { // open for
      * @see deviceInfo
      */
     @ConfigurationDsl
-    public   actual fun randomDeviceInfo() {
+    public actual fun randomDeviceInfo() {
         deviceInfo = null
+    }
+
+    /**
+     * 使用特定由 [DeviceInfoData] 序列化产生的 JSON 的设备信息
+     */
+    @SinceMirai("1.2.0")
+    public actual fun loadDeviceInfoJson(json: String) {
+        deviceInfo = { context ->
+            this.json.parse(DeviceInfoData.serializer(), json).also { it.context = context }
+        }
     }
 
     /**
@@ -63,7 +73,7 @@ public actual open class BotConfiguration : BotConfigurationBase() { // open for
     @JvmOverloads
     @ConfigurationDsl
     @SinceMirai("1.1.0")
-    public  fun redirectNetworkLogToDirectory(
+    public fun redirectNetworkLogToDirectory(
         dir: File = File("logs"),
         retain: Long = 1.weeksToMillis,
         identity: (bot: Bot) -> String = { "Net ${it.id}" }

@@ -53,6 +53,12 @@ public expect open class BotConfiguration() : BotConfigurationBase {
     public fun randomDeviceInfo()
 
     /**
+     * 使用特定由 [DeviceInfoData] 序列化产生的 JSON 的设备信息
+     */
+    @SinceMirai("1.2.0")
+    public fun loadDeviceInfoJson(json: String)
+
+    /**
      * 协议类型, 服务器仅允许使用不同协议同时登录.
      */
     public enum class MiraiProtocol {
