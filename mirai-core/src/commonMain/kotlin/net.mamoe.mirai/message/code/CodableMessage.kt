@@ -10,7 +10,6 @@
 package net.mamoe.mirai.message.code
 
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 
 /**
@@ -31,7 +30,6 @@ import net.mamoe.mirai.utils.SinceMirai
  * @see FlashImage
  * @see PokeMessage
  */
-@MiraiExperimentalAPI
 @SinceMirai("1.1.0")
 public interface CodableMessage : Message {
     /**
@@ -39,6 +37,5 @@ public interface CodableMessage : Message {
      *
      * @suppress 警告: 此 API 可能在任何时刻被改变
      */
-    @MiraiExperimentalAPI
     public fun toMiraiCode(): String = this.toString()
 }
