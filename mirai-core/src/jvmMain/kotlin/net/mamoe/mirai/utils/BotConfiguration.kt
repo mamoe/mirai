@@ -57,6 +57,8 @@ public actual open class BotConfiguration : BotConfigurationBase() { // open for
 
     /**
      * 使用特定由 [DeviceInfoData] 序列化产生的 JSON 的设备信息
+     *
+     * @see deviceInfo
      */
     @SinceMirai("1.2.0")
     public actual fun loadDeviceInfoJson(json: String) {
