@@ -36,7 +36,7 @@ kotlin {
     jvm("jvm") {
     }
 
-    sourceSets {
+    sourceSets.apply {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
@@ -47,6 +47,10 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
             languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+
+            languageSettings.languageVersion = "1.3"
+            languageSettings.apiVersion = "1.3"
+
             languageSettings.progressiveMode = true
 
             dependencies {
@@ -83,8 +87,8 @@ kotlin {
 
             val androidTest by getting {
                 dependencies {
-                    implementation(kotlin("test", Versions.Kotlin.stdlib))
-                    implementation(kotlin("test-junit", Versions.Kotlin.stdlib))
+                    implementation(kotlin("test", Versions.Kotlin.compiler))
+                    implementation(kotlin("test-junit", Versions.Kotlin.compiler))
                     implementation(kotlin("test-annotations-common"))
                     implementation(kotlin("test-common"))
                 }
@@ -105,8 +109,8 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 dependsOn(commonTest)
-                implementation(kotlin("test", Versions.Kotlin.stdlib))
-                implementation(kotlin("test-junit", Versions.Kotlin.stdlib))
+                implementation(kotlin("test", Versions.Kotlin.compiler))
+                implementation(kotlin("test-junit", Versions.Kotlin.compiler))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
 
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE

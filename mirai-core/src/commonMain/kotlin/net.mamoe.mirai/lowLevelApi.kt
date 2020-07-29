@@ -13,10 +13,6 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.WeakRef
 
@@ -30,7 +26,7 @@ import net.mamoe.mirai.utils.WeakRef
 @RequiresOptIn
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
-annotation class LowLevelAPI
+public annotation class LowLevelAPI
 
 /**
  * [Bot] 相关协议层低级 API.
@@ -42,7 +38,7 @@ annotation class LowLevelAPI
 @MiraiExperimentalAPI
 @Suppress("FunctionName", "unused")
 @LowLevelAPI
-interface LowLevelBotAPIAccessor {
+public interface LowLevelBotAPIAccessor {
     /**
      * 构造一个 [Friend] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
      *
@@ -50,20 +46,20 @@ interface LowLevelBotAPIAccessor {
      * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
      */
     @LowLevelAPI
-    fun _lowLevelNewFriend(friendInfo: FriendInfo): Friend
+    public fun _lowLevelNewFriend(friendInfo: FriendInfo): Friend
 
     /**
      * 向服务器查询群列表. 返回值高 32 bits 为 uin, 低 32 bits 为 groupCode
      */
     @LowLevelAPI
-    suspend fun _lowLevelQueryGroupList(): Sequence<Long>
+    public suspend fun _lowLevelQueryGroupList(): Sequence<Long>
 
     /**
      * 向服务器查询群资料. 获得的仅为当前时刻的资料.
      * 请优先使用 [Bot.getGroup] 然后查看群资料.
      */
     @LowLevelAPI
-    suspend fun _lowLevelQueryGroupInfo(groupCode: Long): GroupInfo
+    public suspend fun _lowLevelQueryGroupInfo(groupCode: Long): GroupInfo
 
     /**
      * 向服务器查询群成员列表.
@@ -74,7 +70,11 @@ interface LowLevelBotAPIAccessor {
      * @see Group.calculateGroupUinByGroupCode 使用 groupCode 计算 groupUin
      */
     @LowLevelAPI
-    suspend fun _lowLevelQueryGroupMemberList(groupUin: Long, groupCode: Long, ownerId: Long): Sequence<MemberInfo>
+    public suspend fun _lowLevelQueryGroupMemberList(
+        groupUin: Long,
+        groupCode: Long,
+        ownerId: Long
+    ): Sequence<MemberInfo>
 
     /**
      * 获取群公告列表
@@ -82,7 +82,7 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int = 1, amount: Int = 10): GroupAnnouncementList
+    public suspend fun _lowLevelGetAnnouncements(groupId: Long, page: Int = 1, amount: Int = 10): GroupAnnouncementList
 
     /**
      * 发送群公告
@@ -91,7 +91,7 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String
+    public suspend fun _lowLevelSendAnnouncement(groupId: Long, announcement: GroupAnnouncement): String
 
 
     /**
@@ -100,7 +100,7 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String)
+    public suspend fun _lowLevelDeleteAnnouncement(groupId: Long, fid: String)
 
     /**
      * 获取一条群公告
@@ -108,7 +108,7 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement
+    public suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement
 
 
     /**
@@ -118,7 +118,7 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int = -1): GroupActiveData
+    public suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int = -1): GroupActiveData
 
 
     /**
@@ -126,7 +126,7 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSolveNewFriendRequestEvent(
+    public suspend fun _lowLevelSolveNewFriendRequestEvent(
         eventId: Long,
         fromId: Long,
         fromNick: String,
@@ -139,7 +139,7 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSolveBotInvitedJoinGroupRequestEvent(
+    public suspend fun _lowLevelSolveBotInvitedJoinGroupRequestEvent(
         eventId: Long,
         invitorId: Long,
         groupId: Long,
@@ -151,7 +151,7 @@ interface LowLevelBotAPIAccessor {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelSolveMemberJoinRequestEvent(
+    public suspend fun _lowLevelSolveMemberJoinRequestEvent(
         eventId: Long,
         fromId: Long,
         fromNick: String,
@@ -163,10 +163,8 @@ interface LowLevelBotAPIAccessor {
 
     /**
      * 查询语音的下载连接
-     *
-     * */
-
+     */
     @LowLevelAPI
     @MiraiExperimentalAPI
-    suspend fun _lowLevelQueryGroupVoiceDownloadUrl(md5: ByteArray, groupId: Long, dstUin: Long): String
+    public suspend fun _lowLevelQueryGroupVoiceDownloadUrl(md5: ByteArray, groupId: Long, dstUin: Long): String
 }

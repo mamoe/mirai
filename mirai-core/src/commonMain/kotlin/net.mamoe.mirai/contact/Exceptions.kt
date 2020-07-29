@@ -20,16 +20,16 @@ import kotlin.time.seconds
  *
  * @see Contact.sendMessage
  */
-class MessageTooLargeException(
-    val target: Contact,
+public class MessageTooLargeException(
+    public val target: Contact,
     /**
      * 原发送消息
      */
-    val originalMessage: Message,
+    public val originalMessage: Message,
     /**
      * 经过事件拦截处理后的消息
      */
-    val messageAfterEvent: Message,
+    public val messageAfterEvent: Message,
     exceptionMessage: String
 ) : RuntimeException(exceptionMessage)
 
@@ -38,8 +38,8 @@ class MessageTooLargeException(
  *
  * @see Group.sendMessage
  */
-class BotIsBeingMutedException(
-    val target: Group
+public class BotIsBeingMutedException(
+    public val target: Group
 ) : RuntimeException("bot is being muted, remaining ${target.botMuteRemaining.seconds.asHumanReadable} seconds")
 
-inline val BotIsBeingMutedException.botMuteRemaining: Int get() = target.botMuteRemaining
+public inline val BotIsBeingMutedException.botMuteRemaining: Int get() = target.botMuteRemaining

@@ -19,9 +19,9 @@ import net.mamoe.mirai.Bot
  * @see Contact
  * @see Bot
  */
-interface ContactOrBot : CoroutineScope {
+public interface ContactOrBot : CoroutineScope {
     /**
      * QQ 号或群号.
      */
-    val id: Long
+    public val id: Long
 }

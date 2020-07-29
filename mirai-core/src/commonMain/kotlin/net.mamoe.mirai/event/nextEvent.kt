@@ -31,7 +31,7 @@ import kotlin.reflect.KClass
  * @throws TimeoutCancellationException 在超时后抛出.
  */
 @JvmSynthetic
-suspend inline fun <reified E : Event> nextEvent(
+public suspend inline fun <reified E : Event> nextEvent(
     timeoutMillis: Long = -1,
     priority: Listener.EventPriority = EventPriority.MONITOR
 ): E {
@@ -53,7 +53,7 @@ suspend inline fun <reified E : Event> nextEvent(
  * @return 事件实例, 在超时后返回 `null`
  */
 @JvmSynthetic
-suspend inline fun <reified E : Event> nextEventOrNull(
+public suspend inline fun <reified E : Event> nextEventOrNull(
     timeoutMillis: Long,
     priority: Listener.EventPriority = EventPriority.MONITOR
 ): E? {
@@ -77,7 +77,7 @@ suspend inline fun <reified E : Event> nextEventOrNull(
     level = DeprecationLevel.HIDDEN
 )
 @JvmSynthetic
-suspend inline fun <reified E : BotEvent> Bot.nextEvent(
+public suspend inline fun <reified E : BotEvent> Bot.nextEvent(
     timeoutMillis: Long = -1,
     priority: Listener.EventPriority = EventPriority.MONITOR
 ): E {

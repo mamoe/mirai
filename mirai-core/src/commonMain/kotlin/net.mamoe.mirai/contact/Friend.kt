@@ -34,22 +34,22 @@ import kotlin.jvm.JvmSynthetic
  * @see FriendMessageEvent
  */
 @Suppress("DEPRECATION_ERROR")
-abstract class Friend : User(), CoroutineScope {
+public abstract class Friend : User(), CoroutineScope {
 
     /**
      * QQ 号码
      */
-    abstract override val id: Long
+    public abstract override val id: Long
 
     /**
      * 昵称
      */
-    abstract override val nick: String
+    public abstract override val nick: String
 
     /**
      * 头像下载链接
      */
-    override val avatarUrl: String
+    public override val avatarUrl: String
         get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
 
     /**

@@ -6,16 +6,16 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
  * 需要通过上传到服务器的消息，如语音、文件
  */
 @MiraiExperimentalAPI
-abstract class PttMessage : MessageContent {
+public abstract class PttMessage : MessageContent {
 
-    companion object Key : Message.Key<PttMessage> {
-        override val typeName: String
+    public companion object Key : Message.Key<PttMessage> {
+        public override val typeName: String
             get() = "PttMessage"
     }
 
-    abstract val fileName: String
-    abstract val md5: ByteArray
-    abstract val fileSize: Long
+    public abstract val fileName: String
+    public abstract val md5: ByteArray
+    public abstract val fileSize: Long
 }
 
 
@@ -23,21 +23,22 @@ abstract class PttMessage : MessageContent {
  * 语音消息, 目前只支持接收和转发
  */
 @MiraiExperimentalAPI
-class Voice(
-    override val fileName: String,
-    override val md5: ByteArray,
-    override val fileSize: Long,
+public class Voice(
+    public override val fileName: String,
+    public override val md5: ByteArray,
+    public override val fileSize: Long,
     private val _url: String
 ) : PttMessage() {
 
-    companion object Key : Message.Key<Voice> {
+    public companion object Key : Message.Key<Voice> {
         override val typeName: String
             get() = "Voice"
     }
 
-    val url: String?
-        get() = if (_url.startsWith("http")) _url
-        else null
+    public val url: String?
+        get() =
+            if (_url.startsWith("http")) _url
+            else null
 
     private var _stringValue: String? = null
         get() = field ?: kotlin.run {
@@ -45,7 +46,7 @@ class Voice(
             field
         }
 
-    override fun toString(): String = _stringValue!!
+    public override fun toString(): String = _stringValue!!
 
-    override fun contentToString(): String = "[语音]"
+    public override fun contentToString(): String = "[语音]"
 }

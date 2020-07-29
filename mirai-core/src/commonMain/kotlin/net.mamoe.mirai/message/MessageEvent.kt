@@ -46,13 +46,13 @@ import kotlin.jvm.JvmSynthetic
  * @see isContextIdenticalWith 判断语境是否相同
  */
 @Suppress("DEPRECATION_ERROR")
-abstract class MessageEvent : @PlannedRemoval("1.2.0") ContactMessage(),
+public abstract class MessageEvent : @PlannedRemoval("1.2.0") ContactMessage(),
     BotEvent, MessageEventExtensions<User, Contact> {
 
     /**
      * 与这个消息事件相关的 [Bot]
      */
-    abstract override val bot: Bot
+    public abstract override val bot: Bot
 
     /**
      * 消息事件主体.
@@ -63,19 +63,19 @@ abstract class MessageEvent : @PlannedRemoval("1.2.0") ContactMessage(),
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */
-    abstract override val subject: Contact
+    public abstract override val subject: Contact
 
     /**
      * 发送人.
      *
      * 在好友消息时为 [Friend] 的实例, 在群消息时为 [Member] 的实例
      */
-    abstract override val sender: User
+    public abstract override val sender: User
 
     /**
      * 发送人名称
      */
-    abstract override val senderName: String
+    public abstract override val senderName: String
 
     /**
      * 消息内容.
@@ -83,20 +83,20 @@ abstract class MessageEvent : @PlannedRemoval("1.2.0") ContactMessage(),
      * 第一个元素一定为 [MessageSource], 存储此消息的发送人, 发送时间, 收信人, 消息 id 等数据.
      * 随后的元素为拥有顺序的真实消息内容.
      */
-    abstract override val message: MessageChain
+    public abstract override val message: MessageChain
 
     /** 消息发送时间 (由服务器提供, 可能与本地有时差) */
-    abstract override val time: Int
+    public abstract override val time: Int
 
     /**
      * 消息源. 来自 [message] 的第一个元素,
      */
-    override val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
+    public override val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 }
 
 /** 消息事件的扩展函数 */
 @Suppress("EXPOSED_SUPER_INTERFACE") // Functions are visible
-interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
+public interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
     MessageEventPlatformExtensions<TSender, TSubject> {
 
     // region 发送 Message
@@ -107,29 +107,29 @@ interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
     @JvmSynthetic
-    suspend inline fun reply(message: Message): MessageReceipt<TSubject> =
+    public suspend inline fun reply(message: Message): MessageReceipt<TSubject> =
         subject.sendMessage(message.asMessageChain()) as MessageReceipt<TSubject>
 
     @JvmSynthetic
-    suspend inline fun reply(plain: String): MessageReceipt<TSubject> =
+    public suspend inline fun reply(plain: String): MessageReceipt<TSubject> =
         subject.sendMessage(plain.toMessage().asMessageChain()) as MessageReceipt<TSubject>
 
     // endregion
 
     @JvmSynthetic
-    suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
+    public suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
 
     @JvmSynthetic
-    suspend inline fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend inline fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
     @JvmSynthetic
-    suspend inline fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend inline fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
     @JvmSynthetic
-    suspend inline fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend inline fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
     @JvmSynthetic
-    suspend inline fun String.send(): MessageReceipt<TSubject> = this.toMessage().sendTo(subject)
+    public suspend inline fun String.send(): MessageReceipt<TSubject> = this.toMessage().sendTo(subject)
 
     // region 引用回复
     /**
@@ -138,17 +138,18 @@ interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
     @JvmSynthetic
-    suspend inline fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
+    public suspend inline fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
         reply(this.message.quote() + message)
 
     @JvmSynthetic
-    suspend inline fun quoteReply(message: Message): MessageReceipt<TSubject> = reply(this.message.quote() + message)
+    public suspend inline fun quoteReply(message: Message): MessageReceipt<TSubject> =
+        reply(this.message.quote() + message)
 
     @JvmSynthetic
-    suspend inline fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
+    public suspend inline fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
 
     @JvmSynthetic
-    inline fun At.isBot(): Boolean = target == bot.id
+    public inline fun At.isBot(): Boolean = target == bot.id
 
 
     /**
@@ -156,7 +157,7 @@ interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
      * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
     @JvmSynthetic
-    suspend inline fun Image.url(): String = this@url.queryUrl()
+    public suspend inline fun Image.url(): String = this@url.queryUrl()
 }
 
 /** 一个消息事件在各平台的相关扩展. 请使用 [MessageEventExtensions] */
@@ -177,14 +178,15 @@ internal expect interface MessageEventPlatformExtensions<out TSender : User, out
     replaceWith = ReplaceWith("MessageEvent", "net.mamoe.mirai.message.MessageEvent"),
     level = DeprecationLevel.HIDDEN
 )
-abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : Packet, BotEvent, AbstractEvent() {
+public abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : Packet, BotEvent,
+    AbstractEvent() {
     abstract override val bot: Bot
-    abstract val sender: User
-    abstract val subject: Contact
-    abstract val message: MessageChain
-    abstract val time: Int
-    abstract val source: OnlineMessageSource.Incoming
-    abstract val senderName: String
+    public abstract val sender: User
+    public abstract val subject: Contact
+    public abstract val message: MessageChain
+    public abstract val time: Int
+    public abstract val source: OnlineMessageSource.Incoming
+    public abstract val senderName: String
 }
 
 @PlannedRemoval("1.2.0")
@@ -194,7 +196,7 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
     level = DeprecationLevel.HIDDEN
 )
 @Suppress("DEPRECATION_ERROR")
-abstract class MessagePacket : MessagePacketBase<User, Contact>(),
+public abstract class MessagePacket : MessagePacketBase<User, Contact>(),
     BotEvent, MessageEventExtensions<User, Contact> {
     abstract override val bot: Bot
     abstract override val sender: User
@@ -212,7 +214,7 @@ abstract class MessagePacket : MessagePacketBase<User, Contact>(),
     level = DeprecationLevel.HIDDEN
 )
 @Suppress("DEPRECATION_ERROR")
-abstract class ContactMessage : MessagePacket(),
+public abstract class ContactMessage : MessagePacket(),
     BotEvent, MessageEventExtensions<User, Contact> {
     abstract override val bot: Bot
     abstract override val sender: User
@@ -230,7 +232,7 @@ abstract class ContactMessage : MessagePacket(),
     level = DeprecationLevel.HIDDEN
 )
 @Suppress("DEPRECATION_ERROR")
-abstract class FriendMessage : MessageEvent() {
+public abstract class FriendMessage : MessageEvent() {
     abstract override val bot: Bot
     abstract override val sender: Friend
     abstract override val subject: Friend
@@ -247,8 +249,8 @@ abstract class FriendMessage : MessageEvent() {
     level = DeprecationLevel.HIDDEN
 )
 @Suppress("DEPRECATION_ERROR")
-abstract class GroupMessage : MessageEvent() {
-    abstract val group: Group
+public abstract class GroupMessage : MessageEvent() {
+    public abstract val group: Group
     abstract override val bot: Bot
     abstract override val sender: Member
     abstract override val subject: Group
@@ -264,13 +266,13 @@ abstract class GroupMessage : MessageEvent() {
     replaceWith = ReplaceWith("TempMessageEvent", "net.mamoe.mirai.message.TempMessageEvent"),
     level = DeprecationLevel.HIDDEN
 )
-abstract class TempMessage : MessageEvent() {
+public abstract class TempMessage : MessageEvent() {
     abstract override val bot: Bot
     abstract override val sender: Member
     abstract override val subject: Member
     abstract override val message: MessageChain
     abstract override val time: Int
     abstract override val source: OnlineMessageSource.Incoming.FromTemp
-    abstract val group: Group
+    public abstract val group: Group
     abstract override val senderName: String
 }

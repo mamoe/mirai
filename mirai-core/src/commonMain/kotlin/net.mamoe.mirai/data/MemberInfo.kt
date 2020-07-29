@@ -13,12 +13,12 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.MemberPermission
 
 @LowLevelAPI
-interface MemberInfo : FriendInfo {
-    val nameCard: String
+public interface MemberInfo : FriendInfo {
+    public val nameCard: String
 
-    val permission: MemberPermission
+    public val permission: MemberPermission
 
-    val specialTitle: String
+    public val specialTitle: String
 
-    val muteTimestamp: Int
+    public val muteTimestamp: Int
 }

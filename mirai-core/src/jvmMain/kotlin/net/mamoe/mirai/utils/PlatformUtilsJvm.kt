@@ -30,5 +30,5 @@ import java.util.zip.Inflater
 /**
  * 时间戳
  */
-actual val currentTimeMillis: Long
+public actual val currentTimeMillis: Long
     get() = System.currentTimeMillis()

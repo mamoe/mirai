@@ -11,7 +11,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
  */
 @MiraiExperimentalAPI
 @Serializable
-data class GroupActiveData(
+public data class GroupActiveData(
 
     @SerialName("ec")
     val ec: Int? = null,
@@ -29,7 +29,7 @@ data class GroupActiveData(
     val role: Int? = 0
 ) {
     @Serializable
-    data class GInfo(
+    public data class GInfo(
 
 
         @SerialName("g_act_num")
@@ -39,7 +39,7 @@ data class GroupActiveData(
         val createTime: Int? = 0,
 
         @SerialName("g_exit_num")
-        val exitNum: List<GExitNum?>? =  null,  //退群人数列表
+        val exitNum: List<GExitNum?>? = null,  //退群人数列表
 
         @SerialName("g_join_num")
         val joinNum: List<GJoinNum?>? = null,
@@ -66,7 +66,7 @@ data class GroupActiveData(
         val isEnd: Int? = null
     ) {
         @Serializable
-        data class GActNum(
+        public data class GActNum(
 
             @SerialName("date")
             val date: String? = null,
@@ -76,7 +76,7 @@ data class GroupActiveData(
         )
 
         @Serializable
-        data class GExitNum(
+        public data class GExitNum(
 
             @SerialName("date")
             val date: String? = null,
@@ -86,7 +86,7 @@ data class GroupActiveData(
         )
 
         @Serializable
-        data class GJoinNum(
+        public data class GJoinNum(
 
             @SerialName("date")
             val date: String? = null,
@@ -96,7 +96,7 @@ data class GroupActiveData(
         )
 
         @Serializable
-        data class GMemNum(
+        public data class GMemNum(
 
             @SerialName("date")
             val date: String? = null,
@@ -106,7 +106,7 @@ data class GroupActiveData(
         )
 
         @Serializable
-        data class GMostAct(
+        public data class GMostAct(
 
             @SerialName("name")
             val name: String? = null,  // 名称 不完整
@@ -122,7 +122,7 @@ data class GroupActiveData(
         )
 
         @Serializable
-        data class GSentence(
+        public data class GSentence(
 
             @SerialName("date")
             val date: String? = null,

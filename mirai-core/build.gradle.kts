@@ -14,6 +14,8 @@ description = "Mirai API module"
 val isAndroidSDKAvailable: Boolean by project
 
 kotlin {
+    explicitApi()
+
     if (isAndroidSDKAvailable) {
         apply(from = rootProject.file("gradle/android.gradle"))
         android("android") {
@@ -38,7 +40,7 @@ kotlin {
         // withJava() // https://youtrack.jetbrains.com/issue/KT-39991
     }
 
-    sourceSets {
+    sourceSets.apply {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
@@ -49,12 +51,16 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
             languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+
+            languageSettings.languageVersion = "1.3"
+            languageSettings.apiVersion = "1.3"
+
             languageSettings.progressiveMode = true
         }
 
-        commonMain {
+        val commonMain by getting {
             dependencies {
-                api(kotlin("stdlib"))
+                api(kotlin("stdlib", Versions.Kotlin.stdlib))
                 api(kotlin("serialization"))
                 api(kotlin("reflect"))
 
@@ -66,11 +72,12 @@ kotlin {
 
                 api("org.jetbrains.kotlinx:atomicfu-common:${Versions.Kotlin.atomicFU}")
 
-                api(ktor("client-cio", Versions.Kotlin.ktor))
-                api(ktor("client-core", Versions.Kotlin.ktor))
-                api(ktor("network", Versions.Kotlin.ktor))
+                api(ktor("client-cio"))
+                api(ktor("client-core"))
+                api(ktor("network"))
             }
         }
+
         commonTest {
             dependencies {
                 implementation(kotlin("test-annotations-common"))

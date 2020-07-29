@@ -21,22 +21,22 @@ import javax.swing.JTextField
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
 @MiraiExperimentalAPI
-object SwingSolver : LoginSolver() {
-    override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
+public object SwingSolver : LoginSolver() {
+    public  override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
         return openWindow("Mirai PicCaptcha(${bot.id})") {
             val image = ImageIO.read(data.inputStream())
             JLabel(ImageIcon(image)).append()
         }
     }
 
-    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+    public  override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
         return openWindow("Mirai SliderCaptcha(${bot.id})") {
             JLabel("需要滑动验证码, 完成后请关闭该窗口").append()
             Desktop.getDesktop().browse(URI(url))
         }
     }
 
-    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+    public   override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
         return openWindow("Mirai UnsafeDeviceLoginVerify(${bot.id})") {
             JLabel(
                 """

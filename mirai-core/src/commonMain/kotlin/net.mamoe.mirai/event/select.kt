@@ -58,24 +58,24 @@ import kotlin.jvm.JvmSynthetic
  * @see nextMessage 挂起协程并等待下一条消息
  */
 @Suppress("unused")
-suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
+public suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
-) = whileSelectMessagesImpl(timeoutMillis, filterContext, priority, selectBuilder)
+): Unit = whileSelectMessagesImpl(timeoutMillis, filterContext, priority, selectBuilder)
 
 /**
  * [selectMessages] 的 [Unit] 返回值捷径 (由于 Kotlin 无法推断 [Unit] 类型)
  */
 @MiraiExperimentalAPI
 @JvmName("selectMessages1")
-suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
+public suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, Unit>.() -> Unit
-) = selectMessagesImpl(timeoutMillis, true, filterContext, priority, selectBuilder)
+): Unit = selectMessagesImpl(timeoutMillis, true, filterContext, priority, selectBuilder)
 
 
 /**
@@ -100,17 +100,19 @@ suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
  */
 @Suppress("unused") // false positive
 // @BuilderInference // https://youtrack.jetbrains.com/issue/KT-37716
-suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
+public suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     // @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, R>.() -> Unit
 ): R =
-    selectMessagesImpl(timeoutMillis,
+    selectMessagesImpl(
+        timeoutMillis,
         false,
         filterContext,
-        priority) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
+        priority
+    ) { selectBuilder.invoke(this as MessageSelectBuilder<T, R>) }
 
 /**
  * [selectMessages] 时的 DSL 构建器.
@@ -120,7 +122,7 @@ suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
  * @see MessageSelectBuilderUnit 查看上层 API
  */
 @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal constructor(
+public abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal constructor(
     ownerMessagePacket: M,
     stub: Any?,
     subscriber: (M.(String) -> Boolean, MessageListener<M, Any?>) -> Unit
@@ -132,10 +134,10 @@ abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal 
     override fun <N : Any> mapping(
         mapper: M.(String) -> N?,
         onEvent: @MessageDsl suspend M.(N) -> R
-    ) = error("prohibited")
+    ): Nothing = error("prohibited")
 
     @Deprecated("Use `default` instead", level = DeprecationLevel.HIDDEN)
-    override fun always(onEvent: MessageListener<M, Any?>) = error("prohibited")
+    override fun always(onEvent: MessageListener<M, Any?>): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override infix fun MessageSelectionTimeoutChecker.reply(block: suspend () -> Any?): Nothing = error("prohibited")
@@ -176,55 +178,55 @@ abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal 
     override fun String.containsReply(reply: String): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun String.containsReply(replier: suspend M.(String) -> Any?) = error("prohibited")
+    override fun String.containsReply(replier: suspend M.(String) -> Any?): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun Regex.matchingReply(replier: suspend M.(MatchResult) -> Any?) = error("prohibited")
+    override fun Regex.matchingReply(replier: suspend M.(MatchResult) -> Any?): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun Regex.findingReply(replier: suspend M.(MatchResult) -> Any?) = error("prohibited")
+    override fun Regex.findingReply(replier: suspend M.(MatchResult) -> Any?): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun String.endsWithReply(replier: suspend M.(String) -> Any?) = error("prohibited")
+    override fun String.endsWithReply(replier: suspend M.(String) -> Any?): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun String.reply(reply: String) = error("prohibited")
+    override fun String.reply(reply: String): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun String.reply(reply: Message) = error("prohibited")
+    override fun String.reply(reply: Message): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun String.reply(replier: suspend M.(String) -> Any?) = error("prohibited")
+    override fun String.reply(replier: suspend M.(String) -> Any?): Nothing = error("prohibited")
 
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.reply(toReply: String) = error("prohibited")
+    override fun ListeningFilter.reply(toReply: String): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.reply(message: Message) = error("prohibited")
+    override fun ListeningFilter.reply(message: Message): Nothing = error("prohibited")
 
     @JvmName("reply3")
     @Suppress("INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.`->`(toReply: String) = error("prohibited")
+    override fun ListeningFilter.`->`(toReply: String): Nothing = error("prohibited")
 
     @JvmName("reply3")
     @Suppress("INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.`->`(message: Message) = error("prohibited")
+    override fun ListeningFilter.`->`(message: Message): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.reply(replier: suspend M.(String) -> Any?) =
+    override fun ListeningFilter.reply(replier: suspend M.(String) -> Any?): Nothing =
         error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.quoteReply(toReply: String) = error("prohibited")
+    override fun ListeningFilter.quoteReply(toReply: String): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.quoteReply(toReply: Message) = error("prohibited")
+    override fun ListeningFilter.quoteReply(toReply: Message): Nothing = error("prohibited")
 
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.quoteReply(replier: suspend M.(String) -> Any?) = error("prohibited")
+    override fun ListeningFilter.quoteReply(replier: suspend M.(String) -> Any?): Nothing = error("prohibited")
 }
 
 /**
@@ -234,7 +236,7 @@ abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi internal 
  *
  * @see MessageSubscribersBuilder 查看上层 API
  */
-abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi internal constructor(
+public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi internal constructor(
     private val ownerMessagePacket: M,
     stub: Any?,
     subscriber: (M.(String) -> Boolean, MessageListener<M, Any?>) -> Unit
@@ -243,17 +245,17 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
      * 当其他条件都不满足时的默认处理.
      */
     @MessageDsl
-    abstract fun default(onEvent: MessageListener<M, R>) // 需要后置默认监听器
+    public abstract fun default(onEvent: MessageListener<M, R>) // 需要后置默认监听器
 
     @Deprecated("Use `default` instead", level = DeprecationLevel.HIDDEN)
-    override fun always(onEvent: MessageListener<M, Any?>) = error("prohibited")
+    override fun always(onEvent: MessageListener<M, Any?>): Nothing = error("prohibited")
 
     /**
      * 限制本次 select 的最长等待时间, 当超时后抛出 [TimeoutCancellationException]
      */
     @Suppress("NOTHING_TO_INLINE")
     @MessageDsl
-    fun timeoutException(
+    public fun timeoutException(
         timeoutMillis: Long,
         exception: () -> Throwable = { throw MessageSelectionTimeoutException() }
     ) {
@@ -271,7 +273,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
      * 限制本次 select 的最长等待时间, 当超时后执行 [block] 以完成 select
      */
     @MessageDsl
-    fun timeout(timeoutMillis: Long, block: suspend () -> R) {
+    public fun timeout(timeoutMillis: Long, block: suspend () -> R) {
         require(timeoutMillis > 0) { "timeoutMillis must be positive" }
         obtainCurrentCoroutineScope().launch {
             delay(timeoutMillis)
@@ -290,7 +292,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
      * @see reply
      */
     @MessageDsl
-    fun timeout(timeoutMillis: Long): MessageSelectionTimeoutChecker {
+    public fun timeout(timeoutMillis: Long): MessageSelectionTimeoutChecker {
         require(timeoutMillis > 0) { "timeoutMillis must be positive" }
         return MessageSelectionTimeoutChecker(timeoutMillis)
     }
@@ -301,7 +303,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
      * @see Deferred<Unit>.invoke
      */
     @Suppress("unused")
-    fun MessageSelectionTimeoutChecker.invoke(block: suspend () -> R) {
+    public fun MessageSelectionTimeoutChecker.invoke(block: suspend () -> R) {
         return timeout(this.timeoutMillis, block)
     }
 
@@ -314,7 +316,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
      * @see quoteReply
      */
     @Suppress("unused", "UNCHECKED_CAST")
-    open infix fun MessageSelectionTimeoutChecker.reply(block: suspend () -> Any?) {
+    public open infix fun MessageSelectionTimeoutChecker.reply(block: suspend () -> Any?) {
         return timeout(this.timeoutMillis) {
             executeAndReply(block)
             Unit as R
@@ -322,7 +324,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
     }
 
     @Suppress("unused", "UNCHECKED_CAST")
-    open infix fun MessageSelectionTimeoutChecker.reply(message: Message) {
+    public open infix fun MessageSelectionTimeoutChecker.reply(message: Message) {
         return timeout(this.timeoutMillis) {
             ownerMessagePacket.reply(message)
             Unit as R
@@ -330,7 +332,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
     }
 
     @Suppress("unused", "UNCHECKED_CAST")
-    open infix fun MessageSelectionTimeoutChecker.reply(message: String) {
+    public open infix fun MessageSelectionTimeoutChecker.reply(message: String) {
         return timeout(this.timeoutMillis) {
             ownerMessagePacket.reply(message)
             Unit as R
@@ -342,7 +344,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
         "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
         "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
     )
-    open infix fun MessageSelectionTimeoutChecker.`->`(message: Message) {
+    public open infix fun MessageSelectionTimeoutChecker.`->`(message: Message) {
         return this.reply(message)
     }
 
@@ -351,7 +353,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
         "INAPPLICABLE_JVM_NAME", "unused", "UNCHECKED_CAST",
         "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName"
     )
-    open infix fun MessageSelectionTimeoutChecker.`->`(message: String) {
+    public open infix fun MessageSelectionTimeoutChecker.`->`(message: String) {
         return this.reply(message)
     }
 
@@ -364,7 +366,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
      * @see reply
      */
     @Suppress("unused", "UNCHECKED_CAST")
-    open infix fun MessageSelectionTimeoutChecker.quoteReply(block: suspend () -> Any?) {
+    public open infix fun MessageSelectionTimeoutChecker.quoteReply(block: suspend () -> Any?) {
         return timeout(this.timeoutMillis) {
             executeAndQuoteReply(block)
             Unit as R
@@ -372,7 +374,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
     }
 
     @Suppress("unused", "UNCHECKED_CAST")
-    open infix fun MessageSelectionTimeoutChecker.quoteReply(message: Message) {
+    public open infix fun MessageSelectionTimeoutChecker.quoteReply(message: Message) {
         return timeout(this.timeoutMillis) {
             ownerMessagePacket.quoteReply(message)
             Unit as R
@@ -380,7 +382,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
     }
 
     @Suppress("unused", "UNCHECKED_CAST")
-    open infix fun MessageSelectionTimeoutChecker.quoteReply(message: String) {
+    public open infix fun MessageSelectionTimeoutChecker.quoteReply(message: String) {
         return timeout(this.timeoutMillis) {
             ownerMessagePacket.quoteReply(message)
             Unit as R
@@ -393,7 +395,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
      * 当 [block] 返回值为 [Unit] 时不回复, 为 [Message] 时回复 [Message], 其他将 [toString] 后回复为 [PlainText]
      */
     @MessageDsl
-    fun defaultReply(block: suspend () -> Any?): Unit = subscriber({ true }, {
+    public fun defaultReply(block: suspend () -> Any?): Unit = subscriber({ true }, {
         this@MessageSelectBuilderUnit.executeAndReply(block)
     })
 
@@ -404,7 +406,7 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
      * 当 [block] 返回值为 [Unit] 时不回复, 为 [Message] 时回复 [Message], 其他将 [toString] 后回复为 [PlainText]
      */
     @MessageDsl
-    fun defaultQuoteReply(block: suspend () -> Any?): Unit = subscriber({ true }, {
+    public fun defaultQuoteReply(block: suspend () -> Any?): Unit = subscriber({ true }, {
         this@MessageSelectBuilderUnit.executeAndQuoteReply(block)
     })
 
@@ -433,9 +435,9 @@ abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedApi inter
 }
 
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
-inline class MessageSelectionTimeoutChecker internal constructor(val timeoutMillis: Long)
+public inline class MessageSelectionTimeoutChecker internal constructor(public val timeoutMillis: Long)
 
-class MessageSelectionTimeoutException : RuntimeException()
+public class MessageSelectionTimeoutException : RuntimeException()
 
 
 /////////////////////////

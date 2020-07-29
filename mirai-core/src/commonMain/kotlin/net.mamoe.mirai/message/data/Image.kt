@@ -61,9 +61,9 @@ import kotlin.jvm.JvmSynthetic
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-expect interface Image : Message, MessageContent, CodableMessage {
-    companion object Key : Message.Key<Image> {
-        override val typeName: String
+public expect interface Image : Message, MessageContent, CodableMessage {
+    public companion object Key : Message.Key<Image> {
+        public override val typeName: String
     }
 
     /**
@@ -82,7 +82,7 @@ expect interface Image : Message, MessageContent, CodableMessage {
      * @see Image 使用 id 构造图片
      * @see md5 得到图片文件 MD5
      */
-    val imageId: String
+    public val imageId: String
 
     /* 实现:
     final override fun toString(): String = _stringValue!!
@@ -106,7 +106,7 @@ expect interface Image : Message, MessageContent, CodableMessage {
  * 在 Java 使用: `MessageUtils.calculateImageMd5(image)`
  */
 @get:JvmName("calculateImageMd5")
-val Image.md5: ByteArray
+public val Image.md5: ByteArray
     get() = calculateImageMd5ByImageId(imageId)
 
 
@@ -116,9 +116,9 @@ val Image.md5: ByteArray
  * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
  */
 // NotOnlineImage
-abstract class FriendImage internal constructor() : AbstractImage() { // change to sealed in the future.
-    companion object Key : Message.Key<FriendImage> {
-        override val typeName: String get() = "FriendImage"
+public abstract class FriendImage internal constructor() : AbstractImage() { // change to sealed in the future.
+    public companion object Key : Message.Key<FriendImage> {
+        public override val typeName: String get() = "FriendImage"
     }
 }
 
@@ -129,9 +129,9 @@ abstract class FriendImage internal constructor() : AbstractImage() { // change 
  * @see Image 查看更多说明
  */
 // CustomFace
-abstract class GroupImage internal constructor() : AbstractImage() { // change to sealed in the future.
-    companion object Key : Message.Key<GroupImage> {
-        override val typeName: String get() = "GroupImage"
+public abstract class GroupImage internal constructor() : AbstractImage() { // change to sealed in the future.
+    public companion object Key : Message.Key<GroupImage> {
+        public override val typeName: String get() = "GroupImage"
     }
 }
 
@@ -142,7 +142,7 @@ abstract class GroupImage internal constructor() : AbstractImage() { // change t
  * @see FRIEND_IMAGE_ID_REGEX_2
  */
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
-val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
+public val FRIEND_IMAGE_ID_REGEX_1: Regex = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
 
 /**
  * 好友图片 ID 正则表达式 2
@@ -151,16 +151,17 @@ val FRIEND_IMAGE_ID_REGEX_1 = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a
  * @see FRIEND_IMAGE_ID_REGEX_1
  */
 // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_2
-val FRIEND_IMAGE_ID_REGEX_2 = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
+public val FRIEND_IMAGE_ID_REGEX_2: Regex = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
 
 /**
  * 群图片 ID 正则表达式
  *
  * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext`
  */
-@Suppress("RegExpRedundantEscape") // This is required on Android
+@Suppress("RegExpRedundantEscape")
+// This is required on Android
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
-val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
+public val GROUP_IMAGE_ID_REGEX: Regex = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
 
 /**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
@@ -175,7 +176,7 @@ val GROUP_IMAGE_ID_REGEX = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-f
 @Suppress("FunctionName", "DEPRECATION")
 @JsName("newImage")
 @JvmName("newImage")
-fun Image(imageId: String): OfflineImage = when {
+public fun Image(imageId: String): OfflineImage = when {
     imageId matches FRIEND_IMAGE_ID_REGEX_1 -> OfflineFriendImage(imageId)
     imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
     imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
@@ -192,7 +193,7 @@ fun Image(imageId: String): OfflineImage = when {
  * @throws IllegalStateException 当无任何 [Bot] 在线时抛出 (因为无法获取相关协议)
  */
 @JvmSynthetic
-suspend fun Image.queryUrl(): String {
+public suspend fun Image.queryUrl(): String {
     @Suppress("DEPRECATION")
     return when (this) {
         is ConstOriginUrlAware -> this.originUrl

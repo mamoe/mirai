@@ -19,9 +19,9 @@ import kotlin.reflect.KProperty
 /**
  * WeakRef that `getValue` for delegation throws an [IllegalStateException] if the referent is released by GC. Therefore it returns notnull value only
  */
-class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
-    fun get(): T = weakRef.get() ?: error("WeakRef is released")
-    fun clear() = weakRef.clear()
+public class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
+    public fun get(): T = weakRef.get() ?: error("WeakRef is released")
+    public fun clear(): Unit = weakRef.clear()
 }
 
 /**
@@ -32,7 +32,7 @@ class UnsafeWeakRef<T>(private val weakRef: WeakRef<T>) {
  * ```
  */
 @JvmSynthetic
-inline operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T = get()
+public inline operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T = get()
 
 /**
  * Weak Reference.
@@ -46,9 +46,9 @@ inline operator fun <T> UnsafeWeakRef<T>.getValue(thisRef: Any?, property: KProp
  * @see weakRef provides a WeakRef
  * @see unsafeWeakRef provides a UnsafeWeakRef
  */
-expect class WeakRef<T>(referent: T) {
-    fun get(): T?
-    fun clear()
+public expect class WeakRef<T>(referent: T) {
+    public fun get(): T?
+    public fun clear()
 }
 
 /**
@@ -58,20 +58,20 @@ expect class WeakRef<T>(referent: T) {
  */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
-annotation class WeakRefProperty
+public annotation class WeakRefProperty
 
 /**
  * Provides a weak reference to [this]
  * The `getValue` for delegation returns [this] when [this] is not released by GC
  */
 @JvmSynthetic
-inline fun <T> T.weakRef(): WeakRef<T> = WeakRef(this)
+public inline fun <T> T.weakRef(): WeakRef<T> = WeakRef(this)
 
 /**
  * Constructs an unsafe inline delegate for [this]
  */
 @JvmSynthetic
-inline fun <T> WeakRef<T>.unsafe(): UnsafeWeakRef<T> = UnsafeWeakRef(this)
+public inline fun <T> WeakRef<T>.unsafe(): UnsafeWeakRef<T> = UnsafeWeakRef(this)
 
 /**
  * Provides a weak reference to [this].
@@ -80,7 +80,7 @@ inline fun <T> WeakRef<T>.unsafe(): UnsafeWeakRef<T> = UnsafeWeakRef(this)
  * **UNSTABLE API**: It is strongly suggested not to use this api
  */
 @JvmSynthetic
-inline fun <T> T.unsafeWeakRef(): UnsafeWeakRef<T> = UnsafeWeakRef(this.weakRef())
+public inline fun <T> T.unsafeWeakRef(): UnsafeWeakRef<T> = UnsafeWeakRef(this.weakRef())
 
 /**
  * Provides delegate value.
@@ -90,10 +90,10 @@ inline fun <T> T.unsafeWeakRef(): UnsafeWeakRef<T> = UnsafeWeakRef(this.weakRef(
  * ```
  */
 @JvmSynthetic
-inline operator fun <T> WeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T? = this.get()
+public inline operator fun <T> WeakRef<T>.getValue(thisRef: Any?, property: KProperty<*>): T? = this.get()
 
 /**
  * Call the block if the referent is absent
  */
 @JvmSynthetic
-inline fun <T, R> WeakRef<T>.ifAbsent(block: (T) -> R): R? = this.get()?.let(block)
+public inline fun <T, R> WeakRef<T>.ifAbsent(block: (T) -> R): R? = this.get()?.let(block)
