@@ -52,9 +52,6 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
             languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
 
-            languageSettings.languageVersion = "1.3"
-            languageSettings.apiVersion = "1.3"
-
             languageSettings.progressiveMode = true
         }
 
