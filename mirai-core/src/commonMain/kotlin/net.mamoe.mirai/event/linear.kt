@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 /**
  * 挂起当前协程, 监听事件 [E], 并尝试从这个事件中**同步**一个值, 在超时时抛出 [TimeoutCancellationException]
  *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
+ * @param timeoutMillis 超时. 单位为毫秒.
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  *
  * @see asyncFromEvent 本函数的异步版本
