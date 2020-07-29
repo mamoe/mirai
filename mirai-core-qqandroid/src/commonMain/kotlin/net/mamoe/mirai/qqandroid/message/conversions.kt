@@ -230,14 +230,13 @@ internal fun MsgComm.Msg.toMessageChain(
     isTemp: Boolean = false
 ): MessageChain {
     val elements = this.msgBody.richText.elems
-    val ptt = this.msgBody.richText.ptt
 
-    val pptMsg = ptt?.run {
+    val pptMsg = msgBody.richText.ptt?.run {
 //        when (fileType) {
 //            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
 //            else -> null
 //        }
-        Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
+        Voice(String(fileName), fileMd5, fileSize.toLong(), String(downPara))
     }
 
     return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {

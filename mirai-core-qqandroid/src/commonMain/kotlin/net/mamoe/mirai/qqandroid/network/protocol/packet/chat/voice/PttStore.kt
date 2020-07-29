@@ -9,13 +9,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.getRandomString
-import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.qqandroid.utils.toUHexString
 
 internal class PttStore {
     object GroupPttUp : OutgoingPacketFactory<GroupPttUp.Response>("PttStore.GroupPttUp") {
@@ -35,15 +31,14 @@ internal class PttStore {
             }
         }
 
-
-        @ExperimentalStdlibApi
+        @OptIn(ExperimentalStdlibApi::class)
         operator fun invoke(
             client: QQAndroidClient,
             uin: Long,
             groupCode: Long,
             md5: ByteArray,
-            size: Long,
-            voiceLength: Int,
+            size: Long = 0,
+            voiceLength: Int = 0,
             fileId: Long = 0
         ): OutgoingPacket {
             val pack = Cmd0x388.ReqBody(
@@ -96,26 +91,26 @@ internal class PttStore {
 
     object GroupPttDown : OutgoingPacketFactory<GroupPttDown.Response>("PttStore.GroupPttDown") {
 
-        sealed class Response() : Packet {
+        sealed class Response : Packet {
             class DownLoadInfo(
                 val downDomain: ByteArray,
-                val downPara:ByteArray,
-                val strDomain:String,
-                val uint32DownIp:List<Int>,
-                val uint32DownPort:List<Int>
+                val downPara: ByteArray,
+                val strDomain: String,
+                val uint32DownIp: List<Int>,
+                val uint32DownPort: List<Int>
             ) : GroupPttDown.Response() {
                 override fun toString(): String {
-                     return "GroupPttDown(downPara=${downPara.encodeToString()},strDomain=$strDomain})"
+                    return "GroupPttDown(downPara=${downPara.encodeToString()},strDomain=$strDomain})"
                 }
             }
 
         }
 
-        @ExperimentalStdlibApi
+        @OptIn(ExperimentalStdlibApi::class)
         operator fun invoke(
             client: QQAndroidClient,
             groupCode: Long,
-            dstUin:Long,
+            dstUin: Long,
             md5: ByteArray
 
         ): OutgoingPacket = buildOutgoingUniPacket(client) {
@@ -144,7 +139,7 @@ internal class PttStore {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
             resp0.msgGetpttUrlRsp ?: error("cannot find `msgGetpttUrlRsp` from `Cmd0x388.RspBody`")
             val resp = resp0.msgGetpttUrlRsp.first()
-            if (!resp.failMsg.contentEquals(EMPTY_BYTE_ARRAY)){
+            if (!resp.failMsg.contentEquals(EMPTY_BYTE_ARRAY)) {
                 throw IllegalStateException(resp.failMsg.encodeToString())
             }
             return Response.DownLoadInfo(

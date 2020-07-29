@@ -12,8 +12,7 @@
 package net.mamoe.mirai.qqandroid
 
 import io.ktor.client.request.*
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.*
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
@@ -56,7 +55,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.absoluteValue
-import kotlin.math.log
 import kotlin.random.Random
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
@@ -793,8 +791,7 @@ internal abstract class QQAndroidBotBase constructor(
         }
     }
 
-    @ExperimentalStdlibApi
-    @MiraiExperimentalAPI
+    @OptIn(ExperimentalStdlibApi::class)
     @LowLevelAPI
     override suspend fun _lowLevelQueryGroupVoiceDownloadUrl(
         md5: ByteArray,

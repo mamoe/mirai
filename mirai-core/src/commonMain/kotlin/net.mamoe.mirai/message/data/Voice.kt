@@ -1,6 +1,8 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 需要通过上传到服务器的消息，如语音、文件
@@ -22,8 +24,8 @@ public abstract class PttMessage : MessageContent {
 /**
  * 语音消息, 目前只支持接收和转发
  */
-@MiraiExperimentalAPI
-public class Voice(
+@SinceMirai("1.2.0")
+public class Voice @MiraiInternalAPI constructor(
     public override val fileName: String,
     public override val md5: ByteArray,
     public override val fileSize: Long,
