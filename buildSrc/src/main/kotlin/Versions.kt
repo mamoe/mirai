@@ -9,13 +9,13 @@
 
 object Versions {
     object Mirai {
-        const val version = "1.1.0"
+        const val version = "1.2.0"
     }
 
     object Kotlin {
-        const val compiler = "1.4-M3"
+        const val compiler = "1.4.0-rc"
         const val stdlib = "1.3.72"
-        const val coroutines = "1.3.7"
+        const val coroutines = "1.3.8"
         const val atomicFU = "0.14.2"
         const val serialization = "0.20.0"
         const val ktor = "1.3.2"
