@@ -121,7 +121,8 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 
     private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
         return object : MemberInfo {
-            override val nameCard: String get() = ""
+            override val nameCard: String get() = msgHead.authNick.takeIf { it.isNotEmpty() }
+                ?: msgHead.fromNick
             override val permission: MemberPermission get() = MemberPermission.MEMBER
             override val specialTitle: String get() = ""
             override val muteTimestamp: Int get() = 0
