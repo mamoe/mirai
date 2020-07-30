@@ -15,6 +15,7 @@ abstract class PttMessage : MessageContent {
 
     abstract val fileName: String
     abstract val md5: ByteArray
+    abstract val fileSize: Long
 }
 
 
@@ -25,6 +26,7 @@ abstract class PttMessage : MessageContent {
 class Voice(
     override val fileName: String,
     override val md5: ByteArray,
+    override val fileSize: Long,
     private val _url: String
 ) : PttMessage() {
 
@@ -33,9 +35,9 @@ class Voice(
             get() = "Voice"
     }
 
-    val url: String
+    val url: String?
         get() = if (_url.startsWith("http")) _url
-        else "http://grouptalk.c2c.qq.com$_url"
+        else null
 
     private var _stringValue: String? = null
         get() = field ?: kotlin.run {

@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.qqandroid.network
 
+import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.io.core.*
@@ -27,6 +28,7 @@ import net.mamoe.mirai.qqandroid.utils.*
 import net.mamoe.mirai.qqandroid.utils.cryptor.ECDH
 import net.mamoe.mirai.qqandroid.utils.cryptor.TEA
 import net.mamoe.mirai.utils.*
+import kotlin.jvm.Volatile
 import kotlin.random.Random
 
 internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
@@ -204,6 +206,9 @@ internal open class QQAndroidClient(
     val protocolVersion: Short = 8001
 
     class C2cMessageSyncData {
+        val firstNotify: AtomicBoolean = atomic(true)
+
+        @Volatile
         var syncCookie: ByteArray? = null
         var pubAccountCookie = EMPTY_BYTE_ARRAY
         var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY

@@ -16,6 +16,9 @@ import kotlin.jvm.JvmField
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
+
+// COMMENTED ON 2020/7/25
+
 @Serializable
 internal class SyncCookie(
     @ProtoId(1) @JvmField val time1: Long? = null, // 1580277992
@@ -31,6 +34,8 @@ internal class SyncCookie(
 
 private val const1_: Long = Random.nextLong().absoluteValue
 private val const2_: Long = Random.nextLong().absoluteValue
+
+
 /*
 
 @Serializable

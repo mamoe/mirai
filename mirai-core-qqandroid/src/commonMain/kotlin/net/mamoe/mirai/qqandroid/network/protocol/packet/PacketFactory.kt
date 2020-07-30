@@ -20,6 +20,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
@@ -139,6 +140,8 @@ internal object KnownPacketFactories {
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
         ImgStore.GroupPicUp,
+        PttStore.GroupPttUp,
+        PttStore.GroupPttDown,
         LongConn.OffPicUp,
         LongConn.OffPicDown,
         TroopManagement.EditSpecialTitle,

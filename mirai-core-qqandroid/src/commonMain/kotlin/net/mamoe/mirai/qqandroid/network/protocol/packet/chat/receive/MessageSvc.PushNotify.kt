@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
+import kotlinx.atomicfu.loop
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -31,12 +32,20 @@ internal object MessageSvcPushNotify : IncomingPacketFactory<RequestPushNotify>(
 
     override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
 
-        network.run {
-            return MessageSvcPbGetMsg(
-                client,
-                MsgSvc.SyncFlag.START,
-                packet.stMsgInfo?.uMsgTime ?: currentTimeSeconds
-            )
+        client.c2cMessageSync.firstNotify.loop { firstNotify ->
+            network.run {
+                return MessageSvcPbGetMsg(
+                    client,
+                    MsgSvc.SyncFlag.START,
+                    packet.stMsgInfo?.uMsgTime ?: currentTimeSeconds,
+                    if (firstNotify) {
+                        if (!client.c2cMessageSync.firstNotify.compareAndSet(firstNotify, false)) {
+                            return@loop
+                        }
+                        null
+                    } else packet.vNotifyCookie
+                )
+            }
         }
     }
 }

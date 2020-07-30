@@ -13,6 +13,8 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 在 [登录][Bot.login] 失败时抛出, 可正常地中断登录过程.
@@ -29,17 +31,24 @@ sealed class LoginFailedException constructor(
 /**
  * 密码输入错误 (有时候也会是其他错误, 如 `"当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。"`)
  */
-class WrongPasswordException(message: String?) : LoginFailedException(true, message)
+class WrongPasswordException @MiraiInternalAPI constructor(message: String?) : LoginFailedException(true, message)
 
 /**
  * 无可用服务器
  */
-class NoServerAvailableException(override val cause: Throwable?) : LoginFailedException(false, "no server available")
+class NoServerAvailableException @MiraiInternalAPI constructor(override val cause: Throwable?) :
+    LoginFailedException(false, "no server available")
+
+/**
+ * 服务器要求稍后重试
+ */
+@SinceMirai("1.2.0")
+class RetryLaterException @MiraiInternalAPI constructor() : LoginFailedException(false, "server requests retrial later")
 
 /**
  * 无标准输入或 Kotlin 不支持此输入.
  */
-class NoStandardInputForCaptchaException(override val cause: Throwable?) :
+class NoStandardInputForCaptchaException @MiraiInternalAPI constructor(override val cause: Throwable?) :
     LoginFailedException(true, "no standard input for captcha")
 
 /**

@@ -24,6 +24,7 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -176,8 +177,12 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     }
                 }
 
-                is WtLogin.Login.LoginPacketResponse.Error ->
+                is WtLogin.Login.LoginPacketResponse.Error -> {
+                    if (response.message.contains("0x9a")) { //Error(title=登录失败, message=请你稍后重试。(0x9a), errorInfo=)
+                        throw RetryLaterException()
+                    }
                     throw WrongPasswordException(response.toString())
+                }
 
                 is WtLogin.Login.LoginPacketResponse.DeviceLockLogin -> {
                     response = WtLogin.Login.SubCommand20(
@@ -406,7 +411,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         logger.info { "Syncing friend message history..." }
         withTimeoutOrNull(30000) {
             launch(CoroutineName("Syncing friend message history")) { syncFromEvent<MessageSvcPbGetMsg.GetMsgSuccess, Unit> { Unit } }
-            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds).sendAndExpect<Packet>()
+            // 别问我为什么要发两个 我也不知道 反正它能用
+            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds, null,firstSync = true).sendAndExpect<Packet>()
+            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, currentTimeSeconds, null,firstSync = true).sendAndExpect<Packet>()
         } ?: error("timeout syncing friend message history")
         logger.info { "Syncing friend message history: Success" }
     }

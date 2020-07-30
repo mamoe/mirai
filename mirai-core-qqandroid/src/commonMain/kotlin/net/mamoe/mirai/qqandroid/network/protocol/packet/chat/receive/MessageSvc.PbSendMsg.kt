@@ -25,13 +25,15 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
 import net.mamoe.mirai.qqandroid.message.toRichTextElems
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgCtrl
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.qqandroid.utils.io.serialization.toByteArray
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.contracts.InvocationKind
@@ -78,7 +80,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 ),
                 msgSeq = source.sequenceId,
                 msgRand = source.internalId,
-                syncCookie = SyncCookie(time = source.time.toLong()).toByteArray(SyncCookie.serializer())
+                syncCookie = client.c2cMessageSync.syncCookie ?: byteArrayOf()
                 // msgVia = 1
             )
         )
@@ -108,7 +110,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 ),
                 msgSeq = source.sequenceId,
                 msgRand = source.internalId,
-                syncCookie = SyncCookie(time = source.time.toLong()).toByteArray(SyncCookie.serializer())
+                syncCookie = client.c2cMessageSync.syncCookie ?: byteArrayOf()
             )
         )
     }
@@ -138,7 +140,14 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                     richText = ImMsgBody.RichText(
                         elems = message.toRichTextElems(forGroup = true, withGeneralFlags = true),
                         ptt = message.firstOrNull(PttMessage)?.run {
-                            ImMsgBody.Ptt(fileName = fileName.toByteArray(), fileMd5 = md5)
+                            ImMsgBody.Ptt(
+                                fileName = fileName.toByteArray(),
+                                fileMd5 = md5,
+                                boolValid = true,
+                                fileSize = fileSize.toInt(),
+                                fileType = 4,
+                                pbReserve = byteArrayOf(0)
+                            )
                         }
                     )
                 ),

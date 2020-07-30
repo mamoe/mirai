@@ -356,7 +356,8 @@ data class MemberJoinRequestEvent internal constructor(
 
     @JvmSynthetic
     @JvmOverloads
-    suspend fun reject(blackList: Boolean = false, message: String = "") = bot.rejectMemberJoinRequest(this, blackList, message)
+    suspend fun reject(blackList: Boolean = false, message: String = "") =
+        bot.rejectMemberJoinRequest(this, blackList, message)
 
     @JvmSynthetic
     suspend fun ignore(blackList: Boolean = false) = bot.ignoreMemberJoinRequest(this, blackList)
@@ -385,6 +386,8 @@ data class MemberJoinRequestEvent internal constructor(
 
 /**
  * 成员群名片改动. 此事件广播前修改就已经完成.
+ *
+ * 由于服务器并不会告知名片变动, 此事件只能由 mirai 在发现变动时才广播. 不要依赖于这个事件.
  */
 data class MemberCardChangeEvent internal constructor(
     /**
