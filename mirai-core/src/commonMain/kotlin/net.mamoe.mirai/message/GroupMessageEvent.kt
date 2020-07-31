@@ -16,6 +16,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.PlannedRemoval
 
@@ -33,7 +34,7 @@ public class GroupMessageEvent(
     public override val sender: Member,
     public override val message: MessageChain,
     public override val time: Int
-) : @PlannedRemoval("1.2.0") GroupMessage(), Event {
+) : @PlannedRemoval("1.2.0") GroupMessage(), Event, GroupEvent {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
