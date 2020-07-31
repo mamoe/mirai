@@ -8,6 +8,7 @@
  */
 
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
 
 package net.mamoe.mirai.event.events
@@ -18,6 +19,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.Event
 import kotlin.internal.HidesMembers
+import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
