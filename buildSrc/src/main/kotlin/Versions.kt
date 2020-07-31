@@ -15,7 +15,7 @@ object Versions {
     const val consolePure = console
 
     const val kotlinCompiler = "1.4.0-rc" // for public explict API
-    const val kotlinStdlib = "1.3.72" // for not overriding dependant's stdlib dependency
+    const val kotlinStdlib = "1.4.0-rc" // for not overriding dependant's stdlib dependency
 
     const val coroutines = "1.3.8-1.4.0-rc"
     const val collectionsImmutable = "0.3.2"
