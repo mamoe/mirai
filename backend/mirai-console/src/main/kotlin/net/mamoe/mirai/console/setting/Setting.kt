@@ -88,7 +88,7 @@ public abstract class AbstractSetting : Setting, SettingImpl() {
  *
  * @see JvmPlugin.loadSetting 通过 [JvmPlugin] 获取指定 [Setting] 实例.
  */
-public interface Setting {
+public interface Setting : ExperimentalSettingExtensions {
     /**
      * 使用 `by` 时自动调用此方法, 添加对 [Value] 的值修改的跟踪.
      */
@@ -111,6 +111,21 @@ public interface Setting {
      * 当这个 [Setting] 被放入一个 [SettingStorage] 时调用
      */
     public fun setStorage(storage: SettingStorage)
+}
+
+@ConsoleExperimentalAPI("")
+public interface ExperimentalSettingExtensions {
+    public fun <E, V, K> MutableMap<E, V>.shadowMap(
+        eToK: (E) -> K,
+        kToE: (K) -> E
+    ): MutableMap<K, V> {
+        return this.shadowMap(
+            kTransform = eToK,
+            kTransformBack = kToE,
+            vTransform = { it },
+            vTransformBack = { it }
+        )
+    }
 }
 
 //// region Setting_value_primitives CODEGEN ////

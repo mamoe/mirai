@@ -23,10 +23,10 @@ import net.mamoe.mirai.console.command.internal.InternalCommandManager
 import net.mamoe.mirai.console.command.primaryName
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
-import net.mamoe.mirai.console.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.plugin.center.CuiPluginCenter
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.PluginManagerImpl
 import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.utils.ConsoleBuiltInSettingStorage
 import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
@@ -64,7 +64,9 @@ public interface MiraiConsole : CoroutineScope {
     public val mainLogger: MiraiLogger
 
     /**
-     * 内建加载器列表, 一般需要包含 [JarPluginLoader]
+     * 内建加载器列表, 一般需要包含 [JarPluginLoader].
+     *
+     * @return 不可变 [List] ([java.util.Collections.unmodifiableList])
      */
     public val builtInPluginLoaders: List<PluginLoader<*, *>>
 

@@ -41,7 +41,7 @@ internal fun Bot.addManager(id: Long): Boolean {
 }
 
 
-internal object ManagersConfig : Setting by (ConsoleBuiltInSettingStorage.load(ConsoleBuiltInSettingHolder)) {
+internal object ManagersConfig : Setting by ConsoleBuiltInSettingStorage.load() {
     private val managers: MutableMap<Long, MutableSet<Long>> by value()
 
     internal operator fun get(bot: Bot): MutableSet<Long> = managers.getOrPut(bot.id, ::mutableSetOf)
@@ -54,10 +54,12 @@ internal fun CoroutineScope.childScope(context: CoroutineContext = EmptyCoroutin
 
 internal object ConsoleBuiltInSettingHolder : AutoSaveSettingHolder,
     CoroutineScope by MiraiConsole.childScope() {
-    override val autoSaveIntervalMillis: LongRange
-        get() = 30.minutesToMillis..60.minutesToMillis
+    override val autoSaveIntervalMillis: LongRange = 30.minutesToMillis..60.minutesToMillis
     override val name: String get() = "ConsoleBuiltIns"
 }
 
 internal object ConsoleBuiltInSettingStorage :
-    SettingStorage by MiraiConsoleImplementationBridge.settingStorageForJarPluginLoader
+    SettingStorage by MiraiConsoleImplementationBridge.settingStorageForJarPluginLoader {
+
+    inline fun <reified T : Setting> load(): T = load(ConsoleBuiltInSettingHolder)
+}

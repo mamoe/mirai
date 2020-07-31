@@ -42,21 +42,21 @@ public interface ResourceContainer {
      */
     @JvmDefault
     public fun getResource(name: String, charset: Charset): String =
-        this.getResourceAsStream(name).use { it.readBytes() }.encodeToString()
+        this.getResourceAsStream(name).use { it.readBytes() }.encodeToString(charset)
 
     public companion object {
         /**
          * 使用 [Class.getResourceAsStream] 读取资源文件
          */
         @JvmStatic
-        @JvmName("byClass")
+        @JvmName("create")
         public fun KClass<*>.asResourceContainer(): ResourceContainer = this.java.asResourceContainer()
 
         /**
          * 使用 [Class.getResourceAsStream] 读取资源文件
          */
         @JvmStatic
-        @JvmName("byClass")
+        @JvmName("create")
         public fun Class<*>.asResourceContainer(): ResourceContainer = ClassAsResourceContainer(this)
     }
 }

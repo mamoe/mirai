@@ -55,7 +55,9 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val mainLogger: MiraiLogger
 
     /**
-     * 内建加载器列表, 一般需要包含 [JarPluginLoader]
+     * 内建加载器列表, 一般需要包含 [JarPluginLoader].
+     *
+     * @return 不可变的 [List]
      */
     public val builtInPluginLoaders: List<PluginLoader<*, *>>
 

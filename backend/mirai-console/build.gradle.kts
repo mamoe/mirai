@@ -1,6 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.text.SimpleDateFormat
-import java.util.*
 
 plugins {
     kotlin("jvm") version Versions.kotlinCompiler
@@ -74,6 +73,8 @@ dependencies {
     api(kotlinx("coroutines-jdk8", Versions.coroutines))
 
     api("com.vdurmont:semver4j:3.1.0")
+
+    //api(kotlinx("collections-immutable", Versions.collectionsImmutable))
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))

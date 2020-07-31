@@ -36,7 +36,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      */
     @get:JvmName("getPluginDescription")
     @get:Throws(PluginLoadException::class)
-    public val P.description: D // Java signature: `public P getDescription(P)`
+    public val P.description: D // Java signature: `public D getDescription(P)`
 
     /**
      * 加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的主类实例
@@ -50,6 +50,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     public fun disable(plugin: P)
 }
 
+@JvmSynthetic
 public inline fun <D : PluginDescription, P : Plugin> PluginLoader<in P, out D>.getDescription(plugin: P): D =
     plugin.description
 

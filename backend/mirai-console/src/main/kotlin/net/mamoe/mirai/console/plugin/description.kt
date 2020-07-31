@@ -20,6 +20,21 @@ import net.mamoe.yamlkt.YamlDynamicSerializer
 import java.io.File
 
 
+/**
+ * 插件描述
+ */
+public interface PluginDescription {
+    public val kind: PluginKind
+
+    public val name: String
+    public val author: String
+    public val version: Semver
+    public val info: String
+
+    /** 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件 */
+    public val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency>
+}
+
 /** 插件类型 */
 @Serializable(with = PluginKind.AsStringSerializer::class)
 public enum class PluginKind {
@@ -37,21 +52,6 @@ public enum class PluginKind {
             } ?: NORMAL
         }
     )
-}
-
-/**
- * 插件描述
- */
-public interface PluginDescription {
-    public val kind: PluginKind
-
-    public val name: String
-    public val author: String
-    public val version: Semver
-    public val info: String
-
-    /** 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件 */
-    public val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency>
 }
 
 /** 插件的一个依赖的信息 */

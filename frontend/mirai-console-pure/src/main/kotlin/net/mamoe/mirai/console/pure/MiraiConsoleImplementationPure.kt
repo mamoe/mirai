@@ -37,6 +37,7 @@ import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
+import java.util.*
 
 /**
  * mirai-console-pure 后端实现
@@ -47,7 +48,10 @@ import java.io.File
 class MiraiConsoleImplementationPure
 @JvmOverloads constructor(
     override val rootDir: File = File("."),
-    override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JarPluginLoader }),
+    override val builtInPluginLoaders: List<PluginLoader<*, *>> = Collections.unmodifiableList(
+        listOf(
+            DeferredPluginLoader { JarPluginLoader })
+    ),
     override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure,
     override val mainLogger: MiraiLogger = frontEnd.loggerFor("main"),
     override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
