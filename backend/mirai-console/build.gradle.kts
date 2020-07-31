@@ -48,20 +48,6 @@ kotlin {
             useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
         }
     }
-
-    sourceSets.invoke {
-        getByName("test") {
-            languageSettings.apply {
-                languageVersion = "1.4"
-            }
-        }
-        getByName("main") {
-            languageSettings.apply {
-                languageVersion = "1.3"
-                apiVersion = "1.3"
-            }
-        }
-    }
 }
 
 dependencies {
