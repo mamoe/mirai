@@ -67,7 +67,7 @@ public interface MemorySettingStorage : SettingStorage, Map<Class<out Setting>, 
     /**
      * 当任一 [Setting] 实例拥有的 [Value] 的值被改变后调用的回调函数.
      */
-    public /* fun */ interface OnChangedCallback { // TODO: 2020/7/24 make `fun` in 1.4
+    public fun interface OnChangedCallback {
         public fun onChanged(storage: MemorySettingStorage, value: Value<*>)
 
         /**
