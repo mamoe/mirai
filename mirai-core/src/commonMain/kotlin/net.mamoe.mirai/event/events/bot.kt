@@ -43,8 +43,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     public data class Active(
         public override val bot: Bot,
         public override val cause: Throwable?
-    ) : BotOfflineEvent(), BotActiveEvent,
-        CauseAware
+    ) : BotOfflineEvent(), BotActiveEvent, CauseAware
 
     /**
      * 被挤下线
@@ -53,9 +52,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
         public override val bot: Bot,
         public val title: String,
         public val message: String
-    ) :
-        BotOfflineEvent(), Packet,
-        BotPassiveEvent
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent
 
     /**
      * 被服务器断开
@@ -65,9 +62,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     public data class MsfOffline internal constructor(
         public override val bot: Bot,
         public override val cause: Throwable?
-    ) :
-        BotOfflineEvent(), Packet,
-        BotPassiveEvent, CauseAware
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
 
     /**
      * 因网络问题而掉线
@@ -75,9 +70,17 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     public data class Dropped internal constructor(
         public override val bot: Bot,
         public override val cause: Throwable?
-    ) : BotOfflineEvent(),
-        Packet,
-        BotPassiveEvent, CauseAware
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
+
+    /**
+     * 因 returnCode = -10008 等原因掉线
+     */
+    @MiraiInternalAPI("This is very experimental and might be changed")
+    @SinceMirai("1.2.0")
+    public data class PacketFactory10008 internal constructor(
+        public override val bot: Bot,
+        public override val cause: Throwable
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
 
     /**
      * 服务器主动要求更换另一个服务器

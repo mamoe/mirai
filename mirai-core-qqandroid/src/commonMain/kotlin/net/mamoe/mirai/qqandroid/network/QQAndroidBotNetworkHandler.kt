@@ -24,6 +24,7 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.network.ForceOfflineException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
@@ -32,6 +33,7 @@ import net.mamoe.mirai.qqandroid.contact.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.qqandroid.network.protocol.packet.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.KnownPacketFactories.PacketFactoryIllegalState10008Exception
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
@@ -456,7 +458,14 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         return this.launch(
             start = CoroutineStart.ATOMIC
         ) {
-            input.use { parsePacket(it) }
+            input.use {
+                try {
+                    parsePacket(it)
+                } catch (e: PacketFactoryIllegalState10008Exception) {
+                    logger.warning { "Network force offline: ${e.message}" }
+                    bot.launch { BotOfflineEvent.PacketFactory10008(bot, e).broadcast() }
+                }
+            }
         }
     }
 
@@ -466,6 +475,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
      *
      * @param input 一个完整的包的内容, 去掉开头的 int 包长度
      */
+    @Throws(ForceOfflineException::class)
     suspend fun parsePacket(input: ByteReadPacket) {
         generifiedParsePacket<Packet>(input)
     }

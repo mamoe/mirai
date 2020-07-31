@@ -82,7 +82,8 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
             when (event) {
                 is BotOfflineEvent.MsfOffline,
                 is BotOfflineEvent.Dropped,
-                is BotOfflineEvent.RequireReconnect
+                is BotOfflineEvent.RequireReconnect,
+                is BotOfflineEvent.PacketFactory10008
                 -> {
                     if (!_network.isActive) {
                         // normally closed
