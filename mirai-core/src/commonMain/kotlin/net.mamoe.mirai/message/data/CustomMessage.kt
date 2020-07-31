@@ -14,9 +14,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.io.core.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.utils.*
@@ -90,8 +88,8 @@ public sealed class CustomMessage : SingleMessage {
          */
         public abstract fun serializer(): KSerializer<M>
 
-        public override fun dump(message: M): ByteArray = ProtoBuf.dump(serializer(), message)
-        public override fun load(input: ByteArray): M = ProtoBuf.load(serializer(), input)
+        public override fun dump(message: M): ByteArray = ProtoBuf.encodeToByteArray(serializer(), message)
+        public override fun load(input: ByteArray): M = ProtoBuf.decodeFromByteArray(serializer(), input)
     }
 
     /**
@@ -106,11 +104,10 @@ public sealed class CustomMessage : SingleMessage {
          */
         public abstract fun serializer(): KSerializer<M>
 
-        @OptIn(UnstableDefault::class)
-        public open val json: Json = Json(JsonConfiguration.Default)
+        public open val json: Json = Json.Default
 
-        public override fun dump(message: M): ByteArray = json.stringify(serializer(), message).toByteArray()
-        public override fun load(input: ByteArray): M = json.parse(serializer(), String(input))
+        public override fun dump(message: M): ByteArray = json.encodeToString(serializer(), message).toByteArray()
+        public override fun load(input: ByteArray): M = json.decodeFromString(serializer(), String(input))
     }
 
     public companion object Key : Message.Key<CustomMessage> {
@@ -143,7 +140,7 @@ public sealed class CustomMessage : SingleMessage {
                 if (fullData.remaining != length.toLong()) {
                     return null
                 }
-                ProtoBuf.load(CustomMessageFullData.serializer(), fullData.readBytes(length))
+                ProtoBuf.decodeFromByteArray(CustomMessageFullData.serializer(), fullData.readBytes(length))
             }.getOrElse {
                 throw CustomMessageFullDataDeserializeInternalException(it)
             }
@@ -158,7 +155,7 @@ public sealed class CustomMessage : SingleMessage {
         }
 
         internal fun <M : CustomMessage> dump(factory: Factory<M>, message: M): ByteArray = buildPacket {
-            ProtoBuf.dump(
+            ProtoBuf.encodeToByteArray(
                 CustomMessageFullData.serializer(), CustomMessageFullData(
                     miraiVersionFlag = 1,
                     typeName = factory.typeName,

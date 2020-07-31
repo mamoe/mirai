@@ -24,10 +24,10 @@ import kotlin.random.nextInt
 public fun File.loadAsDeviceInfo(json: Json, context: Context = ContextImpl()): DeviceInfo {
     if (!this.exists() || this.length() == 0L) {
         return SystemDeviceInfo(context).also {
-            this.writeText(json.stringify(SystemDeviceInfo.serializer(), it))
+            this.writeText(json.encodeToString(SystemDeviceInfo.serializer(), it))
         }
     }
-    return json.parse(DeviceInfoData.serializer(), this.readText()).also {
+    return json.decodeFromString(DeviceInfoData.serializer(), this.readText()).also {
         it.context = context
     }
 }

@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import net.mamoe.mirai.utils.FileCacheStrategy
 import java.awt.image.BufferedImage
+import java.io.InputStream
 import java.net.URL
 
 internal actual class DeferredReusableInput actual constructor(
@@ -44,7 +45,7 @@ internal actual class DeferredReusableInput actual constructor(
         return delegate?.writeTo(out) ?: error("DeferredReusableInput not yet initialized")
     }
 
-    override fun asInput(): Input {
+    override fun asInput(): InputStream {
         return delegate?.asInput() ?: error("DeferredReusableInput not yet initialized")
     }
 

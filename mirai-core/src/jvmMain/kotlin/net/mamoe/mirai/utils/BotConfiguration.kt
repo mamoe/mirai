@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+
 @file:Suppress("unused", "DEPRECATION_ERROR", "EXPOSED_SUPER_CLASS")
 
 package net.mamoe.mirai.utils
@@ -63,7 +64,7 @@ public actual open class BotConfiguration : BotConfigurationBase() { // open for
     @SinceMirai("1.2.0")
     public actual fun loadDeviceInfoJson(json: String) {
         deviceInfo = { context ->
-            this.json.parse(DeviceInfoData.serializer(), json).also { it.context = context }
+            this.json.decodeFromString(DeviceInfoData.serializer(), json).also { it.context = context }
         }
     }
 

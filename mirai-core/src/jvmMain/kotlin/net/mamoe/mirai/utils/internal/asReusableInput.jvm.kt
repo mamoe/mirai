@@ -8,6 +8,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import kotlinx.io.streams.asInput
 import net.mamoe.mirai.message.data.toLongUnsigned
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
 
@@ -36,8 +37,8 @@ internal actual fun ByteArray.asReusableInput(): ReusableInput {
             return this@asReusableInput.size.toLongUnsigned()
         }
 
-        override fun asInput(): Input {
-            return ByteReadPacket(this@asReusableInput)
+        override fun asInput(): InputStream {
+            return ByteArrayInputStream(this@asReusableInput)
         }
     }
 }
@@ -62,8 +63,8 @@ internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
             return inputStream().use { it.copyTo(out) }
         }
 
-        override fun asInput(): Input {
-            return inputStream().asInput()
+        override fun asInput(): InputStream {
+            return inputStream()
         }
     }
 }
@@ -88,8 +89,8 @@ internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): Reusa
             return inputStream().use { it.copyTo(out) }
         }
 
-        override fun asInput(): Input {
-            return inputStream().asInput()
+        override fun asInput(): InputStream {
+            return inputStream()
         }
     }
 }

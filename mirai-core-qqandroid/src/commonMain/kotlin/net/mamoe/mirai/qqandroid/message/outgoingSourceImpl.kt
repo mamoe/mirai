@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+
 @file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_OVERRIDE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.qqandroid.message

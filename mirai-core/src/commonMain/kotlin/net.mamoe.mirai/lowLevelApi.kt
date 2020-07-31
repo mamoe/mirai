@@ -14,6 +14,7 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRef
 
 /**
@@ -125,7 +126,6 @@ public interface LowLevelBotAPIAccessor {
      * 处理一个账号请求添加机器人为好友的事件
      */
     @LowLevelAPI
-    @MiraiExperimentalAPI
     public suspend fun _lowLevelSolveNewFriendRequestEvent(
         eventId: Long,
         fromId: Long,
@@ -138,7 +138,6 @@ public interface LowLevelBotAPIAccessor {
      * 处理被邀请加入一个群请求事件
      */
     @LowLevelAPI
-    @MiraiExperimentalAPI
     public suspend fun _lowLevelSolveBotInvitedJoinGroupRequestEvent(
         eventId: Long,
         invitorId: Long,
@@ -150,7 +149,7 @@ public interface LowLevelBotAPIAccessor {
      * 处理账号请求加入群事件
      */
     @LowLevelAPI
-    @MiraiExperimentalAPI
+    @SinceMirai("1.2.0")
     public suspend fun _lowLevelSolveMemberJoinRequestEvent(
         eventId: Long,
         fromId: Long,
@@ -165,6 +164,20 @@ public interface LowLevelBotAPIAccessor {
      * 查询语音的下载连接
      */
     @LowLevelAPI
-    @MiraiExperimentalAPI
-    public suspend fun _lowLevelQueryGroupVoiceDownloadUrl(md5: ByteArray, groupId: Long, dstUin: Long): String
+    @SinceMirai("1.2.0")
+    public suspend fun _lowLevelQueryGroupVoiceDownloadUrl(
+        md5: ByteArray,
+        groupId: Long,
+        dstUin: Long
+    ): String
+
+    /**
+     * 查询语音的上传连接
+     */
+    @LowLevelAPI
+    @SinceMirai("1.2.0")
+    public suspend fun _lowLevelUploadVoice(
+        md5: ByteArray,
+        groupId: Long,
+    )
 }

@@ -6,13 +6,9 @@ import kotlinx.io.core.*
 import kotlinx.io.streams.asInput
 import kotlinx.io.streams.asOutput
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.internal.InputStream
 import net.mamoe.mirai.utils.internal.asReusableInput
 import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
-import java.io.OutputStream
+import java.io.*
 import java.net.URL
 import java.security.MessageDigest
 import java.util.*
