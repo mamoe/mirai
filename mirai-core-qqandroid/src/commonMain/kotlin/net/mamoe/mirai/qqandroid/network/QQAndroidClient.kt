@@ -128,6 +128,8 @@ internal open class QQAndroidClient(
 
     lateinit var fileStoragePushFSSvcList: FileStoragePushFSSvcListFuckKotlin
 
+    internal val firstSyncPackets: AtomicInt = atomic(0)  // 启动时候仅将所有好友信息设为已读的包
+
     internal suspend inline fun useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
         if (bot.client.serverList.isEmpty()) {
             throw NoServerAvailableException(null)
