@@ -148,7 +148,7 @@ internal class StatSvc {
                                 var44.strVendorName = ROMUtil.getRomName();
                                 var44.strVendorOSName = ROMUtil.getRomVersion(20);
                                 */
-                                bytes_0x769_reqbody = ProtoBuf.dump(
+                                bytes_0x769_reqbody = ProtoBuf.encodeToByteArray(
                                     Oidb0x769.RequestBody.serializer(), Oidb0x769.RequestBody(
                                         rpt_config_list = listOf(
                                             Oidb0x769.ConfigSeq(

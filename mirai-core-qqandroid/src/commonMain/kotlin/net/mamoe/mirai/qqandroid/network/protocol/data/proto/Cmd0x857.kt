@@ -19,7 +19,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import kotlin.jvm.JvmField
 
-class GroupOpenSysMsg : ProtoBuf {
+internal class GroupOpenSysMsg : ProtoBuf {
     @Serializable
     internal class LightApp(
         @ProtoId(1) @JvmField val app: String = "",

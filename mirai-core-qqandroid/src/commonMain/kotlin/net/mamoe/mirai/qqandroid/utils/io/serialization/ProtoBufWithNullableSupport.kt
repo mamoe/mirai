@@ -9,22 +9,26 @@
 
 package net.mamoe.mirai.qqandroid.utils.io.serialization
 
-import kotlinx.io.ByteArrayOutputStream
-import kotlinx.io.ByteBuffer
-import kotlinx.io.ByteOrder
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ByteArraySerializer
 import kotlinx.serialization.builtins.MapEntrySerializer
 import kotlinx.serialization.builtins.SetSerializer
+import kotlinx.serialization.descriptors.PolymorphicKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.internal.MapLikeSerializer
 import kotlinx.serialization.internal.TaggedEncoder
-import kotlinx.serialization.modules.EmptyModule
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumberType
 import kotlinx.serialization.protobuf.ProtoType
 import moe.him188.jcekt.JceId
 import net.mamoe.mirai.qqandroid.utils.io.serialization.ProtoBufWithNullableSupport.Varint.encodeVarint
+import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 internal typealias ProtoDesc = Pair<Int, ProtoNumberType>
 
@@ -45,11 +49,12 @@ internal fun extractParameters(desc: SerialDescriptor, index: Int, zeroBasedDefa
  * 代码复制自 kotlinx.serialization. 修改部分已进行标注 (详见 "MIRAI MODIFY START")
  */
 @OptIn(InternalSerializationApi::class)
-internal class ProtoBufWithNullableSupport(override val context: SerialModule = EmptyModule) : SerialFormat, BinaryFormat {
+internal class ProtoBufWithNullableSupport(override val serializersModule: SerializersModule = EmptySerializersModule) :
+    SerialFormat, BinaryFormat {
 
     internal open inner class ProtobufWriter(private val encoder: ProtobufEncoder) : TaggedEncoder<ProtoDesc>() {
-        override val context
-            get() = this@ProtoBufWithNullableSupport.context
+        override val serializersModule
+            get() = this@ProtoBufWithNullableSupport.serializersModule
 
         override fun beginStructure(
             descriptor: SerialDescriptor,
@@ -241,7 +246,8 @@ internal class ProtoBufWithNullableSupport(override val context: SerialModule = 
     }
 
     companion object : BinaryFormat {
-        override val context: SerialModule get() = plain.context
+        override val serializersModule: SerializersModule
+            get() = plain.serializersModule
 
         private fun SerialDescriptor.getProtoDesc(index: Int): ProtoDesc {
             return extractParameters(this, index)
@@ -254,20 +260,24 @@ internal class ProtoBufWithNullableSupport(override val context: SerialModule = 
 
         private val plain = ProtoBufWithNullableSupport()
 
-        override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray = plain.dump(serializer, value)
-        override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T =
-            plain.load(deserializer, bytes)
+        override fun <T> encodeToByteArray(serializer: SerializationStrategy<T>, value: T): ByteArray {
+            return plain.encodeToByteArray(serializer, value)
+        }
+
+        override fun <T> decodeFromByteArray(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
+            return plain.decodeFromByteArray(deserializer, bytes)
+        }
     }
 
-    override fun <T> dump(serializer: SerializationStrategy<T>, value: T): ByteArray {
+    override fun <T> encodeToByteArray(serializer: SerializationStrategy<T>, value: T): ByteArray {
         val encoder = ByteArrayOutputStream()
         val dumper = ProtobufWriter(ProtobufEncoder(encoder))
-        dumper.encode(serializer, value)
+        dumper.encodeSerializableValue(serializer, value)
         return encoder.toByteArray()
     }
 
-    override fun <T> load(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
-        return ProtoBuf.load(deserializer, bytes)
+    override fun <T> decodeFromByteArray(deserializer: DeserializationStrategy<T>, bytes: ByteArray): T {
+        return ProtoBuf.decodeFromByteArray(deserializer, bytes)
     }
 
 }

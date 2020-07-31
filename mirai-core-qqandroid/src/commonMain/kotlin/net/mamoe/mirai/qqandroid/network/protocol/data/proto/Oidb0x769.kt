@@ -14,9 +14,9 @@ import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import kotlin.jvm.JvmField
 
-class Oidb0x769 {
+internal class Oidb0x769 {
     @Serializable
-internal class RequestBody(
+    internal class RequestBody(
         @ProtoId(1) @JvmField val rpt_config_list: List<ConfigSeq>
         // @SerialId(2) @JvmField val msg_device_info: DeviceInfo,
         // @SerialId(3) @JvmField val str_info: String = "",
@@ -27,19 +27,19 @@ internal class RequestBody(
     ) : ProtoBuf
 
     @Serializable
-internal class QueryUinPackageUsageReq(
+    internal class QueryUinPackageUsageReq(
         @ProtoId(1) @JvmField val type: Int,
         @ProtoId(2) @JvmField val uinFileSize: Long = 0
-    ): ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
-internal class ConfigSeq(
+    internal class ConfigSeq(
         @ProtoId(1) @JvmField val type: Int, // uint
         @ProtoId(2) @JvmField val version: Int // uint
-    ): ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
-internal class DeviceInfo(
+    internal class DeviceInfo(
         @ProtoId(1) @JvmField val brand: String,
         @ProtoId(2) @JvmField val model: String
         //@SerialId(3) @JvmField val os: OS,
@@ -48,49 +48,49 @@ internal class DeviceInfo(
         //@SerialId(6) @JvmField val storage: Storage,
         //@SerialId(7) @JvmField val screen: Screen,
         //@SerialId(8) @JvmField val camera: Camera
-    ): ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
-internal class OS(
+    internal class OS(
         @ProtoId(1) @JvmField val type: Int = 1,
         @ProtoId(2) @JvmField val version: String,
         @ProtoId(3) @JvmField val sdk: String,
         @ProtoId(4) @JvmField val kernel: String,
         @ProtoId(5) @JvmField val rom: String
-    ): ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
-internal class Camera(
+    internal class Camera(
         @ProtoId(1) @JvmField val primary: Long,
         @ProtoId(2) @JvmField val secondary: Long,
         @ProtoId(3) @JvmField val flag: Boolean
-    ): ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
-internal class CPU(
+    internal class CPU(
         @ProtoId(1) @JvmField val model: String,
         @ProtoId(2) @JvmField val frequency: Int,
         @ProtoId(3) @JvmField val cores: Int
-    ): ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
-internal class Memory(
+    internal class Memory(
         @ProtoId(1) @JvmField val total: Int,
         @ProtoId(2) @JvmField val process: Int
-    ): ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
-internal class Screen(
+    internal class Screen(
         @ProtoId(1) @JvmField val model: String,
         @ProtoId(2) @JvmField val width: Int,
         @ProtoId(3) @JvmField val height: Int,
         @ProtoId(4) @JvmField val dpi: Int,
         @ProtoId(5) @JvmField val multiTouch: Boolean
-    ): ProtoBuf
+    ) : ProtoBuf
 
     @Serializable
-internal class Storage(
+    internal class Storage(
         @ProtoId(1) @JvmField val builtin: Int,
         @ProtoId(2) @JvmField val external: Int
-    ): ProtoBuf
+    ) : ProtoBuf
 }

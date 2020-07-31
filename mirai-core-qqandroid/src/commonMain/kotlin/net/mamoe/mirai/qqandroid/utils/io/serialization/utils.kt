@@ -14,8 +14,8 @@ package net.mamoe.mirai.qqandroid.utils.io.serialization
 
 import kotlinx.io.core.*
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.descriptors.SerialDescriptor
 import moe.him188.jcekt.Jce
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
@@ -99,7 +99,7 @@ private fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String
 
 internal fun <T : JceStruct> T.toByteArray(
     serializer: SerializationStrategy<T>
-): ByteArray = Jce.UTF_8.dump(serializer, this)
+): ByteArray = Jce.UTF_8.encodeToByteArray(serializer, this)
 
 internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
     this.writeFully(v.toByteArray(serializer))
@@ -109,14 +109,14 @@ internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: Serializ
  * dump
  */
 internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
-    return ProtoBufWithNullableSupport.dump(serializer, this)
+    return ProtoBufWithNullableSupport.encodeToByteArray(serializer, this)
 }
 
 /**
  * load
  */
 internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
-    return ProtoBufWithNullableSupport.load(deserializer, this)
+    return ProtoBufWithNullableSupport.decodeFromByteArray(deserializer, this)
 }
 
 /**
@@ -125,7 +125,7 @@ internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrate
 internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
-): T = ProtoBufWithNullableSupport.load(serializer, this.readBytes(length))
+): T = ProtoBufWithNullableSupport.decodeFromByteArray(serializer, this.readBytes(length))
 
 /**
  * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]

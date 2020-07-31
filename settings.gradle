@@ -11,11 +11,13 @@ pluginManagement {
 
     repositories {
         mavenLocal()
+        gradlePluginPortal()
         jcenter()
         google()
         mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies" }
+        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 }
 

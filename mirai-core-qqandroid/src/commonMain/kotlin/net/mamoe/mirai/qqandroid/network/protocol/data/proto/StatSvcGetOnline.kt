@@ -14,21 +14,21 @@ import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import kotlin.jvm.JvmField
 
-class StatSvcGetOnline {
+internal class StatSvcGetOnline {
     @Serializable
-internal class Instance(
+    internal class Instance(
         @ProtoId(1) @JvmField val instanceId: Int = 0,
         @ProtoId(2) @JvmField val clientType: Int = 0
     ) : ProtoBuf
 
     @Serializable
-internal class ReqBody(
+    internal class ReqBody(
         @ProtoId(1) @JvmField val uin: Long = 0L,
         @ProtoId(2) @JvmField val appid: Int = 0
     ) : ProtoBuf
 
     @Serializable
-internal class RspBody(
+    internal class RspBody(
         @ProtoId(1) @JvmField val errorCode: Int = 0,
         @ProtoId(2) @JvmField val errorMsg: String = "",
         @ProtoId(3) @JvmField val uin: Long = 0L,

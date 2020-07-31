@@ -14,11 +14,11 @@ object Versions {
 
     object Kotlin {
         const val compiler = "1.4.0-rc"
-        const val stdlib = "1.3.72"
-        const val coroutines = "1.3.8"
-        const val atomicFU = "0.14.2"
-        const val serialization = "0.20.0"
-        const val ktor = "1.3.2"
+        const val stdlib = "1.4.0-rc"
+        const val coroutines = "1.3.8-1.4.0-rc"
+        const val atomicFU = "0.14.3-1.4.0-rc"
+        const val serialization = "1.0-M1-1.4.0-rc"
+        const val ktor = "1.3.2-1.4.0-rc"
         const val binaryValidator = "0.2.3"
 
         const val io = "0.1.16"
@@ -26,7 +26,7 @@ object Versions {
         const val dokka = "0.10.1"
     }
 
-    const val jcekt = "1.0.0"
+    const val jcekt = "2.0.0-1.4.0-rc-4"
 
     object Android {
         const val androidGradlePlugin = "3.5.3"

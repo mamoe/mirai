@@ -48,7 +48,6 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toInt
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
 
@@ -57,20 +56,18 @@ import net.mamoe.mirai.utils.warning
  * 获取好友消息和消息记录
  */
 internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Response>("MessageSvc.PbGetMsg") {
-    private var firstSyncPackets = 0  // 启动时候仅将所有好友信息设为已读的包
     @Suppress("SpellCheckingInspection")
     operator fun invoke(
         client: QQAndroidClient,
         syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
-        msgTime: Long, //PbPushMsg.msg.msgHead.msgTime
-        syncCookie: ByteArray?,
+        syncCookie: ByteArray?, //PbPushMsg.msg.msgHead.msgTime
         firstSync: Boolean = false
     ): OutgoingPacket = buildOutgoingUniPacket(
         client
     ) {
         //println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
         if (firstSync) {
-            firstSyncPackets++
+            client.firstSyncPackets.getAndAdd(1)
         }
         writeProtoBuf(
             MsgSvc.PbGetMsgReq.serializer(),
@@ -279,7 +276,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     */
 
                     166 -> {
-                        if (firstSyncPackets != 0) {
+                        if (bot.client.firstSyncPackets.value != 0) {
                             return@mapNotNull null
                         }
                         if (msg.msgHead.fromUin == bot.id) {
@@ -384,8 +381,8 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
     override suspend fun QQAndroidBot.handle(packet: Response) {
         when (packet.syncFlagFromServer) {
             MsgSvc.SyncFlag.STOP -> {
-                if (firstSyncPackets != 0) {
-                    firstSyncPackets--
+                if (client.firstSyncPackets.value != 0) {
+                    client.firstSyncPackets.getAndDecrement()
                 }
             }
 
@@ -394,7 +391,6 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
-                        currentTimeSeconds,
                         packet.syncCookie
                     ).sendAndExpect<Packet>()
                 }
@@ -406,7 +402,6 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
-                        currentTimeSeconds,
                         packet.syncCookie
                     ).sendAndExpect<Packet>()
                 }

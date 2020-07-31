@@ -7,7 +7,6 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-
 @file:JvmName("Utils")
 @file:JvmMultifileClass
 
@@ -17,9 +16,9 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.io.ByteReadChannel
 import kotlinx.coroutines.io.ByteWriteChannel
 import kotlinx.coroutines.io.readAvailable
-import kotlinx.io.OutputStream
 import kotlinx.io.core.Output
 import kotlinx.serialization.InternalSerializationApi
+import java.io.OutputStream
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 

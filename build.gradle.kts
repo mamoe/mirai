@@ -9,8 +9,10 @@ buildscript {
         mavenLocal()
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
+        maven(url = "https://kotlin.bintray.com/kotlinx")
         jcenter()
         google()
+        mavenCentral()
     }
 
     dependencies {
@@ -60,8 +62,10 @@ allprojects {
         mavenLocal()
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
+        maven(url = "https://kotlin.bintray.com/kotlinx")
         jcenter()
         google()
+        mavenCentral()
     }
 }
 

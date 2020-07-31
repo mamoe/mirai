@@ -14,15 +14,15 @@ import kotlinx.serialization.protobuf.ProtoId
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import kotlin.jvm.JvmField
 
-class MsgRevokeUserDef : ProtoBuf {
+internal class MsgRevokeUserDef : ProtoBuf {
     @Serializable
-internal class MsgInfoUserDef(
+    internal class MsgInfoUserDef(
         @ProtoId(1) @JvmField val longMessageFlag: Int = 0,
         @ProtoId(2) @JvmField val longMsgInfo: List<MsgInfoDef>? = null,
         @ProtoId(3) @JvmField val fileUuid: List<String> = listOf()
     ) : ProtoBuf {
         @Serializable
-internal class MsgInfoDef(
+        internal class MsgInfoDef(
             @ProtoId(1) @JvmField val msgSeq: Int = 0,
             @ProtoId(2) @JvmField val longMsgId: Int = 0,
             @ProtoId(3) @JvmField val longMsgNum: Int = 0,
