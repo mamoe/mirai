@@ -37,8 +37,8 @@ internal actual fun ByteArray.asReusableInput(): ReusableInput {
             return this@asReusableInput.size.toLongUnsigned()
         }
 
-        override fun asInput(): InputStream {
-            return ByteArrayInputStream(this@asReusableInput)
+        override fun asInput(): Input {
+            return ByteArrayInputStream(this@asReusableInput).asInput()
         }
     }
 }
@@ -63,8 +63,8 @@ internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
             return inputStream().use { it.copyTo(out) }
         }
 
-        override fun asInput(): InputStream {
-            return inputStream()
+        override fun asInput(): Input {
+            return inputStream().asInput()
         }
     }
 }
@@ -89,8 +89,8 @@ internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): Reusa
             return inputStream().use { it.copyTo(out) }
         }
 
-        override fun asInput(): InputStream {
-            return inputStream()
+        override fun asInput(): Input {
+            return inputStream().asInput()
         }
     }
 }

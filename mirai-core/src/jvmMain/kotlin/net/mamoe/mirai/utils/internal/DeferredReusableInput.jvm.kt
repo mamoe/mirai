@@ -45,7 +45,7 @@ internal actual class DeferredReusableInput actual constructor(
         return delegate?.writeTo(out) ?: error("DeferredReusableInput not yet initialized")
     }
 
-    override fun asInput(): InputStream {
+    override fun asInput(): Input {
         return delegate?.asInput() ?: error("DeferredReusableInput not yet initialized")
     }
 

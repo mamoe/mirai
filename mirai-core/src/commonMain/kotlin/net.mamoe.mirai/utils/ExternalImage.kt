@@ -11,12 +11,15 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.io.core.readBytes
+import kotlinx.io.core.use
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
+import net.mamoe.mirai.message.data.toUHexString
 import net.mamoe.mirai.utils.internal.DeferredReusableInput
 import net.mamoe.mirai.utils.internal.ReusableInput
 import kotlin.jvm.JvmSynthetic
@@ -30,16 +33,14 @@ import kotlin.jvm.JvmSynthetic
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
 public class ExternalImage internal constructor(
-    override val input: ReusableInput
-) : ExternalFile {
-    public override val formatName: String by lazy {
-        TODO()
-        /*
+    internal val input: ReusableInput
+) {
+    internal val md5: ByteArray get() = input.md5
+    public val formatName: String by lazy {
         val hex = input.asInput().use {
-            //it.asInput().readBytes(8).toUHexString("")
-            TODO()
+            it.readBytes(8).toUHexString("")
         }
-        return@lazy hex.detectFormatName() as String*/
+        return@lazy hex.detectFormatName()
     }
 
     init {
