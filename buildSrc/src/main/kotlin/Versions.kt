@@ -14,10 +14,11 @@ object Versions {
     const val consoleTerminal = "0.1.0"
     const val consolePure = console
 
-    const val kotlinCompiler = "1.4-M3" // for public explict API
+    const val kotlinCompiler = "1.4.0-rc" // for public explict API
     const val kotlinStdlib = "1.3.72" // for not overriding dependant's stdlib dependency
 
     const val coroutines = "1.3.7"
+    const val collectionsImmutable = "0.3.2"
     const val serialization = "0.20.0"
     const val ktor = "1.3.2"
 
