@@ -67,7 +67,7 @@ public suspend inline fun CommandSender.sendMessage(message: String): Unit = sen
 public abstract class ConsoleCommandSender internal constructor() : CommandSender {
     public final override val bot: Nothing? get() = null
 
-    public companion object {
+    internal companion object {
         internal val instance get() = MiraiConsoleImplementationBridge.consoleCommandSender
     }
 }
@@ -117,7 +117,9 @@ public sealed class UserCommandSender : CommandSender, BotAwareCommandSender {
  * 代表一个用户私聊机器人执行指令
  * @see Friend.asCommandSender
  */
-public open class FriendCommandSender(final override val user: Friend) : UserCommandSender() {
+public open class FriendCommandSender(
+    public final override val user: Friend
+) : UserCommandSender() {
     public override val subject: Contact get() = user
 }
 
@@ -125,7 +127,9 @@ public open class FriendCommandSender(final override val user: Friend) : UserCom
  * 代表一个用户私聊机器人执行指令
  * @see Friend.asCommandSender
  */
-public class FriendCommandSenderOnMessage(override val fromEvent: FriendMessageEvent) :
+public class FriendCommandSenderOnMessage(
+    public override val fromEvent: FriendMessageEvent
+) :
     FriendCommandSender(fromEvent.sender),
     MessageEventContextAware<FriendMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
     public override val subject: Contact get() = super.subject
@@ -136,7 +140,9 @@ public class FriendCommandSenderOnMessage(override val fromEvent: FriendMessageE
  * 代表一个群成员执行指令.
  * @see Member.asCommandSender
  */
-public open class MemberCommandSender(final override val user: Member) : UserCommandSender() {
+public open class MemberCommandSender(
+    public final override val user: Member
+) : UserCommandSender() {
     public inline val group: Group get() = user.group
     public override val subject: Contact get() = group
 }
@@ -145,7 +151,9 @@ public open class MemberCommandSender(final override val user: Member) : UserCom
  * 代表一个群成员在群内执行指令.
  * @see Member.asCommandSender
  */
-public class MemberCommandSenderOnMessage(override val fromEvent: GroupMessageEvent) :
+public class MemberCommandSenderOnMessage(
+    public override val fromEvent: GroupMessageEvent
+) :
     MemberCommandSender(fromEvent.sender),
     MessageEventContextAware<GroupMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
     public override val subject: Contact get() = super.subject
@@ -157,7 +165,9 @@ public class MemberCommandSenderOnMessage(override val fromEvent: GroupMessageEv
  * @see Member.asCommandSender
  */
 @ConsoleExperimentalAPI
-public class TempCommandSenderOnMessage(override val fromEvent: TempMessageEvent) :
+public class TempCommandSenderOnMessage(
+    public override val fromEvent: TempMessageEvent
+) :
     MemberCommandSender(fromEvent.sender),
     MessageEventContextAware<TempMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
     public override val subject: Contact get() = super.subject

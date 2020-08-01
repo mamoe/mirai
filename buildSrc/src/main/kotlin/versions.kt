@@ -1,5 +1,3 @@
-import org.gradle.kotlin.dsl.DependencyHandlerScope
-
 /*
  * Copyright 2020 Mamoe Technologies and contributors.
  *
@@ -10,22 +8,21 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
  */
 
 object Versions {
-    object Mirai {
-        const val core = "1.0.0"
-        const val console = "0.5.2"
-        const val consoleGraphical = "0.0.7"
-    }
+    const val core = "1.1.3"
+    const val console = "1.0-M1"
+    const val consoleGraphical = "0.0.7"
+    const val consoleTerminal = "0.1.0"
+    const val consolePure = console
 
-    object Kotlin {
-        const val stdlib = "1.3.72"
-        const val coroutines = "1.3.5"
-        const val serialization = "0.20.0"
-        const val ktor = "1.3.2"
-    }
+    const val kotlinCompiler = "1.4.0-rc" // for public explict API
+    const val kotlinStdlib = "1.4.0-rc" // for not overriding dependant's stdlib dependency
+
+    const val coroutines = "1.3.8-1.4.0-rc"
+    const val collectionsImmutable = "0.3.2"
+    const val serialization = "1.0-M1-1.4.0-rc"
+    const val ktor = "1.3.2-1.4.0-rc"
+
+    const val androidGradle = "3.6.2"
+
+    const val bintray = "1.8.5"
 }
-
-@Suppress("unused")
-fun DependencyHandlerScope.kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
-
-@Suppress("unused")
-fun DependencyHandlerScope.ktor(id: String, version: String = Versions.Kotlin.ktor) = "io.ktor:ktor-$id:$version"

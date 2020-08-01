@@ -33,7 +33,6 @@ kotlin {
             kotlinOptions {
                 freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=enable"
                 jvmTarget = "1.8"
-                // useIR = true
             }
         }
         languageSettings.apply {
