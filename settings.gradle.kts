@@ -1,20 +1,10 @@
 pluginManagement {
     repositories {
         mavenLocal()
+        gradlePluginPortal()
         jcenter()
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         mavenCentral()
-    }
-
-    resolutionStrategy {
-        eachPlugin {
-            val version = requested.version
-            when (requested.id.id) {
-                "org.jetbrains.kotlin.jvm" -> useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${version}")
-                "org.jetbrains.kotlin.plugin.serialization" -> useModule("org.jetbrains.kotlin:kotlin-serialization:${version}")
-                "com.jfrog.bintray" -> useModule("com.jfrog.bintray.gradle:gradle-bintray-plugin:$version")
-            }
-        }
     }
 }
 

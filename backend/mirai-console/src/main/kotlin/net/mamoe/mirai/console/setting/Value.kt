@@ -69,25 +69,25 @@ public interface SerializerAwareValue<T> : Value<T> {
         @JvmStatic
         @ConsoleExperimentalAPI("will be changed due to reconstruction of kotlinx.serialization")
         public fun <T> SerializerAwareValue<T>.serialize(format: StringFormat): String {
-            return format.stringify(this.serializer, Unit)
+            return format.encodeToString(this.serializer, Unit)
         }
 
         @JvmStatic
         @ConsoleExperimentalAPI("will be changed due to reconstruction of kotlinx.serialization")
         public fun <T> SerializerAwareValue<T>.serialize(format: BinaryFormat): ByteArray {
-            return format.dump(this.serializer, Unit)
+            return format.encodeToByteArray(this.serializer, Unit)
         }
 
         @JvmStatic
         @ConsoleExperimentalAPI("will be changed due to reconstruction of kotlinx.serialization")
         public fun <T> SerializerAwareValue<T>.deserialize(format: StringFormat, value: String) {
-            format.parse(this.serializer, value)
+            format.decodeFromString(this.serializer, value)
         }
 
         @JvmStatic
         @ConsoleExperimentalAPI("will be changed due to reconstruction of kotlinx.serialization")
         public fun <T> SerializerAwareValue<T>.deserialize(format: BinaryFormat, value: ByteArray) {
-            format.load(this.serializer, value)
+            format.decodeFromByteArray(this.serializer, value)
         }
     }
 }

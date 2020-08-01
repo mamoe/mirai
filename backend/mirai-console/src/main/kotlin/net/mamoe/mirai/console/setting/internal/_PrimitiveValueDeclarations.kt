@@ -9,11 +9,11 @@
 
 package net.mamoe.mirai.console.setting.internal
 
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import net.mamoe.mirai.console.setting.*
 
 /**
@@ -98,6 +98,7 @@ internal abstract class ShortValueImpl : ShortValue, SerializerAwareValue<Short>
         else value.hashCode() * 31
     }
 }
+
 internal abstract class IntValueImpl : IntValue, SerializerAwareValue<Int>, KSerializer<Unit>, AbstractValueImpl<Int> {
     constructor()
     constructor(default: Int) {

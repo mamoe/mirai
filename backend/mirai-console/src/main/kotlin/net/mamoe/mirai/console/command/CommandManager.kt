@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.command.internal.*
 import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 
@@ -229,6 +230,7 @@ public suspend fun Command.execute(sender: CommandSender, vararg args: Any, chec
  *
  * @see JCommandManager.executeCommandDetailed Java 方法
  */
+@ConsoleExperimentalAPI
 public suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): CommandExecuteResult {
     if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
     return executeCommandDetailedInternal(messages, messages[0].toString().substringBefore(' '))
@@ -243,6 +245,7 @@ public suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): C
  *
  * @see JCommandManager.executeCommandDetailed Java 方法
  */
+@ConsoleExperimentalAPI
 public suspend fun CommandSender.executeCommandDetailed(messages: MessageChain): CommandExecuteResult {
     if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
     return executeCommandDetailedInternal(messages, messages[0].toString())

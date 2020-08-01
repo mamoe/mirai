@@ -7,18 +7,15 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.console.setting.internal
 
-import kotlinx.serialization.*
-import kotlinx.serialization.builtins.*
+import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.console.setting.SerializableValue.Companion.serializableValueWith
 import net.mamoe.mirai.console.setting.SerializerAwareValue
 import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.valueFromKType
-import net.mamoe.yamlkt.YamlDynamicSerializer
-import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.createInstance as createInstanceKotlin
@@ -142,63 +139,3 @@ internal fun KClass<*>.isPrimitiveOrBuiltInSerializableValue(): Boolean {
 @PublishedApi
 @Suppress("UNCHECKED_CAST")
 internal inline fun <R> Any.cast(): R = this as R
-
-/**
- * Copied from kotlinx.serialization, modifications are marked with "/* mamoe modify */"
- * Copyright 2017-2020 JetBrains s.r.o.
- */
-@Suppress(
-    "UNCHECKED_CAST",
-    "NO_REFLECTION_IN_CLASS_PATH",
-    "UNSUPPORTED",
-    "INVISIBLE_MEMBER",
-    "INVISIBLE_REFERENCE",
-    "IMPLICIT_CAST_TO_ANY"
-)
-@OptIn(ImplicitReflectionSerializer::class)
-internal fun serializerMirai(type: KType): KSerializer<Any?> {
-    fun serializerByKTypeImpl(type: KType): KSerializer<Any> {
-        val rootClass = when (val t = type.classifier) {
-            is KClass<*> -> t
-            else -> error("Only KClass supported as classifier, got $t")
-        } as KClass<Any>
-
-        val typeArguments = type.arguments
-            .map { requireNotNull(it.type) { "Star projections are not allowed, had $it instead" } }
-        return when {
-            typeArguments.isEmpty() -> rootClass.serializer()
-            else -> {
-                val serializers = typeArguments
-                    .map(::serializer)
-                // Array is not supported, see KT-32839
-                when (rootClass) {
-                    List::class, MutableList::class, ArrayList::class -> ListSerializer(serializers[0])
-                    HashSet::class -> SetSerializer(serializers[0])
-                    Set::class, MutableSet::class, LinkedHashSet::class -> SetSerializer(serializers[0])
-                    HashMap::class -> MapSerializer(serializers[0], serializers[1])
-                    Map::class, MutableMap::class, LinkedHashMap::class -> MapSerializer(serializers[0], serializers[1])
-                    Map.Entry::class -> MapEntrySerializer(serializers[0], serializers[1])
-                    Pair::class -> PairSerializer(serializers[0], serializers[1])
-                    Triple::class -> TripleSerializer(serializers[0], serializers[1], serializers[2])
-                    /* mamoe modify */ Any::class -> if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer
-                    else -> {
-                        if (isReferenceArray(type, rootClass)) {
-                            @Suppress("RemoveExplicitTypeArguments")
-                            return ArraySerializer<Any, Any?>(
-                                typeArguments[0].classifier as KClass<Any>,
-                                serializers[0]
-                            ).cast()
-                        }
-                        requireNotNull(rootClass.constructSerializerForGivenTypeArgs(*serializers.toTypedArray())) {
-                            "Can't find a method to construct serializer for type ${rootClass.simpleName()}. " +
-                                    "Make sure this class is marked as @Serializable or provide serializer explicitly."
-                        }
-                    }
-                }
-            }
-        }.cast()
-    }
-
-    val result = serializerByKTypeImpl(type)
-    return if (type.isMarkedNullable) result.nullable else result.cast()
-}

@@ -9,9 +9,7 @@
 
 package net.mamoe.mirai.console.setting
 
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import net.mamoe.mirai.console.utils.ConsoleInternalAPI
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -34,20 +32,19 @@ internal class SettingTest {
         }
     }
 
-    @OptIn(UnstableDefault::class)
-    private val jsonPrettyPrint = Json(JsonConfiguration(prettyPrint = true))
-    private val json = Json(JsonConfiguration.Stable)
+    private val jsonPrettyPrint = Json { prettyPrint = true }
+    private val json = Json {}
 
     @Test
     fun testStringify() {
         val setting = MySetting()
 
-        var string = json.stringify(setting.updaterSerializer, Unit)
+        var string = json.encodeToString(setting.updaterSerializer, Unit)
         assertEquals("""{"int":1,"map":{},"map2":{}}""", string)
 
         setting.int = 2
 
-        string = json.stringify(setting.updaterSerializer, Unit)
+        string = json.encodeToString(setting.updaterSerializer, Unit)
         assertEquals("""{"int":2,"map":{},"map2":{}}""", string)
     }
 
@@ -57,10 +54,10 @@ internal class SettingTest {
 
         assertEquals(1, setting.int)
 
-        json.parse(
+        json.decodeFromString(
             setting.updaterSerializer, """
-            {"int":3,"map":{},"map2":{}}
-        """.trimIndent()
+                {"int":3,"map":{},"map2":{}}
+            """.trimIndent()
         )
 
         assertEquals(3, setting.int)
@@ -77,10 +74,10 @@ internal class SettingTest {
 
         assertEquals(mutableMapOf(), delegation()) // delegation
 
-        json.parse(
+        json.decodeFromString(
             setting.updaterSerializer, """
-            {"int":1,"map":{"t":"test"},"map2":{}}
-        """.trimIndent()
+                {"int":1,"map":{"t":"test"},"map2":{}}
+            """.trimIndent()
         )
 
         assertEquals(mapOf("t" to "test").toString(), delegation().toString())
@@ -100,10 +97,10 @@ internal class SettingTest {
 
         assertEquals(mutableMapOf(), delegation()) // delegation
 
-        json.parse(
+        json.decodeFromString(
             setting.updaterSerializer, """
-            {"int":1,"map":{},"map2":{"t":{"f":"test"}}}
-        """.trimIndent()
+                {"int":1,"map":{},"map2":{"t":{"f":"test"}}}
+            """.trimIndent()
         )
 
         assertEquals(mapOf("t" to mapOf("f" to "test")).toString(), delegation().toString())
@@ -125,10 +122,10 @@ internal class SettingTest {
 
         assertEquals(mutableMapOf(), delegation()) // delegation
 
-        json.parse(
+        json.decodeFromString(
             setting.updaterSerializer, """
-            {"int":1,"map":{},"map2":{"t":{"f":"test"}}}
-        """.trimIndent()
+                {"int":1,"map":{},"map2":{"t":{"f":"test"}}}
+            """.trimIndent()
         )
 
         assertEquals(mapOf("f" to "test").toString(), delegation().toString())

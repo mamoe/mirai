@@ -11,9 +11,14 @@
 
 package net.mamoe.mirai.console.setting.internal
 
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import net.mamoe.mirai.console.setting.SerializerAwareValue
 import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.Value
@@ -53,7 +58,7 @@ internal abstract class SettingImpl {
         @Suppress("UNCHECKED_CAST")
         override fun deserialize(decoder: Decoder) {
             val descriptor = descriptor
-            with(decoder.beginStructure(descriptor, *settingUpdaterSerializerTypeArguments)) {
+            with(decoder.beginStructure(descriptor)) {
                 if (decodeSequentially()) {
                     var index = 0
                     repeat(decodeCollectionSize(descriptor)) {
@@ -70,7 +75,7 @@ internal abstract class SettingImpl {
                         var serialName: String? = null
                         innerLoop@ while (true) {
                             val index = decodeElementIndex(descriptor)
-                            if (index == CompositeDecoder.READ_DONE) {
+                            if (index == CompositeDecoder.DECODE_DONE) {
                                 check(serialName == null) { "name must be null at this moment." }
                                 break@outerLoop
                             }
@@ -102,7 +107,7 @@ internal abstract class SettingImpl {
         @Suppress("UNCHECKED_CAST")
         override fun serialize(encoder: Encoder, value: Unit) {
             val descriptor = descriptor
-            with(encoder.beginCollection(descriptor, valueNodes.size, *settingUpdaterSerializerTypeArguments)) {
+            with(encoder.beginCollection(descriptor, valueNodes.size)) {
                 var index = 0
 
                 // val vSerializer = settingUpdaterSerializerTypeArguments[1] as KSerializer<Any?>

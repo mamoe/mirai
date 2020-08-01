@@ -63,7 +63,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
         DefaultSubCommandDescriptor(
             "",
             permission,
-            onCommand = block2 { sender: CommandSender, args: Array<out Any> ->
+            onCommand = { sender: CommandSender, args: Array<out Any> ->
                 sender.onDefault(args)
             }
         )
@@ -292,7 +292,7 @@ internal fun AbstractReflectionCommand.createSubCommand(
         params,
         subDescription,
         overridePermission?.value?.getInstance() ?: permission,
-        onCommand = block { sender: CommandSender, args: Array<out Any> ->
+        onCommand = { sender: CommandSender, args: Array<out Any> ->
             val result = if (notStatic) {
                 if (hasSenderParam) {
                     function.isSuspend
@@ -311,13 +311,4 @@ internal fun AbstractReflectionCommand.createSubCommand(
         context = context,
         usage = buildUsage.toString()
     )
-}
-
-
-private fun block(block: suspend (CommandSender, Array<out Any>) -> Boolean): suspend (CommandSender, Array<out Any>) -> Boolean {
-    return block
-}
-
-private fun block2(block: suspend (CommandSender, Array<out Any>) -> Unit): suspend (CommandSender, Array<out Any>) -> Unit {
-    return block
 }

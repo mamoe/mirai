@@ -9,7 +9,11 @@
 
 package net.mamoe.mirai.console.setting.internal
 
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
 

@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.console.setting.internal
 
-import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.UnsafeSerializationApi
 import kotlinx.serialization.serializer
 import net.mamoe.yamlkt.Yaml
 import kotlin.reflect.KClass
@@ -452,7 +452,7 @@ internal inline fun <T> MutableSet<T>.observable(crossinline onChanged: () -> Un
 }
 
 
-@OptIn(ImplicitReflectionSerializer::class)
+@OptIn(UnsafeSerializationApi::class)
 internal fun <R : Any> Any.smartCastPrimitive(clazz: KClass<R>): R {
     kotlin.runCatching {
         return Yaml.default.parse(clazz.serializer(), this.toString())

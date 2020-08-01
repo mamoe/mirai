@@ -2,6 +2,7 @@
 plugins {
     id("com.jfrog.bintray") version Versions.bintray apply false
 }
+
 tasks.withType(JavaCompile::class.java) {
     options.encoding = "UTF8"
 }

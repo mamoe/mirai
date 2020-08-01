@@ -11,22 +11,20 @@
 
 package net.mamoe.mirai.console.plugin.center
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.util.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.utils.retryCatching
 import java.io.File
 
-@OptIn(UnstableDefault::class)
-internal val json = runCatching {
-    Json(JsonConfiguration(isLenient = true, ignoreUnknownKeys = true))
-}.getOrElse { Json(JsonConfiguration.Stable) }
+internal val json = Json {
+    isLenient = true
+    ignoreUnknownKeys = true
+}
 
 @OptIn(KtorExperimentalAPI::class)
 internal val Http = HttpClient(CIO)
@@ -64,7 +62,7 @@ internal object CuiPluginCenter : PluginCenter {
         }.getOrElse { return null }
         if (result == "err:not found") return null
 
-        return json.parse(PluginCenter.PluginInfo.serializer(), result)
+        return json.decodeFromString(PluginCenter.PluginInfo.serializer(), result)
     }
 
     override suspend fun refresh() {
@@ -75,7 +73,7 @@ internal object CuiPluginCenter : PluginCenter {
             val result: List<PluginCenter.PluginInsight>
         )
 
-        val result = json.parse(Result.serializer(), Http.get("https://miraiapi.jasonczc.cn/getPluginList"))
+        val result = json.decodeFromString(Result.serializer(), Http.get("https://miraiapi.jasonczc.cn/getPluginList"))
 
         check(result.success) { "Failed to fetch plugin list from Cui Cloud" }
         plugins = result.result

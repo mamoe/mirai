@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.CoroutineStart;
 import kotlinx.coroutines.future.FutureKt;
 import net.mamoe.mirai.console.plugin.jvm.JavaPlugin;
+import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI;
 import net.mamoe.mirai.message.data.Message;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -152,6 +153,7 @@ public final class JCommandManager {
      * @return 执行结果
      * @see #executeCommandDetailedAsync(CoroutineScope, CommandSender, Object...)
      */
+    @ConsoleExperimentalAPI
     @NotNull
     public static CommandExecuteResult executeCommandDetailed(final @NotNull CommandSender sender, final @NotNull Object... args) throws InterruptedException {
         Objects.requireNonNull(sender, "sender");
@@ -171,6 +173,7 @@ public final class JCommandManager {
      * @return 执行结果
      * @see #executeCommandDetailed(CommandSender, Object...)
      */
+    @ConsoleExperimentalAPI
     @NotNull
     public static CompletableFuture<@NotNull CommandExecuteResult>
     executeCommandDetailedAsync(final @NotNull CoroutineScope scope, final @NotNull CommandSender sender, final @NotNull Object... args) {
