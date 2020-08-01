@@ -94,13 +94,13 @@ object GitHub {
         /*
         * 只能获取1M以内/branch为master的sha
         * */
-        class TargetTooLargeException() : Exception("Target TOO Large")
+        class TargetTooLargeException : Exception("Target TOO Large")
 
         suspend fun getShaSmart(repo: String, filePath: String, project: Project): String? {
             return withContext(Dispatchers.IO) {
                 val response = Jsoup
                     .connect(
-                        "https://api.github.com/repos/mamoe/$repo/contents/$filePath?access_token=" + getGithubToken(
+                        "https://api.github.com/repos/project-mirai/$repo/contents/$filePath?access_token=" + getGithubToken(
                             project
                         )
                     )
@@ -129,7 +129,7 @@ object GitHub {
             val resp = withContext(Dispatchers.IO) {
                 Jsoup
                     .connect(
-                        "https://api.github.com/repos/mamoe/$repo/git/ref/heads/$branch?access_token=" + getGithubToken(
+                        "https://api.github.com/repos/project-mirai/$repo/git/ref/heads/$branch?access_token=" + getGithubToken(
                             project
                         )
                     )
