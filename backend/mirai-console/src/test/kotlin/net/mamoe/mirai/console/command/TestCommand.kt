@@ -11,7 +11,23 @@
 
 package net.mamoe.mirai.console.command
 
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.Testing
+import net.mamoe.mirai.console.Testing.withTesting
+import net.mamoe.mirai.console.command.description.CommandArgParser
+import net.mamoe.mirai.console.command.description.CommandParserContext
+import net.mamoe.mirai.console.command.internal.InternalCommandManager
+import net.mamoe.mirai.console.command.internal.flattenCommandComponents
+import net.mamoe.mirai.console.initTestEnvironment
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.toMessage
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import kotlin.test.*
 
 object TestCompositeCommand : CompositeCommand(
     ConsoleCommandOwner,
@@ -33,7 +49,7 @@ object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
 internal val sender by lazy { ConsoleCommandSender.instance }
 internal val owner by lazy { ConsoleCommandOwner }
 
-/*
+
 internal class TestCommand {
     companion object {
         @JvmStatic
@@ -45,8 +61,7 @@ internal class TestCommand {
         @AfterAll
         @JvmStatic
         fun destroy() {
-           // Runtime.getRuntime().halt(0) // TODO: 2020/8/1 fix exitProcess
-            exitProcess(0)
+            MiraiConsole.cancel()
         }
     }
 
@@ -209,4 +224,3 @@ internal class TestCommand {
         }
     }
 }
-*/

@@ -9,9 +9,8 @@
 
 package net.mamoe.mirai.console.command
 
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
@@ -86,12 +85,6 @@ public object BuiltInCommands {
         ConsoleCommandOwner, "help",
         description = "Gets help about the console."
     ), BuiltInCommand {
-        init {
-            Runtime.getRuntime().addShutdownHook(thread(false) {
-                runBlocking { Stop.execute(ConsoleCommandSender.instance) }
-            })
-        }
-
         @Handler
         public suspend fun CommandSender.handle() {
             sendMessage("现在有指令: ${allRegisteredCommands.joinToString { it.primaryName }}")
@@ -105,57 +98,56 @@ public object BuiltInCommands {
     ), BuiltInCommand {
         init {
             Runtime.getRuntime().addShutdownHook(thread(false) {
-                if (!MiraiConsole.isActive) {
-                    return@thread
-                }
-                runBlocking { Stop.execute(ConsoleCommandSender.instance) }
+                MiraiConsole.cancel()
             })
         }
 
         private val closingLock = Mutex()
 
         @Handler
-        public suspend fun CommandSender.handle(): Unit = closingLock.withLock {
-            sendMessage("Stopping mirai-console")
-            kotlin.runCatching {
-                MiraiConsole.job.cancelAndJoin()
-            }.fold(
-                onSuccess = { sendMessage("mirai-console stopped successfully.") },
-                onFailure = {
-                    MiraiConsole.mainLogger.error(it)
-                    sendMessage(it.localizedMessage ?: it.message ?: it.toString())
-                }
-            )
+        public suspend fun CommandSender.handle(): Unit {
+            closingLock.withLock {
+                sendMessage("Stopping mirai-console")
+                kotlin.runCatching {
+                    MiraiConsole.job.cancelAndJoin()
+                }.fold(
+                    onSuccess = { sendMessage("mirai-console stopped successfully.") },
+                    onFailure = {
+                        MiraiConsole.mainLogger.error(it)
+                        sendMessage(it.localizedMessage ?: it.message ?: it.toString())
+                    }
+                )
+            }
             exitProcess(0)
         }
-    }
 
-    public object Login : SimpleCommand(
-        ConsoleCommandOwner, "login",
-        description = "Log in a bot account."
-    ), BuiltInCommand {
-        @Handler
-        public suspend fun CommandSender.handle(id: Long, password: String) {
+        public object Login : SimpleCommand(
+            ConsoleCommandOwner, "login",
+            description = "Log in a bot account."
+        ), BuiltInCommand {
+            @Handler
+            public suspend fun CommandSender.handle(id: Long, password: String) {
 
-            kotlin.runCatching {
-                MiraiConsole.addBot(id, password).alsoLogin()
-            }.fold(
-                onSuccess = { sendMessage("${it.nick} ($id) Login succeed") },
-                onFailure = { throwable ->
-                    sendMessage(
-                        "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
-                                if (this is MessageEventContextAware<*>) {
-                                    this.fromEvent.selectMessagesUnit {
-                                        "stacktrace" reply {
-                                            throwable.stacktraceString
+                kotlin.runCatching {
+                    MiraiConsole.addBot(id, password).alsoLogin()
+                }.fold(
+                    onSuccess = { sendMessage("${it.nick} ($id) Login succeed") },
+                    onFailure = { throwable ->
+                        sendMessage(
+                            "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
+                                    if (this is MessageEventContextAware<*>) {
+                                        this.fromEvent.selectMessagesUnit {
+                                            "stacktrace" reply {
+                                                throwable.stacktraceString
+                                            }
                                         }
-                                    }
-                                    "test"
-                                } else "")
+                                        "test"
+                                    } else "")
 
-                    throw throwable
-                }
-            )
+                        throw throwable
+                    }
+                )
+            }
         }
     }
 }

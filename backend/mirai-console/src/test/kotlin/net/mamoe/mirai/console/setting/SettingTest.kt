@@ -9,7 +9,12 @@
 
 package net.mamoe.mirai.console.setting
 
-/*
+import kotlinx.serialization.json.Json
+import net.mamoe.mirai.console.utils.ConsoleInternalAPI
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertSame
+
 @OptIn(ConsoleInternalAPI::class)
 internal class SettingTest {
 
@@ -129,4 +134,3 @@ internal class SettingTest {
         assertSame(reference(), delegation()) // check shadowing
     }
 }
-*/
