@@ -60,7 +60,7 @@ class MiraiGraphicalFrontEndController : Controller(), MiraiConsoleFrontEnd {
     }
 
     fun login(qq: String, psd: String) {
-        CommandManager.runCommand(ConsoleCommandSender, "/login $qq $psd")
+        CommandManager.runCommand(ConsoleCommandSender, "login $qq $psd")
     }
 
     fun logout(qq: Long) {
