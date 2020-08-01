@@ -1,5 +1,9 @@
+@file:Suppress("UnusedImport")
+
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
 
 plugins {
     kotlin("jvm") version Versions.kotlinCompiler
@@ -54,7 +58,9 @@ dependencies {
     compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
     compileAndRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib))
 
-    api("net.mamoe.yamlkt:yamlkt:0.3.1")
+    implementation(kotlinx("serialization-runtime", Versions.serialization))
+
+    implementation("net.mamoe.yamlkt:yamlkt:0.3.1")
     api("org.jetbrains:annotations:19.0.0")
     api(kotlinx("coroutines-jdk8", Versions.coroutines))
 
