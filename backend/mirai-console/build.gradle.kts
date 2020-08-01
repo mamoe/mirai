@@ -58,6 +58,7 @@ dependencies {
     compileAndRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib))
 
     implementation(kotlinx("serialization-runtime", Versions.serialization))
+    implementation(kotlin("reflect"))
 
     implementation("net.mamoe.yamlkt:yamlkt:0.3.1")
     api("org.jetbrains:annotations:19.0.0")
