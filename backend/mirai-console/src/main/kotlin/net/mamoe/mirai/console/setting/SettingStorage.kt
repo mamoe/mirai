@@ -89,7 +89,7 @@ public interface MemorySettingStorage : SettingStorage, Map<Class<out Setting>, 
          */
         @JvmStatic
         @JvmName("create")
-        @JvmOverloads
+        // @JvmOverloads
         public operator fun invoke(onChanged: OnChangedCallback = OnChangedCallback.NoOp): MemorySettingStorage =
             MemorySettingStorageImpl(onChanged)
     }

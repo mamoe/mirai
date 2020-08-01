@@ -68,6 +68,7 @@ dependencies {
 
     //api(kotlinx("collections-immutable", Versions.collectionsImmutable))
 
+    testApi(kotlinx("serialization-runtime", Versions.serialization))
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))
     testApi(kotlin("test"))
