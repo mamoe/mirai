@@ -7,19 +7,21 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport")
 
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
-import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
+import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toMessage
+import net.mamoe.mirai.message.recall
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -55,8 +57,8 @@ abstract class Friend : User(), CoroutineScope {
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.
      *
-     * @see FriendMessageSendEvent 发送好友信息事件, cancellable
-     * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     * @see FriendMessagePreSendEvent 发送消息前事件
+     * @see FriendMessagePostSendEvent 发送消息后事件
      *
      * @throws EventCancelledException 当发送消息事件被取消时抛出
      * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
@@ -69,7 +71,7 @@ abstract class Friend : User(), CoroutineScope {
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
-    @kotlin.internal.InlineOnly // purely virtual
+    @kotlin.internal.InlineOnly
     @JvmSynthetic
     suspend inline fun sendMessage(message: String): MessageReceipt<Friend> {
         return sendMessage(message.toMessage())

@@ -64,26 +64,22 @@ internal class ChunkedInput(
  *
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
-internal fun ByteReadPacket.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
+internal fun ByteReadPacket.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.remaining <= sizePerPacket.toLong()) {
-        ByteArrayPool.useInstance { buffer ->
-            return flowOf(
-                ChunkedInput(
-                    buffer,
-                    this.readAvailable(buffer, 0, sizePerPacket)
-                )
+        return flowOf(
+            ChunkedInput(
+                buffer,
+                this.readAvailable(buffer, 0, sizePerPacket)
             )
-        }
+        )
     }
     return flow {
-        ByteArrayPool.useInstance { buffer ->
-            val chunkedInput = ChunkedInput(buffer, 0)
-            do {
-                chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
-                emit(chunkedInput)
-            } while (this@chunkedFlow.isNotEmpty)
-        }
+        val chunkedInput = ChunkedInput(buffer, 0)
+        do {
+            chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
+            emit(chunkedInput)
+        } while (this@chunkedFlow.isNotEmpty)
     }
 }
 
@@ -93,19 +89,17 @@ internal fun ByteReadPacket.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> 
  * 对于一个 1000 长度的 [ByteReadChannel] 和参数 [sizePerPacket] = 300, 将会产生含四个元素的 [Sequence],
  * 其长度分别为: 300, 300, 300, 100.
  */
-internal fun ByteReadChannel.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
+internal fun ByteReadChannel.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.isClosedForRead) {
         return flowOf()
     }
     return flow {
-        ByteArrayPool.useInstance { buffer ->
-            val chunkedInput = ChunkedInput(buffer, 0)
-            do {
-                chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
-                emit(chunkedInput)
-            } while (!this@chunkedFlow.isClosedForRead)
-        }
+        val chunkedInput = ChunkedInput(buffer, 0)
+        do {
+            chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
+            emit(chunkedInput)
+        } while (!this@chunkedFlow.isClosedForRead)
     }
 }
 
@@ -117,7 +111,7 @@ internal fun ByteReadChannel.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput>
  * 其长度分别为: 300, 300, 300, 100.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
+internal fun Input.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
 
     if (this.endOfInput) {
@@ -125,12 +119,10 @@ internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
     }
 
     return flow {
-        ByteArrayPool.useInstance { buffer ->
-            val chunkedInput = ChunkedInput(buffer, 0)
-            while (!this@chunkedFlow.endOfInput) {
-                chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
-                emit(chunkedInput)
-            }
+        val chunkedInput = ChunkedInput(buffer, 0)
+        while (!this@chunkedFlow.endOfInput) {
+            chunkedInput.size = this@chunkedFlow.readAvailable(buffer, 0, sizePerPacket)
+            emit(chunkedInput)
         }
     }
 }
@@ -144,16 +136,14 @@ internal fun Input.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
 @OptIn(ExperimentalCoroutinesApi::class, InternalSerializationApi::class)
-internal fun InputStream.chunkedFlow(sizePerPacket: Int): Flow<ChunkedInput> {
-    ByteArrayPool.checkBufferSize(sizePerPacket)
+internal fun InputStream.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
+    require(sizePerPacket <= buffer.size) { "sizePerPacket is too large. Maximum buffer size=buffer.size=${buffer.size}" }
 
     return flow {
-        ByteArrayPool.useInstance { buffer ->
-            val chunkedInput = ChunkedInput(buffer, 0)
-            while (this@chunkedFlow.available() != 0) {
-                chunkedInput.size = this@chunkedFlow.read(buffer, 0, sizePerPacket)
-                emit(chunkedInput)
-            }
+        val chunkedInput = ChunkedInput(buffer, 0)
+        while (this@chunkedFlow.available() != 0) {
+            chunkedInput.size = this@chunkedFlow.read(buffer, 0, sizePerPacket)
+            emit(chunkedInput)
         }
     }
 }

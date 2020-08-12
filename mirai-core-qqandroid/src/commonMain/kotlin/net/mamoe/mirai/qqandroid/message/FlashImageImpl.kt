@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION_ERROR", "UnusedImport")
+
 package net.mamoe.mirai.qqandroid.message
 
 import net.mamoe.mirai.message.data.FriendFlashImage

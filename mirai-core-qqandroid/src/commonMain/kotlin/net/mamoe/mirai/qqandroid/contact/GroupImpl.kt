@@ -22,7 +22,6 @@ import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -33,6 +32,7 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.createToGroup
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.utils.estimateLength
 import net.mamoe.mirai.utils.*
@@ -129,7 +129,7 @@ internal class GroupImpl(
             get() = _announcement
             set(newValue) {
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
-                if (_announcement != newValue) {
+                //if (_announcement != newValue) {
                     val oldValue = _announcement
                     _announcement = newValue
                     launch {
@@ -142,7 +142,7 @@ internal class GroupImpl(
                         }
                         GroupEntranceAnnouncementChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                }
+                //}
             }
 
 
@@ -150,7 +150,7 @@ internal class GroupImpl(
             get() = _allowMemberInvite
             set(newValue) {
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
-                if (_allowMemberInvite != newValue) {
+                //if (_allowMemberInvite != newValue) {
                     val oldValue = _allowMemberInvite
                     _allowMemberInvite = newValue
                     launch {
@@ -163,7 +163,7 @@ internal class GroupImpl(
                         }
                         GroupAllowMemberInviteEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                }
+                //}
             }
 
         override var isAutoApproveEnabled: Boolean
@@ -180,34 +180,34 @@ internal class GroupImpl(
                 TODO()
             }
 
+        @Suppress("OverridingDeprecatedMember")
         override var isConfessTalkEnabled: Boolean
             get() = _confessTalk
             set(newValue) {
 
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
-                if (_confessTalk != newValue) {
-                    val oldValue = _confessTalk
-                    _confessTalk = newValue
-                    launch {
-                        bot.network.run {
-                            TroopManagement.GroupOperation.confessTalk(
-                                client = bot.client,
-                                groupCode = id,
-                                switch = newValue
-                            ).sendWithoutExpect()
-                        }
-                        GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
+                //if (_confessTalk != newValue) {
+                val oldValue = _confessTalk
+                _confessTalk = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.confessTalk(
+                            client = bot.client,
+                            groupCode = id,
+                            switch = newValue
+                        ).sendWithoutExpect()
                     }
+                    GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
                 }
+                // }
             }
 
 
         override var isMuteAll: Boolean
             get() = _muteAll
             set(newValue) {
-
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
-                if (_muteAll != newValue) {
+                //if (_muteAll != newValue) {
                     val oldValue = _muteAll
                     _muteAll = newValue
                     launch {
@@ -220,7 +220,7 @@ internal class GroupImpl(
                         }
                         GroupMuteAllEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
                     }
-                }
+                //}
             }
     }
 
@@ -304,94 +304,92 @@ internal class GroupImpl(
             check(message.nodeList.size < 200) {
                 throw MessageTooLargeException(
                     this, message, message,
-                    "ForwardMessage allows up to 200 nodes, but found ${message.nodeList.size}")
+                    "ForwardMessage allows up to 200 nodes, but found ${message.nodeList.size}"
+                )
             }
 
             return bot.lowLevelSendGroupLongOrForwardMessage(this.id, message.nodeList, false, message)
         }
 
-        val msg: MessageChain
+        val msg: MessageChain = if (message !is LongMessage && message !is ForwardMessageInternal) {
+            val chain = kotlin.runCatching {
+                GroupMessagePreSendEvent(this, message).broadcast()
+            }.onSuccess {
+                check(!it.isCancelled) {
+                    throw EventCancelledException("cancelled by GroupMessagePreSendEvent")
+                }
+            }.getOrElse {
+                throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
+            }.message.asMessageChain()
 
-        if (message !is LongMessage && message !is ForwardMessageInternal) {
-            val event = GroupMessageSendEvent(this, message.asMessageChain()).broadcast()
-            if (event.isCancelled) {
-                throw EventCancelledException("cancelled by GroupMessageSendEvent")
-            }
-
-            val length = event.message.estimateLength(703) // 阈值为700左右，限制到3的倍数
+            val length = chain.estimateLength(703) // 阈值为700左右，限制到3的倍数
             var imageCnt = 0 // 通过下方逻辑短路延迟计算
 
-            if (length > 5000 || event.message.count { it is Image }.apply { imageCnt = this } > 50) {
+            if (length > 5000 || chain.count { it is Image }.apply { imageCnt = this } > 50) {
                 throw MessageTooLargeException(
-                    this,
-                    message,
-                    event.message,
-                    "message(${event.message.joinToString(
-                        "",
-                        limit = 10
-                    )}) is too large. Allow up to 50 images or 5000 chars"
+                    this, message, chain,
+                    "message(${chain.joinToString("", limit = 10)}) is too large. Allow up to 50 images or 5000 chars"
                 )
             }
 
             if (length > 702 || imageCnt > 2) {
-                return bot.lowLevelSendGroupLongOrForwardMessage(this.id,
-                    listOf(ForwardMessage.Node(
-                        senderId = bot.id,
-                        time = currentTimeSeconds.toInt(),
-                        message = event.message,
-                        senderName = bot.nick)
+                return bot.lowLevelSendGroupLongOrForwardMessage(
+                    this.id,
+                    listOf(
+                        ForwardMessage.Node(
+                            senderId = bot.id,
+                            time = currentTimeSeconds.toInt(),
+                            message = chain,
+                            senderName = bot.nick
+                        )
                     ),
-                    true, null)
+                    true, null
+                )
             }
+            chain
+        } else message.asMessageChain()
 
-            msg = event.message
-        } else msg = message.asMessageChain()
         msg.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
-        lateinit var source: MessageSourceToGroupImpl
-        bot.network.run {
-            val response: MessageSvcPbSendMsg.Response = MessageSvcPbSendMsg.createToGroup(
+
+        val result = bot.network.runCatching {
+            val source: MessageSourceToGroupImpl
+            MessageSvcPbSendMsg.createToGroup(
                 bot.client,
                 this@GroupImpl,
                 msg,
                 isForward
             ) {
                 source = it
-            }.sendAndExpect()
-            if (response is MessageSvcPbSendMsg.Response.Failed) {
-                when (response.resultType) {
-                    120 -> throw BotIsBeingMutedException(this@GroupImpl)
-                    34 -> {
-                        kotlin.runCatching { // allow retry once
-                            return bot.lowLevelSendGroupLongOrForwardMessage(
-                                id, listOf(
-                                    ForwardMessage.Node(
-                                        senderId = bot.id,
-                                        time = currentTimeSeconds.toInt(),
-                                        message = msg,
-                                        senderName = bot.nick
-                                    )
-                                ), true, null)
-                        }.getOrElse {
-                            throw IllegalStateException("internal error: send message failed(34)", it)
-                        }
-                    }
-                    else -> error("send message failed: $response")
+            }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
+                check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
+                    "Send temp message failed: $it"
                 }
             }
-        }
 
-        try {
-            source.ensureSequenceIdAvailable()
-        } catch (e: Exception) {
-            bot.network.logger.warning {
-                "Timeout awaiting sequenceId for group message(${message.contentToString()
-                    .take(10)}). Some features may not work properly"
+            try {
+                source.ensureSequenceIdAvailable()
+            } catch (e: Exception) {
+                bot.network.logger.warning {
+                    "Timeout awaiting sequenceId for group message(${message.contentToString()
+                        .take(10)}). Some features may not work properly"
+                }
+                bot.network.logger.warning(e)
             }
-            bot.network.logger.warning(e)
+
+            MessageReceipt(source, this@GroupImpl, botAsMember)
         }
 
-        return MessageReceipt(source, this, botAsMember)
+        result.fold(
+            onSuccess = {
+                GroupMessagePostSendEvent(this, msg, null, it)
+            },
+            onFailure = {
+                GroupMessagePostSendEvent(this, msg, it, null)
+            }
+        ).broadcast()
+
+        return result.getOrThrow()
     }
 
     @Suppress("DEPRECATION")

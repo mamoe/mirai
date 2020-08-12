@@ -12,7 +12,8 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.utils.internal.runBlocking
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.annotations.NotNull
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.EmptyCoroutineContext
@@ -75,6 +76,13 @@ internal class JvmMethodEventsTest {
 
             @EventHandler
             @Suppress("unused")
+            private fun TestEvent.`test annotations`(@NotNull event: TestEvent): ListeningStatus {
+                called.getAndIncrement()
+                return ListeningStatus.STOPPED
+            }
+
+            @EventHandler
+            @Suppress("unused")
             fun TestEvent.`receiver param LS`(event: TestEvent): ListeningStatus {
                 called.getAndIncrement()
                 return ListeningStatus.STOPPED
@@ -88,7 +96,7 @@ internal class JvmMethodEventsTest {
                 TestEvent().broadcast()
             }
 
-            assertEquals(8, this.getCalled())
+            assertEquals(9, this.getCalled())
         }
     }
 
@@ -114,14 +122,14 @@ internal class JvmMethodEventsTest {
             }
         }
 
-        TestClass().run {
-            this.registerEvents()
-
-            runBlocking {
-                TestEvent().broadcast()
-            }
-
-            assertEquals(1, this.getCalled())
-        }
+//        TestClass().run {
+//            this.registerEvents()
+//
+//            runBlocking {
+//                TestEvent().broadcast()
+//            }
+//
+//            assertEquals(1, this.getCalled())
+//        }
     }
 }

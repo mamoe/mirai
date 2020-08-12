@@ -136,12 +136,9 @@ internal class StatSvc {
                                 strDevName = client.device.model.encodeToString(),
                                 strDevType = client.device.model.encodeToString(),
                                 strOSVer = client.device.version.release.encodeToString(),
-
                                 uOldSSOIp = 0,
-                                uNewSSOIp = MiraiPlatformUtils.localIpAddress().split(".")
-                                    .foldIndexed(0L) { index: Int, acc: Long, s: String ->
-                                        acc or ((s.toLong() shl (index * 16)))
-                                    },
+                                uNewSSOIp = MiraiPlatformUtils.localIpAddress().runCatching { ipToLong() }
+                                    .getOrElse { "192.168.1.123".ipToLong() },
                                 strVendorName = "MIUI",
                                 strVendorOSName = "?ONEPLUS A5000_23_17",
                                 // register 时还需要
@@ -173,13 +170,19 @@ internal class StatSvc {
             }
         }
 
+        private fun String.ipToLong(): Long {
+            return split('.').foldIndexed(0L) { index: Int, acc: Long, s: String ->
+                acc or (((s.toLongOrNull() ?: 0) shl (index * 16)))
+            }
+        }
+
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             return Response
         }
     }
 
     internal object ReqMSFOffline :
-        IncomingPacketFactory<BotOfflineEvent.Dropped>("StatSvc.ReqMSFOffline", "StatSvc.RspMSFForceOffline") {
+        IncomingPacketFactory<BotOfflineEvent.MsfOffline>("StatSvc.ReqMSFOffline", "StatSvc.RspMSFForceOffline") {
 
         internal data class MsfOfflineToken(
             val uin: Long,
@@ -187,13 +190,13 @@ internal class StatSvc {
             val const: Byte
         ) : Packet, RuntimeException("dropped by StatSvc.ReqMSFOffline")
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): BotOfflineEvent.Dropped {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): BotOfflineEvent.MsfOffline {
             val decodeUniPacket = readUniPacket(RequestMSFForceOffline.serializer())
             @Suppress("INVISIBLE_MEMBER")
-            return BotOfflineEvent.Dropped(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
+            return BotOfflineEvent.MsfOffline(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
         }
 
-        override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.Dropped, sequenceId: Int): OutgoingPacket? {
+        override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.MsfOffline, sequenceId: Int): OutgoingPacket? {
             val cause = packet.cause
             check(cause is MsfOfflineToken) { "internal error: handling $packet in StatSvc.ReqMSFOffline" }
             return buildResponseUniPacket(client) {

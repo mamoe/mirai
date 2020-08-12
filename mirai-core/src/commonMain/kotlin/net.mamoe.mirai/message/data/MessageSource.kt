@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
-@file:Suppress("NOTHING_TO_INLINE", "unused", "INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR")
+@file:Suppress("NOTHING_TO_INLINE", "unused", "INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "UnUsedImport")
 
 package net.mamoe.mirai.message.data
 
@@ -18,6 +18,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.quote
+import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.LazyProperty
 import kotlin.coroutines.CoroutineContext
@@ -27,7 +29,9 @@ import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
 /**
- * 消息源, 它存在于 [MessageChain] 中, 用于表示这个消息的来源.
+ * 消息源. 消息源存在于 [MessageChain] 中, 用于表示这个消息的来源, 也可以用来分辨 [MessageChain].
+ *
+ * 对于来自 [MessageEvent.message] 的 [MessageChain]
  *
  *
  * ### 组成
@@ -47,6 +51,7 @@ import kotlin.jvm.JvmSynthetic
  * #### content
  * - [originalMessage] 消息内容
  *
+ * ### 使用
  *
  * 消息源可用于 [引用回复][QuoteReply] 或 [撤回][Bot.recall].
  *
@@ -55,6 +60,8 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see OnlineMessageSource 在线消息的 [MessageSource]
  * @see OfflineMessageSource 离线消息的 [MessageSource]
+ *
+ * @see buildMessageSource 构造一个 [OfflineMessageSource]
  */
 sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
     companion object Key : Message.Key<MessageSource> {
@@ -69,7 +76,7 @@ sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSo
     abstract val bot: Bot
 
     /**
-     * 消息 id (序列号).
+     * 消息 id (序列号). 在获取失败时 (概率很低) 为 `-1`.
      **
      * #### 值域
      * 值的范围约为 [UShort] 的范围.
@@ -344,6 +351,10 @@ inline fun MessageChain.quote(): QuoteReply = QuoteReply(this.source)
 /**
  * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
  *
+ * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
+ *
+ * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
+ *
  * [Bot] 撤回自己的消息不需要权限.
  * [Bot] 撤回群员的消息需要管理员权限.
  *
@@ -376,54 +387,63 @@ inline fun MessageSource.recallIn(
 
 /**
  * 消息 id.
- * 仅从服务器接收的消息才可以获取
+ *
+ * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源.
  *
  * @see MessageSource.id
  */
 @get:JvmSynthetic
-inline val MessageChain.id: Int
+val MessageChain.id: Int
     get() = this.source.id
 
 /**
  * 消息内部 id.
- * 仅从服务器接收的消息才可以获取
+ *
+ * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源.
  *
  * @see MessageSource.id
  */
 @get:JvmSynthetic
-inline val MessageChain.internalId: Int
+val MessageChain.internalId: Int
     get() = this.source.internalId
 
 /**
  * 消息时间.
- * 仅从服务器接收的消息才可以获取
+ *
+ * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源.
  *
  * @see MessageSource.id
  */
 @get:JvmSynthetic
-inline val MessageChain.time: Int
+val MessageChain.time: Int
     get() = this.source.time
 
 /**
  * 消息内部 id.
- * 仅从服务器接收的消息才可以获取
+ *
+ * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取. 否则将抛出异常 [NoSuchElementException]
  *
  * @see MessageSource.id
  */
 @get:JvmSynthetic
-inline val MessageChain.bot: Bot
+val MessageChain.bot: Bot
     get() = this.source.bot
 
 /**
- * 获取这条消息源
- * 仅从服务器接收的消息才可以获取消息源
+ * 获取这条消息的 [消息源][MessageSource].
+ *
+ * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源, 否则将抛出异常 [NoSuchElementException]
  */
 @get:JvmSynthetic
-inline val MessageChain.source: MessageSource
+val MessageChain.source: MessageSource
     get() = this.getOrFail(MessageSource)
 
 /**
  * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
+ *
+ * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
+ *
+ * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
  *
  * [Bot] 撤回自己的消息不需要权限.
  * [Bot] 撤回群员的消息需要管理员权限.
@@ -438,6 +458,10 @@ suspend inline fun MessageChain.recall() = this.source.recall()
 
 /**
  * 在一段时间后撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
+ *
+ * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
+ *
+ * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
  *
  * [Bot] 撤回自己的消息不需要权限.
  * [Bot] 撤回群员的消息需要管理员权限.

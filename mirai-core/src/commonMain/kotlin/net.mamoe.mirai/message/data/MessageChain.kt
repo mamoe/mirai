@@ -14,31 +14,27 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.js.JsName
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmSynthetic
+import kotlin.jvm.*
 import kotlin.reflect.KProperty
 
 /**
  * 消息链. 空的实现为 [EmptyMessageChain]
- *
- * 在发送消息时必须构造一个消息链, 可通过一系列扩展函数 [asMessageChain] 转换.
  *
  * 要获取更多消息相关的信息, 查看 [Message]
  *
  * ### 构造消息链
  * - [buildMessageChain]: 使用构建器
  * - [Message.plus]: 将两个消息相连成为一个消息链
- * - [asMessageChain] 将 [Iterable], 等类型消息
+ * - [asMessageChain] 将 [Iterable], [Array] 等类型消息转换为 [MessageChain]
  * - [messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
  *
  * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
  * @see getOrFail 获取消息链中一个类型的元素, 不存在时抛出异常 [NoSuchElementException]
  * @see quote 引用这条消息
- * @see recall 撤回这条消息 (
+ * @see recall 撤回这条消息 (仅限来自 [MessageEvent] 的消息)
  *
  * @see buildMessageChain 构造一个 [MessageChain]
  * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
@@ -63,10 +59,25 @@ interface MessageChain : Message, List<SingleMessage>, RandomAccess {
     /**
      * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`
      *
+     * ### Kotlin 使用方法
+     * ```
+     * val chain: MessageChain = ...
+     *
+     * val at = Message[At] // At 为伴生对象
+     * ```
+     *
+     * ### Java 使用方法
+     * ```java
+     * MessageChain chain = ...
+     * chain.first(At.Key)
+     * ```
+     *
      * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
+     *
+     * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
     @JvmName("first")
-    final operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
+    operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
 
     /**
      * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face] 等
@@ -74,27 +85,22 @@ interface MessageChain : Message, List<SingleMessage>, RandomAccess {
      */
     @JvmName("forEachContent")
     @JavaFriendlyAPI
-    final fun __forEachContentForJava__(block: (Message) -> Unit) = this.forEachContent(block)
-
-
-    @PlannedRemoval("1.1.0")
-    @Deprecated("use Java 8 API", level = DeprecationLevel.HIDDEN)
-    @JvmName("forEach")
-    @JavaFriendlyAPI
-    @JvmSynthetic
-    @kotlin.internal.LowPriorityInOverloadResolution
-    final fun __forEachForJava__(block: (Message) -> Unit) = this.forEach(block)
+    fun __forEachContentForJava__(block: (Message) -> Unit) = this.forEachContent(block)
 
     @PlannedRemoval("1.2.0")
     @JvmName("firstOrNull")
-    @Deprecated("use get instead. This is going to be removed in mirai 1.2.0", ReplaceWith("get(key)"))
-    final fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
+    @Deprecated(
+        "use get instead. This is going to be removed in mirai 1.2.0",
+        ReplaceWith("get(key)"),
+        level = DeprecationLevel.ERROR
+    )
+    fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
 }
 
 // region accessors
 
 /**
- * 获取第一个类型为 [key] 的 [Message] 实例
+ * 获取第一个类型为 [key] 的 [Message] 实例, 在找不到此类型的元素时抛出 [NoSuchElementException]
  *
  * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
  */
@@ -213,7 +219,8 @@ inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, p
  * 可空的委托
  * @see orNull
  */
-inline class OrNullDelegate<out R : Message?>(private val value: Any?) {
+@Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
+inline class OrNullDelegate<out R> @PublishedApi internal constructor(@JvmField @PublishedApi internal val value: Any?) {
     @Suppress("UNCHECKED_CAST")
     operator fun getValue(thisRef: Any?, property: KProperty<*>): R = value as R
 }
@@ -248,10 +255,9 @@ inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> =
  */
 @Suppress("RemoveExplicitTypeArguments")
 @JvmSynthetic
-inline fun <reified T : Message?> MessageChain.orElse(
-    lazyDefault: () -> T
-): OrNullDelegate<T> =
-    OrNullDelegate<T>(this.firstIsInstanceOrNull<T>() ?: lazyDefault())
+inline fun <reified T : R, R : Message?> MessageChain.orElse(
+    lazyDefault: () -> R
+): OrNullDelegate<R> = OrNullDelegate<R>(this.firstIsInstanceOrNull<T>() ?: lazyDefault())
 
 // endregion delegate
 
@@ -399,8 +405,8 @@ inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.as
  * 扁平化 [Message]
  *
  * 对于不同类型的接收者（receiver）:
- * - `CombinedMessage(A, B)` 返回 `A <- B`
- * - `MessageChain(E, F, G)` 返回 `E <- F <- G`
+ * - [CombinedMessage]`(A, B)` 返回 `A <- B`
+ * - `[MessageChain](E, F, G)` 返回 `E <- F <- G`
  * - 其他: 返回 `sequenceOf(this)`
  */
 fun Message.flatten(): Sequence<SingleMessage> {

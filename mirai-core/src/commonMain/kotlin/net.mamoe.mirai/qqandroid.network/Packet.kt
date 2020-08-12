@@ -1,5 +1,6 @@
 package net.mamoe.mirai.qqandroid.network
 
+import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.utils.MiraiInternalAPI
 
 /**
@@ -14,4 +15,9 @@ interface Packet {
      * 实现这个接口的包将不会被记录到日志中
      */
     interface NoLog
+
+    /**
+     * 实现这个接口的 [Event] 不会被作为事件记录到日志中
+     */
+    interface NoEventLog
 }

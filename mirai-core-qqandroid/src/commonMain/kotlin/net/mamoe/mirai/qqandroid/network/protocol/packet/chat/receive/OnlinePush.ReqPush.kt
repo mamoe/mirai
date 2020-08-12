@@ -81,7 +81,9 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
         val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
             when (msgInfo.shMsgType.toInt()) {
                 732 -> {
-                    val group = bot.getGroup(readUInt().toLong())
+                    val group = bot.getGroupOrNull(readUInt().toLong())
+                        ?: return@deco emptySequence() // group has not been initialized
+
                     GroupImpl.checkIsInstance(group)
 
                     val internalType = readByte().toInt()
@@ -257,6 +259,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     }
                 }
 
+                @Suppress("DEPRECATION")
                 if (group.settings.isConfessTalkEnabled == new) {
                     return@lambda732 emptySequence()
                 }
@@ -390,6 +393,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     },
     // bot 在其他客户端被踢或主动退出而同步情况
     0xD4L to lambda528 { bot ->
+        // this.soutv("0x210")
         @Serializable
         data class SubD4(
             // ok

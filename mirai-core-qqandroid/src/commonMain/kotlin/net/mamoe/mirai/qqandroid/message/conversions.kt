@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 @file:OptIn(LowLevelAPI::class)
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.qqandroid.message
 
@@ -100,10 +100,12 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             is CustomMessage -> {
                 @Suppress("UNCHECKED_CAST")
                 elements.add(
-                    ImMsgBody.Elem(customElem = ImMsgBody.CustomElem(
-                        enumType = MIRAI_CUSTOM_ELEM_TYPE,
-                        data = CustomMessage.serialize(it.getFactory() as CustomMessage.Factory<CustomMessage>, it)
-                    ))
+                    ImMsgBody.Elem(
+                        customElem = ImMsgBody.CustomElem(
+                            enumType = MIRAI_CUSTOM_ELEM_TYPE,
+                            data = CustomMessage.dump(it.getFactory() as CustomMessage.Factory<CustomMessage>, it)
+                        )
+                    )
                 )
             }
             is At -> {
@@ -388,18 +390,22 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
             element.customElem != null -> {
                 element.customElem.data.read {
                     kotlin.runCatching {
-                        CustomMessage.deserialize(this)
+                        CustomMessage.load(this)
                     }.fold(
                         onFailure = {
                             if (it is CustomMessage.Key.CustomMessageFullDataDeserializeInternalException) {
-                                bot.logger.error("Internal error: " +
-                                        "exception while deserializing CustomMessage head data," +
-                                        " data=${element.customElem.data.toUHexString()}", it)
+                                bot.logger.error(
+                                    "Internal error: " +
+                                            "exception while deserializing CustomMessage head data," +
+                                            " data=${element.customElem.data.toUHexString()}", it
+                                )
                             } else {
                                 it as CustomMessage.Key.CustomMessageFullDataDeserializeUserException
-                                bot.logger.error("User error: " +
-                                        "exception while deserializing CustomMessage body," +
-                                        " body=${it.body.toUHexString()}", it)
+                                bot.logger.error(
+                                    "User error: " +
+                                            "exception while deserializing CustomMessage body," +
+                                            " body=${it.body.toUHexString()}", it
+                                )
                             }
 
                         },
@@ -450,9 +456,10 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
 internal fun contextualBugReportException(
     context: String,
     forDebug: String,
-    e: Throwable? = null
+    e: Throwable? = null,
+    additional: String = ""
 ): IllegalStateException {
-    return IllegalStateException("在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai. 调试信息: $forDebug", e)
+    return IllegalStateException("在 $context 时遇到了意料之中的问题. 请完整复制此日志提交给 mirai. $additional 调试信息: $forDebug", e)
 }
 
 @OptIn(ExperimentalContracts::class)

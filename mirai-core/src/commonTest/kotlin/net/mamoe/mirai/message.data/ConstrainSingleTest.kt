@@ -92,7 +92,7 @@ internal class ConstrainSingleTest {
         }
 
         assertEquals(7, result.size)
-        assertEquals(" [表情]ss p test", result.contentToString())
+        assertEquals(" [OK]ss p test", result.contentToString())
         result as MessageChainImplByCollection
         assertSame(new, result.delegate.toTypedArray()[2])
     }

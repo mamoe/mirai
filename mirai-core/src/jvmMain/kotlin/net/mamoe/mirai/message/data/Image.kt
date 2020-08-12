@@ -13,8 +13,15 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.io.core.Input
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.sendAsImageTo
+import net.mamoe.mirai.message.sendImage
+import net.mamoe.mirai.message.uploadAsImage
+import net.mamoe.mirai.message.uploadImage
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.sendImage
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -42,15 +49,19 @@ import java.net.URL
  * @see Input.sendAsImageTo
  * @see URL.sendAsImageTo
  *
- *
  * ### 下载图片
- * @see Image.queryUrl 查询图片下载链接
+ * @see Image.queryUrl 扩展函数. 查询图片下载链接
+ * @see Bot.queryImageUrl 查询图片下载链接 (Java 使用)
  *
+ * 查看平台 `actual` 定义以获取上传方式扩展.
+ *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:image:*[Image.imageId]*&#93;
  *
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-actual interface Image : Message, MessageContent {
+actual interface Image : Message, MessageContent, CodableMessage {
     actual companion object Key : Message.Key<Image> {
         actual override val typeName: String get() = "Image"
     }
@@ -74,9 +85,11 @@ actual interface Image : Message, MessageContent {
     actual val imageId: String
 
 
-    @Deprecated("""
+    @Deprecated(
+        """
         不要自行实现 OnlineGroupImage, 它必须由协议模块实现, 否则会无法发送也无法解析.
-    """, level = DeprecationLevel.HIDDEN)
+    """, level = DeprecationLevel.HIDDEN
+    )
     @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName", "unused")
     @get:JvmSynthetic
     internal actual val DoNotImplementThisClass: Nothing?

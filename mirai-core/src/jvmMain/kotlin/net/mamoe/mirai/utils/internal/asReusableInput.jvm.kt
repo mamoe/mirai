@@ -4,9 +4,14 @@ import io.ktor.utils.io.ByteWriteChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.Input
+import kotlinx.io.streams.asInput
 import net.mamoe.mirai.message.data.toLongUnsigned
 import java.io.File
 import java.io.InputStream
+
+internal const val DEFAULT_REUSABLE_INPUT_BUFFER_SIZE = 8192
 
 internal actual fun ByteArray.asReusableInput(): ReusableInput {
     return object : ReusableInput {
@@ -15,9 +20,11 @@ internal actual fun ByteArray.asReusableInput(): ReusableInput {
 
         override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
             return object : ChunkedFlowSession<ChunkedInput> {
-                override val flow: Flow<ChunkedInput> = inputStream().chunkedFlow(sizePerPacket)
+                private val stream = inputStream()
+                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket, ByteArray(DEFAULT_REUSABLE_INPUT_BUFFER_SIZE.coerceAtLeast(sizePerPacket)))
 
                 override fun close() {
+                    stream.close()
                     // nothing to do
                 }
             }
@@ -27,6 +34,10 @@ internal actual fun ByteArray.asReusableInput(): ReusableInput {
             out.writeFully(this@asReusableInput, 0, this@asReusableInput.size)
             out.flush()
             return this@asReusableInput.size.toLongUnsigned()
+        }
+
+        override fun asInput(): Input {
+            return ByteReadPacket(this@asReusableInput)
         }
     }
 }
@@ -39,7 +50,7 @@ internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
         override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
             val stream = inputStream()
             return object : ChunkedFlowSession<ChunkedInput> {
-                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket)
+                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket, ByteArray(DEFAULT_REUSABLE_INPUT_BUFFER_SIZE.coerceAtLeast(sizePerPacket)))
                 override fun close() {
                     stream.close()
                     if (deleteOnClose) this@asReusableInput.delete()
@@ -49,6 +60,10 @@ internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
 
         override suspend fun writeTo(out: ByteWriteChannel): Long {
             return inputStream().use { it.copyTo(out) }
+        }
+
+        override fun asInput(): Input {
+            return inputStream().asInput()
         }
     }
 }
@@ -61,7 +76,7 @@ internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): Reusa
         override fun chunkedFlow(sizePerPacket: Int): ChunkedFlowSession<ChunkedInput> {
             val stream = inputStream()
             return object : ChunkedFlowSession<ChunkedInput> {
-                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket)
+                override val flow: Flow<ChunkedInput> = stream.chunkedFlow(sizePerPacket, ByteArray(DEFAULT_REUSABLE_INPUT_BUFFER_SIZE.coerceAtLeast(sizePerPacket)))
                 override fun close() {
                     stream.close()
                     if (deleteOnClose) this@asReusableInput.delete()
@@ -71,6 +86,10 @@ internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): Reusa
 
         override suspend fun writeTo(out: ByteWriteChannel): Long {
             return inputStream().use { it.copyTo(out) }
+        }
+
+        override fun asInput(): Input {
+            return inputStream().asInput()
         }
     }
 }

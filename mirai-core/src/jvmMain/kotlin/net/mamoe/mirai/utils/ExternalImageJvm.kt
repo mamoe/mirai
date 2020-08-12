@@ -64,21 +64,26 @@ fun Input.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput
 
 
 @PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun Input.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Suppress("RedundantSuspendModifier")
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
+suspend fun Input.suspendToExternalImage(): ExternalImage = toExternalImage()
 
+@Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun InputStream.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
+suspend fun InputStream.suspendToExternalImage(): ExternalImage = toExternalImage()
 
+@Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun URL.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
+suspend fun URL.suspendToExternalImage(): ExternalImage = toExternalImage()
 
+@Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun File.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
+suspend fun File.suspendToExternalImage(): ExternalImage = toExternalImage()
 
+@Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"))
-fun BufferedImage.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
+suspend fun BufferedImage.suspendToExternalImage(): ExternalImage = toExternalImage()

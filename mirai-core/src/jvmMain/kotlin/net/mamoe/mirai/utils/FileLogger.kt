@@ -13,8 +13,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-private val currentDay = Calendar.getInstance()[Calendar.DAY_OF_MONTH]
-private val currentDate = SimpleDateFormat("yyyy-MM-dd").format(Date())
+private val currentDay get() = Calendar.getInstance()[Calendar.DAY_OF_MONTH]
+private val currentDate get() = SimpleDateFormat("yyyy-MM-dd").format(Date())
 
 /**
  * 将日志写入('append')到特定文件.
@@ -22,7 +22,7 @@ private val currentDate = SimpleDateFormat("yyyy-MM-dd").format(Date())
  * @see PlatformLogger 查看格式信息
  */
 class SingleFileLogger @JvmOverloads constructor(identity: String, file: File = File("$identity-$currentDate.log")) :
-    PlatformLogger(identity, { file.appendText(it) }, false) {
+    PlatformLogger(identity, { file.appendText(it + "\n") }, false) {
 
     init {
         file.createNewFile()

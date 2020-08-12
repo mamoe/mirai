@@ -99,8 +99,12 @@ internal class StGroupRankInfo(
     @JceId(4) @JvmField val dwGroupRankSeq: Long? = null,
     @JceId(5) @JvmField val ownerName: String? = "",
     @JceId(6) @JvmField val adminName: String? = "",
-    @JceId(7) @JvmField val dwOfficeMode: Long? = null
+    @JceId(7) @JvmField val dwOfficeMode: Long? = null,
+    @JceId(9) @JvmField val fuckIssue405: List<FuckIssue405?>? = null // fake
 ) : JceStruct
+
+@Serializable
+internal class FuckIssue405
 
 @Serializable
 internal class StFavoriteGroup(

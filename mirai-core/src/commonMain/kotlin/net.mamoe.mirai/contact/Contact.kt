@@ -16,13 +16,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.event.events.BeforeImageUploadEvent
-import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.event.events.ImageUploadEvent
-import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
-import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.quote
+import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.recall
 import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.ExternalImage
@@ -57,8 +55,8 @@ abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.
      *
-     * @see FriendMessageSendEvent 发送好友信息事件, cancellable
-     * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     * @see MessagePreSendEvent 发送消息前事件
+     * @see MessagePostSendEvent 发送消息后事件
      *
      * @throws EventCancelledException 当发送消息事件被取消时抛出
      * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
@@ -71,7 +69,7 @@ abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
     abstract suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
-    @kotlin.internal.InlineOnly // purely virtual
+    @kotlin.internal.InlineOnly
     @JvmSynthetic
     suspend inline fun sendMessage(message: String): MessageReceipt<Contact> {
         return sendMessage(message.toMessage())
@@ -80,7 +78,7 @@ abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
     /**
      * 上传一个图片以备发送.
      *
-     * @see Image 查看有关图片的更多信息
+     * @see Image 查看有关图片的更多信息, 如上传图片
      *
      * @see BeforeImageUploadEvent 图片发送前事件, 可拦截.
      * @see ImageUploadEvent 图片发送完成事件, 不可拦截.

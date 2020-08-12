@@ -64,8 +64,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private val packetReceiveLock: Mutex = Mutex()
 
     override fun areYouOk(): Boolean {
-        return this.isActive && ::channel.isInitialized && channel.isOpen
-                && heartbeatJob?.isActive == true && _packetReceiverJob?.isActive == true
+        return kotlin.runCatching {
+            this.isActive && ::channel.isInitialized && channel.isOpen
+                    && heartbeatJob?.isActive == true && _packetReceiverJob?.isActive == true
+        }.getOrElse { false }
     }
 
     private suspend fun startPacketReceiverJobOrKill(cancelCause: CancellationException? = null): Job {
@@ -94,14 +96,17 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     private fun startHeartbeatJobOrKill(cancelCause: CancellationException? = null): Job {
         heartbeatJob?.cancel(cancelCause)
 
-        return this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) {
+        return this@QQAndroidBotNetworkHandler.launch(CoroutineName("Heartbeat")) heartBeatJob@{
             while (this.isActive) {
                 delay(bot.configuration.heartbeatPeriodMillis)
                 val failException = doHeartBeat()
                 if (failException != null) {
                     delay(bot.configuration.firstReconnectDelayMillis)
-                    bot.launch { BotOfflineEvent.Dropped(bot, failException).broadcast() }
-                    return@launch
+
+                    bot.launch {
+                        BotOfflineEvent.Dropped(bot, failException).broadcast()
+                    }
+                    return@heartBeatJob
                 }
             }
         }.also { heartbeatJob = it }
@@ -121,7 +126,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             channel.close()
         }
         channel = PlatformSocket()
-        // TODO: 2020/2/14 连接多个服务器, #52
 
         while (isActive) {
             try {
@@ -485,13 +489,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     ) {
         // highest priority: pass to listeners (attached by sendAndExpect).
         if (packet != null && (bot.logger.isEnabled || logger.isEnabled)) {
-            when (packet) {
-                is Packet.NoLog -> {
+            when {
+                packet is Packet.NoLog -> {
                     // nothing to do
                 }
-                is MessageEvent -> packet.logMessageReceived()
-                is Event -> bot.logger.verbose { "Event: ${packet.toString().singleLine()}" }
-                else -> logger.verbose { "Packet: ${packet.toString().singleLine()}" }
+                packet is MessageEvent -> packet.logMessageReceived()
+                packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
+                    "Event: ${packet.toString().singleLine()}"
+                }
+                else -> logger.verbose { "Recv: ${packet.toString().singleLine()}" }
             }
         }
 

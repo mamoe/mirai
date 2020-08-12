@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package net.mamoe.mirai.qqandroid.contact
 
@@ -18,19 +18,17 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.MemberCardChangeEvent
-import net.mamoe.mirai.event.events.MemberLeaveEvent
-import net.mamoe.mirai.event.events.MemberSpecialTitleChangeEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.asMessageChain
-import net.mamoe.mirai.message.data.isContentNotEmpty
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
+import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
+import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.createToTemp
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.getValue
@@ -57,28 +55,59 @@ internal class MemberImpl constructor(
     override val id: Long = qq.id
     override val nick: String = qq.nick
 
+    @Suppress("UNCHECKED_CAST")
     @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
         require(message.isContentNotEmpty()) { "message is empty" }
 
-        return (this.asFriendOrNull()?.sendMessageImpl(this, message) ?: sendMessageImpl(message))
-            .also { logMessageSent(message) }
+        val asFriend = this.asFriendOrNull()
+
+        return (asFriend?.sendMessageImpl(
+            message,
+            friendReceiptConstructor = { MessageReceipt(it, asFriend, null) },
+            tReceiptConstructor = { MessageReceipt(it, this, null) }
+        ) ?: sendMessageImpl(message)).also { logMessageSent(message) }
     }
 
     private suspend fun sendMessageImpl(message: Message): MessageReceipt<Member> {
-        lateinit var source: MessageSourceToTempImpl
-        bot.network.run {
-            check(
-                MessageSvcPbSendMsg.createToTemp(
-                    bot.client,
-                    this@MemberImpl,
-                    message.asMessageChain()
-                ) {
-                    source = it
-                }.sendAndExpect<MessageSvcPbSendMsg.Response>() is MessageSvcPbSendMsg.Response.SUCCESS
-            ) { "send message failed" }
+        val chain = kotlin.runCatching {
+            TempMessagePreSendEvent(this, message).broadcast()
+        }.onSuccess {
+            check(!it.isCancelled) {
+                throw EventCancelledException("cancelled by TempMessagePreSendEvent")
+            }
+        }.getOrElse {
+            throw EventCancelledException("exception thrown when broadcasting TempMessagePreSendEvent", it)
+        }.message.asMessageChain()
+
+        chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+
+        val result = bot.network.runCatching {
+            val source: MessageSourceToTempImpl
+            MessageSvcPbSendMsg.createToTemp(
+                bot.client,
+                this@MemberImpl,
+                chain
+            ) {
+                source = it
+            }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
+                check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
+                    "Send temp message failed: $it"
+                }
+            }
+            MessageReceipt(source, this@MemberImpl, null)
         }
-        return MessageReceipt(source, this, null)
+
+        result.fold(
+            onSuccess = {
+                TempMessagePostSendEvent(this, chain, null, it)
+            },
+            onFailure = {
+                TempMessagePostSendEvent(this, chain, it, null)
+            }
+        ).broadcast()
+
+        return result.getOrThrow()
     }
 
     @JvmSynthetic
@@ -208,7 +237,7 @@ internal class MemberImpl constructor(
 
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             group.members.delegate.removeIf { it.id == this@MemberImpl.id }
-            this.cancel(CancellationException("Kicked by bot"))
+            this@MemberImpl.cancel(CancellationException("Kicked by bot"))
             MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
     }

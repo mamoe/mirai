@@ -17,7 +17,6 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
 import net.mamoe.mirai.contact.Contact
@@ -43,22 +42,14 @@ import kotlin.jvm.JvmSynthetic
  * #### 在 Kotlin 使用 [Message]:
  * 这与使用 [String] 的使用非常类似.
  *
- * 比较 [SingleMessage] 与 [String]:
- *  `if(message.contentToString() == "你好") friend.sendMessage(event)`
+ * - 比较 [SingleMessage] 与 [String]:
+ *  `if(message.content == "你好") friend.sendMessage(event)`
  *
- * 连接 [Message] 与 [Message], [String], (使用操作符 [Message.plus]):
+ * - 连接 [Message] 与 [Message], [String], (使用操作符 [Message.plus]):
  *  ```
- *      text = PlainText("Hello ")
- *      qq.sendMessage(text + "world")
+ * val text = PlainText("Hello ") + PlainText("world") + "!"
+ * friend.sendMessage(text) // "Hello world!"
  *  ```
- *
- * `Message1 + Message2 + Message3`, 类似 [String] 的连接:
- * ```
- *   +----------+   plus  +----------+   plus  +----------+
- *   | Message1 | <------ | Message2 | <------ | Message3 |
- *   +----------+         +----------+         +----------+
- * ```
- *
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *
  * #### 实现规范
@@ -76,7 +67,7 @@ import kotlin.jvm.JvmSynthetic
  * @see AtAll 全体成员的引用
  * @see QuoteReply 一条消息的引用
  * @see RichMessage 富文本消息, 如 [XML 和 JSON][ServiceMessage], [小程序][LightApp]
- * @see HummerMessage 一些特殊的消息, 如 [闪照][FlashImage], [戳一戳][PokeMessage]
+ * @see HummerMessage 一些特殊的消息, 如 [闪照][FlashImage], [戳一戳][PokeMessage], [VIP表情][VipFace]
  * @see CustomMessage 自定义消息类型
  *
  * @see MessageChain 消息链(即 `List<Message>`)
@@ -114,11 +105,9 @@ interface Message { // must be interface. Don't consider any changes.
      * val b = PlainText("world!")
      * val c: MessageChain = a + b
      * println(c) // "Hello world!"
-     *
-     * val d = PlainText("world!")
-     * val e = c + d; // PlainText + CombinedMessage
-     * println(c) // "Hello world!"
      * ```
+     *
+     * 在 Java 使用 [plus]
      *
      * @see plus `+` 操作符重载
      */
@@ -131,11 +120,12 @@ interface Message { // must be interface. Don't consider any changes.
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用的是 [contentToString] 而不是 [toString]
      *
      * 各个 [SingleMessage] 的转换示例:
-     * [PlainText]: "Hello"
-     * [GroupImage]: "[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"
-     * [FriendImage]: "[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"
-     * [PokeMessage]: "[mirai:poke:1,-1]"
-     * [MessageChain]: 无间隔地连接所有元素 (`joinToString("")`)
+     * - [PlainText] : `"Hello"`
+     * - [GroupImage] : `"[mirai:image:{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai]"`
+     * - [FriendImage] : `"[mirai:image:/f8f1ab55-bf8e-4236-b55e-955848d7069f]"`
+     * - [PokeMessage] : `"[mirai:poke:1,-1]"`
+     * - [MessageChain] : 无间隔地连接所有元素 (`joinToString("")`)
+     * - ...
      *
      * @see contentToString 转为最接近官方格式的字符串
      */
@@ -147,10 +137,11 @@ interface Message { // must be interface. Don't consider any changes.
      * 在使用消息相关 DSL 和扩展时, 一些内容比较的实现均使用 [contentToString] 而不是 [toString]
      *
      * 各个 [SingleMessage] 的转换示例:
-     * [PlainText]: "Hello"
-     * [Image]: "\[图片\]"
-     * [PokeMessage]: "\[戳一戳\]"
-     * [MessageChain]: 无间隔地连接所有元素 (`joinToString("", transformer=Message::contentToString)`)
+     * - [PlainText] : `"Hello"`
+     * - [Image] : `"[图片]"`
+     * - [PokeMessage] : `"[戳一戳]"`
+     * - [MessageChain] : 无间隔地连接所有元素 (`joinToString("", transformer=Message::contentToString)`)
+     * - ...
      *
      * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
      */
@@ -163,8 +154,6 @@ interface Message { // must be interface. Don't consider any changes.
      * 若本函数返回 `true`, 则表明:
      * - `this` 与 [another] 的 [contentToString] 相等
      * - `this` 为 [another] 的所有 [MessageContent] 都 [相等][Message.equals] 且有同样的排列顺序.
-     *
-     * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
     /* final */ fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
         contentEqualsImpl(another, ignoreCase)
@@ -175,8 +164,6 @@ interface Message { // must be interface. Don't consider any changes.
      * 若本函数返回 `true`, 则表明:
      * - [contentToString] 与 [another] 相等
      * - 若 `this` 为 [MessageChain], 则只包含 [MessageMetadata] 和 [PlainText]
-     *
-     * @sample net.mamoe.mirai.message.data.ContentEqualsTest
      */
     /* final */ fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
         if (!this.contentToString().equals(another, ignoreCase = ignoreCase)) return false
@@ -187,25 +174,37 @@ interface Message { // must be interface. Don't consider any changes.
         }
     }
 
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     /* final */ operator fun plus(another: MessageChain): MessageChain = this + another as Message
+
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     /* final */ operator fun plus(another: Message): MessageChain = this.followedBy(another)
+
+    /** 将 [another] 连接到这个消息的尾部. */
     /* final */ operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
+
+    /** 将 [another] 作为 [PlainText] 连接到这个消息的尾部. */
     /* final */ operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
+
+    /** 将 [another] 作为 [PlainText] 连接到这个消息的尾部. */
     /* final */ operator fun plus(another: CharSequence): MessageChain = this.followedBy(another.toString().toMessage())
+
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     /* final */ operator fun plus(another: Iterable<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     @JvmName("plusIterableString")
     /* final */ operator fun plus(another: Iterable<String>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
+    /** 将 [another] 按顺序连接到这个消息的尾部. */
     /* final */ operator fun plus(another: Sequence<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 }
 
 @MiraiExperimentalAPI
 @JvmSynthetic
-@ExperimentalCoroutinesApi
 suspend inline operator fun Message.plus(another: Flow<Message>): MessageChain =
     another.fold(this) { acc, it -> acc + it }.asMessageChain()
 

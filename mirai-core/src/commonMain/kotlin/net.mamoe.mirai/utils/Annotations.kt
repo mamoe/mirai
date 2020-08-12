@@ -23,6 +23,7 @@ import kotlin.annotation.AnnotationTarget.*
     CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
     CLASS, FUNCTION, PROPERTY
 )
+@MustBeDocumented
 annotation class MiraiInternalAPI(
     val message: String = ""
 )
@@ -36,6 +37,7 @@ annotation class MiraiInternalAPI(
 @Retention(AnnotationRetention.SOURCE)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
+@MustBeDocumented
 annotation class MiraiExperimentalAPI(
     val message: String = ""
 )
@@ -49,7 +51,7 @@ annotation class MiraiExperimentalAPI(
 annotation class SinceMirai(val version: String)
 
 /**
- * 标记一个正计划在 [version] 版本时删除的 API.
+ * 标记一个正计划在 [version] 版本时删除 (对外隐藏) 的 API.
  */
 @Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
 @Retention(AnnotationRetention.SOURCE)

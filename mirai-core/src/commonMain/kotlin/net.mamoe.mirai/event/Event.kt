@@ -65,16 +65,6 @@ interface Event {
      */
     @SinceMirai("1.0.0")
     fun intercept()
-
-
-    @Deprecated(
-        """
-        Don't implement Event but extend AbstractEvent instead.
-    """, level = DeprecationLevel.HIDDEN
-    ) // so Kotlin class won't be compiled.
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName")
-    @get:JvmSynthetic // so Java user won't see it
-    internal val DoNotImplementThisClassButExtendAbstractEvent: Nothing
 }
 
 /**
@@ -83,12 +73,6 @@ interface Event {
  * 在使用事件时应使用类型 [Event]. 在实现自定义事件时应继承 [AbstractEvent].
  */
 abstract class AbstractEvent : Event {
-    @Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "PropertyName")
-    @get:JvmSynthetic // so Java user won't see it
-    @Deprecated("prohibit illegal overrides", level = DeprecationLevel.HIDDEN)
-    final override val DoNotImplementThisClassButExtendAbstractEvent: Nothing
-        get() = throw Error("Shouldn't be reached")
-
     /** 限制一个事件实例不能并行广播. (适用于 object 广播的情况) */
     @JvmField
     internal val broadCastLock = Mutex()
@@ -156,7 +140,8 @@ interface CancellableEvent : Event {
 /**
  * 广播一个事件的唯一途径.
  *
- * 当事件被实现为 Kotlin `object` 时, 同一时刻只能有一个 [广播][broadcast] 存在. 较晚执行的 [广播][broadcast] 将会挂起协程并等待之前的广播任务结束.
+ * 当事件被实现为 Kotlin `object` 时, 同一时刻只能有一个 [广播][broadcast] 存在.
+ * 较晚执行的 [广播][broadcast] 将会挂起协程并等待之前的广播任务结束.
  *
  * @see __broadcastJava Java 使用
  */

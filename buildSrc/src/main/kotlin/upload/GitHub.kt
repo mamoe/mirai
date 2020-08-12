@@ -18,6 +18,7 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.HttpTimeout
 import io.ktor.client.request.put
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.gradle.api.Project
@@ -70,23 +71,34 @@ object GitHub {
         )
     }
 
-    fun upload(file: File, url: String, project: Project) = runBlocking {
+    fun upload(file: File, project: Project, repo: String, targetFilePath: String) = runBlocking {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
-        Http.put<String>("$url?access_token=$token") {
-            val sha = getGithubSha("mirai-repo", "shadow/${project.name}/${file.name}", "master", project)
-            println("sha=$sha")
-            val content = String(Base64.getEncoder().encode(file.readBytes()))
-            body = """
+        val url = "https://api.github.com/repos/project-mirai/$repo/contents/$targetFilePath"
+        retryCatching(100, onFailure = { delay(30_000) }) { // 403 forbidden?
+            Http.put<String>("$url?access_token=$token") {
+                val sha = retryCatching(3, onFailure = { delay(30_000) }) {
+                    getGithubSha(
+                        repo,
+                        targetFilePath,
+                        "master",
+                        project
+                    )
+                }.getOrNull()
+                println("sha=$sha")
+                val content = String(Base64.getEncoder().encode(file.readBytes()))
+                body = """
                     {
                       "message": "automatically upload on release",
                       "content": "$content"
                       ${if (sha == null) "" else """, "sha": "$sha" """}
                     }
                 """.trimIndent()
-        }.let {
-            println("Upload response: $it")
-        }
+            }.let {
+                println("Upload response: $it")
+            }
+            delay(1000)
+        }.getOrThrow()
     }
 
 
@@ -109,7 +121,7 @@ object GitHub {
             return withContext(Dispatchers.IO) {
                 val response = Jsoup
                     .connect(
-                        "https://api.github.com/repos/mamoe/$repo/contents/$filePath?access_token=" + getGithubToken(
+                        "https://api.github.com/repos/project-mirai/$repo/contents/$filePath?access_token=" + getGithubToken(
                             project
                         )
                     )
@@ -138,7 +150,7 @@ object GitHub {
             val resp = withContext(Dispatchers.IO) {
                 Jsoup
                     .connect(
-                        "https://api.github.com/repos/mamoe/$repo/git/ref/heads/$branch?access_token=" + getGithubToken(
+                        "https://api.github.com/repos/project-mirai/$repo/git/ref/heads/$branch?access_token=" + getGithubToken(
                             project
                         )
                     )

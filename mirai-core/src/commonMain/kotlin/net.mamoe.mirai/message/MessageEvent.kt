@@ -77,13 +77,20 @@ abstract class MessageEvent : @PlannedRemoval("1.2.0") ContactMessage(),
      */
     abstract override val senderName: String
 
-    /** 消息内容 */
+    /**
+     * 消息内容.
+     *
+     * 第一个元素一定为 [MessageSource], 存储此消息的发送人, 发送时间, 收信人, 消息 id 等数据.
+     * 随后的元素为拥有顺序的真实消息内容.
+     */
     abstract override val message: MessageChain
 
-    /** 消息发送时间 (由服务器提供) */
+    /** 消息发送时间 (由服务器提供, 可能与本地有时差) */
     abstract override val time: Int
 
-    /** 消息源 */
+    /**
+     * 消息源. 来自 [message] 的第一个元素,
+     */
     override val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 }
 
@@ -168,7 +175,7 @@ internal expect interface MessageEventPlatformExtensions<out TSender : User, out
 @Deprecated(
     message = "use MessageEvent",
     replaceWith = ReplaceWith("MessageEvent", "net.mamoe.mirai.message.MessageEvent"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : Packet, BotEvent, AbstractEvent() {
     abstract override val bot: Bot
@@ -184,7 +191,7 @@ abstract class MessagePacketBase<out TSender : User, out TSubject : Contact> : P
 @Deprecated(
     message = "Ambiguous name. Use MessageEvent instead",
     replaceWith = ReplaceWith("MessageEvent", "net.mamoe.mirai.message.MessageEvent"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 @Suppress("DEPRECATION_ERROR")
 abstract class MessagePacket : MessagePacketBase<User, Contact>(),
@@ -202,7 +209,7 @@ abstract class MessagePacket : MessagePacketBase<User, Contact>(),
 @Deprecated(
     message = "Ambiguous name. Use MessageEvent instead",
     replaceWith = ReplaceWith("MessageEvent", "net.mamoe.mirai.message.MessageEvent"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 @Suppress("DEPRECATION_ERROR")
 abstract class ContactMessage : MessagePacket(),
@@ -220,7 +227,7 @@ abstract class ContactMessage : MessagePacket(),
 @Deprecated(
     message = "Ambiguous name. Use FriendMessageEvent instead",
     replaceWith = ReplaceWith("FriendMessageEvent", "net.mamoe.mirai.message.FriendMessageEvent"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 @Suppress("DEPRECATION_ERROR")
 abstract class FriendMessage : MessageEvent() {
@@ -237,7 +244,7 @@ abstract class FriendMessage : MessageEvent() {
 @Deprecated(
     message = "Ambiguous name. Use GroupMessageEvent instead",
     replaceWith = ReplaceWith("GroupMessageEvent", "net.mamoe.mirai.message.GroupMessageEvent"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 @Suppress("DEPRECATION_ERROR")
 abstract class GroupMessage : MessageEvent() {
@@ -255,7 +262,7 @@ abstract class GroupMessage : MessageEvent() {
 @Deprecated(
     message = "Ambiguous name. Use TempMessageEvent instead",
     replaceWith = ReplaceWith("TempMessageEvent", "net.mamoe.mirai.message.TempMessageEvent"),
-    level = DeprecationLevel.ERROR
+    level = DeprecationLevel.HIDDEN
 )
 abstract class TempMessage : MessageEvent() {
     abstract override val bot: Bot

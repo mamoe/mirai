@@ -11,12 +11,15 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.io.core.readBytes
+import kotlinx.io.core.use
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
+import net.mamoe.mirai.message.data.toUHexString
 import net.mamoe.mirai.utils.internal.DeferredReusableInput
 import net.mamoe.mirai.utils.internal.ReusableInput
 import kotlin.jvm.JvmField
@@ -35,6 +38,12 @@ class ExternalImage internal constructor(
     internal val input: ReusableInput
 ) {
     internal val md5: ByteArray get() = this.input.md5
+    val formatName: String by lazy {
+        val hex = input.asInput().use {
+            it.readBytes(8).toUHexString("")
+        }
+        return@lazy hex.detectFormatName()
+    }
 
     init {
         if (input !is DeferredReusableInput) {
@@ -67,6 +76,14 @@ class ExternalImage internal constructor(
     }
 
     internal fun calculateImageResourceId(): String = generateImageId(md5)
+
+    private fun String.detectFormatName(): String = when {
+        startsWith("FFD8") -> "jpg"
+        startsWith("89504E47") -> "png"
+        startsWith("47494638") -> "gif"
+        startsWith("424D") -> "bmp"
+        else -> defaultFormatName
+    }
 }
 
 /*
@@ -81,7 +98,10 @@ class ExternalImage internal constructor(
  */
 
 /**
- * 将图片作为单独的消息发送给指定联系人
+ * 将图片作为单独的消息发送给指定联系人.
+ *
+ * @see Contact.uploadImage 上传图片
+ * @see Contact.sendMessage 最终调用, 发送消息.
  */
 @JvmSynthetic
 suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
@@ -91,10 +111,12 @@ suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = 
 }
 
 /**
- * 上传图片并通过图片 ID 构造 [Image]
- * 这个函数可能需消耗一段时间
+ * 上传图片并构造 [Image].
+ * 这个函数可能需消耗一段时间.
  *
- * @see contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
+ * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
+ *
+ * @see Contact.uploadImage 最终调用, 上传图片.
  */
 @JvmSynthetic
 suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
@@ -105,6 +127,8 @@ suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
 
 /**
  * 将图片作为单独的消息发送给 [this]
+ *
+ * @see Contact.sendMessage 最终调用, 发送消息.
  */
 @JvmSynthetic
 suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)

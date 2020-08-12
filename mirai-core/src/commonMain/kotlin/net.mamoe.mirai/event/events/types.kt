@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION")
+@file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
 package net.mamoe.mirai.event.events
 
@@ -16,6 +16,8 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.Event
+import kotlin.internal.HidesMembers
+import kotlin.jvm.JvmSynthetic
 
 /**
  * 有关一个 [Bot] 的事件
@@ -68,14 +70,17 @@ interface GroupOperableEvent : GroupEvent {
 /**
  * 是否由 [Bot] 操作
  */
-val GroupOperableEvent.isByBot: Boolean
+@HidesMembers
+@get:JvmSynthetic // inline: planning to change to another file (1.2.0)
+inline val GroupOperableEvent.isByBot: Boolean
     get() = operator == null
 
 /**
  * 当操作人为 [Member] 时获取这个 [Member],
  * 当操作人为 [Bot] 时获取 [Group.botAsMember]
  */
-val GroupOperableEvent.operatorOrBot: Member
+@get:JvmSynthetic // inline: planning to change to another file (1.2.0)
+inline val GroupOperableEvent.operatorOrBot: Member
     get() = this.operator ?: this.group.botAsMember
 
 

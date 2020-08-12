@@ -154,9 +154,9 @@ actual abstract class LoginSolver {
 //////////////// internal
 ///////////////////////////////
 
-internal actual fun getFileBasedDeviceInfoSupplier(filename: String): ((Context) -> DeviceInfo)? {
+internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(filename: String): ((Context) -> DeviceInfo)? {
     return {
-        File(filename).loadAsDeviceInfo(it)
+        File(filename).loadAsDeviceInfo(json, it)
     }
 }
 

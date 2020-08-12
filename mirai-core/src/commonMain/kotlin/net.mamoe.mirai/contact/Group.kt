@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport")
 
 package net.mamoe.mirai.contact
 
@@ -17,12 +17,12 @@ import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
-import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toMessage
+import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.JvmName
@@ -88,7 +88,7 @@ abstract class Group : Contact(), CoroutineScope {
      * 群头像下载链接.
      */
     val avatarUrl: String
-        get() = "https://p.qlogo.cn/gh/$id/${id}_1/640"
+        get() = "https://p.qlogo.cn/gh/$id/${id}/640"
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
@@ -137,8 +137,8 @@ abstract class Group : Contact(), CoroutineScope {
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.
      *
-     * @see FriendMessageSendEvent 发送好友信息事件, cancellable
-     * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     * @see GroupMessagePreSendEvent 发送消息前事件
+     * @see GroupMessagePostSendEvent 发送消息后事件
      *
      * @throws EventCancelledException 当发送消息事件被取消时抛出
      * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
@@ -154,7 +154,7 @@ abstract class Group : Contact(), CoroutineScope {
      * @see sendMessage
      */
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
-    @kotlin.internal.InlineOnly // purely virtual
+    @kotlin.internal.InlineOnly
     @JvmSynthetic
     suspend inline fun sendMessage(message: String): MessageReceipt<Group> {
         return sendMessage(message.toMessage())
@@ -162,6 +162,8 @@ abstract class Group : Contact(), CoroutineScope {
 
     /**
      * 上传一个图片以备发送.
+     *
+     * @see Image 查看有关图片的更多信息, 如上传图片
      *
      * @see BeforeImageUploadEvent 图片上传前事件, cancellable
      * @see ImageUploadEvent 图片上传完成事件
@@ -174,15 +176,19 @@ abstract class Group : Contact(), CoroutineScope {
 
     companion object {
         /**
+         * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
+        @MiraiExperimentalAPI
         @JvmStatic
         fun calculateGroupUinByGroupCode(groupCode: Long): Long =
             CommonGroupCalculations.calculateGroupUinByGroupCode(groupCode)
 
         /**
+         * 使用 groupUin 计算 groupCode. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
+        @MiraiExperimentalAPI
         @JvmStatic
         fun calculateGroupCodeByGroupUin(groupUin: Long): Long =
             CommonGroupCalculations.calculateGroupCodeByGroupUin(groupUin)
@@ -231,6 +237,8 @@ interface GroupSettings {
      * @see GroupAllowConfessTalkEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
+    @PlannedRemoval("1.3.0")
+    @Deprecated("mirai 将不再支持此用例较少的设置", level = DeprecationLevel.WARNING)
     var isConfessTalkEnabled: Boolean
 
     /**
@@ -246,6 +254,7 @@ interface GroupSettings {
     /**
      * 自动加群审批
      */
+    @MiraiExperimentalAPI
     val isAutoApproveEnabled: Boolean
 
     /**

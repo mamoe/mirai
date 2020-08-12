@@ -1,7 +1,7 @@
 # mirai
 欢迎来到 mirai 文档.
 
-本文档基于 mirai 1.0-RC2-1, 最后修改时间为 2020/5/16
+本文档基于 mirai 1.0.0, 最后修改时间为 2020/5/22
 
 ## 声明
 1. mirai 为完全免费的开源项目，使用 AGPLv3 开源协议. mirai 项目维护者和贡献者 (下文简称 '我们') 不通过任何方式收取费用。所有人都可以免费获取并使用这个项目。
@@ -20,29 +20,27 @@
 mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组成.
 
 
-- [`mirai-core`](../mirai-core) 是机器人服务支持**库**. 提供所有机器人相关 API. **本身只包含抽象类和接口, 具体由协议模块实现**.  
+- [`mirai-core`](../mirai-core) 是机器人服务支持**库**. 提供所有机器人相关 API. **本身只包含抽象类和接口, 使用时还需要同时依赖协议模块**.  
   可用的协议模块:
-  - [`mirai-core-qqandroid`](../mirai-core-qqandroid): Android QQ 8.3.0 版本协议实现.
+  - [`mirai-core-qqandroid`](../mirai-core-qqandroid): Android QQ 8.3.0 版本协议实现. 
 
   `mirai-core` 设计为一个 **`支持库`**, 意味着它可以被独立依赖, 在任意项目中使用. 详见下文.
 
-
-- `mirai-core-qqandroid` 继承 `mirai-core`, 是 Android QQ 协议的实现. 在使用时只需参考 `mirai-core` 的 API.
-
+- `mirai-serialization` 依赖 `mirai-core`, 是 mirai-core 的序列化支持模块. 提供 `Message` 类型的序列化支持与相关 [mirai 码](mirai-code-specification.md) 支持.  
+  此模块自 mirai `1.1.0` 起可用, 引用方法同 `mirai-core`.
 
 - [`mirai-console`](https://github.com/mamoe/mirai-console) 是基于 `mirai-core` 的, 支持插件加载, 指令系统, 和配置等的**控制台框架**.  
-  **注意: 此模块正在重写, 短时间内可能不可用**  
+  **注意: 此模块正在重写, 短时间内不可用**  
   console 由 '后端' 和 '前端' 组成.  
-  `mirai-console` 即为后端, 包含所有开发时需要用到的功能.  
-  可用的前端:
-  - 纯命令行: `mirai-console` 内置纯命令行前端.
-  - 基于 JavaFX 的图形端: [`mirai-console-graphical`](https://github.com/mamoe/mirai-console/tree/master/mirai-console-graphical)
-  - Unix 友好的终端: [`mirai-console-terminal`](https://github.com/mamoe/mirai-console/tree/master/mirai-console-terminal)
-  
-- [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid) 是`mirai-console`的Android前端程序，支持大部分mirai-console功能以及多种脚本api
+  [`backend/mirai-console`](https://github.com/mamoe/mirai-console/tree/reborn/backend/mirai-console) 为唯一的后端, 包含所有开发时需要用到的功能.  
+  可用的官方（由 mirai 所属 [mamoe](https://github.com/mamoe) 组成员维护）前端:  
+  - 纯命令行: [`frontend/mirai-console-pure`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-pure)
+  - 基于 JavaFX 的图形端: [`frontend/mirai-console-graphical`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-graphical)
+  - Unix 友好的终端: [`frontend/mirai-console-terminal`](https://github.com/mamoe/mirai-console/tree/reborn/frontend/mirai-console-terminal)
+  - Android APP: [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid) 额外支持多种脚本 API
 
 
-**注意**: `mirai-core` (将)于 2020 年 6 月发布的 `1.0.0` 版本正式进入稳定更新阶段,   
+**注意**: `mirai-core` 于 2020 年 5 月发布的 `1.0.0` 版本正式进入稳定更新阶段,   
 **而 `mirai-console` 仍处于快速迭代阶段, 任何 API 都有可能在不经过警告的情况下改动, 任何 API 都不具有任何稳定性.**
 
 ## `mirai-core`
@@ -62,6 +60,7 @@ mirai 全部使用 Kotlin, 若你无法理解部分 API, 可先简略阅读 Kotl
 Kotlin 编译后生成 Java 方法 `public Object sendMessage(Message msg, Continuation<Unit> cont)`  
 Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Message msg)` 使得 Java 使用者可无缝接入。
 
+建议在 IDE 内打开本文件 (位置 /docs/mirai.md), 可以进行源码内跳转.
 
 ### 开始
 
@@ -82,7 +81,6 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
 3. '消息'
    1. [消息对象 Message](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/Message.kt)  
       特别注意, `Message` 分为 单个消息(`SingleMessage`) 和 多个消息, 即消息链(`MessageChain` ).  
-      // TODO 此处还有更详细的扩展 API 解释, 待更新
    2. [消息链 MessageChain](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/MessageChain.kt)  
       // TODO 此处还有更详细的扩展 API 解释, 待更新
    3. 接下来可按需阅读各类型消息 [各类型消息](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/). 一个文件包含一种消息.
@@ -97,7 +95,7 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
    4. 内建事件列表 [README](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/events/README.md).  
       **注意**: mirai 将接收到的消息事件独立放置在 `net.mamoe.mirai.message` 下, 并命名为 `MessageEvent`. 并为他们实现了一些扩展. 详见 [MessageEvent.kt](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/MessageEvent.kt)
    5. 事件工具类和工具函数 (仅 Kotlin) (可以跳过本节):  
-      标注 (*) 的几种处理方式可能需要比较好的 Kotlin 技能才能理解并正确使用. 建议在不熟悉时不要使用它们.  
+      标注 (*) 代表需要比较好的 Kotlin 技能才能理解.
       - 挂起当前协程, 直到返回下一个事件实例: [nextEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/nextEvent.kt)
       - 挂起当前协程, 并从一个事件中同步一个值: [syncFromEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/linear.kt)
       - (*) 消息事件监听 DSL: [subscribeMessages](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/subscribeMessages.kt)
@@ -108,7 +106,7 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
 <br><br>
 一切准备就绪. 现在开始构造 `Bot` 实例:
 
-1. `Bot` 的配置: [BotConfiguration](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.kt)
+1. `Bot` 的配置: [BotConfiguration](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.common.kt)
    可大致了解或跳过. 一般使用默认属性即可.
 2. 构造 `Bot` 实例: [BotFactory](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/BotFactory.kt#L23), [newBot](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/BotFactory.kt#L53)
 
@@ -121,17 +119,17 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
 
 #### 第三方依赖
 
-mirai-core 通过 gradle 依赖的 `api` 方式暴露了如下依赖库:
+在 `1.0.0` 及更新版本, mirai-core 通过 gradle 依赖的 `api` 方式暴露了如下依赖库:
 
 - `kotlin-stdlib`: Kotlin 标准库, 版本至少为 1.3.72
 - `kotlin-reflect`: Kotlin 反射, 版本至少为 1.3.72
-- `kotlinx-coroutines-core`: Kotlin 协程, 版本至少为 1.3.5
+- `kotlinx-coroutines-core`: Kotlin 协程, 版本至少为 1.3.7
 - `kotlinx-serialization-runtime`: Kotlin 序列化运行时, 和 JSON 序列化, 版本至少为 0.20.0
 - `kotlinx-serialization-protobuf`: Kotlin ProtocolBuffers 序列化, 版本至少为 0.20.0
 - `kotlinx-io`: Kotlin IO, 版本至少为 0.1.16 (此库非常不稳定, 不建议使用它)
 - `kotlinx-coroutines-io`: Kotlin 异步 IO, 版本至少为 0.1.16 (此库非常不稳定, 不建议使用它)
 - `kotlinx-atomicfu`: Kotlin 原子操作, 版本至少为 0.14.2
-- `ktor-client-core`, `ktor-network`, `ktor-client-cio`: Ktor HTTP
+- `ktor-client-core`, `ktor-network`, `ktor-client-cio`: Ktor HTTP, 版本至少为 1.3.2
 
 在 JVM, mirai 使用 `"org.bouncycastle:bcprov-jdk15on:1.64"` 进行密匙计算.
 

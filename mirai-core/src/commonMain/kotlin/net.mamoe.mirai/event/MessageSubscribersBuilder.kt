@@ -462,14 +462,14 @@ open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, RR>(
 
     /** 启动这个监听器, 在满足条件时回复原消息 */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use reply instead", ReplaceWith("this.reply(message)"))
+    @Deprecated("use reply instead", ReplaceWith("this.reply(message)"), level = DeprecationLevel.ERROR)
     @JvmName("reply3")
     @MessageDsl
     open infix fun ListeningFilter.`->`(toReply: String): Ret = this.reply(toReply)
 
     /** 启动这个监听器, 在满足条件时回复原消息 */
     @PlannedRemoval("1.2.0")
-    @Deprecated("use reply instead", ReplaceWith("this.reply(message)"))
+    @Deprecated("use reply instead", ReplaceWith("this.reply(message)"), level = DeprecationLevel.ERROR)
     @JvmName("reply3")
     @MessageDsl
     open infix fun ListeningFilter.`->`(message: Message): Ret = this.reply(message)

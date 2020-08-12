@@ -32,6 +32,8 @@ jobs:
         run: ./gradlew :mirai-core:bintrayUpload -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }} -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
       - name: Gradle :mirai-core-qqandroid:bintrayUpload
         run: ./gradlew :mirai-core-qqandroid:bintrayUpload -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }} -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+      - name: Gradle :mirai-serialization:bintrayUpload
+        run: ./gradlew :mirai-serialization:bintrayUpload -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }} -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
 
 #      - name: Upload artifact

@@ -86,10 +86,10 @@ internal abstract class BotNetworkHandler : CoroutineScope {
 
     /**
      * 当 [Bot] 正常运作时, 这个函数将一直挂起协程到 [Bot] 被 [Bot.close]
-     * 当 [Bot] 离线时, 这个函数立即返回.
      */
     abstract suspend fun join()
 
+    // cool name
     abstract fun areYouOk(): Boolean
 
 

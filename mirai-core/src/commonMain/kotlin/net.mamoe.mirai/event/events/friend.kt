@@ -9,7 +9,7 @@
 
 @file:JvmMultifileClass
 @file:JvmName("BotEventsKt")
-@file:Suppress("FunctionName", "unused")
+@file:Suppress("FunctionName", "unused", "DEPRECATION_ERROR")
 
 package net.mamoe.mirai.event.events
 
@@ -28,7 +28,7 @@ import kotlin.jvm.*
 /**
  * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
  */
-data class FriendRemarkChangeEvent(
+data class FriendRemarkChangeEvent internal constructor(
     override val friend: Friend,
     val newName: String
 ) : FriendEvent, Packet, AbstractEvent()
@@ -36,7 +36,7 @@ data class FriendRemarkChangeEvent(
 /**
  * 成功添加了一个新好友的事件
  */
-data class FriendAddEvent(
+data class FriendAddEvent internal constructor(
     /**
      * 新好友. 已经添加到 [Bot.friends]
      */
@@ -46,7 +46,7 @@ data class FriendAddEvent(
 /**
  * 好友已被删除的事件.
  */
-data class FriendDeleteEvent(
+data class FriendDeleteEvent internal constructor(
     override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
@@ -54,7 +54,7 @@ data class FriendDeleteEvent(
  * 一个账号请求添加机器人为好友的事件
  */
 @Suppress("DEPRECATION")
-data class NewFriendRequestEvent(
+data class NewFriendRequestEvent internal constructor(
     override val bot: Bot,
     /**
      * 事件唯一识别号
@@ -107,7 +107,7 @@ data class NewFriendRequestEvent(
 /**
  * [Friend] 头像被修改. 在此事件广播前就已经修改完毕.
  */
-data class FriendAvatarChangedEvent(
+data class FriendAvatarChangedEvent internal constructor(
     override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 

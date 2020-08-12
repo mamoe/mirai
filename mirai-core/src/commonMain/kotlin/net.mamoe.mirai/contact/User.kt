@@ -13,11 +13,7 @@ package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.BeforeImageUploadEvent
-import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.event.events.ImageUploadEvent
-import net.mamoe.mirai.event.events.MessageSendEvent.FriendMessageSendEvent
-import net.mamoe.mirai.event.events.MessageSendEvent.GroupMessageSendEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
@@ -58,8 +54,8 @@ abstract class User : Contact(), CoroutineScope {
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.
      *
-     * @see FriendMessageSendEvent 发送好友信息事件, cancellable
-     * @see GroupMessageSendEvent  发送群消息事件. cancellable
+     * @see UserMessagePreSendEvent 发送消息前事件
+     * @see UserMessagePostSendEvent 发送消息后事件
      *
      * @throws EventCancelledException 当发送消息事件被取消时抛出
      * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
@@ -75,7 +71,7 @@ abstract class User : Contact(), CoroutineScope {
      * @see sendMessage
      */
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
-    @kotlin.internal.InlineOnly // purely virtual
+    @kotlin.internal.InlineOnly
     @JvmSynthetic
     suspend inline fun sendMessage(message: String): MessageReceipt<User> {
         return sendMessage(message.toMessage())
@@ -83,6 +79,8 @@ abstract class User : Contact(), CoroutineScope {
 
     /**
      * 上传一个图片以备发送.
+     *
+     * @see Image 查看有关图片的更多信息, 如上传图片
      *
      * @see BeforeImageUploadEvent 图片发送前事件, cancellable
      * @see ImageUploadEvent 图片发送完成事件

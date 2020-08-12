@@ -22,23 +22,6 @@ import kotlin.test.assertFailsWith
 internal class SubscribingGetTest {
 
     @Test
-    fun testSyncFromEvent() {
-        runBlockingWithTimeout(10000) {
-            suspendCancellableCoroutine<Unit> { cont ->
-                launch {
-                    syncFromEvent(8000) { _: TestEvent ->
-                        cont.resume(Unit)
-                    }
-                }
-                launch {
-                    delay(4000)
-                    TestEvent().broadcast()
-                }
-            }
-        }
-    }
-
-    @Test
     fun testSyncFromEventTimeout() {
         runBlockingWithTimeout(500) {
             assertFailsWith<TimeoutCancellationException> {

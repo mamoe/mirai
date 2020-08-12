@@ -8,7 +8,13 @@
  */
 
 @file:OptIn(LowLevelAPI::class)
-@file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "NOTHING_TO_INLINE")
+@file:Suppress(
+    "EXPERIMENTAL_API_USAGE",
+    "DEPRECATION_ERROR",
+    "NOTHING_TO_INLINE",
+    "INVISIBLE_MEMBER",
+    "INVISIBLE_REFERENCE"
+)
 
 package net.mamoe.mirai.qqandroid.contact
 
@@ -27,6 +33,7 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.highway.postImage
@@ -81,7 +88,11 @@ internal class FriendImpl(
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
         require(message.isContentNotEmpty()) { "message is empty" }
-        return sendMessageImpl(this, message).also {
+        return sendMessageImpl(
+            message,
+            friendReceiptConstructor = { MessageReceipt(it, this, null) },
+            tReceiptConstructor = { MessageReceipt(it, this, null) }
+        ).also {
             logMessageSent(message)
         }
     }
@@ -95,64 +106,63 @@ internal class FriendImpl(
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
-        bot.network.run {
-            val response = LongConn.OffPicUp(
+        val response = bot.network.run {
+            LongConn.OffPicUp(
                 bot.client, Cmd0x352.TryUpImgReq(
                     srcUin = bot.id.toInt(),
                     dstUin = id.toInt(),
                     fileId = 0,
-                    fileMd5 = @Suppress("INVISIBLE_MEMBER") image.md5,
-                    fileSize = @Suppress("INVISIBLE_MEMBER")
-                    image.input.size.toInt(),
-                    fileName = @Suppress("INVISIBLE_MEMBER") image.md5.toUHexString("") + "." + ExternalImage.defaultFormatName,
+                    fileMd5 = image.md5,
+                    fileSize = image.input.size.toInt(),
+                    fileName = image.md5.toUHexString("") + "." + image.formatName,
                     imgOriginal = 1
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
+        }
 
-            @Suppress("UNCHECKED_CAST", "DEPRECATION", "INVISIBLE_MEMBER")
-            return when (response) {
-                is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId)
-                    .also {
-                        ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
-                    }
-                is LongConn.OffPicUp.Response.RequireUpload -> {
-                    bot.network.logger.verbose {
-                        "[Http] Uploading friend image, size=${image.input.size.sizeToString()}"
-                    }
-
-                    val time = measureTime {
-                        MiraiPlatformUtils.Http.postImage(
-                            "0x6ff0070",
-                            bot.id,
-                            null,
-                            imageInput = image.input,
-                            uKeyHex = response.uKey.toUHexString("")
-                        )
-                    }
-
-                    bot.network.logger.verbose {
-                        "[Http] Uploading friend image: succeed at ${(image.input.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
-                    }
-
-                    /*
-                    HighwayHelper.uploadImageToServers(
-                        bot,
-                        response.serverIp.zip(response.serverPort),
-                        response.uKey,
-                        image,
-                        kind = "friend",
-                        commandId = 1
-                    )*/
-                    // 为什么不能 ??
-
-                    return net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId).also {
-                        ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
-                    }
+        @Suppress("UNCHECKED_CAST", "DEPRECATION")
+        when (response) {
+            is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId)
+                .also {
+                    ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
-                is LongConn.OffPicUp.Response.Failed -> {
-                    ImageUploadEvent.Failed(this@FriendImpl, image, -1, response.message).broadcast()
-                    error(response.message)
+            is LongConn.OffPicUp.Response.RequireUpload -> {
+                bot.network.logger.verbose {
+                    "[Http] Uploading friend image, size=${image.input.size.sizeToString()}"
                 }
+
+                val time = measureTime {
+                    MiraiPlatformUtils.Http.postImage(
+                        "0x6ff0070",
+                        bot.id,
+                        null,
+                        imageInput = image.input,
+                        uKeyHex = response.uKey.toUHexString("")
+                    )
+                }
+
+                bot.network.logger.verbose {
+                    "[Http] Uploading friend image: succeed at ${(image.input.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+                }
+
+                /*
+                HighwayHelper.uploadImageToServers(
+                    bot,
+                    response.serverIp.zip(response.serverPort),
+                    response.uKey,
+                    image,
+                    kind = "friend",
+                    commandId = 1
+                )*/
+                // 为什么不能 ??
+
+                OfflineFriendImage(response.resourceId).also {
+                    ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
+                }
+            }
+            is LongConn.OffPicUp.Response.Failed -> {
+                ImageUploadEvent.Failed(this@FriendImpl, image, -1, response.message).broadcast()
+                error(response.message)
             }
         }
     } finally {

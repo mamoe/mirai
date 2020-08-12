@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.ByteReadPacket
@@ -31,6 +33,7 @@ import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.encodeToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.loadAs
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.utils.warning
 
 /**
  * 接受群消息
@@ -105,7 +108,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
                 flags and 8 != 0 -> MemberPermission.OWNER
                 flags == 0 -> MemberPermission.MEMBER
                 else -> {
-                    bot.logger.warning("判断群 ${sender.group.id} 的群员 ${sender.id} 的权限失败: ${flags._miraiContentToString()}. 请完整截图或复制此日志并确认其真实权限后发送给 mirai 维护者以帮助解决问题.")
+                    bot.logger.warning { "判断群 ${sender.group.id} 的群员 ${sender.id} 的权限失败: ${flags._miraiContentToString()}. 请完整截图或复制此日志并确认其真实权限后发送给 mirai 维护者以帮助解决问题." }
                     sender.permission
                 }
             },
