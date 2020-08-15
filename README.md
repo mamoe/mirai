@@ -31,7 +31,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 ### 许可证
 
 **协议原版权归属腾讯科技股份有限公司所有，本项目其他代码遵守**：  
-**GNU AFFERO GENERAL PUBLIC LICENSE version 3**(简称 `AGPLv3`)，建立在额外要求上:
+[**GNU AFFERO GENERAL PUBLIC LICENSE version 3**](https://www.gnu.org/licenses/agpl-3.0.html)(简称 `AGPLv3`)，建立在额外要求上:
 - **所有衍生软件 *(衍生软件: 间接或直接接触到 mirai, 即使没有修改 mirai 源码的软件)* 必须使用相同协议 (AGPLv3) 开源**
 - **尽管 `AGPLv3` 有其他说明，本软件及其所有衍生作品禁止用于一切商业活动**
 - **尽管 `AGPLv3` 有其他说明，本软件及其所有衍生作品禁止收费传递, 或传递时不提供源代码**
