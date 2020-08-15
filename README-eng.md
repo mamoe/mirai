@@ -1,9 +1,9 @@
 # Mirai
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d0ec3ea244b424f93a6f59038a9deeb)](https://www.codacy.com/manual/Him188/mirai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mamoe/mirai&amp;utm_campaign=Badge_Grade)  
 
-Mirai is a high-performance multi-platform library, as well as a framework, providing chatting protocol support for Tencent QQ.
+Mirai is a high-performance multi-platform library, as well as a framework, providing protocol support for Tencent QQ.
 
-Mirai is designed to handle all sorts of messaging jobs that can be automatically done by bots **in a perfect way**.
+Mirai is designed to handle all sorts of messaging works that can be automatically done by bots **in a perfect way**.
 
 > Tencent QQ: A modern messaging software used by all Chinese netizens.
 
@@ -14,26 +14,26 @@ Mirai is designed to handle all sorts of messaging jobs that can be automaticall
 
 ### Use as a framework
 
-Mirai is able to run as plugin-supported framework.  
-Mirai is building a community (with `mirai-console`) that allows developers to share their plugins, and for users to install plugins quickly.
+Mirai is able to run as a plugin-supported framework.  
+The community, (with `mirai-console`) that allows developers to share their plugins, and for users to install plugins quickly, is building in progress.
 
-- （Official） `Java` or `Kotlin`： Make Jar plugin for [mirai-console](https://github.com/mamoe/mirai-console) directly and share with other developers through the plugin center.
-- （Official） `Kotlin Script`： [mirai-kts](https://github.com/iTXTech/mirai-kts) supports plugins using Kotlin Scripts (`kts`)（**OpenJDK 8+ only，except Android**）
-- （Official） Native languages like `C`, `C++`： [mirai-native](https://github.com/iTXTech/mirai-native) supports plugins from CoolQ **(`Windows JREx86` only / with `Wine`)**
-- （Official） `JavaScript`： [mirai-js](https://github.com/iTXTech/mirai-js) supports plugins using `JavaScript` and inter-operate with **mirai** on JVM directly.
-- （Official） Any language：Use HTTP API from [mirai-api-http](https://github.com/mamoe/mirai-api-http)
+- JVM languages like `Java` or `Kotlin`： Make Jar plugin for [mirai-console](https://github.com/mamoe/mirai-console) directly and share with other developers through the plugin center.
+- `Kotlin Script`： [mirai-kts](https://github.com/iTXTech/mirai-kts) supports plugins using Kotlin Scripts (`kts`)（**OpenJDK 8+ only，except Android**）
+- Native languages like `C`, `C++`： [mirai-native](https://github.com/iTXTech/mirai-native) supports plugins from CoolQ **(`Windows JREx86` only / with `Wine`)**
+- `JavaScript`： [mirai-js](https://github.com/iTXTech/mirai-js) supports plugins using `JavaScript` and inter-operate with **mirai** on JVM directly.
+- Any language：Use HTTP API from [mirai-api-http](https://github.com/mamoe/mirai-api-http)
 
-**Though only Jar plugins are supported officially, you can use these bridges that are created and maintained by the community**:
+**Though only Jar plugins are supported officially, language bridges that are maintained by the community can connect with your knowledge.**:
 
-- （Community）`Python`: [python-mirai](https://github.com/NatriumLab/python-mirai) A Bot framework based on `mirai-api-http`.
-- （Community）`JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) The Node.js SDK for mirai.
-- （Community）`Go`: [gomirai](https://github.com/Logiase/gomirai) The GoLang SDK for mirai.
-- （Community）`Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk) The Mozilla Rhino (JavaScript) SDK for mirai.
-- （Community）`Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) The Lua SDK for mirai-core, supporting Java extensions that act as a bridge between Java and natrive Lua.
-- （Community）`C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) A simple C++ SDK using `mirai-api-http` for ALL platforms.
-- （Community）`C++`: [miraipp](https://github.com/Chlorie/miraipp-template) A sophisticated, modern mapping for `mirai-http-api` to C++, providing development documents.
-- （Community）`Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) The Rust mapping for `mirai-http-api`.
-- （Community）`TypeScript`: [mirai-ts](https://github.com/YunYouJun/mirai-ts) TypeScript SDK comes with a declaration file, has good code hints, and can also be used as a JavaScript SDK.
+- `Python`: [python-mirai](https://github.com/NatriumLab/python-mirai) A Bot framework based on `mirai-api-http`.
+- `JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) The Node.js SDK for mirai.
+- `Go`: [gomirai](https://github.com/Logiase/gomirai) The GoLang SDK for mirai.
+- `Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk) The Mozilla Rhino (JavaScript) SDK for mirai.
+- `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) The Lua SDK for mirai-core, supporting Java extensions that act as a bridge between Java and natrive Lua.
+- `C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) A simple C++ SDK using `mirai-api-http` for ALL platforms.
+- `C++`: [miraipp](https://github.com/Chlorie/miraipp-template) A sophisticated, modern mapping for `mirai-http-api` to C++, providing development documents.
+- `Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) The Rust mapping for `mirai-http-api`.
+- `TypeScript`: [mirai-ts](https://github.com/YunYouJun/mirai-ts) TypeScript SDK comes with a declaration file, has good code hints, and can also be used as a JavaScript SDK.
 
 ### Use as a library
 You can install mirai as a library into your project.
@@ -83,7 +83,7 @@ implementation("net.mamoe:mirai-core-android:VERSION")
     <dependency>
         <groupId>net.mamoe</groupId>
         <artifactId>mirai-core-qqandroid</artifactId>
-        <version>0.23.0</version> <!-- 替换版本为最新版本 -->
+        <version>0.23.0</version> <!-- Replace to the newest -->
     </dependency>
 </dependencies>
 ```
