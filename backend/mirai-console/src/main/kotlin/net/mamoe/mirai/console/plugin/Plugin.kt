@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import java.io.File
 
 /**

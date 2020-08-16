@@ -1,12 +1,19 @@
 plugins {
-    kotlin("jvm") version Versions.kotlinCompiler
-    kotlin("plugin.serialization") version Versions.kotlinCompiler
+    kotlin("jvm")
+    kotlin("plugin.serialization")
     id("java")
     `maven-publish`
     id("com.jfrog.bintray")
 }
 
 kotlin {
+    target.compilations.all {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
+        }
+    }
+
     sourceSets {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
@@ -16,7 +23,7 @@ kotlin {
             languageSettings.progressiveMode = true
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.console.utils.ConsoleExperimentalAPI")
+            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.console.util.ConsoleExperimentalAPI")
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
             languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")

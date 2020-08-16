@@ -11,11 +11,10 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.runBlocking
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.utils.JavaFriendlyAPI
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.Message
@@ -38,17 +37,8 @@ public interface CommandSender {
      * 立刻发送一条消息
      */
     @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun sendMessage(message: Message)
-
-    @JvmDefault
-    @JavaFriendlyAPI
-    @JvmName("sendMessage")
-    public fun __sendMessageBlocking(messageChain: Message): Unit = runBlocking { sendMessage(messageChain) }
-
-    @JvmDefault
-    @JavaFriendlyAPI
-    @JvmName("sendMessage")
-    public fun __sendMessageBlocking(message: String): Unit = runBlocking { sendMessage(message) }
 }
 
 /**
@@ -58,6 +48,7 @@ public interface BotAwareCommandSender : CommandSender {
     public override val bot: Bot
 }
 
+@JvmSynthetic
 public suspend inline fun CommandSender.sendMessage(message: String): Unit = sendMessage(PlainText(message))
 
 /**

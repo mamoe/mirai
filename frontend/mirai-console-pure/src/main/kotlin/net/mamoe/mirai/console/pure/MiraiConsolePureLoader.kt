@@ -23,8 +23,13 @@ package net.mamoe.mirai.console.pure
 import kotlinx.coroutines.isActive
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
-import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.utils.ConsoleInternalAPI
+import net.mamoe.mirai.console.command.BuiltInCommands
+import net.mamoe.mirai.console.command.Command.Companion.primaryName
+import net.mamoe.mirai.console.command.CommandExecuteStatus
+import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommandDetailed
+import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.DefaultLogger
@@ -74,11 +79,11 @@ internal fun startConsoleThread() {
                 while (isActive) {
                     val next = MiraiConsoleFrontEndPure.requestInput("").let {
                         when {
-                            it.startsWith(CommandPrefix) -> {
+                            it.startsWith(CommandManager.commandPrefix) -> {
                                 it
                             }
-                            it == "?" -> CommandPrefix + BuiltInCommands.Help.primaryName
-                            else -> CommandPrefix + it
+                            it == "?" -> CommandManager.commandPrefix + BuiltInCommands.Help.primaryName
+                            else -> CommandManager.commandPrefix + it
                         }
                     }
                     if (next.isBlank()) {

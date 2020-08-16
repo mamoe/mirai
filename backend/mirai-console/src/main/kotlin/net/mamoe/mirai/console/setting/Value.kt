@@ -14,9 +14,9 @@ package net.mamoe.mirai.console.setting
 import kotlinx.serialization.BinaryFormat
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
-import net.mamoe.mirai.console.setting.internal.map
-import net.mamoe.mirai.console.setting.internal.setValueBySerializer
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.internal.setting.map
+import net.mamoe.mirai.console.internal.setting.setValueBySerializer
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import kotlin.reflect.KProperty
 
 /**

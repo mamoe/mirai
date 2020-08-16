@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
-import net.mamoe.mirai.console.plugin.internal.JvmPluginInternal
+import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
 import net.mamoe.mirai.utils.minutesToSeconds
 import net.mamoe.mirai.utils.secondsToMillis
 import kotlin.coroutines.CoroutineContext

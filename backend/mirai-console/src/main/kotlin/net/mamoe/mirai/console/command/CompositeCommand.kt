@@ -18,9 +18,9 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.description.*
-import net.mamoe.mirai.console.command.internal.AbstractReflectionCommand
-import net.mamoe.mirai.console.command.internal.CompositeCommandSubCommandAnnotationResolver
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
+import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.reflect.KClass
@@ -35,13 +35,13 @@ public abstract class CompositeCommand @JvmOverloads constructor(
     description: String = "no description available",
     permission: CommandPermission = CommandPermission.Default,
     prefixOptional: Boolean = false,
-    overrideContext: CommandParserContext = EmptyCommandParserContext
+    overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
 ) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
-    CommandParserContextAware {
+    CommandArgumentContextAware {
     /**
-     * [CommandArgParser] 的环境
+     * [CommandArgumentParser] 的环境
      */
-    public final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
+    public final override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
 
     /**
      * 标记一个函数为子指令, 当 [value] 为空时使用函数名.

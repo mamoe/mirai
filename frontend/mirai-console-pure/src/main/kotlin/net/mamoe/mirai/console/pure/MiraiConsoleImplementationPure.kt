@@ -34,7 +34,7 @@ import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.setting.MultiFileSettingStorage
 import net.mamoe.mirai.console.setting.SettingStorage
-import net.mamoe.mirai.console.utils.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.util.*

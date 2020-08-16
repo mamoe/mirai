@@ -34,24 +34,24 @@ internal data class CommandParam<T : Any>(
      */
     val name: String,
     /**
-     * 参数类型. 将从 [CompositeCommand.context] 中寻找 [CommandArgParser] 解析.
+     * 参数类型. 将从 [CompositeCommand.context] 中寻找 [CommandArgumentParser] 解析.
      */
     val type: KClass<T> // exact type
 ) {
-    constructor(name: String, type: KClass<T>, parser: CommandArgParser<T>) : this(name, type) {
+    constructor(name: String, type: KClass<T>, parser: CommandArgumentParser<T>) : this(name, type) {
         this._overrideParser = parser
     }
 
     @Suppress("PropertyName")
     @JvmField
-    internal var _overrideParser: CommandArgParser<T>? = null
+    internal var _overrideParser: CommandArgumentParser<T>? = null
 
 
     /**
-     * 覆盖的 [CommandArgParser].
+     * 覆盖的 [CommandArgumentParser].
      *
-     * 如果非 `null`, 将不会从 [CommandParserContext] 寻找 [CommandArgParser]
+     * 如果非 `null`, 将不会从 [CommandArgumentContext] 寻找 [CommandArgumentParser]
      */
-    val overrideParser: CommandArgParser<T>? get() = _overrideParser
+    val overrideParser: CommandArgumentParser<T>? get() = _overrideParser
 }
 

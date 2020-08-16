@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.utils.isManager
+import net.mamoe.mirai.console.util.BotManager.INSTANCE.isManager
 import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.contact.isOwner
@@ -35,13 +35,11 @@ public interface CommandPermission {
     /**
      * 满足两个权限其中一个即可使用指令
      */ // no extension for Java
-    @JvmDefault
     public infix fun or(another: CommandPermission): CommandPermission = OrCommandPermission(this, another)
 
     /**
      * 同时拥有两个权限才能使用指令
      */ // no extension for Java
-    @JvmDefault
     public infix fun and(another: CommandPermission): CommandPermission = AndCommandPermission(this, another)
 
 

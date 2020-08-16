@@ -10,7 +10,7 @@
 package net.mamoe.mirai.console
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
 

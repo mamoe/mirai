@@ -11,16 +11,20 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.internal.isValidSubName
+import net.mamoe.kjbb.JvmBlockingBridge
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.internal.command.isValidSubName
 import net.mamoe.mirai.message.data.SingleMessage
 
 /**
  * 指令
- * 通常情况下, 你的指令应继承 @see CompositeCommand/SimpleCommand
- * @see register 注册这个指令
+ *
+ * @see CommandManager.register 注册这个指令
  *
  * @see RawCommand
  * @see CompositeCommand
+ * @see SimpleCommand
  */
 public interface Command {
     /**
@@ -28,8 +32,14 @@ public interface Command {
      */
     public val names: Array<out String>
 
+    /**
+     * 用法说明, 用于发送给用户
+     */
     public val usage: String
 
+    /**
+     * 指令描述, 用于显示在 [BuiltInCommands.Help]
+     */
     public val description: String
 
     /**
@@ -38,19 +48,36 @@ public interface Command {
     public val permission: CommandPermission
 
     /**
-     * 为 `true` 时表示 [指令前缀][CommandPrefix] 可选
+     * 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选
      */
     public val prefixOptional: Boolean
 
+    /**
+     * 指令拥有者, 对于插件的指令通常是 [PluginCommandOwner]
+     */
     public val owner: CommandOwner
 
     /**
-     * @param args 指令参数. 可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
+     * @param args 指令参数. 数组元素类型可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
      *
-     * @see Command.execute
-     */ // TODO: 2020/6/28 Java-friendly bridges
+     * @see CommandManager.execute
+     */
+    @JvmBlockingBridge
     public suspend fun CommandSender.onCommand(args: Array<out Any>)
+
+    public companion object {
+        /**
+         * 主要指令名. 为 [Command.names] 的第一个元素.
+         */
+        @JvmStatic
+        public val Command.primaryName: String
+            get() = names[0]
+    }
 }
+
+@JvmSynthetic
+public suspend inline fun Command.onCommand(sender: CommandSender, args: Array<out Any>): Unit =
+    sender.run { onCommand(args) }
 
 /**
  * [Command] 的基础实现
@@ -69,11 +96,3 @@ public abstract class AbstractCommand @JvmOverloads constructor(
         }.toTypedArray()
 
 }
-
-public suspend inline fun Command.onCommand(sender: CommandSender, args: Array<out Any>): Unit =
-    sender.run { onCommand(args) }
-
-/**
- * 主要指令名. 为 [Command.names] 的第一个元素.
- */
-public val Command.primaryName: String get() = names[0]

@@ -7,7 +7,7 @@ import net.mamoe.mirai.console.plugin.Config;
 import net.mamoe.mirai.console.plugin.ConfigSection;
 import net.mamoe.mirai.console.plugin.ConfigSectionFactory;
 import net.mamoe.mirai.console.plugin.PluginBase;
-import net.mamoe.mirai.console.utils.Utils;
+import net.mamoe.mirai.console.util.Utils;
 import net.mamoe.mirai.message.GroupMessage;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;

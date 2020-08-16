@@ -16,7 +16,9 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.stacktraceString
+import net.mamoe.mirai.console.command.Command.Companion.primaryName
+import net.mamoe.mirai.console.command.CommandManagerImpl.allRegisteredCommands
+import net.mamoe.mirai.console.command.CommandManagerImpl.register
 import net.mamoe.mirai.event.selectMessagesUnit
 import net.mamoe.mirai.utils.DirectoryLogger
 import net.mamoe.mirai.utils.weeksToMillis
@@ -138,7 +140,7 @@ public object BuiltInCommands {
                                     if (this is MessageEventContextAware<*>) {
                                         this.fromEvent.selectMessagesUnit {
                                             "stacktrace" reply {
-                                                throwable.stacktraceString
+                                                throwable.stackTraceToString()
                                             }
                                         }
                                         "test"

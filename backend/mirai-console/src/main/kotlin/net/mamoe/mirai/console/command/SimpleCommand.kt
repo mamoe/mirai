@@ -17,12 +17,12 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.description.CommandParserContext
-import net.mamoe.mirai.console.command.description.CommandParserContextAware
-import net.mamoe.mirai.console.command.description.EmptyCommandParserContext
+import net.mamoe.mirai.console.command.description.CommandArgumentContext
+import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
+import net.mamoe.mirai.console.command.description.EmptyCommandArgumentContext
 import net.mamoe.mirai.console.command.description.plus
-import net.mamoe.mirai.console.command.internal.AbstractReflectionCommand
-import net.mamoe.mirai.console.command.internal.SimpleCommandSubCommandAnnotationResolver
+import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
+import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
 
 public abstract class SimpleCommand @JvmOverloads constructor(
     owner: CommandOwner,
@@ -30,9 +30,9 @@ public abstract class SimpleCommand @JvmOverloads constructor(
     description: String = "no description available",
     permission: CommandPermission = CommandPermission.Default,
     prefixOptional: Boolean = false,
-    overrideContext: CommandParserContext = EmptyCommandParserContext
+    overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
 ) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
-    CommandParserContextAware {
+    CommandArgumentContextAware {
 
     public override val usage: String
         get() = super.usage
@@ -42,7 +42,11 @@ public abstract class SimpleCommand @JvmOverloads constructor(
      */
     protected annotation class Handler
 
-    public final override val context: CommandParserContext = CommandParserContext.Builtins + overrideContext
+    public final override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
+
+    public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+        subCommands.single().parseAndExecute(this, args, false)
+    }
 
     internal override fun checkSubCommand(subCommands: Array<SubCommandDescriptor>) {
         super.checkSubCommand(subCommands)
@@ -51,10 +55,6 @@ public abstract class SimpleCommand @JvmOverloads constructor(
 
     @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
     internal override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) = sendMessage(usage)
-
-    public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
-        subCommands.single().parseAndExecute(this, args, false)
-    }
 
     internal final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
         get() = SimpleCommandSubCommandAnnotationResolver

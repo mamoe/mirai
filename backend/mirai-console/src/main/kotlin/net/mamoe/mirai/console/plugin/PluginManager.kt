@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.plugin.jvm.PluginManagerImpl
+import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import java.io.File
 
 /**
@@ -55,7 +55,9 @@ public interface PluginManager {
      */
     public val Plugin.description: PluginDescription
 
-    public companion object INSTANCE : PluginManager by PluginManagerImpl
+    public companion object INSTANCE : PluginManager by PluginManagerImpl {
+        override val Plugin.description: PluginDescription get() = PluginManagerImpl.run { description }
+    }
 }
 
 @JvmSynthetic

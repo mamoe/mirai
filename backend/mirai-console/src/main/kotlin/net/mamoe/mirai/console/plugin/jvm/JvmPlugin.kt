@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
 import net.mamoe.mirai.console.setting.AutoSaveSettingHolder
 import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.utils.ResourceContainer
+import net.mamoe.mirai.console.util.ResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.reflect.KClass
 

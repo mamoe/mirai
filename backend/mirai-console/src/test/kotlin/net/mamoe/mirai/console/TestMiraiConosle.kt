@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.setting.MemorySettingStorage
 import net.mamoe.mirai.console.setting.SettingStorage
-import net.mamoe.mirai.console.utils.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.LoginSolver

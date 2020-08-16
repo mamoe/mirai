@@ -13,10 +13,10 @@ package net.mamoe.mirai.console.setting
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import net.mamoe.mirai.console.internal.setting.*
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.setting.SettingStorage.Companion.load
-import net.mamoe.mirai.console.setting.internal.*
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.KType

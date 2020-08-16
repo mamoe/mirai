@@ -11,7 +11,7 @@ package net.mamoe.mirai.console.plugin.center
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import java.io.File
 
 @ConsoleExperimentalAPI

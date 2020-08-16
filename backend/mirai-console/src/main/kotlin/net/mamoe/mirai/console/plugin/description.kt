@@ -13,8 +13,8 @@ import com.vdurmont.semver4j.Semver
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
-import net.mamoe.mirai.console.setting.internal.map
-import net.mamoe.mirai.console.utils.SemverAsStringSerializerIvy
+import net.mamoe.mirai.console.internal.setting.SemverAsStringSerializerIvy
+import net.mamoe.mirai.console.internal.setting.map
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlDynamicSerializer
 import java.io.File

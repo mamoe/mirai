@@ -12,11 +12,11 @@
 package net.mamoe.mirai.console.setting
 
 import kotlinx.serialization.KSerializer
+import net.mamoe.mirai.console.internal.setting.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.loadSetting
-import net.mamoe.mirai.console.setting.internal.*
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.utils.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType

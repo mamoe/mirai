@@ -1,5 +1,8 @@
 package net.mamoe.mirai.console.command
 
+/**
+ * 无参数解析, 接收原生参数的指令.
+ */
 public abstract class RawCommand(
     public override val owner: CommandOwner,
     public override vararg val names: String,

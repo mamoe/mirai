@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.console.command
 
+import net.mamoe.mirai.console.command.Command.Companion.primaryName
+
 /**
  * 在 [executeCommand] 中, [Command.onCommand] 抛出异常时包装的异常.
  */

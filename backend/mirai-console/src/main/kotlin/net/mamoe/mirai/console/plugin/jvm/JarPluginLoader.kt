@@ -10,10 +10,10 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.console.internal.plugin.JarPluginLoaderImpl
 import net.mamoe.mirai.console.plugin.FilePluginLoader
-import net.mamoe.mirai.console.plugin.internal.JarPluginLoaderImpl
 import net.mamoe.mirai.console.setting.SettingStorage
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
  * 内建的 Jar (JVM) 插件加载器
@@ -25,5 +25,9 @@ public interface JarPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, J
     @ConsoleExperimentalAPI
     public val settingStorage: SettingStorage
 
-    public companion object INSTANCE : JarPluginLoader by JarPluginLoaderImpl
+    public companion object INSTANCE : JarPluginLoader by JarPluginLoaderImpl {
+        @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+        override val JvmPlugin.description: JvmPluginDescription
+            get() = JarPluginLoaderImpl.run { description }
+    }
 }

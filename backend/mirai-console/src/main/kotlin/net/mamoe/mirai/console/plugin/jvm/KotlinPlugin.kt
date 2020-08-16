@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
-import net.mamoe.mirai.console.utils.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 

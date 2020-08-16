@@ -16,11 +16,16 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.Testing
 import net.mamoe.mirai.console.Testing.withTesting
-import net.mamoe.mirai.console.command.description.CommandArgParser
-import net.mamoe.mirai.console.command.description.CommandParserContext
-import net.mamoe.mirai.console.command.internal.InternalCommandManager
-import net.mamoe.mirai.console.command.internal.flattenCommandComponents
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.registeredCommands
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
+import net.mamoe.mirai.console.command.description.CommandArgumentContext
+import net.mamoe.mirai.console.command.description.CommandArgumentParser
 import net.mamoe.mirai.console.initTestEnvironment
+import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.toMessage
@@ -75,8 +80,8 @@ internal class TestCommand {
 
             assertEquals(1, ConsoleCommandOwner.registeredCommands.size)
 
-            assertEquals(1, InternalCommandManager.registeredCommands.size)
-            assertEquals(2, InternalCommandManager.requiredPrefixCommandMap.size)
+            assertEquals(1, CommandManagerImpl.registeredCommands.size)
+            assertEquals(2, CommandManagerImpl.requiredPrefixCommandMap.size)
         } finally {
             TestCompositeCommand.unregister()
         }
@@ -180,8 +185,8 @@ internal class TestCommand {
             val composite = object : CompositeCommand(
                 ConsoleCommandOwner,
                 "test",
-                overrideContext = CommandParserContext {
-                    add(object : CommandArgParser<MyClass> {
+                overrideContext = CommandArgumentContext {
+                    add(object : CommandArgumentParser<MyClass> {
                         override fun parse(raw: String, sender: CommandSender): MyClass {
                             return MyClass(raw.toInt())
                         }

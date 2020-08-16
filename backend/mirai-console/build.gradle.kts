@@ -6,11 +6,12 @@ import java.util.Date
 import java.util.TimeZone
 
 plugins {
-    kotlin("jvm") version Versions.kotlinCompiler
-    kotlin("plugin.serialization") version Versions.kotlinCompiler
+    kotlin("jvm")
+    kotlin("plugin.serialization")
     id("java")
     `maven-publish`
     id("com.jfrog.bintray")
+    id("net.mamoe.kotlin-jvm-blocking-bridge")
 }
 
 version = Versions.console
@@ -31,8 +32,9 @@ kotlin {
     sourceSets.all {
         target.compilations.all {
             kotlinOptions {
-                freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=enable"
                 jvmTarget = "1.8"
+                freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
+                //useIR = true
             }
         }
         languageSettings.apply {
@@ -45,7 +47,7 @@ kotlin {
             useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
             useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
             useExperimentalAnnotation("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
-            useExperimentalAnnotation("net.mamoe.mirai.console.utils.ConsoleExperimentalAPI")
+            useExperimentalAnnotation("net.mamoe.mirai.console.util.ConsoleExperimentalAPI")
             useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
