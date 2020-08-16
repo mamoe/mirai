@@ -15,8 +15,15 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.internal.registerEvent
+import java.lang.reflect.Method
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.reflect.KClass
+import kotlin.reflect.full.IllegalCallableAccessException
+import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.jvm.isAccessible
+import kotlin.reflect.jvm.kotlinFunction
 
 /**
  * 标注一个函数为事件监听器.

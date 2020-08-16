@@ -298,17 +298,18 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                             return@mapNotNull null
                         }
 
-                        friend.lastMessageSequence.loop { instant ->
-                            if (msg.msgHead.msgSeq > instant) {
-                                if (friend.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
-                                    return@mapNotNull FriendMessageEvent(
-                                        friend,
-                                        msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
-                                        msg.msgHead.msgTime
-                                    )
-                                }
-                            } else return@mapNotNull null
+                        if (friend.lastMessageSequence.compareAndSet(
+                                friend.lastMessageSequence.value,
+                                msg.msgHead.msgSeq
+                            )
+                        ) {
+                            return@mapNotNull FriendMessageEvent(
+                                friend,
+                                msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
+                                msg.msgHead.msgTime
+                            )
                         }
+                        return@mapNotNull null
                     }
                     208 -> {
                         // friend ptt

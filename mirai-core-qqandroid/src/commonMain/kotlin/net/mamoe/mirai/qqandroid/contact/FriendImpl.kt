@@ -121,7 +121,7 @@ internal class FriendImpl(
 
         @Suppress("UNCHECKED_CAST", "DEPRECATION")
         when (response) {
-            is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId)
+            is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId)
                 .also {
                     ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
@@ -155,7 +155,7 @@ internal class FriendImpl(
                 )*/
                 // 为什么不能 ??
 
-                OfflineFriendImage(response.resourceId).also {
+                net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId).also {
                     ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
             }
