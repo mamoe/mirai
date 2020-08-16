@@ -212,11 +212,11 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         val member = group.getOrNull(target) ?: return@lambda732 emptySequence()
         member.checkIsMemberImpl()
 
-        if (member._muteTimestamp == timeSeconds) {
+        if (member.muteTimeRemaining == timeSeconds) {
             return@lambda732 emptySequence()
         }
 
-        member._muteTimestamp = timeSeconds
+        member._muteTimestamp = currentTimeSeconds.toInt() + timeSeconds
         return@lambda732 if (timeSeconds == 0) sequenceOf(MemberUnmuteEvent(member, operator))
         else sequenceOf(MemberMuteEvent(member, timeSeconds, operator))
     },
