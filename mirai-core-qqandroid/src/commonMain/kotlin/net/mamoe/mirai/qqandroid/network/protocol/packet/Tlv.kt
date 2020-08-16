@@ -85,7 +85,7 @@ internal fun BytePacketBuilder.t106(
     subAppId: Long,
     appClientVersion: Int = 0,
     uin: Long,
-    n5_always_1: Int = 1,
+    isSavePassword: Boolean = true,
     passwordMd5: ByteArray,
     salt: Long,
     uinAccountString: ByteArray,
@@ -115,7 +115,7 @@ internal fun BytePacketBuilder.t106(
 
             writeInt(currentTimeMillis.toInt())
             writeFully(ByteArray(4)) // ip // no need to write actual ip
-            writeByte(n5_always_1.toByte())
+            writeByte(isSavePassword.toByte())
             writeFully(passwordMd5)
             writeFully(tgtgtKey)
             writeInt(0)
@@ -174,16 +174,16 @@ internal fun BytePacketBuilder.t100(
 
 internal fun BytePacketBuilder.t107(
     picType: Int,
-    const1_always_0: Int = 0,
-    const2_always_0: Int = 0,
-    const3_always_1: Int = 1
+    capType: Int = 0,
+    picSize: Int = 0,
+    retType: Int = 1
 ) {
     writeShort(0x107)
     writeShortLVPacket {
         writeShort(picType.toShort())
-        writeByte(const1_always_0.toByte())
-        writeShort(const2_always_0.toShort())
-        writeByte(const3_always_1.toByte())
+        writeByte(capType.toByte())
+        writeShort(picSize.toShort())
+        writeByte(retType.toByte())
     } shouldEqualsTo 6
 }
 
@@ -352,7 +352,7 @@ internal fun BytePacketBuilder.t124(
     osVersion: ByteArray, // Build.VERSION.RELEASE.toByteArray()
     networkType: NetworkType,  //oicq.wlogin_sdk.tools.util#get_network_type
     simInfo: ByteArray, // oicq.wlogin_sdk.tools.util#get_sim_operator_name
-    unknown: ByteArray,
+    address: ByteArray, // always new byte[0]
     apn: ByteArray = "wifi".toByteArray() // oicq.wlogin_sdk.tools.util#get_apn_string
 ) {
     writeShort(0x124)
@@ -361,7 +361,7 @@ internal fun BytePacketBuilder.t124(
         writeShortLVByteArrayLimitedLength(osVersion, 16)
         writeShort(networkType.value.toShort())
         writeShortLVByteArrayLimitedLength(simInfo, 16)
-        writeShortLVByteArrayLimitedLength(unknown, 32)
+        writeShortLVByteArrayLimitedLength(address, 32)
         writeShortLVByteArrayLimitedLength(apn, 16)
     }
 }
@@ -637,14 +637,14 @@ internal fun BytePacketBuilder.t202(
 }
 
 internal fun BytePacketBuilder.t177(
-    unknown1: Long = 1571193922L,
-    unknown2: String = "6.0.0.2413"
+    buildTime: Long = 1571193922L, // wtLogin BuildTime
+    BuildVersion: String = "6.0.0.2413" // wtLogin SDK Version
 ) {
     writeShort(0x177)
     writeShortLVPacket {
         writeByte(1)
-        writeInt(unknown1.toInt())
-        writeShortLVString(unknown2)
+        writeInt(buildTime.toInt())
+        writeShortLVString(BuildVersion)
     } shouldEqualsTo 0x11
 }
 
