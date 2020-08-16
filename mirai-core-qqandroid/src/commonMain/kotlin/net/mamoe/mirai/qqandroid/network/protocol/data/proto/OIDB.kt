@@ -403,27 +403,27 @@ internal class Cmd0x8bb : ProtoBuf {
 
     @Serializable
     internal class ReqBody(
-            @ProtoId(1) @JvmField val WriteReq: WriteReq? = null
+            @ProtoId(1) @JvmField val WriteReq: WriteReq? = null,
             @ProtoId(2) @JvmField val ReadReq: ReadReq? = null
     ) : ProtoBuf
-    
+
     @Serializable
     internal class RspBody(
-            @ProtoId(1) @JvmField val WriteRsp: WriteRsp? = null
+            @ProtoId(1) @JvmField val WriteRsp: WriteRsp? = null,
             @ProtoId(2) @JvmField val ReadRsp: ReadRsp? = null
     ) : ProtoBuf
 
     @Serializable
     internal class WordInfo(
             @ProtoId(1) @JvmField val Keyword: String = "",
-            @ProtoId(2) @JvmField val UpdateTime: Int = 0,
+            @ProtoId(2) @JvmField val UpdateTime: Int = 0
     ) : ProtoBuf
-    
+
     @Serializable
     internal class WriteReq(
             @ProtoId(1) @JvmField val GroupConcernedInfo: List<GroupConcernedInfo>? = null
     ) : ProtoBuf
-    
+
     @Serializable
     internal class WriteRsp(
             @ProtoId(1) @JvmField val GroupConcernedInfo: List<GroupConcernedInfo>? = null
@@ -432,7 +432,7 @@ internal class Cmd0x8bb : ProtoBuf {
     @Serializable
     internal class ForbidUin(
             @ProtoId(1) @JvmField val uin: Long = 0,
-            @ProtoId(2) @JvmField val updateTime: Int = ""
+            @ProtoId(2) @JvmField val updateTime: Int = 0
     ) : ProtoBuf
 }
 
@@ -2485,3 +2485,4 @@ internal class Cmd0x6ce : ProtoBuf {
         @ProtoId(1) @JvmField val msgReadReq: List<ReadRedpointReq>? = null
     ) : ProtoBuf
 }
+
