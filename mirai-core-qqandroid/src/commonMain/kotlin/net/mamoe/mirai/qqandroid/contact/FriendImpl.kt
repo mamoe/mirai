@@ -18,8 +18,6 @@
 
 package net.mamoe.mirai.qqandroid.contact
 
-import kotlinx.atomicfu.AtomicInt
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.io.core.Closeable
@@ -40,12 +38,10 @@ import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.highway.sizeToString
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
+import net.mamoe.mirai.qqandroid.utils.AtomicResizeCacheList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -78,7 +74,7 @@ internal class FriendImpl(
     override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
     @Suppress("unused") // bug
-    val lastMessageSequence: AtomicInt = atomic(-1)
+    val lastMessageSeqCacheList: AtomicResizeCacheList<Int> = AtomicResizeCacheList(15.minutesToMillis)
 
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val nick: String
