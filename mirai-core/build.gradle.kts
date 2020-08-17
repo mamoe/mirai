@@ -108,6 +108,8 @@ kotlin {
                 //api(kotlin("stdlib-jdk8"))
                 //api(kotlin("stdlib-jdk7"))
                 api(kotlin("reflect"))
+                compileOnly("org.apache.logging.log4j:log4j-api:" + Versions.Logging.log4j)
+                compileOnly("org.slf4j:slf4j-api:" + Versions.Logging.slf4j)
 
                 api(ktor("client-core-jvm", Versions.Kotlin.ktor))
                 implementation(kotlinx("io-jvm", Versions.Kotlin.io))
