@@ -109,7 +109,7 @@ internal fun Method.registerEvent(
         require(!kotlinFunction.returnType.isMarkedNullable) {
             "Kotlin event handlers cannot have nullable return type."
         }
-        require(!kotlinFunction.parameters.any { it.type.isMarkedNullable }) {
+        require(kotlinFunction.parameters.none { it.type.isMarkedNullable }) {
             "Kotlin event handlers cannot have nullable parameter type."
         }
         when (kotlinFunction.returnType.classifier) {
