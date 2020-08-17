@@ -36,6 +36,10 @@ object Versions {
         const val bintray = "1.8.5"
     }
 
+    object Logging {
+        const val slf4j = "1.7.30"
+        const val log4j = "2.13.3"
+    }
 }
 
 @Suppress("unused")
