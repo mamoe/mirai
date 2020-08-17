@@ -61,14 +61,10 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         client: QQAndroidClient,
         syncFlag: MsgSvc.SyncFlag = MsgSvc.SyncFlag.START,
         syncCookie: ByteArray?, //PbPushMsg.msg.msgHead.msgTime
-        firstSync: Boolean = false
     ): OutgoingPacket = buildOutgoingUniPacket(
         client
     ) {
         //println("syncCookie=${client.c2cMessageSync.syncCookie?.toUHexString()}")
-        if (firstSync) {
-            client.firstSyncPackets.getAndAdd(1)
-        }
         writeProtoBuf(
             MsgSvc.PbGetMsgReq.serializer(),
             MsgSvc.PbGetMsgReq(
@@ -150,10 +146,13 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 
         val messages = resp.uinPairMsgs.asFlow()
             .filterNot { it.msg == null }
-            .flatMapConcat { it.msg!!.asFlow() }
-            .also {
-                MessageSvcPbDeleteMsg.delete(bot, it)
-            } // 删除消息
+            .flatMapConcat {
+                it.msg!!.asFlow()
+                    .filter { msg: MsgComm.Msg -> msg.msgHead.msgTime > it.lastReadTime.toLong() and 4294967295L }
+            }.also {
+                MessageSvcPbDeleteMsg.delete(bot, it) // 删除消息
+                // todo 实现一个锁来防止重复收到消息
+            }
             .mapNotNull<MsgComm.Msg, Packet> { msg ->
 
                 suspend fun createGroupForBot(groupUin: Long): Group? {
@@ -277,9 +276,6 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     */
 
                     166 -> {
-                        if (bot.client.firstSyncPackets.value != 0) {
-                            return@mapNotNull null
-                        }
                         if (msg.msgHead.fromUin == bot.id) {
                             loop@ while (true) {
                                 val instance = bot.client.getFriendSeq()
@@ -383,9 +379,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
     override suspend fun QQAndroidBot.handle(packet: Response) {
         when (packet.syncFlagFromServer) {
             MsgSvc.SyncFlag.STOP -> {
-                if (client.firstSyncPackets.value != 0) {
-                    client.firstSyncPackets.getAndDecrement()
-                }
+
             }
 
             MsgSvc.SyncFlag.START -> {

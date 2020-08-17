@@ -159,8 +159,11 @@ public open class BotConfigurationBase internal constructor() {
     @MiraiExperimentalAPI
     public var json: Json = kotlin.runCatching {
         @OptIn(UnstableDefault::class)
-        Json(JsonConfiguration(isLenient = true, ignoreUnknownKeys = true))
-    }.getOrElse { Json(JsonConfiguration.Stable) }
+        Json {
+            isLenient = true
+            ignoreUnknownKeys = true
+        }
+    }.getOrElse { Json {} }
 
     /**
      * 不显示网络日志. 不推荐.

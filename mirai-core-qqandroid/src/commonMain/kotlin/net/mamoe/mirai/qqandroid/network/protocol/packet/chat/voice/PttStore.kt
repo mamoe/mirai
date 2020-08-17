@@ -37,9 +37,8 @@ internal class PttStore {
             uin: Long,
             groupCode: Long,
             md5: ByteArray,
-            size: Long = 0,
-            voiceLength: Int = 0,
-            fileId: Long = 0
+            size: Long,
+            codec: Int = 0
         ): OutgoingPacket {
             val pack = Cmd0x388.ReqBody(
                 netType = 3, // wifi
@@ -48,7 +47,7 @@ internal class PttStore {
                     Cmd0x388.TryUpPttReq(
                         srcUin = uin,
                         groupCode = groupCode,
-                        fileId = fileId,
+                        fileId = 0,
                         fileSize = size,
                         fileMd5 = md5,
                         fileName = md5,
@@ -57,8 +56,8 @@ internal class PttStore {
                         buType = 4,
                         innerIp = 0,
                         buildVer = "6.5.5.663".encodeToByteArray(),
-                        voiceLength = voiceLength,
-                        codec = 0,
+                        voiceLength = 1,
+                        codec = codec,
                         voiceType = 1,
                         boolNewUpChan = true
                     )

@@ -413,9 +413,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         logger.info { "Syncing friend message history..." }
         withTimeoutOrNull(30000) {
             launch(CoroutineName("Syncing friend message history")) { syncFromEvent<MessageSvcPbGetMsg.GetMsgSuccess, Unit> { Unit } }
-            // 别问我为什么要发两个 我也不知道 反正它能用
-            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null, firstSync = true).sendAndExpect<Packet>()
-            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null, firstSync = true).sendAndExpect<Packet>()
+            MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null).sendAndExpect<Packet>()
+
         } ?: error("timeout syncing friend message history")
         logger.info { "Syncing friend message history: Success" }
     }
