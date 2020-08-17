@@ -7,27 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils.ext.logging.jdk
+package net.mamoe.mirai.utils.internal.logging
 
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
 import java.util.logging.Level
 import java.util.logging.Logger
 
-public class JdkLogger(private val logger: Logger) : MiraiLoggerPlatformBase() {
-    public companion object {
-        public fun newLogger(identity: String?): MiraiLogger {
-            if (identity == null)
-                return JdkLogger(Logger.getGlobal())
-            return JdkLogger(Logger.getLogger(identity));
-        }
-
-        public fun use() {
-            DefaultLogger = ::newLogger
-        }
-    }
-
+internal class JdkLogger(private val logger: Logger) : MiraiLoggerPlatformBase() {
     override fun verbose0(message: String?, e: Throwable?) {
         logger.log(Level.FINER, message, e)
     }

@@ -7,25 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils.ext.logging.log4j
+package net.mamoe.mirai.utils.internal.logging
 
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import org.slf4j.Logger
 
-public class Log4jLogger(private val logger: Logger) : MiraiLoggerPlatformBase() {
-    public companion object {
-        public fun newLogger(identity: String?): MiraiLogger {
-            return Log4jLogger(LogManager.getLogger(identity));
-        }
-        public fun use() {
-            DefaultLogger = ::newLogger
-        }
-    }
-
-
+internal class Slf4jLogger(private val logger: Logger) : MiraiLoggerPlatformBase() {
     override fun verbose0(message: String?, e: Throwable?) {
         logger.trace(message, e)
     }
@@ -48,5 +35,4 @@ public class Log4jLogger(private val logger: Logger) : MiraiLoggerPlatformBase()
 
     override val identity: String?
         get() = logger.name
-
 }
