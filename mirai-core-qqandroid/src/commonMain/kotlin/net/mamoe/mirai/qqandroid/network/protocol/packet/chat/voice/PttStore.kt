@@ -47,7 +47,7 @@ internal class PttStore {
                     Cmd0x388.TryUpPttReq(
                         srcUin = uin,
                         groupCode = groupCode,
-                        fileId = fileId,
+                        fileId = 0,
                         fileSize = size,
                         fileMd5 = md5,
                         fileName = md5,
