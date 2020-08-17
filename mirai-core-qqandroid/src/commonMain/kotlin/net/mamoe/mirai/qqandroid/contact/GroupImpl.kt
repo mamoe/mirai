@@ -12,9 +12,7 @@
 
 package net.mamoe.mirai.qqandroid.contact
 
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
@@ -33,9 +31,13 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.createToGroup
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
+import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.estimateLength
+import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.*
+import java.io.InputStream
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
@@ -130,18 +132,18 @@ internal class GroupImpl(
             set(newValue) {
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
                 //if (_announcement != newValue) {
-                    val oldValue = _announcement
-                    _announcement = newValue
-                    launch {
-                        bot.network.run {
-                            TroopManagement.GroupOperation.memo(
-                                client = bot.client,
-                                groupCode = id,
-                                newMemo = newValue
-                            ).sendWithoutExpect()
-                        }
-                        GroupEntranceAnnouncementChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
+                val oldValue = _announcement
+                _announcement = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.memo(
+                            client = bot.client,
+                            groupCode = id,
+                            newMemo = newValue
+                        ).sendWithoutExpect()
                     }
+                    GroupEntranceAnnouncementChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
+                }
                 //}
             }
 
@@ -151,18 +153,18 @@ internal class GroupImpl(
             set(newValue) {
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
                 //if (_allowMemberInvite != newValue) {
-                    val oldValue = _allowMemberInvite
-                    _allowMemberInvite = newValue
-                    launch {
-                        bot.network.run {
-                            TroopManagement.GroupOperation.allowMemberInvite(
-                                client = bot.client,
-                                groupCode = id,
-                                switch = newValue
-                            ).sendWithoutExpect()
-                        }
-                        GroupAllowMemberInviteEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
+                val oldValue = _allowMemberInvite
+                _allowMemberInvite = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.allowMemberInvite(
+                            client = bot.client,
+                            groupCode = id,
+                            switch = newValue
+                        ).sendWithoutExpect()
                     }
+                    GroupAllowMemberInviteEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
+                }
                 //}
             }
 
@@ -208,18 +210,18 @@ internal class GroupImpl(
             set(newValue) {
                 checkBotPermission(MemberPermission.ADMINISTRATOR)
                 //if (_muteAll != newValue) {
-                    val oldValue = _muteAll
-                    _muteAll = newValue
-                    launch {
-                        bot.network.run {
-                            TroopManagement.GroupOperation.muteAll(
-                                client = bot.client,
-                                groupCode = id,
-                                switch = newValue
-                            ).sendWithoutExpect()
-                        }
-                        GroupMuteAllEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
+                val oldValue = _muteAll
+                _muteAll = newValue
+                launch {
+                    bot.network.run {
+                        TroopManagement.GroupOperation.muteAll(
+                            client = bot.client,
+                            groupCode = id,
+                            switch = newValue
+                        ).sendWithoutExpect()
                     }
+                    GroupMuteAllEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
+                }
                 //}
             }
     }
@@ -442,6 +444,38 @@ internal class GroupImpl(
     } finally {
         (image.input as? Closeable)?.close()
     }
+
+    /**
+     * 上传一个语音消息以备发送.
+     * 请注意，这是一个实验性api且随时会被删除
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
+     */
+    @JvmSynthetic
+    @MiraiExperimentalAPI
+    override suspend fun uploadGroupVoice(input: InputStream): Voice {
+        val content = ByteArray(input.available())
+        input.read(content)
+        if (content.size > 1048576) {
+            throw  OverFileSizeMaxException()
+        }
+        val md5 = MiraiPlatformUtils.md5(content)
+        return bot.network.run {
+            val response: PttStore.GroupPttUp.Response.RequireUpload =
+                PttStore.GroupPttUp(bot.client, bot.id, 0L, md5, content.size.toLong()).sendAndExpect()
+            HighwayHelper.uploadPttToServers(
+                bot,
+                response.uploadIpList.zip(response.uploadPortList),
+                content,
+                md5,
+                response.uKey,
+                response.fileKey
+            )
+            Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), "")
+        }
+
+    }
+
 
     override fun toString(): String = "Group($id)"
 }
