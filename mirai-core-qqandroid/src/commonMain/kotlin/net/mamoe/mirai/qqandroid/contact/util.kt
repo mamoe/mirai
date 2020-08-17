@@ -62,7 +62,7 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
             source = it
         }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
             check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
-                "Send temp message failed: $it"
+                "Send friend message failed: $it"
             }
         }
         friendReceiptConstructor(source)

@@ -363,7 +363,7 @@ internal class GroupImpl(
                 source = it
             }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
                 check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
-                    "Send temp message failed: $it"
+                    "Send group message failed: $it"
                 }
             }
 
