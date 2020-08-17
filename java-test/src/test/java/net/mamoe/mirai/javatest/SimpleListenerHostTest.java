@@ -8,33 +8,33 @@
 
 package net.mamoe.mirai.javatest;
 
-import kotlin.coroutines.CoroutineContext;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.CoroutineScopeKt;
 import net.mamoe.mirai.event.*;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SimpleListenerHostTest {
     @Test
-    public void test() {
+    public void testJavaSimpleListenerHostWork() {
+        AtomicBoolean called = new AtomicBoolean();
         final SimpleListenerHost host = new SimpleListenerHost() {
             @EventHandler
             public void testListen(
                     AbstractEvent event
             ) {
                 System.out.println(event);
-            }
-
-            @Override
-            public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
-                exception.printStackTrace();
+                called.set(true);
             }
         };
         CoroutineScope scope = CoroutineScopeKt.CoroutineScope(EmptyCoroutineContext.INSTANCE);
         Events.registerEvents(scope, host);
         EventKt.broadcast(new AbstractEvent() {
         });
+        if (!called.get()) {
+            throw new AssertionError("JavaTest: SimpleListenerHost Failed.");
+        }
     }
 }
