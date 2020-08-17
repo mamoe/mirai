@@ -123,6 +123,14 @@ public interface LowLevelBotAPIAccessor {
 
 
     /**
+     * 获取群荣誉信息
+     */
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    public suspend fun _lowLevelGetGroupHonorListData(groupId: Long, type: GroupHonorType): GroupHonorListData?
+
+
+    /**
      * 处理一个账号请求添加机器人为好友的事件
      */
     @LowLevelAPI
