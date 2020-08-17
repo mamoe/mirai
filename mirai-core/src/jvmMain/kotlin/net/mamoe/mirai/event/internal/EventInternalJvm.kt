@@ -161,11 +161,11 @@ internal fun Method.registerEvent(
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
                             withContext(Dispatchers.IO) {
-                                this@registerEvent.invoke(owner, this)
+                                this@registerEvent.invoke(owner, this@subscribeAlways)
                             }
                         }
                     } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invoke(owner, this)
+                        this@registerEvent.invoke(owner, this@subscribeAlways)
                     }
                 }
             }
@@ -179,11 +179,11 @@ internal fun Method.registerEvent(
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
                             withContext(Dispatchers.IO) {
-                                this@registerEvent.invoke(owner, this) as ListeningStatus
+                                this@registerEvent.invoke(owner, this@subscribe) as ListeningStatus
                             }
                         } else ListeningStatus.LISTENING
                     } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invoke(owner, this) as ListeningStatus
+                        this@registerEvent.invoke(owner, this@subscribe) as ListeningStatus
                     }
 
                 }
