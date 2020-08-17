@@ -1,5 +1,14 @@
 # Version 1.x
 
+## `1.1.3`  2020/7/17
+- 修复 ListenerHost Java 兼容性问题  (#443, #446 by [@Karlatemp](https://github.com/Karlatemp))
+
+## `1.1.2`  2020/7/16
+- 修复 JvmMethodEvents `T.registerEvents` 注册时错误判断 `@NotNull` 注解的问题 (#436)
+
+## `1.1.1`  2020/7/11
+- 修复最后一个 mirai 码之后的消息无法解析的问题 (#431 [@cxy654849388](https://github.com/cxy654849388))
+
 ## `1.1.0`  2020/7/9
 - 支持 Android 手表协议 (`BotConfiguration.MiraiProtocol.ANDROID_WATCH`)
 - `EventHandler` 现在支持 `Nothing` 类型.

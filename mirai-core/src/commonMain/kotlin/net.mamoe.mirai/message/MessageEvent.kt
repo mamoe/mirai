@@ -1,8 +1,8 @@
 /*
- * Copyright 2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -10,8 +10,7 @@
 @file:Suppress(
     "EXPERIMENTAL_UNSIGNED_LITERALS",
     "EXPERIMENTAL_API_USAGE",
-    "unused",
-    "DECLARATION_CANT_BE_INLINED", "UNCHECKED_CAST", "NOTHING_TO_INLINE"
+    "unused", "UNCHECKED_CAST", "NOTHING_TO_INLINE"
 )
 
 @file:JvmMultifileClass
@@ -105,29 +104,29 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
     @JvmSynthetic
-    public suspend inline fun reply(message: Message): MessageReceipt<TSubject> =
+    public suspend fun reply(message: Message): MessageReceipt<TSubject> =
         subject.sendMessage(message.asMessageChain()) as MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend inline fun reply(plain: String): MessageReceipt<TSubject> =
+    public suspend fun reply(plain: String): MessageReceipt<TSubject> =
         subject.sendMessage(plain.toMessage().asMessageChain()) as MessageReceipt<TSubject>
 
     // endregion
 
     @JvmSynthetic
-    public suspend inline fun ExternalImage.upload(): Image = this.upload(subject)
+    public suspend fun ExternalImage.upload(): Image = this.upload(subject)
 
     @JvmSynthetic
-    public suspend inline fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
     @JvmSynthetic
-    public suspend inline fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
     @JvmSynthetic
-    public suspend inline fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
     @JvmSynthetic
-    public suspend inline fun String.send(): MessageReceipt<TSubject> = this.toMessage().sendTo(subject)
+    public suspend fun String.send(): MessageReceipt<TSubject> = this.toMessage().sendTo(subject)
 
     // region 引用回复
     /**
@@ -136,18 +135,18 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
     @JvmSynthetic
-    public suspend inline fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
+    public suspend fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
         reply(this.message.quote() + message)
 
     @JvmSynthetic
-    public suspend inline fun quoteReply(message: Message): MessageReceipt<TSubject> =
+    public suspend fun quoteReply(message: Message): MessageReceipt<TSubject> =
         reply(this.message.quote() + message)
 
     @JvmSynthetic
-    public suspend inline fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
+    public suspend fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
 
     @JvmSynthetic
-    public inline fun At.isBot(): Boolean = target == bot.id
+    public fun At.isBot(): Boolean = target == bot.id
 
 
     /**
@@ -155,7 +154,7 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
     @JvmSynthetic
-    public suspend inline fun Image.url(): String = this@url.queryUrl()
+    public suspend fun Image.url(): String = this@url.queryUrl()
 }
 
 /** 一个消息事件在各平台的相关扩展. 请使用 [MessageEventExtensions] */

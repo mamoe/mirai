@@ -1,3 +1,5 @@
+          GNU AFFERO GENERAL PUBLIC LICENSE with Mamoe Exceptions
+
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
@@ -659,3 +661,16 @@ specific requirements.
 if any, to sign a "copyright disclaimer" for the program, if necessary.
 For more information on this, and how to apply and follow the GNU AGPL, see
 <https://www.gnu.org/licenses/>.
+
+
+-------------------------------------------------------------------------------
+ADDITIONAL INFORMATION ABOUT LICENSING
+
+Certain files distributed by Mamoe Technologies and/or relevant contributors are
+subject to the following clarification and special exception to the AGPLv3.
+
+The following exceptions shall prevail if conflict with AGPLv3.
+
+1. This software is prohibited from being used in all commercial activities
+
+2. This software is prohibited from conveying commercially or without source code.
