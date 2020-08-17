@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SimpleListenerHostTest {
     @Test
-    public void test() {
+    public void testJavaSimpleListenerHostWork() {
         AtomicBoolean called = new AtomicBoolean();
         final SimpleListenerHost host = new SimpleListenerHost() {
             @EventHandler
