@@ -111,3 +111,11 @@ public data class FriendAvatarChangedEvent internal constructor(
     public override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
+/**
+ * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
+ */
+public data class FriendInputStatusChangedEvent internal constructor(
+    public override val friend: Friend,
+    public val inputting: Boolean
+
+) : FriendEvent, Packet, AbstractEvent()
