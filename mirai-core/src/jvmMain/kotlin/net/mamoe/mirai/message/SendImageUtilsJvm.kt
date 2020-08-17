@@ -12,14 +12,12 @@
 package net.mamoe.mirai.message
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.sendTo
-import net.mamoe.mirai.utils.toExternalImage
-import net.mamoe.mirai.utils.upload
+import net.mamoe.mirai.message.data.Voice
+import net.mamoe.mirai.utils.*
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
@@ -118,6 +116,19 @@ public suspend fun InputStream.uploadAsImage(contact: Contact): Image =
 public suspend fun File.uploadAsImage(contact: Contact): Image {
     require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
     return toExternalImage().upload(contact)
+}
+
+/**
+ * 在 [Dispatchers.IO] 中将文件作为语音上传后构造 [Image]
+ * 请手动关闭输入流
+ * 请使用mar格式
+ * 注意，这只是个实验性功能且随时可能会删除
+ * @throws OverFileSizeMaxException
+ */
+@Throws(OverFileSizeMaxException::class)
+@MiraiExperimentalAPI
+public suspend fun InputStream.uploadAsGroupVoice(group: Group): Voice {
+    return group.uploadGroupVoice(this)
 }
 
 // endregion

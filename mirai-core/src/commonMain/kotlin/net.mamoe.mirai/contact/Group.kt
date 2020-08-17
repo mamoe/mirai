@@ -18,13 +18,11 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.data.toMessage
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.runBlocking
+import java.io.InputStream
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
@@ -173,6 +171,19 @@ public abstract class Group : Contact(), CoroutineScope {
      */
     @JvmSynthetic
     public abstract override suspend fun uploadImage(image: ExternalImage): Image
+
+    /**
+     * 上传一个语音消息以备发送.
+     * 请手动关闭输入流
+     * 请使用mar格式
+     * 请注意，这是一个实验性api且随时会被删除
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
+     */
+    @JvmSynthetic
+    @MiraiExperimentalAPI
+    public abstract suspend fun uploadGroupVoice(input: InputStream): Voice
+
 
     public companion object {
         /**
