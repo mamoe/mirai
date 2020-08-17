@@ -141,7 +141,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 #### 从其他平台迁移
 
 - 酷Q的插件可以在 mirai 中加载，详见 [mirai-Native](https://github.com/iTXTech/mirai-native)
-- 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`mirai-CQ-Adapter` 正在进行中
+- 使用 `酷Q HTTP API` 的插件将可以在 mirai 中通过`CQHTTP Mirai`加载，详见 [cqhttp-mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)
 
 
 ## [贡献](CONTRIBUTING.md)
