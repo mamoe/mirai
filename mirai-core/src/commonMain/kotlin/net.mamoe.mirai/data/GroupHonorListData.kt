@@ -95,7 +95,7 @@ public data class GroupHonorListData(
     val hasServerError: Boolean?,
 
     @SerialName("hwExcellentList")
-    val hwExcellentList: List<Actor?>? = null,
+    val hwExcellentList: List<Actor?>? = null
 ) {
     /**
      * 对于活跃头衔, 对象Key为等级名称, 可自定义, 故不固定, 此处未对其进行支持, 先占位
@@ -118,7 +118,7 @@ public data class GroupHonorListData(
         val region: String? = null,
 
         @SerialName("quality")
-        val quality: Double? = null,
+        val quality: Double? = null
     )
 
     @Serializable
