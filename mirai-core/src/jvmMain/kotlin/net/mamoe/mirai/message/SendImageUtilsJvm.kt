@@ -127,6 +127,7 @@ public suspend fun File.uploadAsImage(contact: Contact): Image {
  */
 @Throws(OverFileSizeMaxException::class)
 @MiraiExperimentalAPI
+@SinceMirai("1.2.0")
 public suspend fun InputStream.uploadAsGroupVoice(group: Group): Voice {
     return group.uploadGroupVoice(this)
 }

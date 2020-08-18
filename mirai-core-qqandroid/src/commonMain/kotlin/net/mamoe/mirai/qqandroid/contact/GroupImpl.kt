@@ -453,6 +453,7 @@ internal class GroupImpl(
      */
     @JvmSynthetic
     @MiraiExperimentalAPI
+    @SinceMirai("1.2.0")
     override suspend fun uploadGroupVoice(input: InputStream): Voice {
         val content = ByteArray(input.available())
         input.read(content)
@@ -462,7 +463,7 @@ internal class GroupImpl(
         val md5 = MiraiPlatformUtils.md5(content)
         return bot.network.run {
             val response: PttStore.GroupPttUp.Response.RequireUpload =
-                PttStore.GroupPttUp(bot.client, bot.id, 0L, md5, content.size.toLong()).sendAndExpect()
+                PttStore.GroupPttUp(bot.client, bot.id, id, md5, content.size.toLong()).sendAndExpect()
             HighwayHelper.uploadPttToServers(
                 bot,
                 response.uploadIpList.zip(response.uploadPortList),
