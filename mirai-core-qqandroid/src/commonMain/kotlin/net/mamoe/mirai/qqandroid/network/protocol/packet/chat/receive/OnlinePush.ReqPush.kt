@@ -39,6 +39,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x115
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x44
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0xb3
@@ -447,6 +448,17 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             group.cancel(CancellationException("Being kicked"))
             sequenceOf(BotLeaveEvent.Active(group))
         } else emptySequence()
+    },
+    //好友输入状态
+    0x115L to lambda528 { bot ->
+        val body = vProtobuf.loadAs(Submsgtype0x115.SubMsgType0x115.MsgBody.serializer())
+        val friend = bot.getFriendOrNull(body.fromUin)
+        val item = body.msgNotifyItem
+        return@lambda528 if (friend != null && item != null) {
+            sequenceOf(FriendInputStatusChangedEvent(friend, item.eventType == 1))
+        } else {
+            emptySequence()
+        }
     },
     // 群相关,  ModFriendRemark, DelFriend, ModGroupProfile
     0x27L to lambda528 { bot ->
