@@ -129,7 +129,7 @@ public suspend fun File.uploadAsImage(contact: Contact): Image {
 @MiraiExperimentalAPI
 @SinceMirai("1.2.0")
 public suspend fun InputStream.uploadAsGroupVoice(group: Group): Voice {
-    return group.uploadGroupVoice(this)
+    return group.uploadVoice(this)
 }
 
 // endregion
