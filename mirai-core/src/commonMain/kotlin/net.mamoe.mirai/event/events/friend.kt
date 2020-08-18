@@ -21,6 +21,7 @@ import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.qqandroid.network.Packet
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.*
 
@@ -111,3 +112,12 @@ public data class FriendAvatarChangedEvent internal constructor(
     public override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
+/**
+ * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
+ */
+@SinceMirai("1.2.0")
+public data class FriendInputStatusChangedEvent internal constructor(
+    public override val friend: Friend,
+    public val inputting: Boolean
+
+) : FriendEvent, Packet, AbstractEvent()

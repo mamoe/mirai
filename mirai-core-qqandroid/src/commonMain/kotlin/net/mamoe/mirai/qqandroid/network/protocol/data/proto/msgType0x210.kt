@@ -182,7 +182,7 @@ internal class Submsgtype0x115 {
         @Serializable
         internal class NotifyItem(
             @ProtoNumber(1) @JvmField val ime: Int = 0,
-            @ProtoNumber(2) @JvmField val timeoutS: Int = 0,
+            @ProtoNumber(2) @JvmField val timeout: Int = 0,
             @ProtoNumber(3) @JvmField val timestamp: Long = 0L,
             @ProtoNumber(4) @JvmField val eventType: Int = 0,
             @ProtoNumber(5) @JvmField val interval: Int = 0,
@@ -610,7 +610,6 @@ internal class Submsgtype0x26 {
         ) : ProtoBuf
     }
 }
-
 
 internal class Submsgtype0x27 {
     internal class SubMsgType0x27 : ProtoBuf {
