@@ -178,7 +178,7 @@ public abstract class Group : Contact(), CoroutineScope {
      * 请使用amr或silk格式
      * 请注意，这是一个实验性api且随时会被删除
      * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
+     * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
     @JvmSynthetic
     @MiraiExperimentalAPI
