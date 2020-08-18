@@ -22,22 +22,22 @@ import kotlinx.serialization.internal.TaggedEncoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.protobuf.ProtoBuf
-import kotlinx.serialization.protobuf.ProtoNumberType
+import kotlinx.serialization.protobuf.ProtoIntegerType
 import kotlinx.serialization.protobuf.ProtoType
-import moe.him188.jcekt.JceId
 import net.mamoe.mirai.qqandroid.utils.io.serialization.ProtoBufWithNullableSupport.Varint.encodeVarint
+import net.mamoe.mirai.qqandroid.utils.io.serialization.tars.TarsId
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-internal typealias ProtoDesc = Pair<Int, ProtoNumberType>
+internal typealias ProtoDesc = Pair<Int, ProtoIntegerType>
 
-internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<JceId>(index)?.id
+internal fun getSerialId(desc: SerialDescriptor, index: Int): Int? = desc.findAnnotation<TarsId>(index)?.id
 
 internal fun extractParameters(desc: SerialDescriptor, index: Int, zeroBasedDefault: Boolean = false): ProtoDesc {
     val idx = getSerialId(desc, index) ?: (if (zeroBasedDefault) index else index + 1)
     val format = desc.findAnnotation<ProtoType>(index)?.type
-        ?: ProtoNumberType.DEFAULT
+        ?: ProtoIntegerType.DEFAULT
     return idx to format
 }
 
@@ -56,6 +56,7 @@ internal class ProtoBufWithNullableSupport(override val serializersModule: Seria
         override val serializersModule
             get() = this@ProtoBufWithNullableSupport.serializersModule
 
+        @Suppress("OverridingDeprecatedMember")
         override fun beginStructure(
             descriptor: SerialDescriptor,
             vararg typeSerializers: KSerializer<*>
@@ -72,17 +73,17 @@ internal class ProtoBufWithNullableSupport(override val serializersModule: Seria
         override fun encodeTaggedLong(tag: ProtoDesc, value: Long) = encoder.writeLong(value, tag.first, tag.second)
         override fun encodeTaggedFloat(tag: ProtoDesc, value: Float) = encoder.writeFloat(value, tag.first)
         override fun encodeTaggedDouble(tag: ProtoDesc, value: Double) = encoder.writeDouble(value, tag.first)
-        override fun encodeTaggedBoolean(tag: ProtoDesc, value: Boolean) = encoder.writeInt(if (value) 1 else 0, tag.first, ProtoNumberType.DEFAULT)
+        override fun encodeTaggedBoolean(tag: ProtoDesc, value: Boolean) = encoder.writeInt(if (value) 1 else 0, tag.first, ProtoIntegerType.DEFAULT)
         override fun encodeTaggedChar(tag: ProtoDesc, value: Char) = encoder.writeInt(value.toInt(), tag.first, tag.second)
         override fun encodeTaggedString(tag: ProtoDesc, value: String) = encoder.writeString(value, tag.first)
         override fun encodeTaggedEnum(
             tag: ProtoDesc,
-            enumDescription: SerialDescriptor,
+            enumDescriptor: SerialDescriptor,
             ordinal: Int
         ) = encoder.writeInt(
-            extractParameters(enumDescription, ordinal, zeroBasedDefault = true).first,
+            extractParameters(enumDescriptor, ordinal, zeroBasedDefault = true).first,
             tag.first,
-            ProtoNumberType.DEFAULT
+            ProtoIntegerType.DEFAULT
         )
 
         override fun SerialDescriptor.getTag(index: Int) = this.getProtoDesc(index)
@@ -134,8 +135,8 @@ internal class ProtoBufWithNullableSupport(override val serializersModule: Seria
 
     internal inner class MapRepeatedWriter(parentTag: ProtoDesc?, parentEncoder: ProtobufEncoder) : ObjectWriter(parentTag, parentEncoder) {
         override fun SerialDescriptor.getTag(index: Int): ProtoDesc =
-            if (index % 2 == 0) 1 to (parentTag?.second ?: ProtoNumberType.DEFAULT)
-            else 2 to (parentTag?.second ?: ProtoNumberType.DEFAULT)
+            if (index % 2 == 0) 1 to (parentTag?.second ?: ProtoIntegerType.DEFAULT)
+            else 2 to (parentTag?.second ?: ProtoIntegerType.DEFAULT)
     }
 
     internal inner class RepeatedWriter(encoder: ProtobufEncoder, private val curTag: ProtoDesc) :
@@ -153,16 +154,16 @@ internal class ProtoBufWithNullableSupport(override val serializersModule: Seria
             out.write(bytes)
         }
 
-        fun writeInt(value: Int, tag: Int, format: ProtoNumberType) {
-            val wireType = if (format == ProtoNumberType.FIXED) i32 else VARINT
+        fun writeInt(value: Int, tag: Int, format: ProtoIntegerType) {
+            val wireType = if (format == ProtoIntegerType.FIXED) i32 else VARINT
             val header = encode32((tag shl 3) or wireType)
             val content = encode32(value, format)
             out.write(header)
             out.write(content)
         }
 
-        fun writeLong(value: Long, tag: Int, format: ProtoNumberType) {
-            val wireType = if (format == ProtoNumberType.FIXED) i64 else VARINT
+        fun writeLong(value: Long, tag: Int, format: ProtoIntegerType) {
+            val wireType = if (format == ProtoIntegerType.FIXED) i64 else VARINT
             val header = encode32((tag shl 3) or wireType)
             val content = encode64(value, format)
             out.write(header)
@@ -189,19 +190,19 @@ internal class ProtoBufWithNullableSupport(override val serializersModule: Seria
             out.write(content)
         }
 
-        private fun encode32(number: Int, format: ProtoNumberType = ProtoNumberType.DEFAULT): ByteArray =
+        private fun encode32(number: Int, format: ProtoIntegerType = ProtoIntegerType.DEFAULT): ByteArray =
             when (format) {
-                ProtoNumberType.FIXED -> ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(number).array()
-                ProtoNumberType.DEFAULT -> encodeVarint(number.toLong())
-                ProtoNumberType.SIGNED -> encodeVarint(((number shl 1) xor (number shr 31)))
+                ProtoIntegerType.FIXED -> ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(number).array()
+                ProtoIntegerType.DEFAULT -> encodeVarint(number.toLong())
+                ProtoIntegerType.SIGNED -> encodeVarint(((number shl 1) xor (number shr 31)))
             }
 
 
-        private fun encode64(number: Long, format: ProtoNumberType = ProtoNumberType.DEFAULT): ByteArray =
+        private fun encode64(number: Long, format: ProtoIntegerType = ProtoIntegerType.DEFAULT): ByteArray =
             when (format) {
-                ProtoNumberType.FIXED -> ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(number).array()
-                ProtoNumberType.DEFAULT -> encodeVarint(number)
-                ProtoNumberType.SIGNED -> encodeVarint((number shl 1) xor (number shr 63))
+                ProtoIntegerType.FIXED -> ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(number).array()
+                ProtoIntegerType.DEFAULT -> encodeVarint(number)
+                ProtoIntegerType.SIGNED -> encodeVarint((number shl 1) xor (number shr 63))
             }
     }
 
@@ -209,6 +210,7 @@ internal class ProtoBufWithNullableSupport(override val serializersModule: Seria
      *  Source for all varint operations:
      *  https://github.com/addthis/stream-lib/blob/master/src/main/java/com/clearspring/analytics/util/Varint.java
      */
+    @Suppress("unused")
     internal object Varint {
         internal fun encodeVarint(inp: Int): ByteArray {
             var value = inp

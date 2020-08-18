@@ -47,6 +47,7 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
             languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+            languageSettings.useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
 
             languageSettings.progressiveMode = true
 
@@ -57,13 +58,11 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
+                api(kotlinx("serialization-core", Versions.Kotlin.serialization))
                 implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 api("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
                 implementation(kotlinx("io", Versions.Kotlin.io))
                 implementation(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
-                //implementation("moe.him188:jcekt:${Versions.jcekt}")
-                implementation("moe.him188:jcekt:${Versions.jcekt}")
             }
         }
 
@@ -95,6 +94,7 @@ kotlin {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 implementation("org.bouncycastle:bcprov-jdk15on:1.64")
+                implementation(kotlinx("io-jvm", Versions.Kotlin.io))
                 //    api(kotlinx("coroutines-debug", Versions.Kotlin.coroutines))
             }
         }

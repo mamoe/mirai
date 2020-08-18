@@ -36,7 +36,7 @@ kotlin {
         )
     }
 
-    jvm() {
+    jvm {
         // withJava() // https://youtrack.jetbrains.com/issue/KT-39991
     }
 
@@ -60,7 +60,7 @@ kotlin {
                 api(kotlin("serialization"))
                 api(kotlin("reflect"))
 
-                api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
+                api(kotlinx("serialization-core", Versions.Kotlin.serialization))
                 implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 implementation(kotlinx("io", Versions.Kotlin.io))
                 implementation(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
