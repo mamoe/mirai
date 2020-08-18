@@ -9,7 +9,7 @@ import javax.swing.JLabel
 /**
  * 构造方法中url指代用户需要点击的链接, text为显示的提示内容
  */
-class HyperLinkLabel constructor(url :String, text :String) : JLabel() {
+internal class HyperLinkLabel constructor(url :String, text :String) : JLabel() {
     init {
         super.setText("<html><a href='$url'>$text</a></html>");
         addMouseListener(object : MouseAdapter() {
