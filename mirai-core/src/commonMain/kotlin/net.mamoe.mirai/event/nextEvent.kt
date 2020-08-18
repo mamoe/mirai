@@ -37,7 +37,7 @@ import kotlin.reflect.KClass
 public suspend inline fun <reified E : Event> nextEvent(
     timeoutMillis: Long = -1,
     priority: Listener.EventPriority = EventPriority.MONITOR,
-    crossinline filter: E.(E) -> Boolean = { true }
+    crossinline filter: (E) -> Boolean = { true }
 ): E {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return withTimeoutOrCoroutineScope(timeoutMillis) {
@@ -62,7 +62,7 @@ public suspend inline fun <reified E : Event> nextEvent(
 public suspend inline fun <reified E : Event> nextEventOrNull(
     timeoutMillis: Long,
     priority: Listener.EventPriority = EventPriority.MONITOR,
-    crossinline filter: E.(E) -> Boolean = { true }
+    crossinline filter: (E) -> Boolean = { true }
 ): E? {
     return withTimeoutOrNull(timeoutMillis) {
         nextEventImpl(E::class, this, priority, filter)
@@ -100,10 +100,10 @@ internal suspend inline fun <E : Event> nextEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
     priority: Listener.EventPriority,
-    crossinline filter: E.(E) -> Boolean
+    crossinline filter: (E) -> Boolean
 ): E = suspendCancellableCoroutine { cont ->
     coroutineScope.subscribe(eventClass, priority = priority) {
-        if (!filter(this, this)) return@subscribe ListeningStatus.LISTENING
+        if (!filter(this)) return@subscribe ListeningStatus.LISTENING
 
         try {
             cont.resume(this)
