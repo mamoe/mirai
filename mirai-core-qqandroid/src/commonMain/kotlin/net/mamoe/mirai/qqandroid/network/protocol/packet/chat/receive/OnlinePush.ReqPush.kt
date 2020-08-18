@@ -14,8 +14,6 @@
 
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.cancel
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
@@ -434,20 +432,23 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         return@lambda528 emptySequence()
     },
     // bot 在其他客户端被踢或主动退出而同步情况
-    0xD4L to lambda528 { bot ->
+    0xD4L to lambda528 {
         // this.soutv("0x210")
-        @Serializable
-        data class SubD4(
-            // ok
-            val uin: Long
-        ) : ProtoBuf
+        /* @Serializable
+         data class SubD4(
+             // ok
+             val uin: Long
+         ) : ProtoBuf
 
-        val uin = vProtobuf.loadAs(SubD4.serializer()).uin
-        val group = bot.getGroupByUinOrNull(uin) ?: bot.getGroupOrNull(uin)
-        return@lambda528 if (group != null && bot.groups.delegate.remove(group)) {
-            group.cancel(CancellationException("Being kicked"))
-            sequenceOf(BotLeaveEvent.Active(group))
-        } else emptySequence()
+         val uin = vProtobuf.loadAs(SubD4.serializer()).uin
+         val group = bot.getGroupByUinOrNull(uin) ?: bot.getGroupOrNull(uin)
+         return@lambda528 if (group != null && bot.groups.delegate.remove(group)) {
+             group.cancel(CancellationException("Being kicked"))
+             sequenceOf(BotLeaveEvent.Active(group))
+         } else emptySequence()*/
+
+        //ignore
+        return@lambda528 emptySequence()
     },
     //好友输入状态
     0x115L to lambda528 { bot ->

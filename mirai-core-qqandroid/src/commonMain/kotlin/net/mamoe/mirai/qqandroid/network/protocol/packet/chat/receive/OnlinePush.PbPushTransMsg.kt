@@ -16,11 +16,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
-import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent
+import net.mamoe.mirai.event.events.BotLeaveEvent
 import net.mamoe.mirai.event.events.MemberLeaveEvent
 import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -108,26 +109,31 @@ internal object OnlinePushPbPushTransMsg :
                     A8 32 51 A1
                     83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 39 32 46 45 30 36 31 41 33 37 36 43 44 35 37 35 37 39 45 37 32 34 44 37 37 30 36 46 39 39 43 35 35 33 33 31 34 44 32 44 46 35 45 42 43 31 31 36
                      */
-                    readUInt().toLong() // group, uin or code ?
-
-                    discardExact(1)
+                    readUInt().toLong() // groupUin
+                    readByte().toInt() // follow type
                     val target = readUInt().toLong()
-                    val type = readUByte().toInt()
+                    val type = readByte().toInt()
                     val operator = readUInt().toLong()
                     val groupUin = content.fromUin
 
                     when (type) {
-                        0x82 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
+                        2 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
                             val member = group.getOrNull(target) as? MemberImpl ?: return null
                             return MemberLeaveEvent.Quit(member.also {
                                 member.cancel(CancellationException("Leaved actively"))
+                                if (target == bot.id) {
+                                    BotLeaveEvent.Active(group).broadcast()
+                                }
                                 group.members.delegate.remove(member)
                             })
                         }
-                        0x83 -> bot.getGroupByUin(groupUin).let { group ->
+                        3 -> bot.getGroupByUin(groupUin).let { group ->
                             val member = group.getOrNull(target) as? MemberImpl ?: return null
                             return MemberLeaveEvent.Kick(member.also {
-                                member.cancel(CancellationException("Leaved actively"))
+                                member.cancel(CancellationException("Being kicked"))
+                                if (target == bot.id) {
+                                    BotLeaveEvent.Kick(group.members[operator]).broadcast()
+                                }
                                 group.members.delegate.remove(member)
                             }, group.members[operator])
                         }
