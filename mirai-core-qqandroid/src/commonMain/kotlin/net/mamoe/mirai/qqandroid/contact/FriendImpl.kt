@@ -53,7 +53,7 @@ import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
 internal inline class FriendInfoImpl(
-    private val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
+    internal val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
 ) : FriendInfo {
     override val nick: String get() = jceFriendInfo.nick
     override val uin: Long get() = jceFriendInfo.friendUin
@@ -72,7 +72,7 @@ internal class FriendImpl(
     bot: QQAndroidBot,
     coroutineContext: CoroutineContext,
     override val id: Long,
-    private val friendInfo: FriendInfo
+    internal val friendInfo: FriendInfo
 ) : Friend() {
     override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
