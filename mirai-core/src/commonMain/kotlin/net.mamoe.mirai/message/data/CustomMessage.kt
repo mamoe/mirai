@@ -16,7 +16,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
-import kotlinx.serialization.protobuf.ProtoId
+import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.checkOffsetAndLength
 import kotlin.jvm.JvmOverloads
@@ -125,9 +125,9 @@ public sealed class CustomMessage : SingleMessage {
 
         @Serializable
         private class CustomMessageFullData(
-            @ProtoId(1) val miraiVersionFlag: Int,
-            @ProtoId(2) val typeName: String,
-            @ProtoId(3) val data: ByteArray
+            @ProtoNumber(1) val miraiVersionFlag: Int,
+            @ProtoNumber(2) val typeName: String,
+            @ProtoNumber(3) val data: ByteArray
         )
 
         public class CustomMessageFullDataDeserializeInternalException(cause: Throwable?) : RuntimeException(cause)

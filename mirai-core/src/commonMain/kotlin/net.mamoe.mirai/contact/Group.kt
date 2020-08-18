@@ -175,14 +175,15 @@ public abstract class Group : Contact(), CoroutineScope {
     /**
      * 上传一个语音消息以备发送.
      * 请手动关闭输入流
-     * 请使用mar格式
+     * 请使用amr或silk格式
      * 请注意，这是一个实验性api且随时会被删除
      * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
+     * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
     @JvmSynthetic
     @MiraiExperimentalAPI
-    public abstract suspend fun uploadGroupVoice(input: InputStream): Voice
+    @SinceMirai("1.2.0")
+    public abstract suspend fun uploadVoice(input: InputStream): Voice
 
 
     public companion object {

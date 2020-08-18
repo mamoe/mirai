@@ -119,16 +119,17 @@ public suspend fun File.uploadAsImage(contact: Contact): Image {
 }
 
 /**
- * 在 [Dispatchers.IO] 中将文件作为语音上传后构造 [Image]
+ * 在 [Dispatchers.IO] 中将文件作为语音上传后构造 [Voice]
  * 请手动关闭输入流
- * 请使用mar格式
+ * 请使用amr或silk格式
  * 注意，这只是个实验性功能且随时可能会删除
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
 @MiraiExperimentalAPI
+@SinceMirai("1.2.0")
 public suspend fun InputStream.uploadAsGroupVoice(group: Group): Voice {
-    return group.uploadGroupVoice(this)
+    return group.uploadVoice(this)
 }
 
 // endregion

@@ -1,87 +1,42 @@
-import upload.Bintray
-
 // 部分源码来自 kotlinx.coroutines
 // Source code from kotlinx.coroutines
 
-task ensureBintrayAvailable() {
+tasks.register("ensureBintrayAvailable") {
     doLast {
-        if (!Bintray.isBintrayAvailable(project)) {
+        if (!upload.Bintray.isBintrayAvailable(project)) {
             throw new IllegalStateException("bintray isn't available. ")
         }
     }
 }
 
-if (!Bintray.isBintrayAvailable(project)) {
-    println("bintray isn't available. NO PUBLICATIONS WILL BE SET")
-    return
-}
+def vcs = "https://github.com/mamoe/mirai"
 
-def miraiGitHubUrl = "https://github.com/mamoe/mirai"
-
-bintray {
-    user = Bintray.getUser(project)
-    key = Bintray.getKey(project)
-
-    pkg {
-        repo = 'mirai'
-        name = "mirai-core"
-        licenses = ['AGPL']
-        vcsUrl = miraiGitHubUrl
-        websiteUrl = miraiGitHubUrl
-        githubRepo = miraiGitHubUrl
-        issueTrackerUrl = "$miraiGitHubUrl/issues"
-       /* version {
-            name = project.version
-        }*/
-    }
-}
-
-afterEvaluate {
-    project.publishing.publications.forEach { publication ->
-        publication.pom.withXml {
-            def root = asNode()
-            //root.appendNode('groupId', project.group)
-            //root.appendNode('artifactId', project.name)
-            //root.appendNode('version', project.version)
-            root.appendNode('name', project.name)
-            root.appendNode('description', project.description)
-            root.appendNode('url', miraiGitHubUrl)
-            root.children().last() + {
-                licenses {
-                    license {
-                        name "AGPL-V3"
-                        url "https://www.gnu.org/licenses/agpl-3.0.txt"
-                        distribution "repo"
-                    }
-                }
-                developers {
-                    developer {
-                        id "mamoe"
-                        name "Mamoe Technologies"
-                        email "support@mamoe.net"
-                    }
-                }
-                scm {
-                    url miraiGitHubUrl
-                }
-            }
+def pomConfig = {
+    licenses {
+        license {
+            name "AGPLv3 with Mamoe Exceptions"
+            url "https://github.com/mamoe/mirai/blob/master/LICENSE"
+            distribution "repo"
         }
     }
+    developers {
+        developer {
+            id "mamoe"
+            name "Mamoe Technologies"
+            email "support@mamoe.net"
+        }
+    }
+    scm {
+        url vcs
+    }
 }
 
-bintrayUpload.doFirst {
-    publications = project.publishing.publications
-}
-
-bintrayUpload.dependsOn {
-    def list = new LinkedList<Task>()
-    list.add(tasks.getByName("build"))
-
-    list.addAll(tasks.findAll { task -> task.name.contains('Jar') })
-    list.addAll(tasks.findAll { task -> task.name.startsWith('generateMetadataFileFor') })
-    list.addAll(tasks.findAll { task -> task.name.startsWith('generatePomFileFor') })
-
-    list
+project.ext.configureMavenCentralMetadata = { pom ->
+    def root = asNode()
+    root.appendNode('name', project.name)
+    root.appendNode('description', project.description)
+    root.appendNode('url', vcs)
+    root.children().last() + pomConfig
 }
 
 try {
@@ -90,40 +45,117 @@ try {
     task javadocJar(type: Jar) {
         archiveClassifier = 'javadoc'
     }
-
 } catch (Exception ignored) {
 
 }
-publishing {
-    publications.all {
-        // add empty javadocs (no need for MPP root publication which publishes only pom file)
-        if (it.name != 'kotlinMultiplatform') {
-            it.artifact(javadocJar)
+
+try {
+    task stubJavadoc(type: Jar) {
+        archiveClassifier = 'javadoc'
+    }
+}catch (Exception ignored) {
+
+}
+
+/**
+ * Publish the platform JAR and POM so that consumers who depend on this module and can't read Gradle module
+ * metadata can still get the platform artifact and transitive dependencies from the POM
+ * (see details in https://youtrack.jetbrains.com/issue/KT-39184#focus=streamItem-27-4115233.0-0)
+ */
+project.ext.publishPlatformArtifactsInRootModule = { platformPublication ->
+    afterEvaluate {
+        def platformPomBuilder = null
+
+        platformPublication.pom.withXml { platformPomBuilder = asString() }
+
+        publishing.publications.kotlinMultiplatform {
+            platformPublication.artifacts.forEach {
+                artifact(it)
+            }
+
+            pom.withXml {
+                def pomStringBuilder = asString()
+                pomStringBuilder.setLength(0)
+                // The platform POM needs its artifact ID replaced with the artifact ID of the root module:
+                def platformPomString = platformPomBuilder.toString()
+                platformPomString.eachLine { line ->
+                    if (!line.contains("<!--")) { // Remove the Gradle module metadata marker as it will be added anew
+                        pomStringBuilder.append(line.replace(platformPublication.artifactId, artifactId))
+                        pomStringBuilder.append("\n")
+                    }
+                }
+            }
         }
 
-        // Rename MPP artifacts for backward compatibility
-        def type = it.name
-        switch (type) {
-            case 'kotlinMultiplatform':
-                it.artifactId = "$project.name-native"
-                break
-            case 'metadata':
-                it.artifactId = "$project.name-common"
-                break
-            case 'jvm':
-                it.artifactId = "$project.name"
-                break
-            case 'js':
-            case 'native':
-                it.artifactId = "$project.name-$type"
-                break
-        }
-
-        // disable metadata everywhere, but in native modules
-        if (type == 'maven' || type == 'metadata' || type == 'jvm' || type == 'js') {
-            moduleDescriptorGenerator = null
+        tasks.matching { it.name == "generatePomFileForKotlinMultiplatformPublication" }.configureEach {
+            dependsOn(tasks["generatePomFileFor${platformPublication.name.capitalize()}Publication"])
         }
     }
 }
 
-// bintrayUpload.dependsOn publishToMavenLocal
+def isKotlin137x = false
+
+afterEvaluate {
+
+    publishing {
+        def variantName = "${project.name}"
+
+        // Rename artifacts for backward compatibility
+        publications.all {
+            def type = it.name
+            logger.info("Configuring $type")
+            switch (type) {
+                case 'kotlinMultiplatform':
+                    if (isKotlin137x) {
+                        it.artifactId = "$variantName-native"
+                        it.artifact sourcesJar
+                    } else {
+                        // With Kotlin 1.4.0, the root module ID has no suffix, but for compatibility with
+                        // the consumers who can't read Gradle module metadata, we publish the JVM artifacts in it
+                        it.artifactId = variantName
+                        publishPlatformArtifactsInRootModule(publications["jvm"])
+                    }
+                    break
+
+                case 'metadata':
+                    it.artifactId = isKotlin137x ? "$variantName-common" : "$variantName-metadata"
+                    break
+
+                case 'jvm':
+                    it.artifactId = isKotlin137x ? "$variantName" : "$variantName-jvm"
+                    break
+
+                case 'js':
+                    it.artifactId = "$variantName-$type"
+                    break
+            }
+            logger.info("Artifact id = ${it.artifactId}")
+
+            pom.withXml(configureMavenCentralMetadata)
+
+            // The 'root' module publishes the JVM module's Javadoc JAR as per publishPlatformArtifactsInRootModule, and
+
+            if (name != "kotlinMultiplatform")
+                artifact stubJavadoc
+        }
+
+        if (isKotlin137x) {
+            disableMetadataPublication()
+        }
+    }
+}
+
+
+if (upload.Bintray.isBintrayAvailable(project)) {
+    apply from: rootProject.file("gradle/bintray.gradle")
+}
+
+/*
+task bintrayUpload(dependsOn: publish)
+
+// This is required for K/N publishing
+bintrayUpload.dependsOn publishToMavenLocal
+
+
+bintrayUpload.dependsOn generatePomFileForKotlinMultiplatformPublication
+ */
