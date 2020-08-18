@@ -355,43 +355,38 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
     0x8AL to lambda528 { bot ->
         @Serializable
-        data class Sub8AInner(
+        data class Sub8AInfo(
             @ProtoId(1) val fromUin: Long,
             @ProtoId(2) val botUin: Long,
             @ProtoId(3) val srcId: Int,
             @ProtoId(4) val srcInternalId: Int,
             @ProtoId(5) val time: Int,
             @ProtoId(6) val random: Int, // 同srcInternalId
-            @ProtoId(7) val flag1: Boolean, // true
-            @ProtoId(8) val flag2: Boolean, // false
-            @ProtoId(9) val flag3: Boolean, // false
-            @ProtoId(12) val flag4: Boolean // true
+            @ProtoId(7) val pkgNum: Int, // 1
+            @ProtoId(8) val pkgIdx: Int, // 0
+            @ProtoId(9) val devSeq: Int, // 0
+            @ProtoId(12) val unknown: Int // 1
         ) : ProtoBuf
 
         @Serializable
         data class Sub8A(
-            @ProtoId(1) val inner: Sub8AInner,
-            @ProtoId(2) val v2: Long, // 1 or 1001 ??
-            @ProtoId(3) val v3: Long, // 1
-            @ProtoId(4) val v4: Long, // 0
-            @ProtoId(5) val v5: ByteArray? = null // struct{ boolean(1), boolean(2) }
+            @ProtoId(1) val msgInfo: List<Sub8AInfo>,
+            @ProtoId(2) val appId: Int, // 1 or 1001 ??
+            @ProtoId(3) val insId: Int, // 1
+            @ProtoId(4) val longMsgFlag: Int, // 0
+            @ProtoId(5) val reserved: ByteArray? = null // struct{ boolean(1), boolean(2) }
         ) : ProtoBuf
 
-        val sub8AInner = vProtobuf.loadAs(Sub8A.serializer()).inner
-
-        if (sub8AInner.botUin == bot.id) {
-            return@lambda528 sequenceOf(
+        return@lambda528 vProtobuf.loadAs(Sub8A.serializer()).msgInfo.asSequence()
+            .filter { it.botUin == bot.id }.map {
                 MessageRecallEvent.FriendRecall(
                     bot = bot,
-                    messageId = sub8AInner.srcId,
-                    messageInternalId = sub8AInner.srcInternalId,
-                    messageTime = sub8AInner.time,
-                    operator = sub8AInner.fromUin
+                    messageId = it.srcId,
+                    messageInternalId = it.srcInternalId,
+                    messageTime = it.time,
+                    operator = it.fromUin
                 )
-            )
-        }
-
-        return@lambda528 emptySequence()
+            }
     },
 
     // Network(1994701021) 16:03:54 : unknown group 528 type 0x0000000000000026, data: 08 01 12 40 0A 06 08 F4 EF BB 8F 04 10 E7 C1 AD B8 02 18 01 22 2C 10 01 1A 1A 18 B4 DC F8 9B 0C 20 E7 C1 AD B8 02 28 06 30 02 A2 01 04 08 93 D6 03 A8 01 08 20 00 28 00 32 08 18 01 20 FE AF AF F5 05 28 00
