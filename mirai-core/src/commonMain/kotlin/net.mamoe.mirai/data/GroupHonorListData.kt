@@ -187,22 +187,22 @@ public data class GroupHonorListData(
     @Serializable
     public data class LevelName(
         @SerialName("lvln1")
-        val lv1: String? = "潜水",
+        val lv1: String? = null,
 
         @SerialName("lvln2")
-        val lv2: String? = "冒泡",
+        val lv2: String? = null,
 
         @SerialName("lvln3")
-        val lv3: String? = "吐槽",
+        val lv3: String? = null,
 
         @SerialName("lvln4")
-        val lv4: String? = "活跃",
+        val lv4: String? = null,
 
         @SerialName("lvln5")
-        val lv5: String? = "话唠",
+        val lv5: String? = null,
 
         @SerialName("lvln6")
-        val lv6: String? = "传说"
+        val lv6: String? = null
     )
 
     @Serializable
@@ -235,7 +235,7 @@ public data class GroupHonorListData(
             PrimitiveSerialDescriptor("GroupHonorTypeSerializer", PrimitiveKind.INT)
 
         override fun serialize(encoder: Encoder, value: GroupHonorType) {
-            encoder.encodeString(value.toString())
+            encoder.encodeInt(value.value)
         }
 
         override fun deserialize(decoder: Decoder): GroupHonorType {
