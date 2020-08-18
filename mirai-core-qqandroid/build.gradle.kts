@@ -4,6 +4,7 @@ plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
+    id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray") version Versions.Publishing.bintray
 }
@@ -47,6 +48,8 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
             languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+            languageSettings.useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
+            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.UnstableExternalImage")
 
             languageSettings.progressiveMode = true
 
@@ -57,13 +60,11 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
+                api(kotlinx("serialization-core", Versions.Kotlin.serialization))
                 implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 api("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
                 implementation(kotlinx("io", Versions.Kotlin.io))
                 implementation(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
-                //implementation("moe.him188:jcekt:${Versions.jcekt}")
-                implementation("moe.him188:jcekt:${Versions.jcekt}")
             }
         }
 
@@ -95,6 +96,7 @@ kotlin {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 implementation("org.bouncycastle:bcprov-jdk15on:1.64")
+                implementation(kotlinx("io-jvm", Versions.Kotlin.io))
                 //    api(kotlinx("coroutines-debug", Versions.Kotlin.coroutines))
             }
         }
@@ -114,3 +116,19 @@ kotlin {
 }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
+
+
+tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
+    doFirst {
+        publishing.publications
+            .filterIsInstance<MavenPublication>()
+            .forEach { publication ->
+                val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
+                if (moduleFile.exists()) {
+                    publication.artifact(object : org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
+                        override fun getDefaultExtension() = "module"
+                    })
+                }
+            }
+    }
+}

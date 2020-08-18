@@ -1,0 +1,12 @@
+publishing {
+    repositories {
+        maven {
+            url = "https://api.bintray.com/maven/mamoe/mirai/mirai-core/;publish=0"
+
+            credentials {
+                username = upload.Bintray.getUser(project)
+                password = upload.Bintray.getKey(project)
+            }
+        }
+    }
+}

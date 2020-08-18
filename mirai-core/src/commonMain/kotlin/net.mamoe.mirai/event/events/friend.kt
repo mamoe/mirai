@@ -113,8 +113,9 @@ public data class FriendAvatarChangedEvent internal constructor(
 ) : FriendEvent, Packet, AbstractEvent()
 
 
+
 /**
- * [Friend] (bot的好友) 的昵称改变事件, 在此事件广播时好友已经完成改名
+ * [Friend] 昵称改变事件, 在此事件广播时好友已经完成改名
  * @see BotNickChangedEvent
  */
 @SinceMirai("1.2.0")
@@ -122,4 +123,14 @@ public data class FriendNickChangedEvent internal constructor(
     public override val friend: Friend,
     public val from: String,
     public val to: String
+)
+  
+/**
+ * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
+ */
+@SinceMirai("1.2.0")
+public data class FriendInputStatusChangedEvent internal constructor(
+    public override val friend: Friend,
+    public val inputting: Boolean
+
 ) : FriendEvent, Packet, AbstractEvent()

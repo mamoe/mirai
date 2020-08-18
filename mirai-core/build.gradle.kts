@@ -5,6 +5,7 @@ plugins {
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("signing")
+    id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray") version Versions.Publishing.bintray
 }
@@ -36,7 +37,7 @@ kotlin {
         )
     }
 
-    jvm() {
+    jvm {
         // withJava() // https://youtrack.jetbrains.com/issue/KT-39991
     }
 
@@ -51,6 +52,8 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
             languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+            languageSettings.useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
+            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.UnstableExternalImage")
 
             languageSettings.progressiveMode = true
         }
@@ -60,7 +63,7 @@ kotlin {
                 api(kotlin("serialization"))
                 api(kotlin("reflect"))
 
-                api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
+                api(kotlinx("serialization-core", Versions.Kotlin.serialization))
                 implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 implementation(kotlinx("io", Versions.Kotlin.io))
                 implementation(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
@@ -132,3 +135,18 @@ kotlin {
 }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
+
+tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
+    doFirst {
+        publishing.publications
+            .filterIsInstance<MavenPublication>()
+            .forEach { publication ->
+                val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
+                if (moduleFile.exists()) {
+                    publication.artifact(object : org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
+                        override fun getDefaultExtension() = "module"
+                    })
+                }
+            }
+    }
+}

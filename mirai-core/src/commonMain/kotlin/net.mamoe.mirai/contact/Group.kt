@@ -183,7 +183,7 @@ public abstract class Group : Contact(), CoroutineScope {
     @JvmSynthetic
     @MiraiExperimentalAPI
     @SinceMirai("1.2.0")
-    public abstract suspend fun uploadGroupVoice(input: InputStream): Voice
+    public abstract suspend fun uploadVoice(input: InputStream): Voice
 
 
     public companion object {

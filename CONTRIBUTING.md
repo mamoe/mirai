@@ -19,7 +19,7 @@ mirai 欢迎一切形式的代码贡献。你可以通过以下几种途径向 m
 ### 注意事项
 - 尽量不要引用新的库
 - 遵守 Kotlin 官方代码规范（提交前使用 IDE 格式化代码 (commit 时勾选 'Reformat code')）
-- 不要手动拆解数据包. 请一定使用 `kotlinx.serialization` 拆解 ProtoBuf, 使用 [`jcekt`](https://github.com/him188/jcekt) 拆解 Tars 数据包, 使用 `kotlinx.serialization` 拆解 Json 数据.
+- 不要手动拆解数据包. 请一定使用 `kotlinx.serialization` 拆解 ProtoBuf, 使用 `net.mamoe.mirai.qqandroid.utils.io.serialization.Tars` 拆解 Tars 数据包, 使用 `kotlinx.serialization` 拆解 Json 数据.
 
 ## 社区
 

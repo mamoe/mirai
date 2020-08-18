@@ -12,7 +12,9 @@
 
 package net.mamoe.mirai.qqandroid.contact
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
@@ -373,8 +375,10 @@ internal class GroupImpl(
                 source.ensureSequenceIdAvailable()
             } catch (e: Exception) {
                 bot.network.logger.warning {
-                    "Timeout awaiting sequenceId for group message(${message.contentToString()
-                        .take(10)}). Some features may not work properly"
+                    "Timeout awaiting sequenceId for group message(${
+                        message.contentToString()
+                            .take(10)
+                    }). Some features may not work properly"
                 }
                 bot.network.logger.warning(e)
             }
@@ -453,7 +457,8 @@ internal class GroupImpl(
      */
     @JvmSynthetic
     @MiraiExperimentalAPI
-    override suspend fun uploadGroupVoice(input: InputStream): Voice {
+    @SinceMirai("1.2.0")
+    override suspend fun uploadVoice(input: InputStream): Voice {
         val content = ByteArray(input.available())
         input.read(content)
         if (content.size > 1048576) {
@@ -469,14 +474,15 @@ internal class GroupImpl(
         }
         return bot.network.run {
             val response: PttStore.GroupPttUp.Response.RequireUpload =
-                PttStore.GroupPttUp(bot.client, bot.id, id, md5, content.size.toLong()).sendAndExpect()
+                PttStore.GroupPttUp(bot.client, bot.id, id, md5, content.size.toLong(), codec).sendAndExpect()
             HighwayHelper.uploadPttToServers(
                 bot,
                 response.uploadIpList.zip(response.uploadPortList),
                 content,
                 md5,
                 response.uKey,
-                response.fileKey
+                response.fileKey,
+                codec
             )
             Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), "")
         }
