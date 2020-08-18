@@ -33,9 +33,6 @@ public data class GroupHonorListData(
     @SerialName("acceptLanguages")
     val acceptLanguages: List<Language?>? = null,
 
-    @SerialName("bkn")
-    val bkn: Int?,
-
     @SerialName("gc")
     val gc: String?,
 
