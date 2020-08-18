@@ -576,8 +576,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                             val value = modified.value
                             val to = value.encodeToString()
                             if (uin == bot.id) {
-                                val from = bot.selfInfo.nick
-                                bot.selfInfo.nick = to
+                                val from = bot.nick
+                                bot.cachedNick = to
                                 add(
                                     BotNickChangedEvent(
                                         bot, from, to
@@ -589,7 +589,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                                 val from = info.nick
                                 when (info) {
                                     is FriendInfoImpl -> {
-                                        info.jceFriendInfo.nick = to
+                                        info.cachedNick = to
                                     }
                                     is MemberInfoImpl -> {
                                         info._nick = to
@@ -602,7 +602,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                                 }
                                 add(
                                     FriendNickChangedEvent(
-                                        friend, bot, from, to
+                                        friend, from, to
                                     )
                                 )
                             }

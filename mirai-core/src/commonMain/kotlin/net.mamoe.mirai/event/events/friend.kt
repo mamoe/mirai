@@ -115,13 +115,11 @@ public data class FriendAvatarChangedEvent internal constructor(
 
 /**
  * [Friend] (bot的好友) 的昵称改变事件, 在此事件广播时好友已经完成改名
- * @param bot 由哪个bot触发
  * @see BotNickChangedEvent
  */
 @SinceMirai("1.2.0")
 public data class FriendNickChangedEvent internal constructor(
     public override val friend: Friend,
-    public override val bot: Bot,
     public val from: String,
     public val to: String
 ) : FriendEvent, Packet, AbstractEvent()

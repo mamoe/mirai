@@ -52,10 +52,11 @@ import kotlin.jvm.JvmSynthetic
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
-internal inline class FriendInfoImpl(
-    internal val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
+internal class FriendInfoImpl(
+    private val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
 ) : FriendInfo {
-    override val nick: String get() = jceFriendInfo.nick
+    internal var cachedNick: String? = null
+    override val nick: String get() = cachedNick ?: jceFriendInfo.nick.also { cachedNick = it }
     override val uin: Long get() = jceFriendInfo.friendUin
 }
 
