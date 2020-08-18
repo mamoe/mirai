@@ -21,7 +21,7 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.readUInt
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.protobuf.ProtoId
+import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.events.*
@@ -357,25 +357,25 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     0x8AL to lambda528 { bot ->
         @Serializable
         data class Sub8AInner(
-            @ProtoId(1) val fromUin: Long,
-            @ProtoId(2) val botUin: Long,
-            @ProtoId(3) val srcId: Int,
-            @ProtoId(4) val srcInternalId: Int,
-            @ProtoId(5) val time: Int,
-            @ProtoId(6) val random: Int, // 同srcInternalId
-            @ProtoId(7) val flag1: Boolean, // true
-            @ProtoId(8) val flag2: Boolean, // false
-            @ProtoId(9) val flag3: Boolean, // false
-            @ProtoId(12) val flag4: Boolean // true
+            @ProtoNumber(1) val fromUin: Long,
+            @ProtoNumber(2) val botUin: Long,
+            @ProtoNumber(3) val srcId: Int,
+            @ProtoNumber(4) val srcInternalId: Int,
+            @ProtoNumber(5) val time: Int,
+            @ProtoNumber(6) val random: Int, // 同srcInternalId
+            @ProtoNumber(7) val flag1: Boolean, // true
+            @ProtoNumber(8) val flag2: Boolean, // false
+            @ProtoNumber(9) val flag3: Boolean, // false
+            @ProtoNumber(12) val flag4: Boolean // true
         ) : ProtoBuf
 
         @Serializable
         data class Sub8A(
-            @ProtoId(1) val inner: Sub8AInner,
-            @ProtoId(2) val v2: Boolean, // true
-            @ProtoId(3) val v3: Boolean, // true
-            @ProtoId(4) val v4: Boolean, // false
-            @ProtoId(5) val v5: ByteArray? = null // struct{ boolean(1), boolean(2) }
+            @ProtoNumber(1) val inner: Sub8AInner,
+            @ProtoNumber(2) val v2: Boolean, // true
+            @ProtoNumber(3) val v3: Boolean, // true
+            @ProtoNumber(4) val v4: Boolean, // false
+            @ProtoNumber(5) val v5: ByteArray? = null // struct{ boolean(1), boolean(2) }
         ) : ProtoBuf
 
         val sub8A = vProtobuf.loadAs(Sub8A.serializer()).inner

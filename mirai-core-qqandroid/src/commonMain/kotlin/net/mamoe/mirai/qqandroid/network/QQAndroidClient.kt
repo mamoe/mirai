@@ -46,13 +46,13 @@ private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray
 internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0, 255).toByte() }
 
 internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
+    "msfwifi.3g.qq.com" to 8080,
     "42.81.169.46" to 8080,
     "42.81.172.81" to 80,
     "114.221.148.59" to 14000,
     "42.81.172.147" to 443,
     "125.94.60.146" to 80,
     "114.221.144.215" to 80,
-    "msfwifi.3g.qq.com" to 8080,
     "42.81.172.22" to 80
 )
 
@@ -133,7 +133,7 @@ internal open class QQAndroidClient(
             throw NoServerAvailableException(null)
         }
         retryCatching(bot.client.serverList.size, except = LoginFailedException::class) {
-            val pair = bot.client.serverList.random()
+            val pair = bot.client.serverList[0]
             kotlin.runCatching {
                 block(pair.first, pair.second)
                 return@retryCatching

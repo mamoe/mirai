@@ -190,7 +190,9 @@ internal object HighwayHelper {
         servers: List<Pair<Int, Int>>,
         content: ByteArray,
         md5: ByteArray,
-        uKey: ByteArray, fileKey: ByteArray
+        uKey: ByteArray,
+        fileKey: ByteArray,
+        codec: Int
     ) {
         servers.retryWithServers(10 * 1000, {
             throw IllegalStateException("cannot upload ptt, failed on all servers.", it)
@@ -199,7 +201,7 @@ internal object HighwayHelper {
                 "[Highway] Uploading ptt to ${s}:$i, size=${content.size.toLong().sizeToString()}"
             }
             val time = measureTime {
-                uploadPttToServer(s, i, content, md5, uKey, fileKey)
+                uploadPttToServer(s, i, content, md5, uKey, fileKey, codec)
             }
             bot.network.logger.verbose {
                 "[Highway] Uploading ptt: succeed at ${(content.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
@@ -214,7 +216,9 @@ internal object HighwayHelper {
         serverPort: Int,
         content: ByteArray,
         md5: ByteArray,
-        uKey: ByteArray, fileKey: ByteArray
+        uKey: ByteArray,
+        fileKey: ByteArray,
+        codec: Int
     ) {
         MiraiPlatformUtils.Http.post<String> {
             url("http://$serverIp:$serverPort")
@@ -224,7 +228,7 @@ internal object HighwayHelper {
             parameter("filesize", content.size)
             parameter("bmd5", md5.toUHexString(""))
             parameter("mType", "pttDu")
-            parameter("voice_encodec", 0)
+            parameter("voice_encodec", codec)
             body = content
         }
     }
