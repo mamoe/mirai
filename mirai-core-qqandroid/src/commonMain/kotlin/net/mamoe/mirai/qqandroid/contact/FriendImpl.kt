@@ -48,14 +48,15 @@ import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
 internal class FriendInfoImpl(
-    private val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
+    @JvmField private val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
 ) : FriendInfo {
-    internal var cachedNick: String? = null
+    @JvmField internal var cachedNick: String? = null
     override val nick: String get() = cachedNick ?: jceFriendInfo.nick.also { cachedNick = it }
     override val uin: Long get() = jceFriendInfo.friendUin
 }
