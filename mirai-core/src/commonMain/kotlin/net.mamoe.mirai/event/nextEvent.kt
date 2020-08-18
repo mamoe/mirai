@@ -49,7 +49,7 @@ public suspend inline fun <reified E : Event> nextEvent(
 /**
  * 挂起当前协程, 直到监听到事件 [E] 的广播并通过 [filter], 返回这个事件实例.
  *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
+ * @param timeoutMillis 超时. 单位为毫秒.
  * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
  *
  * @see subscribe 普通地监听一个事件
