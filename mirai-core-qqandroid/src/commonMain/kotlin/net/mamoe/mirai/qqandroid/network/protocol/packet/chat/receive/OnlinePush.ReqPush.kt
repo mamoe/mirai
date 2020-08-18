@@ -32,7 +32,6 @@ import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsInstance
 import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
-import net.mamoe.mirai.qqandroid.message.contextualBugReportException
 import net.mamoe.mirai.qqandroid.network.MultiPacketBySequence
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
@@ -372,22 +371,22 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         @Serializable
         data class Sub8A(
             @ProtoId(1) val inner: Sub8AInner,
-            @ProtoId(2) val v2: Boolean, // true
-            @ProtoId(3) val v3: Boolean, // true
-            @ProtoId(4) val v4: Boolean, // false
+            @ProtoId(2) val v2: Long, // 1 or 1001 ??
+            @ProtoId(3) val v3: Long, // 1
+            @ProtoId(4) val v4: Long, // 0
             @ProtoId(5) val v5: ByteArray? = null // struct{ boolean(1), boolean(2) }
         ) : ProtoBuf
 
-        val sub8A = vProtobuf.loadAs(Sub8A.serializer()).inner
+        val sub8AInner = vProtobuf.loadAs(Sub8A.serializer()).inner
 
-        if (sub8A.botUin == bot.id) {
+        if (sub8AInner.botUin == bot.id) {
             return@lambda528 sequenceOf(
                 MessageRecallEvent.FriendRecall(
                     bot = bot,
-                    messageId = sub8A.srcId,
-                    messageInternalId = sub8A.srcInternalId,
-                    messageTime = sub8A.time,
-                    operator = sub8A.fromUin
+                    messageId = sub8AInner.srcId,
+                    messageInternalId = sub8AInner.srcInternalId,
+                    messageTime = sub8AInner.time,
+                    operator = sub8AInner.fromUin
                 )
             )
         }
