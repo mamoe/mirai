@@ -449,11 +449,10 @@ internal class GroupImpl(
      * 上传一个语音消息以备发送.
      * 请注意，这是一个实验性api且随时会被删除
      * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
+     * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
     @JvmSynthetic
     @MiraiExperimentalAPI
-    @SinceMirai("1.2.0")
     override suspend fun uploadGroupVoice(input: InputStream): Voice {
         val content = ByteArray(input.available())
         input.read(content)
@@ -461,6 +460,13 @@ internal class GroupImpl(
             throw  OverFileSizeMaxException()
         }
         val md5 = MiraiPlatformUtils.md5(content)
+        val codec = with(content.copyOfRange(0, 10).toUHexString("")) {
+            when {
+                startsWith("2321414D52") -> 0             // amr
+                startsWith("02232153494C4B5F5633") -> 1  // silk V3
+                else -> 0                               // use amr by default
+            }
+        }
         return bot.network.run {
             val response: PttStore.GroupPttUp.Response.RequireUpload =
                 PttStore.GroupPttUp(bot.client, bot.id, id, md5, content.size.toLong()).sendAndExpect()
