@@ -7,7 +7,7 @@ import kotlin.math.pow
 buildscript {
     repositories {
         mavenLocal()
-        maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         maven(url = "https://kotlin.bintray.com/kotlinx")
         jcenter()
