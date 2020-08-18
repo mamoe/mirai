@@ -5,6 +5,7 @@ plugins {
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("signing")
+    id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray") version Versions.Publishing.bintray
 }

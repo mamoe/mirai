@@ -27,6 +27,7 @@ buildscript {
 
 plugins {
     id("org.jetbrains.dokka") version Versions.Kotlin.dokka apply false
+    id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge apply false
     // id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
 }
 
