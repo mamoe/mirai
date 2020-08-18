@@ -469,14 +469,15 @@ internal class GroupImpl(
         }
         return bot.network.run {
             val response: PttStore.GroupPttUp.Response.RequireUpload =
-                PttStore.GroupPttUp(bot.client, bot.id, id, md5, content.size.toLong()).sendAndExpect()
+                PttStore.GroupPttUp(bot.client, bot.id, id, md5, content.size.toLong(), codec).sendAndExpect()
             HighwayHelper.uploadPttToServers(
                 bot,
                 response.uploadIpList.zip(response.uploadPortList),
                 content,
                 md5,
                 response.uKey,
-                response.fileKey
+                response.fileKey,
+                codec
             )
             Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), "")
         }
