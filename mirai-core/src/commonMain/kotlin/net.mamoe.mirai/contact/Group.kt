@@ -155,7 +155,7 @@ public abstract class Group : Contact(), CoroutineScope {
     @kotlin.internal.InlineOnly
     @JvmSynthetic
     public suspend inline fun sendMessage(message: String): MessageReceipt<Group> {
-        return sendMessage(message.toMessage())
+        return sendMessage(PlainText(message))
     }
 
     /**

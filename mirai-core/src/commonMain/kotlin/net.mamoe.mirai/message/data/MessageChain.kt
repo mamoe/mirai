@@ -356,7 +356,7 @@ public fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBy
 @Suppress("FunctionName")
 @JvmName("newChain")
 public fun _____newChain______(messages: String): MessageChain {
-    return messages.toMessage().asMessageChain()
+    return PlainText(messages).asMessageChain()
 }
 
 /**

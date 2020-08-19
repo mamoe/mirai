@@ -20,11 +20,11 @@ internal val codeRegex = Regex("""(?:\[mirai:([^\]]*)?:(.*?)?\])|(?:\[mirai:([^:
 internal fun String.parseMiraiCodeImpl(): MessageChain = buildMessageChain {
     forEachMiraiCode { origin, name, args ->
         if (name == null) {
-            add(origin.toMessage())
+            add(PlainText(origin))
             return@forEachMiraiCode
         }
         val parser = MiraiCodeParsers[name] ?: kotlin.run {
-            add(origin.toMessage())
+            add(PlainText(origin))
             return@forEachMiraiCode
         }
         parser.argsRegex.matchEntire(args)
@@ -35,7 +35,7 @@ internal fun String.parseMiraiCodeImpl(): MessageChain = buildMessageChain {
                 }.getOrNull()
             }
             ?.let(::add)
-            ?: add(origin.toMessage())
+            ?: add(PlainText(origin))
     }
 }
 

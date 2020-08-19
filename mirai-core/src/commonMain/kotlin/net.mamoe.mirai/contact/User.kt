@@ -17,7 +17,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.toMessage
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import kotlin.jvm.JvmSynthetic
@@ -74,7 +74,7 @@ public abstract class User : Contact(), CoroutineScope {
     @kotlin.internal.InlineOnly
     @JvmSynthetic
     public suspend inline fun sendMessage(message: String): MessageReceipt<User> {
-        return sendMessage(message.toMessage())
+        return sendMessage(PlainText(message))
     }
 
     /**

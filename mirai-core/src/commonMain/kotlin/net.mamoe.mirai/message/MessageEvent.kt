@@ -109,7 +109,7 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
 
     @JvmSynthetic
     public suspend fun reply(plain: String): MessageReceipt<TSubject> =
-        subject.sendMessage(plain.toMessage().asMessageChain()) as MessageReceipt<TSubject>
+        subject.sendMessage(PlainText(plain).asMessageChain()) as MessageReceipt<TSubject>
 
     // endregion
 
@@ -126,7 +126,7 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
     public suspend fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
 
     @JvmSynthetic
-    public suspend fun String.send(): MessageReceipt<TSubject> = this.toMessage().sendTo(subject)
+    public suspend fun String.send(): MessageReceipt<TSubject> = PlainText(this).sendTo(subject)
 
     // region 引用回复
     /**

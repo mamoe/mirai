@@ -184,11 +184,11 @@ public interface Message { // must be interface. Don't consider any changes.
     public /* final */ operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
 
     /** 将 [another] 作为 [PlainText] 连接到这个消息的尾部. */
-    public /* final */ operator fun plus(another: String): MessageChain = this.followedBy(another.toMessage())
+    public /* final */ operator fun plus(another: String): MessageChain = this.followedBy(PlainText(another))
 
     /** 将 [another] 作为 [PlainText] 连接到这个消息的尾部. */
     public  /* final */ operator fun plus(another: CharSequence): MessageChain =
-        this.followedBy(another.toString().toMessage())
+        this.followedBy(PlainText(another.toString()))
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public /* final */ operator fun plus(another: Iterable<Message>): MessageChain =
