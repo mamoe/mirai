@@ -17,23 +17,23 @@
  */
 
 object Versions {
-    const val core = "1.1.3"
-    const val console = "1.0-M1"
+    const val core = "1.2.0"
+    const val console = "1.0-M2"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = "0.1.0"
     const val consolePure = console
 
-    const val kotlinCompiler = "1.4.0-rc" // for public explict API
-    const val kotlinStdlib = "1.4.0-rc" // for not overriding dependant's stdlib dependency
+    const val kotlinCompiler = "1.4.0"
+    const val kotlinStdlib = "1.4.0"
 
-    const val coroutines = "1.3.8-1.4.0-rc"
+    const val coroutines = "1.3.9"
     const val collectionsImmutable = "0.3.2"
-    const val serialization = "1.0-M1-1.4.0-rc"
-    const val ktor = "1.3.2-1.4.0-rc"
+    const val serialization = "1.0.0-RC"
+    const val ktor = "1.4.0"
 
     const val androidGradle = "3.6.2"
 
     const val bintray = "1.8.5"
 
-    const val blockingBridge = "0.9.0"
+    const val blockingBridge = "1.0.2"
 }
