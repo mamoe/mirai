@@ -28,6 +28,8 @@ jobs:
         run: ./gradlew build # if test's failed, don't publish
       - name: Check keys
         run: ./gradlew :mirai-console:ensureBintrayAvailable -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }} -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+      - name: Gradle :mirai-console:fillBuildConstants
+        run: ./gradlew :mirai-console:fillBuildConstants -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }} -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
       - name: Gradle :mirai-console:bintrayUpload
         run: ./gradlew :mirai-console:bintrayUpload -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }} -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
       - name: Gradle :mirai-console-pure:bintrayUpload
