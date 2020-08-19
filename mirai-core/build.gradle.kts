@@ -65,8 +65,12 @@ kotlin {
 
                 api(kotlinx("serialization-core", Versions.Kotlin.serialization))
                 implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
-                implementation(kotlinx("io", Versions.Kotlin.io))
-                implementation(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
+                api(kotlinx("io", Versions.Kotlin.io)) {
+                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                }
+                api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo)) {
+                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                }
                 api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
 
                 implementation("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
@@ -89,8 +93,12 @@ kotlin {
                 dependencies {
                     api(kotlin("reflect"))
 
-                    implementation(kotlinx("io-jvm", Versions.Kotlin.io))
-                    implementation(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+                    api(kotlinx("io-jvm", Versions.Kotlin.io)) {
+                        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                    }
+                    api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo)) {
+                        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                    }
 
                     api(ktor("client-android", Versions.Kotlin.ktor))
                 }
@@ -115,8 +123,12 @@ kotlin {
                 compileOnly("org.slf4j:slf4j-api:" + Versions.Logging.slf4j)
 
                 api(ktor("client-core-jvm", Versions.Kotlin.ktor))
-                implementation(kotlinx("io-jvm", Versions.Kotlin.io))
-                implementation(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+                api(kotlinx("io-jvm", Versions.Kotlin.io)) {
+                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                }
+                api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo)) {
+                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                }
 
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
             }
@@ -143,7 +155,8 @@ tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
             .forEach { publication ->
                 val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
                 if (moduleFile.exists()) {
-                    publication.artifact(object : org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
+                    publication.artifact(object :
+                        org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
                         override fun getDefaultExtension() = "module"
                     })
                 }
