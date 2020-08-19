@@ -9,7 +9,7 @@
 
 object Versions {
     object Mirai {
-        const val version = "1.2.0"
+        const val version = "1.2.1"
     }
 
     object Kotlin {
@@ -18,7 +18,7 @@ object Versions {
         const val coroutines = "1.3.9"
         const val atomicFU = "0.14.4"
         const val serialization = "1.0.0-RC"
-        const val ktor = "1.3.2-1.4.0-rc"
+        const val ktor = "1.4.0"
         const val binaryValidator = "0.2.3"
 
         const val io = "0.1.16"

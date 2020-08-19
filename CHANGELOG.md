@@ -1,5 +1,10 @@
 # Version 1.x
 
+## `1.2.1`  2020/8/19
+- 修复在 Java 调用 `group.uploadImage` 时编译出错的问题 (#511)
+- 为 `group.uploadVoice` 添加 Java 方法 (需要 [kotlin-jvm-blocking-bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge)) (#512)
+- 更新 ktor 到 1.4.0
+
 ## `1.2.0`  2020/8/19
 
 ### 新特性
