@@ -36,7 +36,6 @@ public interface CommandSender {
     /**
      * 立刻发送一条消息
      */
-    @JvmSynthetic
     @JvmBlockingBridge
     public suspend fun sendMessage(message: Message)
 }
