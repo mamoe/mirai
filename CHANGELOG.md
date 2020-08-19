@@ -29,11 +29,9 @@
 - 显式 API
   - mirai 的所有公开 API 均已经显式加上 `public` 修饰符, 遵循 [Koltin Explicit API mode](https://kotlinlang.org/docs/reference/whatsnew14.html#explicit-api-mode-for-library-authors) 规范. 如:
     ```kotlin
-    ```kotlin
          data class BotOnlineEvent internal constructor(
             override val bot: Bot
         ) : BotActiveEvent, AbstractEvent()
-        ```
     ```
   - *调整了一些不应该公开的 API 为 `internal`, 这些调整在绝大多数情况下不影响现有代码*
 - 修复群权限判断失败的问题 (#389)
