@@ -358,26 +358,26 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
     0x8AL to lambda528 { bot ->
         @Serializable
-        data class Sub8AInner(
+        data class Sub8AMsgInfo(
             @ProtoNumber(1) val fromUin: Long,
             @ProtoNumber(2) val botUin: Long,
             @ProtoNumber(3) val srcId: Int,
             @ProtoNumber(4) val srcInternalId: Int,
             @ProtoNumber(5) val time: Int,
             @ProtoNumber(6) val random: Int, // 同srcInternalId
-            @ProtoNumber(7) val flag1: Boolean, // true
-            @ProtoNumber(8) val flag2: Boolean, // false
-            @ProtoNumber(9) val flag3: Boolean, // false
-            @ProtoNumber(12) val flag4: Boolean // true
+            @ProtoNumber(7) val pkgNum: Int, // true
+            @ProtoNumber(8) val pkgIndex: Int, // false
+            @ProtoNumber(9) val devSeq: Int, // false
+            @ProtoNumber(12) val flag: Int // true
         ) : ProtoBuf
 
         @Serializable
         data class Sub8A(
-            @ProtoNumber(1) val inner: Sub8AInner,
-            @ProtoNumber(2) val v2: Boolean, // true
-            @ProtoNumber(3) val v3: Boolean, // true
-            @ProtoNumber(4) val v4: Boolean, // false
-            @ProtoNumber(5) val v5: ByteArray? = null // struct{ boolean(1), boolean(2) }
+            @ProtoNumber(1) val msgInfo: List<Sub8AMsgInfo>,
+            @ProtoNumber(2) val appId: Boolean, // true
+            @ProtoNumber(3) val instId: Boolean, // true
+            @ProtoNumber(4) val longMessageFlag: Boolean, // false
+            @ProtoNumber(5) val reserved: ByteArray? = null // struct{ boolean(1), boolean(2) }
         ) : ProtoBuf
 
         return@lambda528 vProtobuf.loadAs(Sub8A.serializer()).msgInfo.asSequence()
