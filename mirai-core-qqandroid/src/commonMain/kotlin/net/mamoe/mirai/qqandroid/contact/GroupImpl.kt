@@ -455,7 +455,6 @@ internal class GroupImpl(
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
-    @JvmSynthetic
     @MiraiExperimentalAPI
     @SinceMirai("1.2.0")
     override suspend fun uploadVoice(input: InputStream): Voice {
