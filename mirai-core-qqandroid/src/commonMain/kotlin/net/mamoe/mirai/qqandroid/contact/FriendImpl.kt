@@ -33,6 +33,7 @@ import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.OfflineFriendImage
 import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.highway.postImage
