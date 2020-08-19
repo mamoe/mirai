@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.console.internal.setting
 
-import kotlinx.serialization.UnsafeSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.serializer
 import net.mamoe.yamlkt.Yaml
 import kotlin.reflect.KClass
@@ -452,10 +452,10 @@ internal inline fun <T> MutableSet<T>.observable(crossinline onChanged: () -> Un
 }
 
 
-@OptIn(UnsafeSerializationApi::class)
+@OptIn(InternalSerializationApi::class)
 internal fun <R : Any> Any.smartCastPrimitive(clazz: KClass<R>): R {
     kotlin.runCatching {
-        return Yaml.default.parse(clazz.serializer(), this.toString())
+        return Yaml.default.decodeFromString(clazz.serializer(), this.toString())
     }.getOrElse {
         throw IllegalArgumentException("Cannot cast '$this' to ${clazz.qualifiedName}", it)
     }

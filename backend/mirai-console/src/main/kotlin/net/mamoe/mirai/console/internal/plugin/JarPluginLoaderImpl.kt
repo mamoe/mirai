@@ -63,7 +63,7 @@ internal object JarPluginLoaderImpl :
                     url.readText()
                 }.fold(
                     onSuccess = { yaml ->
-                        Yaml.nonStrict.parse(JvmPluginDescription.serializer(), yaml)
+                        Yaml.nonStrict.decodeFromString(JvmPluginDescription.serializer(), yaml)
                     },
                     onFailure = {
                         logger.error("Cannot load plugin file ${file.name}", it)

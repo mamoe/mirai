@@ -145,7 +145,7 @@ internal open class MultiFileSettingStorageImpl(
                         "or 'setting' is an object or has a constructor which either has no parameters or all parameters of which are optional"
             )
             if (file.exists() && file.isFile && file.canRead()) {
-                Yaml.default.parse(instance.updaterSerializer, file.readText())
+                Yaml.default.decodeFromString(instance.updaterSerializer, file.readText())
             }
             instance
         }
@@ -170,7 +170,7 @@ internal open class MultiFileSettingStorageImpl(
         val file = getSettingFile(holder, this)
 
         if (file.exists() && file.isFile && file.canRead()) {
-            file.writeText(Yaml.default.stringify(setting.updaterSerializer, Unit))
+            file.writeText(Yaml.default.encodeToString(setting.updaterSerializer, Unit))
         }
     }
 }

@@ -51,6 +51,7 @@ kotlin {
             useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
             useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+            useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
         }
     }
 }
@@ -62,7 +63,7 @@ dependencies {
     implementation(kotlinx("serialization-core", Versions.serialization))
     implementation(kotlin("reflect"))
 
-    implementation("net.mamoe.yamlkt:yamlkt:0.3.3")
+    implementation("net.mamoe.yamlkt:yamlkt:0.4.0")
     implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}")
     api("org.jetbrains:annotations:19.0.0")
     api(kotlinx("coroutines-jdk8", Versions.coroutines))

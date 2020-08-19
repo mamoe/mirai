@@ -9,8 +9,9 @@
 
 package net.mamoe.mirai.console.internal.setting
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.UnsafeSerializationApi
 import kotlinx.serialization.builtins.*
 import kotlinx.serialization.serializer
 import net.mamoe.yamlkt.YamlDynamicSerializer
@@ -24,7 +25,7 @@ import kotlin.reflect.KType
  * Copied from kotlinx.serialization, modifications are marked with "/* mamoe modify */"
  * Copyright 2017-2020 JetBrains s.r.o.
  */
-@OptIn(UnsafeSerializationApi::class)
+@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
 @Suppress(
     "UNCHECKED_CAST",
     "NO_REFLECTION_IN_CLASS_PATH",
@@ -81,7 +82,6 @@ internal fun serializerMirai(type: KType): KSerializer<Any?> {
  * Copied from kotlinx.serialization, modifications are marked with "/* mamoe modify */"
  * Copyright 2017-2020 JetBrains s.r.o.
  */
-@OptIn(UnsafeSerializationApi::class)
 @Suppress(
     "UNCHECKED_CAST",
     "NO_REFLECTION_IN_CLASS_PATH",
