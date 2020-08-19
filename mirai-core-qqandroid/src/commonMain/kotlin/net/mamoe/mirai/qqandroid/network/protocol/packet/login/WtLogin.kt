@@ -137,7 +137,7 @@ internal class WtLogin {
                             client.subAppId /* maybe 1*/,
                             client.appClientVersion,
                             client.uin,
-                            1,
+                            true,
                             client.account.passwordMd5,
                             0,
                             client.uin.toByteArray(),
