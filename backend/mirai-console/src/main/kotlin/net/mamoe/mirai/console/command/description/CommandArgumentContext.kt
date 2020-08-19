@@ -168,7 +168,7 @@ public inline fun CommandArgumentContext(block: CommandArgumentContextBuilder.()
  * @see CommandArgumentContext
  */
 public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutableListOf() {
-    @JvmName("add")
+    @JvmName("add") // TODO: 2020/8/19 java class support
     public inline infix fun <T : Any> KClass<T>.with(parser: CommandArgumentParser<T>): ParserPair<*> =
         ParserPair(this, parser).also { add(it) }
 

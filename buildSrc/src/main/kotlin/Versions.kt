@@ -17,7 +17,7 @@
  */
 
 object Versions {
-    const val core = "1.2.0"
+    const val core = "1.2.1"
     const val console = "1.0-M2"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = "0.1.0"
@@ -30,6 +30,7 @@ object Versions {
     const val collectionsImmutable = "0.3.2"
     const val serialization = "1.0.0-RC"
     const val ktor = "1.4.0"
+    const val atomicFU = "0.14.4"
 
     const val androidGradle = "3.6.2"
 

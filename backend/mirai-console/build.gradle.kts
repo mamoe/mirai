@@ -59,10 +59,11 @@ dependencies {
     compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
     compileAndRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib))
 
-    implementation(kotlinx("serialization-runtime", Versions.serialization))
+    implementation(kotlinx("serialization-core", Versions.serialization))
     implementation(kotlin("reflect"))
 
-    implementation("net.mamoe.yamlkt:yamlkt:0.3.1")
+    implementation("net.mamoe.yamlkt:yamlkt:0.3.3")
+    implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}")
     api("org.jetbrains:annotations:19.0.0")
     api(kotlinx("coroutines-jdk8", Versions.coroutines))
 
@@ -70,7 +71,7 @@ dependencies {
 
     //api(kotlinx("collections-immutable", Versions.collectionsImmutable))
 
-    testApi(kotlinx("serialization-runtime", Versions.serialization))
+    testApi(kotlinx("serialization-core", Versions.serialization))
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))
     testApi(kotlin("test"))
