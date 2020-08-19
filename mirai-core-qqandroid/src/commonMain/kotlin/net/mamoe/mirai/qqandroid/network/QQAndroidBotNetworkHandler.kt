@@ -246,6 +246,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
             // self info
             data.selfInfo?.run {
+                bot.cachedNick = null
                 bot.selfInfo = this
 //                            bot.remark = remark ?: ""
 //                            bot.sex = sex
