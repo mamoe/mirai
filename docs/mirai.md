@@ -121,15 +121,15 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
 
 在 `1.0.0` 及更新版本, mirai-core 通过 gradle 依赖的 `api` 方式暴露了如下依赖库:
 
-- `kotlin-stdlib`: Kotlin 标准库, 版本至少为 1.3.72
-- `kotlin-reflect`: Kotlin 反射, 版本至少为 1.3.72
-- `kotlinx-coroutines-core`: Kotlin 协程, 版本至少为 1.3.7
-- `kotlinx-serialization-runtime`: Kotlin 序列化运行时, 和 JSON 序列化, 版本至少为 0.20.0
-- `kotlinx-serialization-protobuf`: Kotlin ProtocolBuffers 序列化, 版本至少为 0.20.0
+- `kotlin-stdlib`: Kotlin 标准库, 版本 1.4.0
+- `kotlin-reflect`: Kotlin 反射, 版本 1.4.0
+- `kotlinx-coroutines-core`: Kotlin 协程, 版本 1.3.9
+- `kotlinx-serialization-core`: Kotlin 序列化运行时, 和 JSON 序列化, 版本 1.0.0-RC (此库不稳定, 请不要用新版本覆盖)
+- `kotlinx-serialization-protobuf`: Kotlin ProtocolBuffers 序列化, 版本 1.0.0-RC (此库不稳定, 请不要用新版本覆盖)
 - `kotlinx-io`: Kotlin IO, 版本至少为 0.1.16 (此库非常不稳定, 不建议使用它)
 - `kotlinx-coroutines-io`: Kotlin 异步 IO, 版本至少为 0.1.16 (此库非常不稳定, 不建议使用它)
-- `kotlinx-atomicfu`: Kotlin 原子操作, 版本至少为 0.14.2
-- `ktor-client-core`, `ktor-network`, `ktor-client-cio`: Ktor HTTP, 版本至少为 1.3.2
+- `kotlinx-atomicfu`: Kotlin 原子操作, 版本至少为 0.14.4
+- `ktor-client-core`, `ktor-network`, `ktor-client-cio`: Ktor HTTP, 版本至少为 1.3.2-1.4.0-rc
 
 在 JVM, mirai 使用 `"org.bouncycastle:bcprov-jdk15on:1.64"` 进行密匙计算.
 

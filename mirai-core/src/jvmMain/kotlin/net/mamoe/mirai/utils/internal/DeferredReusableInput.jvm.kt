@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.core.Input
 import net.mamoe.mirai.utils.FileCacheStrategy
 import java.awt.image.BufferedImage
+import java.io.InputStream
 import java.net.URL
 
 internal actual class DeferredReusableInput actual constructor(

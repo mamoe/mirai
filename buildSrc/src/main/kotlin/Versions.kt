@@ -9,15 +9,16 @@
 
 object Versions {
     object Mirai {
-        const val version = "1.1.3"
+        const val version = "1.2.0"
     }
 
     object Kotlin {
-        const val stdlib = "1.3.72"
-        const val coroutines = "1.3.7"
-        const val atomicFU = "0.14.2"
-        const val serialization = "0.20.0"
-        const val ktor = "1.3.2"
+        const val compiler = "1.4.0"
+        const val stdlib = "1.4.0"
+        const val coroutines = "1.3.9"
+        const val atomicFU = "0.14.4"
+        const val serialization = "1.0.0-RC"
+        const val ktor = "1.3.2-1.4.0-rc"
         const val binaryValidator = "0.2.3"
 
         const val io = "0.1.16"
@@ -25,7 +26,7 @@ object Versions {
         const val dokka = "0.10.1"
     }
 
-    const val jcekt = "1.0.0"
+    val blockingBridge = "1.0.2"
 
     object Android {
         const val androidGradlePlugin = "3.5.3"
@@ -35,10 +36,14 @@ object Versions {
         const val bintray = "1.8.5"
     }
 
+    object Logging {
+        const val slf4j = "1.7.30"
+        const val log4j = "2.13.3"
+    }
 }
 
 @Suppress("unused")
 fun kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
 
 @Suppress("unused")
-fun ktor(id: String, version: String) = "io.ktor:ktor-$id:$version"
+fun ktor(id: String, version: String = Versions.Kotlin.ktor) = "io.ktor:ktor-$id:$version"

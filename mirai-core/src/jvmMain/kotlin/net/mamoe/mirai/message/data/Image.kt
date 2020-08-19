@@ -61,8 +61,8 @@ import java.net.URL
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-actual interface Image : Message, MessageContent, CodableMessage {
-    actual companion object Key : Message.Key<Image> {
+public actual interface Image : Message, MessageContent, CodableMessage {
+    public actual companion object Key : Message.Key<Image> {
         actual override val typeName: String get() = "Image"
     }
 
@@ -82,7 +82,7 @@ actual interface Image : Message, MessageContent, CodableMessage {
      *
      * @see Image 使用 id 构造图片
      */
-    actual val imageId: String
+    public actual val imageId: String
 
 
     @Deprecated(

@@ -23,7 +23,7 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageChainBuilder
  */
 @JvmSynthetic
-inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChain {
+public inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChain {
     return MessageChainBuilder().apply(block).asMessageChain()
 }
 
@@ -33,7 +33,7 @@ inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChai
  * @see MessageChainBuilder
  */
 @JvmSynthetic
-inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> Unit): MessageChain {
+public inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> Unit): MessageChain {
     return MessageChainBuilder(initialSize).apply(block).asMessageChain()
 }
 
@@ -47,19 +47,19 @@ inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> 
  * @see buildMessageChain 推荐使用
  * @see asMessageChain 完成构建
  */
-open class MessageChainBuilder private constructor(
+public open class MessageChainBuilder private constructor(
     private val container: MutableList<SingleMessage>
 ) : MutableList<SingleMessage> by container, Appendable {
-    constructor() : this(mutableListOf())
-    constructor(initialSize: Int) : this(ArrayList<SingleMessage>(initialSize))
+    public constructor() : this(mutableListOf())
+    public constructor(initialSize: Int) : this(ArrayList<SingleMessage>(initialSize))
 
-    final override fun add(element: SingleMessage): Boolean {
+    public final override fun add(element: SingleMessage): Boolean {
         checkBuilt()
         flushCache()
         return addAndCheckConstrainSingle(element)
     }
 
-    fun add(element: Message): Boolean {
+    public fun add(element: Message): Boolean {
         checkBuilt()
         flushCache()
         @Suppress("UNCHECKED_CAST")
@@ -71,27 +71,27 @@ open class MessageChainBuilder private constructor(
         }
     }
 
-    final override fun addAll(elements: Collection<SingleMessage>): Boolean {
+    public final override fun addAll(elements: Collection<SingleMessage>): Boolean {
         checkBuilt()
         flushCache()
         return addAll(elements.flatten())
     }
 
-    fun addAll(elements: Iterable<SingleMessage>): Boolean {
+    public fun addAll(elements: Iterable<SingleMessage>): Boolean {
         checkBuilt()
         flushCache()
         return addAll(elements.flatten())
     }
 
     @JvmName("addAllFlatten") // erased generic type cause declaration clash
-    fun addAll(elements: Iterable<Message>): Boolean {
+    public fun addAll(elements: Iterable<Message>): Boolean {
         checkBuilt()
         flushCache()
         return addAll(elements.flatten())
     }
 
     @JvmSynthetic
-    operator fun Message.unaryPlus() {
+    public operator fun Message.unaryPlus() {
         checkBuilt()
         flushCache()
         add(this)
@@ -99,91 +99,91 @@ open class MessageChainBuilder private constructor(
 
 
     @JvmSynthetic
-    operator fun String.unaryPlus() {
+    public operator fun String.unaryPlus() {
         checkBuilt()
         add(this)
     }
 
     @JvmSynthetic // they should use add
-    operator fun plusAssign(plain: String) {
+    public operator fun plusAssign(plain: String) {
         checkBuilt()
         withCache { append(plain) }
     }
 
     @JvmSynthetic // they should use add
-    operator fun plusAssign(message: Message) {
+    public operator fun plusAssign(message: Message) {
         checkBuilt()
         flushCache()
         this.add(message)
     }
 
     @JvmSynthetic // they should use add
-    operator fun plusAssign(message: SingleMessage) { // avoid resolution ambiguity
+    public operator fun plusAssign(message: SingleMessage) { // avoid resolution ambiguity
         checkBuilt()
         flushCache()
         this.add(message)
     }
 
-    fun add(plain: String) {
+    public fun add(plain: String) {
         checkBuilt()
         withCache { append(plain) }
     }
 
     @JvmSynthetic // they should use add
-    operator fun plusAssign(charSequence: CharSequence) {
+    public operator fun plusAssign(charSequence: CharSequence) {
         checkBuilt()
         withCache { append(charSequence) }
     }
 
-    final override fun append(value: Char): MessageChainBuilder = withCache { append(value) }
-    final override fun append(value: CharSequence?): MessageChainBuilder = withCache { append(value) }
-    final override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): MessageChainBuilder =
+    public final override fun append(value: Char): MessageChainBuilder = withCache { append(value) }
+    public final override fun append(value: CharSequence?): MessageChainBuilder = withCache { append(value) }
+    public final override fun append(value: CharSequence?, startIndex: Int, endIndex: Int): MessageChainBuilder =
         withCache { append(value, startIndex, endIndex) }
 
-    fun append(message: Message): MessageChainBuilder = apply { add(message) }
-    fun append(message: SingleMessage): MessageChainBuilder = apply { add(message) }
+    public fun append(message: Message): MessageChainBuilder = apply { add(message) }
+    public fun append(message: SingleMessage): MessageChainBuilder = apply { add(message) }
 
     // avoid resolution to extensions
-    fun asMessageChain(): MessageChain {
+    public fun asMessageChain(): MessageChain {
         built = true
         this.flushCache()
         return MessageChainImplByCollection(this) // fast-path, no need to constrain
     }
 
     /** 同 [asMessageChain] */
-    fun build(): MessageChain = asMessageChain()
+    public fun build(): MessageChain = asMessageChain()
 
     /**
      * 将所有已有元素引用复制到一个新的 [MessageChainBuilder]
      */
-    fun copy(): MessageChainBuilder {
+    public fun copy(): MessageChainBuilder {
         return MessageChainBuilder(container.toMutableList())
     }
 
     ///////
     // FOR IMMUTABLE SAFETY
 
-    final override fun remove(element: SingleMessage): Boolean {
+    public final override fun remove(element: SingleMessage): Boolean {
         checkBuilt()
         return container.remove(element)
     }
 
-    final override fun removeAll(elements: Collection<SingleMessage>): Boolean {
+    public final override fun removeAll(elements: Collection<SingleMessage>): Boolean {
         checkBuilt()
         return container.removeAll(elements)
     }
 
-    final override fun removeAt(index: Int): SingleMessage {
+    public final override fun removeAt(index: Int): SingleMessage {
         checkBuilt()
         return container.removeAt(index)
     }
 
-    final override fun clear() {
+    public final override fun clear() {
         checkBuilt()
         return container.clear()
     }
 
-    final override fun set(index: Int, element: SingleMessage): SingleMessage {
+    public final override fun set(index: Int, element: SingleMessage): SingleMessage {
         checkBuilt()
         return container.set(index, element)
     }
@@ -193,7 +193,7 @@ open class MessageChainBuilder private constructor(
     private var cache: StringBuilder? = null
     private fun flushCache() {
         cache?.let {
-            container.add(it.toString().toMessage())
+            container.add(PlainText(it.toString()))
         }
         cache = null
     }

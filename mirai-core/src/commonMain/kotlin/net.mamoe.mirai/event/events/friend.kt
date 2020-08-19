@@ -21,6 +21,7 @@ import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.qqandroid.network.Packet
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.*
 
@@ -28,54 +29,54 @@ import kotlin.jvm.*
 /**
  * 好友昵称改变事件. 目前仅支持解析 (来自 PC 端的修改).
  */
-data class FriendRemarkChangeEvent internal constructor(
-    override val friend: Friend,
-    val newName: String
+public data class FriendRemarkChangeEvent internal constructor(
+    public override val friend: Friend,
+    public val newName: String
 ) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * 成功添加了一个新好友的事件
  */
-data class FriendAddEvent internal constructor(
+public data class FriendAddEvent internal constructor(
     /**
      * 新好友. 已经添加到 [Bot.friends]
      */
-    override val friend: Friend
+    public override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * 好友已被删除的事件.
  */
-data class FriendDeleteEvent internal constructor(
-    override val friend: Friend
+public data class FriendDeleteEvent internal constructor(
+    public override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * 一个账号请求添加机器人为好友的事件
  */
 @Suppress("DEPRECATION")
-data class NewFriendRequestEvent internal constructor(
-    override val bot: Bot,
+public data class NewFriendRequestEvent internal constructor(
+    public override val bot: Bot,
     /**
      * 事件唯一识别号
      */
-    val eventId: Long,
+    public val eventId: Long,
     /**
      * 申请好友消息
      */
-    val message: String,
+    public val message: String,
     /**
      * 请求人 [User.id]
      */
-    val fromId: Long,
+    public val fromId: Long,
     /**
      * 来自群 [Group.id], 其他途径时为 0
      */
-    val fromGroupId: Long,
+    public val fromGroupId: Long,
     /**
      * 群名片或好友昵称
      */
-    val fromNick: String
+    public val fromNick: String
 ) : BotEvent, Packet, AbstractEvent() {
     @JvmField
     internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
@@ -83,23 +84,23 @@ data class NewFriendRequestEvent internal constructor(
     /**
      * @return 申请人来自的群. 当申请人来自其他途径申请时为 `null`
      */
-    val fromGroup: Group? = if (fromGroupId == 0L) null else bot.getGroup(fromGroupId)
+    public val fromGroup: Group? = if (fromGroupId == 0L) null else bot.getGroup(fromGroupId)
 
     @JvmSynthetic
-    suspend fun accept() = bot.acceptNewFriendRequest(this)
+    public suspend fun accept(): Unit = bot.acceptNewFriendRequest(this)
 
     @JvmSynthetic
-    suspend fun reject(blackList: Boolean = false) = bot.rejectNewFriendRequest(this, blackList)
+    public suspend fun reject(blackList: Boolean = false): Unit = bot.rejectNewFriendRequest(this, blackList)
 
 
     @JavaFriendlyAPI
     @JvmName("accept")
-    fun __acceptBlockingForJava__() = runBlocking { accept() }
+    public fun __acceptBlockingForJava__(): Unit = runBlocking { accept() }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("reject")
-    fun __rejectBlockingForJava__(blackList: Boolean = false) =
+    public fun __rejectBlockingForJava__(blackList: Boolean = false): Unit =
         runBlocking { reject(blackList) }
 }
 
@@ -107,7 +108,29 @@ data class NewFriendRequestEvent internal constructor(
 /**
  * [Friend] 头像被修改. 在此事件广播前就已经修改完毕.
  */
-data class FriendAvatarChangedEvent internal constructor(
-    override val friend: Friend
+public data class FriendAvatarChangedEvent internal constructor(
+    public override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
+
+
+/**
+ * [Friend] 昵称改变事件, 在此事件广播时好友已经完成改名
+ * @see BotNickChangedEvent
+ */
+@SinceMirai("1.2.0")
+public data class FriendNickChangedEvent internal constructor(
+    public override val friend: Friend,
+    public val from: String,
+    public val to: String
+) : FriendEvent, Packet, AbstractEvent()
+  
+/**
+ * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
+ */
+@SinceMirai("1.2.0")
+public data class FriendInputStatusChangedEvent internal constructor(
+    public override val friend: Friend,
+    public val inputting: Boolean
+
+) : FriendEvent, Packet, AbstractEvent()

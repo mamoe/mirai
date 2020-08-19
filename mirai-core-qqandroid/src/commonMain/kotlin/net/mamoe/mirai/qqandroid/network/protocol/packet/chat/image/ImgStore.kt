@@ -29,7 +29,7 @@ internal fun getRandomString(length: Int): String =
 private val defaultRanges: Array<CharRange> = arrayOf('a'..'z', 'A'..'Z', '0'..'9')
 
 internal fun getRandomString(length: Int, vararg charRanges: CharRange): String =
-    String(CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() })
+    CharArray(length) { charRanges[Random.Default.nextInt(0..charRanges.lastIndex)].random() }.concatToString()
 
 internal class ImgStore {
     object GroupPicUp : OutgoingPacketFactory<GroupPicUp.Response>("ImgStore.GroupPicUp") {

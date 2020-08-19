@@ -1,27 +1,32 @@
 package net.mamoe.mirai.qqandroid.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.protobuf.ProtoId
+import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import kotlin.jvm.JvmField
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
+
+// COMMENTED ON 2020/7/25
+
 @Serializable
 internal class SyncCookie(
-    @ProtoId(1) @JvmField val time1: Long? = null, // 1580277992
-    @ProtoId(2) @JvmField val time: Long, // 1580277992
-    @ProtoId(3) @JvmField val unknown1: Long = Random.nextLong().absoluteValue,// 678328038
-    @ProtoId(4) @JvmField val unknown2: Long = Random.nextLong().absoluteValue, // 1687142153
-    @ProtoId(5) @JvmField val const1: Long = const1_, // 1458467940
-    @ProtoId(11) @JvmField val const2: Long = const2_, // 2683038258
-    @ProtoId(12) @JvmField val unknown3: Long = 0x1d,
-    @ProtoId(13) @JvmField val lastSyncTime: Long? = null,
-    @ProtoId(14) @JvmField val unknown4: Long = 0
+    @ProtoNumber(1) @JvmField val time1: Long? = null, // 1580277992
+    @ProtoNumber(2) @JvmField val time: Long, // 1580277992
+    @ProtoNumber(3) @JvmField val unknown1: Long = Random.nextLong().absoluteValue,// 678328038
+    @ProtoNumber(4) @JvmField val unknown2: Long = Random.nextLong().absoluteValue, // 1687142153
+    @ProtoNumber(5) @JvmField val const1: Long = const1_, // 1458467940
+    @ProtoNumber(11) @JvmField val const2: Long = const2_, // 2683038258
+    @ProtoNumber(12) @JvmField val unknown3: Long = 0x1d,
+    @ProtoNumber(13) @JvmField val lastSyncTime: Long? = null,
+    @ProtoNumber(14) @JvmField val unknown4: Long = 0
 ) : ProtoBuf
 
 private val const1_: Long = Random.nextLong().absoluteValue
 private val const2_: Long = Random.nextLong().absoluteValue
+
+
 /*
 
 @Serializable

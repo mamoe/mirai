@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 /**
  * 挂起当前协程, 监听事件 [E], 并尝试从这个事件中**同步**一个值, 在超时时抛出 [TimeoutCancellationException]
  *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
+ * @param timeoutMillis 超时. 单位为毫秒.
  * @param mapper 过滤转换器. 返回非 null 则代表得到了需要的值. [syncFromEvent] 会返回这个值
  *
  * @see asyncFromEvent 本函数的异步版本
@@ -33,7 +33,7 @@ import kotlin.reflect.KClass
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-suspend inline fun <reified E : Event, R : Any> syncFromEvent(
+public suspend inline fun <reified E : Event, R : Any> syncFromEvent(
     timeoutMillis: Long = -1,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
@@ -66,7 +66,7 @@ suspend inline fun <reified E : Event, R : Any> syncFromEvent(
  * @throws Throwable 当 [mapper] 抛出任何异常时, 本函数会抛出该异常
  */
 @JvmSynthetic
-suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
+public suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
     timeoutMillis: Long,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     crossinline mapper: suspend E.(E) -> R?
@@ -94,7 +94,7 @@ suspend inline fun <reified E : Event, R : Any> syncFromEventOrNull(
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
-inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
+public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
     timeoutMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     priority: Listener.EventPriority = EventPriority.MONITOR,
@@ -123,7 +123,7 @@ inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEventOrNull(
  */
 @JvmSynthetic
 @Suppress("DeferredIsResult")
-inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
+public inline fun <reified E : Event, R : Any> CoroutineScope.asyncFromEvent(
     timeoutMillis: Long = -1,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     priority: Listener.EventPriority = EventPriority.MONITOR,

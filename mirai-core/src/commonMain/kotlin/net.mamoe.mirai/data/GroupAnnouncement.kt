@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
  */
 @MiraiExperimentalAPI
 @Serializable
-data class GroupAnnouncementList(
+public data class GroupAnnouncementList(
     val ec: Int,  //状态码 0 是正常的
     @SerialName("em") val msg: String,   //信息
     val feeds: List<GroupAnnouncement>? = null,   //群公告列表
@@ -31,7 +31,7 @@ data class GroupAnnouncementList(
 
 @MiraiExperimentalAPI
 @Serializable
-data class GroupAnnouncement(
+public data class GroupAnnouncement(
     @SerialName("u") val sender: Long = 0,
     val msg: GroupAnnouncementMsg,
     val settings: GroupAnnouncementSettings? = null,
@@ -39,12 +39,12 @@ data class GroupAnnouncement(
     @SerialName("read_num") val readNum: Int = 0,
     @SerialName("is_read") val isRead: Int = 0,
     val pinned: Int = 0,
-    val fid:String? = null      //公告的id
+    val fid: String? = null      //公告的id
 )
 
 @MiraiExperimentalAPI
 @Serializable
-data class GroupAnnouncementMsg(
+public data class GroupAnnouncementMsg(
     val text: String,
     val text_face: String? = null,
     val title: String? = null
@@ -52,7 +52,7 @@ data class GroupAnnouncementMsg(
 
 @MiraiExperimentalAPI
 @Serializable
-data class GroupAnnouncementSettings(
+public data class GroupAnnouncementSettings(
     @SerialName("is_show_edit_card") val isShowEditCard: Int = 0,
     @SerialName("remind_ts") val remindTs: Int = 0,
     @SerialName("tip_window_type") val tipWindowType: Int = 0,

@@ -49,14 +49,16 @@ import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmField
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
-internal inline class FriendInfoImpl(
-    private val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
+internal class FriendInfoImpl(
+    @JvmField private val jceFriendInfo: net.mamoe.mirai.qqandroid.network.protocol.data.jce.FriendInfo
 ) : FriendInfo {
-    override val nick: String get() = jceFriendInfo.nick
+    @JvmField internal var cachedNick: String? = null
+    override val nick: String get() = cachedNick ?: jceFriendInfo.nick.also { cachedNick = it }
     override val uin: Long get() = jceFriendInfo.friendUin
 }
 
@@ -73,7 +75,7 @@ internal class FriendImpl(
     bot: QQAndroidBot,
     coroutineContext: CoroutineContext,
     override val id: Long,
-    private val friendInfo: FriendInfo
+    internal val friendInfo: FriendInfo
 ) : Friend() {
     override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
@@ -122,7 +124,7 @@ internal class FriendImpl(
 
         @Suppress("UNCHECKED_CAST", "DEPRECATION")
         when (response) {
-            is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId)
+            is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId)
                 .also {
                     ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
@@ -156,7 +158,7 @@ internal class FriendImpl(
                 )*/
                 // 为什么不能 ??
 
-                OfflineFriendImage(response.resourceId).also {
+                net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId).also {
                     ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
             }

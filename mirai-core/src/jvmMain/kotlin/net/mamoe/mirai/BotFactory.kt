@@ -29,12 +29,12 @@ import net.mamoe.mirai.utils.ContextImpl
  * ### 手动选择协议模块并构造 [Bot]
  * 引用 `net.mamoe.mirai.qqandroid.QQAndroid` 并使用其成员函数 [Bot]
  */
-actual interface BotFactory {
+public actual interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     @JvmName("newBot")
-    actual fun Bot(
+    public actual fun Bot(
         context: Context,
         qq: Long,
         password: String,
@@ -45,7 +45,7 @@ actual interface BotFactory {
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     @JvmName("newBot")
-    actual fun Bot(
+    public actual fun Bot(
         context: Context,
         qq: Long,
         passwordMd5: ByteArray,
@@ -61,14 +61,14 @@ actual interface BotFactory {
  */
 @JvmName("newBot")
 @JvmOverloads
-fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
+public fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
     factory.Bot(context, qq, password, configuration)
 
 /**
  * 自动加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
 @JvmSynthetic
-inline fun Bot(context: Context, qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
+public inline fun Bot(context: Context, qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(context, qq, password, configuration)
 
 
@@ -79,14 +79,14 @@ inline fun Bot(context: Context, qq: Long, password: String, configuration: (Bot
  */
 @JvmName("newBot")
 @JvmOverloads
-fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
+public fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
     factory.Bot(ContextImpl(), qq, password, configuration)
 
 /**
  * 自动加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
 @JvmSynthetic
-inline fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
+public inline fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(ContextImpl(), qq, password, configuration)
 
 
@@ -97,7 +97,7 @@ inline fun Bot(qq: Long, password: String, configuration: (BotConfiguration.() -
  */
 @JvmName("newBot")
 @JvmOverloads
-fun Bot(
+public fun Bot(
     context: Context,
     qq: Long,
     passwordMd5: ByteArray,
@@ -109,7 +109,7 @@ fun Bot(
  * 自动加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
 @JvmSynthetic
-inline fun Bot(context: Context, qq: Long, passwordMd5: ByteArray, configuration: (BotConfiguration.() -> Unit)): Bot =
+public inline fun Bot(context: Context, qq: Long, passwordMd5: ByteArray, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(context, qq, passwordMd5, BotConfiguration().apply(configuration))
 
 
@@ -120,14 +120,14 @@ inline fun Bot(context: Context, qq: Long, passwordMd5: ByteArray, configuration
  */
 @JvmName("newBot")
 @JvmOverloads
-fun Bot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration = BotConfiguration.Default): Bot =
+public fun Bot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration = BotConfiguration.Default): Bot =
     factory.Bot(ContextImpl(), qq, passwordMd5, configuration)
 
 /**
  * 自动加载现有协议的 [BotFactory], 并使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
 @JvmSynthetic
-inline fun Bot(qq: Long, passwordMd5: ByteArray, configuration: (BotConfiguration.() -> Unit)): Bot =
+public inline fun Bot(qq: Long, passwordMd5: ByteArray, configuration: (BotConfiguration.() -> Unit)): Bot =
     factory.Bot(ContextImpl(), qq, passwordMd5, BotConfiguration().apply(configuration))
 
 

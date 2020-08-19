@@ -14,6 +14,7 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.event.internal.registerEvent
 import java.lang.reflect.Method
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -148,23 +149,23 @@ import kotlin.reflect.jvm.kotlinFunction
  */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class EventHandler(
+public annotation class EventHandler(
     /**
      * 监听器优先级
      * @see Listener.EventPriority 查看优先级相关信息
      * @see Event.intercept 拦截事件
      */
-    val priority: Listener.EventPriority = EventPriority.NORMAL,
+    public val priority: Listener.EventPriority = EventPriority.NORMAL,
     /**
      * 是否自动忽略被 [取消][CancellableEvent.isCancelled]
      * @see CancellableEvent
      */
-    val ignoreCancelled: Boolean = true,
+    public val ignoreCancelled: Boolean = true,
     /**
      * 并发类型
      * @see Listener.ConcurrencyKind
      */
-    val concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT
+    public val concurrency: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT
 )
 
 /**
@@ -173,23 +174,23 @@ annotation class EventHandler(
  * @see SimpleListenerHost 简单的实现
  * @see EventHandler 查看更多信息
  */
-interface ListenerHost
+public interface ListenerHost
 
 /**
  * 携带一个异常处理器的 [ListenerHost].
  * @see ListenerHost 查看更多信息
  * @see EventHandler 查看更多信息
  */
-abstract class SimpleListenerHost
+public abstract class SimpleListenerHost
 @JvmOverloads constructor(coroutineContext: CoroutineContext = EmptyCoroutineContext) : ListenerHost, CoroutineScope {
 
-    final override val coroutineContext: CoroutineContext =
+    public final override val coroutineContext: CoroutineContext =
         CoroutineExceptionHandler(::handleException) + coroutineContext + SupervisorJob(coroutineContext[Job])
 
     /**
      * 处理事件处理中未捕获的异常. 在构造器中的 [coroutineContext] 未提供 [CoroutineExceptionHandler] 情况下必须继承此函数.
      */
-    open fun handleException(context: CoroutineContext, exception: Throwable) {
+    public open fun handleException(context: CoroutineContext, exception: Throwable) {
         throw IllegalStateException(
             """
             未找到异常处理器. 请继承 SimpleListenerHost 中的 handleException 方法, 或在构造 SimpleListenerHost 时提供 CoroutineExceptionHandler
@@ -203,7 +204,7 @@ abstract class SimpleListenerHost
     /**
      * 停止所有事件监听
      */
-    fun cancelAll() {
+    public fun cancelAll() {
         this.cancel()
     }
 }
@@ -216,7 +217,7 @@ abstract class SimpleListenerHost
  * @see EventHandler 获取更多信息
  */
 @JvmOverloads
-fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext)
+public fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext): Unit
         where T : CoroutineScope, T : ListenerHost = this.registerEvents(this, coroutineContext)
 
 /**
@@ -227,7 +228,10 @@ fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineCont
  * @see EventHandler 获取更多信息
  */
 @JvmOverloads
-fun CoroutineScope.registerEvents(host: ListenerHost, coroutineContext: CoroutineContext = EmptyCoroutineContext) {
+public fun CoroutineScope.registerEvents(
+    host: ListenerHost,
+    coroutineContext: CoroutineContext = EmptyCoroutineContext
+) {
     for (method in host.javaClass.declaredMethods) {
         method.getAnnotation(EventHandler::class.java)?.let {
             method.registerEvent(host, this, it, coroutineContext)
@@ -250,15 +254,15 @@ private fun Method.registerEvent(
 
         val param = kotlinFunction.parameters
         when (param.size) {
-            3 -> { // dispatch receiver, extension receiver, param #0 event
+            3 -> { // ownerClass, receiver, event
                 check(param[1].type == param[2].type) { "Illegal kotlin function ${kotlinFunction.name}. Receiver and param must have same type" }
                 check((param[1].type.classifier as? KClass<*>)?.isSubclassOf(Event::class) == true) {
-                    "Illegal kotlin function ${kotlinFunction.name}. First param or extension receiver must be subclass of Event, but found ${param[1].type.classifier}"
+                    "Illegal kotlin function ${kotlinFunction.name}. First param or receiver must be subclass of Event, but found ${param[1].type.classifier}"
                 }
             }
-            2 -> { // dispatch receiver, param #0 event
+            2 -> { // ownerClass, event
                 check((param[1].type.classifier as? KClass<*>)?.isSubclassOf(Event::class) == true) {
-                    "Illegal kotlin function ${kotlinFunction.name}. First param or extension receiver must be subclass of Event, but found ${param[1].type.classifier}"
+                    "Illegal kotlin function ${kotlinFunction.name}. First param or receiver must be subclass of Event, but found ${param[1].type.classifier}"
                 }
             }
             else -> error("function ${kotlinFunction.name} must have one Event param")
@@ -295,7 +299,7 @@ private fun Method.registerEvent(
         require(!kotlinFunction.returnType.isMarkedNullable) {
             "Kotlin event handlers cannot have nullable return type."
         }
-        require(kotlinFunction.parameters.none { it.type.isMarkedNullable }) {
+        require(kotlinFunction.parameters.any { it.type.isMarkedNullable }) {
             "Kotlin event handlers cannot have nullable parameter type."
         }
         when (kotlinFunction.returnType.classifier) {
@@ -331,11 +335,9 @@ private fun Method.registerEvent(
         }
     } else {
         // java methods
-        check(this.parameterCount == 1) {
-            "Illegal method parameter. Only one parameter is required."
-        }
+
         val paramType = this.parameters[0].type
-        check(Event::class.java.isAssignableFrom(paramType)) {
+        check(this.parameterCount == 1 && Event::class.java.isAssignableFrom(paramType)) {
             "Illegal method parameter. Required one exact Event subclass. found $paramType"
         }
         when (this.returnType) {
@@ -349,11 +351,11 @@ private fun Method.registerEvent(
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
                             withContext(Dispatchers.IO) {
-                                this@registerEvent.invoke(owner, this@subscribeAlways)
+                                this@registerEvent.invoke(owner, this)
                             }
                         }
                     } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invoke(owner, this@subscribeAlways)
+                        this@registerEvent.invoke(owner, this)
                     }
                 }
             }
@@ -367,11 +369,11 @@ private fun Method.registerEvent(
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
                             withContext(Dispatchers.IO) {
-                                this@registerEvent.invoke(owner, this@subscribe) as ListeningStatus
+                                this@registerEvent.invoke(owner, this) as ListeningStatus
                             }
                         } else ListeningStatus.LISTENING
                     } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invoke(owner, this@subscribe) as ListeningStatus
+                        this@registerEvent.invoke(owner, this) as ListeningStatus
                     }
 
                 }

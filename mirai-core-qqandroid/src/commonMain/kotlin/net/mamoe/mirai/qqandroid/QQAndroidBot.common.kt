@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.qqandroid
 
-import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import kotlinx.coroutines.CoroutineName
@@ -19,6 +18,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.*
@@ -44,6 +45,7 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.encodeToString
@@ -248,7 +250,8 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val friends: ContactList<Friend> = ContactList(LockFreeLinkedList())
 
-    override val nick: String get() = selfInfo.nick
+    @JvmField internal var cachedNick: String? = null
+    override val nick: String get() = cachedNick ?: selfInfo.nick.also { cachedNick = it }
 
     internal lateinit var selfInfo: JceFriendInfo
 
@@ -297,7 +300,7 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     fun getGroupByUinOrNull(uin: Long): Group? {
-        return groups.asSequence().firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
+        return groups.firstOrNull { it.checkIsGroupImpl(); it.uin == uin }
     }
 
     @OptIn(LowLevelAPI::class)
@@ -487,7 +490,7 @@ internal abstract class QQAndroidBotBase constructor(
 
         val rep = data.await()
 //        bot.network.logger.error(rep)
-        return json.parse(GroupAnnouncementList.serializer(), rep)
+        return json.decodeFromString(GroupAnnouncementList.serializer(), rep)
     }
 
     @LowLevelAPI
@@ -503,7 +506,7 @@ internal abstract class QQAndroidBotBase constructor(
                     append("pinned", announcement.pinned)
                     append(
                         "settings",
-                        json.stringify(
+                        json.encodeToString(
                             GroupAnnouncementSettings.serializer(),
                             announcement.settings ?: GroupAnnouncementSettings()
                         )
@@ -521,8 +524,8 @@ internal abstract class QQAndroidBotBase constructor(
                 }
             }
         }
-        val jsonObj = json.parseJson(rep)
-        return jsonObj.jsonObject["new_fid"]?.primitive?.content
+        val jsonObj = json.parseToJsonElement(rep)
+        return jsonObj.jsonObject["new_fid"]?.jsonPrimitive?.content
             ?: throw throw IllegalStateException("Send Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} content:${announcement.msg.text}")
     }
 
@@ -549,8 +552,8 @@ internal abstract class QQAndroidBotBase constructor(
                 }
             }
         }
-        val jsonObj = json.parseJson(data)
-        if (jsonObj.jsonObject["ec"]?.int ?: 1 != 0) {
+        val jsonObj = json.parseToJsonElement(data)
+        if (jsonObj.jsonObject["ec"]?.jsonPrimitive?.int ?: 1 != 0) {
             throw throw IllegalStateException("delete Announcement fail group:$groupId msg:${jsonObj.jsonObject["em"]} fid:$fid")
         }
     }
@@ -559,7 +562,7 @@ internal abstract class QQAndroidBotBase constructor(
     @MiraiExperimentalAPI
     override suspend fun _lowLevelGetAnnouncement(groupId: Long, fid: String): GroupAnnouncement {
         val data = network.async {
-            HttpClient().post<String> {
+            MiraiPlatformUtils.Http.post<String> {
                 url("https://web.qun.qq.com/cgi-bin/announce/get_feed")
                 body = MultiPartFormDataContent(formData {
                     append("qid", groupId)
@@ -578,7 +581,7 @@ internal abstract class QQAndroidBotBase constructor(
 
         val rep = data.await()
 //        bot.network.logger.error(rep)
-        return json.parse(GroupAnnouncement.serializer(), rep)
+        return json.decodeFromString(GroupAnnouncement.serializer(), rep)
 
     }
 
@@ -586,7 +589,7 @@ internal abstract class QQAndroidBotBase constructor(
     @MiraiExperimentalAPI
     override suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int): GroupActiveData {
         val data = network.async {
-            HttpClient().get<String> {
+            MiraiPlatformUtils.Http.get<String> {
                 url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                 parameter("bkn", bkn)
                 parameter("gc", groupId)
@@ -602,7 +605,7 @@ internal abstract class QQAndroidBotBase constructor(
             }
         }
         val rep = data.await()
-        return json.parse(GroupActiveData.serializer(), rep)
+        return json.decodeFromString(GroupActiveData.serializer(), rep)
     }
 
     @JvmSynthetic
@@ -789,6 +792,25 @@ internal abstract class QQAndroidBotBase constructor(
                     }))
                 }
         }
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    @LowLevelAPI
+    override suspend fun _lowLevelQueryGroupVoiceDownloadUrl(
+        md5: ByteArray,
+        groupId: Long,
+        dstUin: Long
+    ): String {
+        network.run {
+            val response: PttStore.GroupPttDown.Response.DownLoadInfo =
+                PttStore.GroupPttDown(client, groupId, dstUin, md5).sendAndExpect()
+            return "http://${response.strDomain}${response.downPara.encodeToString()}"
+        }
+    }
+
+    @LowLevelAPI
+    override suspend fun _lowLevelUploadVoice(md5: ByteArray, groupId: Long) {
+
     }
 
     @Suppress("DEPRECATION", "OverridingDeprecatedMember")

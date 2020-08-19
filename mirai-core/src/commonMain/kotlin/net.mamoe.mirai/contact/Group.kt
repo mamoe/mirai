@@ -18,13 +18,11 @@ import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.data.toMessage
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.runBlocking
+import java.io.InputStream
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
@@ -32,7 +30,7 @@ import kotlin.jvm.JvmSynthetic
 /**
  * 群.
  */
-abstract class Group : Contact(), CoroutineScope {
+public abstract class Group : Contact(), CoroutineScope {
     /**
      * 群名称.
      *
@@ -42,30 +40,30 @@ abstract class Group : Contact(), CoroutineScope {
      * @see GroupNameChangeEvent 群名片修改事件
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    abstract var name: String
+    public abstract var name: String
 
     /**
      * 群设置
      */
-    abstract val settings: GroupSettings
+    public abstract val settings: GroupSettings
 
     /**
      * 同为 groupCode, 用户看到的群号码.
      */
-    abstract override val id: Long
+    public abstract override val id: Long
 
     /**
      * 群主.
      *
      * @return 若机器人是群主, 返回 [botAsMember]. 否则返回相应的成员
      */
-    abstract val owner: Member
+    public abstract val owner: Member
 
     /**
      * [Bot] 在群内的 [Member] 实例
      */
     @MiraiExperimentalAPI
-    abstract val botAsMember: Member
+    public abstract val botAsMember: Member
 
     /**
      * 机器人被禁言还剩余多少秒
@@ -73,7 +71,7 @@ abstract class Group : Contact(), CoroutineScope {
      * @see BotMuteEvent 机器人被禁言事件
      * @see isBotMuted 判断机器人是否正在被禁言
      */
-    abstract val botMuteRemaining: Int
+    public abstract val botMuteRemaining: Int
 
     /**
      * 机器人在这个群里的权限
@@ -82,38 +80,38 @@ abstract class Group : Contact(), CoroutineScope {
      *
      * @see BotGroupPermissionChangeEvent 机器人群员修改
      */
-    abstract val botPermission: MemberPermission
+    public abstract val botPermission: MemberPermission
 
     /**
      * 群头像下载链接.
      */
-    val avatarUrl: String
+    public val avatarUrl: String
         get() = "https://p.qlogo.cn/gh/$id/${id}/640"
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
      * 在 [Group] 实例创建的时候查询一次. 并与事件同步事件更新
      */
-    abstract val members: ContactList<Member>
+    public abstract val members: ContactList<Member>
 
     /**
      * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException]
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
     @Throws(NoSuchElementException::class)
-    abstract operator fun get(id: Long): Member
+    public abstract operator fun get(id: Long): Member
 
     /**
      * 获取群成员实例, 不存在则 null
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
-    abstract fun getOrNull(id: Long): Member?
+    public abstract fun getOrNull(id: Long): Member?
 
     /**
      * 检查此 id 的群成员是否存在
      * 当 [id] 为 [Bot.id] 时返回 `true`
      */
-    abstract operator fun contains(id: Long): Boolean
+    public abstract operator fun contains(id: Long): Boolean
 
 
     /**
@@ -122,7 +120,7 @@ abstract class Group : Contact(), CoroutineScope {
      * @return 退出成功时 true; 已经退出时 false
      */
     @JvmSynthetic
-    abstract suspend fun quit(): Boolean
+    public abstract suspend fun quit(): Boolean
 
     /**
      * 构造一个 [Member].
@@ -130,7 +128,7 @@ abstract class Group : Contact(), CoroutineScope {
      */
     @LowLevelAPI
     @MiraiExperimentalAPI("dangerous")
-    abstract fun newMember(memberInfo: MemberInfo): Member
+    public abstract fun newMember(memberInfo: MemberInfo): Member
 
     /**
      * 向这个对象发送消息.
@@ -148,7 +146,7 @@ abstract class Group : Contact(), CoroutineScope {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    abstract override suspend fun sendMessage(message: Message): MessageReceipt<Group>
+    public abstract override suspend fun sendMessage(message: Message): MessageReceipt<Group>
 
     /**
      * @see sendMessage
@@ -156,8 +154,8 @@ abstract class Group : Contact(), CoroutineScope {
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
     @kotlin.internal.InlineOnly
     @JvmSynthetic
-    suspend inline fun sendMessage(message: String): MessageReceipt<Group> {
-        return sendMessage(message.toMessage())
+    public suspend inline fun sendMessage(message: String): MessageReceipt<Group> {
+        return sendMessage(PlainText(message))
     }
 
     /**
@@ -172,16 +170,30 @@ abstract class Group : Contact(), CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     @JvmSynthetic
-    abstract override suspend fun uploadImage(image: ExternalImage): Image
+    public abstract override suspend fun uploadImage(image: ExternalImage): Image
 
-    companion object {
+    /**
+     * 上传一个语音消息以备发送.
+     * 请手动关闭输入流
+     * 请使用amr或silk格式
+     * 请注意，这是一个实验性api且随时会被删除
+     * @throws EventCancelledException 当发送消息事件被取消
+     * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
+     */
+    @JvmSynthetic
+    @MiraiExperimentalAPI
+    @SinceMirai("1.2.0")
+    public abstract suspend fun uploadVoice(input: InputStream): Voice
+
+
+    public companion object {
         /**
          * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
          * @suppress internal api
          */
         @MiraiExperimentalAPI
         @JvmStatic
-        fun calculateGroupUinByGroupCode(groupCode: Long): Long =
+        public fun calculateGroupUinByGroupCode(groupCode: Long): Long =
             CommonGroupCalculations.calculateGroupUinByGroupCode(groupCode)
 
         /**
@@ -190,7 +202,7 @@ abstract class Group : Contact(), CoroutineScope {
          */
         @MiraiExperimentalAPI
         @JvmStatic
-        fun calculateGroupCodeByGroupUin(groupUin: Long): Long =
+        public fun calculateGroupCodeByGroupUin(groupUin: Long): Long =
             CommonGroupCalculations.calculateGroupCodeByGroupUin(groupUin)
     }
 
@@ -200,7 +212,7 @@ abstract class Group : Contact(), CoroutineScope {
     @Suppress("FunctionName")
     @JvmName("quit")
     @JavaFriendlyAPI
-    fun __quitBlockingForJava__(): Boolean = runBlocking { quit() }
+    public fun __quitBlockingForJava__(): Boolean = runBlocking { quit() }
 }
 
 /**
@@ -208,7 +220,7 @@ abstract class Group : Contact(), CoroutineScope {
  *
  * @see Group.settings 获取群设置
  */
-interface GroupSettings {
+public interface GroupSettings {
     /**
      * 入群公告, 没有时为空字符串.
      *
@@ -217,7 +229,7 @@ interface GroupSettings {
      * @see GroupEntranceAnnouncementChangeEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var entranceAnnouncement: String
+    public var entranceAnnouncement: String
 
     /**
      * 全体禁言状态. `true` 为开启.
@@ -227,7 +239,7 @@ interface GroupSettings {
      * @see GroupMuteAllEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var isMuteAll: Boolean
+    public var isMuteAll: Boolean
 
     /**
      * 坦白说状态. `true` 为允许.
@@ -239,7 +251,7 @@ interface GroupSettings {
      */
     @PlannedRemoval("1.3.0")
     @Deprecated("mirai 将不再支持此用例较少的设置", level = DeprecationLevel.WARNING)
-    var isConfessTalkEnabled: Boolean
+    public var isConfessTalkEnabled: Boolean
 
     /**
      * 允许群员邀请好友入群的状态. `true` 为允许
@@ -249,18 +261,18 @@ interface GroupSettings {
      * @see GroupAllowMemberInviteEvent
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
-    var isAllowMemberInvite: Boolean
+    public var isAllowMemberInvite: Boolean
 
     /**
      * 自动加群审批
      */
     @MiraiExperimentalAPI
-    val isAutoApproveEnabled: Boolean
+    public val isAutoApproveEnabled: Boolean
 
     /**
      * 匿名聊天
      */
-    val isAnonymousChatEnabled: Boolean
+    public val isAnonymousChatEnabled: Boolean
 }
 
 
@@ -269,7 +281,7 @@ interface GroupSettings {
  *
  * @see Group.botMuteRemaining 剩余禁言时间
  */
-inline val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0
+public inline val Group.isBotMuted: Boolean get() = this.botMuteRemaining != 0
 
 
 internal object CommonGroupCalculations {

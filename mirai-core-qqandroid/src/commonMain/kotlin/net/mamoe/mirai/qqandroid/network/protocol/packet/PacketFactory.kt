@@ -20,6 +20,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.qqandroid.network.protocol.packet.login.ConfigPushSvc
@@ -36,6 +37,7 @@ import net.mamoe.mirai.qqandroid.utils.io.useBytes
 import net.mamoe.mirai.qqandroid.utils.io.withUse
 import net.mamoe.mirai.utils.*
 import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 
 internal sealed class PacketFactory<TPacket : Packet?> {
     /**
@@ -139,6 +141,8 @@ internal object KnownPacketFactories {
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
         ImgStore.GroupPicUp,
+        PttStore.GroupPttUp,
+        PttStore.GroupPttDown,
         LongConn.OffPicUp,
         LongConn.OffPicDown,
         TroopManagement.EditSpecialTitle,
@@ -172,6 +176,11 @@ internal object KnownPacketFactories {
         return OutgoingFactories.firstOrNull { it.receivingCommandName == commandName }
             ?: IncomingFactories.firstOrNull { it.receivingCommandName == commandName }
     }
+
+    class PacketFactoryIllegalState10008Exception @JvmOverloads constructor(
+        override val message: String? = null,
+        override val cause: Throwable? = null
+    ) : RuntimeException()
 
     // do not inline. Exceptions thrown will not be reported correctly
     @Suppress("UNCHECKED_CAST")
@@ -244,11 +253,13 @@ internal object KnownPacketFactories {
             bot.network.logger.debug { "Received unknown commandName: ${it.commandName}" }
             PacketLogger.warning { "找不到 PacketFactory" }
             PacketLogger.verbose {
-                "传递给 PacketFactory 的数据 = ${it.data.useBytes { data, length ->
-                    data.toUHexString(
-                        length = length
-                    )
-                }}"
+                "传递给 PacketFactory 的数据 = ${
+                    it.data.useBytes { data, length ->
+                        data.toUHexString(
+                            length = length
+                        )
+                    }
+                }"
             }
             return
         }
@@ -301,8 +312,14 @@ internal object KnownPacketFactories {
         input.readPacketExact(input.readInt() - 4).withUse {
             ssoSequenceId = readInt()
             PacketLogger.verbose { "sequenceId = $ssoSequenceId" }
+
             val returnCode = readInt()
-            check(returnCode == 0) { "returnCode = $returnCode" }
+            check(returnCode == 0) {
+                if (returnCode == -10008) { // https://github.com/mamoe/mirai/issues/470
+                    throw PacketFactoryIllegalState10008Exception("returnCode = $returnCode")
+                } else "returnCode = $returnCode"
+            }
+
             if (PacketLogger.isEnabled) {
                 val extraData = readBytes(readInt() - 4)
                 PacketLogger.verbose { "(sso/inner)extraData = ${extraData.toUHexString()}" }

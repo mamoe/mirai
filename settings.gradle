@@ -11,11 +11,13 @@ pluginManagement {
 
     repositories {
         mavenLocal()
+        gradlePluginPortal()
         jcenter()
         google()
         mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
         maven { url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies" }
+        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 }
 
@@ -25,6 +27,7 @@ include(':mirai-core')
 include(':mirai-core-qqandroid')
 include(':mirai-serialization')
 include(':java-test')
+
 //include(':compatibility-validator') // THIS WILL CAUSE A DEPENDENCY RESOLUTION BUG
 //include(':java-compatibility-validator')
 

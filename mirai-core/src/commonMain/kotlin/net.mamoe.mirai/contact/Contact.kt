@@ -35,12 +35,12 @@ import kotlin.jvm.JvmSynthetic
  * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
  */
 @Suppress("EXPOSED_SUPER_CLASS")
-abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
+public abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
     /**
      * 这个联系对象所属 [Bot].
      */
     @WeakRefProperty
-    abstract val bot: Bot
+    public abstract val bot: Bot
 
     /**
      * 可以是 QQ 号码或者群号码.
@@ -48,7 +48,7 @@ abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
      * @see User.id
      * @see Group.id
      */
-    abstract override val id: Long
+    public abstract override val id: Long
 
     /**
      * 向这个对象发送消息.
@@ -66,13 +66,13 @@ abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
     @JvmSynthetic
-    abstract suspend fun sendMessage(message: Message): MessageReceipt<Contact>
+    public abstract suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
     @kotlin.internal.InlineOnly
     @JvmSynthetic
-    suspend inline fun sendMessage(message: String): MessageReceipt<Contact> {
-        return sendMessage(message.toMessage())
+    public suspend inline fun sendMessage(message: String): MessageReceipt<Contact> {
+        return sendMessage(PlainText(message))
     }
 
     /**
@@ -87,34 +87,34 @@ abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendlyAPI {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     @JvmSynthetic
-    abstract suspend fun uploadImage(image: ExternalImage): Image
+    public abstract suspend fun uploadImage(image: ExternalImage): Image
 
-    final override fun equals(other: Any?): Boolean = super.equals(other)
-    final override fun hashCode(): Int = super.hashCode()
+    public final override fun equals(other: Any?): Boolean = super.equals(other)
+    public final override fun hashCode(): Int = super.hashCode()
 
     /**
      * @return "Friend($id)" or "Group($id)" or "Member($id)"
      */
-    abstract override fun toString(): String
+    public abstract override fun toString(): String
 }
 
 /**
  * @see Bot.recall
  */
 @JvmSynthetic
-suspend inline fun Contact.recall(source: MessageChain) = this.bot.recall(source)
+public suspend inline fun Contact.recall(source: MessageChain): Unit = this.bot.recall(source)
 
 /**
  * @see Bot.recall
  */
 @JvmSynthetic
-suspend inline fun Contact.recall(source: MessageSource) = this.bot.recall(source)
+public suspend inline fun Contact.recall(source: MessageSource): Unit = this.bot.recall(source)
 
 /**
  * @see Bot.recallIn
  */
 @JvmSynthetic
-inline fun Contact.recallIn(
+public inline fun Contact.recallIn(
     message: MessageChain,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -124,7 +124,7 @@ inline fun Contact.recallIn(
  * @see Bot.recallIn
  */
 @JvmSynthetic
-inline fun Contact.recallIn(
+public inline fun Contact.recallIn(
     source: MessageSource,
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext

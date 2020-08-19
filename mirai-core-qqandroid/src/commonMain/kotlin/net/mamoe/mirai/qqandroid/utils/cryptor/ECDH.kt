@@ -11,11 +11,11 @@ package net.mamoe.mirai.qqandroid.utils.cryptor
 
 import net.mamoe.mirai.qqandroid.utils.chunkedHexToBytes
 
-expect interface ECDHPrivateKey {
+internal expect interface ECDHPrivateKey {
     fun getEncoded(): ByteArray
 }
 
-expect interface ECDHPublicKey {
+internal expect interface ECDHPublicKey {
     fun getEncoded(): ByteArray
 }
 

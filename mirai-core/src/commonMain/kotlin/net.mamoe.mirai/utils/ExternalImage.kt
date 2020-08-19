@@ -22,8 +22,22 @@ import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.message.data.toUHexString
 import net.mamoe.mirai.utils.internal.DeferredReusableInput
 import net.mamoe.mirai.utils.internal.ReusableInput
-import kotlin.jvm.JvmField
+import java.io.File
 import kotlin.jvm.JvmSynthetic
+
+/**
+ * mirai 将在未来重构 [ExternalImage] 相关 API, 请尽量避免使用他们.
+ *
+ * 可以直接通过 [File.uploadAsImageTo] 等 API 替代.
+ */
+@RequiresOptIn(
+    "mirai 将在 2.0.0 时重构 ExternalImage 相关 API, 请尽量避免使用他们. 可以直接通过 File.uploadAsImageTo() 等 API 替代.",
+    level = RequiresOptIn.Level.WARNING
+)
+@Retention(AnnotationRetention.BINARY)
+@UnstableExternalImage
+@SinceMirai("1.2.0")
+public annotation class UnstableExternalImage
 
 /**
  * 外部图片. 图片数据还没有读取到内存.
@@ -33,12 +47,12 @@ import kotlin.jvm.JvmSynthetic
  * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
-class ExternalImage internal constructor(
-    @JvmField
+@UnstableExternalImage
+public class ExternalImage internal constructor(
     internal val input: ReusableInput
 ) {
-    internal val md5: ByteArray get() = this.input.md5
-    val formatName: String by lazy {
+    internal val md5: ByteArray get() = input.md5
+    public val formatName: String by lazy {
         val hex = input.asInput().use {
             it.readBytes(8).toUHexString("")
         }
@@ -51,22 +65,22 @@ class ExternalImage internal constructor(
         }
     }
 
-    companion object {
-        const val defaultFormatName = "mirai"
+    public companion object {
+        public const val defaultFormatName: String = "mirai"
 
 
         @MiraiExperimentalAPI
-        fun generateUUID(md5: ByteArray): String {
+        public fun generateUUID(md5: ByteArray): String {
             return "${md5[0, 3]}-${md5[4, 5]}-${md5[6, 7]}-${md5[8, 9]}-${md5[10, 15]}"
         }
 
         @MiraiExperimentalAPI
-        fun generateImageId(md5: ByteArray): String {
+        public fun generateImageId(md5: ByteArray): String {
             return """{${generateUUID(md5)}}.$defaultFormatName"""
         }
     }
 
-    override fun toString(): String {
+    public override fun toString(): String {
         if (input is DeferredReusableInput) {
             if (!input.initialized) {
                 return "ExternalImage(uninitialized)"
@@ -104,7 +118,7 @@ class ExternalImage internal constructor(
  * @see Contact.sendMessage 最终调用, 发送消息.
  */
 @JvmSynthetic
-suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
+public suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
     is Group -> contact.uploadImage(this).sendTo(contact)
     is User -> contact.uploadImage(this).sendTo(contact)
     else -> error("unreachable")
@@ -119,7 +133,7 @@ suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = 
  * @see Contact.uploadImage 最终调用, 上传图片.
  */
 @JvmSynthetic
-suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
+public suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
     is Group -> contact.uploadImage(this)
     is User -> contact.uploadImage(this)
     else -> error("unreachable")
@@ -131,7 +145,7 @@ suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
  * @see Contact.sendMessage 最终调用, 发送消息.
  */
 @JvmSynthetic
-suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
+public suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
 
 
 @JvmSynthetic

@@ -19,8 +19,8 @@ import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.message.recall
 import kotlin.jvm.JvmSynthetic
 
@@ -34,22 +34,22 @@ import kotlin.jvm.JvmSynthetic
  * @see FriendMessageEvent
  */
 @Suppress("DEPRECATION_ERROR")
-abstract class Friend : User(), CoroutineScope {
+public abstract class Friend : User(), CoroutineScope {
 
     /**
      * QQ 号码
      */
-    abstract override val id: Long
+    public abstract override val id: Long
 
     /**
      * 昵称
      */
-    abstract override val nick: String
+    public abstract override val nick: String
 
     /**
      * 头像下载链接
      */
-    override val avatarUrl: String
+    public override val avatarUrl: String
         get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
 
     /**
@@ -74,7 +74,7 @@ abstract class Friend : User(), CoroutineScope {
     @kotlin.internal.InlineOnly
     @JvmSynthetic
     suspend inline fun sendMessage(message: String): MessageReceipt<Friend> {
-        return sendMessage(message.toMessage())
+        return sendMessage(PlainText(message))
     }
 
     final override fun toString(): String = "Friend($id)"

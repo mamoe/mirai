@@ -9,7 +9,7 @@ internal class CombinedMessageTest {
 
     @Test
     fun testAsSequence() {
-        var message: Message = "Hello ".toMessage()
+        var message: Message = PlainText("Hello ")
         message += "World"
 
         assertEquals(
@@ -20,7 +20,7 @@ internal class CombinedMessageTest {
 
     @Test
     fun testAsSequence2() {
-        var message: Message = "Hello ".toMessage()
+        var message: Message = PlainText("Hello ")
         message += listOf(
             PlainText("W"),
             PlainText("o"),

@@ -12,64 +12,64 @@ package net.mamoe.mirai.utils
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.protobuf.ProtoBuf
-import kotlinx.serialization.protobuf.ProtoId
+import kotlinx.serialization.protobuf.ProtoNumber
 
 /**
  * 设备信息. 可通过继承 [SystemDeviceInfo] 来在默认的基础上修改
  */
-abstract class DeviceInfo {
+public abstract class DeviceInfo {
     @Transient
-    abstract val context: Context
+    public abstract val context: Context
 
-    abstract val display: ByteArray
-    abstract val product: ByteArray
-    abstract val device: ByteArray
-    abstract val board: ByteArray
+    public abstract val display: ByteArray
+    public abstract val product: ByteArray
+    public abstract val device: ByteArray
+    public abstract val board: ByteArray
 
-    abstract val brand: ByteArray
-    abstract val model: ByteArray
-    abstract val bootloader: ByteArray
-    abstract val fingerprint: ByteArray
-    abstract val bootId: ByteArray
+    public abstract val brand: ByteArray
+    public abstract val model: ByteArray
+    public abstract val bootloader: ByteArray
+    public abstract val fingerprint: ByteArray
+    public abstract val bootId: ByteArray
 
-    abstract val procVersion: ByteArray
-    abstract val baseBand: ByteArray
+    public abstract val procVersion: ByteArray
+    public abstract val baseBand: ByteArray
 
-    abstract val version: Version
+    public abstract val version: Version
 
-    abstract val simInfo: ByteArray
+    public abstract val simInfo: ByteArray
 
-    abstract val osType: ByteArray
+    public abstract val osType: ByteArray
 
-    abstract val macAddress: ByteArray
+    public abstract val macAddress: ByteArray
 
-    abstract val wifiBSSID: ByteArray?
-    abstract val wifiSSID: ByteArray?
+    public abstract val wifiBSSID: ByteArray?
+    public abstract val wifiSSID: ByteArray?
 
-    abstract val imsiMd5: ByteArray
-    abstract val imei: String
+    public abstract val imsiMd5: ByteArray
+    public abstract val imei: String
 
-    val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
+    public val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
 
-    abstract val androidId: ByteArray
+    public abstract val androidId: ByteArray
 
-    abstract val apn: ByteArray
+    public abstract val apn: ByteArray
 
-    fun generateDeviceInfoData(): ByteArray {
+    public fun generateDeviceInfoData(): ByteArray {
         @Serializable
         class DevInfo(
-            @ProtoId(1) val bootloader: ByteArray,
-            @ProtoId(2) val procVersion: ByteArray,
-            @ProtoId(3) val codename: ByteArray,
-            @ProtoId(4) val incremental: ByteArray,
-            @ProtoId(5) val fingerprint: ByteArray,
-            @ProtoId(6) val bootId: ByteArray,
-            @ProtoId(7) val androidId: ByteArray,
-            @ProtoId(8) val baseBand: ByteArray,
-            @ProtoId(9) val innerVersion: ByteArray
+            @ProtoNumber(1) val bootloader: ByteArray,
+            @ProtoNumber(2) val procVersion: ByteArray,
+            @ProtoNumber(3) val codename: ByteArray,
+            @ProtoNumber(4) val incremental: ByteArray,
+            @ProtoNumber(5) val fingerprint: ByteArray,
+            @ProtoNumber(6) val bootId: ByteArray,
+            @ProtoNumber(7) val androidId: ByteArray,
+            @ProtoNumber(8) val baseBand: ByteArray,
+            @ProtoNumber(9) val innerVersion: ByteArray
         )
 
-        return ProtoBuf.dump(
+        return ProtoBuf.encodeToByteArray(
             DevInfo.serializer(), DevInfo(
                 bootloader,
                 procVersion,
@@ -84,48 +84,48 @@ abstract class DeviceInfo {
         )
     }
 
-    interface Version {
-        val incremental: ByteArray
-        val release: ByteArray
-        val codename: ByteArray
-        val sdk: Int
+    public interface Version {
+        public val incremental: ByteArray
+        public val release: ByteArray
+        public val codename: ByteArray
+        public val sdk: Int
     }
 }
 
 @Serializable
-class DeviceInfoData(
-    override val display: ByteArray,
-    override val product: ByteArray,
-    override val device: ByteArray,
-    override val board: ByteArray,
-    override val brand: ByteArray,
-    override val model: ByteArray,
-    override val bootloader: ByteArray,
-    override val fingerprint: ByteArray,
-    override val bootId: ByteArray,
-    override val procVersion: ByteArray,
-    override val baseBand: ByteArray,
-    override val version: VersionData,
-    override val simInfo: ByteArray,
-    override val osType: ByteArray,
-    override val macAddress: ByteArray,
-    override val wifiBSSID: ByteArray?,
-    override val wifiSSID: ByteArray?,
-    override val imsiMd5: ByteArray,
-    override val imei: String,
-    override val apn: ByteArray
+public class DeviceInfoData(
+    public override val display: ByteArray,
+    public override val product: ByteArray,
+    public override val device: ByteArray,
+    public override val board: ByteArray,
+    public override val brand: ByteArray,
+    public override val model: ByteArray,
+    public override val bootloader: ByteArray,
+    public override val fingerprint: ByteArray,
+    public override val bootId: ByteArray,
+    public override val procVersion: ByteArray,
+    public override val baseBand: ByteArray,
+    public override val version: VersionData,
+    public override val simInfo: ByteArray,
+    public override val osType: ByteArray,
+    public override val macAddress: ByteArray,
+    public override val wifiBSSID: ByteArray?,
+    public override val wifiSSID: ByteArray?,
+    public override val imsiMd5: ByteArray,
+    public override val imei: String,
+    public override val apn: ByteArray
 ) : DeviceInfo() {
     @Transient
-    override lateinit var context: Context
+    public override lateinit var context: Context
 
-    override val androidId: ByteArray get() = display
+    public override val androidId: ByteArray get() = display
 
     @Serializable
-    class VersionData(
-        override val incremental: ByteArray = SystemDeviceInfo.Version.incremental,
-        override val release: ByteArray = SystemDeviceInfo.Version.release,
-        override val codename: ByteArray = SystemDeviceInfo.Version.codename,
-        override val sdk: Int = SystemDeviceInfo.Version.sdk
+    public class VersionData(
+        public override val incremental: ByteArray = SystemDeviceInfo.Version.incremental,
+        public override val release: ByteArray = SystemDeviceInfo.Version.release,
+        public override val codename: ByteArray = SystemDeviceInfo.Version.codename,
+        public override val sdk: Int = SystemDeviceInfo.Version.sdk
     ) : Version
 }
 

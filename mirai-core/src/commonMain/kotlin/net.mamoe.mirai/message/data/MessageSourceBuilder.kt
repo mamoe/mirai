@@ -28,7 +28,7 @@ import kotlin.jvm.JvmSynthetic
  * 将在线消息源转换为离线消息源.
  */
 @JvmName("toOfflineMessageSource")
-fun OnlineMessageSource.toOffline(): OfflineMessageSource =
+public fun OnlineMessageSource.toOffline(): OfflineMessageSource =
     OfflineMessageSourceByOnline(this)
 
 ///////////////
@@ -43,25 +43,25 @@ fun OnlineMessageSource.toOffline(): OfflineMessageSource =
  */
 @MiraiExperimentalAPI
 @JvmName("copySource")
-fun MessageSource.copyAmend(
+public fun MessageSource.copyAmend(
     block: MessageSourceAmender.() -> Unit
 ): OfflineMessageSource = toMutableOffline().apply(block)
 
 /**
  * 仅于 [copyAmend] 中修改 [MessageSource]
  */
-interface MessageSourceAmender {
-    var kind: OfflineMessageSource.Kind
-    var fromUin: Long
-    var targetUin: Long
-    var id: Int
-    var time: Int
-    var internalId: Int
+public interface MessageSourceAmender {
+    public var kind: OfflineMessageSource.Kind
+    public var fromUin: Long
+    public var targetUin: Long
+    public var id: Int
+    public var time: Int
+    public var internalId: Int
 
-    var originalMessage: MessageChain
+    public var originalMessage: MessageChain
 
     /** 从另一个 [MessageSource] 中复制 [id], [internalId], [time]*/
-    fun metadataFrom(another: MessageSource) {
+    public fun metadataFrom(another: MessageSource) {
         this.id = another.id
         this.internalId = another.internalId
         this.time = another.time
@@ -104,7 +104,7 @@ interface MessageSourceAmender {
  */
 @JvmSynthetic
 @MiraiExperimentalAPI
-fun Bot.buildMessageSource(block: MessageSourceBuilder.() -> Unit): MessageSource {
+public fun Bot.buildMessageSource(block: MessageSourceBuilder.() -> Unit): MessageSource {
     val builder = MessageSourceBuilderImpl().apply(block)
     return constructMessageSource(
         builder.kind ?: error("You must call `Contact.sendTo(Contact)` when `buildMessageSource`"),
@@ -120,7 +120,7 @@ fun Bot.buildMessageSource(block: MessageSourceBuilder.() -> Unit): MessageSourc
 /**
  * @see buildMessageSource
  */
-abstract class MessageSourceBuilder {
+public abstract class MessageSourceBuilder {
     internal abstract var kind: OfflineMessageSource.Kind?
     internal abstract var fromUin: Long
     internal abstract var targetUin: Long
@@ -132,22 +132,22 @@ abstract class MessageSourceBuilder {
     @PublishedApi
     internal val originalMessages: MessageChainBuilder = MessageChainBuilder()
 
-    fun time(from: MessageSource): MessageSourceBuilder = apply { this.time = from.time }
-    val now: Int get() = currentTimeSeconds.toInt()
-    fun time(value: Int) = apply { this.time = value }
+    public fun time(from: MessageSource): MessageSourceBuilder = apply { this.time = from.time }
+    public val now: Int get() = currentTimeSeconds.toInt()
+    public fun time(value: Int): MessageSourceBuilder = apply { this.time = value }
 
-    fun internalId(from: MessageSource): MessageSourceBuilder = apply { this.internalId = from.internalId }
-    fun internalId(value: Int): MessageSourceBuilder = apply { this.internalId = value }
+    public fun internalId(from: MessageSource): MessageSourceBuilder = apply { this.internalId = from.internalId }
+    public fun internalId(value: Int): MessageSourceBuilder = apply { this.internalId = value }
 
-    fun id(from: MessageSource): MessageSourceBuilder = apply { this.id = from.id }
-    fun id(value: Int): MessageSourceBuilder = apply { this.id = value }
+    public fun id(from: MessageSource): MessageSourceBuilder = apply { this.id = from.id }
+    public fun id(value: Int): MessageSourceBuilder = apply { this.id = value }
 
 
     /**
      * 从另一个 [MessageSource] 复制 [id], [time], [internalId].
      * 这三个数据决定官方客户端能 "定位" 到的原消息
      */
-    fun metadata(from: MessageSource): MessageSourceBuilder = apply {
+    public fun metadata(from: MessageSource): MessageSourceBuilder = apply {
         id(from)
         internalId(from)
         time(from)
@@ -156,7 +156,7 @@ abstract class MessageSourceBuilder {
     /**
      * 从另一个 [MessageSource] 复制所有信息, 包括消息内容. 不会清空已有消息.
      */
-    fun allFrom(source: MessageSource): MessageSourceBuilder {
+    public fun allFrom(source: MessageSource): MessageSourceBuilder {
         this.kind = determineKind(source)
         this.id = source.id
         this.time = source.time
@@ -171,34 +171,35 @@ abstract class MessageSourceBuilder {
     /**
      * 从另一个 [MessageSource] 复制 [消息内容][MessageSource.originalMessage]. 不会清空已有消息.
      */
-    fun messagesFrom(source: MessageSource): MessageSourceBuilder = apply {
+    public fun messagesFrom(source: MessageSource): MessageSourceBuilder = apply {
         this.originalMessages.addAll(source.originalMessage)
     }
 
-    fun messages(messages: Iterable<Message>): MessageSourceBuilder = apply {
+    public fun messages(messages: Iterable<Message>): MessageSourceBuilder = apply {
         this.originalMessages.addAll(messages)
     }
 
-    fun messages(vararg message: Message): MessageSourceBuilder = apply {
+    public fun messages(vararg message: Message): MessageSourceBuilder = apply {
         for (it in message) {
             this.originalMessages.add(it)
         }
     }
 
     @JvmSynthetic
-    inline fun messages(block: MessageChainBuilder.() -> Unit): MessageSourceBuilder = apply {
+    public inline fun messages(block: MessageChainBuilder.() -> Unit): MessageSourceBuilder = apply {
         this.originalMessages.apply(block)
     }
 
-    fun clearMessages(): MessageSourceBuilder = apply { this.originalMessages.clear() }
+    public fun clearMessages(): MessageSourceBuilder = apply { this.originalMessages.clear() }
 
     /**
      * 设置 [发送人][this] 和 [发送目标][target], 并自动判断 [kind]
      */
     @JvmSynthetic
-    abstract infix fun ContactOrBot.sendTo(target: ContactOrBot): MessageSourceBuilder
+    public abstract infix fun ContactOrBot.sendTo(target: ContactOrBot): MessageSourceBuilder
 
-    fun setSenderAndTarget(sender: ContactOrBot, target: ContactOrBot) = sender sendTo target
+    public fun setSenderAndTarget(sender: ContactOrBot, target: ContactOrBot): MessageSourceBuilder =
+        sender sendTo target
 }
 
 

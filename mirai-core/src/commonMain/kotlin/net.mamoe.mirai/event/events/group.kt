@@ -31,82 +31,85 @@ import kotlin.jvm.*
 /**
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
  */
-sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
-    abstract val group: Group
+public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
+    public abstract val group: Group
 
     /**
      * 机器人主动退出一个群.
      */
     @MiraiExperimentalAPI("目前此事件类型不一定正确. 部分被踢出情况也会广播此事件.")
-    data class Active internal constructor(override val group: Group) : BotLeaveEvent() {
-        override fun toString(): String = "BotLeaveEvent.Active(group=${group.id})"
+    public data class Active internal constructor(
+        public override val group: Group
+    ) : BotLeaveEvent() {
+        public override fun toString(): String = "BotLeaveEvent.Active(group=${group.id})"
     }
 
     /**
      * 机器人被管理员或群主踢出群.
      */
     @MiraiExperimentalAPI("BotLeaveEvent 的子类可能在将来改动. 使用 BotLeaveEvent 以保证兼容性.")
-    data class Kick internal constructor(override val operator: Member) : BotLeaveEvent(), GroupOperableEvent {
-        override val group: Group get() = operator.group
-        override val bot: Bot get() = super<BotLeaveEvent>.bot
-        override fun toString(): String = "BotLeaveEvent.Kick(group=${group.id},operator=${operator.id})"
+    public data class Kick internal constructor(
+        public override val operator: Member
+    ) : BotLeaveEvent(),
+        GroupOperableEvent {
+        public override val group: Group get() = operator.group
+        public override val bot: Bot get() = super<BotLeaveEvent>.bot
+        public override fun toString(): String = "BotLeaveEvent.Kick(group=${group.id},operator=${operator.id})"
     }
 
-    override val bot: Bot get() = group.bot
+    public override val bot: Bot get() = group.bot
 }
 
 /**
  * Bot 在群里的权限被改变. 操作人一定是群主
  */
-data class BotGroupPermissionChangeEvent internal constructor(
-    override val group: Group,
-    val origin: MemberPermission,
-    val new: MemberPermission
+public data class BotGroupPermissionChangeEvent internal constructor(
+    public override val group: Group,
+    public val origin: MemberPermission,
+    public val new: MemberPermission
 ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent()
 
 /**
  * Bot 被禁言
  */
-data class BotMuteEvent internal constructor(
-    val durationSeconds: Int,
+public data class BotMuteEvent internal constructor(
+    public val durationSeconds: Int,
     /**
      * 操作人.
      */
-    val operator: Member
+    public val operator: Member
 ) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
-    override val group: Group
+    public override val group: Group
         get() = operator.group
 }
 
 /**
  * Bot 被取消禁言
  */
-data class BotUnmuteEvent internal constructor(
+public data class BotUnmuteEvent internal constructor(
     /**
      * 操作人.
      */
-    val operator: Member
+    public val operator: Member
 ) : GroupEvent, Packet, BotPassiveEvent, AbstractEvent() {
-    override val group: Group
+    public override val group: Group
         get() = operator.group
 }
 
 /**
  * Bot 成功加入了一个新群
  */
-sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
-    abstract override val group: Group
+public sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
+    public abstract override val group: Group
 
     /**
      * 不确定. 可能是主动加入
      */
     @MiraiExperimentalAPI
-    data class Active internal constructor(
-        override val group: Group
+    public data class Active internal constructor(
+        public override val group: Group
     ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent() {
-        override fun toString(): String {
-            return "BotJoinGroupEvent.Active(group=$group)"
-        }
+        public override fun toString(): String = "BotJoinGroupEvent.Active(group=$group)"
     }
 
     /**
@@ -115,15 +118,15 @@ sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
      * 此时服务器基于 Bot 的 QQ 设置自动同意了请求.
      */
     @MiraiExperimentalAPI
-    data class Invite internal constructor(
+    public data class Invite internal constructor(
         /**
          * 邀请人
          */
-        val invitor: Member
+        public val invitor: Member
     ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent() {
-        override val group: Group get() = invitor.group
+        public override val group: Group get() = invitor.group
 
-        override fun toString(): String {
+        public override fun toString(): String {
             return "BotJoinGroupEvent.Invite(invitor=$invitor)"
         }
     }
@@ -134,95 +137,95 @@ sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
 /**
  * 群设置改变. 此事件广播前修改就已经完成.
  */
-interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent, BroadcastControllable {
-    val origin: T
-    val new: T
+public interface GroupSettingChangeEvent<T> : GroupEvent, BotPassiveEvent, BroadcastControllable {
+    public val origin: T
+    public val new: T
 
-    override val shouldBroadcast: Boolean
+    public override val shouldBroadcast: Boolean
         get() = origin != new
 }
 
 /**
  * 群名改变. 此事件广播前修改就已经完成.
  */
-data class GroupNameChangeEvent internal constructor(
-    override val origin: String,
-    override val new: String,
-    override val group: Group,
+public data class GroupNameChangeEvent internal constructor(
+    public override val origin: String,
+    public override val new: String,
+    public override val group: Group,
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    override val operator: Member?
+    public override val operator: Member?
 ) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent() {
     @LowPriorityInOverloadResolution
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    val isByBot: Boolean
+    internal val isByBot: Boolean
         get() = operator == null
 }
 
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.
  */
-data class GroupEntranceAnnouncementChangeEvent internal constructor(
-    override val origin: String,
-    override val new: String,
-    override val group: Group,
+public data class GroupEntranceAnnouncementChangeEvent internal constructor(
+    public override val origin: String,
+    public override val new: String,
+    public override val group: Group,
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    override val operator: Member?
+    public override val operator: Member?
 ) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
 
 
 /**
  * 群 "全员禁言" 功能状态改变. 此事件广播前修改就已经完成.
  */
-data class GroupMuteAllEvent internal constructor(
-    override val origin: Boolean,
-    override val new: Boolean,
-    override val group: Group,
+public data class GroupMuteAllEvent internal constructor(
+    public override val origin: Boolean,
+    public override val new: Boolean,
+    public override val group: Group,
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    override val operator: Member?
+    public override val operator: Member?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
 /**
  * 群 "匿名聊天" 功能状态改变. 此事件广播前修改就已经完成.
  */
-data class GroupAllowAnonymousChatEvent internal constructor(
-    override val origin: Boolean,
-    override val new: Boolean,
-    override val group: Group,
+public data class GroupAllowAnonymousChatEvent internal constructor(
+    public override val origin: Boolean,
+    public override val new: Boolean,
+    public override val group: Group,
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    override val operator: Member?
+    public override val operator: Member?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
 /**
  * 群 "坦白说" 功能状态改变. 此事件广播前修改就已经完成.
  */
-data class GroupAllowConfessTalkEvent internal constructor(
-    override val origin: Boolean,
-    override val new: Boolean,
-    override val group: Group,
-    val isByBot: Boolean // 无法获取操作人
+public data class GroupAllowConfessTalkEvent internal constructor(
+    public override val origin: Boolean,
+    public override val new: Boolean,
+    public override val group: Group,
+    public val isByBot: Boolean // 无法获取操作人
 ) : GroupSettingChangeEvent<Boolean>, Packet, AbstractEvent()
 
 /**
  * 群 "允许群员邀请好友加群" 功能状态改变. 此事件广播前修改就已经完成.
  */
-data class GroupAllowMemberInviteEvent internal constructor(
-    override val origin: Boolean,
-    override val new: Boolean,
-    override val group: Group,
+public data class GroupAllowMemberInviteEvent internal constructor(
+    public override val origin: Boolean,
+    public override val new: Boolean,
+    public override val group: Group,
     /**
      * 操作人. 为 null 时则是机器人操作
      */
-    override val operator: Member?
+    public override val operator: Member?
 ) : GroupSettingChangeEvent<Boolean>, Packet, GroupOperableEvent, AbstractEvent()
 
 
@@ -236,45 +239,53 @@ data class GroupAllowMemberInviteEvent internal constructor(
 /**
  * 成员已经加入群的事件
  */
-sealed class MemberJoinEvent(override val member: Member) : GroupMemberEvent, BotPassiveEvent, Packet,
+public sealed class MemberJoinEvent(
+    public override val member: Member
+) : GroupMemberEvent, BotPassiveEvent, Packet,
     AbstractEvent() {
     /**
      * 被邀请加入群
      */
-    data class Invite internal constructor(override val member: Member) : MemberJoinEvent(member) {
-        override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id})"
+    public data class Invite internal constructor(
+        public override val member: Member
+    ) : MemberJoinEvent(member) {
+        public override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id})"
     }
 
     /**
      * 成员主动加入群
      */
-    data class Active internal constructor(override val member: Member) : MemberJoinEvent(member) {
-        override fun toString(): String = "MemberJoinEvent.Active(member=${member.id})"
+    public data class Active internal constructor(
+        public override val member: Member
+    ) : MemberJoinEvent(member) {
+        public override fun toString(): String = "MemberJoinEvent.Active(member=${member.id})"
     }
 }
 
 /**
  * 成员已经离开群的事件. 在事件广播前成员就已经从 [Group.members] 中删除
  */
-sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
+public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
     /**
      * 成员被踢出群. 成员不可能是机器人自己.
      */
-    data class Kick(
-        override val member: Member,
+    public data class Kick(
+        public override val member: Member,
         /**
          * 操作人. 为 null 则是机器人操作.
          */
-        override val operator: Member?
+        public override val operator: Member?
     ) : MemberLeaveEvent(), Packet, GroupOperableEvent {
-        override fun toString(): String = "MemberLeaveEvent.Kick(member=${member.id}, operator=${operator?.id})"
+        public override fun toString(): String = "MemberLeaveEvent.Kick(member=${member.id}, operator=${operator?.id})"
     }
 
     /**
      * 成员主动离开
      */
-    data class Quit(override val member: Member) : MemberLeaveEvent(), Packet {
-        override fun toString(): String = "MemberLeaveEvent.Quit(member=${member.id})"
+    public data class Quit(
+        public override val member: Member
+    ) : MemberLeaveEvent(), Packet {
+        public override fun toString(): String = "MemberLeaveEvent.Quit(member=${member.id})"
     }
 }
 
@@ -282,42 +293,42 @@ sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
  * [Bot] 被邀请加入一个群.
  */
 @Suppress("DEPRECATION")
-data class BotInvitedJoinGroupRequestEvent internal constructor(
-    override val bot: Bot,
+public data class BotInvitedJoinGroupRequestEvent internal constructor(
+    public override val bot: Bot,
     /**
      * 事件唯一识别号
      */
-    val eventId: Long,
+    public val eventId: Long,
     /**
      * 邀请入群的账号的 id
      */
-    val invitorId: Long,
-    val groupId: Long,
-    val groupName: String,
+    public val invitorId: Long,
+    public val groupId: Long,
+    public val groupName: String,
     /**
      * 邀请人昵称
      */
-    val invitorNick: String
+    public val invitorNick: String
 ) : BotEvent, Packet, AbstractEvent() {
-    val invitor: Friend get() = this.bot.getFriend(invitorId)
+    public val invitor: Friend get() = this.bot.getFriend(invitorId)
 
     @JvmField
     internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     @JvmSynthetic
-    suspend fun accept() = bot.acceptInvitedJoinGroupRequest(this)
+    public suspend fun accept(): Unit = bot.acceptInvitedJoinGroupRequest(this)
 
     @JvmSynthetic
-    suspend fun ignore() = bot.ignoreInvitedJoinGroupRequest(this)
+    public suspend fun ignore(): Unit = bot.ignoreInvitedJoinGroupRequest(this)
 
     @JavaFriendlyAPI
     @JvmName("accept")
-    fun __acceptBlockingForJava__() =
+    public fun __acceptBlockingForJava__(): Unit =
         runBlocking { bot.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
 
     @JavaFriendlyAPI
     @JvmName("ignore")
-    fun __ignoreBlockingForJava__() =
+    public fun __ignoreBlockingForJava__(): Unit =
         runBlocking { bot.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
 }
 
@@ -325,7 +336,7 @@ data class BotInvitedJoinGroupRequestEvent internal constructor(
  * 一个账号请求加入群事件, [Bot] 在此群中是管理员或群主.
  */
 @Suppress("DEPRECATION")
-data class MemberJoinRequestEvent internal constructor(
+public data class MemberJoinRequestEvent internal constructor(
     override val bot: Bot,
     /**
      * 事件唯一识别号
@@ -346,36 +357,38 @@ data class MemberJoinRequestEvent internal constructor(
      */
     val fromNick: String
 ) : BotEvent, Packet, AbstractEvent() {
-    val group: Group get() = this.bot.getGroup(groupId)
+    public val group: Group get() = this.bot.getGroup(groupId)
 
     @JvmField
     internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     @JvmSynthetic
-    suspend fun accept() = bot.acceptMemberJoinRequest(this)
+    public suspend fun accept(): Unit = bot.acceptMemberJoinRequest(this)
 
     @JvmSynthetic
     @JvmOverloads
-    suspend fun reject(blackList: Boolean = false, message: String = "") = bot.rejectMemberJoinRequest(this, blackList, message)
+    public suspend fun reject(blackList: Boolean = false, message: String = ""): Unit =
+        bot.rejectMemberJoinRequest(this, blackList, message)
 
     @JvmSynthetic
-    suspend fun ignore(blackList: Boolean = false) = bot.ignoreMemberJoinRequest(this, blackList)
+    public suspend fun ignore(blackList: Boolean = false): Unit = bot.ignoreMemberJoinRequest(this, blackList)
 
 
     @JavaFriendlyAPI
     @JvmName("accept")
-    fun __acceptBlockingForJava__() = runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
+    public fun __acceptBlockingForJava__(): Unit =
+        runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("reject")
-    fun __rejectBlockingForJava__(blackList: Boolean = false, message: String = "") =
+    public fun __rejectBlockingForJava__(blackList: Boolean = false, message: String = ""): Unit =
         runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList, message) }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("ignore")
-    fun __ignoreBlockingForJava__(blackList: Boolean = false) =
+    public fun __ignoreBlockingForJava__(blackList: Boolean = false): Unit =
         runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
@@ -385,43 +398,45 @@ data class MemberJoinRequestEvent internal constructor(
 
 /**
  * 成员群名片改动. 此事件广播前修改就已经完成.
+ *
+ * 由于服务器并不会告知名片变动, 此事件只能由 mirai 在发现变动时才广播. 不要依赖于这个事件.
  */
-data class MemberCardChangeEvent internal constructor(
+public data class MemberCardChangeEvent internal constructor(
     /**
      * 修改前
      */
-    val origin: String,
+    public val origin: String,
 
     /**
      * 修改后
      */
-    val new: String,
+    public val new: String,
 
-    override val member: Member
+    public override val member: Member
 ) : GroupMemberEvent, Packet, AbstractEvent()
 
 /**
  * 成员群头衔改动. 一定为群主操作
  */
-data class MemberSpecialTitleChangeEvent internal constructor(
+public data class MemberSpecialTitleChangeEvent internal constructor(
     /**
      * 修改前
      */
-    val origin: String,
+    public val origin: String,
 
     /**
      * 修改后
      */
-    val new: String,
+    public val new: String,
 
-    override val member: Member,
+    public override val member: Member,
 
     /**
      * 操作人.
      * 不为 null 时一定为群主. 可能与 [member] 引用相同, 此时为群员自己修改.
      * 为 null 时则是机器人操作.
      */
-    override val operator: Member?
+    public override val operator: Member?
 ) : GroupMemberEvent, GroupOperableEvent, AbstractEvent()
 
 // endregion
@@ -432,10 +447,10 @@ data class MemberSpecialTitleChangeEvent internal constructor(
 /**
  * 成员权限改变的事件. 成员不可能是机器人自己.
  */
-data class MemberPermissionChangeEvent internal constructor(
-    override val member: Member,
-    val origin: MemberPermission,
-    val new: MemberPermission
+public data class MemberPermissionChangeEvent internal constructor(
+    public override val member: Member,
+    public val origin: MemberPermission,
+    public val new: MemberPermission
 ) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
 
 // endregion
@@ -448,13 +463,13 @@ data class MemberPermissionChangeEvent internal constructor(
  *
  * @see BotMuteEvent 机器人被禁言的事件
  */
-data class MemberMuteEvent internal constructor(
-    override val member: Member,
-    val durationSeconds: Int,
+public data class MemberMuteEvent internal constructor(
+    public override val member: Member,
+    public val durationSeconds: Int,
     /**
      * 操作人. 为 null 则为机器人操作
      */
-    override val operator: Member?
+    public override val operator: Member?
 ) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent()
 
 /**
@@ -462,12 +477,12 @@ data class MemberMuteEvent internal constructor(
  *
  * @see BotUnmuteEvent 机器人被取消禁言的事件
  */
-data class MemberUnmuteEvent internal constructor(
-    override val member: Member,
+public data class MemberUnmuteEvent internal constructor(
+    public override val member: Member,
     /**
      * 操作人. 为 null 则为机器人操作
      */
-    override val operator: Member?
+    public override val operator: Member?
 ) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent()
 
 // endregion

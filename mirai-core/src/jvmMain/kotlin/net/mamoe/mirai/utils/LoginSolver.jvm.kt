@@ -30,15 +30,13 @@ import java.io.RandomAccessFile
 import javax.imageio.ImageIO
 import kotlin.coroutines.CoroutineContext
 
-actual typealias Throws = kotlin.jvm.Throws
-
 /**
  * 自动选择 [SwingSolver] 或 [StandardCharImageLoginSolver]
  */
 @MiraiExperimentalAPI
-class DefaultLoginSolver(
-    val input: suspend () -> String,
-    val overrideLogger: MiraiLogger? = null
+public class DefaultLoginSolver(
+    public val input: suspend () -> String,
+    public val overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
     private val delegate: LoginSolver
 
@@ -67,7 +65,7 @@ class DefaultLoginSolver(
  * 使用字符图片展示验证码, 使用 [input] 获取输入, 使用 [overrideLogger] 输出
  */
 @MiraiExperimentalAPI
-class StandardCharImageLoginSolver(
+public class StandardCharImageLoginSolver(
     input: suspend () -> String,
     /**
      * 为 `null` 时使用 [Bot.logger]
@@ -138,13 +136,13 @@ class StandardCharImageLoginSolver(
 /**
  * 验证码, 设备锁解决器
  */
-actual abstract class LoginSolver {
-    actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
-    actual abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
-    actual abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
+public actual abstract class LoginSolver {
+    public actual abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
+    public actual abstract suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String?
+    public actual abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
 
-    actual companion object {
-        actual val Default: LoginSolver =
+    public actual companion object {
+        public actual val Default: LoginSolver =
 
             DefaultLoginSolver({ readLine() ?: throw NoStandardInputForCaptchaException(null) })
     }

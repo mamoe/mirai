@@ -173,10 +173,11 @@ internal class NewContact {
                         }
                         2 -> { // 被邀请入群, 自动同意, 不需处理
 
-                            val group = bot.getNewGroup(groupCode) ?: return null
-                            val invitor = group[actionUin]
-
-                            BotJoinGroupEvent.Invite(invitor)
+//                            val group = bot.getNewGroup(groupCode) ?: return null
+//                            val invitor = group[actionUin]
+//
+//                            BotJoinGroupEvent.Invite(invitor)
+                            null
                         }
                         3 -> { // 已被请他管理员处理
                             null

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused", "DECLARATION_CANT_BE_INLINED")
+@file:Suppress("unused")
 
 package net.mamoe.mirai.message
 
@@ -35,69 +35,115 @@ internal actual interface MessageEventPlatformExtensions<out TSender : User, out
     // region 上传图片
 
     @JvmSynthetic
-    suspend inline fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+    suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
 
     @JvmSynthetic
-    suspend inline fun uploadImage(image: URL): Image = subject.uploadImage(image)
+    suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
 
     @JvmSynthetic
-    suspend inline fun uploadImage(image: Input): Image = subject.uploadImage(image)
-
-    @JvmSynthetic
-    suspend inline fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
-
-    @JvmSynthetic
-    suspend inline fun uploadImage(image: File): Image = subject.uploadImage(image)
+    suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
     // endregion
 
     // region 发送图片
     @JvmSynthetic
-    suspend inline fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
+    suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
 
     @JvmSynthetic
-    suspend inline fun sendImage(image: URL): MessageReceipt<TSubject> = subject.sendImage(image)
+    suspend fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
 
     @JvmSynthetic
-    suspend inline fun sendImage(image: Input): MessageReceipt<TSubject> = subject.sendImage(image)
-
-    @JvmSynthetic
-    suspend inline fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
-
-    @JvmSynthetic
-    suspend inline fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
+    suspend fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
     // endregion
 
     // region 上传图片 (扩展)
     @JvmSynthetic
-    suspend inline fun BufferedImage.upload(): Image = upload(subject)
+    suspend fun BufferedImage.upload(): Image = upload(subject)
 
     @JvmSynthetic
-    suspend inline fun URL.uploadAsImage(): Image = uploadAsImage(subject)
+    suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
 
     @JvmSynthetic
-    suspend inline fun Input.uploadAsImage(): Image = uploadAsImage(subject)
-
-    @JvmSynthetic
-    suspend inline fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
-
-    @JvmSynthetic
-    suspend inline fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
     @JvmSynthetic
-    suspend inline fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
+    suspend fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
 
     @JvmSynthetic
-    suspend inline fun URL.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
 
     @JvmSynthetic
-    suspend inline fun Input.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
-
-    @JvmSynthetic
-    suspend inline fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
-
-    @JvmSynthetic
-    suspend inline fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    suspend fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
     // endregion 发送图片 (扩展)
+
+
+    @Deprecated(
+        "请自行通过 URL.openConnection 得到 InputStream 后调用其扩展",
+        replaceWith = ReplaceWith("this.openConnection().sendAsImageTo(contact)"),
+        level = DeprecationLevel.WARNING
+    )
+    @JvmSynthetic
+    @Suppress("DEPRECATION")
+    suspend fun URL.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+
+    @Deprecated(
+        "已弃用对 kotlinx.io 的支持",
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("DEPRECATION_ERROR")
+    @JvmSynthetic
+    suspend fun Input.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+
+    @Deprecated(
+        "请自行通过 URL.openConnection 得到 InputStream 后调用其扩展",
+        replaceWith = ReplaceWith("this.openConnection().sendAsImageTo(contact)"),
+        level = DeprecationLevel.WARNING
+    )
+    @JvmSynthetic
+    @Suppress("DEPRECATION")
+    suspend fun uploadImage(image: URL): Image = subject.uploadImage(image)
+
+    @Deprecated(
+        "已弃用对 kotlinx.io 的支持",
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("DEPRECATION_ERROR")
+    @JvmSynthetic
+    suspend fun uploadImage(image: Input): Image = subject.uploadImage(image)
+
+    @Deprecated(
+        "请自行通过 URL.openConnection 得到 InputStream 后调用其扩展",
+        replaceWith = ReplaceWith("this.openConnection().sendAsImageTo(contact)"),
+        level = DeprecationLevel.WARNING
+    )
+    @Suppress("DEPRECATION")
+    @JvmSynthetic
+    suspend fun sendImage(image: URL): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @Deprecated(
+        "已弃用对 kotlinx.io 的支持",
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("DEPRECATION_ERROR")
+    @JvmSynthetic
+    suspend fun sendImage(image: Input): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @Deprecated(
+        "请自行通过 URL.openConnection 得到 InputStream 后调用其扩展",
+        replaceWith = ReplaceWith("this.openConnection().sendAsImageTo(contact)"),
+        level = DeprecationLevel.WARNING
+    )
+    @Suppress("DEPRECATION")
+    @JvmSynthetic
+    suspend fun URL.uploadAsImage(): Image = uploadAsImage(subject)
+
+    @Deprecated(
+        "已弃用对 kotlinx.io 的支持",
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("DEPRECATION_ERROR")
+    @JvmSynthetic
+    suspend fun Input.uploadAsImage(): Image = uploadAsImage(subject)
+
 }

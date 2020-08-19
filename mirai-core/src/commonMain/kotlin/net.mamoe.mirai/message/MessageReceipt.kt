@@ -41,26 +41,26 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageReceipt.sourceId 源 id
  * @see MessageReceipt.sourceTime 源时间
  */
-open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructor is subject to change.") constructor(
+public open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructor is subject to change.") constructor(
     /**
      * 指代发送出去的消息.
      */
-    val source: OnlineMessageSource.Outgoing,
+    public val source: OnlineMessageSource.Outgoing,
     /**
      * 发送目标, 为 [Group] 或 [Friend] 或 [Member]
      */
-    val target: C,
+    public val target: C,
 
     /**
      * @see Group.botAsMember
      */
     @MiraiExperimentalAPI("This is subject to change.")
-    val botAsMember: Member?
+    public val botAsMember: Member?
 ) {
     /**
      * 是否为发送给群的消息的回执
      */
-    val isToGroup: Boolean get() = target is Group
+    public val isToGroup: Boolean get() = target is Group
 
     /**
      * 引用这条消息并回复.
@@ -71,7 +71,7 @@ open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructo
      */
     @JavaFriendlyAPI
     @JvmName("quoteReply")
-    fun __quoteReplyBlockingForJava__(message: Message): MessageReceipt<C> {
+    public fun __quoteReplyBlockingForJava__(message: Message): MessageReceipt<C> {
         return runBlocking { return@runBlocking quoteReply(message) }
     }
 
@@ -82,7 +82,7 @@ open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructo
      */
     @JavaFriendlyAPI
     @JvmName("quoteReply")
-    fun __quoteReplyBlockingForJava__(message: String): MessageReceipt<C> {
+    public fun __quoteReplyBlockingForJava__(message: String): MessageReceipt<C> {
         return runBlocking { quoteReply(message) }
     }
 
@@ -93,7 +93,7 @@ open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructo
      */
     @JavaFriendlyAPI
     @JvmName("recall")
-    fun __recallBlockingForJava__() {
+    public fun __recallBlockingForJava__() {
         return runBlocking { recall() }
     }
 
@@ -104,7 +104,7 @@ open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructo
      */
     @JavaFriendlyAPI
     @JvmName("recallIn")
-    fun __recallInBlockingForJava__(timeMillis: Long): Job {
+    public fun __recallInBlockingForJava__(timeMillis: Long): Job {
         return recallIn(timeMillis = timeMillis)
     }
 
@@ -115,7 +115,7 @@ open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructo
      */
     @JavaFriendlyAPI
     @JvmName("quote")
-    fun __quoteBlockingForJava__(): QuoteReply {
+    public fun __quoteBlockingForJava__(): QuoteReply {
         return this.quote()
     }
 }
@@ -126,7 +126,7 @@ open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructo
  * @see Bot.recall
  * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
  */
-suspend inline fun MessageReceipt<*>.recall() {
+public suspend inline fun MessageReceipt<*>.recall() {
     return target.bot.recall(source)
 }
 
@@ -136,7 +136,7 @@ suspend inline fun MessageReceipt<*>.recall() {
  * @param timeMillis 延迟时间, 单位为毫秒
  * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
  */
-inline fun MessageReceipt<*>.recallIn(
+public inline fun MessageReceipt<*>.recallIn(
     timeMillis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = source.recallIn(timeMillis, coroutineContext)
@@ -147,14 +147,14 @@ inline fun MessageReceipt<*>.recallIn(
  * @see MessageChain.quote 引用一条消息
  */
 @JvmSynthetic
-inline fun MessageReceipt<*>.quote(): QuoteReply = this.source.quote()
+public inline fun MessageReceipt<*>.quote(): QuoteReply = this.source.quote()
 
 /**
  * 引用这条消息并回复.
  * @see MessageChain.quote 引用一条消息
  */
 @JvmSynthetic
-suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: Message): MessageReceipt<C> {
+public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: Message): MessageReceipt<C> {
     @Suppress("UNCHECKED_CAST")
     return target.sendMessage(this.quote() + message) as MessageReceipt<C>
 }
@@ -164,8 +164,8 @@ suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: Message):
  * @see MessageChain.quote 引用一条消息
  */
 @JvmSynthetic
-suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: String): MessageReceipt<C> {
-    return this.quoteReply(message.toMessage())
+public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: String): MessageReceipt<C> {
+    return this.quoteReply(PlainText(message))
 }
 
 
@@ -175,7 +175,7 @@ suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: String): 
  * @see MessageSource.id
  */
 @get:JvmSynthetic
-inline val MessageReceipt<*>.sourceId: Int
+public inline val MessageReceipt<*>.sourceId: Int
     get() = this.source.id
 
 
@@ -185,7 +185,7 @@ inline val MessageReceipt<*>.sourceId: Int
  * @see MessageSource.id
  */
 @get:JvmSynthetic
-inline val MessageReceipt<*>.sourceInternalId: Int
+public inline val MessageReceipt<*>.sourceInternalId: Int
     get() = this.source.internalId
 
 /**
@@ -194,6 +194,6 @@ inline val MessageReceipt<*>.sourceInternalId: Int
  * @see MessageSource.time
  */
 @get:JvmSynthetic
-inline val MessageReceipt<*>.sourceTime: Int
+public inline val MessageReceipt<*>.sourceTime: Int
     get() = this.source.time
 

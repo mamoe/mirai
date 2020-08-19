@@ -45,7 +45,7 @@ import kotlin.reflect.KClass
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-inline fun <reified E : BotEvent> Bot.subscribe(
+public inline fun <reified E : BotEvent> Bot.subscribe(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
     priority: Listener.EventPriority = NORMAL,
@@ -59,7 +59,7 @@ inline fun <reified E : BotEvent> Bot.subscribe(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-fun <E : BotEvent> Bot.subscribe(
+public fun <E : BotEvent> Bot.subscribe(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
@@ -82,7 +82,7 @@ fun <E : BotEvent> Bot.subscribe(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-inline fun <reified E : BotEvent> Bot.subscribeAlways(
+public inline fun <reified E : BotEvent> Bot.subscribeAlways(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = NORMAL,
@@ -95,7 +95,7 @@ inline fun <reified E : BotEvent> Bot.subscribeAlways(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-fun <E : BotEvent> Bot.subscribeAlways(
+public fun <E : BotEvent> Bot.subscribeAlways(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -114,7 +114,7 @@ fun <E : BotEvent> Bot.subscribeAlways(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-inline fun <reified E : BotEvent> Bot.subscribeOnce(
+public inline fun <reified E : BotEvent> Bot.subscribeOnce(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     priority: Listener.EventPriority = NORMAL,
     noinline listener: suspend E.(E) -> Unit
@@ -126,7 +126,7 @@ inline fun <reified E : BotEvent> Bot.subscribeOnce(
     "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
     level = DeprecationLevel.HIDDEN
 )
-fun <E : BotEvent> Bot.subscribeOnce(
+public fun <E : BotEvent> Bot.subscribeOnce(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     priority: Listener.EventPriority = NORMAL,
@@ -149,7 +149,7 @@ fun <E : BotEvent> Bot.subscribeOnce(
 @JvmSynthetic
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-inline fun <reified E : Event> CoroutineScope.subscribeDeprecated(
+public inline fun <reified E : Event> CoroutineScope.subscribeDeprecated(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
     noinline handler: suspend E.(E) -> ListeningStatus
@@ -165,7 +165,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeDeprecated(
 @JvmSynthetic
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-fun <E : Event> CoroutineScope.subscribeDeprecated(
+public fun <E : Event> CoroutineScope.subscribeDeprecated(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
@@ -183,7 +183,7 @@ fun <E : Event> CoroutineScope.subscribeDeprecated(
 @JvmSynthetic
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-inline fun <reified E : Event> CoroutineScope.subscribeAlwaysDeprecated(
+public inline fun <reified E : Event> CoroutineScope.subscribeAlwaysDeprecated(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
     noinline listener: suspend E.(E) -> Unit
@@ -199,7 +199,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeAlwaysDeprecated(
 @JvmSynthetic
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-fun <E : Event> CoroutineScope.subscribeAlwaysDeprecated(
+public fun <E : Event> CoroutineScope.subscribeAlwaysDeprecated(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
@@ -217,7 +217,7 @@ fun <E : Event> CoroutineScope.subscribeAlwaysDeprecated(
 @JvmSynthetic
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-inline fun <reified E : Event> CoroutineScope.subscribeOnceDeprecated(
+public inline fun <reified E : Event> CoroutineScope.subscribeOnceDeprecated(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline listener: suspend E.(E) -> Unit
 ): Listener<E> = subscribeOnce(
@@ -231,7 +231,7 @@ inline fun <reified E : Event> CoroutineScope.subscribeOnceDeprecated(
 @JvmSynthetic
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-fun <E : Event> CoroutineScope.subscribeOnceDeprecated(
+public fun <E : Event> CoroutineScope.subscribeOnceDeprecated(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     listener: suspend E.(E) -> Unit
@@ -247,7 +247,7 @@ fun <E : Event> CoroutineScope.subscribeOnceDeprecated(
 @JvmName("subscribeAlwaysForBot")
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-inline fun <reified E : BotEvent> Bot.subscribeDeprecated(
+public inline fun <reified E : BotEvent> Bot.subscribeDeprecated(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
     noinline handler: suspend E.(E) -> ListeningStatus
@@ -263,7 +263,7 @@ inline fun <reified E : BotEvent> Bot.subscribeDeprecated(
 @JvmName("subscribe")
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-fun <E : BotEvent> Bot.subscribeDeprecated(
+public fun <E : BotEvent> Bot.subscribeDeprecated(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = LOCKED,
@@ -281,7 +281,7 @@ fun <E : BotEvent> Bot.subscribeDeprecated(
 @JvmName("subscribeAlwaysForBot1")
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-inline fun <reified E : BotEvent> Bot.subscribeAlwaysDeprecated(
+public inline fun <reified E : BotEvent> Bot.subscribeAlwaysDeprecated(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = CONCURRENT,
     noinline listener: suspend E.(E) -> Unit
@@ -297,7 +297,7 @@ inline fun <reified E : BotEvent> Bot.subscribeAlwaysDeprecated(
 @JvmName("subscribeAlways")
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-fun <E : BotEvent> Bot.subscribeAlwaysDeprecated(
+public fun <E : BotEvent> Bot.subscribeAlwaysDeprecated(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -315,7 +315,7 @@ fun <E : BotEvent> Bot.subscribeAlwaysDeprecated(
 @JvmName("subscribeOnceForBot2")
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-inline fun <reified E : BotEvent> Bot.subscribeOnceDeprecated(
+public inline fun <reified E : BotEvent> Bot.subscribeOnceDeprecated(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     noinline listener: suspend E.(E) -> Unit
 ): Listener<E> = subscribeOnce(
@@ -329,7 +329,7 @@ inline fun <reified E : BotEvent> Bot.subscribeOnceDeprecated(
 @JvmName("subscribeOnce")
 @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
 @Suppress("unused")
-fun <E : BotEvent> Bot.subscribeOnceDeprecated(
+public fun <E : BotEvent> Bot.subscribeOnceDeprecated(
     eventClass: KClass<E>,
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     listener: suspend E.(E) -> Unit

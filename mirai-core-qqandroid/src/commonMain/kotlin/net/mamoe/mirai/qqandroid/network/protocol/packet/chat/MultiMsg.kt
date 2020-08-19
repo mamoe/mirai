@@ -48,33 +48,40 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
     random: Int,
     groupCode: Long
 ): MessageValidationData {
-    val msgTransmit = MsgTransmit.PbMultiMsgTransmit(
-        msg = this.map { chain ->
-            MsgComm.Msg(
-                msgHead = MsgComm.MsgHead(
-                    fromUin = chain.senderId,
-                    msgSeq = sequenceId,
-                    msgTime = chain.time,
-                    msgUid = 0x01000000000000000L or random.toLongUnsigned(),
-                    mutiltransHead = MsgComm.MutilTransHead(
-                        status = 0,
-                        msgId = 1
-                    ),
-                    msgType = 82, // troop
-                    groupInfo = MsgComm.GroupInfo(
-                        groupCode = groupCode,
-                        groupCard = chain.senderName // Cinnamon
-                    ),
-                    isSrcMsg = false
+    val msgList = map { chain ->
+        MsgComm.Msg(
+            msgHead = MsgComm.MsgHead(
+                fromUin = chain.senderId,
+                msgSeq = sequenceId,
+                msgTime = chain.time,
+                msgUid = 0x01000000000000000L or random.toLongUnsigned(),
+                mutiltransHead = MsgComm.MutilTransHead(
+                    status = 0,
+                    msgId = 1
                 ),
-                msgBody = ImMsgBody.MsgBody(
-                    richText = ImMsgBody.RichText(
-                        elems = chain.message.asMessageChain()
-                            .toRichTextElems(forGroup = true, withGeneralFlags = false).toMutableList()
-                    )
+                msgType = 82, // troop
+                groupInfo = MsgComm.GroupInfo(
+                    groupCode = groupCode,
+                    groupCard = chain.senderName // Cinnamon
+                ),
+                isSrcMsg = false
+            ),
+            msgBody = ImMsgBody.MsgBody(
+                richText = ImMsgBody.RichText(
+                    elems = chain.message.asMessageChain()
+                        .toRichTextElems(forGroup = true, withGeneralFlags = false).toMutableList()
                 )
             )
-        }
+        )
+    }
+    val msgTransmit = MsgTransmit.PbMultiMsgTransmit(
+        msg = msgList,
+        pbItemList = listOf(
+            MsgTransmit.PbMultiMsgItem(
+                fileName = "MultiMsg",
+                buffer = MsgTransmit.PbMultiMsgNew(msgList).toByteArray(MsgTransmit.PbMultiMsgNew.serializer())
+            )
+        )
     )
 
     val bytes = msgTransmit.toByteArray(MsgTransmit.PbMultiMsgTransmit.serializer())

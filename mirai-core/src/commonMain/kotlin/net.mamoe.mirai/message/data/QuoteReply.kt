@@ -44,37 +44,37 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see MessageSource 获取有关消息源的更多信息
  */
-class QuoteReply(val source: MessageSource) : Message, MessageMetadata, ConstrainSingle<QuoteReply> {
-    companion object Key : Message.Key<QuoteReply> {
-        override val typeName: String
+public class QuoteReply(public val source: MessageSource) : Message, MessageMetadata, ConstrainSingle<QuoteReply> {
+    public companion object Key : Message.Key<QuoteReply> {
+        public override val typeName: String
             get() = "QuoteReply"
     }
 
-    override val key: Message.Key<QuoteReply> get() = Key
+    public override val key: Message.Key<QuoteReply> get() = Key
 
-    override fun toString(): String = "[mirai:quote:${source.id},${source.internalId}]"
-    override fun equals(other: Any?): Boolean = other is QuoteReply && other.source == this.source
-    override fun hashCode(): Int = source.hashCode()
+    public override fun toString(): String = "[mirai:quote:${source.id},${source.internalId}]"
+    public override fun equals(other: Any?): Boolean = other is QuoteReply && other.source == this.source
+    public override fun hashCode(): Int = source.hashCode()
 }
 
 /**
  * @see MessageSource.bot
  */
 @get:JvmSynthetic
-inline val QuoteReply.bot: Bot
+public inline val QuoteReply.bot: Bot
     get() = source.bot
 
 /**
  * 撤回引用的源消息
  */
 @JvmSynthetic
-suspend inline fun QuoteReply.recallSource() = this.source.recall()
+public suspend inline fun QuoteReply.recallSource(): Unit = this.source.recall()
 
 /**
  * 在一段时间后撤回引用的源消息
  */
 @JvmOverloads
-inline fun QuoteReply.recallSourceIn(
+public inline fun QuoteReply.recallSourceIn(
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = this.source.recallIn(millis, coroutineContext)
@@ -85,43 +85,43 @@ inline fun QuoteReply.recallSourceIn(
 @PlannedRemoval("1.3.0")
 @get:JvmSynthetic
 @Deprecated("use source.id for clearer semantics", ReplaceWith("source.id"))
-inline val QuoteReply.id: Int
+public inline val QuoteReply.id: Int
     get() = source.id
 
 @PlannedRemoval("1.3.0")
 @get:JvmSynthetic
 @Deprecated("use source.internalId for clearer semantics", ReplaceWith("source.internalId"))
-inline val QuoteReply.internalId: Int
+public inline val QuoteReply.internalId: Int
     get() = source.internalId
 
 @PlannedRemoval("1.3.0")
 @get:JvmSynthetic
 @Deprecated("use source.fromId for clearer semantics", ReplaceWith("source.fromId"))
-inline val QuoteReply.fromId: Long
+public inline val QuoteReply.fromId: Long
     get() = source.fromId
 
 @PlannedRemoval("1.3.0")
 @get:JvmSynthetic
 @Deprecated("use source.targetId for clearer semantics", ReplaceWith("source.targetId"))
-inline val QuoteReply.targetId: Long
+public inline val QuoteReply.targetId: Long
     get() = source.targetId
 
 @PlannedRemoval("1.3.0")
 @get:JvmSynthetic
 @Deprecated("use source.originalMessage for clearer semantics", ReplaceWith("source.originalMessage"))
-inline val QuoteReply.originalMessage: MessageChain
+public inline val QuoteReply.originalMessage: MessageChain
     get() = source.originalMessage
 
 @PlannedRemoval("1.3.0")
 @get:JvmSynthetic
 @Deprecated("use source.time for clearer semantics", ReplaceWith("source.time"))
-inline val QuoteReply.time: Int
+public inline val QuoteReply.time: Int
     get() = source.time
 
 @PlannedRemoval("1.3.0")
 @Deprecated("use recallSourceIn for clearer semantics", ReplaceWith("recallSourceIn(millis, coroutineContext)"))
 @JvmOverloads
-inline fun QuoteReply.recallIn(
+public inline fun QuoteReply.recallIn(
     millis: Long,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
 ): Job = recallSourceIn(millis, coroutineContext)
@@ -129,4 +129,4 @@ inline fun QuoteReply.recallIn(
 @PlannedRemoval("1.3.0")
 @Deprecated("use recallSource for clearer semantics", ReplaceWith("this.recallSource()"))
 @JvmSynthetic
-suspend inline fun QuoteReply.recall() = recallSource()
+public suspend inline fun QuoteReply.recall(): Unit = recallSource()

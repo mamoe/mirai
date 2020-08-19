@@ -13,15 +13,17 @@ package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 在 [登录][Bot.login] 失败时抛出, 可正常地中断登录过程.
  */
-sealed class LoginFailedException constructor(
+public sealed class LoginFailedException(
     /**
      * 是否可因此登录失败而关闭 [Bot]. 一般是密码错误, 被冻结等异常时.
      */
-    val killBot: Boolean = false,
+    public val killBot: Boolean = false,
     message: String? = null,
     cause: Throwable? = null
 ) : RuntimeException(message, cause)
@@ -29,31 +31,43 @@ sealed class LoginFailedException constructor(
 /**
  * 密码输入错误 (有时候也会是其他错误, 如 `"当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。"`)
  */
-class WrongPasswordException(message: String?) : LoginFailedException(true, message)
+public class WrongPasswordException @MiraiInternalAPI constructor(
+    message: String?
+) : LoginFailedException(true, message)
 
 /**
  * 无可用服务器
  */
-class NoServerAvailableException(override val cause: Throwable?) : LoginFailedException(false, "no server available")
+public class NoServerAvailableException @MiraiInternalAPI constructor(
+    public override val cause: Throwable?
+) : LoginFailedException(false, "no server available")
+
+/**
+ * 服务器要求稍后重试
+ */
+@SinceMirai("1.2.0")
+public class RetryLaterException @MiraiInternalAPI constructor() :
+    LoginFailedException(false, "server requests retrial later")
 
 /**
  * 无标准输入或 Kotlin 不支持此输入.
  */
-class NoStandardInputForCaptchaException(override val cause: Throwable?) :
-    LoginFailedException(true, "no standard input for captcha")
+public class NoStandardInputForCaptchaException @MiraiInternalAPI constructor(
+    public override val cause: Throwable?
+) : LoginFailedException(true, "no standard input for captcha")
 
 /**
  * 需要短信验证时抛出. mirai 目前还不支持短信验证.
  */
 @MiraiExperimentalAPI("Will be removed when SMS login is supported")
-class UnsupportedSMSLoginException(message: String?) : LoginFailedException(true, message)
+public class UnsupportedSMSLoginException(message: String?) : LoginFailedException(true, message)
 
 /**
  * 非 mirai 实现的异常
  */
-abstract class CustomLoginFailedException : LoginFailedException {
-    constructor(killBot: Boolean) : super(killBot)
-    constructor(killBot: Boolean, message: String?) : super(killBot, message)
-    constructor(killBot: Boolean, message: String?, cause: Throwable?) : super(killBot, message, cause)
-    constructor(killBot: Boolean, cause: Throwable?) : super(killBot, cause = cause)
+public abstract class CustomLoginFailedException : LoginFailedException {
+    public constructor(killBot: Boolean) : super(killBot)
+    public constructor(killBot: Boolean, message: String?) : super(killBot, message)
+    public constructor(killBot: Boolean, message: String?, cause: Throwable?) : super(killBot, message, cause)
+    public constructor(killBot: Boolean, cause: Throwable?) : super(killBot, cause = cause)
 }

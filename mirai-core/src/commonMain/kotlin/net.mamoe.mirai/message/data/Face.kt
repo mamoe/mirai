@@ -24,219 +24,219 @@ import kotlin.jvm.JvmSynthetic
  * ## mirai 码支持
  * 格式: &#91;mirai:face:*[id]*&#93;
  */
-data class Face(val id: Int) : // used in delegation
+public data class Face(public val id: Int) : // used in delegation
     MessageContent, CodableMessage {
 
-    override fun toString(): String = "[mirai:face:$id]"
-    override fun contentToString(): String =
-            if (id >= 0 && id <= 255)
-                FaceName.names[id]
-            else "[表情]"
+    public override fun toString(): String = "[mirai:face:$id]"
+    public override fun contentToString(): String =
+        if (id >= 0 && id <= 255)
+            FaceName.names[id]
+        else "[表情]"
 
-    override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
-    override fun hashCode(): Int = id
+    public override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
+    public override fun hashCode(): Int = id
 
     /**
      * @author LamGC
      */
     @Suppress("SpellCheckingInspection", "unused")
-    companion object IdList : Message.Key<Face> {
-        override val typeName: String
+    public companion object IdList : Message.Key<Face> {
+        public override val typeName: String
             get() = "Face"
 
-        const val unknown: Int = 0xff
-        const val jingya: Int = 0
-        const val piezui: Int = 1
-        const val se: Int = 2
-        const val fadai: Int = 3
-        const val deyi: Int = 4
-        const val liulei: Int = 5
-        const val haixiu: Int = 6
-        const val bizui: Int = 7
-        const val shui: Int = 8
-        const val daku: Int = 9
-        const val ganga: Int = 10
-        const val fanu: Int = 11
-        const val tiaopi: Int = 12
-        const val ciya: Int = 13
-        const val weixiao: Int = 14
-        const val nanguo: Int = 15
-        const val ku: Int = 16
-        const val zhuakuang: Int = 18
-        const val tu: Int = 19
-        const val touxiao: Int = 20
-        const val keai: Int = 21
-        const val baiyan: Int = 22
-        const val aoman: Int = 23
-        const val ji_e: Int = 24
-        const val kun: Int = 25
-        const val jingkong: Int = 26
-        const val liuhan: Int = 27
-        const val hanxiao: Int = 28
-        const val dabing: Int = 29
-        const val fendou: Int = 30
-        const val zhouma: Int = 31
-        const val yiwen: Int = 32
-        const val yun: Int = 34
-        const val zhemo: Int = 35
-        const val shuai: Int = 36
-        const val kulou: Int = 37
-        const val qiaoda: Int = 38
-        const val zaijian: Int = 39
-        const val fadou: Int = 41
-        const val aiqing: Int = 42
-        const val tiaotiao: Int = 43
-        const val zhutou: Int = 46
-        const val yongbao: Int = 49
-        const val dan_gao: Int = 53
-        const val shandian: Int = 54
-        const val zhadan: Int = 55
-        const val dao: Int = 56
-        const val zuqiu: Int = 57
-        const val bianbian: Int = 59
-        const val kafei: Int = 60
-        const val fan: Int = 61
-        const val meigui: Int = 63
-        const val diaoxie: Int = 64
-        const val aixin: Int = 66
-        const val xinsui: Int = 67
-        const val liwu: Int = 69
-        const val taiyang: Int = 74
-        const val yueliang: Int = 75
-        const val qiang: Int = 76
-        const val ruo: Int = 77
-        const val woshou: Int = 78
-        const val shengli: Int = 79
-        const val feiwen: Int = 85
-        const val naohuo: Int = 86
-        const val xigua: Int = 89
-        const val lenghan: Int = 96
-        const val cahan: Int = 97
-        const val koubi: Int = 98
-        const val guzhang: Int = 99
-        const val qiudale: Int = 100
-        const val huaixiao: Int = 101
-        const val zuohengheng: Int = 102
-        const val youhengheng: Int = 103
-        const val haqian: Int = 104
-        const val bishi: Int = 105
-        const val weiqu: Int = 106
-        const val kuaikule: Int = 107
-        const val yinxian: Int = 108
-        const val qinqin: Int = 109
-        const val xia: Int = 110
-        const val kelian: Int = 111
-        const val caidao: Int = 112
-        const val pijiu: Int = 113
-        const val lanqiu: Int = 114
-        const val pingpang: Int = 115
-        const val shiai: Int = 116
-        const val piaochong: Int = 117
-        const val baoquan: Int = 118
-        const val gouyin: Int = 119
-        const val quantou: Int = 120
-        const val chajin: Int = 121
-        const val aini: Int = 122
-        const val bu: Int = 123
-        const val hao: Int = 124
-        const val zhuanquan: Int = 125
-        const val ketou: Int = 126
-        const val huitou: Int = 127
-        const val tiaosheng: Int = 128
-        const val huishou: Int = 129
-        const val jidong: Int = 130
-        const val jiewu: Int = 131
-        const val xianwen: Int = 132
-        const val zuotaiji: Int = 133
-        const val youtaiji: Int = 134
-        const val shuangxi: Int = 136
-        const val bianpao: Int = 137
-        const val denglong: Int = 138
-        const val facai: Int = 139
-        const val K_ge: Int = 140
-        const val gouwu: Int = 141
-        const val youjian: Int = 142
-        const val shuai_qi: Int = 143
-        const val hecai: Int = 144
-        const val qidao: Int = 145
-        const val baojin: Int = 146
-        const val bangbangtang: Int = 147
-        const val he_nai: Int = 148
-        const val xiamian: Int = 149
-        const val xiangjiao: Int = 150
-        const val feiji: Int = 151
-        const val kaiche: Int = 152
-        const val gaotiezuochetou: Int = 153
-        const val chexiang: Int = 154
-        const val gaotieyouchetou: Int = 155
-        const val duoyun: Int = 156
-        const val xiayu: Int = 157
-        const val chaopiao: Int = 158
-        const val xiongmao: Int = 159
-        const val dengpao: Int = 160
-        const val fengche: Int = 161
-        const val naozhong: Int = 162
-        const val dasan: Int = 163
-        const val caiqiu: Int = 164
-        const val zuanjie: Int = 165
-        const val shafa: Int = 166
-        const val zhijin: Int = 167
-        const val yao: Int = 168
-        const val shouqiang: Int = 169
-        const val qingwa: Int = 170
-        const val hexie: Int = 184
-        const val yangtuo: Int = 185
-        const val youling: Int = 187
-        const val dan: Int = 188
-        const val juhua: Int = 190
-        const val hongbao: Int = 192
-        const val daxiao: Int = 193
-        const val bukaixin: Int = 194
-        const val lengmo: Int = 197
-        const val e: Int = 198
-        const val haobang: Int = 199
-        const val baituo: Int = 200
-        const val dianzan: Int = 201
-        const val wuliao: Int = 202
-        const val tuolian: Int = 203
-        const val chi: Int = 204
-        const val songhua: Int = 205
-        const val haipa: Int = 206
-        const val huachi: Int = 207
-        const val xiaoyanger: Int = 208
-        const val biaolei: Int = 210
-        const val wobukan: Int = 211
-        const val bobo: Int = 214
-        const val hulian: Int = 215
-        const val paitou: Int = 216
-        const val cheyiche: Int = 217
-        const val tianyitian: Int = 218
-        const val cengyiceng: Int = 219
-        const val zhuaizhatian: Int = 220
-        const val dingguagua: Int = 221
-        const val baobao: Int = 222
-        const val baoji: Int = 223
-        const val kaiqiang: Int = 224
-        const val liaoyiliao: Int = 225
-        const val paizhuo: Int = 226
-        const val paishou: Int = 227
-        const val gongxi: Int = 228
-        const val ganbei: Int = 229
-        const val chaofeng: Int = 230
-        const val heng: Int = 231
-        const val foxi: Int = 232
-        const val qiaoyiqioa: Int = 233
-        const val jingdai: Int = 234
-        const val chandou: Int = 235
-        const val kentou: Int = 236
-        const val toukan: Int = 237
-        const val shanlian: Int = 238
-        const val yuanliang: Int = 239
-        const val penlian: Int = 240
-        const val shengrikuaile: Int = 241
-        const val touzhuangji: Int = 242
-        const val shuaitou: Int = 243
-        const val rengou: Int = 244
+        public const val unknown: Int = 0xff
+        public const val jingya: Int = 0
+        public const val piezui: Int = 1
+        public const val se: Int = 2
+        public const val fadai: Int = 3
+        public const val deyi: Int = 4
+        public const val liulei: Int = 5
+        public const val haixiu: Int = 6
+        public const val bizui: Int = 7
+        public const val shui: Int = 8
+        public const val daku: Int = 9
+        public const val ganga: Int = 10
+        public const val fanu: Int = 11
+        public const val tiaopi: Int = 12
+        public const val ciya: Int = 13
+        public const val weixiao: Int = 14
+        public const val nanguo: Int = 15
+        public const val ku: Int = 16
+        public const val zhuakuang: Int = 18
+        public const val tu: Int = 19
+        public const val touxiao: Int = 20
+        public const val keai: Int = 21
+        public const val baiyan: Int = 22
+        public const val aoman: Int = 23
+        public const val ji_e: Int = 24
+        public const val kun: Int = 25
+        public const val jingkong: Int = 26
+        public const val liuhan: Int = 27
+        public const val hanxiao: Int = 28
+        public const val dabing: Int = 29
+        public const val fendou: Int = 30
+        public const val zhouma: Int = 31
+        public const val yiwen: Int = 32
+        public const val yun: Int = 34
+        public const val zhemo: Int = 35
+        public const val shuai: Int = 36
+        public const val kulou: Int = 37
+        public const val qiaoda: Int = 38
+        public const val zaijian: Int = 39
+        public const val fadou: Int = 41
+        public const val aiqing: Int = 42
+        public const val tiaotiao: Int = 43
+        public const val zhutou: Int = 46
+        public const val yongbao: Int = 49
+        public const val dan_gao: Int = 53
+        public const val shandian: Int = 54
+        public const val zhadan: Int = 55
+        public const val dao: Int = 56
+        public const val zuqiu: Int = 57
+        public const val bianbian: Int = 59
+        public const val kafei: Int = 60
+        public const val fan: Int = 61
+        public const val meigui: Int = 63
+        public const val diaoxie: Int = 64
+        public const val aixin: Int = 66
+        public const val xinsui: Int = 67
+        public const val liwu: Int = 69
+        public const val taiyang: Int = 74
+        public const val yueliang: Int = 75
+        public const val qiang: Int = 76
+        public const val ruo: Int = 77
+        public const val woshou: Int = 78
+        public const val shengli: Int = 79
+        public const val feiwen: Int = 85
+        public const val naohuo: Int = 86
+        public const val xigua: Int = 89
+        public const val lenghan: Int = 96
+        public const val cahan: Int = 97
+        public const val koubi: Int = 98
+        public const val guzhang: Int = 99
+        public const val qiudale: Int = 100
+        public const val huaixiao: Int = 101
+        public const val zuohengheng: Int = 102
+        public const val youhengheng: Int = 103
+        public const val haqian: Int = 104
+        public const val bishi: Int = 105
+        public const val weiqu: Int = 106
+        public const val kuaikule: Int = 107
+        public const val yinxian: Int = 108
+        public const val qinqin: Int = 109
+        public const val xia: Int = 110
+        public const val kelian: Int = 111
+        public const val caidao: Int = 112
+        public const val pijiu: Int = 113
+        public const val lanqiu: Int = 114
+        public const val pingpang: Int = 115
+        public const val shiai: Int = 116
+        public const val piaochong: Int = 117
+        public const val baoquan: Int = 118
+        public const val gouyin: Int = 119
+        public const val quantou: Int = 120
+        public const val chajin: Int = 121
+        public const val aini: Int = 122
+        public const val bu: Int = 123
+        public const val hao: Int = 124
+        public const val zhuanquan: Int = 125
+        public const val ketou: Int = 126
+        public const val huitou: Int = 127
+        public const val tiaosheng: Int = 128
+        public const val huishou: Int = 129
+        public const val jidong: Int = 130
+        public const val jiewu: Int = 131
+        public const val xianwen: Int = 132
+        public const val zuotaiji: Int = 133
+        public const val youtaiji: Int = 134
+        public const val shuangxi: Int = 136
+        public const val bianpao: Int = 137
+        public const val denglong: Int = 138
+        public const val facai: Int = 139
+        public const val K_ge: Int = 140
+        public const val gouwu: Int = 141
+        public const val youjian: Int = 142
+        public const val shuai_qi: Int = 143
+        public const val hecai: Int = 144
+        public const val qidao: Int = 145
+        public const val baojin: Int = 146
+        public const val bangbangtang: Int = 147
+        public const val he_nai: Int = 148
+        public const val xiamian: Int = 149
+        public const val xiangjiao: Int = 150
+        public const val feiji: Int = 151
+        public const val kaiche: Int = 152
+        public const val gaotiezuochetou: Int = 153
+        public const val chexiang: Int = 154
+        public const val gaotieyouchetou: Int = 155
+        public const val duoyun: Int = 156
+        public const val xiayu: Int = 157
+        public const val chaopiao: Int = 158
+        public const val xiongmao: Int = 159
+        public const val dengpao: Int = 160
+        public const val fengche: Int = 161
+        public const val naozhong: Int = 162
+        public const val dasan: Int = 163
+        public const val caiqiu: Int = 164
+        public const val zuanjie: Int = 165
+        public const val shafa: Int = 166
+        public const val zhijin: Int = 167
+        public const val yao: Int = 168
+        public const val shouqiang: Int = 169
+        public const val qingwa: Int = 170
+        public const val hexie: Int = 184
+        public const val yangtuo: Int = 185
+        public const val youling: Int = 187
+        public const val dan: Int = 188
+        public const val juhua: Int = 190
+        public const val hongbao: Int = 192
+        public const val daxiao: Int = 193
+        public const val bukaixin: Int = 194
+        public const val lengmo: Int = 197
+        public const val e: Int = 198
+        public const val haobang: Int = 199
+        public const val baituo: Int = 200
+        public const val dianzan: Int = 201
+        public const val wuliao: Int = 202
+        public const val tuolian: Int = 203
+        public const val chi: Int = 204
+        public const val songhua: Int = 205
+        public const val haipa: Int = 206
+        public const val huachi: Int = 207
+        public const val xiaoyanger: Int = 208
+        public const val biaolei: Int = 210
+        public const val wobukan: Int = 211
+        public const val bobo: Int = 214
+        public const val hulian: Int = 215
+        public const val paitou: Int = 216
+        public const val cheyiche: Int = 217
+        public const val tianyitian: Int = 218
+        public const val cengyiceng: Int = 219
+        public const val zhuaizhatian: Int = 220
+        public const val dingguagua: Int = 221
+        public const val baobao: Int = 222
+        public const val baoji: Int = 223
+        public const val kaiqiang: Int = 224
+        public const val liaoyiliao: Int = 225
+        public const val paizhuo: Int = 226
+        public const val paishou: Int = 227
+        public const val gongxi: Int = 228
+        public const val ganbei: Int = 229
+        public const val chaofeng: Int = 230
+        public const val heng: Int = 231
+        public const val foxi: Int = 232
+        public const val qiaoyiqioa: Int = 233
+        public const val jingdai: Int = 234
+        public const val chandou: Int = 235
+        public const val kentou: Int = 236
+        public const val toukan: Int = 237
+        public const val shanlian: Int = 238
+        public const val yuanliang: Int = 239
+        public const val penlian: Int = 240
+        public const val shengrikuaile: Int = 241
+        public const val touzhuangji: Int = 242
+        public const val shuaitou: Int = 243
+        public const val rengou: Int = 244
     }
 
 
@@ -249,13 +249,13 @@ data class Face(val id: Int) : // used in delegation
     @PlannedRemoval("1.2.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @Suppress("unused", "UNUSED_PARAMETER")
-    fun copy(id: Int = this.id, stringValue: String = "") = this.copy(id = id)
+    public fun copy(id: Int = this.id, stringValue: String = ""): Face = this.copy(id = id)
 
     @JvmSynthetic
     @PlannedRemoval("1.2.0")
     @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
     @Suppress("unused", "UNUSED_PARAMETER")
-    operator fun component2(): String = toString()
+    public operator fun component2(): String = toString()
 }
 
 
@@ -264,7 +264,7 @@ data class Face(val id: Int) : // used in delegation
  */
 @Suppress("SpellCheckingInspection")
 private object FaceName {
-    val names = Array<String>(256, { "[表情]" })
+    val names = Array(256) { "[表情]" }
 
     init {
         names[Face.jingya] = "[惊讶]"

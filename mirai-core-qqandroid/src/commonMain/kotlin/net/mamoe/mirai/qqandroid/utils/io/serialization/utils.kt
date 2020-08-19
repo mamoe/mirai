@@ -14,15 +14,15 @@ package net.mamoe.mirai.qqandroid.utils.io.serialization
 
 import kotlinx.io.core.*
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationStrategy
-import moe.him188.jcekt.Jce
+import kotlinx.serialization.descriptors.SerialDescriptor
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.utils.io.JceStruct
 import net.mamoe.mirai.qqandroid.utils.io.ProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.readPacketExact
+import net.mamoe.mirai.qqandroid.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.qqandroid.utils.read
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -34,20 +34,20 @@ internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
 
 internal fun <T : JceStruct> ByteArray.loadAs(
     deserializer: DeserializationStrategy<T>
-): T = this.read { Jce.UTF_8.load(deserializer, this) }
+): T = this.read { Tars.UTF_8.load(deserializer, this) }
 
 internal fun <T : JceStruct> BytePacketBuilder.writeJceStruct(
     serializer: SerializationStrategy<T>,
     struct: T
 ) {
-    Jce.UTF_8.dumpTo(serializer, struct, this)
+    Tars.UTF_8.dumpTo(serializer, struct, this)
 }
 
 internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
 ): T {
-    return Jce.UTF_8.load(serializer, this.readPacketExact(length))
+    return Tars.UTF_8.load(serializer, this.readPacketExact(length))
 }
 
 /**
@@ -99,7 +99,7 @@ private fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String
 
 internal fun <T : JceStruct> T.toByteArray(
     serializer: SerializationStrategy<T>
-): ByteArray = Jce.UTF_8.dump(serializer, this)
+): ByteArray = Tars.UTF_8.encodeToByteArray(serializer, this)
 
 internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: SerializationStrategy<T>, v: T) {
     this.writeFully(v.toByteArray(serializer))
@@ -109,14 +109,14 @@ internal fun <T : ProtoBuf> BytePacketBuilder.writeProtoBuf(serializer: Serializ
  * dump
  */
 internal fun <T : ProtoBuf> T.toByteArray(serializer: SerializationStrategy<T>): ByteArray {
-    return ProtoBufWithNullableSupport.dump(serializer, this)
+    return ProtoBufWithNullableSupport.encodeToByteArray(serializer, this)
 }
 
 /**
  * load
  */
 internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrategy<T>): T {
-    return ProtoBufWithNullableSupport.load(deserializer, this)
+    return ProtoBufWithNullableSupport.decodeFromByteArray(deserializer, this)
 }
 
 /**
@@ -125,7 +125,7 @@ internal fun <T : ProtoBuf> ByteArray.loadAs(deserializer: DeserializationStrate
 internal fun <T : ProtoBuf> ByteReadPacket.readProtoBuf(
     serializer: DeserializationStrategy<T>,
     length: Int = this.remaining.toInt()
-): T = ProtoBufWithNullableSupport.load(serializer, this.readBytes(length))
+): T = ProtoBufWithNullableSupport.decodeFromByteArray(serializer, this.readBytes(length))
 
 /**
  * 构造 [RequestPacket] 的 [RequestPacket.sBuffer]

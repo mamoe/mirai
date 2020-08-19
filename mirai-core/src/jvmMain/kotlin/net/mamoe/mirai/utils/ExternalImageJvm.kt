@@ -29,7 +29,7 @@ import java.net.URL
  * 将 [BufferedImage] 保存为临时文件, 然后构造 [ExternalImage]
  */
 @JvmOverloads
-fun BufferedImage.toExternalImage(formatName: String = "png"): ExternalImage =
+public fun BufferedImage.toExternalImage(formatName: String = "png"): ExternalImage =
     ExternalImage(DeferredReusableInput(this, formatName))
 
 /**
@@ -37,7 +37,7 @@ fun BufferedImage.toExternalImage(formatName: String = "png"): ExternalImage =
  * @param deleteOnClose 若为 `true`, 图片发送后将会删除这个文件
  */
 @JvmOverloads
-fun File.toExternalImage(deleteOnClose: Boolean = false): ExternalImage {
+public fun File.toExternalImage(deleteOnClose: Boolean = false): ExternalImage {
     require(this.isFile) { "File must be a file" }
     require(this.exists()) { "File must exist" }
     require(this.canRead()) { "File must can be read" }
@@ -45,45 +45,55 @@ fun File.toExternalImage(deleteOnClose: Boolean = false): ExternalImage {
 }
 
 /**
- * 将 [URL] 委托为 [ExternalImage].
- * 只会在上传图片时才读取 [URL] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
- */
-fun URL.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
-
-/**
  * 将 [InputStream] 委托为 [ExternalImage].
  * 只会在上传图片时才读取 [InputStream] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
  */
-fun InputStream.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
+public fun InputStream.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
+
+/**
+ * 将 [URL] 委托为 [ExternalImage].
+ *
+ * 只会在上传图片时才读取 [URL] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
+ */
+@Deprecated(
+    "请自行通过 URL.openConnection 得到 InputStream 后调用其扩展",
+    replaceWith = ReplaceWith("this.openConnection().toExternalImage"),
+    level = DeprecationLevel.WARNING
+)
+public fun URL.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
 
 /**
  * 将 [Input] 委托为 [ExternalImage].
  * 只会在上传图片时才读取 [Input] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
  */
-fun Input.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
+@Deprecated(
+    "已弃用对 kotlinx.io 的支持",
+    level = DeprecationLevel.ERROR
+)
+public fun Input.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
 
 
 @PlannedRemoval("1.2.0")
-@Suppress("RedundantSuspendModifier")
-@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
-suspend fun Input.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Suppress("RedundantSuspendModifier", "DEPRECATION_ERROR")
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.HIDDEN)
+public suspend fun Input.suspendToExternalImage(): ExternalImage = toExternalImage()
 
 @Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
-suspend fun InputStream.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.HIDDEN)
+public suspend fun InputStream.suspendToExternalImage(): ExternalImage = toExternalImage()
+
+@Suppress("RedundantSuspendModifier", "DEPRECATION")
+@PlannedRemoval("1.2.0")
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.HIDDEN)
+public suspend fun URL.suspendToExternalImage(): ExternalImage = toExternalImage()
 
 @Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
-suspend fun URL.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.HIDDEN)
+public suspend fun File.suspendToExternalImage(): ExternalImage = toExternalImage()
 
 @Suppress("RedundantSuspendModifier")
 @PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
-suspend fun File.suspendToExternalImage(): ExternalImage = toExternalImage()
-
-@Suppress("RedundantSuspendModifier")
-@PlannedRemoval("1.2.0")
-@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.ERROR)
-suspend fun BufferedImage.suspendToExternalImage(): ExternalImage = toExternalImage()
+@Deprecated("no need", ReplaceWith("toExternalImage()"), level = DeprecationLevel.HIDDEN)
+public suspend fun BufferedImage.suspendToExternalImage(): ExternalImage = toExternalImage()

@@ -14,11 +14,9 @@ package net.mamoe.mirai.message.data
 import kotlinx.io.core.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.protobuf.ProtoBuf
-import kotlinx.serialization.protobuf.ProtoId
+import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.checkOffsetAndLength
 import kotlin.jvm.JvmOverloads
@@ -37,11 +35,11 @@ import kotlin.jvm.JvmOverloads
  * @see CustomMessageMetadata 自定义消息元数据
  */
 @MiraiExperimentalAPI
-sealed class CustomMessage : SingleMessage {
+public sealed class CustomMessage : SingleMessage {
     /**
      * 获取这个消息的工厂
      */
-    abstract fun getFactory(): Factory<out CustomMessage>
+    public abstract fun getFactory(): Factory<out CustomMessage>
 
     /**
      * 序列化和反序列化此消息的工厂, 将会自动注册.
@@ -51,13 +49,13 @@ sealed class CustomMessage : SingleMessage {
      * @see ProtoBufSerializerFactory 使用 [ProtoBuf] 作为序列模式的 [Factory]
      */
     @MiraiExperimentalAPI
-    abstract class Factory<M : CustomMessage>(
+    public abstract class Factory<M : CustomMessage>(
         /**
          * 此类型消息的名称.
          * 在发往服务器时使用此名称.
          * 应确保唯一且不变.
          */
-        final override val typeName: String
+        public final override val typeName: String
     ) : Message.Key<M> {
 
         init {
@@ -69,51 +67,50 @@ sealed class CustomMessage : SingleMessage {
          * 序列化此消息.
          */
         @Throws(Exception::class)
-        abstract fun dump(message: @UnsafeVariance M): ByteArray
+        public abstract fun dump(message: @UnsafeVariance M): ByteArray
 
         /**
          * 从 [input] 读取此消息.
          */
         @Throws(Exception::class)
-        abstract fun load(input: ByteArray): @UnsafeVariance M
+        public abstract fun load(input: ByteArray): @UnsafeVariance M
     }
 
     /**
      * 使用 [ProtoBuf] 作为序列模式的 [Factory].
      * 推荐使用此工厂
      */
-    abstract class ProtoBufSerializerFactory<M : CustomMessage>(typeName: String) :
+    public abstract class ProtoBufSerializerFactory<M : CustomMessage>(typeName: String) :
         Factory<M>(typeName) {
 
         /**
          * 得到 [M] 的 [KSerializer].
          */
-        abstract fun serializer(): KSerializer<M>
+        public abstract fun serializer(): KSerializer<M>
 
-        override fun dump(message: M): ByteArray = ProtoBuf.dump(serializer(), message)
-        override fun load(input: ByteArray): M = ProtoBuf.load(serializer(), input)
+        public override fun dump(message: M): ByteArray = ProtoBuf.encodeToByteArray(serializer(), message)
+        public override fun load(input: ByteArray): M = ProtoBuf.decodeFromByteArray(serializer(), input)
     }
 
     /**
      * 使用 [Json] 作为序列模式的 [Factory]
      * 推荐在调试时使用此工厂
      */
-    abstract class JsonSerializerFactory<M : CustomMessage>(typeName: String) :
+    public abstract class JsonSerializerFactory<M : CustomMessage>(typeName: String) :
         Factory<M>(typeName) {
 
         /**
          * 得到 [M] 的 [KSerializer].
          */
-        abstract fun serializer(): KSerializer<M>
+        public abstract fun serializer(): KSerializer<M>
 
-        @OptIn(UnstableDefault::class)
-        open val json = Json(JsonConfiguration.Default)
+        public open val json: Json = Json.Default
 
-        override fun dump(message: M): ByteArray = json.stringify(serializer(), message).toByteArray()
-        override fun load(input: ByteArray): M = json.parse(serializer(), String(input))
+        public override fun dump(message: M): ByteArray = json.encodeToString(serializer(), message).toByteArray()
+        public override fun load(input: ByteArray): M = json.decodeFromString(serializer(), String(input))
     }
 
-    companion object Key : Message.Key<CustomMessage> {
+    public companion object Key : Message.Key<CustomMessage> {
         override val typeName: String get() = "CustomMessage"
         private val factories: LockFreeLinkedList<Factory<*>> = LockFreeLinkedList()
 
@@ -127,14 +124,14 @@ sealed class CustomMessage : SingleMessage {
         }
 
         @Serializable
-        class CustomMessageFullData(
-            @ProtoId(1) val miraiVersionFlag: Int,
-            @ProtoId(2) val typeName: String,
-            @ProtoId(3) val data: ByteArray
+        private class CustomMessageFullData(
+            @ProtoNumber(1) val miraiVersionFlag: Int,
+            @ProtoNumber(2) val typeName: String,
+            @ProtoNumber(3) val data: ByteArray
         )
 
-        class CustomMessageFullDataDeserializeInternalException(cause: Throwable?) : RuntimeException(cause)
-        class CustomMessageFullDataDeserializeUserException(val body: ByteArray, cause: Throwable?) :
+        public class CustomMessageFullDataDeserializeInternalException(cause: Throwable?) : RuntimeException(cause)
+        public class CustomMessageFullDataDeserializeUserException(public val body: ByteArray, cause: Throwable?) :
             RuntimeException(cause)
 
         internal fun load(fullData: ByteReadPacket): CustomMessage? {
@@ -143,7 +140,7 @@ sealed class CustomMessage : SingleMessage {
                 if (fullData.remaining != length.toLong()) {
                     return null
                 }
-                ProtoBuf.load(CustomMessageFullData.serializer(), fullData.readBytes(length))
+                ProtoBuf.decodeFromByteArray(CustomMessageFullData.serializer(), fullData.readBytes(length))
             }.getOrElse {
                 throw CustomMessageFullDataDeserializeInternalException(it)
             }
@@ -158,7 +155,7 @@ sealed class CustomMessage : SingleMessage {
         }
 
         internal fun <M : CustomMessage> dump(factory: Factory<M>, message: M): ByteArray = buildPacket {
-            ProtoBuf.dump(
+            ProtoBuf.encodeToByteArray(
                 CustomMessageFullData.serializer(), CustomMessageFullData(
                     miraiVersionFlag = 1,
                     typeName = factory.typeName,
@@ -177,7 +174,7 @@ sealed class CustomMessage : SingleMessage {
  */
 @MiraiExperimentalAPI
 @SinceMirai("1.1.0")
-fun <T : CustomMessage> T.toByteArray(): ByteArray {
+public fun <T : CustomMessage> T.toByteArray(): ByteArray {
     @Suppress("UNCHECKED_CAST")
     return (this.getFactory() as CustomMessage.Factory<T>).dump(this)
 }
@@ -194,12 +191,12 @@ fun <T : CustomMessage> T.toByteArray(): ByteArray {
  * @see ConstrainSingle 可实现此接口以保证消息链中只存在一个元素
  */
 @MiraiExperimentalAPI
-abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
-    companion object Key : Message.Key<CustomMessageMetadata> {
+public abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
+    public companion object Key : Message.Key<CustomMessageMetadata> {
         override val typeName: String get() = "CustomMessageMetadata"
     }
 
-    open fun customToString(): ByteArray = customToStringImpl(this.getFactory())
+    public open fun customToString(): ByteArray = customToStringImpl(this.getFactory())
 
     final override fun toString(): String =
         "[mirai:custom:${getFactory().typeName}:${String(customToString())}]"

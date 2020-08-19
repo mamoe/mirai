@@ -28,68 +28,100 @@ import kotlin.jvm.JvmName
 /**
  * [Bot] 登录完成, 好友列表, 群组列表初始化完成
  */
-data class BotOnlineEvent internal constructor(override val bot: Bot) : BotActiveEvent, AbstractEvent()
+public data class BotOnlineEvent internal constructor(
+    public override val bot: Bot
+) : BotActiveEvent, AbstractEvent()
 
 /**
  * [Bot] 离线.
  */
-sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
+public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
 
     /**
      * 主动离线. 主动广播这个事件也可以让 [Bot] 关闭.
      */
-    data class Active(override val bot: Bot, override val cause: Throwable?) : BotOfflineEvent(), BotActiveEvent,
-        CauseAware
+    public data class Active(
+        public override val bot: Bot,
+        public override val cause: Throwable?
+    ) : BotOfflineEvent(), BotActiveEvent, CauseAware
 
     /**
      * 被挤下线
      */
-    data class Force internal constructor(override val bot: Bot, val title: String, val message: String) :
-        BotOfflineEvent(), Packet,
-        BotPassiveEvent
+    public data class Force internal constructor(
+        public override val bot: Bot,
+        public val title: String,
+        public val message: String
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent
 
     /**
      * 被服务器断开
      */
     @SinceMirai("1.1.0")
     @MiraiInternalAPI("This is very experimental and might be changed")
-    data class MsfOffline internal constructor(override val bot: Bot, override val cause: Throwable?) :
-        BotOfflineEvent(), Packet,
-        BotPassiveEvent, CauseAware
+    public data class MsfOffline internal constructor(
+        public override val bot: Bot,
+        public override val cause: Throwable?
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
 
     /**
      * 因网络问题而掉线
      */
-    data class Dropped internal constructor(override val bot: Bot, override val cause: Throwable?) : BotOfflineEvent(),
-        Packet,
-        BotPassiveEvent, CauseAware
+    public data class Dropped internal constructor(
+        public override val bot: Bot,
+        public override val cause: Throwable?
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
+
+    /**
+     * 因 returnCode = -10008 等原因掉线
+     */
+    @MiraiInternalAPI("This is very experimental and might be changed")
+    @SinceMirai("1.2.0")
+    public data class PacketFactory10008 internal constructor(
+        public override val bot: Bot,
+        public override val cause: Throwable
+    ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
 
     /**
      * 服务器主动要求更换另一个服务器
      */
     @MiraiInternalAPI
-    data class RequireReconnect internal constructor(override val bot: Bot) : BotOfflineEvent(), Packet, BotPassiveEvent
+    public data class RequireReconnect internal constructor(
+        public override val bot: Bot
+    ) : BotOfflineEvent(), Packet,
+        BotPassiveEvent
 
     @MiraiExperimentalAPI
-    interface CauseAware {
-        val cause: Throwable?
+    public interface CauseAware {
+        public val cause: Throwable?
     }
 }
 
 /**
  * [Bot] 主动或被动重新登录. 在此事件广播前就已经登录完毕.
  */
-data class BotReloginEvent internal constructor(
-    override val bot: Bot,
-    val cause: Throwable?
+public data class BotReloginEvent internal constructor(
+    public override val bot: Bot,
+    public val cause: Throwable?
 ) : BotEvent, BotActiveEvent, AbstractEvent()
 
 /**
  * [Bot] 头像被修改（通过其他客户端修改了头像）. 在此事件广播前就已经修改完毕.
  * @see FriendAvatarChangedEvent
  */
-data class BotAvatarChangedEvent(
-    override val bot: Bot
+public data class BotAvatarChangedEvent(
+    public override val bot: Bot
+) : BotEvent, Packet, AbstractEvent()
+
+/**
+ * [Bot] 的昵称被改变事件, 在此事件触发时 bot 已经完成改名
+ * @see FriendNickChangedEvent
+ */
+@SinceMirai("1.2.0")
+public data class BotNickChangedEvent(
+    public override val bot: Bot,
+    public val from: String,
+    public val to: String
 ) : BotEvent, Packet, AbstractEvent()
 
 // region 图片

@@ -17,8 +17,10 @@ import java.security.spec.X509EncodedKeySpec
 import javax.crypto.KeyAgreement
 
 
-actual typealias ECDHPrivateKey = PrivateKey
-actual typealias ECDHPublicKey = PublicKey
+@Suppress("ACTUAL_WITHOUT_EXPECT")
+internal actual typealias ECDHPrivateKey = PrivateKey
+@Suppress("ACTUAL_WITHOUT_EXPECT")
+internal actual typealias ECDHPublicKey = PublicKey
 
 internal actual class ECDHKeyPairImpl(
     private val delegate: KeyPair

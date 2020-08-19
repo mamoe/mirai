@@ -50,8 +50,7 @@ internal class ProfileService {
                         GroupMngReqJce(
                             reqtype = 2,
                             uin = client.uin,
-                            vecBody = client.uin.shl(32).or(Group.calculateGroupUinByGroupCode(groupCode))
-                                .toByteArray() // 这里可能是 code
+                            vecBody = client.uin.shl(32).or(groupCode).toByteArray()
                         )
                     )
                 )

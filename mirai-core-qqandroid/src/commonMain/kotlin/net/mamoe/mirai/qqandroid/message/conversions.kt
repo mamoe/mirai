@@ -33,7 +33,9 @@ import kotlin.contracts.contract
 private val UNSUPPORTED_MERGED_MESSAGE_PLAIN = PlainText("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。")
 private val UNSUPPORTED_POKE_MESSAGE_PLAIN = PlainText("[戳一戳]请使用最新版手机QQ体验新功能。")
 private val UNSUPPORTED_FLASH_MESSAGE_PLAIN = PlainText("[闪照]请使用新版手机QQ查看闪照。")
+private val UNSUPPORTED_VOICE_MESSAGE_PLAIN = PlainText("收到语音消息，你需要升级到最新版QQ才能接收，升级地址https://im.qq.com")
 
+@OptIn(ExperimentalStdlibApi::class)
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
     val elements = ArrayList<ImMsgBody.Elem>(this.size)
@@ -157,7 +159,20 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             is VipFace -> {
                 transformOneMessage(PlainText(it.contentToString()))
             }
-            is PttMessage,
+            is PttMessage -> {
+                elements.add(
+                    ImMsgBody.Elem(
+                        extraInfo = ImMsgBody.ExtraInfo(flags = 16, groupMask = 1)
+                    )
+                )
+                elements.add(
+                    ImMsgBody.Elem(
+                        elemFlags2 = ImMsgBody.ElemFlags2(
+                            vipStatus = 1
+                        )
+                    )
+                )
+            }
             is ForwardMessage,
             is MessageSource, // mirai metadata only
             is RichMessage // already transformed above
@@ -216,13 +231,13 @@ internal fun MsgComm.Msg.toMessageChain(
     isTemp: Boolean = false
 ): MessageChain {
     val elements = this.msgBody.richText.elems
-    val ptt = this.msgBody.richText.ptt
 
-    val pptMsg = ptt?.run {
-        when(fileType) {
-            4 -> Voice(String(fileName), fileMd5, String(downPara))
-            else -> null
-        }
+    val pptMsg = msgBody.richText.ptt?.run {
+//        when (fileType) {
+//            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
+//            else -> null
+//        }
+        Voice(String(fileName), fileMd5, fileSize.toLong(), String(downPara))
     }
 
     return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {
@@ -275,13 +290,13 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     return@forEach
                 }
             }
-            if (last is FlashImage && element is PlainText) {
-                if (element == UNSUPPORTED_FLASH_MESSAGE_PLAIN) {
+            // 解决tim发送的语音无法正常识别
+            if (element is PlainText) {
+                if (element == UNSUPPORTED_VOICE_MESSAGE_PLAIN) {
                     last = element
                     return@forEach
                 }
             }
-
             add(element)
             last = element
         }
@@ -312,7 +327,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
             element.face != null -> list.add(Face(element.face.index))
             element.text != null -> {
                 if (element.text.attr6Buf.isEmpty()) {
-                    list.add(element.text.str.toMessage())
+                    list.add(PlainText(element.text.str))
                 } else {
                     val id: Long
                     element.text.attr6Buf.read {
@@ -432,7 +447,8 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                                     .orEmpty(),
                             proto.pokeType,
                             proto.vaspokeId
-                        ))
+                        )
+                        )
                     }
                     3 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())

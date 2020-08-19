@@ -26,22 +26,22 @@ import net.mamoe.mirai.message.data.source
  *
  * @see MessageEvent
  */
-class TempMessageEvent(
-    override val sender: Member,
-    override val message: MessageChain,
-    override val time: Int
+public class TempMessageEvent(
+    public override val sender: Member,
+    public override val message: MessageChain,
+    public override val time: Int
 ) : TempMessage(), BroadcastControllable {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
     }
 
-    override val bot: Bot get() = sender.bot
-    override val subject: Member get() = sender
-    override val group: Group get() = sender.group
-    override val senderName: String get() = sender.nameCardOrNick
-    override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
+    public override val bot: Bot get() = sender.bot
+    public override val subject: Member get() = sender
+    public override val group: Group get() = sender.group
+    public override val senderName: String get() = sender.nameCardOrNick
+    public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
 
-    override fun toString(): String =
+    public override fun toString(): String =
         "TempMessageEvent(sender=${sender.id} from group(${sender.group.id}), message=$message)"
 }

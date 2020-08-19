@@ -4,6 +4,7 @@ plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
+    id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray") version Versions.Publishing.bintray
 }
@@ -36,7 +37,7 @@ kotlin {
     jvm("jvm") {
     }
 
-    sourceSets {
+    sourceSets.apply {
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
             languageSettings.useExperimentalAnnotation("kotlin.Experimental")
@@ -47,6 +48,9 @@ kotlin {
             languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
             languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
             languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
+            languageSettings.useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
+            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.UnstableExternalImage")
+
             languageSettings.progressiveMode = true
 
             dependencies {
@@ -56,13 +60,14 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(kotlin("stdlib", Versions.Kotlin.stdlib))
-                api(kotlinx("serialization-runtime-common", Versions.Kotlin.serialization))
-                api(kotlinx("serialization-protobuf-common", Versions.Kotlin.serialization))
-                api("moe.him188:jcekt-common:${Versions.jcekt}")
+                api(kotlinx("serialization-core", Versions.Kotlin.serialization))
+                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
+                implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 api("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
-                api(kotlinx("io", Versions.Kotlin.io))
-                api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
+                implementation(kotlinx("io", Versions.Kotlin.io)) {
+                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                }
+                implementation(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
             }
         }
 
@@ -77,14 +82,13 @@ kotlin {
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
                 dependencies {
-                    api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 }
             }
 
             val androidTest by getting {
                 dependencies {
-                    implementation(kotlin("test", Versions.Kotlin.stdlib))
-                    implementation(kotlin("test-junit", Versions.Kotlin.stdlib))
+                    implementation(kotlin("test", Versions.Kotlin.compiler))
+                    implementation(kotlin("test-junit", Versions.Kotlin.compiler))
                     implementation(kotlin("test-annotations-common"))
                     implementation(kotlin("test-common"))
                 }
@@ -94,19 +98,19 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
+                implementation("org.bouncycastle:bcprov-jdk15on:1.64")
+                implementation(kotlinx("io-jvm", Versions.Kotlin.io)) {
+                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                }
                 //    api(kotlinx("coroutines-debug", Versions.Kotlin.coroutines))
-                api("moe.him188:jcekt:${Versions.jcekt}")
-                api(kotlinx("serialization-runtime", Versions.Kotlin.serialization))
-                //api(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
-
             }
         }
 
         val jvmTest by getting {
             dependencies {
                 dependsOn(commonTest)
-                implementation(kotlin("test", Versions.Kotlin.stdlib))
-                implementation(kotlin("test-junit", Versions.Kotlin.stdlib))
+                implementation(kotlin("test", Versions.Kotlin.compiler))
+                implementation(kotlin("test-junit", Versions.Kotlin.compiler))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
 
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
@@ -117,3 +121,20 @@ kotlin {
 }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
+
+
+tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
+    doFirst {
+        publishing.publications
+            .filterIsInstance<MavenPublication>()
+            .forEach { publication ->
+                val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
+                if (moduleFile.exists()) {
+                    publication.artifact(object :
+                        org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
+                        override fun getDefaultExtension() = "module"
+                    })
+                }
+            }
+    }
+}

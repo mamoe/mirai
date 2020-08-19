@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+
 @file:Suppress("unused", "DEPRECATION_ERROR", "EXPOSED_SUPER_CLASS")
 
 package net.mamoe.mirai.utils
@@ -37,13 +38,13 @@ import java.io.File
  * ```
  */
 @Suppress("PropertyName")
-actual open class BotConfiguration : BotConfigurationBase() { // open for Java
+public actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     /**
      * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
      * @see fileBasedDeviceInfo 使用指定文件存储设备信息
      * @see randomDeviceInfo 使用随机设备信息
      */
-    actual var deviceInfo: ((Context) -> DeviceInfo)? = deviceInfoStub
+    public actual var deviceInfo: ((Context) -> DeviceInfo)? = deviceInfoStub
 
     /**
      * 使用随机设备信息.
@@ -51,8 +52,20 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
      * @see deviceInfo
      */
     @ConfigurationDsl
-    actual fun randomDeviceInfo() {
+    public actual fun randomDeviceInfo() {
         deviceInfo = null
+    }
+
+    /**
+     * 使用特定由 [DeviceInfoData] 序列化产生的 JSON 的设备信息
+     *
+     * @see deviceInfo
+     */
+    @SinceMirai("1.2.0")
+    public actual fun loadDeviceInfoJson(json: String) {
+        deviceInfo = { context ->
+            this.json.decodeFromString(DeviceInfoData.serializer(), json).also { it.context = context }
+        }
     }
 
     /**
@@ -63,7 +76,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     @JvmOverloads
     @ConfigurationDsl
     @SinceMirai("1.1.0")
-    fun redirectNetworkLogToDirectory(
+    public fun redirectNetworkLogToDirectory(
         dir: File = File("logs"),
         retain: Long = 1.weeksToMillis,
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
@@ -82,7 +95,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     @JvmOverloads
     @SinceMirai("1.1.0")
     @ConfigurationDsl
-    fun redirectNetworkLogToFile(
+    public fun redirectNetworkLogToFile(
         file: File = File("mirai.log"),
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
     ) {
@@ -99,7 +112,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     @JvmOverloads
     @ConfigurationDsl
     @SinceMirai("1.1.0")
-    fun redirectBotLogToDirectory(
+    public fun redirectBotLogToDirectory(
         dir: File = File("logs"),
         retain: Long = 1.weeksToMillis,
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
@@ -118,7 +131,7 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     @JvmOverloads
     @ConfigurationDsl
     @SinceMirai("1.1.0")
-    fun redirectBotLogToFile(
+    public fun redirectBotLogToFile(
         file: File = File("mirai.log"),
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
     ) {
@@ -128,9 +141,9 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
     }
 
     @Suppress("ACTUAL_WITHOUT_EXPECT")
-    actual enum class MiraiProtocol actual constructor(
+    public actual enum class MiraiProtocol actual constructor(
         /** 协议模块使用的 ID */
-        @JvmField actual internal val id: Long
+        @JvmField internal actual val id: Long
     ) {
         /**
          * Android 手机.
@@ -149,10 +162,10 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
         ANDROID_WATCH(537061176)
     }
 
-    actual companion object {
+    public actual companion object {
         /** 默认的配置实例. 可以进行修改 */
         @JvmStatic
-        actual val Default = BotConfiguration()
+        public actual val Default: BotConfiguration = BotConfiguration()
     }
 
     /**
@@ -164,11 +177,11 @@ actual open class BotConfiguration : BotConfigurationBase() { // open for Java
      */
     @JvmOverloads
     @ConfigurationDsl
-    fun fileBasedDeviceInfo(filepath: String = "device.json") {
+    public fun fileBasedDeviceInfo(filepath: String = "device.json") {
         deviceInfo = getFileBasedDeviceInfoSupplier(filepath)
     }
 
-    actual fun copy(): BotConfiguration {
+    public actual fun copy(): BotConfiguration {
         return BotConfiguration().also { new ->
             new.botLoggerSupplier = botLoggerSupplier
             new.networkLoggerSupplier = networkLoggerSupplier

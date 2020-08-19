@@ -49,13 +49,13 @@ import kotlin.jvm.JvmSynthetic
  * @see Contact.sendMessage 发送消息. 为广播这个事件的唯一途径
  */
 @SinceMirai("1.1.0")
-sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
+public sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
     /** 发信目标. */
-    abstract val target: Contact
-    final override val bot: Bot get() = target.bot
+    public abstract val target: Contact
+    public final override val bot: Bot get() = target.bot
 
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    abstract var message: Message
+    public abstract var message: Message
 }
 
 /**
@@ -63,11 +63,11 @@ sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEvent(), Ca
  * @see MessagePreSendEvent
  */
 @SinceMirai("1.1.0")
-data class GroupMessagePreSendEvent internal constructor(
+public data class GroupMessagePreSendEvent internal constructor(
     /** 发信目标. */
-    override val target: Group,
+    public override val target: Group,
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    override var message: Message
+    public override var message: Message
 ) : MessagePreSendEvent()
 
 /**
@@ -75,9 +75,9 @@ data class GroupMessagePreSendEvent internal constructor(
  * @see MessagePreSendEvent
  */
 @SinceMirai("1.1.0")
-sealed class UserMessagePreSendEvent : MessagePreSendEvent() {
+public sealed class UserMessagePreSendEvent : MessagePreSendEvent() {
     /** 发信目标. */
-    abstract override val target: User
+    public abstract override val target: User
 }
 
 /**
@@ -85,11 +85,11 @@ sealed class UserMessagePreSendEvent : MessagePreSendEvent() {
  * @see MessagePreSendEvent
  */
 @SinceMirai("1.1.0")
-data class FriendMessagePreSendEvent internal constructor(
+public data class FriendMessagePreSendEvent internal constructor(
     /** 发信目标. */
-    override val target: Friend,
+    public override val target: Friend,
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    override var message: Message
+    public override var message: Message
 ) : UserMessagePreSendEvent()
 
 /**
@@ -97,13 +97,13 @@ data class FriendMessagePreSendEvent internal constructor(
  * @see MessagePreSendEvent
  */
 @SinceMirai("1.1.0")
-data class TempMessagePreSendEvent internal constructor(
+public data class TempMessagePreSendEvent internal constructor(
     /** 发信目标. */
-    override val target: Member,
+    public override val target: Member,
     /** 待发送的消息. 修改后将会同时应用于发送. */
-    override var message: Message
+    public override var message: Message
 ) : UserMessagePreSendEvent() {
-    val group get() = target.group
+    public val group: Group get() = target.group
 }
 
 
@@ -122,25 +122,25 @@ data class TempMessagePreSendEvent internal constructor(
  * @see MessagePreSendEvent
  */
 @SinceMirai("1.1.0")
-sealed class MessagePostSendEvent<C : Contact> : BotEvent, BotActiveEvent, AbstractEvent() {
+public sealed class MessagePostSendEvent<C : Contact> : BotEvent, BotActiveEvent, AbstractEvent() {
     /** 发信目标. */
-    abstract val target: C
-    final override val bot: Bot get() = target.bot
+    public abstract val target: C
+    public final override val bot: Bot get() = target.bot
 
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
-    abstract val message: MessageChain
+    public abstract val message: MessageChain
 
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
      * @see result
      */
-    abstract val exception: Throwable?
+    public abstract val exception: Throwable?
 
     /**
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    abstract val receipt: MessageReceipt<C>?
+    public abstract val receipt: MessageReceipt<C>?
 }
 
 /**
@@ -149,7 +149,7 @@ sealed class MessagePostSendEvent<C : Contact> : BotEvent, BotActiveEvent, Abstr
  */
 @get:JvmSynthetic
 @SinceMirai("1.1.0")
-inline val MessagePostSendEvent<*>.source: MessageSource?
+public inline val MessagePostSendEvent<*>.source: MessageSource?
     get() = receipt?.source
 
 /**
@@ -158,7 +158,7 @@ inline val MessagePostSendEvent<*>.source: MessageSource?
  */
 @get:JvmSynthetic
 @SinceMirai("1.1.0")
-inline val MessagePostSendEvent<*>.sourceResult: Result<MessageSource>
+public inline val MessagePostSendEvent<*>.sourceResult: Result<MessageSource>
     get() = result.map { it.source }
 
 /**
@@ -168,7 +168,7 @@ inline val MessagePostSendEvent<*>.sourceResult: Result<MessageSource>
  */
 @get:JvmSynthetic
 @SinceMirai("1.1.0")
-inline val MessagePostSendEvent<*>.isSuccess: Boolean
+public inline val MessagePostSendEvent<*>.isSuccess: Boolean
     get() = exception == null
 
 /**
@@ -178,7 +178,7 @@ inline val MessagePostSendEvent<*>.isSuccess: Boolean
  */
 @get:JvmSynthetic
 @SinceMirai("1.1.0")
-inline val MessagePostSendEvent<*>.isFailure: Boolean
+public inline val MessagePostSendEvent<*>.isFailure: Boolean
     get() = exception != null
 
 /**
@@ -186,7 +186,7 @@ inline val MessagePostSendEvent<*>.isFailure: Boolean
  */
 @InlineOnly
 @SinceMirai("1.1.0")
-inline val <C : Contact> MessagePostSendEvent<C>.result: Result<MessageReceipt<C>>
+public inline val <C : Contact> MessagePostSendEvent<C>.result: Result<MessageReceipt<C>>
     get() = exception.let { exception -> if (exception != null) Result.failure(exception) else Result.success(receipt!!) }
 
 /**
@@ -194,21 +194,21 @@ inline val <C : Contact> MessagePostSendEvent<C>.result: Result<MessageReceipt<C
  * @see MessagePostSendEvent
  */
 @SinceMirai("1.1.0")
-data class GroupMessagePostSendEvent internal constructor(
+public data class GroupMessagePostSendEvent internal constructor(
     /** 发信目标. */
-    override val target: Group,
+    public override val target: Group,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
-    override val message: MessageChain,
+    public override val message: MessageChain,
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
      * @see result
      */
-    override val exception: Throwable?,
+    public override val exception: Throwable?,
     /**
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    override val receipt: MessageReceipt<Group>?
+    public override val receipt: MessageReceipt<Group>?
 ) : MessagePostSendEvent<Group>()
 
 /**
@@ -216,28 +216,28 @@ data class GroupMessagePostSendEvent internal constructor(
  * @see MessagePostSendEvent
  */
 @SinceMirai("1.1.0")
-sealed class UserMessagePostSendEvent<C : User> : MessagePostSendEvent<C>()
+public sealed class UserMessagePostSendEvent<C : User> : MessagePostSendEvent<C>()
 
 /**
  * 在好友消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
 @SinceMirai("1.1.0")
-data class FriendMessagePostSendEvent internal constructor(
+public data class FriendMessagePostSendEvent internal constructor(
     /** 发信目标. */
-    override val target: Friend,
+    public override val target: Friend,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
-    override val message: MessageChain,
+    public override val message: MessageChain,
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
      * @see result
      */
-    override val exception: Throwable?,
+    public override val exception: Throwable?,
     /**
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    override val receipt: MessageReceipt<Friend>?
+    public override val receipt: MessageReceipt<Friend>?
 ) : UserMessagePostSendEvent<Friend>()
 
 /**
@@ -245,23 +245,23 @@ data class FriendMessagePostSendEvent internal constructor(
  * @see MessagePostSendEvent
  */
 @SinceMirai("1.1.0")
-data class TempMessagePostSendEvent internal constructor(
+public data class TempMessagePostSendEvent internal constructor(
     /** 发信目标. */
-    override val target: Member,
+    public override val target: Member,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
-    override val message: MessageChain,
+    public override val message: MessageChain,
     /**
      * 发送消息时抛出的异常. `null` 表示消息成功发送.
      * @see result
      */
-    override val exception: Throwable?,
+    public override val exception: Throwable?,
     /**
      * 发送消息成功时的回执. `null` 表示消息发送失败.
      * @see result
      */
-    override val receipt: MessageReceipt<Member>?
+    public override val receipt: MessageReceipt<Member>?
 ) : UserMessagePostSendEvent<Member>() {
-    val group get() = target.group
+    public val group: Group get() = target.group
 }
 
 // endregion
@@ -271,71 +271,71 @@ data class TempMessagePostSendEvent internal constructor(
  *
  * @see Contact.recall 撤回消息. 为广播这个事件的唯一途径
  */
-sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
+public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 消息原发送人
      */
-    abstract val authorId: Long
+    public abstract val authorId: Long
 
     /**
      * 消息 id.
      * @see MessageSource.id
      */
-    abstract val messageId: Int
+    public abstract val messageId: Int
 
     /**
      * 消息内部 id.
      * @see MessageSource.id
      */
-    abstract val messageInternalId: Int
+    public abstract val messageInternalId: Int
 
     /**
      * 原发送时间
      */
-    abstract val messageTime: Int // seconds
+    public abstract val messageTime: Int // seconds
 
     /**
-     * 好友消息撤回事件, 暂不支持.
-     */ // TODO: 2020/4/22 支持好友消息撤回事件的解析和主动广播
-    data class FriendRecall internal constructor(
-        override val bot: Bot,
-        override val messageId: Int,
-        override val messageInternalId: Int,
-        override val messageTime: Int,
+     * 好友消息撤回事件
+     */
+    public data class FriendRecall internal constructor(
+        public override val bot: Bot,
+        public override val messageId: Int,
+        public override val messageInternalId: Int,
+        public override val messageTime: Int,
         /**
-         * 撤回操作人, 可能为 [Bot.id] 或好友的 [User.id]
+         * 撤回操作人, 好友的 [User.id]
          */
-        val operator: Long
+        public val operator: Long
     ) : MessageRecallEvent(), Packet {
-        override val authorId: Long
+        public override val authorId: Long
             get() = bot.id
     }
 
     /**
      * 群消息撤回事件.
      */
-    data class GroupRecall internal constructor(
-        override val bot: Bot,
-        override val authorId: Long,
-        override val messageId: Int,
-        override val messageInternalId: Int,
-        override val messageTime: Int,
+    public data class GroupRecall internal constructor(
+        public override val bot: Bot,
+        public override val authorId: Long,
+        public override val messageId: Int,
+        public override val messageInternalId: Int,
+        public override val messageTime: Int,
         /**
          * 操作人. 为 null 时则为 [Bot] 操作.
          */
-        override val operator: Member?,
-        override val group: Group
+        public override val operator: Member?,
+        public override val group: Group
     ) : MessageRecallEvent(), GroupOperableEvent, Packet
 }
 
-val MessageRecallEvent.GroupRecall.author: Member
+public val MessageRecallEvent.GroupRecall.author: Member
     get() = if (authorId == bot.id) group.botAsMember else group[authorId]
 
-val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
+public val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
 // val MessageRecallEvent.GroupRecall.isByBot: Boolean get() = (this as GroupOperableEvent).isByBot
 // no need
 
-val MessageRecallEvent.isByBot: Boolean
+public val MessageRecallEvent.isByBot: Boolean
     get() = when (this) {
         is MessageRecallEvent.FriendRecall -> this.isByBot
         is MessageRecallEvent.GroupRecall -> (this as GroupOperableEvent).isByBot
@@ -350,11 +350,11 @@ val MessageRecallEvent.isByBot: Boolean
  *
  * @see Contact.uploadImage 上传图片. 为广播这个事件的唯一途径
  */
-data class BeforeImageUploadEvent internal constructor(
-    val target: Contact,
-    val source: ExternalImage
+public data class BeforeImageUploadEvent internal constructor(
+    public val target: Contact,
+    public val source: ExternalImage
 ) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
-    override val bot: Bot
+    public override val bot: Bot
         get() = target.bot
 }
 
@@ -369,19 +369,19 @@ data class BeforeImageUploadEvent internal constructor(
  * @see Succeed
  * @see Failed
  */
-sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
-    abstract val target: Contact
-    abstract val source: ExternalImage
-    override val bot: Bot
+public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
+    public abstract val target: Contact
+    public abstract val source: ExternalImage
+    public override val bot: Bot
         get() = target.bot
 
-    data class Succeed internal constructor(
+    public data class Succeed internal constructor(
         override val target: Contact,
         override val source: ExternalImage,
         val image: Image
     ) : ImageUploadEvent()
 
-    data class Failed internal constructor(
+    public data class Failed internal constructor(
         override val target: Contact,
         override val source: ExternalImage,
         val errno: Int,
@@ -406,9 +406,9 @@ sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
     replaceWith = ReplaceWith("MessagePreSendEvent", "net.mamoe.mirai.event.events.MessagePreSendEvent"),
     level = DeprecationLevel.WARNING
 )
-sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
-    abstract val target: Contact
-    final override val bot: Bot
+public sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
+    public abstract val target: Contact
+    public final override val bot: Bot
         get() = target.bot
 
     @Deprecated(
@@ -418,7 +418,7 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
         replaceWith = ReplaceWith("GroupMessagePreSendEvent", "net.mamoe.mirai.event.events.GroupMessagePreSendEvent"),
         level = DeprecationLevel.WARNING
     )
-    data class GroupMessageSendEvent internal constructor(
+    public data class GroupMessageSendEvent internal constructor(
         override val target: Group,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
@@ -433,7 +433,7 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
         ),
         level = DeprecationLevel.WARNING
     )
-    data class FriendMessageSendEvent internal constructor(
+    public data class FriendMessageSendEvent internal constructor(
         override val target: Friend,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent
@@ -445,7 +445,7 @@ sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
         replaceWith = ReplaceWith("TempMessagePreSendEvent", "net.mamoe.mirai.event.events.TempMessagePreSendEvent"),
         level = DeprecationLevel.WARNING
     )
-    data class TempMessageSendEvent internal constructor(
+    public data class TempMessageSendEvent internal constructor(
         override val target: Member,
         var message: MessageChain
     ) : MessageSendEvent(), CancellableEvent

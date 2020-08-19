@@ -15,50 +15,57 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.resume
 import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KClass
 
 
 /**
- * 挂起当前协程, 直到监听到事件 [E] 的广播, 返回这个事件实例.
+ * 挂起当前协程, 直到监听到事件 [E] 的广播并通过 [filter], 返回这个事件实例.
  *
  * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
+ * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
  *
  * @see subscribe 普通地监听一个事件
  * @see syncFromEvent 挂起当前协程, 并尝试从事件中同步一个值
  *
  * @throws TimeoutCancellationException 在超时后抛出.
  */
+@SinceMirai("1.2.0")
 @JvmSynthetic
-suspend inline fun <reified E : Event> nextEvent(
+public suspend inline fun <reified E : Event> nextEvent(
     timeoutMillis: Long = -1,
-    priority: Listener.EventPriority = EventPriority.MONITOR
+    priority: Listener.EventPriority = EventPriority.MONITOR,
+    crossinline filter: (E) -> Boolean = { true }
 ): E {
     require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
     return withTimeoutOrCoroutineScope(timeoutMillis) {
-        nextEventImpl(E::class, this, priority)
+        nextEventImpl(E::class, this, priority, filter)
     }
 }
 
 
 /**
- * 挂起当前协程, 直到监听到事件 [E] 的广播, 返回这个事件实例.
+ * 挂起当前协程, 直到监听到事件 [E] 的广播并通过 [filter], 返回这个事件实例.
  *
- * @param timeoutMillis 超时. 单位为毫秒. `-1` 为不限制.
+ * @param timeoutMillis 超时. 单位为毫秒.
+ * @param filter 过滤器. 返回 `true` 时表示得到了需要的实例. 返回 `false` 时表示继续监听
  *
  * @see subscribe 普通地监听一个事件
  * @see syncFromEvent 挂起当前协程, 并尝试从事件中同步一个值
  *
  * @return 事件实例, 在超时后返回 `null`
  */
+@SinceMirai("1.2.0")
 @JvmSynthetic
-suspend inline fun <reified E : Event> nextEventOrNull(
+public suspend inline fun <reified E : Event> nextEventOrNull(
     timeoutMillis: Long,
-    priority: Listener.EventPriority = EventPriority.MONITOR
+    priority: Listener.EventPriority = EventPriority.MONITOR,
+    crossinline filter: (E) -> Boolean = { true }
 ): E? {
     return withTimeoutOrNull(timeoutMillis) {
-        nextEventImpl(E::class, this, priority)
+        nextEventImpl(E::class, this, priority, filter)
     }
 }
 
@@ -77,7 +84,7 @@ suspend inline fun <reified E : Event> nextEventOrNull(
     level = DeprecationLevel.HIDDEN
 )
 @JvmSynthetic
-suspend inline fun <reified E : BotEvent> Bot.nextEvent(
+public suspend inline fun <reified E : BotEvent> Bot.nextEvent(
     timeoutMillis: Long = -1,
     priority: Listener.EventPriority = EventPriority.MONITOR
 ): E {
@@ -92,9 +99,12 @@ suspend inline fun <reified E : BotEvent> Bot.nextEvent(
 internal suspend inline fun <E : Event> nextEventImpl(
     eventClass: KClass<E>,
     coroutineScope: CoroutineScope,
-    priority: Listener.EventPriority
+    priority: Listener.EventPriority,
+    crossinline filter: (E) -> Boolean
 ): E = suspendCancellableCoroutine { cont ->
     coroutineScope.subscribe(eventClass, priority = priority) {
+        if (!filter(this)) return@subscribe ListeningStatus.LISTENING
+
         try {
             cont.resume(this)
         } catch (e: Exception) {

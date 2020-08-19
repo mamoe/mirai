@@ -1,5 +1,51 @@
 # Version 1.x
 
+## `1.2.0`  2020/8/19
+
+### 新特性
+- 初步语音支持: `Group.uploadVoice`, 支持 silk 或 arm 格式.  
+   **注意**: 现阶段语音实现仅为临时方案, 在将来 (`2.0.0`) 一定会变动. 使用时请评估可能带来的不兼容性.
+
+- 新增将日志转换为 log4j, JDK Logger, SLF4J 等框架的方法: `LoggerAdapters` (#498 by [@Karlatemp](https://github.com/Karlatemp))
+- 支持解析好友输入状态: `FriendInputStatusChangedEvent` (by [@sandtechnology](https://github.com/sandtechnology))
+- 支持解析好友昵称改变事件: `FriendNickChangedEvent` (#507 by [@Karlatemp](https://github.com/Karlatemp))
+- `nextEvent` 和 `nextEventOrNull` 添加 `filter`
+- 将 mirai 码相关内容从 mirai-serialization 集成到 mirai-core
+- `GroupMessageEvent` 现在实现接口 `GroupEvent`
+- `FriendMessageEvent` 现在实现接口 `FriendEvent` (#444)
+
+### 依赖更新
+- 更新 Kotlin 版本到 [`1.4.0`](https://blog.jetbrains.com/zh-hans/kotlin/2020/08/kotlin-1-4-released-with-a-focus-on-quality-and-performance-zh/)
+- 更新 kotlinx-coroutines-core 到 `1.3.9`
+- 使用者也需要更新到 `1.4.0`, 至少更新编译器 (Maven 和 Gradle 插件)
+- **更新 kotlinx-serialization 到 `1.0.0-RC`**: kotlinx-serialization 在此版本做了较大的不兼容改动.
+
+### API 弃用
+- `String.toMessage`: 为避免和 mirai code 产生混乱.
+- `URL.toExternalImage`
+- `Input.toExternalImage`
+
+### 优化和修复
+- 显式 API
+  - mirai 的所有公开 API 均已经显式加上 `public` 修饰符, 遵循 [Koltin Explicit API mode](https://kotlinlang.org/docs/reference/whatsnew14.html#explicit-api-mode-for-library-authors) 规范. 如:
+    ```kotlin
+         data class BotOnlineEvent internal constructor(
+            override val bot: Bot
+        ) : BotActiveEvent, AbstractEvent()
+    ```
+  - *调整了一些不应该公开的 API 为 `internal`, 这些调整在绝大多数情况下不影响现有代码*
+- 修复群权限判断失败的问题 (#389)
+- 修复 `syncFromEvent` 文档错误 (#427)
+- 新增 `BotConfiguration.loadDeviceInfoJson(String)` (#450)
+- 修复成员进群后第一次发言触发改名事件的问题 (#475 by [@cxy654849388](https://github.com/cxy654849388)
+- 修复 `group.quit` 未正确执行的问题 (#472, #477 by [@Mr4s](https://github.com/Mrs4s)
+- 修复初始化时 syncCookie 同步问题
+- 修复 Network Protocol: java.lang.IllegalStateException: returnCode = -10008 (#470)
+- 修复 `Member.isMuted`
+- 修复 `Method.registerEvent` 相关问题 (#495 by @sandtechnology, #499 by @Karlatemp)
+- 修复 Android 手表协议无法监听撤回事件的问题 (#448)
+- 改进好友消息同步过程
+
 ## `1.1.3`  2020/7/17
 - 修复 ListenerHost Java 兼容性问题  (#443, #446 by [@Karlatemp](https://github.com/Karlatemp))
 

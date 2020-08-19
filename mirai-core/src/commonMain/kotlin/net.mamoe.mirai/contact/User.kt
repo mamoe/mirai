@@ -17,7 +17,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.toMessage
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import kotlin.jvm.JvmSynthetic
@@ -32,21 +32,21 @@ import kotlin.jvm.JvmSynthetic
  *
  * 对于同一个 [Bot] 任何一个人的 [User] 实例都是单一的.
  */
-abstract class User : Contact(), CoroutineScope {
+public abstract class User : Contact(), CoroutineScope {
     /**
      * QQ 号码
      */
-    abstract override val id: Long
+    public abstract override val id: Long
 
     /**
      * 昵称
      */
-    abstract val nick: String
+    public abstract val nick: String
 
     /**
      * 头像下载链接
      */
-    open val avatarUrl: String
+    public open val avatarUrl: String
         get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
 
     /**
@@ -65,7 +65,7 @@ abstract class User : Contact(), CoroutineScope {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    abstract override suspend fun sendMessage(message: Message): MessageReceipt<User>
+    public abstract override suspend fun sendMessage(message: Message): MessageReceipt<User>
 
     /**
      * @see sendMessage
@@ -73,8 +73,8 @@ abstract class User : Contact(), CoroutineScope {
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
     @kotlin.internal.InlineOnly
     @JvmSynthetic
-    suspend inline fun sendMessage(message: String): MessageReceipt<User> {
-        return sendMessage(message.toMessage())
+    public suspend inline fun sendMessage(message: String): MessageReceipt<User> {
+        return sendMessage(PlainText(message))
     }
 
     /**
@@ -89,7 +89,7 @@ abstract class User : Contact(), CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     @JvmSynthetic
-    abstract override suspend fun uploadImage(image: ExternalImage): Image
+    public abstract override suspend fun uploadImage(image: ExternalImage): Image
 
-    abstract override fun toString(): String
+    public abstract override fun toString(): String
 }

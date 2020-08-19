@@ -23,4 +23,4 @@ import kotlin.jvm.JvmName
  * 解析形如 "[mirai:]" 的 mirai 码, 即 [Message.toString] 返回的内容.
  */
 @SinceMirai("1.1.0")
-fun String.parseMiraiCode(): MessageChain = parseMiraiCodeImpl()
+public fun String.parseMiraiCode(): MessageChain = parseMiraiCodeImpl()
