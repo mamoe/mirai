@@ -19,7 +19,6 @@ import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent
 import net.mamoe.mirai.event.events.BotLeaveEvent
 import net.mamoe.mirai.event.events.MemberLeaveEvent
@@ -118,34 +117,42 @@ internal object OnlinePushPbPushTransMsg :
 
                     when (type) {
                         2 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
-                            val member = group.getOrNull(target) as? MemberImpl ?: return null
-                            return MemberLeaveEvent.Quit(member.also {
-                                member.cancel(CancellationException("Leaved actively"))
-                                if (target == bot.id) {
-                                    BotLeaveEvent.Active(group).broadcast()
+                            if (target == bot.id) {
+                                return BotLeaveEvent.Active(group).also {
+                                    group.cancel(CancellationException("Leaved actively"))
+                                    bot.groups.delegate.remove(group)
                                 }
-                                group.members.delegate.remove(member)
-                            })
+                            } else {
+                                val member = group.getOrNull(target) as? MemberImpl ?: return null
+                                return MemberLeaveEvent.Quit(member.also {
+                                    member.cancel(CancellationException("Leaved actively"))
+                                    group.members.delegate.remove(member)
+                                })
+                            }
                         }
                         3 -> bot.getGroupByUin(groupUin).let { group ->
-                            val member = group.getOrNull(target) as? MemberImpl ?: return null
-                            return MemberLeaveEvent.Kick(member.also {
-                                member.cancel(CancellationException("Being kicked"))
-                                if (target == bot.id) {
-                                    BotLeaveEvent.Kick(group.members[operator]).broadcast()
+                            if (target == bot.id) {
+                                return BotLeaveEvent.Kick(group.members[operator]).also {
+                                    group.cancel(CancellationException("Being kicked"))
+                                    bot.groups.delegate.remove(group)
                                 }
-                                group.members.delegate.remove(member)
-                            }, group.members[operator])
+                            } else {
+                                val member = group.getOrNull(target) as? MemberImpl ?: return null
+                                return MemberLeaveEvent.Kick(member.also {
+                                    member.cancel(CancellationException("Being kicked"))
+                                    group.members.delegate.remove(member)
+                                }, group.members[operator])
+                            }
+                        }
+                        else -> {
+                            throw contextualBugReportException(
+                                "解析 OnlinePush.PbPushTransMsg, msgType=${content.msgType}",
+                                content._miraiContentToString(),
+                                null,
+                                "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作."
+                            )
                         }
                     }
-                }
-                else -> {
-                    throw contextualBugReportException(
-                        "解析 OnlinePush.PbPushTransMsg, msgType=${content.msgType}",
-                        content._miraiContentToString(),
-                        null,
-                        "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作."
-                    )
                 }
             }
         }
