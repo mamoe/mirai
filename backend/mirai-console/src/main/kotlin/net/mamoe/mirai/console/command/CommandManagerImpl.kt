@@ -70,7 +70,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     ///// IMPL
 
 
-    override val CommandOwner.registeredCommands: List<Command> get() = registeredCommands.filter { it.owner == this }
+    override val CommandOwner.registeredCommands: List<Command> get() = this@CommandManagerImpl.registeredCommands.filter { it.owner == this }
     override val allRegisteredCommands: List<Command> get() = registeredCommands.toList() // copy
     override val commandPrefix: String get() = "/"
     override fun CommandOwner.unregisterAllCommands() {
