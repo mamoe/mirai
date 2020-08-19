@@ -55,6 +55,18 @@ object Bintray {
             }
         }
 
+        project.file("bintray.user.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
+        project.rootProject.file("bintray.user.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
         error(
             "Cannot find bintray user, " +
                     "please specify by creating a file bintray.user.txt in project dir, " +
@@ -91,6 +103,19 @@ object Bintray {
                 return local.readText().trim()
             }
         }
+
+        project.file("bintray.user.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
+        project.rootProject.file("bintray.user.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
 
         error(
             "Cannot find bintray key, " +
