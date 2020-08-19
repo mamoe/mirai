@@ -63,6 +63,18 @@ object GitHub {
             }
         }
 
+        project.file("token.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
+        project.rootProject.file("token.txt").let { local ->
+            if (local.exists()) {
+                return local.readText().trim()
+            }
+        }
+
         error(
             "Cannot find github token, " +
                     "please specify by creating a file token.txt in project dir, " +

@@ -15,8 +15,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.attributes
+import org.gradle.kotlin.dsl.getByName
 import java.io.File
-import kotlin.math.pow
 
 class MiraiConsoleBuildPlugin : Plugin<Project> {
     override fun apply(target: Project) = target.run {
@@ -97,7 +97,11 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
     }
 }
 
-fun Project.findLatestFile(): Map.Entry<String, File> {
+fun Project.findLatestFile(): Pair<String, File> {
+    return tasks.getByName("shadowJar", ShadowJar::class).run {
+        val file = archiveFile.get().asFile
+        this@findLatestFile.version.toString() to file
+    }/*
     return File(projectDir, "build/libs").walk()
         .filter { it.isFile }
         .onEach { println("all files=$it") }
@@ -112,7 +116,7 @@ fun Project.findLatestFile(): Map.Entry<String, File> {
             }.reversed().foldIndexed(0) { index: Int, acc: Int, s: String ->
                 acc + 100.0.pow(index).toInt() * (s.toIntOrNull() ?: 0)
             }
-        } ?: error("cannot find any file to upload")
+        } ?: error("cannot find any file to upload")*/
 }
 
 val gitVersion: String by lazy {
