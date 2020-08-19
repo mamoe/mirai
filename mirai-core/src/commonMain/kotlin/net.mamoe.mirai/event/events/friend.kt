@@ -123,7 +123,7 @@ public data class FriendNickChangedEvent internal constructor(
     public override val friend: Friend,
     public val from: String,
     public val to: String
-)
+) : FriendEvent, Packet, AbstractEvent()
   
 /**
  * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
