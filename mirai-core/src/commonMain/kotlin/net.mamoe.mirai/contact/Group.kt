@@ -12,6 +12,7 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.LowLevelAPI
@@ -175,12 +176,14 @@ public abstract class Group : Contact(), CoroutineScope {
     /**
      * 上传一个语音消息以备发送.
      * 请手动关闭输入流
-     * 请使用amr或silk格式
-     * 请注意，这是一个实验性api且随时会被删除
+     * 请使用 amr 或 silk 格式
+     *
+     * @suppress 这是一个实验性 API 且随时会被删除
+     *
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     @MiraiExperimentalAPI
     @SinceMirai("1.2.0")
     public abstract suspend fun uploadVoice(input: InputStream): Voice
