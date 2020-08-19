@@ -61,9 +61,12 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(kotlinx("serialization-core", Versions.Kotlin.serialization))
+                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
                 implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
                 api("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
-                implementation(kotlinx("io", Versions.Kotlin.io))
+                implementation(kotlinx("io", Versions.Kotlin.io)) {
+                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                }
                 implementation(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
             }
         }
@@ -96,7 +99,9 @@ kotlin {
             dependencies {
                 runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 implementation("org.bouncycastle:bcprov-jdk15on:1.64")
-                implementation(kotlinx("io-jvm", Versions.Kotlin.io))
+                implementation(kotlinx("io-jvm", Versions.Kotlin.io)) {
+                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+                }
                 //    api(kotlinx("coroutines-debug", Versions.Kotlin.coroutines))
             }
         }
@@ -125,7 +130,8 @@ tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
             .forEach { publication ->
                 val moduleFile = buildDir.resolve("publications/${publication.name}/module.json")
                 if (moduleFile.exists()) {
-                    publication.artifact(object : org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
+                    publication.artifact(object :
+                        org.gradle.api.publish.maven.internal.artifact.FileBasedMavenArtifact(moduleFile) {
                         override fun getDefaultExtension() = "module"
                     })
                 }
