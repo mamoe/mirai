@@ -365,18 +365,18 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             @ProtoNumber(4) val srcInternalId: Int,
             @ProtoNumber(5) val time: Int,
             @ProtoNumber(6) val random: Int, // 同srcInternalId
-            @ProtoNumber(7) val pkgNum: Int, // true
-            @ProtoNumber(8) val pkgIndex: Int, // false
-            @ProtoNumber(9) val devSeq: Int, // false
-            @ProtoNumber(12) val flag: Int // true
+            @ProtoNumber(7) val pkgNum: Int, // 1
+            @ProtoNumber(8) val pkgIndex: Int, // 0
+            @ProtoNumber(9) val devSeq: Int, // 0
+            @ProtoNumber(12) val flag: Int // 1
         ) : ProtoBuf
 
         @Serializable
         data class Sub8A(
             @ProtoNumber(1) val msgInfo: List<Sub8AMsgInfo>,
-            @ProtoNumber(2) val appId: Boolean, // true
-            @ProtoNumber(3) val instId: Boolean, // true
-            @ProtoNumber(4) val longMessageFlag: Boolean, // false
+            @ProtoNumber(2) val appId: Int, // 1
+            @ProtoNumber(3) val instId: Int, // 1
+            @ProtoNumber(4) val longMessageFlag: Int, // 0
             @ProtoNumber(5) val reserved: ByteArray? = null // struct{ boolean(1), boolean(2) }
         ) : ProtoBuf
 
