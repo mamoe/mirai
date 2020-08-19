@@ -250,7 +250,8 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val friends: ContactList<Friend> = ContactList(LockFreeLinkedList())
 
-    override val nick: String get() = selfInfo.nick
+    @JvmField internal var cachedNick: String? = null
+    override val nick: String get() = cachedNick ?: selfInfo.nick.also { cachedNick = it }
 
     internal lateinit var selfInfo: JceFriendInfo
 
@@ -588,7 +589,7 @@ internal abstract class QQAndroidBotBase constructor(
     @MiraiExperimentalAPI
     override suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int): GroupActiveData {
         val data = network.async {
-           MiraiPlatformUtils.Http.get<String> {
+            MiraiPlatformUtils.Http.get<String> {
                 url("https://qqweb.qq.com/c/activedata/get_mygroup_data")
                 parameter("bkn", bkn)
                 parameter("gc", groupId)

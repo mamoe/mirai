@@ -259,7 +259,8 @@ internal class MemberInfoImpl(
 ) : MemberInfo {
     override val uin: Long = jceInfo.memberUin
     override val nameCard: String = jceInfo.sName ?: ""
-    override val nick: String = jceInfo.nick
+    internal var _nick: String = jceInfo.nick
+    override val nick: String get() = _nick
     override val permission: MemberPermission = when {
         jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
         jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
