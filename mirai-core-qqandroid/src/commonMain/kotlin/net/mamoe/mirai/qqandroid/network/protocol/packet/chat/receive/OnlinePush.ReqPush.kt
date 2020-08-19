@@ -28,6 +28,8 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.contact.*
+import net.mamoe.mirai.qqandroid.contact.FriendImpl
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsGroupImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsInstance
@@ -572,6 +574,59 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             return sequenceOf(FriendAvatarChangedEvent(friend))
         }
 
+        fun ModProfile.transform(bot: QQAndroidBot): Sequence<Packet> {
+            return ArrayList<Packet>().apply {
+                var containsUnknown = false
+                msgProfileInfos?.forEach { modified ->
+                    when (modified.field) {
+                        20002 -> { // 昵称修改
+                            val value = modified.value
+                            val to = value.encodeToString()
+                            if (uin == bot.id) {
+                                val from = bot.nick
+                                bot.cachedNick = to
+                                add(
+                                    BotNickChangedEvent(
+                                        bot, from, to
+                                    )
+                                )
+                            } else {
+                                val friend = (bot.getFriendOrNull(uin) ?: return@forEach) as FriendImpl
+                                val info = friend.friendInfo
+                                val from = info.nick
+                                when (info) {
+                                    is FriendInfoImpl -> {
+                                        info.cachedNick = to
+                                    }
+                                    is MemberInfoImpl -> {
+                                        info._nick = to
+                                    }
+                                    else -> {
+                                        bot.network.logger.debug {
+                                            "Unknown how to update nick for $info"
+                                        }
+                                    }
+                                }
+                                add(
+                                    FriendNickChangedEvent(
+                                        friend, from, to
+                                    )
+                                )
+                            }
+                        }
+                        else -> {
+                            containsUnknown = true
+                        }
+                    }
+                }
+                if (msgProfileInfos == null || msgProfileInfos.isEmpty() || containsUnknown) {
+                    bot.network.logger.debug {
+                        "Transformers528 0x27L: new data: ${_miraiContentToString()}"
+                    }
+                }
+            }.asSequence()
+
+        }
 
         return@lambda528 vProtobuf.loadAs(SubMsgType0x27MsgBody.serializer()).msgModInfos.asSequence()
             .flatMap {
@@ -581,6 +636,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                     it.msgModGroupProfile != null -> it.msgModGroupProfile.transform(bot)
                     it.msgModGroupMemberProfile != null -> it.msgModGroupMemberProfile.transform(bot)
                     it.msgModCustomFace != null -> it.msgModCustomFace.transform(bot)
+                    it.msgModProfile != null -> it.msgModProfile.transform(bot)
                     else -> {
                         bot.network.logger.debug {
                             "Transformers528 0x27L: new data: ${it._miraiContentToString()}"
