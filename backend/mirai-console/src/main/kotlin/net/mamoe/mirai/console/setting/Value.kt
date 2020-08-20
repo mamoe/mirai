@@ -60,7 +60,10 @@ public class SerializableValue<T>(
 }
 
 /**
- * @see SerializableValue
+ * 带有显式 [序列化器][serializer] 的 [Value].
+ *
+ * @see SerializableValue 简单实现
+ * @see Setting.value 创建一个这样的 [SerializerAwareValue]
  */
 public interface SerializerAwareValue<T> : Value<T> {
     public val serializer: KSerializer<Unit>

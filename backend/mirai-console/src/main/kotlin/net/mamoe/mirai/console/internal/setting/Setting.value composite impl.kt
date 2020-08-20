@@ -101,7 +101,7 @@ internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
 }
 
 @PublishedApi
-internal fun KClass<*>.createInstance(): Any? {
+internal fun KClass<*>.createInstanceSmart(): Any? {
     return when (this) {
         MutableMap::class,
         Map::class,

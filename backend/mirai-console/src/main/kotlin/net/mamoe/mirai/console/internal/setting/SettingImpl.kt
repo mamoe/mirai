@@ -19,7 +19,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import net.mamoe.mirai.console.setting.SerializerAwareValue
+import net.mamoe.mirai.console.setting.AbstractSetting.ValueNode
 import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.setting.Value
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
@@ -34,23 +34,9 @@ internal val KProperty<*>.serialName: String get() = this.findAnnotation<SerialN
  * - Auto-saving
  */
 internal abstract class SettingImpl {
-    internal fun findNodeInstance(name: String): Node<*>? = valueNodes.firstOrNull { it.serialName == name }
+    internal fun findNodeInstance(name: String): ValueNode<*>? = valueNodes.firstOrNull { it.serialName == name }
 
-    internal data class Node<T>(
-        val serialName: String,
-        val value: Value<T>,
-        val updaterSerializer: KSerializer<Unit>
-    )
-
-    internal fun <T> SerializerAwareValue<T>.provideDelegateImpl(
-        property: KProperty<*>
-    ): SerializerAwareValue<T> {
-        val name = property.serialName
-        valueNodes.add(Node(name, this, this.serializer))
-        return this
-    }
-
-    internal val valueNodes: MutableList<Node<*>> = mutableListOf()
+    internal abstract val valueNodes: MutableList<ValueNode<*>>
 
     internal open val updaterSerializer: KSerializer<Unit> = object : KSerializer<Unit> {
         override val descriptor: SerialDescriptor get() = settingUpdaterSerializerDescriptor

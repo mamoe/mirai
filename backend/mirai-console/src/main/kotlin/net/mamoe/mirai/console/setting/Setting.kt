@@ -16,8 +16,8 @@ import net.mamoe.mirai.console.internal.setting.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.loadSetting
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 
@@ -50,21 +50,42 @@ public typealias SerialName = kotlinx.serialization.SerialName
  */
 public abstract class AbstractSetting : Setting, SettingImpl() {
     /**
+     * 添加了追踪的 [ValueNode] 列表, 即通过 `by value` 初始化的属性列表.
+     *
+     * 他们的修改会被跟踪, 并触发 [onValueChanged].
+     *
+     * @see provideDelegate
+     */
+    public override val valueNodes: MutableList<ValueNode<*>> = mutableListOf()
+
+    /**
+     * 由 [provideDelegate] 创建, 来自一个通过 `by value` 初始化的属性.
+     */
+    public data class ValueNode<T>(
+        val serialName: String,
+        val value: Value<T>,
+        @ConsoleExperimentalAPI
+        val updaterSerializer: KSerializer<Unit>
+    )
+
+    /**
      * 使用 `by` 时自动调用此方法, 添加对 [Value] 的值修改的跟踪.
+     *
+     * 将会创建一个 [ValueNode] 并添加到 [valueNodes]
      */
     public final override operator fun <T> SerializerAwareValue<T>.provideDelegate(
         thisRef: Any?,
         property: KProperty<*>
     ): SerializerAwareValue<T> {
         val name = property.serialName
-        valueNodes.add(Node(name, this, this.serializer))
+        valueNodes.add(ValueNode(name, this, this.serializer))
         return this
     }
 
     /**
-     * 值更新序列化器. 仅供内部使用
+     * 值更新序列化器. 仅供内部使用.
      */
-    @ConsoleInternalAPI
+    @ConsoleExperimentalAPI
     public final override val updaterSerializer: KSerializer<Unit>
         get() = super.updaterSerializer
 
@@ -77,11 +98,11 @@ public abstract class AbstractSetting : Setting, SettingImpl() {
 /**
  * 一个配置对象. 可包含对多个 [Value] 的值变更的跟踪.
  *
- * 在 [JvmPlugin] 的实现方式:
+ * 在 [JvmPlugin] 的典型实现方式:
  * ```
  * object PluginMain : KotlinPlugin()
  *
- * object AccountSettings : Setting by PluginMain.getSetting() {
+ * object AccountSettings : Setting by PluginMain.loadSetting() {
  *    val map: Map<String, String> by value("a" to "b")
  * }
  * ```
@@ -100,6 +121,7 @@ public interface Setting : ExperimentalSettingExtensions {
     /**
      * 值更新序列化器. 仅供内部使用
      */
+    @ConsoleExperimentalAPI
     public val updaterSerializer: KSerializer<Unit>
 
     /**
@@ -144,27 +166,33 @@ public fun Setting.value(default: String): SerializerAwareValue<String> = valueI
 
 
 /**
- * Creates a [Value] with reified type, and set default value.
+ * 通过具体化类型创建一个 [SerializerAwareValue], 并设置初始值.
  *
- * @param T reified param type T.
- * Supports only primitives, Kotlin built-in collections,
- * and classes that are serializable with Kotlinx.serialization
- * (typically annotated with [kotlinx.serialization.Serializable])
+ * @param T 具体化参数类型 T. 仅支持:
+ * - 基础数据类型
+ * - 标准库集合类型 ([List], [Map], [Set])
+ * - 标准库数据类型 ([Map.Entry], [Pair], [Triple])
+ * - 和使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的
  */
 @Suppress("UNCHECKED_CAST")
 @LowPriorityInOverloadResolution
 public inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T> = valueFromKType(typeOf0<T>(), default)
 
 /**
- * Creates a [Value] with reified type, and set default value by reflection to its no-arg public constructor.
+ * 通过具体化类型创建一个 [SerializerAwareValue].
  *
- * @param T reified param type T.
- * Supports only primitives, Kotlin built-in collections,
- * and classes that are serializable with Kotlinx.serialization
- * (typically annotated with [kotlinx.serialization.Serializable])
+ * 对于 [List], [Map], [Set] 等标准库类型, 这个函数会尝试构造 [LinkedHashMap] 等相关类型.
+ * 而对于自定义数据类型, 本函数只会反射获取 [objectInstance][KClass.objectInstance] 或使用无参构造器构造实例.
+ *
+ * @param T 具体化参数类型 T. 仅支持:
+ * - 基础数据类型
+ * - 标准库集合类型 ([List], [Map], [Set])
+ * - 标准库数据类型 ([Map.Entry], [Pair], [Triple])
+ * - 和使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的
  */
 @LowPriorityInOverloadResolution
-public inline fun <reified T> Setting.value(): SerializerAwareValue<T> = value(T::class.createInstance() as T)
+public inline fun <reified T> Setting.value(): SerializerAwareValue<T> =
+    value(T::class.run { objectInstance ?: createInstanceSmart() } as T)
 
 /**
  * Creates a [Value] with specified [KType], and set default value.
