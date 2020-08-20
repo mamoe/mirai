@@ -49,7 +49,7 @@ internal abstract class JvmPluginInternal(
     @Suppress("PropertyName")
     internal open lateinit var _description: JvmPluginDescription
 
-    override val description: JvmPluginDescription get() = _description
+    final override val description: JvmPluginDescription get() = _description
 
     final override val logger: MiraiLogger by lazy {
         MiraiConsole.newLogger(
@@ -59,7 +59,7 @@ internal abstract class JvmPluginInternal(
 
     private var firstRun = true
 
-    override val dataFolder: File by lazy {
+    final override val dataFolder: File by lazy {
         File(
             PluginManager.pluginsDataFolder,
             description.name
