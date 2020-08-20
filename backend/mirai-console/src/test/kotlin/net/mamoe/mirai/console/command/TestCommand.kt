@@ -27,8 +27,8 @@ import net.mamoe.mirai.console.command.description.CommandArgumentParser
 import net.mamoe.mirai.console.initTestEnvironment
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.message.data.toMessage
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -107,7 +107,7 @@ internal class TestCommand {
     @Test
     fun testSimpleArgsSplitting() = runBlocking {
         assertEquals(arrayOf("test", "ttt", "tt").contentToString(), withTesting<Array<String>> {
-            TestSimpleCommand.execute(sender, "test ttt tt".toMessage())
+            TestSimpleCommand.execute(sender, PlainText("test ttt tt"))
         }.contentToString())
     }
 
