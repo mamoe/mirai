@@ -51,7 +51,7 @@ internal fun startup() {
     DefaultLogger = { MiraiConsoleFrontEndPure.loggerFor(it) }
     overrideSTD()
     MiraiConsoleImplementationPure().start()
-    startConsoleThread()
+    startupConsoleThread()
 }
 
 internal fun overrideSTD() {
@@ -71,56 +71,6 @@ internal fun overrideSTD() {
     )
 }
 
-internal fun startConsoleThread() {
-    thread(name = "Console Input") {
-        val consoleLogger = DefaultLogger("Console")
-        try {
-            kotlinx.coroutines.runBlocking {
-                while (isActive) {
-                    val next = MiraiConsoleFrontEndPure.requestInput("").let {
-                        when {
-                            it.startsWith(CommandManager.commandPrefix) -> {
-                                it
-                            }
-                            it == "?" -> CommandManager.commandPrefix + BuiltInCommands.Help.primaryName
-                            else -> CommandManager.commandPrefix + it
-                        }
-                    }
-                    if (next.isBlank()) {
-                        continue
-                    }
-                    consoleLogger.debug("INPUT> $next")
-                    val result = ConsoleCommandSenderImpl.executeCommandDetailed(next)
-                    when (result.status) {
-                        CommandExecuteStatus.SUCCESSFUL -> {
-                        }
-                        CommandExecuteStatus.EXECUTION_EXCEPTION -> {
-                            result.exception?.printStackTrace()
-                        }
-                        CommandExecuteStatus.COMMAND_NOT_FOUND -> {
-                            consoleLogger.warning("Unknown command: ${result.commandName}")
-                        }
-                        CommandExecuteStatus.PERMISSION_DENIED -> {
-                            consoleLogger.warning("Permission denied.")
-                        }
-
-                    }
-                }
-            }
-        } catch (e: InterruptedException) {
-            return@thread
-        }
-    }.let { thread ->
-        MiraiConsole.job.invokeOnCompletion {
-            runCatching {
-                thread.interrupt()
-            }.exceptionOrNull()?.printStackTrace()
-            runCatching {
-                ConsoleUtils.terminal.close()
-            }.exceptionOrNull()?.printStackTrace()
-        }
-    }
-}
 
 internal object ConsoleCommandSenderImpl : ConsoleCommandSender() {
     override suspend fun sendMessage(message: Message) {

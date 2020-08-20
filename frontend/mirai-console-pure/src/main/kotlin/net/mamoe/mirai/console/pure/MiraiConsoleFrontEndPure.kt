@@ -22,6 +22,7 @@ package net.mamoe.mirai.console.pure
 
 //import net.mamoe.mirai.console.command.CommandManager
 //import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
+import io.ktor.utils.io.concurrent.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
@@ -71,9 +72,15 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
     const val COLOR_RESET = "\u001b[39;49m"
     // }
 
-    private val sdf by lazy {
+    internal val sdf by ThreadLocal.withInitial {
+        // SimpleDateFormat not thread safe.
         SimpleDateFormat("HH:mm:ss")
     }
+
+    private operator fun <T> ThreadLocal<T>.getValue(thiz: Any, property: Any): T {
+        return this.get()
+    }
+
     override val name: String
         get() = "Pure"
     override val version: String
@@ -90,27 +97,18 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
     }
 
     override suspend fun requestInput(hint: String): String {
-        if (hint.isNotEmpty()) {
-            ConsoleUtils.lineReader.printAbove(
-                Ansi.ansi()
-                    .fgCyan().a(sdf.format(Date()))
-                    .fgMagenta().a(hint)
-                    .toString()
-            )
-        }
-        return withContext(Dispatchers.IO) {
-            ConsoleUtils.lineReader.readLine("> ")
-        }
+        return ConsoleUtils.miraiLineReader(hint)
     }
 
     override fun createLoginSolver(): LoginSolver {
         return DefaultLoginSolver(
             input = suspend {
-                requestInput("")
+                requestInput("LOGIN> ")
             }
         )
     }
 }
+
 
 /*
 class MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
