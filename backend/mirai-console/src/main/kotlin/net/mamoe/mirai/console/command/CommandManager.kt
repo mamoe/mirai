@@ -140,6 +140,8 @@ public interface CommandManager {
     public suspend fun CommandSender.executeCommandDetailed(messages: MessageChain): CommandExecuteResult
 
     public companion object INSTANCE : CommandManager by CommandManagerImpl {
+        // TODO: 2020/8/20 https://youtrack.jetbrains.com/issue/KT-41191
+
         override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.run { registeredCommands }
         override fun CommandOwner.unregisterAllCommands(): Unit = CommandManagerImpl.run { unregisterAllCommands() }
         override fun Command.register(override: Boolean): Boolean = CommandManagerImpl.run { register(override) }
