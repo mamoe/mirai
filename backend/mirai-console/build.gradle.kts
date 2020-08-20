@@ -107,23 +107,25 @@ tasks {
     val fillBuildConstants by registering {
         group = "mirai"
         doLast {
-            (compileKotlin as KotlinCompile).source.filter { it.name == "MiraiConsole.kt" }.single().let { file ->
-                file.writeText(file.readText()
-                    .replace(Regex("""val buildDate: Date = Date\((.*)\) //(.*)""")) {
-                        """
+            (compileKotlin as KotlinCompile).source.filter { it.name == "MiraiConsoleBuildConstants.kt" }.single()
+                .let { file ->
+                    file.writeText(
+                        file.readText()
+                            .replace(Regex("""val buildDate: Date = Date\((.*)\) //(.*)""")) {
+                                """
                         val buildDate: Date = Date(${System.currentTimeMillis()}L) // ${
-                            SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
-                                timeZone = TimeZone.getTimeZone("GMT+8")
-                            }.format(Date())
-                        }
+                                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
+                                        timeZone = TimeZone.getTimeZone("GMT+8")
+                                    }.format(Date())
+                                }
                     """.trimIndent()
-                    }
-                    .replace(Regex("""const val version: String = "(.*)"""")) {
-                        """
+                            }
+                            .replace(Regex("""const val version: String = "(.*)"""")) {
+                                """
                         const val version: String = "${Versions.console}"
                     """.trimIndent()
-                    }
-                )
+                            }
+                    )
             }
         }
     }
