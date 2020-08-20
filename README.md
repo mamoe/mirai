@@ -5,7 +5,6 @@
 
 ----
 
-[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 ![Gradle CI](https://github.com/mamoe/mirai/workflows/Gradle%20CI/badge.svg?branch=master)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)  
 
@@ -25,23 +24,37 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 ## 声明
 
 ### 一切开发旨在学习，请勿用于非法用途
+
 - mirai 是完全免费且开放源代码的软件，仅供学习和娱乐用途使用
 - mirai 不会通过任何方式强制收取费用，或对使用者提出物质条件
 - mirai 由整个开源社区维护，并不是属于某个个体的作品，所有贡献者都享有其作品的著作权。
-```json
-   Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻信任何所谓学习, 交流群, 不造谣不传谣不信谣从我做起
+```
+Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻信任何所谓学习, 交流群, 不造谣不传谣不信谣从我做起
 ```
 
 ### 许可证
 
-**协议原版权归属腾讯科技股份有限公司所有，本项目其他代码遵守**：  
-[**GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions**](https://github.com/mamoe/mirai/blob/master/LICENSE) （简称 `AGPLv3 with Mamoe Exceptions`）, 建立在 [**GNU AFFERO GENERAL PUBLIC LICENSE version 3**](https://www.gnu.org/licenses/agpl-3.0.html) （简称 `AGPLv3`）的基础之上添加额外条件。
+    Copyright (C) 2019-2020 Mamoe Technologies and contributors.
 
-如果与 `AGPLv3` 冲突，则以 `AGPLv3 with Mamoe Exceptions` 的如下额外条件为准。
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
 
-- **所有衍生软件 *(衍生软件: 间接或直接接触到 mirai, 即使没有修改 mirai 源码的软件)* 必须使用相同协议 (AGPLv3 with Mamoe Exceptions) 开源**
-- **本软件禁止用于一切商业活动**
-- **本软件禁止收费传递, 或在传递时不提供源代码**
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+`mirai` 采用 `AGPLv3` 协议开源。为了整个社区的良性发展，我们**强烈建议**您做到以下几点：
+
+- **间接接触（包括但不限于使用 `httpapi` 或 跨进程技术）到 `mirai` 的软件使用 `AGPLv3` 开源**
+- **不鼓励，不支持一切商业使用**
+
+鉴于项目的特殊性，开发团队可能在任何时间**停止更新**或**删除项目**。
 
 ## 协议支持
 
@@ -144,8 +157,8 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 #### 从其他平台迁移
 
-- 酷Q的插件可以在 mirai 中加载，详见 [mirai-Native](https://github.com/iTXTech/mirai-native)
-- 使用 `酷Q HTTP API` 的插件将可以在 mirai 中通过`CQHTTP Mirai`加载，详见 [cqhttp-mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)
+- 酷Q的插件可以在 `mirai` 中加载，详见 [Mirai Native](https://github.com/iTXTech/mirai-native)
+- 使用 `酷Q HTTP API` 的插件将可以在 `mirai` 中通过`CQHTTP Mirai`加载，详见 [cqhttp-mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)
 
 
 ## [贡献](CONTRIBUTING.md)
