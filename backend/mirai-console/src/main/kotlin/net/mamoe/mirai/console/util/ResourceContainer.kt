@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 /**
  * 资源容器.
  *
- * 资源容器可能使用 [Class.getResourceAsStream], 也可能使用其他方式, 取决于实现方式.
+ * 资源容器可能使用 [Class.getResourceAsStream], [ClassLoader.getResourceAsStream], 也可能使用其他方式, 取决于实现方式.
  *
  * @see JvmPlugin [JvmPlugin] 通过 [ClassLoader.getResourceAsStream] 实现 [ResourceContainer], 使用 [ResourceContainer.asResourceContainer]
  */
@@ -46,13 +46,15 @@ public interface ResourceContainer {
     public companion object {
         /**
          * 使用 [Class.getResourceAsStream] 读取资源文件
+         *
+         * @see ClassLoader.asResourceContainer
          */
         @JvmStatic
         @JvmName("create")
         public fun KClass<*>.asResourceContainer(): ResourceContainer = this.java.asResourceContainer()
 
         /**
-         * 使用 [Class.getResourceAsStream] 读取资源文件
+         * 使用 [ClassLoader.getResourceAsStream] 读取资源文件
          */
         @JvmStatic
         @JvmName("create")

@@ -18,7 +18,7 @@
 
 object Versions {
     const val core = "1.2.1"
-    const val console = "1.0-M2"
+    const val console = "1.0-M2-1"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = "0.1.0"
     const val consolePure = console
@@ -36,5 +36,5 @@ object Versions {
 
     const val bintray = "1.8.5"
 
-    const val blockingBridge = "1.0.2"
+    const val blockingBridge = "1.0.3"
 }

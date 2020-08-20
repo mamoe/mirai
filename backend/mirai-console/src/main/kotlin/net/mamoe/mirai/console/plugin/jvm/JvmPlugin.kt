@@ -24,6 +24,9 @@ import kotlin.reflect.KClass
 /**
  * Java, Kotlin 或其他 JVM 平台插件
  *
+ * ### ResourceContainer
+ * 实现为 [ClassLoader.getResourceAsStream]
+ *
  * @see AbstractJvmPlugin 默认实现
  *
  * @see JavaPlugin Java 插件
@@ -46,20 +49,28 @@ public interface JvmPlugin : Plugin, CoroutineScope,
         get() = JarPluginLoader
 
     /**
-     * 获取一个 [Setting] 实例
+     * 从 [JarPluginLoader.settingStorage] 获取一个 [Setting] 实例
      */
     @JvmDefault
     public fun <T : Setting> loadSetting(clazz: Class<T>): T = loader.settingStorage.load(this, clazz)
 
-    // TODO: 2020/7/11 document onLoad, onEnable, onDisable
+    /**
+     * 在插件被加载时调用. 只会被调用一次.
+     */
     @JvmDefault
     public fun onLoad() {
     }
 
+    /**
+     * 在插件被启用时调用, 可能会被调用多次
+     */
     @JvmDefault
     public fun onEnable() {
     }
 
+    /**
+     * 在插件被关闭时调用, 可能会被调用多次
+     */
     @JvmDefault
     public fun onDisable() {
     }
