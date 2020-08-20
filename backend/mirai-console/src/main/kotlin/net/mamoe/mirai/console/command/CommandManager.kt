@@ -146,6 +146,7 @@ public interface CommandManager {
         override fun Command.findDuplicate(): Command? = CommandManagerImpl.run { findDuplicate() }
         override fun Command.unregister(): Boolean = CommandManagerImpl.run { unregister() }
         override fun Command.isRegistered(): Boolean = CommandManagerImpl.run { isRegistered() }
+        override val commandPrefix: String get() = CommandManagerImpl.commandPrefix
         override suspend fun CommandSender.executeCommand(vararg messages: Any): Command? =
             CommandManagerImpl.run { executeCommand(*messages) }
 
@@ -196,4 +197,4 @@ public abstract class PluginCommandOwner(
 /**
  * 代表控制台所有者. 所有的 mirai-console 内建的指令都属于 [ConsoleCommandOwner].
  */
-public object ConsoleCommandOwner : CommandOwner()
+internal object ConsoleCommandOwner : CommandOwner()

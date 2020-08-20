@@ -15,9 +15,9 @@ import net.mamoe.mirai.console.command.CompositeCommand
 import java.lang.reflect.Parameter
 import kotlin.reflect.KClass
 
-internal fun Parameter.toCommandParam(): CommandParam<*> {
+internal fun Parameter.toCommandParam(): CommandParameter<*> {
     val name = getAnnotation(CompositeCommand.Name::class.java)
-    return CommandParam(
+    return CommandParameter(
         name?.value ?: this.name
         ?: throw IllegalArgumentException("Cannot construct CommandParam from a unnamed param"),
         this.type.kotlin
@@ -28,7 +28,7 @@ internal fun Parameter.toCommandParam(): CommandParam<*> {
  * 指令形式参数.
  * @see toCommandParam
  */
-internal data class CommandParam<T : Any>(
+internal data class CommandParameter<T : Any>(
     /**
      * 参数名. 不允许重复.
      */

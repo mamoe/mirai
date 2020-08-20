@@ -15,6 +15,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
@@ -54,6 +55,7 @@ fun initTestEnvironment() {
         override val settingStorageForBuiltIns: SettingStorage get() = MemorySettingStorage()
         override val coroutineContext: CoroutineContext = SupervisorJob()
     }.start()
+    CommandManager
 }
 
 internal object Testing {

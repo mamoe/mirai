@@ -12,10 +12,9 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
-import net.mamoe.mirai.console.command.description.CommandParam
+import net.mamoe.mirai.console.command.description.CommandParameter
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
 import kotlin.reflect.KAnnotatedElement
@@ -90,7 +89,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
             }.map { function ->
                 createSubCommand(function, context)
             }.toTypedArray().also {
-                _usage = it.firstOrNull()?.usage ?: description
+                _usage = it.createUsage(this)
             }.also { checkSubCommand(it) }
     }
 
@@ -112,16 +111,16 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
         val onCommand: suspend (sender: CommandSender, rawArgs: Array<out Any>) -> Unit
     )
 
-    internal class SubCommandDescriptor(
+    internal inner class SubCommandDescriptor(
         val names: Array<out String>,
-        val params: Array<CommandParam<*>>,
+        val params: Array<CommandParameter<*>>,
         val description: String,
         val permission: CommandPermission,
         val onCommand: suspend (sender: CommandSender, parsedArgs: Array<out Any>) -> Boolean,
-        val context: CommandArgumentContext,
-        val usage: String
+        val context: CommandArgumentContext
     ) {
-        internal suspend inline fun parseAndExecute(
+        val usage: String = createUsage(this@AbstractReflectionCommand)
+        internal suspend fun parseAndExecute(
             sender: CommandSender,
             argsWithSubCommandNameNotRemoved: Array<out Any>,
             removeSubName: Boolean
@@ -159,7 +158,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
      * @param rawArgs 元素类型必须为 [SingleMessage] 或 [String], 且已经经过扁平化处理. 否则抛出异常 [IllegalArgumentException]
      */
     internal fun matchSubCommand(rawArgs: Array<out Any>): SubCommandDescriptor? {
-        val maxCount = rawArgs.size - 1
+        val maxCount = rawArgs.size
         var cur = 0
         bakedCommandNameToSubDescriptorArray.forEach { (name, descriptor) ->
             if (name.size != cur) {
@@ -209,6 +208,29 @@ internal inline fun <T : Any> KClass<out T>.getInstance(): T {
 
 internal val KClass<*>.qualifiedNameOrTip: String get() = this.qualifiedName ?: "<anonymous class>"
 
+internal fun Array<AbstractReflectionCommand.SubCommandDescriptor>.createUsage(baseCommand: AbstractReflectionCommand): String =
+    buildString {
+        appendLine(baseCommand.description)
+        appendLine()
+
+        for (subCommandDescriptor in this@createUsage) {
+            appendLine(subCommandDescriptor.usage)
+        }
+    }.trimEnd()
+
+internal fun AbstractReflectionCommand.SubCommandDescriptor.createUsage(baseCommand: AbstractReflectionCommand): String =
+    buildString {
+        if (!baseCommand.prefixOptional) {
+            append(CommandManager.commandPrefix)
+        }
+        append(names.first())
+        append(" ")
+        append(params.joinToString(" ") { "<${it.name}>" })
+        append("   ")
+        append(description)
+        appendLine()
+    }.trimEnd()
+
 internal fun AbstractReflectionCommand.createSubCommand(
     function: KFunction<*>,
     context: CommandArgumentContext
@@ -216,7 +238,7 @@ internal fun AbstractReflectionCommand.createSubCommand(
     val notStatic = !function.hasAnnotation<JvmStatic>()
     val overridePermission = function.findAnnotation<CompositeCommand.Permission>()//optional
     val subDescription =
-        function.findAnnotation<CompositeCommand.Description>()?.value ?: "<no description available>"
+        function.findAnnotation<CompositeCommand.Description>()?.value ?: ""
 
     fun KClass<*>.isValidReturnType(): Boolean {
         return when (this) {
@@ -269,26 +291,20 @@ internal fun AbstractReflectionCommand.createSubCommand(
                 }
             }
 
-    val buildUsage = StringBuilder(this.description).append(": \n")
-
     //map parameter
     val params = parameters.map { param ->
-        buildUsage.append("/$primaryName ")
 
         if (param.isOptional) error("optional parameters are not yet supported. (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)")
 
-        val argName = param.findAnnotation<CompositeCommand.Name>()?.value ?: param.name ?: "unknown"
-        buildUsage.append("<").append(argName).append("> ").append(" ")
-        CommandParam(
-            argName,
+        val paramName = param.findAnnotation<CompositeCommand.Name>()?.value ?: param.name ?: "unknown"
+        CommandParameter(
+            paramName,
             (param.type.classifier as? KClass<*>)
                 ?: throw IllegalArgumentException("unsolved type reference from param " + param.name + ". (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)")
         )
     }.toTypedArray()
 
-    buildUsage.append(subDescription).append("\n")
-
-    return AbstractReflectionCommand.SubCommandDescriptor(
+    return SubCommandDescriptor(
         commandName,
         params,
         subDescription,
@@ -309,7 +325,6 @@ internal fun AbstractReflectionCommand.createSubCommand(
 
             result as? Boolean ?: true // Unit, void is considered as true.
         },
-        context = context,
-        usage = buildUsage.toString()
+        context = context
     )
 }
