@@ -180,6 +180,14 @@ public inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T>
 
 /**
  * 通过具体化类型创建一个 [SerializerAwareValue].
+ * @see valueFromKType 查看更多实现信息
+ */
+@LowPriorityInOverloadResolution
+public inline fun <reified T> Setting.value(): SerializerAwareValue<T> =
+    value(T::class.run { objectInstance ?: createInstanceSmart() } as T)
+
+/**
+ * 通过一个特定的 [KType] 创建 [Value], 并设置初始值.
  *
  * 对于 [List], [Map], [Set] 等标准库类型, 这个函数会尝试构造 [LinkedHashMap] 等相关类型.
  * 而对于自定义数据类型, 本函数只会反射获取 [objectInstance][KClass.objectInstance] 或使用无参构造器构造实例.
@@ -189,13 +197,6 @@ public inline fun <reified T> Setting.value(default: T): SerializerAwareValue<T>
  * - 标准库集合类型 ([List], [Map], [Set])
  * - 标准库数据类型 ([Map.Entry], [Pair], [Triple])
  * - 和使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的
- */
-@LowPriorityInOverloadResolution
-public inline fun <reified T> Setting.value(): SerializerAwareValue<T> =
-    value(T::class.run { objectInstance ?: createInstanceSmart() } as T)
-
-/**
- * Creates a [Value] with specified [KType], and set default value.
  */
 @Suppress("UNCHECKED_CAST")
 @ConsoleExperimentalAPI

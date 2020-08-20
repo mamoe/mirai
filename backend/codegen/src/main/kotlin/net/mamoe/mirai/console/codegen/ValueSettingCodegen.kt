@@ -29,7 +29,7 @@ internal object ValueSettingCodegen {
             appendKCode(
                 """
                     /**
-                     * Represents a non-null [$ktType] value.
+                     * 表示一个不可空 [$ktType] [Value].
                      */
                     public interface ${ktType}Value : PrimitiveValue<$ktType>
                 """
