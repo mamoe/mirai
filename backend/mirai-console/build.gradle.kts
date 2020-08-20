@@ -33,7 +33,7 @@ kotlin {
         target.compilations.all {
             kotlinOptions {
                 jvmTarget = "1.8"
-                freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
+                freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=enable"
                 //useIR = true
             }
         }
