@@ -11,10 +11,11 @@ package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
+import net.mamoe.mirai.console.command.CommandExecuteStatus
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommandDetailed
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.DefaultLogger
 import org.fusesource.jansi.Ansi
@@ -22,7 +23,7 @@ import java.util.*
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
-@ConsoleInternalAPI
+@OptIn(ConsoleInternalAPI::class)
 internal fun startupConsoleThread() {
     val service = Executors.newSingleThreadExecutor { code ->
         thread(start = false, isDaemon = false, name = "Console Input", block = code::run)
@@ -44,21 +45,6 @@ internal fun startupConsoleThread() {
             )
         }
     }
-
-    /*
-    object : AbstractCommand(ConsoleCommandOwner, "test") {
-        override val usage: String
-            get() = "? Why usage"
-
-        override suspend fun CommandSender.onCommand(args: Array<out Any>) {
-            withContext(Dispatchers.IO) {
-                launch { sendMessage("I1> " + MiraiConsole.frontEnd.requestInput("Value 1")) }
-                launch { sendMessage("I2> " + MiraiConsole.frontEnd.requestInput("Value 2")) }
-            }
-        }
-
-    }.register(true)
-    */
 
     CoroutineScope(dispatch).launch {
         val consoleLogger = DefaultLogger("Console")
