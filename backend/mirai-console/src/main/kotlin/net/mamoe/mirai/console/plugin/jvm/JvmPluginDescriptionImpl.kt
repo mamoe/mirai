@@ -14,14 +14,28 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.console.internal.setting.SemverAsStringSerializerLoose
-import net.mamoe.mirai.console.plugin.FilePluginDescription
 import net.mamoe.mirai.console.plugin.PluginDependency
 import net.mamoe.mirai.console.plugin.PluginDescription
 import net.mamoe.mirai.console.plugin.PluginKind
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.io.File
 
+@MiraiExperimentalAPI
 @Serializable
-public class JvmPluginDescription internal constructor(
+public data class JvmMemoryPluginDescription(
+    public override val kind: PluginKind,
+    public override val name: String,
+    public override val author: String,
+    public override val version: @Serializable(with = SemverAsStringSerializerLoose::class) Semver,
+    public override val info: String,
+    public override val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency>
+) : JvmPluginDescription
+
+public interface JvmPluginDescription : PluginDescription
+
+@MiraiExperimentalAPI
+@Serializable
+public class JvmPluginDescriptionImpl internal constructor(
     public override val kind: PluginKind = PluginKind.NORMAL,
     public override val name: String,
     @SerialName("main")
@@ -31,7 +45,7 @@ public class JvmPluginDescription internal constructor(
     public override val info: String = "",
     @SerialName("depends")
     public override val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency> = listOf()
-) : PluginDescription, FilePluginDescription {
+) : JvmPluginDescription {
 
     /**
      * 在手动实现时使用这个构造器.
@@ -45,7 +59,7 @@ public class JvmPluginDescription internal constructor(
         this._file = file
     }
 
-    public override val file: File
+    public val file: File
         get() = _file ?: error("Internal error: JvmPluginDescription(name=$name)._file == null")
 
 

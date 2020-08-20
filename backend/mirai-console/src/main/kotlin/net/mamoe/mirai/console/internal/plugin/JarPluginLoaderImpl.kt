@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionImpl
 import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
@@ -56,14 +57,14 @@ internal object JarPluginLoaderImpl :
     override val JvmPlugin.description: JvmPluginDescription
         get() = this.description
 
-    override fun Sequence<File>.mapToDescription(): List<JvmPluginDescription> {
+    override fun Sequence<File>.mapToDescription(): List<JvmPluginDescriptionImpl> {
         return this.associateWith { URI("jar:file:${it.absolutePath.replace('\\', '/')}!/plugin.yml").toURL() }
             .mapNotNull { (file, url) ->
                 kotlin.runCatching {
                     url.readText()
                 }.fold(
                     onSuccess = { yaml ->
-                        Yaml.nonStrict.decodeFromString(JvmPluginDescription.serializer(), yaml)
+                        Yaml.nonStrict.decodeFromString(JvmPluginDescriptionImpl.serializer(), yaml)
                     },
                     onFailure = {
                         logger.error("Cannot load plugin file ${file.name}", it)
@@ -73,10 +74,12 @@ internal object JarPluginLoaderImpl :
             }
     }
 
-    @Suppress("RemoveExplicitTypeArguments") // until Kotlin 1.4 NI
     @Throws(PluginLoadException::class)
-    override fun load(description: JvmPluginDescription): JvmPlugin =
-        description.runCatching<JvmPluginDescription, JvmPlugin> {
+    override fun load(description: JvmPluginDescription): JvmPlugin {
+        require(description is JvmPluginDescriptionImpl) {
+            "Illegal description: ${description::class.qualifiedName}"
+        }
+        return description.runCatching {
             ensureActive()
             val main = classLoader.loadPluginMainClassByJarFile(
                 pluginName = name,
@@ -98,9 +101,10 @@ internal object JarPluginLoaderImpl :
                 main.internalOnLoad()
             } else main.onLoad()
             main
-        }.getOrElse<JvmPlugin, JvmPlugin> {
+        }.getOrElse {
             throw PluginLoadException("Exception while loading ${description.name}", it)
         }
+    }
 
     override fun enable(plugin: JvmPlugin) {
         ensureActive()

@@ -56,7 +56,7 @@ public enum class PluginKind {
 }
 
 /** 插件的一个依赖的信息 */
-@Serializable
+@Serializable(with = PluginDependency.SmartSerializer::class)
 public data class PluginDependency(
     /** 依赖插件名 */
     public val name: String,
