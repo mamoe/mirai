@@ -153,9 +153,6 @@ public interface CommandManager {
         override suspend fun CommandSender.executeCommand(message: MessageChain): Command? =
             CommandManagerImpl.run { executeCommand(message) }
 
-        override val commandPrefix: String
-            get() = CommandManagerImpl.commandPrefix
-
         override suspend fun Command.execute(
             sender: CommandSender,
             args: MessageChain,
