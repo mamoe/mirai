@@ -178,10 +178,10 @@ public interface AutoSaveSettingHolder : SettingHolder, CoroutineScope {
      */
     @JvmDefault
     public override fun <T : Setting> newSettingInstance(type: KType): T {
-        val classifier = type.classifier?.cast<KClass<*>>()?.java
-        require(classifier == Setting::class.java) {
+        val classifier = type.classifier?.cast<KClass<Setting>>()
+        require(classifier != null && classifier.java == Setting::class.java) {
             "Cannot create Setting instance. AutoSaveSettingHolder supports only Setting type."
         }
-        return AutoSaveSetting(this) as T // T is always Setting
+        return AutoSaveSetting(this, classifier) as T // T is always Setting
     }
 }

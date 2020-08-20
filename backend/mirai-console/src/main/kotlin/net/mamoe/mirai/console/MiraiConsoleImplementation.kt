@@ -24,6 +24,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.annotation.AnnotationTarget.*
+import kotlin.coroutines.CoroutineContext
 
 
 /**
@@ -44,6 +45,11 @@ public annotation class ConsoleFrontEndImplementation
  */
 @ConsoleFrontEndImplementation
 public interface MiraiConsoleImplementation : CoroutineScope {
+    /**
+     * [MiraiConsole] 的 [CoroutineScope.coroutineContext]
+     */
+    public override val coroutineContext: CoroutineContext
+
     /**
      * Console 运行路径
      */

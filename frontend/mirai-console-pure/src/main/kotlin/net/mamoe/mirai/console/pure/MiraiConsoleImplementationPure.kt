@@ -48,14 +48,13 @@ class MiraiConsoleImplementationPure
 @JvmOverloads constructor(
     override val rootDir: File = File("."),
     override val builtInPluginLoaders: List<PluginLoader<*, *>> = Collections.unmodifiableList(
-        listOf(
-            DeferredPluginLoader { JarPluginLoader })
+        listOf(DeferredPluginLoader { JarPluginLoader })
     ),
     override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure,
     override val mainLogger: MiraiLogger = frontEnd.loggerFor("main"),
     override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
-    override val settingStorageForJarPluginLoader: SettingStorage = MultiFileSettingStorage(rootDir),
-    override val settingStorageForBuiltIns: SettingStorage = MultiFileSettingStorage(rootDir)
+    override val settingStorageForJarPluginLoader: SettingStorage = MultiFileSettingStorage(File(rootDir, "data")),
+    override val settingStorageForBuiltIns: SettingStorage = MultiFileSettingStorage(File(rootDir, "data"))
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(SupervisorJob()) {
     init {
         rootDir.mkdir()

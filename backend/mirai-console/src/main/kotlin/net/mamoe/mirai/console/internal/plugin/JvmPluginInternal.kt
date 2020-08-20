@@ -11,10 +11,7 @@ package net.mamoe.mirai.console.internal.plugin
 
 import kotlinx.atomicfu.AtomicLong
 import kotlinx.atomicfu.locks.withLock
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
@@ -69,6 +66,7 @@ internal abstract class JvmPluginInternal(
     internal fun internalOnDisable() {
         firstRun = false
         this.onDisable()
+        this.cancel(CancellationException("plugin disabled"))
     }
 
     internal fun internalOnLoad() {

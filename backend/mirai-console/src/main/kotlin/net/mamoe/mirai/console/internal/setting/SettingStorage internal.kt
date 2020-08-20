@@ -10,10 +10,7 @@
 package net.mamoe.mirai.console.internal.setting
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.plugin.jvm.loadSetting
@@ -36,7 +33,10 @@ import kotlin.reflect.full.findAnnotation
  *
  * @see loadSetting
  */
-internal open class AutoSaveSetting(private val owner: AutoSaveSettingHolder) :
+internal open class AutoSaveSetting(
+    private val owner: AutoSaveSettingHolder,
+    internal val originSettingClass: KClass<out Setting>
+) :
     AbstractSetting() {
     private lateinit var storage: SettingStorage
 
@@ -54,7 +54,8 @@ internal open class AutoSaveSetting(private val owner: AutoSaveSettingHolder) :
     internal var currentFirstStartTime = atomic(0L)
 
     init {
-        owner.coroutineContext[Job]?.invokeOnCompletion { doSave() }
+        @OptIn(InternalCoroutinesApi::class)
+        owner.coroutineContext[Job]?.invokeOnCompletion(true) { doSave() }
     }
 
     private val updaterBlock: suspend CoroutineScope.() -> Unit = {
@@ -125,10 +126,12 @@ internal class MemorySettingStorageImpl(
 internal open class MultiFileSettingStorageImpl(
     public final override val directory: File
 ) : SettingStorage, MultiFileSettingStorage {
+    init {
+        directory.mkdir()
+    }
+
     public override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T =
         with(settingClass.kotlin) {
-            val file = getSettingFile(holder, this)
-
             @Suppress("UNCHECKED_CAST")
             val instance = objectInstance ?: this.createInstanceOrNull() ?: kotlin.run {
                 require(settingClass == Setting::class.java) {
@@ -136,15 +139,20 @@ internal open class MultiFileSettingStorageImpl(
                             "or has a constructor which either has no parameters or all parameters of which are optional"
                 }
                 if (holder is AutoSaveSettingHolder) {
-                    AutoSaveSetting(holder) as T?
+                    AutoSaveSetting(holder, this) as T?
                 } else null
             } ?: throw IllegalArgumentException(
                 "Cannot create Setting instance. Make sure 'holder' is a AutoSaveSettingHolder, " +
                         "or 'setting' is an object or has a constructor which either has no parameters or all parameters of which are optional"
             )
+
+            val file = getSettingFile(holder, this)
             file.createNewFile()
             check(file.exists() && file.isFile && file.canRead()) { "${file.absolutePath} cannot be read" }
-            Yaml.default.decodeFromString(instance.updaterSerializer, file.readText())
+            val text = file.readText()
+            if (text.isNotBlank()) {
+                Yaml.default.decodeFromString(instance.updaterSerializer, file.readText())
+            }
             instance
         }.also { it.setStorage(this) }
 
@@ -155,6 +163,7 @@ internal open class MultiFileSettingStorageImpl(
         if (dir.isFile) {
             error("Target directory ${dir.path} for holder $holder is occupied by a file therefore setting $qualifiedNameOrTip can't be saved.")
         }
+        dir.mkdir()
 
         val file = File(directory, name)
         if (file.isDirectory) {
@@ -164,8 +173,9 @@ internal open class MultiFileSettingStorageImpl(
     }
 
     @ConsoleExperimentalAPI
-    public override fun store(holder: SettingHolder, setting: Setting): Unit = with(setting::class) {
-        val file = getSettingFile(holder, this)
+    public override fun store(holder: SettingHolder, setting: Setting) {
+        val file =
+            getSettingFile(holder, if (setting is AutoSaveSetting) setting.originSettingClass else setting::class)
 
         if (file.exists() && file.isFile && file.canRead()) {
             file.writeText(Yaml.default.encodeToString(setting.updaterSerializer, Unit))

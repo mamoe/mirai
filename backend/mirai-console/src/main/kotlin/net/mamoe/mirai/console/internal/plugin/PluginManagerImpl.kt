@@ -12,6 +12,8 @@
 package net.mamoe.mirai.console.internal.plugin
 
 import kotlinx.atomicfu.locks.withLock
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.setting.cast
 import net.mamoe.mirai.console.plugin.*
@@ -54,6 +56,12 @@ internal object PluginManagerImpl : PluginManager {
         _pluginLoaders.remove(loader)
     }
 
+    init {
+        @OptIn(InternalCoroutinesApi::class)
+        MiraiConsole.coroutineContext[Job]!!.invokeOnCompletion(true) {
+            plugins.forEach(Plugin::disable)
+        }
+    }
 
     // region LOADING
 

@@ -46,7 +46,7 @@ internal fun startupConsoleThread() {
         }
     }
 
-    CoroutineScope(dispatch).launch {
+    CoroutineScope(dispatch + SupervisorJob()).launch {
         val consoleLogger = DefaultLogger("console")
         while (isActive) {
             try {

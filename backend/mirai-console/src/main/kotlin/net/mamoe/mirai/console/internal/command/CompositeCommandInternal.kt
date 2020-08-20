@@ -24,15 +24,20 @@ import kotlin.reflect.full.*
 
 internal object CompositeCommandSubCommandAnnotationResolver :
     AbstractReflectionCommand.SubCommandAnnotationResolver {
-    override fun hasAnnotation(function: KFunction<*>) = function.hasAnnotation<CompositeCommand.SubCommand>()
-    override fun getSubCommandNames(function: KFunction<*>): Array<out String> =
+    override fun hasAnnotation(baseCommand: AbstractReflectionCommand, function: KFunction<*>) =
+        function.hasAnnotation<CompositeCommand.SubCommand>()
+
+    override fun getSubCommandNames(baseCommand: AbstractReflectionCommand, function: KFunction<*>): Array<out String> =
         function.findAnnotation<CompositeCommand.SubCommand>()!!.value
 }
 
 internal object SimpleCommandSubCommandAnnotationResolver :
     AbstractReflectionCommand.SubCommandAnnotationResolver {
-    override fun hasAnnotation(function: KFunction<*>) = function.hasAnnotation<SimpleCommand.Handler>()
-    override fun getSubCommandNames(function: KFunction<*>): Array<out String> = arrayOf("")
+    override fun hasAnnotation(baseCommand: AbstractReflectionCommand, function: KFunction<*>) =
+        function.hasAnnotation<SimpleCommand.Handler>()
+
+    override fun getSubCommandNames(baseCommand: AbstractReflectionCommand, function: KFunction<*>): Array<out String> =
+        baseCommand.names
 }
 
 internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
@@ -74,12 +79,12 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     }
 
     interface SubCommandAnnotationResolver {
-        fun hasAnnotation(function: KFunction<*>): Boolean
-        fun getSubCommandNames(function: KFunction<*>): Array<out String>
+        fun hasAnnotation(baseCommand: AbstractReflectionCommand, function: KFunction<*>): Boolean
+        fun getSubCommandNames(baseCommand: AbstractReflectionCommand, function: KFunction<*>): Array<out String>
     }
 
     internal val subCommands: Array<SubCommandDescriptor> by lazy {
-        this::class.declaredFunctions.filter { subCommandAnnotationResolver.hasAnnotation(it) }
+        this::class.declaredFunctions.filter { subCommandAnnotationResolver.hasAnnotation(this, it) }
             .also { subCommandFunctions ->
                 // overloading not yet supported
                 val overloadFunction = subCommandFunctions.groupBy { it.name }.entries.firstOrNull { it.value.size > 1 }
@@ -278,7 +283,7 @@ internal fun AbstractReflectionCommand.createSubCommand(
     }
 
     val commandName =
-        subCommandAnnotationResolver.getSubCommandNames(function)
+        subCommandAnnotationResolver.getSubCommandNames(this, function)
             .let { namesFromAnnotation ->
                 if (namesFromAnnotation.isNotEmpty()) {
                     namesFromAnnotation

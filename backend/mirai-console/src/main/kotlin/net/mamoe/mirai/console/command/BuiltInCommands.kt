@@ -107,7 +107,7 @@ public object BuiltInCommands {
         private val closingLock = Mutex()
 
         @Handler
-        public suspend fun CommandSender.handle(): Unit {
+        public suspend fun CommandSender.handle() {
             closingLock.withLock {
                 sendMessage("Stopping mirai-console")
                 kotlin.runCatching {
