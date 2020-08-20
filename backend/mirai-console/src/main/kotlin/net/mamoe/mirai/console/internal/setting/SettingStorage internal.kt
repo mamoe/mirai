@@ -127,15 +127,13 @@ internal open class MultiFileSettingStorageImpl(
 ) : SettingStorage, MultiFileSettingStorage {
     public override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T =
         with(settingClass.kotlin) {
-            val file = getSettingFile(holder, settingClass::class)
+            val file = getSettingFile(holder, this)
 
             @Suppress("UNCHECKED_CAST")
             val instance = objectInstance ?: this.createInstanceOrNull() ?: kotlin.run {
-                if (settingClass != Setting::class.java) {
-                    throw IllegalArgumentException(
-                        "Cannot create Setting instance. Make sure settingClass is Setting::class.java or a Kotlin's object, " +
-                                "or has a constructor which either has no parameters or all parameters of which are optional"
-                    )
+                require(settingClass == Setting::class.java) {
+                    "Cannot create Setting instance. Make sure settingClass is Setting::class.java or a Kotlin's object, " +
+                            "or has a constructor which either has no parameters or all parameters of which are optional"
                 }
                 if (holder is AutoSaveSettingHolder) {
                     AutoSaveSetting(holder) as T?
@@ -144,9 +142,9 @@ internal open class MultiFileSettingStorageImpl(
                 "Cannot create Setting instance. Make sure 'holder' is a AutoSaveSettingHolder, " +
                         "or 'setting' is an object or has a constructor which either has no parameters or all parameters of which are optional"
             )
-            if (file.exists() && file.isFile && file.canRead()) {
-                Yaml.default.decodeFromString(instance.updaterSerializer, file.readText())
-            }
+            file.createNewFile()
+            check(file.exists() && file.isFile && file.canRead()) { "${file.absolutePath} cannot be read" }
+            Yaml.default.decodeFromString(instance.updaterSerializer, file.readText())
             instance
         }
 

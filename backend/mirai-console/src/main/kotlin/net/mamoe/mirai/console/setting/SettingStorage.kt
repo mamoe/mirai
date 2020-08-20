@@ -96,7 +96,7 @@ public interface MemorySettingStorage : SettingStorage, Map<Class<out Setting>, 
 }
 
 /**
- * 在内存存储所有 [Setting] 实例的 [SettingStorage].
+ * 用多个文件存储 [Setting] 实例的 [SettingStorage].
  */
 public interface MultiFileSettingStorage : SettingStorage {
     /**
