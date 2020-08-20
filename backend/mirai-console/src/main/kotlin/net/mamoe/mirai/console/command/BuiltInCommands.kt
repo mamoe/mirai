@@ -122,34 +122,34 @@ public object BuiltInCommands {
             }
             exitProcess(0)
         }
+    }
 
-        public object Login : SimpleCommand(
-            ConsoleCommandOwner, "login",
-            description = "Log in a bot account."
-        ), BuiltInCommand {
-            @Handler
-            public suspend fun CommandSender.handle(id: Long, password: String) {
+    public object Login : SimpleCommand(
+        ConsoleCommandOwner, "login",
+        description = "Log in a bot account."
+    ), BuiltInCommand {
+        @Handler
+        public suspend fun CommandSender.handle(id: Long, password: String) {
 
-                kotlin.runCatching {
-                    MiraiConsole.addBot(id, password).alsoLogin()
-                }.fold(
-                    onSuccess = { sendMessage("${it.nick} ($id) Login succeed") },
-                    onFailure = { throwable ->
-                        sendMessage(
-                            "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
-                                    if (this is MessageEventContextAware<*>) {
-                                        this.fromEvent.selectMessagesUnit {
-                                            "stacktrace" reply {
-                                                throwable.stackTraceToString()
-                                            }
+            kotlin.runCatching {
+                MiraiConsole.addBot(id, password).alsoLogin()
+            }.fold(
+                onSuccess = { sendMessage("${it.nick} ($id) Login succeed") },
+                onFailure = { throwable ->
+                    sendMessage(
+                        "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
+                                if (this is MessageEventContextAware<*>) {
+                                    this.fromEvent.selectMessagesUnit {
+                                        "stacktrace" reply {
+                                            throwable.stackTraceToString()
                                         }
-                                        "test"
-                                    } else "")
+                                    }
+                                    "test"
+                                } else "")
 
-                        throw throwable
-                    }
-                )
-            }
+                    throw throwable
+                }
+            )
         }
     }
 }
