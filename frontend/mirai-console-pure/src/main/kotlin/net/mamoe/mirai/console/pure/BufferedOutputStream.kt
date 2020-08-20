@@ -15,7 +15,7 @@ import java.io.OutputStream
 private const val LN = 10.toByte()
 
 internal class BufferedOutputStream @JvmOverloads constructor(
-    private val size: Int = 1024 * 1024 * 1024,
+    private val size: Int = 1024 * 1024,
     private val logger: (String?) -> Unit
 ) : ByteArrayOutputStream(size + 1) {
     override fun write(b: Int) {

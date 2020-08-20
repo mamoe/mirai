@@ -19,6 +19,7 @@ internal object ConsoleUtils {
 
     val lineReader: LineReader
     val terminal: Terminal
+    lateinit var miraiLineReader: suspend (String) -> String
 
     init {
 
