@@ -73,7 +73,7 @@ public abstract class CompositeCommand @JvmOverloads constructor(
     }
 
 
-    internal override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
+    protected override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
         sendMessage(usage)
     }
 
