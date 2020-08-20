@@ -42,6 +42,8 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 ### 使用
 
+**查看示例插件**: [mirai-console-example-plugin](https://github.com/Him188/mirai-console-example-plugin)
+
 #### Gradle
 `CORE_VERSION`: [ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-core/)
 `CONSOLE_VERSION`: [ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-console/)
