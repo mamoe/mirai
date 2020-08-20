@@ -146,7 +146,7 @@ internal open class MultiFileSettingStorageImpl(
             check(file.exists() && file.isFile && file.canRead()) { "${file.absolutePath} cannot be read" }
             Yaml.default.decodeFromString(instance.updaterSerializer, file.readText())
             instance
-        }
+        }.also { it.setStorage(this) }
 
     protected open fun getSettingFile(holder: SettingHolder, clazz: KClass<*>): File = with(clazz) {
         val name = findASerialName()
