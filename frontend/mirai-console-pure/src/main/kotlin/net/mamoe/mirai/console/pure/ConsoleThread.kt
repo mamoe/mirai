@@ -47,7 +47,7 @@ internal fun startupConsoleThread() {
     }
 
     CoroutineScope(dispatch).launch {
-        val consoleLogger = DefaultLogger("Console")
+        val consoleLogger = DefaultLogger("console")
         while (isActive) {
             try {
                 val next = MiraiConsoleFrontEndPure.requestInput("").let {
@@ -62,7 +62,7 @@ internal fun startupConsoleThread() {
                 if (next.isBlank()) {
                     continue
                 }
-                consoleLogger.debug("INPUT> $next")
+                // consoleLogger.debug("INPUT> $next")
                 val result = ConsoleCommandSenderImpl.executeCommandDetailed(next)
                 when (result.status) {
                     CommandExecuteStatus.SUCCESSFUL -> {

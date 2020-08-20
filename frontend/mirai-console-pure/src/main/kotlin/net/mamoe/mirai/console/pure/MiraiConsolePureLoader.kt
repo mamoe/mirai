@@ -20,21 +20,13 @@
 
 package net.mamoe.mirai.console.pure
 
-import kotlinx.coroutines.isActive
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
-import net.mamoe.mirai.console.command.BuiltInCommands
-import net.mamoe.mirai.console.command.Command.Companion.primaryName
-import net.mamoe.mirai.console.command.CommandExecuteStatus
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommandDetailed
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.DefaultLogger
 import java.io.PrintStream
-import kotlin.concurrent.thread
 
 /**
  * mirai-console-pure CLI 入口点
@@ -58,14 +50,14 @@ internal fun overrideSTD() {
     System.setOut(
         PrintStream(
             BufferedOutputStream(
-                logger = DefaultLogger("sout").run { ({ line: String? -> info(line) }) }
+                logger = DefaultLogger("stdout").run { ({ line: String? -> info(line) }) }
             )
         )
     )
     System.setErr(
         PrintStream(
             BufferedOutputStream(
-                logger = DefaultLogger("serr").run { ({ line: String? -> warning(line) }) }
+                logger = DefaultLogger("stderr").run { ({ line: String? -> warning(line) }) }
             )
         )
     )

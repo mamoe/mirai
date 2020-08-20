@@ -26,7 +26,7 @@ internal object PluginManagerImpl : PluginManager {
     @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()
     private val loadersLock: ReentrantLock = ReentrantLock()
-    private val logger = MiraiConsole.newLogger("PluginManager")
+    private val logger = MiraiConsole.newLogger("plugin")
 
     @JvmField
     internal val resolvedPlugins: MutableList<Plugin> = mutableListOf()
