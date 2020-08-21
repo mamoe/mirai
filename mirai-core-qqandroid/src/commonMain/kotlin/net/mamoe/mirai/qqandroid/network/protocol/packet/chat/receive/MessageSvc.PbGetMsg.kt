@@ -14,6 +14,7 @@ package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 import kotlinx.atomicfu.loop
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
@@ -43,6 +44,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.qqandroid.utils._miraiContentToString
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.utils.read
@@ -56,6 +58,12 @@ import net.mamoe.mirai.utils.warning
  * 获取好友消息和消息记录
  */
 internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Response>("MessageSvc.PbGetMsg") {
+
+
+    private val msgUidQueue = ArrayDeque<Long>()
+    private val msgUidSet = hashSetOf<Long>()
+    private val msgQueueMutex = Mutex()
+
     @Suppress("SpellCheckingInspection")
     operator fun invoke(
         client: QQAndroidClient,
@@ -114,8 +122,9 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 
     private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
         return object : MemberInfo {
-            override val nameCard: String get() = msgHead.authNick.takeIf { it.isNotEmpty() }
-                ?: msgHead.fromNick
+            override val nameCard: String
+                get() = msgHead.authNick.takeIf { it.isNotEmpty() }
+                    ?: msgHead.fromNick
             override val permission: MemberPermission get() = MemberPermission.MEMBER
             override val specialTitle: String get() = ""
             override val muteTimestamp: Int get() = 0
@@ -135,9 +144,23 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                 .warning { "MessageSvcPushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}" }
             return EmptyResponse
         }
+        when (resp.msgRspType) {
+            0 -> {
+                bot.client.c2cMessageSync.syncCookie = resp.syncCookie
+                bot.client.c2cMessageSync.pubAccountCookie = resp.pubAccountCookie
+            }
+            1 -> {
+                bot.client.c2cMessageSync.syncCookie = resp.syncCookie
+            }
+            2 -> {
+                bot.client.c2cMessageSync.pubAccountCookie = resp.pubAccountCookie
 
-        bot.client.c2cMessageSync.syncCookie = resp.syncCookie
-        bot.client.c2cMessageSync.pubAccountCookie = resp.pubAccountCookie
+            }
+        }
+
+//        bot.logger.debug(resp.msgRspType._miraiContentToString())
+//        bot.logger.debug(resp.syncCookie._miraiContentToString())
+
         bot.client.c2cMessageSync.msgCtrlBuf = resp.msgCtrlBuf
 
         if (resp.uinPairMsgs == null) {
@@ -151,9 +174,20 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     .filter { msg: MsgComm.Msg -> msg.msgHead.msgTime > it.lastReadTime.toLong() and 4294967295L }
             }.also {
                 MessageSvcPbDeleteMsg.delete(bot, it) // 删除消息
-                // todo 实现一个锁来防止重复收到消息
             }
             .mapNotNull<MsgComm.Msg, Packet> { msg ->
+
+                msgQueueMutex.lock()
+                val msgUid = msg.msgHead.msgUid
+                if (msgUidSet.size > 50) {
+                    msgUidSet.remove(msgUidQueue.removeFirst())
+                }
+                if (!msgUidSet.add(msgUid)) {
+                    msgQueueMutex.unlock()
+                    return@mapNotNull null
+                }
+                msgQueueMutex.unlock()
+                msgUidQueue.addLast(msgUid)
 
                 suspend fun createGroupForBot(groupUin: Long): Group? {
                     val group = bot.getGroupByUinOrNull(groupUin)
@@ -294,18 +328,15 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                             return@mapNotNull null
                         }
 
-                        if (friend.lastMessageSequence.compareAndSet(
-                                friend.lastMessageSequence.value,
-                                msg.msgHead.msgSeq
-                            )
-                        ) {
-                            return@mapNotNull FriendMessageEvent(
-                                friend,
-                                msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
-                                msg.msgHead.msgTime
-                            )
+                        friend.lastMessageSequence.loop {
+                            if (friend.lastMessageSequence.compareAndSet(it, msg.msgHead.msgSeq)) {
+                                return@mapNotNull FriendMessageEvent(
+                                    friend,
+                                    msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
+                                    msg.msgHead.msgTime
+                                )
+                            } else return@mapNotNull null
                         }
-                        return@mapNotNull null
                     }
                     208 -> {
                         // friend ptt
@@ -387,7 +418,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
-                        packet.syncCookie
+                        bot.client.c2cMessageSync.syncCookie
                     ).sendAndExpect<Packet>()
                 }
                 return
@@ -398,7 +429,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
-                        packet.syncCookie
+                        bot.client.c2cMessageSync.syncCookie
                     ).sendAndExpect<Packet>()
                 }
                 return
