@@ -10,8 +10,10 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.description.CommandArgumentParserException
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.nameCardOrNick
 
 
 internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
@@ -61,9 +63,6 @@ internal inline fun <T : Any> Collection<T>.fuzzySearch(
     target: String,
     index: (T) -> String
 ): T? {
-    if (this.isEmpty()) {
-        return null
-    }
     var potential: T? = null
     var rate = 0.0
     this.forEach {
@@ -90,9 +89,6 @@ internal inline fun <T : Any> Collection<T>.fuzzySearchOnly(
     target: String,
     index: (T) -> String
 ): T? {
-    if (this.isEmpty()) {
-        return null
-    }
     var potential: T? = null
     var rate = 0.0
     var collide = 0
@@ -115,9 +111,7 @@ internal inline fun <T : Any> Collection<T>.fuzzySearchOnly(
 
 
 internal fun Group.fuzzySearchMember(nameCardTarget: String): Member? {
-    return this.members.fuzzySearchOnly(nameCardTarget) {
-        it.nameCard
-    }
+    return this.members.fuzzySearch(nameCardTarget) { it.nameCardOrNick }
 }
 
 
@@ -159,7 +153,10 @@ internal suspend inline fun CommandSender.executeCommandInternal(
     kotlin.runCatching {
         command.onCommand(this, args)
     }.onFailure {
-        throw CommandExecutionException(command, commandName, it)
+        catchExecutionException(it)
+        if (it !is CommandArgumentParserException) {
+            throw CommandExecutionException(command, commandName, it)
+        }
     }
 }
 

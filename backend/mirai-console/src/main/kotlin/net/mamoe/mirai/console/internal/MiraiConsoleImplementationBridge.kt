@@ -22,13 +22,13 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandManagerImpl
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
-import net.mamoe.mirai.console.internal.utils.ConsoleBuiltInSettingStorage
+import net.mamoe.mirai.console.internal.utils.ConsoleBuiltInPluginDataStorage
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
-import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
@@ -58,8 +58,8 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val builtInPluginLoaders: List<PluginLoader<*, *>> get() = instance.builtInPluginLoaders
     override val consoleCommandSender: ConsoleCommandSender get() = instance.consoleCommandSender
 
-    override val settingStorageForJarPluginLoader: SettingStorage get() = instance.settingStorageForJarPluginLoader
-    override val settingStorageForBuiltIns: SettingStorage get() = instance.settingStorageForBuiltIns
+    override val dataStorageForJarPluginLoader: PluginDataStorage get() = instance.dataStorageForJarPluginLoader
+    override val dataStorageForBuiltIns: PluginDataStorage get() = instance.dataStorageForBuiltIns
 
     init {
         DefaultLogger = { identity -> this.newLogger(identity) }
@@ -91,7 +91,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
         mainLogger.info { "mirai-console started successfully." }
 
-        ConsoleBuiltInSettingStorage // init
+        ConsoleBuiltInPluginDataStorage // init
         // Only for initialize
     }
 }

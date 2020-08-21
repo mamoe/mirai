@@ -14,8 +14,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encodeToString
-import net.mamoe.mirai.console.internal.setting.SemverAsStringSerializerIvy
-import net.mamoe.mirai.console.internal.setting.map
+import net.mamoe.mirai.console.internal.data.SemverAsStringSerializerIvy
+import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlDynamicSerializer
 import java.io.File

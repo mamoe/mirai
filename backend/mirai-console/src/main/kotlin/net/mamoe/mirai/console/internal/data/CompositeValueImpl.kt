@@ -9,13 +9,13 @@
 
 @file:Suppress("unused")
 
-package net.mamoe.mirai.console.internal.setting
+package net.mamoe.mirai.console.internal.data
 
-import net.mamoe.mirai.console.setting.*
+import net.mamoe.mirai.console.data.*
 
 
 // type inference bug
-internal fun <T> Setting.createCompositeSetValueImpl(tToValue: (T) -> Value<T>): CompositeSetValueImpl<T> {
+internal fun <T> PluginData.createCompositeSetValueImpl(tToValue: (T) -> Value<T>): CompositeSetValueImpl<T> {
     return object : CompositeSetValueImpl<T>(tToValue) {
         override fun onChanged() {
             this@createCompositeSetValueImpl.onValueChanged(this)
@@ -62,7 +62,7 @@ internal abstract class CompositeSetValueImpl<T>(
 
 
 // type inference bug
-internal fun <T> Setting.createCompositeListValueImpl(tToValue: (T) -> Value<T>): CompositeListValueImpl<T> {
+internal fun <T> PluginData.createCompositeListValueImpl(tToValue: (T) -> Value<T>): CompositeListValueImpl<T> {
     return object : CompositeListValueImpl<T>(tToValue) {
         override fun onChanged() {
             this@createCompositeListValueImpl.onValueChanged(this)
@@ -108,7 +108,7 @@ internal abstract class CompositeListValueImpl<T>(
 }
 
 // workaround to a type inference bug
-internal fun <K, V> Setting.createCompositeMapValueImpl(
+internal fun <K, V> PluginData.createCompositeMapValueImpl(
     kToValue: (K) -> Value<K>,
     vToValue: (V) -> Value<V>
 ): CompositeMapValueImpl<K, V> {

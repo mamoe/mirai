@@ -7,11 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.internal.setting
+package net.mamoe.mirai.console.internal.data
 
 import kotlinx.serialization.builtins.serializer
-import net.mamoe.mirai.console.setting.SerializerAwareValue
-import net.mamoe.mirai.console.setting.Setting
+import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.SerializerAwareValue
 import kotlin.reflect.KClass
 
 
@@ -49,9 +49,9 @@ internal object BuiltInSerializerConstants {
 }
 
 @Suppress("UNCHECKED_CAST")
-internal fun <T : Any> Setting.valueImplPrimitive(kClass: KClass<T>): SerializerAwareValue<T>? {
+internal fun <T : Any> PluginData.valueImplPrimitive(kClass: KClass<T>): SerializerAwareValue<T>? {
     return when (kClass) {
-        //// region Setting_valueImplPrimitive CODEGEN ////
+        //// region PluginData_valueImplPrimitive CODEGEN ////
 
         Byte::class -> byteValueImpl()
         Short::class -> shortValueImpl()
@@ -63,103 +63,120 @@ internal fun <T : Any> Setting.valueImplPrimitive(kClass: KClass<T>): Serializer
         Boolean::class -> booleanValueImpl()
         String::class -> stringValueImpl()
 
-        //// endregion Setting_valueImplPrimitive CODEGEN ////
+        //// endregion PluginData_valueImplPrimitive CODEGEN ////
         else -> error("Internal error: unexpected type passed: ${kClass.qualifiedName}")
     } as SerializerAwareValue<T>?
 }
 
 
-//// region Setting_value_PrimitivesImpl CODEGEN ////
+//// region PluginData_value_PrimitivesImpl CODEGEN ////
 
-internal fun Setting.valueImpl(default: Byte): SerializerAwareValue<Byte> {
+internal fun PluginData.valueImpl(default: Byte): SerializerAwareValue<Byte> {
     return object : ByteValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.byteValueImpl(): SerializerAwareValue<Byte> {
+
+internal fun PluginData.byteValueImpl(): SerializerAwareValue<Byte> {
     return object : ByteValueImpl() {
         override fun onChanged() = this@byteValueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.valueImpl(default: Short): SerializerAwareValue<Short> {
+
+internal fun PluginData.valueImpl(default: Short): SerializerAwareValue<Short> {
     return object : ShortValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.shortValueImpl(): SerializerAwareValue<Short> {
+
+internal fun PluginData.shortValueImpl(): SerializerAwareValue<Short> {
     return object : ShortValueImpl() {
         override fun onChanged() = this@shortValueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.valueImpl(default: Int): SerializerAwareValue<Int> {
+
+internal fun PluginData.valueImpl(default: Int): SerializerAwareValue<Int> {
     return object : IntValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.intValueImpl(): SerializerAwareValue<Int> {
+
+internal fun PluginData.intValueImpl(): SerializerAwareValue<Int> {
     return object : IntValueImpl() {
         override fun onChanged() = this@intValueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.valueImpl(default: Long): SerializerAwareValue<Long> {
+
+internal fun PluginData.valueImpl(default: Long): SerializerAwareValue<Long> {
     return object : LongValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.longValueImpl(): SerializerAwareValue<Long> {
+
+internal fun PluginData.longValueImpl(): SerializerAwareValue<Long> {
     return object : LongValueImpl() {
         override fun onChanged() = this@longValueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.valueImpl(default: Float): SerializerAwareValue<Float> {
+
+internal fun PluginData.valueImpl(default: Float): SerializerAwareValue<Float> {
     return object : FloatValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.floatValueImpl(): SerializerAwareValue<Float> {
+
+internal fun PluginData.floatValueImpl(): SerializerAwareValue<Float> {
     return object : FloatValueImpl() {
         override fun onChanged() = this@floatValueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.valueImpl(default: Double): SerializerAwareValue<Double> {
+
+internal fun PluginData.valueImpl(default: Double): SerializerAwareValue<Double> {
     return object : DoubleValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.doubleValueImpl(): SerializerAwareValue<Double> {
+
+internal fun PluginData.doubleValueImpl(): SerializerAwareValue<Double> {
     return object : DoubleValueImpl() {
         override fun onChanged() = this@doubleValueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.valueImpl(default: Char): SerializerAwareValue<Char> {
+
+internal fun PluginData.valueImpl(default: Char): SerializerAwareValue<Char> {
     return object : CharValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.charValueImpl(): SerializerAwareValue<Char> {
+
+internal fun PluginData.charValueImpl(): SerializerAwareValue<Char> {
     return object : CharValueImpl() {
         override fun onChanged() = this@charValueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.valueImpl(default: Boolean): SerializerAwareValue<Boolean> {
+
+internal fun PluginData.valueImpl(default: Boolean): SerializerAwareValue<Boolean> {
     return object : BooleanValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.booleanValueImpl(): SerializerAwareValue<Boolean> {
+
+internal fun PluginData.booleanValueImpl(): SerializerAwareValue<Boolean> {
     return object : BooleanValueImpl() {
         override fun onChanged() = this@booleanValueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.valueImpl(default: String): SerializerAwareValue<String> {
+
+internal fun PluginData.valueImpl(default: String): SerializerAwareValue<String> {
     return object : StringValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.stringValueImpl(): SerializerAwareValue<String> {
+
+internal fun PluginData.stringValueImpl(): SerializerAwareValue<String> {
     return object : StringValueImpl() {
         override fun onChanged() = this@stringValueImpl.onValueChanged(this)
     }
 }
 
-//// endregion Setting_value_PrimitivesImpl CODEGEN ////
+//// endregion PluginData_value_PrimitivesImpl CODEGEN ////

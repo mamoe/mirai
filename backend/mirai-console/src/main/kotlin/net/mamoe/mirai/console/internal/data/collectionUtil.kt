@@ -9,7 +9,7 @@
 
 @file:Suppress("DuplicatedCode")
 
-package net.mamoe.mirai.console.internal.setting
+package net.mamoe.mirai.console.internal.data
 
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.serializer

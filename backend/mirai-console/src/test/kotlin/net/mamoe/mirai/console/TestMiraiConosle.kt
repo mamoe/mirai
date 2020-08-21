@@ -17,11 +17,11 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.data.MemoryPluginDataStorage
+import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.setting.MemorySettingStorage
-import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
@@ -51,8 +51,8 @@ fun initTestEnvironment() {
         override val consoleCommandSender: ConsoleCommandSender = object : ConsoleCommandSender() {
             override suspend fun sendMessage(message: Message) = println(message)
         }
-        override val settingStorageForJarPluginLoader: SettingStorage get() = MemorySettingStorage()
-        override val settingStorageForBuiltIns: SettingStorage get() = MemorySettingStorage()
+        override val dataStorageForJarPluginLoader: PluginDataStorage get() = MemoryPluginDataStorage()
+        override val dataStorageForBuiltIns: PluginDataStorage get() = MemoryPluginDataStorage()
         override val coroutineContext: CoroutineContext = SupervisorJob()
     }.start()
     CommandManager

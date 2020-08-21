@@ -17,7 +17,7 @@ import java.io.File
 fun main() {
     println(File("").absolutePath) // default project base dir
 
-    File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/setting/_Value.kt").apply {
+    File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/_Value.kt").apply {
         createNewFile()
     }.writeText(genPublicApi())
 }
@@ -64,7 +64,7 @@ fun genPublicApi() = buildString {
     appendLine()
     appendln(
         """
-            package net.mamoe.mirai.console.setting
+            package net.mamoe.mirai.console.data
 
             import kotlinx.serialization.KSerializer
             import kotlin.properties.ReadWriteProperty
@@ -85,15 +85,15 @@ fun genPublicApi() = buildString {
 
     appendln(
         """
-sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
+sealed class Value<T : Any> : ReadWriteProperty<PluginData, T> {
     abstract var value: T
 
     /**
      * 用于更新 [value] 的序列化器
      */
     abstract val serializer: KSerializer<T>
-    override fun getValue(thisRef: Setting, property: KProperty<*>): T = value
-    override fun setValue(thisRef: Setting, property: KProperty<*>, value: T) {
+    override fun getValue(thisRef: PluginData, property: KProperty<*>): T = value
+    override fun setValue(thisRef: PluginData, property: KProperty<*>, value: T) {
         this.value = value
     }
 
@@ -212,7 +212,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
         // SETTING
         appendln(
             """
-        abstract class Setting${collectionName}Value<T: Setting> internal constructor() : Value<${collectionName}<T>>(), ${collectionName}<T>
+        abstract class PluginData${collectionName}Value<T: PluginData> internal constructor() : Value<${collectionName}<T>>(), ${collectionName}<T>
     """
         )
         appendLine()
@@ -222,7 +222,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
 
     appendln(
         """
-            abstract class SettingValue<T : Setting> internal constructor() : Value<T>()
+            abstract class PluginDataValue<T : PluginData> internal constructor() : Value<T>()
         """
     )
 
@@ -250,7 +250,7 @@ sealed class Value<T : Any> : ReadWriteProperty<Setting, T> {
         // SETTING
         appendln(
             """
-        abstract class MutableSetting${collectionName}Value<T: Setting> internal constructor() : Value<Mutable${collectionName}<T>>(), Mutable${collectionName}<T>
+        abstract class MutablePluginData${collectionName}Value<T: PluginData> internal constructor() : Value<Mutable${collectionName}<T>>(), Mutable${collectionName}<T>
     """
         )
         appendLine()

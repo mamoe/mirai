@@ -9,13 +9,13 @@
 
 @file:Suppress("NOTHING_TO_INLINE", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
-package net.mamoe.mirai.console.internal.setting
+package net.mamoe.mirai.console.internal.data
 
 import kotlinx.serialization.KSerializer
-import net.mamoe.mirai.console.setting.SerializableValue.Companion.serializableValueWith
-import net.mamoe.mirai.console.setting.SerializerAwareValue
-import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.setting.valueFromKType
+import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.SerializableValue.Companion.serializableValueWith
+import net.mamoe.mirai.console.data.SerializerAwareValue
+import net.mamoe.mirai.console.data.valueFromKType
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.createInstance as createInstanceKotlin
@@ -30,7 +30,7 @@ internal inline fun <reified T> typeOf0(): KType = kotlin.reflect.typeOf<T>()
 
 @PublishedApi
 @Suppress("UnsafeCall", "SMARTCAST_IMPOSSIBLE", "UNCHECKED_CAST")
-internal fun Setting.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
+internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*> {
     val classifier = type.classifier
     require(classifier is KClass<*>)
 

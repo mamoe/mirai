@@ -15,10 +15,10 @@ import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -75,8 +75,8 @@ public interface MiraiConsoleImplementation : CoroutineScope {
 
     public val consoleCommandSender: ConsoleCommandSender
 
-    public val settingStorageForJarPluginLoader: SettingStorage
-    public val settingStorageForBuiltIns: SettingStorage
+    public val dataStorageForJarPluginLoader: PluginDataStorage
+    public val dataStorageForBuiltIns: PluginDataStorage
 
     public companion object {
         internal lateinit var instance: MiraiConsoleImplementation

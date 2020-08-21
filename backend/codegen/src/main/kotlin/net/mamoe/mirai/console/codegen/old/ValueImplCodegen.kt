@@ -18,7 +18,7 @@ import java.io.File
 fun main() {
     println(File("").absolutePath) // default project base dir
 
-    File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/setting/internal/_ValueImpl.kt").apply {
+    File("backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/internal/_ValueImpl.kt").apply {
         createNewFile()
     }.writeText(buildString {
         appendLine(COPYRIGHT)
@@ -43,13 +43,13 @@ private val DO_NOT_MODIFY = """
 """.trimIndent()
 
 private val PACKAGE = """
-package net.mamoe.mirai.console.setting.internal
+package net.mamoe.mirai.console.data.internal
 """.trimIndent()
 
 private val IMPORTS = """
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.*
-import net.mamoe.mirai.console.setting.*
+import net.mamoe.mirai.console.data.*
 """.trimIndent()
 
 fun genAllValueImpl(): String = buildString {
@@ -121,7 +121,7 @@ fun genAllValueImpl(): String = buildString {
             appendln(
                 """
                 @JvmName("valueImplMutable${number}${collectionName}")
-                internal fun Setting.valueImpl(
+                internal fun PluginData.valueImpl(
                     default: Mutable${collectionName}<${number}>
                 ): Mutable${number}${collectionName}Value {
                     var internalValue: Mutable${collectionName}<${number}> = default
@@ -166,8 +166,8 @@ fun genAllValueImpl(): String = buildString {
 
     appendln(
         """
-            internal fun <T : Setting> Setting.valueImpl(default: T): Value<T> {
-                return object : SettingValue<T>() {
+            internal fun <T : PluginData> PluginData.valueImpl(default: T): Value<T> {
+                return object : PluginDataValue<T>() {
                     private var internalValue: T = default
                     override var value: T
                         get() = internalValue
@@ -187,7 +187,7 @@ fun genAllValueImpl(): String = buildString {
                         }
 
                         override fun serialize(encoder: Encoder, value: T) {
-                            internalValue.updaterSerializer.serialize(encoder, SettingSerializerMark)
+                            internalValue.updaterSerializer.serialize(encoder, PluginDataSerializerMark)
                         }
                     }
                 }
@@ -203,20 +203,20 @@ fun genPrimitiveValueImpl(
     isArray: Boolean
 ): String =
     """
-        internal fun Setting.valueImpl(default: ${kotlinTypeName}): ${miraiValueName}Value {
+        internal fun PluginData.valueImpl(default: ${kotlinTypeName}): ${miraiValueName}Value {
             return object : ${miraiValueName}Value() {
                 private var internalValue: $kotlinTypeName = default
                 override var value: $kotlinTypeName
                     get() = internalValue
                     set(new) {
                         ${
-    if (isArray) """
+        if (isArray) """
                         if (!new.contentEquals(internalValue)) {
                             internalValue = new
                             onElementChanged(this)
                         }
     """.trim()
-    else """
+        else """
                         if (new != internalValue) {
                             internalValue = new
                             onElementChanged(this)
@@ -238,7 +238,7 @@ fun genCollectionValueImpl(
     isArray: Boolean
 ): String =
     """
-        internal fun Setting.valueImpl(default: ${kotlinTypeName}): ${miraiValueName}Value {
+        internal fun PluginData.valueImpl(default: ${kotlinTypeName}): ${miraiValueName}Value {
             var internalValue: $kotlinTypeName = default
             val delegt = dynamic$collectionName { internalValue }
             return object : ${miraiValueName}Value(), $kotlinTypeName by delegt {
@@ -246,13 +246,13 @@ fun genCollectionValueImpl(
                     get() = internalValue
                     set(new) {
                         ${
-    if (isArray) """
+        if (isArray) """
                         if (!new.contentEquals(internalValue)) {
                             internalValue = new
                             onElementChanged(this)
                         }
     """.trim()
-    else """
+        else """
                         if (new != internalValue) {
                             internalValue = new
                             onElementChanged(this)

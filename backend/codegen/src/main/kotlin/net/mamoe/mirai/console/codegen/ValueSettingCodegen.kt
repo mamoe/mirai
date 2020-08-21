@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("PRE_RELEASE_CLASS", "ClassName", "RedundantVisibilityModifier")
+@file:Suppress("PRE_RELEASE_CLASS", "ClassName", "RedundantVisibilityModifier", "KDocUnresolvedReference")
 
 package net.mamoe.mirai.console.codegen
 
@@ -15,7 +15,7 @@ import kotlin.reflect.full.functions
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.isSubclassOf
 
-internal object ValueSettingCodegen {
+internal object ValuePluginDataCodegen {
     /**
      * The interface
      */
@@ -37,7 +37,7 @@ internal object ValueSettingCodegen {
         }
     }
 
-    object BuiltInSerializerConstantsPrimitivesCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
+    object BuiltInSerializerConstantsPrimitivesCodegen : RegionCodegen("_PluginData.value.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
@@ -99,7 +99,7 @@ internal abstract class ${ktType.standardName}ValueImpl : ${ktType.standardName}
 
     }
 
-    object Setting_value_PrimitivesImplCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
+    object PluginData_value_PrimitivesImplCodegen : RegionCodegen("_PluginData.value.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
@@ -107,12 +107,12 @@ internal abstract class ${ktType.standardName}ValueImpl : ${ktType.standardName}
         override fun StringBuilder.apply(ktType: KtType) {
             appendKCode(
                 """
-internal fun Setting.valueImpl(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> {
+internal fun PluginData.valueImpl(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> {
     return object : ${ktType.standardName}ValueImpl(default) {
         override fun onChanged() = this@valueImpl.onValueChanged(this)
     }
 }
-internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${ktType.standardName}> {
+internal fun PluginData.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${ktType.standardName}> {
     return object : ${ktType.standardName}ValueImpl() {
         override fun onChanged() = this@${ktType.lowerCaseName}ValueImpl.onValueChanged(this)
     }
@@ -122,7 +122,7 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
         }
     }
 
-    object Setting_valueImplPrimitiveCodegen : RegionCodegen("_Setting.value.kt"), DefaultInvoke {
+    object PluginData_valueImplPrimitiveCodegen : RegionCodegen("_PluginData.value.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
@@ -136,7 +136,7 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
         }
     }
 
-    object Setting_value_primitivesCodegen : RegionCodegen("Setting.kt"), DefaultInvoke {
+    object PluginData_value_primitivesCodegen : RegionCodegen("PluginData.kt"), DefaultInvoke {
         @JvmStatic
         fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
@@ -145,9 +145,13 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
             @Suppress("unused")
             appendKCode(
                 """
-                public fun Setting.value(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = valueImpl(default)
+                /**
+                 * 创建一个 [${ktType.standardName}] 类型的 [Value], 并设置初始值为 [default]
+                 */
+                public fun PluginData.value(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = valueImpl(default)
                 """
             )
+            appendLine()
         }
 
     }
@@ -158,7 +162,7 @@ internal fun Setting.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue<${
     @OptIn(ExperimentalStdlibApi::class)
     @JvmStatic
     fun main(args: Array<String>) {
-        ValueSettingCodegen::class.nestedClasses
+        ValuePluginDataCodegen::class.nestedClasses
             .filter { it.isSubclassOf(RegionCodegen::class) }
             .associateWith { kClass -> kClass.functions.find { it.name == "main" && it.hasAnnotation<JvmStatic>() } }
             .filter { it.value != null }

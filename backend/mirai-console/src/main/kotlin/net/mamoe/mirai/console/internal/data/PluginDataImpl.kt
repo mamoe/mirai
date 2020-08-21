@@ -9,7 +9,7 @@
 
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "EXPOSED_SUPER_CLASS")
 
-package net.mamoe.mirai.console.internal.setting
+package net.mamoe.mirai.console.internal.data
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -19,9 +19,9 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import net.mamoe.mirai.console.setting.AbstractSetting.ValueNode
-import net.mamoe.mirai.console.setting.Setting
-import net.mamoe.mirai.console.setting.Value
+import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.PluginData.ValueNode
+import net.mamoe.mirai.console.data.Value
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.findAnnotation
@@ -29,17 +29,17 @@ import kotlin.reflect.full.findAnnotation
 internal val KProperty<*>.serialName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
 
 /**
- * Internal implementation for [Setting] including:
+ * Internal implementation for [PluginData] including:
  * - Reflection on Kotlin properties and Java fields
  * - Auto-saving
  */
-internal abstract class SettingImpl {
+internal abstract class PluginDataImpl {
     internal fun findNodeInstance(name: String): ValueNode<*>? = valueNodes.firstOrNull { it.serialName == name }
 
     internal abstract val valueNodes: MutableList<ValueNode<*>>
 
     internal open val updaterSerializer: KSerializer<Unit> = object : KSerializer<Unit> {
-        override val descriptor: SerialDescriptor get() = settingUpdaterSerializerDescriptor
+        override val descriptor: SerialDescriptor get() = dataUpdaterSerializerDescriptor
 
         @Suppress("UNCHECKED_CAST")
         override fun deserialize(decoder: Decoder) {
@@ -96,7 +96,7 @@ internal abstract class SettingImpl {
             with(encoder.beginCollection(descriptor, valueNodes.size)) {
                 var index = 0
 
-                // val vSerializer = settingUpdaterSerializerTypeArguments[1] as KSerializer<Any?>
+                // val vSerializer = dataUpdaterSerializerTypeArguments[1] as KSerializer<Any?>
                 valueNodes.forEach { (serialName, _, valueSerializer) ->
                     encodeSerializableElement(descriptor, index++, String.serializer(), serialName)
                     encodeSerializableElement(descriptor, index++, valueSerializer, Unit)
@@ -113,8 +113,8 @@ internal abstract class SettingImpl {
     abstract fun onValueChanged(value: Value<*>)
 
     companion object {
-        private val settingUpdaterSerializerTypeArguments = arrayOf(String.serializer(), YamlNullableDynamicSerializer)
-        private val settingUpdaterSerializerDescriptor =
-            MapSerializer(settingUpdaterSerializerTypeArguments[0], settingUpdaterSerializerTypeArguments[1]).descriptor
+        private val dataUpdaterSerializerTypeArguments = arrayOf(String.serializer(), YamlNullableDynamicSerializer)
+        private val dataUpdaterSerializerDescriptor =
+            MapSerializer(dataUpdaterSerializerTypeArguments[0], dataUpdaterSerializerTypeArguments[1]).descriptor
     }
 }

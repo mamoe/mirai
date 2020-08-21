@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
+import net.mamoe.mirai.console.plugin.safeLoader
 import net.mamoe.mirai.console.util.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -65,17 +66,36 @@ internal abstract class JvmPluginInternal(
 
     internal fun internalOnDisable() {
         firstRun = false
-        this.onDisable()
-        this.cancel(CancellationException("plugin disabled"))
+        kotlin.runCatching {
+            onLoad()
+        }.fold(
+            onSuccess = {
+                cancel(CancellationException("plugin disabled"))
+            },
+            onFailure = {
+                cancel(CancellationException("Exception while enabling plugin", it))
+            }
+        )
     }
 
-    internal fun internalOnLoad() {
-        this.onLoad()
+    @Throws(Throwable::class)
+    internal fun internalOnLoad() { // propagate exceptions
+        onLoad()
     }
 
-    internal fun internalOnEnable() {
+    internal fun internalOnEnable(): Boolean {
         if (!firstRun) refreshCoroutineContext()
-        this.onEnable()
+        kotlin.runCatching {
+            onEnable()
+        }.fold(
+            onSuccess = {
+                return true
+            },
+            onFailure = {
+                cancel(CancellationException("Exception while enabling plugin", it))
+                return false
+            }
+        )
     }
 
     // endregion
@@ -85,18 +105,25 @@ internal abstract class JvmPluginInternal(
     // for future use
     @Suppress("PropertyName")
     @JvmField
-    internal var _intrinsicCoroutineContext: CoroutineContext =
-        EmptyCoroutineContext
+    internal var _intrinsicCoroutineContext: CoroutineContext = EmptyCoroutineContext
 
     @JvmField
     internal val coroutineContextInitializer = {
         CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
             .plus(parentCoroutineContext)
-            .plus(SupervisorJob(parentCoroutineContext[Job])) + _intrinsicCoroutineContext
+            .plus(SupervisorJob(parentCoroutineContext[Job]))
+            .plus(_intrinsicCoroutineContext)
     }
 
     private fun refreshCoroutineContext(): CoroutineContext {
-        return coroutineContextInitializer().also { _coroutineContext = it }
+        return coroutineContextInitializer().also { _coroutineContext = it }.also {
+            job.invokeOnCompletion { e ->
+                if (e != null) {
+                    logger.error(e)
+                    safeLoader.disable(this)
+                }
+            }
+        }
     }
 
     private val contextUpdateLock: ReentrantLock =

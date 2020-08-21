@@ -14,6 +14,7 @@ package net.mamoe.mirai.console
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.plugin.PluginLoader
@@ -21,6 +22,7 @@ import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.util.*
@@ -72,7 +74,24 @@ public interface MiraiConsole : CoroutineScope {
          */ // MiraiConsole.INSTANCE.getJob()
         public val job: Job
             get() = MiraiConsole.coroutineContext[Job]
-                ?: error("Internal error: Job not found in MiraiConsole.coroutineContext")
+                ?: throw IllegalMiraiConsoleImplementationError("Internal error: Job not found in MiraiConsole.coroutineContext")
+
+        /**
+         * 添加一个 [Bot] 实例到全局 Bot 列表, 但不登录.
+         *
+         * 调用 [Bot.login] 可登录.
+         *
+         * @see Bot.botInstances 获取现有 [Bot] 实例列表
+         */
+        // don't static
+        @ConsoleExperimentalAPI("This is a low-level API and might be removed in the future.")
+        public fun addBot(id: Long, password: String, configuration: BotConfiguration.() -> Unit = {}): Bot =
+            Bot(id, password) {
+                fileBasedDeviceInfo()
+                this.loginSolver = frontEnd.createLoginSolver()
+                redirectNetworkLogToDirectory()
+                configuration()
+            }
     }
 }
 

@@ -10,9 +10,9 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.plugin.JarPluginLoaderImpl
 import net.mamoe.mirai.console.plugin.FilePluginLoader
-import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
@@ -20,10 +20,10 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  */
 public interface JarPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
     /**
-     * [JvmPlugin.loadSetting] 默认使用的实例
+     * [JvmPlugin.loadPluginData] 默认使用的实例
      */
     @ConsoleExperimentalAPI
-    public val settingStorage: SettingStorage
+    public val dataStorage: PluginDataStorage
 
     public companion object INSTANCE : JarPluginLoader by JarPluginLoaderImpl {
         @Suppress("EXTENSION_SHADOWED_BY_MEMBER")

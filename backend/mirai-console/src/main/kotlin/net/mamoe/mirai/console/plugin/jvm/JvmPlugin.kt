@@ -12,10 +12,10 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
+import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
-import net.mamoe.mirai.console.setting.AutoSaveSettingHolder
-import net.mamoe.mirai.console.setting.Setting
 import net.mamoe.mirai.console.util.ResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.reflect.KClass
@@ -36,7 +36,7 @@ import kotlin.reflect.KClass
  * @see ResourceContainer 支持资源获取 (如 Jar 中的资源文件)
  */
 public interface JvmPlugin : Plugin, CoroutineScope,
-    PluginFileExtensions, ResourceContainer, AutoSaveSettingHolder {
+    PluginFileExtensions, ResourceContainer, AutoSavePluginDataHolder {
     /** 日志 */
     public val logger: MiraiLogger
 
@@ -49,10 +49,10 @@ public interface JvmPlugin : Plugin, CoroutineScope,
         get() = JarPluginLoader
 
     /**
-     * 从 [JarPluginLoader.settingStorage] 获取一个 [Setting] 实例
+     * 从 [JarPluginLoader.dataStorage] 获取一个 [PluginData] 实例
      */
     @JvmDefault
-    public fun <T : Setting> loadSetting(clazz: Class<T>): T = loader.settingStorage.load(this, clazz)
+    public fun <T : PluginData> loadPluginData(clazz: Class<T>): T = loader.dataStorage.load(this, clazz)
 
     /**
      * 在插件被加载时调用. 只会被调用一次.
@@ -77,7 +77,12 @@ public interface JvmPlugin : Plugin, CoroutineScope,
 }
 
 @JvmSynthetic
-public inline fun <T : Setting> JvmPlugin.loadSetting(clazz: KClass<T>): T = this.loadSetting(clazz.java)
+public inline fun <T : PluginData> JvmPlugin.loadPluginData(clazz: KClass<T>): T = this.loadPluginData(clazz.java)
 
+/**
+ * 读取一个插件数据.
+ *
+ * 插件数据
+ */
 @JvmSynthetic
-public inline fun <reified T : Setting> JvmPlugin.loadSetting(): T = this.loadSetting(T::class)
+public inline fun <reified T : PluginData> JvmPlugin.loadPluginData(): T = this.loadPluginData(T::class)

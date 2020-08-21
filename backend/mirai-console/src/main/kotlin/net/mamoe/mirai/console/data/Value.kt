@@ -9,22 +9,23 @@
 
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused", "NOTHING_TO_INLINE")
 
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.BinaryFormat
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
-import net.mamoe.mirai.console.internal.setting.map
-import net.mamoe.mirai.console.internal.setting.setValueBySerializer
+import net.mamoe.mirai.console.internal.data.map
+import net.mamoe.mirai.console.internal.data.setValueBySerializer
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import kotlin.reflect.KProperty
 
 /**
- * 表示一个可被观测的, 不可变的值包装.
+ * 表示一个值代理.
  *
- * [Value.value] 可以像 Kotlin 的 `var` 一样被修改, 然而它也可能被用户修改, 如通过 UI 前端.
+ * [Value.value] 可以像 Kotlin 的 `var` 一样被修改, 然而它也可能被用户修改, 如通过 UI 前端, 或通过自动重载.
  *
  * 一些常用的基础类型实现由代码生成创建特性的优化.
+ *
+ * @see PluginData 容纳 [Value] 的数据对象
  *
  * @see PrimitiveValue 基础数据类型实现
  * @see CompositeValue 复合数据类型实现
@@ -39,7 +40,7 @@ public interface Value<T> {
 public class SerializableValue<T>(
     private val delegate: Value<T>,
     /**
-     * The serializer used to update and dump [delegate]
+     * 用于更新和保存 [delegate] 的序列化器
      */
     public override val serializer: KSerializer<Unit>
 ) : Value<T> by delegate, SerializerAwareValue<T> {
@@ -63,7 +64,7 @@ public class SerializableValue<T>(
  * 带有显式 [序列化器][serializer] 的 [Value].
  *
  * @see SerializableValue 简单实现
- * @see Setting.value 创建一个这样的 [SerializerAwareValue]
+ * @see PluginData.value 创建一个这样的 [SerializerAwareValue]
  */
 public interface SerializerAwareValue<T> : Value<T> {
     /**
@@ -110,20 +111,6 @@ public interface SerializerAwareValue<T> : Value<T> {
 }
 
 /**
- * 用于支持属性委托
- */
-@JvmSynthetic
-public inline operator fun <T> Value<T>.getValue(mySetting: Any?, property: KProperty<*>): T = value
-
-/**
- * 用于支持属性委托
- */
-@JvmSynthetic
-public inline operator fun <T> Value<T>.setValue(mySetting: Any?, property: KProperty<*>, value: T) {
-    this.value = value
-}
-
-/**
  * 基础数据类型 [Value]
  *
  * 9 个被认为是 *基础类型* 的类型:
@@ -144,42 +131,34 @@ public interface PrimitiveValue<T> : Value<T>
  * 表示一个不可空 [Byte] [Value].
  */
 public interface ByteValue : PrimitiveValue<Byte>
-
 /**
  * 表示一个不可空 [Short] [Value].
  */
 public interface ShortValue : PrimitiveValue<Short>
-
 /**
  * 表示一个不可空 [Int] [Value].
  */
 public interface IntValue : PrimitiveValue<Int>
-
 /**
  * 表示一个不可空 [Long] [Value].
  */
 public interface LongValue : PrimitiveValue<Long>
-
 /**
  * 表示一个不可空 [Float] [Value].
  */
 public interface FloatValue : PrimitiveValue<Float>
-
 /**
  * 表示一个不可空 [Double] [Value].
  */
 public interface DoubleValue : PrimitiveValue<Double>
-
 /**
  * 表示一个不可空 [Char] [Value].
  */
 public interface CharValue : PrimitiveValue<Char>
-
 /**
  * 表示一个不可空 [Boolean] [Value].
  */
 public interface BooleanValue : PrimitiveValue<Boolean>
-
 /**
  * 表示一个不可空 [String] [Value].
  */

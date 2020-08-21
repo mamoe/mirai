@@ -28,11 +28,11 @@ import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsoleFrontEnd
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
+import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.setting.MultiFileSettingStorage
-import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -53,8 +53,8 @@ class MiraiConsoleImplementationPure
     override val frontEnd: MiraiConsoleFrontEnd = MiraiConsoleFrontEndPure,
     override val mainLogger: MiraiLogger = frontEnd.loggerFor("main"),
     override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
-    override val settingStorageForJarPluginLoader: SettingStorage = MultiFileSettingStorage(File(rootDir, "data")),
-    override val settingStorageForBuiltIns: SettingStorage = MultiFileSettingStorage(File(rootDir, "data"))
+    override val dataStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(File(rootDir, "data")),
+    override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(File(rootDir, "data"))
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(SupervisorJob()) {
     init {
         rootDir.mkdir()

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.setting
+package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
@@ -16,9 +16,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
 @OptIn(ConsoleInternalAPI::class)
-internal class SettingTest {
+internal class PluginDataTest {
 
-    class MySetting : AbstractSetting() {
+    class MyPluginData : AbstractPluginData() {
         var int by value(1)
         val map by value<MutableMap<String, String>>()
         val map2 by value<MutableMap<String, MutableMap<String, String>>>()
@@ -28,7 +28,7 @@ internal class SettingTest {
 
         }
 
-        override fun setStorage(storage: SettingStorage) {
+        override fun setStorage(storage: PluginDataStorage) {
         }
     }
 
@@ -37,45 +37,45 @@ internal class SettingTest {
 
     @Test
     fun testStringify() {
-        val setting = MySetting()
+        val data = MyPluginData()
 
-        var string = json.encodeToString(setting.updaterSerializer, Unit)
+        var string = json.encodeToString(data.updaterSerializer, Unit)
         assertEquals("""{"int":1,"map":{},"map2":{}}""", string)
 
-        setting.int = 2
+        data.int = 2
 
-        string = json.encodeToString(setting.updaterSerializer, Unit)
+        string = json.encodeToString(data.updaterSerializer, Unit)
         assertEquals("""{"int":2,"map":{},"map2":{}}""", string)
     }
 
     @Test
     fun testParseUpdate() {
-        val setting = MySetting()
+        val data = MyPluginData()
 
-        assertEquals(1, setting.int)
+        assertEquals(1, data.int)
 
         json.decodeFromString(
-            setting.updaterSerializer, """
+            data.updaterSerializer, """
                 {"int":3,"map":{},"map2":{}}
             """.trimIndent()
         )
 
-        assertEquals(3, setting.int)
+        assertEquals(3, data.int)
     }
 
     @Test
     fun testNestedParseUpdate() {
-        val setting = MySetting()
+        val data = MyPluginData()
 
-        fun delegation() = setting.map
+        fun delegation() = data.map
 
-        val refBefore = setting.map
+        val refBefore = data.map
         fun reference() = refBefore
 
         assertEquals(mutableMapOf(), delegation()) // delegation
 
         json.decodeFromString(
-            setting.updaterSerializer, """
+            data.updaterSerializer, """
                 {"int":1,"map":{"t":"test"},"map2":{}}
             """.trimIndent()
         )
@@ -88,17 +88,17 @@ internal class SettingTest {
 
     @Test
     fun testDeepNestedParseUpdate() {
-        val setting = MySetting()
+        val data = MyPluginData()
 
-        fun delegation() = setting.map2
+        fun delegation() = data.map2
 
-        val refBefore = setting.map2
+        val refBefore = data.map2
         fun reference() = refBefore
 
         assertEquals(mutableMapOf(), delegation()) // delegation
 
         json.decodeFromString(
-            setting.updaterSerializer, """
+            data.updaterSerializer, """
                 {"int":1,"map":{},"map2":{"t":{"f":"test"}}}
             """.trimIndent()
         )
@@ -111,19 +111,19 @@ internal class SettingTest {
 
     @Test
     fun testDeepNestedTrackingParseUpdate() {
-        val setting = MySetting()
+        val data = MyPluginData()
 
-        setting.map2["t"] = mutableMapOf()
+        data.map2["t"] = mutableMapOf()
 
-        fun delegation() = setting.map2["t"]!!
+        fun delegation() = data.map2["t"]!!
 
-        val refBefore = setting.map2["t"]!!
+        val refBefore = data.map2["t"]!!
         fun reference() = refBefore
 
         assertEquals(mutableMapOf(), delegation()) // delegation
 
         json.decodeFromString(
-            setting.updaterSerializer, """
+            data.updaterSerializer, """
                 {"int":1,"map":{},"map2":{"t":{"f":"test"}}}
             """.trimIndent()
         )

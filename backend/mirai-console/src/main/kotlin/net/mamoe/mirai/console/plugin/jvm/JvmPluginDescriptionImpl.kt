@@ -13,7 +13,7 @@ import com.vdurmont.semver4j.Semver
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import net.mamoe.mirai.console.internal.setting.SemverAsStringSerializerLoose
+import net.mamoe.mirai.console.internal.data.SemverAsStringSerializerLoose
 import net.mamoe.mirai.console.plugin.PluginDependency
 import net.mamoe.mirai.console.plugin.PluginDescription
 import net.mamoe.mirai.console.plugin.PluginKind

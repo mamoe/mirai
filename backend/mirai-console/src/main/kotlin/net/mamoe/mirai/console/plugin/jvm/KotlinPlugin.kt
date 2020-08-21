@@ -48,7 +48,7 @@ public abstract class KotlinMemoryPlugin @JvmOverloads constructor(
 
 public object MyPlugin : KotlinPlugin()
 
-public object AccountSetting : Setting by MyPlugin.getSetting() {
+public object AccountPluginData : PluginData by MyPlugin.getPluginData() {
     public val s by value(1)
 }
 */

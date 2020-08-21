@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.internal.plugin
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
@@ -18,7 +19,6 @@ import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionImpl
-import net.mamoe.mirai.console.setting.SettingStorage
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
@@ -35,8 +35,8 @@ internal object JarPluginLoaderImpl :
     private val logger: MiraiLogger = MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
 
     @ConsoleExperimentalAPI
-    override val settingStorage: SettingStorage
-        get() = MiraiConsoleImplementationBridge.settingStorageForJarPluginLoader
+    override val dataStorage: PluginDataStorage
+        get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
 
     override val coroutineContext: CoroutineContext =
         MiraiConsole.coroutineContext +

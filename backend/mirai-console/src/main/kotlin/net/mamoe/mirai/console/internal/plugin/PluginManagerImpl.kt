@@ -15,7 +15,7 @@ import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.internal.setting.cast
+import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.utils.info
 import java.io.File

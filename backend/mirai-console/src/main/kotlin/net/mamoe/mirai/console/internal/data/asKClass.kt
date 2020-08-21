@@ -7,10 +7,10 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.internal.setting
+package net.mamoe.mirai.console.internal.data
 
+import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
-import net.mamoe.mirai.console.setting.Setting
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
@@ -29,16 +29,16 @@ internal inline fun <reified T : Any> KType.asKClass(): KClass<out T> {
     return clazz
 }
 
-internal inline fun <reified T : Setting> newSettingInstanceUsingReflection(type: KType): T {
+internal inline fun <reified T : PluginData> newPluginDataInstanceUsingReflection(type: KType): T {
     val classifier = type.asKClass<T>()
 
     return with(classifier) {
         objectInstance
             ?: createInstanceOrNull()
             ?: throw IllegalArgumentException(
-                "Cannot create Setting instance. " +
-                        "SettingHolder supports Settings implemented as an object " +
-                        "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newSettingInstance implementation."
+                "Cannot create PluginData instance. " +
+                        "PluginDataHolder supports PluginDatas implemented as an object " +
+                        "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newPluginDataInstance implementation."
             )
     }
 }

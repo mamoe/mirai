@@ -7,14 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.internal.setting
+package net.mamoe.mirai.console.internal.data
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
-import net.mamoe.mirai.console.plugin.jvm.loadSetting
-import net.mamoe.mirai.console.setting.*
+import net.mamoe.mirai.console.plugin.jvm.loadPluginData
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.currentTimeMillis
@@ -26,21 +26,21 @@ import kotlin.reflect.full.findAnnotation
 
 
 /**
- * 链接自动保存的 [Setting].
+ * 链接自动保存的 [PluginData].
  * 当任一相关 [Value] 的值被修改时, 将在一段时间无其他修改时保存
  *
- * 若 [AutoSaveSettingHolder.coroutineContext] 含有 [Job], 则 [AutoSaveSetting] 会通过 [Job.invokeOnCompletion] 在 Job 完结时触发自动保存.
+ * 若 [AutoSavePluginDataHolder.coroutineContext] 含有 [Job], 则 [AutoSavePluginData] 会通过 [Job.invokeOnCompletion] 在 Job 完结时触发自动保存.
  *
- * @see loadSetting
+ * @see loadPluginData
  */
-internal open class AutoSaveSetting(
-    private val owner: AutoSaveSettingHolder,
-    internal val originSettingClass: KClass<out Setting>
+internal open class AutoSavePluginData(
+    private val owner: AutoSavePluginDataHolder,
+    internal val originPluginDataClass: KClass<out PluginData>
 ) :
-    AbstractSetting() {
-    private lateinit var storage: SettingStorage
+    AbstractPluginData() {
+    private lateinit var storage: PluginDataStorage
 
-    override fun setStorage(storage: SettingStorage) {
+    override fun setStorage(storage: PluginDataStorage) {
         check(!this::storage.isInitialized) { "storage is already initialized" }
         this.storage = storage
     }
@@ -82,71 +82,71 @@ internal open class AutoSaveSetting(
     private fun doSave() = storage.store(owner, this)
 }
 
-internal class MemorySettingStorageImpl(
-    private val onChanged: MemorySettingStorage.OnChangedCallback
-) : SettingStorage, MemorySettingStorage,
-    MutableMap<Class<out Setting>, Setting> by mutableMapOf() {
+internal class MemoryPluginDataStorageImpl(
+    private val onChanged: MemoryPluginDataStorage.OnChangedCallback
+) : PluginDataStorage, MemoryPluginDataStorage,
+    MutableMap<Class<out PluginData>, PluginData> by mutableMapOf() {
 
-    internal inner class MemorySettingImpl : AbstractSetting() {
+    internal inner class MemoryPluginDataImpl : AbstractPluginData() {
         @ConsoleInternalAPI
         override fun onValueChanged(value: Value<*>) {
-            onChanged.onChanged(this@MemorySettingStorageImpl, value)
+            onChanged.onChanged(this@MemoryPluginDataStorageImpl, value)
         }
 
-        override fun setStorage(storage: SettingStorage) {
-            check(storage is MemorySettingStorageImpl) { "storage is not MemorySettingStorageImpl" }
+        override fun setStorage(storage: PluginDataStorage) {
+            check(storage is MemoryPluginDataStorageImpl) { "storage is not MemoryPluginDataStorageImpl" }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T = (synchronized(this) {
-        this.getOrPut(settingClass) {
-            settingClass.kotlin.run {
+    override fun <T : PluginData> load(holder: PluginDataHolder, dataClass: Class<T>): T = (synchronized(this) {
+        this.getOrPut(dataClass) {
+            dataClass.kotlin.run {
                 objectInstance ?: createInstanceOrNull() ?: kotlin.run {
-                    if (settingClass != Setting::class.java) {
+                    if (dataClass != PluginData::class.java) {
                         throw IllegalArgumentException(
-                            "Cannot create Setting instance. Make sure settingClass is Setting::class.java or a Kotlin's object, " +
+                            "Cannot create PluginData instance. Make sure dataClass is PluginData::class.java or a Kotlin's object, " +
                                     "or has a constructor which either has no parameters or all parameters of which are optional"
                         )
                     }
-                    MemorySettingImpl()
+                    MemoryPluginDataImpl()
                 }
             }
         }
     } as T).also { it.setStorage(this) }
 
-    override fun store(holder: SettingHolder, setting: Setting) {
+    override fun store(holder: PluginDataHolder, pluginData: PluginData) {
         synchronized(this) {
-            this[setting::class.java] = setting
+            this[pluginData::class.java] = pluginData
         }
     }
 }
 
 @Suppress("RedundantVisibilityModifier") // might be public in the future
-internal open class MultiFileSettingStorageImpl(
+internal open class MultiFilePluginDataStorageImpl(
     public final override val directory: File
-) : SettingStorage, MultiFileSettingStorage {
+) : PluginDataStorage, MultiFilePluginDataStorage {
     init {
         directory.mkdir()
     }
 
-    public override fun <T : Setting> load(holder: SettingHolder, settingClass: Class<T>): T =
-        with(settingClass.kotlin) {
+    public override fun <T : PluginData> load(holder: PluginDataHolder, dataClass: Class<T>): T =
+        with(dataClass.kotlin) {
             @Suppress("UNCHECKED_CAST")
             val instance = objectInstance ?: this.createInstanceOrNull() ?: kotlin.run {
-                require(settingClass == Setting::class.java) {
-                    "Cannot create Setting instance. Make sure settingClass is Setting::class.java or a Kotlin's object, " +
+                require(dataClass == PluginData::class.java) {
+                    "Cannot create PluginData instance. Make sure dataClass is PluginData::class.java or a Kotlin's object, " +
                             "or has a constructor which either has no parameters or all parameters of which are optional"
                 }
-                if (holder is AutoSaveSettingHolder) {
-                    AutoSaveSetting(holder, this) as T?
+                if (holder is AutoSavePluginDataHolder) {
+                    AutoSavePluginData(holder, this) as T?
                 } else null
             } ?: throw IllegalArgumentException(
-                "Cannot create Setting instance. Make sure 'holder' is a AutoSaveSettingHolder, " +
-                        "or 'setting' is an object or has a constructor which either has no parameters or all parameters of which are optional"
+                "Cannot create PluginData instance. Make sure 'holder' is a AutoSavePluginDataHolder, " +
+                        "or 'data' is an object or has a constructor which either has no parameters or all parameters of which are optional"
             )
 
-            val file = getSettingFile(holder, this)
+            val file = getPluginDataFile(holder, this)
             file.createNewFile()
             check(file.exists() && file.isFile && file.canRead()) { "${file.absolutePath} cannot be read" }
             val text = file.readText()
@@ -156,29 +156,32 @@ internal open class MultiFileSettingStorageImpl(
             instance
         }.also { it.setStorage(this) }
 
-    protected open fun getSettingFile(holder: SettingHolder, clazz: KClass<*>): File = with(clazz) {
+    protected open fun getPluginDataFile(holder: PluginDataHolder, clazz: KClass<*>): File = with(clazz) {
         val name = findASerialName()
 
         val dir = File(directory, holder.name)
         if (dir.isFile) {
-            error("Target directory ${dir.path} for holder $holder is occupied by a file therefore setting $qualifiedNameOrTip can't be saved.")
+            error("Target directory ${dir.path} for holder $holder is occupied by a file therefore data $qualifiedNameOrTip can't be saved.")
         }
         dir.mkdir()
 
         val file = File(directory, name)
         if (file.isDirectory) {
-            error("Target file $file is occupied by a directory therefore setting $qualifiedNameOrTip can't be saved.")
+            error("Target file $file is occupied by a directory therefore data $qualifiedNameOrTip can't be saved.")
         }
         return file
     }
 
     @ConsoleExperimentalAPI
-    public override fun store(holder: SettingHolder, setting: Setting) {
+    public override fun store(holder: PluginDataHolder, pluginData: PluginData) {
         val file =
-            getSettingFile(holder, if (setting is AutoSaveSetting) setting.originSettingClass else setting::class)
+            getPluginDataFile(
+                holder,
+                if (pluginData is AutoSavePluginData) pluginData.originPluginDataClass else pluginData::class
+            )
 
         if (file.exists() && file.isFile && file.canRead()) {
-            file.writeText(Yaml.default.encodeToString(setting.updaterSerializer, Unit))
+            file.writeText(Yaml.default.encodeToString(pluginData.updaterSerializer, Unit))
         }
     }
 }
