@@ -11,9 +11,11 @@
 
 package net.mamoe.mirai.console.command
 
+import kotlinx.coroutines.launch
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.*
@@ -23,8 +25,8 @@ import net.mamoe.mirai.message.data.PlainText
 /**
  * 指令发送者
  *
- * @see ConsoleCommandSender
- * @see UserCommandSender
+ * @see ConsoleCommandSender 控制台
+ * @see UserCommandSender  [User] ([群成员][Member], [好友][Friend])
  */
 @Suppress("FunctionName")
 public interface CommandSender {
@@ -34,11 +36,43 @@ public interface CommandSender {
     public val bot: Bot?
 
     /**
-     * 立刻发送一条消息
+     * 获取好友昵称, 群员昵称, 或 Bot 的昵称. 当控制台发送消息时返回 [ConsoleCommandSender.NAME]
+     */
+    public val name: String
+
+    /**
+     * 立刻发送一条消息. 对于 [Member.asCommandSender], 这个函数总是发送给所在群
      */
     @JvmBlockingBridge
     public suspend fun sendMessage(message: Message)
+
+    /**
+     * 立刻发送一条消息. 对于 [Member.asCommandSender], 这个函数总是发送给所在群
+     */
+    @JvmDefault
+    @JvmBlockingBridge
+    public suspend fun sendMessage(message: String): Unit = sendMessage(PlainText(message))
+
+    @ConsoleExperimentalAPI
+    public suspend fun catchExecutionException(e: Throwable) {
+        if (this is CommandSenderOnMessage<*>) {
+            // TODO: 2020/8/22 bad scope
+            val cause = e.rootCauseOrSelf
+            sendMessage("${cause::class.simpleName.orEmpty()}: ${cause.message}") // \n\n60 秒内发送 stacktrace 查看堆栈信息
+            bot.launch {
+                if (fromEvent.nextMessageOrNull(60_000) {
+                        it.message.contentEquals("stacktrace") || it.message.contentEquals("stack")
+                    } != null) {
+                    sendMessage(e.stackTraceToString())
+                }
+            }
+        } else {
+            sendMessage(e.stackTraceToString())
+        }
+    }
 }
+
+internal val Throwable.rootCauseOrSelf: Throwable get() = generateSequence(this) { it.cause }.lastOrNull() ?: this
 
 /**
  * 可以知道其 [Bot] 的 [CommandSender]
@@ -47,8 +81,12 @@ public interface BotAwareCommandSender : CommandSender {
     public override val bot: Bot
 }
 
-@JvmSynthetic
-public suspend inline fun CommandSender.sendMessage(message: String): Unit = sendMessage(PlainText(message))
+/**
+ * 可以知道其 [Group] 环境的 [CommandSender]
+ */
+public interface GroupAwareCommandSender : CommandSender {
+    public val group: Group
+}
 
 /**
  * 控制台指令执行者. 代表由控制台执行指令
@@ -56,15 +94,28 @@ public suspend inline fun CommandSender.sendMessage(message: String): Unit = sen
 // 前端实现
 public abstract class ConsoleCommandSender internal constructor() : CommandSender {
     public final override val bot: Nothing? get() = null
+    public override val name: String get() = NAME
 
-    internal companion object {
+    public companion object {
+        public const val NAME: String = "CONSOLE"
+
         internal val instance get() = MiraiConsoleImplementationBridge.consoleCommandSender
     }
 }
 
-public fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
+public fun FriendMessageEvent.toCommandSender(): FriendCommandSenderOnMessage = FriendCommandSenderOnMessage(this)
+public fun GroupMessageEvent.toCommandSender(): MemberCommandSenderOnMessage = MemberCommandSenderOnMessage(this)
+public fun TempMessageEvent.toCommandSender(): TempCommandSenderOnMessage = TempCommandSenderOnMessage(this)
+
+public fun MessageEvent.toCommandSender(): CommandSenderOnMessage<*> = when (this) {
+    is FriendMessageEvent -> toCommandSender()
+    is GroupMessageEvent -> toCommandSender()
+    is TempMessageEvent -> toCommandSender()
+    else -> throw IllegalArgumentException("unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
+}
 
 public fun Member.asCommandSender(): MemberCommandSender = MemberCommandSender(this)
+public fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
 
 public fun User.asCommandSender(): UserCommandSender {
     return when (this) {
@@ -77,6 +128,7 @@ public fun User.asCommandSender(): UserCommandSender {
 /**
  * 表示由 [MessageEvent] 触发的指令
  */
+@ConsoleExperimentalAPI
 public interface MessageEventContextAware<E : MessageEvent> : MessageEventExtensions<User, Contact> {
     public val fromEvent: E
 }
@@ -85,6 +137,7 @@ public interface MessageEventContextAware<E : MessageEvent> : MessageEventExtens
  * 代表一个用户私聊机器人执行指令
  * @see User.asCommandSender
  */
+@ConsoleExperimentalAPI
 public sealed class UserCommandSender : CommandSender, BotAwareCommandSender {
     /**
      * @see MessageEvent.sender
@@ -97,6 +150,7 @@ public sealed class UserCommandSender : CommandSender, BotAwareCommandSender {
     public abstract val subject: Contact
 
     public override val bot: Bot get() = user.bot
+    public override val name: String get() = user.nameCardOrNick
 
     public final override suspend fun sendMessage(message: Message) {
         subject.sendMessage(message)
@@ -107,6 +161,7 @@ public sealed class UserCommandSender : CommandSender, BotAwareCommandSender {
  * 代表一个用户私聊机器人执行指令
  * @see Friend.asCommandSender
  */
+@ConsoleExperimentalAPI
 public open class FriendCommandSender(
     public final override val user: Friend
 ) : UserCommandSender() {
@@ -117,23 +172,39 @@ public open class FriendCommandSender(
  * 代表一个用户私聊机器人执行指令
  * @see Friend.asCommandSender
  */
+@ConsoleExperimentalAPI
 public class FriendCommandSenderOnMessage(
     public override val fromEvent: FriendMessageEvent
-) :
-    FriendCommandSender(fromEvent.sender),
-    MessageEventContextAware<FriendMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
+) : FriendCommandSender(fromEvent.sender),
+    CommandSenderOnMessage<FriendMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
     public override val subject: Contact get() = super.subject
     public override val bot: Bot get() = super.bot
+}
+
+@ConsoleExperimentalAPI
+public interface CommandSenderOnMessage<T : MessageEvent> : MessageEventContextAware<T>, CommandSender
+
+/**
+ * 代表一个群成员执行指令.
+ * @see Member.asCommandSender
+ */
+@ConsoleExperimentalAPI
+public open class MemberCommandSender(
+    public final override val user: Member
+) : UserCommandSender(), GroupAwareCommandSender {
+    public override val group: Group get() = user.group
+    public override val subject: Contact get() = group
 }
 
 /**
  * 代表一个群成员执行指令.
  * @see Member.asCommandSender
  */
-public open class MemberCommandSender(
+@ConsoleExperimentalAPI
+public open class TempCommandSender(
     public final override val user: Member
-) : UserCommandSender() {
-    public inline val group: Group get() = user.group
+) : UserCommandSender(), GroupAwareCommandSender {
+    public override val group: Group get() = user.group
     public override val subject: Contact get() = group
 }
 
@@ -141,11 +212,11 @@ public open class MemberCommandSender(
  * 代表一个群成员在群内执行指令.
  * @see Member.asCommandSender
  */
+@ConsoleExperimentalAPI
 public class MemberCommandSenderOnMessage(
     public override val fromEvent: GroupMessageEvent
-) :
-    MemberCommandSender(fromEvent.sender),
-    MessageEventContextAware<GroupMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
+) : MemberCommandSender(fromEvent.sender),
+    CommandSenderOnMessage<GroupMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
     public override val subject: Contact get() = super.subject
     public override val bot: Bot get() = super.bot
 }
@@ -157,9 +228,8 @@ public class MemberCommandSenderOnMessage(
 @ConsoleExperimentalAPI
 public class TempCommandSenderOnMessage(
     public override val fromEvent: TempMessageEvent
-) :
-    MemberCommandSender(fromEvent.sender),
-    MessageEventContextAware<TempMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
+) : TempCommandSender(fromEvent.sender),
+    CommandSenderOnMessage<TempMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
     public override val subject: Contact get() = super.subject
     public override val bot: Bot get() = super.bot
 }
