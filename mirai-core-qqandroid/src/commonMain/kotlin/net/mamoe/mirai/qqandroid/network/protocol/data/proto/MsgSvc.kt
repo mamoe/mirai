@@ -19,7 +19,7 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val errmsg: String = "",
         @ProtoNumber(3) @JvmField val syncCookie: ByteArray? = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(4) @JvmField val syncFlag: SyncFlag,
+        @ProtoNumber(4) @JvmField val syncFlag: SyncFlag = SyncFlag.CONTINUE,
         @ProtoNumber(5) @JvmField val uinPairMsgs: List<MsgComm.UinPairMsg>? = null,
         @ProtoNumber(6) @JvmField val bindUin: Long = 0L,
         @ProtoNumber(7) @JvmField val msgRspType: Int = 0,
