@@ -37,6 +37,9 @@ internal abstract class JvmPluginInternal(
 ) : JvmPlugin,
     CoroutineScope {
 
+    override val isEnabled: Boolean
+        get() = job.isActive
+
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
     override fun getResourceAsStream(name: String): InputStream? = resourceContainerDelegate.getResourceAsStream(name)
 

@@ -26,6 +26,14 @@ import java.io.File
  */
 public interface Plugin {
     /**
+     * 判断此插件是否已启用
+     *
+     * @see disable 关闭这个插件
+     * @see enable 启用这个插件
+     */
+    public val isEnabled: Boolean
+
+    /**
      * 所属插件加载器实例, 此加载器必须能加载这个 [Plugin].
      */
     public val loader: PluginLoader<*, *>
