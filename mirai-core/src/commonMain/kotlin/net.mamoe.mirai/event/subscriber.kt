@@ -110,7 +110,9 @@ public interface Listener<in E : Event> : CompletableJob {
 
         internal companion object {
             @JvmStatic
-            internal val valuesExceptMonitor: Array<EventPriority> = arrayOf(HIGHEST, HIGH, NORMAL, LOW, LOWEST)
+            internal val prioritiesExcludedMonitor: Array<EventPriority> = run {
+                values().filter { it != MONITOR }.toTypedArray()
+            }
         }
     }
 
