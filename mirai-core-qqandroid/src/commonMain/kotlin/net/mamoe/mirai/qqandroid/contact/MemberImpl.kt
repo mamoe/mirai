@@ -180,7 +180,7 @@ internal class MemberImpl constructor(
         check(this.id != bot.id) {
             "A bot can't mute itself."
         }
-        checkBotPermissionHigherThanThis()
+        checkBotPermissionHigherThanThis("mute")
         bot.network.run {
             TroopManagement.Mute(
                 client = bot.client,
@@ -194,10 +194,10 @@ internal class MemberImpl constructor(
         net.mamoe.mirai.event.events.MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
     }
 
-    private fun checkBotPermissionHigherThanThis() {
+    private fun checkBotPermissionHigherThanThis(operationName: String) {
         check(group.botPermission > this.permission) {
             throw PermissionDeniedException(
-                "`kick` operation requires bot to have a higher permission than the target member, " +
+                "`$operationName` operation requires bot to have a higher permission than the target member, " +
                         "but bot's is ${group.botPermission}, target's is ${this.permission}"
             )
         }
@@ -205,7 +205,7 @@ internal class MemberImpl constructor(
 
     @JvmSynthetic
     override suspend fun unmute() {
-        checkBotPermissionHigherThanThis()
+        checkBotPermissionHigherThanThis("unmute")
         bot.network.run {
             TroopManagement.Mute(
                 client = bot.client,
@@ -222,7 +222,7 @@ internal class MemberImpl constructor(
 
     @JvmSynthetic
     override suspend fun kick(message: String) {
-        checkBotPermissionHigherThanThis()
+        checkBotPermissionHigherThanThis("kick")
         check(group.members.getOrNull(this.id) != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
         }
