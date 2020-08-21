@@ -58,6 +58,9 @@ public interface CommandManager {
      * @return
      * 若已有重名指令, 且 [override] 为 `false`, 返回 `false`;
      * 若已有重名指令, 但 [override] 为 `true`, 覆盖原有指令并返回 `true`.
+     *
+     *
+     * 注意: [内建指令][BuiltInCommands] 也可以被覆盖.
      */
     public fun Command.register(override: Boolean = false): Boolean
 

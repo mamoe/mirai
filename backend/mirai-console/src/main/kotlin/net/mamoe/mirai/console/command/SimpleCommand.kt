@@ -17,13 +17,40 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.description.CommandArgumentContext
-import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
-import net.mamoe.mirai.console.command.description.EmptyCommandArgumentContext
-import net.mamoe.mirai.console.command.description.plus
+import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
 
+/**
+ * 简单指令. 参数支持自动解析. [CommandArgumentParser]
+ *
+ * Kotlin 实现:
+ * ```
+ * object MySimpleCommand : SimpleCommand(
+ *     MyPlugin, "tell",
+ *     description = "Message somebody",
+ *     usage = "/tell <target> <message>"
+ * ) {
+ *     @Handler
+ *     suspend fun CommandSender.onCommand(target: User, message: String) {
+ *         target.sendMessage(message)
+ *     }
+ * }
+ * ```
+ *
+ * Java 实现:
+ * ```java
+ * public final class MySimpleCommand extends SimpleCommand {
+ *     private MySimpleCommand() {
+ *         super(MyPlugin.INSTANCE, new String[]{ "tell" }, "Message somebody", "/tell <target> <message>")
+ *     }
+ *     @Handler
+ *     public void onCommand(CommandSender sender, User target, String message) {
+ *         target.sendMessage(message)
+ *     }
+ * }
+ * ```
+ */
 public abstract class SimpleCommand @JvmOverloads constructor(
     owner: CommandOwner,
     vararg names: String,

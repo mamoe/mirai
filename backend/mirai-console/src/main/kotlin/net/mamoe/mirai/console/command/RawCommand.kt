@@ -12,7 +12,7 @@ package net.mamoe.mirai.console.command
 /**
  * 无参数解析, 接收原生参数的指令.
  */
-public abstract class RawCommand(
+public abstract class RawCommand @JvmOverloads constructor(
     public override val owner: CommandOwner,
     public override vararg val names: String,
     public override val usage: String = "<no usages given>",

@@ -10,9 +10,10 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 
 /**
- * 在 [executeCommand] 中, [CommandSender] 未拥有 [Command.permission] 所要求的权限时抛出的异常.
+ * 在 [CommandManager.executeCommand] 中, [CommandSender] 未拥有 [Command.permission] 所要求的权限时抛出的异常.
  *
  * 总是作为 [CommandExecutionException.cause].
  */

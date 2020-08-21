@@ -19,6 +19,8 @@ import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageContent
+import net.mamoe.mirai.message.data.content
 import java.util.concurrent.locks.ReentrantLock
 
 internal object CommandManagerImpl : CommandManager, CoroutineScope by CoroutineScope(MiraiConsole.job) {
@@ -60,7 +62,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
             concurrency = Listener.ConcurrencyKind.CONCURRENT,
             priority = Listener.EventPriority.HIGH
         ) {
-            if (this.sender.asCommandSender().executeCommand(message) != null) {
+            if (this.toCommandSender().executeCommand(message) != null) {
                 intercept()
             }
         }
@@ -129,7 +131,8 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
 
     override suspend fun CommandSender.executeCommand(message: MessageChain): Command? {
         if (message.isEmpty()) return null
-        return matchAndExecuteCommandInternal(message, message[0].toString().substringBefore(' '))
+        val msg = message.filterIsInstance<MessageContent>()
+        return matchAndExecuteCommandInternal(msg, msg[0].content.substringBefore(' '))
     }
 
     override suspend fun Command.execute(sender: CommandSender, args: MessageChain, checkPermission: Boolean) {
