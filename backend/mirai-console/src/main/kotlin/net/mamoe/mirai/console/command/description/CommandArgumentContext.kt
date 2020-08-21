@@ -74,8 +74,8 @@ public interface CommandArgumentContext {
 
         Member::class with ExistMemberArgumentParser
         Group::class with ExistGroupArgumentParser
-        Bot::class with ExistBotArgumentParser
         Friend::class with ExistFriendArgumentParser
+        Bot::class with ExistBotArgumentParser
     })
 }
 
@@ -179,7 +179,7 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @LowPriorityInOverloadResolution
     public inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgumentParser<T>.(s: String, sender: CommandSender) -> T
-    ): ParserPair<*> = ParserPair(this, CommandArgParser(parser)).also { add(it) }
+    ): ParserPair<*> = ParserPair(this, CommandArgumentParser(parser)).also { add(it) }
 
     /**
      * 添加一个指令解析器
@@ -187,7 +187,8 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @JvmSynthetic
     public inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgumentParser<T>.(s: String) -> T
-    ): ParserPair<*> = ParserPair(this, CommandArgParser { s: String, _: CommandSender -> parser(s) }).also { add(it) }
+    ): ParserPair<*> =
+        ParserPair(this, CommandArgumentParser { s: String, _: CommandSender -> parser(s) }).also { add(it) }
 
     @JvmSynthetic
     public inline fun <reified T : Any> add(parser: CommandArgumentParser<T>): ParserPair<*> =
@@ -200,7 +201,7 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @JvmSynthetic
     public inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgumentParser<*>.(s: String) -> T
-    ): ParserPair<*> = T::class with CommandArgParser { s: String, _: CommandSender -> parser(s) }
+    ): ParserPair<*> = T::class with CommandArgumentParser { s: String, _: CommandSender -> parser(s) }
 
     /**
      * 添加一个指令解析器
@@ -210,7 +211,7 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @LowPriorityInOverloadResolution
     public inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgumentParser<*>.(s: String, sender: CommandSender) -> T
-    ): ParserPair<*> = T::class with CommandArgParser(parser)
+    ): ParserPair<*> = T::class with CommandArgumentParser(parser)
 }
 
 

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "unused")
 
 package net.mamoe.mirai.console.command.description
 
@@ -20,6 +20,7 @@ import kotlin.contracts.contract
  * 指令参数解析器.
  *
  * @see CommandArgumentContext
+ * @see ExistFriendArgumentParser
  */
 public interface CommandArgumentParser<out T : Any> {
     public fun parse(raw: String, sender: CommandSender): T
@@ -28,6 +29,9 @@ public interface CommandArgumentParser<out T : Any> {
     public fun parse(raw: SingleMessage, sender: CommandSender): T = parse(raw.content, sender)
 }
 
+/**
+ * 解析
+ */
 public fun <T : Any> CommandArgumentParser<T>.parse(raw: Any, sender: CommandSender): T {
     contract {
         returns() implies (raw is String || raw is SingleMessage)
@@ -40,10 +44,13 @@ public fun <T : Any> CommandArgumentParser<T>.parse(raw: Any, sender: CommandSen
     }
 }
 
+/**
+ * 抛出一个 [CommandArgumentParserException]
+ */
 @Suppress("unused")
 @JvmSynthetic
 public inline fun CommandArgumentParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing {
-    throw ParserException(message, cause)
+    throw CommandArgumentParserException(message, cause)
 }
 
 @JvmSynthetic
@@ -62,7 +69,7 @@ public inline fun CommandArgumentParser<*>.checkArgument(
  */
 @Suppress("FunctionName")
 @JvmSynthetic
-public inline fun <T : Any> CommandArgParser(
+public inline fun <T : Any> CommandArgumentParser(
     crossinline stringParser: CommandArgumentParser<T>.(s: String, sender: CommandSender) -> T
 ): CommandArgumentParser<T> = object : CommandArgumentParser<T> {
     override fun parse(raw: String, sender: CommandSender): T = stringParser(raw, sender)
@@ -73,7 +80,7 @@ public inline fun <T : Any> CommandArgParser(
  */
 @Suppress("FunctionName")
 @JvmSynthetic
-public inline fun <T : Any> CommandArgParser(
+public inline fun <T : Any> CommandArgumentParser(
     crossinline stringParser: CommandArgumentParser<T>.(s: String, sender: CommandSender) -> T,
     crossinline messageParser: CommandArgumentParser<T>.(m: SingleMessage, sender: CommandSender) -> T
 ): CommandArgumentParser<T> = object : CommandArgumentParser<T> {
@@ -81,8 +88,3 @@ public inline fun <T : Any> CommandArgParser(
     override fun parse(raw: SingleMessage, sender: CommandSender): T = messageParser(raw, sender)
 }
 
-
-/**
- * 在解析参数时遇到的 _正常_ 错误. 如参数不符合规范.
- */
-public class ParserException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)

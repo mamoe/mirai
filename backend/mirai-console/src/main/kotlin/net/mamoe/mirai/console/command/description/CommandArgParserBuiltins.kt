@@ -10,229 +10,253 @@
 package net.mamoe.mirai.console.command.description
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.command.BotAwareCommandSender
-import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.MemberCommandSender
-import net.mamoe.mirai.console.command.UserCommandSender
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.internal.command.fuzzySearchMember
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.getFriendOrNull
+import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
 
 
-public object IntArgumentParser : CommandArgumentParser<Int> {
+/**
+ * 使用 [String.toInt] 解析
+ */
+public object IntArgumentParser : InternalCommandArgumentParserExtensions<Int> {
     public override fun parse(raw: String, sender: CommandSender): Int =
         raw.toIntOrNull() ?: illegalArgument("无法解析 $raw 为整数")
 }
 
-public object LongArgumentParser : CommandArgumentParser<Long> {
+/**
+ * 使用 [String.toInt] 解析
+ */
+public object LongArgumentParser : InternalCommandArgumentParserExtensions<Long> {
     public override fun parse(raw: String, sender: CommandSender): Long =
         raw.toLongOrNull() ?: illegalArgument("无法解析 $raw 为长整数")
 }
 
-public object ShortArgumentParser : CommandArgumentParser<Short> {
+/**
+ * 使用 [String.toInt] 解析
+ */
+public object ShortArgumentParser : InternalCommandArgumentParserExtensions<Short> {
     public override fun parse(raw: String, sender: CommandSender): Short =
         raw.toShortOrNull() ?: illegalArgument("无法解析 $raw 为短整数")
 }
 
-public object ByteArgumentParser : CommandArgumentParser<Byte> {
+/**
+ * 使用 [String.toInt] 解析
+ */
+public object ByteArgumentParser : InternalCommandArgumentParserExtensions<Byte> {
     public override fun parse(raw: String, sender: CommandSender): Byte =
         raw.toByteOrNull() ?: illegalArgument("无法解析 $raw 为字节")
 }
 
-public object DoubleArgumentParser : CommandArgumentParser<Double> {
+/**
+ * 使用 [String.toInt] 解析
+ */
+public object DoubleArgumentParser : InternalCommandArgumentParserExtensions<Double> {
     public override fun parse(raw: String, sender: CommandSender): Double =
         raw.toDoubleOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
 
-public object FloatArgumentParser : CommandArgumentParser<Float> {
+/**
+ * 使用 [String.toInt] 解析
+ */
+public object FloatArgumentParser : InternalCommandArgumentParserExtensions<Float> {
     public override fun parse(raw: String, sender: CommandSender): Float =
         raw.toFloatOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
 
-public object StringArgumentParser : CommandArgumentParser<String> {
-    public override fun parse(raw: String, sender: CommandSender): String {
-        return raw
-    }
+/**
+ * 直接返回 [String], 或取用 [SingleMessage.contentToString]
+ */
+public object StringArgumentParser : InternalCommandArgumentParserExtensions<String> {
+    public override fun parse(raw: String, sender: CommandSender): String = raw
 }
 
-public object BooleanArgumentParser : CommandArgumentParser<Boolean> {
+/**
+ * 当字符串内容为(不区分大小写) "true", "yes", "enabled"
+ */
+public object BooleanArgumentParser : InternalCommandArgumentParserExtensions<Boolean> {
     public override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
         str.equals("true", ignoreCase = true)
                 || str.equals("yes", ignoreCase = true)
                 || str.equals("enabled", ignoreCase = true)
+                || str.equals("on", ignoreCase = true)
     }
 }
 
 /**
- * require a bot that already login in console
- * input: Bot UIN
- * output: Bot
- * errors: String->Int convert, Bot Not Exist
+ * 根据 [Bot.id] 解析一个登录后的 [Bot]
  */
-public object ExistBotArgumentParser : CommandArgumentParser<Bot> {
-    public override fun parse(raw: String, sender: CommandSender): Bot {
-        val uin = raw.toLongOrNull() ?: illegalArgument("无法识别 QQ ID: $raw")
-        return Bot.getInstanceOrNull(uin) ?: illegalArgument("无法找到 Bot $uin")
-    }
+public object ExistBotArgumentParser : InternalCommandArgumentParserExtensions<Bot> {
+    public override fun parse(raw: String, sender: CommandSender): Bot =
+        if (raw == "~") sender.inferBotOrFail()
+        else raw.findBotOrFail()
 }
 
-public object ExistFriendArgumentParser : CommandArgumentParser<Friend> {
-    //Bot.friend
-    //friend
-    //~ = self
-    public override fun parse(raw: String, sender: CommandSender): Friend {
-        if (raw == "~") {
-            if (sender !is BotAwareCommandSender) {
-                illegalArgument("无法解析～作为默认")
-            }
-            val targetID = when (sender) {
-                is UserCommandSender -> sender.user.id
-                else -> illegalArgument("无法解析～作为默认")
-            }
+/**
+ * 解析任意一个存在的好友.
+ *
+ * 支持的输入:
+ * - `botId.friendId`
+ * - `botId.friendNick` (模糊搜索, 寻找最优匹配)
+ * - `~` (指代指令调用人自己作为好友. 仅聊天环境下)
+ *
+ * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+ */
+public object ExistFriendArgumentParser : InternalCommandArgumentParserExtensions<Friend> {
+    private val syntax = """
+        - `botId.friendId`
+        - `botId.friendNick` (模糊搜索, 寻找最优匹配)
+        - `~` (指代指令调用人自己作为好友. 仅聊天环境下)
+        
+        当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+    """.trimIndent()
 
-            return sender.bot.friends.getOrNull(targetID) ?: illegalArgument("无法解析～作为默认")
-        }
-        if (sender is BotAwareCommandSender) {
-            return sender.bot.friends.getOrNull(raw.toLongOrNull() ?: illegalArgument("无法解析 $raw 为整数"))
-                ?: illegalArgument("无法找到" + raw + "这个好友")
-        } else {
-            raw.split(".").let { args ->
-                if (args.size != 2) {
-                    illegalArgument("无法解析 $raw, 格式应为 机器人账号.好友账号")
-                }
-                return try {
-                    Bot.getInstance(args[0].toLong()).friends.getOrNull(
-                        args[1].toLongOrNull() ?: illegalArgument("无法解析 $raw 为好友")
-                    ) ?: illegalArgument("无法找到好友 ${args[1]}")
-                } catch (e: NoSuchElementException) {
-                    illegalArgument("无法找到机器人账号 ${args[0]}")
-                }
+    public override fun parse(raw: String, sender: CommandSender): Friend {
+        if (raw == "~") return sender.inferFriendOrFail()
+
+        val components = raw.split(".")
+
+        return when (components.size) {
+            2 -> components.let { (botId, groupId) ->
+                botId.findBotOrFail().findFriendOrFail(groupId)
             }
+            1 -> components.let { (groupId) ->
+                sender.inferBotOrFail().findFriendOrFail(groupId)
+            }
+            else -> illegalArgument("好友语法错误. \n${syntax}")
         }
     }
 
     public override fun parse(raw: SingleMessage, sender: CommandSender): Friend {
         if (raw is At) {
-            assert(sender is MemberCommandSender)
-            return (sender as BotAwareCommandSender).bot.friends.getOrNull(raw.target) ?: illegalArgument("At的对象非Bot好友")
+            checkArgument(sender is MemberCommandSender)
+            return sender.inferBotOrFail().getFriendOrNull(raw.target)
+                ?: illegalArgument("At 的对象 ${raw.target} 非 Bot 好友")
         } else {
             illegalArgument("无法解析 $raw 为好友")
         }
     }
 }
 
-public object ExistGroupArgumentParser : CommandArgumentParser<Group> {
+/**
+ * 解析任意一个存在的群.
+ *
+ * 支持的输入:
+ * - `botId.groupId`
+ * - `~` (指代指令调用人自己所在群. 仅群聊天环境下)
+ *
+ * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+ */
+public object ExistGroupArgumentParser : InternalCommandArgumentParserExtensions<Group> {
+    private val syntax = """
+        - `botId.groupId`
+        - `~` (指代指令调用人自己所在群. 仅群聊天环境下)
+        当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+    """.trimIndent()
+
     public override fun parse(raw: String, sender: CommandSender): Group {
-        //by default
-        if ((raw == "" || raw == "~") && sender is MemberCommandSender) {
-            return sender.group
-        }
-        //from bot to group
-        if (sender is BotAwareCommandSender) {
-            val code = try {
-                raw.toLong()
-            } catch (e: NoSuchElementException) {
-                illegalArgument("无法识别Group Code$raw")
+        if (raw == "~") return sender.inferGroupOrFail()
+
+        val components = raw.split(".")
+
+        return when (components.size) {
+            2 -> components.let { (botId, groupId) ->
+                botId.findBotOrFail().findGroupOrFail(groupId)
             }
-            return try {
-                sender.bot.getGroup(code)
-            } catch (e: NoSuchElementException) {
-                illegalArgument("无法找到Group " + code + " from Bot " + sender.bot.id)
+            1 -> components.let { (groupId) ->
+                sender.inferBotOrFail().findGroupOrFail(groupId)
             }
-        }
-        //from console/other
-        return with(raw.split(".")) {
-            if (this.size != 2) {
-                illegalArgument("请使用BotQQ号.群号 来表示Bot的一个群")
+            0 -> components.let {
+                sender.inferGroupOrFail()
             }
-            try {
-                Bot.getInstance(this[0].toLong()).getGroup(this[1].toLong())
-            } catch (e: NoSuchElementException) {
-                illegalArgument("无法找到" + this[0] + "的" + this[1] + "群")
-            } catch (e: NumberFormatException) {
-                illegalArgument("无法识别群号或机器人UIN")
-            }
+            else -> illegalArgument("群语法错误. \n${syntax}")
         }
     }
 }
 
-public object ExistMemberArgumentParser : CommandArgumentParser<Member> {
-    //后台: Bot.Group.Member[QQ/名片]
-    //私聊: Group.Member[QQ/名片]
-    //群内: Q号
-    //群内: 名片
+/**
+ * 解析任意一个群成员.
+ *
+ * 支持的输入:
+ * - `botId.group.memberId`
+ * - `botId.group.memberCard` (模糊搜索, 寻找最优匹配)
+ * - `~` (指代指令调用人自己. 仅聊天环境下)
+ *
+ * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+ */
+public object ExistMemberArgumentParser : InternalCommandArgumentParserExtensions<Member> {
+    private val syntax: String = """
+         - `botId.group.memberId`
+         - `botId.group.memberCard` (模糊搜索, 寻找最优匹配)
+         - `~` (指代指令调用人自己. 仅聊天环境下)
+         
+         当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+    """.trimIndent()
+
     public override fun parse(raw: String, sender: CommandSender): Member {
-        if (sender !is BotAwareCommandSender) {
-            with(raw.split(".")) {
-                checkArgument(this.size >= 3) {
-                    "无法识别Member, 请使用Bot.Group.Member[QQ/名片]的格式"
-                }
+        if (raw == "~") return (sender as? MemberCommandSender)?.user ?: illegalArgument("当前语境下无法推断目标群员")
 
-                val bot = try {
-                    Bot.getInstance(this[0].toLong())
-                } catch (e: NoSuchElementException) {
-                    illegalArgument("无法找到Bot")
-                } catch (e: NumberFormatException) {
-                    illegalArgument("无法识别Bot")
-                }
+        val components = raw.split(".")
 
-                val group = try {
-                    bot.getGroup(this[1].toLong())
-                } catch (e: NoSuchElementException) {
-                    illegalArgument("无法找到Group")
-                } catch (e: NumberFormatException) {
-                    illegalArgument("无法识别Group")
-                }
-
-                val memberIndex = this.subList(2, this.size).joinToString(".")
-                return group.members.getOrNull(memberIndex.toLong())
-                    ?: group.fuzzySearchMember(memberIndex)
-                    ?: error("无法找到成员$memberIndex")
+        return when (components.size) {
+            3 -> components.let { (botId, groupId, memberIdOrCard) ->
+                botId.findBotOrFail().findGroupOrFail(groupId).findMemberOrFail(memberIdOrCard)
             }
-        } else {
-            val bot = sender.bot
-            if (sender is MemberCommandSender) {
-                val group = sender.group
-                return try {
-                    group.members[raw.toLong()]
-                } catch (ignored: Exception) {
-                    group.fuzzySearchMember(raw) ?: illegalArgument("无法找到成员$raw")
-                }
-            } else {
-                with(raw.split(".")) {
-                    if (this.size < 2) {
-                        illegalArgument("无法识别Member, 请使用Group.Member[QQ/名片]的格式")
-                    }
-                    val group = try {
-                        bot.getGroup(this[0].toLong())
-                    } catch (e: NoSuchElementException) {
-                        illegalArgument("无法找到Group")
-                    } catch (e: NumberFormatException) {
-                        illegalArgument("无法识别Group")
-                    }
-
-                    val memberIndex = this.subList(1, this.size).joinToString(".")
-                    return try {
-                        group.members[memberIndex.toLong()]
-                    } catch (ignored: Exception) {
-                        group.fuzzySearchMember(memberIndex) ?: illegalArgument("无法找到成员$memberIndex")
-                    }
-                }
+            2 -> components.let { (groupId, memberIdOrCard) ->
+                sender.inferBotOrFail().findGroupOrFail(groupId).findMemberOrFail(memberIdOrCard)
             }
+            1 -> components.let { (memberIdOrCard) ->
+                sender.inferGroupOrFail().findMemberOrFail(memberIdOrCard)
+            }
+            else -> illegalArgument("群成员语法错误. \n$syntax")
         }
     }
 
     public override fun parse(raw: SingleMessage, sender: CommandSender): Member {
         return if (raw is At) {
             checkArgument(sender is MemberCommandSender)
-            (sender.group).members[raw.target]
+            sender.group.members[raw.target]
         } else {
-            illegalArgument("无法识别Member" + raw.content)
+            parse(raw.content, sender)
         }
     }
 }
 
+internal interface InternalCommandArgumentParserExtensions<T : Any> : CommandArgumentParser<T> {
+    fun String.parseToLongOrFail(): Long = toLongOrNull() ?: illegalArgument("无法解析 $this 为整数")
+
+    fun Long.findBotOrFail(): Bot = Bot.getInstanceOrNull(this) ?: illegalArgument("无法找到 Bot: $this")
+
+    fun String.findBotOrFail(): Bot =
+        Bot.getInstanceOrNull(this.parseToLongOrFail()) ?: illegalArgument("无法找到 Bot: $this")
+
+    fun Bot.findGroupOrFail(id: Long): Group = getGroupOrNull(id) ?: illegalArgument("无法找到群: $this")
+
+    fun Bot.findGroupOrFail(id: String): Group =
+        getGroupOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到群: $this")
+
+    fun Bot.findFriendOrFail(id: String): Friend =
+        getFriendOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到好友: $this")
+
+    fun Bot.findMemberOrFail(id: String): Friend =
+        getFriendOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到群员: $this")
+
+    fun Group.findMemberOrFail(idOrCard: String): Member =
+        idOrCard.toLongOrNull()?.let { getOrNull(it) }
+            ?: fuzzySearchMember(idOrCard)
+            ?: illegalArgument("无法找到目标群员 $idOrCard")
+
+    fun CommandSender.inferBotOrFail(): Bot = (this as? BotAwareCommandSender)?.bot ?: illegalArgument("当前语境下无法推断目标群员")
+
+    fun CommandSender.inferGroupOrFail(): Group =
+        (this as? GroupAwareCommandSender)?.group ?: illegalArgument("当前语境下无法推断目标群")
+
+    fun CommandSender.inferFriendOrFail(): Friend =
+        (this as? FriendCommandSender)?.user ?: illegalArgument("当前语境下无法推断目标好友")
+}
