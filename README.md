@@ -154,7 +154,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 ### 使用者
 
 - [mirai-console](https://github.com/mamoe/mirai-console) 支持插件的控制台服务端，支持PC和Android平台 **本模块正在开发中**
-- [awsome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md) mirai相关项目合集
+- [awesome-mirai](https://github.com/project-mirai/awsome-mirai/blob/master/README.md) mirai相关项目合集
 
 #### 从其他平台迁移
 
