@@ -182,12 +182,12 @@ public interface CommandManager {
  * 指令的所有者.
  * @see PluginCommandOwner
  */
-public sealed class CommandOwner
+public open class CommandOwner
 
 /**
  * 插件指令所有者. 插件只能通过 [PluginCommandOwner] 管理指令.
  */
-public abstract class PluginCommandOwner(
+public class PluginCommandOwner(
     public val plugin: Plugin
 ) : CommandOwner() {
     init {
