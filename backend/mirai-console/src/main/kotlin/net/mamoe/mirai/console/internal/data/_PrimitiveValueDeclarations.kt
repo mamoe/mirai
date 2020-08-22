@@ -17,7 +17,7 @@ import kotlinx.serialization.encoding.Encoder
 import net.mamoe.mirai.console.data.*
 
 /**
- * The super class to all ValueImpl s
+ * The super class to all ValueImpl
  */
 internal abstract class AbstractValueImpl<T> : Value<T> {
     open fun setValueBySerializer(value: T) {

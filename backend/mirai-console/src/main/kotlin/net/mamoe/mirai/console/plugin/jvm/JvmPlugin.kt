@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
+import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
@@ -55,6 +56,12 @@ public interface JvmPlugin : Plugin, CoroutineScope,
     public fun <T : PluginData> loadPluginData(clazz: Class<T>): T = loader.dataStorage.load(this, clazz)
 
     /**
+     * 从 [JarPluginLoader.dataStorage] 获取一个 [PluginData] 实例
+     */
+    @JvmDefault
+    public fun <T : PluginConfig> loadPluginConfig(clazz: Class<T>): T = loader.dataStorage.load(this, clazz)
+
+    /**
      * 在插件被加载时调用. 只会被调用一次.
      */
     @JvmDefault
@@ -76,13 +83,26 @@ public interface JvmPlugin : Plugin, CoroutineScope,
     }
 }
 
+/**
+ * 读取一个插件数据.
+ */
 @JvmSynthetic
 public inline fun <T : PluginData> JvmPlugin.loadPluginData(clazz: KClass<T>): T = this.loadPluginData(clazz.java)
 
 /**
  * 读取一个插件数据.
- *
- * 插件数据
  */
 @JvmSynthetic
 public inline fun <reified T : PluginData> JvmPlugin.loadPluginData(): T = this.loadPluginData(T::class)
+
+/**
+ * 读取一个插件配置.
+ */
+@JvmSynthetic
+public inline fun <T : PluginConfig> JvmPlugin.loadPluginConfig(clazz: KClass<T>): T = this.loadPluginConfig(clazz.java)
+
+/**
+ * 读取一个插件配置.
+ */
+@JvmSynthetic
+public inline fun <reified T : PluginConfig> JvmPlugin.loadPluginConfig(): T = this.loadPluginConfig(T::class)

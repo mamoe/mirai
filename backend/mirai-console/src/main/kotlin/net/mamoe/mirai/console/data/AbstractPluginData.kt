@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.data.PluginData.ValueNode
 import net.mamoe.mirai.console.internal.data.PluginDataImpl
 import net.mamoe.mirai.console.internal.data.serialName
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import kotlin.annotation.AnnotationTarget.*
 import kotlin.reflect.KProperty
 
 /**
@@ -55,3 +56,28 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
      */
     public abstract override fun onValueChanged(value: Value<*>)
 }
+
+/**
+ * [PluginConfig] 的默认实现.
+ *
+ * 支持所有 [PluginData] 支持的功能, 支持通过 UI
+ *
+ * @see PluginConfig
+ */
+@ExperimentalPluginConfig
+public abstract class AbstractPluginConfig : AbstractPluginData(), PluginConfig
+
+
+/**
+ * 标记实验性的 [PluginConfig] API.
+ *
+ * @see ConsoleExperimentalAPI
+ */
+@ConsoleExperimentalAPI
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
+@MustBeDocumented
+public annotation class ExperimentalPluginConfig(
+    val message: String = ""
+)

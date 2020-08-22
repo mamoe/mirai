@@ -13,6 +13,9 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.*
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.serializer
 import net.mamoe.yamlkt.YamlDynamicSerializer
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
@@ -129,10 +132,27 @@ private fun <T : Any> findObjectSerializer(jClass: Class<T>): KSerializer<T>? {
     return result as? KSerializer<T>
 }
 
-private fun isReferenceArray(rootClass: KClass<Any>): Boolean = rootClass.java.isArray
+internal inline fun <E> KSerializer<E>.bind(
+    crossinline setter: (E) -> Unit,
+    crossinline getter: () -> E
+): KSerializer<E> {
+    return object : KSerializer<E> {
+        override val descriptor: SerialDescriptor get() = this@bind.descriptor
+        override fun deserialize(decoder: Decoder): E = this@bind.deserialize(decoder).also { setter(it) }
 
-@Suppress("UNCHECKED_CAST")
-private fun KType.kclass() = when (val t = classifier) {
-    is KClass<*> -> t
-    else -> error("Only KClass supported as classifier, got $t")
-} as KClass<Any>
+        @Suppress("UNCHECKED_CAST")
+        override fun serialize(encoder: Encoder, value: E) =
+            this@bind.serialize(encoder, getter())
+    }
+}
+
+internal inline fun <E, R> KSerializer<E>.map(
+    crossinline serializer: (R) -> E,
+    crossinline deserializer: (E) -> R
+): KSerializer<R> {
+    return object : KSerializer<R> {
+        override val descriptor: SerialDescriptor get() = this@map.descriptor
+        override fun deserialize(decoder: Decoder): R = this@map.deserialize(decoder).let(deserializer)
+        override fun serialize(encoder: Encoder, value: R) = this@map.serialize(encoder, value.let(serializer))
+    }
+}

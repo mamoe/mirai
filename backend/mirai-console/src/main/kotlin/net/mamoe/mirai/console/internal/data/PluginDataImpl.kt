@@ -12,7 +12,6 @@
 package net.mamoe.mirai.console.internal.data
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -23,10 +22,6 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginData.ValueNode
 import net.mamoe.mirai.console.data.Value
 import net.mamoe.yamlkt.YamlNullableDynamicSerializer
-import kotlin.reflect.KProperty
-import kotlin.reflect.full.findAnnotation
-
-internal val KProperty<*>.serialName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
 
 /**
  * Internal implementation for [PluginData] including:

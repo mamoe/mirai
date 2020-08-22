@@ -14,4 +14,5 @@ package net.mamoe.mirai.console.data
  *
  * 用户可通过 mirai-console 前端修改这些配置, 修改会自动写入这个对象中.
  */
+@ExperimentalPluginConfig
 public interface PluginConfig : PluginData

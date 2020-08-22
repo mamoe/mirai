@@ -9,10 +9,14 @@
 
 package net.mamoe.mirai.console.internal.data
 
+import kotlinx.serialization.SerialName
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
+import kotlin.reflect.KProperty
 import kotlin.reflect.KType
+import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 
 @Suppress("UNCHECKED_CAST")
@@ -42,3 +46,33 @@ internal inline fun <reified T : PluginData> newPluginDataInstanceUsingReflectio
             )
     }
 }
+
+
+private fun isReferenceArray(rootClass: KClass<Any>): Boolean = rootClass.java.isArray
+
+@Suppress("UNCHECKED_CAST")
+private fun KType.kclass() = when (val t = classifier) {
+    is KClass<*> -> t
+    else -> error("Only KClass supported as classifier, got $t")
+} as KClass<Any>
+
+@JvmSynthetic
+internal fun <T : Any> KClass<T>.createInstanceOrNull(): T? {
+    val noArgsConstructor = constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }
+        ?: return null
+
+    return noArgsConstructor.callBy(emptyMap())
+}
+
+@JvmSynthetic
+internal fun KClass<*>.findASerialName(): String =
+    findAnnotation<SerialName>()?.value
+        ?: qualifiedName
+        ?: throw IllegalArgumentException("Cannot find a serial name for $this")
+
+
+internal val KProperty<*>.serialNameOrPropertyName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
+
+internal fun Int.isOdd() = this and 0b1 != 0
+
+internal val KProperty<*>.serialName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
