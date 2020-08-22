@@ -77,6 +77,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 #### 不会支持的协议
 - 金钱相关，如点赞、收付款
 - 敏感操作，如主动添加好友、主动加入群、主动邀请好友加群
+- 安全相关，获取账号登录凭证(token，cookie等)
 
 **一切开发旨在学习，请勿用于非法用途**
 
@@ -140,7 +141,7 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 #### 从其他平台迁移
 
 - 酷Q的插件可以在 mirai 中加载，详见 [mirai-Native](https://github.com/iTXTech/mirai-native)
-- 使用 `酷Q HTTP API` 的插件将可以在 mirai 中加载，`mirai-CQ-Adapter` 正在进行中
+- 使用 `酷Q HTTP API` 的插件将可以在 mirai 中通过`CQHTTP Mirai`加载，详见 [cqhttp-mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)
 
 
 ## [贡献](CONTRIBUTING.md)
