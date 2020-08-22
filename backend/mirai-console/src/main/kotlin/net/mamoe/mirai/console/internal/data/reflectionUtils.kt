@@ -48,10 +48,10 @@ internal inline fun <reified T : PluginData> newPluginDataInstanceUsingReflectio
 }
 
 
-private fun isReferenceArray(rootClass: KClass<Any>): Boolean = rootClass.java.isArray
+internal fun isReferenceArray(rootClass: KClass<Any>): Boolean = rootClass.java.isArray
 
 @Suppress("UNCHECKED_CAST")
-private fun KType.kclass() = when (val t = classifier) {
+internal fun KType.kclass() = when (val t = classifier) {
     is KClass<*> -> t
     else -> error("Only KClass supported as classifier, got $t")
 } as KClass<Any>

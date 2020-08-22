@@ -23,7 +23,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 internal object PluginManagerImpl : PluginManager {
     override val pluginsPath: Path = MiraiConsole.rootPath.resolve("plugins").apply { mkdir() }
-    override val pluginsDataPath = MiraiConsole.rootPath.resolve("data").apply { mkdir() }
+    override val pluginsDataPath: Path = MiraiConsole.rootPath.resolve("data").apply { mkdir() }
 
     @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()

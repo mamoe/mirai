@@ -123,8 +123,10 @@ internal class TestCommand {
     }
 
     @Test
-    fun `test throw Exception`() = runBlocking {
-        assertEquals(null, sender.executeCommand(""))
+    fun `test throw Exception`() = assertTrue {
+        runBlocking {
+            sender.executeCommand("").isFailure()
+        }
     }
 
     @Test

@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandExecuteStatus
 import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommandDetailed
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.utils.DefaultLogger
@@ -62,7 +62,7 @@ internal fun startupConsoleThread() {
                     continue
                 }
                 // consoleLogger.debug("INPUT> $next")
-                val result = ConsoleCommandSenderImpl.executeCommandDetailed(next)
+                val result = ConsoleCommandSenderImpl.executeCommand(next)
                 when (result.status) {
                     CommandExecuteStatus.SUCCESSFUL -> {
                     }

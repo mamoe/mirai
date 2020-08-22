@@ -55,7 +55,7 @@ public sealed class CommandExecuteResult {
     }
 
     /** 指令执行过程出现了错误 */
-    public class ExecutionException(
+    public class ExecutionFailed(
         /** 指令执行时发生的错误 */
         public override val exception: Throwable,
         /** 尝试执行的指令 */
@@ -122,7 +122,6 @@ public sealed class CommandExecuteResult {
     }
 }
 
-
 @Suppress("RemoveRedundantQualifierName")
 public typealias CommandExecuteStatus = CommandExecuteResult.CommandExecuteStatus
 
@@ -139,19 +138,19 @@ public fun CommandExecuteResult.isSuccess(): Boolean {
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.ExecutionException] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.ExecutionFailed] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isExecutionException(): Boolean {
     contract {
-        returns(true) implies (this@isExecutionException is CommandExecuteResult.ExecutionException)
-        returns(false) implies (this@isExecutionException !is CommandExecuteResult.ExecutionException)
+        returns(true) implies (this@isExecutionException is CommandExecuteResult.ExecutionFailed)
+        returns(false) implies (this@isExecutionException !is CommandExecuteResult.ExecutionFailed)
     }
-    return this is CommandExecuteResult.ExecutionException
+    return this is CommandExecuteResult.ExecutionFailed
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.ExecutionException] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.ExecutionFailed] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isPermissionDenied(): Boolean {
@@ -163,7 +162,7 @@ public fun CommandExecuteResult.isPermissionDenied(): Boolean {
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.ExecutionException] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.ExecutionFailed] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isCommandNotFound(): Boolean {
@@ -175,7 +174,7 @@ public fun CommandExecuteResult.isCommandNotFound(): Boolean {
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.ExecutionException] 或 [CommandExecuteResult.CommandNotFound] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.ExecutionFailed] 或 [CommandExecuteResult.CommandNotFound] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isFailure(): Boolean {

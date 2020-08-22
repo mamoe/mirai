@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.plugin
 
+import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import java.io.File
@@ -25,7 +26,7 @@ import java.nio.file.Path
  *
  * @see PluginLoader 插件加载器
  */
-public interface Plugin {
+public interface Plugin : CommandOwner {
     /**
      * 判断此插件是否已启用
      *

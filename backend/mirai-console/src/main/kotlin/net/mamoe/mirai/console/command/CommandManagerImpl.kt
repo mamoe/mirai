@@ -10,20 +10,26 @@
 package net.mamoe.mirai.console.command
 
 import kotlinx.atomicfu.locks.withLock
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
-import net.mamoe.mirai.console.internal.command.*
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.internal.command.executeCommandInternal
+import net.mamoe.mirai.console.internal.command.flattenCommandComponents
+import net.mamoe.mirai.console.internal.command.intersectsIgnoringCase
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageContent
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.locks.ReentrantLock
 
 internal object CommandManagerImpl : CommandManager, CoroutineScope by CoroutineScope(MiraiConsole.job) {
+    private val logger: MiraiLogger by lazy {
+        MiraiConsole.newLogger("command")
+    }
+
     @JvmField
     internal val registeredCommands: MutableList<Command> = mutableListOf()
 
@@ -49,11 +55,31 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
 
     internal val commandListener: Listener<MessageEvent> by lazy {
         subscribeAlways(
+            coroutineContext = CoroutineExceptionHandler { _, throwable ->
+                logger.error(throwable)
+            },
             concurrency = Listener.ConcurrencyKind.CONCURRENT,
             priority = Listener.EventPriority.HIGH
         ) {
-            if (this.toCommandSender().executeCommand(message) != null) {
-                intercept()
+            val sender = this.toCommandSender()
+
+            when (val result = sender.executeCommand(message)) {
+                is CommandExecuteResult.PermissionDenied -> {
+                    if (!result.command.prefixOptional) {
+                        sender.sendMessage("权限不足")
+                        intercept()
+                    }
+                }
+                is CommandExecuteResult.Success -> {
+                    intercept()
+                }
+                is CommandExecuteResult.ExecutionFailed -> {
+                    sender.catchExecutionException(result.exception)
+                    intercept()
+                }
+                is CommandExecuteResult.CommandNotFound -> {
+                    // noop
+                }
             }
         }
     }
@@ -114,17 +140,6 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     override fun Command.isRegistered(): Boolean = this in registeredCommands
 
     //// executing without detailed result (faster)
-    override suspend fun CommandSender.executeCommand(vararg messages: Any): Command? {
-        if (messages.isEmpty()) return null
-        return matchAndExecuteCommandInternal(messages, messages[0].toString().substringBefore(' '))
-    }
-
-    override suspend fun CommandSender.executeCommand(message: MessageChain): Command? {
-        if (message.isEmpty()) return null
-        val msg = message.filterIsInstance<MessageContent>()
-        return matchAndExecuteCommandInternal(msg, msg[0].content.substringBefore(' '))
-    }
-
     override suspend fun Command.execute(sender: CommandSender, args: MessageChain, checkPermission: Boolean) {
         sender.executeCommandInternal(
             this,
@@ -144,15 +159,14 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     }
 
     //// execution with detailed result
-    @ConsoleExperimentalAPI
-    override suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): CommandExecuteResult {
+    override suspend fun CommandSender.executeCommand(vararg messages: Any): CommandExecuteResult {
         if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
-        return executeCommandDetailedInternal(messages, messages[0].toString().substringBefore(' '))
+        return executeCommandInternal(messages, messages[0].toString().substringBefore(' '))
     }
 
-    @ConsoleExperimentalAPI
-    override suspend fun CommandSender.executeCommandDetailed(messages: MessageChain): CommandExecuteResult {
-        if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
-        return executeCommandDetailedInternal(messages, messages[0].toString())
+    override suspend fun CommandSender.executeCommand(messages: MessageChain): CommandExecuteResult {
+        val msg = messages.filterIsInstance<MessageContent>()
+        if (msg.isEmpty()) return CommandExecuteResult.CommandNotFound("")
+        return executeCommandInternal(msg, msg[0].toString().substringBefore(' '))
     }
 }

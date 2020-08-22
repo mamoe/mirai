@@ -109,20 +109,6 @@ internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Arr
 
 @JvmSynthetic
 @Throws(CommandExecutionException::class)
-internal suspend inline fun CommandSender.matchAndExecuteCommandInternal(
-    messages: Any,
-    commandName: String
-): Command? {
-    val command = CommandManagerImpl.matchCommand(
-        commandName
-    ) ?: return null
-
-    this.executeCommandInternal(command, messages.flattenCommandComponents().dropToTypedArray(1), commandName, true)
-    return command
-}
-
-@JvmSynthetic
-@Throws(CommandExecutionException::class)
 internal suspend inline fun CommandSender.executeCommandInternal(
     command: Command,
     args: Array<out Any>,
@@ -149,7 +135,7 @@ internal suspend inline fun CommandSender.executeCommandInternal(
 
 
 @JvmSynthetic
-internal suspend inline fun CommandSender.executeCommandDetailedInternal(
+internal suspend fun CommandSender.executeCommandInternal(
     messages: Any,
     commandName: String
 ): CommandExecuteResult {
@@ -171,7 +157,7 @@ internal suspend inline fun CommandSender.executeCommandDetailedInternal(
             )
         },
         onFailure = {
-            return CommandExecuteResult.ExecutionException(
+            return CommandExecuteResult.ExecutionFailed(
                 commandName = commandName,
                 command = command,
                 exception = it,

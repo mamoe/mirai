@@ -12,9 +12,10 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 
 /**
- * 在 [executeCommand] 中, [Command.onCommand] 抛出异常时包装的异常.
+ * 在 [CommandManager.executeCommand] 中, [Command.onCommand] 抛出异常时包装的异常.
  */
 public class CommandExecutionException(
     /**

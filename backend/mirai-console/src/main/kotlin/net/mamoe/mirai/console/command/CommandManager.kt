@@ -15,12 +15,7 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.console.command.CommandManagerImpl.unregisterAllCommands
-import net.mamoe.mirai.console.plugin.Plugin
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 
@@ -80,27 +75,6 @@ public interface CommandManager {
     public fun Command.isRegistered(): Boolean
 
     /**
-     * 解析并执行一个指令. 将会检查指令权限, 在无权限时抛出
-     *
-     * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
-     *
-     * @return 成功执行的指令, 在无匹配指令时返回 `null`
-     * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
-     */
-    @JvmBlockingBridge
-    public suspend fun CommandSender.executeCommand(vararg messages: Any): Command?
-
-    /**
-     * 解析并执行一个指令
-     *
-     * @return 成功执行的指令, 在无匹配指令时返回 `null`
-     * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
-     */
-    @Throws(CommandExecutionException::class)
-    @JvmBlockingBridge
-    public suspend fun CommandSender.executeCommand(message: MessageChain): Command?
-
-    /**
      * 执行一个指令
      *
      * @return 成功执行的指令, 在无匹配指令时返回 `null`
@@ -127,20 +101,18 @@ public interface CommandManager {
      *
      * @return 执行结果
      */
-    @ConsoleExperimentalAPI
     @JvmBlockingBridge
-    public suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): CommandExecuteResult
+    public suspend fun CommandSender.executeCommand(vararg messages: Any): CommandExecuteResult
 
     /**
      * 解析并执行一个指令, 获取详细的指令参数等信息
      *
-     * 执行过程中产生的异常将不会直接抛出, 而会包装为 [CommandExecuteResult.ExecutionException]
+     * 执行过程中产生的异常将不会直接抛出, 而会包装为 [CommandExecuteResult.ExecutionFailed]
      *
      * @return 执行结果
      */
-    @ConsoleExperimentalAPI
     @JvmBlockingBridge
-    public suspend fun CommandSender.executeCommandDetailed(messages: MessageChain): CommandExecuteResult
+    public suspend fun CommandSender.executeCommand(messages: MessageChain): CommandExecuteResult
 
     public companion object INSTANCE : CommandManager by CommandManagerImpl {
         // TODO: 2020/8/20 https://youtrack.jetbrains.com/issue/KT-41191
@@ -152,54 +124,19 @@ public interface CommandManager {
         override fun Command.unregister(): Boolean = CommandManagerImpl.run { unregister() }
         override fun Command.isRegistered(): Boolean = CommandManagerImpl.run { isRegistered() }
         override val commandPrefix: String get() = CommandManagerImpl.commandPrefix
-        override suspend fun CommandSender.executeCommand(vararg messages: Any): Command? =
-            CommandManagerImpl.run { executeCommand(*messages) }
-
-        override suspend fun CommandSender.executeCommand(message: MessageChain): Command? =
-            CommandManagerImpl.run { executeCommand(message) }
-
         override suspend fun Command.execute(
             sender: CommandSender,
             args: MessageChain,
             checkPermission: Boolean
-        ): Unit =
-            CommandManagerImpl.run { execute(sender, args = args, checkPermission = checkPermission) }
+        ): Unit = CommandManagerImpl.run { execute(sender, args = args, checkPermission = checkPermission) }
 
         override suspend fun Command.execute(sender: CommandSender, vararg args: Any, checkPermission: Boolean): Unit =
             CommandManagerImpl.run { execute(sender, args = args, checkPermission = checkPermission) }
 
-        @ConsoleExperimentalAPI
-        override suspend fun CommandSender.executeCommandDetailed(vararg messages: Any): CommandExecuteResult =
-            CommandManagerImpl.run { executeCommandDetailed(*messages) }
+        override suspend fun CommandSender.executeCommand(vararg messages: Any): CommandExecuteResult =
+            CommandManagerImpl.run { executeCommand(*messages) }
 
-        @ConsoleExperimentalAPI
-        override suspend fun CommandSender.executeCommandDetailed(messages: MessageChain): CommandExecuteResult =
-            CommandManagerImpl.run { executeCommandDetailed(messages) }
+        override suspend fun CommandSender.executeCommand(messages: MessageChain): CommandExecuteResult =
+            CommandManagerImpl.run { executeCommand(messages) }
     }
 }
-
-/**
- * 指令的所有者.
- * @see PluginCommandOwner
- */
-public open class CommandOwner
-
-/**
- * 插件指令所有者. 插件只能通过 [PluginCommandOwner] 管理指令.
- */
-public class PluginCommandOwner(
-    public val plugin: Plugin
-) : CommandOwner() {
-    init {
-        if (plugin is CoroutineScope) { // JVM Plugin
-            plugin.coroutineContext[Job]?.invokeOnCompletion {
-                this.unregisterAllCommands()
-            }
-        }
-    }
-}
-
-/**
- * 代表控制台所有者. 所有的 mirai-console 内建的指令都属于 [ConsoleCommandOwner].
- */
-internal object ConsoleCommandOwner : CommandOwner()

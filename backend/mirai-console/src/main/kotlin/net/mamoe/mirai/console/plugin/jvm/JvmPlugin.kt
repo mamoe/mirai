@@ -38,6 +38,7 @@ import kotlin.reflect.KClass
  */
 public interface JvmPlugin : Plugin, CoroutineScope,
     PluginFileExtensions, ResourceContainer, AutoSavePluginDataHolder {
+
     /** 日志 */
     public val logger: MiraiLogger
 
