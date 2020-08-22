@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.command
 import kotlinx.coroutines.launch
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.command.description.CommandArgumentParserException
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
@@ -58,7 +59,12 @@ public interface CommandSender {
         if (this is CommandSenderOnMessage<*>) {
             // TODO: 2020/8/22 bad scope
             val cause = e.rootCauseOrSelf
-            sendMessage("${cause::class.simpleName.orEmpty()}: ${cause.message}") // \n\n60 秒内发送 stacktrace 查看堆栈信息
+
+            val message = cause
+                .takeIf { it is CommandArgumentParserException }?.message
+                ?: "${cause::class.simpleName.orEmpty()}: ${cause.message}"
+
+            sendMessage(message) // \n\n60 秒内发送 stacktrace 查看堆栈信息
             bot.launch {
                 if (fromEvent.nextMessageOrNull(60_000) {
                         it.message.contentEquals("stacktrace") || it.message.contentEquals("stack")
