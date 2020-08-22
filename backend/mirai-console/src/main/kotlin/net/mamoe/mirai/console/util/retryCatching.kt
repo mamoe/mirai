@@ -8,6 +8,8 @@
  */
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
+@file:JvmMultifileClass
+@file:JvmName("ConsoleUtils")
 
 package net.mamoe.mirai.console.util
 

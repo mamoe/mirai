@@ -8,6 +8,8 @@
  */
 
 @file:Suppress("INAPPLICABLE_JVM_NAME", "unused")
+@file:JvmMultifileClass
+@file:JvmName("ConsoleUtils")
 
 package net.mamoe.mirai.console.util
 

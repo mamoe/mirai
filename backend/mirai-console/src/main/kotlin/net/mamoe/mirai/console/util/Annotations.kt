@@ -7,6 +7,9 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
+@file:JvmName("ConsoleUtils")
+
 package net.mamoe.mirai.console.util
 
 import kotlin.annotation.AnnotationTarget.*

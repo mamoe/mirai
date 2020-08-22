@@ -8,11 +8,13 @@
  */
 
 @file:Suppress("NOTHING_TO_INLINE")
+@file:JvmMultifileClass
+@file:JvmName("ConsoleUtils")
 
 package net.mamoe.mirai.console.util
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.internal.utils.BotManagerImpl
+import net.mamoe.mirai.console.internal.util.BotManagerImpl
 import net.mamoe.mirai.contact.User
 
 public interface BotManager {

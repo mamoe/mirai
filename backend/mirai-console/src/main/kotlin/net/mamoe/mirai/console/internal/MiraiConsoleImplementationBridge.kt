@@ -25,7 +25,7 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
-import net.mamoe.mirai.console.internal.utils.ConsoleBuiltInPluginDataStorage
+import net.mamoe.mirai.console.internal.util.ConsoleBuiltInPluginDataStorage
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter

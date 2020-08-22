@@ -9,7 +9,7 @@
 
 @file:Suppress("MemberVisibilityCanBePrivate")
 
-package net.mamoe.mirai.console.internal.utils
+package net.mamoe.mirai.console.internal.util
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
