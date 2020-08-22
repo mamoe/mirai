@@ -1,7 +1,10 @@
 package net.mamoe.mirai.console.internal.data
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
@@ -35,8 +38,7 @@ internal open class AutoSavePluginData(
     internal var currentFirstStartTime = atomic(0L)
 
     init {
-        @OptIn(InternalCoroutinesApi::class)
-        owner.coroutineContext[Job]?.invokeOnCompletion(true) { doSave() }
+        owner.coroutineContext[Job]?.invokeOnCompletion { doSave() }
     }
 
     private val updaterBlock: suspend CoroutineScope.() -> Unit = {

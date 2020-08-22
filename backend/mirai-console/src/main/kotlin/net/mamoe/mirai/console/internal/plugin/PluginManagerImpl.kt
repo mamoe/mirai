@@ -12,7 +12,6 @@
 package net.mamoe.mirai.console.internal.plugin
 
 import kotlinx.atomicfu.locks.withLock
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.cast
@@ -58,8 +57,7 @@ internal object PluginManagerImpl : PluginManager {
     }
 
     init {
-        @OptIn(InternalCoroutinesApi::class)
-        MiraiConsole.coroutineContext[Job]!!.invokeOnCompletion(true) {
+        MiraiConsole.coroutineContext[Job]!!.invokeOnCompletion {
             plugins.forEach(Plugin::disable)
         }
     }

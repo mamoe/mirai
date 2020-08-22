@@ -27,18 +27,9 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     @JvmField
     internal val registeredCommands: MutableList<Command> = mutableListOf()
 
-    /**
-     * 全部注册的指令
-     * /mute -> MuteCommand
-     * /jinyan -> MuteCommand
-     */
     @JvmField
     internal val requiredPrefixCommandMap: MutableMap<String, Command> = mutableMapOf()
 
-    /**
-     * Command name of commands that are prefix optional
-     * mute -> MuteCommand
-     */
     @JvmField
     internal val optionalPrefixCommandMap: MutableMap<String, Command> = mutableMapOf()
 
@@ -57,8 +48,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     }
 
     internal val commandListener: Listener<MessageEvent> by lazy {
-        @Suppress("RemoveExplicitTypeArguments")
-        subscribeAlways<MessageEvent>(
+        subscribeAlways(
             concurrency = Listener.ConcurrencyKind.CONCURRENT,
             priority = Listener.EventPriority.HIGH
         ) {
