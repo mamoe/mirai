@@ -160,7 +160,7 @@ public class SimpleCommandArgumentContext(
  */
 @Suppress("FunctionName")
 @JvmSynthetic
-public inline fun CommandArgumentContext(block: CommandArgumentContextBuilder.() -> Unit): CommandArgumentContext {
+public fun CommandArgumentContext(block: CommandArgumentContextBuilder.() -> Unit): CommandArgumentContext {
     return SimpleCommandArgumentContext(CommandArgumentContextBuilder().apply(block).distinctByReversed { it.klass })
 }
 
@@ -214,8 +214,6 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     ): ParserPair<*> = T::class with CommandArgumentParser(parser)
 }
 
-
-@PublishedApi
 internal inline fun <T, K> List<T>.distinctByReversed(selector: (T) -> K): List<T> {
     val set = HashSet<K>()
     val list = ArrayList<T>()
