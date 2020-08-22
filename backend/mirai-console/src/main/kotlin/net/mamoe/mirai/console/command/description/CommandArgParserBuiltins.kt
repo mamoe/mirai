@@ -195,12 +195,15 @@ public object ExistMemberArgumentParser : InternalCommandArgumentParserExtension
          - `botId.group.memberId`
          - `botId.group.memberCard` (模糊搜索, 寻找最优匹配)
          - `~` (指代指令调用人自己. 仅聊天环境下)
+         - `$` (随机成员)
          
          当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
     """.trimIndent()
 
     public override fun parse(raw: String, sender: CommandSender): Member {
-        if (raw == "~") return (sender as? MemberCommandSender)?.user ?: illegalArgument("当前语境下无法推断目标群员")
+        if (raw == "~") return (sender as? MemberCommandSender)?.user ?: illegalArgument("当前语境下无法推断自身作为群员")
+        if (raw == "\$") return (sender as? MemberCommandSender)?.group?.members?.randomOrNull()
+            ?: illegalArgument("当前语境下无法推断随机群员")
 
         val components = raw.split(".")
 
@@ -221,7 +224,12 @@ public object ExistMemberArgumentParser : InternalCommandArgumentParserExtension
     public override fun parse(raw: SingleMessage, sender: CommandSender): Member {
         return if (raw is At) {
             checkArgument(sender is MemberCommandSender)
-            sender.group.members[raw.target]
+            val bot = sender.inferBotOrFail()
+            val group = sender.inferGroupOrFail()
+            if (raw.target == bot.id) {
+                return group.botAsMember
+            }
+            group[raw.target]
         } else {
             parse(raw.content, sender)
         }
@@ -247,10 +255,12 @@ internal interface InternalCommandArgumentParserExtensions<T : Any> : CommandArg
     fun Bot.findMemberOrFail(id: String): Friend =
         getFriendOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到群员: $this")
 
-    fun Group.findMemberOrFail(idOrCard: String): Member =
-        idOrCard.toLongOrNull()?.let { getOrNull(it) }
+    fun Group.findMemberOrFail(idOrCard: String): Member {
+        if (idOrCard == "\$") return members.randomOrNull() ?: illegalArgument("当前语境下无法推断随机群员")
+        return idOrCard.toLongOrNull()?.let { getOrNull(it) }
             ?: fuzzySearchMember(idOrCard)
             ?: illegalArgument("无法找到目标群员 $idOrCard")
+    }
 
     fun CommandSender.inferBotOrFail(): Bot = (this as? BotAwareCommandSender)?.bot ?: illegalArgument("当前语境下无法推断目标群员")
 

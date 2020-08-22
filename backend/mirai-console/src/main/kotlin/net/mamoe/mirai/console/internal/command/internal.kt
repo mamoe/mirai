@@ -14,6 +14,7 @@ import net.mamoe.mirai.console.command.description.CommandArgumentParserExceptio
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
+import kotlin.math.max
 
 
 internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
@@ -31,53 +32,39 @@ internal infix fun Array<out String>.intersectsIgnoringCase(other: Array<out Str
     return false
 }
 
-internal fun String.fuzzyCompare(target: String): Double {
-    var step = 0
+internal fun String.fuzzyMatchWith(target: String): Double {
     if (this == target) {
         return 1.0
     }
-    if (target.length > this.length) {
-        return 0.0
-    }
-    for (i in this.indices) {
-        if (target.length == i) {
-            step--
-        } else {
-            if (this[i] != target[i]) {
-                break
-            }
-            step++
+    var match = 0
+    for (i in 0..(max(this.lastIndex, target.lastIndex))) {
+        val t = target.getOrNull(match)
+        if (t == this.getOrNull(i) && t != null) {
+            match++
         }
     }
-
-    if (step == this.length - 1) {
-        return 1.0
-    }
-    return step.toDouble() / this.length
+    return match.toDouble() / (max(this.lastIndex, target.lastIndex) + 1)
 }
 
-/**
- * 模糊搜索一个List中index最接近target的东西
- */
 internal inline fun <T : Any> Collection<T>.fuzzySearch(
     target: String,
-    index: (T) -> String
+    crossinline index: (T) -> String
 ): T? {
-    var potential: T? = null
-    var rate = 0.0
-    this.forEach {
-        val thisIndex = index(it)
-        if (thisIndex == target) {
-            return it
-        }
-        with(thisIndex.fuzzyCompare(target)) {
-            if (this > rate) {
-                rate = this
-                potential = it
-            }
+    var maxElement: T? = null
+    var max = 0.0
+
+    for (t in this) {
+        val r = index(t).fuzzyMatchWith(target)
+        if (r > max) {
+            maxElement = t
+            max = r
         }
     }
-    return potential
+
+    if (max >= 0.7) {
+        return maxElement
+    }
+    return null
 }
 
 /**
@@ -93,7 +80,7 @@ internal inline fun <T : Any> Collection<T>.fuzzySearchOnly(
     var rate = 0.0
     var collide = 0
     this.forEach {
-        with(index(it).fuzzyCompare(target)) {
+        with(index(it).fuzzyMatchWith(target)) {
             if (this > rate) {
                 rate = this
                 potential = it
