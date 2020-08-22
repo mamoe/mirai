@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.internal.data.MultiFilePluginDataStorageImpl
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import java.io.File
+import java.nio.file.Path
 import kotlin.reflect.KClass
 
 /**
@@ -99,7 +100,7 @@ public interface MultiFilePluginDataStorage : PluginDataStorage {
     /**
      * 存放 [PluginData] 的目录.
      */
-    public val directory: File
+    public val directoryPath: Path
 
     public companion object {
         /**
@@ -109,7 +110,11 @@ public interface MultiFilePluginDataStorage : PluginDataStorage {
          */
         @JvmStatic
         @JvmName("create")
-        public operator fun invoke(directory: File): MultiFilePluginDataStorage =
+        public operator fun invoke(directory: Path): MultiFilePluginDataStorage =
             MultiFilePluginDataStorageImpl(directory)
     }
 }
+
+@get:JvmSynthetic
+public inline val MultiFilePluginDataStorage.directory: File
+    get() = this.directoryPath.toFile()

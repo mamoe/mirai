@@ -16,14 +16,15 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.cast
+import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.utils.info
-import java.io.File
+import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 
 internal object PluginManagerImpl : PluginManager {
-    override val pluginsDir = File(MiraiConsole.rootDir, "plugins").apply { mkdir() }
-    override val pluginsDataFolder = File(MiraiConsole.rootDir, "data").apply { mkdir() }
+    override val pluginsPath: Path = MiraiConsole.rootPath.resolve("plugins").apply { mkdir() }
+    override val pluginsDataPath = MiraiConsole.rootPath.resolve("data").apply { mkdir() }
 
     @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()
@@ -45,15 +46,15 @@ internal object PluginManagerImpl : PluginManager {
             ?.getDescription(this)
             ?: error("Plugin is unloaded")
 
-    override fun registerPluginLoader(loader: PluginLoader<*, *>): Boolean = loadersLock.withLock {
-        if (_pluginLoaders.any { it::class == loader }) {
+    override fun PluginLoader<*, *>.register(): Boolean = loadersLock.withLock {
+        if (_pluginLoaders.any { it::class == this }) {
             return false
         }
-        _pluginLoaders.add(loader)
+        _pluginLoaders.add(this)
     }
 
-    override fun unregisterPluginLoader(loader: PluginLoader<*, *>) = loadersLock.withLock {
-        _pluginLoaders.remove(loader)
+    override fun PluginLoader<*, *>.unregister() = loadersLock.withLock {
+        _pluginLoaders.remove(this)
     }
 
     init {

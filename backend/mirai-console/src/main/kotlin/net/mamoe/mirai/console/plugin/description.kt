@@ -22,21 +22,53 @@ import java.io.File
 
 
 /**
- * 插件描述
+ * 插件描述.
+ *
+ * @see Plugin
  */
 public interface PluginDescription {
+    /**
+     * 插件类型. 将会决定加载顺序
+     *
+     * @see PluginKind
+     */
     public val kind: PluginKind
 
+    /**
+     * 插件名称.
+     */
     public val name: String
+
+    /**
+     * 插件作者, 允许为空
+     */
     public val author: String
+
+    /**
+     * 插件版本.
+     *
+     * 语法参考: ([语义化版本 2.0.0](https://semver.org/lang/zh-CN/))
+     *
+     * @see Semver 语义化版本
+     */
     public val version: Semver
+
+    /**
+     * 插件信息, 允许为空
+     */
     public val info: String
 
-    /** 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件 */
+    /**
+     * 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件
+     *
+     * @see PluginDependency
+     */
     public val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency>
 }
 
-/** 插件类型 */
+/**
+ * 插件类型
+ */
 @Serializable(with = PluginKind.AsStringSerializer::class)
 public enum class PluginKind {
     /** 表示此插件提供一个 [PluginLoader], 应在加载其他 [NORMAL] 类型插件前加载 */
@@ -55,7 +87,11 @@ public enum class PluginKind {
     )
 }
 
-/** 插件的一个依赖的信息 */
+/**
+ * 插件的一个依赖的信息
+ *
+ * @see PluginDescription.dependencies
+ */
 @Serializable(with = PluginDependency.SmartSerializer::class)
 public data class PluginDependency(
     /** 依赖插件名 */

@@ -13,10 +13,9 @@
 
 package net.mamoe.mirai.console.util
 
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.internal.util.ConsoleInputImpl
 
 /**
  * Console 输入. 由于 console 接管了 [stdin][System. in], [readLine] 等操作需要在这里进行.
@@ -28,16 +27,9 @@ public interface ConsoleInput {
     @JvmBlockingBridge
     public suspend fun requestInput(hint: String): String
 
-    public companion object INSTANCE : ConsoleInput by ConsoleInputImpl {
-        @JvmSynthetic
-        public suspend inline fun MiraiConsole.requestInput(hint: String): String = ConsoleInput.requestInput(hint)
-    }
+    public companion object INSTANCE : ConsoleInput by ConsoleInputImpl
 }
 
-@Suppress("unused")
-internal object ConsoleInputImpl : ConsoleInput {
-    private val inputLock = Mutex()
-
-    override suspend fun requestInput(hint: String): String =
-        inputLock.withLock { MiraiConsole.frontEnd.requestInput(hint) }
-}
+// don't move into INSTANCE, Compilation error
+@JvmSynthetic
+public suspend inline fun MiraiConsole.requestInput(hint: String): String = ConsoleInput.requestInput(hint)

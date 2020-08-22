@@ -13,6 +13,7 @@ import kotlinx.atomicfu.AtomicLong
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceContainer
@@ -20,8 +21,8 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.safeLoader
 import net.mamoe.mirai.utils.MiraiLogger
-import java.io.File
 import java.io.InputStream
+import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -60,11 +61,8 @@ internal abstract class JvmPluginInternal(
 
     private var firstRun = true
 
-    final override val dataFolder: File by lazy {
-        File(
-            PluginManager.pluginsDataFolder,
-            description.name
-        ).apply { mkdir() }
+    final override val dataFolderPath: Path by lazy {
+        PluginManager.pluginsPath.resolve(description.name).apply { mkdir() }
     }
 
     internal fun internalOnDisable() {

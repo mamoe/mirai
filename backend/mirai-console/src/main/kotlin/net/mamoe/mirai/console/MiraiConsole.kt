@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.console
 
+import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
@@ -24,8 +25,8 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
-import java.io.File
-import java.util.*
+import java.nio.file.Path
+import java.time.Instant
 
 
 /**
@@ -36,19 +37,20 @@ import java.util.*
  */
 public interface MiraiConsole : CoroutineScope {
     /**
-     * Console 运行路径
+     * Console 运行根目录, 由前端决定确切路径.
+     *
+     * 所有子模块都会在这个目录之下创建子目录.
      */
-    public val rootDir: File
+    public val rootPath: Path
 
     /**
-     * Console 前端接口
+     * Console 主日志.
+     *
+     * **实现细节**: 这个 [MiraiLogger] 的 [MiraiLogger.identity] 通常为 `main`
+     *
+     * **注意**: 插件不应该在任何时刻使用它.
      */
-    @ConsoleExperimentalAPI
-    public val frontEnd: MiraiConsoleFrontEnd
-
-    /**
-     * 与前端交互所使用的 Logger
-     */
+    @ConsoleInternalAPI
     public val mainLogger: MiraiLogger
 
     /**
@@ -58,13 +60,22 @@ public interface MiraiConsole : CoroutineScope {
      */
     public val builtInPluginLoaders: List<PluginLoader<*, *>>
 
-    public val buildDate: Date
+    /**
+     * 此 Console 后端构建时间
+     */
+    public val buildDate: Instant
 
-    public val version: String
+    /**
+     * 此 Console 后端版本号
+     */
+    public val version: Semver
 
     @ConsoleExperimentalAPI
     public val pluginCenter: PluginCenter
 
+    /**
+     * 创建一个 logger
+     */
     @ConsoleExperimentalAPI
     public fun newLogger(identity: String?): MiraiLogger
 
@@ -88,8 +99,9 @@ public interface MiraiConsole : CoroutineScope {
         public fun addBot(id: Long, password: String, configuration: BotConfiguration.() -> Unit = {}): Bot =
             Bot(id, password) {
                 fileBasedDeviceInfo()
-                this.loginSolver = frontEnd.createLoginSolver()
                 redirectNetworkLogToDirectory()
+
+                this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)
                 configuration()
             }
     }

@@ -20,18 +20,9 @@
 
 package net.mamoe.mirai.console.pure
 
-import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.alsoLogin
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.command.CommandPermission
-import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.DefaultLogger
@@ -44,29 +35,12 @@ object MiraiConsolePureLoader {
     @JvmStatic
     fun main(args: Array<String>?) {
         startup()
-        YellowCommand.register()
-        runBlocking { MiraiConsole.addBot(1994701021, "Asd123456789asd").alsoLogin() }
-    }
-}
-
-object YellowCommand : SimpleCommand(
-    net.mamoe.mirai.console.command.ConsoleCommandOwner, "睡", "sleep",
-    prefixOptional = true,
-    description = "睡一个人",
-    permission = CommandPermission.Any
-) {
-    @Handler
-    suspend fun CommandSender.handle(target: Member) {
-        target.mute(1)
-
-        sendMessage("${this.name} 睡了 ${target.nameCardOrNick}")
     }
 }
 
 internal fun startup() {
-    DefaultLogger = { MiraiConsoleFrontEndPure.loggerFor(it) }
-    overrideSTD()
     MiraiConsoleImplementationPure().start()
+    overrideSTD()
     startupConsoleThread()
 }
 

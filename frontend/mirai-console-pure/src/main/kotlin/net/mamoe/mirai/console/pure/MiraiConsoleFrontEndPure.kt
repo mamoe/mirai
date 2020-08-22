@@ -22,20 +22,13 @@ package net.mamoe.mirai.console.pure
 
 //import net.mamoe.mirai.console.command.CommandManager
 //import net.mamoe.mirai.console.utils.MiraiConsoleFrontEnd
-import io.ktor.utils.io.concurrent.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.MiraiConsoleFrontEnd
+import com.vdurmont.semver4j.Semver
+import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
-import net.mamoe.mirai.utils.DefaultLoginSolver
-import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.PlatformLogger
 import org.fusesource.jansi.Ansi
 import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 private val ANSI_RESET = Ansi().reset().toString()
 
@@ -53,25 +46,7 @@ internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
  */
 @ConsoleInternalAPI
 @Suppress("unused")
-object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
-    private val globalLogger = LoggerCreator("Mirai")
-    private val cachedLoggers = ConcurrentHashMap<String, MiraiLogger>()
-
-    // companion object {
-    // ANSI color codes
-    const val COLOR_RED = "\u001b[38;5;196m"
-    const val COLOR_CYAN = "\u001b[38;5;87m"
-    const val COLOR_GREEN = "\u001b[38;5;82m"
-
-    // use a dark yellow(more like orange) instead of light one to save Solarized-light users
-    const val COLOR_YELLOW = "\u001b[38;5;220m"
-    const val COLOR_GREY = "\u001b[38;5;244m"
-    const val COLOR_BLUE = "\u001b[38;5;27m"
-    const val COLOR_NAVY = "\u001b[38;5;24m" // navy uniform blue
-    const val COLOR_PINK = "\u001b[38;5;207m"
-    const val COLOR_RESET = "\u001b[39;49m"
-    // }
-
+object MiraiConsoleFrontEndPure : MiraiConsoleFrontEndDescription {
     internal val sdf by ThreadLocal.withInitial {
         // SimpleDateFormat not thread safe.
         SimpleDateFormat("HH:mm:ss")
@@ -81,32 +56,9 @@ object MiraiConsoleFrontEndPure : MiraiConsoleFrontEnd {
         return this.get()
     }
 
-    override val name: String
-        get() = "Pure"
-    override val version: String
-        get() = net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
-
-    override fun loggerFor(identity: String?): MiraiLogger {
-        identity?.apply {
-            return cachedLoggers.computeIfAbsent(this, LoggerCreator)
-        }
-        return globalLogger
-    }
-
-    override fun pushBot(bot: Bot) {
-    }
-
-    override suspend fun requestInput(hint: String): String {
-        return ConsoleUtils.miraiLineReader(hint)
-    }
-
-    override fun createLoginSolver(): LoginSolver {
-        return DefaultLoginSolver(
-            input = suspend {
-                requestInput("LOGIN> ")
-            }
-        )
-    }
+    override val name: String get() = "Pure"
+    override val version: Semver get() = net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
+    override val vendor: String get() = "Mamoe Technologies"
 }
 
 

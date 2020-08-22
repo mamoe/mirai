@@ -11,12 +11,13 @@
 
 package net.mamoe.mirai.console.internal
 
+import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.IllegalMiraiConsoleImplementationError
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.MiraiConsoleFrontEnd
+import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
@@ -30,12 +31,12 @@ import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.info
-import java.io.File
+import net.mamoe.mirai.console.util.ConsoleInput
+import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.utils.*
+import java.nio.file.Path
 import java.text.SimpleDateFormat
-import java.util.*
+import java.time.Instant
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -45,36 +46,39 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     MiraiConsole {
     override val pluginCenter: PluginCenter get() = CuiPluginCenter
 
-    private val instance: MiraiConsoleImplementation get() = MiraiConsoleImplementation.instance
-    override val buildDate: Date get() = MiraiConsoleBuildConstants.buildDate
-    override val version: String get() = MiraiConsoleBuildConstants.version
-    override val rootDir: File get() = instance.rootDir
-    override val frontEnd: MiraiConsoleFrontEnd get() = instance.frontEnd
+    private val instance: MiraiConsoleImplementation by MiraiConsoleImplementation.Companion::instance
+    override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
+    override val version: Semver by MiraiConsoleBuildConstants::version
+    override val rootPath: Path by instance::rootPath
+    override val frontEndDescription: MiraiConsoleFrontEndDescription by instance::frontEndDescription
 
-    @ConsoleExperimentalAPI
-    override val mainLogger: MiraiLogger
-        get() = instance.mainLogger
-    override val coroutineContext: CoroutineContext get() = instance.coroutineContext
-    override val builtInPluginLoaders: List<PluginLoader<*, *>> get() = instance.builtInPluginLoaders
-    override val consoleCommandSender: ConsoleCommandSender get() = instance.consoleCommandSender
+    @OptIn(ConsoleInternalAPI::class)
+    override val mainLogger: MiraiLogger by instance::mainLogger
+    override val coroutineContext: CoroutineContext by instance::coroutineContext
+    override val builtInPluginLoaders: List<PluginLoader<*, *>> by instance::builtInPluginLoaders
+    override val consoleCommandSender: ConsoleCommandSender by instance::consoleCommandSender
 
-    override val dataStorageForJarPluginLoader: PluginDataStorage get() = instance.dataStorageForJarPluginLoader
-    override val configStorageForJarPluginLoader: PluginDataStorage get() = instance.configStorageForJarPluginLoader
-    override val dataStorageForBuiltIns: PluginDataStorage get() = instance.dataStorageForBuiltIns
+    override val dataStorageForJarPluginLoader: PluginDataStorage by instance::dataStorageForJarPluginLoader
+    override val configStorageForJarPluginLoader: PluginDataStorage by instance::configStorageForJarPluginLoader
+    override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
+    override val consoleInput: ConsoleInput by instance::consoleInput
+
+    override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
+        instance.createLoginSolver(requesterBot, configuration)
 
     init {
-        DefaultLogger = { identity -> this.newLogger(identity) }
+        DefaultLogger = this::newLogger
     }
 
     @ConsoleExperimentalAPI
-    override fun newLogger(identity: String?): MiraiLogger = frontEnd.loggerFor(identity)
+    override fun newLogger(identity: String?): MiraiLogger = instance.newLogger(identity)
 
     @OptIn(ConsoleExperimentalAPI::class)
     internal fun doStart() {
         val buildDateFormatted = SimpleDateFormat("yyyy-MM-dd").format(buildDate)
         mainLogger.info { "Starting mirai-console..." }
         mainLogger.info { "Backend: version $version, built on $buildDateFormatted." }
-        mainLogger.info { "Frontend ${frontEnd.name}: version $version." }
+        mainLogger.info { frontEndDescription.render() }
 
         if (coroutineContext[Job] == null) {
             throw IllegalMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")

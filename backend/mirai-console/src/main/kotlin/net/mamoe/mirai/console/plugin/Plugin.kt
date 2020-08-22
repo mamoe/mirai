@@ -14,11 +14,12 @@ package net.mamoe.mirai.console.plugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import java.io.File
+import java.nio.file.Path
 
 /**
  * 表示一个 mirai-console 插件.
  *
- * @see PluginDescription 插件描述
+ * @see PluginDescription 插件描述， 需由 [PluginLoader] 帮助提供（[PluginLoader.description]）
  * @see JvmPlugin Java, Kotlin 或其他 JVM 平台插件
  * @see PluginFileExtensions 支持文件系统存储的扩展
  *
@@ -71,13 +72,33 @@ public interface PluginFileExtensions {
     /**
      * 数据目录
      */
-    public val dataFolder: File
+    public val dataFolderPath: Path
 
     /**
-     * 从数据目录获取一个文件, 若不存在则创建文件.
+     * 从数据目录获取一个文件.
+     * @see dataFolderPath
      */
     @JvmDefault
-    public fun file(relativePath: String): File = File(dataFolder, relativePath).apply { createNewFile() }
+    public fun resolveDataFile(relativePath: String): File = dataFolderPath.resolve(relativePath).toFile()
 
-    // TODO: 2020/7/11  add `fun path(...): Path` ?
+    /**
+     * 从数据目录获取一个文件.
+     * @see dataFolderPath
+     */
+    @JvmDefault
+    public fun resolveDataPath(relativePath: String): Path = dataFolderPath.resolve(relativePath)
+
+    /**
+     * 从数据目录获取一个文件.
+     * @see dataFolderPath
+     */
+    @JvmDefault
+    public fun resolveDataFile(relativePath: Path): File = dataFolderPath.resolve(relativePath).toFile()
+
+    /**
+     * 从数据目录获取一个文件路径.
+     * @see dataFolderPath
+     */
+    @JvmDefault
+    public fun resolveDataPath(relativePath: Path): Path = dataFolderPath.resolve(relativePath)
 }

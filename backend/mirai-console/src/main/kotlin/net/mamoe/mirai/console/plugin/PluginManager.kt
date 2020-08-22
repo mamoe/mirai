@@ -14,41 +14,74 @@ package net.mamoe.mirai.console.plugin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import java.io.File
+import java.nio.file.Path
 
 /**
  * 插件管理器.
+ *
+ * [PluginManager] 管理所有 [插件加载器][PluginLoader], 储存对所有插件的引用 ([plugins]), 但不直接与 [插件实例][Plugin] 交互.
+ *
+ * 有关 [插件加载][PluginLoader.load], [插件启用][PluginLoader.enable] 等操作都由 [PluginLoader] 完成.
+ * [PluginManager] 仅作为一个联系所有 [插件加载器][PluginLoader], 使它们互相合作的桥梁.
+ *
+ * 若要主动加载一个插件, 请获取相应插件的 [PluginLoader], 然后使用 [PluginLoader.enable]
+ *
+ * @see Plugin 插件
+ * @see PluginLoader 插件加载器
  */
 public interface PluginManager {
     /**
-     * `$rootDir/plugins`
+     * 插件自身存放路径. 由前端决定具体路径.
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/plugins`
+     *
+     * @see pluginsFolder [File] 类型
      */
-    public val pluginsDir: File
+    public val pluginsPath: Path
 
     /**
-     * `$rootDir/data`
+     * 插件数据存放路径
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/data`
+     *
+     * @see pluginsDataFolder [File] 类型
      */
-    public val pluginsDataFolder: File
+    public val pluginsDataPath: Path
 
     /**
      * 已加载的插件列表
+     *
+     * @return 只读列表
      */
     public val plugins: List<Plugin>
 
     /**
      * 内建的插件加载器列表. 由 [MiraiConsole] 初始化.
      *
-     * @return 不可变的 list.
+     * @return 只读列表
      */
     public val builtInLoaders: List<PluginLoader<*, *>>
 
     /**
      * 由插件创建的 [PluginLoader]
+     *
+     * @return 只读列表
      */
     public val pluginLoaders: List<PluginLoader<*, *>>
 
-    public fun registerPluginLoader(loader: PluginLoader<*, *>): Boolean
+    /**
+     * 注册一个扩展的插件加载器
+     *
+     * @see PluginLoader 插件加载器
+     */
+    public fun PluginLoader<*, *>.register(): Boolean
 
-    public fun unregisterPluginLoader(loader: PluginLoader<*, *>): Boolean
+    /**
+     * 取消注册一个扩展的插件加载器
+     *
+     * @see PluginLoader 插件加载器
+     */
+    public fun PluginLoader<*, *>.unregister(): Boolean
 
     /**
      * 获取插件的 [描述][PluginDescription], 通过 [PluginLoader.getDescription]
@@ -56,26 +89,23 @@ public interface PluginManager {
     public val Plugin.description: PluginDescription
 
     public companion object INSTANCE : PluginManager by PluginManagerImpl {
-        override val Plugin.description: PluginDescription get() = PluginManagerImpl.run { description }
+        // due to Kotlin's bug
+        public override val Plugin.description: PluginDescription get() = PluginManagerImpl.run { description }
+        public override fun PluginLoader<*, *>.register(): Boolean = PluginManagerImpl.run { register() }
+        public override fun PluginLoader<*, *>.unregister(): Boolean = PluginManagerImpl.run { unregister() }
     }
 }
 
-@JvmSynthetic
-public inline fun PluginLoader<*, *>.register(): Boolean = PluginManager.registerPluginLoader(this)
+/**
+ * @see PluginManager.pluginsPath
+ */
+@get:JvmSynthetic
+public inline val PluginManager.pluginsFolder: File
+    get() = pluginsPath.toFile()
 
-@JvmSynthetic
-public inline fun PluginLoader<*, *>.unregister(): Boolean = PluginManager.unregisterPluginLoader(this)
-
-public class PluginMissingDependencyException : PluginResolutionException {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
-
-public open class PluginResolutionException : Exception {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
+/**
+ * @see PluginManager.pluginsDataPath
+ */
+@get:JvmSynthetic
+public inline val PluginManager.pluginsDataFolder: File
+    get() = pluginsDataPath.toFile()

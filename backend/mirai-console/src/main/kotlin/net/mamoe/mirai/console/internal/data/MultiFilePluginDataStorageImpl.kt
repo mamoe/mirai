@@ -14,14 +14,15 @@ import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.yamlkt.Yaml
 import java.io.File
+import java.nio.file.Path
 import kotlin.reflect.KClass
 
 @Suppress("RedundantVisibilityModifier") // might be public in the future
 internal open class MultiFilePluginDataStorageImpl(
-    public final override val directory: File
+    public final override val directoryPath: Path
 ) : PluginDataStorage, MultiFilePluginDataStorage {
     init {
-        directory.mkdir()
+        directoryPath.mkdir()
     }
 
     public override fun <T : PluginData> load(holder: PluginDataHolder, dataClass: Class<T>): T =
@@ -53,17 +54,17 @@ internal open class MultiFilePluginDataStorageImpl(
     protected open fun getPluginDataFile(holder: PluginDataHolder, clazz: KClass<*>): File = with(clazz) {
         val name = findASerialName()
 
-        val dir = File(directory, holder.name)
+        val dir = directoryPath.resolve(holder.name)
         if (dir.isFile) {
-            error("Target directory ${dir.path} for holder $holder is occupied by a file therefore data $qualifiedNameOrTip can't be saved.")
+            error("Target directory $dir for holder $holder is occupied by a file therefore data $qualifiedNameOrTip can't be saved.")
         }
         dir.mkdir()
 
-        val file = File(directory, name)
+        val file = directoryPath.resolve(name)
         if (file.isDirectory) {
             error("Target file $file is occupied by a directory therefore data $qualifiedNameOrTip can't be saved.")
         }
-        return file
+        return file.toFile()
     }
 
     @ConsoleExperimentalAPI
@@ -79,3 +80,7 @@ internal open class MultiFilePluginDataStorageImpl(
         }
     }
 }
+
+internal fun Path.mkdir(): Boolean = this.toFile().mkdir()
+internal val Path.isFile: Boolean get() = this.toFile().isFile
+internal val Path.isDirectory: Boolean get() = this.toFile().isDirectory

@@ -13,7 +13,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
@@ -22,13 +21,15 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.PlatformLogger
-import java.io.File
+import java.nio.file.Path
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -37,22 +38,34 @@ import kotlin.test.assertNotNull
 @OptIn(ConsoleInternalAPI::class)
 fun initTestEnvironment() {
     object : MiraiConsoleImplementation {
-        override val rootDir: File = createTempDir()
-        override val frontEnd: MiraiConsoleFrontEnd = object : MiraiConsoleFrontEnd {
-            override val name: String get() = "Test"
-            override val version: String get() = "1.0.0"
-            override fun loggerFor(identity: String?): MiraiLogger = PlatformLogger(identity)
-            override fun pushBot(bot: Bot) = println("pushBot: $bot")
-            override suspend fun requestInput(hint: String): String = readLine()!!
-            override fun createLoginSolver(): LoginSolver = LoginSolver.Default
-        }
+        override val rootPath: Path = createTempDir().toPath()
+
+        @ConsoleExperimentalAPI
+        override val frontEndDescription: MiraiConsoleFrontEndDescription
+            get() = TODO("Not yet implemented")
         override val mainLogger: MiraiLogger = DefaultLogger("main")
         override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JarPluginLoader })
         override val consoleCommandSender: ConsoleCommandSender = object : ConsoleCommandSender() {
             override suspend fun sendMessage(message: Message) = println(message)
         }
         override val dataStorageForJarPluginLoader: PluginDataStorage get() = MemoryPluginDataStorage()
+        override val configStorageForJarPluginLoader: PluginDataStorage
+            get() = TODO("Not yet implemented")
         override val dataStorageForBuiltIns: PluginDataStorage get() = MemoryPluginDataStorage()
+        override val consoleInput: ConsoleInput = object : ConsoleInput {
+            override suspend fun requestInput(hint: String): String {
+                println(hint)
+                return readLine() ?: error("No stdin")
+            }
+        }
+
+        override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
+            LoginSolver.Default
+
+        override fun newLogger(identity: String?): MiraiLogger {
+            return DefaultLogger(identity)
+        }
+
         override val coroutineContext: CoroutineContext = SupervisorJob()
     }.start()
     CommandManager

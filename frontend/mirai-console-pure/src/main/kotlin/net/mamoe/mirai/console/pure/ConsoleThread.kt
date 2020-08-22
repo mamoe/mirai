@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.command.CommandExecuteStatus
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommandDetailed
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.utils.DefaultLogger
 import org.fusesource.jansi.Ansi
 import java.util.*
@@ -50,11 +51,9 @@ internal fun startupConsoleThread() {
         val consoleLogger = DefaultLogger("console")
         while (isActive) {
             try {
-                val next = MiraiConsoleFrontEndPure.requestInput("").let {
+                val next = MiraiConsole.requestInput("").let {
                     when {
-                        it.startsWith(CommandManager.commandPrefix) -> {
-                            it
-                        }
+                        it.startsWith(CommandManager.commandPrefix) -> it
                         it == "?" -> CommandManager.commandPrefix + BuiltInCommands.Help.primaryName
                         else -> CommandManager.commandPrefix + it
                     }
@@ -71,7 +70,7 @@ internal fun startupConsoleThread() {
                         result.exception?.printStackTrace()
                     }
                     CommandExecuteStatus.COMMAND_NOT_FOUND -> {
-                        consoleLogger.warning("Unknown command: ${result.commandName}")
+                        consoleLogger.warning("未知指令: ${result.commandName}, 输入 ? 获取帮助")
                     }
                     CommandExecuteStatus.PERMISSION_DENIED -> {
                         consoleLogger.warning("Permission denied.")

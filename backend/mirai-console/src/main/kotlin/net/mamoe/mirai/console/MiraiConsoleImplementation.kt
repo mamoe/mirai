@@ -13,6 +13,7 @@ package net.mamoe.mirai.console
 
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
@@ -20,8 +21,11 @@ import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleInput
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.LoginSolver
 import net.mamoe.mirai.utils.MiraiLogger
-import java.io.File
+import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.coroutines.CoroutineContext
@@ -51,15 +55,16 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public override val coroutineContext: CoroutineContext
 
     /**
-     * Console 运行路径
+     * Console 运行根目录
+     * @see MiraiConsole.rootPath
      */
-    public val rootDir: File
+    public val rootPath: Path
 
     /**
      * Console 前端接口
      */
     @ConsoleExperimentalAPI
-    public val frontEnd: MiraiConsoleFrontEnd
+    public val frontEndDescription: MiraiConsoleFrontEndDescription
 
     /**
      * 与前端交互所使用的 Logger
@@ -78,6 +83,28 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val dataStorageForJarPluginLoader: PluginDataStorage
     public val configStorageForJarPluginLoader: PluginDataStorage
     public val dataStorageForBuiltIns: PluginDataStorage
+
+    /**
+     * @see ConsoleInput 的实现
+     */
+    public val consoleInput: ConsoleInput
+
+    /**
+     * 创建一个 [LoginSolver]
+     *
+     * **调用备注**: 此函数通常在构造 [Bot] 实例时调用.
+     *
+     * @param requesterBot 请求者 [Bot.id]
+     * @param configuration 请求者 [Bot.configuration]
+     *
+     * @see LoginSolver.Default
+     */
+    public fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver
+
+    /**
+     * 创建一个 logger
+     */
+    public fun newLogger(identity: String?): MiraiLogger
 
     public companion object {
         internal lateinit var instance: MiraiConsoleImplementation

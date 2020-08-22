@@ -19,6 +19,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.command.CommandManagerImpl.register
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.secondsToMillis
 import kotlin.concurrent.thread
@@ -79,6 +80,7 @@ public object BuiltInCommands {
                 }.fold(
                     onSuccess = { sendMessage("mirai-console stopped successfully.") },
                     onFailure = {
+                        @OptIn(ConsoleInternalAPI::class)
                         MiraiConsole.mainLogger.error(it)
                         sendMessage(it.localizedMessage ?: it.message ?: it.toString())
                     }
