@@ -11,29 +11,23 @@
 
 package net.mamoe.mirai.console.util
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.MiraiConsole
 
 /**
- * Console 输入. 由于 console 接管了 stdin, [readLine] 等操作需要在这里进行.
+ * Console 输入. 由于 console 接管了 [stdin][System. in], [readLine] 等操作需要在这里进行.
  */
 public interface ConsoleInput {
     /**
-     * 以 [提示][hint] 向用户索要一个输入
+     * 挂起当前协程, 以 [提示][hint] 向用户索要一个输入, 在用户完成输入时返回输入结果.
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun requestInput(hint: String): String
 
-    /**
-     * 以 [提示][hint] 向用户索要一个输入. 仅供 Java 调用者使用
-     */
-    @JvmName("requestInput")
-    @JavaFriendlyAPI
-    public fun requestInputBlocking(hint: String): String
-
     public companion object INSTANCE : ConsoleInput by ConsoleInputImpl {
+        @JvmSynthetic
         public suspend inline fun MiraiConsole.requestInput(hint: String): String = ConsoleInput.requestInput(hint)
     }
 }
@@ -42,10 +36,6 @@ public interface ConsoleInput {
 internal object ConsoleInputImpl : ConsoleInput {
     private val inputLock = Mutex()
 
-    override suspend fun requestInput(
-        hint: String
-    ): String = inputLock.withLock { MiraiConsole.frontEnd.requestInput(hint) }
-
-    @JavaFriendlyAPI
-    override fun requestInputBlocking(hint: String): String = runBlocking { requestInput(hint) }
+    override suspend fun requestInput(hint: String): String =
+        inputLock.withLock { MiraiConsole.frontEnd.requestInput(hint) }
 }
