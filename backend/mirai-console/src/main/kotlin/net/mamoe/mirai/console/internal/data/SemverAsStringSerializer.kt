@@ -17,11 +17,15 @@ import kotlinx.serialization.builtins.serializer
 @Serializer(forClass = Semver::class)
 internal object SemverAsStringSerializerLoose : KSerializer<Semver> by String.serializer().map(
     serializer = { it.toString() },
-    deserializer = { Semver(it, Semver.SemverType.LOOSE) }
+    deserializer = {
+        Semver(it.removePrefix("v").removePrefix("V"), Semver.SemverType.LOOSE)
+    }
 )
 
 @Serializer(forClass = Semver::class)
 internal object SemverAsStringSerializerIvy : KSerializer<Semver> by String.serializer().map(
     serializer = { it.toString() },
-    deserializer = { Semver(it, Semver.SemverType.IVY) }
+    deserializer = {
+        Semver(it.removePrefix("v").removePrefix("V"), Semver.SemverType.IVY)
+    }
 )

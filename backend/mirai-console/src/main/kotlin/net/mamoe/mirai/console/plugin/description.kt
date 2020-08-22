@@ -14,7 +14,6 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encodeToString
-import net.mamoe.mirai.console.internal.data.SemverAsStringSerializerIvy
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlDynamicSerializer
@@ -49,7 +48,7 @@ public interface PluginDescription {
      *
      * 语法参考: ([语义化版本 2.0.0](https://semver.org/lang/zh-CN/))
      *
-     * @see Semver 语义化版本
+     * @see Semver 语义化版本. 允许 [宽松][Semver.SemverType.LOOSE] 类型版本.
      */
     public val version: Semver
 
