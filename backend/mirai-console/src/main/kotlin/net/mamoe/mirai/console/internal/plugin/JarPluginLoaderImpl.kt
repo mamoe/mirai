@@ -32,6 +32,9 @@ internal object JarPluginLoaderImpl :
     CoroutineScope,
     JarPluginLoader {
 
+    override val configStorage: PluginDataStorage
+        get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
+
     private val logger: MiraiLogger = MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
 
     @ConsoleExperimentalAPI

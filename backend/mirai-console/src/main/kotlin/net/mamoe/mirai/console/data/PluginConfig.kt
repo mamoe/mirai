@@ -12,7 +12,10 @@ package net.mamoe.mirai.console.data
 /**
  * 一个插件的配置数据, 用于和用户交互.
  *
- * 用户可通过 mirai-console 前端修改这些配置, 修改会自动写入这个对象中.
+ * 用户可通过 mirai-console 前端 (如在 Android 中可视化实现) 修改这些配置, 修改会自动写入这个对象中.
+ *
+ * **提示**:
+ * 插件内部的数据应用 [PluginData] 存储, 而不能使用 [PluginConfig].
  */
 @ExperimentalPluginConfig
 public interface PluginConfig : PluginData

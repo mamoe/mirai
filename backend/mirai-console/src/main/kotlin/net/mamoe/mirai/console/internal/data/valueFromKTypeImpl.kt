@@ -99,7 +99,6 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
     }
 }
 
-@PublishedApi
 internal fun KClass<*>.createInstanceSmart(): Any? {
     return when (this) {
         MutableMap::class,

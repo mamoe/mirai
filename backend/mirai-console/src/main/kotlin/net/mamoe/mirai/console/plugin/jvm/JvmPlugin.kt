@@ -50,16 +50,16 @@ public interface JvmPlugin : Plugin, CoroutineScope,
         get() = JarPluginLoader
 
     /**
-     * 从 [JarPluginLoader.dataStorage] 获取一个 [PluginData] 实例
+     * 读取一个 [PluginData] 实例
      */
     @JvmDefault
     public fun <T : PluginData> loadPluginData(clazz: Class<T>): T = loader.dataStorage.load(this, clazz)
 
     /**
-     * 从 [JarPluginLoader.dataStorage] 获取一个 [PluginData] 实例
+     * 读取一个 [PluginConfig] 实例
      */
     @JvmDefault
-    public fun <T : PluginConfig> loadPluginConfig(clazz: Class<T>): T = loader.dataStorage.load(this, clazz)
+    public fun <T : PluginConfig> loadPluginConfig(clazz: Class<T>): T = loader.configStorage.load(this, clazz)
 
     /**
      * 在插件被加载时调用. 只会被调用一次.
@@ -84,25 +84,25 @@ public interface JvmPlugin : Plugin, CoroutineScope,
 }
 
 /**
- * 读取一个插件数据.
+ * 读取一个 [PluginData] 实例
  */
 @JvmSynthetic
 public inline fun <T : PluginData> JvmPlugin.loadPluginData(clazz: KClass<T>): T = this.loadPluginData(clazz.java)
 
 /**
- * 读取一个插件数据.
+ * 读取一个 [PluginData] 实例
  */
 @JvmSynthetic
 public inline fun <reified T : PluginData> JvmPlugin.loadPluginData(): T = this.loadPluginData(T::class)
 
 /**
- * 读取一个插件配置.
+ * 读取一个 [PluginConfig] 实例
  */
 @JvmSynthetic
 public inline fun <T : PluginConfig> JvmPlugin.loadPluginConfig(clazz: KClass<T>): T = this.loadPluginConfig(clazz.java)
 
 /**
- * 读取一个插件配置.
+ * 读取一个 [PluginConfig] 实例
  */
 @JvmSynthetic
 public inline fun <reified T : PluginConfig> JvmPlugin.loadPluginConfig(): T = this.loadPluginConfig(T::class)

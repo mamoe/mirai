@@ -25,6 +25,12 @@ public interface JarPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, J
     @ConsoleExperimentalAPI
     public val dataStorage: PluginDataStorage
 
+    /**
+     * [JvmPlugin.loadPluginData] 默认使用的实例
+     */
+    @ConsoleExperimentalAPI
+    public val configStorage: PluginDataStorage
+
     public companion object INSTANCE : JarPluginLoader by JarPluginLoaderImpl {
         @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
         override val JvmPlugin.description: JvmPluginDescription

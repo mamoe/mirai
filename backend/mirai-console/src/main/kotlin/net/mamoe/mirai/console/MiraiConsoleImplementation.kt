@@ -76,6 +76,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val consoleCommandSender: ConsoleCommandSender
 
     public val dataStorageForJarPluginLoader: PluginDataStorage
+    public val configStorageForJarPluginLoader: PluginDataStorage
     public val dataStorageForBuiltIns: PluginDataStorage
 
     public companion object {

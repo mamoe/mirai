@@ -59,6 +59,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val consoleCommandSender: ConsoleCommandSender get() = instance.consoleCommandSender
 
     override val dataStorageForJarPluginLoader: PluginDataStorage get() = instance.dataStorageForJarPluginLoader
+    override val configStorageForJarPluginLoader: PluginDataStorage get() = instance.configStorageForJarPluginLoader
     override val dataStorageForBuiltIns: PluginDataStorage get() = instance.dataStorageForBuiltIns
 
     init {

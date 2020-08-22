@@ -13,14 +13,12 @@ import kotlin.reflect.KClass
  * 当任一相关 [Value] 的值被修改时, 将在一段时间无其他修改时保存
  *
  * 若 [AutoSavePluginDataHolder.coroutineContext] 含有 [Job], 则 [AutoSavePluginData] 会通过 [Job.invokeOnCompletion] 在 Job 完结时触发自动保存.
- *
- * @see loadPluginData
  */
 internal open class AutoSavePluginData(
     private val owner: AutoSavePluginDataHolder,
     internal val originPluginDataClass: KClass<out PluginData>
-) :
-    AbstractPluginData(), PluginConfig {
+) : AbstractPluginData(), PluginConfig {
+
     private lateinit var storage: PluginDataStorage
 
     override fun setStorage(storage: PluginDataStorage) {
