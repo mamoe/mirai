@@ -19,10 +19,8 @@ import net.mamoe.mirai.contact.isOwner
 
 /**
  * 指令权限
- *
- * @see AnonymousCommandPermission
  */
-public interface CommandPermission {
+public fun interface CommandPermission {
     /**
      * 判断 [this] 是否拥有这个指令的权限
      *
@@ -100,18 +98,12 @@ public interface CommandPermission {
         public override fun CommandSender.hasPermission(): Boolean = this is ConsoleCommandSender
     }
 
+    /**
+     * 默认权限.
+     *
+     * [Manager] or [Console]
+     */
     public object Default : CommandPermission by (Manager or Console)
-}
-
-/**
- * 使用 [lambda][block] 快速构造 [CommandPermission]
- */
-@JvmSynthetic
-@Suppress("FunctionName")
-public inline fun AnonymousCommandPermission(crossinline block: CommandSender.() -> Boolean): CommandPermission {
-    return object : CommandPermission {
-        override fun CommandSender.hasPermission(): Boolean = block()
-    }
 }
 
 public inline fun CommandSender.hasPermission(permission: CommandPermission): Boolean =
