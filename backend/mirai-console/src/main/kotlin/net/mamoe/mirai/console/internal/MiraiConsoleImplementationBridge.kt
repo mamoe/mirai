@@ -35,8 +35,9 @@ import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.*
 import java.nio.file.Path
-import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -75,7 +76,8 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     @OptIn(ConsoleExperimentalAPI::class)
     internal fun doStart() {
-        val buildDateFormatted = SimpleDateFormat("yyyy-MM-dd").format(buildDate)
+        val buildDateFormatted =
+            buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         mainLogger.info { "Starting mirai-console..." }
         mainLogger.info { "Backend: version $version, built on $buildDateFormatted." }
         mainLogger.info { frontEndDescription.render() }
@@ -83,6 +85,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         if (coroutineContext[Job] == null) {
             throw IllegalMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
         }
+
         MiraiConsole.job.invokeOnCompletion {
             Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
         }

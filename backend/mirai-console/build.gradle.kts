@@ -2,6 +2,7 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.Date
 import java.util.TimeZone
 
@@ -112,20 +113,14 @@ tasks {
                 .let { file ->
                     file.writeText(
                         file.readText()
-                            .replace(Regex("""val buildDate: Date = Date\((.*)\) //(.*)""")) {
-                                """
-                        val buildDate: Date = Date(${System.currentTimeMillis()}L) // ${
-                                    SimpleDateFormat("yyyy-MM-dd HH:mm:ss").apply {
-                                        timeZone = TimeZone.getTimeZone("GMT+8")
-                                    }.format(Date())
-                                }
-                    """.trimIndent()
-                            }
-                            .replace(Regex("""const val version: String = "(.*)"""")) {
-                                """
-                        const val version: String = "${Versions.console}"
-                    """.trimIndent()
-                            }
+                            .replace(
+                                """val buildDate: Instant = Instant.ofEpochSecond(0)""",
+                                """val buildDate: Instant = Instant.ofEpochSecond(${Instant.now().getEpochSecond()})"""
+                            )
+                            .replace(
+                                """val version: Semver = Semver("0", Semver.SemverType.LOOSE)""",
+                                """val version: Semver = Semver("${project.version}", Semver.SemverType.LOOSE)"""
+                            )
                     )
             }
         }

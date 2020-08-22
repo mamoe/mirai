@@ -33,7 +33,7 @@ import java.io.PrintStream
  */
 object MiraiConsolePureLoader {
     @JvmStatic
-    fun main(args: Array<String>?) {
+    fun main(args: Array<String>) {
         startup()
     }
 }
