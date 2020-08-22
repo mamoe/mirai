@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 /**
  * 内建的 Jar (JVM) 插件加载器
  */
+@ConsoleExperimentalAPI("classname might change")
 public interface JarPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
     /**
      * [JvmPlugin.loadPluginData] 默认使用的实例

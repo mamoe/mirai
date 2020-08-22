@@ -10,12 +10,11 @@
 @file:JvmMultifileClass
 @file:JvmName("ConsoleUtils")
 
-package net.mamoe.mirai.console.util
+package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Runnable
 import net.mamoe.mirai.console.internal.util.JavaPluginSchedulerImpl
-import net.mamoe.mirai.console.plugin.jvm.JavaPlugin
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
