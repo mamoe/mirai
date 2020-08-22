@@ -19,8 +19,8 @@ import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.message.recall
 import kotlin.jvm.JvmSynthetic
 
@@ -74,7 +74,7 @@ public abstract class Friend : User(), CoroutineScope {
     @kotlin.internal.InlineOnly
     @JvmSynthetic
     suspend inline fun sendMessage(message: String): MessageReceipt<Friend> {
-        return sendMessage(message.toMessage())
+        return sendMessage(PlainText(message))
     }
 
     final override fun toString(): String = "Friend($id)"

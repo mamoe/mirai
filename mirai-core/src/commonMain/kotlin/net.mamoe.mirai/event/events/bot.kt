@@ -113,6 +113,17 @@ public data class BotAvatarChangedEvent(
     public override val bot: Bot
 ) : BotEvent, Packet, AbstractEvent()
 
+/**
+ * [Bot] 的昵称被改变事件, 在此事件触发时 bot 已经完成改名
+ * @see FriendNickChangedEvent
+ */
+@SinceMirai("1.2.0")
+public data class BotNickChangedEvent(
+    public override val bot: Bot,
+    public val from: String,
+    public val to: String
+) : BotEvent, Packet, AbstractEvent()
+
 // region 图片
 
 // endregion

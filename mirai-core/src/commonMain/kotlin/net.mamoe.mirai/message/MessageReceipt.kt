@@ -165,7 +165,7 @@ public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: Me
  */
 @JvmSynthetic
 public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: String): MessageReceipt<C> {
-    return this.quoteReply(message.toMessage())
+    return this.quoteReply(PlainText(message))
 }
 
 

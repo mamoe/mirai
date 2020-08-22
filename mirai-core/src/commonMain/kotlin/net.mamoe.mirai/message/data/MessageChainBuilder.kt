@@ -193,7 +193,7 @@ public open class MessageChainBuilder private constructor(
     private var cache: StringBuilder? = null
     private fun flushCache() {
         cache?.let {
-            container.add(it.toString().toMessage())
+            container.add(PlainText(it.toString()))
         }
         cache = null
     }

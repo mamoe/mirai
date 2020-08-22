@@ -419,7 +419,7 @@ public class ForwardMessageBuilder private constructor(
          * 指定消息内容
          */
         @ForwardMessageDsl
-        public infix fun message(message: String): BuilderNode = this.apply { this.message = message.toMessage() }
+        public infix fun message(message: String): BuilderNode = this.apply { this.message = PlainText(message) }
 
         /** 添加一条消息  */
         @ForwardMessageDsl
@@ -431,7 +431,7 @@ public class ForwardMessageBuilder private constructor(
 
         /** 添加一条消息  */
         @ForwardMessageDsl
-        public infix fun says(message: String): ForwardMessageBuilder = this.says(message.toMessage())
+        public infix fun says(message: String): ForwardMessageBuilder = this.says(PlainText(message))
 
         /** 构造并添加一个 [MessageChain] */
         @ForwardMessageDsl
@@ -443,12 +443,12 @@ public class ForwardMessageBuilder private constructor(
 
     /** 添加一条消息, 自动按顺序调整时间  */
     @ForwardMessageDsl
-    public infix fun Long.says(message: String): ForwardMessageBuilder = says(message.toMessage())
+    public infix fun Long.says(message: String): ForwardMessageBuilder = says(PlainText(message))
 
     /** 添加一条消息, 自动按顺序调整时间  */
     @ForwardMessageDsl
     public infix fun Int.says(message: String): ForwardMessageBuilder =
-        this.toLong().and(0xFFFF_FFFF).says(message.toMessage())
+        this.toLong().and(0xFFFF_FFFF).says(PlainText(message))
 
     /** 添加一条消息, 自动按顺序调整时间 */
     @ForwardMessageDsl

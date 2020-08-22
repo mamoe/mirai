@@ -72,7 +72,7 @@ public abstract class Contact : ContactOrBot, CoroutineScope, ContactJavaFriendl
     @kotlin.internal.InlineOnly
     @JvmSynthetic
     public suspend inline fun sendMessage(message: String): MessageReceipt<Contact> {
-        return sendMessage(message.toMessage())
+        return sendMessage(PlainText(message))
     }
 
     /**

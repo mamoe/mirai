@@ -22,7 +22,22 @@ import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.message.data.toUHexString
 import net.mamoe.mirai.utils.internal.DeferredReusableInput
 import net.mamoe.mirai.utils.internal.ReusableInput
+import java.io.File
 import kotlin.jvm.JvmSynthetic
+
+/**
+ * mirai 将在未来重构 [ExternalImage] 相关 API, 请尽量避免使用他们.
+ *
+ * 可以直接通过 [File.uploadAsImageTo] 等 API 替代.
+ */
+@RequiresOptIn(
+    "mirai 将在 2.0.0 时重构 ExternalImage 相关 API, 请尽量避免使用他们. 可以直接通过 File.uploadAsImageTo() 等 API 替代.",
+    level = RequiresOptIn.Level.WARNING
+)
+@Retention(AnnotationRetention.BINARY)
+@UnstableExternalImage
+@SinceMirai("1.2.0")
+public annotation class UnstableExternalImage
 
 /**
  * 外部图片. 图片数据还没有读取到内存.
@@ -32,6 +47,7 @@ import kotlin.jvm.JvmSynthetic
  * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
  * @See ExternalImage.upload 上传图片并得到 [Image] 消息
  */
+@UnstableExternalImage
 public class ExternalImage internal constructor(
     internal val input: ReusableInput
 ) {

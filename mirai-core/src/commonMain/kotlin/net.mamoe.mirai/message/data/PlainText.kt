@@ -50,6 +50,11 @@ public data class PlainText(
 /**
  * 构造 [PlainText]
  */
+@Deprecated(
+    "为和 mirai code 区分, 请使用 PlainText(this)",
+    ReplaceWith("PlainText(this)", "net.mamoe.mirai.message.data.PlainText"),
+    level = DeprecationLevel.WARNING
+)
 @JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
 public inline fun String.toMessage(): PlainText = PlainText(this)

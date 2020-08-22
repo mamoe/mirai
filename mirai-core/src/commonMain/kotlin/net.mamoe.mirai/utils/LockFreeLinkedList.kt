@@ -844,7 +844,7 @@ internal open class LockFreeLinkedListNode<E>(
      * [Tail], is not being tested.
      */
     inline fun allMatching(condition: (LockFreeLinkedListNode<E>) -> Boolean): Boolean =
-        this.childIterateReturnsLastSatisfying({ it.nextNode }, condition) !is Tail
+        this.childIterateReturnsLastSatisfying({ it.nextNode }, condition) is Tail
 
     /**
      * Stop on and returns the former element of the element that is [equals] to the [element]

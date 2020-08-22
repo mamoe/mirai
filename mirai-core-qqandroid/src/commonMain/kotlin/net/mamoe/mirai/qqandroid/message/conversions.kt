@@ -327,7 +327,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
             element.face != null -> list.add(Face(element.face.index))
             element.text != null -> {
                 if (element.text.attr6Buf.isEmpty()) {
-                    list.add(element.text.str.toMessage())
+                    list.add(PlainText(element.text.str))
                 } else {
                     val id: Long
                     element.text.attr6Buf.read {

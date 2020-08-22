@@ -17,8 +17,8 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.data.toMessage
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.jvm.JvmSynthetic
@@ -164,7 +164,7 @@ public abstract class Member : MemberJavaFriendlyAPI, User() {
     @kotlin.internal.InlineOnly
     @JvmSynthetic
     public suspend inline fun sendMessage(message: String): MessageReceipt<Member> {
-        return sendMessage(message.toMessage())
+        return sendMessage(PlainText(message))
     }
 
     public final override fun toString(): String = "Member($id)"

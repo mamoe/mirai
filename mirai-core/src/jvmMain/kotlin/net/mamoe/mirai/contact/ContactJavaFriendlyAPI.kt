@@ -21,6 +21,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.uploadImage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.UnstableExternalImage
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
@@ -65,6 +66,7 @@ internal actual interface ContactJavaFriendlyAPI {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
+    @UnstableExternalImage
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
     open fun __uploadImageBlockingForJava__(image: ExternalImage): Image {
@@ -76,6 +78,7 @@ internal actual interface ContactJavaFriendlyAPI {
      * @throws OverFileSizeMaxException
      */
     @Throws(OverFileSizeMaxException::class)
+    @Suppress("DEPRECATION")
     @JvmName("uploadImage")
     open fun __uploadImageBlockingForJava__(image: URL): Image {
         return runBlocking { uploadImage(image) }
@@ -95,6 +98,11 @@ internal actual interface ContactJavaFriendlyAPI {
      * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片上传, 但不发送
      * @throws OverFileSizeMaxException
      */
+    @Deprecated(
+        "已弃用对 kotlinx.io 的支持",
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("DEPRECATION_ERROR")
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
     open fun __uploadImageBlockingForJava__(image: Input): Image {
@@ -126,6 +134,7 @@ internal actual interface ContactJavaFriendlyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
+    @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
     open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<Contact>> {
         return future { sendMessage(message) }
     }
@@ -135,6 +144,7 @@ internal actual interface ContactJavaFriendlyAPI {
      * @see Contact.sendMessage
      */
     @JvmName("sendMessageAsync")
+    @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
     open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<Contact>> {
         return future { sendMessage(message) }
     }
@@ -145,7 +155,9 @@ internal actual interface ContactJavaFriendlyAPI {
      * @see BeforeImageUploadEvent 图片发送前事件, cancellable
      * @see ImageUploadEvent 图片发送完成事件
      */
+    @UnstableExternalImage
     @JvmName("uploadImageAsync")
+    @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
     open fun __uploadImageAsyncForJava__(image: ExternalImage): Future<Image> {
         return future { uploadImage(image) }
     }
@@ -153,6 +165,8 @@ internal actual interface ContactJavaFriendlyAPI {
     /**
      * 在 [Dispatchers.IO] 中下载 [URL] 到临时文件并将其作为图片上传, 但不发送
      */
+    @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
+    @Suppress("DEPRECATION")
     @JvmName("uploadImageAsync")
     open fun __uploadImageAsyncForJava__(image: URL): Future<Image> {
         return future { uploadImage(image) }
@@ -161,6 +175,7 @@ internal actual interface ContactJavaFriendlyAPI {
     /**
      * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片上传, 但不发送
      */
+    @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
     @JvmName("uploadImageAsync")
     open fun __uploadImageAsyncForJava__(image: InputStream): Future<Image> {
         return future { uploadImage(image) }
@@ -169,6 +184,11 @@ internal actual interface ContactJavaFriendlyAPI {
     /**
      * 在 [Dispatchers.IO] 中读取 [Input] 到临时文件并将其作为图片上传, 但不发送
      */
+    @Suppress("DEPRECATION_ERROR")
+    @Deprecated(
+        "已弃用对 kotlinx.io 的支持",
+        level = DeprecationLevel.ERROR
+    )
     @JvmName("uploadImageAsync")
     open fun __uploadImageAsyncForJava__(image: Input): Future<Image> {
         return future { uploadImage(image) }
@@ -178,6 +198,7 @@ internal actual interface ContactJavaFriendlyAPI {
      * 在 [Dispatchers.IO] 中将文件作为图片上传, 但不发送
      */
     @JvmName("uploadImageAsync")
+    @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
     open fun __uploadImageAsyncForJava__(image: File): Future<Image> {
         return future { uploadImage(image) }
     }
@@ -186,6 +207,7 @@ internal actual interface ContactJavaFriendlyAPI {
      * 在 [Dispatchers.IO] 中将图片上传, 但不发送. 不会保存临时文件
      */
     @JvmName("uploadImageAsync")
+    @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
     open fun __uploadImageAsyncForJava__(image: BufferedImage): Future<Image> {
         return future { uploadImage(image) }
     }
