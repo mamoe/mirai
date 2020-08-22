@@ -12,18 +12,19 @@ package net.mamoe.mirai.event.internal
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
 
-internal actual class MiraiAtomicBoolean actual constructor(initial: Boolean) {
-    private val delegate: AtomicBoolean = AtomicBoolean(initial)
 
-    actual fun compareAndSet(expect: Boolean, update: Boolean): Boolean {
-        return delegate.compareAndSet(expect, update)
+internal actual object GlobalEventListeners {
+    private val ALL_LEVEL_REGISTRIES: Map<Listener.EventPriority, LockFreeLinkedList<ListenerRegistry>>
+
+    init {
+        val map = EnumMap<Listener.EventPriority, LockFreeLinkedList<ListenerRegistry>>(Listener.EventPriority::class.java)
+        Listener.EventPriority.values().forEach {
+            map[it] = LockFreeLinkedList()
+        }
+        this.ALL_LEVEL_REGISTRIES = map
     }
 
-    actual var value: Boolean
-        get() = delegate.get()
-        set(value) {
-            delegate.set(value)
-        }
+    actual operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerRegistry> = ALL_LEVEL_REGISTRIES[priority]!!
+
 }

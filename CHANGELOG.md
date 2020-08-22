@@ -1,5 +1,8 @@
 # Version 1.x
 
+## `1.2.2`  2020/8/22
+- 修复依赖冲突问题 (#523)
+
 ## `1.2.1`  2020/8/19
 - 修复在 Java 调用 `group.uploadImage` 时编译出错的问题 (#511)
 - 为 `group.uploadVoice` 添加 Java 方法 (需要 [kotlin-jvm-blocking-bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge)) (#512)
@@ -8,7 +11,7 @@
 ## `1.2.0`  2020/8/19
 
 ### 新特性
-- 初步语音支持: `Group.uploadVoice`, 支持 silk 或 arm 格式.  
+- 初步语音支持: `Group.uploadVoice`, 支持 silk 或 amr 格式.  
    **注意**: 现阶段语音实现仅为临时方案, 在将来 (`2.0.0`) 一定会变动. 使用时请评估可能带来的不兼容性.
 
 - 新增将日志转换为 log4j, JDK Logger, SLF4J 等框架的方法: `LoggerAdapters` (#498 by [@Karlatemp](https://github.com/Karlatemp))

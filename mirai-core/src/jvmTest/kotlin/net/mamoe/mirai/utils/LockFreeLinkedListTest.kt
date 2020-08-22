@@ -34,6 +34,14 @@ internal class LockFreeLinkedListTest {
     }
 
     @Test
+    fun isEmpty() {
+        val list = LockFreeLinkedList<Int>()
+        assertTrue { list.isEmpty() }
+        list.addLast(1)
+        assertFalse { list.isEmpty() }
+    }
+
+    @Test
     fun addAndGetConcurrent() = runBlocking {
         //withContext(Dispatchers.Default){
         val list = LockFreeLinkedList<Int>()

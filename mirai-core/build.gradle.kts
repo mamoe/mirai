@@ -63,21 +63,17 @@ kotlin {
                 api(kotlin("serialization"))
                 api(kotlin("reflect"))
 
-                api(kotlinx("serialization-core", Versions.Kotlin.serialization))
-                implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
-                api(kotlinx("io", Versions.Kotlin.io)) {
-                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-                }
-                api(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo)) {
-                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-                }
+                api1(kotlinx("serialization-core", Versions.Kotlin.serialization))
+                implementation1(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
+                api1(kotlinx("io", Versions.Kotlin.io))
+                api1(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
                 api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
 
-                implementation("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
+                implementation1("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
 
-                api(ktor("client-cio"))
-                api(ktor("client-core"))
-                api(ktor("network"))
+                api1(ktor("client-cio"))
+                api1(ktor("client-core"))
+                api1(ktor("network"))
             }
         }
 
@@ -93,14 +89,10 @@ kotlin {
                 dependencies {
                     api(kotlin("reflect"))
 
-                    api(kotlinx("io-jvm", Versions.Kotlin.io)) {
-                        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-                    }
-                    api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo)) {
-                        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-                    }
+                    api1(kotlinx("io-jvm", Versions.Kotlin.io))
+                    api1(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
 
-                    api(ktor("client-android", Versions.Kotlin.ktor))
+                    api1(ktor("client-android", Versions.Kotlin.ktor))
                 }
             }
 
@@ -116,21 +108,13 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                //api(kotlin("stdlib-jdk8"))
-                //api(kotlin("stdlib-jdk7"))
                 api(kotlin("reflect"))
                 compileOnly("org.apache.logging.log4j:log4j-api:" + Versions.Logging.log4j)
                 compileOnly("org.slf4j:slf4j-api:" + Versions.Logging.slf4j)
 
-                api(ktor("client-core-jvm", Versions.Kotlin.ktor))
-                api(kotlinx("io-jvm", Versions.Kotlin.io)) {
-                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-                }
-                api(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo)) {
-                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-                }
-
-                runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
+                api1(ktor("client-core-jvm", Versions.Kotlin.ktor))
+                api1(kotlinx("io-jvm", Versions.Kotlin.io))
+                api1(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
             }
         }
 
@@ -145,6 +129,24 @@ kotlin {
         }
     }
 }
+
+fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
+    implementation(dependencyNotation) {
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
+    }
+
+fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNotation: String) =
+    api(dependencyNotation) {
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
+    }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
 
