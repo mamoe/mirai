@@ -15,10 +15,10 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.safeLoader
-import net.mamoe.mirai.console.util.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.io.InputStream

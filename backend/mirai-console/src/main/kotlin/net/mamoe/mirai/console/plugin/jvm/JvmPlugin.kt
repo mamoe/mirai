@@ -17,7 +17,7 @@ import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
-import net.mamoe.mirai.console.util.ResourceContainer
+import net.mamoe.mirai.console.plugin.ResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
 import kotlin.reflect.KClass
 

@@ -9,10 +9,10 @@
 
 @file:Suppress("unused")
 
-package net.mamoe.mirai.console.util
+package net.mamoe.mirai.console.plugin
 
+import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.util.ResourceContainer.Companion.asResourceContainer
 import java.io.InputStream
 import java.nio.charset.Charset
 import kotlin.reflect.KClass
