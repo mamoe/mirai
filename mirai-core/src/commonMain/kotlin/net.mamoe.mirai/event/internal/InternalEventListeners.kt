@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
 internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
     with(GlobalEventListeners[listener.priority]) {
         @Suppress("UNCHECKED_CAST")
-        val node = ListenerNode(listener as Listener<Event>, this@subscribeInternal)
+        val node = ListenerRegistry(listener as Listener<Event>, this@subscribeInternal)
         addLast(node)
         listener.invokeOnCompletion {
             this.remove(node)
@@ -107,13 +107,13 @@ internal class Handler<in E : Event> internal constructor(
     }
 }
 
-internal class ListenerNode(
+internal class ListenerRegistry(
     val listener: Listener<Event>,
-    val owner: KClass<out Event>
+    val type: KClass<out Event>
 )
 
 internal expect object GlobalEventListeners {
-    operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerNode>
+    operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerRegistry>
 }
 
 internal expect class MiraiAtomicBoolean(initial: Boolean) {
@@ -135,50 +135,50 @@ internal suspend inline fun AbstractEvent.broadcastInternal() {
 internal suspend inline fun <E : AbstractEvent> callAndRemoveIfRequired(
     event: E
 ) {
-    for (p in Listener.EventPriority.valuesExceptMonitor) {
-        GlobalEventListeners[p].forEachNode { eventNode ->
+    for (p in Listener.EventPriority.prioritiesExcludedMonitor) {
+        GlobalEventListeners[p].forEachNode { registeredRegistryNode ->
             if (event.isIntercepted) {
                 return
             }
-            val node = eventNode.nodeValue
-            if (!node.owner.isInstance(event)) return@forEachNode
-            val listener = node.listener
+            val listenerRegistry = registeredRegistryNode.nodeValue
+            if (!listenerRegistry.type.isInstance(event)) return@forEachNode
+            val listener = listenerRegistry.listener
             when (listener.concurrencyKind) {
                 Listener.ConcurrencyKind.LOCKED -> {
                     (listener as Handler).lock!!.withLock {
                         if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                            removeNode(eventNode)
+                            removeNode(registeredRegistryNode)
                         }
                     }
                 }
                 Listener.ConcurrencyKind.CONCURRENT -> {
                     if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                        removeNode(eventNode)
+                        removeNode(registeredRegistryNode)
                     }
                 }
             }
         }
     }
     coroutineScope {
-        GlobalEventListeners[EventPriority.MONITOR].forEachNode { eventNode ->
+        GlobalEventListeners[EventPriority.MONITOR].forEachNode { registeredRegistryNode ->
             if (event.isIntercepted) {
                 return@coroutineScope
             }
-            val node = eventNode.nodeValue
-            if (!node.owner.isInstance(event)) return@forEachNode
-            val listener = node.listener
+            val listenerRegistry = registeredRegistryNode.nodeValue
+            if (!listenerRegistry.type.isInstance(event)) return@forEachNode
+            val listener = listenerRegistry.listener
             launch {
                 when (listener.concurrencyKind) {
                     Listener.ConcurrencyKind.LOCKED -> {
                         (listener as Handler).lock!!.withLock {
                             if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                                removeNode(eventNode)
+                                removeNode(registeredRegistryNode)
                             }
                         }
                     }
                     Listener.ConcurrencyKind.CONCURRENT -> {
                         if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                            removeNode(eventNode)
+                            removeNode(registeredRegistryNode)
                         }
                     }
                 }
