@@ -16,8 +16,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.CommandManagerImpl.allRegisteredCommands
-import net.mamoe.mirai.console.command.CommandManagerImpl.register
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.internal.command.CommandManagerImpl
+import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.nextMessageOrNull

@@ -14,7 +14,6 @@ package net.mamoe.mirai.console.internal.command
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
-import net.mamoe.mirai.console.command.description.CommandParameter
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
 import kotlin.reflect.KAnnotatedElement

@@ -19,6 +19,10 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
  */
 public class CommandExecutionException(
     /**
+     * 执行者
+     */
+    public val sender: CommandSender,
+    /**
      * 执行过程发生异常的指令
      */
     public val command: Command,

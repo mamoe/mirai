@@ -26,15 +26,18 @@ import kotlin.reflect.full.isSubclassOf
 
 
 /**
- * [CommandArgumentParser] 的集合, 用于 [CompositeCommand] 和 [SimpleCommand].
+ * 指令参数环境, 即 [CommandArgumentParser] 的集合, 用于 [CompositeCommand] 和 [SimpleCommand].
+ *
+ * 在指令解析时, 总是从 [CommandArgumentContextAware.context] 搜索相关解析器
+ *
+ * 要构造 [CommandArgumentContext], 参考 [buildCommandArgumentContext]
  *
  * @see SimpleCommandArgumentContext 简单实现
  * @see EmptyCommandArgumentContext 空实现, 类似 [emptyList]
- * @see CommandArgumentContext.EMPTY 空实现的另一种获取方式.
  *
  * @see CommandArgumentContext.Builtins 内建 [CommandArgumentParser]
  *
- * @see CommandArgumentContext DSL
+ * @see buildCommandArgumentContext DSL 构造
  */
 public interface CommandArgumentContext {
     /**
@@ -62,7 +65,7 @@ public interface CommandArgumentContext {
     /**
      * 内建的默认 [CommandArgumentParser]
      */
-    public object Builtins : CommandArgumentContext by (CommandArgumentContext {
+    public object Builtins : CommandArgumentContext by (buildCommandArgumentContext {
         Int::class with IntArgumentParser
         Byte::class with ByteArgumentParser
         Short::class with ShortArgumentParser
@@ -73,14 +76,14 @@ public interface CommandArgumentContext {
         Float::class with FloatArgumentParser
 
         Member::class with ExistMemberArgumentParser
-        Group::class with ExistGroupArgumentParser
-        Friend::class with ExistFriendArgumentParser
-        Bot::class with ExistBotArgumentParser
+        Group::class with ExistingGroupArgumentParser
+        Friend::class with ExistingFriendArgumentParser
+        Bot::class with ExistingBotArgumentParser
     })
 }
 
 /**
- * 拥有 [CommandArgumentContext] 的类
+ * 拥有 [buildCommandArgumentContext] 的类
  *
  * @see SimpleCommand
  * @see CompositeCommand
@@ -95,7 +98,7 @@ public interface CommandArgumentContextAware {
 public object EmptyCommandArgumentContext : CommandArgumentContext by SimpleCommandArgumentContext(listOf())
 
 /**
- * 合并两个 [CommandArgumentContext], [replacer] 将会替换 [this] 中重复的 parser.
+ * 合并两个 [buildCommandArgumentContext], [replacer] 将会替换 [this] 中重复的 parser.
  */
 public operator fun CommandArgumentContext.plus(replacer: CommandArgumentContext): CommandArgumentContext {
     if (replacer == EmptyCommandArgumentContext) return this
@@ -125,9 +128,9 @@ public operator fun CommandArgumentContext.plus(replacer: List<ParserPair<*>>): 
 }
 
 /**
- * 自定义 [CommandArgumentContext]
+ * 自定义 [buildCommandArgumentContext]
  *
- * @see CommandArgumentContext
+ * @see buildCommandArgumentContext
  */
 @Suppress("UNCHECKED_CAST")
 public class SimpleCommandArgumentContext(
@@ -140,10 +143,11 @@ public class SimpleCommandArgumentContext(
 }
 
 /**
- * 构建一个 [CommandArgumentContext].
+ * 构建一个 [buildCommandArgumentContext].
  *
+ * Kotlin 实现:
  * ```
- * CommandArgumentContext {
+ * val context = buildCommandArgumentContext {
  *     Int::class with IntArgParser
  *     Member::class with ExistMemberArgParser
  *     Group::class with { s: String, sender: CommandSender ->
@@ -155,22 +159,47 @@ public class SimpleCommandArgumentContext(
  * }
  * ```
  *
+ * Java 实现:
+ * ```java
+ * CommandArgumentContext context =
+ *     new CommandArgumentContextBuilder()
+ *         .add(clazz1, parser1)
+ *         .add(String.class, new CommandArgumentParser<String>() {
+ *              public String parse(String raw, CommandSender sender) {
+ *                  // ...
+ *              }
+ *         })
+ *         // 更多 add
+ *         .build()
+ * ```
+ *
  * @see CommandArgumentContextBuilder
- * @see CommandArgumentContext
+ * @see buildCommandArgumentContext
  */
-@Suppress("FunctionName")
 @JvmSynthetic
-public fun CommandArgumentContext(block: CommandArgumentContextBuilder.() -> Unit): CommandArgumentContext {
-    return SimpleCommandArgumentContext(CommandArgumentContextBuilder().apply(block).distinctByReversed { it.klass })
+public fun buildCommandArgumentContext(block: CommandArgumentContextBuilder.() -> Unit): CommandArgumentContext {
+    return CommandArgumentContextBuilder().apply(block).build()
 }
 
 /**
- * @see CommandArgumentContext
+ * 参考 [buildCommandArgumentContext]
  */
 public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutableListOf() {
-    @JvmName("add") // TODO: 2020/8/19 java class support
-    public inline infix fun <T : Any> KClass<T>.with(parser: CommandArgumentParser<T>): ParserPair<*> =
-        ParserPair(this, parser).also { add(it) }
+    /**
+     * 添加一个指令解析器.
+     */
+    @JvmName("add")
+    public infix fun <T : Any> Class<T>.with(parser: CommandArgumentParser<T>): CommandArgumentContextBuilder =
+        this.kotlin with parser
+
+    /**
+     * 添加一个指令解析器
+     */
+    @JvmName("add")
+    public inline infix fun <T : Any> KClass<T>.with(parser: CommandArgumentParser<T>): CommandArgumentContextBuilder {
+        add(ParserPair(this, parser))
+        return this@CommandArgumentContextBuilder
+    }
 
     /**
      * 添加一个指令解析器
@@ -179,7 +208,12 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @LowPriorityInOverloadResolution
     public inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgumentParser<T>.(s: String, sender: CommandSender) -> T
-    ): ParserPair<*> = ParserPair(this, CommandArgumentParser(parser)).also { add(it) }
+    ): CommandArgumentContextBuilder {
+        add(ParserPair(this, object : CommandArgumentParser<T> {
+            override fun parse(raw: String, sender: CommandSender): T = parser(raw, sender)
+        }))
+        return this@CommandArgumentContextBuilder
+    }
 
     /**
      * 添加一个指令解析器
@@ -187,12 +221,18 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @JvmSynthetic
     public inline infix fun <T : Any> KClass<T>.with(
         crossinline parser: CommandArgumentParser<T>.(s: String) -> T
-    ): ParserPair<*> =
-        ParserPair(this, CommandArgumentParser { s: String, _: CommandSender -> parser(s) }).also { add(it) }
+    ): CommandArgumentContextBuilder {
+        add(ParserPair(this, object : CommandArgumentParser<T> {
+            override fun parse(raw: String, sender: CommandSender): T = parser(raw)
+        }))
+        return this@CommandArgumentContextBuilder
+    }
 
     @JvmSynthetic
-    public inline fun <reified T : Any> add(parser: CommandArgumentParser<T>): ParserPair<*> =
-        ParserPair(T::class, parser).also { add(it) }
+    public inline fun <reified T : Any> add(parser: CommandArgumentParser<T>): CommandArgumentContextBuilder {
+        add(ParserPair(T::class, parser))
+        return this@CommandArgumentContextBuilder
+    }
 
     /**
      * 添加一个指令解析器
@@ -201,7 +241,9 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @JvmSynthetic
     public inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgumentParser<*>.(s: String) -> T
-    ): ParserPair<*> = T::class with CommandArgumentParser { s: String, _: CommandSender -> parser(s) }
+    ): CommandArgumentContextBuilder = T::class with object : CommandArgumentParser<T> {
+        override fun parse(raw: String, sender: CommandSender): T = parser(raw)
+    }
 
     /**
      * 添加一个指令解析器
@@ -211,7 +253,14 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @LowPriorityInOverloadResolution
     public inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgumentParser<*>.(s: String, sender: CommandSender) -> T
-    ): ParserPair<*> = T::class with CommandArgumentParser(parser)
+    ): CommandArgumentContextBuilder = T::class with object : CommandArgumentParser<T> {
+        override fun parse(raw: String, sender: CommandSender): T = parser(raw, sender)
+    }
+
+    /**
+     * 完成构建, 得到 [CommandArgumentContext]
+     */
+    public fun build(): CommandArgumentContext = SimpleCommandArgumentContext(this.distinctByReversed { it.klass })
 }
 
 internal inline fun <T, K> List<T>.distinctByReversed(selector: (T) -> K): List<T> {

@@ -17,19 +17,23 @@
 
 package net.mamoe.mirai.console.command
 
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
 
 /**
- * 简单指令. 参数支持自动解析. [CommandArgumentParser]
+ * 简单的, 支持参数自动解析的指令.
+ *
+ * 要查看指令解析流程, 参考 [CommandManager.executeCommand]
+ * 要查看参数解析方式, 参考 [CommandArgumentParser]
  *
  * Kotlin 实现:
  * ```
  * object MySimpleCommand : SimpleCommand(
  *     MyPlugin, "tell",
  *     description = "Message somebody",
- *     usage = "/tell <target> <message>"
+ *     usage = "/tell <target> <message>"  // usage 如不设置则自动根据带有 @Handler 的方法生成
  * ) {
  *     @Handler
  *     suspend fun CommandSender.onCommand(target: User, message: String) {
@@ -38,18 +42,8 @@ import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotatio
  * }
  * ```
  *
- * Java 实现:
- * ```java
- * public final class MySimpleCommand extends SimpleCommand {
- *     private MySimpleCommand() {
- *         super(MyPlugin.INSTANCE, new String[]{ "tell" }, "Message somebody", "/tell <target> <message>")
- *     }
- *     @Handler
- *     public void onCommand(CommandSender sender, User target, String message) {
- *         target.sendMessage(message)
- *     }
- * }
- * ```
+ * @see JSimpleCommand Java 实现
+ * @see [CommandManager.executeCommand]
  */
 public abstract class SimpleCommand @JvmOverloads constructor(
     owner: CommandOwner,
@@ -69,7 +63,7 @@ public abstract class SimpleCommand @JvmOverloads constructor(
      */
     protected annotation class Handler
 
-    public final override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
+    public override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
 
     public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
         subCommands.single().parseAndExecute(this, args, false)
@@ -85,4 +79,41 @@ public abstract class SimpleCommand @JvmOverloads constructor(
 
     internal final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
         get() = SimpleCommandSubCommandAnnotationResolver
+}
+
+/**
+ * Java 实现:
+ * ```java
+ * public final class MySimpleCommand extends JSimpleCommand {
+ *     private MySimpleCommand() {
+ *         super(MyPlugin.INSTANCE, "tell")
+ *         // 可选设置如下属性
+ *         setDescription("这是一个测试指令")
+ *         setUsage("/tell <target> <message>") // 如不设置则自动根据带有 @Handler 的方法生成
+ *         setPermission(CommandPermission.Operator.INSTANCE)
+ *         setPrefixOptional(true)
+ *     }
+ *
+ *     @Handler
+ *     public void onCommand(CommandSender sender, User target, String message) {
+ *         target.sendMessage(message)
+ *     }
+ * }
+ * ```
+ *
+ * @see SimpleCommand
+ * @see [CommandManager.executeCommand]
+ */
+public abstract class JSimpleCommand(
+    owner: CommandOwner,
+    vararg names: String
+) : SimpleCommand(owner, *names) {
+    public override var description: String = super.description
+        protected set
+    public override var permission: CommandPermission = super.permission
+        protected set
+    public override var prefixOptional: Boolean = super.prefixOptional
+        protected set
+    public override var context: CommandArgumentContext = super.context
+        protected set
 }

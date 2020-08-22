@@ -109,18 +109,14 @@ internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Arr
 
 @JvmSynthetic
 @Throws(CommandExecutionException::class)
-internal suspend inline fun CommandSender.executeCommandInternal(
+internal suspend fun CommandSender.executeCommandInternal(
     command: Command,
     args: Array<out Any>,
     commandName: String,
     checkPermission: Boolean
 ) {
     if (checkPermission && !command.testPermission(this)) {
-        throw CommandExecutionException(
-            command,
-            commandName,
-            CommandPermissionDeniedException(command)
-        )
+        throw CommandExecutionException(this, command, commandName, CommandPermissionDeniedException(this, command))
     }
 
     kotlin.runCatching {
@@ -128,7 +124,7 @@ internal suspend inline fun CommandSender.executeCommandInternal(
     }.onFailure {
         catchExecutionException(it)
         if (it !is CommandArgumentParserException) {
-            throw CommandExecutionException(command, commandName, it)
+            throw CommandExecutionException(this, command, commandName, it)
         }
     }
 }

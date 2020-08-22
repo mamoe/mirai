@@ -22,8 +22,8 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.registeredCommands
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
-import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentParser
+import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
 import net.mamoe.mirai.console.initTestEnvironment
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.message.data.Image
@@ -187,7 +187,7 @@ internal class TestCommand {
             val composite = object : CompositeCommand(
                 ConsoleCommandOwner,
                 "test",
-                overrideContext = CommandArgumentContext {
+                overrideContext = buildCommandArgumentContext {
                     add(object : CommandArgumentParser<MyClass> {
                         override fun parse(raw: String, sender: CommandSender): MyClass {
                             return MyClass(raw.toInt())

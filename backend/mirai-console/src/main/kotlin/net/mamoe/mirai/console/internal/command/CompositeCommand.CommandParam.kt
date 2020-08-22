@@ -9,9 +9,10 @@
 
 @file:Suppress("unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 
-package net.mamoe.mirai.console.command.description
+package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.command.description.CommandArgumentParser
 import java.lang.reflect.Parameter
 import kotlin.reflect.KClass
 

@@ -7,16 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.command
+package net.mamoe.mirai.console.internal.command
 
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
-import net.mamoe.mirai.console.internal.command.executeCommandInternal
-import net.mamoe.mirai.console.internal.command.flattenCommandComponents
-import net.mamoe.mirai.console.internal.command.intersectsIgnoringCase
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
@@ -88,7 +86,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     ///// IMPL
 
 
-    override val CommandOwner.registeredCommands: List<Command> get() = this@CommandManagerImpl.registeredCommands.filter { it.owner == this }
+    override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.registeredCommands.filter { it.owner == this }
     override val allRegisteredCommands: List<Command> get() = registeredCommands.toList() // copy
     override val commandPrefix: String get() = "/"
     override fun CommandOwner.unregisterAllCommands() {

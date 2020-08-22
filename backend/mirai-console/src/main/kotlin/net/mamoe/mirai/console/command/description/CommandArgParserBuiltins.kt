@@ -92,7 +92,7 @@ public object BooleanArgumentParser : InternalCommandArgumentParserExtensions<Bo
 /**
  * 根据 [Bot.id] 解析一个登录后的 [Bot]
  */
-public object ExistBotArgumentParser : InternalCommandArgumentParserExtensions<Bot> {
+public object ExistingBotArgumentParser : InternalCommandArgumentParserExtensions<Bot> {
     public override fun parse(raw: String, sender: CommandSender): Bot =
         if (raw == "~") sender.inferBotOrFail()
         else raw.findBotOrFail()
@@ -108,7 +108,7 @@ public object ExistBotArgumentParser : InternalCommandArgumentParserExtensions<B
  *
  * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
  */
-public object ExistFriendArgumentParser : InternalCommandArgumentParserExtensions<Friend> {
+public object ExistingFriendArgumentParser : InternalCommandArgumentParserExtensions<Friend> {
     private val syntax = """
         - `botId.friendId`
         - `botId.friendNick` (模糊搜索, 寻找最优匹配)
@@ -153,7 +153,7 @@ public object ExistFriendArgumentParser : InternalCommandArgumentParserExtension
  *
  * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
  */
-public object ExistGroupArgumentParser : InternalCommandArgumentParserExtensions<Group> {
+public object ExistingGroupArgumentParser : InternalCommandArgumentParserExtensions<Group> {
     private val syntax = """
         - `botId.groupId`
         - `~` (指代指令调用人自己所在群. 仅群聊天环境下)

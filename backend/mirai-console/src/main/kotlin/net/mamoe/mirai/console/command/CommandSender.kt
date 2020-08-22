@@ -24,10 +24,34 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 
 /**
- * 指令发送者
+ * 指令发送者.
+ *
+ * ### 获得指令发送者
+ * - [MessageEvent.toCommandSender]
+ * - [FriendMessageEvent.toCommandSender]
+ * - [GroupMessageEvent.toCommandSender]
+ * - [TempMessageEvent.toCommandSender]
+ *
+ * - [Member.asCommandSender]
+ * - [Friend.asCommandSender]
+ * - [User.asCommandSender]
+ *
+ * ### 子类型
+ *
+ * 当真实收到由用户执行的指令时:
+ * - 若用户在群内指令执行, 对应 [CommandSender] 为 [MemberCommandSenderOnMessage]
+ * - 若用户在私聊环境内指令执行, 对应 [CommandSender] 为 [FriendCommandSenderOnMessage]
+ * - 若用户在临时会话内指令执行, 对应 [CommandSender] 为 [TempCommandSenderOnMessage]
+ *
+ * 当指令由其他插件主动执行时, 插件应使用 [toCommandSender] 或 [asCommandSender], 因此
+ * - 若用户在群内指令执行, 对应 [CommandSender] 为 [MemberCommandSender]
+ * - 若用户在私聊环境内指令执行, 对应 [CommandSender] 为 [FriendCommandSender]
+ * - 若用户在临时会话内指令执行, 对应 [CommandSender] 为 [TempCommandSender]
  *
  * @see ConsoleCommandSender 控制台
  * @see UserCommandSender  [User] ([群成员][Member], [好友][Friend])
+ * @see toCommandSender
+ * @see asCommandSender
  */
 @Suppress("FunctionName")
 public interface CommandSender {
@@ -109,10 +133,16 @@ public abstract class ConsoleCommandSender internal constructor() : CommandSende
     }
 }
 
+@ConsoleExperimentalAPI
 public fun FriendMessageEvent.toCommandSender(): FriendCommandSenderOnMessage = FriendCommandSenderOnMessage(this)
+
+@ConsoleExperimentalAPI
 public fun GroupMessageEvent.toCommandSender(): MemberCommandSenderOnMessage = MemberCommandSenderOnMessage(this)
+
+@ConsoleExperimentalAPI
 public fun TempMessageEvent.toCommandSender(): TempCommandSenderOnMessage = TempCommandSenderOnMessage(this)
 
+@ConsoleExperimentalAPI
 public fun MessageEvent.toCommandSender(): CommandSenderOnMessage<*> = when (this) {
     is FriendMessageEvent -> toCommandSender()
     is GroupMessageEvent -> toCommandSender()
@@ -120,9 +150,13 @@ public fun MessageEvent.toCommandSender(): CommandSenderOnMessage<*> = when (thi
     else -> throw IllegalArgumentException("unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
 }
 
+@ConsoleExperimentalAPI
 public fun Member.asCommandSender(): MemberCommandSender = MemberCommandSender(this)
+
+@ConsoleExperimentalAPI
 public fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
 
+@ConsoleExperimentalAPI
 public fun User.asCommandSender(): UserCommandSender {
     return when (this) {
         is Friend -> this.asCommandSender()

@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.internal.command.isValidSubName
 import net.mamoe.mirai.message.data.SingleMessage
@@ -53,14 +53,17 @@ public interface Command {
     public val prefixOptional: Boolean
 
     /**
-     * 指令拥有者, 对于插件的指令通常是 [PluginCommandOwner]
+     * 指令拥有者.
+     * @see CommandOwner
      */
     public val owner: CommandOwner
 
     /**
+     * 在指令被执行时调用.
+     *
      * @param args 指令参数. 数组元素类型可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
      *
-     * @see CommandManager.execute
+     * @see CommandManager.executeCommand 查看更多信息
      */
     @JvmBlockingBridge
     public suspend fun CommandSender.onCommand(args: Array<out Any>)
@@ -81,16 +84,23 @@ public suspend inline fun Command.onCommand(sender: CommandSender, args: Array<o
 
 /**
  * [Command] 的基础实现
+ *
+ * @see SimpleCommand
+ * @see CompositeCommand
+ * @see RawCommand
  */
 public abstract class AbstractCommand @JvmOverloads constructor(
-    public final override val owner: CommandOwner,
+    /** 指令拥有者. */
+    public override val owner: CommandOwner,
     vararg names: String,
     description: String = "<no description available>",
-    public final override val permission: CommandPermission = CommandPermission.Default,
-    public final override val prefixOptional: Boolean = false
+    /** 指令权限 */
+    public override val permission: CommandPermission = CommandPermission.Default,
+    /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
+    public override val prefixOptional: Boolean = false
 ) : Command {
-    public final override val description: String = description.trimIndent()
-    public final override val names: Array<out String> =
+    public override val description: String = description.trimIndent()
+    public override val names: Array<out String> =
         names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).also { list ->
             list.firstOrNull { !it.isValidSubName() }?.let { error("Invalid name: $it") }
         }.toTypedArray()

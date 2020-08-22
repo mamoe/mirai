@@ -16,9 +16,15 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.kjbb.JvmBlockingBridge
+import net.mamoe.mirai.console.internal.command.CommandManagerImpl
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.SingleMessage
 
+/**
+ * 指令管理器
+ */
 public interface CommandManager {
     /**
      * 获取已经注册了的属于这个 [CommandOwner] 的指令列表.
@@ -79,6 +85,7 @@ public interface CommandManager {
      *
      * @return 成功执行的指令, 在无匹配指令时返回 `null`
      * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
+     * @see executeCommand
      */
     @JvmBlockingBridge
     @Throws(CommandExecutionException::class)
@@ -89,6 +96,7 @@ public interface CommandManager {
      *
      * @return 成功执行的指令, 在无匹配指令时返回 `null`
      * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
+     * @see executeCommand
      */
     @JvmBlockingBridge
     @Throws(CommandExecutionException::class)
@@ -96,6 +104,16 @@ public interface CommandManager {
 
     /**
      * 解析并执行一个指令, 获取详细的指令参数等信息
+     *
+     * 执行过程中产生的异常将不会直接抛出, 而会包装为 [CommandExecuteResult.ExecutionFailed]
+     *
+     * ### 指令解析流程
+     * 1. [messages] 的第一个消息元素的 [内容][Message.contentToString] 被作为指令名, 在已注册指令列表中搜索. (包含 [Command.prefixOptional] 相关的处理)
+     * 2. 参数语法分析.
+     *   在当前的实现下, [messages] 被以空格和 [SingleMessage] 分割.
+     *   如 "MessageChain("foo bar", [Image], " test")" 被分割为 "foo", "bar", [Image], "test".
+     *   注意: 字符串与消息元素之间不需要空格, 会被强制分割. 如 "bar[mirai:image:]" 会被分割为 "bar" 和 [Image] 类型的消息元素.
+     * 3. 参数解析. 各类型指令实现不同. 详见 [RawCommand], [CompositeCommand], [SimpleCommand]
      *
      * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
      *
