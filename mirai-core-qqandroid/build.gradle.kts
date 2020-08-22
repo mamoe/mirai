@@ -60,14 +60,12 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                api(kotlinx("serialization-core", Versions.Kotlin.serialization))
+                api1(kotlinx("serialization-core", Versions.Kotlin.serialization))
                 api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
-                implementation(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
-                api("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
-                api(kotlinx("io", Versions.Kotlin.io)) {
-                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-                }
-                implementation(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
+                implementation1(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
+                api1("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
+                api1(kotlinx("io", Versions.Kotlin.io))
+                implementation1(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
             }
         }
 
@@ -97,11 +95,8 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
                 implementation("org.bouncycastle:bcprov-jdk15on:1.64")
-                api(kotlinx("io-jvm", Versions.Kotlin.io)) {
-                    exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-                }
+                api1(kotlinx("io-jvm", Versions.Kotlin.io))
                 //    api(kotlinx("coroutines-debug", Versions.Kotlin.coroutines))
             }
         }
@@ -112,13 +107,28 @@ kotlin {
                 implementation(kotlin("test", Versions.Kotlin.compiler))
                 implementation(kotlin("test-junit", Versions.Kotlin.compiler))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
-
-                runtimeOnly(files("build/classes/kotlin/jvm/main")) // classpath is not properly set by IDE
-                runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
     }
 }
+
+fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
+    implementation(dependencyNotation) {
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
+    }
+
+fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNotation: String) =
+    api(dependencyNotation) {
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-jvm")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-metadata")
+    }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
 
