@@ -8,6 +8,7 @@
  */
 
 @file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "EXPOSED_SUPER_CLASS", "NOTHING_TO_INLINE")
+@file:JvmName("PluginDataKt")
 
 package net.mamoe.mirai.console.data
 
@@ -23,28 +24,6 @@ import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
-
-
-/**
- * 序列化之后的名称.
- *
- * 例:
- * ```
- * @SerialName("accounts")
- * object AccountPluginData : PluginData by ... {
- *    @SerialName("info")
- *    val map: Map<String, String> by value("a" to "b")
- * }
- * ```
- *
- * 将被保存为配置 (YAML 作为示例):
- * ```yaml
- * accounts:
- *   info:
- *     a: b
- * ```
- */
-public typealias SerialName = kotlinx.serialization.SerialName
 
 /**
  * 一个插件内部的, 对用户隐藏的数据对象. 可包含对多个 [Value] 的值变更的跟踪.
@@ -210,7 +189,12 @@ public inline fun <reified T> PluginData.value(default: T): SerializerAwareValue
  */
 @LowPriorityInOverloadResolution
 public inline fun <reified T> PluginData.value(): SerializerAwareValue<T> =
-    value(T::class.run { objectInstance ?: createInstanceSmart() } as T)
+    valueImpl(typeOf0<T>(), T::class)
+
+@Suppress("UNCHECKED_CAST")
+@PublishedApi
+internal fun <T> PluginData.valueImpl(type: KType, classifier: KClass<*>): SerializerAwareValue<T> =
+    valueFromKType(type, classifier.run { objectInstance ?: createInstanceSmart() } as T)
 
 /**
  * 通过一个特定的 [KType] 创建 [Value], 并设置初始值.
