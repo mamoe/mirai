@@ -16,6 +16,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.MemberPermission
@@ -111,12 +112,12 @@ internal object OnlinePushPbPushTransMsg :
                     readUInt().toLong() // groupUin
                     readByte().toInt() // follow type
                     val target = readUInt().toLong()
-                    val type = readByte().toInt()
+                    val type = readUByte().toInt()
                     val operator = readUInt().toLong()
                     val groupUin = content.fromUin
 
                     when (type) {
-                        2 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
+                        2, 0x82 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
                             if (target == bot.id) {
                                 return BotLeaveEvent.Active(group).also {
                                     group.cancel(CancellationException("Leaved actively"))
@@ -130,7 +131,7 @@ internal object OnlinePushPbPushTransMsg :
                                 })
                             }
                         }
-                        3 -> bot.getGroupByUin(groupUin).let { group ->
+                        3, 0x83 -> bot.getGroupByUin(groupUin).let { group ->
                             if (target == bot.id) {
                                 return BotLeaveEvent.Kick(group.members[operator]).also {
                                     group.cancel(CancellationException("Being kicked"))
@@ -146,7 +147,7 @@ internal object OnlinePushPbPushTransMsg :
                         }
                         else -> {
                             throw contextualBugReportException(
-                                "解析 OnlinePush.PbPushTransMsg, msgType=${content.msgType}",
+                                "解析 OnlinePush.PbPushTransMsg, msgType=${content.msgType}, type=$type",
                                 content._miraiContentToString(),
                                 null,
                                 "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作."
