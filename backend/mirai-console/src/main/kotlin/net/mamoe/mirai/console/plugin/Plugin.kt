@@ -12,6 +12,8 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.command.CommandOwner
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
@@ -20,6 +22,10 @@ import java.nio.file.Path
 
 /**
  * 表示一个 mirai-console 插件.
+ *
+ * @see PluginManager.enable 启用一个插件
+ * @see PluginManager.disable 禁用一个插件
+ * @see PluginManager.description 获取一个插件的 [描述][PluginDescription]
  *
  * @see PluginDescription 插件描述， 需由 [PluginLoader] 帮助提供（[PluginLoader.description]）
  * @see JvmPlugin Java, Kotlin 或其他 JVM 平台插件
@@ -31,8 +37,8 @@ public interface Plugin : CommandOwner {
     /**
      * 判断此插件是否已启用
      *
-     * @see disable 关闭这个插件
-     * @see enable 启用这个插件
+     * @see PluginManager.enable 启用一个插件
+     * @see PluginManager.disable 禁用一个插件
      */
     public val isEnabled: Boolean
 
@@ -41,33 +47,6 @@ public interface Plugin : CommandOwner {
      */
     public val loader: PluginLoader<*, *>
 }
-
-/**
- * 获取插件描述
- */
-public val Plugin.description: PluginDescription get() = safeLoader.getDescription(this)
-
-/**
- * 禁用这个插件
- *
- * @see PluginLoader.disable
- */
-public fun Plugin.disable(): Unit = safeLoader.disable(this)
-
-/**
- * 启用这个插件
- *
- * @see PluginLoader.enable
- */
-public fun Plugin.enable(): Unit = safeLoader.enable(this)
-
-/**
- * 经过泛型类型转换的 [PluginLoader]
- */
-@get:JvmSynthetic
-@Suppress("UNCHECKED_CAST")
-public inline val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
-    get() = this.loader as PluginLoader<P, PluginDescription>
 
 /**
  * 支持文件系统存储的扩展.

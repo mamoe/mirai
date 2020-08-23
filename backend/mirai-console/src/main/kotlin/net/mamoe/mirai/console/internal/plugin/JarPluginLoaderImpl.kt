@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
@@ -25,7 +26,6 @@ import net.mamoe.yamlkt.Yaml
 import java.io.File
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
-import kotlin.reflect.full.createInstance
 
 internal object JarPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
@@ -90,14 +90,14 @@ internal object JarPluginLoaderImpl :
                 jarFile = file
             ).kotlin.run {
                 objectInstance
-                    ?: kotlin.runCatching { createInstance() }.getOrNull()
+                    ?: createInstanceOrNull()
                     ?: (java.constructors + java.declaredConstructors)
                         .firstOrNull { it.parameterCount == 0 }
                         ?.apply { kotlin.runCatching { isAccessible = true } }
                         ?.newInstance()
-            } ?: error("No Kotlin object or public no-arg constructor found")
+            } ?: error("No Kotlin object or public no-arg constructor found for $mainClassName")
 
-            check(main is JvmPlugin) { "The main class of Jar plugin must extend JvmPlugin, recommending JavaPlugin or KotlinPlugin" }
+            check(main is JvmPlugin) { "The main class of Jar plugin must extend JvmPlugin, recommended JavaPlugin or KotlinPlugin" }
 
             if (main is JvmPluginInternal) {
                 main._description = description
@@ -110,6 +110,7 @@ internal object JarPluginLoaderImpl :
     }
 
     override fun enable(plugin: JvmPlugin) {
+        if (plugin.isEnabled) throw IllegalStateException("Plugin is already enabled")
         ensureActive()
         if (plugin is JvmPluginInternal) {
             plugin.internalOnEnable()
@@ -117,6 +118,8 @@ internal object JarPluginLoaderImpl :
     }
 
     override fun disable(plugin: JvmPlugin) {
+        if (!plugin.isEnabled) throw IllegalStateException("Plugin is already disabled")
+
         if (plugin is JvmPluginInternal) {
             plugin.internalOnDisable()
         } else plugin.onDisable()

@@ -38,7 +38,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      *
      * 在 console 启动时, [PluginManager] 会获取所有 [PluginDescription], 分析依赖关系, 确认插件加载顺序.
      *
-     * **实现细节:** 此函数只*应该*在 console 启动时被调用一次. 但取决于前端实现不同, 或可能由于被一些插件需要, 此函数也可能会被多次调用.
+     * **实现细节:** 此函数*只应该*在 console 启动时被调用一次. 但取决于前端实现不同, 或由于被一些插件需要, 此函数也可能会被多次调用.
      */
     public fun listPlugins(): List<D>
 
@@ -52,6 +52,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如无法读取插件信息等).
      *
      * @see PluginDescription 插件描述
+     * @see getDescription 无 receiver, 接受参数的版本.
      */
     @get:JvmName("getPluginDescription")
     @get:Throws(PluginLoadException::class)
@@ -71,17 +72,53 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
      * 启用这个插件.
      *
-     * **实现约定**: 若插件已经启用, 抛出
+     * **实现细节**: 此函数可抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
+     * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
+     *
+     * @throws IllegalStateException 当插件已经启用时抛出
+     * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
      */
+    @Throws(IllegalStateException::class, PluginLoadException::class)
     public fun enable(plugin: P)
+
+    /**
+     * 禁用这个插件.
+     *
+     * **实现细节**: 此函数可抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
+     * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
+     *
+     * @throws IllegalStateException 当插件已经禁用时抛出
+     * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
+     */
+    @Throws(IllegalStateException::class, PluginLoadException::class)
     public fun disable(plugin: P)
 }
 
+/**
+ * 获取此插件的描述.
+ *
+ * **实现细节**: 此函数只允许抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
+ *
+ * 若在 console 启动并加载所有插件的过程中, 本函数抛出异常, 则会放弃此插件的加载, 并影响依赖它的其他插件.
+ *
+ * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如无法读取插件信息等).
+ *
+ * @see PluginDescription 插件描述
+ * @see PluginLoader.description
+ */
 @Suppress("UNCHECKED_CAST")
 @JvmSynthetic
 public inline fun <D : PluginDescription, P : Plugin> PluginLoader<in P, out D>.getDescription(plugin: P): D =
     plugin.description
 
+/**
+ * 在加载插件过程中遇到的意料之中的问题.
+ *
+ * @see PluginLoader.load
+ * @see PluginLoader.enable
+ * @see PluginLoader.disable
+ * @see PluginLoader.description
+ */
 public open class PluginLoadException : RuntimeException {
     public constructor() : super()
     public constructor(message: String?) : super(message)

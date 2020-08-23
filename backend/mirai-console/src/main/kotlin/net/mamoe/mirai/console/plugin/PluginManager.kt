@@ -89,11 +89,36 @@ public interface PluginManager {
      */
     public val Plugin.description: PluginDescription
 
+    /**
+     * 禁用这个插件
+     *
+     * @see PluginLoader.disable
+     */
+    public fun Plugin.disable(): Unit = safeLoader.disable(this)
+
+    /**
+     * 启用这个插件
+     *
+     * @see PluginLoader.enable
+     */
+    public fun Plugin.enable(): Unit = safeLoader.enable(this)
+
+    /**
+     * 经过泛型类型转换的 [PluginLoader]
+     */
+    @get:JvmSynthetic
+    @Suppress("UNCHECKED_CAST")
+    public val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
+        get() = this.loader as PluginLoader<P, PluginDescription>
+
     public companion object INSTANCE : PluginManager by PluginManagerImpl {
         // due to Kotlin's bug
         public override val Plugin.description: PluginDescription get() = PluginManagerImpl.run { description }
         public override fun PluginLoader<*, *>.register(): Boolean = PluginManagerImpl.run { register() }
         public override fun PluginLoader<*, *>.unregister(): Boolean = PluginManagerImpl.run { unregister() }
+        public override fun Plugin.disable(): Unit = PluginManagerImpl.run { disable() }
+        public override fun Plugin.enable(): Unit = PluginManagerImpl.run { enable() }
+        public override val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription> get() = PluginManagerImpl.run { safeLoader }
     }
 }
 
