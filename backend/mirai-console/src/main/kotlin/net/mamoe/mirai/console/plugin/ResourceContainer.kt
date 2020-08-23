@@ -26,26 +26,32 @@ import kotlin.reflect.KClass
  */
 public interface ResourceContainer {
     /**
-     * 获取一个资源文件
+     * 获取一个资源文件.
+     *
+     * @return 资源文件内容. 在未找到文件时返回 `null`.
      */
-    public fun getResourceAsStream(name: String): InputStream?
+    public fun getResourceAsStream(path: String): InputStream?
 
     /**
-     * 读取一个资源文件并以 [Charsets.UTF_8] 编码为 [String]
+     * 读取一个资源文件并以 [Charsets.UTF_8] 解码为 [String].
+     *
+     * @return 资源文件内容. 在未找到文件时返回 `null`.
      */
     @JvmDefault
-    public fun getResource(name: String): String? = getResource(name, Charsets.UTF_8)
+    public fun getResource(path: String): String? = getResource(path, Charsets.UTF_8)
 
     /**
-     * 读取一个资源文件并以 [charset] 编码为 [String]
+     * 读取一个资源文件并以 [charset] 解码为 [String].
+     *
+     * @return 资源文件内容. 在未找到文件时返回 `null`.
      */
     @JvmDefault
-    public fun getResource(name: String, charset: Charset): String? =
-        this.getResourceAsStream(name)?.use(InputStream::readBytes)?.let(::String)
+    public fun getResource(path: String, charset: Charset): String? =
+        this.getResourceAsStream(path)?.use(InputStream::readBytes)?.let(::String)
 
     public companion object {
         /**
-         * 使用 [Class.getResourceAsStream] 读取资源文件
+         * 使用 [Class.getResourceAsStream] 读取资源文件.
          *
          * @see ClassLoader.asResourceContainer
          */
@@ -54,14 +60,14 @@ public interface ResourceContainer {
         public fun KClass<*>.asResourceContainer(): ResourceContainer = this.java.asResourceContainer()
 
         /**
-         * 使用 [ClassLoader.getResourceAsStream] 读取资源文件
+         * 使用 [ClassLoader.getResourceAsStream] 读取资源文件.
          */
         @JvmStatic
         @JvmName("create")
         public fun ClassLoader.asResourceContainer(): ResourceContainer = ClassLoaderAsResourceContainer(this)
 
         /**
-         * 使用 [Class.getResourceAsStream] 读取资源文件
+         * 使用 [Class.getResourceAsStream] 读取资源文件.
          */
         @JvmStatic
         @JvmName("create")
@@ -72,11 +78,11 @@ public interface ResourceContainer {
 private class ClassAsResourceContainer(
     private val clazz: Class<*>
 ) : ResourceContainer {
-    override fun getResourceAsStream(name: String): InputStream? = clazz.getResourceAsStream(name)
+    override fun getResourceAsStream(path: String): InputStream? = clazz.getResourceAsStream(path)
 }
 
 private class ClassLoaderAsResourceContainer(
     private val clazz: ClassLoader
 ) : ResourceContainer {
-    override fun getResourceAsStream(name: String): InputStream? = clazz.getResourceAsStream(name)
+    override fun getResourceAsStream(path: String): InputStream? = clazz.getResourceAsStream(path)
 }

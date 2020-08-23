@@ -42,7 +42,7 @@ internal abstract class JvmPluginInternal(
         get() = job.isActive
 
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
-    override fun getResourceAsStream(name: String): InputStream? = resourceContainerDelegate.getResourceAsStream(name)
+    override fun getResourceAsStream(path: String): InputStream? = resourceContainerDelegate.getResourceAsStream(path)
 
     // region JvmPlugin
     /**
