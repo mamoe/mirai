@@ -13,12 +13,12 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
  */
 
 public enum class GroupHonorType(public val value: Int) {
-    // ACTIVE(7)        // 活跃头衔
     TALKATIVE(1),       // 龙王
     PERFORMER(2),       // 群聊之火
     LEGEND(3),          // 群聊炽焰
     STRONG_NEWBIE(5),   // 冒尖小春笋
     EMOTION(6),         // 快乐源泉
+    ACTIVE(7),          // 活跃头衔
     EXCLUSIVE(8),       // 特殊头衔
     MANAGE(9);          // 管理头衔
 
@@ -74,10 +74,10 @@ public data class GroupHonorListData(
     val exclusiveList: List<Tag?>? = null,
 
     @SerialName("activeObj")
-    val activeObj: PlaceHolder? = null,
+    val activeObj: Map<String, List<Tag?>?>? = null, // Key为活跃等级名, 如`冒泡`
 
     @SerialName("showActiveObj")
-    val showActiveObj: PlaceHolder? = null,
+    val showActiveObj: Map<String, Boolean?>? = null,
 
     @SerialName("myTitle")
     val myTitle: String?,
@@ -94,15 +94,6 @@ public data class GroupHonorListData(
     @SerialName("hwExcellentList")
     val hwExcellentList: List<Actor?>? = null
 ) {
-    /**
-     * 对于活跃头衔, 对象Key为等级名称, 可自定义, 故不固定, 此处未对其进行支持, 先占位
-     */
-    @Serializable
-    public data class PlaceHolder(
-        @SerialName("placeHolder")
-        val placeHolder: String? = null
-    )
-
     @Serializable
     public data class Language(
         @SerialName("code")
