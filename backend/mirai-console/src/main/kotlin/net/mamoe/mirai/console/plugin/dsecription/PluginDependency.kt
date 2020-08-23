@@ -7,99 +7,18 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugin
+package net.mamoe.mirai.console.plugin.dsecription
 
 import com.vdurmont.semver4j.Semver
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encodeToString
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.yamlkt.Yaml
 import net.mamoe.yamlkt.YamlDynamicSerializer
-import java.io.File
-
-
-/**
- * 插件描述.
- *
- * @see Plugin
- */
-public interface PluginDescription {
-    /**
-     * 插件类型. 将会决定加载顺序
-     *
-     * @see PluginKind
-     */
-    public val kind: PluginKind
-
-    /**
-     * 插件名称.
-     */
-    public val name: String
-
-    /**
-     * 插件作者, 允许为空
-     */
-    public val author: String
-
-    /**
-     * 插件版本.
-     *
-     * 语法参考: ([语义化版本 2.0.0](https://semver.org/lang/zh-CN/))
-     *
-     * @see Semver 语义化版本. 允许 [宽松][Semver.SemverType.LOOSE] 类型版本.
-     */
-    public val version: Semver
-
-    /**
-     * 插件信息, 允许为空
-     */
-    public val info: String
-
-    /**
-     * 此插件依赖的其他插件, 将会在这些插件加载之后加载此插件
-     *
-     * @see PluginDependency
-     */
-    public val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency>
-}
-
-/**
- * 插件类型
- */
-@Serializable(with = PluginKind.AsStringSerializer::class)
-public enum class PluginKind {
-    /** 表示此插件提供一个 [PluginLoader], 应在加载其他 [NORMAL] 类型插件前加载 */
-    LOADER,
-
-    /** 表示此插件为一个通常的插件, 按照正常的依赖关系加载. */
-    NORMAL;
-
-    public object AsStringSerializer : KSerializer<PluginKind> by String.serializer().map(
-        serializer = { it.name },
-        deserializer = { str ->
-            values().firstOrNull {
-                it.name.equals(str, ignoreCase = true)
-            } ?: NORMAL
-        }
-    )
-}
 
 /**
  * 插件的一个依赖的信息.
- *
- * 在 YAML 格式下, 典型的插件依赖示例:
- * ```yaml
- * dependencies:
- *   - name: "依赖的插件名"  # 依赖的插件名
- *     version: "" # 依赖的版本号, 支持 Apache Ivy 格式. 为 null 或不指定时不限制版本
- *     isOptional: true # `true` 表示插件在找不到此依赖时也能正常加载
- *   - "SamplePlugin" # 名称为 SamplePlugin 的插件, 不限制版本, isOptional=false
- *   - "TestPlugin:1.0.0+" # 名称为 ExamplePlugin 的插件, 版本至少为 1.0.0, isOptional=false
- *   - "ExamplePlugin:1.5.0+?" # 名称为 ExamplePlugin 的插件, 版本至少为 1.5.0, 末尾 `?` 表示 isOptional=true
- *   - "Another test plugin:[1.0.0, 2.0.0)" # 名称为 Another test plugin 的插件, 版本要求大于等于 1.0.0, 小于 2.0.0, isOptional=false
- * ```
  *
  * @see PluginDescription.dependencies
  */
@@ -121,7 +40,7 @@ public data class PluginDependency(
     public val isOptional: Boolean = false
 ) {
     public override fun toString(): String {
-        return "$name v$version"
+        return "$name v$version${if (isOptional) "?" else ""}"
     }
 
 
@@ -157,11 +76,4 @@ public data class PluginDependency(
             }
         }
     )
-}
-
-/**
- * 基于文件的插件 的描述
- */
-public interface FilePluginDescription : PluginDescription {
-    public val file: File
 }

@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
 import java.io.File
 import java.nio.file.Path
 

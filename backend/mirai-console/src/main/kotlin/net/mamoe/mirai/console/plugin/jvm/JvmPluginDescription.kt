@@ -14,9 +14,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.console.internal.data.SemverAsStringSerializerLoose
-import net.mamoe.mirai.console.plugin.PluginDependency
-import net.mamoe.mirai.console.plugin.PluginDescription
-import net.mamoe.mirai.console.plugin.PluginKind
+import net.mamoe.mirai.console.plugin.dsecription.PluginDependency
+import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
+import net.mamoe.mirai.console.plugin.dsecription.PluginKind
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.io.File
@@ -32,7 +32,11 @@ public data class JvmMemoryPluginDescription(
     public override val version: Semver,
     public override val info: String,
     public override val dependencies: List<PluginDependency>
-) : JvmPluginDescription
+) : JvmPluginDescription {
+    init {
+        require(!name.contains(':')) { "':' is forbidden in plugin name" }
+    }
+}
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
@@ -72,6 +76,9 @@ public data class JvmMemoryPluginDescription(
  */
 public interface JvmPluginDescription : PluginDescription
 
+/**
+ * @see JvmPluginDescriptionImpl
+ */
 @MiraiExperimentalAPI
 @Serializable
 public class JvmPluginDescriptionImpl internal constructor(
@@ -85,6 +92,10 @@ public class JvmPluginDescriptionImpl internal constructor(
     @SerialName("depends")
     public override val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency> = listOf()
 ) : JvmPluginDescription {
+
+    init {
+        require(!name.contains(':')) { "':' is forbidden in plugin name" }
+    }
 
     /**
      * 在手动实现时使用这个构造器.

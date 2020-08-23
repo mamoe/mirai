@@ -17,6 +17,9 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.*
+import net.mamoe.mirai.console.plugin.dsecription.PluginDependency
+import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
+import net.mamoe.mirai.console.plugin.dsecription.PluginKind
 import net.mamoe.mirai.utils.info
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock

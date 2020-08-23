@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.console.plugin
 
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.register
+import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import java.io.File
 
@@ -25,10 +27,10 @@ import java.io.File
  * - [JarPluginLoader] Jar 插件加载器
  *
  * ### 扩展加载器
- * 插件被允许扩展一个加载器。 可通过 [PluginManager.registerPluginLoader]
+ * 插件被允许扩展一个加载器。 可通过 [PluginManager.register]
  *
  * @see JarPluginLoader Jar 插件加载器
- * @see PluginManager.registerPluginLoader 注册一个扩展的插件加载器
+ * @see PluginManager.register 注册一个扩展的插件加载器
  */
 public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
@@ -75,6 +77,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     public fun disable(plugin: P)
 }
 
+@Suppress("UNCHECKED_CAST")
 @JvmSynthetic
 public inline fun <D : PluginDescription, P : Plugin> PluginLoader<in P, out D>.getDescription(plugin: P): D =
     plugin.description

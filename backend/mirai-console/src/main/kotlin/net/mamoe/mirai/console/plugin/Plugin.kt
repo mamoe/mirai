@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.command.CommandOwner
+import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import java.io.File
@@ -39,12 +40,12 @@ public interface Plugin : CommandOwner {
      * 所属插件加载器实例, 此加载器必须能加载这个 [Plugin].
      */
     public val loader: PluginLoader<*, *>
-
-    /**
-     * 获取插件描述
-     */
-    public val description: PluginDescription
 }
+
+/**
+ * 获取插件描述
+ */
+public val Plugin.description: PluginDescription get() = safeLoader.getDescription(this)
 
 /**
  * 禁用这个插件

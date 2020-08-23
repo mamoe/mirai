@@ -43,7 +43,7 @@ public interface JvmPlugin : Plugin, CoroutineScope,
     public val logger: MiraiLogger
 
     /** 插件描述 */
-    public override val description: JvmPluginDescription
+    public val description: JvmPluginDescription
 
     /** 所属插件加载器实例 */
     @JvmDefault
