@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -47,13 +47,13 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @Throws(EventCancelledException::class, IllegalStateException::class)
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<Contact> {
+    fun __sendMessageBlockingForJava__(message: Message): MessageReceipt<Contact> {
         return runBlocking { sendMessage(message) }
     }
 
     @Throws(EventCancelledException::class, IllegalStateException::class)
     @JvmName("sendMessage")
-    open fun __sendMessageBlockingForJava__(message: String): MessageReceipt<Contact> {
+    fun __sendMessageBlockingForJava__(message: String): MessageReceipt<Contact> {
         return runBlocking { sendMessage(message) }
     }
 
@@ -69,7 +69,7 @@ internal actual interface ContactJavaFriendlyAPI {
     @UnstableExternalImage
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: ExternalImage): Image {
+    fun __uploadImageBlockingForJava__(image: ExternalImage): Image {
         return runBlocking { uploadImage(image) }
     }
 
@@ -80,7 +80,7 @@ internal actual interface ContactJavaFriendlyAPI {
     @Throws(OverFileSizeMaxException::class)
     @Suppress("DEPRECATION")
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: URL): Image {
+    fun __uploadImageBlockingForJava__(image: URL): Image {
         return runBlocking { uploadImage(image) }
     }
 
@@ -90,7 +90,7 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: InputStream): Image {
+    fun __uploadImageBlockingForJava__(image: InputStream): Image {
         return runBlocking { uploadImage(image) }
     }
 
@@ -105,7 +105,7 @@ internal actual interface ContactJavaFriendlyAPI {
     @Suppress("DEPRECATION_ERROR")
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: Input): Image {
+    fun __uploadImageBlockingForJava__(image: Input): Image {
         return runBlocking { uploadImage(image) }
     }
 
@@ -115,7 +115,7 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: File): Image {
+    fun __uploadImageBlockingForJava__(image: File): Image {
         return runBlocking { uploadImage(image) }
     }
 
@@ -125,7 +125,7 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @Throws(OverFileSizeMaxException::class)
     @JvmName("uploadImage")
-    open fun __uploadImageBlockingForJava__(image: BufferedImage): Image {
+    fun __uploadImageBlockingForJava__(image: BufferedImage): Image {
         return runBlocking { uploadImage(image) }
     }
 
@@ -135,7 +135,7 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @JvmName("sendMessageAsync")
     @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
-    open fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<Contact>> {
+    fun __sendMessageAsyncForJava__(message: Message): Future<MessageReceipt<Contact>> {
         return future { sendMessage(message) }
     }
 
@@ -145,7 +145,7 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @JvmName("sendMessageAsync")
     @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
-    open fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<Contact>> {
+    fun __sendMessageAsyncForJava__(message: String): Future<MessageReceipt<Contact>> {
         return future { sendMessage(message) }
     }
 
@@ -158,7 +158,7 @@ internal actual interface ContactJavaFriendlyAPI {
     @UnstableExternalImage
     @JvmName("uploadImageAsync")
     @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
-    open fun __uploadImageAsyncForJava__(image: ExternalImage): Future<Image> {
+    fun __uploadImageAsyncForJava__(image: ExternalImage): Future<Image> {
         return future { uploadImage(image) }
     }
 
@@ -168,7 +168,7 @@ internal actual interface ContactJavaFriendlyAPI {
     @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
     @Suppress("DEPRECATION")
     @JvmName("uploadImageAsync")
-    open fun __uploadImageAsyncForJava__(image: URL): Future<Image> {
+    fun __uploadImageAsyncForJava__(image: URL): Future<Image> {
         return future { uploadImage(image) }
     }
 
@@ -177,7 +177,7 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
     @JvmName("uploadImageAsync")
-    open fun __uploadImageAsyncForJava__(image: InputStream): Future<Image> {
+    fun __uploadImageAsyncForJava__(image: InputStream): Future<Image> {
         return future { uploadImage(image) }
     }
 
@@ -190,7 +190,7 @@ internal actual interface ContactJavaFriendlyAPI {
         level = DeprecationLevel.ERROR
     )
     @JvmName("uploadImageAsync")
-    open fun __uploadImageAsyncForJava__(image: Input): Future<Image> {
+    fun __uploadImageAsyncForJava__(image: Input): Future<Image> {
         return future { uploadImage(image) }
     }
 
@@ -199,7 +199,7 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @JvmName("uploadImageAsync")
     @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
-    open fun __uploadImageAsyncForJava__(image: File): Future<Image> {
+    fun __uploadImageAsyncForJava__(image: File): Future<Image> {
         return future { uploadImage(image) }
     }
 
@@ -208,7 +208,7 @@ internal actual interface ContactJavaFriendlyAPI {
      */
     @JvmName("uploadImageAsync")
     @Deprecated("已停止支持 Java async API", level = DeprecationLevel.WARNING)
-    open fun __uploadImageAsyncForJava__(image: BufferedImage): Future<Image> {
+    fun __uploadImageAsyncForJava__(image: BufferedImage): Future<Image> {
         return future { uploadImage(image) }
     }
 }
@@ -249,7 +249,7 @@ internal actual interface MemberJavaFriendlyAPI {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("mute")
-    open fun __muteBlockingForJava__(seconds: Int) {
+    fun __muteBlockingForJava__(seconds: Int) {
         runBlocking { mute(seconds) }
     }
 
@@ -262,7 +262,7 @@ internal actual interface MemberJavaFriendlyAPI {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("unmute")
-    open fun __unmuteBlockingForJava__() {
+    fun __unmuteBlockingForJava__() {
         runBlocking { unmute() }
     }
 
@@ -275,7 +275,7 @@ internal actual interface MemberJavaFriendlyAPI {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("kick")
-    open fun __kickBlockingForJava__(message: String = "") {
+    fun __kickBlockingForJava__(message: String = "") {
         runBlocking { kick(message) }
     }
 
@@ -288,7 +288,7 @@ internal actual interface MemberJavaFriendlyAPI {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("kick")
-    open fun __kickBlockingForJava__() = __kickBlockingForJava__("")
+    fun __kickBlockingForJava__() = __kickBlockingForJava__("")
 
 
     /**
@@ -310,7 +310,7 @@ internal actual interface MemberJavaFriendlyAPI {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("muteAsync")
-    open fun __muteAsyncForJava__(seconds: Int): Future<Unit> {
+    fun __muteAsyncForJava__(seconds: Int): Future<Unit> {
         return future { mute(seconds) }
     }
 
@@ -323,7 +323,7 @@ internal actual interface MemberJavaFriendlyAPI {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("unmuteAsync")
-    open fun __unmuteAsyncForJava__(): Future<Unit> {
+    fun __unmuteAsyncForJava__(): Future<Unit> {
         return future { unmute() }
     }
 
@@ -336,7 +336,7 @@ internal actual interface MemberJavaFriendlyAPI {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("kickAsync")
-    open fun __kickAsyncForJava__(message: String = ""): Future<Unit> {
+    fun __kickAsyncForJava__(message: String = ""): Future<Unit> {
         return future { kick(message) }
     }
 
@@ -349,7 +349,7 @@ internal actual interface MemberJavaFriendlyAPI {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmName("kickAsync")
-    open fun __kickAsyncForJava__(): Future<Unit> = __kickAsyncForJava__("")
+    fun __kickAsyncForJava__(): Future<Unit> = __kickAsyncForJava__("")
 }
 
 @JavaFriendlyAPI

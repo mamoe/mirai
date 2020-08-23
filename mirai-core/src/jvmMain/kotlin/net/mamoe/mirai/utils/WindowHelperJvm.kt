@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -38,15 +38,15 @@ internal class WindowInitialzier(private val initializer: WindowInitialzier.(JFr
     private lateinit var frame0: JFrame
     val frame: JFrame get() = frame0
     fun java.awt.Component.append() {
-        frame.add(this, BorderLayout.NORTH);
+        frame.add(this, BorderLayout.NORTH)
     }
 
     fun java.awt.Component.last() {
-        frame.add(this);
+        frame.add(this)
     }
 
     internal fun init(frame: JFrame) {
-        this.frame0 = frame;
+        this.frame0 = frame
         initializer(frame)
     }
 }
