@@ -7,20 +7,18 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "RedundantVisibilityModifier")
 
 package net.mamoe.mirai.console.plugin
 
-// TODO: 2020/8/22 Document PluginMissingDependencyException
-public class PluginMissingDependencyException : PluginResolutionException {
+internal class PluginMissingDependencyException : PluginResolutionException {
     public constructor() : super()
     public constructor(message: String?) : super(message)
     public constructor(message: String?, cause: Throwable?) : super(message, cause)
     public constructor(cause: Throwable?) : super(cause)
 }
 
-// TODO: 2020/8/22 Document PluginResolutionException
-public open class PluginResolutionException : Exception {
+internal open class PluginResolutionException : Exception {
     public constructor() : super()
     public constructor(message: String?) : super(message)
     public constructor(message: String?, cause: Throwable?) : super(message, cause)
