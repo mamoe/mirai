@@ -110,7 +110,7 @@ internal object JarPluginLoaderImpl :
     }
 
     override fun enable(plugin: JvmPlugin) {
-        if (plugin.isEnabled) throw IllegalStateException("Plugin is already enabled")
+        if (plugin.isEnabled) return
         ensureActive()
         if (plugin is JvmPluginInternal) {
             plugin.internalOnEnable()
@@ -118,7 +118,7 @@ internal object JarPluginLoaderImpl :
     }
 
     override fun disable(plugin: JvmPlugin) {
-        if (!plugin.isEnabled) throw IllegalStateException("Plugin is already disabled")
+        if (!plugin.isEnabled) return
 
         if (plugin is JvmPluginInternal) {
             plugin.internalOnDisable()

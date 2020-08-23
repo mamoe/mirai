@@ -38,8 +38,7 @@ internal abstract class JvmPluginInternal(
 ) : JvmPlugin,
     CoroutineScope {
 
-    override val isEnabled: Boolean
-        get() = job.isActive
+    override var isEnabled: Boolean = false
 
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
     override fun getResourceAsStream(path: String): InputStream? = resourceContainerDelegate.getResourceAsStream(path)
@@ -77,6 +76,7 @@ internal abstract class JvmPluginInternal(
                 cancel(CancellationException("Exception while enabling plugin", it))
             }
         )
+        isEnabled = false
     }
 
     @Throws(Throwable::class)
@@ -90,6 +90,7 @@ internal abstract class JvmPluginInternal(
             onEnable()
         }.fold(
             onSuccess = {
+                isEnabled = true
                 return true
             },
             onFailure = {
@@ -121,7 +122,7 @@ internal abstract class JvmPluginInternal(
             job.invokeOnCompletion { e ->
                 if (e != null) {
                     logger.error(e)
-                    safeLoader.disable(this)
+                    if (this.isEnabled) safeLoader.disable(this)
                 }
             }
         }

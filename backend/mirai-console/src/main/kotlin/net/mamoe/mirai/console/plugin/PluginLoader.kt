@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.console.plugin
 
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
@@ -75,8 +77,9 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      * **实现细节**: 此函数可抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
      *
-     * @throws IllegalStateException 当插件已经启用时抛出
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
+     *
+     * @see PluginManager.enable
      */
     @Throws(IllegalStateException::class, PluginLoadException::class)
     public fun enable(plugin: P)
@@ -87,8 +90,9 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      * **实现细节**: 此函数可抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
      *
-     * @throws IllegalStateException 当插件已经禁用时抛出
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
+     *
+     * @see PluginManager.disable
      */
     @Throws(IllegalStateException::class, PluginLoadException::class)
     public fun disable(plugin: P)
