@@ -26,7 +26,7 @@ public abstract class KotlinPlugin @JvmOverloads constructor(
 
 
 /**
- * 在内存动态加载的插件.
+ * 在内存动态加载的插件. 此为预览版本 API.
  */
 @ConsoleExperimentalAPI
 public abstract class KotlinMemoryPlugin @JvmOverloads constructor(

@@ -22,9 +22,9 @@ import net.mamoe.mirai.message.data.SingleMessage
  *
  * @see CommandManager.register 注册这个指令
  *
- * @see RawCommand
- * @see CompositeCommand
- * @see SimpleCommand
+ * @see RawCommand 无参数解析, 接收原生参数的指令
+ * @see CompositeCommand 复合指令
+ * @see SimpleCommand 简单的, 支持参数自动解析的指令
  */
 public interface Command {
     /**

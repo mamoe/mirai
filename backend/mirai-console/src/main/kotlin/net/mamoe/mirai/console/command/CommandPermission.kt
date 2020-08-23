@@ -12,13 +12,20 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
+import net.mamoe.mirai.console.internal.command.AndCommandPermissionImpl
+import net.mamoe.mirai.console.internal.command.OrCommandPermissionImpl
 import net.mamoe.mirai.console.util.BotManager.INSTANCE.isManager
 import net.mamoe.mirai.contact.isAdministrator
 import net.mamoe.mirai.contact.isOperator
 import net.mamoe.mirai.contact.isOwner
 
 /**
- * 指令权限
+ * 指令权限.
+ *
+ * 在 [CommandManager.executeCommand] 时将会检查权限.
+ *
+ * @see Command.permission 从指令获取权限
  */
 public fun interface CommandPermission {
     /**
@@ -33,12 +40,12 @@ public fun interface CommandPermission {
     /**
      * 满足两个权限其中一个即可使用指令
      */ // no extension for Java
-    public infix fun or(another: CommandPermission): CommandPermission = OrCommandPermission(this, another)
+    public infix fun or(another: CommandPermission): CommandPermission = OrCommandPermissionImpl(this, another)
 
     /**
      * 同时拥有两个权限才能使用指令
      */ // no extension for Java
-    public infix fun and(another: CommandPermission): CommandPermission = AndCommandPermission(this, another)
+    public infix fun and(another: CommandPermission): CommandPermission = AndCommandPermissionImpl(this, another)
 
 
     /**
@@ -101,34 +108,36 @@ public fun interface CommandPermission {
     /**
      * 默认权限.
      *
-     * [Manager] or [Console]
+     * @return [Manager] or [Console]
      */
     public object Default : CommandPermission by (Manager or Console)
 }
 
+/**
+ * 判断 [this] 是否拥有权限 [permission]
+ *
+ * @see CommandSender.hasPermission
+ * @see CommandPermission.testPermission
+ * @see CommandPermission.hasPermission
+ */
 public inline fun CommandSender.hasPermission(permission: CommandPermission): Boolean =
     permission.run { this@hasPermission.hasPermission() }
 
 
+/**
+ * 判断 [sender] 是否拥有权限 [this]
+ *
+ * @see CommandSender.hasPermission
+ * @see CommandPermission.testPermission
+ * @see CommandPermission.hasPermission
+ */
 public inline fun CommandPermission.testPermission(sender: CommandSender): Boolean = this.run { sender.hasPermission() }
 
+/**
+ * 判断 [sender] 是否拥有权限 [Command.permission]
+ *
+ * @see CommandSender.hasPermission
+ * @see CommandPermission.testPermission
+ * @see CommandPermission.hasPermission
+ */
 public inline fun Command.testPermission(sender: CommandSender): Boolean = sender.hasPermission(this.permission)
-
-internal class OrCommandPermission(
-    private val first: CommandPermission,
-    private val second: CommandPermission
-) : CommandPermission {
-    override fun CommandSender.hasPermission(): Boolean {
-        return this.hasPermission(first) || this.hasPermission(second)
-    }
-}
-
-
-internal class AndCommandPermission(
-    private val first: CommandPermission,
-    private val second: CommandPermission
-) : CommandPermission {
-    override fun CommandSender.hasPermission(): Boolean {
-        return this.hasPermission(first) && this.hasPermission(second)
-    }
-}

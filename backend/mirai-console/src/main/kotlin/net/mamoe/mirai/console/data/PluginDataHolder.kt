@@ -6,12 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.data.PluginDataStorage.Companion.load
 import net.mamoe.mirai.console.internal.data.AutoSavePluginData
-import net.mamoe.mirai.console.internal.data.cast
-import net.mamoe.mirai.console.internal.data.newPluginDataInstanceUsingReflection
-import net.mamoe.mirai.console.internal.data.typeOf0
-import kotlin.reflect.KClass
-import kotlin.reflect.KType
-import kotlin.reflect.full.createType
 
 /**
  * 可以持有相关 [PluginData] 实例的对象, 作为 [PluginData] 实例的拥有者.
@@ -19,35 +13,13 @@ import kotlin.reflect.full.createType
  * @see PluginDataStorage.load
  * @see PluginDataStorage.store
  *
- * @see AutoSavePluginDataHolder 自动保存
+ * @see AutoSavePluginDataHolder 支持自动保存
  */
 public interface PluginDataHolder {
     /**
      * 保存时使用的分类名
      */
     public val name: String
-
-    /**
-     * 创建一个 [PluginData] 实例.
-     *
-     * @see Companion.newPluginDataInstance
-     * @see KClass.createType
-     */
-    @JvmDefault
-    public fun <T : PluginData> newPluginDataInstance(type: KType): T =
-        newPluginDataInstanceUsingReflection<PluginData>(type) as T
-
-    public companion object {
-        /**
-         * 创建一个 [PluginData] 实例.
-         *
-         * @see PluginDataHolder.newPluginDataInstance
-         */
-        @JvmSynthetic
-        public inline fun <reified T : PluginData> PluginDataHolder.newPluginDataInstance(): T {
-            return this.newPluginDataInstance(typeOf0<T>())
-        }
-    }
 }
 
 /**
@@ -69,6 +41,38 @@ public interface AutoSavePluginDataHolder : PluginDataHolder, CoroutineScope {
      * @see Long.rangeTo Kotlin 用户使用 [Long.rangeTo] 创建, 如 `3000..50000`
      */
     public val autoSaveIntervalMillis: LongRange
+}
+
+/*
+public interface PluginDataHolder {
+
+    /**
+     * 创建一个 [PluginData] 实例.
+     *
+     * 注意, 此时的 [PluginData] 并没有绑定 [PluginDataStorage], 因此无法进行保存等操作.
+     *
+     * @see Companion.newPluginDataInstance
+     * @see KClass.createType
+     */
+    @JvmDefault
+    public fun <T : PluginData> newPluginDataInstance(type: KType): T =
+        newPluginDataInstanceUsingReflection<PluginData>(type) as T
+
+    public companion object {
+        /**
+         * 创建一个 [PluginData] 实例.
+         *
+         * @see PluginDataHolder.newPluginDataInstance
+         */
+        @JvmSynthetic
+        public inline fun <reified T : PluginData> PluginDataHolder.newPluginDataInstance(): T {
+            return this.newPluginDataInstance(typeOf0<T>())
+        }
+    }
+ */
+
+/*
+public interface AutoSavePluginDataHolder : PluginDataHolder, CoroutineScope {
 
     /**
      * 仅支持确切的 [PluginData] 类型
@@ -81,4 +85,4 @@ public interface AutoSavePluginDataHolder : PluginDataHolder, CoroutineScope {
         }
         return AutoSavePluginData(this, classifier) as T // T is always PluginData
     }
-}
+ */

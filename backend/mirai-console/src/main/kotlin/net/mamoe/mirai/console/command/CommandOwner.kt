@@ -9,11 +9,16 @@
 
 package net.mamoe.mirai.console.command
 
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+
 /**
  * 指令的所有者. 目前仅作为标识作用.
  *
  * @see CommandManager.unregisterAllCommands 取消注册所有属于一个 [CommandOwner] 的指令
  * @see CommandManager.registeredCommands 获取已经注册了的属于一个 [CommandOwner] 的指令列表.
+ *
+ * @see JvmPlugin 是一个 [CommandOwner]
  */
 public interface CommandOwner
 

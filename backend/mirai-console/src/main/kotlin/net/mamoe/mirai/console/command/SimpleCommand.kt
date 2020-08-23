@@ -45,7 +45,7 @@ import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotatio
  * @see JSimpleCommand Java 实现
  * @see [CommandManager.executeCommand]
  */
-public abstract class SimpleCommand @JvmOverloads constructor(
+public abstract class SimpleCommand(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",

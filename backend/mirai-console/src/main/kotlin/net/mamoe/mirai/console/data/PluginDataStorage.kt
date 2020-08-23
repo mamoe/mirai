@@ -20,7 +20,12 @@ import java.nio.file.Path
 import kotlin.reflect.KClass
 
 /**
- * [PluginData] 存储仓库.
+ * [数据对象][PluginData] 存储仓库.
+ *
+ * ## 职责
+ * [PluginDataStorage] 类似于一个数据库, 它只承担将序列化之后的数据保存到数据库中, 和从数据库取出这个对象的任务.
+ * [PluginDataStorage] 不考虑一个 []
+ *
  *
  * 此为较低层的 API, 一般插件开发者不会接触.
  *
@@ -36,7 +41,9 @@ public interface PluginDataStorage {
     public fun <T : PluginData> load(holder: PluginDataHolder, dataClass: Class<T>): T
 
     /**
-     * 保存一个实例
+     * 保存一个实例.
+     *
+     * **实现细节**: 调用 [PluginData.updaterSerializer], 将
      */
     public fun store(holder: PluginDataHolder, pluginData: PluginData)
 

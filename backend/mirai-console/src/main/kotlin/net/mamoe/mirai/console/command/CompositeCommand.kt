@@ -73,7 +73,7 @@ import kotlin.reflect.KClass
  * @see buildCommandArgumentContext
  */
 @ConsoleExperimentalAPI
-public abstract class CompositeCommand @JvmOverloads constructor(
+public abstract class CompositeCommand(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",

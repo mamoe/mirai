@@ -34,6 +34,9 @@ public interface BuiltInCommand : Command, BuiltInCommandInternal
 // for identification
 internal interface BuiltInCommandInternal : Command
 
+/**
+ * 内建指令列表
+ */
 @ConsoleExperimentalAPI
 @Suppress("unused")
 public object BuiltInCommands {

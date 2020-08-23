@@ -28,7 +28,7 @@ import net.mamoe.mirai.message.data.SingleMessage
  * @see SimpleCommand 简单指令
  * @see CompositeCommand 复合指令
  */
-public abstract class RawCommand @JvmOverloads constructor(
+public abstract class RawCommand(
     /**
      * 指令拥有者.
      * @see CommandOwner
