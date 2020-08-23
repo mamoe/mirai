@@ -39,6 +39,11 @@ public interface Plugin : CommandOwner {
      * 所属插件加载器实例, 此加载器必须能加载这个 [Plugin].
      */
     public val loader: PluginLoader<*, *>
+
+    /**
+     * 获取插件描述
+     */
+    public val description: PluginDescription
 }
 
 /**

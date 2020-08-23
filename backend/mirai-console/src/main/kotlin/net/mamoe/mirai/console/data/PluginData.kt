@@ -65,14 +65,7 @@ import kotlin.reflect.KType
  * val theList = AccountPluginData.list
  * ```
  *
- * 但也注意, 不要存储 `AccountPluginData.list`. 它可能受不到值跟踪.
- * 错误的示例:
- * ```
- *
- * class  {
- *
- * }
- * ```
+ * 但也注意, 不要存储 `AccountPluginData.list`. 它可能受不到值跟踪. 若必要存储, 请使用 [PluginData.findBackingFieldValue]
  *
  * ### 使用 Java
  *
