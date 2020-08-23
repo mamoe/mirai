@@ -29,7 +29,7 @@ import net.mamoe.yamlkt.YamlNullableDynamicSerializer
  * - Auto-saving
  */
 internal abstract class PluginDataImpl {
-    internal fun findNodeInstance(name: String): ValueNode<*>? = valueNodes.firstOrNull { it.serialName == name }
+    internal fun findNodeInstance(name: String): ValueNode<*>? = valueNodes.firstOrNull { it.valueName == name }
 
     internal abstract val valueNodes: MutableList<ValueNode<*>>
 
@@ -43,8 +43,8 @@ internal abstract class PluginDataImpl {
                 if (decodeSequentially()) {
                     var index = 0
                     repeat(decodeCollectionSize(descriptor)) {
-                        val serialName = decodeSerializableElement(descriptor, index++, String.serializer())
-                        val node = findNodeInstance(serialName)
+                        val valueName = decodeSerializableElement(descriptor, index++, String.serializer())
+                        val node = findNodeInstance(valueName)
                         if (node == null) {
                             decodeSerializableElement(descriptor, index++, YamlNullableDynamicSerializer)
                         } else {
@@ -53,21 +53,21 @@ internal abstract class PluginDataImpl {
                     }
                 } else {
                     outerLoop@ while (true) {
-                        var serialName: String? = null
+                        var valueName: String? = null
                         innerLoop@ while (true) {
                             val index = decodeElementIndex(descriptor)
                             if (index == CompositeDecoder.DECODE_DONE) {
-                                check(serialName == null) { "name must be null at this moment." }
+                                check(valueName == null) { "name must be null at this moment." }
                                 break@outerLoop
                             }
 
                             if (!index.isOdd()) { // key
-                                check(serialName == null) { "name must be null at this moment" }
-                                serialName = decodeSerializableElement(descriptor, index, String.serializer())
+                                check(valueName == null) { "name must be null at this moment" }
+                                valueName = decodeSerializableElement(descriptor, index, String.serializer())
                             } else {
-                                check(serialName != null) { "name must not be null at this moment" }
+                                check(valueName != null) { "name must not be null at this moment" }
 
-                                val node = findNodeInstance(serialName)
+                                val node = findNodeInstance(valueName)
                                 if (node == null) {
                                     decodeSerializableElement(descriptor, index, YamlNullableDynamicSerializer)
                                 } else {
@@ -92,8 +92,8 @@ internal abstract class PluginDataImpl {
                 var index = 0
 
                 // val vSerializer = dataUpdaterSerializerTypeArguments[1] as KSerializer<Any?>
-                valueNodes.forEach { (serialName, _, valueSerializer) ->
-                    encodeSerializableElement(descriptor, index++, String.serializer(), serialName)
+                valueNodes.forEach { (valueName, _, valueSerializer) ->
+                    encodeSerializableElement(descriptor, index++, String.serializer(), valueName)
                     encodeSerializableElement(descriptor, index++, valueSerializer, Unit)
                 }
                 endStructure(descriptor)

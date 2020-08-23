@@ -25,6 +25,7 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllComm
 import net.mamoe.mirai.console.command.description.CommandArgumentParser
 import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
 import net.mamoe.mirai.console.initTestEnvironment
+import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.PlainText

@@ -54,6 +54,7 @@ kotlin {
             useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
             useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
             useExperimentalAnnotation("net.mamoe.mirai.console.data.ExperimentalPluginConfig")
+            useExperimentalAnnotation("net.mamoe.mirai.console.util.ConsoleInternalAPI")
         }
     }
 }

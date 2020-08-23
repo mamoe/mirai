@@ -39,7 +39,7 @@ import kotlin.reflect.KType
 )
 internal fun serializerMirai(type: KType): KSerializer<Any?> {
     fun serializerByKTypeImpl(type: KType): KSerializer<Any> {
-        val rootClass = type.kclass()
+        val rootClass = type.classifierAsKClass()
 
         val typeArguments = type.arguments
             .map { requireNotNull(it.type) { "Star projections in type arguments are not allowed, but had $type" } }
@@ -60,7 +60,7 @@ internal fun serializerMirai(type: KType): KSerializer<Any?> {
                     Triple::class -> TripleSerializer(serializers[0], serializers[1], serializers[2])
                     /* mamoe modify */ Any::class -> if (type.isMarkedNullable) YamlNullableDynamicSerializer else YamlDynamicSerializer
                     else -> {
-                        if (isReferenceArray(rootClass)) {
+                        if (rootClass.java.isArray) {
                             return ArraySerializer(
                                 typeArguments[0].classifier as KClass<Any>,
                                 serializers[0]

@@ -21,9 +21,9 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
-import net.mamoe.mirai.console.command.CommandManagerImpl
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.ConsoleBuiltInPluginDataStorage

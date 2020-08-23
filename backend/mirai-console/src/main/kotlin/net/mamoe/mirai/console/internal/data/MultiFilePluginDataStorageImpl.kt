@@ -52,7 +52,7 @@ internal open class MultiFilePluginDataStorageImpl(
         }.also { it.setStorage(this) }
 
     protected open fun getPluginDataFile(holder: PluginDataHolder, clazz: KClass<*>): File = with(clazz) {
-        val name = findASerialName()
+        val name = findValueName()
 
         val dir = directoryPath.resolve(holder.name)
         if (dir.isFile) {

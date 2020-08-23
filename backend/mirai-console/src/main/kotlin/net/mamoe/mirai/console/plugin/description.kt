@@ -87,7 +87,19 @@ public enum class PluginKind {
 }
 
 /**
- * 插件的一个依赖的信息
+ * 插件的一个依赖的信息.
+ *
+ * 在 YAML 格式下, 典型的插件依赖示例:
+ * ```yaml
+ * dependencies:
+ *   - name: "依赖的插件名"  # 依赖的插件名
+ *     version: "" # 依赖的版本号, 支持 Apache Ivy 格式. 为 null 或不指定时不限制版本
+ *     isOptional: true # `true` 表示插件在找不到此依赖时也能正常加载
+ *   - "SamplePlugin" # 名称为 SamplePlugin 的插件, 不限制版本, isOptional=false
+ *   - "TestPlugin:1.0.0+" # 名称为 ExamplePlugin 的插件, 版本至少为 1.0.0, isOptional=false
+ *   - "ExamplePlugin:1.5.0+?" # 名称为 ExamplePlugin 的插件, 版本至少为 1.5.0, 末尾 `?` 表示 isOptional=true
+ *   - "Another test plugin:[1.0.0, 2.0.0)" # 名称为 Another test plugin 的插件, 版本要求大于等于 1.0.0, 小于 2.0.0, isOptional=false
+ * ```
  *
  * @see PluginDescription.dependencies
  */
@@ -100,7 +112,7 @@ public data class PluginDependency(
      *
      * 版本遵循 [语义化版本 2.0 规范](https://semver.org/lang/zh-CN/),
      *
-     * 允许 [Apache Ivy 格式版本号](http://ant.apache.org/ivy/history/latest-milestone/ivyfile/dependency.html)
+     * 允许 [Apache Ivy 风格版本号表示](http://ant.apache.org/ivy/history/latest-milestone/settings/version-matchers.html)
      */
     public val version: @Serializable(SemverAsStringSerializerIvy::class) Semver? = null,
     /**
@@ -124,7 +136,24 @@ public data class PluginDependency(
                     serializer(),
                     Yaml.nonStrict.encodeToString<Map<*, *>>(any)
                 )
-                else -> PluginDependency(any.toString())
+                else -> {
+                    var value = any.toString()
+                    val isOptional = value.endsWith('?')
+                    if (isOptional) {
+                        value = value.removeSuffix("?")
+                    }
+
+                    val components = value.split(':')
+                    when (components.size) {
+                        1 -> PluginDependency(value, isOptional = isOptional)
+                        2 -> PluginDependency(
+                            components[0],
+                            Semver(components[1], Semver.SemverType.IVY),
+                            isOptional = isOptional
+                        )
+                        else -> error("Illegal plugin dependency statement: $value")
+                    }
+                }
             }
         }
     )

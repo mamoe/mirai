@@ -1,10 +1,7 @@
 package net.mamoe.mirai.console.internal.data
 
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
@@ -27,6 +24,15 @@ internal open class AutoSavePluginData(
     override fun setStorage(storage: PluginDataStorage) {
         check(!this::storage.isInitialized) { "storage is already initialized" }
         this.storage = storage
+
+        if (shouldPerformAutoSaveWheneverChanged()) {
+            owner.launch {
+                while (isActive) {
+                    delay(owner.autoSaveIntervalMillis.last) // 定时自动保存一次, 用于 kts 序列化的对象
+                    doSave()
+                }
+            }
+        }
     }
 
     @JvmField
@@ -34,25 +40,30 @@ internal open class AutoSavePluginData(
     internal var lastAutoSaveJob: Job? = null
 
     @JvmField
-    @Volatile
-    internal var currentFirstStartTime = atomic(0L)
+    internal val currentFirstStartTime = atomic(0L)
+
+    protected open fun shouldPerformAutoSaveWheneverChanged(): Boolean {
+        return true
+    }
 
     init {
         owner.coroutineContext[Job]?.invokeOnCompletion { doSave() }
     }
 
     private val updaterBlock: suspend CoroutineScope.() -> Unit = {
-        currentFirstStartTime.updateWhen({ it == 0L }, { currentTimeMillis })
+        if (::storage.isInitialized) {
+            currentFirstStartTime.updateWhen({ it == 0L }, { currentTimeMillis })
 
-        delay(owner.autoSaveIntervalMillis.first.coerceAtLeast(1000)) // for safety
+            delay(owner.autoSaveIntervalMillis.first.coerceAtLeast(1000)) // for safety
 
-        if (lastAutoSaveJob == this.coroutineContext[Job]) {
-            doSave()
-        } else {
-            if (currentFirstStartTime.updateWhen(
-                    { currentTimeMillis - it >= owner.autoSaveIntervalMillis.last },
-                    { 0 })
-            ) doSave()
+            if (lastAutoSaveJob == this.coroutineContext[Job]) {
+                doSave()
+            } else {
+                if (currentFirstStartTime.updateWhen(
+                        { currentTimeMillis - it >= owner.autoSaveIntervalMillis.last },
+                        { 0 })
+                ) doSave()
+            }
         }
     }
 

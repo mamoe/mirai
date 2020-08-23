@@ -9,8 +9,8 @@
 
 package net.mamoe.mirai.console.internal.data
 
-import kotlinx.serialization.SerialName
 import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.ValueName
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
@@ -20,7 +20,7 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
 
 @Suppress("UNCHECKED_CAST")
-internal inline fun <reified T : Any> KType.asKClass(): KClass<out T> {
+internal inline fun <reified T : Any> KType.toKClass(): KClass<out T> {
     val clazz = requireNotNull(classifier as? KClass<T>) { "Unsupported classifier: $classifier" }
 
     val fromClass = arguments[0].type?.classifier as? KClass<*> ?: Any::class
@@ -34,24 +34,22 @@ internal inline fun <reified T : Any> KType.asKClass(): KClass<out T> {
 }
 
 internal inline fun <reified T : PluginData> newPluginDataInstanceUsingReflection(type: KType): T {
-    val classifier = type.asKClass<T>()
+    val classifier = type.toKClass<T>()
 
     return with(classifier) {
         objectInstance
             ?: createInstanceOrNull()
             ?: throw IllegalArgumentException(
                 "Cannot create PluginData instance. " +
-                        "PluginDataHolder supports PluginDatas implemented as an object " +
+                        "PluginDataHolder supports PluginData implemented as an object " +
                         "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newPluginDataInstance implementation."
             )
     }
 }
 
 
-internal fun isReferenceArray(rootClass: KClass<Any>): Boolean = rootClass.java.isArray
-
 @Suppress("UNCHECKED_CAST")
-internal fun KType.kclass() = when (val t = classifier) {
+internal fun KType.classifierAsKClass() = when (val t = classifier) {
     is KClass<*> -> t
     else -> error("Only KClass supported as classifier, got $t")
 } as KClass<Any>
@@ -65,14 +63,12 @@ internal fun <T : Any> KClass<T>.createInstanceOrNull(): T? {
 }
 
 @JvmSynthetic
-internal fun KClass<*>.findASerialName(): String =
-    findAnnotation<SerialName>()?.value
+internal fun KClass<*>.findValueName(): String =
+    findAnnotation<ValueName>()?.value
         ?: qualifiedName
         ?: throw IllegalArgumentException("Cannot find a serial name for $this")
 
 
-internal val KProperty<*>.serialNameOrPropertyName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
-
 internal fun Int.isOdd() = this and 0b1 != 0
 
-internal val KProperty<*>.serialName: String get() = this.findAnnotation<SerialName>()?.value ?: this.name
+internal val KProperty<*>.valueName: String get() = this.findAnnotation<ValueName>()?.value ?: this.name
