@@ -33,8 +33,6 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * 标记一个仅用于 [MiraiConsole] 前端实现的 API. 这些 API 只应由前端实现者使用, 而不应该被插件或其他调用者使用.
- *
- * 前端实现时
  */
 @Retention(AnnotationRetention.SOURCE)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
@@ -113,6 +111,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         /** 由前端调用, 初始化 [MiraiConsole] 实例, 并启动 */
         @JvmStatic
         @ConsoleFrontEndImplementation
+        @Throws(IllegalMiraiConsoleImplementationError::class)
         public fun MiraiConsoleImplementation.start(): Unit = initLock.withLock {
             this@Companion.instance = this
             MiraiConsoleImplementationBridge.doStart()
