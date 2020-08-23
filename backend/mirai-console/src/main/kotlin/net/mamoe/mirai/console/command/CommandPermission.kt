@@ -83,7 +83,7 @@ public fun interface CommandPermission {
     /**
      * 管理员 (不包含群主) 可以使用这个指令
      */
-    public object Administrator : CommandPermission {
+    public object GroupAdmin : CommandPermission {
         public override fun CommandSender.hasPermission(): Boolean {
             return this is MemberCommandSender && this.user.isAdministrator()
         }
