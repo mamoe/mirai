@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.command
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.command.java.JCommand
 import net.mamoe.mirai.console.internal.command.isValidSubName
 import net.mamoe.mirai.message.data.SingleMessage
 
@@ -25,15 +26,19 @@ import net.mamoe.mirai.message.data.SingleMessage
  * @see RawCommand 无参数解析, 接收原生参数的指令
  * @see CompositeCommand 复合指令
  * @see SimpleCommand 简单的, 支持参数自动解析的指令
+ *
+ * @see JCommand 为 Java 用户添加协程帮助的 [Command]
  */
 public interface Command {
     /**
      * 指令名. 需要至少有一个元素. 所有元素都不能带有空格
+     *
+     * @see Command.primaryName 获取主要指令名
      */
     public val names: Array<out String>
 
     /**
-     * 用法说明, 用于发送给用户
+     * 用法说明, 用于发送给用户. 一般 [usage] 包含 [description].
      */
     public val usage: String
 

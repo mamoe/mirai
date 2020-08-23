@@ -19,6 +19,7 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.description.*
+import net.mamoe.mirai.console.command.java.JSimpleCommand
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
 
@@ -55,14 +56,19 @@ public abstract class SimpleCommand(
 ) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
     CommandArgumentContextAware {
 
-    public override val usage: String
-        get() = super.usage
+    /**
+     * 自动根据带有 [Handler] 注解的函数签名生成 [usage]. 也可以被覆盖.
+     */
+    public override val usage: String get() = super.usage
 
     /**
      * 标注指令处理器
      */
     protected annotation class Handler
 
+    /**
+     * 指令参数环境. 默认为 [CommandArgumentContext.Builtins] `+` `overrideContext`
+     */
     public override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
 
     public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
@@ -81,39 +87,3 @@ public abstract class SimpleCommand(
         get() = SimpleCommandSubCommandAnnotationResolver
 }
 
-/**
- * Java 实现:
- * ```java
- * public final class MySimpleCommand extends JSimpleCommand {
- *     private MySimpleCommand() {
- *         super(MyPlugin.INSTANCE, "tell")
- *         // 可选设置如下属性
- *         setDescription("这是一个测试指令")
- *         setUsage("/tell <target> <message>") // 如不设置则自动根据带有 @Handler 的方法生成
- *         setPermission(CommandPermission.Operator.INSTANCE)
- *         setPrefixOptional(true)
- *     }
- *
- *     @Handler
- *     public void onCommand(CommandSender sender, User target, String message) {
- *         target.sendMessage(message)
- *     }
- * }
- * ```
- *
- * @see SimpleCommand
- * @see [CommandManager.executeCommand]
- */
-public abstract class JSimpleCommand(
-    owner: CommandOwner,
-    vararg names: String
-) : SimpleCommand(owner, *names) {
-    public override var description: String = super.description
-        protected set
-    public override var permission: CommandPermission = super.permission
-        protected set
-    public override var prefixOptional: Boolean = super.prefixOptional
-        protected set
-    public override var context: CommandArgumentContext = super.context
-        protected set
-}

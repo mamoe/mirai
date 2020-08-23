@@ -82,6 +82,12 @@ public abstract class CompositeCommand(
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
 ) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
     CommandArgumentContextAware {
+
+    /**
+     * 自动根据带有 [SubCommand] 注解的函数签名生成 [usage]. 也可以被覆盖.
+     */
+    public override val usage: String get() = super.usage
+
     /**
      * [CommandArgumentParser] 的环境
      */
@@ -126,71 +132,3 @@ public abstract class CompositeCommand(
 }
 
 
-/**
- * 复合指令. 指令注册时候会通过反射构造指令解析器.
- *
- * 示例:
- * ```
- * public final class MyCompositeCommand extends CompositeCommand {
- *     public static final MyCompositeCommand INSTANCE = new MyCompositeCommand();
- *
- *     public MyCompositeCommand() {
- *         super(MyPluginMain.INSTANCE, "manage") // "manage" 是主指令名
- *     }
- *
- *     // [参数智能解析]
- *     //
- *     //
- *     // 在控制台执行 "/manage <群号>.<群员> <持续时间>",
- *     // 或在聊天群内发送 "/manage <@一个群员> <持续时间>",
- *     // 或在聊天群内发送 "/manage <目标群员的群名> <持续时间>",
- *     // 或在聊天群内发送 "/manage <目标群员的账号> <持续时间>"
- *     // 时调用这个函数
- *     @SubCommand
- *     public void mute(CommandSender sender, Member target, int duration) { // 通过 /manage mute <target> <duration> 调用.
- *         sender.sendMessage("/manage mute 被调用了, 参数为: " + target + ", " + duration);
- *
- *
- *         String result;
- *         try {
- *             result = target.mute(duration).toString();
- *         } catch(Exception e) {
- *             result = ExceptionsKt.stackTraceToString(e);
- *         }
- *
- *         sender.sendMessage("结果: " + result)
- *     }
- *
- *     @SubCommand
- *     public void list(CommandSender sender) { // 执行 "/manage list" 时调用这个方法
- *         sender.sendMessage("/manage list 被调用了")
- *     }
- *
- *     // 支持 Image 类型, 需在聊天中执行此指令.
- *     @SubCommand
- *     public void test(CommandSender sender, Image image) { // 执行 "/manage test <一张图片>" 时调用这个方法
- *         sender.sendMessage("/manage image 被调用了, 图片是 " + image.imageId)
- *     }
- * }
- * ```
- *
- * @see buildCommandArgumentContext
- */
-@ConsoleExperimentalAPI
-public abstract class JCompositeCommand(
-    owner: CommandOwner,
-    vararg names: String
-) : CompositeCommand(owner, *names) {
-    /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
-    public final override var description: String = "<no descriptions given>"
-        protected set
-
-    /** 指令权限 */
-    public final override var permission: CommandPermission = CommandPermission.Default
-        protected set
-
-    /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
-    public final override var prefixOptional: Boolean = false
-        protected set
-
-}
