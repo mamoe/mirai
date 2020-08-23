@@ -114,7 +114,7 @@ public data class PluginDependency(
      *
      * 允许 [Apache Ivy 风格版本号表示](http://ant.apache.org/ivy/history/latest-milestone/settings/version-matchers.html)
      */
-    public val version: @Serializable(SemverAsStringSerializerIvy::class) Semver? = null,
+    public val version: @Serializable(net.mamoe.mirai.console.internal.data.SemverAsStringSerializerIvy::class) Semver? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */
