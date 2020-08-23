@@ -16,9 +16,9 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.SerializableValue.Companion.serializableValueWith
 import net.mamoe.mirai.console.data.SerializerAwareValue
 import net.mamoe.mirai.console.data.valueFromKType
+import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.full.createInstance as createInstanceKotlin
 
 private val primitiveCollectionsImplemented by lazy {
     false
@@ -101,24 +101,36 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
 
 internal fun KClass<*>.createInstanceSmart(): Any? {
     return when (this) {
+        Byte::class -> 0.toByte()
+        Short::class -> 0.toShort()
+        Int::class -> 0
+        Long::class -> 0L
+        Float::class -> 0.toFloat()
+        Double::class -> 0.0
+
+        Boolean::class -> false
+
+        String::class -> ""
+
         MutableMap::class,
         Map::class,
         LinkedHashMap::class,
         HashMap::class
-        -> mutableMapOf<Any?, Any?>()
+        -> LinkedHashMap<Any?, Any?>()
 
         MutableList::class,
         List::class,
         ArrayList::class
-        -> mutableListOf<Any?>()
+        -> ArrayList<Any?>()
 
         MutableSet::class,
         Set::class,
         LinkedHashSet::class,
         HashSet::class
-        -> mutableSetOf<Any?>()
+        -> LinkedHashSet<Any?>()
 
-        else -> createInstanceKotlin()
+        else -> createInstanceOrNull()
+            ?: error("Cannot create instance or find a initial value for ${this.qualifiedNameOrTip}")
     }
 }
 

@@ -47,10 +47,11 @@ import kotlin.reflect.KType
  * ```
  * object PluginMain : KotlinPlugin()
  *
- * object AccountPluginData : PluginData by PluginMain.loadPluginData() {
+ * object MyPluginData : PluginData by PluginMain.loadPluginData() {
  *    val list: MutableList<String> by value(mutableListOf("a", "b")) // mutableListOf("a", "b") 是初始值, 可以省略
  *    val custom: Map<Long, CustomData> by value() // 使用 kotlinx-serialization 序列化的类型. (目前还不支持)
- *    var custom2: CustomData by value() // 允许 var
+ *    var long: Long by value(0) // 允许 var
+ *    var int by value(0) // 可以使用类型推断, 但更推荐使用 `var long: Long by value(0)` 这种定义方式.
  * }
  *
  * @Serializable

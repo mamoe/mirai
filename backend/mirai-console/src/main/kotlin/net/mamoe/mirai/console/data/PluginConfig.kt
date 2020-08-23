@@ -19,6 +19,24 @@ import kotlin.annotation.AnnotationTarget.*
  *
  * **提示**:
  * 插件内部的数据应用 [PluginData] 存储, 而不能使用 [PluginConfig].
+ *
+ * ## 实现
+ * 对使用者来说, [PluginConfig] 与 [PluginData] 实现几乎相同. 目前仅需在 [PluginData] 使用的基础上添加接口实现即可.
+ *
+ * ### Kotlin
+ * 在 [PluginData] 的示例基础上, 修改对象定义
+ * ```
+ * // 原
+ * object MyPluginData : PluginData by PluginMain.loadPluginData()
+ * // 修改为
+ * object MyPluginConfig : PluginConfig by PluginMain.loadPluginConfig()
+ * ```
+ * 即可将一个 [PluginData] 变更为 [PluginConfig].
+ *
+ * ### Java
+ * 见 [JPluginConfig]
+ *
+ * @see PluginData
  */
 @ExperimentalPluginConfig
 public interface PluginConfig : PluginData
