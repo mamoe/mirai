@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused", "NOTHING_TO_INLINE")
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "unused", "NOTHING_TO_INLINE", "INAPPLICABLE_JVM_NAME")
 
 package net.mamoe.mirai.console.data
 
@@ -31,6 +31,8 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  * @see CompositeValue 复合数据类型实现
  */
 public interface Value<T> {
+    @get:JvmName("get")
+    @set:JvmName("set")
     public var value: T
 }
 

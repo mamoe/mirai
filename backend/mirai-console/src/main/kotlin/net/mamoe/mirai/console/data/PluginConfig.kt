@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai.console.data
 
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import kotlin.annotation.AnnotationTarget.*
+
 /**
  * 一个插件的配置数据, 用于和用户交互.
  *
@@ -19,3 +22,17 @@ package net.mamoe.mirai.console.data
  */
 @ExperimentalPluginConfig
 public interface PluginConfig : PluginData
+
+/**
+ * 标记实验性的 [PluginConfig] API.
+ *
+ * @see ConsoleExperimentalAPI
+ */
+@ConsoleExperimentalAPI
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
+@MustBeDocumented
+public annotation class ExperimentalPluginConfig(
+    val message: String = ""
+)

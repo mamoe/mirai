@@ -5,9 +5,9 @@ package net.mamoe.mirai.console.data
  *
  * 例:
  * ```
- * @SerialName("accounts")
+ * @ValueName("accounts")
  * object AccountPluginData : PluginData by ... {
- *    @SerialName("info")
+ *    @ValueName("info")
  *    val map: Map<String, String> by value("a" to "b")
  * }
  * ```
@@ -19,4 +19,6 @@ package net.mamoe.mirai.console.data
  *     a: b
  * ```
  */
-public typealias SerialName = kotlinx.serialization.SerialName
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.BINARY)
+public annotation class ValueName(val value: String)

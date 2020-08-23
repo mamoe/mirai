@@ -156,6 +156,26 @@ internal fun PluginData.${ktType.lowerCaseName}ValueImpl(): SerializerAwareValue
 
     }
 
+    object JPluginData_value_primitivesCodegen : RegionCodegen("JPluginData.kt"), DefaultInvoke {
+        @JvmStatic
+        fun main(args: Array<String>) = super.startIndependently()
+        override val defaultInvokeArgs: List<KtType> = KtPrimitives + KtString
+
+        override fun StringBuilder.apply(ktType: KtType) {
+            @Suppress("unused")
+            appendKCode(
+                """
+                /**
+                 * 创建一个 [${ktType.standardName}] 类型的 [Value], 并设置初始值为 [default]
+                 */
+                public fun value(default: ${ktType.standardName}): SerializerAwareValue<${ktType.standardName}> = delegate.valueImpl(default)
+                """
+            )
+            appendLine()
+        }
+
+    }
+
     /**
      * 运行本 object 中所有嵌套 object Codegen
      */

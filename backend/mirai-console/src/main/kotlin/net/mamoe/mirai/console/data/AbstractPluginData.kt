@@ -14,10 +14,8 @@ package net.mamoe.mirai.console.data
 import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.console.data.PluginData.ValueNode
 import net.mamoe.mirai.console.internal.data.PluginDataImpl
-import net.mamoe.mirai.console.internal.data.serialName
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import kotlin.annotation.AnnotationTarget.*
-import kotlin.reflect.KProperty
+import net.mamoe.mirai.console.util.ConsoleInternalAPI
 
 /**
  * [PluginData] 的默认实现. 支持使用 `by value()` 等委托方法创建 [Value] 并跟踪其改动.
@@ -28,24 +26,23 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     /**
      * 添加了追踪的 [ValueNode] 列表, 即通过 `by value` 初始化的属性列表.
      *
-     * 他们的修改会被跟踪, 并触发 [onValueChanged].
+     * 它们的修改会被跟踪, 并触发 [onValueChanged].
      *
      * @see provideDelegate
      */
+    @ConsoleExperimentalAPI
     public override val valueNodes: MutableList<ValueNode<*>> = mutableListOf()
 
     /**
-     * 使用 `by` 时自动调用此方法, 添加对 [Value] 的值修改的跟踪.
-     *
-     * 将会创建一个 [ValueNode] 并添加到 [valueNodes]
+     * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
      */
-    public final override operator fun <T> SerializerAwareValue<T>.provideDelegate(
-        thisRef: Any?,
-        property: KProperty<*>
-    ): SerializerAwareValue<T> = apply { valueNodes.add(ValueNode(property.serialName, this, this.serializer)) }
+    public override fun <T : SerializerAwareValue<*>> T.track(valueName: String): T =
+        apply { valueNodes.add(ValueNode(valueName, this, this.serializer)) }
 
     /**
-     * 值更新序列化器. 仅供内部使用.
+     * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用
+     *
+     * @suppress 注意, 这是实验性 API.
      */
     @ConsoleExperimentalAPI
     public final override val updaterSerializer: KSerializer<Unit>
@@ -54,30 +51,6 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     /**
      * 当所属于这个 [PluginData] 的 [Value] 的 [值][Value.value] 被修改时被调用.
      */
+    @ConsoleInternalAPI
     public abstract override fun onValueChanged(value: Value<*>)
 }
-
-/**
- * [PluginConfig] 的默认实现.
- *
- * 支持所有 [PluginData] 支持的功能, 支持通过 UI
- *
- * @see PluginConfig
- */
-@ExperimentalPluginConfig
-public abstract class AbstractPluginConfig : AbstractPluginData(), PluginConfig
-
-
-/**
- * 标记实验性的 [PluginConfig] API.
- *
- * @see ConsoleExperimentalAPI
- */
-@ConsoleExperimentalAPI
-@Retention(AnnotationRetention.BINARY)
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
-@Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
-@MustBeDocumented
-public annotation class ExperimentalPluginConfig(
-    val message: String = ""
-)
