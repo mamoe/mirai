@@ -47,7 +47,7 @@ internal fun startupConsoleThread() {
         }
     }
 
-    CoroutineScope(dispatch + SupervisorJob()).launch {
+    MiraiConsole.launch(dispatch) {
         val consoleLogger = DefaultLogger("console")
         while (isActive) {
             try {
@@ -77,6 +77,8 @@ internal fun startupConsoleThread() {
                     }
                 }
             } catch (e: InterruptedException) {
+                return@launch
+            } catch (e: CancellationException) {
                 return@launch
             } catch (e: Throwable) {
                 consoleLogger.error("Unhandled exception", e)
