@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: mirai-doc Publish
+
+# Controls when the action will run. Triggers the workflow on push or pull request 
+# events but only for the master branch
+on:
+  release:
+    types:
+      - created
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Gradle clean
+        run: ./gradlew clean
+      - name: Gradle build
+        run: ./gradlew build # if test's failed, don't publish
+      - name: Gradle :mirai-core:dokkaGitHubUpload
+        run: ./gradlew :mirai-core:dokkaGitHubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
+      - name: Gradle :mirai-core-qqandroid:dokkaGitHubUpload
+        run: ./gradlew :mirai-core-qqandroid:dokkaGitHubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
+
+
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v1.0.0
+#        with:
+#          # Artifact name
+#          name: mirai-core
+#          # Directory containing files to upload
+#          path: "mirai-core/build/libs/mirai-core-*-all.jar"
+#      - name: Upload artifact
+#        uses: actions/upload-artifact@v1.0.0
+#        with:
+#          # Artifact name
+#          name: mirai-core-qqandroid-all
+#          # Directory containing files to upload
+#          path: "mirai-core-qqandroid/build/libs/mirai-core-qqandroid-*-all.jar"
