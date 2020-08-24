@@ -30,7 +30,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.KG_TOKEN }}
-          publish_dir: ./mirai-core/build/dokka/mirai-core
+          publish_dir: ./mirai-core/build/dokka
           external_repository: Karlatemp-bot/test-mirai-doc
           publish_branch: master
           user_name: 'github-actions[bot]'
