@@ -2,7 +2,7 @@
 
 name: mirai-doc Publish
 
-# Controls when the action will run. Triggers the workflow on push or pull request 
+# Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
   release:
@@ -22,27 +22,17 @@ jobs:
           java-version: 1.8
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Gradle clean
-        run: ./gradlew clean
       - name: Gradle build
-        run: ./gradlew build # if test's failed, don't publish
-      - name: Gradle :mirai-core:dokkaGitHubUpload
-        run: ./gradlew :mirai-core:dokkaGitHubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
-      - name: Gradle :mirai-core-qqandroid:dokkaGitHubUpload
-        run: ./gradlew :mirai-core-qqandroid:dokkaGitHubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
+        run: ./gradlew clean build # if test's failed, don't publish
+      - name: Gradle :mirai-core:dokkaGenerator
+        run: ./gradlew :mirai-core:dokka
+      - name: GitHub Pages Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.DOC_DEPLOY_KEY }}
+          publish_dir: ./mirai-core/build/dokka
+          external_repository: project-mirai/mirai-doc
+          publish_branch: master
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
 
-
-#      - name: Upload artifact
-#        uses: actions/upload-artifact@v1.0.0
-#        with:
-#          # Artifact name
-#          name: mirai-core
-#          # Directory containing files to upload
-#          path: "mirai-core/build/libs/mirai-core-*-all.jar"
-#      - name: Upload artifact
-#        uses: actions/upload-artifact@v1.0.0
-#        with:
-#          # Artifact name
-#          name: mirai-core-qqandroid-all
-#          # Directory containing files to upload
-#          path: "mirai-core-qqandroid/build/libs/mirai-core-qqandroid-*-all.jar"
