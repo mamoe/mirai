@@ -21,13 +21,13 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 @ConsoleExperimentalAPI("classname might change")
 public interface JarPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
     /**
-     * [JvmPlugin.loadPluginData] 默认使用的实例
+     * [JvmPlugin.reloadPluginData] 默认使用的实例
      */
     @ConsoleExperimentalAPI
     public val dataStorage: PluginDataStorage
 
     /**
-     * [JvmPlugin.loadPluginData] 默认使用的实例
+     * [JvmPlugin.reloadPluginData] 默认使用的实例
      */
     @ConsoleExperimentalAPI
     public val configStorage: PluginDataStorage

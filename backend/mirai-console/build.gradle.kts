@@ -60,8 +60,7 @@ kotlin {
 }
 
 dependencies {
-    compileAndRuntime("net.mamoe:mirai-core:${Versions.core}")
-    compileAndRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib))
+    implementation("net.mamoe:mirai-core:${Versions.core}")
 
     implementation(kotlinx("serialization-core", Versions.serialization))
     implementation(kotlin("reflect"))
@@ -92,6 +91,8 @@ ext.apply {
         dependencyFilter.exclude {
             when ("${it.moduleGroup}:${it.moduleName}") {
                 "net.mamoe:mirai-core" -> true
+                "org.jetbrains.kotlin:kotlin-stdlib" -> true
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8" -> true
                 "net.mamoe:mirai-core-qqandroid" -> true
                 else -> false
             }

@@ -14,7 +14,7 @@ package net.mamoe.mirai.console.plugin
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.register
-import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
+import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import java.io.File
 

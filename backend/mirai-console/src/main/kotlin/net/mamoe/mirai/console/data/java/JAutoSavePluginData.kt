@@ -7,10 +7,11 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "EXPOSED_SUPER_CLASS")
 
-package net.mamoe.mirai.console.data
+package net.mamoe.mirai.console.data.java
 
+import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.setValueBySerializer
 import net.mamoe.mirai.console.internal.data.valueImpl
@@ -27,18 +28,19 @@ import kotlin.reflect.full.createType
  * ```
  * // PluginMain.java
  * public final class PluginMain extends JavaPlugin {
- *     public static PluginMain INSTANCE = null;
+ *     public static PluginMain INSTANCE;
  *     public PluginMain() {
  *          INSTANCE = this;
+ *          this.reloadPluginData(MyPluginData.INSTANCE); // 读取文件等
  *     }
  * }
  *
  * // MyPluginData.java
- * public class AccountPluginData extends JPluginData {
- *     public static AccountPluginData INSTANCE;
+ * public class MyPluginData extends JAutoSavePluginData {
+ *     public static final MyPluginData INSTANCE = new MyPluginData();
  *
- *     public AccountPluginData() {
- *         super(PluginMain.INSTANCE.loadPluginData(AccountPluginData.class));
+ *     private MyPluginData() {
+ *         super(PluginMain.INSTANCE);
  *         INSTANCE = this;
  *     }
  *
@@ -64,57 +66,57 @@ import kotlin.reflect.full.createType
  * theList.set();
  * ```
  *
+ * **注意**: 由于实现特殊, 请不要在初始化 Value 时就使用 `.get()`. 这可能会导致自动保存追踪失效. 必须在使用时才调用 `.get()` 获取真实数据对象.
+ *
  * @see PluginData
  */
-public open class JPluginData(
-    private val delegate: PluginData
-) : PluginData by delegate {
+public abstract class JAutoSavePluginData : AutoSavePluginData(), PluginConfig {
     //// region JPluginData_value_primitives CODEGEN ////
 
     /**
      * 创建一个 [Byte] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: Byte): SerializerAwareValue<Byte> = delegate.valueImpl(default)
+    public fun value(default: Byte): SerializerAwareValue<Byte> = valueImpl(default)
 
     /**
      * 创建一个 [Short] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: Short): SerializerAwareValue<Short> = delegate.valueImpl(default)
+    public fun value(default: Short): SerializerAwareValue<Short> = valueImpl(default)
 
     /**
      * 创建一个 [Int] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: Int): SerializerAwareValue<Int> = delegate.valueImpl(default)
+    public fun value(default: Int): SerializerAwareValue<Int> = valueImpl(default)
 
     /**
      * 创建一个 [Long] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: Long): SerializerAwareValue<Long> = delegate.valueImpl(default)
+    public fun value(default: Long): SerializerAwareValue<Long> = valueImpl(default)
 
     /**
      * 创建一个 [Float] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: Float): SerializerAwareValue<Float> = delegate.valueImpl(default)
+    public fun value(default: Float): SerializerAwareValue<Float> = valueImpl(default)
 
     /**
      * 创建一个 [Double] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: Double): SerializerAwareValue<Double> = delegate.valueImpl(default)
+    public fun value(default: Double): SerializerAwareValue<Double> = valueImpl(default)
 
     /**
      * 创建一个 [Char] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: Char): SerializerAwareValue<Char> = delegate.valueImpl(default)
+    public fun value(default: Char): SerializerAwareValue<Char> = valueImpl(default)
 
     /**
      * 创建一个 [Boolean] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: Boolean): SerializerAwareValue<Boolean> = delegate.valueImpl(default)
+    public fun value(default: Boolean): SerializerAwareValue<Boolean> = valueImpl(default)
 
     /**
      * 创建一个 [String] 类型的 [Value], 并设置初始值为 [default]
      */
-    public fun value(default: String): SerializerAwareValue<String> = delegate.valueImpl(default)
+    public fun value(default: String): SerializerAwareValue<String> = valueImpl(default)
 
     //// endregion JPluginData_value_primitives CODEGEN ////
 
@@ -134,7 +136,7 @@ public open class JPluginData(
      */
     @JvmOverloads
     public fun <T : Any> typedValue(type: KType, default: T? = null): SerializerAwareValue<T> {
-        val value = delegate.valueImpl<T>(type, type.classifier!!.cast())
+        val value = valueImpl<T>(type, type.classifier!!.cast())
         if (default != null) value.setValueBySerializer(default)
         return value
     }

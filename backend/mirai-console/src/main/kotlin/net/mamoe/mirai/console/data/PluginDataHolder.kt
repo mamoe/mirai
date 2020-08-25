@@ -13,8 +13,7 @@ package net.mamoe.mirai.console.data
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import net.mamoe.mirai.console.data.PluginDataStorage.Companion.load
-import net.mamoe.mirai.console.internal.data.AutoSavePluginData
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
  * 可以持有相关 [PluginData] 实例的对象, 作为 [PluginData] 实例的拥有者.
@@ -24,6 +23,7 @@ import net.mamoe.mirai.console.internal.data.AutoSavePluginData
  *
  * @see AutoSavePluginDataHolder 支持自动保存
  */
+@ConsoleExperimentalAPI
 public interface PluginDataHolder {
     /**
      * 保存时使用的分类名
@@ -36,6 +36,7 @@ public interface PluginDataHolder {
  *
  * @see net.mamoe.mirai.console.plugin.jvm.JvmPlugin
  */
+@ConsoleExperimentalAPI
 public interface AutoSavePluginDataHolder : PluginDataHolder, CoroutineScope {
     /**
      * [AutoSavePluginData] 每次自动保存时间间隔

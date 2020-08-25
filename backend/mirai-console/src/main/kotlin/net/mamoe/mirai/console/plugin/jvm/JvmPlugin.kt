@@ -7,7 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXPOSED_SUPER_CLASS", "NOTHING_TO_INLINE")
+@file:Suppress(
+    "INVISIBLE_MEMBER",
+    "INVISIBLE_REFERENCE",
+    "EXPOSED_SUPER_CLASS",
+    "NOTHING_TO_INLINE",
+    "INAPPLICABLE_JVM_NAME"
+)
 
 package net.mamoe.mirai.console.plugin.jvm
 
@@ -19,7 +25,6 @@ import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
 import net.mamoe.mirai.console.plugin.ResourceContainer
 import net.mamoe.mirai.utils.MiraiLogger
-import kotlin.reflect.KClass
 
 
 /**
@@ -51,16 +56,22 @@ public interface JvmPlugin : Plugin, CoroutineScope,
         get() = JarPluginLoader
 
     /**
-     * 读取一个 [PluginData] 实例
+     * 重载 [PluginData]
+     *
+     * @see reloadPluginData
      */
     @JvmDefault
-    public fun <T : PluginData> loadPluginData(clazz: Class<T>): T = loader.dataStorage.load(this, clazz)
+    @JvmName("reloadPluginData")
+    public fun <T : PluginData> T.reload(): Unit = loader.dataStorage.load(this@JvmPlugin, this)
 
     /**
-     * 读取一个 [PluginConfig] 实例
+     * 重载 [PluginConfig]
+     *
+     * @see reloadPluginConfig
      */
     @JvmDefault
-    public fun <T : PluginConfig> loadPluginConfig(clazz: Class<T>): T = loader.configStorage.load(this, clazz)
+    @JvmName("reloadPluginConfig")
+    public fun <T : PluginConfig> T.reload(): Unit = loader.configStorage.load(this@JvmPlugin, this)
 
     /**
      * 在插件被加载时调用. 只会被调用一次.
@@ -85,25 +96,17 @@ public interface JvmPlugin : Plugin, CoroutineScope,
 }
 
 /**
- * 读取一个 [PluginData] 实例
+ * 重载一个 [PluginData]
+ *
+ * @see JvmPlugin.reload
  */
 @JvmSynthetic
-public inline fun <T : PluginData> JvmPlugin.loadPluginData(clazz: KClass<T>): T = this.loadPluginData(clazz.java)
+public inline fun JvmPlugin.reloadPluginData(instance: PluginData): Unit = this.run { instance.reload() }
 
 /**
- * 读取一个 [PluginData] 实例
+ * 重载一个 [PluginConfig]
+ *
+ * @see JvmPlugin.reload
  */
 @JvmSynthetic
-public inline fun <reified T : PluginData> JvmPlugin.loadPluginData(): T = this.loadPluginData(T::class)
-
-/**
- * 读取一个 [PluginConfig] 实例
- */
-@JvmSynthetic
-public inline fun <T : PluginConfig> JvmPlugin.loadPluginConfig(clazz: KClass<T>): T = this.loadPluginConfig(clazz.java)
-
-/**
- * 读取一个 [PluginConfig] 实例
- */
-@JvmSynthetic
-public inline fun <reified T : PluginConfig> JvmPlugin.loadPluginConfig(): T = this.loadPluginConfig(T::class)
+public inline fun JvmPlugin.reloadPluginConfig(instance: PluginConfig): Unit = this.run { instance.reload() }

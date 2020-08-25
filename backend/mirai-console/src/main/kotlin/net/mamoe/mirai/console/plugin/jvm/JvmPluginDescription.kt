@@ -14,9 +14,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.console.internal.data.SemverAsStringSerializerLoose
-import net.mamoe.mirai.console.plugin.dsecription.PluginDependency
-import net.mamoe.mirai.console.plugin.dsecription.PluginDescription
-import net.mamoe.mirai.console.plugin.dsecription.PluginKind
+import net.mamoe.mirai.console.plugin.description.PluginDependency
+import net.mamoe.mirai.console.plugin.description.PluginDescription
+import net.mamoe.mirai.console.plugin.description.PluginKind
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import java.io.File

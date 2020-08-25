@@ -10,6 +10,8 @@
 package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.console.data.AutoSavePluginDataHolder.Companion.createPluginData
+import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -18,18 +20,12 @@ import kotlin.test.assertSame
 @OptIn(ConsoleInternalAPI::class)
 internal class PluginDataTest {
 
-    class MyPluginData : AbstractPluginData() {
+    object MyPlugin : KotlinPlugin()
+
+    class MyPluginData : PluginData by MyPlugin.createPluginData() {
         var int by value(1)
-        val map by value<MutableMap<String, String>>()
-        val map2 by value<MutableMap<String, MutableMap<String, String>>>()
-
-        @ConsoleInternalAPI
-        override fun onValueChanged(value: Value<*>) {
-
-        }
-
-        override fun setStorage(storage: PluginDataStorage) {
-        }
+        val map: MutableMap<String, String> by value()
+        val map2: MutableMap<String, MutableMap<String, String>> by value()
     }
 
     private val jsonPrettyPrint = Json { prettyPrint = true }

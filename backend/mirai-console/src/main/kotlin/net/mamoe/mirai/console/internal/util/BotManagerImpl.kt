@@ -17,7 +17,6 @@ import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.*
-import net.mamoe.mirai.console.data.PluginDataStorage.Companion.load
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.util.BotManager
 import net.mamoe.mirai.contact.User
@@ -43,7 +42,7 @@ internal object BotManagerImpl : BotManager {
     }
 }
 
-internal object ManagersConfig : PluginData by ConsoleBuiltInPluginDataStorage.load() {
+internal object ManagersConfig : AutoSavePluginData() {
     private val managers: MutableMap<Long, MutableSet<Long>> by value()
 
     internal operator fun get(bot: Bot): MutableSet<Long> = managers.getOrPut(bot.id, ::mutableSetOf)
@@ -61,7 +60,4 @@ internal object ConsoleBuiltInPluginDataHolder : AutoSavePluginDataHolder,
 }
 
 internal object ConsoleBuiltInPluginDataStorage :
-    PluginDataStorage by MiraiConsoleImplementationBridge.dataStorageForBuiltIns {
-
-    inline fun <reified T : PluginData> load(): T = load(ConsoleBuiltInPluginDataHolder)
-}
+    PluginDataStorage by MiraiConsoleImplementationBridge.dataStorageForBuiltIns

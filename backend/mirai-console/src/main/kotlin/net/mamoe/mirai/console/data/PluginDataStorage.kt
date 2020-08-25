@@ -15,16 +15,15 @@ import net.mamoe.mirai.console.internal.data.MemoryPluginDataStorageImpl
 import net.mamoe.mirai.console.internal.data.MultiFilePluginDataStorageImpl
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import java.io.File
 import java.nio.file.Path
-import kotlin.reflect.KClass
 
 /**
  * [数据对象][PluginData] 存储仓库.
  *
  * ## 职责
  * [PluginDataStorage] 类似于一个数据库, 它只承担将序列化之后的数据保存到数据库中, 和从数据库取出这个对象的任务.
- * [PluginDataStorage] 不考虑一个 []
  *
  *
  * 此为较低层的 API, 一般插件开发者不会接触.
@@ -34,69 +33,77 @@ import kotlin.reflect.KClass
  * @see PluginDataHolder
  * @see JarPluginLoader.dataStorage
  */
+@ConsoleExperimentalAPI
 public interface PluginDataStorage {
     /**
-     * 读取一个实例. 在 [T] 实例创建后 [设置 [PluginDataStorage]][PluginData.setStorage]
+     * 读取一个实例. 在 [T] 实例创建后 [设置 [PluginDataStorage]][PluginData.onStored]
      */
-    public fun <T : PluginData> load(holder: PluginDataHolder, dataClass: Class<T>): T
+    public fun load(holder: PluginDataHolder, instance: PluginData)
 
     /**
      * 保存一个实例.
      *
      * **实现细节**: 调用 [PluginData.updaterSerializer], 将
      */
-    public fun store(holder: PluginDataHolder, pluginData: PluginData)
+    public fun store(holder: PluginDataHolder, instance: PluginData)
 
-    public companion object {
-        /**
-         * 读取一个实例. 在 [T] 实例创建后 [设置 [PluginDataStorage]][PluginData.setStorage]
-         */
-        @JvmStatic
-        public fun <T : PluginData> PluginDataStorage.load(holder: PluginDataHolder, dataClass: KClass<T>): T =
-            this.load(holder, dataClass.java)
+    /*
+public companion object {
+   /**
+    * 通过反射
+    * 读取一个实例.
+    *
+    * 在 [T] 实例创建后 [设置 [PluginDataStorage]][PluginData.setStorage]
+    */
+   @ConsoleExperimentalAPI
+   @JvmStatic
+   public fun <T : PluginData> PluginDataStorage.load(holder: PluginDataHolder, dataClass: KClass<T>): T {
+       @Suppress("UNCHECKED_CAST")
+       val instance = with(dataClass){
+           objectInstance
+               ?: createInstanceOrNull()
+               ?: throw IllegalArgumentException(
+                   "Cannot create PluginData instance. Make sure dataClass is PluginData::class.java or a Kotlin's object, " +
+                           "or has a constructor which either has no parameters or all parameters of which are optional"
+               )
+       }
 
-        /**
-         * 读取一个实例. 在 [T] 实例创建后 [设置 [PluginDataStorage]][PluginData.setStorage]
-         */
-        @JvmSynthetic
-        public inline fun <reified T : PluginData> PluginDataStorage.load(holder: PluginDataHolder): T =
-            this.load(holder, T::class)
+       load(holder, instance)
+       return instance
+   }
+
+   /**
+    * 读取一个实例. 在 [T] 实例创建后 [设置 [PluginDataStorage]][PluginData.setStorage]
+    */
+   @JvmStatic
+   public fun <T : PluginData> PluginDataStorage.load(holder: PluginDataHolder, dataClass: Class<T>): T =
+       this.load(holder, dataClass.java)
+
+   /**
+    * 读取一个实例. 在 [T] 实例创建后 [设置 [PluginDataStorage]][PluginData.setStorage]
+    */
+   @JvmSynthetic
+   public inline fun <reified T : PluginData> PluginDataStorage.load(holder: PluginDataHolder): T =
+       this.load(holder, T::class)
+
     }
+    */
 }
 
 /**
  * 在内存存储所有 [PluginData] 实例的 [PluginDataStorage]. 在内存数据丢失后相关 [PluginData] 实例也会丢失.
  * @see PluginDataStorage
  */
-public interface MemoryPluginDataStorage : PluginDataStorage, Map<Class<out PluginData>, PluginData> {
-    /**
-     * 当任一 [PluginData] 实例拥有的 [Value] 的值被改变后调用的回调函数.
-     */
-    public fun interface OnChangedCallback {
-        public fun onChanged(storage: MemoryPluginDataStorage, value: Value<*>)
-
-        /**
-         * 无任何操作的 [OnChangedCallback]
-         * @see OnChangedCallback
-         */
-        public object NoOp : OnChangedCallback {
-            public override fun onChanged(storage: MemoryPluginDataStorage, value: Value<*>) {
-                // no-op
-            }
-        }
-    }
-
+@ConsoleExperimentalAPI
+public interface MemoryPluginDataStorage : PluginDataStorage {
     public companion object {
         /**
          * 创建一个 [MemoryPluginDataStorage] 实例.
-         *
-         * @param onChanged 当任一 [PluginData] 实例拥有的 [Value] 的值被改变后调用的回调函数.
          */
         @JvmStatic
         @JvmName("create")
         // @JvmOverloads
-        public operator fun invoke(onChanged: OnChangedCallback = OnChangedCallback.NoOp): MemoryPluginDataStorage =
-            MemoryPluginDataStorageImpl(onChanged)
+        public operator fun invoke(): MemoryPluginDataStorage = MemoryPluginDataStorageImpl()
     }
 }
 

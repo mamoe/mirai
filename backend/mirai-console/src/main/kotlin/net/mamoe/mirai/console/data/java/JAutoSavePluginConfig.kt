@@ -7,7 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.data
+@file:Suppress("unused", "EXPOSED_SUPER_CLASS")
+
+package net.mamoe.mirai.console.data.java
+
+import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.ExperimentalPluginConfig
+import net.mamoe.mirai.console.data.PluginConfig
+import net.mamoe.mirai.console.data.PluginData
 
 /**
  * 一个插件的配置数据, 用于和用户交互.
@@ -19,16 +26,17 @@ package net.mamoe.mirai.console.data
  *
  * ### 实现
  *
- * 在 [JPluginData] 的示例基础上, 修改类定义
+ * 在 [JAutoSavePluginData] 的示例基础上, 修改类定义
  * ```java
  * // 原
- * public class AccountPluginData extends JPluginData {
+ * public class AccountPluginData extends JAutoSavePluginData {
  * // 修改为
- * public class AccountPluginConfig extends JPluginConfig {
+ * public class AccountPluginConfig extends JAutoSavePluginConfig {
  * ```
  * 即可将一个 [PluginData] 变更为 [PluginConfig].
  *
- * @see JPluginData
+ * @see JAutoSavePluginData
  * @see PluginConfig
  */
-public abstract class JPluginConfig(delegate: PluginData) : JPluginData(delegate), PluginConfig
+@ExperimentalPluginConfig
+public abstract class JAutoSavePluginConfig : AutoSavePluginConfig(), PluginConfig

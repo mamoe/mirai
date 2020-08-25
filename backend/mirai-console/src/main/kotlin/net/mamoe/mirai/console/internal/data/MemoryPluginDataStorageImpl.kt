@@ -9,45 +9,20 @@
 
 package net.mamoe.mirai.console.internal.data
 
-import net.mamoe.mirai.console.data.*
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.data.MemoryPluginDataStorage
+import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.PluginDataHolder
+import net.mamoe.mirai.console.data.PluginDataStorage
 
-internal class MemoryPluginDataStorageImpl(
-    private val onChanged: MemoryPluginDataStorage.OnChangedCallback
-) : PluginDataStorage, MemoryPluginDataStorage,
+internal class MemoryPluginDataStorageImpl : PluginDataStorage, MemoryPluginDataStorage,
     MutableMap<Class<out PluginData>, PluginData> by mutableMapOf() {
 
-    internal inner class MemoryPluginDataImpl : AbstractPluginData() {
-        @ConsoleInternalAPI
-        override fun onValueChanged(value: Value<*>) {
-            onChanged.onChanged(this@MemoryPluginDataStorageImpl, value)
-        }
-
-        override fun setStorage(storage: PluginDataStorage) {
-            check(storage is MemoryPluginDataStorageImpl) { "storage is not MemoryPluginDataStorageImpl" }
-        }
+    @Suppress("UNCHECKED_CAST")
+    override fun load(holder: PluginDataHolder, instance: PluginData) {
+        instance.onStored(holder, this)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : PluginData> load(holder: PluginDataHolder, dataClass: Class<T>): T = (synchronized(this) {
-        this.getOrPut(dataClass) {
-            dataClass.kotlin.run {
-                objectInstance ?: createInstanceOrNull() ?: kotlin.run {
-                    if (dataClass != PluginData::class.java) {
-                        throw IllegalArgumentException(
-                            "Cannot create PluginData instance. Make sure dataClass is PluginData::class.java or a Kotlin's object, " +
-                                    "or has a constructor which either has no parameters or all parameters of which are optional"
-                        )
-                    }
-                    MemoryPluginDataImpl()
-                }
-            }
-        }
-    } as T).also { it.setStorage(this) }
-
-    override fun store(holder: PluginDataHolder, pluginData: PluginData) {
-        synchronized(this) {
-            this[pluginData::class.java] = pluginData
-        }
+    override fun store(holder: PluginDataHolder, instance: PluginData) {
+        // no-op
     }
 }

@@ -36,6 +36,7 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     /**
      * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
      */
+    @ConsoleExperimentalAPI
     public override fun <T : SerializerAwareValue<*>> T.track(valueName: String): T =
         apply { valueNodes.add(ValueNode(valueName, this, this.serializer)) }
 

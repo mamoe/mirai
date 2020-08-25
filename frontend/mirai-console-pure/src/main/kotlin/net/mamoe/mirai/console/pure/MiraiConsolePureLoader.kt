@@ -36,12 +36,13 @@ object MiraiConsolePureLoader {
     fun main(args: Array<String>) {
         startup()
     }
-}
 
-internal fun startup() {
-    MiraiConsoleImplementationPure().start()
-    overrideSTD()
-    startupConsoleThread()
+    @Suppress("MemberVisibilityCanBePrivate")
+    internal fun startup(instance: MiraiConsoleImplementationPure = MiraiConsoleImplementationPure()) {
+        instance.start()
+        overrideSTD()
+        startupConsoleThread()
+    }
 }
 
 internal fun overrideSTD() {

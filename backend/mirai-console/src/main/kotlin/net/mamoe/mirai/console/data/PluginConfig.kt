@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.data
 
+import net.mamoe.mirai.console.data.java.JAutoSavePluginConfig
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import kotlin.annotation.AnnotationTarget.*
 
@@ -27,14 +28,14 @@ import kotlin.annotation.AnnotationTarget.*
  * 在 [PluginData] 的示例基础上, 修改对象定义
  * ```
  * // 原
- * object MyPluginData : PluginData by PluginMain.loadPluginData()
+ * object MyPluginData : AutoSavePluginData()
  * // 修改为
- * object MyPluginConfig : PluginConfig by PluginMain.loadPluginConfig()
+ * object MyPluginConfig : AutoSavePluginConfig()
  * ```
  * 即可将一个 [PluginData] 变更为 [PluginConfig].
  *
  * ### Java
- * 见 [JPluginConfig]
+ * 见 [JAutoSavePluginConfig]
  *
  * @see PluginData
  */

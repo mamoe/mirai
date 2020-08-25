@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.plugin.dsecription
+package net.mamoe.mirai.console.plugin.description
 
 import com.vdurmont.semver4j.Semver
 import kotlinx.serialization.KSerializer

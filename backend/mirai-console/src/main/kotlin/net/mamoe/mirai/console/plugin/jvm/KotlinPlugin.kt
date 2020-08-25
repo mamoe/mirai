@@ -24,7 +24,6 @@ public abstract class KotlinPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext)
 
-
 /**
  * 在内存动态加载的插件. 此为预览版本 API.
  */

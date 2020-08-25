@@ -116,7 +116,7 @@ dependencies:
 
 
 [`Plugin`]: src/main/kotlin/net/mamoe/mirai/console/plugin/Plugin.kt
-[`PluginDescription`]: src/main/kotlin/net/mamoe/mirai/console/plugin/description.kt
+[`PluginDescription`]: src/main/kotlin/net/mamoe/mirai/console/plugin/description/PluginDescription.kt
 [`PluginLoader`]: src/main/kotlin/net/mamoe/mirai/console/plugin/PluginLoader.kt
 [`PluginManager`]: src/main/kotlin/net/mamoe/mirai/console/plugin/PluginManager.kt
 [`JarPluginLoader`]: src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JarPluginLoader.kt

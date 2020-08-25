@@ -18,15 +18,17 @@
 package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.KSerializer
+import net.mamoe.mirai.console.data.java.JAutoSavePluginData
 import net.mamoe.mirai.console.internal.data.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.plugin.jvm.loadPluginData
+import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.KType
+import kotlin.reflect.full.findAnnotation
 
 /**
  * 一个插件内部的, 对用户隐藏的数据对象. 可包含对多个 [Value] 的值变更的跟踪.
@@ -47,7 +49,7 @@ import kotlin.reflect.KType
  * ```
  * object PluginMain : KotlinPlugin()
  *
- * object MyPluginData : PluginData by PluginMain.loadPluginData() {
+ * object MyPluginData : AutoSavePluginData() {
  *    val list: MutableList<String> by value(mutableListOf("a", "b")) // mutableListOf("a", "b") 是初始值, 可以省略
  *    val custom: Map<Long, CustomData> by value() // 使用 kotlinx-serialization 序列化的类型. (目前还不支持)
  *    var long: Long by value(0) // 允许 var
@@ -69,11 +71,9 @@ import kotlin.reflect.KType
  *
  * ### 使用 Java
  *
- * 参考 [JPluginData]
+ * 参考 [JAutoSavePluginData]
  *
- * **注意**: 由于实现特殊, 请不要在初始化 Value 时就使用 `.get()`. 这可能会导致自动保存追踪失效. 必须在使用时才调用 `.get()` 获取真实数据对象.
- *
- * @see JvmPlugin.loadPluginData 通过 [JvmPlugin] 获取指定 [PluginData] 实例.
+ * @see JvmPlugin.reloadPluginData 通过 [JvmPlugin] 获取指定 [PluginData] 实例.
  * @see PluginDataStorage [PluginData] 存储仓库
  */
 public interface PluginData {
@@ -87,6 +87,18 @@ public interface PluginData {
      */
     @ConsoleExperimentalAPI
     public val valueNodes: MutableList<ValueNode<*>>
+
+    /**
+     * 这个 [PluginData] 保存时使用的名称. 默认通过 [ValueName] 获取, 否则使用 [类全名][KClass.qualifiedName] (即 [Class.getCanonicalName])
+     */
+    @ConsoleExperimentalAPI
+    public val saveName: String
+        get() {
+            val clazz = this::class
+            return clazz.findAnnotation<ValueName>()?.value
+                ?: clazz.qualifiedName
+                ?: throw IllegalArgumentException("Cannot find a serial name for ${this::class}")
+        }
 
     /**
      * 由 [provideDelegate] 创建, 来自一个通过 `by value` 初始化的属性节点.
@@ -123,6 +135,7 @@ public interface PluginData {
     /**
      * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
      */
+    @ConsoleExperimentalAPI
     public fun <T : SerializerAwareValue<*>> T.track(
         /**
          * 值名称.
@@ -153,7 +166,7 @@ public interface PluginData {
      * 当这个 [PluginData] 被放入一个 [PluginDataStorage] 时调用
      */
     @ConsoleInternalAPI
-    public fun setStorage(storage: PluginDataStorage)
+    public fun onStored(owner: PluginDataHolder, storage: PluginDataStorage)
 }
 
 /**
@@ -161,12 +174,14 @@ public interface PluginData {
  *
  * 如, 对于
  * ```
- * object MyData : PluginData {
+ * object MyData : AutoSavePluginData(PluginMain) {
  *     val list: List<String> by value()
  * }
  *
  * val value: Value<List<String>> = MyData.findBackingFieldValue(MyData::list)
  * ```
+ *
+ * @see PluginData
  */
 @Suppress("UNCHECKED_CAST")
 public fun <T> PluginData.findBackingFieldValue(property: KProperty<T>): Value<out T>? =
@@ -177,7 +192,7 @@ public fun <T> PluginData.findBackingFieldValue(property: KProperty<T>): Value<o
  *
  * 如, 对于
  * ```
- * object MyData : PluginData {
+ * object MyData : AutoSavePluginData(PluginMain) {
  *     @ValueName("theList")
  *     val list: List<String> by value()
  *     val int: Int by value()
@@ -186,6 +201,8 @@ public fun <T> PluginData.findBackingFieldValue(property: KProperty<T>): Value<o
  * val value: Value<List<String>> = MyData.findBackingFieldValue("theList") // 需使用 @ValueName 标注的名称
  * val intValue: Value<Int> = MyData.findBackingFieldValue("int")
  * ```
+ *
+ * @see PluginData
  */
 @Suppress("UNCHECKED_CAST")
 public fun <T> PluginData.findBackingFieldValue(propertyValueName: String): Value<out T>? {
@@ -198,12 +215,14 @@ public fun <T> PluginData.findBackingFieldValue(propertyValueName: String): Valu
  *
  * 如, 对于
  * ```
- * object MyData : PluginData {
+ * object MyData : AutoSavePluginData(PluginMain) {
  *     val list: List<String> by value()
  * }
  *
  * val value: PluginData.ValueNode<List<String>> = MyData.findBackingFieldValueNode(MyData::list)
  * ```
+ *
+ * @see PluginData
  */
 @Suppress("UNCHECKED_CAST")
 public fun <T> PluginData.findBackingFieldValueNode(property: KProperty<T>): PluginData.ValueNode<out T>? {

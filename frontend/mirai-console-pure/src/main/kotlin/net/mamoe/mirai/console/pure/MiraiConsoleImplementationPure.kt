@@ -38,12 +38,11 @@ import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.pure.ConsoleInputImpl.requestInput
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.DefaultLoginSolver
-import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
+import org.fusesource.jansi.Ansi
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -92,3 +91,21 @@ private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
     override val vendor: String get() = "Mamoe Technologies"
     override val version: Semver = net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
 }
+
+private val ANSI_RESET = Ansi().reset().toString()
+
+internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
+    PlatformLogger(identity = it, output = { line ->
+        ConsoleUtils.lineReader.printAbove(line + ANSI_RESET)
+    })
+}
+
+internal val sdf by ThreadLocal.withInitial {
+    // SimpleDateFormat not thread safe.
+    SimpleDateFormat("HH:mm:ss")
+}
+
+private operator fun <T> ThreadLocal<T>.getValue(thisRef: Any?, property: Any): T {
+    return this.get()
+}
+
