@@ -32,50 +32,45 @@ import javax.swing.SwingUtilities
 // 隔离类代码
 @Suppress("DEPRECATION")
 internal object WindowHelperJvm {
-    internal val isDesktopSupported: Boolean
-
-    init {
-        isDesktopSupported = kotlin.run {
-            if (System.getProperty("mirai.no-desktop") === null) {
-                kotlin.runCatching {
-                    Class.forName("java.awt.Desktop")
-                }.onFailure { return@run false } // Android OS
-                kotlin.runCatching {
-                    Toolkit.getDefaultToolkit()
-                }.onFailure { // AWT Error, #270
-                    MiraiLogger.warning("Your system unsupported desktop.")
-                    return@run false
-                }
-                kotlin.runCatching {
-                    Desktop.isDesktopSupported().also { stat ->
-                        if (stat) {
-                            MiraiLogger.info(
-                                """
+    internal val isDesktopSupported: Boolean = kotlin.run {
+        if (System.getProperty("mirai.no-desktop") === null) {
+            kotlin.runCatching {
+                Class.forName("java.awt.Desktop")
+                Class.forName("java.awt.Toolkit")
+            }.onFailure { return@run false } // Android OS
+            kotlin.runCatching {
+                Toolkit.getDefaultToolkit()
+            }.onFailure { // AWT Error, #270
+                return@run false
+            }
+            kotlin.runCatching {
+                Desktop.isDesktopSupported().also { stat ->
+                    if (stat) {
+                        MiraiLogger.info(
+                            """
                                 Mirai 正在使用桌面环境,
-                                如果你正在通过SSH, 或者无法访问桌面等原因.
+                                如果你正在使用SSH, 或者无法访问桌面等原因.
                                 请将 `mirai.no-desktop` 添加到 JVM 系统属性中 (-Dmirai.no-desktop)
                                 然后重启 Mirai
                             """.trimIndent()
-                            )
-                            MiraiLogger.info(
-                                """
+                        )
+                        MiraiLogger.info(
+                            """
                                 Mirai using DesktopCaptcha System.
                                 If you are running on SSH, cannot access desktop or more.
                                 Please add `mirai.no-desktop` to JVM properties (-Dmirai.no-desktop)
                                 Then restart mirai
                             """.trimIndent()
-                            )
-                        }
+                        )
                     }
-                }.getOrElse {
-                    // Should not happen
-                    MiraiLogger.warning("Exception in checking desktop support.", it)
-                    false
                 }
-            } else {
-                MiraiLogger.info("[Desktop] Mirai Desktop support was disabled by `mirai.no-desktop`")
+            }.getOrElse {
+                // Should not happen
+                MiraiLogger.warning("Exception in checking desktop support.", it)
                 false
             }
+        } else {
+            false
         }
     }
 }
@@ -99,16 +94,8 @@ internal class WindowInitializer(private val initializer: WindowInitializer.(JFr
 
 internal val windowIcon: BufferedImage? by lazy {
     WindowHelperJvm::class.java.getResourceAsStream("project-mirai.png")?.use {
-        return@lazy ImageIO.read(it)
+        ImageIO.read(it)
     }
-    File("mirai-core/build/processedResources/jvm/main/net/mamoe/mirai/utils/project-mirai.png").takeIf {
-        it.isFile
-    }?.let {
-        return@lazy ImageIO.read(it)
-    }
-    @Suppress("DEPRECATION")
-    MiraiLogger.warning("Missing icon.")
-    null
 }
 
 internal suspend fun openWindow(title: String = "", initializer: WindowInitializer.(JFrame) -> Unit = {}): String {
