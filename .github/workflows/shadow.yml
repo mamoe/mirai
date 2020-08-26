@@ -28,8 +28,8 @@ jobs:
         run: ./gradlew build # if test's failed, don't publish
       - name: Gradle :mirai-console:githubUpload
         run: ./gradlew :mirai-console:githubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
-      - name: Gradle :mirai-console-graphical:githubUpload
-        run: ./gradlew :mirai-console-graphical:githubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
+      - name: Gradle :mirai-console-pure:githubUpload
+        run: ./gradlew :mirai-console-pure:githubUpload -Dgithub_token=${{ secrets.MAMOE_TOKEN }} -Pgithub_token=${{ secrets.MAMOE_TOKEN }}
 
 
 #      - name: Upload artifact
