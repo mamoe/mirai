@@ -74,8 +74,12 @@ internal abstract class ${ktType.standardName}ValueImpl : ${ktType.standardName}
         get() = _value ?: error("${ktType.standardName}Value.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 

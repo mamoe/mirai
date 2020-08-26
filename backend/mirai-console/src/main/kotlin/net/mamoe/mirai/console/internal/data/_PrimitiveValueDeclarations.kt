@@ -42,8 +42,12 @@ internal abstract class ByteValueImpl : ByteValue, SerializerAwareValue<Byte>, K
         get() = _value ?: error("ByteValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
@@ -77,8 +81,12 @@ internal abstract class ShortValueImpl : ShortValue, SerializerAwareValue<Short>
         get() = _value ?: error("ShortValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
@@ -110,8 +118,12 @@ internal abstract class IntValueImpl : IntValue, SerializerAwareValue<Int>, KSer
         get() = _value ?: error("IntValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
@@ -145,8 +157,12 @@ internal abstract class LongValueImpl : LongValue, SerializerAwareValue<Long>, K
         get() = _value ?: error("LongValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
@@ -180,8 +196,12 @@ internal abstract class FloatValueImpl : FloatValue, SerializerAwareValue<Float>
         get() = _value ?: error("FloatValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
@@ -215,8 +235,12 @@ internal abstract class DoubleValueImpl : DoubleValue, SerializerAwareValue<Doub
         get() = _value ?: error("DoubleValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
@@ -250,8 +274,12 @@ internal abstract class CharValueImpl : CharValue, SerializerAwareValue<Char>, K
         get() = _value ?: error("CharValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
@@ -285,8 +313,12 @@ internal abstract class BooleanValueImpl : BooleanValue, SerializerAwareValue<Bo
         get() = _value ?: error("BooleanValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
@@ -320,8 +352,12 @@ internal abstract class StringValueImpl : StringValue, SerializerAwareValue<Stri
         get() = _value ?: error("StringValue.value should be initialized before get.")
         set(v) {
             if (v != this._value) {
-                this._value = v
-                onChanged()
+                if (this._value == null) {
+                    this._value = v
+                } else {
+                    this._value = v
+                    onChanged()
+                }
             }
         }
 
