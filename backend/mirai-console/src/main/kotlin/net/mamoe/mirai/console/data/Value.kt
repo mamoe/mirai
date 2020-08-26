@@ -240,10 +240,13 @@ public interface PrimitiveLongSetValue : PrimitiveSetValue<Long>
  * @see [CompositeMapValue]
  * @see [PrimitiveMapValue]
  */
+@ConsoleExperimentalAPI
 public interface MapValue<K, V> : CompositeValue<Map<K, V>>
 
+@ConsoleExperimentalAPI
 public interface CompositeMapValue<K, V> : MapValue<K, V>
 
+@ConsoleExperimentalAPI
 public interface PrimitiveMapValue<K, V> : MapValue<K, V>
 
 

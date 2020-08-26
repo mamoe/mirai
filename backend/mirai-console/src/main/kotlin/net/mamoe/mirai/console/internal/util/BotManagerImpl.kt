@@ -17,6 +17,8 @@ import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.*
+import net.mamoe.mirai.console.data.PluginDataExtensions.mapKeys
+import net.mamoe.mirai.console.data.PluginDataExtensions.withEmptyDefault
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.util.BotManager
 import net.mamoe.mirai.contact.User
@@ -44,7 +46,9 @@ internal object BotManagerImpl : BotManager {
 
 internal object ManagersConfig : AutoSavePluginConfig() {
     private val managers by value<MutableMap<Long, MutableSet<Long>>>().withEmptyDefault()
-    internal operator fun get(bot: Bot): MutableSet<Long> = managers[bot.id]!!
+        .mapKeys(Bot::getInstance, Bot::id)
+
+    internal operator fun get(bot: Bot): MutableSet<Long> = managers[bot]!!
 }
 
 

@@ -76,7 +76,7 @@ import kotlin.reflect.full.findAnnotation
  * @see JvmPlugin.reloadPluginData 通过 [JvmPlugin] 获取指定 [PluginData] 实例.
  * @see PluginDataStorage [PluginData] 存储仓库
  */
-public interface PluginData : PluginDataExtensions {
+public interface PluginData {
     /**
      * 添加了追踪的 [ValueNode] 列表 (即使用 `by value()` 委托的属性), 即通过 `by value` 初始化的属性列表.
      *

@@ -20,20 +20,20 @@ import kotlin.reflect.KClass
 
 
 internal open class ShadowMap<K, V, KR, VR>(
-    private val originMap: MutableMap<K, V>,
+    private val originMapComputer: () -> MutableMap<K, V>,
     private val kTransform: (K) -> KR,
     private val kTransformBack: (KR) -> K,
     private val vTransform: (V) -> VR,
     private val vTransformBack: (VR) -> V
 ) : MutableMap<KR, VR> {
-    override val size: Int get() = originMap.size
-    override fun containsKey(key: KR): Boolean = originMap.containsKey(key.let(kTransformBack))
-    override fun containsValue(value: VR): Boolean = originMap.containsValue(value.let(vTransformBack))
-    override fun get(key: KR): VR? = originMap[key.let(kTransformBack)]?.let(vTransform)
-    override fun isEmpty(): Boolean = originMap.isEmpty()
+    override val size: Int get() = originMapComputer().size
+    override fun containsKey(key: KR): Boolean = originMapComputer().containsKey(key.let(kTransformBack))
+    override fun containsValue(value: VR): Boolean = originMapComputer().containsValue(value.let(vTransformBack))
+    override fun get(key: KR): VR? = originMapComputer()[key.let(kTransformBack)]?.let(vTransform)
+    override fun isEmpty(): Boolean = originMapComputer().isEmpty()
 
     override val entries: MutableSet<MutableMap.MutableEntry<KR, VR>>
-        get() = originMap.entries.shadowMap(
+        get() = originMapComputer().entries.shadowMap(
             transform = { entry: MutableMap.MutableEntry<K, V> ->
                 object : MutableMap.MutableEntry<KR, VR> {
                     override val key: KR get() = entry.key.let(kTransform)
@@ -66,30 +66,30 @@ internal open class ShadowMap<K, V, KR, VR>(
             }
         )
     override val keys: MutableSet<KR>
-        get() = originMap.keys.shadowMap(kTransform, kTransformBack)
+        get() = originMapComputer().keys.shadowMap(kTransform, kTransformBack)
     override val values: MutableCollection<VR>
-        get() = originMap.values.shadowMap(vTransform, vTransformBack)
+        get() = originMapComputer().values.shadowMap(vTransform, vTransformBack)
 
-    override fun clear() = originMap.clear()
+    override fun clear() = originMapComputer().clear()
     override fun put(key: KR, value: VR): VR? =
-        originMap.put(key.let(kTransformBack), value.let(vTransformBack))?.let(vTransform)
+        originMapComputer().put(key.let(kTransformBack), value.let(vTransformBack))?.let(vTransform)
 
     override fun putAll(from: Map<out KR, VR>) {
         from.forEach { (kr, vr) ->
-            originMap[kr.let(kTransformBack)] = vr.let(vTransformBack)
+            originMapComputer()[kr.let(kTransformBack)] = vr.let(vTransformBack)
         }
     }
 
-    override fun remove(key: KR): VR? = originMap.remove(key.let(kTransformBack))?.let(vTransform)
-    override fun toString(): String = originMap.toString()
-    override fun hashCode(): Int = originMap.hashCode()
+    override fun remove(key: KR): VR? = originMapComputer().remove(key.let(kTransformBack))?.let(vTransform)
+    override fun toString(): String = originMapComputer().toString()
+    override fun hashCode(): Int = originMapComputer().hashCode()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as ShadowMap<*, *, *, *>
 
-        if (originMap != other.originMap) return false
+        if (originMapComputer != other.originMapComputer) return false
         if (kTransform != other.kTransform) return false
         if (kTransformBack != other.kTransformBack) return false
         if (vTransform != other.vTransform) return false
@@ -104,7 +104,7 @@ internal fun <K, V, KR, VR> MutableMap<K, V>.shadowMap(
     kTransformBack: (KR) -> K,
     vTransform: (V) -> VR,
     vTransformBack: (VR) -> V
-): MutableMap<KR, VR> = ShadowMap(this, kTransform, kTransformBack, vTransform, vTransformBack)
+): MutableMap<KR, VR> = ShadowMap({ this }, kTransform, kTransformBack, vTransform, vTransformBack)
 
 internal inline fun <E, R> MutableCollection<E>.shadowMap(
     crossinline transform: (E) -> R,
