@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console
 
+import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -25,10 +26,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.*
 import java.nio.file.Path
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -42,7 +40,15 @@ fun initTestEnvironment() {
 
         @ConsoleExperimentalAPI
         override val frontEndDescription: MiraiConsoleFrontEndDescription
-            get() = TODO("Not yet implemented")
+            get() = object : MiraiConsoleFrontEndDescription {
+                override val name: String
+                    get() = "Test"
+                override val vendor: String
+                    get() = "Test"
+                override val version: Semver
+                    get() = Semver("1.0.0")
+
+            }
         override val mainLogger: MiraiLogger = DefaultLogger("main")
         override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JarPluginLoader })
         override val consoleCommandSender: ConsoleCommandSender = object : ConsoleCommandSender() {
@@ -64,7 +70,7 @@ fun initTestEnvironment() {
             LoginSolver.Default
 
         override fun newLogger(identity: String?): MiraiLogger {
-            return DefaultLogger(identity)
+            return PlatformLogger(identity)
         }
 
         override val coroutineContext: CoroutineContext = SupervisorJob()
