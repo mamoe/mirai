@@ -18,6 +18,8 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.currentTimeMillis
+import net.mamoe.mirai.utils.error
+import net.mamoe.mirai.utils.withSwitch
 
 /**
  * 链接自动保存的 [PluginData].
@@ -95,16 +97,18 @@ public open class AutoSavePluginData private constructor(
     @Suppress("RedundantVisibilityModifier")
     @ConsoleInternalAPI
     public final override fun onValueChanged(value: Value<*>) {
-        debuggingLogger1.error("onValueChanged: $value")
+        debuggingLogger1.error { "onValueChanged: $value" }
         if (::owner_.isInitialized) {
             lastAutoSaveJob_ = owner_.launch(block = updaterBlock)
         }
     }
 
     private fun doSave() {
-        debuggingLogger1.error("doSave: ${this::class.qualifiedName}")
+        debuggingLogger1.error { "doSave: ${this::class.qualifiedName}" }
         storage_.store(owner_, this)
     }
 }
 
-internal val debuggingLogger1 = DefaultLogger("debug")
+internal val debuggingLogger1 by lazy {
+    DefaultLogger("debug").withSwitch(false)
+}
