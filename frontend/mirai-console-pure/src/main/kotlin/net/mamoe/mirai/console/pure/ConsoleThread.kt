@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.console.pure
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
@@ -21,34 +21,13 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.utils.DefaultLogger
-import org.fusesource.jansi.Ansi
 import org.jline.reader.UserInterruptException
-import java.util.*
 import kotlin.concurrent.thread
+
+val consoleLogger by lazy { DefaultLogger("console") }
 
 @OptIn(ConsoleInternalAPI::class)
 internal fun startupConsoleThread() {
-    val mutex = Mutex()
-    ConsoleUtils.miraiLineReader = { hint ->
-        mutex.withLock {
-            withContext(Dispatchers.IO) {
-                ConsoleUtils.lineReader.readLine(
-                    if (hint.isNotEmpty()) {
-                        ConsoleUtils.lineReader.printAbove(
-                            Ansi.ansi()
-                                .fgCyan().a(sdf.format(Date())).a(" ")
-                                .fgMagenta().a(hint)
-                                .reset()
-                                .toString()
-                        )
-                        "$hint > "
-                    } else "> "
-                )
-            }
-        }
-    }
-
-    val consoleLogger = DefaultLogger("console")
 
     val inputThread = thread(start = true, isDaemon = false, name = "Console Input") {
         try {
@@ -109,7 +88,7 @@ internal fun startupConsoleThread() {
             inputThread.interrupt()
         }.exceptionOrNull()?.printStackTrace()
         runCatching {
-            ConsoleUtils.terminal.close()
+            terminal.close()
         }.exceptionOrNull()?.printStackTrace()
     }
 }

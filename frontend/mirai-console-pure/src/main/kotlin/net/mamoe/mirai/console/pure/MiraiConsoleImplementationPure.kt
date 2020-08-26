@@ -24,7 +24,9 @@ package net.mamoe.mirai.console.pure
 
 import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
@@ -40,9 +42,17 @@ import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.*
 import org.fusesource.jansi.Ansi
+import org.jline.reader.LineReader
+import org.jline.reader.LineReaderBuilder
+import org.jline.reader.impl.completer.NullCompleter
+import org.jline.terminal.Terminal
+import org.jline.terminal.TerminalBuilder
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 /**
@@ -83,7 +93,51 @@ internal class MiraiConsoleImplementationPure
 }
 
 private object ConsoleInputImpl : ConsoleInput {
-    override suspend fun requestInput(hint: String): String = ConsoleUtils.miraiLineReader(hint)
+    private val format = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+    override suspend fun requestInput(hint: String): String {
+        return withContext(Dispatchers.IO) {
+            lineReader.readLine(
+                if (hint.isNotEmpty()) {
+                    lineReader.printAbove(
+                        Ansi.ansi()
+                            .fgCyan().a(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()).format(format))
+                            .a(" ")
+                            .fgMagenta().a(hint)
+                            .reset()
+                            .toString()
+                    )
+                    "$hint > "
+                } else "> "
+            )
+        }
+    }
+}
+
+val lineReader: LineReader by lazy {
+    LineReaderBuilder.builder()
+        .terminal(terminal)
+        .completer(NullCompleter())
+        .build()
+}
+
+val terminal: Terminal = run {
+    val dumb = System.getProperty("java.class.path")
+        .contains("idea_rt.jar") || System.getProperty("mirai.idea") !== null || System.getenv("mirai.idea") !== null
+
+    runCatching {
+        TerminalBuilder.builder()
+            .dumb(dumb)
+            .build()
+    }.recoverCatching {
+        TerminalBuilder.builder()
+            .jansi(true)
+            .build()
+    }.recoverCatching {
+        TerminalBuilder.builder()
+            .system(true)
+            .build()
+    }.getOrThrow()
 }
 
 private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
@@ -96,16 +150,6 @@ private val ANSI_RESET = Ansi().reset().toString()
 
 internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
     PlatformLogger(identity = it, output = { line ->
-        ConsoleUtils.lineReader.printAbove(line + ANSI_RESET)
+        lineReader.printAbove(line + ANSI_RESET)
     })
 }
-
-internal val sdf by ThreadLocal.withInitial {
-    // SimpleDateFormat not thread safe.
-    SimpleDateFormat("HH:mm:ss")
-}
-
-private operator fun <T> ThreadLocal<T>.getValue(thisRef: Any?, property: Any): T {
-    return this.get()
-}
-

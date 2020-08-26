@@ -24,7 +24,6 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.DefaultLogger
 import java.io.PrintStream
 
@@ -66,10 +65,9 @@ internal fun overrideSTD() {
 internal object ConsoleCommandSenderImpl : ConsoleCommandSender() {
     override suspend fun sendMessage(message: Message) {
         kotlin.runCatching {
-            ConsoleUtils.lineReader.printAbove(message.contentToString())
+            lineReader.printAbove(message.contentToString())
         }.onFailure {
-            println(message.content)
-            it.printStackTrace()
+            consoleLogger.error(it)
         }
     }
 }
