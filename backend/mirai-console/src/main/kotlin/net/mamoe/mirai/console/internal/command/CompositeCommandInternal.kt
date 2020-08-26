@@ -59,7 +59,10 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     internal var _usage: String = "<not yet initialized>"
 
     override val usage: String  // initialized by subCommand reflection
-        get() = _usage
+        get() {
+            subCommands // ensure init
+            return _usage
+        }
 
     abstract suspend fun CommandSender.onDefault(rawArgs: Array<out Any>)
 

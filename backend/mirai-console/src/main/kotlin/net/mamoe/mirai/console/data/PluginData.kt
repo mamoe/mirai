@@ -39,7 +39,7 @@ import kotlin.reflect.full.findAnnotation
  *
  * **注意**: [PluginData] 总应该是单例的.
  *
- * ### [JvmPlugin] 的实现方案
+ * ## [JvmPlugin] 的实现方案
  *
  * 要修改保存时的名称, 请参考 [ValueName]
  *
@@ -50,10 +50,13 @@ import kotlin.reflect.full.findAnnotation
  * object PluginMain : KotlinPlugin()
  *
  * object MyPluginData : AutoSavePluginData() {
- *    val list: MutableList<String> by value(mutableListOf("a", "b")) // mutableListOf("a", "b") 是初始值, 可以省略
+ *    var list: MutableList<String> by value(mutableListOf("a", "b")) // mutableListOf("a", "b") 是初始值, 可以省略
  *    val custom: Map<Long, CustomData> by value() // 使用 kotlinx-serialization 序列化的类型. (目前还不支持)
  *    var long: Long by value(0) // 允许 var
  *    var int by value(0) // 可以使用类型推断, 但更推荐使用 `var long: Long by value(0)` 这种定义方式.
+ *
+ *    // 将 MutableMap<Long, Long> 映射到 MutableMap<Bot, Long>.
+ *    val botToLongMap: MutableMap<Bot, Long> by value<MutableMap<Long, Long>>().mapKeys(Bot::getInstance, Bot::id)
  * }
  *
  * @Serializable
@@ -64,7 +67,7 @@ import kotlin.reflect.full.findAnnotation
  *
  * 使用时, 可以方便地直接调用, 如:
  * ```
- * val theList = AccountPluginData.list
+ * val theList: MutableList<String> = AccountPluginData.list
  * ```
  *
  * 但也注意, 不要存储 `AccountPluginData.list`. 它可能受不到值跟踪. 若必要存储, 请使用 [PluginData.findBackingFieldValue]
@@ -73,8 +76,31 @@ import kotlin.reflect.full.findAnnotation
  *
  * 参考 [JAutoSavePluginData]
  *
+ * ## 非引用赋值
+ *
+ * 由于实现特殊, 赋值时不会写其引用. 即:
+ * ```
+ * val list = ArrayList<String>("A")
+ * MyPluginData.list = list // 赋值给 PluginData 的委托属性是非引用的
+ * println(MyPluginData.list) // "[A]"
+ *
+ * list.add("B")
+ * println(list) // "[A, B]"
+ * println(MyPluginData.list) // "[A]"  // !! 由于 `list` 的引用并未赋值给 `MyPluginData.list`.
+ * ```
+ *
+ * 另一个更容易出错的示例:
+ * ```
+ * // MyPluginData.nestedMap: MutableMap<Long, List<Long>> by value()
+ * val newList = MyPluginData.map.getOrPut(1, ::mutableListOf)
+ * newList.add(1) // 不会添加到 MyPluginData.nestedMap 中, 因为 `mutableListOf` 创建的 MutableList 被非引用地添加进了 MyPluginData.nestedMap
+ * ```
+ *
+ * 一个解决方案是对 [SerializerAwareValue] 做映射或相关修改. 如 [PluginDataExtensions]
+ *
  * @see JvmPlugin.reloadPluginData 通过 [JvmPlugin] 获取指定 [PluginData] 实例.
  * @see PluginDataStorage [PluginData] 存储仓库
+ * @see PluginDataExtensions 相关 [SerializerAwareValue] 映射函数
  */
 public interface PluginData {
     /**

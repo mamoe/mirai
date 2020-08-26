@@ -31,6 +31,9 @@ import kotlin.reflect.full.createType
  *     public static PluginMain INSTANCE;
  *     public PluginMain() {
  *          INSTANCE = this;
+ *     }
+ *     @Override
+ *     public onLoad() {
  *          this.reloadPluginData(MyPluginData.INSTANCE); // 读取文件等
  *     }
  * }
@@ -38,11 +41,6 @@ import kotlin.reflect.full.createType
  * // MyPluginData.java
  * public class MyPluginData extends JAutoSavePluginData {
  *     public static final MyPluginData INSTANCE = new MyPluginData();
- *
- *     private MyPluginData() {
- *         super(PluginMain.INSTANCE);
- *         INSTANCE = this;
- *     }
  *
  *     public final Value<String> string = value("test"); // 默认值 "test"
  *
@@ -60,9 +58,7 @@ import kotlin.reflect.full.createType
  * 使用时, 需要使用 `.get()`, 如:
  * ```
  * Value<List<String>> theList = MyPluginData.INSTANCE.list; // 获取 Value 实例. Value 代表一个追踪自动保存的值.
- *
  * List<String> actualList = theList.get();
- *
  * theList.set();
  * ```
  *
