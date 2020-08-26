@@ -16,10 +16,7 @@ import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
-import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescriptionImpl
+import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
@@ -79,23 +76,29 @@ internal object JarPluginLoaderImpl :
 
     @Throws(PluginLoadException::class)
     override fun load(description: JvmPluginDescription): JvmPlugin {
-        require(description is JvmPluginDescriptionImpl) {
-            "Illegal description: ${description::class.qualifiedName}"
+        val main = when (description) {
+            is JvmMemoryPluginDescription -> {
+                description.instance
+            }
+            is JvmPluginDescriptionImpl -> with(description) {
+                classLoader.loadPluginMainClassByJarFile(
+                    pluginName = name,
+                    mainClass = mainClassName,
+                    jarFile = file
+                ).kotlin.run {
+                    objectInstance
+                        ?: createInstanceOrNull()
+                        ?: (java.constructors + java.declaredConstructors)
+                            .firstOrNull { it.parameterCount == 0 }
+                            ?.apply { kotlin.runCatching { isAccessible = true } }
+                            ?.newInstance()
+                } ?: error("No Kotlin object or public no-arg constructor found for $mainClassName")
+            }
+            else -> error("Illegal description: ${description::class.qualifiedName}")
         }
-        return description.runCatching {
+
+        description.runCatching {
             ensureActive()
-            val main = classLoader.loadPluginMainClassByJarFile(
-                pluginName = name,
-                mainClass = mainClassName,
-                jarFile = file
-            ).kotlin.run {
-                objectInstance
-                    ?: createInstanceOrNull()
-                    ?: (java.constructors + java.declaredConstructors)
-                        .firstOrNull { it.parameterCount == 0 }
-                        ?.apply { kotlin.runCatching { isAccessible = true } }
-                        ?.newInstance()
-            } ?: error("No Kotlin object or public no-arg constructor found for $mainClassName")
 
             check(main is JvmPlugin) { "The main class of Jar plugin must extend JvmPlugin, recommended JavaPlugin or KotlinPlugin" }
 
@@ -103,7 +106,8 @@ internal object JarPluginLoaderImpl :
                 main._description = description
                 main.internalOnLoad()
             } else main.onLoad()
-            main
+
+            return main
         }.getOrElse {
             throw PluginLoadException("Exception while loading ${description.name}", it)
         }

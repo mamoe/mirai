@@ -31,7 +31,8 @@ public data class JvmMemoryPluginDescription(
     public override val author: String,
     public override val version: Semver,
     public override val info: String,
-    public override val dependencies: List<PluginDependency>
+    public override val dependencies: List<PluginDependency>,
+    val instance: JvmPlugin
 ) : JvmPluginDescription {
     init {
         require(!name.contains(':')) { "':' is forbidden in plugin name" }
