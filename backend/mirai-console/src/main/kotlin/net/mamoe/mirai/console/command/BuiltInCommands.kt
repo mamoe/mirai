@@ -14,13 +14,20 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
+import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
+import net.mamoe.mirai.console.util.BotManager.INSTANCE.addManager
+import net.mamoe.mirai.console.util.BotManager.INSTANCE.managers
+import net.mamoe.mirai.console.util.BotManager.INSTANCE.removeManager
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.secondsToMillis
 import kotlin.concurrent.thread
@@ -51,9 +58,36 @@ public object BuiltInCommands {
         }
     }
 
+    public object Managers : CompositeCommand(
+        ConsoleCommandOwner, "managers",
+        description = "Manage the managers for each bot",
+        permission = CommandPermission.Console or CommandPermission.Manager
+    ), BuiltInCommand {
+        @Permission(CommandPermission.Console::class)
+        @SubCommand
+        public suspend fun CommandSender.add(target: User) {
+            target.bot.addManager(target.id)
+            sendMessage("已成功添加 ${target.render()} 为 ${target.bot.render()} 的管理员")
+        }
+
+        @Permission(CommandPermission.Console::class)
+        @SubCommand
+        public suspend fun CommandSender.remove(target: User) {
+            target.bot.removeManager(target.id)
+            sendMessage("已成功取消 ${target.render()} 对 ${target.bot.render()} 的管理员权限")
+        }
+
+        @SubCommand
+        public suspend fun CommandSender.list(bot: Bot) {
+            sendMessage("$bot 的管理员列表:\n" + bot.managers.joinToString("\n") {
+                bot.getFriendOrNull(it)?.render() ?: it.toString()
+            })
+        }
+    }
+
     public object Help : SimpleCommand(
         ConsoleCommandOwner, "help",
-        description = "Gets help about the console."
+        description = "Command list"
     ), BuiltInCommand {
         @Handler
         public suspend fun CommandSender.handle() {
@@ -63,15 +97,16 @@ public object BuiltInCommands {
         }
     }
 
+    init {
+        Runtime.getRuntime().addShutdownHook(thread(false) {
+            MiraiConsole.cancel()
+        })
+    }
+
     public object Stop : SimpleCommand(
         ConsoleCommandOwner, "stop", "shutdown", "exit",
         description = "Stop the whole world."
     ), BuiltInCommand {
-        init {
-            Runtime.getRuntime().addShutdownHook(thread(false) {
-                MiraiConsole.cancel()
-            })
-        }
 
         private val closingLock = Mutex()
 
@@ -119,6 +154,16 @@ public object BuiltInCommands {
                 }
             )
         }
+    }
+}
+
+internal fun ContactOrBot.render(): String {
+    return when (this) {
+        is Bot -> "Bot $nick($id)"
+        is Group -> "Group $name($id)"
+        is Friend -> "Friend $nick($id)"
+        is Member -> "Friend $nameCardOrNick($id)"
+        else -> error("Illegal type for ContactOrBot: ${this::class.qualifiedNameOrTip}")
     }
 }
 

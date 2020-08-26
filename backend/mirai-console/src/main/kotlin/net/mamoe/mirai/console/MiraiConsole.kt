@@ -19,6 +19,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.util.childScopeContext
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
@@ -87,7 +88,7 @@ public interface MiraiConsole : CoroutineScope {
          */ // MiraiConsole.INSTANCE.getJob()
         public val job: Job
             get() = MiraiConsole.coroutineContext[Job]
-                ?: throw IllegalMiraiConsoleImplementationError("Internal error: Job not found in MiraiConsole.coroutineContext")
+                ?: throw MalformedMiraiConsoleImplementationError("Internal error: Job not found in MiraiConsole.coroutineContext")
 
         /**
          * 添加一个 [Bot] 实例到全局 Bot 列表, 但不登录.
@@ -102,6 +103,7 @@ public interface MiraiConsole : CoroutineScope {
             Bot(id, password) {
                 fileBasedDeviceInfo()
                 redirectNetworkLogToDirectory()
+                parentCoroutineContext = MiraiConsole.childScopeContext()
 
                 this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)
                 configuration()
@@ -119,8 +121,10 @@ public val MiraiConsole.rootDir: File get() = rootPath.toFile()
  *
  * @see MiraiConsoleImplementation.start
  */
-public class IllegalMiraiConsoleImplementationError @JvmOverloads constructor(
-    public override val message: String? = null,
-    public override val cause: Throwable? = null
-) : Error()
+public class MalformedMiraiConsoleImplementationError : Error {
+    public constructor() : super()
+    public constructor(message: String?) : super(message)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(cause: Throwable?) : super(cause)
+}
 

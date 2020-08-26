@@ -48,9 +48,11 @@ fun initTestEnvironment() {
         override val consoleCommandSender: ConsoleCommandSender = object : ConsoleCommandSender() {
             override suspend fun sendMessage(message: Message) = println(message)
         }
-        override val dataStorageForJarPluginLoader: PluginDataStorage get() = MemoryPluginDataStorage()
-        override val configStorageForJarPluginLoader: PluginDataStorage get() = TODO("Not yet implemented")
-        override val dataStorageForBuiltIns: PluginDataStorage get() = MemoryPluginDataStorage()
+        override val dataStorageForJarPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
+        override val configStorageForJarPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
+        override val dataStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
+        override val configStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
+
         override val consoleInput: ConsoleInput = object : ConsoleInput {
             override suspend fun requestInput(hint: String): String {
                 println(hint)

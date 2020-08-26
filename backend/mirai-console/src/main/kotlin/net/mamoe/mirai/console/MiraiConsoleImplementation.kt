@@ -81,6 +81,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val dataStorageForJarPluginLoader: PluginDataStorage
     public val configStorageForJarPluginLoader: PluginDataStorage
     public val dataStorageForBuiltIns: PluginDataStorage
+    public val configStorageForBuiltIns: PluginDataStorage
 
     /**
      * @see ConsoleInput 的实现
@@ -111,7 +112,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         /** 由前端调用, 初始化 [MiraiConsole] 实例, 并启动 */
         @JvmStatic
         @ConsoleFrontEndImplementation
-        @Throws(IllegalMiraiConsoleImplementationError::class)
+        @Throws(MalformedMiraiConsoleImplementationError::class)
         public fun MiraiConsoleImplementation.start(): Unit = initLock.withLock {
             this@Companion.instance = this
             MiraiConsoleImplementationBridge.doStart()

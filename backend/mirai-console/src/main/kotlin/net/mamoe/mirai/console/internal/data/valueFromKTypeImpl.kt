@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.data.SerializableValue.Companion.serializableValu
 import net.mamoe.mirai.console.data.SerializerAwareValue
 import net.mamoe.mirai.console.data.valueFromKType
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
@@ -148,4 +149,17 @@ internal fun KClass<*>.isPrimitiveOrBuiltInSerializableValue(): Boolean {
 
 @PublishedApi
 @Suppress("UNCHECKED_CAST")
-internal inline fun <R> Any.cast(): R = this as R
+internal inline fun <reified R> Any.cast(): R {
+    contract {
+        returns() implies (this@cast is R)
+    }
+    return this as R
+}
+
+@Suppress("UNCHECKED_CAST")
+internal inline fun <reified R> Any.castOrInternalError(): R {
+    contract {
+        returns() implies (this@castOrInternalError is R)
+    }
+    return (this as? R) ?: error("Internal error: ${this::class} cannot be casted to ${R::class}")
+}

@@ -110,9 +110,12 @@ internal abstract class CompositeListValueImpl<T>(
 // workaround to a type inference bug
 internal fun <K, V> PluginData.createCompositeMapValueImpl(
     kToValue: (K) -> Value<K>,
-    vToValue: (V) -> Value<V>
+    vToValue: (V) -> Value<V>,
+    valueToK: (Value<K>) -> K = Value<K>::value,
+    valueToV: (Value<V>) -> V = Value<V>::value,
+    applyToShadowedMap: ((MutableMap<K, V>) -> (MutableMap<K, V>))? = null
 ): CompositeMapValueImpl<K, V> {
-    return object : CompositeMapValueImpl<K, V>(kToValue, vToValue) {
+    return object : CompositeMapValueImpl<K, V>(kToValue, vToValue, valueToK, valueToV, applyToShadowedMap) {
         override fun onChanged() = this@createCompositeMapValueImpl.onValueChanged(this)
     }
 }
@@ -120,13 +123,20 @@ internal fun <K, V> PluginData.createCompositeMapValueImpl(
 // TODO: 2020/6/24 在一个 Value 被删除后停止追踪其更新.
 
 internal abstract class CompositeMapValueImpl<K, V>(
-    kToValue: (K) -> Value<K>, // should override onChanged
-    vToValue: (V) -> Value<V> // should override onChanged
+    @JvmField internal val kToValue: (K) -> Value<K>, // should override onChanged
+    @JvmField internal val vToValue: (V) -> Value<V>, // should override onChanged
+    @JvmField internal val valueToK: (Value<K>) -> K = Value<K>::value,
+    @JvmField internal val valueToV: (Value<V>) -> V = Value<V>::value,
+    applyToShadowedMap: ((MutableMap<K, V>) -> (MutableMap<K, V>))? = null
 ) : CompositeMapValue<K, V>, AbstractValueImpl<Map<K, V>>() {
-    private val internalList: MutableMap<Value<K>, Value<V>> = mutableMapOf()
+    @JvmField
+    internal val internalList: MutableMap<Value<K>, Value<V>> = mutableMapOf()
 
     private var _value: MutableMap<K, V> =
-        internalList.shadowMap({ it.value }, kToValue, { it.value }, vToValue).observable { onChanged() }
+        internalList.shadowMap(valueToK, kToValue, valueToV, vToValue).let {
+            applyToShadowedMap?.invoke(it) ?: it
+        }.observable { onChanged() }
+
     override var value: Map<K, V>
         get() = _value
         set(v) {

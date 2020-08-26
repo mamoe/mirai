@@ -15,7 +15,7 @@ import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.IllegalMiraiConsoleImplementationError
+import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
@@ -26,7 +26,7 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
-import net.mamoe.mirai.console.internal.util.ConsoleBuiltInPluginDataStorage
+import net.mamoe.mirai.console.internal.util.ConsoleDataScope
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -62,6 +62,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val dataStorageForJarPluginLoader: PluginDataStorage by instance::dataStorageForJarPluginLoader
     override val configStorageForJarPluginLoader: PluginDataStorage by instance::configStorageForJarPluginLoader
     override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
+    override val configStorageForBuiltIns: PluginDataStorage by instance::configStorageForBuiltIns
     override val consoleInput: ConsoleInput by instance::consoleInput
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
@@ -83,15 +84,18 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         mainLogger.info { frontEndDescription.render() }
 
         if (coroutineContext[Job] == null) {
-            throw IllegalMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
+            throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
         }
 
         MiraiConsole.job.invokeOnCompletion {
             Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
         }
 
+        mainLogger.info { "Reloading configurations..." }
+        ConsoleDataScope.reloadAll()
+
         BuiltInCommands.registerAll()
-        mainLogger.info { "Preparing built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
+        mainLogger.info { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
         CommandManagerImpl.commandListener // start
 
         mainLogger.info { "Loading plugins..." }
@@ -99,7 +103,6 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
         mainLogger.info { "mirai-console started successfully." }
 
-        ConsoleBuiltInPluginDataStorage // init
         // Only for initialize
     }
 }

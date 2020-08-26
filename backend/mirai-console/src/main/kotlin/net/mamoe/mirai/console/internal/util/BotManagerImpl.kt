@@ -42,22 +42,47 @@ internal object BotManagerImpl : BotManager {
     }
 }
 
-internal object ManagersConfig : AutoSavePluginData() {
-    private val managers: MutableMap<Long, MutableSet<Long>> by value()
-
-    internal operator fun get(bot: Bot): MutableSet<Long> = managers.getOrPut(bot.id, ::mutableSetOf)
+internal object ManagersConfig : AutoSavePluginConfig() {
+    private val managers by value<MutableMap<Long, MutableSet<Long>>>().withEmptyDefault()
+    internal operator fun get(bot: Bot): MutableSet<Long> = managers[bot.id]!!
 }
 
 
 internal fun CoroutineContext.overrideWithSupervisorJob(): CoroutineContext = this + SupervisorJob(this[Job])
 internal fun CoroutineScope.childScope(context: CoroutineContext = EmptyCoroutineContext): CoroutineScope =
-    CoroutineScope(this.coroutineContext.overrideWithSupervisorJob() + context)
+    CoroutineScope(this.childScopeContext(context))
+
+internal fun CoroutineScope.childScopeContext(context: CoroutineContext = EmptyCoroutineContext): CoroutineContext =
+    this.coroutineContext.overrideWithSupervisorJob() + context
+
+internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope() {
+    private val data: Array<out PluginData> = arrayOf()
+    private val configs: Array<out PluginConfig> = arrayOf(ManagersConfig)
+
+    fun reloadAll() {
+        data.forEach { dt ->
+            ConsoleBuiltInPluginDataStorage.load(ConsoleBuiltInPluginDataHolder, dt)
+        }
+        configs.forEach { config ->
+            ConsoleBuiltInPluginConfigStorage.load(ConsoleBuiltInPluginConfigHolder, config)
+        }
+    }
+}
 
 internal object ConsoleBuiltInPluginDataHolder : AutoSavePluginDataHolder,
-    CoroutineScope by MiraiConsole.childScope() {
-    override val autoSaveIntervalMillis: LongRange = 30.minutesToMillis..60.minutesToMillis
+    CoroutineScope by ConsoleDataScope.childScope() {
+    override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
+    override val name: String get() = "ConsoleBuiltIns"
+}
+
+internal object ConsoleBuiltInPluginConfigHolder : AutoSavePluginDataHolder,
+    CoroutineScope by ConsoleDataScope.childScope() {
+    override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
     override val name: String get() = "ConsoleBuiltIns"
 }
 
 internal object ConsoleBuiltInPluginDataStorage :
     PluginDataStorage by MiraiConsoleImplementationBridge.dataStorageForBuiltIns
+
+internal object ConsoleBuiltInPluginConfigStorage :
+    PluginDataStorage by MiraiConsoleImplementationBridge.configStorageForBuiltIns

@@ -40,7 +40,7 @@ public interface Value<T> {
  * 可被序列化的 [Value].
  */
 public class SerializableValue<T>(
-    private val delegate: Value<T>,
+    @JvmField internal val delegate: Value<T>,
     /**
      * 用于更新和保存 [delegate] 的序列化器
      */
@@ -56,7 +56,9 @@ public class SerializableValue<T>(
         ): SerializableValue<T> {
             return SerializableValue(
                 this,
-                serializer.map(serializer = { this.value }, deserializer = { this.setValueBySerializer(it) })
+                serializer.map(serializer = {
+                    this.value
+                }, deserializer = { this.setValueBySerializer(it) })
             )
         }
     }

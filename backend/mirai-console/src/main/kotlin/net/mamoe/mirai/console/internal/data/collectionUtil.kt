@@ -18,72 +18,93 @@ import kotlin.reflect.KClass
 
 // TODO: 2020/6/24 优化性能: 引入一个 comparator 之类来替代将 Int 包装为 Value<Int> 后进行 containsKey 比较的方法
 
-internal inline fun <K, V, KR, VR> MutableMap<K, V>.shadowMap(
-    crossinline kTransform: (K) -> KR,
-    crossinline kTransformBack: (KR) -> K,
-    crossinline vTransform: (V) -> VR,
-    crossinline vTransformBack: (VR) -> V
-): MutableMap<KR, VR> {
-    return object : MutableMap<KR, VR> {
-        override val size: Int get() = this@shadowMap.size
-        override fun containsKey(key: KR): Boolean = this@shadowMap.containsKey(key.let(kTransformBack))
-        override fun containsValue(value: VR): Boolean = this@shadowMap.containsValue(value.let(vTransformBack))
-        override fun get(key: KR): VR? = this@shadowMap[key.let(kTransformBack)]?.let(vTransform)
-        override fun isEmpty(): Boolean = this@shadowMap.isEmpty()
 
-        override val entries: MutableSet<MutableMap.MutableEntry<KR, VR>>
-            get() = this@shadowMap.entries.shadowMap(
-                transform = { entry: MutableMap.MutableEntry<K, V> ->
-                    object : MutableMap.MutableEntry<KR, VR> {
-                        override val key: KR get() = entry.key.let(kTransform)
-                        override val value: VR get() = entry.value.let(vTransform)
-                        override fun setValue(newValue: VR): VR =
-                            entry.setValue(newValue.let(vTransformBack)).let(vTransform)
+internal open class ShadowMap<K, V, KR, VR>(
+    private val originMap: MutableMap<K, V>,
+    private val kTransform: (K) -> KR,
+    private val kTransformBack: (KR) -> K,
+    private val vTransform: (V) -> VR,
+    private val vTransformBack: (VR) -> V
+) : MutableMap<KR, VR> {
+    override val size: Int get() = originMap.size
+    override fun containsKey(key: KR): Boolean = originMap.containsKey(key.let(kTransformBack))
+    override fun containsValue(value: VR): Boolean = originMap.containsValue(value.let(vTransformBack))
+    override fun get(key: KR): VR? = originMap[key.let(kTransformBack)]?.let(vTransform)
+    override fun isEmpty(): Boolean = originMap.isEmpty()
 
-                        override fun hashCode(): Int = 17 * 31 + (key?.hashCode() ?: 0) + (value?.hashCode() ?: 0)
-                        override fun toString(): String = "$key=$value"
-                        override fun equals(other: Any?): Boolean {
-                            if (other == null || other !is Map.Entry<*, *>) return false
-                            return other.key == key && other.value == value
-                        }
-                    }
-                } as ((MutableMap.MutableEntry<K, V>) -> MutableMap.MutableEntry<KR, VR>), // type inference bug
-                transformBack = { entry ->
-                    object : MutableMap.MutableEntry<K, V> {
-                        override val key: K get() = entry.key.let(kTransformBack)
-                        override val value: V get() = entry.value.let(vTransformBack)
-                        override fun setValue(newValue: V): V =
-                            entry.setValue(newValue.let(vTransform)).let(vTransformBack)
+    override val entries: MutableSet<MutableMap.MutableEntry<KR, VR>>
+        get() = originMap.entries.shadowMap(
+            transform = { entry: MutableMap.MutableEntry<K, V> ->
+                object : MutableMap.MutableEntry<KR, VR> {
+                    override val key: KR get() = entry.key.let(kTransform)
+                    override val value: VR get() = entry.value.let(vTransform)
+                    override fun setValue(newValue: VR): VR =
+                        entry.setValue(newValue.let(vTransformBack)).let(vTransform)
 
-                        override fun hashCode(): Int = 17 * 31 + (key?.hashCode() ?: 0) + (value?.hashCode() ?: 0)
-                        override fun toString(): String = "$key=$value"
-                        override fun equals(other: Any?): Boolean {
-                            if (other == null || other !is Map.Entry<*, *>) return false
-                            return other.key == key && other.value == value
-                        }
+                    override fun hashCode(): Int = 17 * 31 + (key?.hashCode() ?: 0) + (value?.hashCode() ?: 0)
+                    override fun toString(): String = "$key=$value"
+                    override fun equals(other: Any?): Boolean {
+                        if (other == null || other !is Map.Entry<*, *>) return false
+                        return other.key == key && other.value == value
                     }
                 }
-            )
-        override val keys: MutableSet<KR>
-            get() = this@shadowMap.keys.shadowMap(kTransform, kTransformBack)
-        override val values: MutableCollection<VR>
-            get() = this@shadowMap.values.shadowMap(vTransform, vTransformBack)
+            } as ((MutableMap.MutableEntry<K, V>) -> MutableMap.MutableEntry<KR, VR>), // type inference bug
+            transformBack = { entry ->
+                object : MutableMap.MutableEntry<K, V> {
+                    override val key: K get() = entry.key.let(kTransformBack)
+                    override val value: V get() = entry.value.let(vTransformBack)
+                    override fun setValue(newValue: V): V =
+                        entry.setValue(newValue.let(vTransform)).let(vTransformBack)
 
-        override fun clear() = this@shadowMap.clear()
-        override fun put(key: KR, value: VR): VR? =
-            this@shadowMap.put(key.let(kTransformBack), value.let(vTransformBack))?.let(vTransform)
-
-        override fun putAll(from: Map<out KR, VR>) {
-            from.forEach { (kr, vr) ->
-                this@shadowMap[kr.let(kTransformBack)] = vr.let(vTransformBack)
+                    override fun hashCode(): Int = 17 * 31 + (key?.hashCode() ?: 0) + (value?.hashCode() ?: 0)
+                    override fun toString(): String = "$key=$value"
+                    override fun equals(other: Any?): Boolean {
+                        if (other == null || other !is Map.Entry<*, *>) return false
+                        return other.key == key && other.value == value
+                    }
+                }
             }
-        }
+        )
+    override val keys: MutableSet<KR>
+        get() = originMap.keys.shadowMap(kTransform, kTransformBack)
+    override val values: MutableCollection<VR>
+        get() = originMap.values.shadowMap(vTransform, vTransformBack)
 
-        override fun remove(key: KR): VR? = this@shadowMap.remove(key.let(kTransformBack))?.let(vTransform)
-        override fun toString(): String = this@shadowMap.toString()
-        override fun hashCode(): Int = this@shadowMap.hashCode()
+    override fun clear() = originMap.clear()
+    override fun put(key: KR, value: VR): VR? =
+        originMap.put(key.let(kTransformBack), value.let(vTransformBack))?.let(vTransform)
+
+    override fun putAll(from: Map<out KR, VR>) {
+        from.forEach { (kr, vr) ->
+            originMap[kr.let(kTransformBack)] = vr.let(vTransformBack)
+        }
+    }
+
+    override fun remove(key: KR): VR? = originMap.remove(key.let(kTransformBack))?.let(vTransform)
+    override fun toString(): String = originMap.toString()
+    override fun hashCode(): Int = originMap.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ShadowMap<*, *, *, *>
+
+        if (originMap != other.originMap) return false
+        if (kTransform != other.kTransform) return false
+        if (kTransformBack != other.kTransformBack) return false
+        if (vTransform != other.vTransform) return false
+        if (vTransformBack != other.vTransformBack) return false
+
+        return true
     }
 }
+
+internal fun <K, V, KR, VR> MutableMap<K, V>.shadowMap(
+    kTransform: (K) -> KR,
+    kTransformBack: (KR) -> K,
+    vTransform: (V) -> VR,
+    vTransformBack: (VR) -> V
+): MutableMap<KR, VR> = ShadowMap(this, kTransform, kTransformBack, vTransform, vTransformBack)
 
 internal inline fun <E, R> MutableCollection<E>.shadowMap(
     crossinline transform: (E) -> R,

@@ -16,6 +16,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.currentTimeMillis
 
 /**
@@ -39,7 +40,11 @@ public open class AutoSavePluginData private constructor(
 
     override fun onStored(owner: PluginDataHolder, storage: PluginDataStorage) {
         check(owner is AutoSavePluginDataHolder) { "owner must be AutoSavePluginDataHolder for AutoSavePluginData" }
-        check(!this::storage_.isInitialized) { "storage is already initialized" }
+
+        if (this::storage_.isInitialized) {
+            check(storage == this.storage_) { "AutoSavePluginData is already initialized with one storage and cannot be reinitialized with another." }
+        }
+
         this.storage_ = storage
         this.owner_ = owner
 
@@ -90,10 +95,16 @@ public open class AutoSavePluginData private constructor(
     @Suppress("RedundantVisibilityModifier")
     @ConsoleInternalAPI
     public final override fun onValueChanged(value: Value<*>) {
+        debuggingLogger1.error("onValueChanged: $value")
         if (::owner_.isInitialized) {
             lastAutoSaveJob_ = owner_.launch(block = updaterBlock)
         }
     }
 
-    private fun doSave() = storage_.store(owner_, this)
+    private fun doSave() {
+        debuggingLogger1.error("doSave: ${this::class.qualifiedName}")
+        storage_.store(owner_, this)
+    }
 }
+
+internal val debuggingLogger1 = DefaultLogger("debug")

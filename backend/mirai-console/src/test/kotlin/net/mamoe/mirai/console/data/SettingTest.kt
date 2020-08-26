@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.json.Json
-import net.mamoe.mirai.console.data.AutoSavePluginDataHolder.Companion.createPluginData
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import org.junit.jupiter.api.Test
@@ -22,7 +21,7 @@ internal class PluginDataTest {
 
     object MyPlugin : KotlinPlugin()
 
-    class MyPluginData : PluginData by MyPlugin.createPluginData() {
+    class MyPluginData : AutoSavePluginData() {
         var int by value(1)
         val map: MutableMap<String, String> by value()
         val map2: MutableMap<String, MutableMap<String, String>> by value()

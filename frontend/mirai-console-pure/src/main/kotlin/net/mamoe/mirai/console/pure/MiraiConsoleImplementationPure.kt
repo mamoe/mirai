@@ -58,7 +58,6 @@ import java.util.*
 /**
  * mirai-console-pure 后端实现
  *
- * @see MiraiConsoleFrontEndPure 前端实现
  * @see MiraiConsolePureLoader CLI 入口点
  */
 internal class MiraiConsoleImplementationPure
@@ -71,7 +70,8 @@ internal class MiraiConsoleImplementationPure
     override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
     override val dataStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
-    override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config"))
+    override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
+    override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config"))
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(SupervisorJob()) {
     override val mainLogger: MiraiLogger by lazy {
         MiraiConsole.newLogger("main")

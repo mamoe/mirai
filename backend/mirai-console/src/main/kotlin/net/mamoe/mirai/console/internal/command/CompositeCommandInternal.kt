@@ -130,11 +130,11 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
             removeSubName: Boolean
         ) {
             val args = parseArgs(sender, argsWithSubCommandNameNotRemoved, if (removeSubName) names.size else 0)
-            if (args == null || !onCommand(
-                    sender,
-                    args
-                )
-            ) {
+            if (!this.permission.testPermission(sender)) {
+                sender.sendMessage(usage) // TODO: 2020/8/26 #127
+                return
+            }
+            if (args == null || !onCommand(sender, args)) {
                 sender.sendMessage(usage)
             }
         }
