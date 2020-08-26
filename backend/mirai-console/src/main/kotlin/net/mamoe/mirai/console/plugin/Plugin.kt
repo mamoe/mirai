@@ -88,3 +88,8 @@ public interface PluginFileExtensions {
     @JvmDefault
     public fun resolveDataPath(relativePath: Path): Path = dataFolderPath.resolve(relativePath)
 }
+
+/**
+ * @return `dataFolderPath.toFile()`
+ */
+public val PluginFileExtensions.dataFolder: File get() = dataFolderPath.toFile()
