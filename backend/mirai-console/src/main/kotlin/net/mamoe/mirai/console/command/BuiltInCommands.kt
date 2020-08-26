@@ -91,9 +91,10 @@ public object BuiltInCommands {
     ), BuiltInCommand {
         @Handler
         public suspend fun CommandSender.handle() {
-            sendMessage(allRegisteredCommands.joinToString {
-                it.usage + "\n\n"
-            })
+            sendMessage(
+                allRegisteredCommands.joinToString("\n\n") { "◆ ${it.usage}" }.lines().filterNot(String::isBlank)
+                    .joinToString("\n")
+            )
         }
     }
 
