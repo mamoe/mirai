@@ -25,7 +25,6 @@ import org.fusesource.jansi.Ansi
 import org.jline.reader.UserInterruptException
 import java.util.*
 import kotlin.concurrent.thread
-import kotlin.system.exitProcess
 
 @OptIn(ConsoleInternalAPI::class)
 internal fun startupConsoleThread() {
@@ -33,7 +32,6 @@ internal fun startupConsoleThread() {
     ConsoleUtils.miraiLineReader = { hint ->
         mutex.withLock {
             withContext(Dispatchers.IO) {
-                println("Requesting input")
                 ConsoleUtils.lineReader.readLine(
                     if (hint.isNotEmpty()) {
                         ConsoleUtils.lineReader.printAbove(
@@ -64,7 +62,6 @@ internal fun startupConsoleThread() {
                                 else -> CommandManager.commandPrefix + it
                             }
                         }
-                        exitProcess(123456)
                         if (next.isBlank()) {
                             continue
                         }
@@ -74,7 +71,7 @@ internal fun startupConsoleThread() {
                             CommandExecuteStatus.SUCCESSFUL -> {
                             }
                             CommandExecuteStatus.EXECUTION_EXCEPTION -> {
-                                result.exception?.printStackTrace()
+                                result.exception?.let(consoleLogger::error)
                             }
                             CommandExecuteStatus.COMMAND_NOT_FOUND -> {
                                 consoleLogger.warning("未知指令: ${result.commandName}, 输入 ? 获取帮助")
