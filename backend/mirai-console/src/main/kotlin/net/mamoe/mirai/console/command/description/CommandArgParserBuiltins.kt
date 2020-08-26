@@ -15,6 +15,7 @@ import net.mamoe.mirai.console.internal.command.fuzzySearchMember
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.At
@@ -180,6 +181,57 @@ public object ExistingGroupArgumentParser : InternalCommandArgumentParserExtensi
     }
 }
 
+public object ExistingUserArgumentParser : InternalCommandArgumentParserExtensions<User> {
+    private val syntax: String = """
+         - `botId.group.memberId`
+         - `botId.group.memberCard` (模糊搜索, 寻找最优匹配)
+         - `~` (指代指令调用人自己. 仅聊天环境下)
+         - `$` (随机成员. 仅聊天环境下)
+         - `botId.friendId
+         
+         当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+    """.trimIndent()
+
+    override fun parse(raw: String, sender: CommandSender): User {
+        return parseImpl(sender, raw, ExistingMemberArgumentParser::parse, ExistingFriendArgumentParser::parse)
+    }
+
+    override fun parse(raw: SingleMessage, sender: CommandSender): User {
+        return parseImpl(sender, raw, ExistingMemberArgumentParser::parse, ExistingFriendArgumentParser::parse)
+    }
+
+    private fun <T> parseImpl(
+        sender: CommandSender,
+        raw: T,
+        parseFunction: (T, CommandSender) -> User,
+        parseFunction2: (T, CommandSender) -> User,
+    ): User {
+        if (sender.inferGroup() != null) {
+            kotlin.runCatching {
+                return parseFunction(raw, sender)
+            }.recoverCatching {
+                return parseFunction2(raw, sender)
+            }.getOrElse {
+                illegalArgument("无法推断目标好友或群员. \n$syntax")
+            }
+        }
+        if (Bot.botInstancesSequence.count() == 1) {
+
+            kotlin.runCatching {
+
+            }.getOrElse {
+                illegalArgument("无法推断目标好友或群员. \n$syntax")
+            }
+        }
+        kotlin.runCatching {
+            return parseFunction2(raw, sender)
+        }.getOrElse {
+            illegalArgument("无法推断目标好友或群员. \n$syntax")
+        }
+    }
+}
+
+
 /**
  * 解析任意一个群成员.
  *
@@ -190,7 +242,7 @@ public object ExistingGroupArgumentParser : InternalCommandArgumentParserExtensi
  *
  * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
  */
-public object ExistMemberArgumentParser : InternalCommandArgumentParserExtensions<Member> {
+public object ExistingMemberArgumentParser : InternalCommandArgumentParserExtensions<Member> {
     private val syntax: String = """
          - `botId.group.memberId`
          - `botId.group.memberCard` (模糊搜索, 寻找最优匹配)
@@ -265,7 +317,9 @@ internal interface InternalCommandArgumentParserExtensions<T : Any> : CommandArg
     fun CommandSender.inferBotOrFail(): Bot = (this as? BotAwareCommandSender)?.bot ?: illegalArgument("当前语境下无法推断目标群员")
 
     fun CommandSender.inferGroupOrFail(): Group =
-        (this as? GroupAwareCommandSender)?.group ?: illegalArgument("当前语境下无法推断目标群")
+        inferGroup() ?: illegalArgument("当前语境下无法推断目标群")
+
+    fun CommandSender.inferGroup(): Group? = (this as? GroupAwareCommandSender)?.group
 
     fun CommandSender.inferFriendOrFail(): Friend =
         (this as? FriendCommandSender)?.user ?: illegalArgument("当前语境下无法推断目标好友")

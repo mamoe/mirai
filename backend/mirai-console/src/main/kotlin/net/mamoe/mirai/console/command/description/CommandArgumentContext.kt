@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.User
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -75,7 +76,8 @@ public interface CommandArgumentContext {
         Double::class with DoubleArgumentParser
         Float::class with FloatArgumentParser
 
-        Member::class with ExistMemberArgumentParser
+        User::class with ExistingUserArgumentParser
+        Member::class with ExistingMemberArgumentParser
         Group::class with ExistingGroupArgumentParser
         Friend::class with ExistingFriendArgumentParser
         Bot::class with ExistingBotArgumentParser
@@ -137,7 +139,8 @@ public class SimpleCommandArgumentContext(
     public val list: List<ParserPair<*>>
 ) : CommandArgumentContext {
     override fun <T : Any> get(klass: KClass<out T>): CommandArgumentParser<T>? =
-        this.list.firstOrNull { klass.isSubclassOf(it.klass) }?.parser as CommandArgumentParser<T>?
+        (this.list.firstOrNull { klass == it.klass }?.parser
+            ?: this.list.firstOrNull { klass.isSubclassOf(it.klass) }?.parser) as CommandArgumentParser<T>?
 
     override fun toList(): List<ParserPair<*>> = list
 }

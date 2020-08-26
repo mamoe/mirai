@@ -19,6 +19,7 @@ import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
 import kotlin.contracts.InvocationKind
@@ -43,7 +44,8 @@ import kotlin.contracts.contract
  * - [Bot]: [ExistingBotArgumentParser]
  * - [Friend]: [ExistingFriendArgumentParser]
  * - [Group]: [ExistingGroupArgumentParser]
- * - [Member]: [ExistMemberArgumentParser]
+ * - [Member]: [ExistingMemberArgumentParser]
+ * - [User]: [ExistingUserArgumentParser]
  *
  *
  * @see SimpleCommand 简单指令
