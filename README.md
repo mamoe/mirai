@@ -33,12 +33,7 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 - `mirai-console-terminal`: console 的 Unix 终端界面前端. (开发中)
 
 
-**注意：`mirai-console` 后端和 pure 前端正在进行完全的重构**
-
-重构计划:
-- [x] `1.0-M1`: API 初步
-- [x] `1.0-M2`: API 优化; Java 调用支持
-- [ ] `1.0-M3`: Java 实现支持; 文档补全
+**注意：`mirai-console` 后端和 pure 前端正在进行完全的重构, 所有 API 都不具有稳定性**
 
 ### 使用
 
