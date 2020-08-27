@@ -149,10 +149,13 @@ public interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoa
  * @see FilePluginLoader
  */
 public abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
+    /**
+     * 所支持的插件文件后缀, 含 '.'. 如 [JarPluginLoader] 为 ".jar"
+     */
     public override val fileSuffix: String
 ) : FilePluginLoader<P, D> {
     private fun pluginsFilesSequence(): Sequence<File> =
-        PluginManager.pluginsPath.toFile().walk()
+        PluginManager.pluginsFolder.listFiles().orEmpty().asSequence()
             .filter { it.isFile && it.name.endsWith(fileSuffix, ignoreCase = true) }
 
     /**
