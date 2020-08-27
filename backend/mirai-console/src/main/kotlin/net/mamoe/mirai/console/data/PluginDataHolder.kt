@@ -28,6 +28,7 @@ public interface PluginDataHolder {
     /**
      * 保存时使用的分类名
      */
+    @ConsoleExperimentalAPI
     public val name: String
 }
 
@@ -50,6 +51,7 @@ public interface AutoSavePluginDataHolder : PluginDataHolder, CoroutineScope {
      * @see LongRange Java 用户使用 [LongRange] 的构造器创建
      * @see Long.rangeTo Kotlin 用户使用 [Long.rangeTo] 创建, 如 `3000..50000`
      */
+    @ConsoleExperimentalAPI
     public val autoSaveIntervalMillis: LongRange
 }
 

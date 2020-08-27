@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.internal.util
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.future
+import net.mamoe.mirai.console.internal.plugin.NamedSupervisorJob
 import net.mamoe.mirai.console.plugin.jvm.JavaPluginScheduler
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
@@ -20,7 +21,7 @@ import kotlin.coroutines.CoroutineContext
 internal class JavaPluginSchedulerImpl internal constructor(parentCoroutineContext: CoroutineContext) : CoroutineScope,
     JavaPluginScheduler {
     override val coroutineContext: CoroutineContext =
-        parentCoroutineContext + SupervisorJob(parentCoroutineContext[Job])
+        parentCoroutineContext + NamedSupervisorJob(this.toString(), parentCoroutineContext[Job])
 
     override fun repeating(intervalMs: Long, runnable: Runnable): Future<Void?> {
         return this.future {

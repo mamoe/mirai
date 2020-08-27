@@ -11,15 +11,16 @@
 
 package net.mamoe.mirai.console.internal.util
 
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.data.PluginDataExtensions.mapKeys
 import net.mamoe.mirai.console.data.PluginDataExtensions.withEmptyDefault
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.plugin.NamedSupervisorJob
 import net.mamoe.mirai.console.util.BotManager
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.utils.minutesToMillis
@@ -52,14 +53,25 @@ internal object ManagersConfig : AutoSavePluginConfig() {
 }
 
 
-internal fun CoroutineContext.overrideWithSupervisorJob(): CoroutineContext = this + SupervisorJob(this[Job])
-internal fun CoroutineScope.childScope(context: CoroutineContext = EmptyCoroutineContext): CoroutineScope =
-    CoroutineScope(this.childScopeContext(context))
+internal fun CoroutineContext.overrideWithSupervisorJob(name: String? = null): CoroutineContext =
+    this + NamedSupervisorJob(name ?: "<unnamed>", this[Job])
 
-internal fun CoroutineScope.childScopeContext(context: CoroutineContext = EmptyCoroutineContext): CoroutineContext =
-    this.coroutineContext.overrideWithSupervisorJob() + context
+internal fun CoroutineScope.childScope(
+    name: String? = null,
+    context: CoroutineContext = EmptyCoroutineContext
+): CoroutineScope =
+    CoroutineScope(this.childScopeContext(name, context))
 
-internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope() {
+internal fun CoroutineScope.childScopeContext(
+    name: String? = null,
+    context: CoroutineContext = EmptyCoroutineContext
+): CoroutineContext =
+    this.coroutineContext.overrideWithSupervisorJob(name) + context.let {
+        if (name != null) it + CoroutineName(name)
+        else it
+    }
+
+internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope("ConsoleDataScope") {
     private val data: Array<out PluginData> = arrayOf()
     private val configs: Array<out PluginConfig> = arrayOf(ManagersConfig)
 
@@ -74,13 +86,13 @@ internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope() {
 }
 
 internal object ConsoleBuiltInPluginDataHolder : AutoSavePluginDataHolder,
-    CoroutineScope by ConsoleDataScope.childScope() {
+    CoroutineScope by ConsoleDataScope.childScope("ConsoleBuiltInPluginDataHolder") {
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
     override val name: String get() = "ConsoleBuiltIns"
 }
 
 internal object ConsoleBuiltInPluginConfigHolder : AutoSavePluginDataHolder,
-    CoroutineScope by ConsoleDataScope.childScope() {
+    CoroutineScope by ConsoleDataScope.childScope("ConsoleBuiltInPluginConfigHolder") {
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
     override val name: String get() = "ConsoleBuiltIns"
 }

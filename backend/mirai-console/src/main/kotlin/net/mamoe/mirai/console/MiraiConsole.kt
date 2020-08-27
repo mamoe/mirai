@@ -108,7 +108,7 @@ public interface MiraiConsole : CoroutineScope {
             Bot(id, password) {
                 fileBasedDeviceInfo()
                 redirectNetworkLogToDirectory()
-                parentCoroutineContext = MiraiConsole.childScopeContext()
+                parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
 
                 this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)
                 configuration()

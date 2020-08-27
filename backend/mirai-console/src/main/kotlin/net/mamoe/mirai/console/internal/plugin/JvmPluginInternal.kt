@@ -26,7 +26,6 @@ import java.io.InputStream
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 internal val <T> T.job: Job where T : CoroutineScope, T : Plugin get() = this.coroutineContext[Job]!!
 
@@ -119,14 +118,15 @@ internal abstract class JvmPluginInternal(
 
     // for future use
     @Suppress("PropertyName")
-    @JvmField
-    internal var _intrinsicCoroutineContext: CoroutineContext = EmptyCoroutineContext
+    internal val _intrinsicCoroutineContext: CoroutineContext by lazy {
+        CoroutineName("Plugin $name")
+    }
 
     @JvmField
     internal val coroutineContextInitializer = {
         CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
             .plus(parentCoroutineContext)
-            .plus(SupervisorJob(parentCoroutineContext[Job]))
+            .plus(NamedSupervisorJob("Plugin $name", parentCoroutineContext[Job]))
             .also {
                 JarPluginLoaderImpl.coroutineContext[Job]!!.invokeOnCompletion {
                     this.cancel()
@@ -154,6 +154,16 @@ internal abstract class JvmPluginInternal(
             ?: contextUpdateLock.withLock { _coroutineContext ?: refreshCoroutineContext() }
 
     // endregion
+}
+
+@Suppress("FunctionName")
+internal class NamedSupervisorJob(
+    private val name: String,
+    parent: Job? = null
+) : CompletableJob by SupervisorJob(parent) {
+    override fun toString(): String {
+        return "NamedSupervisorJob($name)"
+    }
 }
 
 internal inline fun AtomicLong.updateWhen(condition: (Long) -> Boolean, update: (Long) -> Long): Boolean {

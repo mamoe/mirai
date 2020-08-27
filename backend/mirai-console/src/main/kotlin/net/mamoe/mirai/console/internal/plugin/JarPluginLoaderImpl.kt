@@ -44,7 +44,7 @@ internal object JarPluginLoaderImpl :
         get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
 
     override val coroutineContext: CoroutineContext =
-        MiraiConsole.childScopeContext(CoroutineExceptionHandler { _, throwable ->
+        MiraiConsole.childScopeContext("JarPluginLoader", CoroutineExceptionHandler { _, throwable ->
             logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
         })
 

@@ -28,7 +28,7 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 
-internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsole.childScope() {
+internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsole.childScope("PluginManager") {
 
     override val pluginsPath: Path = MiraiConsole.rootPath.resolve("plugins").apply { mkdir() }
     override val pluginsFolder: File = pluginsPath.toFile()

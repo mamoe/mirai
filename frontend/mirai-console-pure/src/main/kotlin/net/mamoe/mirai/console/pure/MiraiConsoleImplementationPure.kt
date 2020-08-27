@@ -25,7 +25,6 @@ package net.mamoe.mirai.console.pure
 import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
@@ -34,6 +33,7 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.internal.plugin.NamedSupervisorJob
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
@@ -72,7 +72,7 @@ internal class MiraiConsoleImplementationPure
     override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config"))
-) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(SupervisorJob()) {
+) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(NamedSupervisorJob("MiraiConsoleImplementationPure")) {
     override val mainLogger: MiraiLogger by lazy {
         MiraiConsole.newLogger("main")
     }

@@ -11,7 +11,7 @@ package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
@@ -22,71 +22,53 @@ import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.utils.DefaultLogger
 import org.jline.reader.UserInterruptException
-import kotlin.concurrent.thread
 
 val consoleLogger by lazy { DefaultLogger("console") }
 
 @OptIn(ConsoleInternalAPI::class)
 internal fun startupConsoleThread() {
-
-    val inputThread = thread(start = true, isDaemon = false, name = "Console Input") {
-        try {
-            runBlocking {
-                while (true) {
-                    try {
-                        val next = MiraiConsole.requestInput("").let {
-                            when {
-                                it.startsWith(CommandManager.commandPrefix) -> it
-                                it == "?" -> CommandManager.commandPrefix + BuiltInCommands.Help.primaryName
-                                else -> CommandManager.commandPrefix + it
-                            }
-                        }
-                        if (next.isBlank()) {
-                            continue
-                        }
-                        // consoleLogger.debug("INPUT> $next")
-                        val result = ConsoleCommandSenderImpl.executeCommand(next)
-                        when (result.status) {
-                            CommandExecuteStatus.SUCCESSFUL -> {
-                            }
-                            CommandExecuteStatus.EXECUTION_EXCEPTION -> {
-                                result.exception?.let(consoleLogger::error)
-                            }
-                            CommandExecuteStatus.COMMAND_NOT_FOUND -> {
-                                consoleLogger.warning("未知指令: ${result.commandName}, 输入 ? 获取帮助")
-                            }
-                            CommandExecuteStatus.PERMISSION_DENIED -> {
-                                consoleLogger.warning("Permission denied.")
-                            }
-                        }
-                    } catch (e: InterruptedException) {
-                        return@runBlocking
-                    } catch (e: CancellationException) {
-                        return@runBlocking
-                    } catch (e: UserInterruptException) {
-                        MiraiConsole.cancel()
-                        return@runBlocking
-                    } catch (e: Throwable) {
-                        consoleLogger.error("Unhandled exception", e)
+    MiraiConsole.launch {
+        while (true) {
+            try {
+                val next = MiraiConsole.requestInput("").let {
+                    when {
+                        it.startsWith(CommandManager.commandPrefix) -> it
+                        it == "?" -> CommandManager.commandPrefix + BuiltInCommands.Help.primaryName
+                        else -> CommandManager.commandPrefix + it
                     }
                 }
+                if (next.isBlank()) {
+                    continue
+                }
+                // consoleLogger.debug("INPUT> $next")
+                val result = ConsoleCommandSenderImpl.executeCommand(next)
+                when (result.status) {
+                    CommandExecuteStatus.SUCCESSFUL -> {
+                    }
+                    CommandExecuteStatus.EXECUTION_EXCEPTION -> {
+                        result.exception?.let(consoleLogger::error)
+                    }
+                    CommandExecuteStatus.COMMAND_NOT_FOUND -> {
+                        consoleLogger.warning("未知指令: ${result.commandName}, 输入 ? 获取帮助")
+                    }
+                    CommandExecuteStatus.PERMISSION_DENIED -> {
+                        consoleLogger.warning("Permission denied.")
+                    }
+                }
+            } catch (e: InterruptedException) {
+                return@launch
+            } catch (e: CancellationException) {
+                return@launch
+            } catch (e: UserInterruptException) {
+                MiraiConsole.cancel()
+                return@launch
+            } catch (e: Throwable) {
+                consoleLogger.error("Unhandled exception", e)
             }
-        } catch (e: InterruptedException) {
-            return@thread
-        } catch (e: CancellationException) {
-            return@thread
-        } catch (e: UserInterruptException) {
-            MiraiConsole.cancel()
-            return@thread
-        } catch (e: Throwable) {
-            consoleLogger.error("Unhandled exception", e)
         }
     }
 
     MiraiConsole.job.invokeOnCompletion {
-        runCatching {
-            inputThread.interrupt()
-        }.exceptionOrNull()?.printStackTrace()
         runCatching {
             terminal.close()
         }.exceptionOrNull()?.printStackTrace()
