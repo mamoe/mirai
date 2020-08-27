@@ -59,8 +59,9 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
                     runCatching {
                         upload.GitHub.upload(
                             file,
-                            "https://api.github.com/repos/project-mirai/mirai-repo/contents/shadow/${project.name}/$filename",
-                            project
+                            project,
+                            "mirai-repo",
+                            "shadow/${project.name}/${filename.replace("-all", "")}"
                         )
                     }.exceptionOrNull()?.let {
                         System.err.println("GitHub Upload failed")
