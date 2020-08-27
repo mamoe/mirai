@@ -96,7 +96,10 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
                     .serializableValueWith(serializerMirai(type) as KSerializer<Set<Any?>>)
             }
         }
-        else -> error("Custom composite value is not supported yet (${classifier.qualifiedName})")
+        else -> {
+            val serializer = serializerMirai(type)
+            return LazyReferenceValueImpl<Any?>().serializableValueWith(serializer)
+        }
     }
 }
 

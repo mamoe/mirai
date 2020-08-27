@@ -189,6 +189,7 @@ public interface ListValue<E> : CompositeValue<List<E>>
  *
  * @param E 不是基础数据类型
  */
+@ConsoleExperimentalAPI
 public interface CompositeListValue<E> : ListValue<E>
 
 /**
@@ -196,12 +197,16 @@ public interface CompositeListValue<E> : ListValue<E>
  *
  * @param E 是基础类型
  */
+@ConsoleExperimentalAPI
 public interface PrimitiveListValue<E> : ListValue<E>
 
 
 //// region PrimitiveListValue CODEGEN ////
 
+@ConsoleExperimentalAPI
 public interface PrimitiveIntListValue : PrimitiveListValue<Int>
+
+@ConsoleExperimentalAPI
 public interface PrimitiveLongListValue : PrimitiveListValue<Long>
 // TODO + codegen
 
@@ -212,24 +217,30 @@ public interface PrimitiveLongListValue : PrimitiveListValue<Long>
  * @see [CompositeSetValue]
  * @see [PrimitiveSetValue]
  */
+@ConsoleExperimentalAPI
 public interface SetValue<E> : CompositeValue<Set<E>>
 
 /**
  * 复合数据类型 [Set]
  * @param E 是基础数据类型
  */
+@ConsoleExperimentalAPI
 public interface CompositeSetValue<E> : SetValue<E>
 
 /**
  * 基础数据类型 [Set]
  * @param E 是基础数据类型
  */
+@ConsoleExperimentalAPI
 public interface PrimitiveSetValue<E> : SetValue<E>
 
 
 //// region PrimitiveSetValue CODEGEN ////
 
+@ConsoleExperimentalAPI
 public interface PrimitiveIntSetValue : PrimitiveSetValue<Int>
+
+@ConsoleExperimentalAPI
 public interface PrimitiveLongSetValue : PrimitiveSetValue<Long>
 // TODO + codegen
 
@@ -252,17 +263,15 @@ public interface PrimitiveMapValue<K, V> : MapValue<K, V>
 
 //// region PrimitiveMapValue CODEGEN ////
 
+@ConsoleExperimentalAPI
 public interface PrimitiveIntIntMapValue : PrimitiveMapValue<Int, Int>
+
+@ConsoleExperimentalAPI
 public interface PrimitiveIntLongMapValue : PrimitiveMapValue<Int, Long>
 // TODO + codegen
 
 //// endregion PrimitiveSetValue CODEGEN ////
 
 
-
-
-
-
-
-
-
+@ConsoleExperimentalAPI
+public interface ReferenceValue<T> : Value<T>

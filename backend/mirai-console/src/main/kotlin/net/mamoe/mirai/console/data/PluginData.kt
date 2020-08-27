@@ -362,5 +362,3 @@ internal fun <T> PluginData.valueImpl(type: KType, classifier: KClass<*>): Seria
 @ConsoleExperimentalAPI
 public fun <T> PluginData.valueFromKType(type: KType, default: T): SerializerAwareValue<T> =
     (valueFromKTypeImpl(type) as SerializerAwareValue<Any?>).apply { this.value = default } as SerializerAwareValue<T>
-
-// TODO: 2020/6/24 Introduce class TypeToken for compound types for Java.

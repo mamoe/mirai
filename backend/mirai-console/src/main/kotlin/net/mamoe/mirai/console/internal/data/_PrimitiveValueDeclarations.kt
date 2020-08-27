@@ -25,7 +25,8 @@ internal abstract class AbstractValueImpl<T> : Value<T> {
     }
 }
 
-internal fun <T> Value<T>.setValueBySerializer(value: T) = (this as AbstractValueImpl<T>).setValueBySerializer(value)
+internal fun <T> Value<T>.setValueBySerializer(value: T) =
+    (this.castOrInternalError<AbstractValueImpl<T>>()).setValueBySerializer(value)
 
 //// region PrimitiveValuesImpl CODEGEN ////
 

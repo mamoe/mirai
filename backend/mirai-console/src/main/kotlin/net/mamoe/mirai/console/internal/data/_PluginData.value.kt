@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.internal.data
 
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.ReferenceValue
 import net.mamoe.mirai.console.data.SerializerAwareValue
 import kotlin.reflect.KClass
 
@@ -180,3 +181,19 @@ internal fun PluginData.stringValueImpl(): SerializerAwareValue<String> {
 }
 
 //// endregion PluginData_value_PrimitivesImpl CODEGEN ////
+
+internal class LazyReferenceValueImpl<T> : ReferenceValue<T>, AbstractValueImpl<T>() {
+    private var initialied: Boolean = false
+    private var valueField: T? = null
+
+    @Suppress("UNCHECKED_CAST")
+    override var value: T
+        get() {
+            check(initialied) { "Internal error: LazyReferenceValueImpl.valueField isn't initialized" }
+            return valueField as T
+        }
+        set(value) {
+            initialied = true
+            valueField = value
+        }
+}
