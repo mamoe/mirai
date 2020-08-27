@@ -21,6 +21,7 @@ import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceCont
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.utils.MiraiLogger
+import java.io.File
 import java.io.InputStream
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
@@ -38,7 +39,7 @@ internal abstract class JvmPluginInternal(
 ) : JvmPlugin,
     CoroutineScope {
 
-    override var isEnabled: Boolean = false
+    final override var isEnabled: Boolean = false
 
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
     override fun getResourceAsStream(path: String): InputStream? = resourceContainerDelegate.getResourceAsStream(path)
@@ -62,6 +63,18 @@ internal abstract class JvmPluginInternal(
 
     final override val dataFolderPath: Path by lazy {
         PluginManager.pluginsDataPath.resolve(description.name).apply { mkdir() }
+    }
+
+    final override val dataFolder: File by lazy {
+        dataFolderPath.toFile()
+    }
+
+    override val configFolderPath: Path by lazy {
+        PluginManager.pluginsConfigPath.resolve(description.name).apply { mkdir() }
+    }
+
+    override val configFolder: File by lazy {
+        configFolderPath.toFile()
     }
 
     internal fun internalOnDisable() {

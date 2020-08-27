@@ -31,23 +31,54 @@ import java.nio.file.Path
  * @see PluginLoader 插件加载器
  */
 public interface PluginManager {
+    // region paths
+
     /**
-     * 插件自身存放路径. 由前端决定具体路径.
+     * 插件自身存放路径 [Path]. 由前端决定具体路径.
      *
      * **实现细节**: 在 terminal 前端实现为 `$rootPath/plugins`
-     *
-     * @see pluginsFolder [File] 类型
      */
     public val pluginsPath: Path
 
     /**
-     * 插件数据存放路径
+     * 插件自身存放路径 [File]. 由前端决定具体路径.
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/plugins`
+     */
+    public val pluginsFolder: File
+
+    /**
+     * 插件内部数据存放路径 [Path]
      *
      * **实现细节**: 在 terminal 前端实现为 `$rootPath/data`
-     *
-     * @see pluginsDataFolder [File] 类型
      */
     public val pluginsDataPath: Path
+
+    /**
+     * 插件内部数据存放路径 [File]
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/data`
+     */
+    public val pluginsDataFolder: File
+
+    /**
+     * 插件配置存放路径 [Path]
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/config`
+     */
+    public val pluginsConfigPath: Path
+
+    /**
+     * 插件配置存放路径 [File]
+     *
+     * **实现细节**: 在 terminal 前端实现为 `$rootPath/config`
+     */
+    public val pluginsConfigFolder: File
+
+    // endregion
+
+
+    // region plugins & loaders
 
     /**
      * 已加载的插件列表
@@ -104,12 +135,14 @@ public interface PluginManager {
     public fun Plugin.enable(): Unit = safeLoader.enable(this)
 
     /**
-     * 经过泛型类型转换的 [PluginLoader]
+     * 经过泛型类型转换的 [Plugin.loader]
      */
     @get:JvmSynthetic
     @Suppress("UNCHECKED_CAST")
     public val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
         get() = this.loader as PluginLoader<P, PluginDescription>
+
+    // endregion
 
     public companion object INSTANCE : PluginManager by PluginManagerImpl {
         // due to Kotlin's bug
@@ -121,17 +154,3 @@ public interface PluginManager {
         public override val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription> get() = PluginManagerImpl.run { safeLoader }
     }
 }
-
-/**
- * @see PluginManager.pluginsPath
- */
-@get:JvmSynthetic
-public inline val PluginManager.pluginsFolder: File
-    get() = pluginsPath.toFile()
-
-/**
- * @see PluginManager.pluginsDataPath
- */
-@get:JvmSynthetic
-public inline val PluginManager.pluginsDataFolder: File
-    get() = pluginsDataPath.toFile()

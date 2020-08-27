@@ -21,6 +21,7 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.util.childScopeContext
 import net.mamoe.mirai.console.plugin.PluginLoader
+import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
@@ -43,6 +44,10 @@ public interface MiraiConsole : CoroutineScope {
      * Console 运行根目录, 由前端决定确切路径.
      *
      * 所有子模块都会在这个目录之下创建子目录.
+     *
+     * @see PluginManager.pluginsPath
+     * @see PluginManager.pluginsDataPath
+     * @see PluginManager.pluginsConfigPath
      */
     public val rootPath: Path
 

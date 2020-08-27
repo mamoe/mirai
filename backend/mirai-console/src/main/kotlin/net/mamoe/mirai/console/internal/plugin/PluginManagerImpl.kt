@@ -21,12 +21,18 @@ import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.description.PluginKind
 import net.mamoe.mirai.utils.info
+import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 
 internal object PluginManagerImpl : PluginManager {
+
     override val pluginsPath: Path = MiraiConsole.rootPath.resolve("plugins").apply { mkdir() }
+    override val pluginsFolder: File = pluginsPath.toFile()
     override val pluginsDataPath: Path = MiraiConsole.rootPath.resolve("data").apply { mkdir() }
+    override val pluginsDataFolder: File = pluginsDataPath.toFile()
+    override val pluginsConfigPath: Path = MiraiConsole.rootPath.resolve("config").apply { mkdir() }
+    override val pluginsConfigFolder: File = pluginsConfigPath.toFile()
 
     @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()

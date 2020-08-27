@@ -24,6 +24,7 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
 import net.mamoe.mirai.console.plugin.ResourceContainer
+import net.mamoe.mirai.console.plugin.getDescription
 import net.mamoe.mirai.utils.MiraiLogger
 
 
@@ -48,7 +49,7 @@ public interface JvmPlugin : Plugin, CoroutineScope,
     public val logger: MiraiLogger
 
     /** 插件描述 */
-    public val description: JvmPluginDescription
+    public val description: JvmPluginDescription get() = loader.getDescription(this)
 
     /** 所属插件加载器实例 */
     @JvmDefault

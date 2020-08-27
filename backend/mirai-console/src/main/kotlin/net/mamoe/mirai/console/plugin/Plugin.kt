@@ -12,11 +12,13 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.command.CommandOwner
+import net.mamoe.mirai.console.data.PluginConfig
+import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import java.io.File
 import java.nio.file.Path
 
@@ -49,16 +51,30 @@ public interface Plugin : CommandOwner {
 }
 
 /**
+ * 获取
+ */
+public inline val Plugin.description: PluginDescription get() = this.safeLoader.getDescription(this)
+
+/**
  * 支持文件系统存储的扩展.
+ *
+ * @suppress 此接口只应由 [JvmPlugin] 继承
  *
  * @see JvmPlugin
  */
-@ConsoleExperimentalAPI("classname is subject to change")
 public interface PluginFileExtensions {
     /**
-     * 数据目录
+     * 数据目录路径
+     * @see PluginData
      */
     public val dataFolderPath: Path
+
+    /**
+     * 数据目录. `dataFolderPath.toFile()`
+     * @see PluginData
+     */
+    public val dataFolder: File
+
 
     /**
      * 从数据目录获取一个文件.
@@ -87,9 +103,46 @@ public interface PluginFileExtensions {
      */
     @JvmDefault
     public fun resolveDataPath(relativePath: Path): Path = dataFolderPath.resolve(relativePath)
-}
 
-/**
- * @return `dataFolderPath.toFile()`
- */
-public val PluginFileExtensions.dataFolder: File get() = dataFolderPath.toFile()
+
+    /**
+     * 插件配置保存路径
+     * @see PluginConfig
+     */
+    public val configFolderPath: Path
+
+    /**
+     * 插件配置保存路径
+     * @see PluginConfig
+     */
+    public val configFolder: File
+
+
+    /**
+     * 从配置目录获取一个文件.
+     * @see configFolderPath
+     */
+    @JvmDefault
+    public fun resolveConfigFile(relativePath: String): File = configFolderPath.resolve(relativePath).toFile()
+
+    /**
+     * 从配置目录获取一个文件.
+     * @see configFolderPath
+     */
+    @JvmDefault
+    public fun resolveConfigPath(relativePath: String): Path = configFolderPath.resolve(relativePath)
+
+    /**
+     * 从配置目录获取一个文件.
+     * @see configFolderPath
+     */
+    @JvmDefault
+    public fun resolveConfigFile(relativePath: Path): File = configFolderPath.resolve(relativePath).toFile()
+
+    /**
+     * 从配置目录获取一个文件路径.
+     * @see configFolderPath
+     */
+    @JvmDefault
+    public fun resolveConfigPath(relativePath: Path): Path = configFolderPath.resolve(relativePath)
+}
