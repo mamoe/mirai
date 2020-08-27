@@ -38,6 +38,7 @@ import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.pure.ConsoleInputImpl.requestInput
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.*
@@ -60,7 +61,8 @@ import java.util.*
  *
  * @see MiraiConsolePureLoader CLI 入口点
  */
-internal class MiraiConsoleImplementationPure
+@ConsoleExperimentalAPI
+class MiraiConsoleImplementationPure
 @JvmOverloads constructor(
     override val rootPath: Path = Paths.get("."),
     override val builtInPluginLoaders: List<PluginLoader<*, *>> = Collections.unmodifiableList(

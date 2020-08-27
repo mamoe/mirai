@@ -20,8 +20,12 @@
 
 package net.mamoe.mirai.console.pure
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
@@ -33,11 +37,19 @@ import java.io.PrintStream
 object MiraiConsolePureLoader {
     @JvmStatic
     fun main(args: Array<String>) {
-        startup()
+        startAsDaemon()
+        try {
+            runBlocking {
+                MiraiConsole.job.join()
+            }
+        } catch (e: CancellationException) {
+            // ignored
+        }
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
-    internal fun startup(instance: MiraiConsoleImplementationPure = MiraiConsoleImplementationPure()) {
+    @ConsoleExperimentalAPI
+    fun startAsDaemon(instance: MiraiConsoleImplementationPure = MiraiConsoleImplementationPure()) {
         instance.start()
         overrideSTD()
         startupConsoleThread()

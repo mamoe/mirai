@@ -54,7 +54,7 @@ internal abstract class JvmPluginInternal(
 
     final override val logger: MiraiLogger by lazy {
         MiraiConsole.newLogger(
-            this._description.name
+            "Plugin ${this._description.name}"
         )
     }
 
@@ -124,9 +124,16 @@ internal abstract class JvmPluginInternal(
 
     @JvmField
     internal val coroutineContextInitializer = {
-        CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
+        CoroutineExceptionHandler { _, throwable ->
+            if (throwable !is CancellationException) logger.error(throwable)
+        }
             .plus(parentCoroutineContext)
-            .plus(NamedSupervisorJob("Plugin $name", parentCoroutineContext[Job]))
+            .plus(
+                NamedSupervisorJob(
+                    "Plugin $name",
+                    parentCoroutineContext[Job] ?: JarPluginLoaderImpl.coroutineContext[Job]!!
+                )
+            )
             .also {
                 JarPluginLoaderImpl.coroutineContext[Job]!!.invokeOnCompletion {
                     this.cancel()
@@ -139,7 +146,7 @@ internal abstract class JvmPluginInternal(
         return coroutineContextInitializer().also { _coroutineContext = it }.also {
             job.invokeOnCompletion { e ->
                 if (e != null) {
-                    logger.error(e)
+                    if (e !is CancellationException) logger.error(e)
                     if (this.isEnabled) safeLoader.disable(this)
                 }
             }
