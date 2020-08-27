@@ -12,20 +12,23 @@
 package net.mamoe.mirai.console.internal.plugin
 
 import kotlinx.atomicfu.locks.withLock
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.mkdir
+import net.mamoe.mirai.console.internal.util.childScope
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.description.PluginKind
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.utils.info
 import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 
-internal object PluginManagerImpl : PluginManager {
+internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsole.childScope() {
 
     override val pluginsPath: Path = MiraiConsole.rootPath.resolve("plugins").apply { mkdir() }
     override val pluginsFolder: File = pluginsPath.toFile()
@@ -55,7 +58,7 @@ internal object PluginManagerImpl : PluginManager {
             ?: error("Plugin is unloaded")
 
     override fun PluginLoader<*, *>.register(): Boolean = loadersLock.withLock {
-        if (_pluginLoaders.any { it::class == this }) {
+        if (_pluginLoaders.any { it::class == this::class }) {
             return false
         }
         _pluginLoaders.add(this)
