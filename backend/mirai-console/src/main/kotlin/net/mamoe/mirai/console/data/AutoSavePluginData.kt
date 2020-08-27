@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.data
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
@@ -53,7 +54,7 @@ public open class AutoSavePluginData private constructor(
         owner_.coroutineContext[Job]?.invokeOnCompletion { doSave() }
 
         if (shouldPerformAutoSaveWheneverChanged()) {
-            owner_.launch {
+            owner_.launch(CoroutineName("AutoSavePluginData.timedAutoSave: ${this::class.qualifiedNameOrTip}")) {
                 while (isActive) {
                     delay(autoSaveIntervalMillis_.last) // 定时自动保存一次, 用于 kts 序列化的对象
                     doSave()
@@ -99,7 +100,10 @@ public open class AutoSavePluginData private constructor(
     public final override fun onValueChanged(value: Value<*>) {
         debuggingLogger1.error { "onValueChanged: $value" }
         if (::owner_.isInitialized) {
-            lastAutoSaveJob_ = owner_.launch(block = updaterBlock)
+            lastAutoSaveJob_ = owner_.launch(
+                block = updaterBlock,
+                context = CoroutineName("AutoSavePluginData.passiveAutoSave: ${this::class.qualifiedNameOrTip}")
+            )
         }
     }
 

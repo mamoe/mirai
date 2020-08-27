@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.command
 
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
@@ -153,7 +154,7 @@ public object BuiltInCommands {
                     sendMessage(
                         "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
                                 if (this is MessageEventContextAware<*>) {
-                                    CommandManagerImpl.launch {
+                                    CommandManagerImpl.launch(CoroutineName("stacktrace delayer from Login")) {
                                         fromEvent.nextMessageOrNull(60.secondsToMillis) { it.message.contentEquals("stacktrace") }
                                     }
                                     "\n 1 分钟内发送 stacktrace 以获取堆栈信息"
