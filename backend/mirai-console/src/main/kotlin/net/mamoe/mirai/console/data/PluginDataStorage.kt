@@ -36,14 +36,14 @@ import java.nio.file.Path
 @ConsoleExperimentalAPI
 public interface PluginDataStorage {
     /**
-     * 读取一个实例. 在 [T] 实例创建后 [设置 [PluginDataStorage]][PluginData.onStored]
+     * 读取一个实例. 并为 [instance] [设置 [PluginDataStorage]][PluginData.onStored]
      */
     public fun load(holder: PluginDataHolder, instance: PluginData)
 
     /**
      * 保存一个实例.
      *
-     * **实现细节**: 调用 [PluginData.updaterSerializer], 将
+     * **实现细节**: 调用 [PluginData.updaterSerializer]
      */
     public fun store(holder: PluginDataHolder, instance: PluginData)
 
