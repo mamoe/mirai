@@ -52,10 +52,13 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
         get() = _pluginLoaders.toList()
 
     override val Plugin.description: PluginDescription
-        get() = resolvedPlugins.firstOrNull { it == this }
+        get() = if (this is JvmPlugin) {
+            this.safeLoader.getDescription(this)
+        } else resolvedPlugins.firstOrNull { it == this }
             ?.loader?.cast<PluginLoader<Plugin, PluginDescription>>()
             ?.getDescription(this)
             ?: error("Plugin is unloaded")
+
 
     override fun PluginLoader<*, *>.register(): Boolean = loadersLock.withLock {
         if (_pluginLoaders.any { it::class == this::class }) {
