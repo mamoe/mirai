@@ -80,7 +80,7 @@ internal abstract class JvmPluginInternal(
     internal fun internalOnDisable() {
         firstRun = false
         kotlin.runCatching {
-            onLoad()
+            onDisable()
         }.fold(
             onSuccess = {
                 cancel(CancellationException("plugin disabled"))
