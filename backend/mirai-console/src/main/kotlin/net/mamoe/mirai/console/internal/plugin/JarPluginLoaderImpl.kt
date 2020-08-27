@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
@@ -100,7 +101,7 @@ internal object JarPluginLoaderImpl :
         description.runCatching {
             ensureActive()
 
-            check(main is JvmPlugin) { "The main class of Jar plugin must extend JvmPlugin, recommended JavaPlugin or KotlinPlugin" }
+            check(main is JvmPlugin) { "Main class ${main::class.qualifiedNameOrTip} from plugin ${description.name} does not extend JvmPlugin." }
 
             if (main is JvmPluginInternal) {
                 main._description = description
