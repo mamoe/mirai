@@ -127,6 +127,11 @@ internal abstract class JvmPluginInternal(
         CoroutineExceptionHandler { _, throwable -> logger.error(throwable) }
             .plus(parentCoroutineContext)
             .plus(SupervisorJob(parentCoroutineContext[Job]))
+            .also {
+                JarPluginLoaderImpl.coroutineContext[Job]!!.invokeOnCompletion {
+                    this.cancel()
+                }
+            }
             .plus(_intrinsicCoroutineContext)
     }
 

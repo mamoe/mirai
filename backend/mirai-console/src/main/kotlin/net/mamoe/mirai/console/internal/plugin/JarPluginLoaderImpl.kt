@@ -9,12 +9,16 @@
 
 package net.mamoe.mirai.console.internal.plugin
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
+import net.mamoe.mirai.console.internal.util.childScopeContext
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.*
@@ -40,11 +44,9 @@ internal object JarPluginLoaderImpl :
         get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
 
     override val coroutineContext: CoroutineContext =
-        MiraiConsole.coroutineContext +
-                SupervisorJob(MiraiConsole.coroutineContext[Job]) +
-                CoroutineExceptionHandler { _, throwable ->
-                    logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
-                }
+        MiraiConsole.childScopeContext(CoroutineExceptionHandler { _, throwable ->
+            logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
+        })
 
     private val classLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
 
