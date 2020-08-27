@@ -89,7 +89,7 @@ object GitHub {
                 val content = String(Base64.getEncoder().encode(file.readBytes()))
                 body = """
                     {
-                      "message": "automatically upload on release",
+                      "message": "Automatically upload on release ${project.name}:${project.version}",
                       "content": "$content"
                       ${if (sha == null) "" else """, "sha": "$sha" """}
                     }
