@@ -45,7 +45,10 @@ internal object BotManagerImpl : BotManager {
     }
 }
 
+@ValueName("Managers")
 internal object ManagersConfig : AutoSavePluginConfig() {
+    override val saveName: String
+        get() = "Managers"
     private val managers by value<MutableMap<Long, MutableSet<Long>>>().withEmptyDefault()
         .mapKeys(Bot::getInstance, Bot::id)
 
