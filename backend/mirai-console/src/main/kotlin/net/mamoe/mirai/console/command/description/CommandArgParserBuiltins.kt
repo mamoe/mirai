@@ -97,6 +97,12 @@ public object ExistingBotArgumentParser : InternalCommandArgumentParserExtension
     public override fun parse(raw: String, sender: CommandSender): Bot =
         if (raw == "~") sender.inferBotOrFail()
         else raw.findBotOrFail()
+
+    public override fun parse(raw: SingleMessage, sender: CommandSender): Bot =
+        if (raw is At) {
+            Bot.getInstanceOrNull(raw.target)
+                ?: illegalArgument("@ 的对象不是一个 Bot")
+        } else super.parse(raw, sender)
 }
 
 /**
