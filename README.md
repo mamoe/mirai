@@ -7,7 +7,6 @@
 这里收集了部分已知违反mirai协议的人或组织, 并为其他人排除可能的隐患
 
 
-1: QQ群(780718**3), 创建者(QQ=1783166687) 群管理(github=https://github.com/Pai2Chen), 伪造“官方群”上传“加密插件” 企图不明
 
-2: 
+1: 
 <img src="https://github.com/mamoe/mirai/raw/rm/Screenshot_20200821-002427.jpg" width="200" height="150" />
