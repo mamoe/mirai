@@ -31,8 +31,11 @@ import net.mamoe.mirai.utils.MiraiLogger
 /**
  * Java, Kotlin 或其他 JVM 平台插件
  *
- * ### ResourceContainer
+ * ## ResourceContainer
  * 实现为 [ClassLoader.getResourceAsStream]
+ *
+ * ## 实现 [JvmPlugin]
+ * j
  *
  * @see AbstractJvmPlugin 默认实现
  *

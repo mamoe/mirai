@@ -11,23 +11,23 @@ package net.mamoe.mirai.console.internal.plugin
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
-import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
-import net.mamoe.mirai.console.plugin.jvm.*
+import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.childScopeContext
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.yamlkt.Yaml
 import java.io.File
-import java.net.URI
+import java.net.URLClassLoader
+import java.util.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.streams.asSequence
 
 internal object JarPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
@@ -48,71 +48,53 @@ internal object JarPluginLoaderImpl :
             logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
         })
 
-    internal val classLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
-
-    init { // delayed
-        coroutineContext[Job]!!.invokeOnCompletion {
-            classLoader.clear()
-        }
-    }
+    internal val classLoaders: MutableList<ClassLoader> = mutableListOf()
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
     override val JvmPlugin.description: JvmPluginDescription
         get() = this.description
 
-    override fun Sequence<File>.mapToDescription(): List<JvmPluginDescriptionImpl> {
-        return this.associateWith { URI("jar:file:${it.absolutePath.replace('\\', '/')}!/plugin.yml").toURL() }
-            .mapNotNull { (file, url) ->
+    override fun Sequence<File>.extractPlugins(): List<JvmPlugin> {
+        ensureActive()
+
+        fun <T> ServiceLoader<T>.loadAll(file: File?): Sequence<T> {
+            return stream().asSequence().mapNotNull {
                 kotlin.runCatching {
-                    url.readText()
-                }.fold(
-                    onSuccess = { yaml ->
-                        Yaml.nonStrict.decodeFromString(JvmPluginDescriptionImpl.serializer(), yaml)
-                    },
-                    onFailure = {
-                        logger.error("Cannot load plugin file ${file.name}", it)
-                        null
-                    }
-                )?.also { it._file = file }
+                    it.type().kotlin.objectInstance ?: it.get()
+                }.onFailure {
+                    logger.error("Cannot load plugin ${file ?: "<no-file>"}", it)
+                }.getOrNull()
             }
+        }
+
+        val inMemoryPlugins =
+            ServiceLoader.load(
+                JvmPlugin::class.java,
+                generateSequence(MiraiConsole::class.java.classLoader) { it.parent }.last()
+            ).loadAll(null)
+
+        val filePlugins = this.associateWith {
+            URLClassLoader(arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader)
+        }.onEach { (_, classLoader) ->
+            classLoaders.add(classLoader)
+        }.mapValues {
+            ServiceLoader.load(JvmPlugin::class.java, it.value)
+        }.flatMap { (file, loader) ->
+            loader.loadAll(file)
+        }
+
+        return (inMemoryPlugins + filePlugins).toSet().toList()
     }
 
     @Throws(PluginLoadException::class)
-    override fun load(description: JvmPluginDescription): JvmPlugin {
-        val main = when (description) {
-            is JvmMemoryPluginDescription -> {
-                description.instance
-            }
-            is JvmPluginDescriptionImpl -> with(description) {
-                classLoader.loadPluginMainClassByJarFile(
-                    pluginName = name,
-                    mainClass = mainClassName,
-                    jarFile = file
-                ).kotlin.run {
-                    objectInstance
-                        ?: createInstanceOrNull()
-                        ?: (java.constructors + java.declaredConstructors)
-                            .firstOrNull { it.parameterCount == 0 }
-                            ?.apply { kotlin.runCatching { isAccessible = true } }
-                            ?.newInstance()
-                } ?: error("No Kotlin object or public no-arg constructor found for $mainClassName")
-            }
-            else -> error("Illegal description: ${description::class.qualifiedName}")
-        }
-
-        description.runCatching {
-            ensureActive()
-
-            check(main is JvmPlugin) { "Main class ${main::class.qualifiedNameOrTip} from plugin ${description.name} does not extend JvmPlugin." }
-
-            if (main is JvmPluginInternal) {
-                main._description = description
-                main.internalOnLoad()
-            } else main.onLoad()
-
-            return main
+    override fun load(plugin: JvmPlugin) {
+        ensureActive()
+        runCatching {
+            if (plugin is JvmPluginInternal) {
+                plugin.internalOnLoad()
+            } else plugin.onLoad()
         }.getOrElse {
-            throw PluginLoadException("Exception while loading ${description.name}", it)
+            throw PluginLoadException("Exception while loading ${plugin.description.name}", it)
         }
     }
 
@@ -126,6 +108,7 @@ internal object JarPluginLoaderImpl :
 
     override fun disable(plugin: JvmPlugin) {
         if (!plugin.isEnabled) return
+        ensureActive()
 
         if (plugin is JvmPluginInternal) {
             plugin.internalOnDisable()

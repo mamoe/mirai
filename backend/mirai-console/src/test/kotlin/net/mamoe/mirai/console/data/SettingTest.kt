@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.console.plugin.jvm.SimpleJvmPluginDescription
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -19,7 +20,11 @@ import kotlin.test.assertSame
 @OptIn(ConsoleInternalAPI::class)
 internal class PluginDataTest {
 
-    object MyPlugin : KotlinPlugin()
+    object MyPlugin : KotlinPlugin(
+        SimpleJvmPluginDescription(
+            "1", "2"
+        )
+    )
 
     class MyPluginData : AutoSavePluginData() {
         var int by value(1)

@@ -132,6 +132,13 @@ public interface PluginManager {
     public fun Plugin.disable(): Unit = safeLoader.disable(this)
 
     /**
+     * 加载这个插件
+     *
+     * @see PluginLoader.load
+     */
+    public fun Plugin.load(): Unit = safeLoader.load(this)
+
+    /**
      * 启用这个插件
      *
      * @see PluginLoader.enable
@@ -155,6 +162,7 @@ public interface PluginManager {
         public override fun PluginLoader<*, *>.unregister(): Boolean = PluginManagerImpl.run { unregister() }
         public override fun Plugin.disable(): Unit = PluginManagerImpl.run { disable() }
         public override fun Plugin.enable(): Unit = PluginManagerImpl.run { enable() }
+        public override fun Plugin.load(): Unit = PluginManagerImpl.run { load() }
         public override val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription> get() = PluginManagerImpl.run { safeLoader }
     }
 }

@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.plugin.description
 
 import com.vdurmont.semver4j.Semver
-import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.plugin.Plugin
 
 
@@ -56,6 +55,6 @@ public interface PluginDescription {
      *
      * @see PluginDependency
      */
-    public val dependencies: List<@Serializable(with = PluginDependency.SmartSerializer::class) PluginDependency>
+    public val dependencies: List<PluginDependency>
 }
 

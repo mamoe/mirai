@@ -15,7 +15,6 @@ import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.*
@@ -84,16 +83,16 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
 
     // region LOADING
 
-    private fun <P : Plugin, D : PluginDescription> PluginLoader<P, D>.loadPluginNoEnable(description: D): P {
-        return kotlin.runCatching {
-            this.load(description).also { resolvedPlugins.add(it) }
+    private fun <P : Plugin, D : PluginDescription> PluginLoader<P, D>.loadPluginNoEnable(plugin: P) {
+        kotlin.runCatching {
+            this.load(plugin)
+            resolvedPlugins.add(plugin)
         }.fold(
             onSuccess = {
-                logger.info { "Successfully loaded plugin ${description.name}" }
-                it
+                logger.info { "Successfully loaded plugin ${plugin.description.name}" }
             },
             onFailure = {
-                logger.info { "Cannot load plugin ${description.name}" }
+                logger.info { "Cannot load plugin ${plugin.description.name}" }
                 throw it
             }
         )
@@ -138,33 +137,30 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
 
     private fun loadPluginLoaderProvidedByPlugins() {
         loadersLock.withLock {
-            JarPluginLoaderImpl.classLoader.pluginLoaders.asSequence()
-                .flatMap { (name, pluginClassLoader) ->
+            JarPluginLoaderImpl.classLoaders.asSequence()
+                .flatMap { pluginClassLoader ->
                     ServiceLoader.load(PluginLoader::class.java, pluginClassLoader)
                         .stream().asSequence()
-                        .associateBy { name }
                         .asSequence()
                 }
-                .forEach { (name, provider) ->
+                .forEach { provider ->
                     val pluginLoader = kotlin.runCatching {
                         provider.get()
                     }.getOrElse {
                         logger.error(
-                            { "Could not load PluginLoader ${it::class.qualifiedNameOrTip} from plugin $name" },
+                            { "Could not load PluginLoader ${provider.type().canonicalName}." },
                             it
                         )
                         return@forEach
                     }
                     _pluginLoaders.add(pluginLoader)
-                    logger.info { "Successfully loaded PluginLoader ${pluginLoader::class.qualifiedNameOrTip} from plugin $name" }
+                    logger.info { "Successfully loaded PluginLoader ${provider.type().canonicalName}." }
                 }
         }
     }
 
     private fun List<PluginDescriptionWithLoader>.loadAndEnableAllInOrder() {
-        return this.map { (loader, desc) ->
-            loader to loader.loadPluginNoEnable(desc)
-        }.forEach { (loader, plugin) ->
+        return this.forEach { (loader, _, plugin) ->
             loader.enablePlugin(plugin)
         }
     }
@@ -189,7 +185,9 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     }
 
     private fun List<PluginLoader<*, *>>.listAllPlugins(): List<Pair<PluginLoader<*, *>, List<PluginDescriptionWithLoader>>> {
-        return associateWith { loader -> loader.listPlugins().map { desc -> desc.wrapWith(loader) } }.toList()
+        return associateWith { loader ->
+            loader.listPlugins().map { plugin -> plugin.description.wrapWith(loader, plugin) }
+        }.toList()
     }
 
     @Throws(PluginMissingDependencyException::class)
@@ -231,8 +229,9 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
 }
 
 internal data class PluginDescriptionWithLoader(
-    @JvmField val loader: PluginLoader<*, PluginDescription>, // easier type
-    @JvmField val delegate: PluginDescription
+    @JvmField val loader: PluginLoader<Plugin, PluginDescription>, // easier type
+    @JvmField val delegate: PluginDescription,
+    @JvmField val plugin: Plugin
 ) : PluginDescription by delegate
 
 @Suppress("UNCHECKED_CAST")
@@ -240,9 +239,9 @@ internal fun <D : PluginDescription> PluginDescription.unwrap(): D =
     if (this is PluginDescriptionWithLoader) this.delegate as D else this as D
 
 @Suppress("UNCHECKED_CAST")
-internal fun PluginDescription.wrapWith(loader: PluginLoader<*, *>): PluginDescriptionWithLoader =
+internal fun PluginDescription.wrapWith(loader: PluginLoader<*, *>, plugin: Plugin): PluginDescriptionWithLoader =
     PluginDescriptionWithLoader(
-        loader as PluginLoader<*, PluginDescription>, this
+        loader as PluginLoader<Plugin, PluginDescription>, this, plugin
     )
 
 internal operator fun List<PluginDescription>.contains(dependency: PluginDependency): Boolean =

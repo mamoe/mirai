@@ -19,7 +19,6 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.io.InputStream
@@ -35,8 +34,7 @@ internal val <T> T.job: Job where T : CoroutineScope, T : Plugin get() = this.co
 @PublishedApi
 internal abstract class JvmPluginInternal(
     parentCoroutineContext: CoroutineContext
-) : JvmPlugin,
-    CoroutineScope {
+) : JvmPlugin, CoroutineScope {
 
     final override var isEnabled: Boolean = false
 
@@ -44,17 +42,9 @@ internal abstract class JvmPluginInternal(
     override fun getResourceAsStream(path: String): InputStream? = resourceContainerDelegate.getResourceAsStream(path)
 
     // region JvmPlugin
-    /**
-     * Initialized immediately after construction of [JvmPluginInternal] instance
-     */
-    @Suppress("PropertyName")
-    internal open lateinit var _description: JvmPluginDescription
-
-    final override val description: JvmPluginDescription get() = _description
-
     final override val logger: MiraiLogger by lazy {
         MiraiConsole.newLogger(
-            "Plugin ${this._description.name}"
+            "Plugin ${this.description.name}"
         )
     }
 
@@ -121,11 +111,13 @@ internal abstract class JvmPluginInternal(
     internal val _intrinsicCoroutineContext: CoroutineContext by lazy {
         CoroutineName("Plugin $name")
     }
-
     @JvmField
     internal val coroutineContextInitializer = {
-        CoroutineExceptionHandler { _, throwable ->
-            if (throwable !is CancellationException) logger.error(throwable)
+        CoroutineExceptionHandler { context, throwable ->
+            if (throwable.rootCauseOrSelf !is CancellationException) logger.error(
+                "Exception in coroutine ${context[CoroutineName]?.name ?: "<unnamed>"} of ${description.name}",
+                throwable
+            )
         }
             .plus(parentCoroutineContext)
             .plus(
@@ -184,3 +176,5 @@ internal inline fun AtomicLong.updateWhen(condition: (Long) -> Boolean, update: 
         return false
     }
 }
+
+internal val Throwable.rootCauseOrSelf: Throwable get() = generateSequence(this) { it.cause }.lastOrNull() ?: this

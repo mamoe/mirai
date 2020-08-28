@@ -20,26 +20,9 @@ import kotlin.coroutines.EmptyCoroutineContext
  * 必须通过 "plugin.yml" 指定主类并由 [JarPluginLoader] 加载.
  */
 public abstract class KotlinPlugin @JvmOverloads constructor(
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
+    public final override val description: JvmPluginDescription,
+    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext)
-
-/**
- * 在内存动态加载的插件. 此为预览版本 API.
- */
-public abstract class KotlinMemoryPlugin @JvmOverloads constructor(
-    description: JvmPluginDescription,
-    parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
-) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
-    internal final override var _description: JvmPluginDescription
-        get() = super._description
-        set(value) {
-            super._description = value
-        }
-
-    init {
-        _description = description
-    }
-}
 
 /*
 

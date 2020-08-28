@@ -9,6 +9,7 @@ import java.util.TimeZone
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
+    kotlin("kapt")
     id("java")
     `maven-publish`
     id("com.jfrog.bintray")
@@ -82,6 +83,11 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+
+
+    val autoService = "1.0-rc7"
+    kapt("com.google.auto.service", "auto-service", autoService)
+    compileOnly("com.google.auto.service", "auto-service-annotations", autoService)
 }
 
 ext.apply {
