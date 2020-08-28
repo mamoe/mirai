@@ -20,7 +20,6 @@ import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.childScopeContext
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -35,11 +34,10 @@ internal object JarPluginLoaderImpl :
     JarPluginLoader {
 
     override val configStorage: PluginDataStorage
-        get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
+        get() = MiraiConsoleImplementationBridge.configStorageForJarPluginLoader
 
     private val logger: MiraiLogger = MiraiConsole.newLogger(JarPluginLoader::class.simpleName!!)
 
-    @ConsoleExperimentalAPI
     override val dataStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
 
