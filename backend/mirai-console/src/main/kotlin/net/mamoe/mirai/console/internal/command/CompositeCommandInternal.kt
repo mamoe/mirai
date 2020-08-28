@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
 import net.mamoe.mirai.message.data.PlainText
@@ -228,7 +229,15 @@ internal fun Array<AbstractReflectionCommand.SubCommandDescriptor>.createUsage(b
 internal fun AbstractReflectionCommand.SubCommandDescriptor.createUsage(baseCommand: AbstractReflectionCommand): String =
     buildString {
         if (!baseCommand.prefixOptional) {
+            append("(")
             append(CommandManager.commandPrefix)
+            append(")")
+        } else {
+            append(CommandManager.commandPrefix)
+        }
+        if (baseCommand is CompositeCommand) {
+            append(baseCommand.primaryName)
+            append(" ")
         }
         append(names.first())
         append(" ")
