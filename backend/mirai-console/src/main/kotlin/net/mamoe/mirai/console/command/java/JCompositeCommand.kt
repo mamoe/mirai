@@ -9,9 +9,7 @@
 
 package net.mamoe.mirai.console.command.java
 
-import net.mamoe.mirai.console.command.CommandOwner
-import net.mamoe.mirai.console.command.CommandPermission
-import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
