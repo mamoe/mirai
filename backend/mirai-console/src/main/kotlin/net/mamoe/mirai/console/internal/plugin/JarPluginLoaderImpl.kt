@@ -18,11 +18,11 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
-import net.mamoe.mirai.console.internal.util.childScopeContext
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.childScopeContext
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.yamlkt.Yaml
 import java.io.File
@@ -48,7 +48,7 @@ internal object JarPluginLoaderImpl :
             logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
         })
 
-    private val classLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
+    internal val classLoader: PluginsLoader = PluginsLoader(this.javaClass.classLoader)
 
     init { // delayed
         coroutineContext[Job]!!.invokeOnCompletion {

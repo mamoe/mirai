@@ -15,18 +15,23 @@ import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.mkdir
-import net.mamoe.mirai.console.internal.util.childScope
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.description.PluginKind
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.util.childScope
+import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.info
 import java.io.File
 import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.collections.ArrayList
+import kotlin.streams.asSequence
 
 internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsole.childScope("PluginManager") {
 
@@ -123,8 +128,37 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     @Suppress("UNCHECKED_CAST")
     @Throws(PluginMissingDependencyException::class)
     internal fun loadEnablePlugins() {
-        (loadAndEnableLoaderProviders() + _pluginLoaders.listAllPlugins().flatMap { it.second })
-            .sortByDependencies().loadAndEnableAllInOrder()
+        loadAndEnableLoaderProviders()
+        loadPluginLoaderProvidedByPlugins()
+        loadersLock.withLock {
+            _pluginLoaders.listAllPlugins().flatMap { it.second }
+                .sortByDependencies().loadAndEnableAllInOrder()
+        }
+    }
+
+    private fun loadPluginLoaderProvidedByPlugins() {
+        loadersLock.withLock {
+            JarPluginLoaderImpl.classLoader.pluginLoaders.asSequence()
+                .flatMap { (name, pluginClassLoader) ->
+                    ServiceLoader.load(PluginLoader::class.java, pluginClassLoader)
+                        .stream().asSequence()
+                        .associateBy { name }
+                        .asSequence()
+                }
+                .forEach { (name, provider) ->
+                    val pluginLoader = kotlin.runCatching {
+                        provider.get()
+                    }.getOrElse {
+                        logger.error(
+                            { "Could not load PluginLoader ${it::class.qualifiedNameOrTip} from plugin $name" },
+                            it
+                        )
+                        return@forEach
+                    }
+                    _pluginLoaders.add(pluginLoader)
+                    logger.info { "Successfully loaded PluginLoader ${pluginLoader::class.qualifiedNameOrTip} from plugin $name" }
+                }
+        }
     }
 
     private fun List<PluginDescriptionWithLoader>.loadAndEnableAllInOrder() {

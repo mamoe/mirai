@@ -14,8 +14,10 @@ package net.mamoe.mirai.console.plugin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.plugin.description.PluginDescription
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import java.io.File
 import java.nio.file.Path
+import java.util.*
 
 /**
  * 插件管理器.
@@ -102,10 +104,11 @@ public interface PluginManager {
     public val pluginLoaders: List<PluginLoader<*, *>>
 
     /**
-     * 注册一个扩展的插件加载器
+     * 手动注册一个扩展的插件加载器. 在启动时会通过 [ServiceLoader] 加载, 但也可以手动注册.
      *
      * @see PluginLoader 插件加载器
      */
+    @ConsoleExperimentalAPI
     public fun PluginLoader<*, *>.register(): Boolean
 
     /**
@@ -113,6 +116,7 @@ public interface PluginManager {
      *
      * @see PluginLoader 插件加载器
      */
+    @ConsoleExperimentalAPI
     public fun PluginLoader<*, *>.unregister(): Boolean
 
     /**

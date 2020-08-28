@@ -15,7 +15,7 @@ import java.net.URLClassLoader
 
 internal class PluginsLoader(private val parentClassLoader: ClassLoader) {
     private val loggerName = "PluginsLoader"
-    private val pluginLoaders = linkedMapOf<String, PluginClassLoader>()
+    internal val pluginLoaders = linkedMapOf<String, PluginClassLoader>()
     private val classesCache = mutableMapOf<String, Class<*>>()
     private val logger = MiraiConsole.newLogger(loggerName)
 

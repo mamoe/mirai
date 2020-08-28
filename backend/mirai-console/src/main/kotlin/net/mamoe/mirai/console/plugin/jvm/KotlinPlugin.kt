@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -27,7 +26,6 @@ public abstract class KotlinPlugin @JvmOverloads constructor(
 /**
  * 在内存动态加载的插件. 此为预览版本 API.
  */
-@ConsoleExperimentalAPI
 public abstract class KotlinMemoryPlugin @JvmOverloads constructor(
     description: JvmPluginDescription,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
