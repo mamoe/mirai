@@ -13,14 +13,12 @@ package net.mamoe.mirai.console.data
 
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.currentTimeMillis
-import net.mamoe.mirai.utils.error
-import net.mamoe.mirai.utils.withSwitch
+import net.mamoe.mirai.utils.*
 
 /**
  * 链接自动保存的 [PluginData].
@@ -51,13 +49,31 @@ public open class AutoSavePluginData private constructor(
         this.storage_ = storage
         this.owner_ = owner
 
-        owner_.coroutineContext[Job]?.invokeOnCompletion { doSave() }
+        owner_.coroutineContext[Job]?.invokeOnCompletion {
+            kotlin.runCatching {
+                doSave()
+            }.onFailure { e ->
+                owner_.coroutineContext[CoroutineExceptionHandler]?.handleException(owner_.coroutineContext, e)
+                    ?.let { return@invokeOnCompletion }
+                MiraiConsole.mainLogger.error(
+                    "An exception occurred when saving config ${this@AutoSavePluginData::class.qualifiedNameOrTip} " +
+                            "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner::class.qualifiedNameOrTip}",
+                    e
+                )
+            }
+        }
 
         if (shouldPerformAutoSaveWheneverChanged()) {
             owner_.launch(CoroutineName("AutoSavePluginData.timedAutoSave: ${this::class.qualifiedNameOrTip}")) {
                 while (isActive) {
-                    delay(autoSaveIntervalMillis_.last) // 定时自动保存一次, 用于 kts 序列化的对象
-                    doSave()
+                    try {
+                        delay(autoSaveIntervalMillis_.last)  // 定时自动保存一次, 用于 kts 序列化的对象
+                    } catch (e: CancellationException) {
+                        return@launch
+                    }
+                    withContext(owner_.coroutineContext) {
+                        doSave()
+                    }
                 }
             }
         }
@@ -78,19 +94,29 @@ public open class AutoSavePluginData private constructor(
         return true
     }
 
-    private val updaterBlock: suspend CoroutineScope.() -> Unit = {
+    private val updaterBlock: suspend CoroutineScope.() -> Unit = l@{
         if (::storage_.isInitialized) {
             currentFirstStartTime_.updateWhen({ it == 0L }, { currentTimeMillis })
-
-            delay(autoSaveIntervalMillis_.first.coerceAtLeast(1000)) // for safety
+            try {
+                delay(autoSaveIntervalMillis_.first.coerceAtLeast(1000)) // for safety
+            } catch (e: CancellationException) {
+                return@l
+            }
 
             if (lastAutoSaveJob_ == this.coroutineContext[Job]) {
-                doSave()
+
+                withContext(owner_.coroutineContext) {
+                    doSave()
+                }
             } else {
                 if (currentFirstStartTime_.updateWhen(
                         { currentTimeMillis - it >= autoSaveIntervalMillis_.last },
                         { 0 })
-                ) doSave()
+                ) {
+                    withContext(owner_.coroutineContext) {
+                        doSave()
+                    }
+                }
             }
         }
     }
@@ -114,5 +140,25 @@ public open class AutoSavePluginData private constructor(
 }
 
 internal val debuggingLogger1 by lazy {
-    DefaultLogger("debug").withSwitch(false)
+    DefaultLogger("debug").withSwitch(true)
+}
+
+internal inline fun <R> MiraiLogger.runCatchingLog(message: String? = null, block: () -> R): R? {
+    return kotlin.runCatching {
+        block()
+    }.onFailure {
+        if (message != null) {
+            error(message, it)
+        } else error(it)
+    }.getOrNull()
+}
+
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal inline fun <R> MiraiLogger.runCatchingLog(message: (Throwable) -> String, block: () -> R): R? {
+    return kotlin.runCatching {
+        block()
+    }.onFailure {
+        error(message(it), it)
+    }.getOrNull()
 }

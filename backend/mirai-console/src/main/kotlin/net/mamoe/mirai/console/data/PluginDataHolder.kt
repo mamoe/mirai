@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.data
 
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
@@ -34,6 +35,9 @@ public interface PluginDataHolder {
 
 /**
  * 可以持有相关 [AutoSavePluginData] 的对象.
+ *
+ * ### 实现 [AutoSavePluginDataHolder]
+ * [CoroutineScope.coroutineContext] 中应用 [CoroutineExceptionHandler]
  *
  * @see net.mamoe.mirai.console.plugin.jvm.JvmPlugin
  */
