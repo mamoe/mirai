@@ -66,7 +66,7 @@ dependencies {
     implementation(kotlinx("serialization-core", Versions.serialization))
     implementation(kotlin("reflect"))
 
-    implementation("net.mamoe.yamlkt:yamlkt:0.4.0")
+    implementation("net.mamoe.yamlkt:yamlkt:0.5.0")
     implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}")
     api("org.jetbrains:annotations:19.0.0")
     api(kotlinx("coroutines-jdk8", Versions.coroutines))
