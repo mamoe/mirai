@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.internal
 
 import com.vdurmont.semver4j.Semver
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
@@ -85,6 +86,9 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         if (coroutineContext[Job] == null) {
             throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
+        }
+        if (coroutineContext[CoroutineExceptionHandler] == null) {
+            throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a CoroutineExceptionHandler in it.")
         }
 
         MiraiConsole.job.invokeOnCompletion {
