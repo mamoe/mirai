@@ -107,13 +107,6 @@ public object ExistingBotArgumentParser : InternalCommandArgumentParserExtension
 
 /**
  * 解析任意一个存在的好友.
- *
- * 支持的输入:
- * - `botId.friendId`
- * - `botId.friendNick` (模糊搜索, 寻找最优匹配)
- * - `~` (指代指令调用人自己作为好友. 仅聊天环境下)
- *
- * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
  */
 public object ExistingFriendArgumentParser : InternalCommandArgumentParserExtensions<Friend> {
     private val syntax = """
@@ -121,7 +114,7 @@ public object ExistingFriendArgumentParser : InternalCommandArgumentParserExtens
         - `botId.friendNick` (模糊搜索, 寻找最优匹配)
         - `~` (指代指令调用人自己作为好友. 仅聊天环境下)
         
-        当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+        当只登录了一个 [Bot] 时, `botId` 参数可省略
     """.trimIndent()
 
     public override fun parse(raw: String, sender: CommandSender): Friend {
@@ -153,18 +146,12 @@ public object ExistingFriendArgumentParser : InternalCommandArgumentParserExtens
 
 /**
  * 解析任意一个存在的群.
- *
- * 支持的输入:
- * - `botId.groupId`
- * - `~` (指代指令调用人自己所在群. 仅群聊天环境下)
- *
- * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
  */
 public object ExistingGroupArgumentParser : InternalCommandArgumentParserExtensions<Group> {
     private val syntax = """
         - `botId.groupId`
         - `~` (指代指令调用人自己所在群. 仅群聊天环境下)
-        当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+        当只登录了一个 [Bot] 时, `botId` 参数可省略
     """.trimIndent()
 
     public override fun parse(raw: String, sender: CommandSender): Group {
@@ -189,13 +176,14 @@ public object ExistingGroupArgumentParser : InternalCommandArgumentParserExtensi
 
 public object ExistingUserArgumentParser : InternalCommandArgumentParserExtensions<User> {
     private val syntax: String = """
-         - `botId.group.memberId`
-         - `botId.group.memberCard` (模糊搜索, 寻找最优匹配)
+         - `botId.groupId.memberId`
+         - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
          - `~` (指代指令调用人自己. 仅聊天环境下)
-         - `$` (随机成员. 仅聊天环境下)
+         - `groupId.$` (随机成员. 仅聊天环境下)
          - `botId.friendId
          
-         当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+         当处于一个群内时, `botId` 和 `groupId` 参数都可省略
+         当只登录了一个 [Bot] 时, `botId` 参数可省略
     """.trimIndent()
 
     override fun parse(raw: String, sender: CommandSender): User {
@@ -221,14 +209,6 @@ public object ExistingUserArgumentParser : InternalCommandArgumentParserExtensio
                 illegalArgument("无法推断目标好友或群员. \n$syntax")
             }
         }
-        if (Bot.botInstancesSequence.count() == 1) {
-
-            kotlin.runCatching {
-
-            }.getOrElse {
-                illegalArgument("无法推断目标好友或群员. \n$syntax")
-            }
-        }
         kotlin.runCatching {
             return parseFunction2(raw, sender)
         }.getOrElse {
@@ -240,22 +220,15 @@ public object ExistingUserArgumentParser : InternalCommandArgumentParserExtensio
 
 /**
  * 解析任意一个群成员.
- *
- * 支持的输入:
- * - `botId.group.memberId`
- * - `botId.group.memberCard` (模糊搜索, 寻找最优匹配)
- * - `~` (指代指令调用人自己. 仅聊天环境下)
- *
- * 当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
  */
 public object ExistingMemberArgumentParser : InternalCommandArgumentParserExtensions<Member> {
     private val syntax: String = """
-         - `botId.group.memberId`
-         - `botId.group.memberCard` (模糊搜索, 寻找最优匹配)
+         - `botId.groupId.memberId`
+         - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
          - `~` (指代指令调用人自己. 仅聊天环境下)
-         - `$` (随机成员)
+         - `groupId.$` (随机成员)
          
-         当只登录了一个 [Bot] 时, 无需上述 `botId` 参数即可
+         当只登录了一个 [Bot] 时, `botId` 参数可省略
     """.trimIndent()
 
     public override fun parse(raw: String, sender: CommandSender): Member {
@@ -320,7 +293,10 @@ internal interface InternalCommandArgumentParserExtensions<T : Any> : CommandArg
             ?: illegalArgument("无法找到目标群员 $idOrCard")
     }
 
-    fun CommandSender.inferBotOrFail(): Bot = (this as? BotAwareCommandSender)?.bot ?: illegalArgument("当前语境下无法推断目标群员")
+    fun CommandSender.inferBotOrFail(): Bot =
+        (this as? BotAwareCommandSender)?.bot
+            ?: Bot.botInstancesSequence.singleOrNull()
+            ?: illegalArgument("当前语境下无法推断目标 Bot, 因为目前有多个 Bot 在线.")
 
     fun CommandSender.inferGroupOrFail(): Group =
         inferGroup() ?: illegalArgument("当前语境下无法推断目标群")
