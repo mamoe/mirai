@@ -101,7 +101,7 @@ internal inline fun <T : Any> Collection<T>.fuzzySearchOnly(
  */
 internal fun Group.fuzzySearchMember(
     nameCardTarget: String,
-    minRate: Double = 0.5, // 参与判断, 用于提示可能的解
+    minRate: Double = 0.2, // 参与判断, 用于提示可能的解
     matchRate: Double = 0.6,// 最终选择的最少需要的匹配率, 减少歧义
     /**
      * 如果有多个值超过 [matchRate], 并相互差距小于等于 [disambiguationRate], 则认为有较大歧义风险, 返回可能的解的列表.

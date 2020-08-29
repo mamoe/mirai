@@ -340,7 +340,7 @@ internal fun Char.chineseLength(): Int {
     return when (this) {
         in '\u0000'..'\u007F' -> 1
         in '\u0080'..'\u07FF' -> 2
-        in '\u0800'..'\uFFFF' -> 3
-        else -> 4
+        in '\u0800'..'\uFFFF' -> 2
+        else -> 2
     }
 }
