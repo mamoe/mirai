@@ -225,6 +225,7 @@ public object ExistingMemberArgumentParser : InternalCommandArgumentParserExtens
          - `~` (指代指令调用人自己. 仅聊天环境下)
          - `groupId.$` (随机成员)
          
+         当处于一个群内时, `botId` 和 `groupId` 参数都可省略
          当只登录了一个 [Bot] 时, `botId` 参数可省略
     """.trimIndent()
 
