@@ -12,10 +12,7 @@ package net.mamoe.mirai.console.command.description
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.internal.command.fuzzySearchMember
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.At
@@ -288,9 +285,25 @@ internal interface InternalCommandArgumentParserExtensions<T : Any> : CommandArg
 
     fun Group.findMemberOrFail(idOrCard: String): Member {
         if (idOrCard == "\$") return members.randomOrNull() ?: illegalArgument("当前语境下无法推断随机群员")
-        return idOrCard.toLongOrNull()?.let { getOrNull(it) }
-            ?: fuzzySearchMember(idOrCard)
-            ?: illegalArgument("无法找到目标群员 $idOrCard")
+        idOrCard.toLongOrNull()?.let { getOrNull(it) }?.let { return it }
+        this.members.singleOrNull { it.nameCardOrNick.contains(idOrCard) }?.let { return it }
+        this.members.singleOrNull { it.nameCardOrNick.contains(idOrCard, ignoreCase = true) }?.let { return it }
+
+        val candidates = this.fuzzySearchMember(idOrCard)
+        candidates.singleOrNull()?.let {
+            if (it.second == 1.0) return it.first // single match
+        }
+        if (candidates.isEmpty()) {
+            illegalArgument("无法找到成员 $idOrCard")
+        } else {
+            var index = 1
+            illegalArgument("无法找到成员 $idOrCard。 多个成员满足搜索结果或匹配度不足: \n\n" +
+                    candidates.joinToString("\n", limit = 6) {
+                        val percentage = (it.second * 100).toDecimalPlace(0)
+                        "#${index++}(${percentage}%)${it.first.nameCardOrNick.truncate(10)}(${it.first.id})" // #1 15.4%
+                    }
+            )
+        }
     }
 
     fun CommandSender.inferBotOrFail(): Bot =
@@ -305,4 +318,29 @@ internal interface InternalCommandArgumentParserExtensions<T : Any> : CommandArg
 
     fun CommandSender.inferFriendOrFail(): Friend =
         (this as? FriendCommandSender)?.user ?: illegalArgument("当前语境下无法推断目标好友")
+}
+
+internal fun Double.toDecimalPlace(n: Int): String {
+    return "%.${n}f".format(this)
+}
+
+internal fun String.truncate(lengthLimit: Int, replacement: String = "..."): String = buildString {
+    var lengthSum = 0
+    for (char in this@truncate) {
+        lengthSum += char.chineseLength()
+        if (lengthSum > lengthLimit) {
+            append(replacement)
+            return toString()
+        } else append(char)
+    }
+    return toString()
+}
+
+internal fun Char.chineseLength(): Int {
+    return when (this) {
+        in '\u0000'..'\u007F' -> 1
+        in '\u0080'..'\u07FF' -> 2
+        in '\u0800'..'\uFFFF' -> 3
+        else -> 4
+    }
 }
