@@ -14,6 +14,7 @@ import net.mamoe.mirai.console.command.description.CommandArgumentParserExceptio
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import kotlin.math.max
+import kotlin.math.min
 
 
 internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
@@ -37,12 +38,16 @@ internal fun String.fuzzyMatchWith(target: String): Double {
     }
     var match = 0
     for (i in 0..(max(this.lastIndex, target.lastIndex))) {
-        val t = target.getOrNull(match)
-        if (t == this.getOrNull(i) && t != null) {
+        val t = target.getOrNull(match) ?: break
+        if (t == this.getOrNull(i)) {
             match++
         }
     }
-    return match.toDouble() / (max(this.lastIndex, target.lastIndex) + 1)
+
+    val longerLength = max(this.length, target.length)
+    val shorterLength = min(this.length, target.length)
+
+    return match.toDouble() / (longerLength + (shorterLength - match))
 }
 
 internal inline fun <T : Any> Collection<T>.fuzzySearch(
