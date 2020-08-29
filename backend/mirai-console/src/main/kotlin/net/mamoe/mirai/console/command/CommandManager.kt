@@ -9,7 +9,7 @@
 
 @file:Suppress(
     "NOTHING_TO_INLINE", "unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE",
-    "MemberVisibilityCanBePrivate"
+    "MemberVisibilityCanBePrivate", "INAPPLICABLE_JVM_NAME"
 )
 @file:JvmName("CommandManagerKt")
 
@@ -17,10 +17,8 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.console.internal.command.CommandManagerImpl.executeCommand
+import net.mamoe.mirai.message.data.*
 
 /**
  * 指令管理器
@@ -63,74 +61,92 @@ public interface CommandManager {
      *
      * 注意: [内建指令][BuiltInCommands] 也可以被覆盖.
      */
+    @JvmName("registerCommand")
     public fun Command.register(override: Boolean = false): Boolean
 
     /**
      * 查找并返回重名的指令. 返回重名指令.
      */
+    @JvmName("findCommandDuplicate")
     public fun Command.findDuplicate(): Command?
 
     /**
      * 取消注册这个指令. 若指令未注册, 返回 `false`.
      */
+    @JvmName("unregisterCommand")
     public fun Command.unregister(): Boolean
 
     /**
      * 当 [this] 已经 [注册][register] 后返回 `true`
      */
+    @JvmName("isCommandRegistered")
     public fun Command.isRegistered(): Boolean
 
     /**
-     * 执行一个指令
-     *
-     * @return 成功执行的指令, 在无匹配指令时返回 `null`
-     * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
-     * @see executeCommand
-     */
-    @JvmBlockingBridge
-    @Throws(CommandExecutionException::class)
-    public suspend fun Command.execute(sender: CommandSender, args: MessageChain, checkPermission: Boolean = true)
-
-    /**
-     * 执行一个指令
-     *
-     * @return 成功执行的指令, 在无匹配指令时返回 `null`
-     * @throws CommandExecutionException 当 [Command.onCommand] 抛出异常时包装并附带相关指令信息抛出
-     * @see executeCommand
-     */
-    @JvmBlockingBridge
-    @Throws(CommandExecutionException::class)
-    public suspend fun Command.execute(sender: CommandSender, vararg args: Any, checkPermission: Boolean = true)
-
-    /**
-     * 解析并执行一个指令, 获取详细的指令参数等信息
-     *
-     * 执行过程中产生的异常将不会直接抛出, 而会包装为 [CommandExecuteResult.ExecutionFailed]
+     * 解析并执行一个指令
      *
      * ### 指令解析流程
-     * 1. [messages] 的第一个消息元素的 [内容][Message.contentToString] 被作为指令名, 在已注册指令列表中搜索. (包含 [Command.prefixOptional] 相关的处理)
+     * 1. [message] 的第一个消息元素的 [内容][Message.contentToString] 被作为指令名, 在已注册指令列表中搜索. (包含 [Command.prefixOptional] 相关的处理)
      * 2. 参数语法分析.
-     *   在当前的实现下, [messages] 被以空格和 [SingleMessage] 分割.
+     *   在当前的实现下, [message] 被以空格和 [SingleMessage] 分割.
      *   如 "MessageChain("foo bar", [Image], " test")" 被分割为 "foo", "bar", [Image], "test".
      *   注意: 字符串与消息元素之间不需要空格, 会被强制分割. 如 "bar[mirai:image:]" 会被分割为 "bar" 和 [Image] 类型的消息元素.
      * 3. 参数解析. 各类型指令实现不同. 详见 [RawCommand], [CompositeCommand], [SimpleCommand]
      *
-     * @param messages 接受 [String] 或 [Message], 其他对象将会被 [Any.toString]
+     * ### 未来的扩展
+     * 在将来, 参数语法分析过程可能会被扩展, 允许插件自定义处理方式, 因此可能不会简单地使用空格分隔.
+     *
+     * @param message 一条完整的指令. 如 "/managers add 123456.123456"
+     * @param checkPermission 为 `true` 时检查权限
      *
      * @return 执行结果
      */
     @JvmBlockingBridge
-    public suspend fun CommandSender.executeCommand(vararg messages: Any): CommandExecuteResult
+    public suspend fun CommandSender.executeCommand(
+        message: Message,
+        checkPermission: Boolean = true
+    ): CommandExecuteResult
 
     /**
-     * 解析并执行一个指令, 获取详细的指令参数等信息
+     * 解析并执行一个指令
      *
-     * 执行过程中产生的异常将不会直接抛出, 而会包装为 [CommandExecuteResult.ExecutionFailed]
+     * @param message 一条完整的指令. 如 "/managers add 123456.123456"
+     * @param checkPermission 为 `true` 时检查权限
      *
      * @return 执行结果
+     * @see executeCommand
+     */
+    @JvmDefault
+    @JvmBlockingBridge
+    public suspend fun CommandSender.executeCommand(
+        message: String,
+        checkPermission: Boolean = true
+    ): CommandExecuteResult = executeCommand(PlainText(message).asMessageChain(), checkPermission)
+
+    /**
+     * 执行一个确切的指令
+     * @see executeCommand 获取更多信息
      */
     @JvmBlockingBridge
-    public suspend fun CommandSender.executeCommand(messages: MessageChain): CommandExecuteResult
+    @JvmName("executeCommand")
+    public suspend fun Command.execute(
+        sender: CommandSender,
+        arguments: Message = EmptyMessageChain,
+        checkPermission: Boolean = true
+    ): CommandExecuteResult
+
+    /**
+     * 执行一个确切的指令
+     * @see executeCommand 获取更多信息
+     */
+    @JvmDefault
+    @JvmBlockingBridge
+    @JvmName("executeCommand")
+    public suspend fun Command.execute(
+        sender: CommandSender,
+        arguments: String = "",
+        checkPermission: Boolean = true
+    ): CommandExecuteResult = execute(sender, PlainText(arguments).asMessageChain(), checkPermission)
 
     public companion object INSTANCE : CommandManager by CommandManagerImpl {
         // TODO: 2020/8/20 https://youtrack.jetbrains.com/issue/KT-41191
@@ -142,19 +158,31 @@ public interface CommandManager {
         override fun Command.unregister(): Boolean = CommandManagerImpl.run { unregister() }
         override fun Command.isRegistered(): Boolean = CommandManagerImpl.run { isRegistered() }
         override val commandPrefix: String get() = CommandManagerImpl.commandPrefix
+        override val allRegisteredCommands: List<Command>
+            get() = CommandManagerImpl.allRegisteredCommands
+
+
         override suspend fun Command.execute(
             sender: CommandSender,
-            args: MessageChain,
+            arguments: Message,
             checkPermission: Boolean
-        ): Unit = CommandManagerImpl.run { execute(sender, args = args, checkPermission = checkPermission) }
+        ): CommandExecuteResult =
+            CommandManagerImpl.run { execute(sender, arguments = arguments, checkPermission = checkPermission) }
 
-        override suspend fun Command.execute(sender: CommandSender, vararg args: Any, checkPermission: Boolean): Unit =
-            CommandManagerImpl.run { execute(sender, args = args, checkPermission = checkPermission) }
+        override suspend fun CommandSender.executeCommand(
+            message: String,
+            checkPermission: Boolean
+        ): CommandExecuteResult = CommandManagerImpl.run { executeCommand(message, checkPermission) }
 
-        override suspend fun CommandSender.executeCommand(vararg messages: Any): CommandExecuteResult =
-            CommandManagerImpl.run { executeCommand(*messages) }
+        override suspend fun Command.execute(
+            sender: CommandSender,
+            arguments: String,
+            checkPermission: Boolean
+        ): CommandExecuteResult = CommandManagerImpl.run { execute(sender, arguments, checkPermission) }
 
-        override suspend fun CommandSender.executeCommand(messages: MessageChain): CommandExecuteResult =
-            CommandManagerImpl.run { executeCommand(messages) }
+        override suspend fun CommandSender.executeCommand(
+            message: Message,
+            checkPermission: Boolean
+        ): CommandExecuteResult = CommandManagerImpl.run { executeCommand(message, checkPermission) }
     }
 }

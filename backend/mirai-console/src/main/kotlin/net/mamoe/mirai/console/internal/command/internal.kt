@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.command.description.CommandArgumentParserException
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import kotlin.math.max
@@ -148,34 +147,11 @@ internal suspend fun CommandSender.executeCommandInternal(
     args: Array<out Any>,
     commandName: String,
     checkPermission: Boolean
-) {
-    if (checkPermission && !command.testPermission(this)) {
-        throw CommandExecutionException(this, command, commandName, CommandPermissionDeniedException(this, command))
-    }
-
-    kotlin.runCatching {
-        command.onCommand(this, args)
-    }.onFailure {
-        catchExecutionException(it)
-        if (it !is CommandArgumentParserException) {
-            throw CommandExecutionException(this, command, commandName, it)
-        }
-    }
-}
-
-
-@JvmSynthetic
-internal suspend fun CommandSender.executeCommandInternal(
-    messages: Any,
-    commandName: String
 ): CommandExecuteResult {
-    val command =
-        CommandManagerImpl.matchCommand(commandName) ?: return CommandExecuteResult.CommandNotFound(commandName)
-    val args = messages.flattenCommandComponents().dropToTypedArray(1)
-
-    if (!command.testPermission(this)) {
+    if (checkPermission && !command.testPermission(this)) {
         return CommandExecuteResult.PermissionDenied(command, commandName)
     }
+
     kotlin.runCatching {
         command.onCommand(this, args)
     }.fold(
@@ -195,4 +171,18 @@ internal suspend fun CommandSender.executeCommandInternal(
             )
         }
     )
+}
+
+
+@JvmSynthetic
+internal suspend fun CommandSender.executeCommandInternal(
+    messages: Any,
+    commandName: String,
+    checkPermission: Boolean
+): CommandExecuteResult {
+    val command =
+        CommandManagerImpl.matchCommand(commandName) ?: return CommandExecuteResult.CommandNotFound(commandName)
+    val args = messages.flattenCommandComponents().dropToTypedArray(1)
+
+    return executeCommandInternal(command, args, commandName, checkPermission)
 }

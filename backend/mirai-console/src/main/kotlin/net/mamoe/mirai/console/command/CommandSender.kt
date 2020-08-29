@@ -121,6 +121,7 @@ public interface GroupAwareCommandSender : CommandSender {
 
 /**
  * 控制台指令执行者. 代表由控制台执行指令
+ * @see INSTANCE
  */
 // 前端实现
 public abstract class ConsoleCommandSender internal constructor() : CommandSender {

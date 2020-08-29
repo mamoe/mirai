@@ -30,6 +30,7 @@ import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.buildMessageChain
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -91,7 +92,7 @@ internal class TestCommand {
     @Test
     fun testSimpleExecute() = runBlocking {
         assertEquals(arrayOf("test").contentToString(), withTesting<Array<String>> {
-            TestSimpleCommand.execute(sender, "test")
+            assertSuccess(TestSimpleCommand.execute(sender, "test"))
         }.contentToString())
     }
 
@@ -108,7 +109,7 @@ internal class TestCommand {
     @Test
     fun testSimpleArgsSplitting() = runBlocking {
         assertEquals(arrayOf("test", "ttt", "tt").contentToString(), withTesting<Array<String>> {
-            TestSimpleCommand.execute(sender, PlainText("test ttt tt"))
+            assertSuccess(TestSimpleCommand.execute(sender, PlainText("test ttt tt")))
         }.contentToString())
     }
 
@@ -117,16 +118,20 @@ internal class TestCommand {
     @Test
     fun `PlainText and Image args splitting`() = runBlocking {
         val result = withTesting<Array<Any>> {
-            TestSimpleCommand.execute(sender, "test", image, "tt")
+            assertSuccess(TestSimpleCommand.execute(sender, buildMessageChain {
+                +"test"
+                +image
+                +"tt"
+            }))
         }
         assertEquals(arrayOf("test", image, "tt").contentToString(), result.contentToString())
         assertSame(image, result[1])
     }
 
     @Test
-    fun `test throw Exception`() = assertTrue {
+    fun `test throw Exception`() {
         runBlocking {
-            sender.executeCommand("").isFailure()
+            assertTrue(sender.executeCommand("").isFailure())
         }
     }
 
@@ -134,7 +139,7 @@ internal class TestCommand {
     fun `executing command by string command`() = runBlocking {
         TestCompositeCommand.register()
         val result = withTesting<Int> {
-            assertNotNull(sender.executeCommand("/testComposite", "mute 1"))
+            assertSuccess(sender.executeCommand("/testComposite mute 1"))
         }
 
         assertEquals(1, result)
@@ -143,7 +148,7 @@ internal class TestCommand {
     @Test
     fun `composite command executing`() = runBlocking {
         assertEquals(1, withTesting {
-            assertNotNull(TestCompositeCommand.execute(sender, "mute 1"))
+            assertSuccess(TestCompositeCommand.execute(sender, "mute 1"))
         })
     }
 
@@ -209,7 +214,12 @@ internal class TestCommand {
 
             composite.withRegistration {
                 assertEquals(333, withTesting<MyClass> { execute(sender, "mute 333") }.value)
-                assertEquals(2, withTesting<MyClass> { execute(sender, "mute", image) }.value)
+                assertEquals(2, withTesting<MyClass> {
+                    execute(sender, buildMessageChain {
+                        +"mute"
+                        +image
+                    })
+                }.value)
             }
         }
     }
@@ -231,4 +241,8 @@ internal class TestCommand {
             }
         }
     }
+}
+
+internal fun assertSuccess(result: CommandExecuteResult) {
+    assertTrue(result.isSuccess(), result.toString())
 }

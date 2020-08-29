@@ -18,8 +18,10 @@ import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageContent
+import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.locks.ReentrantLock
 
@@ -137,34 +139,43 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
 
     override fun Command.isRegistered(): Boolean = this in registeredCommands
 
-    //// executing without detailed result (faster)
-    override suspend fun Command.execute(sender: CommandSender, args: MessageChain, checkPermission: Boolean) {
-        sender.executeCommandInternal(
+    override suspend fun Command.execute(
+        sender: CommandSender,
+        arguments: Message,
+        checkPermission: Boolean
+    ): CommandExecuteResult {
+        return sender.executeCommandInternal(
             this,
-            args.flattenCommandComponents().toTypedArray(),
-            this.primaryName,
+            arguments.flattenCommandComponents().toTypedArray(),
+            primaryName,
             checkPermission
         )
     }
 
-    override suspend fun Command.execute(sender: CommandSender, vararg args: Any, checkPermission: Boolean) {
-        sender.executeCommandInternal(
+    override suspend fun Command.execute(
+        sender: CommandSender,
+        arguments: String,
+        checkPermission: Boolean
+    ): CommandExecuteResult {
+        return sender.executeCommandInternal(
             this,
-            args.flattenCommandComponents().toTypedArray(),
-            this.primaryName,
+            arguments.flattenCommandComponents().toTypedArray(),
+            primaryName,
             checkPermission
         )
     }
 
-    //// execution with detailed result
-    override suspend fun CommandSender.executeCommand(vararg messages: Any): CommandExecuteResult {
-        if (messages.isEmpty()) return CommandExecuteResult.CommandNotFound("")
-        return executeCommandInternal(messages, messages[0].toString().substringBefore(' '))
-    }
-
-    override suspend fun CommandSender.executeCommand(messages: MessageChain): CommandExecuteResult {
-        val msg = messages.filterIsInstance<MessageContent>()
+    override suspend fun CommandSender.executeCommand(
+        message: Message,
+        checkPermission: Boolean
+    ): CommandExecuteResult {
+        val msg = message.asMessageChain().filterIsInstance<MessageContent>()
         if (msg.isEmpty()) return CommandExecuteResult.CommandNotFound("")
-        return executeCommandInternal(msg, msg[0].toString().substringBefore(' '))
+        return executeCommandInternal(msg, msg[0].content.substringBefore(' '), checkPermission)
+    }
+
+    override suspend fun CommandSender.executeCommand(message: String, checkPermission: Boolean): CommandExecuteResult {
+        if (message.isBlank()) return CommandExecuteResult.CommandNotFound("")
+        return executeCommandInternal(message, message.substringBefore(' '), checkPermission)
     }
 }
