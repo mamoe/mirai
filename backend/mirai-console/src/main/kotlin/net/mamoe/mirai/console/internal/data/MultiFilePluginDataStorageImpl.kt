@@ -37,6 +37,8 @@ internal open class MultiFilePluginDataStorageImpl(
         val text = getPluginDataFile(holder, instance).readText()
         if (text.isNotBlank()) {
             Yaml.default.decodeFromString(instance.updaterSerializer, text)
+        } else {
+            this.store(holder, instance) // save an initial copy
         }
         logger.debug { "Successfully loaded PluginData: ${instance.saveName} (containing ${instance.valueNodes.size} properties)" }
     }
