@@ -12,6 +12,25 @@
 package net.mamoe.mirai.console.codegen
 
 import org.intellij.lang.annotations.Language
+import kotlin.reflect.KClass
+import kotlin.reflect.full.functions
+import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.full.isSubclassOf
+
+inline fun <reified T> runCodegenInObject() = runCodegenInObject(T::class)
+
+fun runCodegenInObject(clazz: KClass<*>) {
+    clazz.nestedClasses
+        .filter { it.isSubclassOf(RegionCodegen::class) }
+        .associateWith { kClass -> kClass.functions.find { it.name == "main" && it.hasAnnotation<JvmStatic>() } }
+        .filter { it.value != null }
+        .forEach { (kClass, entryPoint) ->
+            println("---------------------------------------------")
+            println("Running Codegen: ${kClass.simpleName}")
+            entryPoint!!.call(kClass.objectInstance, arrayOf<String>())
+            println("---------------------------------------------")
+        }
+}
 
 abstract class Replacer(private val name: String) : (String) -> String {
     override fun toString(): String {

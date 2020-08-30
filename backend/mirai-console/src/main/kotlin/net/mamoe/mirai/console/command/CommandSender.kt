@@ -165,6 +165,7 @@ public interface CommandSender : CoroutineScope {
      *
      * 对于 [MemberCommandSender], 这个函数总是发送给所在群
      */
+    @JvmDefault
     @JvmBlockingBridge
     public suspend fun sendMessage(message: String): MessageReceipt<User>?
 
@@ -259,9 +260,7 @@ public sealed class AbstractCommandSender : CommandSender, CoroutineScope {
     public abstract override val bot: Bot?
     public abstract override val subject: Contact?
     public abstract override val user: User?
-    public abstract override suspend fun sendMessage(message: Message): MessageReceipt<User>?
     public abstract override fun toString(): String
-    public override suspend fun sendMessage(message: String): MessageReceipt<User>? = sendMessage(PlainText(message))
 
     @ConsoleExperimentalAPI("This is unstable and might get changed")
     override suspend fun catchExecutionException(e: Throwable) {
@@ -502,6 +501,11 @@ public abstract class ConsoleCommandSender @ConsoleFrontEndImplementation constr
             MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
             return null
         }
+
+        override suspend fun sendMessage(message: String): MessageReceipt<User>? {
+            MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
+            return null
+        }
     }
 }
 
@@ -567,7 +571,11 @@ public interface UserCommandSender : CommandSender {
 public sealed class AbstractUserCommandSender : UserCommandSender, AbstractCommandSender() {
     public override val bot: Bot get() = user.bot // don't final
     public final override val name: String get() = user.nameCardOrNick
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<User> = sendMessage(PlainText(message))
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<User> = user.sendMessage(message)
 }
 
@@ -580,7 +588,11 @@ public open class FriendCommandSender internal constructor(
 ) : AbstractUserCommandSender(), CoroutineScope by user.childScope("FriendCommandSender") {
     public override val subject: Contact get() = user
     public override fun toString(): String = "FriendCommandSender($user)"
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Friend> = sendMessage(PlainText(message))
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Friend> = user.sendMessage(message)
 }
 
@@ -596,7 +608,11 @@ public open class MemberCommandSender internal constructor(
     public override val group: Group get() = user.group
     public override val subject: Contact get() = group
     public override fun toString(): String = "MemberCommandSender($user)"
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member> = user.sendMessage(message)
 }
 
@@ -612,7 +628,11 @@ public open class TempCommandSender internal constructor(
     public override val group: Group get() = user.group
     public override val subject: Contact get() = group
     public override fun toString(): String = "TempCommandSender($user)"
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member> = user.sendMessage(message)
 }
 

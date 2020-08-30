@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE", "MemberVisibilityCanBePrivate", "unused","PRE_RELEASE_CLASS")
+@file:Suppress("NOTHING_TO_INLINE", "MemberVisibilityCanBePrivate", "unused", "PRE_RELEASE_CLASS")
 
 package net.mamoe.mirai.console.codegen
 
@@ -70,6 +70,16 @@ sealed class KtType {
 
     object KtMap : KtType() {
         override val standardName: String get() = "Map"
+    }
+
+    data class Custom(override val standardName: String) : KtType() {
+        override fun toString(): String {
+            return standardName
+        }
+    }
+
+    companion object {
+        operator fun invoke(standardName: String): KtType = Custom(standardName)
     }
 }
 
