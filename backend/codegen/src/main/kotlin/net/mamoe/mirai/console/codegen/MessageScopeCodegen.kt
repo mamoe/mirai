@@ -74,7 +74,7 @@ internal object MessageScopeCodegen {
         fun main(args: Array<String>) = super.startIndependently()
         override val defaultInvokeArgs: List<KtType> = listOf(KtString) // invoke once
 
-        @Suppress("RedundantVisibilityModifier", "ClassName", "KDocUnresolvedReference")
+        @Suppress("RedundantVisibilityModifier", "ClassName", "KDocUnresolvedReference", "unused")
         override fun StringBuilder.apply(ktType: KtType) {
             for (candidate in TypeCandidatesForMessageScope) {
                 appendKCode(
@@ -109,7 +109,7 @@ internal object MessageScopeCodegen {
                 appendLine()
             }
 
-            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).distinctArrangements()) {
+            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
                 appendKCode(
                     """
                     public fun ${a}.scopeWith(other: ${b}): MessageScope {
@@ -120,7 +120,7 @@ internal object MessageScopeCodegen {
                 appendLine()
             }
 
-            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).distinctArrangements()) {
+            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
                 appendKCode(
                     """
                     public fun ${a}?.scopeWithNotNull(other: ${b}?): MessageScope {
@@ -163,7 +163,10 @@ internal object MessageScopeCodegen {
             for (a in (TypeCandidatesForMessageScope + KtMessageScope)) {
                 appendKCode(
                     """
-                    @Deprecated("Senseless scopeWith. Use asMessageScope.", ReplaceWith("this.asMessageScope()", "net.mamoe.mirai.console.util.asMessageScope"))
+                    @Deprecated(
+                        "Senseless scopeWith. Use asMessageScope.",
+                        ReplaceWith("this.asMessageScope()", "net.mamoe.mirai.console.util.asMessageScope")
+                    )
                     public inline fun ${a}.scopeWith(): MessageScope = asMessageScope()
                 """
                 )
@@ -175,7 +178,11 @@ internal object MessageScopeCodegen {
                     """
                     @Deprecated(
                         "Senseless scopeWith. Use .asMessageScope().invoke.",
-                        ReplaceWith("this.asMessageScope()(action)", "net.mamoe.mirai.console.util.asMessageScope", "net.mamoe.mirai.console.util.invoke")
+                        ReplaceWith(
+                            "this.asMessageScope()(action)",
+                            "net.mamoe.mirai.console.util.asMessageScope", 
+                            "net.mamoe.mirai.console.util.invoke"
+                        )
                     )
                     public inline fun <R> ${a}.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)
 """

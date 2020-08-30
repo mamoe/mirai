@@ -155,11 +155,23 @@ public fun Contact.scopeWith(other: MessageScope): MessageScope {
     return CombinedScope(asMessageScope(), other.asMessageScope())
 }
 
+public fun CommandSender.scopeWith(other: Contact): MessageScope {
+    return CombinedScope(asMessageScope(), other.asMessageScope())
+}
+
 public fun CommandSender.scopeWith(other: CommandSender): MessageScope {
     return CombinedScope(asMessageScope(), other.asMessageScope())
 }
 
 public fun CommandSender.scopeWith(other: MessageScope): MessageScope {
+    return CombinedScope(asMessageScope(), other.asMessageScope())
+}
+
+public fun MessageScope.scopeWith(other: Contact): MessageScope {
+    return CombinedScope(asMessageScope(), other.asMessageScope())
+}
+
+public fun MessageScope.scopeWith(other: CommandSender): MessageScope {
     return CombinedScope(asMessageScope(), other.asMessageScope())
 }
 
@@ -200,6 +212,17 @@ public fun Contact?.scopeWithNotNull(other: MessageScope?): MessageScope {
     }
 }
 
+public fun CommandSender?.scopeWithNotNull(other: Contact?): MessageScope {
+    @Suppress("DuplicatedCode")
+    return when {
+        this == null && other == null -> NoopMessageScope
+        this == null && other != null -> other.asMessageScope()
+        this != null && other == null -> this.asMessageScope()
+        this != null && other != null -> CombinedScope(asMessageScope(), other.asMessageScope())
+        else -> null!!
+    }
+}
+
 public fun CommandSender?.scopeWithNotNull(other: CommandSender?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
@@ -212,6 +235,28 @@ public fun CommandSender?.scopeWithNotNull(other: CommandSender?): MessageScope 
 }
 
 public fun CommandSender?.scopeWithNotNull(other: MessageScope?): MessageScope {
+    @Suppress("DuplicatedCode")
+    return when {
+        this == null && other == null -> NoopMessageScope
+        this == null && other != null -> other.asMessageScope()
+        this != null && other == null -> this.asMessageScope()
+        this != null && other != null -> CombinedScope(asMessageScope(), other.asMessageScope())
+        else -> null!!
+    }
+}
+
+public fun MessageScope?.scopeWithNotNull(other: Contact?): MessageScope {
+    @Suppress("DuplicatedCode")
+    return when {
+        this == null && other == null -> NoopMessageScope
+        this == null && other != null -> other.asMessageScope()
+        this != null && other == null -> this.asMessageScope()
+        this != null && other != null -> CombinedScope(asMessageScope(), other.asMessageScope())
+        else -> null!!
+    }
+}
+
+public fun MessageScope?.scopeWithNotNull(other: CommandSender?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
