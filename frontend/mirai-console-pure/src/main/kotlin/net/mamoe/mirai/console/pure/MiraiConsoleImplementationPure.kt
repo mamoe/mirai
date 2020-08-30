@@ -27,10 +27,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
-import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
-import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.plugin.NamedSupervisorJob
@@ -69,22 +67,19 @@ class MiraiConsoleImplementationPure
         listOf(DeferredPluginLoader { JarPluginLoader })
     ),
     override val frontEndDescription: MiraiConsoleFrontEndDescription = ConsoleFrontEndDescImpl,
-    override val consoleCommandSender: ConsoleCommandSender = ConsoleCommandSenderImpl,
+    override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl = ConsoleCommandSenderImplPure,
     override val dataStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config"))
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(NamedSupervisorJob("MiraiConsoleImplementationPure")) {
-    override val mainLogger: MiraiLogger by lazy {
-        MiraiConsole.newLogger("main")
-    }
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
         return DefaultLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
-    override fun newLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
+    override fun createLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
 
     init {
         with(rootPath.toFile()) {

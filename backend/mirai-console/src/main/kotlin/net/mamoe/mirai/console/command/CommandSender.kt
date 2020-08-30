@@ -7,90 +7,275 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE", "INAPPLICABLE_JVM_NAME")
+@file:Suppress(
+    "NOTHING_TO_INLINE", "INAPPLICABLE_JVM_NAME", "FunctionName", "SuspendFunctionOnCoroutineScope",
+    "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER"
+)
 
 package net.mamoe.mirai.console.command
 
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.console.ConsoleFrontEndImplementation
+import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
+import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
+import net.mamoe.mirai.console.command.CommandSender.Companion.asMemberCommandSender
+import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSender
+import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
+import net.mamoe.mirai.console.command.ConsoleCommandSender.INSTANCE
 import net.mamoe.mirai.console.command.description.CommandArgumentParserException
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
+import net.mamoe.mirai.console.internal.data.castOrNull
+import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.childScope
+import net.mamoe.mirai.console.util.childScopeContext
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
+import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
  * 指令发送者.
  *
- * ### 获得指令发送者
+ * 只有 [CommandSender] 才能 [执行指令][CommandManager.execute]
+ *
+ * ## 获得指令发送者
  * - [MessageEvent.toCommandSender]
  * - [FriendMessageEvent.toCommandSender]
  * - [GroupMessageEvent.toCommandSender]
  * - [TempMessageEvent.toCommandSender]
  *
  * - [Member.asCommandSender]
+ * - [Member.asTempCommandSender]]
+ * - [Member.asMemberCommandSender]]
  * - [Friend.asCommandSender]
  * - [User.asCommandSender]
  *
- * ### 子类型
+ * ## 实现 [CommandSender]
+ * 除 Console 前端外, 在任何时候都不要实现 [CommandSender] (包括使用委托). 必须使用上述扩展获取 [CommandSender] 实例.
  *
- * 当真实收到由用户执行的指令时:
- * - 若用户在群内指令执行, 对应 [CommandSender] 为 [MemberCommandSenderOnMessage]
- * - 若用户在私聊环境内指令执行, 对应 [CommandSender] 为 [FriendCommandSenderOnMessage]
- * - 若用户在临时会话内指令执行, 对应 [CommandSender] 为 [TempCommandSenderOnMessage]
+ * Console 前端可实现 [ConsoleCommandSender]
  *
- * 当指令由其他插件主动执行时, 插件应使用 [toCommandSender] 或 [asCommandSender], 因此
- * - 若用户在群内指令执行, 对应 [CommandSender] 为 [MemberCommandSender]
- * - 若用户在私聊环境内指令执行, 对应 [CommandSender] 为 [FriendCommandSender]
- * - 若用户在临时会话内指令执行, 对应 [CommandSender] 为 [TempCommandSender]
+ * ## 子类型
+ *
+ * 所有 [CommandSender] 都应继承 [AbstractCommandSender].
+ *
+ * [AbstractCommandSender] 是密封类, 一级子类为:
+ * - [AbstractUserCommandSender] 代表用户
+ * - [ConsoleCommandSender] 代表控制台
+ *
+ * 二级子类, 当指令由插件 [主动执行][CommandManager.execute] 时, 插件应使用 [toCommandSender] 或 [asCommandSender], 因此,
+ * - 若在群聊环境, 对应 [CommandSender] 为 [MemberCommandSender]
+ * - 若在私聊环境, 对应 [CommandSender] 为 [FriendCommandSender]
+ * - 若在临时会话环境, 对应 [CommandSender] 为 [TempCommandSender]
+ *
+ * 三级子类, 当真实收到由用户执行的指令时:
+ * - 若在群聊环境, 对应 [CommandSender] 为 [MemberCommandSenderOnMessage]
+ * - 若在私聊环境, 对应 [CommandSender] 为 [FriendCommandSenderOnMessage]
+ * - 若在临时会话环境, 对应 [CommandSender] 为 [TempCommandSenderOnMessage]
+ *
+ * 类型关系如图. 箭头指向的是父类.
+ *
+ * ```
+ *                 CoroutineScope
+ *                        ↑
+ *                        |
+ *                  CommandSender <---------+---------------+-------------------------------+
+ *                        ↑                 |               |                               |
+ *                        |                 |               |                               |
+ *                        |     UserCommandSender   GroupAwareCommandSender     CommandSenderOnMessage
+ *                        |                 ↑               ↑                               ↑
+ *                        |                 |               |                               |
+ *               AbstractCommandSender      |               |                               |
+ *                        ↑                 |               |                               |
+ *                        | sealed          |               |                               |
+ *          +-------------+-------------+   |               |                               |
+ *          |                           |   |               |                               |
+ *          |                           |   |               |                               |      }
+ * ConsoleCommandSender    AbstractUserCommandSender        |                               |      } 一级子类
+ *                                      ↑                   |                               |      }
+ *                                      | sealed            |                               |
+ *                                      |                   |                               |
+ *               +----------------------+                   |                               |
+ *               |                      |                   |                               |
+ *               |                      +------+------------+---------------+               |
+ *               |                             |                            |               |
+ *               |                             |                            |               |      }
+ *       FriendCommandSender          MemberCommandSender           TempCommandSender       |      } 二级子类
+ *               ↑                             ↑                            ↑               |      }
+ *               |                             |                            |               |
+ *               |                             |                            |               |      }
+ *  FriendCommandSenderOnMessage  MemberCommandSenderOnMessage  TempCommandSenderOnMessage  |      } 三级子类
+ *               |                             |                            |               |      }
+ *               |                             |                            |               |
+ *               +-----------------------------+----------------------------+---------------+
+ * ```
  *
  * @see ConsoleCommandSender 控制台
  * @see UserCommandSender  [User] ([群成员][Member], [好友][Friend])
  * @see toCommandSender
  * @see asCommandSender
  */
-@Suppress("FunctionName")
-public interface CommandSender {
+public interface CommandSender : CoroutineScope {
     /**
-     * 与这个 [CommandSender] 相关的 [Bot]. 当通过控制台执行时为 null.
+     * 与这个 [CommandSender] 相关的 [Bot].
+     * 当通过控制台执行时为 `null`.
      */
     public val bot: Bot?
 
     /**
-     * 获取好友昵称, 群员昵称, 或 Bot 的昵称. 当控制台发送消息时返回 [ConsoleCommandSender.NAME]
+     * 与这个 [CommandSender] 相关的 [Contact].
+     *
+     * - 当一个群员执行指令时, [subject] 为所在 [群][Group]
+     * - 当通过控制台执行时为 `null`.
+     */
+    public val subject: Contact?
+
+    /**
+     * 指令原始发送*人*.
+     * - 当通过控制台执行时为 `null`.
+     */
+    public val user: User?
+
+    /**
+     * [User.nameCardOrNick] 或 [ConsoleCommandSender.NAME]
      */
     public val name: String
 
     /**
-     * 立刻发送一条消息. 对于 [Member.asCommandSender], 这个函数总是发送给所在群
+     * 立刻发送一条消息.
+     *
+     * 对于 [MemberCommandSender], 这个函数总是发送给所在群
      */
     @JvmBlockingBridge
-    public suspend fun sendMessage(message: Message)
+    public suspend fun sendMessage(message: Message): MessageReceipt<User>?
 
     /**
-     * 立刻发送一条消息. 对于 [Member.asCommandSender], 这个函数总是发送给所在群
+     * 立刻发送一条消息.
+     *
+     * 对于 [MemberCommandSender], 这个函数总是发送给所在群
      */
-    @JvmDefault
     @JvmBlockingBridge
-    public suspend fun sendMessage(message: String): Unit = sendMessage(PlainText(message))
+    public suspend fun sendMessage(message: String): MessageReceipt<User>?
 
-    @ConsoleExperimentalAPI
-    public suspend fun catchExecutionException(e: Throwable) {
+    @ConsoleExperimentalAPI("This is unstable and might get changed")
+    public suspend fun catchExecutionException(e: Throwable)
+
+    public companion object {
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Constructors
+        ///////////////////////////////////////////////////////////////////////////
+
+        /**
+         * 构造 [FriendCommandSenderOnMessage]
+         */
+        @JvmStatic
+        public fun FriendMessageEvent.toCommandSender(): FriendCommandSenderOnMessage =
+            FriendCommandSenderOnMessage(this)
+
+        /**
+         * 构造 [MemberCommandSenderOnMessage]
+         */
+        @JvmStatic
+        public fun GroupMessageEvent.toCommandSender(): MemberCommandSenderOnMessage =
+            MemberCommandSenderOnMessage(this)
+
+        /**
+         * 构造 [TempCommandSenderOnMessage]
+         */
+        @JvmStatic
+        public fun TempMessageEvent.toCommandSender(): TempCommandSenderOnMessage = TempCommandSenderOnMessage(this)
+
+        /**
+         * 构造 [CommandSenderOnMessage]
+         */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
+        public fun <T : MessageEvent> T.toCommandSender(): CommandSenderOnMessage<T> = when (this) {
+            is FriendMessageEvent -> toCommandSender()
+            is GroupMessageEvent -> toCommandSender()
+            is TempMessageEvent -> toCommandSender()
+            else -> throw IllegalArgumentException("unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
+        } as CommandSenderOnMessage<T>
+
+        /**
+         * 得到 [TempCommandSender]
+         */
+        @JvmStatic
+        public fun Member.asTempCommandSender(): TempCommandSender = TempCommandSender(this)
+
+        /**
+         * 得到 [MemberCommandSender]
+         */
+        @JvmStatic
+        public fun Member.asMemberCommandSender(): MemberCommandSender = MemberCommandSender(this)
+
+        /**
+         * 得到 [MemberCommandSender] 或 [TempCommandSender]
+         * @see asTempCommandSender
+         * @see asMemberCommandSender
+         */
+        @JvmStatic
+        public fun Member.asCommandSender(isTemp: Boolean): UserCommandSender {
+            return if (isTemp) asTempCommandSender() else asMemberCommandSender()
+        }
+
+        /**
+         * 得到 [FriendCommandSender]
+         */
+        @JvmStatic
+        public fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
+
+        /**
+         * 得到 [UserCommandSender]
+         *
+         * @param isTemp
+         */
+        @JvmStatic
+        public fun User.asCommandSender(isTemp: Boolean): UserCommandSender = when (this) {
+            is Friend -> this.asCommandSender()
+            is Member -> if (isTemp) TempCommandSender(this) else MemberCommandSender(this)
+            else -> error("stub")
+        }
+    }
+}
+
+/**
+ * 所有 [CommandSender] 都必须继承自此对象.
+ * @see CommandSender 查看更多信息
+ */
+public sealed class AbstractCommandSender : CommandSender, CoroutineScope {
+    public abstract override val bot: Bot?
+    public abstract override val subject: Contact?
+    public abstract override val user: User?
+    public abstract override suspend fun sendMessage(message: Message): MessageReceipt<User>?
+    public abstract override fun toString(): String
+    public override suspend fun sendMessage(message: String): MessageReceipt<User>? = sendMessage(PlainText(message))
+
+    @ConsoleExperimentalAPI("This is unstable and might get changed")
+    override suspend fun catchExecutionException(e: Throwable) {
         if (this is CommandSenderOnMessage<*>) {
-            // TODO: 2020/8/22 bad scope
             val cause = e.rootCauseOrSelf
 
             val message = cause
                 .takeIf { it is CommandArgumentParserException }?.message
                 ?: "${cause::class.simpleName.orEmpty()}: ${cause.message}"
 
+            // TODO: 2020/8/30 优化 net.mamoe.mirai.console.command.CommandSender.catchExecutionException
+
             sendMessage(message) // \n\n60 秒内发送 stacktrace 查看堆栈信息
-            bot.launch(CoroutineName("stacktrace delayer from command")) {
+            this@AbstractCommandSender.launch(CoroutineName("stacktrace delayer from command")) {
                 if (fromEvent.nextMessageOrNull(60_000) {
                         it.message.contentEquals("stacktrace") || it.message.contentEquals("stack")
                     } != null) {
@@ -103,20 +288,199 @@ public interface CommandSender {
     }
 }
 
-internal val Throwable.rootCauseOrSelf: Throwable get() = generateSequence(this) { it.cause }.lastOrNull() ?: this
-
 /**
- * 可以知道其 [Bot] 的 [CommandSender]
+ * 当 [this] 为 [AbstractCommandSender] 时返回.
+ *
+ * 正常情况下, 所有 [CommandSender] 都应该继承 [AbstractCommandSender]
+ *
+ * 在需要类型智能转换等情况时可使用此函数.
+ *
+ * ### 契约
+ * 本函数定义契约,
+ * - 若函数正常返回, Kotlin 编译器认为 [this] 是 [AbstractCommandSender] 实例并执行智能类型转换.
+ *
+ * @return `this`
  */
-public interface BotAwareCommandSender : CommandSender {
-    public override val bot: Bot
+public fun CommandSender.checkIsAbstractCommandSender(): AbstractCommandSender {
+    contract {
+        returns() implies (this@checkIsAbstractCommandSender is AbstractCommandSender)
+    }
+    check(this is AbstractCommandSender) { "A CommandSender must extend AbstractCommandSender" }
+    return this
 }
 
 /**
- * 可以知道其 [Group] 环境的 [CommandSender]
+ * 当 [this] 为 [AbstractUserCommandSender] 时返回.
+ *
+ * 正常情况下, 所有 [UserCommandSender] 都应该继承 [AbstractUserCommandSender]
+ *
+ * 在需要类型智能转换等情况时可使用此函数.
+ *
+ * ### 契约
+ * 本函数定义契约,
+ * - 若函数正常返回, Kotlin 编译器认为 [this] 是 [AbstractUserCommandSender] 实例并执行智能类型转换.
+ *
+ * @return `this`
  */
-public interface GroupAwareCommandSender : CommandSender {
-    public val group: Group
+public fun UserCommandSender.checkIsAbstractUserCommandSender(): AbstractUserCommandSender {
+    contract {
+        returns() implies (this@checkIsAbstractUserCommandSender is AbstractUserCommandSender)
+    }
+    check(this is AbstractUserCommandSender) { "A UserCommandSender must extend AbstractUserCommandSender" }
+    return this
+}
+
+/**
+ * 当 [this] 为 [ConsoleCommandSender] 时返回 `true`
+ *
+ * ### 契约
+ * 本函数定义契约,
+ * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
+ * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
+ */
+public fun CommandSender.isConsole(): Boolean {
+    contract {
+        returns(true) implies (this@isConsole is ConsoleCommandSender)
+        returns(false) implies (this@isConsole is UserCommandSender)
+    }
+    this.checkIsAbstractCommandSender()
+    return this is ConsoleCommandSender
+}
+
+/**
+ * 当 [this] 不为 [ConsoleCommandSender], 即为 [UserCommandSender] 时返回 `true`.
+ *
+ * ### 契约
+ * 本函数定义契约,
+ * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
+ * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
+ */
+public fun CommandSender.isNotConsole(): Boolean {
+    contract {
+        returns(true) implies (this@isNotConsole is UserCommandSender)
+        returns(false) implies (this@isNotConsole is ConsoleCommandSender)
+    }
+    this.checkIsAbstractCommandSender()
+    return this !is ConsoleCommandSender
+}
+
+/**
+ * 当 [this] 为 [UserCommandSender] 时返回 `true`
+ *
+ * ### 契约
+ * 本函数定义契约,
+ * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
+ * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
+ */
+public fun CommandSender.isUser(): Boolean {
+    contract {
+        returns(true) implies (this@isUser is UserCommandSender)
+        returns(false) implies (this@isUser is ConsoleCommandSender)
+    }
+    this.checkIsAbstractCommandSender()
+    return this is UserCommandSender
+}
+
+/**
+ * 当 [this] 不为 [UserCommandSender], 即为 [ConsoleCommandSender] 时返回 `true`
+ *
+ * ### 契约
+ * 本函数定义契约,
+ * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
+ * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
+ */
+public fun CommandSender.isNotUser(): Boolean {
+    contract {
+        returns(true) implies (this@isNotUser is ConsoleCommandSender)
+        returns(false) implies (this@isNotUser is UserCommandSender)
+    }
+    this.checkIsAbstractCommandSender()
+    return this !is UserCommandSender
+}
+
+/**
+ * 折叠 [AbstractCommandSender] 的两种可能性.
+ *
+ * - 当 [this] 为 [ConsoleCommandSender] 时执行 [ifIsConsole]
+ * - 当 [this] 为 [UserCommandSender] 时执行 [ifIsUser]
+ *
+ * ### 示例
+ * ```
+ * // 当一个指令执行过程出错
+ * val exception: Exception = ...
+ *
+ * sender.fold(
+ *     ifIsConsole = { // this: ConsoleCommandSender
+ *         sendMessage(exception.stackTraceToString()) // 展示整个 stacktrace
+ *     },
+ *     ifIsUser = { // this: UserCommandSender
+ *         sendMessage(exception.message.toString()) // 只展示 Exception.message
+ *     }
+ * )
+ * ```
+ *
+ * @return [ifIsConsole] 或 [ifIsUser] 执行结果.
+ */
+@JvmSynthetic
+@LowPriorityInOverloadResolution
+public inline fun <R> CommandSender.fold(
+    ifIsConsole: ConsoleCommandSender.() -> R,
+    ifIsUser: UserCommandSender.() -> R,
+): R {
+    contract {
+        callsInPlace(ifIsConsole, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(ifIsUser, InvocationKind.AT_MOST_ONCE)
+    }
+    return when (val sender = this.checkIsAbstractCommandSender()) {
+        is ConsoleCommandSender -> ifIsConsole(sender)
+        is AbstractUserCommandSender -> ifIsUser(sender)
+    }
+}
+
+/**
+ * 折叠 [AbstractCommandSender] 的两种可能性, 即在群内发送或在私聊环境发送.
+ *
+ * - 当 [this] 为 [MemberCommandSender] 时执行 [inGroup]
+ * - 当 [this] 为 [TempCommandSender] 或 [FriendCommandSender] 时执行 [inPrivate]
+ *
+ * ### 实验性 API
+ *
+ * 这是预览版本 API. 如果你对 [UserCommandSender.fold] 有建议, 请在 [mamoe/mirai-console/issues](https://github.com/mamoe/mirai-console/issues/new) 提交.
+ *
+ * @return [inGroup] 或 [inPrivate] 执行结果.
+ */
+@JvmSynthetic
+@ConsoleExperimentalAPI
+public inline fun <R> UserCommandSender.foldContext(
+    inGroup: MemberCommandSender.() -> R,
+    inPrivate: UserCommandSender.() -> R,
+): R {
+    contract {
+        callsInPlace(inGroup, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(inPrivate, InvocationKind.AT_MOST_ONCE)
+    }
+    return when (val sender = this.checkIsAbstractUserCommandSender()) {
+        is MemberCommandSender -> inGroup(sender)
+        else -> inPrivate(sender)
+    }
+}
+
+/**
+ * 尝试获取 [Group].
+ *
+ * 当 [GroupAwareCommandSender] 时返回 [GroupAwareCommandSender.group], 否则返回 `null`
+ *
+ * ### 契约
+ * 本函数定义契约,
+ * - 若返回非 `null` 实例, Kotlin 编译器认为 [this] 是 [GroupAwareCommandSender] 实例并执行智能类型转换.
+ * - 若返回 `null`, Kotlin 编译器认为 [this] 是 [FriendCommandSender] 实例并执行智能类型转换.
+ */
+public fun CommandSender.getBotOrNull(): Bot? {
+    contract {
+        returns(null) implies (this@getBotOrNull is AbstractUserCommandSender)
+        returnsNotNull() implies (this@getBotOrNull is ConsoleCommandSender)
+    }
+    return this.castOrNull<UserCommandSender>()?.bot
 }
 
 /**
@@ -124,154 +488,190 @@ public interface GroupAwareCommandSender : CommandSender {
  * @see INSTANCE
  */
 // 前端实现
-public abstract class ConsoleCommandSender internal constructor() : CommandSender {
+public abstract class ConsoleCommandSender @ConsoleFrontEndImplementation constructor() : AbstractCommandSender() {
     public final override val bot: Nothing? get() = null
-    public override val name: String get() = NAME
+    public final override val subject: Nothing? get() = null
+    public final override val user: Nothing? get() = null
+    public final override val name: String get() = NAME
+    public final override fun toString(): String = NAME
 
-    public companion object {
-        public const val NAME: String = "CONSOLE"
-
-        internal val instance get() = MiraiConsoleImplementationBridge.consoleCommandSender
-    }
-}
-
-@ConsoleExperimentalAPI
-public fun FriendMessageEvent.toCommandSender(): FriendCommandSenderOnMessage = FriendCommandSenderOnMessage(this)
-
-@ConsoleExperimentalAPI
-public fun GroupMessageEvent.toCommandSender(): MemberCommandSenderOnMessage = MemberCommandSenderOnMessage(this)
-
-@ConsoleExperimentalAPI
-public fun TempMessageEvent.toCommandSender(): TempCommandSenderOnMessage = TempCommandSenderOnMessage(this)
-
-@ConsoleExperimentalAPI
-public fun MessageEvent.toCommandSender(): CommandSenderOnMessage<*> = when (this) {
-    is FriendMessageEvent -> toCommandSender()
-    is GroupMessageEvent -> toCommandSender()
-    is TempMessageEvent -> toCommandSender()
-    else -> throw IllegalArgumentException("unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
-}
-
-@ConsoleExperimentalAPI
-public fun Member.asCommandSender(): MemberCommandSender = MemberCommandSender(this)
-
-@ConsoleExperimentalAPI
-public fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
-
-@ConsoleExperimentalAPI
-public fun User.asCommandSender(): UserCommandSender {
-    return when (this) {
-        is Friend -> this.asCommandSender()
-        is Member -> this.asCommandSender()
-        else -> error("stub")
+    public companion object INSTANCE : ConsoleCommandSender(), CoroutineScope {
+        public const val NAME: String = "ConsoleCommandSender"
+        public override val coroutineContext: CoroutineContext by lazy { MiraiConsole.childScopeContext(NAME) }
+        public override suspend fun sendMessage(message: Message): Nothing? {
+            MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
+            return null
+        }
     }
 }
 
 /**
- * 表示由 [MessageEvent] 触发的指令
+ * 知道 [Group] 环境的 [UserCommandSender]
+ *
+ * 可能的子类:
+ *
+ * - [MemberCommandSender] 代表一个 [群员][Member] 执行指令
+ * - [TempCommandSender] 代表一个 [群员][Member] 通过临时会话执行指令
  */
-@ConsoleExperimentalAPI
-public interface MessageEventContextAware<E : MessageEvent> : MessageEventExtensions<User, Contact> {
-    public val fromEvent: E
+public interface GroupAwareCommandSender : UserCommandSender {
+    public val group: Group
 }
 
 /**
- * 代表一个用户私聊机器人执行指令
- * @see User.asCommandSender
+ * 尝试获取 [Group].
+ *
+ * 当 [GroupAwareCommandSender] 时返回 [GroupAwareCommandSender.group], 否则返回 `null`
+ *
+ * ### 契约
+ * 本函数定义契约,
+ * - 若返回非 `null` 实例, Kotlin 编译器认为 [this] 是 [GroupAwareCommandSender] 实例并执行智能类型转换.
+ * - 若返回 `null`, Kotlin 编译器认为 [this] 是 [FriendCommandSender] 实例并执行智能类型转换.
  */
-@ConsoleExperimentalAPI
-public sealed class UserCommandSender : CommandSender, BotAwareCommandSender {
+public fun CommandSender.getGroupOrNull(): Group? {
+    contract {
+        returns(null) implies (this@getGroupOrNull is FriendCommandSender)
+        returnsNotNull() implies (this@getGroupOrNull is GroupAwareCommandSender)
+    }
+    return this.castOrNull<GroupAwareCommandSender>()?.group
+}
+
+///////////////////////////////////////////////////////////////////////////
+// UserCommandSender
+///////////////////////////////////////////////////////////////////////////
+
+/**
+ * 代表一个用户执行指令
+ *
+ * @see MemberCommandSender 代表一个 [群员][Member] 执行指令
+ * @see FriendCommandSender 代表一个 [好友][Friend] 执行指令
+ * @see TempCommandSender 代表一个 [群员][Member] 通过临时会话执行指令
+ *
+ * @see CommandSenderOnMessage
+ */
+public interface UserCommandSender : CommandSender {
     /**
      * @see MessageEvent.sender
      */
-    public abstract val user: User
+    public override val user: User // override nullability
 
     /**
      * @see MessageEvent.subject
      */
-    public abstract val subject: Contact
-
-    public override val bot: Bot get() = user.bot
-    public override val name: String get() = user.nameCardOrNick
-
-    public final override suspend fun sendMessage(message: Message) {
-        subject.sendMessage(message)
-    }
+    public override val subject: Contact // override nullability
+    public override val bot: Bot // override nullability
 }
 
 /**
- * 代表一个用户私聊机器人执行指令
- * @see Friend.asCommandSender
+ * [UserCommandSender] 的实现
  */
-@ConsoleExperimentalAPI
-public open class FriendCommandSender(
+public sealed class AbstractUserCommandSender : UserCommandSender, AbstractCommandSender() {
+    public override val bot: Bot get() = user.bot // don't final
+    public final override val name: String get() = user.nameCardOrNick
+    public override suspend fun sendMessage(message: String): MessageReceipt<User> = sendMessage(PlainText(message))
+    public override suspend fun sendMessage(message: Message): MessageReceipt<User> = user.sendMessage(message)
+}
+
+/**
+ * 代表一个 [好友][Friend] 执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * @see FriendCommandSenderOnMessage 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令
+ */
+public open class FriendCommandSender internal constructor(
     public final override val user: Friend
-) : UserCommandSender() {
+) : AbstractUserCommandSender(), CoroutineScope by user.childScope("FriendCommandSender") {
     public override val subject: Contact get() = user
+    public override fun toString(): String = "FriendCommandSender($user)"
+    public override suspend fun sendMessage(message: String): MessageReceipt<Friend> = sendMessage(PlainText(message))
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Friend> = user.sendMessage(message)
 }
 
 /**
- * 代表一个用户私聊机器人执行指令
- * @see Friend.asCommandSender
+ * 代表一个 [群员][Member] 执行指令, 但不一定是通过群内发消息方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * @see MemberCommandSenderOnMessage 代表一个真实的 [群员][Member] 主动在群内发送消息执行指令.
  */
-@ConsoleExperimentalAPI
-public class FriendCommandSenderOnMessage(
+public open class MemberCommandSender internal constructor(
+    public final override val user: Member
+) : AbstractUserCommandSender(),
+    GroupAwareCommandSender,
+    CoroutineScope by user.childScope("MemberCommandSender") {
+    public override val group: Group get() = user.group
+    public override val subject: Contact get() = group
+    public override fun toString(): String = "MemberCommandSender($user)"
+    public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Member> = user.sendMessage(message)
+}
+
+/**
+ * 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
+ */
+public open class TempCommandSender internal constructor(
+    public final override val user: Member
+) : AbstractUserCommandSender(),
+    GroupAwareCommandSender,
+    CoroutineScope by user.childScope("TempCommandSender") {
+    public override val group: Group get() = user.group
+    public override val subject: Contact get() = group
+    public override fun toString(): String = "TempCommandSender($user)"
+    public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Member> = user.sendMessage(message)
+}
+
+///////////////////////////////////////////////////////////////////////////
+// CommandSenderOnMessage
+///////////////////////////////////////////////////////////////////////////
+
+/**
+ * 代表一个真实 [用户][User] 主动私聊机器人或在群内发送消息而执行指令
+ *
+ * @see MemberCommandSenderOnMessage 代表一个真实的 [群员][Member] 主动在群内发送消息执行指令.
+ * @see FriendCommandSenderOnMessage 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令
+ * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
+ */
+public interface CommandSenderOnMessage<T : MessageEvent> :
+    CommandSender,
+    MessageEventExtensions<User, Contact> {
+
+    /**
+     * 消息源 [MessageEvent]
+     */
+    public val fromEvent: T
+}
+
+/**
+ * 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令
+ * @see FriendCommandSender 代表一个 [好友][Friend] 执行指令, 但不一定是通过私聊方式
+ */
+public class FriendCommandSenderOnMessage internal constructor(
     public override val fromEvent: FriendMessageEvent
 ) : FriendCommandSender(fromEvent.sender),
-    CommandSenderOnMessage<FriendMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
-    public override val subject: Contact get() = super.subject
+    CommandSenderOnMessage<FriendMessageEvent>,
+    MessageEventExtensions<User, Contact> by fromEvent {
+    public override val subject: Friend get() = fromEvent.subject
     public override val bot: Bot get() = super.bot
 }
 
-@ConsoleExperimentalAPI
-public interface CommandSenderOnMessage<T : MessageEvent> : MessageEventContextAware<T>, CommandSender
-
 /**
- * 代表一个群成员执行指令.
- * @see Member.asCommandSender
+ * 代表一个真实的 [群员][Member] 主动在群内发送消息执行指令.
+ * @see MemberCommandSender 代表一个 [群员][Member] 执行指令, 但不一定是通过群内发消息方式
  */
-@ConsoleExperimentalAPI
-public open class MemberCommandSender(
-    public final override val user: Member
-) : UserCommandSender(), GroupAwareCommandSender {
-    public override val group: Group get() = user.group
-    public override val subject: Contact get() = group
-}
-
-/**
- * 代表一个群成员执行指令.
- * @see Member.asCommandSender
- */
-@ConsoleExperimentalAPI
-public open class TempCommandSender(
-    public final override val user: Member
-) : UserCommandSender(), GroupAwareCommandSender {
-    public override val group: Group get() = user.group
-    public override val subject: Contact get() = group
-}
-
-/**
- * 代表一个群成员在群内执行指令.
- * @see Member.asCommandSender
- */
-@ConsoleExperimentalAPI
-public class MemberCommandSenderOnMessage(
+public class MemberCommandSenderOnMessage internal constructor(
     public override val fromEvent: GroupMessageEvent
 ) : MemberCommandSender(fromEvent.sender),
-    CommandSenderOnMessage<GroupMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
-    public override val subject: Contact get() = super.subject
+    CommandSenderOnMessage<GroupMessageEvent>,
+    MessageEventExtensions<User, Contact> by fromEvent {
+    public override val subject: Group get() = fromEvent.subject
     public override val bot: Bot get() = super.bot
 }
 
 /**
- * 代表一个群成员通过临时会话私聊机器人执行指令.
- * @see Member.asCommandSender
+ * 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
+ * @see TempCommandSender 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式
  */
-@ConsoleExperimentalAPI
-public class TempCommandSenderOnMessage(
+public class TempCommandSenderOnMessage internal constructor(
     public override val fromEvent: TempMessageEvent
 ) : TempCommandSender(fromEvent.sender),
-    CommandSenderOnMessage<TempMessageEvent>, MessageEventExtensions<User, Contact> by fromEvent {
-    public override val subject: Contact get() = super.subject
+    CommandSenderOnMessage<TempMessageEvent>,
+    MessageEventExtensions<User, Contact> by fromEvent {
+    public override val subject: Member get() = fromEvent.subject
     public override val bot: Bot get() = super.bot
 }

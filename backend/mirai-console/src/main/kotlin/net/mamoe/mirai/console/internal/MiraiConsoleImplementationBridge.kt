@@ -22,7 +22,6 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
-import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtin.ConsoleDataScope
@@ -33,7 +32,6 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInput
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.*
 import java.nio.file.Path
 import java.time.Instant
@@ -54,11 +52,12 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val rootPath: Path by instance::rootPath
     override val frontEndDescription: MiraiConsoleFrontEndDescription by instance::frontEndDescription
 
-    @OptIn(ConsoleInternalAPI::class)
-    override val mainLogger: MiraiLogger by instance::mainLogger
+    override val mainLogger: MiraiLogger by lazy {
+        createLogger("main")
+    }
     override val coroutineContext: CoroutineContext by instance::coroutineContext
     override val builtInPluginLoaders: List<PluginLoader<*, *>> by instance::builtInPluginLoaders
-    override val consoleCommandSender: ConsoleCommandSender by instance::consoleCommandSender
+    override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl by instance::consoleCommandSender
 
     override val dataStorageForJarPluginLoader: PluginDataStorage by instance::dataStorageForJarPluginLoader
     override val configStorageForJarPluginLoader: PluginDataStorage by instance::configStorageForJarPluginLoader
@@ -70,11 +69,10 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         instance.createLoginSolver(requesterBot, configuration)
 
     init {
-        DefaultLogger = this::newLogger
+        DefaultLogger = this::createLogger
     }
 
-    @ConsoleExperimentalAPI
-    override fun newLogger(identity: String?): MiraiLogger = instance.newLogger(identity)
+    override fun createLogger(identity: String?): MiraiLogger = instance.createLogger(identity)
 
     @OptIn(ConsoleExperimentalAPI::class)
     internal fun doStart() {

@@ -85,7 +85,7 @@ public interface MiraiConsole : CoroutineScope {
      * 创建一个 logger
      */
     @ConsoleExperimentalAPI
-    public fun newLogger(identity: String?): MiraiLogger
+    public fun createLogger(identity: String?): MiraiLogger
 
     public companion object INSTANCE : MiraiConsole by MiraiConsoleImplementationBridge {
         /**

@@ -53,7 +53,7 @@ object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
     }
 }
 
-internal val sender by lazy { ConsoleCommandSender.instance }
+internal val sender by lazy { ConsoleCommandSender }
 internal val owner by lazy { ConsoleCommandOwner }
 
 

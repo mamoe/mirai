@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
+import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
@@ -27,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock
 
 internal object CommandManagerImpl : CommandManager, CoroutineScope by CoroutineScope(MiraiConsole.job) {
     private val logger: MiraiLogger by lazy {
-        MiraiConsole.newLogger("command")
+        MiraiConsole.createLogger("command")
     }
 
     @JvmField

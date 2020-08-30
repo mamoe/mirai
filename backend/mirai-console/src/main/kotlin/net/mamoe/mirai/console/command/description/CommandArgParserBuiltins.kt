@@ -308,7 +308,7 @@ internal interface InternalCommandArgumentParserExtensions<T : Any> : CommandArg
     }
 
     fun CommandSender.inferBotOrFail(): Bot =
-        (this as? BotAwareCommandSender)?.bot
+        (this as? UserCommandSender)?.bot
             ?: Bot.botInstancesSequence.singleOrNull()
             ?: illegalArgument("当前语境下无法推断目标 Bot, 因为目前有多个 Bot 在线.")
 

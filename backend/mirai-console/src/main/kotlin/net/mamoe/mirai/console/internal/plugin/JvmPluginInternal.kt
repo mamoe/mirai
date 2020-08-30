@@ -43,7 +43,7 @@ internal abstract class JvmPluginInternal(
 
     // region JvmPlugin
     final override val logger: MiraiLogger by lazy {
-        MiraiConsole.newLogger(
+        MiraiConsole.createLogger(
             "Plugin ${this.description.name}"
         )
     }

@@ -153,7 +153,7 @@ public object BuiltInCommands {
                 onFailure = { throwable ->
                     sendMessage(
                         "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
-                                if (this is MessageEventContextAware<*>) {
+                                if (this is CommandSenderOnMessage<*>) {
                                     CommandManagerImpl.launch(CoroutineName("stacktrace delayer from Login")) {
                                         fromEvent.nextMessageOrNull(60.secondsToMillis) { it.message.contentEquals("stacktrace") }
                                     }

@@ -23,8 +23,8 @@ package net.mamoe.mirai.console.pure
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
-import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
@@ -74,12 +74,16 @@ internal fun overrideSTD() {
 }
 
 
-internal object ConsoleCommandSenderImpl : ConsoleCommandSender() {
-    override suspend fun sendMessage(message: Message) {
+internal object ConsoleCommandSenderImplPure : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
+    override suspend fun sendMessage(message: String) {
         kotlin.runCatching {
-            lineReader.printAbove(message.contentToString())
+            lineReader.printAbove(message)
         }.onFailure {
             consoleLogger.error(it)
         }
+    }
+
+    override suspend fun sendMessage(message: Message) {
+        return sendMessage(message.contentToString())
     }
 }

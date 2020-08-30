@@ -159,6 +159,15 @@ internal inline fun <reified R> Any.cast(): R {
     return this as R
 }
 
+@PublishedApi
+@Suppress("UNCHECKED_CAST")
+internal inline fun <reified R> Any.castOrNull(): R? {
+    contract {
+        returnsNotNull() implies (this@castOrNull is R)
+    }
+    return this as? R
+}
+
 @Suppress("UNCHECKED_CAST")
 internal inline fun <reified R> Any.castOrInternalError(): R {
     contract {

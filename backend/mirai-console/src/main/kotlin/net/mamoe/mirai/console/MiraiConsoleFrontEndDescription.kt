@@ -31,7 +31,17 @@ public interface MiraiConsoleFrontEndDescription {
     public val version: Semver
 
     /**
+     * 兼容的 [MiraiConsole] 后端版本号
+     *
+     * 如 `Semver("[1.0.0, 2.0.0)", Semver.SemverType.IVY)`
+     *
+     * 返回 `null` 表示禁止 [MiraiConsole] 后端检查版本兼容性.
+     */
+    public val compatibleBackendVersion: Semver? get() = null
+
+    /**
      * 返回显示在 [MiraiConsole] 启动时的信息
      */
+    @JvmDefault
     public fun render(): String = "Frontend ${name}: version ${version}, provided by $vendor"
 }

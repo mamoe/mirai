@@ -81,7 +81,9 @@ public abstract class SimpleCommand(
     }
 
     @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    internal override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) = sendMessage(usage)
+    internal override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
+        sendMessage(usage)
+    }
 
     internal final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
         get() = SimpleCommandSubCommandAnnotationResolver

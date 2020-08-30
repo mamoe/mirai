@@ -16,7 +16,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.MemoryPluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
@@ -26,7 +25,10 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.PlatformLogger
 import java.nio.file.Path
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -49,11 +51,17 @@ fun initTestEnvironment() {
                     get() = Semver("1.0.0")
 
             }
-        override val mainLogger: MiraiLogger = DefaultLogger("main")
         override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JarPluginLoader })
-        override val consoleCommandSender: ConsoleCommandSender = object : ConsoleCommandSender() {
-            override suspend fun sendMessage(message: Message) = println(message)
-        }
+        override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl =
+            object : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
+                override suspend fun sendMessage(message: Message) {
+                    println(message)
+                }
+
+                override suspend fun sendMessage(message: String) {
+                    println(message)
+                }
+            }
         override val dataStorageForJarPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
         override val configStorageForJarPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
         override val dataStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
@@ -69,7 +77,7 @@ fun initTestEnvironment() {
         override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
             LoginSolver.Default
 
-        override fun newLogger(identity: String?): MiraiLogger {
+        override fun createLogger(identity: String?): MiraiLogger {
             return PlatformLogger(identity)
         }
 

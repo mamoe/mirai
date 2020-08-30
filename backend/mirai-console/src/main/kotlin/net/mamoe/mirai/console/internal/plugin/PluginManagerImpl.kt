@@ -44,7 +44,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()
     private val loadersLock: ReentrantLock = ReentrantLock()
-    private val logger = MiraiConsole.newLogger("plugin")
+    private val logger = MiraiConsole.createLogger("plugin")
 
     @JvmField
     internal val resolvedPlugins: MutableList<Plugin> = mutableListOf()
