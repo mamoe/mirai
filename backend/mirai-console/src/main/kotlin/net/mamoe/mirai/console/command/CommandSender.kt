@@ -187,6 +187,7 @@ public interface CommandSender : CoroutineScope {
         /**
          * 构造 [FriendCommandSenderOnMessage]
          */
+        @JvmName("from")
         @JvmStatic
         public fun FriendMessageEvent.toCommandSender(): FriendCommandSenderOnMessage =
             FriendCommandSenderOnMessage(this)
@@ -194,6 +195,7 @@ public interface CommandSender : CoroutineScope {
         /**
          * 构造 [MemberCommandSenderOnMessage]
          */
+        @JvmName("from")
         @JvmStatic
         public fun GroupMessageEvent.toCommandSender(): MemberCommandSenderOnMessage =
             MemberCommandSenderOnMessage(this)
@@ -202,30 +204,34 @@ public interface CommandSender : CoroutineScope {
          * 构造 [TempCommandSenderOnMessage]
          */
         @JvmStatic
+        @JvmName("from")
         public fun TempMessageEvent.toCommandSender(): TempCommandSenderOnMessage = TempCommandSenderOnMessage(this)
 
         /**
          * 构造 [CommandSenderOnMessage]
          */
         @JvmStatic
+        @JvmName("from")
         @Suppress("UNCHECKED_CAST")
         public fun <T : MessageEvent> T.toCommandSender(): CommandSenderOnMessage<T> = when (this) {
             is FriendMessageEvent -> toCommandSender()
             is GroupMessageEvent -> toCommandSender()
             is TempMessageEvent -> toCommandSender()
-            else -> throw IllegalArgumentException("unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
+            else -> throw IllegalArgumentException("Unsupported MessageEvent: ${this::class.qualifiedNameOrTip}")
         } as CommandSenderOnMessage<T>
 
         /**
          * 得到 [TempCommandSender]
          */
         @JvmStatic
+        @JvmName("of")
         public fun Member.asTempCommandSender(): TempCommandSender = TempCommandSender(this)
 
         /**
          * 得到 [MemberCommandSender]
          */
         @JvmStatic
+        @JvmName("of")
         public fun Member.asMemberCommandSender(): MemberCommandSender = MemberCommandSender(this)
 
         /**
@@ -234,6 +240,7 @@ public interface CommandSender : CoroutineScope {
          * @see asMemberCommandSender
          */
         @JvmStatic
+        @JvmName("of")
         public fun Member.asCommandSender(isTemp: Boolean): UserCommandSender {
             return if (isTemp) asTempCommandSender() else asMemberCommandSender()
         }
@@ -242,6 +249,7 @@ public interface CommandSender : CoroutineScope {
          * 得到 [FriendCommandSender]
          */
         @JvmStatic
+        @JvmName("of")
         public fun Friend.asCommandSender(): FriendCommandSender = FriendCommandSender(this)
 
         /**
@@ -250,6 +258,7 @@ public interface CommandSender : CoroutineScope {
          * @param isTemp
          */
         @JvmStatic
+        @JvmName("of")
         public fun User.asCommandSender(isTemp: Boolean): UserCommandSender = when (this) {
             is Friend -> this.asCommandSender()
             is Member -> if (isTemp) TempCommandSender(this) else MemberCommandSender(this)
@@ -508,7 +517,7 @@ public abstract class ConsoleCommandSender @ConsoleFrontEndImplementation constr
             return null
         }
 
-        override suspend fun sendMessage(message: String): MessageReceipt<User>? {
+        public override suspend fun sendMessage(message: String): MessageReceipt<User>? {
             MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
             return null
         }
