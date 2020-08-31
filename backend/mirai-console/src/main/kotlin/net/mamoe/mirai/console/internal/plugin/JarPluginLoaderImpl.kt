@@ -32,7 +32,9 @@ import java.net.URLClassLoader
 
 internal object JarPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
-    CoroutineScope,
+    CoroutineScope by MiraiConsole.childScope("JarPluginLoader", CoroutineExceptionHandler { _, throwable ->
+        JarPluginLoaderImpl.logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
+    }),
     JarPluginLoader {
 
     override val configStorage: PluginDataStorage
@@ -43,11 +45,6 @@ internal object JarPluginLoaderImpl :
 
     override val dataStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
-
-    override val coroutineContext: CoroutineContext =
-        MiraiConsole.childScopeContext("JarPluginLoader", CoroutineExceptionHandler { _, throwable ->
-            logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
-        })
 
     internal val classLoaders: MutableList<ClassLoader> = mutableListOf()
 
