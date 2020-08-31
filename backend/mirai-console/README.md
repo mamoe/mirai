@@ -2,6 +2,26 @@
 
 欢迎来到 mirai-console 后端开发文档。
 
+## 准备工作
+
+### 开发 mirai-console 插件的准备工作
+- 需使用 IDE: [IntelliJ IDEA](https://www.jetbrains.com/idea/)
+- IntelliJ 需装有 [Kotlin Jvm Blocking Bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge) 插件 (启动 IntelliJ, 点击 [一键安装](https://plugins.jetbrains.com/embeddable/install/14816))
+- 安装并配置 JDK 8
+
+### 前置知识
+- 你需要掌握 Java 基础.
+- 你需要了解 Kotlin 基础语法:
+  - [基本类型](https://www.kotlincn.net/docs/reference/basic-types.html)
+  - [类与继承](https://www.kotlincn.net/docs/reference/classes.html)
+  - [属性与字段](https://www.kotlincn.net/docs/reference/properties.html)
+  - [接口](https://www.kotlincn.net/docs/reference/interfaces.html)
+  - [扩展](https://www.kotlincn.net/docs/reference/extensions.html)
+  - [数据类](https://www.kotlincn.net/docs/reference/data-classes.html)
+  - [对象](https://www.kotlincn.net/docs/reference/object-declarations.html)
+  - [密封类](https://www.kotlincn.net/docs/reference/sealed-classes.html)
+  - **[Java 中调用 Kotlin](https://www.kotlincn.net/docs/reference/java-to-kotlin-interop.html)**
+
 ## 包结构
 - `net.mamoe.mirai.console.`
   - `command`：指令模块：[`Command`]
@@ -68,48 +88,15 @@ interface JvmPlugin : Plugin, CoroutineScope, PluginFileExtensions, ResourceCont
 
 ##### `plugin.yml`
 
-JVM 插件, 通常需要打包为 `jar` 后才能被加载. `jar` 中根目录需要包含一个 `plugin.yml`, 他将会被读取为 [`JvmPluginDescription`].
+JVM 插件, 通常需要打包为 `jar` 后才能被加载.
 
 **注意**:
 - 插件自身的版本要求遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/) 规范, 合格的版本例如: `1.0.0`, `1.0`, `1.0-M1`, `1.0-pre-1`
 - 插件依赖的版本遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/) 规范, 同时支持 [Apache Ivy 风格表示方法](http://ant.apache.org/ivy/history/latest-milestone/settings/version-matchers.html).
 
-`plugin.yml` 的内容如下:
-```yaml
-# 必须. 插件名称, 允许空格, 允许中文, 不允许 ':'
-name: "MyTestPlugin"
-
-# 必须. 插件主类, 即继承 KotlinPlugin 或 JavaPlugin 的类
-main: org.example.MyPluginMain
-
-# 必须. 插件版本. 遵循《语义化版本 2.0.0》规范
-version: 0.1.0
-
-# 可选. 插件种类.
-# 'NORMAL': 表示普通插件 
-# 'LOADER': 表示提供扩展插件加载器的插件 
-kind: NORMAL 
-
-# 可选. 插件描述
-info: "这是一个测试插件"
-
-# 可选. 插件作者
-author: "Mirai Example"
-
-# 可选. 插件依赖列表. 两种指定方式均可.
-dependencies: 
-  - name: "the"  # 依赖的插件名
-    version: null # 依赖的版本号, 支持 Apache Ivy 格式. 为 null 或不指定时不限制版本
-    isOptional: true # `true` 表示插件在找不到此依赖时也能正常加载
-  - "SamplePlugin" # 名称为 SamplePlugin 的插件, 不限制版本, isOptional=false
-  - "TestPlugin:1.0.0+" # 名称为 ExamplePlugin 的插件, 版本至少为 1.0.0, isOptional=false
-  - "ExamplePlugin:1.5.0+?" # 名称为 ExamplePlugin 的插件, 版本至少为 1.5.0, 末尾 `?` 表示 isOptional=true 
-  - "Another test plugin:[1.0.0, 2.0.0)" # 名称为 Another test plugin 的插件, 版本要求大于等于 1.0.0, 小于 2.0.0, isOptional=false 
-```
-
 
 #### 实现 Kotlin 插件
-在完成上述 `plugin.yml` 之后, 创建 `main` 中指定的插件主类, 继承 [`KotlinPlugin`]
+在任意包内创建一个 `object` 单例, 继承 [`KotlinPlugin`].
 
 #### 实现 Java 插件
 
