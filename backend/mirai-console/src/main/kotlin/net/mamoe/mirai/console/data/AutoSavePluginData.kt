@@ -143,14 +143,15 @@ internal val debuggingLogger1 by lazy {
     DefaultLogger("debug").withSwitch(true)
 }
 
-internal inline fun <R> MiraiLogger.runCatchingLog(message: String? = null, block: () -> R): R? {
+@Suppress("RESULT_CLASS_IN_RETURN_TYPE")
+internal inline fun <R> MiraiLogger.runCatchingLog(message: String? = null, block: () -> R): Result<R> {
     return kotlin.runCatching {
         block()
     }.onFailure {
         if (message != null) {
             error(message, it)
         } else error(it)
-    }.getOrNull()
+    }
 }
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")

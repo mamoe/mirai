@@ -13,6 +13,7 @@ import kotlinx.atomicfu.AtomicLong
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
@@ -43,9 +44,11 @@ internal abstract class JvmPluginInternal(
 
     // region JvmPlugin
     final override val logger: MiraiLogger by lazy {
-        MiraiConsole.createLogger(
-            "Plugin ${this.description.name}"
-        )
+        JarPluginLoaderImpl.logger.runCatchingLog {
+            MiraiConsole.createLogger(
+                "Plugin ${this.description.name}"
+            )
+        }.getOrThrow()
     }
 
     private var firstRun = true
@@ -97,6 +100,7 @@ internal abstract class JvmPluginInternal(
             },
             onFailure = {
                 cancel(CancellationException("Exception while enabling plugin", it))
+                logger.error(it)
                 return false
             }
         )

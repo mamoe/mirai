@@ -36,7 +36,8 @@ internal object JarPluginLoaderImpl :
     override val configStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.configStorageForJarPluginLoader
 
-    private val logger: MiraiLogger = MiraiConsole.createLogger(JarPluginLoader::class.simpleName!!)
+    @JvmStatic
+    internal val logger: MiraiLogger = MiraiConsole.createLogger(JarPluginLoader::class.simpleName!!)
 
     override val dataStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
