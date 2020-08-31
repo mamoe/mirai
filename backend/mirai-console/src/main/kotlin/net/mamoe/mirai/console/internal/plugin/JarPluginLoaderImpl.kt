@@ -15,18 +15,20 @@ import kotlinx.coroutines.ensureActive
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.data.cast
+import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
-import net.mamoe.mirai.console.util.childScopeContext
+import net.mamoe.mirai.console.util.childScope
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.error
+import net.mamoe.mirai.utils.info
 import java.io.File
+import java.io.InputStream
 import java.net.URLClassLoader
-import java.util.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.streams.asSequence
 
 internal object JarPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
@@ -56,33 +58,35 @@ internal object JarPluginLoaderImpl :
     override fun Sequence<File>.extractPlugins(): List<JvmPlugin> {
         ensureActive()
 
-        fun <T> ServiceLoader<T>.loadAll(file: File?): Sequence<T> {
-            return stream().asSequence().mapNotNull {
+        fun Sequence<ClassLoader>.loadAll(): Sequence<JvmPlugin> {
+            return mapNotNull { pluginClassLoader ->
+                pluginClassLoader.getResourceAsStream(JvmPlugin::class.qualifiedName!!)?.use(InputStream::readBytes)
+                    ?.let(::String)?.let { it to pluginClassLoader }
+            }.mapNotNull { (pluginQualifiedName, classLoader) ->
                 kotlin.runCatching {
-                    it.type().kotlin.objectInstance ?: it.get()
-                }.onFailure {
-                    logger.error("Cannot load plugin ${file ?: "<no-file>"}", it)
-                }.getOrNull()
+                    val clazz =
+                        Class.forName(pluginQualifiedName, true, classLoader).cast<Class<out JvmPlugin>>()
+                    clazz.kotlin.objectInstance
+                        ?: clazz.kotlin.createInstanceOrNull() ?: clazz.newInstance()
+                }.getOrElse {
+                    logger.error(
+                        { "Could not load PluginLoader ${pluginQualifiedName}." },
+                        PluginLoadException("Could not load PluginLoader ${pluginQualifiedName}.", it)
+                    )
+                    return@mapNotNull null
+                }.also {
+                    logger.info { "Successfully loaded PluginLoader ${pluginQualifiedName}." }
+                }
             }
         }
 
-        val inMemoryPlugins =
-            ServiceLoader.load(
-                JvmPlugin::class.java,
-                generateSequence(MiraiConsole::class.java.classLoader) { it.parent }.last()
-            ).loadAll(null)
-
-        val filePlugins = this.associateWith {
+        val filePlugins = this.map {
             URLClassLoader(arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader)
-        }.onEach { (_, classLoader) ->
+        }.onEach { classLoader ->
             classLoaders.add(classLoader)
-        }.mapValues {
-            ServiceLoader.load(JvmPlugin::class.java, it.value)
-        }.flatMap { (file, loader) ->
-            loader.loadAll(file)
-        }
+        }.loadAll()
 
-        return (inMemoryPlugins + filePlugins).toSet().toList()
+        return filePlugins.toSet().toList()
     }
 
     @Throws(PluginLoadException::class)

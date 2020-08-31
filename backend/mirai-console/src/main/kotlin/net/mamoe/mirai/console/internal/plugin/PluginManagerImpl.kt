@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.cast
+import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
@@ -26,11 +27,9 @@ import net.mamoe.mirai.console.util.childScope
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.info
 import java.io.File
+import java.io.InputStream
 import java.nio.file.Path
-import java.util.*
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.ArrayList
-import kotlin.streams.asSequence
 
 internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsole.childScope("PluginManager") {
 
@@ -138,23 +137,25 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     private fun loadPluginLoaderProvidedByPlugins() {
         loadersLock.withLock {
             JarPluginLoaderImpl.classLoaders.asSequence()
-                .flatMap { pluginClassLoader ->
-                    ServiceLoader.load(PluginLoader::class.java, pluginClassLoader)
-                        .stream().asSequence()
-                        .asSequence()
+                .mapNotNull { pluginClassLoader ->
+                    pluginClassLoader.getResourceAsStream(JvmPlugin::class.qualifiedName!!)?.use(InputStream::readBytes)
+                        ?.let(::String)?.let { it to pluginClassLoader }
                 }
-                .forEach { provider ->
+                .forEach { (pluginQualifiedName, classLoader) ->
                     val pluginLoader = kotlin.runCatching {
-                        provider.get()
+                        val clazz =
+                            Class.forName(pluginQualifiedName, true, classLoader).cast<Class<out PluginLoader<*, *>>>()
+                        clazz.kotlin.objectInstance
+                            ?: clazz.kotlin.createInstanceOrNull() ?: clazz.newInstance()
                     }.getOrElse {
                         logger.error(
-                            { "Could not load PluginLoader ${provider.type().canonicalName}." },
-                            it
+                            { "Could not load PluginLoader ${pluginQualifiedName}." },
+                            PluginLoadException("Could not load PluginLoader ${pluginQualifiedName}.", it)
                         )
                         return@forEach
                     }
                     _pluginLoaders.add(pluginLoader)
-                    logger.info { "Successfully loaded PluginLoader ${provider.type().canonicalName}." }
+                    logger.info { "Successfully loaded PluginLoader ${pluginQualifiedName}." }
                 }
         }
     }

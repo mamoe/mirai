@@ -23,10 +23,9 @@ package net.mamoe.mirai.console.pure
 
 
 import com.vdurmont.semver4j.Semver
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
@@ -72,7 +71,11 @@ class MiraiConsoleImplementationPure
     override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config"))
-) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(NamedSupervisorJob("MiraiConsoleImplementationPure")) {
+) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(NamedSupervisorJob("MiraiConsoleImplementationPure") +
+        CoroutineExceptionHandler { coroutineContext, throwable ->
+            val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
+            MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
+        }) {
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
