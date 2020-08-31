@@ -93,7 +93,7 @@ internal abstract class PluginDataImpl {
 
                 // val vSerializer = dataUpdaterSerializerTypeArguments[1] as KSerializer<Any?>
                 valueNodes.forEach { (valueName, _, valueSerializer) ->
-                    encodeSerializableElement(descriptor, index++, String.serializer(), valueName)
+                    encodeStringElement(descriptor, index++, valueName)
                     encodeSerializableElement(descriptor, index++, valueSerializer, Unit)
                 }
                 endStructure(descriptor)
