@@ -33,6 +33,7 @@ import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.MessageScope
 import net.mamoe.mirai.console.util.childScope
 import net.mamoe.mirai.console.util.childScopeContext
 import net.mamoe.mirai.contact.*
@@ -120,6 +121,11 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *               |                             |                            |               |
  *               +-----------------------------+----------------------------+---------------+
  * ```
+ *
+ * ## Scoping: [MessageScope]
+ * 在处理多个消息对象时, 可通过 [MessageScope] 简化操作.
+ *
+ * 查看 [MessageScope] 以获取更多信息.
  *
  * @see ConsoleCommandSender 控制台
  * @see UserCommandSender  [User] ([群成员][Member], [好友][Friend])
