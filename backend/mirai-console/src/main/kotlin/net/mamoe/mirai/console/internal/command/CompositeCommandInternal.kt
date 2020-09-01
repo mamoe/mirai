@@ -182,7 +182,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
 
 internal fun <T> Array<T>.contentEqualsOffset(other: Array<out Any>, length: Int): Boolean {
     repeat(length) { index ->
-        if (other[index].toString() != this[index]) {
+        if (!other[index].toString().equals(this[index].toString(), ignoreCase = true)) {
             return false
         }
     }
