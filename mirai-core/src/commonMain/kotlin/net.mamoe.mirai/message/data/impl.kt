@@ -178,7 +178,9 @@ internal fun Message.followedByImpl(tail: Message): MessageChain {
                     } else if (!tailUsed) {
                         tailUsed = true
                         iterator = tail.iterator()
-                        iterator.next()
+                        if (iterator.hasNext()) {
+                            iterator.next()
+                        } else null
                     } else null
                 }
             )
