@@ -18,6 +18,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * Java 插件的父类
  */
 public abstract class JavaPlugin @JvmOverloads constructor(
+    public final override val description: JvmPluginDescription,
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, AbstractJvmPlugin(parentCoroutineContext) {
 
