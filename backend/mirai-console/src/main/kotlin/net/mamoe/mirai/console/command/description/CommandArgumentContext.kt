@@ -17,10 +17,7 @@ import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext.ParserPair
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.*
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -76,6 +73,7 @@ public interface CommandArgumentContext {
         Double::class with DoubleArgumentParser
         Float::class with FloatArgumentParser
 
+        Contact::class with ExistingContactArgumentParser
         User::class with ExistingUserArgumentParser
         Member::class with ExistingMemberArgumentParser
         Group::class with ExistingGroupArgumentParser

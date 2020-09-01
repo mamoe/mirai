@@ -176,7 +176,7 @@ public object ExistingUserArgumentParser : InternalCommandArgumentParserExtensio
          - `botId.groupId.memberId`
          - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
          - `~` (指代指令调用人自己. 仅聊天环境下)
-         - `groupId.$` (随机成员. 仅聊天环境下)
+         - `botId.groupId.$` (随机成员. )
          - `botId.friendId
          
          当处于一个群内时, `botId` 和 `groupId` 参数都可省略
@@ -210,6 +210,43 @@ public object ExistingUserArgumentParser : InternalCommandArgumentParserExtensio
             return parseFunction2(raw, sender)
         }.getOrElse {
             illegalArgument("无法推断目标好友或群员. \n$syntax")
+        }
+    }
+}
+
+
+public object ExistingContactArgumentParser : InternalCommandArgumentParserExtensions<Contact> {
+    private val syntax: String = """
+         - `botId.groupId.memberId`
+         - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
+         - `botId.groupId.$` (随机成员. 仅聊天环境下)
+         - `botId.friendId
+         - `botId.groupId`
+         
+         当处于一个群内时, `botId` 和 `groupId` 参数都可省略
+         当只登录了一个 [Bot] 时, `botId` 参数可省略
+    """.trimIndent()
+
+    override fun parse(raw: String, sender: CommandSender): Contact {
+        return parseImpl(sender, raw, ExistingUserArgumentParser::parse, ExistingGroupArgumentParser::parse)
+    }
+
+    override fun parse(raw: SingleMessage, sender: CommandSender): Contact {
+        return parseImpl(sender, raw, ExistingUserArgumentParser::parse, ExistingGroupArgumentParser::parse)
+    }
+
+    private fun <T> parseImpl(
+        sender: CommandSender,
+        raw: T,
+        parseFunction: (T, CommandSender) -> Contact,
+        parseFunction2: (T, CommandSender) -> Contact,
+    ): Contact {
+        kotlin.runCatching {
+            return parseFunction(raw, sender)
+        }.recoverCatching {
+            return parseFunction2(raw, sender)
+        }.getOrElse {
+            illegalArgument("无法推断目标好友, 群或群员. \n$syntax")
         }
     }
 }
