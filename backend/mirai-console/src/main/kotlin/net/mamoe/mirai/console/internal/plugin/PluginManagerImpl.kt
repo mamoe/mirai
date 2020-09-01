@@ -16,18 +16,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.cast
-import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.description.PluginKind
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.util.ServiceHelper.findServices
+import net.mamoe.mirai.console.util.ServiceHelper.loadAllServices
 import net.mamoe.mirai.console.util.childScope
-import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.info
 import java.io.File
-import java.io.InputStream
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 
@@ -41,7 +40,9 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     override val pluginsConfigFolder: File = pluginsConfigPath.toFile()
 
     @Suppress("ObjectPropertyName")
-    private val _pluginLoaders: MutableList<PluginLoader<*, *>> = mutableListOf()
+    private val _pluginLoaders: MutableList<PluginLoader<*, *>> by lazy {
+        MiraiConsole.builtInPluginLoaders.toMutableList()
+    }
     private val loadersLock: ReentrantLock = ReentrantLock()
     private val logger = MiraiConsole.createLogger("plugin")
 
@@ -130,38 +131,36 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
         loadPluginLoaderProvidedByPlugins()
         loadersLock.withLock {
             _pluginLoaders.listAllPlugins().flatMap { it.second }
-                .sortByDependencies().loadAndEnableAllInOrder()
+                .also {
+                    logger.debug("All plugins: ${it.joinToString { (_, desc, _) -> desc.name }}")
+                }
+                .sortByDependencies()
+                .also {
+                    logger.debug("Sorted plugins: ${it.joinToString { (_, desc, _) -> desc.name }}")
+                }
+                .loadAndEnableAllInOrder()
         }
     }
 
     private fun loadPluginLoaderProvidedByPlugins() {
         loadersLock.withLock {
             JarPluginLoaderImpl.classLoaders.asSequence()
-                .mapNotNull { pluginClassLoader ->
-                    pluginClassLoader.getResourceAsStream(JvmPlugin::class.qualifiedName!!)?.use(InputStream::readBytes)
-                        ?.let(::String)?.let { it to pluginClassLoader }
+                .flatMap { pluginClassLoader ->
+                    pluginClassLoader.findServices<PluginLoader<*, *>>().loadAllServices()
                 }
-                .forEach { (pluginQualifiedName, classLoader) ->
-                    val pluginLoader = kotlin.runCatching {
-                        val clazz =
-                            Class.forName(pluginQualifiedName, true, classLoader).cast<Class<out PluginLoader<*, *>>>()
-                        clazz.kotlin.objectInstance
-                            ?: clazz.kotlin.createInstanceOrNull() ?: clazz.newInstance()
-                    }.getOrElse {
-                        logger.error(
-                            { "Could not load PluginLoader ${pluginQualifiedName}." },
-                            PluginLoadException("Could not load PluginLoader ${pluginQualifiedName}.", it)
-                        )
-                        return@forEach
-                    }
-                    _pluginLoaders.add(pluginLoader)
-                    logger.info { "Successfully loaded PluginLoader ${pluginQualifiedName}." }
+                .onEach { loaded ->
+                    logger.info { "Successfully loaded PluginLoader ${loaded}." }
+                }
+                .forEach {
+                    _pluginLoaders.add(it)
                 }
         }
     }
 
+
     private fun List<PluginDescriptionWithLoader>.loadAndEnableAllInOrder() {
         return this.forEach { (loader, _, plugin) ->
+            loader.loadPluginNoEnable(plugin)
             loader.enablePlugin(plugin)
         }
     }

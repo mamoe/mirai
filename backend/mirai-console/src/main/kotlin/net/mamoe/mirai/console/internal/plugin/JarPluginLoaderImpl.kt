@@ -15,20 +15,17 @@ import kotlinx.coroutines.ensureActive
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.internal.data.cast
-import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
+import net.mamoe.mirai.console.plugin.jvm.*
+import net.mamoe.mirai.console.util.ServiceHelper.findServices
+import net.mamoe.mirai.console.util.ServiceHelper.loadAllServices
 import net.mamoe.mirai.console.util.childScope
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.info
 import java.io.File
-import java.io.InputStream
 import java.net.URLClassLoader
+import java.util.concurrent.ConcurrentHashMap
 
 internal object JarPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
@@ -52,38 +49,37 @@ internal object JarPluginLoaderImpl :
     override val JvmPlugin.description: JvmPluginDescription
         get() = this.description
 
+    private val pluginFileToInstanceMap: MutableMap<File, JvmPlugin> = ConcurrentHashMap()
+
     override fun Sequence<File>.extractPlugins(): List<JvmPlugin> {
         ensureActive()
 
-        fun Sequence<ClassLoader>.loadAll(): Sequence<JvmPlugin> {
-            return mapNotNull { pluginClassLoader ->
-                pluginClassLoader.getResourceAsStream(JvmPlugin::class.qualifiedName!!)?.use(InputStream::readBytes)
-                    ?.let(::String)?.let { it to pluginClassLoader }
-            }.mapNotNull { (pluginQualifiedName, classLoader) ->
-                kotlin.runCatching {
-                    val clazz =
-                        Class.forName(pluginQualifiedName, true, classLoader).cast<Class<out JvmPlugin>>()
-                    clazz.kotlin.objectInstance
-                        ?: clazz.kotlin.createInstanceOrNull() ?: clazz.newInstance()
-                }.getOrElse {
-                    logger.error(
-                        { "Could not load PluginLoader ${pluginQualifiedName}." },
-                        PluginLoadException("Could not load PluginLoader ${pluginQualifiedName}.", it)
-                    )
-                    return@mapNotNull null
-                }.also {
-                    logger.info { "Successfully loaded PluginLoader ${pluginQualifiedName}." }
-                }
+        fun Sequence<Map.Entry<File, ClassLoader>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
+            return map { (f, pluginClassLoader) ->
+                f to pluginClassLoader.findServices(
+                    JvmPlugin::class,
+                    KotlinPlugin::class,
+                    AbstractJvmPlugin::class,
+                    JavaPlugin::class
+                ).loadAllServices()
+            }.flatMap { (f, list) ->
+                list.associateBy { f }.asSequence()
             }
         }
 
-        val filePlugins = this.map {
+        val filePlugins = this.filterNot {
+            pluginFileToInstanceMap.containsKey(it)
+        }.associateWith {
             URLClassLoader(arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader)
-        }.onEach { classLoader ->
+        }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
-        }.loadAll()
+        }.asSequence().findAllInstances().onEach { loaded ->
+            logger.info { "Successfully initialized JvmPlugin ${loaded}." }
+        }.onEach { (file, plugin) ->
+            pluginFileToInstanceMap[file] = plugin
+        }
 
-        return filePlugins.toSet().toList()
+        return filePlugins.toSet().map { it.value }
     }
 
     @Throws(PluginLoadException::class)
