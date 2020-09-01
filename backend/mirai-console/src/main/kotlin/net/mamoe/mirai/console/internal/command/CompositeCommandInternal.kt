@@ -297,8 +297,8 @@ internal fun AbstractReflectionCommand.createSubCommand(
         subCommandAnnotationResolver.getSubCommandNames(this, function)
             .let { namesFromAnnotation ->
                 if (namesFromAnnotation.isNotEmpty()) {
-                    namesFromAnnotation
-                } else arrayOf(function.name)
+                    namesFromAnnotation.map(String::toLowerCase).toTypedArray()
+                } else arrayOf(function.name.toLowerCase())
             }.also { names ->
                 names.forEach {
                     check(it.isValidSubName()) {
