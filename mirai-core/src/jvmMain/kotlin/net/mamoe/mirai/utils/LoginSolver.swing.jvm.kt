@@ -38,18 +38,14 @@ public object SwingSolver : LoginSolver() {
 
     public   override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
         return openWindow("Mirai UnsafeDeviceLoginVerify(${bot.id})") {
-            JLabel(
-                """
+            JLabel("""
                 <html>
                 需要进行账户安全认证<br>
                 该账户有[设备锁]/[不常用登录地点]/[不常用设备登录]的问题<br>
                 完成以下账号认证即可成功登录|理论本认证在mirai每个账户中最多出现1次<br>
-                请将该链接在QQ浏览器中打开并完成认证<br>
-                成功后请关闭该窗口<br>
-                这步操作将在后续的版本中优化
-                """.trimIndent()
-            ).last()
-            JTextField(url).append()
+                成功后请关闭该窗口
+            """.trimIndent()).append()
+            HyperLinkLabel(url, "设备锁验证").last()
         }
     }
 }
