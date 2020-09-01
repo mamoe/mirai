@@ -17,13 +17,13 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.mkdir
+import net.mamoe.mirai.console.internal.util.ServiceHelper.findServices
+import net.mamoe.mirai.console.internal.util.ServiceHelper.loadAllServices
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.description.PluginKind
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.util.ServiceHelper.findServices
-import net.mamoe.mirai.console.util.ServiceHelper.loadAllServices
 import net.mamoe.mirai.console.util.childScope
 import net.mamoe.mirai.utils.info
 import java.io.File

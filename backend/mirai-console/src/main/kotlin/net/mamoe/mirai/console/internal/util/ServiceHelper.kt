@@ -7,13 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.util
+package net.mamoe.mirai.console.internal.util
 
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import java.io.InputStream
 import kotlin.reflect.KClass
 
+@Suppress("unused")
 internal class ServiceList<T>(
     internal val classLoader: ClassLoader,
     internal val delegate: List<String>
