@@ -12,7 +12,9 @@ package net.mamoe.mirai.console.internal.util
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
 import java.io.InputStream
+import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
+import java.lang.reflect.Member as JReflectionMember
 
 @Suppress("unused")
 internal class ServiceList<T>(
@@ -37,13 +39,16 @@ internal object ServiceHelper {
     fun <T : Any> ClassLoader.loadService(
         classname: String
     ): T? {
+        @Suppress("UNCHECKED_CAST")
         return kotlin.runCatching {
             val clazz =
                 Class.forName(classname, true, this).cast<Class<out T>>()
-            @Suppress("UNCHECKED_CAST")
             clazz.kotlin.objectInstance
+                ?: kotlin.runCatching {
+                    clazz.declaredFields.firstOrNull { it.isStatic() && it.name == "INSTANCE" }?.get(null)
+                }.getOrNull()
                 ?: clazz.kotlin.createInstanceOrNull()
-                ?: clazz.constructors.firstOrNull { it.parameterCount == 0 }?.newInstance() as T?
+                ?: clazz.constructors.firstOrNull { it.parameterCount == 0 }?.newInstance()
                 ?: error("Cannot find a no-arg constructor")
         }.getOrElse {
             throw ServiceLoadException("Could not load service ${classname}.", it)
@@ -53,9 +58,11 @@ internal object ServiceHelper {
                 { "Could not load PluginLoader ${pluginQualifiedName}." },
                 PluginLoadException("Could not load PluginLoader ${pluginQualifiedName}.", it)
             )*/
-        }
+        } as T?
     }
 }
+
+internal fun JReflectionMember.isStatic(): Boolean = this.modifiers.and(Modifier.STATIC) != 0
 
 @Suppress("unused", "RedundantVisibilityModifier")
 internal open class ServiceLoadException : RuntimeException {
