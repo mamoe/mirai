@@ -77,7 +77,7 @@ internal object JarPluginLoaderImpl :
             logger.info { "Successfully initialized JvmPlugin ${loaded}." }
         }.onEach { (file, plugin) ->
             pluginFileToInstanceMap[file] = plugin
-        }
+        } + pluginFileToInstanceMap.asSequence()
 
         return filePlugins.toSet().map { it.value }
     }
