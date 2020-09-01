@@ -164,7 +164,7 @@ public interface CommandSender : CoroutineScope {
      * 对于 [MemberCommandSender], 这个函数总是发送给所在群
      */
     @JvmBlockingBridge
-    public suspend fun sendMessage(message: Message): MessageReceipt<User>?
+    public suspend fun sendMessage(message: Message): MessageReceipt<Contact>?
 
     /**
      * 立刻发送一条消息.
@@ -173,7 +173,7 @@ public interface CommandSender : CoroutineScope {
      */
     @JvmDefault
     @JvmBlockingBridge
-    public suspend fun sendMessage(message: String): MessageReceipt<User>?
+    public suspend fun sendMessage(message: String): MessageReceipt<Contact>?
 
     @ConsoleExperimentalAPI("This is unstable and might get changed")
     public suspend fun catchExecutionException(e: Throwable)
@@ -588,10 +588,10 @@ public sealed class AbstractUserCommandSender : UserCommandSender, AbstractComma
     public final override val name: String get() = user.nameCardOrNick
 
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: String): MessageReceipt<User> = sendMessage(PlainText(message))
+    public override suspend fun sendMessage(message: String): MessageReceipt<Contact> = sendMessage(PlainText(message))
 
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: Message): MessageReceipt<User> = user.sendMessage(message)
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Contact> = user.sendMessage(message)
 }
 
 /**
@@ -621,14 +621,14 @@ public open class MemberCommandSender internal constructor(
     GroupAwareCommandSender,
     CoroutineScope by user.childScope("MemberCommandSender") {
     public override val group: Group get() = user.group
-    public override val subject: Contact get() = group
+    public override val subject: Group get() = group
     public override fun toString(): String = "MemberCommandSender($user)"
 
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))
+    public override suspend fun sendMessage(message: String): MessageReceipt<Group> = sendMessage(PlainText(message))
 
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: Message): MessageReceipt<Member> = user.sendMessage(message)
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Group> = subject.sendMessage(message)
 }
 
 /**
