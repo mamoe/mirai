@@ -44,7 +44,7 @@ kotlin {
             progressiveMode = true
 
             useExperimentalAnnotation("kotlin.Experimental")
-            useExperimentalAnnotation("kotlin.OptIn")
+            useExperimentalAnnotation("kotlin.RequiresOptIn")
 
             useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
             useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
