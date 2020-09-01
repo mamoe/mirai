@@ -10,10 +10,7 @@
 package net.mamoe.mirai.console
 
 import com.vdurmont.semver4j.Semver
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.MemoryPluginDataStorage
@@ -81,7 +78,9 @@ fun initTestEnvironment() {
             return PlatformLogger(identity)
         }
 
-        override val coroutineContext: CoroutineContext = SupervisorJob()
+        override val coroutineContext: CoroutineContext = SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
+            throwable.printStackTrace()
+        }
     }.start()
     CommandManager
 }
