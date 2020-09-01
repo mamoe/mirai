@@ -188,7 +188,8 @@ internal fun <K, V> MutableMap<K, V>.patchImpl(_new: Map<K, V>) {
 }
 
 internal fun <C : MutableCollection<E>, E> C.patchImpl(_new: Collection<E>) {
-    this.retainAll(_new)
+    this.clear()
+    this.addAll(_new)
 }
 
 /**

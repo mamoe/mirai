@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SilentLogger
 import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.warning
 import net.mamoe.yamlkt.Yaml
 import java.io.File
 import java.nio.file.Path
@@ -36,6 +37,7 @@ internal open class MultiFilePluginDataStorageImpl(
 
         val text = getPluginDataFile(holder, instance).readText()
         if (text.isNotBlank()) {
+            logger.warning { "Deserializing $text" }
             Yaml.default.decodeFromString(instance.updaterSerializer, text)
         } else {
             this.store(holder, instance) // save an initial copy

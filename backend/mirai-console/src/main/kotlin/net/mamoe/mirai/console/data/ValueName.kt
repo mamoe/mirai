@@ -14,7 +14,6 @@ package net.mamoe.mirai.console.data
  *
  * 例:
  * ```
- * @ValueName("accounts")
  * object AccountPluginData : PluginData by ... {
  *    @ValueName("info")
  *    val map: Map<String, String> by value("a" to "b")
@@ -23,7 +22,7 @@ package net.mamoe.mirai.console.data
  *
  * 将被保存为配置 (YAML 作为示例):
  * ```yaml
- * accounts:
+ * AccountPluginData:
  *   info:
  *     a: b
  * ```
