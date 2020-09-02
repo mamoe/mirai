@@ -83,18 +83,3 @@ public inline val Plugin.author: String get() = this.description.author
  * 获取 [PluginDescription.dependencies]
  */
 public inline val Plugin.dependencies: List<PluginDependency> get() = this.description.dependencies
-
-    /**
-     * 从配置目录获取一个文件.
-     * @see configFolderPath
-     */
-    @JvmDefault
-    public fun resolveConfigFile(relativePath: Path): File = configFolderPath.resolve(relativePath).toFile()
-
-    /**
-     * 从配置目录获取一个文件路径.
-     * @see configFolderPath
-     */
-    @JvmDefault
-    public fun resolveConfigPath(relativePath: Path): Path = configFolderPath.resolve(relativePath)
-}
