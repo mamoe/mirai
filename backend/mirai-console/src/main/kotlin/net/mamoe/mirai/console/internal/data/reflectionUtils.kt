@@ -72,3 +72,6 @@ internal fun KClass<*>.findValueName(): String =
 internal fun Int.isOdd() = this and 0b1 != 0
 
 internal val KProperty<*>.valueName: String get() = this.findAnnotation<ValueName>()?.value ?: this.name
+
+internal inline val Any.kClassQualifiedName: String? get() = this::class.qualifiedName
+internal inline val Any.kClassQualifiedNameOrTip: String get() = this::class.qualifiedNameOrTip

@@ -33,9 +33,9 @@ import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
+import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.console.util.MessageScope
-import net.mamoe.mirai.console.util.childScope
-import net.mamoe.mirai.console.util.childScopeContext
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.Message

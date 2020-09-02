@@ -15,12 +15,12 @@ import kotlinx.coroutines.ensureActive
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.internal.util.ServiceHelper.findServices
-import net.mamoe.mirai.console.internal.util.ServiceHelper.loadAllServices
+import net.mamoe.mirai.console.internal.util.PluginServiceHelper.findServices
+import net.mamoe.mirai.console.internal.util.PluginServiceHelper.loadAllServices
 import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.*
-import net.mamoe.mirai.console.util.childScope
+import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.info
 import java.io.File

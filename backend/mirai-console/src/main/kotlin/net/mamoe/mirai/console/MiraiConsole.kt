@@ -18,6 +18,8 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
+import net.mamoe.mirai.console.extensions.foldExtensions
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
@@ -101,6 +103,8 @@ public interface MiraiConsole : CoroutineScope {
          * 调用 [Bot.login] 可登录.
          *
          * @see Bot.botInstances 获取现有 [Bot] 实例列表
+         *
+         * @see BotConfigurationAl
          */
         // don't static
         @ConsoleExperimentalAPI("This is a low-level API and might be removed in the future.")
@@ -120,7 +124,7 @@ public interface MiraiConsole : CoroutineScope {
 
         @Suppress("UNREACHABLE_CODE")
         private fun addBotImpl(id: Long, password: Any, configuration: BotConfiguration.() -> Unit = {}): Bot {
-            val config: BotConfiguration.() -> Unit = {
+            var config = BotConfiguration().apply {
                 fileBasedDeviceInfo()
                 redirectNetworkLogToDirectory()
                 parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
@@ -128,6 +132,11 @@ public interface MiraiConsole : CoroutineScope {
                 this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)
                 configuration()
             }
+
+            config = BotConfigurationAlterer.foldExtensions(config) { acc, extension ->
+                extension.alterConfiguration(id, acc)
+            }
+
             return when (password) {
                 is ByteArray -> Bot(id, password, config)
                 is String -> Bot(id, password, config)

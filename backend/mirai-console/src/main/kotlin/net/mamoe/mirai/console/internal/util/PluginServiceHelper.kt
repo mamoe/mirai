@@ -11,8 +11,10 @@ package net.mamoe.mirai.console.internal.util
 
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
+import net.mamoe.mirai.console.internal.plugin.JarPluginLoaderImpl
 import java.io.InputStream
 import java.lang.reflect.Modifier
+import java.util.*
 import kotlin.reflect.KClass
 import java.lang.reflect.Member as JReflectionMember
 
@@ -22,7 +24,7 @@ internal class ServiceList<T>(
     internal val delegate: List<String>
 )
 
-internal object ServiceHelper {
+internal object PluginServiceHelper {
     inline fun <reified T : Any> ClassLoader.findServices(): ServiceList<T> = findServices(T::class)
 
     fun <T : Any> ClassLoader.findServices(vararg serviceTypes: KClass<out T>): ServiceList<T> =
@@ -59,6 +61,11 @@ internal object ServiceHelper {
                 PluginLoadException("Could not load PluginLoader ${pluginQualifiedName}.", it)
             )*/
         } as T?
+    }
+
+    fun <T : Any> loadAllServicesFromMemoryAndPluginClassLoaders(service: KClass<T>): List<T> {
+        val list = ServiceLoader.load(service.java, this::class.java.classLoader).toList()
+        return list + JarPluginLoaderImpl.classLoaders.flatMap { it.findServices(service).loadAllServices() }
     }
 }
 
