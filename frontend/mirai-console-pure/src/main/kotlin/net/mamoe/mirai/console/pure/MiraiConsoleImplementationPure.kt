@@ -30,7 +30,6 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.internal.plugin.NamedSupervisorJob
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
@@ -38,6 +37,7 @@ import net.mamoe.mirai.console.pure.ConsoleInputImpl.requestInput
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.NamedSupervisorJob
 import net.mamoe.mirai.utils.*
 import org.fusesource.jansi.Ansi
 import org.jline.reader.LineReader
@@ -71,11 +71,12 @@ class MiraiConsoleImplementationPure
     override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config"))
-) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(NamedSupervisorJob("MiraiConsoleImplementationPure") +
-        CoroutineExceptionHandler { coroutineContext, throwable ->
-            val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
-            MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
-        }) {
+) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
+    NamedSupervisorJob("MiraiConsoleImplementationPure") +
+            CoroutineExceptionHandler { coroutineContext, throwable ->
+                val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
+                MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
+            }) {
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {

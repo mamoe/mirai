@@ -14,21 +14,24 @@
     "INVISIBLE_SETTER",
     "INVISIBLE_GETTER",
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
-    "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPE_WARNING"
 )
 @file:OptIn(ConsoleInternalAPI::class)
 
 package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.minutesToMillis
 import java.io.PrintStream
 
 /**
@@ -54,6 +57,16 @@ object MiraiConsolePureLoader {
         overrideSTD()
         startupConsoleThread()
     }
+}
+
+internal object ConsoleDataHolder : AutoSavePluginDataHolder,
+    CoroutineScope by MiraiConsole.childScope("ConsoleDataHolder") {
+    @ConsoleExperimentalAPI
+    override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
+
+    @ConsoleExperimentalAPI
+    override val dataHolderName: String
+        get() = "Pure"
 }
 
 internal fun overrideSTD() {

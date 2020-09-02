@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.util.NamedSupervisorJob
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.io.InputStream
@@ -157,16 +158,6 @@ internal abstract class JvmPluginInternal(
             ?: contextUpdateLock.withLock { _coroutineContext ?: refreshCoroutineContext() }
 
     // endregion
-}
-
-@Suppress("FunctionName")
-internal class NamedSupervisorJob(
-    private val name: String,
-    parent: Job? = null
-) : CompletableJob by SupervisorJob(parent) {
-    override fun toString(): String {
-        return "NamedSupervisorJob($name)"
-    }
 }
 
 internal inline fun AtomicLong.updateWhen(condition: (Long) -> Boolean, update: (Long) -> Long): Boolean {

@@ -11,27 +11,43 @@
 
 package net.mamoe.mirai.console.util
 
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import net.mamoe.mirai.console.internal.plugin.NamedSupervisorJob
+import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-internal fun CoroutineContext.overrideWithSupervisorJob(name: String? = null): CoroutineContext =
-    this + NamedSupervisorJob(name ?: "<unnamed>", this[Job])
+@ConsoleExperimentalAPI
+public object CoroutineScopeUtils {
+    @JvmStatic
+    @ConsoleExperimentalAPI
+    public fun CoroutineContext.overrideWithSupervisorJob(name: String? = null): CoroutineContext =
+        this + NamedSupervisorJob(name ?: "<unnamed>", this[Job])
 
-internal fun CoroutineScope.childScope(
-    name: String? = null,
-    context: CoroutineContext = EmptyCoroutineContext
-): CoroutineScope =
-    CoroutineScope(this.childScopeContext(name, context))
+    @JvmStatic
+    @ConsoleExperimentalAPI
+    public fun CoroutineScope.childScope(
+        name: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): CoroutineScope =
+        CoroutineScope(this.childScopeContext(name, context))
 
-internal fun CoroutineScope.childScopeContext(
-    name: String? = null,
-    context: CoroutineContext = EmptyCoroutineContext
-): CoroutineContext =
-    this.coroutineContext.overrideWithSupervisorJob(name) + context.let {
-        if (name != null) it + CoroutineName(name)
-        else it
+    @JvmStatic
+    @ConsoleExperimentalAPI
+    public fun CoroutineScope.childScopeContext(
+        name: String? = null,
+        context: CoroutineContext = EmptyCoroutineContext
+    ): CoroutineContext =
+        this.coroutineContext.overrideWithSupervisorJob(name) + context.let {
+            if (name != null) it + CoroutineName(name)
+            else it
+        }
+}
+
+@ConsoleExperimentalAPI
+public class NamedSupervisorJob @JvmOverloads constructor(
+    private val name: String,
+    parent: Job? = null
+) : CompletableJob by SupervisorJob(parent) {
+    override fun toString(): String {
+        return "NamedSupervisorJob($name)"
     }
+}
