@@ -8,6 +8,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
+import kotlin.jvm.JvmStatic
 
 /**
  * 群荣誉信息
@@ -23,8 +24,9 @@ public enum class GroupHonorType(public val value: Int) {
     ACTIVE(7),          // 活跃头衔
     EXCLUSIVE(8),       // 特殊头衔
     MANAGE(9);          // 管理头衔
-    public companion object {
-        public fun fromInt(value: Int): GroupHonorType = values().first { it.value == value }
+    internal companion object {
+        @JvmStatic
+        internal fun deserializeFromInt(value: Int): GroupHonorType = values().first { it.value == value }
     }
 }
 
@@ -229,7 +231,7 @@ public data class GroupHonorListData(
         }
 
         override fun deserialize(decoder: Decoder): GroupHonorType {
-            return GroupHonorType.fromInt(decoder.decodeInt())
+            return GroupHonorType.deserializeFromInt(decoder.decodeInt())
         }
     }
 }
