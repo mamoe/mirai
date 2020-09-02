@@ -103,8 +103,7 @@ public interface MiraiConsole : CoroutineScope {
          * 调用 [Bot.login] 可登录.
          *
          * @see Bot.botInstances 获取现有 [Bot] 实例列表
-         *
-         * @see BotConfigurationAl
+         * @see BotConfigurationAlterer ExtensionPoint
          */
         // don't static
         @ConsoleExperimentalAPI("This is a low-level API and might be removed in the future.")
@@ -117,6 +116,7 @@ public interface MiraiConsole : CoroutineScope {
          * 调用 [Bot.login] 可登录.
          *
          * @see Bot.botInstances 获取现有 [Bot] 实例列表
+         * @see BotConfigurationAlterer ExtensionPoint
          */
         @ConsoleExperimentalAPI("This is a low-level API and might be removed in the future.")
         public fun addBot(id: Long, password: ByteArray, configuration: BotConfiguration.() -> Unit = {}): Bot =
