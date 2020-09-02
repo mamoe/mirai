@@ -122,13 +122,15 @@ tasks {
                     file.writeText(
                         file.readText()
                             .replace(
-                                """val buildDate: Instant = Instant.ofEpochSecond(0)""",
-                                """val buildDate: Instant = Instant.ofEpochSecond(${Instant.now().getEpochSecond()})"""
-                            )
+                                Regex("""val buildDate: Instant = Instant.ofEpochSecond\(.*\)""")
+                            ) {
+                                """val buildDate: Instant = Instant.ofEpochSecond(${
+                                    Instant.now().getEpochSecond()
+                                })"""
+                            }
                             .replace(
-                                """val version: Semver = Semver("0", Semver.SemverType.LOOSE)""",
-                                """val version: Semver = Semver("${project.version}", Semver.SemverType.LOOSE)"""
-                            )
+                                Regex("""val version: Semver = Semver\(".*", Semver.SemverType.LOOSE\)""")
+                            ) { """val version: Semver = Semver("${project.version}", Semver.SemverType.LOOSE)""" }
                     )
             }
         }
