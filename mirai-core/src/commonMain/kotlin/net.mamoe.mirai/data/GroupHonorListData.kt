@@ -7,11 +7,13 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 群荣誉信息
  */
-
+@MiraiExperimentalAPI
+@SinceMirai("1.3.0")
 public enum class GroupHonorType(public val value: Int) {
     TALKATIVE(1),       // 龙王
     PERFORMER(2),       // 群聊之火
@@ -21,13 +23,13 @@ public enum class GroupHonorType(public val value: Int) {
     ACTIVE(7),          // 活跃头衔
     EXCLUSIVE(8),       // 特殊头衔
     MANAGE(9);          // 管理头衔
-
     public companion object {
         public fun fromInt(value: Int): GroupHonorType = values().first { it.value == value }
     }
 }
 
 @MiraiExperimentalAPI
+@SinceMirai("1.3.0")
 @Serializable
 public data class GroupHonorListData(
     @SerialName("acceptLanguages")
