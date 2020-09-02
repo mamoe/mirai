@@ -85,13 +85,15 @@ internal abstract class PluginDataImpl {
         @Suppress("UNCHECKED_CAST")
         override fun serialize(encoder: Encoder, value: Unit) {
             val descriptor = descriptor
-            with(encoder.beginCollection(descriptor, valueNodes.size)) {
-                var index = 0
-
-                // val vSerializer = dataUpdaterSerializerTypeArguments[1] as KSerializer<Any?>
-                valueNodes.forEach { (_, _, _, valueSerializer) ->
-                    //encodeStringElement(descriptor, index, valueName)
-                    encodeSerializableElement(descriptor, index++, valueSerializer, Unit)
+            with(encoder.beginStructure(descriptor)) {
+                repeat(descriptor.elementsCount) { index ->
+                    encodeSerializableElement(
+                        descriptor,
+                        index,
+                        valueNodes.find { it.valueName == descriptor.getElementName(index) }?.updaterSerializer
+                            ?: error("Cannot find a serializer for ${descriptor.getElementName(index)}"),
+                        Unit
+                    )
                 }
                 endStructure(descriptor)
             }
@@ -106,7 +108,7 @@ internal abstract class PluginDataImpl {
     private val dataUpdaterSerializerDescriptor by lazy {
         kotlinx.serialization.descriptors.buildClassSerialDescriptor((this as PluginData).saveName) {
             for (valueNode in valueNodes) valueNode.run {
-                element(valueName, updaterSerializer.descriptor, isOptional = true)
+                element(valueName, updaterSerializer.descriptor, annotations = annotations, isOptional = true)
             }
         }
     }
@@ -132,7 +134,6 @@ internal inline operator fun <T : Any?> Constructor<T>.invoke(vararg args: Any?)
 internal inline fun <reified T : Any> findAnnotationImplementationClassConstructor(): Constructor<out T>? {
     @Suppress("UNCHECKED_CAST")
     return T::class.nestedClasses
-        .also { println(it.joinToString()) }
         .find { it.simpleName?.endsWith("Impl") == true }?.java?.run {
             constructors.singleOrNull()
         } as Constructor<out T>?
