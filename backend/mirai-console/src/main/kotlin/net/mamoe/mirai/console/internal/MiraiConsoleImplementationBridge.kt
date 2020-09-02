@@ -24,7 +24,8 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
-import net.mamoe.mirai.console.internal.data.builtin.ConsoleDataScope
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
+import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.plugin.PluginLoader
@@ -104,6 +105,16 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         PluginManagerImpl.loadEnablePlugins()
         mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
         mainLogger.info { "mirai-console started successfully." }
+
+        for ((id, password) in AutoLoginConfig.plainPasswords) {
+            mainLogger.info { "Auto-login $id" }
+            MiraiConsole.addBot(id, password)
+        }
+
+        for ((id, password) in AutoLoginConfig.md5Passwords) {
+            mainLogger.info { "Auto-login $id" }
+            MiraiConsole.addBot(id, password)
+        }
 
         // Only for initialize
     }

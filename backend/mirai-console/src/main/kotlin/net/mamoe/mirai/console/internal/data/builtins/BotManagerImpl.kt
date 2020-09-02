@@ -9,7 +9,7 @@
 
 @file:Suppress("MemberVisibilityCanBePrivate")
 
-package net.mamoe.mirai.console.internal.data.builtin
+package net.mamoe.mirai.console.internal.data.builtins
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.data.AutoSavePluginConfig

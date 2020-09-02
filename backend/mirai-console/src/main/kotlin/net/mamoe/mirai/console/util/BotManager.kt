@@ -14,7 +14,7 @@
 package net.mamoe.mirai.console.util
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.internal.data.builtin.BotManagerImpl
+import net.mamoe.mirai.console.internal.data.builtins.BotManagerImpl
 import net.mamoe.mirai.contact.User
 
 public interface BotManager {
