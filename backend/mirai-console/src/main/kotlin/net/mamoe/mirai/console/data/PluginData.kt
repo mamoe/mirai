@@ -11,7 +11,7 @@
     "INVISIBLE_REFERENCE",
     "INVISIBLE_MEMBER",
     "EXPOSED_SUPER_CLASS",
-    "NOTHING_TO_INLINE", "unused"
+    "NOTHING_TO_INLINE", "unused", "UNCHECKED_CAST"
 )
 @file:JvmName("PluginDataKt")
 
@@ -23,7 +23,6 @@ import net.mamoe.mirai.console.internal.data.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -111,7 +110,6 @@ public interface PluginData {
      * @see provideDelegate
      * @see track
      */
-    @ConsoleExperimentalAPI
     public val valueNodes: MutableList<ValueNode<*>>
 
     /**
@@ -146,7 +144,6 @@ public interface PluginData {
          *
          * @suppress 注意, 这是实验性 API.
          */
-        @ConsoleExperimentalAPI
         val updaterSerializer: KSerializer<Unit>
     )
 
@@ -161,7 +158,6 @@ public interface PluginData {
     /**
      * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
      */
-    @ConsoleExperimentalAPI
     public fun <T : SerializerAwareValue<*>> T.track(
         /**
          * 值名称.
@@ -179,20 +175,18 @@ public interface PluginData {
      *
      * @suppress 注意, 这是实验性 API.
      */
-    @ConsoleExperimentalAPI
     public val updaterSerializer: KSerializer<Unit>
 
     /**
      * 当所属于这个 [PluginData] 的 [Value] 的 [值][Value.value] 被修改时被调用.
      */
-    @ConsoleInternalAPI
     public fun onValueChanged(value: Value<*>)
 
     /**
      * 当这个 [PluginData] 被放入一个 [PluginDataStorage] 时调用
      */
-    @ConsoleInternalAPI
-    public fun onStored(owner: PluginDataHolder, storage: PluginDataStorage)
+    @ConsoleExperimentalAPI
+    public fun onInit(owner: PluginDataHolder, storage: PluginDataStorage)
 }
 
 /**
@@ -209,7 +203,6 @@ public interface PluginData {
  *
  * @see PluginData
  */
-@Suppress("UNCHECKED_CAST")
 public fun <T> PluginData.findBackingFieldValue(property: KProperty<T>): Value<out T>? =
     findBackingFieldValue(property.valueName)
 
@@ -230,7 +223,6 @@ public fun <T> PluginData.findBackingFieldValue(property: KProperty<T>): Value<o
  *
  * @see PluginData
  */
-@Suppress("UNCHECKED_CAST")
 public fun <T> PluginData.findBackingFieldValue(propertyValueName: String): Value<out T>? {
     return this.valueNodes.find { it.valueName == propertyValueName }?.value as Value<T>
 }
@@ -250,25 +242,11 @@ public fun <T> PluginData.findBackingFieldValue(propertyValueName: String): Valu
  *
  * @see PluginData
  */
-@Suppress("UNCHECKED_CAST")
 public fun <T> PluginData.findBackingFieldValueNode(property: KProperty<T>): PluginData.ValueNode<out T>? {
     return this.valueNodes.find { it == property } as PluginData.ValueNode<out T>?
 }
 
-/**
- * 用于支持属性委托
- */
-@JvmSynthetic
-public inline operator fun <T> Value<T>.getValue(thisRef: Any?, property: KProperty<*>): T = value
-
-/**
- * 用于支持属性委托
- */
-@JvmSynthetic
-public inline operator fun <T> Value<T>.setValue(thisRef: Any?, property: KProperty<*>, value: T) {
-    this.value = value
-}
-
+// don't default = 0, cause ambiguity
 //// region PluginData_value_primitives CODEGEN ////
 
 /**
@@ -330,16 +308,19 @@ public fun PluginData.value(default: String): SerializerAwareValue<String> = val
  */
 @Suppress("UNCHECKED_CAST")
 @LowPriorityInOverloadResolution
-public inline fun <reified T> PluginData.value(default: T): SerializerAwareValue<T> =
-    valueFromKType(typeOf0<T>(), default)
+public inline fun <reified T> PluginData.value(
+    default: T,
+    crossinline apply: T.() -> Unit = {}
+): SerializerAwareValue<T> =
+    valueFromKType(typeOf0<T>(), default).also { it.value.apply() }
 
 /**
  * 通过具体化类型创建一个 [SerializerAwareValue].
  * @see valueFromKType 查看更多实现信息
  */
 @LowPriorityInOverloadResolution
-public inline fun <reified T> PluginData.value(): SerializerAwareValue<T> =
-    valueImpl(typeOf0<T>(), T::class)
+public inline fun <reified T> PluginData.value(apply: T.() -> Unit = {}): SerializerAwareValue<T> =
+    valueImpl<T>(typeOf0<T>(), T::class).also { it.value.apply() }
 
 @Suppress("UNCHECKED_CAST")
 @PublishedApi

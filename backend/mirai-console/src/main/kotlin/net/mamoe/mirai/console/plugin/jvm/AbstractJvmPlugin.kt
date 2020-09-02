@@ -27,7 +27,9 @@ import kotlin.coroutines.EmptyCoroutineContext
 public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
 ) : JvmPlugin, JvmPluginInternal(parentCoroutineContext) {
-    public final override val name: String get() = this.description.name
+    @ConsoleExperimentalAPI
+    public final override val dataHolderName: String
+        get() = this.description.name
 
     @ConsoleExperimentalAPI
     public override val autoSaveIntervalMillis: LongRange = 30.secondsToMillis..10.minutesToMillis

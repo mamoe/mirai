@@ -23,5 +23,4 @@ import kotlinx.coroutines.Job
  * @see PluginConfig
  * @see AutoSavePluginData
  */
-@ExperimentalPluginConfig
 public open class AutoSavePluginConfig : AutoSavePluginData(), PluginConfig

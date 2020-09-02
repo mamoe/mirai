@@ -36,8 +36,9 @@ import java.nio.file.Path
 @ConsoleExperimentalAPI
 public interface PluginDataStorage {
     /**
-     * 读取一个实例. 并为 [instance] [设置 [PluginDataStorage]][PluginData.onStored]
+     * 读取一个实例. 并为 [instance] [设置 [PluginDataStorage]][PluginData.onInit]
      */
+    @ConsoleExperimentalAPI
     public fun load(holder: PluginDataHolder, instance: PluginData)
 
     /**
@@ -45,6 +46,7 @@ public interface PluginDataStorage {
      *
      * **实现细节**: 调用 [PluginData.updaterSerializer]
      */
+    @ConsoleExperimentalAPI
     public fun store(holder: PluginDataHolder, instance: PluginData)
 
     /*
@@ -110,6 +112,7 @@ public interface MemoryPluginDataStorage : PluginDataStorage {
 /**
  * 用多个文件存储 [PluginData] 实例的 [PluginDataStorage].
  */
+@ConsoleExperimentalAPI
 public interface MultiFilePluginDataStorage : PluginDataStorage {
     /**
      * 存放 [PluginData] 的目录.

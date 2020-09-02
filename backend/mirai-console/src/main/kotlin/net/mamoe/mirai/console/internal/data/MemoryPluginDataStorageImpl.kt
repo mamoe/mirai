@@ -19,7 +19,7 @@ internal class MemoryPluginDataStorageImpl : PluginDataStorage, MemoryPluginData
 
     @Suppress("UNCHECKED_CAST")
     override fun load(holder: PluginDataHolder, instance: PluginData) {
-        instance.onStored(holder, this)
+        instance.onInit(holder, this)
     }
 
     override fun store(holder: PluginDataHolder, instance: PluginData) {

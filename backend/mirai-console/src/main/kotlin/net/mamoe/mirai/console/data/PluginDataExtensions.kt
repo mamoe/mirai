@@ -4,12 +4,10 @@ package net.mamoe.mirai.console.data
 
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.internal.data.ShadowMap
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
  * [PluginData] 相关一些扩展
  */
-@ConsoleExperimentalAPI
 public object PluginDataExtensions {
 
     /**

@@ -113,7 +113,7 @@ internal abstract class JvmPluginInternal(
     // for future use
     @Suppress("PropertyName")
     internal val _intrinsicCoroutineContext: CoroutineContext by lazy {
-        CoroutineName("Plugin $name")
+        CoroutineName("Plugin $dataHolderName")
     }
     @JvmField
     internal val coroutineContextInitializer = {
@@ -126,7 +126,7 @@ internal abstract class JvmPluginInternal(
             .plus(parentCoroutineContext)
             .plus(
                 NamedSupervisorJob(
-                    "Plugin $name",
+                    "Plugin $dataHolderName",
                     parentCoroutineContext[Job] ?: JarPluginLoaderImpl.coroutineContext[Job]!!
                 )
             )

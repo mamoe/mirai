@@ -12,7 +12,6 @@
 package net.mamoe.mirai.console.data.java
 
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
-import net.mamoe.mirai.console.data.ExperimentalPluginConfig
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 
@@ -38,5 +37,4 @@ import net.mamoe.mirai.console.data.PluginData
  * @see JAutoSavePluginData
  * @see PluginConfig
  */
-@ExperimentalPluginConfig
 public abstract class JAutoSavePluginConfig : AutoSavePluginConfig(), PluginConfig

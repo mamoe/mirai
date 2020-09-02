@@ -15,7 +15,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.PluginDataExtensions.mapKeys
 import net.mamoe.mirai.console.data.PluginDataExtensions.withEmptyDefault
-import net.mamoe.mirai.console.data.getValue
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.util.BotManager
 import net.mamoe.mirai.contact.User

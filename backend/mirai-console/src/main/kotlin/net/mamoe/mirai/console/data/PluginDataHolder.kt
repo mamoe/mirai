@@ -30,7 +30,7 @@ public interface PluginDataHolder {
      * 保存时使用的分类名
      */
     @ConsoleExperimentalAPI
-    public val name: String
+    public val dataHolderName: String
 }
 
 /**

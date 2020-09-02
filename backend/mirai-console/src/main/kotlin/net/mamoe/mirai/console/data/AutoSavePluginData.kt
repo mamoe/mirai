@@ -17,7 +17,6 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.utils.*
 
 /**
@@ -39,7 +38,8 @@ public open class AutoSavePluginData private constructor(
     public constructor() : this(null)
 
 
-    override fun onStored(owner: PluginDataHolder, storage: PluginDataStorage) {
+    @ConsoleExperimentalAPI
+    override fun onInit(owner: PluginDataHolder, storage: PluginDataStorage) {
         check(owner is AutoSavePluginDataHolder) { "owner must be AutoSavePluginDataHolder for AutoSavePluginData" }
 
         if (this::storage_.isInitialized) {
@@ -121,8 +121,6 @@ public open class AutoSavePluginData private constructor(
         }
     }
 
-    @Suppress("RedundantVisibilityModifier")
-    @ConsoleInternalAPI
     public final override fun onValueChanged(value: Value<*>) {
         debuggingLogger1.error { "onValueChanged: $value" }
         if (::owner_.isInitialized) {

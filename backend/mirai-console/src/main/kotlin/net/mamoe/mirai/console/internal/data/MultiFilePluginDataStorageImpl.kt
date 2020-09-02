@@ -33,7 +33,7 @@ internal open class MultiFilePluginDataStorageImpl(
     }
 
     public override fun load(holder: PluginDataHolder, instance: PluginData) {
-        instance.onStored(holder, this)
+        instance.onInit(holder, this)
 
         val text = getPluginDataFile(holder, instance).readText()
         if (text.isNotBlank()) {
@@ -48,7 +48,7 @@ internal open class MultiFilePluginDataStorageImpl(
     protected open fun getPluginDataFile(holder: PluginDataHolder, instance: PluginData): File {
         val name = instance.saveName
 
-        val dir = directoryPath.resolve(holder.name)
+        val dir = directoryPath.resolve(holder.dataHolderName)
         if (dir.isFile) {
             error("Target directory $dir for holder $holder is occupied by a file therefore data ${instance::class.qualifiedNameOrTip} can't be saved.")
         }

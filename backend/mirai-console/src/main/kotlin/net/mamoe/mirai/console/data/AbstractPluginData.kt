@@ -14,8 +14,6 @@ package net.mamoe.mirai.console.data
 import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.console.data.PluginData.ValueNode
 import net.mamoe.mirai.console.internal.data.PluginDataImpl
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
 
 /**
  * [PluginData] 的默认实现. 支持使用 `by value()` 等委托方法创建 [Value] 并跟踪其改动.
@@ -30,13 +28,11 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
      *
      * @see provideDelegate
      */
-    @ConsoleExperimentalAPI
     public override val valueNodes: MutableList<ValueNode<*>> = mutableListOf()
 
     /**
      * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
      */
-    @ConsoleExperimentalAPI
     public override fun <T : SerializerAwareValue<*>> T.track(valueName: String): T =
         apply { valueNodes.add(ValueNode(valueName, this, this.serializer)) }
 
@@ -45,13 +41,11 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
      *
      * @suppress 注意, 这是实验性 API.
      */
-    @ConsoleExperimentalAPI
     public final override val updaterSerializer: KSerializer<Unit>
         get() = super.updaterSerializer
 
     /**
      * 当所属于这个 [PluginData] 的 [Value] 的 [值][Value.value] 被修改时被调用.
      */
-    @ConsoleInternalAPI
     public abstract override fun onValueChanged(value: Value<*>)
 }
