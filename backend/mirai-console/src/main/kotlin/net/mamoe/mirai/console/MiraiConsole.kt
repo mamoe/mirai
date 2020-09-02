@@ -25,7 +25,7 @@ import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
-import net.mamoe.mirai.console.util.childScopeContext
+import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -105,7 +105,22 @@ public interface MiraiConsole : CoroutineScope {
         // don't static
         @ConsoleExperimentalAPI("This is a low-level API and might be removed in the future.")
         public fun addBot(id: Long, password: String, configuration: BotConfiguration.() -> Unit = {}): Bot =
-            Bot(id, password) {
+            addBotImpl(id, password, configuration)
+
+        /**
+         * 添加一个 [Bot] 实例到全局 Bot 列表, 但不登录.
+         *
+         * 调用 [Bot.login] 可登录.
+         *
+         * @see Bot.botInstances 获取现有 [Bot] 实例列表
+         */
+        @ConsoleExperimentalAPI("This is a low-level API and might be removed in the future.")
+        public fun addBot(id: Long, password: ByteArray, configuration: BotConfiguration.() -> Unit = {}): Bot =
+            addBotImpl(id, password, configuration)
+
+        @Suppress("UNREACHABLE_CODE")
+        private fun addBotImpl(id: Long, password: Any, configuration: BotConfiguration.() -> Unit = {}): Bot {
+            val config: BotConfiguration.() -> Unit = {
                 fileBasedDeviceInfo()
                 redirectNetworkLogToDirectory()
                 parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
@@ -113,6 +128,12 @@ public interface MiraiConsole : CoroutineScope {
                 this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)
                 configuration()
             }
+            return when (password) {
+                is ByteArray -> Bot(id, password, config)
+                is String -> Bot(id, password, config)
+                else -> null!!
+            }
+        }
     }
 }
 
