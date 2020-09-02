@@ -30,12 +30,12 @@ import java.util.*
 
 internal val Http = HttpClient(CIO) {
     engine {
-        requestTimeout = 600_000
+        requestTimeout = 6000_000
     }
     install(HttpTimeout) {
-        socketTimeoutMillis = 600_000
-        requestTimeoutMillis = 600_000
-        connectTimeoutMillis = 600_000
+        socketTimeoutMillis = 6000_000
+        requestTimeoutMillis = 6000_000
+        connectTimeoutMillis = 6000_000
     }
 }
 
@@ -87,7 +87,10 @@ object GitHub {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
         val url = "https://api.github.com/repos/project-mirai/$repo/contents/$targetFilePath"
-        retryCatching(100, onFailure = { delay(30_000) }) { // 403 forbidden?
+        retryCatching(100, onFailure = {
+            it.printStackTrace()
+            delay(30_000)
+        }) { // 403 forbidden?
             Http.put<String>("$url?access_token=$token") {
                 val sha = retryCatching(3, onFailure = { delay(30_000) }) {
                     getGithubSha(

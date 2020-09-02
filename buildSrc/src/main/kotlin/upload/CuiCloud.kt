@@ -149,7 +149,7 @@ object CuiCloud {
 @OptIn(ExperimentalContracts::class)
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
 @kotlin.internal.InlineOnly
-internal inline fun <R> retryCatching(n: Int, onFailure: () -> Unit = {}, block: () -> R): Result<R> {
+internal inline fun <R> retryCatching(n: Int, onFailure: (Throwable) -> Unit = {}, block: () -> R): Result<R> {
     contract {
         callsInPlace(block, InvocationKind.AT_LEAST_ONCE)
     }
@@ -164,7 +164,7 @@ internal inline fun <R> retryCatching(n: Int, onFailure: () -> Unit = {}, block:
             } catch (e: Throwable) {
             }
             exception = e
-            onFailure()
+            onFailure(e)
         }
     }
     return Result.failure(exception!!)
