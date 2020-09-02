@@ -15,6 +15,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.PluginDataExtensions.mapKeys
 import net.mamoe.mirai.console.data.PluginDataExtensions.withEmptyDefault
+import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.util.BotManager
 import net.mamoe.mirai.contact.User
@@ -38,6 +39,11 @@ internal object ManagersConfig : AutoSavePluginConfig() {
     override val saveName: String
         get() = "Managers"
 
+    @ValueDescription(
+        """
+        管理员列表
+    """
+    )
     private val managers by value<MutableMap<Long, MutableSet<Long>>>().withEmptyDefault()
         .mapKeys(Bot::getInstance, Bot::id)
 

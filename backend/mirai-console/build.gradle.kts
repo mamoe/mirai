@@ -1,10 +1,7 @@
 @file:Suppress("UnusedImport")
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.Date
-import java.util.TimeZone
 
 plugins {
     kotlin("jvm")
@@ -65,7 +62,7 @@ dependencies {
     implementation(kotlinx("serialization-core", Versions.serialization))
     implementation(kotlin("reflect"))
 
-    implementation("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
+    api("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
     implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}")
     api("org.jetbrains:annotations:19.0.0")
     api(kotlinx("coroutines-jdk8", Versions.coroutines))

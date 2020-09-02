@@ -127,6 +127,7 @@ public interface PluginData {
     /**
      * 由 [provideDelegate] 创建, 来自一个通过 `by value` 初始化的属性节点.
      */
+    @ConsoleExperimentalAPI
     public data class ValueNode<T>(
         /**
          * 节点名称.
@@ -140,9 +141,11 @@ public interface PluginData {
          */
         val value: Value<out T>,
         /**
+         * 注解列表
+         */
+        val annotations: List<Annotation>,
+        /**
          * 属性值更新器
-         *
-         * @suppress 注意, 这是实验性 API.
          */
         val updaterSerializer: KSerializer<Unit>
     )
@@ -153,7 +156,7 @@ public interface PluginData {
     public operator fun <T : SerializerAwareValue<*>> T.provideDelegate(
         thisRef: Any?,
         property: KProperty<*>
-    ): T = track(property.valueName)
+    ): T = track(property.valueName, property.getAnnotationListForValueSerialization())
 
     /**
      * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
@@ -167,7 +170,8 @@ public interface PluginData {
          *
          * @see [ValueNode.value]
          */
-        valueName: String
+        valueName: String,
+        annotations: List<Annotation>
     ): T
 
     /**

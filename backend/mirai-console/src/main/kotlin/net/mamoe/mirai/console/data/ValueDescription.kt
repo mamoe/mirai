@@ -10,12 +10,14 @@
 package net.mamoe.mirai.console.data
 
 /**
- * 序列化之后的名称.
+ * 序列化之后的注释.
  *
  * 例:
  * ```
  * object AccountPluginData : PluginData by ... {
- *    @ValueName("info")
+ *    @ValueDescription("""
+ *        一个 map
+ *    """)
  *    val map: Map<String, String> by value("a" to "b")
  * }
  * ```
@@ -23,10 +25,11 @@ package net.mamoe.mirai.console.data
  * 将被保存为配置 (YAML 作为示例):
  * ```yaml
  * AccountPluginData:
+ *   # 一个 map
  *   map:
  *     a: b
  * ```
  */
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-public annotation class ValueName(val value: String)
+public annotation class ValueDescription(val value: String)
