@@ -9,7 +9,7 @@
 
 @file:Suppress("unused", "RedundantVisibilityModifier")
 
-package net.mamoe.mirai.console.plugin
+package net.mamoe.mirai.console.internal.plugin
 
 internal class PluginMissingDependencyException : PluginResolutionException {
     public constructor() : super()
