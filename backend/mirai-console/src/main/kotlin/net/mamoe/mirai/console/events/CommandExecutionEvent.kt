@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.event
+package net.mamoe.mirai.console.events
 
 /*
 data class CommandExecutionEvent( // TODO: 2020/6/26  impl CommandExecutionEvent

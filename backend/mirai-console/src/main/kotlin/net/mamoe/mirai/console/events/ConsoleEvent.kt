@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.event
+package net.mamoe.mirai.console.events
 
 import net.mamoe.mirai.event.Event
 
