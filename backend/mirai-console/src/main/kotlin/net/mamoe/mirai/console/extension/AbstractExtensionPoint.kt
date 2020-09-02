@@ -9,7 +9,7 @@
 
 @file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
-package net.mamoe.mirai.console.extensions
+package net.mamoe.mirai.console.extension
 
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
 import net.mamoe.mirai.console.plugin.Plugin
