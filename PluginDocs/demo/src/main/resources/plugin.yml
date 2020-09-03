@@ -1,6 +1,0 @@
-name: "Example"
-author: "你的名字"
-version: "0.1.0"
-main: "my_package_name.ExamplePluginBase"
-info: "My info"
-depends: []

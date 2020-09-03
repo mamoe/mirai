@@ -34,35 +34,6 @@
 [`JavaPluginScheduler`]: src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
 [`ResourceContainer`]: src/main/kotlin/net/mamoe/mirai/console/plugin/ResourceContainer.kt
 
-## 准备工作
-
-### 开发 mirai-console 插件的准备工作
-- 需使用 IDE: [IntelliJ IDEA](https://www.jetbrains.com/idea/)
-- IntelliJ 需装有 [Kotlin Jvm Blocking Bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge) 插件 (启动 IntelliJ, 点击 [一键安装](https://plugins.jetbrains.com/embeddable/install/14816))
-- 安装并配置 JDK 8
-
-### 前置知识
-- 你需要掌握 Java 基础.
-- 你需要了解 Kotlin 基础语法:
-  - [基本类型](https://www.kotlincn.net/docs/reference/basic-types.html)
-  - [类与继承](https://www.kotlincn.net/docs/reference/classes.html)
-  - [属性与字段](https://www.kotlincn.net/docs/reference/properties.html)
-  - [接口](https://www.kotlincn.net/docs/reference/interfaces.html)
-  - [扩展](https://www.kotlincn.net/docs/reference/extensions.html)
-  - [数据类](https://www.kotlincn.net/docs/reference/data-classes.html)
-  - [对象](https://www.kotlincn.net/docs/reference/object-declarations.html)
-  - [密封类](https://www.kotlincn.net/docs/reference/sealed-classes.html)
-  - **[Java 中调用 Kotlin](https://www.kotlincn.net/docs/reference/java-to-kotlin-interop.html)**
-
-## 包结构
-- `net.mamoe.mirai.console.`
-  - `command`：指令模块：[`Command`]
-  - `data`：存储模块：[`PluginData`], [`PluginConfig`], [`PluginDataStorage`]
-  - `event`：Console 实现的事件.
-  - `plugin`：插件模块：[`Plugin`], [`PluginLoader`], [`JvmPlugin`]
-  - `util`：工具类：[`Annotations`], [`BotManager`], [`ConsoleInput`], [`JavaPluginScheduler`]
-  - `internal`：内部实现
-
 
 ## 基础
 

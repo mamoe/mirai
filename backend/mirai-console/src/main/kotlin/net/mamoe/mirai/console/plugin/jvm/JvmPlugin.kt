@@ -35,7 +35,6 @@ import net.mamoe.mirai.utils.MiraiLogger
  * 实现为 [ClassLoader.getResourceAsStream]
  *
  * ## 实现 [JvmPlugin]
- * j
  *
  * @see AbstractJvmPlugin 默认实现
  *
