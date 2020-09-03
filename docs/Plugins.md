@@ -40,7 +40,7 @@
 [JAR]: https://zh.wikipedia.org/zh-cn/JAR_(%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F)
 
 [为什么不支持热加载和卸载插件？]: QA.md#为什么不支持热加载和卸载插件
-[使用 ServiceLoader 加载插件]: QA.md#使用-serviceloader-加载插件
+[使用 AutoService]: QA.md#使用-autoservice
 
 Mirai Console 运行在 [JVM]，支持使用 [Kotlin] 或 [Java] 语言编写的插件。
 
@@ -75,7 +75,14 @@ Mirai Console 提供一些基础的实现，即 [`AbstractJvmPlugin`]，并将 [
 #### 描述
 插件描述需要在主类构造器传递给 `super`。因此插件不需要 `plugin.yml`, `plugin.xml` 等配置文件来指示信息。
 
-Mirai Console 使用 `ServiceLoader` 加载插件。推荐的做法是使用 `AutoService`（如何[使用 ServiceLoader 加载插件]）。
+Mirai Console 使用 `ServiceLoader` 加载插件。  
+在 Kotlin，可（[使用 AutoService]）自动配置 service 信息。  
+在 Kotlin 或其他语言，手动创建 service 文件： 在 `jar` 内 `META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin` 文件内存放插件主类全名（以纯文本 UTF-8 存储，文件内容只包含一行插件主类全名）.
+
+
+有关插件版本号的限制：
+- 插件自身的版本要求遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/) 规范, 合格的版本例如: `1.0.0`, `1.0`, `1.0-M1`, `1.0-pre-1`
+- 插件依赖的版本遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/) 规范, 同时支持 [Apache Ivy 风格表示方法](http://ant.apache.org/ivy/history/latest-milestone/settings/version-matchers.html).
 
 ##### 插件名
 插件名仅取决于 `PluginDescription` 提供的 `name`，与主类类名等其他信息无关。
@@ -87,7 +94,7 @@ Mirai Console 使用 `ServiceLoader` 加载插件。推荐的做法是使用 `Au
 - 访问权限为 `public` 或默认 (不指定)
 
 ```kotlin
-@AutoService(JvmPlugin::class) // 让 Console 知道这个 object 是一个插件主类.
+@AutoService(JvmPlugin::class) // 如果选用上述自动配置的方法
 object SchedulePlugin : KotlinPlugin(
     SimpleJvmPluginDescription( // 插件的描述, name 和 version 是必须的
         name = "Schedule",
@@ -107,7 +114,6 @@ object SchedulePlugin : KotlinPlugin(
 
 (推荐) 静态初始化:
 ```java
-@AutoService(JvmPlugin.class)
 public final class JExample extends JavaPlugin {
     public static final JExample INSTANCE = new JExample(); // 可以像 Kotlin 一样静态初始化单例
     private JExample() {
@@ -121,7 +127,6 @@ public final class JExample extends JavaPlugin {
 
 由 Console 初始化（仅在某些静态初始化不可用的情况下使用）:
 ```java
-@AutoService(JvmPlugin.class)
 public final class JExample extends JavaPlugin {
     private static final JExample instance;
     public static JExample getInstance() {
@@ -212,8 +217,10 @@ MyPluginMain.launch {
 详见 [`PluginFileExtensions`]。
 
 #### 物理目录路径
-用 `$root` 表示 Mirai Console 运行路径，`$name` 表示插件名
-插件数据目录一般在 `$root/plugins/`，
+用 `$root` 表示 Mirai Console 运行路径，`$name` 表示插件名，
+插件数据目录一般在 `$root/data/$name`，插件配置目录一般在 `$root/config/$name`。
+
+有关数据和配置的区别可以在 [PluginData](PluginData.md) 章节查看。
 
 ### 访问 [JAR] 包内资源文件
 
@@ -240,3 +247,6 @@ Java：
 
 **仅可在插件 onEnable() 时及其之后才能使用这些方法。**  
 **在插件 onDisable() 之后不能使用这些方法。**
+
+### 附录：Java 插件的多线程调度器 - [`JavaPluginScheduler`]
+拥有生命周期管理的简单 Java 线程池。

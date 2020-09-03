@@ -11,7 +11,8 @@ import net.mamoe.mirai.console.internal.data.ShadowMap
 public object PluginDataExtensions {
 
     /**
-     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [LinkedHashMap], 再返回这个 [LinkedHashMap]
+     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [LinkedHashMap], 再从 [this] 中取出链接自动保存的 [LinkedHashMap]. ([MutableMap.getOrPut] 的替代)
+     *
      * @see withDefault
      */
     @JvmName("withEmptyDefaultMapImmutable")
@@ -21,7 +22,7 @@ public object PluginDataExtensions {
     }
 
     /**
-     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [LinkedHashMap], 再返回这个 [LinkedHashMap]
+     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [LinkedHashMap], 再从 [this] 中取出链接自动保存的 [LinkedHashMap]. ([MutableMap.getOrPut] 的替代)
      * @see withDefault
      */
     @JvmName("withEmptyDefaultMap")
@@ -32,7 +33,7 @@ public object PluginDataExtensions {
 
 
     /**
-     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [ArrayList], 再返回这个 [ArrayList]
+     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [ArrayList], 再从 [this] 中取出链接自动保存的 [ArrayList].
      * @see withDefault
      */
     @JvmName("withEmptyDefaultListImmutable")
@@ -42,7 +43,7 @@ public object PluginDataExtensions {
     }
 
     /**
-     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [ArrayList], 再返回这个 [ArrayList]
+     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [ArrayList], 再从 [this] 中取出链接自动保存的 [ArrayList].
      * @see withDefault
      */
     @JvmName("withEmptyDefaultList")
@@ -53,7 +54,7 @@ public object PluginDataExtensions {
 
 
     /**
-     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [LinkedHashSet], 再返回这个 [LinkedHashSet]
+     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [LinkedHashSet], 再从 [this] 中取出链接自动保存的 [LinkedHashSet].
      * @see withDefault
      */
     @JvmName("withEmptyDefaultSetImmutable")
@@ -63,7 +64,7 @@ public object PluginDataExtensions {
     }
 
     /**
-     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [LinkedHashSet], 再返回这个 [LinkedHashSet]
+     * 创建一个代理对象, 当 [Map.get] 返回 `null` 时先放入一个 [LinkedHashSet], 再从 [this] 中取出链接自动保存的 [LinkedHashSet].
      * @see withDefault
      */
     @JvmName("withEmptyDefaultSet")
