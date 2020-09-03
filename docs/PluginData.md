@@ -95,16 +95,16 @@ object MyData : AutoSavePluginData()
 2. 使用委托添加属性。所有类型都可以使用同样的‘语法’。
 ```kotlin
 object MyData : AutoSavePluginData() {
-    val value2 by value<Int>() // 推断为 Int
-    val value3 by value(0) // 默认值为 0， 推断为 Int
+    val value1 by value<Int>() // 推断为 Int
+    val value2 by value(0) // 默认值为 0， 推断为 Int
     var value3 by value(0) // 支持 var，修改会自动保存
-    val value1: Int by value() // 显式类型和推断类型，你喜欢哪种？
-    val value4: List<String> by value() // 支持 List，Set
-    val value4: MutableList<String> by value() // 可按需使用 Mutable 类型
-    val value5: List<List<String>> by value() // 支持嵌套
-    val value6: Map<String, List<List<String>>> by value() // 支持 Map
+    val value4: Int by value() // 显式类型和推断类型，你喜欢哪种？
+    val value5: List<String> by value() // 支持 List，Set
+    val value6: MutableList<String> by value() // 可按需使用 Mutable 类型
+    val value7: List<List<String>> by value() // 支持嵌套
+    val value8: Map<String, List<List<String>>> by value() // 支持 Map
     
-    var value4: List<String> by value() // List、Set 或 Map 同样支持 var。但请注意这是非引用赋值（详见下文）。
+    var value9: List<String> by value() // List、Set 或 Map 同样支持 var。但请注意这是非引用赋值（详见下文）。
 }
 ```
 
