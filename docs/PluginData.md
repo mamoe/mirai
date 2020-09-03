@@ -98,7 +98,7 @@ object MyData : AutoSavePluginData() {
     val value2 by value<Int>() // 推断为 Int
     val value3 by value(0) // 默认值为 0， 推断为 Int
     var value3 by value(0) // 支持 var，修改会自动保存
-    val value1: Int by value() // 显示类型和推断类型，你喜欢哪种？
+    val value1: Int by value() // 显式类型和推断类型，你喜欢哪种？
     val value4: List<String> by value() // 支持 List，Set
     val value4: MutableList<String> by value() // 可按需使用 Mutable 类型
     val value5: List<List<String>> by value() // 支持嵌套
