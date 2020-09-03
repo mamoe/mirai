@@ -3,7 +3,7 @@
 ## 插件
 
 
-### 使用 ServiceLoader 加载插件
+### 使用 AutoService
 
 - 方法 A. (推荐) 自动创建 service 文件 (使用 Google auto-service)  
   在 `build.gradle.kts` 添加:
