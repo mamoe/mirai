@@ -110,7 +110,7 @@ object MyData : AutoSavePluginData() {
 
 3. 建立自动保存链接
 使用 `PluginDataStorage.load(PluginDataHolder, PluginData)` 即可完成自动保存链接，并读取数据。  
-对于 [JVM 插件][`JvmPlugin`]，可简便地在 `onEnable()` 中使用 `MyData.reload()`（对于上例）。详见 [读取 [`PluginData`] 或 [`PluginConfig`]](Plugins.md#读取-plugindata-或-pluginconfig)
+对于 [JVM 插件][`JvmPlugin`]，可简便地在 `onEnable()` 中使用 `MyData.reload()`（对于上例）。详见 [读取 `PluginData` 或 `PluginConfig`](Plugins.md#读取-plugindata-或-pluginconfig)
 
 ### 定义数据模型（Java）
 *由于 Java 语法局限，为 Kotlin 而设计的 PluginData 在 Java 使用很复杂。*  
@@ -136,7 +136,7 @@ val newList = MyPluginData.map.getOrPut(1, ::mutableListOf)
 newList.add(1) // 不会添加到 MyPluginData.nestedMap 中, 因为 `mutableListOf` 创建的 MutableList 被非引用地添加进了 MyPluginData.nestedMap
 ```
 
-要解决这种无法自动初始化空集合的问题，请查看 [（实验性）[扩展方法][`PluginDataExtensions`]](#实验性扩展方法)方法
+要解决这种无法自动初始化空集合的问题，请查看 [实验性扩展方法](#实验性扩展方法) 方法
 
 ### 使用自定义可序列化数据类型
 在 Kotlin，支持使用 [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) 序列化的自定义数据类型。
