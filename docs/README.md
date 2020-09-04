@@ -1,19 +1,34 @@
-# MiraiConsole
+# Mirai Console
 
 欢迎来到 mirai-console 开发文档!
 
 ## 准备工作
+***如果跳过本节内容，你很可能遇到无法解决的问题。***
 
-### 开发 mirai-console 插件的准备工作
-- 需使用 IDE: [IntelliJ IDEA](https://www.jetbrains.com/idea/)
-- IntelliJ 需装有 [Kotlin Jvm Blocking Bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge) 插件 (启动 IntelliJ, 点击 [一键安装](https://plugins.jetbrains.com/embeddable/install/14816))
-- 安装并配置 JDK 8
+### 环境要求
+
+*不接受降低最低版本要求的建议*
+
+- JDK 11
+- Android：Android SDK 26+ （Android 8.0)
+- Kotlin: 1.4
+
+*Mirai Console 需要的 Kotlin 版本会与 Kotlin 最新稳定版本同步。*
+
+### 开发插件的准备工作
+
+- 安装并配置 JDK 11
+
+若使用 Java，或要修改 Mirai Console：
+
+- 若使用 Java，必须需使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) （或 `Android Studio`）。
+- 若使用 Java，或要修改 Mirai Console，IDE 需装有 [Kotlin Jvm Blocking Bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge) 插件 (先启动你的 IDE，再点击 [一键安装](https://plugins.jetbrains.com/embeddable/install/14816))
 
 ### 前置知识
 要学习为 mirai-console 开发原生支持的插件, 需要:
 
-- 掌握 Java 基础.
-- 了解 Kotlin 基础语法:
+- 掌握 Java 基础
+- 至少粗略了解 Kotlin 基础语法（30 分钟）:
   - [基本类型](https://www.kotlincn.net/docs/reference/basic-types.html)
   - [类与继承](https://www.kotlincn.net/docs/reference/classes.html)
   - [属性与字段](https://www.kotlincn.net/docs/reference/properties.html)
@@ -23,9 +38,9 @@
   - [对象](https://www.kotlincn.net/docs/reference/object-declarations.html)
   - [密封类](https://www.kotlincn.net/docs/reference/sealed-classes.html)
   - **[Java 中调用 Kotlin](https://www.kotlincn.net/docs/reference/java-to-kotlin-interop.html)**
-- 至少能使用 Java 或 Kotlin 一种一门语言解决问题
-- 了解 JVM 和 Java 等同类编程语言的关系
+- 对于 Java 使用者，请阅读 [Java 用户的使用指南](#java-用户的使用指南)，[在 Java 使用 Mirai Console 中的 Kotlin `suspend` 函数](#在-java-使用-mirai-console-中的-kotlin-suspend-函数)
 - 对于 Kotlin 使用者，请熟知 [Kotlin `1.4` 版本带来的新特性](#mirai-console-使用的-kotlin-14-版本的新特性)
+
 ## 目录
 
 ### 后端插件开发基础
@@ -116,3 +131,35 @@ interface MiraiConsole {
     companion object INSTANCE : MiraiConsole by MiraiConsoleImpl // MiraiConsoleImpl 是内部实现，不公开
 }
 ```
+
+#### Mirai Console 演进
+
+Mirai Console 是不断前进的框架，将来必定会发生 API 弃用和重构。  
+维护者会严谨地推进每一项修改，并提供迁移周期（至少 2 个次版本）。
+
+##### 版本规范
+
+Mirai Console 的版本号遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/#spec-item-9) 规范。
+
+在大版本开发过程中，Mirai Console 会以 `-M1`, `-M2` 等版本后缀发布里程碑预览版本。代表一些功能基本完成，但还不稳定。  
+但这些版本里新增的 API 可能还会在下一个 Milestone 版本变化，因此请按需使用。
+
+在大版本即将发布前，Mirai Console 会以 `-RC` 版本后缀发布最终的预览版本。  
+`RC` 表示新版本 API 已经确定，离稳定版发布只差最后的一些内部优化或 bug 修复。
+
+##### 更新兼容性
+
+对于 `x.y.z` 版本号:
+- 当 `z` 增加时，只会有 bug 修复，和必要的新函数添加（为了解决某一个问题），不会有破坏性变化。
+- 当 `y` 增加时，可能有新 API 的引入，和旧 API 的弃用。但这些弃用会经过一个弃用周期后才被删除（隐藏）。向下兼容得到保证。
+- 当 `x` 增加时，任何 API 都可能会有变化。无兼容性保证。
+
+##### 弃用周期
+
+一个计划被删除的 API，将会在下一个次版本开始经历弃用周期。
+
+如一个 API 在 `1.1.0` 起被弃用，它首先会是 `WARNING` (使用时会得到一个编译警告）弃用级别。  
+在 `1.2.0` 上升为 `ERROR`（使用时会得到一个编译错误）；  
+在 `1.3.0` 上升为 `HIDDEN`（使用者无法看到这些 API)。
+
+`HIDDEN` 的 API 仍然会保留在代码中并正常编译，以提供二进制兼容性，直到下一个主版本更新。

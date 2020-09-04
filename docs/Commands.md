@@ -24,10 +24,11 @@ interface Command {
 
 #### 在 [`CommandManager`] 执行指令
 
-##### Kotlin
 通过扩展：
-- `suspend fun Command.execute(CommandSender, )`
-- `suspend fun CommandSender.execute`
+- `suspend fun Command.execute(CommandSender, args: Message, checkPermission: Boolean=true)`
+- `suspend fun Command.execute(CommandSender, args: String, checkPermission: Boolean=true)`
+- `suspend fun CommandSender.executeCommand(message: Message, checkPermission: Boolean=true)`
+- `suspend fun CommandSender.executeCommand(message: String, checkPermission: Boolean=true)`
 
 ### 指令参数
 
