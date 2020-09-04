@@ -22,7 +22,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 
 @ConsoleExperimentalAPI
-public open class AbstractExtensionPoint<T : Any>(
+public open class AbstractExtensionPoint<T : Extension>(
     @ConsoleExperimentalAPI
     public val type: KClass<T>
 ) {
@@ -109,6 +109,8 @@ internal fun <T : Any> AbstractExtensionPoint<T>.throwExtensionException(
         throwable
     )
 }
+
+internal fun <T : Any> AbstractExtensionPoint<T>
 
 internal inline fun <T : Any> AbstractExtensionPoint<T>.useExtensions(block: (extension: T) -> Unit): Unit =
     withExtensions(block)
