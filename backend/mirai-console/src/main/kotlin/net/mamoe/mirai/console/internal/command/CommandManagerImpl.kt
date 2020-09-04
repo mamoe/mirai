@@ -147,7 +147,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     ): CommandExecuteResult {
         return sender.executeCommandInternal(
             this,
-            arguments.flattenCommandComponents().toTypedArray(),
+            arguments.flattenCommandComponents(),
             primaryName,
             checkPermission
         )
@@ -160,7 +160,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     ): CommandExecuteResult {
         return sender.executeCommandInternal(
             this,
-            arguments.flattenCommandComponents().toTypedArray(),
+            arguments.flattenCommandComponents(),
             primaryName,
             checkPermission
         )

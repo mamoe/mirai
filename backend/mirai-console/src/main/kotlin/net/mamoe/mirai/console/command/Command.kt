@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.java.JCommand
 import net.mamoe.mirai.console.internal.command.isValidSubName
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 
 /**
@@ -71,7 +72,7 @@ public interface Command {
      * @see CommandManager.executeCommand 查看更多信息
      */
     @JvmBlockingBridge
-    public suspend fun CommandSender.onCommand(args: Array<out Any>)
+    public suspend fun CommandSender.onCommand(args: MessageChain)
 
     public companion object {
         /**
@@ -84,7 +85,7 @@ public interface Command {
 }
 
 @JvmSynthetic
-public suspend inline fun Command.onCommand(sender: CommandSender, args: Array<out Any>): Unit =
+public suspend inline fun Command.onCommand(sender: CommandSender, args: MessageChain): Unit =
     sender.run { onCommand(args) }
 
 /**

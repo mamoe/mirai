@@ -15,8 +15,10 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.buildMessageChain
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -65,13 +67,13 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
             return _usage
         }
 
-    abstract suspend fun CommandSender.onDefault(rawArgs: Array<out Any>)
+    abstract suspend fun CommandSender.onDefault(rawArgs: MessageChain)
 
     internal val defaultSubCommand: DefaultSubCommandDescriptor by lazy {
         DefaultSubCommandDescriptor(
             "",
             permission,
-            onCommand = { sender: CommandSender, args: Array<out Any> ->
+            onCommand = { sender: CommandSender, args: MessageChain ->
                 sender.onDefault(args)
             }
         )
@@ -116,7 +118,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     internal class DefaultSubCommandDescriptor(
         val description: String,
         val permission: CommandPermission,
-        val onCommand: suspend (sender: CommandSender, rawArgs: Array<out Any>) -> Unit
+        val onCommand: suspend (sender: CommandSender, rawArgs: MessageChain) -> Unit
     )
 
     internal inner class SubCommandDescriptor(
@@ -130,7 +132,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
         val usage: String = createUsage(this@AbstractReflectionCommand)
         internal suspend fun parseAndExecute(
             sender: CommandSender,
-            argsWithSubCommandNameNotRemoved: Array<out Any>,
+            argsWithSubCommandNameNotRemoved: MessageChain,
             removeSubName: Boolean
         ) {
             val args = parseArgs(sender, argsWithSubCommandNameNotRemoved, if (removeSubName) names.size else 0)
@@ -145,7 +147,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
 
         @JvmField
         internal val bakedSubNames: Array<Array<String>> = names.map { it.bakeSubName() }.toTypedArray()
-        private fun parseArgs(sender: CommandSender, rawArgs: Array<out Any>, offset: Int): Array<out Any>? {
+        private fun parseArgs(sender: CommandSender, rawArgs: MessageChain, offset: Int): Array<out Any>? {
             if (rawArgs.size < offset + this.params.size)
                 return null
             //require(rawArgs.size >= offset + this.params.size) { "No enough args. Required ${params.size}, but given ${rawArgs.size - offset}" }
@@ -154,9 +156,8 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
                 val param = params[index]
                 val rawArg = rawArgs[offset + index]
                 when (rawArg) {
-                    is String -> context[param.type]?.parse(rawArg, sender)
-                    is SingleMessage -> context[param.type]?.parse(rawArg, sender)
-                    else -> throw IllegalArgumentException("Illegal argument type: ${rawArg::class.qualifiedName}")
+                    is PlainText -> context[param.type]?.parse(rawArg.content, sender)
+                    else -> context[param.type]?.parse(rawArg, sender)
                 } ?: error("Cannot find a parser for $rawArg")
             }
         }
@@ -165,7 +166,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     /**
      * @param rawArgs 元素类型必须为 [SingleMessage] 或 [String], 且已经经过扁平化处理. 否则抛出异常 [IllegalArgumentException]
      */
-    internal fun matchSubCommand(rawArgs: Array<out Any>): SubCommandDescriptor? {
+    internal fun matchSubCommand(rawArgs: MessageChain): SubCommandDescriptor? {
         val maxCount = rawArgs.size
         var cur = 0
         bakedCommandNameToSubDescriptorArray.forEach { (name, descriptor) ->
@@ -180,7 +181,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     }
 }
 
-internal fun <T> Array<T>.contentEqualsOffset(other: Array<out Any>, length: Int): Boolean {
+internal fun <T> Array<T>.contentEqualsOffset(other: MessageChain, length: Int): Boolean {
     repeat(length) { index ->
         if (!other[index].toString().equals(this[index].toString(), ignoreCase = true)) {
             return false
@@ -193,18 +194,16 @@ internal val ILLEGAL_SUB_NAME_CHARS = "\\/!@#$%^&*()_+-={}[];':\",.<>?`~".toChar
 internal fun String.isValidSubName(): Boolean = ILLEGAL_SUB_NAME_CHARS.none { it in this }
 internal fun String.bakeSubName(): Array<String> = split(' ').filterNot { it.isBlank() }.toTypedArray()
 
-internal fun Any.flattenCommandComponents(): ArrayList<Any> {
-    val list = ArrayList<Any>()
-    when (this) {
-        is PlainText -> this.content.splitToSequence(' ').filterNot { it.isBlank() }
-            .forEach { list.add(it) }
-        is CharSequence -> this.splitToSequence(' ').filterNot { it.isBlank() }.forEach { list.add(it) }
-        is SingleMessage -> list.add(this)
-        is Array<*> -> this.forEach { if (it != null) list.addAll(it.flattenCommandComponents()) }
-        is Iterable<*> -> this.forEach { if (it != null) list.addAll(it.flattenCommandComponents()) }
-        else -> list.add(this.toString())
+internal fun Any.flattenCommandComponents(): MessageChain = buildMessageChain {
+    when (this@flattenCommandComponents) {
+        is PlainText -> this@flattenCommandComponents.content.splitToSequence(' ').filterNot { it.isBlank() }
+            .forEach { +it }
+        is CharSequence -> this@flattenCommandComponents.splitToSequence(' ').filterNot { it.isBlank() }.forEach { +it }
+        is SingleMessage -> +(this@flattenCommandComponents)
+        is Array<*> -> this@flattenCommandComponents.forEach { if (it != null) addAll(it.flattenCommandComponents()) }
+        is Iterable<*> -> this@flattenCommandComponents.forEach { if (it != null) addAll(it.flattenCommandComponents()) }
+        else -> add(this@flattenCommandComponents.toString())
     }
-    return list
 }
 
 internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): Boolean =

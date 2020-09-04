@@ -15,6 +15,7 @@ import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 
 /**
@@ -25,7 +26,7 @@ import net.mamoe.mirai.message.data.SingleMessage
  * @see Command
  */
 public interface JCommand : Command {
-    public override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+    public override suspend fun CommandSender.onCommand(args: MessageChain) {
         withContext(Dispatchers.IO) { onCommand(this@onCommand, args) }
     }
 
@@ -36,5 +37,5 @@ public interface JCommand : Command {
      *
      * @see CommandManager.executeCommand 查看更多信息
      */
-    public fun onCommand(sender: CommandSender, args: Array<out Any>) // overrides bridge
+    public fun onCommand(sender: CommandSender, args: MessageChain) // overrides bridge
 }

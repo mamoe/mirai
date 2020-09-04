@@ -14,7 +14,7 @@ package net.mamoe.mirai.console.command
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.java.JRawCommand
-import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.message.data.MessageChain
 
 /**
  * 无参数解析, 接收原生参数的指令.
@@ -47,11 +47,11 @@ public abstract class RawCommand(
     /**
      * 在指令被执行时调用.
      *
-     * @param args 指令参数. 数组元素类型可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
+     * @param args 指令参数.
      *
      * @see CommandManager.execute 查看更多信息
      */
-    public abstract override suspend fun CommandSender.onCommand(args: Array<out Any>)
+    public abstract override suspend fun CommandSender.onCommand(args: MessageChain)
 }
 
 

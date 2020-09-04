@@ -22,6 +22,7 @@ import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.command.java.JSimpleCommand
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
+import net.mamoe.mirai.message.data.MessageChain
 
 /**
  * 简单的, 支持参数自动解析的指令.
@@ -71,7 +72,7 @@ public abstract class SimpleCommand(
      */
     public override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
 
-    public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+    public final override suspend fun CommandSender.onCommand(args: MessageChain) {
         subCommands.single().parseAndExecute(this, args, false)
     }
 
@@ -81,7 +82,7 @@ public abstract class SimpleCommand(
     }
 
     @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    internal override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
+    internal override suspend fun CommandSender.onDefault(rawArgs: MessageChain) {
         sendMessage(usage)
     }
 

@@ -21,6 +21,7 @@ import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.message.data.MessageChain
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
 import kotlin.reflect.KClass
@@ -116,14 +117,14 @@ public abstract class CompositeCommand(
     @Target(AnnotationTarget.VALUE_PARAMETER)
     protected annotation class Name(val value: String)
 
-    public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+    public final override suspend fun CommandSender.onCommand(args: MessageChain) {
         matchSubCommand(args)?.parseAndExecute(this, args, true) ?: kotlin.run {
             defaultSubCommand.onCommand(this, args)
         }
     }
 
 
-    protected override suspend fun CommandSender.onDefault(rawArgs: Array<out Any>) {
+    protected override suspend fun CommandSender.onDefault(rawArgs: MessageChain) {
         sendMessage(usage)
     }
 

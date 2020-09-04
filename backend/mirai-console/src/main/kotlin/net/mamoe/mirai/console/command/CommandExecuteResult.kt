@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandExecuteResult.CommandExecuteStatus
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
 import kotlin.contracts.contract
 
 /**
@@ -34,7 +35,7 @@ public sealed class CommandExecuteResult {
     public abstract val commandName: String?
 
     /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-    public abstract val args: Array<out Any>?
+    public abstract val args: MessageChain?
 
     // abstract val to allow smart casting
 
@@ -45,7 +46,7 @@ public sealed class CommandExecuteResult {
         /** 尝试执行的指令名 */
         public override val commandName: String,
         /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        public override val args: Array<out Any>
+        public override val args: MessageChain
     ) : CommandExecuteResult() {
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
@@ -63,7 +64,7 @@ public sealed class CommandExecuteResult {
         /** 尝试执行的指令名 */
         public override val commandName: String,
         /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        public override val args: Array<out Any>
+        public override val args: MessageChain
     ) : CommandExecuteResult() {
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.EXECUTION_EXCEPTION] */
         public override val status: CommandExecuteStatus get() = CommandExecuteStatus.EXECUTION_EXCEPTION

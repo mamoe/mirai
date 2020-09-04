@@ -12,6 +12,8 @@ package net.mamoe.mirai.console.internal.command
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.asMessageChain
 import kotlin.math.max
 import kotlin.math.min
 
@@ -144,7 +146,7 @@ internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Arr
 @Throws(CommandExecutionException::class)
 internal suspend fun CommandSender.executeCommandInternal(
     command: Command,
-    args: Array<out Any>,
+    args: MessageChain,
     commandName: String,
     checkPermission: Boolean
 ): CommandExecuteResult {
@@ -182,7 +184,7 @@ internal suspend fun CommandSender.executeCommandInternal(
 ): CommandExecuteResult {
     val command =
         CommandManagerImpl.matchCommand(commandName) ?: return CommandExecuteResult.CommandNotFound(commandName)
-    val args = messages.flattenCommandComponents().dropToTypedArray(1)
+    val args = messages.flattenCommandComponents()
 
-    return executeCommandInternal(command, args, commandName, checkPermission)
+    return executeCommandInternal(command, args.drop(1).asMessageChain(), commandName, checkPermission)
 }

@@ -11,10 +11,10 @@ package net.mamoe.mirai.console.command.java
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.CommandOwner
-import net.mamoe.mirai.console.command.CommandPermission
-import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
+import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.SingleMessage
 
 /**
  * 供 Java 用户继承
@@ -76,9 +76,9 @@ public abstract class JRawCommand(
      */
     @Suppress("INAPPLICABLE_JVM_NAME")
     @JvmName("onCommand")
-    public abstract fun onCommand(sender: CommandSender, args: Array<out Any>)
+    public abstract fun onCommand(sender: CommandSender, args: MessageChain)
 
-    public final override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+    public final override suspend fun CommandSender.onCommand(args: MessageChain) {
         withContext(Dispatchers.IO) { onCommand(this@onCommand, args) }
     }
 }
