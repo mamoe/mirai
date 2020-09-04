@@ -21,8 +21,10 @@
 
 若使用 Java，或要修改 Mirai Console：
 
-- 若使用 Java，必须需使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) （或 `Android Studio`）。
-- 若使用 Java，或要修改 Mirai Console，IDE 需装有 [Kotlin Jvm Blocking Bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge) 插件 (先启动你的 IDE，再点击 [一键安装](https://plugins.jetbrains.com/embeddable/install/14816))
+- 使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) （或 `Android Studio`）。
+- IDE 需装有 [Kotlin Jvm Blocking Bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge) 插件 (先启动你的 IDE，再点击 [一键安装](https://plugins.jetbrains.com/embeddable/install/14816))
+
+若使用 Kotlin，无特别要求。
 
 ### 前置知识
 要学习为 mirai-console 开发原生支持的插件, 需要:
