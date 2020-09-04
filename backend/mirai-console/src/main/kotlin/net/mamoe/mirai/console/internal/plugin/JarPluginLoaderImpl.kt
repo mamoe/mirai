@@ -26,6 +26,7 @@ import net.mamoe.mirai.utils.info
 import java.io.File
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 
 internal object JarPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
@@ -43,7 +44,7 @@ internal object JarPluginLoaderImpl :
     override val dataStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
 
-    internal val classLoaders: MutableList<ClassLoader> = mutableListOf()
+    internal val classLoaders: ConcurrentLinkedQueue<JvmPluginClassLoader> = ConcurrentLinkedQueue()
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
     override val JvmPlugin.description: JvmPluginDescription
@@ -70,7 +71,7 @@ internal object JarPluginLoaderImpl :
         val filePlugins = this.filterNot {
             pluginFileToInstanceMap.containsKey(it)
         }.associateWith {
-            URLClassLoader(arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader)
+            JvmPluginClassLoader(arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader, classLoaders)
         }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
         }.asSequence().findAllInstances().onEach { loaded ->
