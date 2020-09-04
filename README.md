@@ -173,6 +173,9 @@ Demos: [mirai-demos](https://github.com/mamoe/mirai-demos)
 
 您的 `star` 是对我们最大的鼓励(点击项目右上角)
 
+### 加入 mirai 开发组
+若您有意加入 mirai, mirai-console 和相关社区开发, 请 [邮件联系](mailto:support@mamoe.net) (`support@mamoe.net`), 并附加相关开发经验证明.
+
 ## 鸣谢
 
 > [IntelliJ IDEA](https://zh.wikipedia.org/zh-hans/IntelliJ_IDEA) 是一个在各个方面都最大程度地提高开发人员的生产力的 IDE，适用于 JVM 平台语言。
