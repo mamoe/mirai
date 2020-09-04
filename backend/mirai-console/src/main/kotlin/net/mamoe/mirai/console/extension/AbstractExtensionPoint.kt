@@ -63,12 +63,12 @@ public open class ExtensionException : RuntimeException {
     public constructor(cause: Throwable?) : super(cause)
 }
 
-internal inline fun <T : Any> AbstractExtensionPoint<T>.withExtensions(block: T.() -> Unit) {
+internal inline fun <T : Extension> AbstractExtensionPoint<out T>.withExtensions(block: T.() -> Unit) {
     return withExtensions { _ -> block() }
 }
 
 @LowPriorityInOverloadResolution
-internal inline fun <T : Any> AbstractExtensionPoint<T>.withExtensions(block: T.(plugin: Plugin) -> Unit) {
+internal inline fun <T : Extension> AbstractExtensionPoint<out T>.withExtensions(block: T.(plugin: Plugin) -> Unit) {
     contract {
         callsInPlace(block)
     }
@@ -81,7 +81,7 @@ internal inline fun <T : Any> AbstractExtensionPoint<T>.withExtensions(block: T.
     }
 }
 
-internal inline fun <T : Any, E> AbstractExtensionPoint<T>.foldExtensions(
+internal inline fun <T : Extension, E> AbstractExtensionPoint<out T>.foldExtensions(
     initial: E,
     block: (acc: E, extension: T) -> E
 ): E {
@@ -99,7 +99,7 @@ internal inline fun <T : Any, E> AbstractExtensionPoint<T>.foldExtensions(
     return e
 }
 
-internal fun <T : Any> AbstractExtensionPoint<T>.throwExtensionException(
+internal fun <T : Extension> AbstractExtensionPoint<out T>.throwExtensionException(
     extension: T,
     plugin: Plugin,
     throwable: Throwable
@@ -110,11 +110,9 @@ internal fun <T : Any> AbstractExtensionPoint<T>.throwExtensionException(
     )
 }
 
-internal fun <T : Any> AbstractExtensionPoint<T>
-
-internal inline fun <T : Any> AbstractExtensionPoint<T>.useExtensions(block: (extension: T) -> Unit): Unit =
+internal inline fun <T : Extension> AbstractExtensionPoint<T>.useExtensions(block: (extension: T) -> Unit): Unit =
     withExtensions(block)
 
 @LowPriorityInOverloadResolution
-internal inline fun <T : Any> AbstractExtensionPoint<T>.useExtensions(block: (extension: T, plugin: Plugin) -> Unit): Unit =
+internal inline fun <T : Extension> AbstractExtensionPoint<T>.useExtensions(block: (extension: T, plugin: Plugin) -> Unit): Unit =
     withExtensions(block)

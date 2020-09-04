@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.permission
 
+import net.mamoe.mirai.console.extension.useExtensions
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
@@ -16,4 +17,18 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  * [PermissionServiceProvider]
  */
 @ConsoleExperimentalAPI
-public interface PermissionService
+public interface PermissionService {
+
+
+    public companion object : PermissionService {
+        private val instance by lazy {
+            PermissionServiceProvider.useExtensions { }
+        }
+
+    }
+}
+
+public interface proprietary
+
+@ConsoleExperimentalAPI
+public interface Permission
