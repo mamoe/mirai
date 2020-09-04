@@ -54,7 +54,7 @@ internal open class MultiFilePluginDataStorageImpl(
         }
         dir.mkdir()
 
-        val file = dir.resolve(name)
+        val file = dir.resolve("$name.yml")
         if (file.isDirectory) {
             error("Target File $file is occupied by a directory therefore data ${instance::class.qualifiedNameOrTip} can't be saved.")
         }
