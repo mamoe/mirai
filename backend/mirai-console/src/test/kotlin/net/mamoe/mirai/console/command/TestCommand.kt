@@ -27,10 +27,7 @@ import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
 import net.mamoe.mirai.console.initTestEnvironment
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -48,7 +45,7 @@ object TestCompositeCommand : CompositeCommand(
 
 
 object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
-    override suspend fun CommandSender.onCommand(args: Array<out Any>) {
+    override suspend fun CommandSender.onCommand(args: MessageChain) {
         Testing.ok(args)
     }
 }
@@ -100,7 +97,7 @@ internal class TestCommand {
     fun `test flattenCommandArgs`() {
         val result = arrayOf("test", image).flattenCommandComponents().toTypedArray()
 
-        assertEquals("test", result[0])
+        assertEquals("test", result[0].content)
         assertSame(image, result[1])
 
         assertEquals(2, result.size)
