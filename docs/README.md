@@ -30,15 +30,6 @@
 
 ### 后端插件开发基础
 
-- 包结构
-  `net.mamoe.mirai.console.`
-    - `command`：指令模块：[`Command`]
-    - `data`：存储模块：[`PluginData`], [`PluginConfig`], [`PluginDataStorage`]
-    - `event`：Console 实现的事件.
-    - `plugin`：插件模块：[`Plugin`], [`PluginLoader`], [`JvmPlugin`]
-    - `util`：工具类：[`Annotations`], [`BotManager`], [`ConsoleInput`], [`JavaPluginScheduler`]
-    - `internal`：内部实现
-
 - 插件 - [Plugin 模块](Plugins.md)
 - 指令 - [Command 模块](Commands.md)
 - 存储 - [PluginData 模块](PluginData.md)
