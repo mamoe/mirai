@@ -16,6 +16,7 @@
 [`PluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginData.kt
 [`AbstractPluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AbstractPluginData.kt
 [`AutoSavePluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AutoSavePluginData.kt
+[`AutoSavePluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AutoSavePluginConfig.kt
 [`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
 [`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
 [`MultiFilePluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt#L116
@@ -211,11 +212,25 @@ val value by value<MutableMap<Long, List<Int>>>().withEmptyDefault().mapKeys(Bot
 ```
 使用时：
 ```kotlin
-val bot: Bot = TODO()
+val bot: Bot = getBot()
 
 val list: List<Int> = value[bot]
 value[bot] = listOf()
 ```
+
+## [`PluginConfig`]
+
+### [`PluginData`] 与 [`PluginConfig`] 的区别
+- [`PluginData`] 表示插件内部的数据，不应该被用户看到。
+- [`PluginConfig`] 表示插件的配置，用户可以修改这些配置。
+
+### 使用 [`PluginConfig`]
+[`PluginConfig`] 与 [`PluginData`] 用法完全相同。
+
+在上述 [使用 `PluginData`](#使用-plugindata) 的示例中，
+将 [`AutoSavePluginData`] 换为 [`AutoSavePluginConfig`] 即可创建一个配置，而不是数据。
+
+在加载时使用 `configInstance.reload()` 或 `JvmPlugin.reloadPluginConfig(configInstance)`。
 
 ## [`PluginDataHolder`]
 ***注意：这是实验性 API。***
