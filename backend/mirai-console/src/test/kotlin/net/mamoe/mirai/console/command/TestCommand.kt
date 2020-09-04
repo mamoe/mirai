@@ -88,7 +88,7 @@ internal class TestCommand {
 
     @Test
     fun testSimpleExecute() = runBlocking {
-        assertEquals(arrayOf("test").contentToString(), withTesting<Array<String>> {
+        assertEquals("test", withTesting<MessageChain> {
             assertSuccess(TestSimpleCommand.execute(sender, "test"))
         }.contentToString())
     }
@@ -105,23 +105,23 @@ internal class TestCommand {
 
     @Test
     fun testSimpleArgsSplitting() = runBlocking {
-        assertEquals(arrayOf("test", "ttt", "tt").contentToString(), withTesting<Array<String>> {
+        assertEquals(arrayOf("test", "ttt", "tt").joinToString(), withTesting<MessageChain> {
             assertSuccess(TestSimpleCommand.execute(sender, PlainText("test ttt tt")))
-        }.contentToString())
+        }.joinToString())
     }
 
     val image = Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")
 
     @Test
     fun `PlainText and Image args splitting`() = runBlocking {
-        val result = withTesting<Array<Any>> {
+        val result = withTesting<MessageChain> {
             assertSuccess(TestSimpleCommand.execute(sender, buildMessageChain {
                 +"test"
                 +image
                 +"tt"
             }))
         }
-        assertEquals(arrayOf("test", image, "tt").contentToString(), result.contentToString())
+        assertEquals<Any>(arrayOf("test", image, "tt").joinToString(), result.toTypedArray().joinToString())
         assertSame(image, result[1])
     }
 
@@ -233,8 +233,8 @@ internal class TestCommand {
             }
 
             simple.withRegistration {
-                assertEquals("xxx", withTesting { simple.execute(sender, "xxx") })
-                assertEquals("xxx", withTesting { sender.executeCommand("/test xxx") })
+                // assertEquals("xxx", withTesting { simple.execute(sender, "xxx") })
+                assertEquals("xxx", withTesting { println(sender.executeCommand("/test xxx")) })
             }
         }
     }

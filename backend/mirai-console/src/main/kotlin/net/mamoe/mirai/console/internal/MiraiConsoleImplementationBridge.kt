@@ -22,6 +22,7 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
@@ -99,9 +100,11 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         BuiltInCommands.registerAll()
         mainLogger.info { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
+        CommandManager
         CommandManagerImpl.commandListener // start
 
         mainLogger.info { "Loading plugins..." }
+        PluginManager
         PluginManagerImpl.loadEnablePlugins()
         mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
         mainLogger.info { "mirai-console started successfully." }

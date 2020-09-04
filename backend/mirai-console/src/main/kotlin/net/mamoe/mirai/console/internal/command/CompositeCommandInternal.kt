@@ -196,9 +196,10 @@ internal fun String.bakeSubName(): Array<String> = split(' ').filterNot { it.isB
 internal fun Any.flattenCommandComponents(): MessageChain = buildMessageChain {
     when (this@flattenCommandComponents) {
         is PlainText -> this@flattenCommandComponents.content.splitToSequence(' ').filterNot { it.isBlank() }
-            .forEach { +it }
-        is CharSequence -> this@flattenCommandComponents.splitToSequence(' ').filterNot { it.isBlank() }.forEach { +it }
-        is SingleMessage -> +(this@flattenCommandComponents)
+            .forEach { +PlainText(it) }
+        is CharSequence -> this@flattenCommandComponents.splitToSequence(' ').filterNot { it.isBlank() }
+            .forEach { +PlainText(it) }
+        is SingleMessage -> add(this@flattenCommandComponents)
         is Array<*> -> this@flattenCommandComponents.forEach { if (it != null) addAll(it.flattenCommandComponents()) }
         is Iterable<*> -> this@flattenCommandComponents.forEach { if (it != null) addAll(it.flattenCommandComponents()) }
         else -> add(this@flattenCommandComponents.toString())
