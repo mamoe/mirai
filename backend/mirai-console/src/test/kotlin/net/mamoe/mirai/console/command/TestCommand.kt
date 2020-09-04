@@ -196,7 +196,7 @@ internal class TestCommand {
                             return MyClass(raw.toInt())
                         }
 
-                        override fun parse(raw: SingleMessage, sender: CommandSender): MyClass {
+                        override fun parse(raw: MessageContent, sender: CommandSender): MyClass {
                             assertSame(image, raw)
                             return MyClass(2)
                         }

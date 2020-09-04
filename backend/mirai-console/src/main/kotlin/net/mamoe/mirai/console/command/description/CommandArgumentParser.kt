@@ -16,10 +16,8 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
 import kotlin.contracts.InvocationKind
@@ -46,6 +44,7 @@ import kotlin.contracts.contract
  * - [Group]: [ExistingGroupArgumentParser]
  * - [Member]: [ExistingMemberArgumentParser]
  * - [User]: [ExistingUserArgumentParser]
+ * - [Contact]: [ExistingContactArgumentParser]
  *
  *
  * @see SimpleCommand 简单指令
@@ -68,7 +67,7 @@ public interface CommandArgumentParser<out T : Any> {
     public fun parse(raw: String, sender: CommandSender): T
 
     /**
-     * 解析一个字符串为 [T] 类型参数
+     * 解析一个消息内容元素为 [T] 类型参数
      *
      * **实现提示**: 在解析时遇到意料之中的问题, 如无法找到目标群员, 可抛出 [CommandArgumentParserException].
      * 此异常将会被特殊处理, 不会引发一个错误, 而是作为指令调用成功的情况, 将错误信息发送给用户.
@@ -79,7 +78,7 @@ public interface CommandArgumentParser<out T : Any> {
      */
     @Throws(CommandArgumentParserException::class)
     @JvmDefault
-    public fun parse(raw: SingleMessage, sender: CommandSender): T = parse(raw.content, sender)
+    public fun parse(raw: MessageContent, sender: CommandSender): T = parse(raw.content, sender)
 }
 
 /**
@@ -130,31 +129,3 @@ public inline fun CommandArgumentParser<*>.checkArgument(
     }
     if (!condition) illegalArgument(message())
 }
-
-/*
-
-/**
- * 创建匿名 [CommandArgumentParser]
- */
-@Suppress("FunctionName")
-@JvmSynthetic
-public inline fun <T : Any> CommandArgumentParser(
-    crossinline stringParser: CommandArgumentParser<T>.(s: String, sender: CommandSender) -> T
-): CommandArgumentParser<T> = object : CommandArgumentParser<T> {
-    override fun parse(raw: String, sender: CommandSender): T = stringParser(raw, sender)
-}
-
-/**
- * 创建匿名 [CommandArgumentParser]
- */
-@Suppress("FunctionName")
-@JvmSynthetic
-public inline fun <T : Any> CommandArgumentParser(
-    crossinline stringParser: CommandArgumentParser<T>.(s: String, sender: CommandSender) -> T,
-    crossinline messageParser: CommandArgumentParser<T>.(m: SingleMessage, sender: CommandSender) -> T
-): CommandArgumentParser<T> = object : CommandArgumentParser<T> {
-    override fun parse(raw: String, sender: CommandSender): T = stringParser(raw, sender)
-    override fun parse(raw: SingleMessage, sender: CommandSender): T = messageParser(raw, sender)
-}
-
-*/

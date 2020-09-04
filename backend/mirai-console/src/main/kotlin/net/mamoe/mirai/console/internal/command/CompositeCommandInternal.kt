@@ -15,10 +15,8 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
+import net.mamoe.mirai.message.data.*
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -157,7 +155,8 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
                 val rawArg = rawArgs[offset + index]
                 when (rawArg) {
                     is PlainText -> context[param.type]?.parse(rawArg.content, sender)
-                    else -> context[param.type]?.parse(rawArg, sender)
+                    is MessageContent -> context[param.type]?.parse(rawArg, sender)
+                    else -> throw IllegalArgumentException("Illegal Message kind: ${rawArg.kClassQualifiedNameOrTip}")
                 } ?: error("Cannot find a parser for $rawArg")
             }
         }

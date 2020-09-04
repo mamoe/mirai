@@ -16,6 +16,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.content
 
@@ -95,7 +96,7 @@ public object ExistingBotArgumentParser : InternalCommandArgumentParserExtension
         if (raw == "~") sender.inferBotOrFail()
         else raw.findBotOrFail()
 
-    public override fun parse(raw: SingleMessage, sender: CommandSender): Bot =
+    public override fun parse(raw: MessageContent, sender: CommandSender): Bot =
         if (raw is At) {
             Bot.getInstanceOrNull(raw.target)
                 ?: illegalArgument("@ 的对象不是一个 Bot")
@@ -130,7 +131,7 @@ public object ExistingFriendArgumentParser : InternalCommandArgumentParserExtens
         }
     }
 
-    public override fun parse(raw: SingleMessage, sender: CommandSender): Friend {
+    public override fun parse(raw: MessageContent, sender: CommandSender): Friend {
         if (raw is At) {
             checkArgument(sender is MemberCommandSender)
             return sender.inferBotOrFail().getFriendOrNull(raw.target)
@@ -187,7 +188,7 @@ public object ExistingUserArgumentParser : InternalCommandArgumentParserExtensio
         return parseImpl(sender, raw, ExistingMemberArgumentParser::parse, ExistingFriendArgumentParser::parse)
     }
 
-    override fun parse(raw: SingleMessage, sender: CommandSender): User {
+    override fun parse(raw: MessageContent, sender: CommandSender): User {
         return parseImpl(sender, raw, ExistingMemberArgumentParser::parse, ExistingFriendArgumentParser::parse)
     }
 
@@ -231,7 +232,7 @@ public object ExistingContactArgumentParser : InternalCommandArgumentParserExten
         return parseImpl(sender, raw, ExistingUserArgumentParser::parse, ExistingGroupArgumentParser::parse)
     }
 
-    override fun parse(raw: SingleMessage, sender: CommandSender): Contact {
+    override fun parse(raw: MessageContent, sender: CommandSender): Contact {
         return parseImpl(sender, raw, ExistingUserArgumentParser::parse, ExistingGroupArgumentParser::parse)
     }
 
@@ -287,7 +288,7 @@ public object ExistingMemberArgumentParser : InternalCommandArgumentParserExtens
         }
     }
 
-    public override fun parse(raw: SingleMessage, sender: CommandSender): Member {
+    public override fun parse(raw: MessageContent, sender: CommandSender): Member {
         return if (raw is At) {
             checkArgument(sender is MemberCommandSender)
             val bot = sender.inferBotOrFail()
