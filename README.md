@@ -7,6 +7,7 @@
 
 ![Gradle CI](https://github.com/mamoe/mirai/workflows/Gradle%20CI/badge.svg?branch=master)
 [![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg)](https://bintray.com/him188moe/mirai/mirai-core/)
+[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效率机器人库
 
@@ -29,7 +30,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - mirai 不会通过任何方式强制收取费用，或对使用者提出物质条件
 - mirai 由整个开源社区维护，并不是属于某个个体的作品，所有贡献者都享有其作品的著作权。
 ```
-Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻信任何所谓学习, 交流群, 不造谣不传谣不信谣从我做起
+除本页的 Gitter 讨论组外，Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻信任何所谓学习, 交流群, 不造谣不传谣不信谣从我做起
 ```
 
 ### 许可证
@@ -122,6 +123,8 @@ Mirai 在各个平台均没有任何所谓官方交流群或论坛, 请不要轻
 - 使用 `酷Q HTTP API` 的插件将可以在 `mirai` 中通过`CQHTTP Mirai`加载，详见 [cqhttp-mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)
 
 ### 开发者
+
+开发交流：[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 #### 使用 mirai-console 服务端，为 mirai-console 开发插件
 
