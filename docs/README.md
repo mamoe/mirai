@@ -2,6 +2,39 @@
 
 欢迎来到 mirai-console 开发文档!
 
+## 目录
+
+- **[准备工作](#准备工作)**
+- **[启动 Console](#Run.md)**
+
+### 后端插件开发基础
+
+- 插件 - [Plugin 模块](Plugins.md)
+- 指令 - [Command 模块](Commands.md)
+- 存储 - [PluginData 模块](PluginData.md)
+- 权限 - [Permission 模块](Permissions.md)
+
+### 后端插件开发进阶
+
+- 扩展 - [Extension 模块和扩展点](Extensions.md)
+- 扩展 - [实现 PluginLoader](PluginLoader.md)
+- 扩展 - [实现 PermissionService](PermissionService.md)
+
+### 实现前端
+- [FrontEnd](FrontEnd.md)
+
+[`Plugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/Plugin.kt
+[`Annotations`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/Annotations.kt
+[`PluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginData.kt
+[`JavaPluginScheduler`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
+[`JvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPlugin.kt
+[`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
+[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginLoader.kt
+[`ConsoleInput`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/ConsoleInput.kt
+[`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
+[`BotManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/BotManager.kt
+[`Command`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/Command.kt
+
 ## 准备工作
 ***如果跳过本节内容，你很可能遇到无法解决的问题。***
 
@@ -42,36 +75,6 @@
   - **[Java 中调用 Kotlin](https://www.kotlincn.net/docs/reference/java-to-kotlin-interop.html)**
 - 对于 Java 使用者，请阅读 [Java 用户的使用指南](#java-用户的使用指南)，[在 Java 使用 Mirai Console 中的 Kotlin `suspend` 函数](#在-java-使用-mirai-console-中的-kotlin-suspend-函数)
 - 对于 Kotlin 使用者，请熟知 [Kotlin `1.4` 版本带来的新特性](#mirai-console-使用的-kotlin-14-版本的新特性)
-
-## 目录
-
-### 后端插件开发基础
-
-- 插件 - [Plugin 模块](Plugins.md)
-- 指令 - [Command 模块](Commands.md)
-- 存储 - [PluginData 模块](PluginData.md)
-- 权限 - [Permission 模块](Permissions.md)
-
-### 后端插件开发进阶
-
-- 扩展 - [Extension 模块和扩展点](Extensions.md)
-- 扩展 - [实现 PluginLoader](PluginLoader.md)
-- 扩展 - [实现 PermissionService](PermissionService.md)
-
-### 实现前端
-- [FrontEnd](FrontEnd.md)
-
-[`Plugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/Plugin.kt
-[`Annotations`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/Annotations.kt
-[`PluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginData.kt
-[`JavaPluginScheduler`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
-[`JvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPlugin.kt
-[`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
-[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginLoader.kt
-[`ConsoleInput`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/ConsoleInput.kt
-[`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
-[`BotManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/BotManager.kt
-[`Command`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/Command.kt
 
 
 ## 附录
