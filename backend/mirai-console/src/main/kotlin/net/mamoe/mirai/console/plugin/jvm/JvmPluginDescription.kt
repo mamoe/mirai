@@ -49,3 +49,40 @@ public data class SimpleJvmPluginDescription
         require(!name.contains(':')) { "':' is forbidden in plugin name" }
     }
 }
+
+
+@Deprecated(
+    "JvmPluginDescription 没有构造器. 请使用 SimpleJvmPluginDescription.",
+    replaceWith = ReplaceWith(
+        "SimpleJvmPluginDescription(name, version, author, info, dependencies, kind)",
+        "net.mamoe.mirai.console.plugin.jvm.SimpleJvmPluginDescription"
+    ),
+    level = DeprecationLevel.WARNING
+)
+@Suppress("FunctionName")
+public fun JvmPluginDescription(
+    name: String,
+    version: Semver,
+    author: String = "",
+    info: String = "",
+    dependencies: List<PluginDependency> = listOf(),
+    kind: PluginKind = PluginKind.NORMAL
+): JvmPluginDescription = SimpleJvmPluginDescription(name, version, author, info, dependencies, kind)
+
+@Deprecated(
+    "JvmPluginDescription 没有构造器. 请使用 SimpleJvmPluginDescription.",
+    replaceWith = ReplaceWith(
+        "SimpleJvmPluginDescription(name, version, author, info, dependencies, kind)",
+        "net.mamoe.mirai.console.plugin.jvm.SimpleJvmPluginDescription"
+    ),
+    level = DeprecationLevel.WARNING
+)
+@Suppress("FunctionName")
+public fun JvmPluginDescription(
+    name: String,
+    version: String,
+    author: String = "",
+    info: String = "",
+    dependencies: List<PluginDependency> = listOf(),
+    kind: PluginKind = PluginKind.NORMAL
+): JvmPluginDescription = SimpleJvmPluginDescription(name, version, author, info, dependencies, kind)
