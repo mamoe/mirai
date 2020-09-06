@@ -15,7 +15,9 @@ import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
@@ -24,6 +26,8 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.extension.useExtensions
+import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
@@ -109,16 +113,18 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
         mainLogger.info { "mirai-console started successfully." }
 
-        for ((id, password) in AutoLoginConfig.plainPasswords) {
-            mainLogger.info { "Auto-login $id" }
-            MiraiConsole.addBot(id, password)
+        runBlocking {
+            for ((id, password) in AutoLoginConfig.plainPasswords) {
+                mainLogger.info { "Auto-login $id" }
+                MiraiConsole.addBot(id, password).alsoLogin()
+            }
+
+            for ((id, password) in AutoLoginConfig.md5Passwords) {
+                mainLogger.info { "Auto-login $id" }
+                MiraiConsole.addBot(id, password).alsoLogin()
+            }
         }
 
-        for ((id, password) in AutoLoginConfig.md5Passwords) {
-            mainLogger.info { "Auto-login $id" }
-            MiraiConsole.addBot(id, password)
-        }
-
-        // Only for initialize
+        PostStartupExtension.useExtensions { it() }
     }
 }
