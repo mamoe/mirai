@@ -21,6 +21,8 @@ import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.PermissionIdentifierNamespace
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
 import net.mamoe.mirai.console.plugin.ResourceContainer
@@ -41,8 +43,9 @@ import net.mamoe.mirai.utils.MiraiLogger
  * @see JvmPlugin 支持文件系统扩展
  * @see ResourceContainer 支持资源获取 (如 Jar 中的资源文件)
  */
+@OptIn(ExperimentalPermission::class)
 public interface JvmPlugin : Plugin, CoroutineScope,
-    PluginFileExtensions, ResourceContainer, AutoSavePluginDataHolder {
+    PluginFileExtensions, ResourceContainer, AutoSavePluginDataHolder, PermissionIdentifierNamespace {
 
     /** 日志 */
     public val logger: MiraiLogger

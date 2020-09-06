@@ -32,6 +32,8 @@ import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.Permissible
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
@@ -132,7 +134,8 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * @see toCommandSender
  * @see asCommandSender
  */
-public interface CommandSender : CoroutineScope {
+@OptIn(ExperimentalPermission::class)
+public interface CommandSender : CoroutineScope, Permissible {
     /**
      * 与这个 [CommandSender] 相关的 [Bot].
      * 当通过控制台执行时为 `null`.
@@ -157,6 +160,10 @@ public interface CommandSender : CoroutineScope {
      * [User.nameCardOrNick] 或 [ConsoleCommandSender.NAME]
      */
     public val name: String
+
+    @ExperimentalPermission
+    override val identifier: String
+        get() = user?.id?.toString() ?: bot?.id?.toString() ?: error("Internal error: bot user and bot are null")
 
     /**
      * 立刻发送一条消息.
