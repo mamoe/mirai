@@ -105,7 +105,7 @@ internal fun <T : Extension> AbstractExtensionPoint<out T>.throwExtensionExcepti
     throwable: Throwable
 ) {
     throw ExtensionException(
-        "Exception while executing extension ${extension.kClassQualifiedNameOrTip} from ${plugin.name}, registered for ${this.type.qualifiedName}",
+        "Exception while executing extension ${extension.kClassQualifiedNameOrTip} provided by plugin '${plugin.name}', registered for ${this.type.qualifiedName}",
         throwable
     )
 }
