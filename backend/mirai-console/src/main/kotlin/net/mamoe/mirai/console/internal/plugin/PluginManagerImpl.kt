@@ -159,6 +159,13 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
         }
     }
 
+    @kotlin.jvm.Throws(PluginLoadException::class)
+    internal fun checkPluginDescription(description: PluginDescription) {
+        when (description.name.toLowerCase()) {
+            "main", "console", "plugin", "config", "data" -> throw PluginLoadException("Plugin name '${description.name}' is forbidden.")
+        }
+    }
+
     /**
      * @return [builtInLoaders] 可以加载的插件. 已经完成了 [PluginLoader.load], 但没有 [PluginLoader.enable]
      */
@@ -171,6 +178,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
                 .onEach { (loader, descriptions) ->
                     loader as PluginLoader<Plugin, PluginDescription>
 
+                    descriptions.forEach(PluginManagerImpl::checkPluginDescription)
                     descriptions.filter { it.kind == PluginKind.LOADER }.sortByDependencies().loadAndEnableAllInOrder()
                 }
                 .flatMap { it.second.asSequence() }

@@ -15,6 +15,8 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.internal.data.mkdir
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.Identifier
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
@@ -41,7 +43,13 @@ internal abstract class JvmPluginInternal(
     final override var isEnabled: Boolean = false
 
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
-    override fun getResourceAsStream(path: String): InputStream? = resourceContainerDelegate.getResourceAsStream(path)
+    final override fun getResourceAsStream(path: String): InputStream? =
+        resourceContainerDelegate.getResourceAsStream(path)
+
+    @OptIn(ExperimentalPermission::class)
+    override fun allocate(identifierString: String): Identifier {
+        return Identifier(description.name)
+    }
 
     // region JvmPlugin
     final override val logger: MiraiLogger by lazy {
@@ -62,11 +70,11 @@ internal abstract class JvmPluginInternal(
         dataFolderPath.toFile()
     }
 
-    override val configFolderPath: Path by lazy {
+    final override val configFolderPath: Path by lazy {
         PluginManager.pluginsConfigPath.resolve(description.name).apply { mkdir() }
     }
 
-    override val configFolder: File by lazy {
+    final override val configFolder: File by lazy {
         configFolderPath.toFile()
     }
 
