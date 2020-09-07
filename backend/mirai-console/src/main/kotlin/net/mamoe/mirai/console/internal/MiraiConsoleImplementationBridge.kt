@@ -34,8 +34,8 @@ import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.permission.ExperimentalPermission
-import net.mamoe.mirai.console.permission.HotDeploymentSupportPermissionService
 import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.StorablePermissionService
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -102,23 +102,27 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
         }
 
-        mainLogger.info { "Reloading configurations..." }
+        mainLogger.verbose { "Loading configurations..." }
         ConsoleDataScope.reloadAll()
 
-        PermissionService // init
-        if (PermissionService.INSTANCE is HotDeploymentSupportPermissionService<*>) {
-
+        mainLogger.verbose { "Loading PermissionService..." }
+        PermissionService.INSTANCE.let { ps ->
+            if (ps is StorablePermissionService<*>) {
+                ConsoleDataScope.addAndReloadConfig(ps.config)
+                mainLogger.verbose { "Reloaded PermissionService settings." }
+            }
         }
 
+        mainLogger.verbose { "Loading built-in commands..." }
         BuiltInCommands.registerAll()
-        mainLogger.info { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
+        mainLogger.verbose { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
         CommandManager
         CommandManagerImpl.commandListener // start
 
-        mainLogger.info { "Loading plugins..." }
+        mainLogger.verbose { "Loading plugins..." }
         PluginManager
         PluginManagerImpl.loadEnablePlugins()
-        mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
+        mainLogger.verbose { "${PluginManager.plugins.size} plugin(s) loaded." }
         mainLogger.info { "mirai-console started successfully." }
 
         runBlocking {
