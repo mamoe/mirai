@@ -44,7 +44,7 @@ public abstract class PermissionGroup(
             apply { this.permissionChecker = permissionChecker }
 
         public fun build(property: KProperty<*>): Permission {
-            return PermissionService.register(
+            return PermissionService.INSTANCE.register(
                 identifierNamespace.permissionIdentifier(property.name),
                 description,
                 basePermission

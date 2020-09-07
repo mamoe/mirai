@@ -161,10 +161,6 @@ public interface CommandSender : CoroutineScope, Permissible {
      */
     public val name: String
 
-    @ExperimentalPermission
-    override val identifier: String
-        get() = user?.id?.toString() ?: bot?.id?.toString() ?: error("Internal error: bot user and bot are null")
-
     /**
      * 立刻发送一条消息.
      *

@@ -33,6 +33,9 @@ import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.HotDeploymentSupportPermissionService
+import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -80,7 +83,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     override fun createLogger(identity: String?): MiraiLogger = instance.createLogger(identity)
 
-    @OptIn(ConsoleExperimentalAPI::class)
+    @OptIn(ConsoleExperimentalAPI::class, ExperimentalPermission::class)
     internal fun doStart() {
         val buildDateFormatted =
             buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -101,6 +104,11 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         mainLogger.info { "Reloading configurations..." }
         ConsoleDataScope.reloadAll()
+
+        PermissionService // init
+        if (PermissionService.INSTANCE is HotDeploymentSupportPermissionService<*>) {
+
+        }
 
         BuiltInCommands.registerAll()
         mainLogger.info { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }

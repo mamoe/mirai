@@ -11,10 +11,12 @@
 
 package net.mamoe.mirai.console.permission
 
+/**
+ *
+ * 注意: 请不要自主实现 [Permissible]
+ */
 @ExperimentalPermission
-public interface Permissible {
-    public val identifier: String
-}
+public interface Permissible
 
 @ExperimentalPermission
 public inline fun Permissible.hasPermission(permission: Permission): Boolean =

@@ -11,17 +11,19 @@
 
 package net.mamoe.mirai.console.permission
 
-import net.mamoe.mirai.console.data.AutoSavePluginConfig
-import net.mamoe.mirai.console.data.Value
-import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.KClass
 
 /**
  * [PermissionServiceProvider]
  */
 @ExperimentalPermission
 public interface PermissionService<P : Permission> {
+    @ExperimentalPermission
+    public val permissionType: KClass<P>
+
+    @Throws(DuplicatedRegistrationException::class)
     public fun register(
         identifier: PermissionIdentifier,
         description: String,
@@ -30,99 +32,73 @@ public interface PermissionService<P : Permission> {
 
     public operator fun get(identifier: PermissionIdentifier): P?
 
-
-    public fun getGrantedPermissions(permissible: Permissible): List<PermissionIdentifier>
+    public fun getGrantedPermissions(permissible: Permissible): Sequence<P>
 
 
     public fun testPermission(permissible: Permissible, permission: P): Boolean =
-        permissible.getGrantedPermissions().any { it == permission.identifier }
+        permissible.getGrantedPermissions().any { it == permission }
 
+    public companion object {
+        private val builtIn: PermissionService<out Permission> get() = AllGrantPermissionService
 
-    public companion object INSTANCE : PermissionService<Permission> {
-        private val builtIn: PermissionService<out Permission> get() = TODO("PS IMPL")
-
-        @Suppress("UNCHECKED_CAST")
-        private val instance by lazy {
-            PermissionServiceProvider.getExtensions().singleOrNull()?.extension?.instance
-                ?: builtIn  // TODO: 2020/9/4 ask for further choice
-                        as PermissionService<Permission>
+        @get:JvmName("getInstance")
+        @JvmStatic
+        public val INSTANCE: PermissionService<out Permission> by lazy {
+            PermissionServiceProvider.getExtensions().singleOrNull()?.extension?.instance ?: builtIn
+            // TODO: 2020/9/4 ExtensionSelector
         }
-
-        override fun register(
-            identifier: PermissionIdentifier,
-            description: String,
-            base: PermissionIdentifier?
-        ): Permission = instance.register(identifier, description, base)
-
-        override fun get(identifier: PermissionIdentifier): Permission? = instance[identifier]
-        override fun getGrantedPermissions(permissible: Permissible): List<PermissionIdentifier> =
-            instance.getGrantedPermissions(permissible)
     }
 }
 
 @ExperimentalPermission
-public interface HotDeploymentSupportPermissionService<P : Permission> : PermissionService<P> {
-    public fun grant(permissible: Permissible, permission: P)
-    public fun deny(permissible: Permissible, permission: P)
-}
+public abstract class AbstractPermissionService<P : Permission> : PermissionService<P> {
+    protected val all: MutableMap<PermissionIdentifier, P> = ConcurrentHashMap<PermissionIdentifier, P>()
 
-@ExperimentalPermission
-public open class HotDeploymentNotSupportedException : Exception {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
-
-
-/**
- * [PermissionServiceProvider]
- */
-@ExperimentalPermission
-public abstract class AbstractPermissionService<P : Permission> : AutoSavePluginConfig(), PermissionService<P> {
-    @JvmField
-    protected val permissions: ConcurrentLinkedQueue<P> = ConcurrentLinkedQueue()
-
-    @JvmField
-    protected val grantedPermissionMap: Value<MutableMap<String, MutableList<PermissionIdentifier>>> = value()
-
-    public override fun getGrantedPermissions(permissible: Permissible): List<PermissionIdentifier> =
-        grantedPermissionMap.value[permissible.identifier].orEmpty()
-
-    public override operator fun get(identifier: PermissionIdentifier): P? =
-        permissions.find { it.identifier == identifier }
-
-    public override fun testPermission(permissible: Permissible, permission: P): Boolean =
-        permissible.getGrantedPermissions().any { it == permission.identifier }
-}
-
-@ExperimentalPermission
-public inline fun Permissible.getGrantedPermissions(): List<PermissionIdentifier> =
-    PermissionService.run { this.getGrantedPermissions(this@getGrantedPermissions) }
-
-@ExperimentalPermission
-public inline fun Permission.testPermission(permissible: Permissible): Boolean =
-    PermissionService.run { testPermission(permissible, this@testPermission) }
-
-@ExperimentalPermission
-public inline fun PermissionIdentifier.testPermission(permissible: Permissible): Boolean {
-    val p = PermissionService[this] ?: return false
-    return p.testPermission(permissible)
-}
-
-@OptIn(ExperimentalPermission::class)
-private class PermissionServiceImpl : AbstractPermissionService<PermissionServiceImpl.PermissionImpl>() {
-    private val instances: ConcurrentLinkedQueue<PermissionImpl> = ConcurrentLinkedQueue()
-
-    private class PermissionImpl(
-        override val identifier: PermissionIdentifier,
-        override val description: String,
-        override val base: PermissionIdentifier?
-    ) : Permission
+    protected abstract fun createPermission(
+        identifier: PermissionIdentifier,
+        description: String,
+        base: PermissionIdentifier?
+    ): P
 
     override fun register(
         identifier: PermissionIdentifier,
         description: String,
         base: PermissionIdentifier?
-    ): PermissionImpl = PermissionImpl(identifier, description, base)
+    ): P {
+        val new = createPermission(identifier, description, base)
+        if (all.putIfAbsent(identifier, new) != null) {
+            throw DuplicatedRegistrationException("Duplicated Permission registry: ${all[identifier]}")
+        }
+        return new
+    }
+
+    override fun get(identifier: PermissionIdentifier): P? = all[identifier]
+    override fun getGrantedPermissions(permissible: Permissible): Sequence<P> = all.values.asSequence()
+}
+
+@ExperimentalPermission
+public inline fun Permissible.getGrantedPermissions(): Sequence<Permission> =
+    PermissionService.INSTANCE.run {
+        getGrantedPermissions(this@getGrantedPermissions)
+    }
+
+
+@ExperimentalPermission
+public inline fun Permission.testPermission(permissible: Permissible): Boolean =
+    PermissionService.INSTANCE.run {
+        require(permissionType.isInstance(this@testPermission)) {
+            "Custom-constructed Permission instance is not allowed. " +
+                    "Please obtain Permission from PermissionService.INSTANCE.register or PermissionService.INSTANCE.get"
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        this as PermissionService<Permission>
+
+        testPermission(permissible, this@testPermission)
+    }
+
+@ExperimentalPermission
+public inline fun PermissionIdentifier.testPermission(permissible: Permissible): Boolean {
+    val p = PermissionService.INSTANCE[this] ?: return false
+    return p.testPermission(permissible)
 }

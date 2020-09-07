@@ -9,15 +9,34 @@
 
 package net.mamoe.mirai.console.permission
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.internal.data.map
 
 
-@Serializable
 @ExperimentalPermission
 public data class PermissionIdentifier(
     public val namespace: String,
     public val id: String
-)
+) {
+    init {
+        require(!namespace.contains(':')) {
+            "':' is not allowed in namespace"
+        }
+        require(!id.contains(':')) {
+            "':' is not allowed in id"
+        }
+    }
+
+    @Serializer(forClass = PermissionIdentifier::class)
+    public object AsClassSerializer
+
+    public object AsStringSerializer : KSerializer<PermissionIdentifier> by String.serializer().map(
+        serializer = { it.namespace + ":" + it.id },
+        deserializer = { it.split(':').let { (namespace, id) -> PermissionIdentifier(namespace, id) } }
+    )
+}
 
 @ExperimentalPermission
 public interface PermissionIdentifierNamespace {

@@ -10,22 +10,8 @@
 package net.mamoe.mirai.console.permission
 
 
-/**
- * 一个权限节点
- */
 @ExperimentalPermission
-public interface Permission {
-    public val identifier: PermissionIdentifier
-    public val description: String
-    public val base: PermissionIdentifier?
+public interface HotDeploymentSupportPermissionService<P : Permission> : PermissionService<P> {
+    public fun grant(permissible: Permissible, permission: P)
+    public fun deny(permissible: Permissible, permission: P)
 }
-
-/**
- * [Permission] 的简单实现
- */
-@ExperimentalPermission
-public open class PermissionImpl(
-    override val identifier: PermissionIdentifier,
-    override val description: String,
-    override val base: PermissionIdentifier?
-) : Permission
