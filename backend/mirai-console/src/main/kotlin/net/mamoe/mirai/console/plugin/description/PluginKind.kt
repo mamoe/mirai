@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.plugin.description
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.extension.Extension
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
@@ -26,7 +25,6 @@ import net.mamoe.mirai.console.plugin.description.PluginKind.*
  *
  * 依赖解决过程与插件类型有很大关联. 在一个较早的阶段, 只会解决在此阶段加载的插件. 意味着 [LOADER] 不允许依赖一个 [NORMAL] 类型的插件.
  */
-@Serializable(with = PluginKind.AsStringSerializer::class)
 public enum class PluginKind {
     /** 表示此插件提供一个 [PluginLoader], 也可以同时提供其他 [Extension] 应最早被加载 */
     LOADER,
