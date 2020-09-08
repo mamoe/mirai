@@ -26,7 +26,7 @@ object Versions {
         const val dokka = "0.10.1"
     }
 
-    val blockingBridge = "1.0.2"
+    val blockingBridge = "1.0.5"
 
     object Android {
         const val androidGradlePlugin = "3.5.3"

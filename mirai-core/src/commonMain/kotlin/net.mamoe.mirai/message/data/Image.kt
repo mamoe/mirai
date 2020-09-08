@@ -22,6 +22,7 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.CodableMessage
@@ -192,6 +193,7 @@ public fun Image(imageId: String): OfflineImage = when {
  * @return 原图 HTTP 下载链接 (非 HTTPS)
  * @throws IllegalStateException 当无任何 [Bot] 在线时抛出 (因为无法获取相关协议)
  */
+@JvmBlockingBridge
 @JvmSynthetic
 public suspend fun Image.queryUrl(): String {
     @Suppress("DEPRECATION")
