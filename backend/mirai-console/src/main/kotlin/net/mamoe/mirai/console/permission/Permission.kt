@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.console.permission
 
+import kotlinx.serialization.Serializable
+
 
 /**
  * 一个权限节点
@@ -23,8 +25,9 @@ public interface Permission {
 /**
  * [Permission] 的简单实现
  */
+@Serializable
 @ExperimentalPermission
-public open class PermissionImpl(
+public class PermissionImpl(
     override val id: PermissionId,
     override val description: String,
     override val base: PermissionId?
