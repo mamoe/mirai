@@ -15,10 +15,6 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
  * 表示一个扩展.
- *
- * Console 许多不容易通过
- *
- * @see ExtensionWithConfig
  */
 @ConsoleExperimentalAPI
 public interface Extension
