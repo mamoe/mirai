@@ -11,15 +11,48 @@
 
 package net.mamoe.mirai.console.extension
 
+import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import java.util.*
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
+
+@ConsoleExperimentalAPI
+public interface ExtensionPoint<T : Extension> {
+    public val type: KClass<T>
+
+    public fun registerExtension(plugin: Plugin, extension: T)
+    public fun getExtensions(): Set<ExtensionRegistry<T>>
+
+    public companion object {
+        @JvmStatic
+        @JvmSynthetic
+        @ConsoleExperimentalAPI
+        public inline fun <reified T : Extension> ExtensionPoint<*>.isFor(exactType: Boolean = false): Boolean {
+            return if (exactType) {
+                T::class == type
+            } else T::class.isSubclassOf(type)
+        }
+    }
+}
+
+@ConsoleExperimentalAPI
+public interface SingletonExtensionPoint<T : SingletonExtension<*>> : ExtensionPoint<T> {
+    public companion object {
+        @JvmStatic
+        @ConsoleExperimentalAPI
+        public fun <T : SingletonExtension<*>> SingletonExtensionPoint<T>.findSingleton(): T? {
+            return SingletonExtensionSelector.selectSingleton(type, this.getExtensions())
+        }
+    }
+}
 
 /**
  * 表示一个扩展点
@@ -27,26 +60,28 @@ import kotlin.reflect.KClass
 @ConsoleExperimentalAPI
 public open class AbstractExtensionPoint<T : Extension>(
     @ConsoleExperimentalAPI
-    public val type: KClass<T>
-) {
-
-    @ConsoleExperimentalAPI
-    public data class ExtensionRegistry<T>(
-        public val plugin: Plugin,
-        public val extension: T
-    )
+    public override val type: KClass<T>
+) : ExtensionPoint<T> {
+    init {
+        @Suppress("LeakingThis")
+        allExtensionPoints.add(this)
+    }
 
     private val instances: MutableSet<ExtensionRegistry<T>> = CopyOnWriteArraySet()
 
-    @Synchronized
     @ConsoleExperimentalAPI
-    public fun registerExtension(plugin: Plugin, extension: T) {
+    public override fun registerExtension(plugin: Plugin, extension: T) {
         // require(plugin.isEnabled) { "Plugin $plugin must be enabled before registering an extension." }
+        requireNotNull(extension::class.qualifiedName) { "Extension must not be an anonymous object" }
         instances.add(ExtensionRegistry(plugin, extension))
     }
 
-    @Synchronized
-    internal fun getExtensions(): Set<ExtensionRegistry<T>> = instances
+    public override fun getExtensions(): Set<ExtensionRegistry<T>> = Collections.unmodifiableSet(instances)
+
+    internal companion object {
+        @ConsoleExperimentalAPI
+        internal val allExtensionPoints: MutableList<AbstractExtensionPoint<*>> = mutableListOf()
+    }
 }
 
 

@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.permission
 
+import net.mamoe.mirai.console.extension.SingletonExtensionPoint.Companion.findSingleton
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.permission.PermissibleIdentifier.Companion.grantedWith
 import java.util.concurrent.CopyOnWriteArrayList
@@ -49,13 +50,10 @@ public interface PermissionService<P : Permission> {
     public fun deny(permissibleIdentifier: PermissibleIdentifier, permission: P)
 
     public companion object {
-        private val builtIn: PermissionService<out Permission> get() = BuiltInPermissionService
-
         @get:JvmName("getInstance")
         @JvmStatic
         public val INSTANCE: PermissionService<out Permission> by lazy {
-            PermissionServiceProvider.getExtensions().singleOrNull()?.extension?.instance ?: builtIn
-            // TODO: 2020/9/4 ExtensionSelector
+            PermissionServiceProvider.findSingleton()?.instance ?: BuiltInPermissionService
         }
     }
 }

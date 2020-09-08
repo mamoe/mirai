@@ -10,8 +10,16 @@
 package net.mamoe.mirai.console.permission
 
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.PluginConfig
+import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
+import net.mamoe.mirai.console.data.value
+import net.mamoe.mirai.console.data.valueFromKType
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.KTypeProjection
+import kotlin.reflect.KVariance
 import kotlin.reflect.full.createType
 
 
@@ -72,8 +80,8 @@ public object AllDenyPermissionService : PermissionService<PermissionImpl> {
 }
 
 @ExperimentalPermission
-internal object BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
-    StorablePermissionService<PermissionImpl> {
+public object BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
+    PermissionService<PermissionImpl> {
 
     @ExperimentalPermission
     override val permissionType: KClass<PermissionImpl>
@@ -87,10 +95,43 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
     override fun createPermission(id: PermissionId, description: String, base: PermissionId?): PermissionImpl =
         PermissionImpl(id, description, base)
 
-    override val config: StorablePermissionService.ConcurrentSaveData<PermissionImpl> =
-        StorablePermissionService.ConcurrentSaveData(
+    internal val config: ConcurrentSaveData<PermissionImpl> =
+        ConcurrentSaveData(
             PermissionImpl::class.createType(),
             "PermissionService",
             AutoSavePluginConfig()
         )
+
+    @Suppress("RedundantVisibilityModifier")
+    @ExperimentalPermission
+    internal class ConcurrentSaveData<P : Permission> private constructor(
+        permissionType: KType,
+        public override val saveName: String,
+        delegate: PluginConfig,
+        @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?
+    ) : PluginConfig by delegate {
+        public val permissions: MutableMap<PermissionId, P>
+                by valueFromKType<MutableMap<PermissionId, P>>(
+                    MutableMap::class.createType(
+                        listOf(
+                            KTypeProjection(KVariance.INVARIANT, PermissionId::class.createType()),
+                            KTypeProjection(KVariance.INVARIANT, permissionType),
+                        )
+                    ),
+                    ConcurrentHashMap()
+                )
+
+        public val grantedPermissionMap: MutableMap<PermissionId, List<PermissibleIdentifier>>
+                by value<MutableMap<PermissionId, List<PermissibleIdentifier>>>(ConcurrentHashMap())
+                    .withDefault { CopyOnWriteArrayList() }
+
+        public companion object {
+            @JvmStatic
+            public operator fun <P : Permission> invoke(
+                permissionType: KType,
+                saveName: String,
+                delegate: PluginConfig,
+            ): ConcurrentSaveData<P> = ConcurrentSaveData(permissionType, saveName, delegate, null)
+        }
+    }
 }

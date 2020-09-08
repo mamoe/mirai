@@ -5,7 +5,6 @@ package net.mamoe.mirai.console.extensions
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extension.AbstractExtensionPoint
 import net.mamoe.mirai.console.extension.FunctionExtension
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.BotConfiguration
 
 /**
@@ -13,7 +12,6 @@ import net.mamoe.mirai.utils.BotConfiguration
  *
  * @see MiraiConsole.addBot
  */
-@ConsoleExperimentalAPI
 public interface BotConfigurationAlterer : FunctionExtension {
 
     /**

@@ -28,14 +28,15 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extension.useExtensions
 import net.mamoe.mirai.console.extensions.PostStartupExtension
+import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.permission.StorablePermissionService
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -135,10 +136,12 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
         }
 
+        SingletonExtensionSelector // init
+
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
             PermissionService.INSTANCE.let { ps ->
-                if (ps is StorablePermissionService<*>) {
+                if (ps is BuiltInPermissionService) {
                     ConsoleDataScope.addAndReloadConfig(ps.config)
                     mainLogger.verbose { "Reloaded PermissionService settings." }
                 }
