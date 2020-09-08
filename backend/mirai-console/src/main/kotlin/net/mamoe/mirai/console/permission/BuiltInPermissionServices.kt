@@ -79,7 +79,10 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
     override val permissions: MutableMap<PermissionId, PermissionImpl> get() = config.permissions
-    override val grantedPermissionsMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>> get() = config.grantedPermissionMap
+
+    @Suppress("UNCHECKED_CAST")
+    override val grantedPermissionsMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
+        get() = config.grantedPermissionMap as MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
 
     override fun createPermission(id: PermissionId, description: String, base: PermissionId?): PermissionImpl =
         PermissionImpl(id, description, base)

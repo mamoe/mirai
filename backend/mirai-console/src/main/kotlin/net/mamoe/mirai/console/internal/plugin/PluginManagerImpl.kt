@@ -113,48 +113,58 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
         )
     }
 
-    /**
-     * STEPS:
-     * 1. 遍历插件列表, 使用 [builtInLoaders] 加载 [PluginKind.LOADER] 类型的插件
-     * 2. [启动][PluginLoader.enable] 所有 [PluginKind.LOADER] 的插件
-     * 3. 使用内建和所有插件提供的 [PluginLoader] 加载全部除 [PluginKind.LOADER] 外的插件列表.
-     * 4. 解决依赖并排序
-     * 5. 依次 [PluginLoader.load]
-     * 但不 [PluginLoader.enable]
-     *
-     * @return [builtInLoaders] 可以加载的插件. 已经完成了 [PluginLoader.load], 但没有 [PluginLoader.enable]
-     */
-    @Suppress("UNCHECKED_CAST")
-    @Throws(PluginMissingDependencyException::class)
-    internal fun loadEnablePlugins() {
-        loadAndEnableLoaderProviders()
-        loadPluginLoaderProvidedByPlugins()
+    internal class PluginLoadSession(
+        val allKindsOfPlugins: List<Pair<PluginLoader<*, *>, List<PluginDescriptionWithLoader>>>
+    )
+
+    // Phase #2
+    internal fun scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider(): PluginLoadSession {
+        return PluginLoadSession(loadersLock.withLock { _pluginLoaders.listAllPlugins() })
+    }
+
+    // Phase #0
+    internal fun loadEnablePluginProviderPlugins() {
+        loadAndEnableLoaderProvidersUsingBuiltInLoaders()
+    }
+
+    // Phase #3
+    internal fun loadEnableHighPriorityExtensionPlugins(session: PluginLoadSession): Int {
         loadersLock.withLock {
-            _pluginLoaders.listAllPlugins().flatMap { it.second }
-                .also {
-                    logger.debug("All plugins: ${it.joinToString { (_, desc, _) -> desc.name }}")
-                }
+            session.allKindsOfPlugins.flatMap { it.second }
+                .filter { it.kind == PluginKind.HIGH_PRIORITY_EXTENSIONS }
                 .sortByDependencies()
-                .also {
-                    logger.debug("Sorted plugins: ${it.joinToString { (_, desc, _) -> desc.name }}")
-                }
-                .loadAndEnableAllInOrder()
+                .also { it.loadAndEnableAllInOrder() }
+                .let { return it.size }
         }
     }
 
-    private fun loadPluginLoaderProvidedByPlugins() {
+    // Phase #4
+    internal fun loadEnableNormalPlugins(session: PluginLoadSession): Int {
         loadersLock.withLock {
-            PluginLoaderProvider.useExtensions {
-                logger.info { "Loaded PluginLoader ${it.instance} from $" }
-                _pluginLoaders.add(it.instance)
+            session.allKindsOfPlugins.flatMap { it.second }
+                .filter { it.kind == PluginKind.NORMAL }
+                .sortByDependencies()
+                .also { it.loadAndEnableAllInOrder() }
+                .let { return it.size }
+        }
+    }
+
+    // Phase #1
+    internal fun loadPluginLoaderProvidedByPlugins() {
+        loadersLock.withLock {
+            PluginLoaderProvider.useExtensions { ext, plugin ->
+                logger.info { "Loaded PluginLoader ${ext.instance} from ${plugin.name}" }
+                _pluginLoaders.add(ext.instance)
             }
         }
     }
 
 
     private fun List<PluginDescriptionWithLoader>.loadAndEnableAllInOrder() {
-        return this.forEach { (loader, _, plugin) ->
+        this.forEach { (loader, _, plugin) ->
             loader.loadPluginNoEnable(plugin)
+        }
+        this.forEach { (loader, _, plugin) ->
             loader.enablePlugin(plugin)
         }
     }
@@ -171,7 +181,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
      */
     @Suppress("UNCHECKED_CAST")
     @Throws(PluginMissingDependencyException::class)
-    private fun loadAndEnableLoaderProviders(): List<PluginDescriptionWithLoader> {
+    private fun loadAndEnableLoaderProvidersUsingBuiltInLoaders(): List<PluginDescriptionWithLoader> {
         val allDescriptions =
             builtInLoaders.listAllPlugins()
                 .asSequence()

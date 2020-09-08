@@ -22,7 +22,6 @@ import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.info
 import java.io.File
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
@@ -73,8 +72,8 @@ internal object JarPluginLoaderImpl :
             URLClassLoader(arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader)
         }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
-        }.asSequence().findAllInstances().onEach { loaded ->
-            logger.info { "Successfully initialized JvmPlugin ${loaded}." }
+        }.asSequence().findAllInstances().onEach {
+            //logger.verbose { "Successfully initialized JvmPlugin ${loaded}." }
         }.onEach { (file, plugin) ->
             pluginFileToInstanceMap[file] = plugin
         } + pluginFileToInstanceMap.asSequence()
@@ -97,9 +96,13 @@ internal object JarPluginLoaderImpl :
     override fun enable(plugin: JvmPlugin) {
         if (plugin.isEnabled) return
         ensureActive()
-        if (plugin is JvmPluginInternal) {
-            plugin.internalOnEnable()
-        } else plugin.onEnable()
+        runCatching {
+            if (plugin is JvmPluginInternal) {
+                plugin.internalOnEnable()
+            } else plugin.onEnable()
+        }.getOrElse {
+            throw PluginLoadException("Exception while loading ${plugin.description.name}", it)
+        }
     }
 
     override fun disable(plugin: JvmPlugin) {

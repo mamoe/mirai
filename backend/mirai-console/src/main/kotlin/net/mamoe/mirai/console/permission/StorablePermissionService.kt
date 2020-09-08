@@ -36,8 +36,8 @@ public interface StorablePermissionService<P : Permission> : PermissionService<P
                     ConcurrentHashMap()
                 )
 
-        public val grantedPermissionMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
-                by value<MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>>(ConcurrentHashMap())
+        public val grantedPermissionMap: MutableMap<PermissionId, List<PermissibleIdentifier>>
+                by value<MutableMap<PermissionId, List<PermissibleIdentifier>>>(ConcurrentHashMap())
                     .withDefault { CopyOnWriteArrayList() }
 
         public companion object {
