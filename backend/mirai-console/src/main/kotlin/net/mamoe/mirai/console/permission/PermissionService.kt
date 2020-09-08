@@ -13,8 +13,6 @@ package net.mamoe.mirai.console.permission
 
 import net.mamoe.mirai.console.extension.SingletonExtensionPoint.Companion.findSingleton
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
-import net.mamoe.mirai.console.permission.PermissibleIdentifier.Companion.grantedWith
-import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.reflect.KClass
 
 /**
@@ -37,7 +35,7 @@ public interface PermissionService<P : Permission> {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    @Throws(DuplicatedRegistrationException::class)
+    @Throws(DuplicatedPermissionRegistrationException::class)
     public fun register(
         id: PermissionId,
         description: String,
@@ -59,59 +57,23 @@ public interface PermissionService<P : Permission> {
 }
 
 @ExperimentalPermission
-public abstract class AbstractConcurrentPermissionService<P : Permission> : PermissionService<P> {
-    protected abstract val permissions: MutableMap<PermissionId, P>
-    protected abstract val grantedPermissionsMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
+public inline fun Permissible.hasPermission(permission: Permission): Boolean =
+    PermissionService.run { permission.testPermission(this@hasPermission) }
 
-    protected abstract fun createPermission(
-        id: PermissionId,
-        description: String,
-        base: PermissionId?
-    ): P
+@ExperimentalPermission
+public inline fun Permissible.hasPermission(permission: PermissionId): Boolean =
+    PermissionService.run { permission.testPermission(this@hasPermission) }
 
-    override fun get(id: PermissionId): P? = permissions[id]
-
-    override fun register(id: PermissionId, description: String, base: PermissionId?): P {
-        grantedPermissionsMap[id] = CopyOnWriteArrayList() // mutations are not quite often performed
-        val instance = createPermission(id, description, base)
-        if (permissions.putIfAbsent(id, instance) != null) {
-            throw DuplicatedRegistrationException("Duplicated Permission registry. new: $instance, old: ${permissions[id]}")
-        }
-        return instance
-    }
-
-    override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: P) {
-        val id = permission.id
-        grantedPermissionsMap[id]?.add(permissibleIdentifier)
-            ?: error("Bad PermissionService implementation: grantedPermissionsMap[id] is null.")
-    }
-
-    override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: P) {
-        grantedPermissionsMap[permission.id]?.remove(permissibleIdentifier)
-    }
-
-    public override fun getGrantedPermissions(permissible: Permissible): Sequence<P> = sequence<P> {
-        for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
-            val myIdentifier = permissible.identifier
-
-            val granted =
-                if (permissibleIdentifiers.isEmpty()) false
-                else permissibleIdentifiers.any { myIdentifier grantedWith it }
-
-            if (granted) get(permissionIdentifier)?.let { yield(it) }
-        }
-    }
-}
-
+@JvmSynthetic
 @ExperimentalPermission
 public inline fun Permissible.getGrantedPermissions(): Sequence<Permission> =
     PermissionService.INSTANCE.run {
         getGrantedPermissions(this@getGrantedPermissions)
     }
 
-
+@JvmSynthetic
 @ExperimentalPermission
-public inline fun Permission.testPermission(permissible: Permissible): Boolean =
+public fun Permission.testPermission(permissible: Permissible): Boolean =
     PermissionService.INSTANCE.run {
         require(permissionType.isInstance(this@testPermission)) {
             "Custom-constructed Permission instance is not allowed. " +
@@ -124,8 +86,9 @@ public inline fun Permission.testPermission(permissible: Permissible): Boolean =
         testPermission(permissible, this@testPermission)
     }
 
+@JvmSynthetic
 @ExperimentalPermission
-public inline fun PermissionId.testPermission(permissible: Permissible): Boolean {
+public fun PermissionId.testPermission(permissible: Permissible): Boolean {
     val p = PermissionService.INSTANCE[this] ?: return false
     return p.testPermission(permissible)
 }

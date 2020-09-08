@@ -36,7 +36,7 @@ public object AllGrantPermissionService : PermissionService<PermissionImpl> {
     ): PermissionImpl {
         val new = PermissionImpl(id, description, base)
         if (all.putIfAbsent(id, new) != null) {
-            throw DuplicatedRegistrationException("Duplicated Permission registry: ${all[id]}")
+            throw DuplicatedPermissionRegistrationException("Duplicated Permission registry: ${all[id]}")
         }
         return new
     }
@@ -64,7 +64,7 @@ public object AllDenyPermissionService : PermissionService<PermissionImpl> {
     ): PermissionImpl {
         val new = PermissionImpl(id, description, base)
         if (all.putIfAbsent(id, new) != null) {
-            throw DuplicatedRegistrationException("Duplicated Permission registry: ${all[id]}")
+            throw DuplicatedPermissionRegistrationException("Duplicated Permission registry: ${all[id]}")
         }
         return new
     }
@@ -80,7 +80,7 @@ public object AllDenyPermissionService : PermissionService<PermissionImpl> {
 }
 
 @ExperimentalPermission
-public object BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
+internal object BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
     PermissionService<PermissionImpl> {
 
     @ExperimentalPermission

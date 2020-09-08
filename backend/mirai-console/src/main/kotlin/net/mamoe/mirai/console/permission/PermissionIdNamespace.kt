@@ -7,13 +7,10 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
-
 package net.mamoe.mirai.console.permission
 
-import net.mamoe.mirai.console.command.CommandSender
-
 @ExperimentalPermission
-public fun interface PermissionChecker {
-    public fun CommandSender.testPermission(): Boolean
+public interface PermissionIdNamespace {
+    @ExperimentalPermission
+    public fun permissionId(id: String): PermissionId
 }

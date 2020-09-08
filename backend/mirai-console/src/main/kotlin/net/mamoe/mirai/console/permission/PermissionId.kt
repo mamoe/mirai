@@ -49,8 +49,3 @@ public data class PermissionId(
     }
 }
 
-@ExperimentalPermission
-public interface PermissionIdNamespace {
-    @ExperimentalPermission
-    public fun permissionId(id: String): PermissionId
-}

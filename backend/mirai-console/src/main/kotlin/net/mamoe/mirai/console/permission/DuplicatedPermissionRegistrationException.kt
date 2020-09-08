@@ -7,19 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.permission
 
-
 @ExperimentalPermission
-public open class HotDeploymentNotSupportedException : Exception {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
-
-@ExperimentalPermission
-public open class DuplicatedRegistrationException : Exception {
+public open class DuplicatedPermissionRegistrationException : Exception {
     public constructor() : super()
     public constructor(message: String?) : super(message)
     public constructor(message: String?, cause: Throwable?) : super(message, cause)
