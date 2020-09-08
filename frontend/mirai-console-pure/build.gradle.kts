@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    kotlin("kapt")
     id("java")
     `maven-publish`
     id("com.jfrog.bintray")
@@ -46,10 +45,10 @@ dependencies {
     testApi(project(":mirai-console"))
 
 
-    val autoService = "1.0-rc7"
-    kapt("com.google.auto.service", "auto-service", autoService)
-    compileOnly("com.google.auto.service", "auto-service-annotations", autoService)
-    testCompileOnly("com.google.auto.service", "auto-service-annotations", autoService)
+//    val autoService = "1.0-rc7"
+//    kapt("com.google.auto.service", "auto-service", autoService)
+//    compileOnly("com.google.auto.service", "auto-service-annotations", autoService)
+//    testCompileOnly("com.google.auto.service", "auto-service-annotations", autoService)
 }
 
 ext.apply {
