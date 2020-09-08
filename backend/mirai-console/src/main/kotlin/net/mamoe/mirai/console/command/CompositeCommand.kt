@@ -20,11 +20,12 @@ package net.mamoe.mirai.console.command
 import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
-import kotlin.reflect.KClass
 
 /**
  * 复合指令. 指令注册时候会通过反射构造指令解析器.
@@ -85,10 +86,10 @@ public abstract class CompositeCommand(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
-    permission: CommandPermission = CommandPermission.Default,
+    basePermission: PermissionId? = null,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
-) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
+) : Command, AbstractReflectionCommand(owner, names, description, basePermission, prefixOptional),
     CommandArgumentContextAware {
 
     /**
@@ -112,7 +113,8 @@ public abstract class CompositeCommand(
     /** 指定子指令要求的权限 */
     @Retention(RUNTIME)
     @Target(FUNCTION)
-    protected annotation class Permission(val value: KClass<out CommandPermission>)
+    @ExperimentalPermission
+    protected annotation class Permission(val value: String)
 
     /** 指令描述 */
     @Retention(RUNTIME)

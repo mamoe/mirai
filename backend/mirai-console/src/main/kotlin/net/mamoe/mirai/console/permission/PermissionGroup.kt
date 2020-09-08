@@ -14,7 +14,7 @@ import kotlin.reflect.KProperty
 
 @ExperimentalPermission
 public abstract class PermissionGroup(
-    private val identifierNamespace: PermissionIdentifierNamespace,
+    private val idNamespace: PermissionIdNamespace,
 ) {
     @ExperimentalPermission
     public inner class PermissionBuilder {
@@ -22,30 +22,30 @@ public abstract class PermissionGroup(
         internal var description: String = "<no description given>"
 
         @JvmField
-        internal var basePermission: PermissionIdentifier? = null
+        internal var basePermission: PermissionId? = null
 
         @JvmField
         internal var permissionChecker: PermissionChecker? = null
 
         public fun description(description: String): PermissionBuilder = apply { this.description = description }
-        public fun dependsOn(basePermission: PermissionIdentifier?): PermissionBuilder =
+        public fun dependsOn(basePermission: PermissionId?): PermissionBuilder =
             apply { this.basePermission = basePermission }
 
         public fun dependsOn(basePermission: Permission?): PermissionBuilder =
-            apply { this.basePermission = basePermission?.identifier }
+            apply { this.basePermission = basePermission?.id }
 
-        public fun basePermission(basePermission: PermissionIdentifier?): PermissionBuilder =
+        public fun basePermission(basePermission: PermissionId?): PermissionBuilder =
             apply { this.basePermission = basePermission }
 
         public fun basePermission(basePermission: Permission?): PermissionBuilder =
-            apply { this.basePermission = basePermission?.identifier }
+            apply { this.basePermission = basePermission?.id }
 
         public fun defaults(permissionChecker: PermissionChecker?): PermissionBuilder =
             apply { this.permissionChecker = permissionChecker }
 
         public fun build(property: KProperty<*>): Permission {
             return PermissionService.INSTANCE.register(
-                identifierNamespace.permissionIdentifier(property.name),
+                idNamespace.permissionId(property.name),
                 description,
                 basePermission
             )

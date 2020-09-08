@@ -4,10 +4,13 @@ import net.mamoe.mirai.console.extension.AbstractExtensionPoint
 import net.mamoe.mirai.console.extension.SingletonExtension
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
+/**
+ * [权限服务][PermissionService] 提供器.
+ *
+ * 此扩展
+ */
 @ExperimentalPermission
-@ConsoleExperimentalAPI
 public interface PermissionServiceProvider : SingletonExtension<PermissionService<*>> {
     public companion object ExtensionPoint :
         AbstractExtensionPoint<PermissionServiceProvider>(PermissionServiceProvider::class)

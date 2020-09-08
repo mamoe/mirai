@@ -12,9 +12,10 @@ package net.mamoe.mirai.console.command.java
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandOwner
-import net.mamoe.mirai.console.command.CommandPermission
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
+import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.permission.PermissionId
 
 /**
  * Java 实现:
@@ -41,11 +42,12 @@ import net.mamoe.mirai.console.command.description.CommandArgumentContext
  */
 public abstract class JSimpleCommand(
     owner: CommandOwner,
-    vararg names: String
-) : SimpleCommand(owner, *names) {
+    vararg names: String,
+    basePermission: PermissionId,
+) : SimpleCommand(owner, *names, basePermission = basePermission) {
     public override var description: String = super.description
         protected set
-    public override var permission: CommandPermission = super.permission
+    public override var permission: Permission = super.permission
         protected set
     public override var prefixOptional: Boolean = super.prefixOptional
         protected set

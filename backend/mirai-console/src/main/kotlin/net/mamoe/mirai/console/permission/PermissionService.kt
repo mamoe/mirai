@@ -12,7 +12,8 @@
 package net.mamoe.mirai.console.permission
 
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
-import java.util.concurrent.ConcurrentHashMap
+import net.mamoe.mirai.console.permission.PermissibleIdentifier.Companion.grantedWith
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.reflect.KClass
 
 /**
@@ -23,23 +24,32 @@ public interface PermissionService<P : Permission> {
     @ExperimentalPermission
     public val permissionType: KClass<P>
 
-    @Throws(DuplicatedRegistrationException::class)
-    public fun register(
-        identifier: PermissionIdentifier,
-        description: String,
-        base: PermissionIdentifier? = null
-    ): P
+    ///////////////////////////////////////////////////////////////////////////
 
-    public operator fun get(identifier: PermissionIdentifier): P?
+    public operator fun get(id: PermissionId): P?
 
     public fun getGrantedPermissions(permissible: Permissible): Sequence<P>
-
 
     public fun testPermission(permissible: Permissible, permission: P): Boolean =
         permissible.getGrantedPermissions().any { it == permission }
 
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Throws(DuplicatedRegistrationException::class)
+    public fun register(
+        id: PermissionId,
+        description: String,
+        base: PermissionId? = null
+    ): P
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    public fun grant(permissibleIdentifier: PermissibleIdentifier, permission: P)
+    public fun deny(permissibleIdentifier: PermissibleIdentifier, permission: P)
+
     public companion object {
-        private val builtIn: PermissionService<out Permission> get() = AllGrantPermissionService
+        private val builtIn: PermissionService<out Permission> get() = BuiltInPermissionService
 
         @get:JvmName("getInstance")
         @JvmStatic
@@ -51,29 +61,48 @@ public interface PermissionService<P : Permission> {
 }
 
 @ExperimentalPermission
-public abstract class AbstractPermissionService<P : Permission> : PermissionService<P> {
-    protected val all: MutableMap<PermissionIdentifier, P> = ConcurrentHashMap<PermissionIdentifier, P>()
+public abstract class AbstractConcurrentPermissionService<P : Permission> : PermissionService<P> {
+    protected abstract val permissions: MutableMap<PermissionId, P>
+    protected abstract val grantedPermissionsMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
 
     protected abstract fun createPermission(
-        identifier: PermissionIdentifier,
+        id: PermissionId,
         description: String,
-        base: PermissionIdentifier?
+        base: PermissionId?
     ): P
 
-    override fun register(
-        identifier: PermissionIdentifier,
-        description: String,
-        base: PermissionIdentifier?
-    ): P {
-        val new = createPermission(identifier, description, base)
-        if (all.putIfAbsent(identifier, new) != null) {
-            throw DuplicatedRegistrationException("Duplicated Permission registry: ${all[identifier]}")
+    override fun get(id: PermissionId): P? = permissions[id]
+
+    override fun register(id: PermissionId, description: String, base: PermissionId?): P {
+        grantedPermissionsMap[id] = CopyOnWriteArrayList() // mutations are not quite often performed
+        val instance = createPermission(id, description, base)
+        if (permissions.putIfAbsent(id, instance) != null) {
+            throw DuplicatedRegistrationException("Duplicated Permission registry. new: $instance, old: ${permissions[id]}")
         }
-        return new
+        return instance
     }
 
-    override fun get(identifier: PermissionIdentifier): P? = all[identifier]
-    override fun getGrantedPermissions(permissible: Permissible): Sequence<P> = all.values.asSequence()
+    override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: P) {
+        val id = permission.id
+        grantedPermissionsMap[id]?.add(permissibleIdentifier)
+            ?: error("Bad PermissionService implementation: grantedPermissionsMap[id] is null.")
+    }
+
+    override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: P) {
+        grantedPermissionsMap[permission.id]?.remove(permissibleIdentifier)
+    }
+
+    public override fun getGrantedPermissions(permissible: Permissible): Sequence<P> = sequence<P> {
+        for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
+            val myIdentifier = permissible.identifier
+
+            val granted =
+                if (permissibleIdentifiers.isEmpty()) false
+                else permissibleIdentifiers.any { myIdentifier grantedWith it }
+
+            if (granted) get(permissionIdentifier)?.let { yield(it) }
+        }
+    }
 }
 
 @ExperimentalPermission
@@ -98,7 +127,7 @@ public inline fun Permission.testPermission(permissible: Permissible): Boolean =
     }
 
 @ExperimentalPermission
-public inline fun PermissionIdentifier.testPermission(permissible: Permissible): Boolean {
+public inline fun PermissionId.testPermission(permissible: Permissible): Boolean {
     val p = PermissionService.INSTANCE[this] ?: return false
     return p.testPermission(permissible)
 }

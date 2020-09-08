@@ -10,6 +10,9 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermissionIdNamespace
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 
 /**
@@ -20,9 +23,12 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
  *
  * @see JvmPlugin 是一个 [CommandOwner]
  */
-public interface CommandOwner
+public interface CommandOwner : PermissionIdNamespace
 
 /**
  * 代表控制台所有者. 所有的 mirai-console 内建的指令都属于 [ConsoleCommandOwner].
  */
-internal object ConsoleCommandOwner : CommandOwner
+internal object ConsoleCommandOwner : CommandOwner {
+    @ExperimentalPermission
+    override fun permissionId(id: String): PermissionId = PermissionId("console", id)
+}

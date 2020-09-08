@@ -9,8 +9,13 @@
 
 package net.mamoe.mirai.console.command.java
 
-import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.BuiltInCommands
+import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.CommandOwner
+import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
@@ -64,16 +69,17 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  * @see buildCommandArgumentContext
  */
 @ConsoleExperimentalAPI
-public abstract class JCompositeCommand(
+public abstract class JCompositeCommand @JvmOverloads constructor(
     owner: CommandOwner,
-    vararg names: String
-) : CompositeCommand(owner, *names) {
+    vararg names: String,
+    basePermission: PermissionId? = null,
+) : CompositeCommand(owner, *names, basePermission = basePermission) {
     /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
     public final override var description: String = "<no descriptions given>"
         protected set
 
-    /** 指令权限 */
-    public final override var permission: CommandPermission = CommandPermission.Default
+    @OptIn(ExperimentalPermission::class)
+    public final override var permission: net.mamoe.mirai.console.permission.Permission = super.permission
         protected set
 
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */

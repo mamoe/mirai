@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.permission.ExperimentalPermission
-import net.mamoe.mirai.console.permission.PermissionIdentifier
+import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
@@ -47,8 +47,8 @@ internal abstract class JvmPluginInternal(
         resourceContainerDelegate.getResourceAsStream(path)
 
     @OptIn(ExperimentalPermission::class)
-    override fun permissionIdentifier(identifierString: String): PermissionIdentifier {
-        return PermissionIdentifier(description.name, identifierString)
+    override fun permissionId(id: String): PermissionId {
+        return PermissionId(description.name, id)
     }
 
     // region JvmPlugin
