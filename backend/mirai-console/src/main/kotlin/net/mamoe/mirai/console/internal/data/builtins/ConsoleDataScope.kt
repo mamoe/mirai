@@ -42,13 +42,13 @@ internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope("Co
 internal object ConsoleBuiltInPluginDataHolder : AutoSavePluginDataHolder,
     CoroutineScope by ConsoleDataScope.childScope("ConsoleBuiltInPluginDataHolder") {
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
-    override val dataHolderName: String get() = "ConsoleBuiltIns"
+    override val dataHolderName: String get() = "Console"
 }
 
 internal object ConsoleBuiltInPluginConfigHolder : AutoSavePluginDataHolder,
     CoroutineScope by ConsoleDataScope.childScope("ConsoleBuiltInPluginConfigHolder") {
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
-    override val dataHolderName: String get() = "ConsoleBuiltIns"
+    override val dataHolderName: String get() = "Console"
 }
 
 internal object ConsoleBuiltInPluginDataStorage :
