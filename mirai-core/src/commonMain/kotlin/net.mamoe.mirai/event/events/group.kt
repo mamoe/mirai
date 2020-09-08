@@ -99,7 +99,7 @@ public data class BotUnmuteEvent internal constructor(
 /**
  * Bot 成功加入了一个新群
  */
-public sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
+public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, AbstractEvent() {
     public abstract override val group: Group
 
     /**
@@ -108,7 +108,7 @@ public sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
     @MiraiExperimentalAPI
     public data class Active internal constructor(
         public override val group: Group
-    ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent() {
+    ) : BotJoinGroupEvent() {
         public override fun toString(): String = "BotJoinGroupEvent.Active(group=$group)"
     }
 
@@ -123,7 +123,7 @@ public sealed class BotJoinGroupEvent : GroupEvent, Packet, AbstractEvent() {
          * 邀请人
          */
         public val invitor: Member
-    ) : BotPassiveEvent, GroupEvent, Packet, AbstractEvent() {
+    ) : BotJoinGroupEvent() {
         public override val group: Group get() = invitor.group
 
         public override fun toString(): String {
