@@ -36,12 +36,21 @@ public data class PermissionId(
 
     public object AsStringSerializer : KSerializer<PermissionId> by String.serializer().map(
         serializer = { it.namespace + ":" + it.id },
-        deserializer = { it.split(':').let { (namespace, id) -> PermissionId(namespace, id) } }
+        deserializer = ::parseFromString
     )
+
+    public override fun toString(): String {
+        return "$namespace:$id"
+    }
+
+    public companion object {
+        public fun parseFromString(string: String): PermissionId =
+            string.split(':').let { (namespace, id) -> PermissionId(namespace, id) }
+    }
 }
 
 @ExperimentalPermission
-public interface PermissionIdentifierNamespace {
+public interface PermissionIdNamespace {
     @ExperimentalPermission
-    public fun permissionIdentifier(identifierString: String): PermissionId
+    public fun permissionId(id: String): PermissionId
 }

@@ -14,7 +14,7 @@ import kotlin.reflect.KProperty
 
 @ExperimentalPermission
 public abstract class PermissionGroup(
-    private val identifierNamespace: PermissionIdentifierNamespace,
+    private val idNamespace: PermissionIdNamespace,
 ) {
     @ExperimentalPermission
     public inner class PermissionBuilder {
@@ -45,7 +45,7 @@ public abstract class PermissionGroup(
 
         public fun build(property: KProperty<*>): Permission {
             return PermissionService.INSTANCE.register(
-                identifierNamespace.permissionIdentifier(property.name),
+                idNamespace.permissionId(property.name),
                 description,
                 basePermission
             )

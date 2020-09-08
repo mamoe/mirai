@@ -16,11 +16,15 @@ import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
+import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.message.data.*
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
-import kotlin.reflect.full.*
+import kotlin.reflect.full.callSuspend
+import kotlin.reflect.full.declaredFunctions
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.isSubclassOf
 
 internal object CompositeCommandSubCommandAnnotationResolver :
     AbstractReflectionCommand.SubCommandAnnotationResolver {
@@ -44,13 +48,13 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     owner: CommandOwner,
     names: Array<out String>,
     description: String = "<no description available>",
-    permission: CommandPermission = CommandPermission.Default,
+    basePermission: PermissionId? = null,
     prefixOptional: Boolean = false
 ) : Command, AbstractCommand(
     owner,
     names = names,
     description = description,
-    permission = permission,
+    basePermission = basePermission,
     prefixOptional = prefixOptional
 ), CommandArgumentContextAware {
     internal abstract val subCommandAnnotationResolver: SubCommandAnnotationResolver
@@ -70,7 +74,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     internal val defaultSubCommand: DefaultSubCommandDescriptor by lazy {
         DefaultSubCommandDescriptor(
             "",
-            permission,
+            createCommandPermission(basePermission),
             onCommand = { sender: CommandSender, args: MessageChain ->
                 sender.onDefault(args)
             }
@@ -115,7 +119,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
 
     internal class DefaultSubCommandDescriptor(
         val description: String,
-        val permission: CommandPermission,
+        val permission: Permission,
         val onCommand: suspend (sender: CommandSender, rawArgs: MessageChain) -> Unit
     )
 
@@ -123,7 +127,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
         val names: Array<out String>,
         val params: Array<CommandParameter<*>>,
         val description: String,
-        val permission: CommandPermission,
+        val permission: Permission,
         val onCommand: suspend (sender: CommandSender, parsedArgs: Array<out Any>) -> Boolean,
         val context: CommandArgumentContext
     ) {
@@ -209,10 +213,6 @@ internal fun Any.flattenCommandComponents(): MessageChain = buildMessageChain {
 internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): Boolean =
     findAnnotation<T>() != null
 
-internal inline fun <T : Any> KClass<out T>.getInstance(): T {
-    return this.objectInstance ?: this.createInstance()
-}
-
 internal val KClass<*>.qualifiedNameOrTip: String get() = this.qualifiedName ?: "<anonymous class>"
 
 internal fun Array<AbstractReflectionCommand.SubCommandDescriptor>.createUsage(baseCommand: AbstractReflectionCommand): String =
@@ -246,6 +246,7 @@ internal fun AbstractReflectionCommand.SubCommandDescriptor.createUsage(baseComm
         appendLine()
     }.trimEnd()
 
+@OptIn(ExperimentalPermission::class)
 internal fun AbstractReflectionCommand.createSubCommand(
     function: KFunction<*>,
     context: CommandArgumentContext
@@ -322,8 +323,8 @@ internal fun AbstractReflectionCommand.createSubCommand(
     return SubCommandDescriptor(
         commandName,
         params,
-        subDescription,
-        overridePermission?.value?.getInstance() ?: permission,
+        subDescription, // overridePermission?.value
+        overridePermission?.value?.let { PermissionService.INSTANCE[PermissionId.parseFromString(it)] } ?: permission,
         onCommand = { sender: CommandSender, args: Array<out Any> ->
             val result = if (notStatic) {
                 if (hasSenderParam) {

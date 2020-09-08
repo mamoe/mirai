@@ -47,8 +47,8 @@ internal abstract class JvmPluginInternal(
         resourceContainerDelegate.getResourceAsStream(path)
 
     @OptIn(ExperimentalPermission::class)
-    override fun permissionIdentifier(identifierString: String): PermissionId {
-        return PermissionId(description.name, identifierString)
+    override fun permissionId(id: String): PermissionId {
+        return PermissionId(description.name, id)
     }
 
     // region JvmPlugin

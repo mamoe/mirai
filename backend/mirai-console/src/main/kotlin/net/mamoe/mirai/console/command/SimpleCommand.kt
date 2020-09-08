@@ -22,6 +22,7 @@ import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.command.java.JSimpleCommand
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
+import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.message.data.MessageChain
 
 /**
@@ -51,10 +52,10 @@ public abstract class SimpleCommand(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
-    permission: CommandPermission = CommandPermission.Default,
+    basePermission: PermissionId? = null,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
-) : Command, AbstractReflectionCommand(owner, names, description, permission, prefixOptional),
+) : Command, AbstractReflectionCommand(owner, names, description, basePermission, prefixOptional),
     CommandArgumentContextAware {
 
     /**

@@ -62,17 +62,14 @@ public object BuiltInCommands {
 
     public object Managers : CompositeCommand(
         ConsoleCommandOwner, "managers",
-        description = "Manage the managers for each bot",
-        permission = CommandPermission.Console or CommandPermission.Manager
+        description = "Manage the managers for each bot"
     ), BuiltInCommand {
-        @Permission(CommandPermission.Console::class)
         @SubCommand
         public suspend fun CommandSender.add(target: User) {
             target.bot.addManager(target.id)
             sendMessage("已成功添加 ${target.render()} 为 ${target.bot.render()} 的管理员")
         }
 
-        @Permission(CommandPermission.Console::class)
         @SubCommand
         public suspend fun CommandSender.remove(target: User) {
             target.bot.removeManager(target.id)
