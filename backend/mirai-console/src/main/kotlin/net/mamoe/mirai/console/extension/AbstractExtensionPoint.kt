@@ -38,7 +38,7 @@ public open class AbstractExtensionPoint<T : Extension>(
     @Synchronized
     @ConsoleExperimentalAPI
     public fun registerExtension(plugin: Plugin, extension: T) {
-        require(plugin.isEnabled) { "Plugin $plugin must be enabled before registering an extension." }
+        // require(plugin.isEnabled) { "Plugin $plugin must be enabled before registering an extension." }
         instances.add(ExtensionRegistry(plugin, extension))
     }
 
