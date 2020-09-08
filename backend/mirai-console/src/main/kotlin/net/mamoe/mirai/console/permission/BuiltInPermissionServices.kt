@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.permission
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
+import kotlin.reflect.full.createType
 
 
 @ExperimentalPermission
@@ -84,5 +85,9 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
         PermissionImpl(id, description, base)
 
     override val config: StorablePermissionService.ConcurrentSaveData<PermissionImpl> =
-        StorablePermissionService.ConcurrentSaveData("PermissionService", AutoSavePluginConfig())
+        StorablePermissionService.ConcurrentSaveData(
+            PermissionImpl::class.createType(),
+            "PermissionService",
+            AutoSavePluginConfig()
+        )
 }
