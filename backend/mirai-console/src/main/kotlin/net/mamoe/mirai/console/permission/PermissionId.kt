@@ -10,11 +10,13 @@
 package net.mamoe.mirai.console.permission
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.internal.data.map
 
 
+@Serializable
 @ExperimentalPermission
 public data class PermissionId(
     public val namespace: String,
