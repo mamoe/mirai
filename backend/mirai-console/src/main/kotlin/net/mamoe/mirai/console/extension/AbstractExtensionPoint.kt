@@ -21,6 +21,9 @@ import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 
+/**
+ * 表示一个扩展点
+ */
 @ConsoleExperimentalAPI
 public open class AbstractExtensionPoint<T : Extension>(
     @ConsoleExperimentalAPI

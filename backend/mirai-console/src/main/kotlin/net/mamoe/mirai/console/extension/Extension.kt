@@ -13,9 +13,17 @@ import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
+/**
+ * 表示一个扩展.
+ *
+ * Console 许多不容易通过
+ */
 @ConsoleExperimentalAPI
 public interface Extension
 
+/**
+ * 增加一些函数 (方法)的扩展
+ */
 @ConsoleExperimentalAPI
 public interface FunctionExtension : Extension
 
