@@ -636,7 +636,7 @@ public open class MemberCommandSender internal constructor(
     public override fun toString(): String = "MemberCommandSender($user)"
 
     @ExperimentalPermission
-    public override val identifier: PermissibleIdentifier = AbstractPermissibleIdentifier.ExactMember(user.id, group.id)
+    public override val identifier: PermissibleIdentifier = AbstractPermissibleIdentifier.ExactMember(group.id, user.id)
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Group> = sendMessage(PlainText(message))
@@ -659,7 +659,8 @@ public open class TempCommandSender internal constructor(
     public override fun toString(): String = "TempCommandSender($user)"
 
     @ExperimentalPermission
-    override val identifier: PermissibleIdentifier = AbstractPermissibleIdentifier.ExactTemp(user.id)
+    public override val identifier: PermissibleIdentifier =
+        AbstractPermissibleIdentifier.ExactTemp(user.group.id, user.id)
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))

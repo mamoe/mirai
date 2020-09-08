@@ -71,8 +71,9 @@ public sealed class AbstractPermissibleIdentifier(
 
     public object AnyTemp : AbstractPermissibleIdentifier(AnyUser)
     public data class ExactTemp(
+        public val groupId: Long,
         public val id: Long
-    ) : AbstractPermissibleIdentifier(ExactUser(id))
+    ) : AbstractPermissibleIdentifier(ExactUser(groupId)) // TODO: 2020/9/8 ExactMember ?
 
     public object AnyUser : AbstractPermissibleIdentifier(AnyContact)
     public data class ExactUser(
