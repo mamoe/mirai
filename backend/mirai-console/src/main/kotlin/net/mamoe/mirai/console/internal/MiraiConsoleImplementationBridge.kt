@@ -32,7 +32,6 @@ import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
-import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.permission.ExperimentalPermission
@@ -56,7 +55,7 @@ import kotlin.coroutines.CoroutineContext
  */
 internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleImplementation,
     MiraiConsole {
-    override val pluginCenter: PluginCenter get() = CuiPluginCenter
+    override val pluginCenter: PluginCenter get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
 
     private val instance: MiraiConsoleImplementation by MiraiConsoleImplementation.Companion::instance
     override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
