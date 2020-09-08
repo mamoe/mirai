@@ -55,27 +55,27 @@ public sealed class AbstractPermissibleIdentifier(
     public final override vararg val parents: PermissibleIdentifier
 ) : PermissibleIdentifier {
     public object AnyGroup : AbstractPermissibleIdentifier(AnyContact)
-    public class ExactGroup(public val groupId: Long) : AbstractPermissibleIdentifier(AnyGroup)
+    public data class ExactGroup(public val groupId: Long) : AbstractPermissibleIdentifier(AnyGroup)
 
-    public class AnyMember(public val groupId: Long) : AbstractPermissibleIdentifier(AnyMemberFromAnyGroup)
+    public data class AnyMember(public val groupId: Long) : AbstractPermissibleIdentifier(AnyMemberFromAnyGroup)
     public object AnyMemberFromAnyGroup : AbstractPermissibleIdentifier(AnyUser)
-    public class ExactMember(
+    public data class ExactMember(
         public val groupId: Long,
         public val memberId: Long
     ) : AbstractPermissibleIdentifier(AnyMember(groupId), ExactUser(memberId))
 
     public object AnyFriend : AbstractPermissibleIdentifier(AnyUser)
-    public class ExactFriend(
+    public data class ExactFriend(
         public val id: Long
     ) : AbstractPermissibleIdentifier(ExactUser(id))
 
     public object AnyTemp : AbstractPermissibleIdentifier(AnyUser)
-    public class ExactTemp(
+    public data class ExactTemp(
         public val id: Long
     ) : AbstractPermissibleIdentifier(ExactUser(id))
 
     public object AnyUser : AbstractPermissibleIdentifier(AnyContact)
-    public class ExactUser(
+    public data class ExactUser(
         public val id: Long
     ) : AbstractPermissibleIdentifier(AnyUser)
 
