@@ -44,8 +44,10 @@ internal object ManagersConfig : AutoSavePluginConfig() {
         管理员列表
     """
     )
-    private val managers by value<MutableMap<Long, MutableSet<Long>>>().withEmptyDefault()
-        .mapKeys(Bot::getInstance, Bot::id)
+    private val managers
+            by value<MutableMap<Long, MutableSet<Long>>>()
+                .withEmptyDefault()
+                .mapKeys(Bot::getInstance, Bot::id)
 
-    internal operator fun get(bot: Bot): MutableSet<Long> = managers[bot]!!
+    internal operator fun get(bot: Bot): MutableSet<Long> = managers[bot]
 }
