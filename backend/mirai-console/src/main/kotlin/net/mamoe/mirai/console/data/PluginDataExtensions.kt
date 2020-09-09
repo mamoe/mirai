@@ -45,11 +45,6 @@ public object PluginDataExtensions {
             return super<MutableMap>.getOrDefault(key, defaultValue)
         }
 
-        override fun put(key: K, value: V): V {
-            return delegate.put(key, value)
-                ?: error("Internal error: delegate.put(key, value) returned null for NotNullMutableMap.put")
-        }
-
         @Deprecated(
             "putIfAbsent on NotNullMutableMap always does nothing.",
             level = DeprecationLevel.WARNING,
