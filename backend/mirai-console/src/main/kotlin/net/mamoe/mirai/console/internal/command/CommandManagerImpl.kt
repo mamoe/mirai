@@ -66,7 +66,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
 
             when (val result = sender.executeCommand(message)) {
                 is CommandExecuteResult.PermissionDenied -> {
-                    if (!result.command.prefixOptional) {
+                    if (!result.command.prefixOptional || message.content.startsWith(CommandManager.commandPrefix)) {
                         sender.sendMessage("权限不足")
                         intercept()
                     }
