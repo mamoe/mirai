@@ -42,11 +42,15 @@ public object AllGrantPermissionService : PermissionService<PermissionImpl> {
     }
 
     override fun get(id: PermissionId): PermissionImpl? = all[id]
-    override fun getGrantedPermissions(permissible: Permissible): Sequence<PermissionImpl> = all.values.asSequence()
+    override fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<PermissionImpl> =
+        all.values.asSequence()
+
     override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
     }
 
-    override fun testPermission(permissible: Permissible, permission: PermissionImpl): Boolean = true
+    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl): Boolean =
+        true
+
     override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
     }
 }
@@ -70,11 +74,15 @@ public object AllDenyPermissionService : PermissionService<PermissionImpl> {
     }
 
     override fun get(id: PermissionId): PermissionImpl? = all[id]
-    override fun getGrantedPermissions(permissible: Permissible): Sequence<PermissionImpl> = emptySequence()
+    override fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<PermissionImpl> =
+        emptySequence()
+
     override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
     }
 
-    override fun testPermission(permissible: Permissible, permission: PermissionImpl): Boolean = false
+    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl): Boolean =
+        false
+
     override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
     }
 }

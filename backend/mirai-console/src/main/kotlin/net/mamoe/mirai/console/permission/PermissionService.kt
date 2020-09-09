@@ -27,10 +27,10 @@ public interface PermissionService<P : Permission> {
 
     public operator fun get(id: PermissionId): P?
 
-    public fun getGrantedPermissions(permissible: Permissible): Sequence<P>
+    public fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<P>
 
-    public fun testPermission(permissible: Permissible, permission: P): Boolean =
-        permissible.getGrantedPermissions().any { it == permission }
+    public fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: P): Boolean =
+        getGrantedPermissions(permissibleIdentifier).any { it == permission }
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -57,38 +57,73 @@ public interface PermissionService<P : Permission> {
 }
 
 @ExperimentalPermission
-public inline fun Permissible.hasPermission(permission: Permission): Boolean =
-    PermissionService.run { permission.testPermission(this@hasPermission) }
+public fun PermissibleIdentifier.grant(permission: Permission) {
+    PermissionService.INSTANCE.checkType(permission::class).grant(this, permission)
+}
 
 @ExperimentalPermission
-public inline fun Permissible.hasPermission(permission: PermissionId): Boolean =
-    PermissionService.run { permission.testPermission(this@hasPermission) }
+public fun Permissible.hasPermission(permission: Permission): Boolean =
+    permission.testPermission(this@hasPermission)
+
+@ExperimentalPermission
+public fun PermissibleIdentifier.hasPermission(permission: Permission): Boolean =
+    permission.testPermission(this@hasPermission)
+
+@Suppress("UNCHECKED_CAST")
+@ExperimentalPermission
+public fun PermissibleIdentifier.hasPermission(permission: PermissionId): Boolean =
+    (PermissionService.INSTANCE as PermissionService<Permission>).run {
+        val p = this[permission] ?: return false
+        testPermission(this@hasPermission, p)
+    }
+
+@ExperimentalPermission
+public fun Permissible.hasPermission(permissionId: PermissionId): Boolean =
+    PermissionService.run { permissionId.testPermission(this@hasPermission) }
 
 @JvmSynthetic
 @ExperimentalPermission
-public inline fun Permissible.getGrantedPermissions(): Sequence<Permission> =
-    PermissionService.INSTANCE.run {
-        getGrantedPermissions(this@getGrantedPermissions)
-    }
+public fun Permissible.getGrantedPermissions(): Sequence<Permission> =
+    PermissionService.INSTANCE.getGrantedPermissions(this@getGrantedPermissions.identifier)
+
+@JvmSynthetic
+@ExperimentalPermission
+public fun PermissibleIdentifier.getGrantedPermissions(): Sequence<Permission> =
+    PermissionService.INSTANCE.getGrantedPermissions(this@getGrantedPermissions)
 
 @JvmSynthetic
 @ExperimentalPermission
 public fun Permission.testPermission(permissible: Permissible): Boolean =
-    PermissionService.INSTANCE.run {
-        require(permissionType.isInstance(this@testPermission)) {
-            "Custom-constructed Permission instance is not allowed. " +
-                    "Please obtain Permission from PermissionService.INSTANCE.register or PermissionService.INSTANCE.get"
-        }
+    PermissionService.INSTANCE.checkType(this::class).testPermission(permissible.identifier, this@testPermission)
 
-        @Suppress("UNCHECKED_CAST")
-        this as PermissionService<Permission>
-
-        testPermission(permissible, this@testPermission)
-    }
+@JvmSynthetic
+@ExperimentalPermission
+public fun Permission.testPermission(permissibleIdentifier: PermissibleIdentifier): Boolean =
+    PermissionService.INSTANCE.checkType(this::class).testPermission(permissibleIdentifier, this@testPermission)
 
 @JvmSynthetic
 @ExperimentalPermission
 public fun PermissionId.testPermission(permissible: Permissible): Boolean {
     val p = PermissionService.INSTANCE[this] ?: return false
     return p.testPermission(permissible)
+}
+
+@JvmSynthetic
+@ExperimentalPermission
+public fun PermissionId.testPermission(permissible: PermissibleIdentifier): Boolean {
+    val p = PermissionService.INSTANCE[this] ?: return false
+    return p.testPermission(permissible)
+}
+
+@OptIn(ExperimentalPermission::class)
+internal fun PermissionService<*>.checkType(permissionType: KClass<out Permission>): PermissionService<Permission> {
+    return PermissionService.INSTANCE.run {
+        require(permissionType.isInstance(this@checkType)) {
+            "Custom-constructed Permission instance is not allowed. " +
+                    "Please obtain Permission from PermissionService.INSTANCE.register or PermissionService.INSTANCE.get"
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        this as PermissionService<Permission>
+    }
 }

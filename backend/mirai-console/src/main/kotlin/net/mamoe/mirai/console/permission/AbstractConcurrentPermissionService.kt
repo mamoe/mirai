@@ -44,13 +44,12 @@ public abstract class AbstractConcurrentPermissionService<P : Permission> : Perm
         grantedPermissionsMap[permission.id]?.remove(permissibleIdentifier)
     }
 
-    public override fun getGrantedPermissions(permissible: Permissible): Sequence<P> = sequence<P> {
+    public override fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<P> = sequence<P> {
         for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
-            val myIdentifier = permissible.identifier
 
             val granted =
                 if (permissibleIdentifiers.isEmpty()) false
-                else permissibleIdentifiers.any { myIdentifier grantedWith it }
+                else permissibleIdentifiers.any { permissibleIdentifier grantedWith it }
 
             if (granted) get(permissionIdentifier)?.let { yield(it) }
         }
