@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.permission
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermission
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 

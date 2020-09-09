@@ -25,6 +25,7 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extension.useExtensions
 import net.mamoe.mirai.console.extensions.PostStartupExtension
@@ -36,6 +37,8 @@ import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
+import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -150,6 +153,8 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
                     mainLogger.verbose { "Reloaded PermissionService settings." }
                 }
             }
+
+            ConsoleCommandSender.grantPermission(RootPermission)
         }
 
         phase `prepare commands`@{

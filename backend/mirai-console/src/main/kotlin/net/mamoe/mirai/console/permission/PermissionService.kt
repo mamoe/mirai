@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("NOTHING_TO_INLINE", "unused")
+@file:Suppress("NOTHING_TO_INLINE", "unused", "MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.console.permission
 
@@ -59,86 +59,76 @@ public interface PermissionService<P : Permission> {
         public val INSTANCE: PermissionService<out Permission> by lazy {
             PermissionServiceProvider.findSingleton()?.instance ?: BuiltInPermissionService
         }
+
+        public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
+            get(id) ?: throw PermissionNotFoundException(id)
+
+        internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
+            PermissionId("plugin.${name.toLowerCase()}", id.toLowerCase())
+
+        public fun PermissionId.findCorrespondingPermission(): Permission? = INSTANCE[this]
+
+        public fun PermissionId.findCorrespondingPermissionOrFail(): Permission = INSTANCE.getOrFail(this)
+
+        public fun PermissibleIdentifier.grantPermission(permission: Permission) {
+            INSTANCE.checkType(permission::class).grant(this, permission)
+        }
+
+        public fun Permissible.hasPermission(permission: Permission): Boolean =
+            permission.testPermission(this@hasPermission)
+
+        public fun PermissibleIdentifier.hasPermission(permission: Permission): Boolean =
+            permission.testPermission(this@hasPermission)
+
+        public fun PermissibleIdentifier.hasPermission(permissionId: PermissionId): Boolean {
+            val instance = permissionId.findCorrespondingPermissionOrFail()
+            return INSTANCE.checkType(instance::class).testPermission(this@hasPermission, instance)
+        }
+
+        public fun Permissible.hasPermission(permissionId: PermissionId): Boolean =
+            permissionId.testPermission(this@hasPermission)
+
+        public fun Permissible.getGrantedPermissions(): Sequence<Permission> =
+            INSTANCE.getGrantedPermissions(this@getGrantedPermissions.identifier)
+
+        public fun Permissible.grantPermission(vararg permissions: Permission) {
+            for (permission in permissions) {
+                INSTANCE.checkType(permission::class).grant(this.identifier, permission)
+            }
+        }
+
+        public fun Permissible.denyPermission(vararg permissions: Permission) {
+            for (permission in permissions) {
+                INSTANCE.checkType(permission::class).deny(this.identifier, permission)
+            }
+        }
+
+        public fun PermissibleIdentifier.getGrantedPermissions(): Sequence<Permission> =
+            INSTANCE.getGrantedPermissions(this@getGrantedPermissions)
+
+        public fun Permission.testPermission(permissible: Permissible): Boolean =
+            INSTANCE.checkType(this::class).testPermission(permissible.identifier, this@testPermission)
+
+        public fun Permission.testPermission(permissibleIdentifier: PermissibleIdentifier): Boolean =
+            INSTANCE.checkType(this::class).testPermission(permissibleIdentifier, this@testPermission)
+
+        public fun PermissionId.testPermission(permissible: Permissible): Boolean {
+            val p = INSTANCE[this] ?: return false
+            return p.testPermission(permissible)
+        }
+
+        public fun PermissionId.testPermission(permissible: PermissibleIdentifier): Boolean {
+            val p = INSTANCE[this] ?: return false
+            return p.testPermission(permissible)
+        }
     }
-}
-
-@ExperimentalPermission
-public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
-    get(id) ?: throw PermissionNotFoundException(id)
-
-@ExperimentalPermission
-internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
-    PermissionId("plugin.${name.toLowerCase()}", id.toLowerCase())
-
-@ExperimentalPermission
-public fun PermissionId.findCorrespondingPermission(): Permission? = PermissionService.INSTANCE[this]
-
-@ExperimentalPermission
-public fun PermissionId.findCorrespondingPermissionOrFail(): Permission = PermissionService.INSTANCE.getOrFail(this)
-
-@ExperimentalPermission
-public fun PermissibleIdentifier.grant(permission: Permission) {
-    PermissionService.INSTANCE.checkType(permission::class).grant(this, permission)
-}
-
-@ExperimentalPermission
-public fun Permissible.hasPermission(permission: Permission): Boolean =
-    permission.testPermission(this@hasPermission)
-
-@ExperimentalPermission
-public fun PermissibleIdentifier.hasPermission(permission: Permission): Boolean =
-    permission.testPermission(this@hasPermission)
-
-@Suppress("UNCHECKED_CAST")
-@ExperimentalPermission
-public fun PermissibleIdentifier.hasPermission(permissionId: PermissionId): Boolean =
-    (PermissionService.INSTANCE as PermissionService<Permission>).run {
-        testPermission(this@hasPermission, getOrFail(permissionId))
-    }
-
-@ExperimentalPermission
-public fun Permissible.hasPermission(permissionId: PermissionId): Boolean =
-    permissionId.testPermission(this@hasPermission)
-
-@JvmSynthetic
-@ExperimentalPermission
-public fun Permissible.getGrantedPermissions(): Sequence<Permission> =
-    PermissionService.INSTANCE.getGrantedPermissions(this@getGrantedPermissions.identifier)
-
-@JvmSynthetic
-@ExperimentalPermission
-public fun PermissibleIdentifier.getGrantedPermissions(): Sequence<Permission> =
-    PermissionService.INSTANCE.getGrantedPermissions(this@getGrantedPermissions)
-
-@JvmSynthetic
-@ExperimentalPermission
-public fun Permission.testPermission(permissible: Permissible): Boolean =
-    PermissionService.INSTANCE.checkType(this::class).testPermission(permissible.identifier, this@testPermission)
-
-@JvmSynthetic
-@ExperimentalPermission
-public fun Permission.testPermission(permissibleIdentifier: PermissibleIdentifier): Boolean =
-    PermissionService.INSTANCE.checkType(this::class).testPermission(permissibleIdentifier, this@testPermission)
-
-@JvmSynthetic
-@ExperimentalPermission
-public fun PermissionId.testPermission(permissible: Permissible): Boolean {
-    val p = PermissionService.INSTANCE[this] ?: return false
-    return p.testPermission(permissible)
-}
-
-@JvmSynthetic
-@ExperimentalPermission
-public fun PermissionId.testPermission(permissible: PermissibleIdentifier): Boolean {
-    val p = PermissionService.INSTANCE[this] ?: return false
-    return p.testPermission(permissible)
 }
 
 @OptIn(ExperimentalPermission::class)
 internal fun PermissionService<*>.checkType(permissionType: KClass<out Permission>): PermissionService<Permission> {
     return PermissionService.INSTANCE.run {
         require(this.permissionType.isSuperclassOf(permissionType)) {
-            "Custom-constructed Permission instance is not allowed. " +
+            "Custom-constructed Permission instance is not allowed (Required ${this.permissionType}, found ${permissionType}. " +
                     "Please obtain Permission from PermissionService.INSTANCE.register or PermissionService.INSTANCE.get"
         }
 

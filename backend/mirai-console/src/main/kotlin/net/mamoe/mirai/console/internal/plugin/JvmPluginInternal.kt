@@ -18,7 +18,7 @@ import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.permission.allocatePermissionIdForPlugin
+import net.mamoe.mirai.console.permission.PermissionService.Companion.allocatePermissionIdForPlugin
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader

@@ -16,7 +16,11 @@ import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
-import net.mamoe.mirai.console.permission.*
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.message.data.*
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
