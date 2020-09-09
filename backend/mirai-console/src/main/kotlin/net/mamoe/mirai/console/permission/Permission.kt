@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.permission
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 
 /**
@@ -19,8 +20,28 @@ import kotlinx.serialization.Serializable
 public interface Permission {
     public val id: PermissionId
     public val description: String
-    public val base: PermissionId?
+    public val parent: PermissionId
 }
+
+/**
+ * 所有权限的父权限.
+ */
+@ExperimentalPermission
+public object BasePermission :
+    Permission {
+    override val id: PermissionId = PermissionId("console", "base")
+    override val description: String get() = "The parent of any permission"
+    override val parent: PermissionId get() = id
+
+}
+
+@ConsoleExperimentalAPI
+@ExperimentalPermission
+public fun Permission.parentsWithSelfSequence(): Sequence<Permission> =
+    generateSequence(this) { p ->
+        p.parent.let { PermissionService.INSTANCE[it] }
+            ?.takeIf { parent -> parent != p }
+    }
 
 /**
  * [Permission] 的简单实现
@@ -30,5 +51,5 @@ public interface Permission {
 public class PermissionImpl(
     override val id: PermissionId,
     override val description: String,
-    override val base: PermissionId?
+    override val parent: PermissionId = BasePermission.id
 ) : Permission

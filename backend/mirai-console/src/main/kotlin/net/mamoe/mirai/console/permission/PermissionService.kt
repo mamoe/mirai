@@ -29,8 +29,12 @@ public interface PermissionService<P : Permission> {
 
     public fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<P>
 
-    public fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: P): Boolean =
-        getGrantedPermissions(permissibleIdentifier).any { it == permission }
+    public fun testPermission(permissibleIdentifier: PermissibleIdentifier, permissionId: PermissionId): Boolean {
+        val all = this[permissionId]?.parentsWithSelfSequence() ?: return false
+        return getGrantedPermissions(permissibleIdentifier).any { p ->
+            all.any { p.id == it.id }
+        }
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////
@@ -57,6 +61,9 @@ public interface PermissionService<P : Permission> {
 }
 
 @ExperimentalPermission
+public fun PermissionId.findCorrespondingPermission(): Permission? = PermissionService.INSTANCE[this]
+
+@ExperimentalPermission
 public fun PermissibleIdentifier.grant(permission: Permission) {
     PermissionService.INSTANCE.checkType(permission::class).grant(this, permission)
 }
@@ -71,15 +78,14 @@ public fun PermissibleIdentifier.hasPermission(permission: Permission): Boolean 
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalPermission
-public fun PermissibleIdentifier.hasPermission(permission: PermissionId): Boolean =
+public fun PermissibleIdentifier.hasPermission(permissionId: PermissionId): Boolean =
     (PermissionService.INSTANCE as PermissionService<Permission>).run {
-        val p = this[permission] ?: return false
-        testPermission(this@hasPermission, p)
+        testPermission(this@hasPermission, permissionId)
     }
 
 @ExperimentalPermission
 public fun Permissible.hasPermission(permissionId: PermissionId): Boolean =
-    PermissionService.run { permissionId.testPermission(this@hasPermission) }
+    permissionId.testPermission(this@hasPermission)
 
 @JvmSynthetic
 @ExperimentalPermission
@@ -94,12 +100,12 @@ public fun PermissibleIdentifier.getGrantedPermissions(): Sequence<Permission> =
 @JvmSynthetic
 @ExperimentalPermission
 public fun Permission.testPermission(permissible: Permissible): Boolean =
-    PermissionService.INSTANCE.checkType(this::class).testPermission(permissible.identifier, this@testPermission)
+    PermissionService.INSTANCE.checkType(this::class).testPermission(permissible.identifier, this@testPermission.id)
 
 @JvmSynthetic
 @ExperimentalPermission
 public fun Permission.testPermission(permissibleIdentifier: PermissibleIdentifier): Boolean =
-    PermissionService.INSTANCE.checkType(this::class).testPermission(permissibleIdentifier, this@testPermission)
+    PermissionService.INSTANCE.checkType(this::class).testPermission(permissibleIdentifier, this@testPermission.id)
 
 @JvmSynthetic
 @ExperimentalPermission
