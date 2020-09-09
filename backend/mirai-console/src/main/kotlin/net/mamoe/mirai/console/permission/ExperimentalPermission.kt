@@ -12,7 +12,9 @@ package net.mamoe.mirai.console.permission
 import kotlin.annotation.AnnotationTarget.*
 
 /**
- * 标记一个实验性的权限系统 API
+ * 标记一个实验性的权限系统 API.
+ *
+ * 权限系统是在 1.0-M4 引入的一个实验性系统, 目前不具有 API 稳定性.
  */
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)

@@ -30,7 +30,8 @@ public interface PermissionService<P : Permission> {
 
     public fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<P>
 
-    public fun testPermission(permissibleIdentifier: PermissibleIdentifier, permissionId: PermissionId): Boolean {
+    public fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: P): Boolean {
+        val permissionId = permission.id
         val all = this[permissionId]?.parentsWithSelfSequence() ?: return false
         return getGrantedPermissions(permissibleIdentifier).any { p ->
             all.any { p.id == it.id }
@@ -62,6 +63,11 @@ public interface PermissionService<P : Permission> {
 }
 
 @ExperimentalPermission
+public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P {
+
+}
+
+@ExperimentalPermission
 internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
     PermissionId("plugin.${name.toLowerCase()}", id.toLowerCase())
 
@@ -85,7 +91,7 @@ public fun PermissibleIdentifier.hasPermission(permission: Permission): Boolean 
 @ExperimentalPermission
 public fun PermissibleIdentifier.hasPermission(permissionId: PermissionId): Boolean =
     (PermissionService.INSTANCE as PermissionService<Permission>).run {
-        testPermission(this@hasPermission, permissionId)
+        testPermission(this@hasPermission, get(permissionId) ?: PermissionNotFoundException(""))
     }
 
 @ExperimentalPermission
