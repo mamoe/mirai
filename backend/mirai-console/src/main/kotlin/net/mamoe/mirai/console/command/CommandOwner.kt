@@ -24,12 +24,14 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
  *
  * @see JvmPlugin 是一个 [CommandOwner]
  */
+@OptIn(ExperimentalPermission::class)
 public interface CommandOwner : PermissionIdNamespace {
     /**
      * 此 [PermissionIdNamespace] 拥有的指令都默认将 [basePermission] 作为父权限.
      *
      * TODO document
      */
+    @ExperimentalPermission
     public val basePermission: PermissionId
 }
 
@@ -37,6 +39,7 @@ public interface CommandOwner : PermissionIdNamespace {
  * 代表控制台所有者. 所有的 mirai-console 内建的指令都属于 [ConsoleCommandOwner].
  */
 internal object ConsoleCommandOwner : CommandOwner {
+    @ExperimentalPermission
     override val basePermission: PermissionId get() = BasePermission.id
 
     @ExperimentalPermission

@@ -69,7 +69,8 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  * @see buildCommandArgumentContext
  */
 @ConsoleExperimentalAPI
-public abstract class JCompositeCommand @JvmOverloads constructor(
+public abstract class JCompositeCommand @OptIn(ExperimentalPermission::class)
+@JvmOverloads constructor(
     owner: CommandOwner,
     vararg names: String,
     parentPermission: PermissionId = owner.basePermission,

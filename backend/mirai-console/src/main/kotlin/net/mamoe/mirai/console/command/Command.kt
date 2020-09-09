@@ -55,6 +55,7 @@ public interface Command {
     /**
      * 指令权限
      */
+    @ExperimentalPermission
     public val permission: Permission
 
     /**
@@ -100,6 +101,7 @@ public suspend inline fun Command.onCommand(sender: CommandSender, args: Message
  * @see RawCommand
  */
 public abstract class AbstractCommand
+@OptIn(ExperimentalPermission::class)
 @JvmOverloads constructor(
     /** 指令拥有者. */
     public override val owner: CommandOwner,

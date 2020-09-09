@@ -44,7 +44,8 @@ internal object SimpleCommandSubCommandAnnotationResolver :
         baseCommand.names
 }
 
-internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
+internal abstract class AbstractReflectionCommand @OptIn(ExperimentalPermission::class)
+@JvmOverloads constructor(
     owner: CommandOwner,
     names: Array<out String>,
     description: String = "<no description available>",
@@ -117,13 +118,13 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
         }
     }
 
-    internal class DefaultSubCommandDescriptor(
+    internal class DefaultSubCommandDescriptor @OptIn(ExperimentalPermission::class) constructor(
         val description: String,
         val permission: Permission,
         val onCommand: suspend (sender: CommandSender, rawArgs: MessageChain) -> Unit
     )
 
-    internal inner class SubCommandDescriptor(
+    internal inner class SubCommandDescriptor @OptIn(ExperimentalPermission::class) constructor(
         val names: Array<out String>,
         val params: Array<CommandParameter<*>>,
         val description: String,
@@ -132,6 +133,8 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
         val context: CommandArgumentContext
     ) {
         val usage: String = createUsage(this@AbstractReflectionCommand)
+
+        @OptIn(ExperimentalPermission::class)
         internal suspend fun parseAndExecute(
             sender: CommandSender,
             argsWithSubCommandNameNotRemoved: MessageChain,

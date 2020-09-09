@@ -31,7 +31,7 @@ import net.mamoe.mirai.message.data.MessageChain
  * @see SimpleCommand 简单指令
  * @see CompositeCommand 复合指令
  */
-public abstract class RawCommand(
+public abstract class RawCommand @OptIn(ExperimentalPermission::class) constructor(
     /**
      * 指令拥有者.
      * @see CommandOwner

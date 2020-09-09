@@ -82,7 +82,7 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
  * @see buildCommandArgumentContext
  */
 @ConsoleExperimentalAPI
-public abstract class CompositeCommand(
+public abstract class CompositeCommand @OptIn(ExperimentalPermission::class) constructor(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
