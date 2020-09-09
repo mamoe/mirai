@@ -63,9 +63,8 @@ public interface PermissionService<P : Permission> {
 }
 
 @ExperimentalPermission
-public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P {
-
-}
+public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
+    get(id) ?: throw PermissionNotFoundException(id)
 
 @ExperimentalPermission
 internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
@@ -73,6 +72,9 @@ internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id
 
 @ExperimentalPermission
 public fun PermissionId.findCorrespondingPermission(): Permission? = PermissionService.INSTANCE[this]
+
+@ExperimentalPermission
+public fun PermissionId.findCorrespondingPermissionOrFail(): Permission = PermissionService.INSTANCE.getOrFail(this)
 
 @ExperimentalPermission
 public fun PermissibleIdentifier.grant(permission: Permission) {
@@ -91,7 +93,7 @@ public fun PermissibleIdentifier.hasPermission(permission: Permission): Boolean 
 @ExperimentalPermission
 public fun PermissibleIdentifier.hasPermission(permissionId: PermissionId): Boolean =
     (PermissionService.INSTANCE as PermissionService<Permission>).run {
-        testPermission(this@hasPermission, get(permissionId) ?: PermissionNotFoundException(""))
+        testPermission(this@hasPermission, getOrFail(permissionId))
     }
 
 @ExperimentalPermission
@@ -111,12 +113,12 @@ public fun PermissibleIdentifier.getGrantedPermissions(): Sequence<Permission> =
 @JvmSynthetic
 @ExperimentalPermission
 public fun Permission.testPermission(permissible: Permissible): Boolean =
-    PermissionService.INSTANCE.checkType(this::class).testPermission(permissible.identifier, this@testPermission.id)
+    PermissionService.INSTANCE.checkType(this::class).testPermission(permissible.identifier, this@testPermission)
 
 @JvmSynthetic
 @ExperimentalPermission
 public fun Permission.testPermission(permissibleIdentifier: PermissibleIdentifier): Boolean =
-    PermissionService.INSTANCE.checkType(this::class).testPermission(permissibleIdentifier, this@testPermission.id)
+    PermissionService.INSTANCE.checkType(this::class).testPermission(permissibleIdentifier, this@testPermission)
 
 @JvmSynthetic
 @ExperimentalPermission

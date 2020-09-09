@@ -48,7 +48,7 @@ public object AllGrantPermissionService : PermissionService<PermissionImpl> {
     override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
     }
 
-    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permissionId: PermissionId): Boolean =
+    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl): Boolean =
         true
 
     override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
@@ -80,7 +80,7 @@ public object AllDenyPermissionService : PermissionService<PermissionImpl> {
     override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
     }
 
-    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permissionId: PermissionId): Boolean =
+    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl): Boolean =
         false
 
     override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
