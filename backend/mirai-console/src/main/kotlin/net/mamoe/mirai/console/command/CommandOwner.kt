@@ -10,10 +10,10 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
-import net.mamoe.mirai.console.permission.AncestorPermission
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionIdNamespace
+import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 
 /**
@@ -41,7 +41,7 @@ public interface CommandOwner : PermissionIdNamespace {
 internal object ConsoleCommandOwner : CommandOwner {
     @ExperimentalPermission
     override val basePermission: PermissionId
-        get() = AncestorPermission.id
+        get() = RootPermission.id
 
     @ExperimentalPermission
     override fun permissionId(id: String): PermissionId = PermissionId("console", id)

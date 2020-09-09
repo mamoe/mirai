@@ -45,7 +45,7 @@ public interface PermissionService<P : Permission> {
     public fun register(
         id: PermissionId,
         description: String,
-        base: PermissionId = AncestorPermission.id
+        base: PermissionId = RootPermission.id
     ): P
 
     ///////////////////////////////////////////////////////////////////////////
