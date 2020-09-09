@@ -17,7 +17,7 @@ public interface PermissibleIdentifier {
 
     public companion object {
         @ExperimentalPermission
-        public infix fun PermissibleIdentifier.grantedWith(with: PermissibleIdentifier): Boolean {
+        public fun PermissibleIdentifier.grantedWith(with: PermissibleIdentifier): Boolean {
             return allParentsWithSelf().any { it == with }
         }
 

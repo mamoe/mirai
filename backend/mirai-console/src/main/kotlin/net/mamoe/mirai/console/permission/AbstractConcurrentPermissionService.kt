@@ -49,7 +49,7 @@ public abstract class AbstractConcurrentPermissionService<P : Permission> : Perm
 
             val granted =
                 if (permissibleIdentifiers.isEmpty()) false
-                else permissibleIdentifiers.any { permissibleIdentifier grantedWith it }
+                else permissibleIdentifiers.any { permissibleIdentifier.grantedWith(it) }
 
             if (granted) get(permissionIdentifier)?.let { yield(it) }
         }
