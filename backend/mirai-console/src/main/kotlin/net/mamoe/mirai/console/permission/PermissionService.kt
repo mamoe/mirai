@@ -43,7 +43,7 @@ public interface PermissionService<P : Permission> {
     public fun register(
         id: PermissionId,
         description: String,
-        base: PermissionId? = null
+        base: PermissionId = BasePermission.id
     ): P
 
     ///////////////////////////////////////////////////////////////////////////
@@ -59,6 +59,9 @@ public interface PermissionService<P : Permission> {
         }
     }
 }
+
+internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
+    PermissionId("plugin.${name.toLowerCase()}", id.toLowerCase())
 
 @ExperimentalPermission
 public fun PermissionId.findCorrespondingPermission(): Permission? = PermissionService.INSTANCE[this]

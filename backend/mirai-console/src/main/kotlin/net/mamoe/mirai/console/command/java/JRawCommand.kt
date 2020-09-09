@@ -53,7 +53,7 @@ public abstract class JRawCommand @JvmOverloads constructor(
     public override val owner: CommandOwner,
     /** 指令名. 需要至少有一个元素. 所有元素都不能带有空格 */
     public override vararg val names: String,
-    basePermission: PermissionId? = null,
+    parentPermission: PermissionId = owner.basePermission,
 ) : Command {
     /** 用法说明, 用于发送给用户 */
     public override var usage: String = "<no usages given>"
@@ -64,7 +64,7 @@ public abstract class JRawCommand @JvmOverloads constructor(
         protected set
 
     /** 指令权限 */
-    public final override var permission: Permission = createCommandPermission(basePermission)
+    public final override var permission: Permission = createCommandPermission(parentPermission)
         protected set
 
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */

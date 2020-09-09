@@ -14,7 +14,9 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 
 /**
- * 一个权限节点
+ * 一个权限节点.
+ *
+ * 由 [PermissionService] 实现不同, [Permission] 可能会有多种实例. 但一个权限总是拥有确定的 [id]
  */
 @ExperimentalPermission
 public interface Permission {
@@ -29,10 +31,9 @@ public interface Permission {
 @ExperimentalPermission
 public object BasePermission :
     Permission {
-    override val id: PermissionId = PermissionId("console", "base")
+    override val id: PermissionId = PermissionId("*", "*")
     override val description: String get() = "The parent of any permission"
     override val parent: PermissionId get() = id
-
 }
 
 @ConsoleExperimentalAPI

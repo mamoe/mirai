@@ -105,7 +105,7 @@ public abstract class AbstractCommand
     public override val owner: CommandOwner,
     vararg names: String,
     description: String = "<no description available>",
-    basePermission: PermissionId? = null,
+    parentPermission: PermissionId = owner.basePermission,
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
     public override val prefixOptional: Boolean = false
 ) : Command {
@@ -116,5 +116,5 @@ public abstract class AbstractCommand
         }.toTypedArray()
 
     @OptIn(ExperimentalPermission::class)
-    public override val permission: Permission by lazy { createCommandPermission(basePermission) }
+    public override val permission: Permission by lazy { createCommandPermission(parentPermission) }
 }

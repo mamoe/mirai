@@ -139,14 +139,11 @@ internal fun Group.fuzzySearchMember(
 }
 
 @OptIn(ExperimentalPermission::class)
-internal fun Command.createCommandPermission(basePermission: PermissionId?): Permission {
-    return PermissionService.INSTANCE.register(owner.permissionId(primaryName), description, basePermission)
+internal fun Command.createCommandPermission(parent: PermissionId): Permission {
+    return PermissionService.INSTANCE.register(owner.permissionId(primaryName), description, parent)
 }
 
 //// internal
-
-@JvmSynthetic
-internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Array(size - n) { this[n + it] }
 
 @OptIn(ExperimentalPermission::class)
 @JvmSynthetic

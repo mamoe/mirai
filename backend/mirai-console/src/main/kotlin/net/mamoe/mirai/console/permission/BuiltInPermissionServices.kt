@@ -32,7 +32,7 @@ public object AllGrantPermissionService : PermissionService<PermissionImpl> {
     override fun register(
         id: PermissionId,
         description: String,
-        base: PermissionId?
+        base: PermissionId
     ): PermissionImpl {
         val new = PermissionImpl(id, description, base)
         if (all.putIfAbsent(id, new) != null) {
@@ -48,7 +48,7 @@ public object AllGrantPermissionService : PermissionService<PermissionImpl> {
     override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
     }
 
-    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl): Boolean =
+    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permissionId: PermissionId): Boolean =
         true
 
     override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
@@ -64,7 +64,7 @@ public object AllDenyPermissionService : PermissionService<PermissionImpl> {
     override fun register(
         id: PermissionId,
         description: String,
-        base: PermissionId?
+        base: PermissionId
     ): PermissionImpl {
         val new = PermissionImpl(id, description, base)
         if (all.putIfAbsent(id, new) != null) {
@@ -80,7 +80,7 @@ public object AllDenyPermissionService : PermissionService<PermissionImpl> {
     override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
     }
 
-    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl): Boolean =
+    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permissionId: PermissionId): Boolean =
         false
 
     override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
@@ -100,7 +100,7 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
     override val grantedPermissionsMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
         get() = config.grantedPermissionMap as MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
 
-    override fun createPermission(id: PermissionId, description: String, base: PermissionId?): PermissionImpl =
+    override fun createPermission(id: PermissionId, description: String, base: PermissionId): PermissionImpl =
         PermissionImpl(id, description, base)
 
     internal val config: ConcurrentSaveData<PermissionImpl> =

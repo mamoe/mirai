@@ -43,13 +43,13 @@ public abstract class RawCommand(
     public override val usage: String = "<no usages given>",
     /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
     public override val description: String = "<no descriptions given>",
-    /** 指令权限 */
-    basePermission: PermissionId? = null,
+    /** 指令父权限 */
+    parentPermission: PermissionId = owner.basePermission,
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
     public override val prefixOptional: Boolean = false
 ) : Command {
     @OptIn(ExperimentalPermission::class)
-    public override val permission: Permission by lazy { createCommandPermission(basePermission) }
+    public override val permission: Permission by lazy { createCommandPermission(parentPermission) }
 
     /**
      * 在指令被执行时调用.

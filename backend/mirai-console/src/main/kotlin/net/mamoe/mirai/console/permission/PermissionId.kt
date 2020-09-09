@@ -16,6 +16,9 @@ import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.internal.data.map
 
 
+/**
+ * [PermissionId] 与 [Permission] 唯一对应.
+ */
 @Serializable
 @ExperimentalPermission
 public data class PermissionId(

@@ -72,8 +72,8 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 public abstract class JCompositeCommand @JvmOverloads constructor(
     owner: CommandOwner,
     vararg names: String,
-    basePermission: PermissionId? = null,
-) : CompositeCommand(owner, *names, basePermission = basePermission) {
+    parentPermission: PermissionId = owner.basePermission,
+) : CompositeCommand(owner, *names, parentPermission = parentPermission) {
     /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
     public final override var description: String = "<no descriptions given>"
         protected set

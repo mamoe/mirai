@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
+import net.mamoe.mirai.console.permission.BasePermission
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionIdNamespace
@@ -23,12 +24,21 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
  *
  * @see JvmPlugin 是一个 [CommandOwner]
  */
-public interface CommandOwner : PermissionIdNamespace
+public interface CommandOwner : PermissionIdNamespace {
+    /**
+     * 此 [PermissionIdNamespace] 拥有的指令都默认将 [basePermission] 作为父权限.
+     *
+     * TODO document
+     */
+    public val basePermission: PermissionId
+}
 
 /**
  * 代表控制台所有者. 所有的 mirai-console 内建的指令都属于 [ConsoleCommandOwner].
  */
 internal object ConsoleCommandOwner : CommandOwner {
+    override val basePermission: PermissionId get() = BasePermission.id
+
     @ExperimentalPermission
     override fun permissionId(id: String): PermissionId = PermissionId("console", id)
 }

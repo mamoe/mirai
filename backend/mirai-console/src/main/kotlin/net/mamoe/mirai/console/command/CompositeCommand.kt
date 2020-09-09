@@ -86,10 +86,10 @@ public abstract class CompositeCommand(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
-    basePermission: PermissionId? = null,
+    parentPermission: PermissionId = owner.basePermission,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
-) : Command, AbstractReflectionCommand(owner, names, description, basePermission, prefixOptional),
+) : Command, AbstractReflectionCommand(owner, names, description, parentPermission, prefixOptional),
     CommandArgumentContextAware {
 
     /**

@@ -48,13 +48,13 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     owner: CommandOwner,
     names: Array<out String>,
     description: String = "<no description available>",
-    basePermission: PermissionId? = null,
+    parentPermission: PermissionId = owner.basePermission,
     prefixOptional: Boolean = false
 ) : Command, AbstractCommand(
     owner,
     names = names,
     description = description,
-    basePermission = basePermission,
+    parentPermission = parentPermission,
     prefixOptional = prefixOptional
 ), CommandArgumentContextAware {
     internal abstract val subCommandAnnotationResolver: SubCommandAnnotationResolver
@@ -74,7 +74,7 @@ internal abstract class AbstractReflectionCommand @JvmOverloads constructor(
     internal val defaultSubCommand: DefaultSubCommandDescriptor by lazy {
         DefaultSubCommandDescriptor(
             "",
-            createCommandPermission(basePermission),
+            createCommandPermission(parentPermission),
             onCommand = { sender: CommandSender, args: MessageChain ->
                 sender.onDefault(args)
             }

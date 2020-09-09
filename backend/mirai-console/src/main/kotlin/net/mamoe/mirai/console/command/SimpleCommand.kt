@@ -52,7 +52,7 @@ public abstract class SimpleCommand(
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
-    basePermission: PermissionId? = null,
+    basePermission: PermissionId = owner.basePermission,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
 ) : Command, AbstractReflectionCommand(owner, names, description, basePermission, prefixOptional),

@@ -27,7 +27,7 @@ public interface PluginDescription {
     public val kind: PluginKind
 
     /**
-     * 插件名称. 不允许存在 ":".
+     * 插件名称. 不允许存在 ":", 推荐全英文.
      *
      * 插件名称不能完全是以下其中一种.
      * - console

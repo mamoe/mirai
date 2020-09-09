@@ -20,12 +20,12 @@ public abstract class AbstractConcurrentPermissionService<P : Permission> : Perm
     protected abstract fun createPermission(
         id: PermissionId,
         description: String,
-        base: PermissionId?
+        base: PermissionId = BasePermission.id
     ): P
 
     override fun get(id: PermissionId): P? = permissions[id]
 
-    override fun register(id: PermissionId, description: String, base: PermissionId?): P {
+    override fun register(id: PermissionId, description: String, base: PermissionId): P {
         grantedPermissionsMap[id] = CopyOnWriteArrayList() // mutations are not quite often performed
         val instance = createPermission(id, description, base)
         if (permissions.putIfAbsent(id, instance) != null) {
