@@ -9,11 +9,7 @@
 
 package net.mamoe.mirai.console.permission
 
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
-import kotlinx.serialization.builtins.serializer
-import net.mamoe.mirai.console.internal.data.map
 
 
 /**
@@ -33,14 +29,6 @@ public data class PermissionId(
             "':' is not allowed in id"
         }
     }
-
-    @Serializer(forClass = PermissionId::class)
-    public object AsClassSerializer
-
-    public object AsStringSerializer : KSerializer<PermissionId> by String.serializer().map(
-        serializer = { it.namespace + ":" + it.id },
-        deserializer = ::parseFromString
-    )
 
     public override fun toString(): String {
         return "$namespace:$id"

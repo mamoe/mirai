@@ -60,6 +60,7 @@ public interface PermissionService<P : Permission> {
     }
 }
 
+@ExperimentalPermission
 internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
     PermissionId("plugin.${name.toLowerCase()}", id.toLowerCase())
 
