@@ -17,7 +17,9 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 /**
  * 一个权限节点.
  *
- * 由 [PermissionService] 实现不同, [Permission] 可能会有多种实例. 但一个权限总是拥有确定的 [id]
+ * 由 [PermissionService] 实现不同, [Permission] 可能会有多种实例. 但一个权限总是拥有确定的 [id].
+ *
+ * 请不要手动实现这个接口. 总是从 [PermissionService.register] 获得实例.
  */
 @ExperimentalPermission
 public interface Permission {
@@ -26,15 +28,20 @@ public interface Permission {
     public val parentId: PermissionId
 }
 
+@OptIn(ExperimentalPermission::class)
+private val ROOT_PERMISSION_ID = PermissionId("*", "*")
+
 /**
  * 所有权限的父权限.
  */
+@get:JvmName("getRootPermission")
 @ExperimentalPermission
-public object RootPermission :
-    Permission {
-    override val id: PermissionId = PermissionId("*", "*")
-    override val description: String get() = "The parent of any permission"
-    override val parentId: PermissionId get() = id
+public val RootPermission: Permission by lazy {
+    PermissionService.INSTANCE.register(
+        ROOT_PERMISSION_ID,
+        "The parent of any permission",
+        ROOT_PERMISSION_ID
+    )
 }
 
 @ConsoleExperimentalAPI

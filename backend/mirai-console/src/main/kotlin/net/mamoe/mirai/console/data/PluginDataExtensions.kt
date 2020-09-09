@@ -183,7 +183,7 @@ public object PluginDataExtensions {
 
     private fun <K, V> createDelegateInstance(
         origin: SerializerAwareValue<MutableMap<K, V>>,
-        defaultValueComputer: (K) -> V
+        defaultValueComputer: (K) -> V,
     ): MutableMap<K, V> {
         return object : MutableMap<K, V>, AbstractMap<K, V>() {
             override val entries: MutableSet<MutableMap.MutableEntry<K, V>> get() = origin.value.entries
