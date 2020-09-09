@@ -11,6 +11,10 @@
 
 package net.mamoe.mirai.console.permission
 
+import kotlinx.serialization.Serializable
+
+/**
+ */
 @ExperimentalPermission("Classname is subject to change")
 public interface PermissibleIdentifier {
     public val parents: Array<out PermissibleIdentifier>
@@ -30,37 +34,57 @@ public interface PermissibleIdentifier {
     }
 }
 
+@Serializable
 @ExperimentalPermission
 public sealed class AbstractPermissibleIdentifier(
     public final override vararg val parents: PermissibleIdentifier
 ) : PermissibleIdentifier {
+    @Serializable
     public object AnyGroup : AbstractPermissibleIdentifier(AnyContact)
+
+    @Serializable
     public data class ExactGroup(public val groupId: Long) : AbstractPermissibleIdentifier(AnyGroup)
 
+    @Serializable
     public data class AnyMember(public val groupId: Long) : AbstractPermissibleIdentifier(AnyMemberFromAnyGroup)
+
+    @Serializable
     public object AnyMemberFromAnyGroup : AbstractPermissibleIdentifier(AnyUser)
+
+    @Serializable
     public data class ExactMember(
         public val groupId: Long,
         public val memberId: Long
     ) : AbstractPermissibleIdentifier(AnyMember(groupId), ExactUser(memberId))
 
+    @Serializable
     public object AnyFriend : AbstractPermissibleIdentifier(AnyUser)
+
+    @Serializable
     public data class ExactFriend(
         public val id: Long
     ) : AbstractPermissibleIdentifier(ExactUser(id))
 
+    @Serializable
     public object AnyTemp : AbstractPermissibleIdentifier(AnyUser)
+
+    @Serializable
     public data class ExactTemp(
         public val groupId: Long,
         public val id: Long
     ) : AbstractPermissibleIdentifier(ExactUser(groupId)) // TODO: 2020/9/8 ExactMember ?
 
+    @Serializable
     public object AnyUser : AbstractPermissibleIdentifier(AnyContact)
+
+    @Serializable
     public data class ExactUser(
         public val id: Long
     ) : AbstractPermissibleIdentifier(AnyUser)
 
+    @Serializable
     public object AnyContact : AbstractPermissibleIdentifier()
 
+    @Serializable
     public object Console : AbstractPermissibleIdentifier()
 }

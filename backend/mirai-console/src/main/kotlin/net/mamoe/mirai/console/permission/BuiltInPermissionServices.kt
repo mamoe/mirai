@@ -127,8 +127,8 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
                     ConcurrentHashMap()
                 )
 
-        public val grantedPermissionMap: MutableMap<PermissionId, MutableList<PermissibleIdentifier>>
-                by value<MutableMap<PermissionId, MutableList<PermissibleIdentifier>>>(ConcurrentHashMap())
+        public val grantedPermissionMap: MutableMap<PermissionId, MutableList<AbstractPermissibleIdentifier>>
+                by value<MutableMap<PermissionId, MutableList<AbstractPermissibleIdentifier>>>(ConcurrentHashMap())
                     .withDefault { CopyOnWriteArrayList() }
 
         public companion object {
