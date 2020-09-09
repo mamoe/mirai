@@ -22,7 +22,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 public interface Permission {
     public val id: PermissionId
     public val description: String
-    public val parent: PermissionId
+    public val parentId: PermissionId
 }
 
 /**
@@ -33,15 +33,14 @@ public object AncestorPermission :
     Permission {
     override val id: PermissionId = PermissionId("*", "*")
     override val description: String get() = "The parent of any permission"
-    override val parent: PermissionId get() = id
+    override val parentId: PermissionId get() = id
 }
 
 @ConsoleExperimentalAPI
 @ExperimentalPermission
 public fun Permission.parentsWithSelfSequence(): Sequence<Permission> =
     generateSequence(this) { p ->
-        p.parent.let { PermissionService.INSTANCE[it] }
-            ?.takeIf { parent -> parent != p }
+        p.parentId.findCorrespondingPermission()?.takeIf { parent -> parent != p }
     }
 
 /**
@@ -52,5 +51,5 @@ public fun Permission.parentsWithSelfSequence(): Sequence<Permission> =
 public class PermissionImpl(
     override val id: PermissionId,
     override val description: String,
-    override val parent: PermissionId = AncestorPermission.id
+    override val parentId: PermissionId = AncestorPermission.id
 ) : Permission
