@@ -23,7 +23,7 @@ public abstract class AbstractConcurrentPermissionService<P : Permission> : Perm
     protected abstract fun createPermission(
         id: PermissionId,
         description: String,
-        base: PermissionId = BasePermission.id
+        base: PermissionId = AncestorPermission.id
     ): P
 
     override fun get(id: PermissionId): P? = permissions[id]

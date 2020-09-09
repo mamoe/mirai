@@ -29,7 +29,7 @@ public interface Permission {
  * 所有权限的父权限.
  */
 @ExperimentalPermission
-public object BasePermission :
+public object AncestorPermission :
     Permission {
     override val id: PermissionId = PermissionId("*", "*")
     override val description: String get() = "The parent of any permission"
@@ -52,5 +52,5 @@ public fun Permission.parentsWithSelfSequence(): Sequence<Permission> =
 public class PermissionImpl(
     override val id: PermissionId,
     override val description: String,
-    override val parent: PermissionId = BasePermission.id
+    override val parent: PermissionId = AncestorPermission.id
 ) : Permission
