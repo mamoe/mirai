@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.permission
 
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
-import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.data.valueFromKType
@@ -105,17 +104,17 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
         ConcurrentSaveData(
             PermissionImpl::class.createType(),
             "PermissionService",
-            AutoSavePluginConfig()
-        )
+
+            )
 
     @Suppress("RedundantVisibilityModifier")
     @ExperimentalPermission
     internal class ConcurrentSaveData<P : Permission> private constructor(
         permissionType: KType,
         public override val saveName: String,
-        delegate: PluginConfig,
+        //   delegate: PluginConfig,
         @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?
-    ) : PluginConfig by delegate {
+    ) : AutoSavePluginConfig() {
         public val permissions: MutableMap<PermissionId, P>
                 by valueFromKType<MutableMap<PermissionId, P>>(
                     MutableMap::class.createType(
@@ -136,8 +135,8 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
             public operator fun <P : Permission> invoke(
                 permissionType: KType,
                 saveName: String,
-                delegate: PluginConfig,
-            ): ConcurrentSaveData<P> = ConcurrentSaveData(permissionType, saveName, delegate, null)
+                // delegate: PluginConfig,
+            ): ConcurrentSaveData<P> = ConcurrentSaveData(permissionType, saveName, null)
         }
     }
 }

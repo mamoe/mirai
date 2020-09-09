@@ -9,15 +9,19 @@
 
 package net.mamoe.mirai.console.internal.data
 
-import net.mamoe.mirai.console.data.*
+import kotlinx.serialization.json.Json
+import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
+import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.PluginDataHolder
+import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
+import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SilentLogger
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
 import net.mamoe.yamlkt.Yaml
-import net.mamoe.yamlkt.YamlConfiguration
 import java.io.File
 import java.nio.file.Path
 
@@ -62,16 +66,25 @@ internal open class MultiFilePluginDataStorageImpl(
 
     @ConsoleExperimentalAPI
     public override fun store(holder: PluginDataHolder, instance: PluginData) {
-        val yaml = if (instance is PluginConfig) Yaml(
+        @OptIn(ExperimentalPermission::class)
+        val yaml = if (instance.saveName == "PermissionService") Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            isLenient = true
+            allowStructuredMapKeys = true
+        } /*Yaml(
             configuration = YamlConfiguration(
                 mapSerialization = YamlConfiguration.MapSerialization.FLOW_MAP,
                 listSerialization = YamlConfiguration.ListSerialization.FLOW_SEQUENCE,
                 classSerialization = YamlConfiguration.MapSerialization.FLOW_MAP
             )
-        ) else Yaml.default
-
+        )*/ else Yaml.default
         getPluginDataFile(holder, instance).writeText(
-            yaml.encodeToString(instance.updaterSerializer, Unit)
+            kotlin.runCatching {
+                yaml.encodeToString(instance.updaterSerializer, Unit)
+            }.getOrElse {
+                throw IllegalStateException("Exception while saving $instance, saveName=${instance.saveName}", it)
+            }
         )
         logger.debug { "Successfully saved PluginData: ${instance.saveName} (containing ${instance.valueNodes.size} properties)" }
     }
