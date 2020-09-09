@@ -12,6 +12,9 @@ package net.mamoe.mirai.console.permission
 import net.mamoe.mirai.console.permission.PermissibleIdentifier.Companion.grantedWith
 import java.util.concurrent.CopyOnWriteArrayList
 
+/**
+ *
+ */
 @ExperimentalPermission
 public abstract class AbstractConcurrentPermissionService<P : Permission> : PermissionService<P> {
     protected abstract val permissions: MutableMap<PermissionId, P>
@@ -28,9 +31,8 @@ public abstract class AbstractConcurrentPermissionService<P : Permission> : Perm
     override fun register(id: PermissionId, description: String, base: PermissionId): P {
         grantedPermissionsMap[id] = CopyOnWriteArrayList() // mutations are not quite often performed
         val instance = createPermission(id, description, base)
-        if (permissions.putIfAbsent(id, instance) != null) {
-            throw DuplicatedPermissionRegistrationException("Duplicated Permission registry. new: $instance, old: ${permissions[id]}")
-        }
+        val old = permissions.putIfAbsent(id, instance)
+        if (old != null) throw DuplicatedPermissionRegistrationException(instance, old)
         return instance
     }
 

@@ -7,14 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate", "CanBeParameter")
 
 package net.mamoe.mirai.console.permission
 
 @ExperimentalPermission
-public open class DuplicatedPermissionRegistrationException : Exception {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
+public class DuplicatedPermissionRegistrationException(
+    newInstance: Permission,
+    public val existingInstance: Permission
+) : Exception("Duplicated Permission registry. new: $newInstance, existing: $existingInstance")
