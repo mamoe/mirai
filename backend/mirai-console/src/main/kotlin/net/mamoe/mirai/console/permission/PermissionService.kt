@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.permission
 import net.mamoe.mirai.console.extension.SingletonExtensionPoint.Companion.findSingleton
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSuperclassOf
 
 /**
  * [PermissionServiceProvider]
@@ -128,7 +129,7 @@ public fun PermissionId.testPermission(permissible: PermissibleIdentifier): Bool
 @OptIn(ExperimentalPermission::class)
 internal fun PermissionService<*>.checkType(permissionType: KClass<out Permission>): PermissionService<Permission> {
     return PermissionService.INSTANCE.run {
-        require(permissionType.isInstance(this@checkType)) {
+        require(this.permissionType.isSuperclassOf(permissionType)) {
             "Custom-constructed Permission instance is not allowed. " +
                     "Please obtain Permission from PermissionService.INSTANCE.register or PermissionService.INSTANCE.get"
         }
