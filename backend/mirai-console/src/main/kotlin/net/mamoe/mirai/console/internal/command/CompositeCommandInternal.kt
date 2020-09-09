@@ -234,7 +234,7 @@ internal fun Array<AbstractReflectionCommand.SubCommandDescriptor>.createUsage(b
 
 internal fun AbstractReflectionCommand.SubCommandDescriptor.createUsage(baseCommand: AbstractReflectionCommand): String =
     buildString {
-        if (!baseCommand.prefixOptional) {
+        if (baseCommand.prefixOptional) {
             append("(")
             append(CommandManager.commandPrefix)
             append(")")
