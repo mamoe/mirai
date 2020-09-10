@@ -23,7 +23,6 @@ import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
-import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -54,15 +53,29 @@ internal object JarPluginLoaderImpl :
     override fun Sequence<File>.extractPlugins(): List<JvmPlugin> {
         ensureActive()
 
-        fun Sequence<Map.Entry<File, ClassLoader>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
+        fun Sequence<Map.Entry<File, JvmPluginClassLoader>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
             return map { (f, pluginClassLoader) ->
-                f to pluginClassLoader.findServices(
+                val exportManagers = pluginClassLoader.findServices(
+                    ExportManager::class
+                ).loadAllServices()
+                if (exportManagers.isEmpty()) {
+                    val rules = pluginClassLoader.getResourceAsStream("export-rules.txt")
+                    if (rules == null)
+                        pluginClassLoader.declaredFilter = StandardExportManagers.AllExported
+                    else rules.bufferedReader(Charsets.UTF_8).useLines {
+                        pluginClassLoader.declaredFilter = ExportManagerImpl.parse(it.iterator())
+                    }
+                } else {
+                    pluginClassLoader.declaredFilter = exportManagers[0]
+                }
+                f to (pluginClassLoader.findServices(
                     JvmPlugin::class,
                     KotlinPlugin::class,
                     AbstractJvmPlugin::class,
                     JavaPlugin::class
-                ).loadAllServices()
+                ).loadAllServices())
             }.flatMap { (f, list) ->
+
                 list.associateBy { f }.asSequence()
             }
         }

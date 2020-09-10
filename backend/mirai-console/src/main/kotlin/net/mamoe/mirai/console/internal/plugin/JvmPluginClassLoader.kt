@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.console.internal.plugin
 
+import net.mamoe.mirai.console.plugin.jvm.ExportManager
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
@@ -22,6 +23,7 @@ internal class JvmPluginClassLoader(
     val classloaders: Collection<JvmPluginClassLoader>
 ) : URLClassLoader(urls, parent) {
     private val cache = ConcurrentHashMap<String, Class<*>>()
+    internal var declaredFilter: ExportManager? = null
 
     companion object {
         init {
@@ -43,6 +45,12 @@ internal class JvmPluginClassLoader(
             return null
         classloaders.forEach { otherClassloader ->
             if (otherClassloader === this) return@forEach
+            val filter = otherClassloader.declaredFilter
+            if (filter != null) {
+                if (!filter.isExported(name)) {
+                    return@forEach
+                }
+            }
             val otherClass = otherClassloader.findClass(name, true)
             if (otherClass != null) return otherClass
         }
