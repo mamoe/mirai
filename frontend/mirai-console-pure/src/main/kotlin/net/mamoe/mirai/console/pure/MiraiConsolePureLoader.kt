@@ -92,11 +92,11 @@ internal object ConsoleCommandSenderImplPure : MiraiConsoleImplementation.Consol
         kotlin.runCatching {
             lineReader.printAbove(message)
         }.onFailure {
-            consoleLogger.error(it)
+            consoleLogger.error("Exception while ConsoleCommandSenderImplPure.sendMessage", it)
         }
     }
 
     override suspend fun sendMessage(message: Message) {
-        return sendMessage(message.contentToString())
+        return sendMessage(message.toString())
     }
 }
