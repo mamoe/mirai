@@ -28,7 +28,6 @@
 [`RawCommand`]: src/main/kotlin/net/mamoe/mirai/console/command/RawCommand.kt
 [`CommandManager`]: src/main/kotlin/net/mamoe/mirai/console/command/CommandManager.kt
 
-[`BotManager`]: src/main/kotlin/net/mamoe/mirai/console/util/BotManager.kt
 [`Annotations`]: src/main/kotlin/net/mamoe/mirai/console/util/Annotations.kt
 [`ConsoleInput`]: src/main/kotlin/net/mamoe/mirai/console/util/ConsoleInput.kt
 [`JavaPluginScheduler`]: src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
