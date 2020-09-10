@@ -33,6 +33,7 @@ import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
+import net.mamoe.mirai.console.internal.extensions.BuiltInSingletonExtensionSelector
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.permission.BuiltInPermissionService
@@ -125,7 +126,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         val pluginLoadSession: PluginManagerImpl.PluginLoadSession
 
-        phase `load plugins`@{
+        phase `load plugin provider plugins and high priority extension plugins`@{
             PluginManager // init
 
             mainLogger.verbose { "Loading PluginLoader provider plugins..." }
@@ -141,7 +142,12 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
         }
 
-        SingletonExtensionSelector.instance // init
+        phase `load SingletonExtensionSelector`@{
+            val instance = SingletonExtensionSelector.instance
+            if (instance is BuiltInSingletonExtensionSelector) {
+                ConsoleDataScope.addAndReloadConfig(instance.config)
+            }
+        }
 
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
