@@ -37,10 +37,10 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * - `C<A>.toMessageScope()`. 其中 `C` 表示 `Iterable`, `Sequence`, `Flow`, `Array` 其中任一.
  *
  * ## 连接 [MessageScope]
- * - `A.scopeWith(vararg B)`.
- * - `A.scopeWith(vararg A)`.
- * - `A.scopeWithNotNull(vararg B?)`. 类似 [listOfNotNull].
- * - `A.scopeWithNotNull(vararg A?)`. 类似 [listOfNotNull].
+ * - `A?.scopeWith(vararg B?)`.
+ * - `A?.scopeWith(vararg A?)`.
+ *
+ * `null` 项将会被过滤.
  *
  * ## 自动去重
  * 在连接时, [MessageScope] 会自动根据真实的 [收信对象][CommandSender.subject] 去重.
@@ -82,12 +82,12 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  *     // 使用 MessageScope, 清晰逻辑
  *     // 表示至少发送给 `this`, 当 `this` 的真实发信对象与 `target.group` 不同时, 还额外发送给 `target.group`
- *     this.scopeWithNotNull(target.group) {
+ *     this.scopeWith(target.group) {
  *         sendMessage("${name} 禁言了 ${target.nameCardOrNick} $duration 秒")
  *     }
  *
  *     // 同样地, 可以扩展用法, 同时私聊指令执行者:
- *     // this.scopeWithNotNull(
+ *     // this.scopeWith(
  *     //    target,
  *     //    target.group
  *     // ) { ... }
