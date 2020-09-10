@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
-import net.mamoe.mirai.console.internal.command.createCommandPermission
+import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
@@ -67,7 +67,7 @@ public abstract class JRawCommand @OptIn(ExperimentalPermission::class)
 
     /** 指令权限 */
     @ExperimentalPermission
-    public final override var permission: Permission = createCommandPermission(parentPermission)
+    public final override var permission: Permission = createOrFindCommandPermission(parentPermission)
         protected set
 
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */

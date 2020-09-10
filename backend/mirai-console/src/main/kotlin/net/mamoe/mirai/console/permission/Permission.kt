@@ -56,7 +56,7 @@ public fun Permission.parentsWithSelfSequence(): Sequence<Permission> =
  */
 @Serializable
 @ExperimentalPermission
-public class PermissionImpl(
+public data class PermissionImpl(
     override val id: PermissionId,
     override val description: String,
     override val parentId: PermissionId = RootPermission.id

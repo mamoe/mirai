@@ -15,7 +15,7 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.java.JCommand
-import net.mamoe.mirai.console.internal.command.createCommandPermission
+import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.internal.command.isValidSubName
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
@@ -118,5 +118,5 @@ public abstract class AbstractCommand
         }.toTypedArray()
 
     @OptIn(ExperimentalPermission::class)
-    public override val permission: Permission by lazy { createCommandPermission(parentPermission) }
+    public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
 }

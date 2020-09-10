@@ -79,7 +79,7 @@ internal abstract class AbstractReflectionCommand @OptIn(ExperimentalPermission:
     internal val defaultSubCommand: DefaultSubCommandDescriptor by lazy {
         DefaultSubCommandDescriptor(
             "",
-            createCommandPermission(parentPermission),
+            createOrFindCommandPermission(parentPermission),
             onCommand = { sender: CommandSender, args: MessageChain ->
                 sender.onDefault(args)
             }

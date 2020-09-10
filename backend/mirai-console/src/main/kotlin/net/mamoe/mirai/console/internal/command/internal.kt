@@ -143,8 +143,9 @@ internal fun Group.fuzzySearchMember(
 }
 
 @OptIn(ExperimentalPermission::class)
-internal fun Command.createCommandPermission(parent: PermissionId): Permission {
-    return PermissionService.INSTANCE.register(owner.permissionId(primaryName), description, parent)
+internal fun Command.createOrFindCommandPermission(parent: PermissionId): Permission {
+    val id = owner.permissionId(primaryName)
+    return PermissionService.INSTANCE[id] ?: PermissionService.INSTANCE.register(id, description, parent)
 }
 
 //// internal
