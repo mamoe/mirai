@@ -113,7 +113,7 @@ public object BuiltInCommands {
                 closingLock.withLock {
                     sendMessage("Stopping mirai-console")
                     kotlin.runCatching {
-                        MiraiConsole.job.cancelAndJoin()
+                        ignoreException<CancellationException> { MiraiConsole.job.cancelAndJoin() }
                     }.fold(
                         onSuccess = {
                             ignoreException<EventCancelledException> { sendMessage("mirai-console stopped successfully.") }
