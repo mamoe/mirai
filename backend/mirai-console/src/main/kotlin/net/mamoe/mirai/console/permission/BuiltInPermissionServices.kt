@@ -12,13 +12,10 @@ package net.mamoe.mirai.console.permission
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.data.value
-import net.mamoe.mirai.console.data.valueFromKType
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.KTypeProjection
-import kotlin.reflect.KVariance
 import kotlin.reflect.full.createType
 
 
@@ -91,7 +88,7 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
     @ExperimentalPermission
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
-    override val permissions: MutableMap<PermissionId, PermissionImpl> get() = config.permissions
+    override val permissions: MutableMap<PermissionId, PermissionImpl> = ConcurrentHashMap()
 
     @Suppress("UNCHECKED_CAST")
     override val grantedPermissionsMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
@@ -115,17 +112,6 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
         //   delegate: PluginConfig,
         @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?
     ) : AutoSavePluginConfig() {
-        public val permissions: MutableMap<PermissionId, P>
-                by valueFromKType<MutableMap<PermissionId, P>>(
-                    MutableMap::class.createType(
-                        listOf(
-                            KTypeProjection(KVariance.INVARIANT, PermissionId::class.createType()),
-                            KTypeProjection(KVariance.INVARIANT, permissionType),
-                        )
-                    ),
-                    ConcurrentHashMap()
-                )
-
         public val grantedPermissionMap: MutableMap<PermissionId, MutableList<AbstractPermissibleIdentifier>>
                 by value<MutableMap<PermissionId, MutableList<AbstractPermissibleIdentifier>>>(ConcurrentHashMap())
                     .withDefault { CopyOnWriteArrayList() }
