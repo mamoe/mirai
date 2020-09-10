@@ -152,7 +152,7 @@ internal data class PermissionImpl @Deprecated("Only for Root") constructor(
 
         if (id != other.id) return false
         if (description != other.description) return false
-        if (parent != other.parent) return false
+        if (parent !== other.parent) return false
 
         return true
     }
@@ -160,9 +160,10 @@ internal data class PermissionImpl @Deprecated("Only for Root") constructor(
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + description.hashCode()
-        result = 31 * result + parent.hashCode()
+        result = 31 * result + if (parent == this) 1 else parent.hashCode()
         return result
     }
 
-    override fun toString(): String = "PermissionImpl(id=$id, description='$description', parentId=$parent)"
+    override fun toString(): String =
+        "PermissionImpl(id=$id, description='$description', parent=${if (parent === this) "<self>" else parent.toString()})"
 }
