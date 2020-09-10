@@ -11,10 +11,11 @@ package net.mamoe.mirai.console.permission
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.PluginDataExtensions
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.data.value
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.reflect.KClass
 
 
@@ -22,7 +23,7 @@ import kotlin.reflect.KClass
 internal object AllGrantPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl> get() = PermissionImpl::class
-    override val rootPermission: PermissionImpl get() = RootPermissionImpl
+    override val rootPermission: PermissionImpl get() = RootPermissionImpl.also { all[it.id] = it }
 
     override fun register(
         id: PermissionId,
@@ -59,7 +60,7 @@ internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
-    override val rootPermission: PermissionImpl get() = RootPermissionImpl
+    override val rootPermission: PermissionImpl = RootPermissionImpl.also { all[it.id] = it }
 
     override fun register(
         id: PermissionId,
@@ -94,13 +95,12 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
     @ExperimentalPermission
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
-    override val permissions: MutableMap<PermissionId, PermissionImpl> = ConcurrentHashMap()
-    override val rootPermission: PermissionImpl
-        get() = RootPermissionImpl
+    override val permissions: ConcurrentHashMap<PermissionId, PermissionImpl> = ConcurrentHashMap()
+    override val rootPermission: PermissionImpl = RootPermissionImpl.also { permissions[it.id] = it }
 
     @Suppress("UNCHECKED_CAST")
-    override val grantedPermissionsMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
-        get() = config.grantedPermissionMap as MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
+    override val grantedPermissionsMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
+        get() = config.grantedPermissionMap as PluginDataExtensions.NotNullMutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
 
     override fun createPermission(id: PermissionId, description: String, parent: Permission): PermissionImpl =
         PermissionImpl(id, description, parent)
@@ -114,9 +114,9 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
         public override val saveName: String,
         @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?
     ) : AutoSavePluginConfig() {
-        public val grantedPermissionMap: MutableMap<PermissionId, MutableList<AbstractPermissibleIdentifier>>
-                by value<MutableMap<PermissionId, MutableList<AbstractPermissibleIdentifier>>>(ConcurrentHashMap())
-                    .withDefault { CopyOnWriteArrayList() }
+        public val grantedPermissionMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableSet<AbstractPermissibleIdentifier>>
+                by value<MutableMap<PermissionId, MutableSet<AbstractPermissibleIdentifier>>>(ConcurrentHashMap())
+                    .withDefault { CopyOnWriteArraySet() }
 
         public companion object {
             @JvmStatic
