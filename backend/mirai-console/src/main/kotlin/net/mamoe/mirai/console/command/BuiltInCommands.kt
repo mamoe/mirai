@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
@@ -122,8 +119,9 @@ public object BuiltInCommands {
                             ignoreException<EventCancelledException> { sendMessage("mirai-console stopped successfully.") }
                         },
                         onFailure = {
+                            if (it is CancellationException) return@fold
                             @OptIn(ConsoleInternalAPI::class)
-                            MiraiConsole.mainLogger.error(it)
+                            MiraiConsole.mainLogger.error("Exception in stop", it)
                             ignoreException<EventCancelledException> {
                                 sendMessage(
                                     it.localizedMessage ?: it.message ?: it.toString()
