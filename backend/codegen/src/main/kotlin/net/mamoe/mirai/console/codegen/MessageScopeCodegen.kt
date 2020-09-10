@@ -84,46 +84,46 @@ internal object MessageScopeCodegen {
                 )
                 appendLine()
             }
+//
+//            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
+//                appendKCode(
+//                    """
+//                    @LowPriorityInOverloadResolution
+//                    public fun ${a}.scopeWith(vararg others: ${b}): MessageScope {
+//                        return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+//                    }
+//                """
+//                )
+//                appendLine()
+//            }
 
             for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
                 appendKCode(
                     """
                     @LowPriorityInOverloadResolution
-                    public fun ${a}.scopeWith(vararg others: ${b}): MessageScope {
-                        return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+                    public fun ${a}?.scopeWith(vararg others: ${b}?): MessageScope {
+                        return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
                     }
                 """
                 )
                 appendLine()
             }
+//
+//            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
+//                appendKCode(
+//                    """
+//                    public fun ${a}.scopeWith(other: ${b}): MessageScope {
+//                        return CombinedScope(asMessageScope(), other.asMessageScope())
+//                    }
+//                """
+//                )
+//                appendLine()
+//            }
 
             for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
                 appendKCode(
                     """
-                    @LowPriorityInOverloadResolution
-                    public fun ${a}?.scopeWithNotNull(vararg others: ${b}?): MessageScope {
-                        return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-                    }
-                """
-                )
-                appendLine()
-            }
-
-            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
-                appendKCode(
-                    """
-                    public fun ${a}.scopeWith(other: ${b}): MessageScope {
-                        return CombinedScope(asMessageScope(), other.asMessageScope())
-                    }
-                """
-                )
-                appendLine()
-            }
-
-            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
-                appendKCode(
-                    """
-                    public fun ${a}?.scopeWithNotNull(other: ${b}?): MessageScope {
+                    public fun ${a}?.scopeWith(other: ${b}?): MessageScope {
                         @Suppress("DuplicatedCode")
                         return when {
                             this == null && other == null -> NoopMessageScope
@@ -137,23 +137,23 @@ internal object MessageScopeCodegen {
                 )
                 appendLine()
             }
+//
+//            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
+//                appendKCode(
+//                    """
+//                    public inline fun <R> ${a}.scopeWith(vararg others: ${b}, action: MessageScope.() -> R): R {
+//                        return scopeWith(*others).invoke(action)
+//                    }
+//                """
+//                )
+//                appendLine()
+//            }
 
             for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
                 appendKCode(
                     """
-                    public inline fun <R> ${a}.scopeWith(vararg others: ${b}, action: MessageScope.() -> R): R {
+                    public inline fun <R> ${a}?.scopeWith(vararg others: ${b}?, action: MessageScope.() -> R): R {
                         return scopeWith(*others).invoke(action)
-                    }
-                """
-                )
-                appendLine()
-            }
-
-            for ((a, b) in (TypeCandidatesForMessageScope + KtMessageScope).arrangements()) {
-                appendKCode(
-                    """
-                    public inline fun <R> ${a}?.scopeWithNotNull(vararg others: ${b}?, action: MessageScope.() -> R): R {
-                        return scopeWithNotNull(*others).invoke(action)
                     }
                 """
                 )

@@ -23,7 +23,7 @@ import net.mamoe.mirai.console.command.java.JSimpleCommand
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.permission.ExperimentalPermission
-import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.MessageChain
 
 /**
@@ -53,10 +53,10 @@ public abstract class SimpleCommand @OptIn(ExperimentalPermission::class) constr
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
-    basePermission: PermissionId = owner.basePermission,
+    parentPermission: Permission = owner.parentPermission,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
-) : Command, AbstractReflectionCommand(owner, names, description, basePermission, prefixOptional),
+) : Command, AbstractReflectionCommand(owner, names, description, parentPermission, prefixOptional),
     CommandArgumentContextAware {
 
     /**

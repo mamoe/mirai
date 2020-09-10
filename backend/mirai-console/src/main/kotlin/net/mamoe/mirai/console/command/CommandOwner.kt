@@ -10,10 +10,7 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
-import net.mamoe.mirai.console.permission.ExperimentalPermission
-import net.mamoe.mirai.console.permission.PermissionId
-import net.mamoe.mirai.console.permission.PermissionIdNamespace
-import net.mamoe.mirai.console.permission.RootPermission
+import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 
 /**
@@ -27,12 +24,12 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 @OptIn(ExperimentalPermission::class)
 public interface CommandOwner : PermissionIdNamespace {
     /**
-     * 此 [PermissionIdNamespace] 拥有的指令都默认将 [basePermission] 作为父权限.
+     * 此 [PermissionIdNamespace] 拥有的指令都默认将 [parentPermission] 作为父权限.
      *
      * TODO document
      */
     @ExperimentalPermission
-    public val basePermission: PermissionId
+    public val parentPermission: Permission
 }
 
 /**
@@ -40,8 +37,8 @@ public interface CommandOwner : PermissionIdNamespace {
  */
 internal object ConsoleCommandOwner : CommandOwner {
     @ExperimentalPermission
-    override val basePermission: PermissionId
-        get() = RootPermission.id
+    override val parentPermission: Permission
+        get() = RootPermission
 
     @ExperimentalPermission
     override fun permissionId(id: String): PermissionId = PermissionId("console", id)

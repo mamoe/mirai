@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.allocatePermissionIdForPlugin
@@ -44,11 +45,11 @@ internal abstract class JvmPluginInternal(
 ) : JvmPlugin, CoroutineScope {
 
     @OptIn(ExperimentalPermission::class)
-    final override val basePermission: PermissionId by lazy {
+    final override val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
             PermissionService.INSTANCE.allocatePermissionIdForPlugin(name, "*"),
             "The base permission"
-        ).id
+        )
     }
 
     final override var isEnabled: Boolean = false
@@ -110,7 +111,7 @@ internal abstract class JvmPluginInternal(
     }
 
     internal fun internalOnEnable(): Boolean {
-        basePermission
+        parentPermission
         if (!firstRun) refreshCoroutineContext()
         kotlin.runCatching {
             onEnable()

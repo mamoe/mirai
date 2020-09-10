@@ -18,7 +18,7 @@ import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.plugin.description.PluginKind
+import net.mamoe.mirai.console.plugin.description.PluginLoadPriority
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 
 /**
@@ -65,9 +65,9 @@ public inline val Plugin.name: String get() = this.description.name
 public inline val Plugin.version: Semver get() = this.description.version
 
 /**
- * 获取 [PluginDescription.kind]
+ * 获取 [PluginDescription.loadPriority]
  */
-public inline val Plugin.kind: PluginKind get() = this.description.kind
+public inline val Plugin.loadPriority: PluginLoadPriority get() = this.description.loadPriority
 
 /**
  * 获取 [PluginDescription.info]

@@ -13,7 +13,6 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.contact.Group
@@ -143,8 +142,9 @@ internal fun Group.fuzzySearchMember(
 }
 
 @OptIn(ExperimentalPermission::class)
-internal fun Command.createCommandPermission(parent: PermissionId): Permission {
-    return PermissionService.INSTANCE.register(owner.permissionId(primaryName), description, parent)
+internal fun Command.createOrFindCommandPermission(parent: Permission): Permission {
+    val id = owner.permissionId(primaryName)
+    return PermissionService.INSTANCE[id] ?: PermissionService.INSTANCE.register(id, description, parent)
 }
 
 //// internal

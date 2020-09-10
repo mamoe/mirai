@@ -33,7 +33,9 @@ import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
+import net.mamoe.mirai.console.internal.extensions.BuiltInSingletonExtensionSelector
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionService
@@ -124,13 +126,22 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         val pluginLoadSession: PluginManagerImpl.PluginLoadSession
 
-        phase `load plugins`@{
+        phase `load BEFORE_EXTENSIONS plugins`@{
             PluginManager // init
 
             mainLogger.verbose { "Loading PluginLoader provider plugins..." }
             PluginManagerImpl.loadEnablePluginProviderPlugins()
             mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
+        }
 
+        phase `load SingletonExtensionSelector`@{
+            val instance = SingletonExtensionSelector.instance
+            if (instance is BuiltInSingletonExtensionSelector) {
+                ConsoleDataScope.addAndReloadConfig(instance.config)
+            }
+        }
+
+        phase `load ON_EXTENSIONS plugins`@{
             mainLogger.verbose { "Scanning high-priority extension and normal plugins..." }
             pluginLoadSession = PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider()
             mainLogger.verbose { "${pluginLoadSession.allKindsOfPlugins.size} plugin(s) found." }
@@ -139,8 +150,6 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             PluginManagerImpl.loadEnableHighPriorityExtensionPlugins(pluginLoadSession)
             mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
         }
-
-        SingletonExtensionSelector.instance // init
 
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
@@ -162,7 +171,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             CommandManagerImpl.commandListener // start
         }
 
-        phase `load normal plugins`@{
+        phase `load AFTER_EXTENSION plugins`@{
             mainLogger.verbose { "Loading normal plugins..." }
             val count = PluginManagerImpl.loadEnableNormalPlugins(pluginLoadSession)
             mainLogger.verbose { "$count normal plugin(s) loaded." }
@@ -172,14 +181,19 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         phase `auto-login bots`@{
             runBlocking {
-                for ((id, password) in AutoLoginConfig.plainPasswords) {
+                for ((id, password) in AutoLoginConfig.plainPasswords.filterNot { it.key == 123456654321L }) {
                     mainLogger.info { "Auto-login $id" }
                     MiraiConsole.addBot(id, password).alsoLogin()
                 }
 
-                for ((id, password) in AutoLoginConfig.md5Passwords) {
+                for ((id, password) in AutoLoginConfig.md5Passwords.filterNot { it.key == 123456654321L }) {
                     mainLogger.info { "Auto-login $id" }
-                    MiraiConsole.addBot(id, password).alsoLogin()
+                    val x = runCatching {
+                        password.autoHexToBytes()
+                    }.getOrElse {
+                        error("Bad auto-login md5: '$password'")
+                    }
+                    MiraiConsole.addBot(id, x).alsoLogin()
                 }
             }
         }

@@ -22,7 +22,7 @@ import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.plugin.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.plugin.description.PluginKind
+import net.mamoe.mirai.console.plugin.description.PluginLoadPriority
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.info
@@ -131,7 +131,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     internal fun loadEnableHighPriorityExtensionPlugins(session: PluginLoadSession): Int {
         loadersLock.withLock {
             session.allKindsOfPlugins.flatMap { it.second }
-                .filter { it.kind == PluginKind.HIGH_PRIORITY_EXTENSIONS }
+                .filter { it.loadPriority == PluginLoadPriority.ON_EXTENSIONS }
                 .sortByDependencies()
                 .also { it.loadAndEnableAllInOrder() }
                 .let { return it.size }
@@ -142,7 +142,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     internal fun loadEnableNormalPlugins(session: PluginLoadSession): Int {
         loadersLock.withLock {
             session.allKindsOfPlugins.flatMap { it.second }
-                .filter { it.kind == PluginKind.NORMAL }
+                .filter { it.loadPriority == PluginLoadPriority.AFTER_EXTENSIONS }
                 .sortByDependencies()
                 .also { it.loadAndEnableAllInOrder() }
                 .let { return it.size }
@@ -191,7 +191,8 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
                     loader as PluginLoader<Plugin, PluginDescription>
 
                     descriptions.forEach(PluginManagerImpl::checkPluginDescription)
-                    descriptions.filter { it.kind == PluginKind.LOADER }.sortByDependencies().loadAndEnableAllInOrder()
+                    descriptions.filter { it.loadPriority == PluginLoadPriority.BEFORE_EXTENSIONS }.sortByDependencies()
+                        .loadAndEnableAllInOrder()
                 }
                 .flatMap { it.second.asSequence() }
 

@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.PermissionId
 
 /**
  * Java 实现:
@@ -44,8 +43,8 @@ import net.mamoe.mirai.console.permission.PermissionId
 public abstract class JSimpleCommand @OptIn(ExperimentalPermission::class) constructor(
     owner: CommandOwner,
     vararg names: String,
-    basePermission: PermissionId,
-) : SimpleCommand(owner, *names, basePermission = basePermission) {
+    basePermission: Permission,
+) : SimpleCommand(owner, *names, parentPermission = basePermission) {
     public override var description: String = super.description
         protected set
 

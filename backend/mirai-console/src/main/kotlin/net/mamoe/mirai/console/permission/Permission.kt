@@ -9,8 +9,6 @@
 
 package net.mamoe.mirai.console.permission
 
-import kotlinx.serialization.Serializable
-import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermission
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 
@@ -25,22 +23,29 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 public interface Permission {
     public val id: PermissionId
     public val description: String
-    public val parentId: PermissionId
-}
 
-@OptIn(ExperimentalPermission::class)
-private val ROOT_PERMISSION_ID = PermissionId("*", "*")
+    /**
+     * [RootPermission] 的 parent 为自身
+     */
+    public val parent: Permission
+}
 
 /**
  * 所有权限的父权限.
  */
 @get:JvmName("getRootPermission")
 @ExperimentalPermission
-public val RootPermission: Permission by lazy {
+public val RootPermission: Permission
+    get() = PermissionService.INSTANCE.rootPermission
+
+/**
+ * 所有内建指令的权限
+ */
+@ExperimentalPermission
+public val RootConsoleBuiltInPermission: Permission by lazy {
     PermissionService.INSTANCE.register(
-        ROOT_PERMISSION_ID,
-        "The parent of any permission",
-        ROOT_PERMISSION_ID
+        PermissionId("console", "*"),
+        "The parent of any built-in commands"
     )
 }
 
@@ -48,16 +53,5 @@ public val RootPermission: Permission by lazy {
 @ExperimentalPermission
 public fun Permission.parentsWithSelfSequence(): Sequence<Permission> =
     generateSequence(this) { p ->
-        p.parentId.findCorrespondingPermission()?.takeIf { parent -> parent != p }
+        p.parent.takeIf { parent -> parent != p }
     }
-
-/**
- * [Permission] 的简单实现
- */
-@Serializable
-@ExperimentalPermission
-public class PermissionImpl(
-    override val id: PermissionId,
-    override val description: String,
-    override val parentId: PermissionId = RootPermission.id
-) : Permission

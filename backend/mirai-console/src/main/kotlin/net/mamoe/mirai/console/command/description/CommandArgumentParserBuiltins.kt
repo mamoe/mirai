@@ -321,7 +321,7 @@ public object PermissionIdArgumentParser : CommandArgumentParser<PermissionId> {
 public object PermissibleIdentifierArgumentParser : CommandArgumentParser<PermissibleIdentifier> {
     override fun parse(raw: String, sender: CommandSender): PermissibleIdentifier {
         return kotlin.runCatching { AbstractPermissibleIdentifier.parseFromString(raw) }.getOrElse {
-            illegalArgument("无法解析 $raw 为 PermissionId")
+            illegalArgument("无法解析 $raw 为 PermissibleIdentifier")
         }
     }
 

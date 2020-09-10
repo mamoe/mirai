@@ -26,7 +26,6 @@
 [`RawCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/RawCommand.kt
 [`CommandManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandManager.kt
 
-[`BotManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/BotManager.kt
 [`Annotations`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/Annotations.kt
 [`ConsoleInput`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/ConsoleInput.kt
 [`JavaPluginScheduler`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
@@ -75,9 +74,9 @@ Mirai Console 提供一些基础的实现，即 [`AbstractJvmPlugin`]，并将 [
 #### 描述
 插件描述需要在主类构造器传递给 `super`。因此插件不需要 `plugin.yml`, `plugin.xml` 等配置文件来指示信息。
 
-Mirai Console 使用 `ServiceLoader` 加载插件。  
+Mirai Console 使用类似 `ServiceLoader` 的机制加载插件。  
 在 Kotlin，可（[使用 AutoService]）自动配置 service 信息。  
-在 Kotlin 或其他语言，手动创建 service 文件： 在 `jar` 内 `META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin` 文件内存放插件主类全名（以纯文本 UTF-8 存储，文件内容只包含一行插件主类全名）.
+在 Kotlin 或其他语言，可手动创建 service 文件： 在 `jar` 内 `META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin` 文件内存放插件主类全名（以纯文本 UTF-8 存储，文件内容只包含一行插件主类全名）.
 
 
 有关插件版本号的限制：
@@ -94,13 +93,16 @@ Mirai Console 使用 `ServiceLoader` 加载插件。
 - 访问权限为 `public` 或默认 (不指定)
 
 ```kotlin
-@AutoService(JvmPlugin::class) // 如果选用上述自动配置的方法
 object SchedulePlugin : KotlinPlugin(
-    SimpleJvmPluginDescription( // 插件的描述, name 和 version 是必须的
-        name = "Schedule",
+    JvmPluginDescription(
+        id = "org.example.my-schedule-plugin",
         version = "1.0.0",
-        // author, description, ...
-    )
+    ) {
+        name("Schedule")
+        
+        // author("...")
+        // dependsOn("...")
+    }
 ) {
     // ...
 }
@@ -117,10 +119,14 @@ object SchedulePlugin : KotlinPlugin(
 public final class JExample extends JavaPlugin {
     public static final JExample INSTANCE = new JExample(); // 可以像 Kotlin 一样静态初始化单例
     private JExample() {
-        super(new SimpleJvmPluginDescription(
+        super(new JvmPluginDescriptionBuilder(
             "JExample", // name
             "1.0.0" // version
-        ));
+        )
+        // .author("...")
+        // .info("...")
+        .build()
+        );
     }
 }
 ```
@@ -133,10 +139,14 @@ public final class JExample extends JavaPlugin {
         return instance;
     }
     public JExample() { // 此时必须 public
-        super(new SimpleJvmPluginDescription(
+        super(new JvmPluginDescriptionBuilder(
             "JExample", // name
             "1.0.0" // version
-        ));
+        )
+        // .author("...")
+        // .info("...")
+        .build()
+        );
         instance = this;
     }
 }
@@ -248,5 +258,31 @@ Java：
 **仅可在插件 onEnable() 时及其之后才能使用这些方法。**  
 **在插件 onDisable() 之后不能使用这些方法。**
 
+#### 使用示例
+
+```kotlin
+object SchedulePlugin : KotlinPlugin(
+    JvmPluginDescription(
+        id = "org.example.my-schedule-plugin",
+        version = "1.0.0",
+    ) {
+        name("Schedule")
+        
+        // author("...")
+        // dependsOn("...")
+    }
+) {
+    // ...
+    
+    override fun onEnable() {
+        MyData.reload() // 仅需此行，保证启动时更新数据，在之后自动存储数据。
+    }
+}
+
+object MyData : AutoSavePluginData() {
+    val value: Map<String, String> by value()
+}
+```
+
 ### 附录：Java 插件的多线程调度器 - [`JavaPluginScheduler`]
-拥有生命周期管理的简单 Java 线程池。
+拥有生命周期管理的简单 Java 线程池。其中所有的任务都会在插件被关闭时自动停止。

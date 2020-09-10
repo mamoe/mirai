@@ -2,7 +2,7 @@ package net.mamoe.mirai.console.internal.extensions
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.data.AutoSavePluginData
+import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.extension.Extension
 import net.mamoe.mirai.console.extension.ExtensionRegistry
@@ -15,9 +15,9 @@ import kotlin.reflect.KClass
 
 internal object BuiltInSingletonExtensionSelector : SingletonExtensionSelector {
 
-    private val config: SaveData = SaveData()
+    internal val config: SaveData = SaveData()
 
-    private class SaveData : AutoSavePluginData() {
+    internal class SaveData : AutoSavePluginConfig() {
         override val saveName: String get() = "ExtensionSelector"
 
         val value: MutableMap<String, String> by value()

@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
 import net.mamoe.mirai.console.permission.ExperimentalPermission
-import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
@@ -73,14 +73,14 @@ public abstract class JCompositeCommand @OptIn(ExperimentalPermission::class)
 @JvmOverloads constructor(
     owner: CommandOwner,
     vararg names: String,
-    parentPermission: PermissionId = owner.basePermission,
+    parentPermission: Permission = owner.parentPermission,
 ) : CompositeCommand(owner, *names, parentPermission = parentPermission) {
     /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
     public final override var description: String = "<no descriptions given>"
         protected set
 
     @OptIn(ExperimentalPermission::class)
-    public final override var permission: net.mamoe.mirai.console.permission.Permission = super.permission
+    public final override var permission: Permission = super.permission
         protected set
 
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */

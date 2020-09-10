@@ -13,10 +13,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
-import net.mamoe.mirai.console.internal.command.createCommandPermission
+import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 
@@ -55,7 +54,7 @@ public abstract class JRawCommand @OptIn(ExperimentalPermission::class)
     public override val owner: CommandOwner,
     /** 指令名. 需要至少有一个元素. 所有元素都不能带有空格 */
     public override vararg val names: String,
-    parentPermission: PermissionId = owner.basePermission,
+    parentPermission: Permission = owner.parentPermission,
 ) : Command {
     /** 用法说明, 用于发送给用户 */
     public override var usage: String = "<no usages given>"
@@ -67,7 +66,7 @@ public abstract class JRawCommand @OptIn(ExperimentalPermission::class)
 
     /** 指令权限 */
     @ExperimentalPermission
-    public final override var permission: Permission = createCommandPermission(parentPermission)
+    public final override var permission: Permission = createOrFindCommandPermission(parentPermission)
         protected set
 
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
