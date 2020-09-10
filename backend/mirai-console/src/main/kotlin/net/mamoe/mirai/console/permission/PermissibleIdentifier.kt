@@ -11,7 +11,11 @@
 
 package net.mamoe.mirai.console.permission
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.internal.data.map
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
  */
@@ -25,7 +29,7 @@ public interface PermissibleIdentifier {
             return allParentsWithSelf().any { it == with }
         }
 
-        internal fun PermissibleIdentifier.allParentsWithSelf(): Sequence<PermissibleIdentifier> {
+        private fun PermissibleIdentifier.allParentsWithSelf(): Sequence<PermissibleIdentifier> {
             return sequence {
                 yield(this@allParentsWithSelf)
                 yieldAll(parents.asSequence())
@@ -34,57 +38,99 @@ public interface PermissibleIdentifier {
     }
 }
 
-@Serializable
+@Serializable(with = AbstractPermissibleIdentifier.AsStringSerializer::class)
 @ExperimentalPermission
 public sealed class AbstractPermissibleIdentifier(
     public final override vararg val parents: PermissibleIdentifier
 ) : PermissibleIdentifier {
-    @Serializable
-    public object AnyGroup : AbstractPermissibleIdentifier(AnyContact)
+    internal companion object {
+        val objects by lazy {
+            // https://youtrack.jetbrains.com/issue/KT-41782
+            AbstractPermissibleIdentifier::class.nestedClasses.mapNotNull { it.objectInstance }
+        }
 
-    @Serializable
+        val regexes: List<Pair<Regex, (matchGroup: MatchResult.Destructured) -> AbstractPermissibleIdentifier>> =
+            listOf(
+                Regex("""ExactGroup\(\s*([0-9]+)\s*\)""") to { (id) -> ExactGroup(id.toLong()) },
+                Regex("""ExactFriend\(\s*([0-9]+)\s*\)""") to { (id) -> ExactFriend(id.toLong()) },
+                Regex("""ExactUser\(\s*([0-9]+)\s*\)""") to { (id) -> ExactUser(id.toLong()) },
+                Regex("""AnyMember\(\s*([0-9]+)\s*\)""") to { (id) -> AnyMember(id.toLong()) },
+                Regex("""ExactMember\(\s*([0-9]+)\s*([0-9]+)\s*\)""") to { (a, b) ->
+                    ExactMember(
+                        a.toLong(),
+                        b.toLong()
+                    )
+                },
+                Regex("""ExactTemp\(\s*([0-9]+)\s*([0-9]+)\s*\)""") to { (a, b) -> ExactTemp(a.toLong(), b.toLong()) },
+            )
+    }
+
+    @ConsoleExperimentalAPI
+    public object AsStringSerializer : KSerializer<AbstractPermissibleIdentifier> by String.serializer().map(
+        serializer = { it.toString() },
+
+        deserializer = d@{ str ->
+            @Suppress("NAME_SHADOWING") val str = str.trim()
+            objects.find { it.toString() == str }?.let { return@d it as AbstractPermissibleIdentifier }
+            for ((regex, block) in regexes) {
+                val result = regex.find(str) ?: continue
+                if (result.range.last != str.lastIndex) continue
+                if (result.range.first != 0) continue
+                return@d result.destructured.run(block)
+            }
+            error("Cannot deserialize '$str' as AbstractPermissibleIdentifier")
+        }
+    )
+
+    public object AnyGroup : AbstractPermissibleIdentifier(AnyContact) {
+        override fun toString(): String = "AnyGroup"
+    }
+
     public data class ExactGroup(public val groupId: Long) : AbstractPermissibleIdentifier(AnyGroup)
 
-    @Serializable
     public data class AnyMember(public val groupId: Long) : AbstractPermissibleIdentifier(AnyMemberFromAnyGroup)
 
-    @Serializable
-    public object AnyMemberFromAnyGroup : AbstractPermissibleIdentifier(AnyUser)
+    public object AnyMemberFromAnyGroup : AbstractPermissibleIdentifier(AnyUser) {
+        override fun toString(): String = "AnyMemberFromAnyGroup"
+    }
 
-    @Serializable
     public data class ExactMember(
         public val groupId: Long,
         public val memberId: Long
     ) : AbstractPermissibleIdentifier(AnyMember(groupId), ExactUser(memberId))
 
-    @Serializable
-    public object AnyFriend : AbstractPermissibleIdentifier(AnyUser)
+    public object AnyFriend : AbstractPermissibleIdentifier(AnyUser) {
+        override fun toString(): String = "AnyFriend"
+    }
 
-    @Serializable
     public data class ExactFriend(
         public val id: Long
-    ) : AbstractPermissibleIdentifier(ExactUser(id))
+    ) : AbstractPermissibleIdentifier(ExactUser(id)) {
+        override fun toString(): String = "ExactFriend"
+    }
 
-    @Serializable
-    public object AnyTemp : AbstractPermissibleIdentifier(AnyUser)
+    public object AnyTemp : AbstractPermissibleIdentifier(AnyUser) {
+        override fun toString(): String = "AnyTemp"
+    }
 
-    @Serializable
     public data class ExactTemp(
         public val groupId: Long,
         public val id: Long
     ) : AbstractPermissibleIdentifier(ExactUser(groupId)) // TODO: 2020/9/8 ExactMember ?
 
-    @Serializable
-    public object AnyUser : AbstractPermissibleIdentifier(AnyContact)
+    public object AnyUser : AbstractPermissibleIdentifier(AnyContact) {
+        override fun toString(): String = "AnyUser"
+    }
 
-    @Serializable
     public data class ExactUser(
         public val id: Long
     ) : AbstractPermissibleIdentifier(AnyUser)
 
-    @Serializable
-    public object AnyContact : AbstractPermissibleIdentifier()
+    public object AnyContact : AbstractPermissibleIdentifier() {
+        override fun toString(): String = "AnyContact"
+    }
 
-    @Serializable
-    public object Console : AbstractPermissibleIdentifier()
+    public object Console : AbstractPermissibleIdentifier() {
+        override fun toString(): String = "Console"
+    }
 }

@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.internal.data
 
-import kotlinx.serialization.json.Json
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataHolder
@@ -67,7 +66,7 @@ internal open class MultiFilePluginDataStorageImpl(
     @ConsoleExperimentalAPI
     public override fun store(holder: PluginDataHolder, instance: PluginData) {
         @OptIn(ExperimentalPermission::class)
-        val yaml = if (instance.saveName == "PermissionService") Json {
+        val yaml =/* if (instance.saveName == "PermissionService") Json {
             prettyPrint = true
             ignoreUnknownKeys = true
             isLenient = true
@@ -78,7 +77,7 @@ internal open class MultiFilePluginDataStorageImpl(
                 listSerialization = YamlConfiguration.ListSerialization.FLOW_SEQUENCE,
                 classSerialization = YamlConfiguration.MapSerialization.FLOW_MAP
             )
-        )*/ else Yaml.default
+        )*/ else */Yaml.default
         getPluginDataFile(holder, instance).writeText(
             kotlin.runCatching {
                 yaml.encodeToString(instance.updaterSerializer, Unit)

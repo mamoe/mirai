@@ -47,7 +47,7 @@ internal fun serializerMirai(type: KType): KSerializer<Any?> {
             typeArguments.isEmpty() -> rootClass.serializer()
             else -> {
                 val serializers = typeArguments
-                    .map(::serializer)
+                    .map(::serializerMirai)
                 // Array is not supported, see KT-32839
                 when (rootClass) {
                     List::class, MutableList::class, ArrayList::class -> ListSerializer(serializers[0])
