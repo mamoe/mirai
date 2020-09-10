@@ -46,36 +46,67 @@ public sealed class AbstractPermissibleIdentifier(
     public companion object {
         @JvmStatic
         public fun parseFromString(string: String): AbstractPermissibleIdentifier {
-            val str = string.trim()
-            objects.find { it.toString() == str }?.let { return it as AbstractPermissibleIdentifier }
-            for ((regex, block) in regexes) {
-                val result = regex.find(str) ?: continue
-                if (result.range.last != str.lastIndex) continue
-                if (result.range.first != 0) continue
-                return result.destructured.run(block)
+            val str = string.trim { it.isWhitespace() }.toLowerCase()
+            if (str == "console") return Console
+            if (str.isNotEmpty()) {
+                when (str[0]) {
+                    'g' -> {
+                        val arg = str.substring(1)
+                        if (arg == "*") return AnyGroup
+                        else arg.toLongOrNull()?.let(::ExactGroup)?.let { return it }
+                    }
+                    'f' -> {
+                        val arg = str.substring(1)
+                        if (arg == "*") return AnyFriend
+                        else arg.toLongOrNull()?.let(::ExactFriend)?.let { return it }
+                    }
+                    'u' -> {
+                        val arg = str.substring(1)
+                        if (arg == "*") return AnyUser
+                        else arg.toLongOrNull()?.let(::ExactUser)?.let { return it }
+                    }
+                    'c' -> {
+                        val arg = str.substring(1)
+                        if (arg == "*") return AnyContact
+                    }
+                    'm' -> kotlin.run {
+                        val arg = str.substring(1)
+                        if (arg == "*") return AnyMemberFromAnyGroup
+                        else {
+                            val components = arg.split('.')
+
+                            if (components.size == 2) {
+                                val groupId = components[0].toLongOrNull() ?: return@run
+
+                                if (components[1] == "*") return AnyMember(groupId)
+                                else {
+                                    val memberId = components[1].toLongOrNull() ?: return@run
+                                    return ExactMember(groupId, memberId)
+                                }
+                            }
+                        }
+                    }
+                    't' -> kotlin.run {
+                        val arg = str.substring(1)
+                        if (arg == "*") return AnyTempFromAnyGroup
+                        else {
+                            val components = arg.split('.')
+
+                            if (components.size == 2) {
+                                val groupId = components[0].toLongOrNull() ?: return@run
+
+                                if (components[1] == "*") return AnyTemp(groupId)
+                                else {
+                                    val memberId = components[1].toLongOrNull() ?: return@run
+                                    return ExactTemp(groupId, memberId)
+                                }
+                            }
+                        }
+                    }
+                }
             }
             error("Cannot deserialize '$str' as AbstractPermissibleIdentifier")
         }
-
-        internal val objects by lazy {
-            // https://youtrack.jetbrains.com/issue/KT-41782
-            AbstractPermissibleIdentifier::class.nestedClasses.mapNotNull { it.objectInstance }
-        }
-
-        internal val regexes: List<Pair<Regex, (matchGroup: MatchResult.Destructured) -> AbstractPermissibleIdentifier>> =
-            listOf(
-                Regex("""ExactGroup\(\s*([0-9]+)\s*\)""") to { (id) -> ExactGroup(id.toLong()) },
-                Regex("""ExactFriend\(\s*([0-9]+)\s*\)""") to { (id) -> ExactFriend(id.toLong()) },
-                Regex("""ExactUser\(\s*([0-9]+)\s*\)""") to { (id) -> ExactUser(id.toLong()) },
-                Regex("""AnyMember\(\s*([0-9]+)\s*\)""") to { (id) -> AnyMember(id.toLong()) },
-                Regex("""ExactMember\(\s*([0-9]+)\s*([0-9]+)\s*\)""") to { (a, b) ->
-                    ExactMember(
-                        a.toLong(),
-                        b.toLong()
-                    )
-                },
-                Regex("""ExactTemp\(\s*([0-9]+)\s*([0-9]+)\s*\)""") to { (a, b) -> ExactTemp(a.toLong(), b.toLong()) },
-            )
     }
 
     @ConsoleExperimentalAPI
@@ -86,54 +117,70 @@ public sealed class AbstractPermissibleIdentifier(
     )
 
     public object AnyGroup : AbstractPermissibleIdentifier(AnyContact) {
-        override fun toString(): String = "AnyGroup"
+        override fun toString(): String = "g*"
     }
 
-    public data class ExactGroup(public val groupId: Long) : AbstractPermissibleIdentifier(AnyGroup)
+    public data class ExactGroup(public val groupId: Long) : AbstractPermissibleIdentifier(AnyGroup) {
+        override fun toString(): String = "g$groupId"
+    }
 
-    public data class AnyMember(public val groupId: Long) : AbstractPermissibleIdentifier(AnyMemberFromAnyGroup)
+    public data class AnyMember(public val groupId: Long) : AbstractPermissibleIdentifier(AnyMemberFromAnyGroup) {
+        override fun toString(): String = "m$groupId.*"
+    }
 
     public object AnyMemberFromAnyGroup : AbstractPermissibleIdentifier(AnyUser) {
-        override fun toString(): String = "AnyMemberFromAnyGroup"
+        override fun toString(): String = "m*"
+    }
+
+    public object AnyTempFromAnyGroup : AbstractPermissibleIdentifier(AnyUser) {
+        override fun toString(): String = "t*"
     }
 
     public data class ExactMember(
         public val groupId: Long,
         public val memberId: Long
-    ) : AbstractPermissibleIdentifier(AnyMember(groupId), ExactUser(memberId))
+    ) : AbstractPermissibleIdentifier(AnyMember(groupId), ExactUser(memberId)) {
+        override fun toString(): String = "m$groupId.$memberId"
+    }
 
     public object AnyFriend : AbstractPermissibleIdentifier(AnyUser) {
-        override fun toString(): String = "AnyFriend"
+        override fun toString(): String = "f*"
     }
 
     public data class ExactFriend(
         public val id: Long
     ) : AbstractPermissibleIdentifier(ExactUser(id)) {
-        override fun toString(): String = "ExactFriend"
+        override fun toString(): String = "f$id"
     }
 
-    public object AnyTemp : AbstractPermissibleIdentifier(AnyUser) {
-        override fun toString(): String = "AnyTemp"
+    public data class AnyTemp(
+        public val groupId: Long,
+    ) : AbstractPermissibleIdentifier(AnyUser, AnyMember(groupId)) {
+        override fun toString(): String = "t$groupId.*"
     }
 
     public data class ExactTemp(
         public val groupId: Long,
-        public val id: Long
-    ) : AbstractPermissibleIdentifier(ExactUser(groupId)) // TODO: 2020/9/8 ExactMember ?
+        public val memberId: Long
+    ) : AbstractPermissibleIdentifier(ExactUser(groupId), ExactMember(groupId, memberId)) {
+        override fun toString(): String = "t$groupId.$memberId"
+    }
 
     public object AnyUser : AbstractPermissibleIdentifier(AnyContact) {
-        override fun toString(): String = "AnyUser"
+        override fun toString(): String = "u*"
     }
 
     public data class ExactUser(
         public val id: Long
-    ) : AbstractPermissibleIdentifier(AnyUser)
+    ) : AbstractPermissibleIdentifier(AnyUser) {
+        override fun toString(): String = "u$id"
+    }
 
     public object AnyContact : AbstractPermissibleIdentifier() {
-        override fun toString(): String = "AnyContact"
+        override fun toString(): String = "*"
     }
 
     public object Console : AbstractPermissibleIdentifier() {
-        override fun toString(): String = "Console"
+        override fun toString(): String = "console"
     }
 }
