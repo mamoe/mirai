@@ -126,19 +126,11 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         val pluginLoadSession: PluginManagerImpl.PluginLoadSession
 
-        phase `load plugin provider plugins and high priority extension plugins`@{
+        phase `load BEFORE_EXTENSIONS plugins`@{
             PluginManager // init
 
             mainLogger.verbose { "Loading PluginLoader provider plugins..." }
             PluginManagerImpl.loadEnablePluginProviderPlugins()
-            mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
-
-            mainLogger.verbose { "Scanning high-priority extension and normal plugins..." }
-            pluginLoadSession = PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider()
-            mainLogger.verbose { "${pluginLoadSession.allKindsOfPlugins.size} plugin(s) found." }
-
-            mainLogger.verbose { "Loading Extension provider plugins..." }
-            PluginManagerImpl.loadEnableHighPriorityExtensionPlugins(pluginLoadSession)
             mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
         }
 
@@ -147,6 +139,16 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             if (instance is BuiltInSingletonExtensionSelector) {
                 ConsoleDataScope.addAndReloadConfig(instance.config)
             }
+        }
+
+        phase `load ON_EXTENSIONS plugins`@{
+            mainLogger.verbose { "Scanning high-priority extension and normal plugins..." }
+            pluginLoadSession = PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider()
+            mainLogger.verbose { "${pluginLoadSession.allKindsOfPlugins.size} plugin(s) found." }
+
+            mainLogger.verbose { "Loading Extension provider plugins..." }
+            PluginManagerImpl.loadEnableHighPriorityExtensionPlugins(pluginLoadSession)
+            mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
         }
 
         phase `load PermissionService`@{
@@ -169,7 +171,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             CommandManagerImpl.commandListener // start
         }
 
-        phase `load normal plugins`@{
+        phase `load AFTER_EXTENSION plugins`@{
             mainLogger.verbose { "Loading normal plugins..." }
             val count = PluginManagerImpl.loadEnableNormalPlugins(pluginLoadSession)
             mainLogger.verbose { "$count normal plugin(s) loaded." }

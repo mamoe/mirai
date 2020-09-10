@@ -23,9 +23,9 @@ public interface PluginDescription {
     /**
      * 插件类型. 将会决定加载顺序
      *
-     * @see PluginKind
+     * @see PluginLoadPriority
      */
-    public val kind: PluginKind
+    public val loadPriority: PluginLoadPriority
 
     /**
      * 插件 ID, 必须全英文, 仅允许英文字母, '-', '_', '.'.

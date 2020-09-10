@@ -5,12 +5,14 @@ import net.mamoe.mirai.console.extension.SingletonExtension
 import net.mamoe.mirai.console.extension.SingletonExtensionPoint
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.plugin.description.PluginKind
+import net.mamoe.mirai.console.plugin.description.PluginLoadPriority
 
 /**
  * [权限服务][PermissionService] 提供器.
  *
- * 此扩展可由 [PluginKind.LOADER] 和 [PluginKind.HIGH_PRIORITY_EXTENSIONS] 插件提供
+ * 当插件注册 [PermissionService] 后, 默认会使用插件的 [PermissionService].
+ *
+ * 此扩展可由 [PluginLoadPriority.BEFORE_EXTENSIONS] 和 [PluginLoadPriority.ON_EXTENSIONS] 插件提供
  */
 @ExperimentalPermission
 public interface PermissionServiceProvider : SingletonExtension<PermissionService<*>> {

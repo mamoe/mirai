@@ -12,7 +12,7 @@ package net.mamoe.mirai.console.extensions
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extension.*
 import net.mamoe.mirai.console.internal.extensions.BuiltInSingletonExtensionSelector
-import net.mamoe.mirai.console.plugin.description.PluginKind
+import net.mamoe.mirai.console.plugin.description.PluginLoadPriority
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.utils.info
 import kotlin.reflect.KClass
@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
  *
  * 如有多个 [SingletonExtensionSelector] 注册, 将会停止服务器.
  *
- * 此扩展可由 [PluginKind.LOADER] 和 [PluginKind.HIGH_PRIORITY_EXTENSIONS] 插件提供
+ * 此扩展可由 [PluginLoadPriority.BEFORE_EXTENSIONS] 插件提供
  */
 public interface SingletonExtensionSelector : FunctionExtension {
 
