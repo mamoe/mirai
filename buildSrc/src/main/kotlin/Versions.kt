@@ -37,5 +37,5 @@ object Versions {
     const val bintray = "1.8.5"
 
     const val blockingBridge = "1.0.5"
-    const val yamlkt = "0.5.1"
+    const val yamlkt = "0.5.2"
 }
