@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.pure
 
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.MiraiConsole
@@ -28,7 +29,7 @@ val consoleLogger by lazy { DefaultLogger("console") }
 
 @OptIn(ConsoleInternalAPI::class)
 internal fun startupConsoleThread() {
-    MiraiConsole.launch {
+    MiraiConsole.launch(CoroutineName("Input")) {
         while (true) {
             try {
                 val next = MiraiConsole.requestInput("").let {

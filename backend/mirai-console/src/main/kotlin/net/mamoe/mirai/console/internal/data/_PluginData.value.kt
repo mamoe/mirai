@@ -196,4 +196,21 @@ internal class LazyReferenceValueImpl<T> : ReferenceValue<T>, AbstractValueImpl<
             initialied = true
             valueField = value
         }
+
+    override fun toString(): String {
+        return valueField.toString()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other?.javaClass != this.javaClass) return false
+
+        other as LazyReferenceValueImpl<*>
+        if (other.valueField != valueField) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return valueField?.hashCode() ?: 0
+    }
 }

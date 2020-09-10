@@ -74,6 +74,9 @@ class MiraiConsoleImplementationPure
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
     NamedSupervisorJob("MiraiConsoleImplementationPure") +
             CoroutineExceptionHandler { coroutineContext, throwable ->
+                if (throwable is CancellationException) {
+                    return@CoroutineExceptionHandler
+                }
                 val coroutineName = coroutineContext[CoroutineName]?.name ?: "<unnamed>"
                 MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
             }) {

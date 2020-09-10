@@ -14,6 +14,7 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataHolder
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
+import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SilentLogger
@@ -54,7 +55,7 @@ internal open class MultiFilePluginDataStorageImpl(
         }
         dir.mkdir()
 
-        val file = dir.resolve(name)
+        val file = dir.resolve("$name.yml")
         if (file.isDirectory) {
             error("Target File $file is occupied by a directory therefore data ${instance::class.qualifiedNameOrTip} can't be saved.")
         }
@@ -64,7 +65,26 @@ internal open class MultiFilePluginDataStorageImpl(
 
     @ConsoleExperimentalAPI
     public override fun store(holder: PluginDataHolder, instance: PluginData) {
-        getPluginDataFile(holder, instance).writeText(Yaml.default.encodeToString(instance.updaterSerializer, Unit))
+        @OptIn(ExperimentalPermission::class)
+        val yaml =/* if (instance.saveName == "PermissionService") Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            isLenient = true
+            allowStructuredMapKeys = true
+        } /*Yaml(
+            configuration = YamlConfiguration(
+                mapSerialization = YamlConfiguration.MapSerialization.FLOW_MAP,
+                listSerialization = YamlConfiguration.ListSerialization.FLOW_SEQUENCE,
+                classSerialization = YamlConfiguration.MapSerialization.FLOW_MAP
+            )
+        )*/ else */Yaml.default
+        getPluginDataFile(holder, instance).writeText(
+            kotlin.runCatching {
+                yaml.encodeToString(instance.updaterSerializer, Unit)
+            }.getOrElse {
+                throw IllegalStateException("Exception while saving $instance, saveName=${instance.saveName}", it)
+            }
+        )
         logger.debug { "Successfully saved PluginData: ${instance.saveName} (containing ${instance.valueNodes.size} properties)" }
     }
 }

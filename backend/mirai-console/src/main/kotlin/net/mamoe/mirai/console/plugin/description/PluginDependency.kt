@@ -18,9 +18,11 @@ import com.vdurmont.semver4j.Semver
  *
  * @see PluginDescription.dependencies
  */
-public data class PluginDependency(
-    /** 依赖插件名 */
-    public val name: String,
+public data class PluginDependency @JvmOverloads constructor(
+    /**
+     * 依赖插件 ID, [PluginDescription.id]
+     */
+    public val id: String,
     /**
      * 依赖版本号. 为 null 时则为不限制版本.
      *
@@ -34,6 +36,16 @@ public data class PluginDependency(
      */
     public val isOptional: Boolean = false
 ) {
+    /**
+     * @see PluginDependency
+     */
+    public constructor(name: String, isOptional: Boolean = false) : this(
+        name, null, isOptional
+    )
+
+    /**
+     * @see PluginDependency
+     */
     public constructor(name: String, version: String, isOptional: Boolean) : this(
         name,
         Semver(version, Semver.SemverType.IVY),

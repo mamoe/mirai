@@ -21,8 +21,13 @@ import net.mamoe.mirai.utils.minutesToMillis
 
 
 internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope("ConsoleDataScope") {
-    private val data: Array<out PluginData> = arrayOf()
-    private val configs: Array<out PluginConfig> = arrayOf(ManagersConfig, AutoLoginConfig)
+    private val data: List<PluginData> = mutableListOf()
+    private val configs: MutableList<PluginConfig> = mutableListOf(AutoLoginConfig)
+
+    fun addAndReloadConfig(config: PluginConfig) {
+        configs.add(config)
+        ConsoleBuiltInPluginConfigStorage.load(ConsoleBuiltInPluginConfigHolder, config)
+    }
 
     fun reloadAll() {
         data.forEach { dt ->
@@ -37,13 +42,13 @@ internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope("Co
 internal object ConsoleBuiltInPluginDataHolder : AutoSavePluginDataHolder,
     CoroutineScope by ConsoleDataScope.childScope("ConsoleBuiltInPluginDataHolder") {
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
-    override val dataHolderName: String get() = "ConsoleBuiltIns"
+    override val dataHolderName: String get() = "Console"
 }
 
 internal object ConsoleBuiltInPluginConfigHolder : AutoSavePluginDataHolder,
     CoroutineScope by ConsoleDataScope.childScope("ConsoleBuiltInPluginConfigHolder") {
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
-    override val dataHolderName: String get() = "ConsoleBuiltIns"
+    override val dataHolderName: String get() = "Console"
 }
 
 internal object ConsoleBuiltInPluginDataStorage :

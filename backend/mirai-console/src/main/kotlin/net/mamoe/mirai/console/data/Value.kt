@@ -58,6 +58,26 @@ public class SerializableValue<T>(
 ) : Value<T> by delegate, SerializerAwareValue<T> {
     public override fun toString(): String = delegate.toString()
 
+    public override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other?.javaClass != this.javaClass) return false
+
+        @Suppress("UNCHECKED_CAST")
+        other as SerializableValue<T>
+        if (other.delegate != this.delegate) return false
+        // if (other.serializer != this.serializer) return false
+        // TODO: 2020/9/9 serializers should be checked here, but it will cause incomparable issue when putting a SerializableValue as a Key
+        return true
+    }
+
+    override fun hashCode(): Int {
+        @Suppress("UnnecessaryVariable", "CanBeVal")
+        var result = delegate.hashCode()
+        // result = 31 * result + serializer.hashCode()
+        // TODO: 2020/9/9 serializers should be checked here, but it will cause incomparable issue when putting a SerializableValue as a Key
+        return result
+    }
+
     public companion object {
         @JvmStatic
         @JvmName("create")

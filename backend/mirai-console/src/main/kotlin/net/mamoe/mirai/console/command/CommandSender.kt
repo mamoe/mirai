@@ -32,6 +32,10 @@ import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
+import net.mamoe.mirai.console.permission.AbstractPermissibleIdentifier
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.Permissible
+import net.mamoe.mirai.console.permission.PermissibleIdentifier
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
@@ -132,7 +136,8 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * @see toCommandSender
  * @see asCommandSender
  */
-public interface CommandSender : CoroutineScope {
+@OptIn(ExperimentalPermission::class)
+public interface CommandSender : CoroutineScope, Permissible {
     /**
      * 与这个 [CommandSender] 相关的 [Bot].
      * 当通过控制台执行时为 `null`.
@@ -509,6 +514,9 @@ public abstract class ConsoleCommandSender @ConsoleFrontEndImplementation constr
     public final override val name: String get() = NAME
     public final override fun toString(): String = NAME
 
+    @ExperimentalPermission
+    public final override val identifier: PermissibleIdentifier = AbstractPermissibleIdentifier.Console
+
     public companion object INSTANCE : ConsoleCommandSender(), CoroutineScope {
         public const val NAME: String = "ConsoleCommandSender"
         public override val coroutineContext: CoroutineContext by lazy { MiraiConsole.childScopeContext(NAME) }
@@ -604,6 +612,9 @@ public open class FriendCommandSender internal constructor(
     public override val subject: Contact get() = user
     public override fun toString(): String = "FriendCommandSender($user)"
 
+    @ExperimentalPermission
+    public override val identifier: PermissibleIdentifier = AbstractPermissibleIdentifier.ExactFriend(user.id)
+
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Friend> = sendMessage(PlainText(message))
 
@@ -620,9 +631,12 @@ public open class MemberCommandSender internal constructor(
 ) : AbstractUserCommandSender(),
     GroupAwareCommandSender,
     CoroutineScope by user.childScope("MemberCommandSender") {
-    public override val group: Group get() = user.group
+    public final override val group: Group get() = user.group
     public override val subject: Group get() = group
     public override fun toString(): String = "MemberCommandSender($user)"
+
+    @ExperimentalPermission
+    public override val identifier: PermissibleIdentifier = AbstractPermissibleIdentifier.ExactMember(group.id, user.id)
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Group> = sendMessage(PlainText(message))
@@ -643,6 +657,10 @@ public open class TempCommandSender internal constructor(
     public override val group: Group get() = user.group
     public override val subject: Contact get() = group
     public override fun toString(): String = "TempCommandSender($user)"
+
+    @ExperimentalPermission
+    public override val identifier: PermissibleIdentifier =
+        AbstractPermissibleIdentifier.ExactTemp(user.group.id, user.id)
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))

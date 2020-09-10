@@ -15,11 +15,16 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.internal.data.mkdir
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.PermissionService.Companion.allocatePermissionIdForPlugin
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceContainer
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.NamedSupervisorJob
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -38,10 +43,24 @@ internal abstract class JvmPluginInternal(
     parentCoroutineContext: CoroutineContext
 ) : JvmPlugin, CoroutineScope {
 
+    @OptIn(ExperimentalPermission::class)
+    final override val basePermission: PermissionId by lazy {
+        PermissionService.INSTANCE.register(
+            PermissionService.INSTANCE.allocatePermissionIdForPlugin(name, "*"),
+            "The base permission"
+        ).id
+    }
+
     final override var isEnabled: Boolean = false
 
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
-    override fun getResourceAsStream(path: String): InputStream? = resourceContainerDelegate.getResourceAsStream(path)
+    final override fun getResourceAsStream(path: String): InputStream? =
+        resourceContainerDelegate.getResourceAsStream(path)
+
+    @OptIn(ExperimentalPermission::class)
+    override fun permissionId(id: String): PermissionId {
+        return PermissionId(description.name, id)
+    }
 
     // region JvmPlugin
     final override val logger: MiraiLogger by lazy {
@@ -62,11 +81,11 @@ internal abstract class JvmPluginInternal(
         dataFolderPath.toFile()
     }
 
-    override val configFolderPath: Path by lazy {
+    final override val configFolderPath: Path by lazy {
         PluginManager.pluginsConfigPath.resolve(description.name).apply { mkdir() }
     }
 
-    override val configFolder: File by lazy {
+    final override val configFolder: File by lazy {
         configFolderPath.toFile()
     }
 
@@ -91,6 +110,7 @@ internal abstract class JvmPluginInternal(
     }
 
     internal fun internalOnEnable(): Boolean {
+        basePermission
         if (!firstRun) refreshCoroutineContext()
         kotlin.runCatching {
             onEnable()
@@ -116,6 +136,7 @@ internal abstract class JvmPluginInternal(
     internal val _intrinsicCoroutineContext: CoroutineContext by lazy {
         CoroutineName("Plugin $dataHolderName")
     }
+
     @JvmField
     internal val coroutineContextInitializer = {
         CoroutineExceptionHandler { context, throwable ->

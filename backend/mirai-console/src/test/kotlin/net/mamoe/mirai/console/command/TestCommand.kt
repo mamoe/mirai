@@ -189,7 +189,7 @@ internal class TestCommand {
 
             val composite = object : CompositeCommand(
                 ConsoleCommandOwner,
-                "test",
+                "test22",
                 overrideContext = buildCommandArgumentContext {
                     add(object : CommandArgumentParser<MyClass> {
                         override fun parse(raw: String, sender: CommandSender): MyClass {
@@ -234,7 +234,7 @@ internal class TestCommand {
 
             simple.withRegistration {
                 // assertEquals("xxx", withTesting { simple.execute(sender, "xxx") })
-                assertEquals("xxx", withTesting { println(sender.executeCommand("/test xxx")) })
+                assertEquals("xxx", withTesting { assertSuccess(sender.executeCommand("/test xxx")) })
             }
         }
     }

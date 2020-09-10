@@ -10,8 +10,8 @@
 package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
-import net.mamoe.mirai.console.plugin.jvm.SimpleJvmPluginDescription
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -21,7 +21,7 @@ import kotlin.test.assertSame
 internal class PluginDataTest {
 
     object MyPlugin : KotlinPlugin(
-        SimpleJvmPluginDescription(
+        JvmPluginDescription(
             "1", "2"
         )
     )

@@ -15,7 +15,9 @@ import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MalformedMiraiConsoleImplementationError
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
@@ -23,12 +25,20 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.extension.useExtensions
+import net.mamoe.mirai.console.extensions.PostStartupExtension
+import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
-import net.mamoe.mirai.console.internal.plugin.CuiPluginCenter
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
+import net.mamoe.mirai.console.permission.BuiltInPermissionService
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
+import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -39,6 +49,8 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -46,7 +58,7 @@ import kotlin.coroutines.CoroutineContext
  */
 internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleImplementation,
     MiraiConsole {
-    override val pluginCenter: PluginCenter get() = CuiPluginCenter
+    override val pluginCenter: PluginCenter get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
 
     private val instance: MiraiConsoleImplementation by MiraiConsoleImplementation.Companion::instance
     override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
@@ -76,49 +88,116 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     override fun createLogger(identity: String?): MiraiLogger = instance.createLogger(identity)
 
-    @OptIn(ConsoleExperimentalAPI::class)
+    @OptIn(ConsoleExperimentalAPI::class, ExperimentalPermission::class)
+    @Suppress("RemoveRedundantBackticks")
     internal fun doStart() {
-        val buildDateFormatted =
-            buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-        mainLogger.info { "Starting mirai-console..." }
-        mainLogger.info { "Backend: version $version, built on $buildDateFormatted." }
-        mainLogger.info { frontEndDescription.render() }
+        phase `greeting`@{
+            val buildDateFormatted =
+                buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
-        if (coroutineContext[Job] == null) {
-            throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
-        }
-        if (coroutineContext[CoroutineExceptionHandler] == null) {
-            throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a CoroutineExceptionHandler in it.")
+            mainLogger.info { "Starting mirai-console..." }
+            mainLogger.info { "Backend: version $version, built on $buildDateFormatted." }
+            mainLogger.info { frontEndDescription.render() }
         }
 
-        MiraiConsole.job.invokeOnCompletion {
-            Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
+        phase `check coroutineContext`@{
+            if (coroutineContext[Job] == null) {
+                throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
+            }
+            if (coroutineContext[CoroutineExceptionHandler] == null) {
+                throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a CoroutineExceptionHandler in it.")
+            }
+
+            MiraiConsole.job.invokeOnCompletion {
+                Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
+            }
         }
 
-        mainLogger.info { "Reloading configurations..." }
-        ConsoleDataScope.reloadAll()
+        ConsoleInput
 
-        BuiltInCommands.registerAll()
-        mainLogger.info { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
-        CommandManager
-        CommandManagerImpl.commandListener // start
+        // start
 
-        mainLogger.info { "Loading plugins..." }
-        PluginManager
-        PluginManagerImpl.loadEnablePlugins()
-        mainLogger.info { "${PluginManager.plugins.size} plugin(s) loaded." }
+        phase `load configurations`@{
+            mainLogger.verbose { "Loading configurations..." }
+            ConsoleDataScope.reloadAll()
+        }
+
+        val pluginLoadSession: PluginManagerImpl.PluginLoadSession
+
+        phase `load plugins`@{
+            PluginManager // init
+
+            mainLogger.verbose { "Loading PluginLoader provider plugins..." }
+            PluginManagerImpl.loadEnablePluginProviderPlugins()
+            mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
+
+            mainLogger.verbose { "Scanning high-priority extension and normal plugins..." }
+            pluginLoadSession = PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider()
+            mainLogger.verbose { "${pluginLoadSession.allKindsOfPlugins.size} plugin(s) found." }
+
+            mainLogger.verbose { "Loading Extension provider plugins..." }
+            PluginManagerImpl.loadEnableHighPriorityExtensionPlugins(pluginLoadSession)
+            mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
+        }
+
+        SingletonExtensionSelector.instance // init
+
+        phase `load PermissionService`@{
+            mainLogger.verbose { "Loading PermissionService..." }
+            PermissionService.INSTANCE.let { ps ->
+                if (ps is BuiltInPermissionService) {
+                    ConsoleDataScope.addAndReloadConfig(ps.config)
+                    mainLogger.verbose { "Reloaded PermissionService settings." }
+                }
+            }
+
+            ConsoleCommandSender.grantPermission(RootPermission)
+        }
+
+        phase `prepare commands`@{
+            mainLogger.verbose { "Loading built-in commands..." }
+            BuiltInCommands.registerAll()
+            mainLogger.verbose { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
+            CommandManager
+            CommandManagerImpl.commandListener // start
+        }
+
+        phase `load normal plugins`@{
+            mainLogger.verbose { "Loading normal plugins..." }
+            val count = PluginManagerImpl.loadEnableNormalPlugins(pluginLoadSession)
+            mainLogger.verbose { "$count normal plugin(s) loaded." }
+        }
+
+        mainLogger.info { "${PluginManagerImpl.plugins.size} plugin(s) loaded." }
+
+        phase `auto-login bots`@{
+            runBlocking {
+                for ((id, password) in AutoLoginConfig.plainPasswords) {
+                    mainLogger.info { "Auto-login $id" }
+                    MiraiConsole.addBot(id, password).alsoLogin()
+                }
+
+                for ((id, password) in AutoLoginConfig.md5Passwords) {
+                    mainLogger.info { "Auto-login $id" }
+                    MiraiConsole.addBot(id, password).alsoLogin()
+                }
+            }
+        }
+
+        PostStartupExtension.useExtensions { it() }
+
         mainLogger.info { "mirai-console started successfully." }
+    }
 
-        for ((id, password) in AutoLoginConfig.plainPasswords) {
-            mainLogger.info { "Auto-login $id" }
-            MiraiConsole.addBot(id, password)
+    @Retention(AnnotationRetention.SOURCE)
+    @DslMarker
+    private annotation class MiraiIsCool
+
+    @MiraiIsCool
+    private inline fun phase(block: () -> Unit) {
+        contract {
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
-
-        for ((id, password) in AutoLoginConfig.md5Passwords) {
-            mainLogger.info { "Auto-login $id" }
-            MiraiConsole.addBot(id, password)
-        }
-
-        // Only for initialize
+        block()
     }
 }

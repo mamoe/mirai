@@ -10,6 +10,12 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.Command.Companion.primaryName
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.message.data.MessageChain
@@ -136,12 +142,14 @@ internal fun Group.fuzzySearchMember(
     }
 }
 
+@OptIn(ExperimentalPermission::class)
+internal fun Command.createCommandPermission(parent: PermissionId): Permission {
+    return PermissionService.INSTANCE.register(owner.permissionId(primaryName), description, parent)
+}
 
 //// internal
 
-@JvmSynthetic
-internal inline fun <reified T> List<T>.dropToTypedArray(n: Int): Array<T> = Array(size - n) { this[n + it] }
-
+@OptIn(ExperimentalPermission::class)
 @JvmSynthetic
 @Throws(CommandExecutionException::class)
 internal suspend fun CommandSender.executeCommandInternal(
@@ -150,7 +158,7 @@ internal suspend fun CommandSender.executeCommandInternal(
     commandName: String,
     checkPermission: Boolean
 ): CommandExecuteResult {
-    if (checkPermission && !command.testPermission(this)) {
+    if (checkPermission && !command.permission.testPermission(this)) {
         return CommandExecuteResult.PermissionDenied(command, commandName)
     }
 
