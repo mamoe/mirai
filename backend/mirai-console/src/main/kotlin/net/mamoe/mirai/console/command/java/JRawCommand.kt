@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 
@@ -55,7 +54,7 @@ public abstract class JRawCommand @OptIn(ExperimentalPermission::class)
     public override val owner: CommandOwner,
     /** 指令名. 需要至少有一个元素. 所有元素都不能带有空格 */
     public override vararg val names: String,
-    parentPermission: PermissionId = owner.basePermission,
+    parentPermission: Permission = owner.parentPermission,
 ) : Command {
     /** 用法说明, 用于发送给用户 */
     public override var usage: String = "<no usages given>"

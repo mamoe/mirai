@@ -82,6 +82,21 @@ public interface CommandArgumentParser<out T : Any> {
 }
 
 /**
+ * 使用原 [this] 解析, 成功后使用 [mapper] 映射为另一个类型.
+ */
+public fun <T : Any, R : Any> CommandArgumentParser<T>.map(
+    mapper: CommandArgumentParser<R>.(T) -> R
+): CommandArgumentParser<R> = MappingCommandArgumentParser(this, mapper)
+
+private class MappingCommandArgumentParser<T : Any, R : Any>(
+    private val original: CommandArgumentParser<T>,
+    private val mapper: CommandArgumentParser<R>.(T) -> R
+) : CommandArgumentParser<R> {
+    override fun parse(raw: String, sender: CommandSender): R = mapper(original.parse(raw, sender))
+    override fun parse(raw: MessageContent, sender: CommandSender): R = mapper(original.parse(raw, sender))
+}
+
+/**
  * 解析一个字符串或 [SingleMessage] 为 [T] 类型参数
  *
  * @throws IllegalArgumentException 当 [raw] 既不是 [SingleMessage], 也不是 [String] 时抛出.

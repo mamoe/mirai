@@ -9,28 +9,27 @@
 
 package net.mamoe.mirai.console.permission
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.data.value
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.reflect.KClass
-import kotlin.reflect.KType
-import kotlin.reflect.full.createType
 
 
 @ExperimentalPermission
-public object AllGrantPermissionService : PermissionService<PermissionImpl> {
+internal object AllGrantPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
-    override val permissionType: KClass<PermissionImpl>
-        get() = PermissionImpl::class
+    override val permissionType: KClass<PermissionImpl> get() = PermissionImpl::class
+    override val rootPermission: PermissionImpl get() = RootPermissionImpl
 
     override fun register(
         id: PermissionId,
         description: String,
-        base: PermissionId
+        parent: Permission
     ): PermissionImpl {
-        val new = PermissionImpl(id, description, base)
+        val new = PermissionImpl(id, description, parent)
         val old = all.putIfAbsent(id, new)
         if (old != null) throw DuplicatedPermissionRegistrationException(new, old)
         return new
@@ -51,18 +50,23 @@ public object AllGrantPermissionService : PermissionService<PermissionImpl> {
     }
 }
 
+@Suppress("DEPRECATION")
+@OptIn(ExperimentalPermission::class)
+private val RootPermissionImpl = PermissionImpl(PermissionId("*", "*"), "The root permission").also { it.parent = it }
+
 @ExperimentalPermission
-public object AllDenyPermissionService : PermissionService<PermissionImpl> {
+internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
+    override val rootPermission: PermissionImpl get() = RootPermissionImpl
 
     override fun register(
         id: PermissionId,
         description: String,
-        base: PermissionId
+        parent: Permission
     ): PermissionImpl {
-        val new = PermissionImpl(id, description, base)
+        val new = PermissionImpl(id, description, parent)
         val old = all.putIfAbsent(id, new)
         if (old != null) throw DuplicatedPermissionRegistrationException(new, old)
         return new
@@ -91,27 +95,23 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
     override val permissions: MutableMap<PermissionId, PermissionImpl> = ConcurrentHashMap()
+    override val rootPermission: PermissionImpl
+        get() = RootPermissionImpl
 
     @Suppress("UNCHECKED_CAST")
     override val grantedPermissionsMap: MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
         get() = config.grantedPermissionMap as MutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
 
-    override fun createPermission(id: PermissionId, description: String, base: PermissionId): PermissionImpl =
-        PermissionImpl(id, description, base)
+    override fun createPermission(id: PermissionId, description: String, parent: Permission): PermissionImpl =
+        PermissionImpl(id, description, parent)
 
-    internal val config: ConcurrentSaveData<PermissionImpl> =
-        ConcurrentSaveData(
-            PermissionImpl::class.createType(),
-            "PermissionService",
-
-            )
+    internal val config: ConcurrentSaveData =
+        ConcurrentSaveData("PermissionService")
 
     @Suppress("RedundantVisibilityModifier")
     @ExperimentalPermission
-    internal class ConcurrentSaveData<P : Permission> private constructor(
-        permissionType: KType,
+    internal class ConcurrentSaveData private constructor(
         public override val saveName: String,
-        //   delegate: PluginConfig,
         @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?
     ) : AutoSavePluginConfig() {
         public val grantedPermissionMap: MutableMap<PermissionId, MutableList<AbstractPermissibleIdentifier>>
@@ -120,11 +120,49 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
 
         public companion object {
             @JvmStatic
-            public operator fun <P : Permission> invoke(
-                permissionType: KType,
+            public operator fun invoke(
                 saveName: String,
                 // delegate: PluginConfig,
-            ): ConcurrentSaveData<P> = ConcurrentSaveData(permissionType, saveName, null)
+            ): ConcurrentSaveData = ConcurrentSaveData(saveName, null)
         }
     }
+}
+
+/**
+ * [Permission] 的简单实现
+ */
+@Serializable
+@ExperimentalPermission
+internal data class PermissionImpl @Deprecated("Only for Root") constructor(
+    override val id: PermissionId,
+    override val description: String,
+) : Permission {
+    override lateinit var parent: Permission
+
+    @Suppress("DEPRECATION")
+    constructor(id: PermissionId, description: String, parent: Permission) : this(id, description) {
+        this.parent = parent
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PermissionImpl
+
+        if (id != other.id) return false
+        if (description != other.description) return false
+        if (parent != other.parent) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + parent.hashCode()
+        return result
+    }
+
+    override fun toString(): String = "PermissionImpl(id=$id, description='$description', parentId=$parent)"
 }

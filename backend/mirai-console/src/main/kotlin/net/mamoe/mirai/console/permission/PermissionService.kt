@@ -23,6 +23,7 @@ import kotlin.reflect.full.isSuperclassOf
 public interface PermissionService<P : Permission> {
     @ExperimentalPermission
     public val permissionType: KClass<P>
+    public val rootPermission: P
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +47,7 @@ public interface PermissionService<P : Permission> {
     public fun register(
         id: PermissionId,
         description: String,
-        base: PermissionId = RootPermission.id
+        parent: Permission = RootPermission
     ): P
 
     ///////////////////////////////////////////////////////////////////////////

@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.permission.ExperimentalPermission
-import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.annotation.AnnotationRetention.RUNTIME
@@ -86,7 +86,7 @@ public abstract class CompositeCommand @OptIn(ExperimentalPermission::class) con
     owner: CommandOwner,
     vararg names: String,
     description: String = "no description available",
-    parentPermission: PermissionId = owner.basePermission,
+    parentPermission: Permission = owner.parentPermission,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext
 ) : Command, AbstractReflectionCommand(owner, names, description, parentPermission, prefixOptional),
@@ -109,12 +109,6 @@ public abstract class CompositeCommand @OptIn(ExperimentalPermission::class) con
     @Retention(RUNTIME)
     @Target(FUNCTION)
     protected annotation class SubCommand(vararg val value: String)
-
-    /** 指定子指令要求的权限 */
-    @Retention(RUNTIME)
-    @Target(FUNCTION)
-    @ExperimentalPermission
-    protected annotation class Permission(val value: String)
 
     /** 指令描述 */
     @Retention(RUNTIME)

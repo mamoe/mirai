@@ -18,8 +18,6 @@ import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.PermissionId
-import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.message.data.*
 import kotlin.reflect.KAnnotatedElement
@@ -53,7 +51,7 @@ internal abstract class AbstractReflectionCommand @OptIn(ExperimentalPermission:
     owner: CommandOwner,
     names: Array<out String>,
     description: String = "<no description available>",
-    parentPermission: PermissionId = owner.basePermission,
+    parentPermission: Permission = owner.parentPermission,
     prefixOptional: Boolean = false
 ) : Command, AbstractCommand(
     owner,
@@ -144,7 +142,7 @@ internal abstract class AbstractReflectionCommand @OptIn(ExperimentalPermission:
             argsWithSubCommandNameNotRemoved: MessageChain,
             removeSubName: Boolean
         ) {
-            val args = parseArgs(sender, argsWithSubCommandNameNotRemoved, if (removeSubName) names.size else 0)
+            val args = parseArgs(sender, argsWithSubCommandNameNotRemoved, if (removeSubName) 1 else 0)
             if (!this.permission.testPermission(sender)) {
                 sender.sendMessage(usage) // TODO: 2020/8/26 #127
                 return
@@ -259,7 +257,7 @@ internal fun AbstractReflectionCommand.createSubCommand(
     context: CommandArgumentContext
 ): AbstractReflectionCommand.SubCommandDescriptor {
     val notStatic = !function.hasAnnotation<JvmStatic>()
-    val overridePermission = function.findAnnotation<CompositeCommand.Permission>()//optional
+    //val overridePermission = null//function.findAnnotation<CompositeCommand.PermissionId>()//optional
     val subDescription =
         function.findAnnotation<CompositeCommand.Description>()?.value ?: ""
 
@@ -331,7 +329,7 @@ internal fun AbstractReflectionCommand.createSubCommand(
         commandName,
         params,
         subDescription, // overridePermission?.value
-        overridePermission?.value?.let { PermissionService.INSTANCE[PermissionId.parseFromString(it)] } ?: permission,
+        permission,//overridePermission?.value?.let { PermissionService.INSTANCE[PermissionId.parseFromString(it)] } ?: permission,
         onCommand = { sender: CommandSender, args: Array<out Any> ->
             val result = if (notStatic) {
                 if (hasSenderParam) {

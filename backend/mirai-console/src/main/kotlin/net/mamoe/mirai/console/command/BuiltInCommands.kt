@@ -16,17 +16,13 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.command.description.PermissibleIdentifierArgumentParser
-import net.mamoe.mirai.console.command.description.PermissionIdArgumentParser
-import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
+import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
-import net.mamoe.mirai.console.permission.ExperimentalPermission
-import net.mamoe.mirai.console.permission.PermissibleIdentifier
-import net.mamoe.mirai.console.permission.PermissionId
-import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.permission.PermissionService.Companion.denyPermission
+import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
 import net.mamoe.mirai.console.permission.PermissionService.Companion.getGrantedPermissions
 import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
@@ -51,6 +47,7 @@ internal interface BuiltInCommandInternal : Command
  */
 @ConsoleExperimentalAPI
 @Suppress("unused")
+@OptIn(ExperimentalPermission::class)
 public object BuiltInCommands {
 
     public val all: Array<out Command> by lazy {
@@ -63,9 +60,10 @@ public object BuiltInCommands {
         }
     }
 
-    public object Help : SimpleCommand(
+    public object HelpCommand : SimpleCommand(
         ConsoleCommandOwner, "help",
-        description = "Command list"
+        description = "Command list",
+        parentPermission = RootConsoleBuiltInPermission,
     ), BuiltInCommand {
         @Handler
         public suspend fun CommandSender.handle() {
@@ -82,9 +80,10 @@ public object BuiltInCommands {
         })
     }
 
-    public object Stop : SimpleCommand(
+    public object StopCommand : SimpleCommand(
         ConsoleCommandOwner, "stop", "shutdown", "exit",
-        description = "Stop the whole world."
+        description = "Stop the whole world.",
+        parentPermission = RootConsoleBuiltInPermission,
     ), BuiltInCommand {
 
         private val closingLock = Mutex()
@@ -117,9 +116,10 @@ public object BuiltInCommands {
         }
     }
 
-    public object Login : SimpleCommand(
+    public object LoginCommand : SimpleCommand(
         ConsoleCommandOwner, "login", "登录",
-        description = "Log in a bot account."
+        description = "Log in a bot account.",
+        parentPermission = RootConsoleBuiltInPermission,
     ), BuiltInCommand {
         @Handler
         public suspend fun CommandSender.handle(id: Long, password: String) {
@@ -145,23 +145,28 @@ public object BuiltInCommands {
     }
 
     @OptIn(ExperimentalPermission::class)
-    public object Permission : CompositeCommand(
-        ConsoleCommandOwner, "permission", "权限",
+    public object PermissionCommand : CompositeCommand(
+        ConsoleCommandOwner, "permission", "权限", "perm",
         description = "Manage permissions",
         overrideContext = buildCommandArgumentContext {
             PermissibleIdentifier::class with PermissibleIdentifierArgumentParser
-            PermissionId::class with PermissionIdArgumentParser
-        }
+            Permission::class with PermissionIdArgumentParser.map { id ->
+                kotlin.runCatching {
+                    id.findCorrespondingPermissionOrFail()
+                }.getOrElse { illegalArgument("指令不存在: $id", it) }
+            }
+        },
+        parentPermission = RootConsoleBuiltInPermission,
     ), BuiltInCommand {
         // TODO: 2020/9/10 improve Permission command
         @SubCommand
-        public suspend fun CommandSender.grant(target: PermissibleIdentifier, permission: PermissionId) {
+        public suspend fun CommandSender.grant(target: PermissibleIdentifier, permission: Permission) {
             target.grantPermission(permission)
             sendMessage("OK")
         }
 
         @SubCommand
-        public suspend fun CommandSender.deny(target: PermissibleIdentifier, permission: PermissionId) {
+        public suspend fun CommandSender.deny(target: PermissibleIdentifier, permission: Permission) {
             target.denyPermission(permission)
             sendMessage("OK")
         }

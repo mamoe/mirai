@@ -19,7 +19,6 @@ import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.internal.command.isValidSubName
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
 
@@ -107,7 +106,7 @@ public abstract class AbstractCommand
     public override val owner: CommandOwner,
     vararg names: String,
     description: String = "<no description available>",
-    parentPermission: PermissionId = owner.basePermission,
+    parentPermission: Permission = owner.parentPermission,
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
     public override val prefixOptional: Boolean = false
 ) : Command {
