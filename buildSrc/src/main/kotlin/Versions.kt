@@ -23,8 +23,8 @@ object Versions {
     const val consoleTerminal = "0.1.0"
     const val consolePure = console
 
-    const val kotlinCompiler = "1.4.0"
-    const val kotlinStdlib = "1.4.0"
+    const val kotlinCompiler = "1.4.10"
+    const val kotlinStdlib = kotlinCompiler
 
     const val coroutines = "1.3.9"
     const val collectionsImmutable = "0.3.2"
