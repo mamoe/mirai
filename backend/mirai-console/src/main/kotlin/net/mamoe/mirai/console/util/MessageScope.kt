@@ -142,132 +142,51 @@ public fun Contact.asMessageScope(): MessageScope = createScopeDelegate(this)
 public fun CommandSender.asMessageScope(): MessageScope = createScopeDelegate(this)
 
 @LowPriorityInOverloadResolution
-public fun Contact.scopeWith(vararg others: Contact): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun Contact?.scopeWith(vararg others: Contact?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
 @LowPriorityInOverloadResolution
-public fun Contact.scopeWith(vararg others: CommandSender): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun Contact?.scopeWith(vararg others: CommandSender?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
 @LowPriorityInOverloadResolution
-public fun Contact.scopeWith(vararg others: MessageScope): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun Contact?.scopeWith(vararg others: MessageScope?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
 @LowPriorityInOverloadResolution
-public fun CommandSender.scopeWith(vararg others: Contact): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun CommandSender?.scopeWith(vararg others: Contact?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
 @LowPriorityInOverloadResolution
-public fun CommandSender.scopeWith(vararg others: CommandSender): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun CommandSender?.scopeWith(vararg others: CommandSender?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
 @LowPriorityInOverloadResolution
-public fun CommandSender.scopeWith(vararg others: MessageScope): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun CommandSender?.scopeWith(vararg others: MessageScope?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
 @LowPriorityInOverloadResolution
-public fun MessageScope.scopeWith(vararg others: Contact): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun MessageScope?.scopeWith(vararg others: Contact?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
 @LowPriorityInOverloadResolution
-public fun MessageScope.scopeWith(vararg others: CommandSender): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun MessageScope?.scopeWith(vararg others: CommandSender?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
 @LowPriorityInOverloadResolution
-public fun MessageScope.scopeWith(vararg others: MessageScope): MessageScope {
-    return others.fold(this.asMessageScope()) { acc, other -> CombinedScope(acc, other.asMessageScope()) }
+public fun MessageScope?.scopeWith(vararg others: MessageScope?): MessageScope {
+    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWith(other?.asMessageScope()) }
 }
 
-@LowPriorityInOverloadResolution
-public fun Contact?.scopeWithNotNull(vararg others: Contact?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-@LowPriorityInOverloadResolution
-public fun Contact?.scopeWithNotNull(vararg others: CommandSender?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-@LowPriorityInOverloadResolution
-public fun Contact?.scopeWithNotNull(vararg others: MessageScope?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-@LowPriorityInOverloadResolution
-public fun CommandSender?.scopeWithNotNull(vararg others: Contact?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-@LowPriorityInOverloadResolution
-public fun CommandSender?.scopeWithNotNull(vararg others: CommandSender?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-@LowPriorityInOverloadResolution
-public fun CommandSender?.scopeWithNotNull(vararg others: MessageScope?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-@LowPriorityInOverloadResolution
-public fun MessageScope?.scopeWithNotNull(vararg others: Contact?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-@LowPriorityInOverloadResolution
-public fun MessageScope?.scopeWithNotNull(vararg others: CommandSender?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-@LowPriorityInOverloadResolution
-public fun MessageScope?.scopeWithNotNull(vararg others: MessageScope?): MessageScope {
-    return others.fold(this.asMessageScopeOrNoop()) { acc, other -> acc.scopeWithNotNull(other?.asMessageScope()) }
-}
-
-public fun Contact.scopeWith(other: Contact): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun Contact.scopeWith(other: CommandSender): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun Contact.scopeWith(other: MessageScope): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun CommandSender.scopeWith(other: Contact): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun CommandSender.scopeWith(other: CommandSender): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun CommandSender.scopeWith(other: MessageScope): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun MessageScope.scopeWith(other: Contact): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun MessageScope.scopeWith(other: CommandSender): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun MessageScope.scopeWith(other: MessageScope): MessageScope {
-    return CombinedScope(asMessageScope(), other.asMessageScope())
-}
-
-public fun Contact?.scopeWithNotNull(other: Contact?): MessageScope {
+public fun Contact?.scopeWith(other: Contact?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -278,7 +197,7 @@ public fun Contact?.scopeWithNotNull(other: Contact?): MessageScope {
     }
 }
 
-public fun Contact?.scopeWithNotNull(other: CommandSender?): MessageScope {
+public fun Contact?.scopeWith(other: CommandSender?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -289,7 +208,7 @@ public fun Contact?.scopeWithNotNull(other: CommandSender?): MessageScope {
     }
 }
 
-public fun Contact?.scopeWithNotNull(other: MessageScope?): MessageScope {
+public fun Contact?.scopeWith(other: MessageScope?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -300,7 +219,7 @@ public fun Contact?.scopeWithNotNull(other: MessageScope?): MessageScope {
     }
 }
 
-public fun CommandSender?.scopeWithNotNull(other: Contact?): MessageScope {
+public fun CommandSender?.scopeWith(other: Contact?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -311,7 +230,7 @@ public fun CommandSender?.scopeWithNotNull(other: Contact?): MessageScope {
     }
 }
 
-public fun CommandSender?.scopeWithNotNull(other: CommandSender?): MessageScope {
+public fun CommandSender?.scopeWith(other: CommandSender?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -322,7 +241,7 @@ public fun CommandSender?.scopeWithNotNull(other: CommandSender?): MessageScope 
     }
 }
 
-public fun CommandSender?.scopeWithNotNull(other: MessageScope?): MessageScope {
+public fun CommandSender?.scopeWith(other: MessageScope?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -333,7 +252,7 @@ public fun CommandSender?.scopeWithNotNull(other: MessageScope?): MessageScope {
     }
 }
 
-public fun MessageScope?.scopeWithNotNull(other: Contact?): MessageScope {
+public fun MessageScope?.scopeWith(other: Contact?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -344,7 +263,7 @@ public fun MessageScope?.scopeWithNotNull(other: Contact?): MessageScope {
     }
 }
 
-public fun MessageScope?.scopeWithNotNull(other: CommandSender?): MessageScope {
+public fun MessageScope?.scopeWith(other: CommandSender?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -355,7 +274,7 @@ public fun MessageScope?.scopeWithNotNull(other: CommandSender?): MessageScope {
     }
 }
 
-public fun MessageScope?.scopeWithNotNull(other: MessageScope?): MessageScope {
+public fun MessageScope?.scopeWith(other: MessageScope?): MessageScope {
     @Suppress("DuplicatedCode")
     return when {
         this == null && other == null -> NoopMessageScope
@@ -366,76 +285,40 @@ public fun MessageScope?.scopeWithNotNull(other: MessageScope?): MessageScope {
     }
 }
 
-public inline fun <R> Contact.scopeWith(vararg others: Contact, action: MessageScope.() -> R): R {
+public inline fun <R> Contact?.scopeWith(vararg others: Contact?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
 }
 
-public inline fun <R> Contact.scopeWith(vararg others: CommandSender, action: MessageScope.() -> R): R {
+public inline fun <R> Contact?.scopeWith(vararg others: CommandSender?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
 }
 
-public inline fun <R> Contact.scopeWith(vararg others: MessageScope, action: MessageScope.() -> R): R {
+public inline fun <R> Contact?.scopeWith(vararg others: MessageScope?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
 }
 
-public inline fun <R> CommandSender.scopeWith(vararg others: Contact, action: MessageScope.() -> R): R {
+public inline fun <R> CommandSender?.scopeWith(vararg others: Contact?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
 }
 
-public inline fun <R> CommandSender.scopeWith(vararg others: CommandSender, action: MessageScope.() -> R): R {
+public inline fun <R> CommandSender?.scopeWith(vararg others: CommandSender?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
 }
 
-public inline fun <R> CommandSender.scopeWith(vararg others: MessageScope, action: MessageScope.() -> R): R {
+public inline fun <R> CommandSender?.scopeWith(vararg others: MessageScope?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
 }
 
-public inline fun <R> MessageScope.scopeWith(vararg others: Contact, action: MessageScope.() -> R): R {
+public inline fun <R> MessageScope?.scopeWith(vararg others: Contact?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
 }
 
-public inline fun <R> MessageScope.scopeWith(vararg others: CommandSender, action: MessageScope.() -> R): R {
+public inline fun <R> MessageScope?.scopeWith(vararg others: CommandSender?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
 }
 
-public inline fun <R> MessageScope.scopeWith(vararg others: MessageScope, action: MessageScope.() -> R): R {
+public inline fun <R> MessageScope?.scopeWith(vararg others: MessageScope?, action: MessageScope.() -> R): R {
     return scopeWith(*others).invoke(action)
-}
-
-public inline fun <R> Contact?.scopeWithNotNull(vararg others: Contact?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
-}
-
-public inline fun <R> Contact?.scopeWithNotNull(vararg others: CommandSender?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
-}
-
-public inline fun <R> Contact?.scopeWithNotNull(vararg others: MessageScope?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
-}
-
-public inline fun <R> CommandSender?.scopeWithNotNull(vararg others: Contact?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
-}
-
-public inline fun <R> CommandSender?.scopeWithNotNull(vararg others: CommandSender?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
-}
-
-public inline fun <R> CommandSender?.scopeWithNotNull(vararg others: MessageScope?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
-}
-
-public inline fun <R> MessageScope?.scopeWithNotNull(vararg others: Contact?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
-}
-
-public inline fun <R> MessageScope?.scopeWithNotNull(vararg others: CommandSender?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
-}
-
-public inline fun <R> MessageScope?.scopeWithNotNull(vararg others: MessageScope?, action: MessageScope.() -> R): R {
-    return scopeWithNotNull(*others).invoke(action)
 }
 
 @Deprecated(
