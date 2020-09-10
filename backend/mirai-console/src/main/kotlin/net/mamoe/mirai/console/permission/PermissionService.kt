@@ -28,6 +28,7 @@ public interface PermissionService<P : Permission> {
 
     public operator fun get(id: PermissionId): P?
 
+    public fun getRegisteredPermissions(): Sequence<P>
     public fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<P>
 
     public fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: P): Boolean {
@@ -72,6 +73,18 @@ public interface PermissionService<P : Permission> {
 
         public fun PermissibleIdentifier.grantPermission(permission: Permission) {
             INSTANCE.checkType(permission::class).grant(this, permission)
+        }
+
+        public fun PermissibleIdentifier.grantPermission(permissionId: PermissionId) {
+            grantPermission(permissionId.findCorrespondingPermissionOrFail())
+        }
+
+        public fun PermissibleIdentifier.denyPermission(permission: Permission) {
+            INSTANCE.checkType(permission::class).deny(this, permission)
+        }
+
+        public fun PermissibleIdentifier.denyPermission(permissionId: PermissionId) {
+            denyPermission(permissionId.findCorrespondingPermissionOrFail())
         }
 
         public fun Permissible.hasPermission(permission: Permission): Boolean =

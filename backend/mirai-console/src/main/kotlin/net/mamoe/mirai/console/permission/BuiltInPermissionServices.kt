@@ -37,6 +37,7 @@ public object AllGrantPermissionService : PermissionService<PermissionImpl> {
     }
 
     override fun get(id: PermissionId): PermissionImpl? = all[id]
+    override fun getRegisteredPermissions(): Sequence<PermissionImpl> = all.values.asSequence()
     override fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<PermissionImpl> =
         all.values.asSequence()
 
@@ -68,6 +69,7 @@ public object AllDenyPermissionService : PermissionService<PermissionImpl> {
     }
 
     override fun get(id: PermissionId): PermissionImpl? = all[id]
+    override fun getRegisteredPermissions(): Sequence<PermissionImpl> = all.values.asSequence()
     override fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<PermissionImpl> =
         emptySequence()
 

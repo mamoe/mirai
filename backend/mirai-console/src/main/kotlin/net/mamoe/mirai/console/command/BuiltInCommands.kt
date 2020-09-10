@@ -16,17 +16,23 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.command.description.PermissibleIdentifierArgumentParser
+import net.mamoe.mirai.console.command.description.PermissionIdArgumentParser
+import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
-import net.mamoe.mirai.console.util.BotManager.INSTANCE.addManager
-import net.mamoe.mirai.console.util.BotManager.INSTANCE.managers
-import net.mamoe.mirai.console.util.BotManager.INSTANCE.removeManager
+import net.mamoe.mirai.console.permission.ExperimentalPermission
+import net.mamoe.mirai.console.permission.PermissibleIdentifier
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.permission.PermissionService.Companion.denyPermission
+import net.mamoe.mirai.console.permission.PermissionService.Companion.getGrantedPermissions
+import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.secondsToMillis
 import kotlin.concurrent.thread
@@ -54,30 +60,6 @@ public object BuiltInCommands {
     internal fun registerAll() {
         BuiltInCommands::class.nestedClasses.forEach {
             (it.objectInstance as? Command)?.register()
-        }
-    }
-
-    public object Managers : CompositeCommand(
-        ConsoleCommandOwner, "managers",
-        description = "Manage the managers for each bot"
-    ), BuiltInCommand {
-        @SubCommand
-        public suspend fun CommandSender.add(target: User) {
-            target.bot.addManager(target.id)
-            sendMessage("已成功添加 ${target.render()} 为 ${target.bot.render()} 的管理员")
-        }
-
-        @SubCommand
-        public suspend fun CommandSender.remove(target: User) {
-            target.bot.removeManager(target.id)
-            sendMessage("已成功取消 ${target.render()} 对 ${target.bot.render()} 的管理员权限")
-        }
-
-        @SubCommand
-        public suspend fun CommandSender.list(bot: Bot) {
-            sendMessage("$bot 的管理员列表:\n" + bot.managers.joinToString("\n") {
-                bot.getFriendOrNull(it)?.render() ?: it.toString()
-            })
         }
     }
 
@@ -136,7 +118,7 @@ public object BuiltInCommands {
     }
 
     public object Login : SimpleCommand(
-        ConsoleCommandOwner, "login",
+        ConsoleCommandOwner, "login", "登录",
         description = "Log in a bot account."
     ), BuiltInCommand {
         @Handler
@@ -159,6 +141,40 @@ public object BuiltInCommands {
                     throw throwable
                 }
             )
+        }
+    }
+
+    @OptIn(ExperimentalPermission::class)
+    public object Permission : CompositeCommand(
+        ConsoleCommandOwner, "permission", "权限",
+        description = "Manage permissions",
+        overrideContext = buildCommandArgumentContext {
+            PermissibleIdentifier::class with PermissibleIdentifierArgumentParser
+            PermissionId::class with PermissionIdArgumentParser
+        }
+    ), BuiltInCommand {
+        // TODO: 2020/9/10 improve Permission command
+        @SubCommand
+        public suspend fun CommandSender.grant(target: PermissibleIdentifier, permission: PermissionId) {
+            target.grantPermission(permission)
+            sendMessage("OK")
+        }
+
+        @SubCommand
+        public suspend fun CommandSender.deny(target: PermissibleIdentifier, permission: PermissionId) {
+            target.denyPermission(permission)
+            sendMessage("OK")
+        }
+
+        @SubCommand("grantedPermissions", "gp")
+        public suspend fun CommandSender.grantedPermissions(target: PermissibleIdentifier) {
+            val grantedPermissions = target.getGrantedPermissions()
+            sendMessage(grantedPermissions.joinToString("\n") { it.id.toString() })
+        }
+
+        @SubCommand("listPermissions", "lp")
+        public suspend fun CommandSender.listPermissions() {
+            sendMessage(PermissionService.INSTANCE.getRegisteredPermissions().joinToString("\n") { it.id.toString() })
         }
     }
 }

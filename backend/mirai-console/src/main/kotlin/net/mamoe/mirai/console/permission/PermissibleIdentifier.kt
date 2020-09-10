@@ -43,13 +43,26 @@ public interface PermissibleIdentifier {
 public sealed class AbstractPermissibleIdentifier(
     public final override vararg val parents: PermissibleIdentifier
 ) : PermissibleIdentifier {
-    internal companion object {
-        val objects by lazy {
+    public companion object {
+        @JvmStatic
+        public fun parseFromString(string: String): AbstractPermissibleIdentifier {
+            val str = string.trim()
+            objects.find { it.toString() == str }?.let { return it as AbstractPermissibleIdentifier }
+            for ((regex, block) in regexes) {
+                val result = regex.find(str) ?: continue
+                if (result.range.last != str.lastIndex) continue
+                if (result.range.first != 0) continue
+                return result.destructured.run(block)
+            }
+            error("Cannot deserialize '$str' as AbstractPermissibleIdentifier")
+        }
+
+        internal val objects by lazy {
             // https://youtrack.jetbrains.com/issue/KT-41782
             AbstractPermissibleIdentifier::class.nestedClasses.mapNotNull { it.objectInstance }
         }
 
-        val regexes: List<Pair<Regex, (matchGroup: MatchResult.Destructured) -> AbstractPermissibleIdentifier>> =
+        internal val regexes: List<Pair<Regex, (matchGroup: MatchResult.Destructured) -> AbstractPermissibleIdentifier>> =
             listOf(
                 Regex("""ExactGroup\(\s*([0-9]+)\s*\)""") to { (id) -> ExactGroup(id.toLong()) },
                 Regex("""ExactFriend\(\s*([0-9]+)\s*\)""") to { (id) -> ExactFriend(id.toLong()) },
@@ -69,17 +82,7 @@ public sealed class AbstractPermissibleIdentifier(
     public object AsStringSerializer : KSerializer<AbstractPermissibleIdentifier> by String.serializer().map(
         serializer = { it.toString() },
 
-        deserializer = d@{ str ->
-            @Suppress("NAME_SHADOWING") val str = str.trim()
-            objects.find { it.toString() == str }?.let { return@d it as AbstractPermissibleIdentifier }
-            for ((regex, block) in regexes) {
-                val result = regex.find(str) ?: continue
-                if (result.range.last != str.lastIndex) continue
-                if (result.range.first != 0) continue
-                return@d result.destructured.run(block)
-            }
-            error("Cannot deserialize '$str' as AbstractPermissibleIdentifier")
-        }
+        deserializer = d@{ str -> parseFromString(str) }
     )
 
     public object AnyGroup : AbstractPermissibleIdentifier(AnyContact) {

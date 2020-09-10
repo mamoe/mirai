@@ -46,6 +46,7 @@ public abstract class AbstractConcurrentPermissionService<P : Permission> : Perm
         grantedPermissionsMap[permission.id]?.remove(permissibleIdentifier)
     }
 
+    override fun getRegisteredPermissions(): Sequence<P> = permissions.values.asSequence()
     public override fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<P> = sequence<P> {
         for ((permissionIdentifier, permissibleIdentifiers) in grantedPermissionsMap) {
 
