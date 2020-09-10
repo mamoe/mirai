@@ -22,7 +22,6 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.data.Message
-import kotlin.internal.InlineOnly
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -623,27 +622,23 @@ public suspend fun Flow<MessageScope>.toMessageScope(): MessageScope { // Flow<A
 // [MessageScope] 实现
 
 @PublishedApi
-@InlineOnly
 internal inline fun MessageScope.asMessageScope(): MessageScope = this
 
-@InlineOnly
 private inline fun MessageScope?.asMessageScopeOrNoop(): MessageScope = this?.asMessageScope() ?: NoopMessageScope
 
-@InlineOnly
 private inline fun Contact?.asMessageScopeOrNoop(): MessageScope = this?.asMessageScope() ?: NoopMessageScope
 
-@InlineOnly
 private inline fun CommandSender?.asMessageScopeOrNoop(): MessageScope = this?.asMessageScope() ?: NoopMessageScope
 
-@InlineOnly
 private inline fun createScopeDelegate(o: CommandSender) = CommandSenderAsMessageScope(o)
 
-@InlineOnly
 private inline fun createScopeDelegate(o: Contact) = ContactAsMessageScope(o)
 
-private fun MessageScope.asSequence(): Sequence<MessageScope> {
+internal fun MessageScope.asSequence(): Sequence<MessageScope> {
     return if (this is CombinedScope) {
-        sequenceOf(this.first.asSequence(), this.second.asSequence()).flatten()
+        val a = this.first.asSequence()
+        val b = this.second.asSequence() // don't inline. fuck compilers
+        sequenceOf(a, b).flatten()
     } else sequenceOf(this)
 }
 
