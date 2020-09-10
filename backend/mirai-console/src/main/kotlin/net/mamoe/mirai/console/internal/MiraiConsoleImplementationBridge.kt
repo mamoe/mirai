@@ -42,7 +42,6 @@ import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
-import net.mamoe.mirai.console.util.BotManager
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.utils.*
@@ -121,8 +120,6 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase `load configurations`@{
             mainLogger.verbose { "Loading configurations..." }
             ConsoleDataScope.reloadAll()
-
-            BotManager
         }
 
         val pluginLoadSession: PluginManagerImpl.PluginLoadSession

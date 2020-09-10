@@ -82,4 +82,4 @@ public inline val Plugin.author: String get() = this.description.author
 /**
  * 获取 [PluginDescription.dependencies]
  */
-public inline val Plugin.dependencies: List<PluginDependency> get() = this.description.dependencies
+public inline val Plugin.dependencies: Set<PluginDependency> get() = this.description.dependencies

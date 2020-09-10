@@ -171,8 +171,10 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
 
     @kotlin.jvm.Throws(PluginLoadException::class)
     internal fun checkPluginDescription(description: PluginDescription) {
-        when (description.name.toLowerCase()) {
-            "main", "console", "plugin", "config", "data" -> throw PluginLoadException("Plugin name '${description.name}' is forbidden.")
+        kotlin.runCatching {
+            PluginDescription.checkPluginDescription(description)
+        }.getOrElse {
+            throw PluginLoadException("PluginDescription check failed.", it)
         }
     }
 
@@ -214,7 +216,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
             return cannotBeLoad
         }
 
-        fun List<PluginDependency>.filterIsMissing(): List<PluginDependency> =
+        fun Collection<PluginDependency>.filterIsMissing(): List<PluginDependency> =
             this.filterNot { it.isOptional || it in resolved }
 
         tailrec fun List<D>.doSort() {
@@ -257,4 +259,4 @@ internal fun PluginDescription.wrapWith(loader: PluginLoader<*, *>, plugin: Plug
     )
 
 internal operator fun List<PluginDescription>.contains(dependency: PluginDependency): Boolean =
-    any { it.name == dependency.name }
+    any { it.id == dependency.id }

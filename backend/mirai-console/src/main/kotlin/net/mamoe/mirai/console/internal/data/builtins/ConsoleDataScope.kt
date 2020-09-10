@@ -22,7 +22,7 @@ import net.mamoe.mirai.utils.minutesToMillis
 
 internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope("ConsoleDataScope") {
     private val data: List<PluginData> = mutableListOf()
-    private val configs: MutableList<PluginConfig> = mutableListOf(ManagersConfig, AutoLoginConfig)
+    private val configs: MutableList<PluginConfig> = mutableListOf(AutoLoginConfig)
 
     fun addAndReloadConfig(config: PluginConfig) {
         configs.add(config)
