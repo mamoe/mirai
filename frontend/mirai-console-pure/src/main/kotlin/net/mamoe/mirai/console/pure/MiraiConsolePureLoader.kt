@@ -54,7 +54,7 @@ object MiraiConsolePureLoader {
     }
 
     @ConsolePureExperimentalAPI
-    fun printlnHelpMessage() {
+    fun printHelpMessage() {
         val help = listOf(
             "" to "Mirai-Console[Pure FrontEnd] v" + kotlin.runCatching {
                 net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
@@ -67,7 +67,7 @@ object MiraiConsolePureLoader {
                     "[NoConsole] [Windows Only] 不进行ansi console初始化工作",
             "--no-ansi" to "[NoConsole] 禁用 ansi",
             "--safe-reading" to
-                    "[NoConsole] 如果启动此选项, console在获取用户输入的时候会获得一个安全的空字符串\n" +
+                    "[NoConsole] 如果启动此选项, console在获取用户输入的时候会获得一个安全的替换符\n" +
                     "            如果不启动, 将会直接 error",
             "--reading-replacement <string>" to
                     "[NoConsole] Console尝试读取命令的替换符, 默认是空字符串\n" +
@@ -102,7 +102,7 @@ object MiraiConsolePureLoader {
         while (iterator.hasNext()) {
             when (val option = iterator.next()) {
                 "--help" -> {
-                    printlnHelpMessage()
+                    printHelpMessage()
                     if (exitProcess) exitProcess(0)
                     return
                 }
@@ -133,7 +133,7 @@ object MiraiConsolePureLoader {
                 }
                 else -> {
                     println("Unknown option `$option`")
-                    printlnHelpMessage()
+                    printHelpMessage()
                     if (exitProcess)
                         exitProcess(1)
                     return
