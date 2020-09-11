@@ -84,10 +84,10 @@ internal object JarPluginLoaderImpl :
     @Throws(PluginLoadException::class)
     override fun load(plugin: JvmPlugin) {
         ensureActive()
+
         runCatching {
-            if (plugin is JvmPluginInternal) {
-                plugin.internalOnLoad()
-            } else plugin.onLoad()
+            check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin" }
+            plugin.internalOnLoad(plugin.componentStorage)
         }.getOrElse {
             throw PluginLoadException("Exception while loading ${plugin.description.name}", it)
         }

@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.permission
 
-import net.mamoe.mirai.console.extension.SingletonExtensionPoint.Companion.findSingleton
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
@@ -47,7 +46,7 @@ public interface PermissionService<P : Permission> {
     public fun register(
         id: PermissionId,
         description: String,
-        parent: Permission = RootPermission
+        parent: Permission = RootPermission,
     ): P
 
     ///////////////////////////////////////////////////////////////////////////
@@ -56,11 +55,12 @@ public interface PermissionService<P : Permission> {
     public fun deny(permissibleIdentifier: PermissibleIdentifier, permission: P)
 
     public companion object {
+        internal var instanceField: PermissionService<*>? = null
+
         @get:JvmName("getInstance")
         @JvmStatic
-        public val INSTANCE: PermissionService<out Permission> by lazy {
-            PermissionServiceProvider.findSingleton()?.instance ?: BuiltInPermissionService
-        }
+        public val INSTANCE: PermissionService<out Permission>
+            get() = instanceField ?: error("PermissionService is not yet initialized therefore cannot be used.")
 
         public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
             get(id) ?: throw PermissionNotFoundException(id)

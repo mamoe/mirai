@@ -27,12 +27,14 @@ import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.extension.useExtensions
+import net.mamoe.mirai.console.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
+import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.extensions.BuiltInSingletonExtensionSelector
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
@@ -44,6 +46,7 @@ import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
+import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.utils.*
@@ -124,35 +127,48 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             ConsoleDataScope.reloadAll()
         }
 
-        val pluginLoadSession: PluginManagerImpl.PluginLoadSession
-
-        phase `load BEFORE_EXTENSIONS plugins`@{
+        phase `initialize all plugins`@{
             PluginManager // init
 
-            mainLogger.verbose { "Loading PluginLoader provider plugins..." }
-            PluginManagerImpl.loadEnablePluginProviderPlugins()
-            mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
+            mainLogger.verbose { "Loading JVM plugins..." }
+            PluginManagerImpl.loadAllPluginsUsingBuiltInLoaders()
+            PluginManagerImpl.initExternalPluginLoaders().let { count ->
+                mainLogger.verbose { "$count external PluginLoader(s) found. " }
+                if (count != 0) {
+                    mainLogger.verbose { "Loading external plugins..." }
+                }
+            }
+        }
+
+        phase `load all plugins`@{
+            PluginManagerImpl.loadPlugins(PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider())
+
+            mainLogger.verbose { "${PluginManager.plugins.size} plugin(s) loaded." }
+        }
+
+        phase `collect extensions`@{
+            for (resolvedPlugin in PluginManagerImpl.resolvedPlugins) {
+                resolvedPlugin.castOrNull<AbstractJvmPlugin>()?.let {
+                    GlobalComponentStorage.mergeWith(it.componentStorage)
+                }
+            }
         }
 
         phase `load SingletonExtensionSelector`@{
+            SingletonExtensionSelector.init()
             val instance = SingletonExtensionSelector.instance
             if (instance is BuiltInSingletonExtensionSelector) {
                 ConsoleDataScope.addAndReloadConfig(instance.config)
             }
         }
 
-        phase `load ON_EXTENSIONS plugins`@{
-            mainLogger.verbose { "Scanning high-priority extension and normal plugins..." }
-            pluginLoadSession = PluginManagerImpl.scanPluginsUsingPluginLoadersIncludingThoseFromPluginLoaderProvider()
-            mainLogger.verbose { "${pluginLoadSession.allKindsOfPlugins.size} plugin(s) found." }
-
-            mainLogger.verbose { "Loading Extension provider plugins..." }
-            PluginManagerImpl.loadEnableHighPriorityExtensionPlugins(pluginLoadSession)
-            mainLogger.verbose { "${PluginManager.plugins.size} such plugin(s) loaded." }
-        }
-
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
+
+            PermissionService.instanceField = GlobalComponentStorage.run {
+                PermissionServiceProvider.findSingletonInstance(BuiltInPermissionService)
+            }
+
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {
                     ConsoleDataScope.addAndReloadConfig(ps.config)
@@ -171,13 +187,13 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             CommandManagerImpl.commandListener // start
         }
 
-        phase `load AFTER_EXTENSION plugins`@{
-            mainLogger.verbose { "Loading normal plugins..." }
-            val count = PluginManagerImpl.loadEnableNormalPlugins(pluginLoadSession)
-            mainLogger.verbose { "$count normal plugin(s) loaded." }
-        }
+        phase `enable plugins`@{
+            mainLogger.verbose { "Enabling plugins..." }
 
-        mainLogger.info { "${PluginManagerImpl.plugins.size} plugin(s) loaded." }
+            PluginManagerImpl.enableAllLoadedPlugins()
+
+            mainLogger.info { "${PluginManagerImpl.plugins.size} plugin(s) enabled." }
+        }
 
         phase `auto-login bots`@{
             runBlocking {
@@ -198,7 +214,9 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             }
         }
 
-        PostStartupExtension.useExtensions { it() }
+        GlobalComponentStorage.run {
+            PostStartupExtension.useExtensions { it() }
+        }
 
         mainLogger.info { "mirai-console started successfully." }
     }

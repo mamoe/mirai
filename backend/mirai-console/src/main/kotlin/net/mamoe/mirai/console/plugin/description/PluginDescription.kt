@@ -21,13 +21,6 @@ import net.mamoe.mirai.console.plugin.PluginLoadException
  */
 public interface PluginDescription {
     /**
-     * 插件类型. 将会决定加载顺序
-     *
-     * @see PluginLoadPriority
-     */
-    public val loadPriority: PluginLoadPriority
-
-    /**
      * 插件 ID, 必须全英文, 仅允许英文字母, '-', '_', '.'.
      *
      * - 类似于 Java 包名, 插件 ID 需要 '域名.名称' 格式, 如 `net.mamoe.mirai.example-plugin`

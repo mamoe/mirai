@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.extension
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
+import net.mamoe.mirai.console.extensions.SingletonExtensionSelector.ExtensionPoint.selectSingleton
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**

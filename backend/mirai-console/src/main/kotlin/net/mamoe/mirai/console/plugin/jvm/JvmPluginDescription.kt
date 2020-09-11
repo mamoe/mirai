@@ -14,13 +14,14 @@ package net.mamoe.mirai.console.plugin.jvm
 import com.vdurmont.semver4j.Semver
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.plugin.description.PluginLoadPriority
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
  *
  * 请不要自行实现 [JvmPluginDescription] 接口. 它不具有继承稳定性.
+ *
+ * 要查看相关约束, 参考 [PluginDescription]
  *
  * @see SimpleJvmPluginDescription
  * @see JvmPluginDescriptionBuilder
@@ -82,7 +83,6 @@ public class JvmPluginDescriptionBuilder(
     private var author: String = ""
     private var info: String = ""
     private var dependencies: MutableSet<PluginDependency> = mutableSetOf()
-    private var loadPriority: PluginLoadPriority = PluginLoadPriority.AFTER_EXTENSIONS
 
     @ILoveKuriyamaMiraiForever
     public fun name(value: String): JvmPluginDescriptionBuilder = apply { this.name = value.trim() }
@@ -102,21 +102,6 @@ public class JvmPluginDescriptionBuilder(
 
     @ILoveKuriyamaMiraiForever
     public fun info(value: String): JvmPluginDescriptionBuilder = apply { this.info = value.trimIndent() }
-
-    @ILoveKuriyamaMiraiForever
-    public fun kind(value: PluginLoadPriority): JvmPluginDescriptionBuilder = apply { this.loadPriority = value }
-
-    @ILoveKuriyamaMiraiForever
-    public fun normalPlugin(): JvmPluginDescriptionBuilder =
-        apply { this.loadPriority = PluginLoadPriority.AFTER_EXTENSIONS }
-
-    @ILoveKuriyamaMiraiForever
-    public fun loaderProviderPlugin(): JvmPluginDescriptionBuilder =
-        apply { this.loadPriority = PluginLoadPriority.BEFORE_EXTENSIONS }
-
-    @ILoveKuriyamaMiraiForever
-    public fun highPriorityExtensionsPlugin(): JvmPluginDescriptionBuilder =
-        apply { this.loadPriority = PluginLoadPriority.ON_EXTENSIONS }
 
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
@@ -154,7 +139,7 @@ public class JvmPluginDescriptionBuilder(
 
     @Suppress("DEPRECATION_ERROR")
     public fun build(): JvmPluginDescription =
-        SimpleJvmPluginDescription(name, version, id, author, info, dependencies, loadPriority)
+        SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
 
     @Retention(AnnotationRetention.SOURCE)
     @DslMarker
@@ -194,7 +179,6 @@ public data class SimpleJvmPluginDescription
     public override val author: String = "",
     public override val info: String = "",
     public override val dependencies: Set<PluginDependency> = setOf(),
-    public override val loadPriority: PluginLoadPriority = PluginLoadPriority.AFTER_EXTENSIONS,
 ) : JvmPluginDescription {
 
     @Deprecated(
@@ -216,8 +200,7 @@ public data class SimpleJvmPluginDescription
         author: String = "",
         info: String = "",
         dependencies: Set<PluginDependency> = setOf(),
-        loadPriority: PluginLoadPriority = PluginLoadPriority.AFTER_EXTENSIONS,
-    ) : this(name, Semver(version, Semver.SemverType.LOOSE), id, author, info, dependencies, loadPriority)
+    ) : this(name, Semver(version, Semver.SemverType.LOOSE), id, author, info, dependencies)
 
     init {
         require(!name.contains(':')) { "':' is forbidden in plugin name" }
@@ -242,8 +225,7 @@ public fun JvmPluginDescription(
     author: String = "",
     info: String = "",
     dependencies: Set<PluginDependency> = setOf(),
-    loadPriority: PluginLoadPriority = PluginLoadPriority.AFTER_EXTENSIONS
-): JvmPluginDescription = SimpleJvmPluginDescription(name, version, id, author, info, dependencies, loadPriority)
+): JvmPluginDescription = SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
 
 @Deprecated(
     "JvmPluginDescription 没有构造器. 请使用 SimpleJvmPluginDescription.",
@@ -262,5 +244,4 @@ public fun JvmPluginDescription(
     author: String = "",
     info: String = "",
     dependencies: Set<PluginDependency> = setOf(),
-    loadPriority: PluginLoadPriority = PluginLoadPriority.AFTER_EXTENSIONS
-): JvmPluginDescription = SimpleJvmPluginDescription(name, version, id, author, info, dependencies, loadPriority)
+): JvmPluginDescription = SimpleJvmPluginDescription(name, version, id, author, info, dependencies)

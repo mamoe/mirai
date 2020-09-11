@@ -18,7 +18,7 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
-import net.mamoe.mirai.console.extension.foldExtensions
+import net.mamoe.mirai.console.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.plugin.PluginLoader
@@ -133,8 +133,10 @@ public interface MiraiConsole : CoroutineScope {
                 configuration()
             }
 
-            config = BotConfigurationAlterer.foldExtensions(config) { acc, extension ->
-                extension.alterConfiguration(id, acc)
+            config = GlobalComponentStorage.run {
+                BotConfigurationAlterer.foldExtensions(config) { acc, extension ->
+                    extension.alterConfiguration(id, acc)
+                }
             }
 
             return when (password) {

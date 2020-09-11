@@ -12,8 +12,9 @@ package net.mamoe.mirai.console.extensions
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extension.*
 import net.mamoe.mirai.console.internal.extensions.BuiltInSingletonExtensionSelector
-import net.mamoe.mirai.console.plugin.description.PluginLoadPriority
+import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.name
+import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.utils.info
 import kotlin.reflect.KClass
 
@@ -21,21 +22,33 @@ import kotlin.reflect.KClass
  * 用于同时拥有多个 [SingletonExtension] 时选择一个实例.
  *
  * 如有多个 [SingletonExtensionSelector] 注册, 将会停止服务器.
- *
- * 此扩展可由 [PluginLoadPriority.BEFORE_EXTENSIONS] 插件提供
  */
+@ConsoleExperimentalAPI
 public interface SingletonExtensionSelector : FunctionExtension {
+    public data class Registry<T : Extension>(
+        val plugin: Plugin,
+        val extension: T,
+    )
 
+    /**
+     * @return null 表示使用 builtin
+     */
     public fun <T : Extension> selectSingleton(
         extensionType: KClass<T>,
-        candidates: Collection<ExtensionRegistry<T>>
+        candidates: Collection<Registry<T>>,
     ): T?
 
     public companion object ExtensionPoint :
         AbstractExtensionPoint<SingletonExtensionSelector>(SingletonExtensionSelector::class) {
-        internal val instance: SingletonExtensionSelector by lazy {
-            val instances = SingletonExtensionSelector.getExtensions()
-            when {
+
+        private var instanceField: SingletonExtensionSelector? = null
+
+        internal val instance: SingletonExtensionSelector get() = instanceField ?: error("")
+
+        internal fun init() {
+            check(instanceField == null) { "Internal error: reinitialize SingletonExtensionSelector" }
+            val instances = GlobalComponentStorage.run { SingletonExtensionSelector.getExtensions() }
+            instanceField = when {
                 instances.isEmpty() -> BuiltInSingletonExtensionSelector
                 instances.size == 1 -> {
                     instances.single().also { (plugin, ext) ->
@@ -50,8 +63,14 @@ public interface SingletonExtensionSelector : FunctionExtension {
 
         internal fun <T : Extension> selectSingleton(
             extensionType: KClass<T>,
-            candidates: Collection<ExtensionRegistry<T>>
+            candidates: Collection<ExtensionRegistry<T>>,
         ): T? =
-            instance.selectSingleton(extensionType, candidates)
+            instance.selectSingleton(extensionType, candidates.map { Registry(it.plugin, it.extension) })
+
+
+        internal fun <T : Extension> SingletonExtensionSelector.selectSingleton(
+            extensionType: KClass<T>,
+            candidates: Collection<ExtensionRegistry<T>>,
+        ): T? = selectSingleton(extensionType, candidates.map { Registry(it.plugin, it.extension) })
     }
 }
