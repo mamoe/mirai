@@ -197,8 +197,8 @@ internal class MemberImpl constructor(
     private fun checkBotPermissionHigherThanThis(operationName: String) {
         check(group.botPermission > this.permission) {
             throw PermissionDeniedException(
-                "`$operationName` operation requires bot to have a higher permission than the target member, " +
-                        "but bot's is ${group.botPermission}, target's is ${this.permission}"
+                "`$operationName` operation requires a higher permission, while" +
+                        "${group.botPermission} < ${this.permission}"
             )
         }
     }
