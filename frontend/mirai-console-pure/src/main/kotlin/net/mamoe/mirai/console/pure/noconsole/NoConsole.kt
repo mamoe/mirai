@@ -92,8 +92,6 @@ internal val SystemOutputPrintStream by lazy {
 private val ANSI_REGEX = """\u001b\[[0-9a-zA-Z;]*?m""".toRegex()
 
 internal object AllEmptyLineReader : LineReader {
-    private fun <T> ignored(): T = error("Ignored")
-    override fun defaultKeyMaps(): MutableMap<String, KeyMap<Binding>> = ignored()
 
     override fun printAbove(str: String?) {
         if (str == null) return
@@ -107,16 +105,13 @@ internal object AllEmptyLineReader : LineReader {
         if (ConsolePureSettings.noConsoleSafeReading) ConsolePureSettings.noConsoleReadingReplacement
         else error("Unsupported Reading line when console front-end closed.")
 
+    // region
+    private fun <T> ignored(): T = error("Ignored")
     override fun readLine(mask: Char?): String = readLine()
-
     override fun readLine(prompt: String?): String = readLine()
-
     override fun readLine(prompt: String?, mask: Char?): String = readLine()
-
     override fun readLine(prompt: String?, mask: Char?, buffer: String?): String = readLine()
-
     override fun readLine(prompt: String?, rightPrompt: String?, mask: Char?, buffer: String?): String = ""
-
     override fun readLine(
         prompt: String?,
         rightPrompt: String?,
@@ -124,83 +119,48 @@ internal object AllEmptyLineReader : LineReader {
         buffer: String?
     ): String = ""
 
-
     override fun printAbove(str: AttributedString?) {
         str?.let { printAbove(it.toAnsi()) }
     }
 
+    override fun defaultKeyMaps(): MutableMap<String, KeyMap<Binding>> = ignored()
     override fun isReading(): Boolean = false
-
     override fun variable(name: String?, value: Any?) = this
-
     override fun option(option: LineReader.Option?, value: Boolean) = this
-
     override fun callWidget(name: String?) {}
-
     override fun getVariables(): MutableMap<String, Any> = ignored()
-
     override fun getVariable(name: String?): Any = ignored()
-
     override fun setVariable(name: String?, value: Any?) {}
-
     override fun isSet(option: LineReader.Option?): Boolean = ignored()
-
     override fun setOpt(option: LineReader.Option?) {}
-
     override fun unsetOpt(option: LineReader.Option?) {}
-
     override fun getTerminal(): Terminal = NoConsole
-
     override fun getWidgets(): MutableMap<String, Widget> = ignored()
-
     override fun getBuiltinWidgets(): MutableMap<String, Widget> = ignored()
-
     override fun getBuffer(): Buffer = ignored()
-
     override fun getAppName(): String = "Mirai Console"
-
     override fun runMacro(macro: String?) {}
-
     override fun readMouseEvent(): MouseEvent = ignored()
-
     override fun getHistory(): History = ignored()
-
     override fun getParser(): Parser = ignored()
-
     override fun getHighlighter(): Highlighter = ignored()
-
     override fun getExpander(): Expander = ignored()
-
     override fun getKeyMaps(): MutableMap<String, KeyMap<Binding>> = ignored()
-
     override fun getKeyMap(): String = ignored()
-
     override fun setKeyMap(name: String?): Boolean = ignored()
-
     override fun getKeys(): KeyMap<Binding> = ignored()
-
     override fun getParsedLine(): ParsedLine = ignored()
-
     override fun getSearchTerm(): String = ignored()
-
     override fun getRegionActive(): LineReader.RegionType = ignored()
-
     override fun getRegionMark(): Int = ignored()
-
     override fun addCommandsInBuffer(commands: MutableCollection<String>?) {}
-
     override fun editAndAddInBuffer(file: File?) {}
-
     override fun getLastBinding(): String = ignored()
-
     override fun getTailTip(): String = ignored()
-
     override fun setTailTip(tailTip: String?) {}
-
     override fun setAutosuggestion(type: LineReader.SuggestionType?) {}
-
     override fun getAutosuggestion(): LineReader.SuggestionType = ignored()
-
+    // endregion
 }
 
 internal object NoConsole : AbstractTerminal(
@@ -209,11 +169,8 @@ internal object NoConsole : AbstractTerminal(
     override fun reader(): NonBlockingReader = NoConsoleNonBlockingReader
 
     private val AllIgnoredPrintWriter = object : PrintWriter(AllIgnoredOutputStream) {
-        override fun close() {
-        }
-
-        override fun flush() {
-        }
+        override fun close() {}
+        override fun flush() {}
     }
 
     // We don't need it. Mirai-Console using LineReader to print messages.
@@ -222,6 +179,7 @@ internal object NoConsole : AbstractTerminal(
     override fun input(): InputStream = AllNextLineInputStream
 
     override fun output(): OutputStream = AllIgnoredOutputStream
+
     private val attributes0 = Attributes()
     override fun getAttributes(): Attributes {
         return Attributes(attributes0)

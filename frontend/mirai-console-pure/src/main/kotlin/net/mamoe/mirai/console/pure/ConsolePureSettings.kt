@@ -30,16 +30,16 @@ public object ConsolePureSettings {
     @JvmField
     var setupAnsi: Boolean = System.getProperty("os.name")
         .toLowerCase()
-        .contains("windows")// Just for Windows
+        .contains("windows") // Just for Windows
 
     @JvmField
     var noConsole: Boolean = false
 
     @JvmField
-    var noAnsi = false
+    var noAnsi: Boolean = false
 
     @JvmField
-    var noConsoleSafeReading = false
+    var noConsoleSafeReading: Boolean = false
 
     @JvmField
     var noConsoleReadingReplacement: String = ""

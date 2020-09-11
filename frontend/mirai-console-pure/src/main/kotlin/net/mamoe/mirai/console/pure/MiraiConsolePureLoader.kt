@@ -118,7 +118,7 @@ object MiraiConsolePureLoader {
                 }
                 "--reading-replacement" -> {
                     ConsolePureSettings.noConsoleSafeReading = true
-                    if (iterator.hasNext()){
+                    if (iterator.hasNext()) {
                         ConsolePureSettings.noConsoleReadingReplacement = iterator.next()
                     } else {
                         println("Bad option `--reading-replacement`")
