@@ -89,7 +89,9 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
                         // normally closed
                         return@subscribeAlways
                     }
-                    bot.logger.info { "Connection dropped by server or lost, retrying login" }
+                    bot.logger.info { "Connection lost, retrying login" }
+
+                    bot.asQQAndroidBot().client.serverList.removeAt(0)
 
                     var failed = false
                     val time = measureTime {
