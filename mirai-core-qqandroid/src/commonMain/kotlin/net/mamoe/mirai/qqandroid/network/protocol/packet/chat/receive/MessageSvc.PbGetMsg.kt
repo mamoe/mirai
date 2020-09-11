@@ -12,8 +12,11 @@
 package net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive
 
 import kotlinx.atomicfu.loop
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
@@ -51,6 +54,7 @@ import net.mamoe.mirai.qqandroid.utils.toInt
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
+import kotlin.random.Random
 
 
 /**
@@ -141,6 +145,12 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         if (resp.result != 0) {
             bot.network.logger
                 .warning { "MessageSvcPushNotify: result != 0, result = ${resp.result}, errorMsg=${resp.errmsg}" }
+            bot.network.launch(CoroutineName("MessageSvcPushNotify.retry")) {
+                delay(500 + Random.nextLong(0, 1000))
+                bot.network.run {
+                    MessageSvcPbGetMsg(bot.client, syncCookie = null).sendWithoutExpect()
+                }
+            }
             return EmptyResponse
         }
         when (resp.msgRspType) {
