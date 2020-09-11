@@ -55,22 +55,30 @@ object MiraiConsolePureLoader {
 
     @ConsolePureExperimentalAPI
     fun printlnHelpMessage() {
-        val help = mapOf(
+        val help = listOf(
+            "" to "Mirai-Console[Pure FrontEnd] v" + kotlin.runCatching {
+                net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
+            }.getOrElse { "<unknown>" },
+            "" to "",
             "--help" to "显示此帮助",
+            "" to "",
             "--no-console" to "使用无终端操作环境",
             "--dont-setup-terminal-ansi" to
-                    "[NoConsole] [Windows Only]\n" +
-                    "不进行ansi console初始化工作",
+                    "[NoConsole] [Windows Only] 不进行ansi console初始化工作",
             "--drop-ansi" to "[NoConsole] 禁用 ansi",
             "--safe-reading" to
                     "[NoConsole] 如果启动此选项, console在获取用户输入的时候会获得一个安全的空字符串\n" +
                     "            如果不启动, 将会直接 error",
         )
         val prefixPlaceholder = String(CharArray(
-            help.keys.maxOfOrNull { it.length }!! + 3
+            help.maxOfOrNull { it.first.length }!! + 3
         ) { ' ' })
 
         fun printOption(optionName: String, value: String) {
+            if (optionName == "") {
+                println(value)
+                return
+            }
             print(optionName)
             print(prefixPlaceholder.substring(optionName.length))
             val lines = value.split('\n').iterator()
@@ -80,7 +88,7 @@ object MiraiConsolePureLoader {
                 println(line)
             }
         }
-        help.entries.forEach { (optionName, value) ->
+        help.forEach { (optionName, value) ->
             printOption(optionName, value)
         }
     }
