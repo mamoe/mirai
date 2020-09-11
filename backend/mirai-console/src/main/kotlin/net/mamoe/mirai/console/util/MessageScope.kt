@@ -526,8 +526,8 @@ internal fun MessageScope.asSequence(): Sequence<MessageScope> {
 }
 
 private class CombinedScope(
-    private val first: MessageScope,
-    private val second: MessageScope
+    val first: MessageScope,
+    val second: MessageScope,
 ) : MessageScope {
     override val realTarget: Any? get() = null
 
@@ -549,7 +549,7 @@ private class CombinedScope(
 }
 
 private class CommandSenderAsMessageScope(
-    private val sender: CommandSender
+    private val sender: CommandSender,
 ) : MessageScope {
     override val realTarget: Any?
         get() = sender.user ?: sender // ConsoleCommandSender
@@ -564,7 +564,7 @@ private class CommandSenderAsMessageScope(
 }
 
 private class ContactAsMessageScope(
-    private val sender: Contact
+    private val sender: Contact,
 ) : MessageScope {
     override val realTarget: Any?
         get() = sender
