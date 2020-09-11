@@ -34,6 +34,7 @@ internal fun startupConsoleThread() {
             try {
                 val next = MiraiConsole.requestInput("").let {
                     when {
+                        it.isBlank() -> it
                         it.startsWith(CommandManager.commandPrefix) -> it
                         it == "?" -> CommandManager.commandPrefix + BuiltInCommands.HelpCommand.primaryName
                         else -> CommandManager.commandPrefix + it
