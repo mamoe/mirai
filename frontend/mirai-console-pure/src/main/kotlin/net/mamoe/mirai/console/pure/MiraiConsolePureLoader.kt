@@ -15,7 +15,7 @@
     "INVISIBLE_GETTER",
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
 )
-@file:OptIn(ConsoleInternalAPI::class)
+@file:OptIn(ConsoleInternalAPI::class, ConsolePureExperimentalAPI::class)
 
 package net.mamoe.mirai.console.pure
 
@@ -26,6 +26,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
+import net.mamoe.mirai.console.pure.noconsole.SystemOutputPrintStream
 import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 import net.mamoe.mirai.console.util.ConsoleInternalAPI
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
@@ -33,6 +34,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.minutesToMillis
 import java.io.PrintStream
+import kotlin.system.exitProcess
 
 /**
  * mirai-console-pure CLI 入口点
@@ -40,6 +42,7 @@ import java.io.PrintStream
 object MiraiConsolePureLoader {
     @JvmStatic
     fun main(args: Array<String>) {
+        parse(args, exitProcess = true)
         startAsDaemon()
         try {
             runBlocking {
@@ -48,6 +51,75 @@ object MiraiConsolePureLoader {
         } catch (e: CancellationException) {
             // ignored
         }
+    }
+
+    @ConsolePureExperimentalAPI
+    fun printlnHelpMessage() {
+        val help = mapOf(
+            "--help" to "显示此帮助",
+            "--no-console" to "使用无终端操作环境",
+            "--dont-setup-terminal-ansi" to
+                    "[NoConsole] [Windows Only]\n" +
+                    "不进行ansi console初始化工作",
+            "--drop-ansi" to "[NoConsole] 禁用 ansi",
+            "--safe-reading" to
+                    "[NoConsole] 如果启动此选项, console在获取用户输入的时候会获得一个安全的空字符串\n" +
+                    "            如果不启动, 将会直接 error",
+        )
+        val prefixPlaceholder = String(CharArray(
+            help.keys.maxOfOrNull { it.length }!! + 3
+        ) { ' ' })
+
+        fun printOption(optionName: String, value: String) {
+            print(optionName)
+            print(prefixPlaceholder.substring(optionName.length))
+            val lines = value.split('\n').iterator()
+            if (lines.hasNext()) println(lines.next())
+            lines.forEach { line ->
+                print(prefixPlaceholder)
+                println(line)
+            }
+        }
+        help.entries.forEach { (optionName, value) ->
+            printOption(optionName, value)
+        }
+    }
+
+    @ConsolePureExperimentalAPI
+    fun parse(args: Array<String>, exitProcess: Boolean = false) {
+        val iterator = args.iterator()
+        while (iterator.hasNext()) {
+            when (val option = iterator.next()) {
+                "--help" -> {
+                    printlnHelpMessage()
+                    if (exitProcess) exitProcess(0)
+                    return
+                }
+                "--no-console" -> {
+                    ConsolePureSettings.noConsole = true
+                }
+                "--dont-setup-terminal-ansi" -> {
+                    ConsolePureSettings.setupAnsi = false
+                }
+                "--drop-ansi" -> {
+                    ConsolePureSettings.dropAnsi = true
+                    ConsolePureSettings.setupAnsi = false
+                }
+                "--safe-reading" -> {
+                    ConsolePureSettings.noConsoleSafeReading = true
+                }
+                else -> {
+                    println("Unknown option `$option`")
+                    printlnHelpMessage()
+                    if (exitProcess)
+                        @Suppress("UNREACHABLE_CODE")
+                        exitProcess(1)
+                    return
+                }
+            }
+        }
+        if (ConsolePureSettings.noConsole)
+            SystemOutputPrintStream // Setup Output Channel
     }
 
     @Suppress("MemberVisibilityCanBePrivate")

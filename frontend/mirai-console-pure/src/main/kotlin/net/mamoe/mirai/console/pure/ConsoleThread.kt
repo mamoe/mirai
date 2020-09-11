@@ -27,8 +27,10 @@ import org.jline.reader.UserInterruptException
 
 val consoleLogger by lazy { DefaultLogger("console") }
 
-@OptIn(ConsoleInternalAPI::class)
+@OptIn(ConsoleInternalAPI::class, ConsolePureExperimentalAPI::class)
 internal fun startupConsoleThread() {
+    if (ConsolePureSettings.noConsole) return
+
     MiraiConsole.launch(CoroutineName("Input")) {
         while (true) {
             try {
