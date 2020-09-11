@@ -10,6 +10,7 @@
 /*
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
+@file:OptIn(ConsolePureExperimentalAPI::class)
 
 package net.mamoe.mirai.console.pure.noconsole
 
@@ -82,20 +83,23 @@ internal object AllIgnoredOutputStream : OutputStream() {
     }
 }
 
-@OptIn(ConsolePureExperimentalAPI::class)
 internal val SystemOutputPrintStream by lazy {
     if (ConsolePureSettings.setupAnsi) {
         org.fusesource.jansi.AnsiConsole.systemInstall()
     }
     System.out
 }
+private val ANSI_REGEX = """\u001b\[[0-9a-zA-Z;]*?m""".toRegex()
 
 internal object AllEmptyLineReader : LineReader {
     private fun <T> ignored(): T = error("Ignored")
     override fun defaultKeyMaps(): MutableMap<String, KeyMap<Binding>> = ignored()
 
     override fun printAbove(str: String?) {
-        SystemOutputPrintStream.println(str)
+        if (str == null) return
+        if (ConsolePureSettings.dropAnsi) {
+            SystemOutputPrintStream.println(ANSI_REGEX.replace(str, ""))
+        } else SystemOutputPrintStream.println(str)
     }
 
     @OptIn(ConsolePureExperimentalAPI::class)
