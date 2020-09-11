@@ -83,7 +83,7 @@ internal object JarPluginLoaderImpl :
         val filePlugins = this.filterNot {
             pluginFileToInstanceMap.containsKey(it)
         }.associateWith {
-            JvmPluginClassLoader(arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader, classLoaders)
+            JvmPluginClassLoader(it, arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader, classLoaders)
         }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
         }.asSequence().findAllInstances().onEach {

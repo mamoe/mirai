@@ -17,43 +17,86 @@ import java.net.URL
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
+internal class LoadingDeniedException(name: String) : ClassNotFoundException(name)
+
 internal class JvmPluginClassLoader(
+    val source: Any,
     urls: Array<URL>,
     parent: ClassLoader?,
-    val classloaders: Collection<JvmPluginClassLoader>
+    val classLoaders: Collection<JvmPluginClassLoader>
 ) : URLClassLoader(urls, parent) {
+    override fun toString(): String {
+        return "JvmPluginClassLoader{source=$source}"
+    }
+
     private val cache = ConcurrentHashMap<String, Class<*>>()
     internal var declaredFilter: ExportManager? = null
 
     companion object {
+        val loadingLock = ConcurrentHashMap<String, Any>()
+
         init {
             ClassLoader.registerAsParallelCapable()
         }
     }
 
-    // private val
-
     override fun findClass(name: String): Class<*> {
-        return findClass(name, false) ?: throw ClassNotFoundException(name)
+        synchronized(kotlin.run {
+            val lock = Any()
+            loadingLock.putIfAbsent(name, lock) ?: lock
+        }) {
+            return findClass(name, false) ?: throw ClassNotFoundException(name)
+        }
     }
 
     internal fun findClass(name: String, disableGlobal: Boolean): Class<*>? {
         val cachedClass = cache[name]
-        if (cachedClass != null) return cachedClass
-        kotlin.runCatching { return super.findClass(name).also { cache[name] = it } }
-        if (disableGlobal)
-            return null
-        classloaders.forEach { otherClassloader ->
-            if (otherClassloader === this) return@forEach
-            val filter = otherClassloader.declaredFilter
-            if (filter != null) {
-                if (!filter.isExported(name)) {
-                    return@forEach
+        if (cachedClass != null) {
+            if (disableGlobal) {
+                val filter = declaredFilter
+                if (filter != null && !filter.isExported(name)) {
+                    throw LoadingDeniedException(name)
                 }
             }
-            val otherClass = otherClassloader.findClass(name, true)
-            if (otherClass != null) return otherClass
+            return cachedClass
         }
-        return null
+        if (disableGlobal)
+            return kotlin.runCatching {
+                super.findClass(name).also { cache[name] = it }
+            }.getOrElse {
+                if (it is ClassNotFoundException) null
+                else throw it
+            }?.also {
+                val filter = declaredFilter
+                if (filter != null && !filter.isExported(name)) {
+                    throw LoadingDeniedException(name)
+                }
+            }
+
+        classLoaders.forEach { otherClassloader ->
+            if (otherClassloader === this) return@forEach
+            val filter = otherClassloader.declaredFilter
+            if (otherClassloader.cache.containsKey(name)) {
+                return if (filter == null || filter.isExported(name)) {
+                    otherClassloader.cache[name]
+                } else throw LoadingDeniedException("$name was not exported by $otherClassloader")
+            }
+        }
+
+        return kotlin.runCatching { super.findClass(name).also { cache[name] = it } }.getOrElse {
+            if (it is ClassNotFoundException) {
+                classLoaders.forEach { otherClassloader ->
+                    if (otherClassloader === this) return@forEach
+                    val other = kotlin.runCatching {
+                        otherClassloader.findClass(name, true)
+                    }.getOrElse { err ->
+                        if (err is LoadingDeniedException || err !is ClassNotFoundException) throw it
+                        null
+                    }
+                    if (other != null) return other
+                }
+            }
+            throw it
+        }
     }
 }
