@@ -104,7 +104,7 @@ internal object AllEmptyLineReader : LineReader {
 
     @OptIn(ConsolePureExperimentalAPI::class)
     override fun readLine(): String =
-        if (ConsolePureSettings.noConsoleSafeReading) ""
+        if (ConsolePureSettings.noConsoleSafeReading) ConsolePureSettings.noConsoleReadingReplacement
         else error("Unsupported Reading line when console front-end closed.")
 
     override fun readLine(mask: Char?): String = readLine()

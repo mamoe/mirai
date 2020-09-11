@@ -40,4 +40,7 @@ public object ConsolePureSettings {
 
     @JvmField
     var noConsoleSafeReading = false
+
+    @JvmField
+    var noConsoleReadingReplacement: String = ""
 }

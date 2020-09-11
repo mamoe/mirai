@@ -69,6 +69,9 @@ object MiraiConsolePureLoader {
             "--safe-reading" to
                     "[NoConsole] 如果启动此选项, console在获取用户输入的时候会获得一个安全的空字符串\n" +
                     "            如果不启动, 将会直接 error",
+            "--reading-replacement <string>" to
+                    "[NoConsole] Console尝试读取命令的替换符, 默认是空字符串\n" +
+                    "            使用此选项会自动开启 --safe-reading",
         )
         val prefixPlaceholder = String(CharArray(
             help.maxOfOrNull { it.first.length }!! + 3
@@ -113,6 +116,18 @@ object MiraiConsolePureLoader {
                     ConsolePureSettings.noAnsi = true
                     ConsolePureSettings.setupAnsi = false
                 }
+                "--reading-replacement" -> {
+                    ConsolePureSettings.noConsoleSafeReading = true
+                    if (iterator.hasNext()){
+                        ConsolePureSettings.noConsoleReadingReplacement = iterator.next()
+                    } else {
+                        println("Bad option `--reading-replacement`")
+                        println("Usage: --reading-replacement <string>")
+                        if (exitProcess)
+                            exitProcess(1)
+                        return
+                    }
+                }
                 "--safe-reading" -> {
                     ConsolePureSettings.noConsoleSafeReading = true
                 }
@@ -120,7 +135,6 @@ object MiraiConsolePureLoader {
                     println("Unknown option `$option`")
                     printlnHelpMessage()
                     if (exitProcess)
-                        @Suppress("UNREACHABLE_CODE")
                         exitProcess(1)
                     return
                 }
