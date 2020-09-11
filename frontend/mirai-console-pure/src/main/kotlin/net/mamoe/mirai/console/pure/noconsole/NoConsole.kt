@@ -30,12 +30,12 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
 
-private const val SPACE_INT = ' '.toInt()
-private const val SPACE_BYTE = ' '.toByte()
+private const val LN_INT = '\n'.toInt()
+private const val LN_BYTE = '\n'.toByte()
 
 internal object NoNonBlockingReader : NonBlockingReader() {
     override fun read(timeout: Long, isPeek: Boolean): Int {
-        return SPACE_INT
+        return LN_INT
     }
 
     override fun close() {
@@ -46,9 +46,9 @@ internal object NoNonBlockingReader : NonBlockingReader() {
     }
 }
 
-internal object AllSpaceInputStream : InputStream() {
+internal object AllNextLineInputStream : InputStream() {
     override fun read(): Int {
-        return SPACE_INT
+        return LN_INT
     }
 
     override fun available(): Int {
@@ -57,7 +57,7 @@ internal object AllSpaceInputStream : InputStream() {
 
     override fun read(b: ByteArray, off: Int, len: Int): Int {
         for (i in off until (off + len)) {
-            b[i] = SPACE_BYTE
+            b[i] = LN_BYTE
         }
         return len
     }
@@ -219,7 +219,7 @@ internal object NoConsole : AbstractTerminal(
     // We don't need it. Mirai-Console using LineReader to print messages.
     override fun writer(): PrintWriter = AllIgnoredPrintWriter
 
-    override fun input(): InputStream = AllSpaceInputStream
+    override fun input(): InputStream = AllNextLineInputStream
 
     override fun output(): OutputStream = AllIgnoredOutputStream
     private val attributes0 = Attributes()
