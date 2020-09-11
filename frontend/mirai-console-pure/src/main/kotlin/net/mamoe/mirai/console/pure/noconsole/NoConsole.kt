@@ -97,7 +97,7 @@ internal object AllEmptyLineReader : LineReader {
 
     override fun printAbove(str: String?) {
         if (str == null) return
-        if (ConsolePureSettings.dropAnsi) {
+        if (ConsolePureSettings.noAnsi) {
             SystemOutputPrintStream.println(ANSI_REGEX.replace(str, ""))
         } else SystemOutputPrintStream.println(str)
     }

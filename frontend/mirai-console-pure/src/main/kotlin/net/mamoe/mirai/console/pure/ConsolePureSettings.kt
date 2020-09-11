@@ -36,7 +36,7 @@ public object ConsolePureSettings {
     var noConsole: Boolean = false
 
     @JvmField
-    var dropAnsi = false
+    var noAnsi = false
 
     @JvmField
     var noConsoleSafeReading = false

@@ -65,7 +65,7 @@ object MiraiConsolePureLoader {
             "--no-console" to "使用无终端操作环境",
             "--dont-setup-terminal-ansi" to
                     "[NoConsole] [Windows Only] 不进行ansi console初始化工作",
-            "--drop-ansi" to "[NoConsole] 禁用 ansi",
+            "--no-ansi" to "[NoConsole] 禁用 ansi",
             "--safe-reading" to
                     "[NoConsole] 如果启动此选项, console在获取用户输入的时候会获得一个安全的空字符串\n" +
                     "            如果不启动, 将会直接 error",
@@ -109,8 +109,8 @@ object MiraiConsolePureLoader {
                 "--dont-setup-terminal-ansi" -> {
                     ConsolePureSettings.setupAnsi = false
                 }
-                "--drop-ansi" -> {
-                    ConsolePureSettings.dropAnsi = true
+                "--no-ansi" -> {
+                    ConsolePureSettings.noAnsi = true
                     ConsolePureSettings.setupAnsi = false
                 }
                 "--safe-reading" -> {
