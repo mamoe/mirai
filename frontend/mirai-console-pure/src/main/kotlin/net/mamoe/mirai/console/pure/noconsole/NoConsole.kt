@@ -33,7 +33,7 @@ import java.io.PrintWriter
 private const val LN_INT = '\n'.toInt()
 private const val LN_BYTE = '\n'.toByte()
 
-internal object NoNonBlockingReader : NonBlockingReader() {
+internal object NoConsoleNonBlockingReader : NonBlockingReader() {
     override fun read(timeout: Long, isPeek: Boolean): Int {
         return LN_INT
     }
@@ -206,7 +206,7 @@ internal object AllEmptyLineReader : LineReader {
 internal object NoConsole : AbstractTerminal(
     "No Console", "No Console"
 ) {
-    override fun reader(): NonBlockingReader = NoNonBlockingReader
+    override fun reader(): NonBlockingReader = NoConsoleNonBlockingReader
 
     private val AllIgnoredPrintWriter = object : PrintWriter(AllIgnoredOutputStream) {
         override fun close() {
