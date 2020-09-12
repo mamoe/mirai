@@ -84,12 +84,12 @@ public interface Command {
         @JvmStatic
         public val Command.primaryName: String
             get() = names[0]
-
-        @JvmSynthetic
-        public suspend inline fun Command.onCommand(sender: CommandSender, args: MessageChain): Unit =
-            sender.run { onCommand(args) }
     }
 }
+
+@JvmSynthetic
+public suspend inline fun Command.onCommand(sender: CommandSender, args: MessageChain): Unit =
+    sender.onCommand(args)
 
 /**
  * [Command] 的基础实现
