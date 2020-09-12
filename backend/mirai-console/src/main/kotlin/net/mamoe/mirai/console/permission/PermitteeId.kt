@@ -16,10 +16,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.permission.parseFromStringImpl
-import net.mamoe.mirai.console.permission.AbstractPermitteeId.AnyMember
-import net.mamoe.mirai.console.permission.AbstractPermitteeId.ExactMember
+import net.mamoe.mirai.console.permission.AbstractPermitteeId.*
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.User
 
@@ -71,6 +71,34 @@ public interface PermitteeId {
         @get:JvmStatic
         public val PermitteeId.allParents: Sequence<PermitteeId>
             get() = directParents.asSequence().flatMap { it.allParentsWithSelf }
+
+        /**
+         * 创建 [AbstractPermitteeId.ExactUser]
+         */
+        @get:JvmSynthetic
+        public val User.permitteeId: ExactUser
+            get() = ExactUser(id)
+
+        /**
+         * 创建 [AbstractPermitteeId.ExactMember]
+         */
+        @get:JvmSynthetic
+        public val Member.permitteeId: ExactMember
+            get() = ExactMember(group.id, id)
+
+        /**
+         * 创建 [AbstractPermitteeId.ExactGroup]
+         */
+        @get:JvmSynthetic
+        public val Group.permitteeId: ExactGroup
+            get() = ExactGroup(id)
+
+        /**
+         * 创建 [AbstractPermitteeId.ExactTemp]
+         */
+        @get:JvmSynthetic
+        public val Member.permitteeIdOnTemp: ExactTemp
+            get() = ExactTemp(group.id, id)
     }
 }
 
