@@ -47,7 +47,7 @@ internal interface BuiltInCommandInternal : Command, BuiltInCommand
 @OptIn(ExperimentalPermission::class)
 public object BuiltInCommands {
     @ConsoleExperimentalApi
-    public val rootPermission: Permission by lazy {
+    public val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
             PermissionId("console", "*"),
             "The parent of any built-in commands"
@@ -67,7 +67,6 @@ public object BuiltInCommands {
     public object HelpCommand : SimpleCommand(
         ConsoleCommandOwner, "help",
         description = "Command list",
-        parentPermission = rootPermission,
     ), BuiltInCommandInternal {
         @Handler
         public suspend fun CommandSender.handle() {
@@ -87,7 +86,6 @@ public object BuiltInCommands {
     public object StopCommand : SimpleCommand(
         ConsoleCommandOwner, "stop", "shutdown", "exit",
         description = "Stop the whole world.",
-        parentPermission = rootPermission,
     ), BuiltInCommandInternal {
 
         private val closingLock = Mutex()
@@ -123,7 +121,6 @@ public object BuiltInCommands {
     public object LoginCommand : SimpleCommand(
         ConsoleCommandOwner, "login", "登录",
         description = "Log in a bot account.",
-        parentPermission = rootPermission,
     ), BuiltInCommandInternal {
         @Handler
         public suspend fun CommandSender.handle(id: Long, password: String) {
@@ -160,7 +157,6 @@ public object BuiltInCommands {
                 }.getOrElse { illegalArgument("指令不存在: $id", it) }
             }
         },
-        parentPermission = rootPermission,
     ), BuiltInCommandInternal {
         // TODO: 2020/9/10 improve Permission command
         @SubCommand("permit", "grant", "add")

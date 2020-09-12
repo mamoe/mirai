@@ -9,6 +9,12 @@
 
 package net.mamoe.mirai.console.permission
 
+/**
+ * [PermissionId] 的命名空间. 用于提供 [PermissionId.namespace].
+ */
 public interface PermissionIdNamespace {
+    /**
+     * 创建一个此命名空间下的 [PermitteeId]
+     */
     public fun permissionId(id: String): PermissionId
 }

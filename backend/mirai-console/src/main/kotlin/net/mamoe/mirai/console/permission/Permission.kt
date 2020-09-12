@@ -27,7 +27,7 @@ import net.mamoe.mirai.console.command.Command
  * #### 指令的权限
  * 每个指令都拥有一个 [Command.permission].
  *
- * [BuiltInCommands.rootPermission] 为所有内建指令的权限.
+ * [BuiltInCommands.parentPermission] 为所有内建指令的权限.
  *
  * #### 手动申请权限
  * [PermissionService.register]
