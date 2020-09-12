@@ -32,7 +32,7 @@ public interface PermissibleIdentifier {
         private fun PermissibleIdentifier.allParentsWithSelf(): Sequence<PermissibleIdentifier> {
             return sequence {
                 yield(this@allParentsWithSelf)
-                yieldAll(parents.asSequence())
+                yieldAll(parents.asSequence().flatMap { it.allParentsWithSelf() })
             }
         }
     }
