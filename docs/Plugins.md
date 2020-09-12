@@ -83,8 +83,7 @@ Mirai Console 使用类似 `ServiceLoader` 的机制加载插件。
 - 插件自身的版本要求遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/) 规范, 合格的版本例如: `1.0.0`, `1.0`, `1.0-M1`, `1.0-pre-1`
 - 插件依赖的版本遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/) 规范, 同时支持 [Apache Ivy 风格表示方法](http://ant.apache.org/ivy/history/latest-milestone/settings/version-matchers.html).
 
-##### 插件名
-插件名仅取决于 `PluginDescription` 提供的 `name`，与主类类名等其他信息无关。
+有关描述的详细信息可在开发时查看源码内文档。
 
 #### 实现 Kotlin 插件主类
 
@@ -120,7 +119,7 @@ public final class JExample extends JavaPlugin {
     public static final JExample INSTANCE = new JExample(); // 可以像 Kotlin 一样静态初始化单例
     private JExample() {
         super(new JvmPluginDescriptionBuilder(
-            "JExample", // name
+            "org.example.test-plugin", // name
             "1.0.0" // version
         )
         // .author("...")
@@ -140,7 +139,7 @@ public final class JExample extends JavaPlugin {
     }
     public JExample() { // 此时必须 public
         super(new JvmPluginDescriptionBuilder(
-            "JExample", // name
+            "org.example.test-plugin", // id
             "1.0.0" // version
         )
         // .author("...")
@@ -176,7 +175,7 @@ Mirai Console 不提供热加载和热卸载功能，所有插件只能在服务
 
 [`JvmPluginLoader`] 调用插件的 `onLoad()`，在 `onLoad()` 正常返回后插件被认为成功加载。
 
-由于 `onLoad()` 只会被初始化一次，插件可以在该方法内进行一些*一次性*的*初始化*任务。
+由于 `onLoad()` 只会被初始化一次，插件可以在该方法内进行一些*一次性*的*初始化*任务，如 [注册扩展](Extensions.md#注册扩展)。
 
 **在 `onLoad()` 时插件并未处于启用状态，此时插件不能进行监听事件，加载配置等操作。**
 

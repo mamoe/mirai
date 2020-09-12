@@ -20,7 +20,7 @@ import net.mamoe.mirai.console.plugin.Plugin
  */
 public interface PluginDescription {
     /**
-     * 插件 ID.
+     * 插件 ID. 用于指令权限等一些内部处理
      *
      * - 仅允许英文字母, '-', '_', '.'. 在内部操作处理时不区分大小写.
      * - 类似于 Java 包名, 插件 ID 需要 '域名.名称' 格式, 如 `net.mamoe.mirai.example-plugin`
@@ -43,24 +43,20 @@ public interface PluginDescription {
      * - 合法 `net.mamoe.mirai.example-plugin`
      * - 非法 `.example-plugin`
      *
-     * ID 用于指令权限等一些内部处理
-     *
      * @see ID_REGEX
      * @see FORBIDDEN_ID_NAMES
      */
     public val id: String
 
     /**
-     * 插件名称. 允许中文, 允许各类符号.
+     * 插件名称用于展示给用户，仅取决于 `PluginDescription` 提供的 `name`，与主类类名等其他信息无关。
      *
-     * 插件名称不能完全是以下其中一种 ([FORBIDDEN_ID_NAMES]).
+     * 名称允许中文, 允许各类符号，但不能完全是以下其中一种（忽略大小写）([FORBIDDEN_ID_NAMES]):
      * - console
      * - main
      * - plugin
      * - config
      * - data
-     *
-     * 插件名称用于显示给用户.
      *
      * @see FORBIDDEN_ID_NAMES
      */
@@ -84,7 +80,7 @@ public interface PluginDescription {
      * - `1.0.0-M2-1`
      * - `1`  (尽管非常不建议这么做)
      *
-     * 非法版本号实例:
+     * 非法版本号示例:
      * - `DEBUG-1`
      * - `-1.0`
      * - `v1.0` (不允许 "v")
