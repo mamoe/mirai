@@ -48,7 +48,7 @@ public interface JvmPlugin : Plugin, CoroutineScope,
 
     /** 所属插件加载器实例 */
     // `final` in AbstractJvmPlugin
-    public override val loader: JarPluginLoader get() = JarPluginLoader
+    public override val loader: JvmPluginLoader get() = JvmPluginLoader
 
     /**
      * 在插件被加载时调用. 只会被调用一次.

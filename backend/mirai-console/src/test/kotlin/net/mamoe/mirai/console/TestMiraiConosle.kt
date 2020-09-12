@@ -17,7 +17,7 @@ import net.mamoe.mirai.console.data.MemoryPluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalApi
@@ -48,7 +48,7 @@ fun initTestEnvironment() {
                     get() = Semver("1.0.0")
 
             }
-        override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JarPluginLoader })
+        override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JvmPluginLoader })
         override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl =
             object : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
                 override suspend fun sendMessage(message: Message) {

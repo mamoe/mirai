@@ -19,7 +19,7 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.plugin.PluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
@@ -72,7 +72,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val frontEndDescription: MiraiConsoleFrontEndDescription
 
     /**
-     * 内建加载器列表, 一般需要包含 [JarPluginLoader].
+     * 内建加载器列表, 一般需要包含 [JvmPluginLoader].
      *
      * @return 不可变的 [List], [Collections.unmodifiableList]
      */

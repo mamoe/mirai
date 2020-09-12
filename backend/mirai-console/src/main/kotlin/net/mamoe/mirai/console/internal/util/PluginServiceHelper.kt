@@ -11,7 +11,7 @@ package net.mamoe.mirai.console.internal.util
 
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.createInstanceOrNull
-import net.mamoe.mirai.console.internal.plugin.JarPluginLoaderImpl
+import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import java.io.InputStream
 import java.lang.reflect.Modifier
 import java.util.*
@@ -65,7 +65,7 @@ internal object PluginServiceHelper {
 
     fun <T : Any> loadAllServicesFromMemoryAndPluginClassLoaders(service: KClass<T>): List<T> {
         val list = ServiceLoader.load(service.java, this::class.java.classLoader).toList()
-        return list + JarPluginLoaderImpl.classLoaders.flatMap { it.findServices(service).loadAllServices() }
+        return list + BuiltInJvmPluginLoaderImpl.classLoaders.flatMap { it.findServices(service).loadAllServices() }
     }
 }
 

@@ -32,7 +32,7 @@ import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.pure.ConsoleInputImpl.requestInput
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -63,14 +63,14 @@ class MiraiConsoleImplementationPure
 @JvmOverloads constructor(
     override val rootPath: Path = Paths.get("."),
     override val builtInPluginLoaders: List<PluginLoader<*, *>> = Collections.unmodifiableList(
-        listOf(DeferredPluginLoader { JarPluginLoader })
+        listOf(DeferredPluginLoader { JvmPluginLoader })
     ),
     override val frontEndDescription: MiraiConsoleFrontEndDescription = ConsoleFrontEndDescImpl,
     override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl = ConsoleCommandSenderImplPure,
     override val dataStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
-    override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config"))
+    override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
     NamedSupervisorJob("MiraiConsoleImplementationPure") +
             CoroutineExceptionHandler { coroutineContext, throwable ->

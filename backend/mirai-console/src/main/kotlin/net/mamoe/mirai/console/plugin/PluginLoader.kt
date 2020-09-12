@@ -14,7 +14,7 @@ package net.mamoe.mirai.console.plugin
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import java.io.File
 import java.util.*
 
@@ -26,7 +26,7 @@ import java.util.*
  * 有关插件的依赖和已加载的插件列表由 [PluginManager] 维护.
  *
  * ## 内建加载器
- * - [JarPluginLoader] Jar 插件加载器
+ * - [JvmPluginLoader] Jar 插件加载器
  *
  * ## 扩展加载器
  * 插件被允许扩展一个加载器.
@@ -34,7 +34,7 @@ import java.util.*
  * ### 实现扩展加载器
  * 直接实现接口 [PluginLoader] 或 [FilePluginLoader], 并添加 [ServiceLoader] 相关资源文件即可.
  *
- * @see JarPluginLoader Jar 插件加载器
+ * @see JvmPluginLoader Jar 插件加载器
  */
 public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
@@ -65,7 +65,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     public val P.description: D // Java signature: `public D getDescription(P)`
 
     /**
-     * 加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的主类实例
+     * 主动加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的主类实例
      *
      * **实现细节**: 此函数只允许抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
@@ -76,7 +76,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     public fun load(plugin: P)
 
     /**
-     * 启用这个插件.
+     * 主动启用这个插件.
      *
      * **实现细节**: 此函数可抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
@@ -89,7 +89,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     public fun enable(plugin: P)
 
     /**
-     * 禁用这个插件.
+     * 主动禁用这个插件.
      *
      * **实现细节**: 此函数可抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
@@ -138,11 +138,11 @@ public open class PluginLoadException : RuntimeException {
  * ['/plugins'][PluginManager.pluginsPath] 目录中的插件的加载器. 每个加载器需绑定一个后缀.
  *
  * @see AbstractFilePluginLoader 默认基础实现
- * @see JarPluginLoader 内建的 Jar (JVM) 插件加载器.
+ * @see JvmPluginLoader 内建的 Jar (JVM) 插件加载器.
  */
 public interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoader<P, D> {
     /**
-     * 所支持的插件文件后缀, 含 '.'. 如 [JarPluginLoader] 为 ".jar"
+     * 所支持的插件文件后缀, 含 '.', 不区分大小写. 如 [JvmPluginLoader] 为 ".jar"
      */
     public val fileSuffix: String
 }
@@ -154,9 +154,9 @@ public interface FilePluginLoader<P : Plugin, D : PluginDescription> : PluginLoa
  */
 public abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription>(
     /**
-     * 所支持的插件文件后缀, 含 '.'. 如 [JarPluginLoader] 为 ".jar"
+     * 所支持的插件文件后缀, 含 '.', 不区分大小写. 如 [JvmPluginLoader] 为 ".jar"
      */
-    public override val fileSuffix: String
+    public override val fileSuffix: String,
 ) : FilePluginLoader<P, D> {
     private fun pluginsFilesSequence(): Sequence<File> =
         PluginManager.pluginsFolder.listFiles().orEmpty().asSequence()
@@ -173,7 +173,7 @@ public abstract class AbstractFilePluginLoader<P : Plugin, D : PluginDescription
 
 // Not yet decided to make public API
 internal class DeferredPluginLoader<P : Plugin, D : PluginDescription>(
-    initializer: () -> PluginLoader<P, D>
+    initializer: () -> PluginLoader<P, D>,
 ) : PluginLoader<P, D> {
     private val instance by lazy(initializer)
 

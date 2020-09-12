@@ -26,18 +26,18 @@ import java.io.File
 import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
-internal object JarPluginLoaderImpl :
+internal object BuiltInJvmPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
     CoroutineScope by MiraiConsole.childScope("JarPluginLoader", CoroutineExceptionHandler { _, throwable ->
-        JarPluginLoaderImpl.logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
+        BuiltInJvmPluginLoaderImpl.logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
     }),
-    JarPluginLoader {
+    JvmPluginLoader {
 
     override val configStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.configStorageForJarPluginLoader
 
     @JvmStatic
-    internal val logger: MiraiLogger = MiraiConsole.createLogger(JarPluginLoader::class.simpleName!!)
+    internal val logger: MiraiLogger = MiraiConsole.createLogger(JvmPluginLoader::class.simpleName!!)
 
     override val dataStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader

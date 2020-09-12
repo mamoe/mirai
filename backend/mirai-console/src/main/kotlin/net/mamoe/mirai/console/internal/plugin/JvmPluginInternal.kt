@@ -63,7 +63,7 @@ internal abstract class JvmPluginInternal(
 
     // region JvmPlugin
     final override val logger: MiraiLogger by lazy {
-        JarPluginLoaderImpl.logger.runCatchingLog {
+        BuiltInJvmPluginLoaderImpl.logger.runCatchingLog {
             MiraiConsole.createLogger(
                 "Plugin ${this.description.name}"
             )
@@ -149,11 +149,11 @@ internal abstract class JvmPluginInternal(
             .plus(
                 NamedSupervisorJob(
                     "Plugin ${(this as AbstractJvmPlugin).dataHolderName}",
-                    parentCoroutineContext[Job] ?: JarPluginLoaderImpl.coroutineContext[Job]!!
+                    parentCoroutineContext[Job] ?: BuiltInJvmPluginLoaderImpl.coroutineContext[Job]!!
                 )
             )
             .also {
-                JarPluginLoaderImpl.coroutineContext[Job]!!.invokeOnCompletion {
+                BuiltInJvmPluginLoaderImpl.coroutineContext[Job]!!.invokeOnCompletion {
                     this.cancel()
                 }
             }

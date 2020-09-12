@@ -17,7 +17,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * Kotlin 插件的父类.
  *
- * 必须通过 "plugin.yml" 指定主类并由 [JarPluginLoader] 加载.
+ * 必须通过 "plugin.yml" 指定主类并由 [JvmPluginLoader] 加载.
  */
 public abstract class KotlinPlugin @JvmOverloads constructor(
     public final override val description: JvmPluginDescription,

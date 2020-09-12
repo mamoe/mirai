@@ -13,8 +13,8 @@ package net.mamoe.mirai.console.data
 
 import net.mamoe.mirai.console.internal.data.MemoryPluginDataStorageImpl
 import net.mamoe.mirai.console.internal.data.MultiFilePluginDataStorageImpl
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import java.io.File
 import java.nio.file.Path
@@ -28,10 +28,10 @@ import java.nio.file.Path
  *
  * 此为较低层的 API, 一般插件开发者不会接触.
  *
- * [JarPluginLoader] 实现一个 [PluginDataStorage], 用于管理所有 [JvmPlugin] 的 [PluginData] 实例.
+ * [JvmPluginLoader] 实现一个 [PluginDataStorage], 用于管理所有 [JvmPlugin] 的 [PluginData] 实例.
  *
  * @see PluginDataHolder
- * @see JarPluginLoader.dataStorage
+ * @see JvmPluginLoader.dataStorage
  */
 @ConsoleExperimentalApi
 public interface PluginDataStorage {
