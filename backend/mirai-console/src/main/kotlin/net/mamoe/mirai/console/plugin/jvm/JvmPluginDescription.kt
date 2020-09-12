@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused", "INVISIBLE_REFERENCE", "INVISIBLE_member")
+@file:Suppress("unused", "INVISIBLE_REFERENCE", "INVISIBLE_member", "DeprecatedCallableAddReplaceWith")
 
 package net.mamoe.mirai.console.plugin.jvm
 
@@ -53,6 +53,8 @@ public interface JvmPluginDescription : PluginDescription {
          * 构建 [JvmPluginDescription]
          * @see JvmPluginDescriptionBuilder
          */
+        @Suppress("DEPRECATION_ERROR")
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @JvmSynthetic
         public operator fun invoke(
             /**
@@ -93,10 +95,13 @@ public interface JvmPluginDescription : PluginDescription {
  *
  * @see [JvmPluginDescription.invoke]
  */
-public class JvmPluginDescriptionBuilder(
+public class JvmPluginDescriptionBuilder
+@Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
+constructor(
     private var id: String,
     private var version: Semver,
 ) {
+    @Suppress("DEPRECATION_ERROR")
     public constructor(name: String, version: String) : this(name, Semver(version, Semver.SemverType.LOOSE))
 
     private var name: String = id
@@ -107,10 +112,12 @@ public class JvmPluginDescriptionBuilder(
     @ILoveKuriyamaMiraiForever
     public fun name(value: String): JvmPluginDescriptionBuilder = apply { this.name = value.trim() }
 
+    @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
     @ILoveKuriyamaMiraiForever
     public fun version(value: String): JvmPluginDescriptionBuilder =
         apply { this.version = Semver(value, Semver.SemverType.LOOSE) }
 
+    @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
     @ILoveKuriyamaMiraiForever
     public fun version(value: Semver): JvmPluginDescriptionBuilder = apply { this.version = value }
 

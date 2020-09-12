@@ -7,13 +7,18 @@ public sealed class VersionRequirement {
     public abstract operator fun contains(version: Semver): Boolean
     public fun contains(version: String): Boolean = contains(Semver(version, Semver.SemverType.LOOSE))
 
-    public class Exact(
+    public class Exact
+    @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
+    constructor(
         version: Semver,
     ) : VersionRequirement() {
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         public val version: Semver = version.toStrict()
 
+        @Suppress("DEPRECATION_ERROR")
         public constructor(version: String) : this(Semver(version, Semver.SemverType.LOOSE))
 
+        @Suppress("DEPRECATION_ERROR")
         override fun contains(version: Semver): Boolean = this.version.isEquivalentTo(version.toStrict())
     }
 
@@ -100,14 +105,17 @@ public sealed class VersionRequirement {
     }
 
 
-    @Suppress("unused")
+    @Suppress("unused", "DeprecatedCallableAddReplaceWith")
     public class Builder {
+        @Suppress("DEPRECATION_ERROR")
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public fun exact(version: Semver): VersionRequirement = Exact(version)
 
         @ILoveKafuuChinoForever
         public fun exact(version: String): VersionRequirement = Exact(version)
 
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public fun custom(checker: (version: Semver) -> Boolean): VersionRequirement {
             return object : Custom() {
@@ -139,6 +147,7 @@ public sealed class VersionRequirement {
             return MatchesCocoapodsPattern(versionPattern)
         }
 
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public fun range(
             begin: Semver,
@@ -147,6 +156,7 @@ public sealed class VersionRequirement {
             endInclusive: Boolean,
         ): VersionRequirement = InRange(begin, beginInclusive, end, endInclusive)
 
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public fun range(
             begin: String,
@@ -155,6 +165,7 @@ public sealed class VersionRequirement {
             endInclusive: Boolean,
         ): VersionRequirement = InRange(begin, beginInclusive, end, endInclusive)
 
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public fun range(
             begin: Semver,
@@ -172,6 +183,7 @@ public sealed class VersionRequirement {
         ): VersionRequirement = InRange(begin, beginInclusive, end, endInclusive)
 
 
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public operator fun Semver.rangeTo(endInclusive: Semver): VersionRequirement {
             return InRange(this, true, endInclusive, true)
@@ -190,12 +202,14 @@ public sealed class VersionRequirement {
                 true)
         }
 
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public operator fun String.rangeTo(endInclusive: Semver): VersionRequirement {
             return InRange(Semver(this, Semver.SemverType.LOOSE), true, endInclusive, true)
         }
 
 
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public infix fun Semver.until(endExclusive: Semver): VersionRequirement {
             return InRange(this, true, endExclusive, false)
@@ -214,6 +228,7 @@ public sealed class VersionRequirement {
                 false)
         }
 
+        @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
         @ILoveKafuuChinoForever
         public infix fun String.until(endExclusive: Semver): VersionRequirement {
             return InRange(Semver(this, Semver.SemverType.LOOSE), true, endExclusive, false)
