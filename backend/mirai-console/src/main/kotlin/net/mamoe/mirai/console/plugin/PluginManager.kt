@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.plugin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.plugin.description.PluginDescription
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import java.io.File
 import java.nio.file.Path
 
@@ -102,7 +103,7 @@ public interface PluginManager {
     public val pluginLoaders: List<PluginLoader<*, *>>
 
     /**
-     * 获取插件的 [描述][PluginDescription], 通过 [PluginLoader.getDescription]
+     * 获取插件的 [描述][PluginDescription], 通过 [PluginLoader.getPluginDescription]
      */
     public val Plugin.description: PluginDescription
 

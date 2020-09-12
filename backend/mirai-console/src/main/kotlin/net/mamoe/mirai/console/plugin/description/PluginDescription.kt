@@ -11,7 +11,6 @@ package net.mamoe.mirai.console.plugin.description
 
 import com.vdurmont.semver4j.Semver
 import net.mamoe.mirai.console.plugin.Plugin
-import net.mamoe.mirai.console.plugin.PluginLoadException
 
 
 /**
@@ -21,34 +20,40 @@ import net.mamoe.mirai.console.plugin.PluginLoadException
  */
 public interface PluginDescription {
     /**
-     * 插件 ID, 必须全英文, 仅允许英文字母, '-', '_', '.'.
+     * 插件 ID.
      *
+     * - 仅允许英文字母, '-', '_', '.'. 在内部操作处理时不区分大小写.
      * - 类似于 Java 包名, 插件 ID 需要 '域名.名称' 格式, 如 `net.mamoe.mirai.example-plugin`
      * - 域名和名称都是必须的
-     * - '.' 不允许位于首位或末尾
-     * - '-' 和 '_' 仅允许存在于两个英文字母之间
+     * - 数字和符号都不允许位于首位
+     * - '-' 和 '_' 仅允许存在于两个英文字母之间. 不推荐使用 '_'. 请参照 `org.example.mirai.plugin.my-example-plugin` 格式.
+     *
+     * 可使用 [ID_REGEX] 检验格式合法性.
      *
      * ID 在插件发布后就应该保持不变, 以便其他插件添加依赖.
      *
-     * 插件 ID 的域名和名称都不能完全是以下其中一个 ([FORBIDDEN_ID_WORDS]).
+     * 插件 ID 的域名和名称都不能完全是以下其中一个 ([FORBIDDEN_ID_NAMES]).
      * - "console"
      * - "main"
      * - "plugin"
      * - "config"
      * - "data"
      *
+     * ### 示例
+     * - 合法 `net.mamoe.mirai.example-plugin`
+     * - 非法 `.example-plugin`
      *
      * ID 用于指令权限等一些内部处理
      *
-     * @see FORBIDDEN_ID_LETTERS
-     * @see FORBIDDEN_ID_WORDS
+     * @see ID_REGEX
+     * @see FORBIDDEN_ID_NAMES
      */
     public val id: String
 
     /**
      * 插件名称. 允许中文, 允许各类符号.
      *
-     * 插件名称不能完全是以下其中一种 ([FORBIDDEN_ID_WORDS]).
+     * 插件名称不能完全是以下其中一种 ([FORBIDDEN_ID_NAMES]).
      * - console
      * - main
      * - plugin
@@ -57,8 +62,7 @@ public interface PluginDescription {
      *
      * 插件名称用于显示给用户.
      *
-     * @see FORBIDDEN_ID_LETTERS
-     * @see FORBIDDEN_ID_WORDS
+     * @see FORBIDDEN_ID_NAMES
      */
     public val name: String
 
@@ -103,8 +107,22 @@ public interface PluginDescription {
     public val dependencies: Set<PluginDependency>
 
     public companion object {
-        public val FORBIDDEN_ID_LETTERS: Array<String> = "~!@#$%^&*()+/*<>{}|[]\\?".map(Char::toString).toTypedArray()
-        public val FORBIDDEN_ID_WORDS: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
+        /**
+         * [PluginDescription.id] 的合法 [Regex].
+         *
+         * - Group 1: 域名
+         * - Group 2: 名称
+         *
+         * @see PluginDescription.id
+         */
+        public val ID_REGEX: Regex = Regex("""([a-zA-Z]+[a-zA-Z0-9]*)\.([a-zA-Z]+[a-zA-Z0-9]*)""")
+
+        /**
+         * 在 [PluginDescription.id] 和 [PluginDescription.name] 中禁止用的完全匹配名称列表.
+         *
+         * @see PluginDescription.id
+         */
+        public val FORBIDDEN_ID_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
 
         /**
          * 依次检查 [PluginDescription] 的 [PluginDescription.id], [PluginDescription.name], [PluginDescription.dependencies] 的合法性
@@ -126,50 +144,55 @@ public interface PluginDescription {
         }
 
         /**
-         * 检查 [PluginDescription.id] 的合法性.
+         * 检查 [PluginDescription.id] 的合法性. 忽略大小写.
          *
          * @throws IllegalPluginDescriptionException 当不合法时抛出.
          */
         @Throws(IllegalPluginDescriptionException::class)
         public fun checkPluginId(id: String) {
             if (id.isBlank()) throw IllegalPluginDescriptionException("Plugin id cannot be blank")
-            if (id.count { it == '.' } < 2) throw IllegalPluginDescriptionException("'$id' is illegal. Plugin id must consist of both domain and name. ")
+            if (id.none { it == '.' }) throw IllegalPluginDescriptionException("'$id' is illegal. Plugin id must consist of both domain and name. ")
 
-            FORBIDDEN_ID_LETTERS.firstOrNull { it in id }?.let { illegal ->
-                throw IllegalPluginDescriptionException("Plugin id contains illegal char: $illegal.")
+            val lowercaseId = id.toLowerCase()
+
+            if (ID_REGEX.matchEntire(id) == null) {
+                throw IllegalPluginDescriptionException("Plugin does not match regex '${ID_REGEX.pattern}'.")
             }
 
-            val idSections = id.split('.')
-            FORBIDDEN_ID_WORDS.firstOrNull { it in idSections }?.let { illegal ->
+            FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseId }?.let { illegal ->
                 throw IllegalPluginDescriptionException("Plugin id contains illegal word: '$illegal'.")
             }
         }
 
         /**
-         * 检查 [PluginDescription.name] 的合法性.
+         * 检查 [PluginDescription.name] 的合法性. 忽略大小写.
          *
          * @throws IllegalPluginDescriptionException 当不合法时抛出.
          */
         @Throws(IllegalPluginDescriptionException::class)
         public fun checkPluginName(name: String) {
             if (name.isBlank()) throw IllegalPluginDescriptionException("Plugin name cannot be blank")
-            FORBIDDEN_ID_WORDS.firstOrNull { it in name }?.let { illegal ->
+            val lowercaseName = name.toLowerCase()
+            FORBIDDEN_ID_NAMES.firstOrNull { it in lowercaseName }?.let { illegal ->
                 throw IllegalPluginDescriptionException("Plugin name is illegal: '$illegal'.")
             }
         }
 
         /**
-         * 检查 [PluginDescription.dependencies] 的合法性.
+         * 检查 [PluginDescription.dependencies] 的合法性. 忽略大小写.
          *
          * @throws IllegalPluginDescriptionException 当不合法时抛出.
          */
         @Throws(IllegalPluginDescriptionException::class)
         public fun checkDependencies(pluginId: String, dependencies: Set<PluginDependency>) {
-            if (dependencies.distinctBy { it.id }.size != dependencies.size)
-                throw PluginLoadException("Duplicated dependency detected: A plugin cannot depend on different versions of dependencies of the same id")
+            val lowercaseId = pluginId.toLowerCase()
+            val lowercaseDependencies = dependencies.mapTo(LinkedHashSet(dependencies.size)) { it.id.toLowerCase() }
 
-            if (dependencies.any { it.id == pluginId })
-                throw PluginLoadException("Recursive dependency detected: A plugin cannot depend on itself")
+            if (lowercaseDependencies.size != dependencies.size)
+                throw IllegalPluginDescriptionException("Duplicated dependency detected: A plugin cannot depend on different versions of dependencies of the same id")
+
+            if (lowercaseDependencies.any { it == lowercaseId })
+                throw IllegalPluginDescriptionException("Recursive dependency detected: A plugin cannot depend on itself")
         }
     }
 }

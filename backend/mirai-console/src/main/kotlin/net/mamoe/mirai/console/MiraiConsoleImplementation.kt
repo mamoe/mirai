@@ -18,8 +18,8 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
@@ -76,7 +76,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      *
      * @return 不可变的 [List], [Collections.unmodifiableList]
      */
-    public val builtInPluginLoaders: List<PluginLoader<*, *>>
+    public val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>>
 
     /**
      * 由 Kotlin 用户实现
@@ -120,8 +120,8 @@ public interface MiraiConsoleImplementation : CoroutineScope {
 
     public val consoleCommandSender: ConsoleCommandSenderImpl
 
-    public val dataStorageForJarPluginLoader: PluginDataStorage
-    public val configStorageForJarPluginLoader: PluginDataStorage
+    public val dataStorageForJvmPluginLoader: PluginDataStorage
+    public val configStorageForJvmPluginLoader: PluginDataStorage
     public val dataStorageForBuiltIns: PluginDataStorage
     public val configStorageForBuiltIns: PluginDataStorage
 

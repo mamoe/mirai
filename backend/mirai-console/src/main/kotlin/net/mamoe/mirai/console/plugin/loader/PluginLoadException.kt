@@ -9,14 +9,17 @@
 
 @file:Suppress("unused")
 
-package net.mamoe.mirai.console.plugin.description
+package net.mamoe.mirai.console.plugin.loader
 
 /**
- * 在检查到非法 [PluginDescription] 时抛出.
+ * 在加载插件过程中遇到的意料之中的问题.
  *
- * @see PluginDescription.checkPluginDescription
+ * @see PluginLoader.load
+ * @see PluginLoader.enable
+ * @see PluginLoader.disable
+ * @see PluginLoader.getPluginDescription
  */
-public class IllegalPluginDescriptionException : RuntimeException {
+public open class PluginLoadException : RuntimeException {
     public constructor() : super()
     public constructor(message: String?) : super(message)
     public constructor(message: String?, cause: Throwable?) : super(message, cause)

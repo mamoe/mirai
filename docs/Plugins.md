@@ -2,9 +2,9 @@
 
 [`Plugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/Plugin.kt
 [`PluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/description/PluginDescription.kt
-[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginLoader.kt
+[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/loader/PluginLoader.kt
 [`PluginManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginManager.kt
-[`JarPluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JarPluginLoader.kt
+[`JvmPluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginLoader.kt
 [`JvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPlugin.kt
 [`JvmPluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription.kt
 [`AbstractJvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin.kt
@@ -63,7 +63,7 @@ interface Plugin : CommandOwner { // CommandOwner 是空的 interface
 
 ## JVM 平台插件接口 - [`JvmPlugin`]
 
-所有的 JVM 插件都必须实现 [`JvmPlugin`]（否则不会被 [`JarPluginLoader`] 加载）。  
+所有的 JVM 插件都必须实现 [`JvmPlugin`]（否则不会被 [`JvmPluginLoader`] 加载）。  
 Mirai Console 提供一些基础的实现，即 [`AbstractJvmPlugin`]，并将 [`JvmPlugin`] 分为 [`KotlinPlugin`] 和 [`JavaPlugin`]。
 
 ### 主类和描述
@@ -174,7 +174,7 @@ Mirai Console 不提供热加载和热卸载功能，所有插件只能在服务
 
 #### 加载
 
-[`JarPluginLoader`] 调用插件的 `onLoad()`，在 `onLoad()` 正常返回后插件被认为成功加载。
+[`JvmPluginLoader`] 调用插件的 `onLoad()`，在 `onLoad()` 正常返回后插件被认为成功加载。
 
 由于 `onLoad()` 只会被初始化一次，插件可以在该方法内进行一些*一次性*的*初始化*任务。
 
@@ -184,13 +184,13 @@ Mirai Console 不提供热加载和热卸载功能，所有插件只能在服务
 
 #### 启用
 
-[`JarPluginLoader`] 调用插件的 `onEnable()`，意为启用一个插件。
+[`JvmPluginLoader`] 调用插件的 `onEnable()`，意为启用一个插件。
 
 此时插件可以启动所有协程，事件监听，和其他任务。**但这些任务都应该拥有生命周期管理，详见 [任务生命周期管理](#任务生命周期管理)。**
 
 #### 禁用
 
-[`JarPluginLoader`] 调用插件的 `onDisable()`，意为禁用一个插件。
+[`JvmPluginLoader`] 调用插件的 `onDisable()`，意为禁用一个插件。
 
 插件的任何类和对象都不会被卸载。「禁用」仅表示停止关闭所有正在进行的任务，保存所有数据，停止处理将来的数据。
 

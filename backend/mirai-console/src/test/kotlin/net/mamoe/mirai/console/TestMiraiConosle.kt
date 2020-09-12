@@ -15,9 +15,8 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.MemoryPluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.plugin.DeferredPluginLoader
-import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalApi
@@ -48,7 +47,7 @@ fun initTestEnvironment() {
                     get() = Semver("1.0.0")
 
             }
-        override val builtInPluginLoaders: List<PluginLoader<*, *>> = listOf(DeferredPluginLoader { JvmPluginLoader })
+        override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader })
         override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl =
             object : MiraiConsoleImplementation.ConsoleCommandSenderImpl {
                 override suspend fun sendMessage(message: Message) {
@@ -59,8 +58,8 @@ fun initTestEnvironment() {
                     println(message)
                 }
             }
-        override val dataStorageForJarPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
-        override val configStorageForJarPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
+        override val dataStorageForJvmPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
+        override val configStorageForJvmPluginLoader: PluginDataStorage = MemoryPluginDataStorage()
         override val dataStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
         override val configStorageForBuiltIns: PluginDataStorage = MemoryPluginDataStorage()
 

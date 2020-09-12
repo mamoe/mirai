@@ -12,13 +12,16 @@ package net.mamoe.mirai.console.plugin.jvm
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
-import net.mamoe.mirai.console.plugin.FilePluginLoader
+import net.mamoe.mirai.console.plugin.loader.FilePluginLoader
 
 /**
  * 内建的 Jar (JVM) 插件加载器
  */
 public interface JvmPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
-    public override val fileSuffix: String get() = ".jar"
+    /**
+     * ".jar"
+     */
+    public override val fileSuffix: String
 
     /**
      * [AbstractJvmPlugin.reloadPluginData] 默认使用的实例
@@ -32,7 +35,7 @@ public interface JvmPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, J
 
     public companion object BuiltIn : JvmPluginLoader by BuiltInJvmPluginLoaderImpl {
         @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-        override val JvmPlugin.description: JvmPluginDescription
-            get() = BuiltInJvmPluginLoaderImpl.run { description }
+        override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription =
+            BuiltInJvmPluginLoaderImpl.run { plugin.description }
     }
 }

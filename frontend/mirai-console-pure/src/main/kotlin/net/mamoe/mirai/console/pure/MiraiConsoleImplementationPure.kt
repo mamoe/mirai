@@ -30,9 +30,8 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.plugin.DeferredPluginLoader
-import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.pure.ConsoleInputImpl.requestInput
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -51,7 +50,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 /**
  * mirai-console-pure 后端实现
@@ -61,15 +59,13 @@ import java.util.*
 @ConsoleExperimentalApi
 class MiraiConsoleImplementationPure
 @JvmOverloads constructor(
-    override val rootPath: Path = Paths.get("."),
-    override val builtInPluginLoaders: List<PluginLoader<*, *>> = Collections.unmodifiableList(
-        listOf(DeferredPluginLoader { JvmPluginLoader })
-    ),
+    override val rootPath: Path = Paths.get(".").toAbsolutePath(),
+    override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader }),
     override val frontEndDescription: MiraiConsoleFrontEndDescription = ConsoleFrontEndDescImpl,
     override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl = ConsoleCommandSenderImplPure,
-    override val dataStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
+    override val dataStorageForJvmPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
-    override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
+    override val configStorageForJvmPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
     override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
     NamedSupervisorJob("MiraiConsoleImplementationPure") +

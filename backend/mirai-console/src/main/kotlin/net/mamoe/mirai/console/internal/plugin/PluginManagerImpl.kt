@@ -18,10 +18,14 @@ import net.mamoe.mirai.console.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.internal.data.cast
 import net.mamoe.mirai.console.internal.data.mkdir
-import net.mamoe.mirai.console.plugin.*
+import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.plugin.loader.PluginLoadException
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.info
 import java.io.File
@@ -39,8 +43,9 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
 
     @Suppress("ObjectPropertyName")
     private val _pluginLoaders: MutableList<PluginLoader<*, *>> by lazy {
-        MiraiConsole.builtInPluginLoaders.toMutableList()
+        builtInLoaders.toMutableList()
     }
+
     private val logger = MiraiConsole.createLogger("plugin")
 
     @JvmField
@@ -48,17 +53,18 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
         CopyOnWriteArrayList() // write operations are mostly performed on init
     override val plugins: List<Plugin>
         get() = resolvedPlugins.toList()
-    override val builtInLoaders: List<PluginLoader<*, *>>
-        get() = MiraiConsole.builtInPluginLoaders
+    override val builtInLoaders: List<PluginLoader<*, *>> by lazy {
+        MiraiConsole.builtInPluginLoaders.map { it.value }
+    }
     override val pluginLoaders: List<PluginLoader<*, *>>
         get() = _pluginLoaders.toList()
 
     override val Plugin.description: PluginDescription
         get() = if (this is JvmPlugin) {
-            this.safeLoader.getDescription(this)
+            this.safeLoader.getPluginDescription(this)
         } else resolvedPlugins.firstOrNull { it == this }
             ?.loader?.cast<PluginLoader<Plugin, PluginDescription>>()
-            ?.getDescription(this)
+            ?.getPluginDescription(this)
             ?: error("Plugin is unloaded")
 
 
@@ -76,10 +82,10 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
             resolvedPlugins.add(plugin)
         }.fold(
             onSuccess = {
-                logger.info { "Successfully loaded plugin ${plugin.description.name}" }
+                logger.info { "Successfully loaded plugin ${getPluginDescription(plugin).name}" }
             },
             onFailure = {
-                logger.info { "Cannot load plugin ${plugin.description.name}" }
+                logger.info { "Cannot load plugin ${getPluginDescription(plugin).name}" }
                 throw it
             }
         )

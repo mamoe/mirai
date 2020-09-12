@@ -42,10 +42,10 @@ import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
 import net.mamoe.mirai.console.permission.RootPermission
-import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.utils.*
@@ -74,11 +74,11 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         createLogger("main")
     }
     override val coroutineContext: CoroutineContext by instance::coroutineContext
-    override val builtInPluginLoaders: List<PluginLoader<*, *>> by instance::builtInPluginLoaders
+    override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> by instance::builtInPluginLoaders
     override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl by instance::consoleCommandSender
 
-    override val dataStorageForJarPluginLoader: PluginDataStorage by instance::dataStorageForJarPluginLoader
-    override val configStorageForJarPluginLoader: PluginDataStorage by instance::configStorageForJarPluginLoader
+    override val dataStorageForJvmPluginLoader: PluginDataStorage by instance::dataStorageForJvmPluginLoader
+    override val configStorageForJvmPluginLoader: PluginDataStorage by instance::configStorageForJvmPluginLoader
     override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
     override val configStorageForBuiltIns: PluginDataStorage by instance::configStorageForBuiltIns
     override val consoleInput: ConsoleInput by instance::consoleInput

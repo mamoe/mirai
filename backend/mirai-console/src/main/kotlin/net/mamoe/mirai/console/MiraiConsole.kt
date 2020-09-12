@@ -21,10 +21,10 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
@@ -68,7 +68,7 @@ public interface MiraiConsole : CoroutineScope {
      *
      * @return 不可变 [List] ([java.util.Collections.unmodifiableList])
      */
-    public val builtInPluginLoaders: List<PluginLoader<*, *>>
+    public val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>>
 
     /**
      * 此 Console 后端构建时间
@@ -79,6 +79,7 @@ public interface MiraiConsole : CoroutineScope {
      * 此 Console 后端版本号
      */
     public val version: Semver
+
 
     @ConsoleExperimentalApi
     public val pluginCenter: PluginCenter

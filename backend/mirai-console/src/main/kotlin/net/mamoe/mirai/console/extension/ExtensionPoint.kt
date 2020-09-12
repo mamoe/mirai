@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.console.extension
 
-import net.mamoe.mirai.console.plugin.PluginLoader
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf

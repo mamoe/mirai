@@ -14,6 +14,9 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import java.io.File
 
+/**
+ * 插件中心, 计划实现中
+ */
 @ConsoleExperimentalApi
 public interface PluginCenter {
 
@@ -29,7 +32,7 @@ public interface PluginCenter {
         val author: String,
         val description: String,
         val tags: List<String>,
-        val commands: List<String>
+        val commands: List<String>,
     )
 
     @ConsoleExperimentalApi
@@ -48,7 +51,7 @@ public interface PluginCenter {
         val usage: String,
         val vcs: String,
         val commands: List<String>,
-        val changeLog: List<String>
+        val changeLog: List<String>,
     )
 
     /**

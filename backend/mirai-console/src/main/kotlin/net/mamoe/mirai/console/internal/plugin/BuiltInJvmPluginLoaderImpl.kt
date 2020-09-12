@@ -17,9 +17,9 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.findServices
 import net.mamoe.mirai.console.internal.util.PluginServiceHelper.loadAllServices
-import net.mamoe.mirai.console.plugin.AbstractFilePluginLoader
-import net.mamoe.mirai.console.plugin.PluginLoadException
 import net.mamoe.mirai.console.plugin.jvm.*
+import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
+import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -28,25 +28,24 @@ import java.util.concurrent.ConcurrentHashMap
 
 internal object BuiltInJvmPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
-    CoroutineScope by MiraiConsole.childScope("JarPluginLoader", CoroutineExceptionHandler { _, throwable ->
+    CoroutineScope by MiraiConsole.childScope("JvmPluginLoader", CoroutineExceptionHandler { _, throwable ->
         BuiltInJvmPluginLoaderImpl.logger.error("Unhandled Jar plugin exception: ${throwable.message}", throwable)
     }),
     JvmPluginLoader {
 
     override val configStorage: PluginDataStorage
-        get() = MiraiConsoleImplementationBridge.configStorageForJarPluginLoader
+        get() = MiraiConsoleImplementationBridge.configStorageForJvmPluginLoader
 
     @JvmStatic
     internal val logger: MiraiLogger = MiraiConsole.createLogger(JvmPluginLoader::class.simpleName!!)
 
     override val dataStorage: PluginDataStorage
-        get() = MiraiConsoleImplementationBridge.dataStorageForJarPluginLoader
+        get() = MiraiConsoleImplementationBridge.dataStorageForJvmPluginLoader
 
     internal val classLoaders: MutableList<ClassLoader> = mutableListOf()
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
-    override val JvmPlugin.description: JvmPluginDescription
-        get() = this.description
+    override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
 
     private val pluginFileToInstanceMap: MutableMap<File, JvmPlugin> = ConcurrentHashMap()
 
