@@ -16,5 +16,5 @@ public interface PermissionIdNamespace {
     /**
      * 创建一个此命名空间下的 [PermitteeId]
      */
-    public fun permissionId(id: String): PermissionId
+    public fun permissionId(name: String): PermissionId
 }

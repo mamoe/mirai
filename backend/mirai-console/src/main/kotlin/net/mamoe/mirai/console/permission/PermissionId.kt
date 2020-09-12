@@ -23,26 +23,26 @@ import net.mamoe.mirai.console.internal.data.map
 @Serializable(with = PermissionId.PermissionIdAsStringSerializer::class)
 public data class PermissionId(
     public val namespace: String,
-    public val id: String,
+    public val name: String,
 ) {
     init {
         require(!namespace.contains(':')) {
             "':' is not allowed in namespace"
         }
-        require(!id.contains(':')) {
+        require(!name.contains(':')) {
             "':' is not allowed in id"
         }
     }
 
     public object PermissionIdAsStringSerializer : KSerializer<PermissionId> by String.serializer().map(
-        serializer = { it.namespace + ":" + it.id },
+        serializer = { it.namespace + ":" + it.name },
         deserializer = { it.split(':').let { (namespace, id) -> PermissionId(namespace, id) } }
     )
 
     /**
      * 返回 `$namespace:$id`
      */
-    public override fun toString(): String = "$namespace:$id"
+    public override fun toString(): String = "$namespace:$name"
 
     public companion object {
         /**

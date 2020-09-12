@@ -11,18 +11,20 @@
 
 package net.mamoe.mirai.console.plugin.loader
 
+import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
-import java.util.*
 
 /**
  * 插件加载器.
  *
- * 插件加载器只实现寻找插件列表, 加载插件, 启用插件, 关闭插件这四个功能.
+ * 插件加载器只实现寻找插件列表, 加载插件, 启用插件, 关闭插件这四个功能。
+ *
+ * 一个插件要在何时被加载，依赖如何处理，[PluginLoader] 都无需关心。
  *
  * 有关插件的依赖和已加载的插件列表由 [PluginManager] 维护.
  *
@@ -33,7 +35,7 @@ import java.util.*
  * 插件被允许扩展一个加载器.
  *
  * ### 实现扩展加载器
- * 直接实现接口 [PluginLoader] 或 [FilePluginLoader], 并添加 [ServiceLoader] 相关资源文件即可.
+ * 直接实现接口 [PluginLoader] 或 [FilePluginLoader], 并注册 [PluginLoaderProvider]
  *
  * @see JvmPluginLoader Jar 插件加载器
  */
@@ -43,9 +45,9 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      *
      * 这些插件都应处于还未被加载的状态.
      *
-     * 在 console 启动时, [PluginManager] 会获取所有 [PluginDescription], 分析依赖关系, 确认插件加载顺序.
+     * 在 Console 启动时, [PluginManager] 会获取所有 [PluginDescription], 分析依赖关系, 确认插件加载顺序.
      *
-     * **实现细节:** 此函数*只应该*在 console 启动时被调用一次. 但取决于前端实现不同, 或由于被一些插件需要, 此函数也可能会被多次调用.
+     * **实现细节:** 此函数*只应该*在 Console 启动时被调用一次. 但取决于前端实现不同, 或由于被一些插件需要, 此函数也可能会被多次调用.
      */
     public fun listPlugins(): List<P>
 
@@ -54,7 +56,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      *
      * **实现细节**: 此函数只允许抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      *
-     * 若在 console 启动并加载所有插件的过程中, 本函数抛出异常, 则会放弃此插件的加载, 并影响依赖它的其他插件.
+     * 若在 Console 启动并加载所有插件的过程中, 本函数抛出异常, 则会放弃此插件的加载, 并影响依赖它的其他插件.
      *
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如无法读取插件信息等).
      *
@@ -67,10 +69,13 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
      * 主动加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的主类实例
      *
+     * **实现注意**: Console 不会把一个已经启用了的插件再次调用 [load] 或 [enable], 但不排除意外情况. 实现本函数时应在这种情况时立即抛出异常 [IllegalStateException].
+     *
      * **实现细节**: 此函数只允许抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
      *
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
+     * @throws IllegalStateException 在插件已经被加载时抛出. 这属于意料之外的情况.
      */
     @Throws(PluginLoadException::class)
     public fun load(plugin: P)
@@ -78,10 +83,13 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
      * 主动启用这个插件.
      *
+     * **实现注意**: Console 不会把一个已经启用了的插件再次调用 [load] 或 [enable], 但不排除意外情况. 实现本函数时应在这种情况时立即抛出异常 [IllegalStateException].
+     *
      * **实现细节**: 此函数可抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
      *
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
+     * @throws IllegalStateException 在插件已经被加载时抛出. 这属于意料之外的情况.
      *
      * @see PluginManager.enable
      */
