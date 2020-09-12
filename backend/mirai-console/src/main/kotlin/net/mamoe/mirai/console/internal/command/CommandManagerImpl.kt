@@ -99,7 +99,11 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     }
 
     override fun Command.register(override: Boolean): Boolean {
-        if (this is CompositeCommand) this.subCommands // init
+        if (this is CompositeCommand) this.subCommands // init lazy
+        this.permission // init lazy
+        this.names // init lazy
+        this.description // init lazy
+        this.usage // init lazy
 
         modifyLock.withLock {
             if (!override) {
