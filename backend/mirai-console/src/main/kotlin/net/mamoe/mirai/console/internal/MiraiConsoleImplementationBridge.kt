@@ -60,6 +60,7 @@ import kotlin.coroutines.CoroutineContext
 /**
  * [MiraiConsole] 公开 API 与前端实现的连接桥.
  */
+@Suppress("SpellCheckingInspection")
 internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleImplementation,
     MiraiConsole {
     override val pluginCenter: PluginCenter get() = throw UnsupportedOperationException("PluginCenter is not supported yet")
@@ -219,11 +220,12 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         mainLogger.info { "mirai-console started successfully." }
     }
 
+    @Suppress("SpellCheckingInspection")
     @Retention(AnnotationRetention.SOURCE)
     @DslMarker
-    private annotation class MiraiIsCool
+    private annotation class ILoveOmaeKumikoForever
 
-    @MiraiIsCool
+    @ILoveOmaeKumikoForever
     private inline fun phase(block: () -> Unit) {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)

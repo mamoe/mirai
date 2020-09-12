@@ -187,7 +187,15 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     private fun <D : PluginDescription> List<D>.sortByDependencies(): List<D> {
         val resolved = ArrayList<D>(this.size)
 
-        fun D.canBeLoad(): Boolean = this.dependencies.all { it.isOptional || it in resolved }
+        fun D.canBeLoad(): Boolean = this.dependencies.all { dependency ->
+            val target = resolved.findDependency(dependency)
+            if (target == null) {
+                dependency.isOptional
+            } else {
+                target.checkSatisfies(dependency, this@canBeLoad)
+                true
+            }
+        }
 
         fun List<D>.consumeLoadable(): List<D> {
             val (canBeLoad, cannotBeLoad) = this.partition { it.canBeLoad() }
@@ -196,7 +204,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
         }
 
         fun Collection<PluginDependency>.filterIsMissing(): List<PluginDependency> =
-            this.filterNot { it.isOptional || it in resolved }
+            this.filterNot { it.isOptional || resolved.findDependency(it) != null }
 
         fun List<D>.doSort() {
             if (this.isEmpty()) return
@@ -206,8 +214,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
                 check(resultPlugins.size < beforeSize) {
                     throw PluginMissingDependencyException(resultPlugins.joinToString("\n") { badPlugin ->
                         "Cannot load plugin ${badPlugin.name}, missing dependencies: ${
-                            badPlugin.dependencies.filterIsMissing()
-                                .joinToString()
+                            badPlugin.dependencies.filterIsMissing().joinToString()
                         }"
                     })
                 }
@@ -235,5 +242,13 @@ internal fun PluginDescription.wrapWith(loader: PluginLoader<*, *>, plugin: Plug
         loader as PluginLoader<Plugin, PluginDescription>, this, plugin
     )
 
-internal operator fun List<PluginDescription>.contains(dependency: PluginDependency): Boolean =
-    any { it.id == dependency.id }
+internal fun List<PluginDescription>.findDependency(dependency: PluginDependency): PluginDescription? {
+    return find { it.id.equals(dependency.id, ignoreCase = true) }
+}
+
+internal fun PluginDescription.checkSatisfies(dependency: PluginDependency, plugin: PluginDescription) {
+    val requirement = dependency.versionRequirement
+    if (requirement != null && this.version !in requirement) {
+        throw PluginLoadException("Plugin '${plugin.id}' ('${plugin.id}') requires '${dependency.id}' with version $requirement while the resolved is ${this.version}")
+    }
+}

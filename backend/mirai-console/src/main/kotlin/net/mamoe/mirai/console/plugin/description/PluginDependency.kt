@@ -11,8 +11,6 @@
 
 package net.mamoe.mirai.console.plugin.description
 
-import com.vdurmont.semver4j.Semver
-
 /**
  * 插件的一个依赖的信息.
  *
@@ -28,13 +26,14 @@ public data class PluginDependency @JvmOverloads constructor(
      *
      * 版本遵循 [语义化版本 2.0 规范](https://semver.org/lang/zh-CN/),
      *
-     * 允许 [Apache Ivy 风格版本号表示](http://ant.apache.org/ivy/history/latest-milestone/settings/version-matchers.html)
+     * ### 示例
+     * `Requirement.buildIvy("[1.0, 2.0)")`
      */
-    public val version: Semver? = null,
+    public val versionRequirement: VersionRequirement? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */
-    public val isOptional: Boolean = false
+    public val isOptional: Boolean = false,
 ) {
     init {
         kotlin.runCatching {
@@ -49,14 +48,5 @@ public data class PluginDependency @JvmOverloads constructor(
      */
     public constructor(name: String, isOptional: Boolean = false) : this(
         name, null, isOptional
-    )
-
-    /**
-     * @see PluginDependency
-     */
-    public constructor(name: String, version: String, isOptional: Boolean) : this(
-        name,
-        Semver(version, Semver.SemverType.IVY),
-        isOptional
     )
 }

@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.plugin.jvm
 import com.vdurmont.semver4j.Semver
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
+import net.mamoe.mirai.console.plugin.description.VersionRequirement
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
@@ -123,16 +124,6 @@ public class JvmPluginDescriptionBuilder(
     public fun info(value: String): JvmPluginDescriptionBuilder = apply { this.info = value.trimIndent() }
 
     @ILoveKuriyamaMiraiForever
-    public fun dependsOn(
-        pluginId: String,
-        version: String? = null,
-        isOptional: Boolean = false,
-    ): JvmPluginDescriptionBuilder = apply {
-        if (version == null) this.dependencies.add(PluginDependency(pluginId, version, isOptional))
-        else this.dependencies.add(PluginDependency(pluginId, version, isOptional))
-    }
-
-    @ILoveKuriyamaMiraiForever
     public fun setDependencies(
         value: Set<PluginDependency>,
     ): JvmPluginDescriptionBuilder = apply {
@@ -148,18 +139,79 @@ public class JvmPluginDescriptionBuilder(
         }
     }
 
+    /**
+     * @see PluginDependency
+     */
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
         pluginId: String,
-        version: Semver? = null,
         isOptional: Boolean = false,
-    ): JvmPluginDescriptionBuilder = apply { this.dependencies.add(PluginDependency(pluginId, version, isOptional)) }
+        versionRequirement: VersionRequirement? = null,
+    ): JvmPluginDescriptionBuilder = apply {
+        if (versionRequirement == null)
+            this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
+        else this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
+    }
+
+    /**
+     * isOptional = false
+     *
+     * @see PluginDependency
+     */
+    @ILoveKuriyamaMiraiForever
+    public fun dependsOn(
+        pluginId: String,
+        versionRequirement: VersionRequirement? = null,
+    ): JvmPluginDescriptionBuilder = apply {
+        if (versionRequirement == null)
+            this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
+        else this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
+    }
+
+    /**
+     * 无版本要求
+     *
+     * @see PluginDependency
+     */
+    @ILoveKuriyamaMiraiForever
+    public fun dependsOn(
+        pluginId: String,
+        isOptional: Boolean = false,
+    ): JvmPluginDescriptionBuilder = apply {
+        dependsOn(pluginId, isOptional, null)
+    }
+
+    /**
+     * 示例:
+     *
+     * ```
+     * dependsOn("org.example.test-plugin") { "1.0.0".."1.2.0" }
+     * dependsOn("org.example.test-plugin") { npmPattern("1.x || >=2.5.0 || 5.0.0 - 7.2.3") }
+     * dependsOn("org.example.test-plugin") { ivyPattern("[1.0,2.0[") }
+     * dependsOn("org.example.test-plugin") { custom { it.toString() == "1.0.0" } }
+     * ```
+     *
+     * @see PluginDependency
+     * @see VersionRequirement.Builder
+     */
+    @ILoveKuriyamaMiraiForever
+    public fun dependsOn(
+        pluginId: String,
+        isOptional: Boolean = false,
+        versionRequirement: VersionRequirement.Builder.() -> VersionRequirement,
+    ): JvmPluginDescriptionBuilder =
+        apply {
+            this.dependencies.add(PluginDependency(pluginId,
+                VersionRequirement.Builder().run(versionRequirement),
+                isOptional))
+        }
 
 
     @Suppress("DEPRECATION_ERROR")
     public fun build(): JvmPluginDescription =
         SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
 
+    @Suppress("SpellCheckingInspection")
     @Retention(AnnotationRetention.SOURCE)
     @DslMarker
     private annotation class ILoveKuriyamaMiraiForever // https://zh.moegirl.org.cn/zh-cn/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5
