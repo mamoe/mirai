@@ -34,10 +34,20 @@ public interface JvmPluginDescription : PluginDescription {
          */
         @JvmSynthetic
         public operator fun invoke(
-            name: String,
+            /**
+             * @see [PluginDescription.id]
+             */
+            id: String,
+            /**
+             * @see [PluginDescription.version]
+             */
             version: String,
-            block: JvmPluginDescriptionBuilder.() -> Unit = {}
-        ): JvmPluginDescription = JvmPluginDescriptionBuilder(name, version).apply(block).build()
+            /**
+             * @see [PluginDescription.name]
+             */
+            name: String = id,
+            block: JvmPluginDescriptionBuilder.() -> Unit = {},
+        ): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
 
         /**
          * 构建 [JvmPluginDescription]
@@ -45,10 +55,20 @@ public interface JvmPluginDescription : PluginDescription {
          */
         @JvmSynthetic
         public operator fun invoke(
-            name: String,
+            /**
+             * @see [PluginDescription.id]
+             */
+            id: String,
+            /**
+             * @see [PluginDescription.version]
+             */
             version: Semver,
-            block: JvmPluginDescriptionBuilder.() -> Unit = {}
-        ): JvmPluginDescription = JvmPluginDescriptionBuilder(name, version).apply(block).build()
+            /**
+             * @see [PluginDescription.name]
+             */
+            name: String = id,
+            block: JvmPluginDescriptionBuilder.() -> Unit = {},
+        ): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
     }
 }
 
