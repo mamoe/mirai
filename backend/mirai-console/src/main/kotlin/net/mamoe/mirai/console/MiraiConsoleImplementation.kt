@@ -118,6 +118,9 @@ public interface MiraiConsoleImplementation : CoroutineScope {
             withContext(Dispatchers.IO) { sendMessageJ(message) }
     }
 
+    /**
+     * [ConsoleCommandSender]
+     */
     public val consoleCommandSender: ConsoleCommandSenderImpl
 
     public val dataStorageForJvmPluginLoader: PluginDataStorage
@@ -127,8 +130,26 @@ public interface MiraiConsoleImplementation : CoroutineScope {
 
     /**
      * @see ConsoleInput 的实现
+     * @see JConsoleInput
      */
     public val consoleInput: ConsoleInput
+
+    /**
+     * 供 Java 用户实现 [ConsoleInput]
+     */
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @ConsoleFrontEndImplementation
+    public interface JConsoleInput : ConsoleInput {
+        /**
+         * @see ConsoleInput.requestInput
+         */
+        @JvmName("requestInput")
+        public fun requestInputJ(hint: String): String
+
+        override suspend fun requestInput(hint: String): String {
+            return withContext(Dispatchers.IO) { requestInputJ(hint) }
+        }
+    }
 
     /**
      * 创建一个 [LoginSolver]
