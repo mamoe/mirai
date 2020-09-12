@@ -1,5 +1,13 @@
 # Version 1.x
 
+## `1.2.3`  2020/9/11
+- 在同步事件失败时添加重试, 改善 #249, #482, #542, #567, #590
+- 修复不断重连同一个服务器的问题 (#589)
+- 更新到 Kotlin `1.4.10`
+
+## `1.2.2`  2020/8/22
+- 修复依赖冲突问题 (#523)
+
 ## `1.2.1`  2020/8/19
 - 修复在 Java 调用 `group.uploadImage` 时编译出错的问题 (#511)
 - 为 `group.uploadVoice` 添加 Java 方法 (需要 [kotlin-jvm-blocking-bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge)) (#512)
