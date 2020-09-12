@@ -17,8 +17,6 @@
 ### 后端插件开发进阶
 
 - 扩展 - [Extension 模块和扩展点](Extensions.md)
-- 扩展 - [实现 PluginLoader](PluginLoader.md)
-- 扩展 - [实现 PermissionService](PermissionService.md)
 
 ### 实现前端
 - [FrontEnd](FrontEnd.md)

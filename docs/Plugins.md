@@ -59,7 +59,7 @@ interface Plugin : CommandOwner { // CommandOwner 是空的 interface
 }
 ```
 
-[`Plugin`] 接口拥有强扩展性，以支持 Mirai Console 统一管理使用其他编程语言编写的插件 （详见进阶章节 [实现 PluginLoader](PluginLoader.md)）。
+[`Plugin`] 接口拥有强扩展性，以支持 Mirai Console 统一管理使用其他编程语言编写的插件 （详见进阶章节 [扩展 - PluginLoader](Extensions.md)）。
 
 ## JVM 平台插件接口 - [`JvmPlugin`]
 

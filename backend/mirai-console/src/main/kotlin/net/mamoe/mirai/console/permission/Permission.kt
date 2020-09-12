@@ -76,7 +76,7 @@ public interface Permission {
 }
 
 /**
- * 根权限. 是所有权限的父权限.
+ * 根权限. 是所有权限的父权限. 权限 ID 为 "*:*"
  */
 @get:JvmSynthetic
 public val RootPermission: Permission

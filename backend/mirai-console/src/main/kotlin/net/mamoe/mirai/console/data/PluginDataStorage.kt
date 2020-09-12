@@ -31,7 +31,7 @@ import java.nio.file.Path
  * [JvmPluginLoader] 实现一个 [PluginDataStorage], 用于管理所有 [JvmPlugin] 的 [PluginData] 实例.
  *
  * ### 实现 [PluginDataStorage]
- * 无特殊需求。实现两个成员函数即可。可参考内建 [MultiFilePluginDataStorageImpl]
+ * 无特殊需求. 实现两个成员函数即可. 可参考内建 [MultiFilePluginDataStorageImpl]
  *
  * @see PluginDataHolder
  * @see JvmPluginLoader.dataStorage

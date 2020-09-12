@@ -49,7 +49,7 @@ public interface PluginDescription {
     public val id: String
 
     /**
-     * 插件名称用于展示给用户，仅取决于 `PluginDescription` 提供的 `name`，与主类类名等其他信息无关。
+     * 插件名称用于展示给用户，仅取决于 `PluginDescription` 提供的 `name`，与主类类名等其他信息无关.
      *
      * 名称允许中文, 允许各类符号，但不能完全是以下其中一种（忽略大小写）([FORBIDDEN_ID_NAMES]):
      * - console

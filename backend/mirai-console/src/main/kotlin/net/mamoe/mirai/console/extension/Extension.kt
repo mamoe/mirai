@@ -20,10 +20,10 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
  * 表示一个扩展.
  *
  * ### 获取扩展
- * Console 不允许插件获取自己或其他插件注册的扩展。
+ * Console 不允许插件获取自己或其他插件注册的扩展
  *
  * ### 注册扩展
- * 插件仅能在 [JvmPlugin.onLoad] 阶段注册扩展。
+ * 插件仅能在 [JvmPlugin.onLoad] 阶段注册扩展
  *
  * ```kotlin
  * object MyPlugin : KotlinPlugin( /* ... */ ) {

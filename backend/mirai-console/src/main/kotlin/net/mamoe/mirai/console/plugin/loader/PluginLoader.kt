@@ -22,9 +22,9 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 /**
  * 插件加载器.
  *
- * 插件加载器只实现寻找插件列表, 加载插件, 启用插件, 关闭插件这四个功能。
+ * 插件加载器只实现寻找插件列表, 加载插件, 启用插件, 关闭插件这四个功能.
  *
- * 一个插件要在何时被加载，依赖如何处理，[PluginLoader] 都无需关心。
+ * 一个插件要在何时被加载，依赖如何处理，[PluginLoader] 都无需关心.
  *
  * 有关插件的依赖和已加载的插件列表由 [PluginManager] 维护.
  *

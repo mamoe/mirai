@@ -94,7 +94,7 @@ import kotlin.reflect.full.findAnnotation
  * newList.add(1) // 不会添加到 MyPluginData.nestedMap 中, 因为 `mutableListOf` 创建的 MutableList 被非引用地添加进了 MyPluginData.nestedMap
  * ```
  *
- * 一个解决方案是对 [SerializerAwareValue] 做映射或相关修改. 如 [PluginDataExtensions]。
+ * 一个解决方案是对 [SerializerAwareValue] 做映射或相关修改. 如 [PluginDataExtensions].
  *
  * 要查看详细的解释，请查看 [docs/PluginData.md](https://github.com/mamoe/mirai-console/blob/master/docs/PluginData.md)
  *
@@ -176,7 +176,7 @@ public interface PluginData {
     ): T
 
     /**
-     * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用。
+     * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用
      */
     public val updaterSerializer: KSerializer<Unit>
 

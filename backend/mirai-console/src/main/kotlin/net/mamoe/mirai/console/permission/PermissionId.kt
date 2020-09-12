@@ -19,6 +19,9 @@ import net.mamoe.mirai.console.internal.data.map
  * 表示一个 [权限][Permission] 的唯一 ID.
  *
  * [PermissionId] 与 [Permission] 唯一对应.
+ *
+ * ### 字符串表示
+ * `"$namespace:$name"`. 如 "console:command.stop", "*:*"
  */
 @Serializable(with = PermissionId.PermissionIdAsStringSerializer::class)
 public data class PermissionId(
