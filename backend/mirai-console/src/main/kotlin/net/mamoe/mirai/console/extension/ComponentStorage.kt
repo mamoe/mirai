@@ -65,7 +65,7 @@ public class ScopedComponentStorage(
     }
 
     /**
-     * 注册一个扩展
+     * 注册一个 [PermissionService]
      */
     @ExperimentalPermission
     public fun contributePermissionService(

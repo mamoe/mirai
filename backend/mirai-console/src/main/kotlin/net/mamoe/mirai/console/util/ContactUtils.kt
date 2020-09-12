@@ -12,8 +12,8 @@
 package net.mamoe.mirai.console.util
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
+import net.mamoe.mirai.contact.*
 
 /**
  * 为简化操作提供的一些工具
@@ -32,7 +32,7 @@ public object ContactUtils {
     @JvmOverloads
     @JvmStatic
     @ConsoleExperimentalApi
-    public fun Bot.getContact(id: Long, includeMembers: Boolean = false): Contact {
+    public fun Bot.getContact(id: Long, includeMembers: Boolean = true): Contact {
         return getContactOrNull(id, includeMembers)
             ?: throw NoSuchElementException("Contact $id not found for bot ${this.id}")
     }
@@ -45,7 +45,7 @@ public object ContactUtils {
     @JvmOverloads
     @JvmStatic
     @ConsoleExperimentalApi
-    public fun Bot.getContactOrNull(id: Long, includeMembers: Boolean = false): Contact? {
+    public fun Bot.getContactOrNull(id: Long, includeMembers: Boolean = true): Contact? {
         return getFriendOrGroupOrNull(id) ?: kotlin.run {
             if (includeMembers) {
                 groups.asSequence().flatMap { it.members.asSequence() }.firstOrNull { it.id == id }
@@ -77,4 +77,18 @@ public object ContactUtils {
         return this.friends.getOrNull(id) ?: this.groups.getOrNull(id)
     }
 
+    /**
+     * 将 [ContactOrBot] 输出为字符串表示.
+     */
+    @JvmName("renderContactOrName")
+    @JvmStatic
+    public fun ContactOrBot.render(): String {
+        return when (this) {
+            is Bot -> "Bot $nick($id)"
+            is Group -> "Group $name($id)"
+            is Friend -> "Friend $nick($id)"
+            is Member -> "Member $nameCardOrNick(${group.id}.$id)"
+            else -> error("Illegal type for ContactOrBot: ${this::class.qualifiedNameOrTip}")
+        }
+    }
 }

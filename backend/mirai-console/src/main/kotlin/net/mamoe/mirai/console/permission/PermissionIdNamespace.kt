@@ -9,8 +9,6 @@
 
 package net.mamoe.mirai.console.permission
 
-@ExperimentalPermission
 public interface PermissionIdNamespace {
-    @ExperimentalPermission
     public fun permissionId(id: String): PermissionId
 }

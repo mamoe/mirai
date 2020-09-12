@@ -17,8 +17,8 @@ import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext.ParserPair
 import net.mamoe.mirai.console.permission.ExperimentalPermission
-import net.mamoe.mirai.console.permission.PermissibleIdentifier
 import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.*
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -85,7 +85,7 @@ public interface CommandArgumentContext {
         Bot::class with ExistingBotArgumentParser
 
         PermissionId::class with PermissionIdArgumentParser
-        PermissibleIdentifier::class with PermissibleIdentifierArgumentParser
+        PermitteeId::class with PermissibleIdentifierArgumentParser
     })
 }
 

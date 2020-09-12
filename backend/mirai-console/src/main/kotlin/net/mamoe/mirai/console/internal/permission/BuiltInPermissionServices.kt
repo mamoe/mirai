@@ -7,20 +7,33 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.permission
+package net.mamoe.mirai.console.internal.permission
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.PluginDataExtensions
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.data.value
+import net.mamoe.mirai.console.permission.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSuperclassOf
 
+@Suppress("unused") // don't pollute top-level
+@OptIn(ExperimentalPermission::class)
+internal fun PermissionService<*>.checkType(permissionType: KClass<out Permission>): PermissionService<Permission> {
+    require(this.permissionType.isSuperclassOf(permissionType)) {
+        "Custom-constructed Permission instance is not allowed (Required ${this.permissionType}, found ${permissionType}. " +
+                "Please obtain Permission from PermissionService.INSTANCE.register or PermissionService.INSTANCE.get"
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    return this as PermissionService<Permission>
+}
 
 @ExperimentalPermission
-internal object AllGrantPermissionService : PermissionService<PermissionImpl> {
+internal object AllPermitPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl> get() = PermissionImpl::class
     override val rootPermission: PermissionImpl get() = RootPermissionImpl.also { all[it.id] = it }
@@ -28,26 +41,26 @@ internal object AllGrantPermissionService : PermissionService<PermissionImpl> {
     override fun register(
         id: PermissionId,
         description: String,
-        parent: Permission
+        parent: Permission,
     ): PermissionImpl {
         val new = PermissionImpl(id, description, parent)
         val old = all.putIfAbsent(id, new)
-        if (old != null) throw DuplicatedPermissionRegistrationException(new, old)
+        if (old != null) throw PermissionRegistryConflictException(new, old)
         return new
     }
 
     override fun get(id: PermissionId): PermissionImpl? = all[id]
     override fun getRegisteredPermissions(): Sequence<PermissionImpl> = all.values.asSequence()
-    override fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<PermissionImpl> =
+    override fun getPermittedPermissions(permitteeId: PermitteeId): Sequence<PermissionImpl> =
         all.values.asSequence()
 
-    override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
+    override fun permit(permitteeId: PermitteeId, permission: PermissionImpl) {
     }
 
-    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl): Boolean =
+    override fun testPermission(permitteeId: PermitteeId, permission: PermissionImpl): Boolean =
         true
 
-    override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
+    override fun cancel(permitteeId: PermitteeId, permission: PermissionImpl, recursive: Boolean) {
     }
 }
 
@@ -65,26 +78,26 @@ internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
     override fun register(
         id: PermissionId,
         description: String,
-        parent: Permission
+        parent: Permission,
     ): PermissionImpl {
         val new = PermissionImpl(id, description, parent)
         val old = all.putIfAbsent(id, new)
-        if (old != null) throw DuplicatedPermissionRegistrationException(new, old)
+        if (old != null) throw PermissionRegistryConflictException(new, old)
         return new
     }
 
     override fun get(id: PermissionId): PermissionImpl? = all[id]
     override fun getRegisteredPermissions(): Sequence<PermissionImpl> = all.values.asSequence()
-    override fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<PermissionImpl> =
+    override fun getPermittedPermissions(permitteeId: PermitteeId): Sequence<PermissionImpl> =
         emptySequence()
 
-    override fun grant(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
+    override fun permit(permitteeId: PermitteeId, permission: PermissionImpl) {
     }
 
-    override fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl): Boolean =
+    override fun testPermission(permitteeId: PermitteeId, permission: PermissionImpl): Boolean =
         false
 
-    override fun deny(permissibleIdentifier: PermissibleIdentifier, permission: PermissionImpl) {
+    override fun cancel(permitteeId: PermitteeId, permission: PermissionImpl, recursive: Boolean) {
     }
 }
 
@@ -99,8 +112,8 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
     override val rootPermission: PermissionImpl = RootPermissionImpl.also { permissions[it.id] = it }
 
     @Suppress("UNCHECKED_CAST")
-    override val grantedPermissionsMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
-        get() = config.grantedPermissionMap as PluginDataExtensions.NotNullMutableMap<PermissionId, MutableCollection<PermissibleIdentifier>>
+    override val grantedPermissionsMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableCollection<PermitteeId>>
+        get() = config.grantedPermissionMap as PluginDataExtensions.NotNullMutableMap<PermissionId, MutableCollection<PermitteeId>>
 
     override fun createPermission(id: PermissionId, description: String, parent: Permission): PermissionImpl =
         PermissionImpl(id, description, parent)
@@ -112,10 +125,10 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
     @ExperimentalPermission
     internal class ConcurrentSaveData private constructor(
         public override val saveName: String,
-        @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?
+        @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?,
     ) : AutoSavePluginConfig() {
-        public val grantedPermissionMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableSet<AbstractPermissibleIdentifier>>
-                by value<MutableMap<PermissionId, MutableSet<AbstractPermissibleIdentifier>>>(ConcurrentHashMap())
+        public val grantedPermissionMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableSet<AbstractPermitteeId>>
+                by value<MutableMap<PermissionId, MutableSet<AbstractPermitteeId>>>(ConcurrentHashMap())
                     .withDefault { CopyOnWriteArraySet() }
 
         public companion object {
