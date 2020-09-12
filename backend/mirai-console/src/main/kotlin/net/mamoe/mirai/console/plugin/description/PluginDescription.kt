@@ -115,7 +115,7 @@ public interface PluginDescription {
          *
          * @see PluginDescription.id
          */
-        public val ID_REGEX: Regex = Regex("""([a-zA-Z]+[a-zA-Z0-9]*)\.([a-zA-Z]+[a-zA-Z0-9]*)""")
+        public val ID_REGEX: Regex = Regex("""([a-zA-Z]+(?:\.[a-zA-Z0-9]+)*)\.([a-zA-Z]+(?:-[a-zA-Z0-9]+)*)""")
 
         /**
          * 在 [PluginDescription.id] 和 [PluginDescription.name] 中禁止用的完全匹配名称列表.
@@ -137,7 +137,7 @@ public interface PluginDescription {
                 checkDependencies(instance.id, instance.dependencies)
             }.getOrElse {
                 throw IllegalPluginDescriptionException(
-                    "Illegal description. Plugin ${instance.name} (${instance.id})",
+                    "Illegal PluginDescription. Plugin ${instance.name} (${instance.id})",
                     it
                 )
             }
@@ -173,7 +173,7 @@ public interface PluginDescription {
         public fun checkPluginName(name: String) {
             if (name.isBlank()) throw IllegalPluginDescriptionException("Plugin name cannot be blank")
             val lowercaseName = name.toLowerCase()
-            FORBIDDEN_ID_NAMES.firstOrNull { it in lowercaseName }?.let { illegal ->
+            FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
                 throw IllegalPluginDescriptionException("Plugin name is illegal: '$illegal'.")
             }
         }
