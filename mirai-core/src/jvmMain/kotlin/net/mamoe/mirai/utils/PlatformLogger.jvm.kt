@@ -59,7 +59,7 @@ public actual open class PlatformLogger @JvmOverloads constructor(
      */
     @SinceMirai("1.1.0")
     protected open fun printLog(message: String?, priority: SimpleLogger.LogPriority) {
-        if (isColored) output("${priority.color}$currentTimeFormatted ${priority.simpleName}/$identity: $message")
+        if (isColored) output("${priority.color}$currentTimeFormatted ${priority.simpleName}/$identity: $message${Color.RESET}")
         else output("$currentTimeFormatted ${priority.simpleName}/$identity: $message")
     }
 
