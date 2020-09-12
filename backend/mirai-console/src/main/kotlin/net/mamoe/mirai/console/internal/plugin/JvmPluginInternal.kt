@@ -64,9 +64,7 @@ internal abstract class JvmPluginInternal(
     // region JvmPlugin
     final override val logger: MiraiLogger by lazy {
         BuiltInJvmPluginLoaderImpl.logger.runCatchingLog {
-            MiraiConsole.createLogger(
-                "Plugin ${this.description.name}"
-            )
+            MiraiConsole.createLogger(this.description.name)
         }.getOrThrow()
     }
 
