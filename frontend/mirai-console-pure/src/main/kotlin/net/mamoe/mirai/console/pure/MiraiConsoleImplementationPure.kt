@@ -17,7 +17,7 @@
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
     "EXPOSED_SUPER_CLASS"
 )
-@file:OptIn(ConsoleInternalApi::class, ConsoleFrontEndImplementation::class)
+@file:OptIn(ConsoleInternalApi::class, ConsoleFrontEndImplementation::class, ConsolePureExperimentalApi::class)
 
 package net.mamoe.mirai.console.pure
 
@@ -34,6 +34,8 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.pure.ConsoleInputImpl.requestInput
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.pure.noconsole.AllEmptyLineReader
+import net.mamoe.mirai.console.pure.noconsole.NoConsole
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.NamedSupervisorJob
@@ -115,6 +117,8 @@ private object ConsoleInputImpl : ConsoleInput {
 }
 
 val lineReader: LineReader by lazy {
+    if (ConsolePureSettings.noConsole) return@lazy AllEmptyLineReader
+
     LineReaderBuilder.builder()
         .terminal(terminal)
         .completer(NullCompleter())
@@ -122,6 +126,8 @@ val lineReader: LineReader by lazy {
 }
 
 val terminal: Terminal = run {
+    if (ConsolePureSettings.noConsole) return@run NoConsole
+
     val dumb = System.getProperty("java.class.path")
         .contains("idea_rt.jar") || System.getProperty("mirai.idea") !== null || System.getenv("mirai.idea") !== null
 

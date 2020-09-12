@@ -15,7 +15,7 @@
     "INVISIBLE_GETTER",
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
 )
-@file:OptIn(ConsoleInternalApi::class)
+@file:OptIn(ConsoleInternalApi::class, ConsolePureExperimentalApi::class)
 
 package net.mamoe.mirai.console.pure
 
@@ -26,6 +26,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
+import net.mamoe.mirai.console.pure.noconsole.SystemOutputPrintStream
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
@@ -33,6 +34,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.minutesToMillis
 import java.io.PrintStream
+import kotlin.system.exitProcess
 
 /**
  * mirai-console-pure CLI 入口点
@@ -40,6 +42,7 @@ import java.io.PrintStream
 object MiraiConsolePureLoader {
     @JvmStatic
     fun main(args: Array<String>) {
+        parse(args, exitProcess = true)
         startAsDaemon()
         try {
             runBlocking {
@@ -48,6 +51,97 @@ object MiraiConsolePureLoader {
         } catch (e: CancellationException) {
             // ignored
         }
+    }
+
+    @ConsolePureExperimentalApi
+    fun printHelpMessage() {
+        val help = listOf(
+            "" to "Mirai-Console[Pure FrontEnd] v" + kotlin.runCatching {
+                net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
+            }.getOrElse { "<unknown>" },
+            "" to "",
+            "--help" to "显示此帮助",
+            "" to "",
+            "--no-console" to "使用无终端操作环境",
+            "--dont-setup-terminal-ansi" to
+                    "[NoConsole] [Windows Only] 不进行ansi console初始化工作",
+            "--no-ansi" to "[NoConsole] 禁用 ansi",
+            "--safe-reading" to
+                    "[NoConsole] 如果启动此选项, console在获取用户输入的时候会获得一个安全的替换符\n" +
+                    "            如果不启动, 将会直接 error",
+            "--reading-replacement <string>" to
+                    "[NoConsole] Console尝试读取命令的替换符, 默认是空字符串\n" +
+                    "            使用此选项会自动开启 --safe-reading",
+        )
+        val prefixPlaceholder = String(CharArray(
+            help.maxOfOrNull { it.first.length }!! + 3
+        ) { ' ' })
+
+        fun printOption(optionName: String, value: String) {
+            if (optionName == "") {
+                println(value)
+                return
+            }
+            print(optionName)
+            print(prefixPlaceholder.substring(optionName.length))
+            val lines = value.split('\n').iterator()
+            if (lines.hasNext()) println(lines.next())
+            lines.forEach { line ->
+                print(prefixPlaceholder)
+                println(line)
+            }
+        }
+        help.forEach { (optionName, value) ->
+            printOption(optionName, value)
+        }
+    }
+
+    @ConsolePureExperimentalApi
+    fun parse(args: Array<String>, exitProcess: Boolean = false) {
+        val iterator = args.iterator()
+        while (iterator.hasNext()) {
+            when (val option = iterator.next()) {
+                "--help" -> {
+                    printHelpMessage()
+                    if (exitProcess) exitProcess(0)
+                    return
+                }
+                "--no-console" -> {
+                    ConsolePureSettings.noConsole = true
+                }
+                "--dont-setup-terminal-ansi" -> {
+                    ConsolePureSettings.setupAnsi = false
+                }
+                "--no-ansi" -> {
+                    ConsolePureSettings.noAnsi = true
+                    ConsolePureSettings.setupAnsi = false
+                }
+                "--reading-replacement" -> {
+                    ConsolePureSettings.noConsoleSafeReading = true
+                    if (iterator.hasNext()) {
+                        ConsolePureSettings.noConsoleReadingReplacement = iterator.next()
+                    } else {
+                        println("Bad option `--reading-replacement`")
+                        println("Usage: --reading-replacement <string>")
+                        if (exitProcess)
+                            exitProcess(1)
+                        return
+                    }
+                }
+                "--safe-reading" -> {
+                    ConsolePureSettings.noConsoleSafeReading = true
+                }
+                else -> {
+                    println("Unknown option `$option`")
+                    printHelpMessage()
+                    if (exitProcess)
+                        exitProcess(1)
+                    return
+                }
+            }
+        }
+        if (ConsolePureSettings.noConsole)
+            SystemOutputPrintStream // Setup Output Channel
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
