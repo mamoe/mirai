@@ -146,11 +146,9 @@ public class JvmPluginDescriptionBuilder(
     public fun dependsOn(
         pluginId: String,
         isOptional: Boolean = false,
-        versionRequirement: VersionRequirement? = null,
+        versionRequirement: VersionRequirement,
     ): JvmPluginDescriptionBuilder = apply {
-        if (versionRequirement == null)
-            this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
-        else this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
+        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
     }
 
     /**
@@ -161,11 +159,9 @@ public class JvmPluginDescriptionBuilder(
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
         pluginId: String,
-        versionRequirement: VersionRequirement? = null,
+        versionRequirement: VersionRequirement,
     ): JvmPluginDescriptionBuilder = apply {
-        if (versionRequirement == null)
-            this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
-        else this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
+        this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
     }
 
     /**
@@ -178,7 +174,7 @@ public class JvmPluginDescriptionBuilder(
         pluginId: String,
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
-        dependsOn(pluginId, isOptional, null)
+        this.dependencies.add(PluginDependency(pluginId, null, isOptional))
     }
 
     /**
