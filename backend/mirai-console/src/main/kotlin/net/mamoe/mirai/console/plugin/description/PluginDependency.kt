@@ -36,6 +36,14 @@ public data class PluginDependency @JvmOverloads constructor(
      */
     public val isOptional: Boolean = false
 ) {
+    init {
+        kotlin.runCatching {
+            PluginDescription.checkPluginId(id)
+        }.getOrElse {
+            throw IllegalArgumentException(it)
+        }
+    }
+
     /**
      * @see PluginDependency
      */
