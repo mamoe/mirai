@@ -14,9 +14,7 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
 
 /**
  * 复合指令. 指令注册时候会通过反射构造指令解析器.
@@ -68,8 +66,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  *
  * @see buildCommandArgumentContext
  */
-@ConsoleExperimentalAPI
-public abstract class JCompositeCommand @OptIn(ExperimentalPermission::class)
+public abstract class JCompositeCommand
 @JvmOverloads constructor(
     owner: CommandOwner,
     vararg names: String,
@@ -79,7 +76,6 @@ public abstract class JCompositeCommand @OptIn(ExperimentalPermission::class)
     public final override var description: String = "<no descriptions given>"
         protected set
 
-    @OptIn(ExperimentalPermission::class)
     public final override var permission: Permission = super.permission
         protected set
 

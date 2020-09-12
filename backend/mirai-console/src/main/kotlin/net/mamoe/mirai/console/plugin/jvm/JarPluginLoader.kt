@@ -13,23 +13,23 @@ import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.plugin.JarPluginLoaderImpl
 import net.mamoe.mirai.console.plugin.FilePluginLoader
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 内建的 Jar (JVM) 插件加载器
  */
-@ConsoleExperimentalAPI("classname might change")
+@ConsoleExperimentalApi("classname might change")
 public interface JarPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
     /**
      * [JvmPlugin.reloadPluginData] 默认使用的实例
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public val dataStorage: PluginDataStorage
 
     /**
      * [JvmPlugin.reloadPluginData] 默认使用的实例
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public val configStorage: PluginDataStorage
 
     public companion object INSTANCE : JarPluginLoader by JarPluginLoaderImpl {

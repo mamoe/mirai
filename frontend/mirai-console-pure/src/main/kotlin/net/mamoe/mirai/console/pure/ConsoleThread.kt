@@ -20,14 +20,14 @@ import net.mamoe.mirai.console.command.CommandExecuteStatus
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.ConsoleCommandSender
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.utils.DefaultLogger
 import org.jline.reader.UserInterruptException
 
 val consoleLogger by lazy { DefaultLogger("console") }
 
-@OptIn(ConsoleInternalAPI::class, ConsolePureExperimentalAPI::class)
+@OptIn(ConsoleInternalApi::class, ConsolePureExperimentalAPI::class)
 internal fun startupConsoleThread() {
     if (ConsolePureSettings.noConsole) return
 
@@ -36,6 +36,7 @@ internal fun startupConsoleThread() {
             try {
                 val next = MiraiConsole.requestInput("").let {
                     when {
+                        it.isBlank() -> it
                         it.startsWith(CommandManager.commandPrefix) -> it
                         it == "?" -> CommandManager.commandPrefix + BuiltInCommands.HelpCommand.primaryName
                         else -> CommandManager.commandPrefix + it

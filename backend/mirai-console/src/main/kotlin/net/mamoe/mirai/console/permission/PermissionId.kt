@@ -11,19 +11,19 @@ package net.mamoe.mirai.console.permission
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.internal.data.map
 
 
 /**
+ * 表示一个 [权限][Permission] 的唯一 ID.
+ *
  * [PermissionId] 与 [Permission] 唯一对应.
  */
-@Serializable(with = PermissionId.AsStringSerializer::class)
-@ExperimentalPermission
+@Serializable(with = PermissionId.PermissionIdAsStringSerializer::class)
 public data class PermissionId(
     public val namespace: String,
-    public val id: String
+    public val id: String,
 ) {
     init {
         require(!namespace.contains(':')) {
@@ -34,21 +34,30 @@ public data class PermissionId(
         }
     }
 
-    @Serializer(forClass = PermissionId::class)
-    public object AsClassSerializer
-
-    public object AsStringSerializer : KSerializer<PermissionId> by String.serializer().map(
+    public object PermissionIdAsStringSerializer : KSerializer<PermissionId> by String.serializer().map(
         serializer = { it.namespace + ":" + it.id },
         deserializer = { it.split(':').let { (namespace, id) -> PermissionId(namespace, id) } }
     )
 
-    public override fun toString(): String {
-        return "$namespace:$id"
-    }
+    /**
+     * 返回 `$namespace:$id`
+     */
+    public override fun toString(): String = "$namespace:$id"
 
     public companion object {
-        public fun parseFromString(string: String): PermissionId =
-            string.split(':').let { (namespace, id) -> PermissionId(namespace, id) }
+        /**
+         * 由 `$namespace:$id` 解析 [PermissionId].
+         *
+         * @throws IllegalArgumentException 在解析失败时抛出.
+         */
+        @JvmStatic
+        public fun parseFromString(string: String): PermissionId {
+            return kotlin.runCatching {
+                string.split(':').let { (namespace, id) -> PermissionId(namespace, id) }
+            }.getOrElse {
+                throw IllegalArgumentException("Could not parse PermissionId from '$string'", it)
+            }
+        }
     }
 }
 

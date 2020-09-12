@@ -11,14 +11,14 @@ package net.mamoe.mirai.console.plugin.center
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import java.io.File
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PluginCenter {
 
     @Serializable
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public data class PluginInsight(
         val name: String,
         val version: String,
@@ -32,7 +32,7 @@ public interface PluginCenter {
         val commands: List<String>
     )
 
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     @Serializable
     public data class PluginInfo(
         val name: String,

@@ -14,7 +14,6 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 
 /**
@@ -40,7 +39,7 @@ import net.mamoe.mirai.console.permission.Permission
  * @see SimpleCommand
  * @see [CommandManager.executeCommand]
  */
-public abstract class JSimpleCommand @OptIn(ExperimentalPermission::class) constructor(
+public abstract class JSimpleCommand(
     owner: CommandOwner,
     vararg names: String,
     basePermission: Permission,
@@ -48,7 +47,6 @@ public abstract class JSimpleCommand @OptIn(ExperimentalPermission::class) const
     public override var description: String = super.description
         protected set
 
-    @ExperimentalPermission
     public override var permission: Permission = super.permission
         protected set
     public override var prefixOptional: Boolean = super.prefixOptional

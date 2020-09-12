@@ -14,15 +14,15 @@ package net.mamoe.mirai.console.permission
 import net.mamoe.mirai.console.command.CommandSender
 
 /**
- * 可拥有权限的对象.
+ * 可被赋予权限的对象, 即 '被许可人'.
  *
- * 典型的实例为 [CommandSender]
+ * 被许可人自身不持有拥有的权限列表, 而是拥有 [PermitteeId], 标识自己的身份, 供 [权限服务][PermissionService] 处理.
  *
- * 注意: 请不要自主实现 [Permissible]
+ * **注意**: 请不要自主实现 [Permittee]
  *
  * @see CommandSender
  */
-@ExperimentalPermission
-public interface Permissible {
-    public val identifier: PermissibleIdentifier
+@PermissionImplementation
+public interface Permittee {
+    public val permitteeId: PermitteeId
 }

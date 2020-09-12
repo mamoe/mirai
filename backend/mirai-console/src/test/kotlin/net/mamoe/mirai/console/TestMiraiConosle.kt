@@ -18,9 +18,9 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LoginSolver
@@ -32,12 +32,12 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.test.assertNotNull
 
-@OptIn(ConsoleInternalAPI::class)
+@OptIn(ConsoleInternalApi::class)
 fun initTestEnvironment() {
     object : MiraiConsoleImplementation {
         override val rootPath: Path = createTempDir().toPath()
 
-        @ConsoleExperimentalAPI
+        @ConsoleExperimentalApi
         override val frontEndDescription: MiraiConsoleFrontEndDescription
             get() = object : MiraiConsoleFrontEndDescription {
                 override val name: String

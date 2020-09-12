@@ -13,7 +13,6 @@ package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import java.io.File
@@ -31,14 +30,11 @@ import java.util.*
  *
  * ## 扩展加载器
  * 插件被允许扩展一个加载器.
- * Console 使用 [ServiceLoader] 加载 [PluginLoader] 的实例.
- * 插件也可通过 [PluginManager.register] 手动注册, 然而这是不推荐的.
  *
  * ### 实现扩展加载器
  * 直接实现接口 [PluginLoader] 或 [FilePluginLoader], 并添加 [ServiceLoader] 相关资源文件即可.
  *
  * @see JarPluginLoader Jar 插件加载器
- * @see PluginManager.register 注册一个扩展的插件加载器
  */
 public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**

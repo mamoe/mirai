@@ -14,7 +14,6 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
@@ -45,7 +44,7 @@ import net.mamoe.mirai.message.data.SingleMessage
  *
  * @see JRawCommand
  */
-public abstract class JRawCommand @OptIn(ExperimentalPermission::class)
+public abstract class JRawCommand
 @JvmOverloads constructor(
     /**
      * 指令拥有者.
@@ -65,7 +64,6 @@ public abstract class JRawCommand @OptIn(ExperimentalPermission::class)
         protected set
 
     /** 指令权限 */
-    @ExperimentalPermission
     public final override var permission: Permission = createOrFindCommandPermission(parentPermission)
         protected set
 

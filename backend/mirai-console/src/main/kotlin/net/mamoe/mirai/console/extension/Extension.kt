@@ -12,18 +12,19 @@ package net.mamoe.mirai.console.extension
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.extensions.SingletonExtensionSelector.ExtensionPoint.selectSingleton
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 表示一个扩展.
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface Extension
 
 /**
  * 增加一些函数 (方法)的扩展
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface FunctionExtension : Extension
 
 /**
@@ -33,7 +34,7 @@ public interface FunctionExtension : Extension
  *
  * @see PermissionServiceProvider
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface SingletonExtension<T> : Extension {
     public val instance: T
 }
@@ -43,7 +44,7 @@ public interface SingletonExtension<T> : Extension {
  *
  * @see PluginLoaderProvider
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface InstanceExtension<T> : Extension {
     public val instance: T
 }

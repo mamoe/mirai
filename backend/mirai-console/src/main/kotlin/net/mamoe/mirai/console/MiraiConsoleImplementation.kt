@@ -37,8 +37,8 @@ import kotlin.coroutines.CoroutineContext
  *
  * 这些 API 只应由前端实现者使用, 而不应该被插件或其他调用者使用.
  */
-@Retention(AnnotationRetention.SOURCE)
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
 public annotation class ConsoleFrontEndImplementation

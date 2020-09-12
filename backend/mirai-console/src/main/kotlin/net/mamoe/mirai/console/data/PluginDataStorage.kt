@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.internal.data.MemoryPluginDataStorageImpl
 import net.mamoe.mirai.console.internal.data.MultiFilePluginDataStorageImpl
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import java.io.File
 import java.nio.file.Path
 
@@ -33,12 +33,12 @@ import java.nio.file.Path
  * @see PluginDataHolder
  * @see JarPluginLoader.dataStorage
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PluginDataStorage {
     /**
      * 读取一个实例. 并为 [instance] [设置 [PluginDataStorage]][PluginData.onInit]
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun load(holder: PluginDataHolder, instance: PluginData)
 
     /**
@@ -46,7 +46,7 @@ public interface PluginDataStorage {
      *
      * **实现细节**: 调用 [PluginData.updaterSerializer]
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun store(holder: PluginDataHolder, instance: PluginData)
 
     /*
@@ -96,7 +96,7 @@ public companion object {
  * 在内存存储所有 [PluginData] 实例的 [PluginDataStorage]. 在内存数据丢失后相关 [PluginData] 实例也会丢失.
  * @see PluginDataStorage
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface MemoryPluginDataStorage : PluginDataStorage {
     public companion object {
         /**
@@ -112,7 +112,7 @@ public interface MemoryPluginDataStorage : PluginDataStorage {
 /**
  * 用多个文件存储 [PluginData] 实例的 [PluginDataStorage].
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface MultiFilePluginDataStorage : PluginDataStorage {
     /**
      * 存放 [PluginData] 的目录.

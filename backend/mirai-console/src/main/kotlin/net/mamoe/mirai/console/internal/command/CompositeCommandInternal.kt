@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.message.data.*
@@ -46,13 +45,13 @@ internal object SimpleCommandSubCommandAnnotationResolver :
         baseCommand.names
 }
 
-internal abstract class AbstractReflectionCommand @OptIn(ExperimentalPermission::class)
+internal abstract class AbstractReflectionCommand
 @JvmOverloads constructor(
     owner: CommandOwner,
     names: Array<out String>,
     description: String = "<no description available>",
     parentPermission: Permission = owner.parentPermission,
-    prefixOptional: Boolean = false
+    prefixOptional: Boolean = false,
 ) : Command, AbstractCommand(
     owner,
     names = names,
@@ -120,27 +119,26 @@ internal abstract class AbstractReflectionCommand @OptIn(ExperimentalPermission:
         }
     }
 
-    internal class DefaultSubCommandDescriptor @OptIn(ExperimentalPermission::class) constructor(
+    internal class DefaultSubCommandDescriptor(
         val description: String,
         val permission: Permission,
-        val onCommand: suspend (sender: CommandSender, rawArgs: MessageChain) -> Unit
+        val onCommand: suspend (sender: CommandSender, rawArgs: MessageChain) -> Unit,
     )
 
-    internal inner class SubCommandDescriptor @OptIn(ExperimentalPermission::class) constructor(
+    internal inner class SubCommandDescriptor(
         val names: Array<out String>,
         val params: Array<CommandParameter<*>>,
         val description: String,
         val permission: Permission,
         val onCommand: suspend (sender: CommandSender, parsedArgs: Array<out Any>) -> Boolean,
-        val context: CommandArgumentContext
+        val context: CommandArgumentContext,
     ) {
         val usage: String = createUsage(this@AbstractReflectionCommand)
 
-        @OptIn(ExperimentalPermission::class)
         internal suspend fun parseAndExecute(
             sender: CommandSender,
             argsWithSubCommandNameNotRemoved: MessageChain,
-            removeSubName: Boolean
+            removeSubName: Boolean,
         ) {
             val args = parseArgs(sender, argsWithSubCommandNameNotRemoved, if (removeSubName) 1 else 0)
             if (!this.permission.testPermission(sender)) {
@@ -251,7 +249,6 @@ internal fun AbstractReflectionCommand.SubCommandDescriptor.createUsage(baseComm
         appendLine()
     }.trimEnd()
 
-@OptIn(ExperimentalPermission::class)
 internal fun AbstractReflectionCommand.createSubCommand(
     function: KFunction<*>,
     context: CommandArgumentContext

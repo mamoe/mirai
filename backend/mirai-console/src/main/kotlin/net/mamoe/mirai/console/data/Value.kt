@@ -16,7 +16,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.data.setValueBySerializer
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -212,7 +212,7 @@ public interface StringValue : PrimitiveValue<String>
 /**
  * 复合数据类型实现
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface CompositeValue<T> : Value<T>
 
 
@@ -227,7 +227,7 @@ public interface ListValue<E> : CompositeValue<List<E>>
  *
  * @param E 不是基础数据类型
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface CompositeListValue<E> : ListValue<E>
 
 /**
@@ -235,16 +235,16 @@ public interface CompositeListValue<E> : ListValue<E>
  *
  * @param E 是基础类型
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveListValue<E> : ListValue<E>
 
 
 //// region PrimitiveListValue CODEGEN ////
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveIntListValue : PrimitiveListValue<Int>
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveLongListValue : PrimitiveListValue<Long>
 // TODO + codegen
 
@@ -255,30 +255,30 @@ public interface PrimitiveLongListValue : PrimitiveListValue<Long>
  * @see [CompositeSetValue]
  * @see [PrimitiveSetValue]
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface SetValue<E> : CompositeValue<Set<E>>
 
 /**
  * 复合数据类型 [Set]
  * @param E 是基础数据类型
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface CompositeSetValue<E> : SetValue<E>
 
 /**
  * 基础数据类型 [Set]
  * @param E 是基础数据类型
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveSetValue<E> : SetValue<E>
 
 
 //// region PrimitiveSetValue CODEGEN ////
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveIntSetValue : PrimitiveSetValue<Int>
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveLongSetValue : PrimitiveSetValue<Long>
 // TODO + codegen
 
@@ -289,27 +289,27 @@ public interface PrimitiveLongSetValue : PrimitiveSetValue<Long>
  * @see [CompositeMapValue]
  * @see [PrimitiveMapValue]
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface MapValue<K, V> : CompositeValue<Map<K, V>>
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface CompositeMapValue<K, V> : MapValue<K, V>
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveMapValue<K, V> : MapValue<K, V>
 
 
 //// region PrimitiveMapValue CODEGEN ////
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveIntIntMapValue : PrimitiveMapValue<Int, Int>
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PrimitiveIntLongMapValue : PrimitiveMapValue<Int, Long>
 // TODO + codegen
 
 //// endregion PrimitiveSetValue CODEGEN ////
 
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface ReferenceValue<T> : Value<T>

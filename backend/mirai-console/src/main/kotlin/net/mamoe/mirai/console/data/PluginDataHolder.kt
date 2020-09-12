@@ -11,7 +11,7 @@
 
 package net.mamoe.mirai.console.data
 
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 可以持有相关 [PluginData] 实例的对象, 作为 [PluginData] 实例的拥有者.
@@ -21,12 +21,12 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  *
  * @see AutoSavePluginDataHolder 支持自动保存
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface PluginDataHolder {
     /**
      * 保存时使用的分类名
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public val dataHolderName: String
 }
 
