@@ -518,13 +518,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             }
         }
 
-        packetListeners.forEach { listener ->
-            if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
-                listener.complete(packet)
-            }
-        }
-
         packetFactory?.run {
+            packetListeners.forEach { listener ->
+                if (listener.filter(commandName, sequenceId) && packetListeners.remove(listener)) {
+                    listener.complete(packet)
+                }
+            }
+
             when (this) {
                 is OutgoingPacketFactory<P> -> bot.handle(packet)
                 is IncomingPacketFactory<P> -> bot.handle(packet, sequenceId)?.sendWithoutExpect()
