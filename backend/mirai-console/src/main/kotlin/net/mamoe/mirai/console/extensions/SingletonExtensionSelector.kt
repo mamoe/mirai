@@ -14,7 +14,6 @@ import net.mamoe.mirai.console.extension.*
 import net.mamoe.mirai.console.internal.extensions.BuiltInSingletonExtensionSelector
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.name
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.info
 import kotlin.reflect.KClass
 
@@ -23,7 +22,6 @@ import kotlin.reflect.KClass
  *
  * 如有多个 [SingletonExtensionSelector] 注册, 将会停止服务器.
  */
-@ConsoleExperimentalApi
 public interface SingletonExtensionSelector : FunctionExtension {
     public data class Registry<T : Extension>(
         val plugin: Plugin,

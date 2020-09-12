@@ -18,7 +18,7 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.console.extension.ScopedComponentStorage
+import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.permission.PermissionIdNamespace
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginFileExtensions
@@ -53,11 +53,13 @@ public interface JvmPlugin : Plugin, CoroutineScope,
     /**
      * 在插件被加载时调用. 只会被调用一次.
      *
-     * 在 [onLoad] 时可注册扩展 [ScopedComponentStorage.contribute]
+     * 在 [onLoad] 时可注册扩展 [PluginComponentStorage.contribute]
+     *
+     * @see PluginComponentStorage 查看更多信息
      *
      * @receiver 组件容器
      */
-    public fun @ParameterName("storage") ScopedComponentStorage.onLoad() {}
+    public fun PluginComponentStorage.onLoad() {}
 
     /**
      * 在插件被启用时调用, 可能会被调用多次
@@ -71,6 +73,6 @@ public interface JvmPlugin : Plugin, CoroutineScope,
 
     public companion object {
         @JvmSynthetic
-        public inline fun JvmPlugin.onLoad(storage: ScopedComponentStorage): Unit = storage.onLoad()
+        public inline fun JvmPlugin.onLoad(storage: PluginComponentStorage): Unit = storage.onLoad()
     }
 }

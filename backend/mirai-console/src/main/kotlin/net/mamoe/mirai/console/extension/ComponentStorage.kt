@@ -1,24 +1,31 @@
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
 
 package net.mamoe.mirai.console.extension
 
-import net.mamoe.mirai.console.extensions.LazyPermissionServiceProviderImpl
-import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector.ExtensionPoint.selectSingleton
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
-import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
 import net.mamoe.mirai.console.plugin.name
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.contracts.contract
-import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
-import kotlin.reflect.full.companionObjectInstance
 
 /**
  * 组件容器, 容纳 [Plugin] 注册的 [Extension].
+ *
+ * @see Extension
+ * @see JvmPlugin.onLoad
  */
 public interface ComponentStorage {
     public fun <T : Extension> contribute(
@@ -32,45 +39,6 @@ public interface ComponentStorage {
         plugin: Plugin,
         lazyInstance: () -> T,
     )
-}
-
-@Suppress("EXPOSED_SUPER_CLASS")
-public class ScopedComponentStorage(
-    @JvmField
-    internal val plugin: Plugin,
-) : AbstractConcurrentComponentStorage() {
-    /**
-     * 注册一个扩展
-     */
-    public fun <E : Extension> contribute(
-        extensionPoint: ExtensionPoint<E>,
-        lazyInstance: () -> E,
-    ) {
-        contribute(extensionPoint, plugin, lazyInstance)
-    }
-
-    /**
-     * 注册一个扩展
-     */
-    public inline fun <reified E : Extension> contribute(
-        noinline lazyInstance: () -> E,
-    ) {
-        @Suppress("UNCHECKED_CAST")
-        (contribute(
-            (E::class.companionObjectInstance as? ExtensionPoint<E>
-                ?: error("Companion object of ${E::class.qualifiedName} is not an ExtensionPoint")),
-            lazyInstance
-        ))
-    }
-
-    /**
-     * 注册一个 [PermissionService]
-     */
-    public fun contributePermissionService(
-        lazyInstance: () -> PermissionService<*>,
-    ) {
-        contribute(PermissionServiceProvider, plugin, LazyPermissionServiceProviderImpl(lazyInstance))
-    }
 }
 
 internal object GlobalComponentStorage : AbstractConcurrentComponentStorage()
@@ -120,7 +88,8 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
         return withExtensions { _ -> block() }
     }
 
-    @LowPriorityInOverloadResolution
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
     internal inline fun <T : Extension> ExtensionPoint<out T>.withExtensions(block: T.(plugin: Plugin) -> Unit) {
         contract {
             callsInPlace(block)
@@ -193,7 +162,8 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
     internal inline fun <T : Extension> ExtensionPoint<T>.useExtensions(block: (extension: T) -> Unit): Unit =
         withExtensions(block)
 
-    @LowPriorityInOverloadResolution
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    @kotlin.internal.LowPriorityInOverloadResolution
     internal inline fun <T : Extension> ExtensionPoint<T>.useExtensions(block: (extension: T, plugin: Plugin) -> Unit): Unit =
         withExtensions(block)
 

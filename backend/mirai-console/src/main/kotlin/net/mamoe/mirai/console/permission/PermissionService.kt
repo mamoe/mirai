@@ -24,6 +24,7 @@ import kotlin.reflect.KClass
  *
  * [PermissionServiceProvider]
  */
+@PermissionImplementation
 public interface PermissionService<P : Permission> {
     /**
      * [P] 的类型

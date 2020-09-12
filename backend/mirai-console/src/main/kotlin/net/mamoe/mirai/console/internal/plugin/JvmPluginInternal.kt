@@ -14,7 +14,7 @@ import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.runCatchingLog
-import net.mamoe.mirai.console.extension.ScopedComponentStorage
+import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
@@ -46,7 +46,7 @@ internal abstract class JvmPluginInternal(
 ) : JvmPlugin, CoroutineScope {
 
     @Suppress("LeakingThis")
-    internal val componentStorage: ScopedComponentStorage = ScopedComponentStorage(this)
+    internal val componentStorage: PluginComponentStorage = PluginComponentStorage(this)
 
     final override val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
@@ -104,7 +104,7 @@ internal abstract class JvmPluginInternal(
     }
 
     @Throws(Throwable::class)
-    internal fun internalOnLoad(componentStorage: ScopedComponentStorage) {
+    internal fun internalOnLoad(componentStorage: PluginComponentStorage) {
         onLoad(componentStorage)
     }
 
