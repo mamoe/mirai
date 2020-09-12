@@ -17,7 +17,7 @@
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
     "EXPOSED_SUPER_CLASS"
 )
-@file:OptIn(ConsoleInternalApi::class, ConsoleFrontEndImplementation::class, ConsolePureExperimentalAPI::class)
+@file:OptIn(ConsoleInternalApi::class, ConsoleFrontEndImplementation::class, ConsolePureExperimentalApi::class)
 
 package net.mamoe.mirai.console.pure
 

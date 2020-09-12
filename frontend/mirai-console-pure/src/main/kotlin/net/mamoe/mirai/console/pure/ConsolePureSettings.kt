@@ -23,9 +23,9 @@ package net.mamoe.mirai.console.pure
     AnnotationTarget.CONSTRUCTOR
 )
 @MustBeDocumented
-annotation class ConsolePureExperimentalAPI
+annotation class ConsolePureExperimentalApi
 
-@ConsolePureExperimentalAPI
+@ConsolePureExperimentalApi
 public object ConsolePureSettings {
     @JvmField
     var setupAnsi: Boolean = System.getProperty("os.name")

@@ -10,11 +10,11 @@
 /*
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
-@file:OptIn(ConsolePureExperimentalAPI::class)
+@file:OptIn(ConsolePureExperimentalApi::class)
 
 package net.mamoe.mirai.console.pure.noconsole
 
-import net.mamoe.mirai.console.pure.ConsolePureExperimentalAPI
+import net.mamoe.mirai.console.pure.ConsolePureExperimentalApi
 import net.mamoe.mirai.console.pure.ConsolePureSettings
 import org.jline.keymap.KeyMap
 import org.jline.reader.*
@@ -38,8 +38,7 @@ internal object NoConsoleNonBlockingReader : NonBlockingReader() {
         return LN_INT
     }
 
-    override fun close() {
-    }
+    override fun close() {}
 
     override fun readBuffered(b: CharArray?): Int {
         return 0
@@ -47,13 +46,9 @@ internal object NoConsoleNonBlockingReader : NonBlockingReader() {
 }
 
 internal object AllNextLineInputStream : InputStream() {
-    override fun read(): Int {
-        return LN_INT
-    }
+    override fun read(): Int = LN_INT
 
-    override fun available(): Int {
-        return 1
-    }
+    override fun available(): Int = 1
 
     override fun read(b: ByteArray, off: Int, len: Int): Int {
         for (i in off until (off + len)) {
@@ -62,28 +57,19 @@ internal object AllNextLineInputStream : InputStream() {
         return len
     }
 
-    override fun close() {
-    }
+    override fun close() {}
 }
 
 internal object AllIgnoredOutputStream : OutputStream() {
-    override fun close() {
-    }
-
-    override fun write(b: ByteArray, off: Int, len: Int) {
-    }
-
-    override fun write(b: ByteArray) {
-    }
-
-    override fun write(b: Int) {
-    }
-
-    override fun flush() {
-    }
+    override fun close() {}
+    override fun write(b: ByteArray, off: Int, len: Int) {}
+    override fun write(b: ByteArray) {}
+    override fun write(b: Int) {}
+    override fun flush() {}
 }
 
 internal val SystemOutputPrintStream by lazy {
+    @OptIn(ConsolePureExperimentalApi::class)
     if (ConsolePureSettings.setupAnsi) {
         org.fusesource.jansi.AnsiConsole.systemInstall()
     }
@@ -95,12 +81,13 @@ internal object AllEmptyLineReader : LineReader {
 
     override fun printAbove(str: String?) {
         if (str == null) return
+        @OptIn(ConsolePureExperimentalApi::class)
         if (ConsolePureSettings.noAnsi) {
             SystemOutputPrintStream.println(ANSI_REGEX.replace(str, ""))
         } else SystemOutputPrintStream.println(str)
     }
 
-    @OptIn(ConsolePureExperimentalAPI::class)
+    @OptIn(ConsolePureExperimentalApi::class)
     override fun readLine(): String =
         if (ConsolePureSettings.noConsoleSafeReading) ConsolePureSettings.noConsoleReadingReplacement
         else error("Unsupported Reading line when console front-end closed.")
@@ -111,13 +98,13 @@ internal object AllEmptyLineReader : LineReader {
     override fun readLine(prompt: String?): String = readLine()
     override fun readLine(prompt: String?, mask: Char?): String = readLine()
     override fun readLine(prompt: String?, mask: Char?, buffer: String?): String = readLine()
-    override fun readLine(prompt: String?, rightPrompt: String?, mask: Char?, buffer: String?): String = ""
+    override fun readLine(prompt: String?, rightPrompt: String?, mask: Char?, buffer: String?): String = readLine()
     override fun readLine(
         prompt: String?,
         rightPrompt: String?,
         maskingCallback: MaskingCallback?,
         buffer: String?
-    ): String = ""
+    ): String = readLine()
 
     override fun printAbove(str: AttributedString?) {
         str?.let { printAbove(it.toAnsi()) }

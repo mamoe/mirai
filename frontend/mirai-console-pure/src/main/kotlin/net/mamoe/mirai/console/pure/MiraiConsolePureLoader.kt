@@ -15,7 +15,7 @@
     "INVISIBLE_GETTER",
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
 )
-@file:OptIn(ConsoleInternalApi::class, ConsolePureExperimentalAPI::class)
+@file:OptIn(ConsoleInternalApi::class, ConsolePureExperimentalApi::class)
 
 package net.mamoe.mirai.console.pure
 
@@ -53,7 +53,7 @@ object MiraiConsolePureLoader {
         }
     }
 
-    @ConsolePureExperimentalAPI
+    @ConsolePureExperimentalApi
     fun printHelpMessage() {
         val help = listOf(
             "" to "Mirai-Console[Pure FrontEnd] v" + kotlin.runCatching {
@@ -96,7 +96,7 @@ object MiraiConsolePureLoader {
         }
     }
 
-    @ConsolePureExperimentalAPI
+    @ConsolePureExperimentalApi
     fun parse(args: Array<String>, exitProcess: Boolean = false) {
         val iterator = args.iterator()
         while (iterator.hasNext()) {

@@ -27,7 +27,7 @@ import org.jline.reader.UserInterruptException
 
 val consoleLogger by lazy { DefaultLogger("console") }
 
-@OptIn(ConsoleInternalApi::class, ConsolePureExperimentalAPI::class)
+@OptIn(ConsoleInternalApi::class, ConsolePureExperimentalApi::class)
 internal fun startupConsoleThread() {
     if (ConsolePureSettings.noConsole) return
 
