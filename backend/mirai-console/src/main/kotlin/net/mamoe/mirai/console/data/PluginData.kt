@@ -176,9 +176,7 @@ public interface PluginData {
     ): T
 
     /**
-     * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用
-     *
-     * @suppress 注意, 这是实验性 API.
+     * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用。
      */
     public val updaterSerializer: KSerializer<Unit>
 

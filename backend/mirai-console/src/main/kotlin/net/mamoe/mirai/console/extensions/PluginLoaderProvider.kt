@@ -10,11 +10,14 @@
 package net.mamoe.mirai.console.extensions
 
 import net.mamoe.mirai.console.extension.AbstractExtensionPoint
+import net.mamoe.mirai.console.extension.Extension
 import net.mamoe.mirai.console.extension.InstanceExtension
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 
 /**
  * 提供扩展 [PluginLoader]
+ *
+ * @see Extension
  */
 public interface PluginLoaderProvider : InstanceExtension<PluginLoader<*, *>> {
     public companion object ExtensionPoint : AbstractExtensionPoint<PluginLoaderProvider>(PluginLoaderProvider::class)
