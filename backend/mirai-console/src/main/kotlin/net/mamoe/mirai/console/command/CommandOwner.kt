@@ -36,5 +36,5 @@ public interface CommandOwner : PermissionIdNamespace {
 internal object ConsoleCommandOwner : CommandOwner {
     override val parentPermission: Permission get() = BuiltInCommands.parentPermission
 
-    override fun permissionId(name: String): PermissionId = PermissionId("console", name)
+    override fun permissionId(name: String): PermissionId = PermissionId("console", "command.$name")
 }

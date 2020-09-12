@@ -20,7 +20,6 @@ import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.denyPermission
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
@@ -51,7 +50,7 @@ public object BuiltInCommands {
     @ConsoleExperimentalApi
     public val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
-            PermissionId("console", "*"),
+            ConsoleCommandOwner.permissionId("*"),
             "The parent of any built-in commands"
         )
     }

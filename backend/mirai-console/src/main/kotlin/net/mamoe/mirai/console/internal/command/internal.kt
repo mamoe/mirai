@@ -88,7 +88,7 @@ internal fun Group.fuzzySearchMember(
 }
 
 internal fun Command.createOrFindCommandPermission(parent: Permission): Permission {
-    val id = owner.permissionId(primaryName)
+    val id = owner.permissionId("command.$primaryName")
     return PermissionService.INSTANCE[id] ?: PermissionService.INSTANCE.register(id, description, parent)
 }
 
