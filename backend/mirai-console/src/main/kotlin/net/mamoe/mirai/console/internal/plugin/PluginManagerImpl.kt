@@ -128,7 +128,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
 
     internal fun loadAllPluginsUsingBuiltInLoaders() {
         for ((l, _, p) in findAndSortAllPluginsUsingBuiltInLoaders()) {
-            l.load(p)
+            l.loadPluginNoEnable(p)
         }
     }
 
