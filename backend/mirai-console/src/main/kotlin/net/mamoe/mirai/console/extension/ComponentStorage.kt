@@ -7,7 +7,6 @@ import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector.ExtensionPoint.selectSingleton
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.name
@@ -67,7 +66,6 @@ public class ScopedComponentStorage(
     /**
      * 注册一个 [PermissionService]
      */
-    @ExperimentalPermission
     public fun contributePermissionService(
         lazyInstance: () -> PermissionService<*>,
     ) {

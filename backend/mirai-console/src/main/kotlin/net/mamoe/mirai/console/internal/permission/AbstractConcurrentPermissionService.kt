@@ -13,10 +13,6 @@ import net.mamoe.mirai.console.data.PluginDataExtensions
 import net.mamoe.mirai.console.permission.*
 import net.mamoe.mirai.console.permission.PermitteeId.Companion.hasChild
 
-/**
- *
- */
-@ExperimentalPermission
 internal abstract class AbstractConcurrentPermissionService<P : Permission> : PermissionService<P> {
     protected abstract val permissions: MutableMap<PermissionId, P>
     protected abstract val grantedPermissionsMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableCollection<PermitteeId>>

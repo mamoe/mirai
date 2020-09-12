@@ -19,11 +19,14 @@ import net.mamoe.mirai.console.command.description.*
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.internal.util.runIgnoreException
-import net.mamoe.mirai.console.permission.*
+import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.denyPermission
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
 import net.mamoe.mirai.console.permission.PermissionService.Companion.getPermittedPermissions
 import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
+import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.event.events.EventCancelledException
@@ -44,7 +47,6 @@ internal interface BuiltInCommandInternal : Command, BuiltInCommand
  * 内建指令列表
  */
 @Suppress("unused")
-@OptIn(ExperimentalPermission::class)
 public object BuiltInCommands {
     @ConsoleExperimentalApi
     public val parentPermission: Permission by lazy {
@@ -145,12 +147,11 @@ public object BuiltInCommands {
         }
     }
 
-    @OptIn(ExperimentalPermission::class)
     public object PermissionCommand : CompositeCommand(
         ConsoleCommandOwner, "permission", "权限", "perm",
         description = "Manage permissions",
         overrideContext = buildCommandArgumentContext {
-            PermitteeId::class with PermissibleIdentifierArgumentParser
+            PermitteeId::class with PermitteeIdArgumentParser
             Permission::class with PermissionIdArgumentParser.map { id ->
                 kotlin.runCatching {
                     id.findCorrespondingPermissionOrFail()

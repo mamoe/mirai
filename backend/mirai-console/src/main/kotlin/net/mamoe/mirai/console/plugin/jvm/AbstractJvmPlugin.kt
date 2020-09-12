@@ -15,6 +15,7 @@ import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
+import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.minutesToMillis
 import net.mamoe.mirai.utils.secondsToMillis
@@ -35,6 +36,8 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
         get() = this.description.name
 
     public final override val loader: JarPluginLoader get() = super<JvmPluginInternal>.loader
+
+    public final override fun permissionId(id: String): PermissionId = PermissionId(description.id, id)
 
     /**
      * 重载 [PluginData]

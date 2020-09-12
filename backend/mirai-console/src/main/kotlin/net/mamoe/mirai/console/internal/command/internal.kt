@@ -11,7 +11,6 @@ package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.contact.Group
@@ -53,56 +52,6 @@ internal fun String.fuzzyMatchWith(target: String): Double {
     return match.toDouble() / (longerLength + (shorterLength - match))
 }
 
-internal inline fun <T : Any> Collection<T>.fuzzySearch(
-    target: String,
-    crossinline index: (T) -> String
-): T? {
-    var maxElement: T? = null
-    var max = 0.0
-
-    for (t in this) {
-        val r = index(t).fuzzyMatchWith(target)
-        if (r > max) {
-            maxElement = t
-            max = r
-        }
-    }
-
-    if (max >= 0.7) {
-        return maxElement
-    }
-    return null
-}
-
-/**
- * 模糊搜索一个List中index最接近target的东西
- * 并且确保target是唯一的
- * 如搜索index为XXXXYY list中同时存在XXXXYYY XXXXYYYY 将返回null
- */
-internal inline fun <T : Any> Collection<T>.fuzzySearchOnly(
-    target: String,
-    index: (T) -> String
-): T? {
-    var potential: T? = null
-    var rate = 0.0
-    var collide = 0
-    this.forEach {
-        with(index(it).fuzzyMatchWith(target)) {
-            if (this > rate) {
-                rate = this
-                potential = it
-            }
-            if (this == 1.0) {
-                collide++
-            }
-            if (collide > 1) {
-                return null//collide
-            }
-        }
-    }
-    return potential
-}
-
 
 /**
  * @return candidates
@@ -138,7 +87,6 @@ internal fun Group.fuzzySearchMember(
     }
 }
 
-@OptIn(ExperimentalPermission::class)
 internal fun Command.createOrFindCommandPermission(parent: Permission): Permission {
     val id = owner.permissionId(primaryName)
     return PermissionService.INSTANCE[id] ?: PermissionService.INSTANCE.register(id, description, parent)

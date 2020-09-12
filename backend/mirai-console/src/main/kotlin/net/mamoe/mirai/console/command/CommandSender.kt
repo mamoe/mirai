@@ -9,7 +9,7 @@
 
 @file:Suppress(
     "NOTHING_TO_INLINE", "INAPPLICABLE_JVM_NAME", "FunctionName", "SuspendFunctionOnCoroutineScope",
-    "unused", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER"
+    "unused"
 )
 
 package net.mamoe.mirai.console.command
@@ -33,7 +33,6 @@ import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permittee
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -47,7 +46,6 @@ import net.mamoe.mirai.message.data.PlainText
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
  * 指令发送者.
@@ -136,7 +134,6 @@ import kotlin.internal.LowPriorityInOverloadResolution
  * @see toCommandSender
  * @see asCommandSender
  */
-@OptIn(ExperimentalPermission::class)
 public interface CommandSender : CoroutineScope, Permittee {
     /**
      * 与这个 [CommandSender] 相关的 [Bot].
@@ -441,7 +438,6 @@ public fun CommandSender.isNotUser(): Boolean {
  * @return [ifIsConsole] 或 [ifIsUser] 执行结果.
  */
 @JvmSynthetic
-@LowPriorityInOverloadResolution
 public inline fun <R> CommandSender.fold(
     ifIsConsole: ConsoleCommandSender.() -> R,
     ifIsUser: UserCommandSender.() -> R,
@@ -464,7 +460,7 @@ public inline fun <R> CommandSender.fold(
  *
  * ### 实验性 API
  *
- * 这是预览版本 API. 如果你对 [UserCommandSender.fold] 有建议, 请在 [mamoe/mirai-console/issues](https://github.com/mamoe/mirai-console/issues/new) 提交.
+ * 这是预览版本 API. 如果你对 [UserCommandSender.foldContext] 有建议, 请在 [mamoe/mirai-console/issues](https://github.com/mamoe/mirai-console/issues/new) 提交.
  *
  * @return [inGroup] 或 [inPrivate] 执行结果.
  */
@@ -517,7 +513,6 @@ public abstract class ConsoleCommandSender @ConsoleFrontEndImplementation constr
     public final override val name: String get() = NAME
     public final override fun toString(): String = NAME
 
-    @ExperimentalPermission
     public final override val permitteeId: AbstractPermitteeId.Console = AbstractPermitteeId.Console
 
     public companion object INSTANCE : ConsoleCommandSender(), CoroutineScope {
@@ -615,7 +610,6 @@ public open class FriendCommandSender internal constructor(
     public override val subject: Contact get() = user
     public override fun toString(): String = "FriendCommandSender($user)"
 
-    @ExperimentalPermission
     public override val permitteeId: PermitteeId = AbstractPermitteeId.ExactFriend(user.id)
 
     @JvmBlockingBridge
@@ -638,7 +632,6 @@ public open class MemberCommandSender internal constructor(
     public override val subject: Group get() = group
     public override fun toString(): String = "MemberCommandSender($user)"
 
-    @ExperimentalPermission
     public override val permitteeId: PermitteeId = AbstractPermitteeId.ExactMember(group.id, user.id)
 
     @JvmBlockingBridge
@@ -661,7 +654,6 @@ public open class TempCommandSender internal constructor(
     public override val subject: Contact get() = group
     public override fun toString(): String = "TempCommandSender($user)"
 
-    @ExperimentalPermission
     public override val permitteeId: PermitteeId =
         AbstractPermitteeId.ExactTemp(user.group.id, user.id)
 

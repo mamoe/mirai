@@ -25,14 +25,26 @@ import kotlin.reflect.KClass
  * [PermissionServiceProvider]
  */
 public interface PermissionService<P : Permission> {
-    @ExperimentalPermission
+    /**
+     * [P] 的类型
+     */
     public val permissionType: KClass<P>
+
+    /**
+     * [RootPermission] 的实现
+     */
     public val rootPermission: P
 
     ///////////////////////////////////////////////////////////////////////////
 
+    /**
+     * 获取一个已经 [注册][register] 了的 [P]
+     */
     public operator fun get(id: PermissionId): P?
 
+    /**
+     * 获取所有已注册的指令列表. 应保证线程安全.
+     */
     public fun getRegisteredPermissions(): Sequence<P>
 
     /**

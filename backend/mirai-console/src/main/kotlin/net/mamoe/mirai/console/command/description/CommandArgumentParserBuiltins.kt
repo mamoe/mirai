@@ -14,7 +14,6 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.internal.command.fuzzySearchMember
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.contact.*
@@ -308,7 +307,6 @@ public object ExistingMemberArgumentParser : InternalCommandArgumentParserExtens
     }
 }
 
-@ExperimentalPermission
 public object PermissionIdArgumentParser : CommandArgumentParser<PermissionId> {
     override fun parse(raw: String, sender: CommandSender): PermissionId {
         return kotlin.runCatching { PermissionId.parseFromString(raw) }.getOrElse {
@@ -317,8 +315,7 @@ public object PermissionIdArgumentParser : CommandArgumentParser<PermissionId> {
     }
 }
 
-@ExperimentalPermission
-public object PermissibleIdentifierArgumentParser : CommandArgumentParser<PermitteeId> {
+public object PermitteeIdArgumentParser : CommandArgumentParser<PermitteeId> {
     override fun parse(raw: String, sender: CommandSender): PermitteeId {
         return if (raw == "~") sender.permitteeId
         else kotlin.runCatching { AbstractPermitteeId.parseFromString(raw) }.getOrElse {

@@ -13,9 +13,7 @@ package net.mamoe.mirai.console.internal.permission
 
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.AbstractPermitteeId.*
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 
-@OptIn(ExperimentalPermission::class)
 internal fun parseFromStringImpl(string: String): AbstractPermitteeId {
     val str = string.trim { it.isWhitespace() }.toLowerCase()
     if (str == "console") return Console

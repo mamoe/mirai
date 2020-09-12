@@ -10,12 +10,10 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.asMessageChain
 
-@OptIn(ExperimentalPermission::class)
 @JvmSynthetic
 @Throws(CommandExecutionException::class)
 internal suspend fun CommandSender.executeCommandInternal(

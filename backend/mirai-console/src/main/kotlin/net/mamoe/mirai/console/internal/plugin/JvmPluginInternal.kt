@@ -16,9 +16,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.extension.ScopedComponentStorage
 import net.mamoe.mirai.console.internal.data.mkdir
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.allocatePermissionIdForPlugin
 import net.mamoe.mirai.console.plugin.Plugin
@@ -50,7 +48,6 @@ internal abstract class JvmPluginInternal(
     @Suppress("LeakingThis")
     internal val componentStorage: ScopedComponentStorage = ScopedComponentStorage(this)
 
-    @OptIn(ExperimentalPermission::class)
     final override val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
             PermissionService.INSTANCE.allocatePermissionIdForPlugin(name, "*"),
@@ -63,11 +60,6 @@ internal abstract class JvmPluginInternal(
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
     final override fun getResourceAsStream(path: String): InputStream? =
         resourceContainerDelegate.getResourceAsStream(path)
-
-    @OptIn(ExperimentalPermission::class)
-    override fun permissionId(id: String): PermissionId {
-        return PermissionId(description.name, id)
-    }
 
     // region JvmPlugin
     final override val logger: MiraiLogger by lazy {

@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionIdNamespace
@@ -24,7 +23,6 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
  *
  * @see JvmPlugin 是一个 [CommandOwner]
  */
-@OptIn(ExperimentalPermission::class)
 public interface CommandOwner : PermissionIdNamespace {
     /**
      * 在构造指令时, [Command.permission] 默认会使用 [parentPermission] 作为 [Permission.parent]

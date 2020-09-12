@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext.ParserPair
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -66,7 +65,6 @@ public interface CommandArgumentContext {
     /**
      * 内建的默认 [CommandArgumentParser]
      */
-    @OptIn(ExperimentalPermission::class)
     public object Builtins : CommandArgumentContext by (buildCommandArgumentContext {
         Int::class with IntArgumentParser
         Byte::class with ByteArgumentParser
@@ -85,7 +83,7 @@ public interface CommandArgumentContext {
         Bot::class with ExistingBotArgumentParser
 
         PermissionId::class with PermissionIdArgumentParser
-        PermitteeId::class with PermissibleIdentifierArgumentParser
+        PermitteeId::class with PermitteeIdArgumentParser
     })
 }
 

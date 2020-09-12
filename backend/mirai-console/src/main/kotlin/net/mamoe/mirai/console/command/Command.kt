@@ -17,7 +17,6 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.java.JCommand
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.internal.command.isValidSubName
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.SingleMessage
@@ -42,12 +41,12 @@ public interface Command {
     public val names: Array<out String>
 
     /**
-     * 用法说明, 用于发送给用户. 一般 [usage] 包含 [description].
+     * 用法说明, 用于发送给用户. [usage] 一般包含 [description].
      */
     public val usage: String
 
     /**
-     * 指令描述, 用于显示在 [BuiltInCommands.Help]
+     * 指令描述, 用于显示在 [BuiltInCommands.HelpCommand]
      */
     public val description: String
 
@@ -99,7 +98,6 @@ public suspend inline fun Command.onCommand(sender: CommandSender, args: Message
  * @see RawCommand
  */
 public abstract class AbstractCommand
-@OptIn(ExperimentalPermission::class)
 @JvmOverloads constructor(
     /** 指令拥有者. */
     public override val owner: CommandOwner,
@@ -107,7 +105,7 @@ public abstract class AbstractCommand
     description: String = "<no description available>",
     parentPermission: Permission = owner.parentPermission,
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
-    public override val prefixOptional: Boolean = false
+    public override val prefixOptional: Boolean = false,
 ) : Command {
     public override val description: String = description.trimIndent()
     public override val names: Array<out String> =
@@ -115,6 +113,5 @@ public abstract class AbstractCommand
             list.firstOrNull { !it.isValidSubName() }?.let { error("Invalid name: $it") }
         }.toTypedArray()
 
-    @OptIn(ExperimentalPermission::class)
     public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
 }

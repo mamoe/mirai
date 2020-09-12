@@ -15,7 +15,6 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.java.JRawCommand
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.MessageChain
 
@@ -30,7 +29,7 @@ import net.mamoe.mirai.message.data.MessageChain
  * @see SimpleCommand 简单指令
  * @see CompositeCommand 复合指令
  */
-public abstract class RawCommand @OptIn(ExperimentalPermission::class) constructor(
+public abstract class RawCommand(
     /**
      * 指令拥有者.
      * @see CommandOwner
@@ -45,9 +44,8 @@ public abstract class RawCommand @OptIn(ExperimentalPermission::class) construct
     /** 指令父权限 */
     parentPermission: Permission = owner.parentPermission,
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
-    public override val prefixOptional: Boolean = false
+    public override val prefixOptional: Boolean = false,
 ) : Command {
-    @OptIn(ExperimentalPermission::class)
     public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
 
     /**

@@ -21,7 +21,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
 @Suppress("unused") // don't pollute top-level
-@OptIn(ExperimentalPermission::class)
 internal fun PermissionService<*>.checkType(permissionType: KClass<out Permission>): PermissionService<Permission> {
     require(this.permissionType.isSuperclassOf(permissionType)) {
         "Custom-constructed Permission instance is not allowed (Required ${this.permissionType}, found ${permissionType}. " +
@@ -32,7 +31,6 @@ internal fun PermissionService<*>.checkType(permissionType: KClass<out Permissio
     return this as PermissionService<Permission>
 }
 
-@ExperimentalPermission
 internal object AllPermitPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl> get() = PermissionImpl::class
@@ -65,10 +63,8 @@ internal object AllPermitPermissionService : PermissionService<PermissionImpl> {
 }
 
 @Suppress("DEPRECATION")
-@OptIn(ExperimentalPermission::class)
 private val RootPermissionImpl = PermissionImpl(PermissionId("*", "*"), "The root permission").also { it.parent = it }
 
-@ExperimentalPermission
 internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
     private val all = ConcurrentHashMap<PermissionId, PermissionImpl>()
     override val permissionType: KClass<PermissionImpl>
@@ -101,11 +97,9 @@ internal object AllDenyPermissionService : PermissionService<PermissionImpl> {
     }
 }
 
-@ExperimentalPermission
 internal object BuiltInPermissionService : AbstractConcurrentPermissionService<PermissionImpl>(),
     PermissionService<PermissionImpl> {
 
-    @ExperimentalPermission
     override val permissionType: KClass<PermissionImpl>
         get() = PermissionImpl::class
     override val permissions: ConcurrentHashMap<PermissionId, PermissionImpl> = ConcurrentHashMap()
@@ -122,7 +116,6 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
         ConcurrentSaveData("PermissionService")
 
     @Suppress("RedundantVisibilityModifier")
-    @ExperimentalPermission
     internal class ConcurrentSaveData private constructor(
         public override val saveName: String,
         @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?,
@@ -145,7 +138,6 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
  * [Permission] 的简单实现
  */
 @Serializable
-@ExperimentalPermission
 internal data class PermissionImpl @Deprecated("Only for Root") constructor(
     override val id: PermissionId,
     override val description: String,

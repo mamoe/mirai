@@ -14,7 +14,6 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.PluginDataHolder
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
-import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SilentLogger
@@ -65,7 +64,6 @@ internal open class MultiFilePluginDataStorageImpl(
 
     @ConsoleExperimentalApi
     public override fun store(holder: PluginDataHolder, instance: PluginData) {
-        @OptIn(ExperimentalPermission::class)
         val yaml =/* if (instance.saveName == "PermissionService") Json {
             prettyPrint = true
             ignoreUnknownKeys = true
