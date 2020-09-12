@@ -1,4 +1,4 @@
-package net.mamoe.mirai.console.internal.extensions
+package net.mamoe.mirai.console.internal.extension
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole

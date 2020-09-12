@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.extension
 
 import net.mamoe.mirai.console.extensions.*
+import net.mamoe.mirai.console.internal.extension.AbstractConcurrentComponentStorage
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoader

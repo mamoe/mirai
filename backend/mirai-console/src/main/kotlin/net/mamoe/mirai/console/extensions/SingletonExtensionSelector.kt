@@ -10,8 +10,13 @@
 package net.mamoe.mirai.console.extensions
 
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.extension.*
-import net.mamoe.mirai.console.internal.extensions.BuiltInSingletonExtensionSelector
+import net.mamoe.mirai.console.extension.AbstractExtensionPoint
+import net.mamoe.mirai.console.extension.Extension
+import net.mamoe.mirai.console.extension.FunctionExtension
+import net.mamoe.mirai.console.extension.SingletonExtension
+import net.mamoe.mirai.console.internal.extension.BuiltInSingletonExtensionSelector
+import net.mamoe.mirai.console.internal.extension.ExtensionRegistry
+import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.utils.info
