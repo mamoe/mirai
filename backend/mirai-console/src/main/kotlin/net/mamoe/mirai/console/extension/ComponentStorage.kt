@@ -154,7 +154,7 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
         throwable: Throwable,
     ) {
         throw ExtensionException(
-            "Exception while executing extension ${extension.kClassQualifiedNameOrTip} provided by plugin '${plugin.name}', registered for ${this.type.qualifiedName}",
+            "Exception while executing extension '${extension.kClassQualifiedNameOrTip}' provided by plugin '${plugin.name}', registered for '${this.extensionType.qualifiedName}'",
             throwable
         )
     }

@@ -11,52 +11,20 @@
 
 package net.mamoe.mirai.console.extension
 
-import net.mamoe.mirai.console.plugin.loader.PluginLoader
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.reflect.KClass
-import kotlin.reflect.full.isSubclassOf
-
-@ConsoleExperimentalApi
-public interface ExtensionPoint<T : Extension> {
-    public val type: KClass<T>
-
-    public companion object {
-        @JvmStatic
-        @JvmSynthetic
-        @ConsoleExperimentalApi
-        public inline fun <reified T : Extension> ExtensionPoint<*>.isFor(exactType: Boolean = false): Boolean {
-            return if (exactType) {
-                T::class == type
-            } else T::class.isSubclassOf(type)
-        }
-    }
-}
-
-@ConsoleExperimentalApi
-public interface SingletonExtensionPoint<T : SingletonExtension<*>> : ExtensionPoint<T>
 
 /**
- * 表示一个扩展点
+ * 由 [Extension] 的 `companion` 实现.
  */
-@ConsoleExperimentalApi
+public interface ExtensionPoint<T : Extension> {
+    public val extensionType: KClass<T>
+}
+
 public open class AbstractExtensionPoint<T : Extension>(
-    @ConsoleExperimentalApi
-    public override val type: KClass<T>,
+    public override val extensionType: KClass<T>,
 ) : ExtensionPoint<T>
 
-
 /**
- * 在调用一个 extension 时遇到的异常.
- *
- * @see PluginLoader.load
- * @see PluginLoader.enable
- * @see PluginLoader.disable
- * @see PluginLoader.description
+ * 表示一个 [SingletonExtension] 的 [ExtensionPoint]
  */
-@ConsoleExperimentalApi
-public open class ExtensionException : RuntimeException {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
+public interface SingletonExtensionPoint<T : SingletonExtension<*>> : ExtensionPoint<T>
