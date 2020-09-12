@@ -14,7 +14,6 @@ package net.mamoe.mirai.console.plugin.jvm
 import com.vdurmont.semver4j.Semver
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
@@ -127,7 +126,7 @@ public class JvmPluginDescriptionBuilder(
     public fun dependsOn(
         pluginId: String,
         version: String? = null,
-        isOptional: Boolean = false
+        isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
         if (version == null) this.dependencies.add(PluginDependency(pluginId, version, isOptional))
         else this.dependencies.add(PluginDependency(pluginId, version, isOptional))
@@ -135,14 +134,14 @@ public class JvmPluginDescriptionBuilder(
 
     @ILoveKuriyamaMiraiForever
     public fun setDependencies(
-        value: Set<PluginDependency>
+        value: Set<PluginDependency>,
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies = value.toMutableSet()
     }
 
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
-        vararg dependencies: PluginDependency
+        vararg dependencies: PluginDependency,
     ): JvmPluginDescriptionBuilder = apply {
         for (dependency in dependencies) {
             this.dependencies.add(dependency)
@@ -153,7 +152,7 @@ public class JvmPluginDescriptionBuilder(
     public fun dependsOn(
         pluginId: String,
         version: Semver? = null,
-        isOptional: Boolean = false
+        isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply { this.dependencies.add(PluginDependency(pluginId, version, isOptional)) }
 
 
@@ -226,42 +225,3 @@ public data class SimpleJvmPluginDescription
         require(!name.contains(':')) { "':' is forbidden in plugin name" }
     }
 }
-
-
-@Deprecated(
-    "JvmPluginDescription 没有构造器. 请使用 SimpleJvmPluginDescription.",
-    replaceWith = ReplaceWith(
-        "SimpleJvmPluginDescription(name, version, author, info, dependencies, kind)",
-        "net.mamoe.mirai.console.plugin.jvm.SimpleJvmPluginDescription"
-    ),
-    level = DeprecationLevel.WARNING
-)
-@LowPriorityInOverloadResolution
-@Suppress("DEPRECATION_ERROR", "FunctionName")
-public fun JvmPluginDescription(
-    name: String,
-    version: Semver,
-    id: String = name,
-    author: String = "",
-    info: String = "",
-    dependencies: Set<PluginDependency> = setOf(),
-): JvmPluginDescription = SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
-
-@Deprecated(
-    "JvmPluginDescription 没有构造器. 请使用 SimpleJvmPluginDescription.",
-    replaceWith = ReplaceWith(
-        "SimpleJvmPluginDescription(name, version, author, info, dependencies, kind)",
-        "net.mamoe.mirai.console.plugin.jvm.SimpleJvmPluginDescription"
-    ),
-    level = DeprecationLevel.WARNING
-)
-@LowPriorityInOverloadResolution
-@Suppress("DEPRECATION_ERROR", "FunctionName")
-public fun JvmPluginDescription(
-    name: String,
-    version: String,
-    id: String = name,
-    author: String = "",
-    info: String = "",
-    dependencies: Set<PluginDependency> = setOf(),
-): JvmPluginDescription = SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
