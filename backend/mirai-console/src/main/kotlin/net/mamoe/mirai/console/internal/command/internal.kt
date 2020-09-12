@@ -9,16 +9,13 @@
 
 package net.mamoe.mirai.console.internal.command
 
-import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.asMessageChain
 import kotlin.math.max
 import kotlin.math.min
 
@@ -148,51 +145,3 @@ internal fun Command.createOrFindCommandPermission(parent: Permission): Permissi
 }
 
 //// internal
-
-@OptIn(ExperimentalPermission::class)
-@JvmSynthetic
-@Throws(CommandExecutionException::class)
-internal suspend fun CommandSender.executeCommandInternal(
-    command: Command,
-    args: MessageChain,
-    commandName: String,
-    checkPermission: Boolean
-): CommandExecuteResult {
-    if (checkPermission && !command.permission.testPermission(this)) {
-        return CommandExecuteResult.PermissionDenied(command, commandName)
-    }
-
-    kotlin.runCatching {
-        command.onCommand(this, args)
-    }.fold(
-        onSuccess = {
-            return CommandExecuteResult.Success(
-                commandName = commandName,
-                command = command,
-                args = args
-            )
-        },
-        onFailure = {
-            return CommandExecuteResult.ExecutionFailed(
-                commandName = commandName,
-                command = command,
-                exception = it,
-                args = args
-            )
-        }
-    )
-}
-
-
-@JvmSynthetic
-internal suspend fun CommandSender.executeCommandInternal(
-    messages: Any,
-    commandName: String,
-    checkPermission: Boolean
-): CommandExecuteResult {
-    val command =
-        CommandManagerImpl.matchCommand(commandName) ?: return CommandExecuteResult.CommandNotFound(commandName)
-    val args = messages.flattenCommandComponents()
-
-    return executeCommandInternal(command, args.drop(1).asMessageChain(), commandName, checkPermission)
-}
