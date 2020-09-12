@@ -19,14 +19,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asMemberCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
-import net.mamoe.mirai.console.command.ConsoleCommandSender.INSTANCE
 import net.mamoe.mirai.console.command.description.CommandArgumentParserException
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
@@ -502,31 +500,28 @@ public fun CommandSender.getBotOrNull(): Bot? {
  * 控制台指令执行者. 代表由控制台执行指令
  *
  * 控制台拥有一切指令的执行权限.
- *
- * @see INSTANCE
  */
 // 前端实现
-public abstract class ConsoleCommandSender @ConsoleFrontEndImplementation constructor() : AbstractCommandSender() {
-    public final override val bot: Nothing? get() = null
-    public final override val subject: Nothing? get() = null
-    public final override val user: Nothing? get() = null
-    public final override val name: String get() = NAME
-    public final override fun toString(): String = NAME
+public object ConsoleCommandSender : AbstractCommandSender() {
+    public const val NAME: String = "ConsoleCommandSender"
 
-    public final override val permitteeId: AbstractPermitteeId.Console = AbstractPermitteeId.Console
+    public override val bot: Nothing? get() = null
+    public override val subject: Nothing? get() = null
+    public override val user: Nothing? get() = null
+    public override val name: String get() = NAME
+    public override fun toString(): String = NAME
 
-    public companion object INSTANCE : ConsoleCommandSender(), CoroutineScope {
-        public const val NAME: String = "ConsoleCommandSender"
-        public override val coroutineContext: CoroutineContext by lazy { MiraiConsole.childScopeContext(NAME) }
-        public override suspend fun sendMessage(message: Message): Nothing? {
-            MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
-            return null
-        }
+    public override val permitteeId: AbstractPermitteeId.Console = AbstractPermitteeId.Console
 
-        public override suspend fun sendMessage(message: String): MessageReceipt<User>? {
-            MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
-            return null
-        }
+    public override val coroutineContext: CoroutineContext by lazy { MiraiConsole.childScopeContext(NAME) }
+    public override suspend fun sendMessage(message: Message): Nothing? {
+        MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
+        return null
+    }
+
+    public override suspend fun sendMessage(message: String): MessageReceipt<User>? {
+        MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
+        return null
     }
 }
 
