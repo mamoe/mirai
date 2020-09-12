@@ -7,26 +7,28 @@ public sealed class VersionRequirement {
     public abstract operator fun contains(version: Semver): Boolean
     public fun contains(version: String): Boolean = contains(Semver(version, Semver.SemverType.LOOSE))
 
-    public data class Exact(
-        val version: Semver,
+    public class Exact(
+        version: Semver,
     ) : VersionRequirement() {
+        public val version: Semver = version.toStrict()
+
         public constructor(version: String) : this(Semver(version, Semver.SemverType.LOOSE))
 
-        override fun contains(version: Semver): Boolean = this.version.isEqualTo(version)
+        override fun contains(version: Semver): Boolean = this.version.isEquivalentTo(version.toStrict())
     }
 
     public data class MatchesNpmPattern(
         val pattern: String,
     ) : VersionRequirement() {
         private val requirement = Requirement.buildNPM(pattern)
-        override fun contains(version: Semver): Boolean = requirement.isSatisfiedBy(version)
+        override fun contains(version: Semver): Boolean = requirement.isSatisfiedBy(version.toStrict())
     }
 
     public data class MatchesIvyPattern(
         val pattern: String,
     ) : VersionRequirement() {
         private val requirement = Requirement.buildIvy(pattern)
-        override fun contains(version: Semver): Boolean = requirement.isSatisfiedBy(version)
+        override fun contains(version: Semver): Boolean = requirement.isSatisfiedBy(version.toStrict())
     }
 
 
@@ -34,17 +36,21 @@ public sealed class VersionRequirement {
         val pattern: String,
     ) : VersionRequirement() {
         private val requirement = Requirement.buildCocoapods(pattern)
-        override fun contains(version: Semver): Boolean = requirement.isSatisfiedBy(version)
+        override fun contains(version: Semver): Boolean = requirement.isSatisfiedBy(version.toStrict())
     }
 
     public abstract class Custom : VersionRequirement()
 
-    public data class InRange(
-        val begin: Semver,
-        val beginInclusive: Boolean,
-        val end: Semver,
-        val endInclusive: Boolean,
+    @Suppress("MemberVisibilityCanBePrivate")
+    public class InRange(
+        begin: Semver,
+        public val beginInclusive: Boolean,
+        end: Semver,
+        public val endInclusive: Boolean,
     ) : VersionRequirement() {
+        public val end: Semver = end.toStrict()
+        public val begin: Semver = begin.toStrict()
+
         public constructor(
             begin: String,
             beginInclusive: Boolean,
@@ -70,14 +76,25 @@ public sealed class VersionRequirement {
         ) : this(begin, beginInclusive, Semver(end, Semver.SemverType.LOOSE), endInclusive)
 
         override fun contains(version: Semver): Boolean {
+            val strict = version.toStrict()
             return if (beginInclusive) {
-                version.isGreaterThanOrEqualTo(begin)
+                strict.isGreaterThanOrEqualTo(begin)
             } else {
-                version.isGreaterThan(begin)
+                strict.isGreaterThan(begin)
             } && if (endInclusive) {
-                version.isLowerThanOrEqualTo(begin)
+                strict.isLowerThanOrEqualTo(end)
             } else {
-                version.isLowerThan(begin)
+                strict.isLowerThan(end)
+            }
+        }
+
+        override fun toString(): String {
+            return buildString {
+                append(if (beginInclusive) "[" else "(")
+                append(begin)
+                append(",")
+                append(end)
+                append(if (endInclusive) "]" else ")")
             }
         }
     }
