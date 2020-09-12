@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 复合指令. 指令注册时候会通过反射构造指令解析器.
@@ -68,7 +68,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  *
  * @see buildCommandArgumentContext
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public abstract class JCompositeCommand @OptIn(ExperimentalPermission::class)
 @JvmOverloads constructor(
     owner: CommandOwner,

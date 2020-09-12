@@ -36,7 +36,7 @@ import net.mamoe.mirai.console.permission.AbstractPermissibleIdentifier
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permissible
 import net.mamoe.mirai.console.permission.PermissibleIdentifier
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.console.util.MessageScope
@@ -180,7 +180,7 @@ public interface CommandSender : CoroutineScope, Permissible {
     @JvmBlockingBridge
     public suspend fun sendMessage(message: String): MessageReceipt<Contact>?
 
-    @ConsoleExperimentalAPI("This is unstable and might get changed")
+    @ConsoleExperimentalApi("This is unstable and might get changed")
     public suspend fun catchExecutionException(e: Throwable)
 
     public companion object {
@@ -282,7 +282,7 @@ public sealed class AbstractCommandSender : CommandSender, CoroutineScope {
     public abstract override val user: User?
     public abstract override fun toString(): String
 
-    @ConsoleExperimentalAPI("This is unstable and might get changed")
+    @ConsoleExperimentalApi("This is unstable and might get changed")
     override suspend fun catchExecutionException(e: Throwable) {
         if (this is CommandSenderOnMessage<*>) {
             val cause = e.rootCauseOrSelf
@@ -469,7 +469,7 @@ public inline fun <R> CommandSender.fold(
  * @return [inGroup] 或 [inPrivate] 执行结果.
  */
 @JvmSynthetic
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public inline fun <R> UserCommandSender.foldContext(
     inGroup: MemberCommandSender.() -> R,
     inPrivate: UserCommandSender.() -> R,

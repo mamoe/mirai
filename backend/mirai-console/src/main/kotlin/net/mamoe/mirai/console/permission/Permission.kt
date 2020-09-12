@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.permission
 
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 
 /**
@@ -49,7 +49,7 @@ public val RootConsoleBuiltInPermission: Permission by lazy {
     )
 }
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 @ExperimentalPermission
 public fun Permission.parentsWithSelfSequence(): Sequence<Permission> =
     generateSequence(this) { p ->

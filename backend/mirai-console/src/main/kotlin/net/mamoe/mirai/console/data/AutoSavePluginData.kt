@@ -16,7 +16,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.*
 
 /**
@@ -38,7 +38,7 @@ public open class AutoSavePluginData private constructor(
     public constructor() : this(null)
 
 
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     override fun onInit(owner: PluginDataHolder, storage: PluginDataStorage) {
         check(owner is AutoSavePluginDataHolder) { "owner must be AutoSavePluginDataHolder for AutoSavePluginData" }
 
@@ -89,7 +89,7 @@ public open class AutoSavePluginData private constructor(
     /**
      * @return `true` 时, 一段时间后, 即使无属性改变, 也会进行保存.
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     protected open fun shouldPerformAutoSaveWheneverChanged(): Boolean {
         return true
     }

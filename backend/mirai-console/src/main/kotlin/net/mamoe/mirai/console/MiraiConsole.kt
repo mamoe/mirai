@@ -8,7 +8,7 @@
  */
 
 @file:Suppress("WRONG_MODIFIER_CONTAINING_DECLARATION", "unused")
-@file:OptIn(ConsoleInternalAPI::class)
+@file:OptIn(ConsoleInternalApi::class)
 
 package net.mamoe.mirai.console
 
@@ -25,8 +25,8 @@ import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
@@ -60,7 +60,7 @@ public interface MiraiConsole : CoroutineScope {
      *
      * **注意**: 插件不应该在任何时刻使用它.
      */
-    @ConsoleInternalAPI
+    @ConsoleInternalApi
     public val mainLogger: MiraiLogger
 
     /**
@@ -80,13 +80,13 @@ public interface MiraiConsole : CoroutineScope {
      */
     public val version: Semver
 
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public val pluginCenter: PluginCenter
 
     /**
      * 创建一个 logger
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun createLogger(identity: String?): MiraiLogger
 
     public companion object INSTANCE : MiraiConsole by MiraiConsoleImplementationBridge {
@@ -106,7 +106,7 @@ public interface MiraiConsole : CoroutineScope {
          * @see BotConfigurationAlterer ExtensionPoint
          */
         // don't static
-        @ConsoleExperimentalAPI("This is a low-level API and might be removed in the future.")
+        @ConsoleExperimentalApi("This is a low-level API and might be removed in the future.")
         public fun addBot(id: Long, password: String, configuration: BotConfiguration.() -> Unit = {}): Bot =
             addBotImpl(id, password, configuration)
 
@@ -118,7 +118,7 @@ public interface MiraiConsole : CoroutineScope {
          * @see Bot.botInstances 获取现有 [Bot] 实例列表
          * @see BotConfigurationAlterer ExtensionPoint
          */
-        @ConsoleExperimentalAPI("This is a low-level API and might be removed in the future.")
+        @ConsoleExperimentalApi("This is a low-level API and might be removed in the future.")
         public fun addBot(id: Long, password: ByteArray, configuration: BotConfiguration.() -> Unit = {}): Bot =
             addBotImpl(id, password, configuration)
 

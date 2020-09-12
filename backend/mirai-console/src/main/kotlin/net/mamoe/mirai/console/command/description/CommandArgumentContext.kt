@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext.ParserPair
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.*
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
@@ -238,7 +238,7 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     /**
      * 添加一个指令解析器
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     @JvmSynthetic
     public inline infix fun <reified T : Any> add(
         crossinline parser: CommandArgumentParser<*>.(s: String) -> T
@@ -249,7 +249,7 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     /**
      * 添加一个指令解析器
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     public inline infix fun <reified T : Any> add(

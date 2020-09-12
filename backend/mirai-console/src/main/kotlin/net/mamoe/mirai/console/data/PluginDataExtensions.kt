@@ -4,7 +4,7 @@ package net.mamoe.mirai.console.data
 
 import net.mamoe.mirai.console.data.PluginDataExtensions.withDefault
 import net.mamoe.mirai.console.internal.data.ShadowMap
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
@@ -12,7 +12,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  */
 public object PluginDataExtensions {
 
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public open class NotNullMap<K, V> internal constructor(
         private val delegate: Map<K, V>
     ) : Map<K, V> by delegate {

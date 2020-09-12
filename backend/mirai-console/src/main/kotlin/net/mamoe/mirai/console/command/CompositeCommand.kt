@@ -22,7 +22,7 @@ import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.permission.ExperimentalPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
@@ -81,7 +81,7 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
  *
  * @see buildCommandArgumentContext
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public abstract class CompositeCommand @OptIn(ExperimentalPermission::class) constructor(
     owner: CommandOwner,
     vararg names: String,

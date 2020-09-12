@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:OptIn(ConsoleExperimentalAPI::class)
+@file:OptIn(ConsoleExperimentalApi::class)
 
 package net.mamoe.mirai.console.internal
 
@@ -47,7 +47,7 @@ import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.utils.*
 import java.nio.file.Path
@@ -93,7 +93,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     override fun createLogger(identity: String?): MiraiLogger = instance.createLogger(identity)
 
-    @OptIn(ConsoleExperimentalAPI::class, ExperimentalPermission::class)
+    @OptIn(ConsoleExperimentalApi::class, ExperimentalPermission::class)
     @Suppress("RemoveRedundantBackticks")
     internal fun doStart() {
         phase `greeting`@{

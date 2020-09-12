@@ -18,7 +18,7 @@ import net.mamoe.mirai.contact.Member
 /**
  * 为简化操作提供的一些工具
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public object ContactUtils {
     /**
      * 获取一个 [Bot] 的好友, 群, 或群员.
@@ -31,7 +31,7 @@ public object ContactUtils {
      */
     @JvmOverloads
     @JvmStatic
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun Bot.getContact(id: Long, includeMembers: Boolean = false): Contact {
         return getContactOrNull(id, includeMembers)
             ?: throw NoSuchElementException("Contact $id not found for bot ${this.id}")
@@ -44,7 +44,7 @@ public object ContactUtils {
      */
     @JvmOverloads
     @JvmStatic
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun Bot.getContactOrNull(id: Long, includeMembers: Boolean = false): Contact? {
         return getFriendOrGroupOrNull(id) ?: kotlin.run {
             if (includeMembers) {
@@ -60,7 +60,7 @@ public object ContactUtils {
      * 访问顺序为 [Bot.friends] -> [Bot.groups]
      */
     @JvmStatic
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun Bot.getFriendOrGroup(id: Long): Contact {
         return getFriendOrGroupOrNull(id)
             ?: throw NoSuchElementException("Friend or Group $id not found for bot ${this.id}")
@@ -72,7 +72,7 @@ public object ContactUtils {
      * 访问顺序为 [Bot.friends] -> [Bot.groups]
      */
     @JvmStatic
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun Bot.getFriendOrGroupOrNull(id: Long): Contact? {
         return this.friends.getOrNull(id) ?: this.groups.getOrNull(id)
     }

@@ -3,7 +3,7 @@ package net.mamoe.mirai.console.data
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 可以持有相关 [AutoSavePluginData] 的对象.
@@ -13,7 +13,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
  *
  * @see net.mamoe.mirai.console.plugin.jvm.JvmPlugin
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface AutoSavePluginDataHolder : PluginDataHolder, CoroutineScope {
     /**
      * [AutoSavePluginData] 每次自动保存时间间隔
@@ -27,6 +27,6 @@ public interface AutoSavePluginDataHolder : PluginDataHolder, CoroutineScope {
      * @see LongRange Java 用户使用 [LongRange] 的构造器创建
      * @see Long.rangeTo Kotlin 用户使用 [Long.rangeTo] 创建, 如 `3000..50000`
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public val autoSaveIntervalMillis: LongRange
 }

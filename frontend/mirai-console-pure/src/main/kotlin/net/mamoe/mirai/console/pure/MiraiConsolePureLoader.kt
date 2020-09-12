@@ -15,7 +15,7 @@
     "INVISIBLE_GETTER",
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER",
 )
-@file:OptIn(ConsoleInternalAPI::class)
+@file:OptIn(ConsoleInternalApi::class)
 
 package net.mamoe.mirai.console.pure
 
@@ -26,8 +26,8 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.DefaultLogger
@@ -51,7 +51,7 @@ object MiraiConsolePureLoader {
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     fun startAsDaemon(instance: MiraiConsoleImplementationPure = MiraiConsoleImplementationPure()) {
         instance.start()
         overrideSTD()
@@ -61,10 +61,10 @@ object MiraiConsolePureLoader {
 
 internal object ConsoleDataHolder : AutoSavePluginDataHolder,
     CoroutineScope by MiraiConsole.childScope("ConsoleDataHolder") {
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
 
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     override val dataHolderName: String
         get() = "Pure"
 }

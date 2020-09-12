@@ -25,8 +25,8 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.denyPermis
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
 import net.mamoe.mirai.console.permission.PermissionService.Companion.getGrantedPermissions
 import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
@@ -35,7 +35,7 @@ import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 @Suppress("EXPOSED_SUPER_INTERFACE")
 public interface BuiltInCommand : Command, BuiltInCommandInternal
 
@@ -45,7 +45,7 @@ internal interface BuiltInCommandInternal : Command
 /**
  * 内建指令列表
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 @Suppress("unused")
 @OptIn(ExperimentalPermission::class)
 public object BuiltInCommands {
@@ -101,7 +101,7 @@ public object BuiltInCommands {
                         },
                         onFailure = {
                             if (it is CancellationException) return@fold
-                            @OptIn(ConsoleInternalAPI::class)
+                            @OptIn(ConsoleInternalApi::class)
                             MiraiConsole.mainLogger.error("Exception in stop", it)
                             ignoreException<EventCancelledException> {
                                 sendMessage(

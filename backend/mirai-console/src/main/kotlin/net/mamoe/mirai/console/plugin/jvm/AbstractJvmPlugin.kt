@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
 import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.minutesToMillis
 import net.mamoe.mirai.utils.secondsToMillis
 import kotlin.coroutines.CoroutineContext
@@ -30,7 +30,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     parentCoroutineContext: CoroutineContext = EmptyCoroutineContext,
 ) : JvmPlugin, JvmPluginInternal(parentCoroutineContext), AutoSavePluginDataHolder {
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public final override val dataHolderName: String
         get() = this.description.name
 
@@ -52,7 +52,7 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     @JvmName("reloadPluginConfig")
     public fun <T : PluginConfig> T.reload(): Unit = loader.configStorage.load(this@AbstractJvmPlugin, this)
 
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public override val autoSaveIntervalMillis: LongRange = 30.secondsToMillis..10.minutesToMillis
 }
 

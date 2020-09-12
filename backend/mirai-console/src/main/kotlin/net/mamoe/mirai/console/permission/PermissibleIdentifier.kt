@@ -15,7 +15,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.internal.data.map
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  */
@@ -109,7 +109,7 @@ public sealed class AbstractPermissibleIdentifier(
         }
     }
 
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public object AsStringSerializer : KSerializer<AbstractPermissibleIdentifier> by String.serializer().map(
         serializer = { it.toString() },
 

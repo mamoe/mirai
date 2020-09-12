@@ -104,7 +104,7 @@ public interface MessageScope {
      *
      * @suppress 此 API 不稳定, 可能在任何时间被修改
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public val realTarget: Any?
 
     /**

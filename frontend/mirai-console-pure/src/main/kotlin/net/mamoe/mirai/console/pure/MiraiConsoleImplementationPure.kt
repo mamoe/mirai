@@ -17,7 +17,7 @@
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
     "EXPOSED_SUPER_CLASS"
 )
-@file:OptIn(ConsoleInternalAPI::class, ConsoleFrontEndImplementation::class)
+@file:OptIn(ConsoleInternalApi::class, ConsoleFrontEndImplementation::class)
 
 package net.mamoe.mirai.console.pure
 
@@ -34,9 +34,9 @@ import net.mamoe.mirai.console.plugin.DeferredPluginLoader
 import net.mamoe.mirai.console.plugin.PluginLoader
 import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
 import net.mamoe.mirai.console.pure.ConsoleInputImpl.requestInput
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.NamedSupervisorJob
 import net.mamoe.mirai.utils.*
 import org.fusesource.jansi.Ansi
@@ -58,7 +58,7 @@ import java.util.*
  *
  * @see MiraiConsolePureLoader CLI 入口点
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 class MiraiConsoleImplementationPure
 @JvmOverloads constructor(
     override val rootPath: Path = Paths.get("."),

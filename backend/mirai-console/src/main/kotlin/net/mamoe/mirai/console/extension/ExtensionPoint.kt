@@ -12,18 +12,18 @@
 package net.mamoe.mirai.console.extension
 
 import net.mamoe.mirai.console.plugin.PluginLoader
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface ExtensionPoint<T : Extension> {
     public val type: KClass<T>
 
     public companion object {
         @JvmStatic
         @JvmSynthetic
-        @ConsoleExperimentalAPI
+        @ConsoleExperimentalApi
         public inline fun <reified T : Extension> ExtensionPoint<*>.isFor(exactType: Boolean = false): Boolean {
             return if (exactType) {
                 T::class == type
@@ -32,15 +32,15 @@ public interface ExtensionPoint<T : Extension> {
     }
 }
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public interface SingletonExtensionPoint<T : SingletonExtension<*>> : ExtensionPoint<T>
 
 /**
  * 表示一个扩展点
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public open class AbstractExtensionPoint<T : Extension>(
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public override val type: KClass<T>,
 ) : ExtensionPoint<T>
 
@@ -53,7 +53,7 @@ public open class AbstractExtensionPoint<T : Extension>(
  * @see PluginLoader.disable
  * @see PluginLoader.description
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public open class ExtensionException : RuntimeException {
     public constructor() : super()
     public constructor(message: String?) : super(message)
