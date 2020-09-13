@@ -128,13 +128,11 @@ object MyCompositeCommand : CompositeCommand(
 ) {
     // 会自动创建一个 ID 为 "org.example.example-plugin:command.manage" 的权限.
 
-    // [参数智能解析]
     //
     // 在控制台执行 "/manage <群号>.<群员> <持续时间>",
     // 或在聊天群内发送 "/manage <@一个群员> <持续时间>",
     // 或在聊天群内发送 "/manage <目标群员的群名> <持续时间>",
     // 或在聊天群内发送 "/manage <目标群员的账号> <持续时间>"
-    // 时调用这个函数
     @SubCommand
     suspend fun CommandSender.mute(target: Member, duration: Int) { // 通过 /manage mute <target> <duration> 调用
         sendMessage("/manage mute 被调用了, 参数为: $target, $duration")

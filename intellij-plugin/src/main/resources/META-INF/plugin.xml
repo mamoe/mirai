@@ -17,6 +17,10 @@
                                         implementationClass="net.mamoe.mirai.console.intellij.line.marker.PluginMainLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="kotlin"
                                         implementationClass="net.mamoe.mirai.console.intellij.line.marker.PluginMainLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="net.mamoe.mirai.console.intellij.line.marker.CommandDeclarationLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="kotlin"
+                                        implementationClass="net.mamoe.mirai.console.intellij.line.marker.CommandDeclarationLineMarkerProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

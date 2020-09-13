@@ -50,3 +50,9 @@ internal fun getElementForLineMark(callElement: PsiElement): PsiElement =
             //but who knows what to reference in KtArrayAccessExpression ?
             generateSequence(callElement, { it.firstChild }).last()
     }
+
+internal val KtAnnotationEntry.annotationClass: KtClass?
+    get() = calleeExpression?.constructorReferenceExpression?.resolve()?.findParent<KtClass>()
+
+internal fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
+    this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
