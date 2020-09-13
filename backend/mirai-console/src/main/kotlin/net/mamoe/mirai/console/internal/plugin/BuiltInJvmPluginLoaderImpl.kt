@@ -42,7 +42,7 @@ internal object BuiltInJvmPluginLoaderImpl :
     override val dataStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.dataStorageForJvmPluginLoader
 
-    internal val classLoaders: ConcurrentLinkedQueue<JvmPluginClassLoader> = ConcurrentLinkedQueue()
+    internal val classLoaders: MutableList<JvmPluginClassLoader> = mutableListOf()
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
@@ -53,7 +53,7 @@ internal object BuiltInJvmPluginLoaderImpl :
         ensureActive()
 
         fun Sequence<Map.Entry<File, JvmPluginClassLoader>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
-            return map { (f, pluginClassLoader) ->
+            return onEach { (_, pluginClassLoader) ->
                 val exportManagers = pluginClassLoader.findServices(
                     ExportManager::class
                 ).loadAllServices()
@@ -67,6 +67,7 @@ internal object BuiltInJvmPluginLoaderImpl :
                 } else {
                     pluginClassLoader.declaredFilter = exportManagers[0]
                 }
+            }.map { (f, pluginClassLoader) ->
                 f to (pluginClassLoader.findServices(
                     JvmPlugin::class,
                     KotlinPlugin::class,

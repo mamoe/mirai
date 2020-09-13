@@ -50,6 +50,7 @@ internal class JvmPluginClassLoader(
     }
 
     internal fun findClass(name: String, disableGlobal: Boolean): Class<*>? {
+        // First. Try direct load in cache.
         val cachedClass = cache[name]
         if (cachedClass != null) {
             if (disableGlobal) {
@@ -60,19 +61,30 @@ internal class JvmPluginClassLoader(
             }
             return cachedClass
         }
-        if (disableGlobal)
+        if (disableGlobal) {
+            // ==== Process Loading Request From JvmPluginClassLoader ====
+            //
+            // If load from other classloader,
+            // means no other loaders are cached.
+            // direct load
             return kotlin.runCatching {
                 super.findClass(name).also { cache[name] = it }
             }.getOrElse {
                 if (it is ClassNotFoundException) null
                 else throw it
             }?.also {
+                // This request is from other classloader,
+                // so we need to check the class is exported or not.
                 val filter = declaredFilter
                 if (filter != null && !filter.isExported(name)) {
                     throw LoadingDeniedException(name)
                 }
             }
+        }
 
+        // ==== Process Loading Request From JDK ClassLoading System ====
+
+        // First. scan other classLoaders's caches
         classLoaders.forEach { otherClassloader ->
             if (otherClassloader === this) return@forEach
             val filter = otherClassloader.declaredFilter
@@ -83,20 +95,26 @@ internal class JvmPluginClassLoader(
             }
         }
 
-        return kotlin.runCatching { super.findClass(name).also { cache[name] = it } }.getOrElse {
-            if (it is ClassNotFoundException) {
+        // If no cache...
+        return kotlin.runCatching {
+            // Try load this class direct....
+            super.findClass(name).also { cache[name] = it }
+        }.getOrElse { exception ->
+            if (exception is ClassNotFoundException) {
+                // Cannot load the class from this, try others.
                 classLoaders.forEach { otherClassloader ->
                     if (otherClassloader === this) return@forEach
                     val other = kotlin.runCatching {
                         otherClassloader.findClass(name, true)
-                    }.getOrElse { err ->
-                        if (err is LoadingDeniedException || err !is ClassNotFoundException) throw it
-                        null
-                    }
+                    }.onFailure { err ->
+                        if (err is LoadingDeniedException || err !is ClassNotFoundException)
+                            throw err
+                    }.getOrNull()
                     if (other != null) return other
                 }
             }
-            throw it
+            // Great, nobody known what is the class.
+            throw exception
         }
     }
 }

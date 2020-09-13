@@ -16,6 +16,8 @@
 [`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
 [`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
 
+[`ExportManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/ExportManager.kt
+
 [`MiraiConsole`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsole.kt
 [`MiraiConsoleImplementation`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleImplementation.kt
 <!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleFrontEnd.kt-->
@@ -159,6 +161,56 @@ public final class JExample extends JavaPlugin {
 
 多个插件的加载是*顺序的*，意味着若一个插件的 `onLoad()` 等回调处理缓慢，后续插件的加载也会被延后，即使它们可能没有依赖关系。  
 因此请尽量让 `onLoad()`，`onEnable()`，`onDisable()`快速返回。
+
+### API 导出管理
+
+我们允许插件将一些内部实现hidden起来， 避免其他插件调用， 要启动这个特性，
+只需要在你的 resources 文件夹创建名为 `export-rules.txt` 的规则文件，便可以控制插件的类的公开规则
+
+Example:
+```text
+
+# #开头的行我们都识别为注释, 你可以在规则文件里面写很多注释
+
+# export 运行插件访问一个类, 或者一个包
+
+# 导出了一个internal包的一个类
+export org.example.miraiconsole.myplugin.internal.OpenInternal
+
+# 导出了整个 api 包, 导出包和导出类的区别就是末尾是否存在 . 号
+export org.example.miraiconsole.myplugin.api.
+
+# deny, 不允许其他插件使用这个包, 要隐藏一个包的时候, 注意不要忘记最后的 . 号
+#
+# 别名: hidden, internal
+deny org.example.miraiconsole.myplugin.internal.
+
+# 这条规则不会生效, 因为在这条规则前已经被上面的 deny 给隐藏了
+export org.example.miraiconsole.myplugin.internal.NotOpenInternal
+
+
+# export-all, 导出全部内容, 当然在此规则之前的deny依然会生效
+# 使用此规则会同时让此规则后的所有规则全部失效
+# export-all
+
+# 拒绝其他插件使用任何类, 除了之前已经explort的
+# 此规则会导致后面的所有规则全部失效
+deny-all
+
+```
+
+插件也可以通过 Service 来自定义导出控制
+
+Example:
+```kotlin
+@AutoService(ExportManager::class)
+object MyExportManager: ExportManager {
+    override fun isExported(className: String): Boolean {
+        println("  <== $className")
+        return true
+    }
+}
+```
 
 ### 插件生命周期
 
