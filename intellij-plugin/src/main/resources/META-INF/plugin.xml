@@ -14,7 +14,9 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <codeInsight.lineMarkerProvider language="JAVA"
-                                        implementationClass="net.mamoe.kjbb.ide.BlockingBridgeLineMarkerProvider"/>
+                                        implementationClass="net.mamoe.mirai.console.intellij.line.marker.PluginMainLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="kotlin"
+                                        implementationClass="net.mamoe.mirai.console.intellij.line.marker.PluginMainLineMarkerProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
