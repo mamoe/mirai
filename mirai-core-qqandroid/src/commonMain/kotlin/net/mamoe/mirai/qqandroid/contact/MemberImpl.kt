@@ -26,13 +26,11 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NudgeManager
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.createToTemp
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -123,6 +121,9 @@ internal class MemberImpl constructor(
 
     @Suppress("PropertyName")
     var _muteTimestamp: Int = memberInfo.muteTimestamp
+
+    @Suppress("PropertyName")
+    var _nudgeTimestamp: Long = 0L
 
     override val muteTimeRemaining: Int
         get() = if (_muteTimestamp == 0 || _muteTimestamp == 0xFFFFFFFF.toInt()) {
@@ -217,6 +218,24 @@ internal class MemberImpl constructor(
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
+    }
+
+    override suspend fun nudge() {
+        require(bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
+            "Please use android phone protocol!"
+        }
+        val coolDown = currentTimeMillis - _nudgeTimestamp;
+        require(coolDown > 10000L) {
+            "Cooling, Please wait $coolDown ms and try again"
+        }
+        bot.network.run {
+            NudgeManager.Nudge.troopInvoke(
+                client = bot.client,
+                groupCode = group.id,
+                targetUin = this@MemberImpl.id,
+            ).sendAndExpect<NudgeManager.Nudge.Response>()
+        }
+        _nudgeTimestamp = currentTimeMillis
     }
 
 

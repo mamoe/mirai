@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
@@ -20,6 +21,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
+import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
@@ -123,6 +125,18 @@ public abstract class Member : MemberJavaFriendlyAPI, User() {
      */
     @JvmSynthetic
     public abstract suspend fun unmute()
+
+    /**
+     * 戳一戳该成员，时间间隔为10秒。
+     * 如对方已禁用该功能，发送将会失败且不会抛出异常。
+     *
+     * 协议限制：手机协议 [MiraiProtocol.ANDROID_PHONE]
+     *
+     * @see MemberNudgeEvent 成员戳一戳事件
+     */
+    @JvmBlockingBridge
+    @JvmSynthetic
+    public abstract suspend fun nudge()
 
     /**
      * 踢出该成员.

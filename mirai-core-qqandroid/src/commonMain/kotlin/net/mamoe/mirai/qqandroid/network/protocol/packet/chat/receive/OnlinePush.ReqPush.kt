@@ -23,6 +23,8 @@ import kotlinx.io.core.readUInt
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
@@ -37,8 +39,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x115
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x122
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x44
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x44.Submsgtype0x44
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0xb3
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
@@ -231,6 +234,41 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         return@lambda732 sequenceOf(GroupAllowAnonymousChatEvent(!new, new, group, operator))
     },
 
+    //系统提示
+    0x14 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
+
+        discardExact(1)
+        val grayTip = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer()).optGeneralGrayTip
+        when (grayTip?.templId) {
+            //戳一戳
+            10043L, 1134L, 1135L -> {
+                //预置数据，服务器将不会提供己方已知消息
+                var action = ""
+                var from: Member = group.botAsMember
+                var target: Member = group.botAsMember
+                var suffix = ""
+                grayTip.msgTemplParam?.forEach {
+                    val value = it.value.decodeToString()
+                    when (it.name.decodeToString()) {
+                        "action_str" -> action = value
+                        "uin_str1" -> from = group[value.toLong()]
+                        "uin_str2" -> target = group[value.toLong()]
+                        "suffix_str" -> suffix = value
+                    }
+                }
+                return@lambda732 sequenceOf(MemberNudgeEvent(from, action, target, suffix))
+            }
+            //TODO:群聊活跃称号提示
+            1067L -> {
+
+            }
+            else -> {
+
+            }
+        }
+
+        return@lambda732 emptySequence()
+    },
     // 传字符串信息
     0x10 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
         val dataBytes = readBytes(26)
@@ -411,7 +449,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         return@lambda528 emptySequence()
     },
     0x44L to lambda528 { bot ->
-        val msg = vProtobuf.loadAs(Submsgtype0x44.Submsgtype0x44.MsgBody.serializer())
+        val msg = vProtobuf.loadAs(Submsgtype0x44.MsgBody.serializer())
         when {
             msg.msgCleanCountMsg != null -> {
 
@@ -440,6 +478,90 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             group.cancel(CancellationException("Being kicked"))
             sequenceOf(BotLeaveEvent.Active(group))
         } else emptySequence()
+    },
+    //戳一戳信息等
+    0x122L to lambda528 { bot ->
+        val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
+        when (body.templId) {
+            //戳一戳
+            1135L, 1136L, 10043L -> {
+                //预置数据，服务器将不会提供己方已知消息
+                var from: Friend = bot.selfQQ
+                var action = ""
+                var target: Friend = bot.selfQQ
+                var suffix = ""
+                body.msgTemplParam?.forEach {
+                    val value = it.value.decodeToString()
+                    when (it.name.decodeToString()) {
+                        "action_str" -> action = value
+                        "uin_str1" -> from = bot.getFriend(value.toLong())
+                        "uin_str2" -> target = bot.getFriend(value.toLong())
+                        "suffix_str" -> suffix = value
+                    }
+                }
+                return@lambda528 sequenceOf(FriendNudgeEvent(from, action, target, suffix))
+
+            }
+            else -> {
+                return@lambda528 emptySequence()
+            }
+        }
+    },
+    //戳一戳信息等
+    0x122L to lambda528 { bot ->
+        val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
+        when (body.templId) {
+            //戳一戳
+            1135L, 1136L, 10043L -> {
+                //预置数据，服务器将不会提供己方已知消息
+                var from: Friend = bot.selfQQ
+                var action = ""
+                var target: Friend = bot.selfQQ
+                var suffix = ""
+                body.msgTemplParam?.forEach {
+                    val value = it.value.decodeToString()
+                    when (it.name.decodeToString()) {
+                        "action_str" -> action = value
+                        "uin_str1" -> from = bot.getFriend(value.toLong())
+                        "uin_str2" -> target = bot.getFriend(value.toLong())
+                        "suffix_str" -> suffix = value
+                    }
+                }
+                return@lambda528 sequenceOf(FriendNudgeEvent(from, action, target, suffix))
+
+            }
+            else -> {
+                return@lambda528 emptySequence()
+            }
+        }
+    },
+    //戳一戳信息等
+    0x122L to lambda528 { bot ->
+        val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
+        when (body.templId) {
+            //戳一戳
+            1135L, 1136L, 10043L -> {
+                //预置数据，服务器将不会提供己方已知消息
+                var from: Friend = bot.selfQQ
+                var action = ""
+                var target: Friend = bot.selfQQ
+                var suffix = ""
+                body.msgTemplParam?.forEach {
+                    val value = it.value.decodeToString()
+                    when (it.name.decodeToString()) {
+                        "action_str" -> action = value
+                        "uin_str1" -> from = bot.getFriend(value.toLong())
+                        "uin_str2" -> target = bot.getFriend(value.toLong())
+                        "suffix_str" -> suffix = value
+                    }
+                }
+                return@lambda528 sequenceOf(FriendNudgeEvent(from, action, target, suffix))
+
+            }
+            else -> {
+                return@lambda528 emptySequence()
+            }
+        }
     },
     //好友输入状态
     0x115L to lambda528 { bot ->

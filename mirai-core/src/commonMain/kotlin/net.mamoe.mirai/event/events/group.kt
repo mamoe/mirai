@@ -487,4 +487,30 @@ public data class MemberUnmuteEvent internal constructor(
 
 // endregion
 
+// region 戳一戳
+/**
+ * 群成员戳一戳事件.
+ *
+ */
+public data class MemberNudgeEvent internal constructor(
+    /**
+     * 戳一戳的发起者
+     */
+    public override val member: Member,
+    /**
+     * 戳一戳的动作
+     */
+    public val action: String,
+    /**
+     * 戳一戳的目标
+     */
+    public val target: Member,
+    /**
+     * 戳一戳中设置的自定义文案
+     */
+    public val suffix: String
+) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
+
+// endregion
+
 // endregion

@@ -12,16 +12,19 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
+import net.mamoe.mirai.event.events.FriendNudgeEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
+import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -76,6 +79,18 @@ public abstract class Friend : User(), CoroutineScope {
     suspend inline fun sendMessage(message: String): MessageReceipt<Friend> {
         return sendMessage(PlainText(message))
     }
+
+    /**
+     * 戳一戳该好友，时间间隔为10秒。
+     * 如对方已禁用该功能，发送将会失败且不会抛出异常。
+     *
+     * 协议限制：手机协议 [MiraiProtocol.ANDROID_PHONE]
+     *
+     * @see FriendNudgeEvent 好友戳一戳事件
+     */
+    @JvmBlockingBridge
+    @JvmSynthetic
+    public abstract suspend fun nudge()
 
     final override fun toString(): String = "Friend($id)"
 }

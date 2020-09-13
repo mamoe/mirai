@@ -38,13 +38,11 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.highway.sizeToString
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NudgeManager
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -85,6 +83,9 @@ internal class FriendImpl(
     override val nick: String
         get() = friendInfo.nick
 
+    @Suppress("PropertyName")
+    var _nudgeTimestamp: Long = 0L
+
     @JvmSynthetic
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
@@ -96,6 +97,24 @@ internal class FriendImpl(
         ).also {
             logMessageSent(message)
         }
+    }
+
+    @Suppress("DuplicatedCode")
+    override suspend fun nudge() {
+        require(bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
+            "Please use android phone protocol!"
+        }
+        val coolDown = currentTimeMillis - _nudgeTimestamp;
+        require(coolDown > 10000L) {
+            "Cooling, Please wait $coolDown ms and try again"
+        }
+        bot.network.run {
+            NudgeManager.Nudge.friendInvoke(
+                client = bot.client,
+                targetUin = this@FriendImpl.id,
+            ).sendAndExpect<NudgeManager.Nudge.Response>()
+        }
+        _nudgeTimestamp = currentTimeMillis
     }
 
     @JvmSynthetic

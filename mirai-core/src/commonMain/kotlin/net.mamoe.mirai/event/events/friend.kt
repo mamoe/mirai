@@ -112,7 +112,27 @@ public data class FriendAvatarChangedEvent internal constructor(
     public override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
-
+/**
+ * [Friend] 的戳一戳事件.
+ */
+public data class FriendNudgeEvent internal constructor(
+    /**
+     * 戳一戳的发起者
+     */
+    public override val friend: Friend,
+    /**
+     * 戳一戳的动作
+     */
+    public val action: String,
+    /**
+     * 戳一戳的目标
+     */
+    public val target: Friend,
+    /**
+     * 戳一戳中设置的自定义文案
+     */
+    public val suffix: String
+) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * [Friend] 昵称改变事件, 在此事件广播时好友已经完成改名
