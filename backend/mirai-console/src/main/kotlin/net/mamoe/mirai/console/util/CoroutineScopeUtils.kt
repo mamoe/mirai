@@ -15,15 +15,15 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public object CoroutineScopeUtils {
     @JvmStatic
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun CoroutineContext.overrideWithSupervisorJob(name: String? = null): CoroutineContext =
         this + NamedSupervisorJob(name ?: "<unnamed>", this[Job])
 
     @JvmStatic
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun CoroutineScope.childScope(
         name: String? = null,
         context: CoroutineContext = EmptyCoroutineContext
@@ -31,7 +31,7 @@ public object CoroutineScopeUtils {
         CoroutineScope(this.childScopeContext(name, context))
 
     @JvmStatic
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun CoroutineScope.childScopeContext(
         name: String? = null,
         context: CoroutineContext = EmptyCoroutineContext
@@ -42,7 +42,7 @@ public object CoroutineScopeUtils {
         }
 }
 
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public class NamedSupervisorJob @JvmOverloads constructor(
     private val name: String,
     parent: Job? = null

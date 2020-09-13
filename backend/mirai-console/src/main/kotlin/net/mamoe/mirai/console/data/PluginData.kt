@@ -21,8 +21,7 @@ import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.console.data.java.JAutoSavePluginData
 import net.mamoe.mirai.console.internal.data.*
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
-import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
@@ -95,7 +94,7 @@ import kotlin.reflect.full.findAnnotation
  * newList.add(1) // 不会添加到 MyPluginData.nestedMap 中, 因为 `mutableListOf` 创建的 MutableList 被非引用地添加进了 MyPluginData.nestedMap
  * ```
  *
- * 一个解决方案是对 [SerializerAwareValue] 做映射或相关修改. 如 [PluginDataExtensions]。
+ * 一个解决方案是对 [SerializerAwareValue] 做映射或相关修改. 如 [PluginDataExtensions].
  *
  * 要查看详细的解释，请查看 [docs/PluginData.md](https://github.com/mamoe/mirai-console/blob/master/docs/PluginData.md)
  *
@@ -117,7 +116,7 @@ public interface PluginData {
     /**
      * 这个 [PluginData] 保存时使用的名称. 默认通过 [ValueName] 获取, 否则使用 [类全名][KClass.qualifiedName] (即 [Class.getCanonicalName])
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public val saveName: String
         get() {
             val clazz = this::class
@@ -129,7 +128,7 @@ public interface PluginData {
     /**
      * 由 [provideDelegate] 创建, 来自一个通过 `by value` 初始化的属性节点.
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public data class ValueNode<T>(
         /**
          * 节点名称.
@@ -178,8 +177,6 @@ public interface PluginData {
 
     /**
      * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用
-     *
-     * @suppress 注意, 这是实验性 API.
      */
     public val updaterSerializer: KSerializer<Unit>
 
@@ -191,7 +188,7 @@ public interface PluginData {
     /**
      * 当这个 [PluginData] 被放入一个 [PluginDataStorage] 时调用
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     public fun onInit(owner: PluginDataHolder, storage: PluginDataStorage)
 }
 
@@ -346,6 +343,6 @@ internal fun <T> PluginData.valueImpl(type: KType, classifier: KClass<*>): Seria
  * - 使用 [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) 的 [Serializable] 标记的类
  */
 @Suppress("UNCHECKED_CAST")
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 public fun <T> PluginData.valueFromKType(type: KType, default: T): SerializerAwareValue<T> =
     (valueFromKTypeImpl(type) as SerializerAwareValue<Any?>).apply { this.value = default } as SerializerAwareValue<T>

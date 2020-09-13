@@ -18,8 +18,8 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.plugin.PluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
@@ -37,8 +37,8 @@ import kotlin.coroutines.CoroutineContext
  *
  * 这些 API 只应由前端实现者使用, 而不应该被插件或其他调用者使用.
  */
-@Retention(AnnotationRetention.SOURCE)
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
 public annotation class ConsoleFrontEndImplementation
@@ -72,11 +72,11 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public val frontEndDescription: MiraiConsoleFrontEndDescription
 
     /**
-     * 内建加载器列表, 一般需要包含 [JarPluginLoader].
+     * 内建加载器列表, 一般需要包含 [JvmPluginLoader].
      *
      * @return 不可变的 [List], [Collections.unmodifiableList]
      */
-    public val builtInPluginLoaders: List<PluginLoader<*, *>>
+    public val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>>
 
     /**
      * 由 Kotlin 用户实现
@@ -118,17 +118,38 @@ public interface MiraiConsoleImplementation : CoroutineScope {
             withContext(Dispatchers.IO) { sendMessageJ(message) }
     }
 
+    /**
+     * [ConsoleCommandSender]
+     */
     public val consoleCommandSender: ConsoleCommandSenderImpl
 
-    public val dataStorageForJarPluginLoader: PluginDataStorage
-    public val configStorageForJarPluginLoader: PluginDataStorage
+    public val dataStorageForJvmPluginLoader: PluginDataStorage
+    public val configStorageForJvmPluginLoader: PluginDataStorage
     public val dataStorageForBuiltIns: PluginDataStorage
     public val configStorageForBuiltIns: PluginDataStorage
 
     /**
      * @see ConsoleInput 的实现
+     * @see JConsoleInput
      */
     public val consoleInput: ConsoleInput
+
+    /**
+     * 供 Java 用户实现 [ConsoleInput]
+     */
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @ConsoleFrontEndImplementation
+    public interface JConsoleInput : ConsoleInput {
+        /**
+         * @see ConsoleInput.requestInput
+         */
+        @JvmName("requestInput")
+        public fun requestInputJ(hint: String): String
+
+        override suspend fun requestInput(hint: String): String {
+            return withContext(Dispatchers.IO) { requestInputJ(hint) }
+        }
+    }
 
     /**
      * 创建一个 [LoginSolver]

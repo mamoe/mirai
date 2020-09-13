@@ -16,7 +16,9 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext.ParserPair
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermitteeId
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.*
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
@@ -43,7 +45,7 @@ public interface CommandArgumentContext {
      */
     public data class ParserPair<T : Any>(
         val klass: KClass<T>,
-        val parser: CommandArgumentParser<T>
+        val parser: CommandArgumentParser<T>,
     )
 
     public operator fun <T : Any> get(klass: KClass<out T>): CommandArgumentParser<T>?
@@ -79,6 +81,9 @@ public interface CommandArgumentContext {
         Group::class with ExistingGroupArgumentParser
         Friend::class with ExistingFriendArgumentParser
         Bot::class with ExistingBotArgumentParser
+
+        PermissionId::class with PermissionIdArgumentParser
+        PermitteeId::class with PermitteeIdArgumentParser
     })
 }
 
@@ -134,7 +139,7 @@ public operator fun CommandArgumentContext.plus(replacer: List<ParserPair<*>>): 
  */
 @Suppress("UNCHECKED_CAST")
 public class SimpleCommandArgumentContext(
-    public val list: List<ParserPair<*>>
+    public val list: List<ParserPair<*>>,
 ) : CommandArgumentContext {
     override fun <T : Any> get(klass: KClass<out T>): CommandArgumentParser<T>? =
         (this.list.firstOrNull { klass == it.klass }?.parser
@@ -208,7 +213,7 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     public inline infix fun <T : Any> KClass<T>.with(
-        crossinline parser: CommandArgumentParser<T>.(s: String, sender: CommandSender) -> T
+        crossinline parser: CommandArgumentParser<T>.(s: String, sender: CommandSender) -> T,
     ): CommandArgumentContextBuilder {
         add(ParserPair(this, object : CommandArgumentParser<T> {
             override fun parse(raw: String, sender: CommandSender): T = parser(raw, sender)
@@ -221,7 +226,7 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
      */
     @JvmSynthetic
     public inline infix fun <T : Any> KClass<T>.with(
-        crossinline parser: CommandArgumentParser<T>.(s: String) -> T
+        crossinline parser: CommandArgumentParser<T>.(s: String) -> T,
     ): CommandArgumentContextBuilder {
         add(ParserPair(this, object : CommandArgumentParser<T> {
             override fun parse(raw: String, sender: CommandSender): T = parser(raw)
@@ -238,10 +243,10 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     /**
      * 添加一个指令解析器
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     @JvmSynthetic
     public inline infix fun <reified T : Any> add(
-        crossinline parser: CommandArgumentParser<*>.(s: String) -> T
+        crossinline parser: CommandArgumentParser<*>.(s: String) -> T,
     ): CommandArgumentContextBuilder = T::class with object : CommandArgumentParser<T> {
         override fun parse(raw: String, sender: CommandSender): T = parser(raw)
     }
@@ -249,11 +254,11 @@ public class CommandArgumentContextBuilder : MutableList<ParserPair<*>> by mutab
     /**
      * 添加一个指令解析器
      */
-    @ConsoleExperimentalAPI
+    @ConsoleExperimentalApi
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     public inline infix fun <reified T : Any> add(
-        crossinline parser: CommandArgumentParser<*>.(s: String, sender: CommandSender) -> T
+        crossinline parser: CommandArgumentParser<*>.(s: String, sender: CommandSender) -> T,
     ): CommandArgumentContextBuilder = T::class with object : CommandArgumentParser<T> {
         override fun parse(raw: String, sender: CommandSender): T = parser(raw, sender)
     }

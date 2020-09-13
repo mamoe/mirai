@@ -5,7 +5,7 @@
 ## 目录
 
 - **[准备工作](#准备工作)**
-- **[启动 Console](#Run.md)**
+- **[启动 Console](Run.md)**
 
 ### 后端插件开发基础
 
@@ -17,8 +17,6 @@
 ### 后端插件开发进阶
 
 - 扩展 - [Extension 模块和扩展点](Extensions.md)
-- 扩展 - [实现 PluginLoader](PluginLoader.md)
-- 扩展 - [实现 PermissionService](PermissionService.md)
 
 ### 实现前端
 - [FrontEnd](FrontEnd.md)
@@ -29,10 +27,9 @@
 [`JavaPluginScheduler`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
 [`JvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPlugin.kt
 [`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
-[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginLoader.kt
+[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/loader/PluginLoader.kt
 [`ConsoleInput`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/ConsoleInput.kt
 [`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
-[`BotManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/BotManager.kt
 [`Command`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/Command.kt
 
 ## 准备工作

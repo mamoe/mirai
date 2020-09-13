@@ -104,7 +104,7 @@ public interface CommandManager {
     @JvmBlockingBridge
     public suspend fun CommandSender.executeCommand(
         message: Message,
-        checkPermission: Boolean = true
+        checkPermission: Boolean = true,
     ): CommandExecuteResult
 
     /**
@@ -120,7 +120,7 @@ public interface CommandManager {
     @JvmBlockingBridge
     public suspend fun CommandSender.executeCommand(
         message: String,
-        checkPermission: Boolean = true
+        checkPermission: Boolean = true,
     ): CommandExecuteResult = executeCommand(PlainText(message).asMessageChain(), checkPermission)
 
     /**
@@ -132,7 +132,7 @@ public interface CommandManager {
     public suspend fun Command.execute(
         sender: CommandSender,
         arguments: Message = EmptyMessageChain,
-        checkPermission: Boolean = true
+        checkPermission: Boolean = true,
     ): CommandExecuteResult
 
     /**
@@ -145,7 +145,7 @@ public interface CommandManager {
     public suspend fun Command.execute(
         sender: CommandSender,
         arguments: String = "",
-        checkPermission: Boolean = true
+        checkPermission: Boolean = true,
     ): CommandExecuteResult = execute(sender, PlainText(arguments).asMessageChain(), checkPermission)
 
     public companion object INSTANCE : CommandManager by CommandManagerImpl {
@@ -165,24 +165,48 @@ public interface CommandManager {
         override suspend fun Command.execute(
             sender: CommandSender,
             arguments: Message,
-            checkPermission: Boolean
+            checkPermission: Boolean,
         ): CommandExecuteResult =
             CommandManagerImpl.run { execute(sender, arguments = arguments, checkPermission = checkPermission) }
 
         override suspend fun CommandSender.executeCommand(
             message: String,
-            checkPermission: Boolean
+            checkPermission: Boolean,
         ): CommandExecuteResult = CommandManagerImpl.run { executeCommand(message, checkPermission) }
 
         override suspend fun Command.execute(
             sender: CommandSender,
             arguments: String,
-            checkPermission: Boolean
+            checkPermission: Boolean,
         ): CommandExecuteResult = CommandManagerImpl.run { execute(sender, arguments, checkPermission) }
 
         override suspend fun CommandSender.executeCommand(
             message: Message,
-            checkPermission: Boolean
+            checkPermission: Boolean,
         ): CommandExecuteResult = CommandManagerImpl.run { executeCommand(message, checkPermission) }
+
+        /**
+         * 执行一个确切的指令
+         * @see execute 获取更多信息
+         */
+        public suspend fun CommandSender.execute(
+            command: Command,
+            arguments: Message,
+            checkPermission: Boolean = true,
+        ): CommandExecuteResult {
+            return command.execute(this, arguments, checkPermission)
+        }
+
+        /**
+         * 执行一个确切的指令
+         * @see execute 获取更多信息
+         */
+        public suspend fun CommandSender.execute(
+            command: Command,
+            arguments: String,
+            checkPermission: Boolean = true,
+        ): CommandExecuteResult {
+            return command.execute(this, arguments, checkPermission)
+        }
     }
 }

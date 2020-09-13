@@ -18,8 +18,8 @@ import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.plugin.description.PluginLoadPriority
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 
 /**
  * 表示一个 mirai-console 插件.
@@ -52,7 +52,7 @@ public interface Plugin : CommandOwner {
 /**
  * 获取 [PluginDescription]
  */
-public inline val Plugin.description: PluginDescription get() = this.safeLoader.getDescription(this)
+public inline val Plugin.description: PluginDescription get() = this.safeLoader.getPluginDescription(this)
 
 /**
  * 获取 [PluginDescription.name`]
@@ -63,11 +63,6 @@ public inline val Plugin.name: String get() = this.description.name
  * 获取 [PluginDescription.version]
  */
 public inline val Plugin.version: Semver get() = this.description.version
-
-/**
- * 获取 [PluginDescription.loadPriority]
- */
-public inline val Plugin.loadPriority: PluginLoadPriority get() = this.description.loadPriority
 
 /**
  * 获取 [PluginDescription.info]

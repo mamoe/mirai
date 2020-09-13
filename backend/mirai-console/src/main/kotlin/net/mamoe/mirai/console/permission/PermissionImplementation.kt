@@ -12,14 +12,12 @@ package net.mamoe.mirai.console.permission
 import kotlin.annotation.AnnotationTarget.*
 
 /**
- * 标记一个实验性的权限系统 API.
+ * 表示一个应该由权限插件实现的类.
  *
- * 权限系统是在 1.0-M4 引入的一个实验性系统, 目前不具有 API 稳定性.
+ * 这样的类不能被用户手动实现或者继承, 也不能使用属性委托或者类委托, 或者其他任意改变实现类的手段.
+ * 用户仅应该使用从 [PermissionService] 或其他途径获取这些对象, 而不能自行实现它们.
  */
 @Retention(AnnotationRetention.BINARY)
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
-public annotation class ExperimentalPermission(
-    val message: String = ""
-)
+internal annotation class PermissionImplementation

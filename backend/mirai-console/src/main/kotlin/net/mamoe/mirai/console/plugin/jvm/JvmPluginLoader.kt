@@ -11,30 +11,31 @@ package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.internal.plugin.JarPluginLoaderImpl
-import net.mamoe.mirai.console.plugin.FilePluginLoader
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+import net.mamoe.mirai.console.plugin.loader.FilePluginLoader
 
 /**
  * 内建的 Jar (JVM) 插件加载器
  */
-@ConsoleExperimentalAPI("classname might change")
-public interface JarPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
+public interface JvmPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
     /**
-     * [JvmPlugin.reloadPluginData] 默认使用的实例
+     * ".jar"
      */
-    @ConsoleExperimentalAPI
+    public override val fileSuffix: String
+
+    /**
+     * [AbstractJvmPlugin.reloadPluginData] 默认使用的实例
+     */
     public val dataStorage: PluginDataStorage
 
     /**
-     * [JvmPlugin.reloadPluginData] 默认使用的实例
+     * [AbstractJvmPlugin.reloadPluginData] 默认使用的实例
      */
-    @ConsoleExperimentalAPI
     public val configStorage: PluginDataStorage
 
-    public companion object INSTANCE : JarPluginLoader by JarPluginLoaderImpl {
+    public companion object BuiltIn : JvmPluginLoader by BuiltInJvmPluginLoaderImpl {
         @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-        override val JvmPlugin.description: JvmPluginDescription
-            get() = JarPluginLoaderImpl.run { description }
+        override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription =
+            BuiltInJvmPluginLoaderImpl.run { plugin.description }
     }
 }

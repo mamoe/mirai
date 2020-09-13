@@ -1,11 +1,10 @@
-package net.mamoe.mirai.console.internal.extensions
+package net.mamoe.mirai.console.internal.extension
 
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.extension.Extension
-import net.mamoe.mirai.console.extension.ExtensionRegistry
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.data.kClassQualifiedName
 import net.mamoe.mirai.console.plugin.name
@@ -25,7 +24,7 @@ internal object BuiltInSingletonExtensionSelector : SingletonExtensionSelector {
 
     override fun <T : Extension> selectSingleton(
         extensionType: KClass<T>,
-        candidates: Collection<ExtensionRegistry<T>>
+        candidates: Collection<SingletonExtensionSelector.Registry<T>>,
     ): T? = when {
         candidates.isEmpty() -> null
         candidates.size == 1 -> candidates.single().extension
@@ -42,14 +41,14 @@ internal object BuiltInSingletonExtensionSelector : SingletonExtensionSelector {
 
     private fun <T : Extension> promptForSelectionAndSave(
         extensionType: KClass<T>,
-        candidates: Collection<ExtensionRegistry<T>>
+        candidates: Collection<SingletonExtensionSelector.Registry<T>>,
     ) = promptForManualSelection(extensionType, candidates)
         .also { config.value[extensionType.qualifiedName!!] = it.extension.kClassQualifiedName!! }.extension
 
-    private fun <T : Any> promptForManualSelection(
+    private fun <T : Extension> promptForManualSelection(
         extensionType: KClass<T>,
-        candidates: Collection<ExtensionRegistry<T>>
-    ): ExtensionRegistry<T> {
+        candidates: Collection<SingletonExtensionSelector.Registry<T>>,
+    ): SingletonExtensionSelector.Registry<T> {
         MiraiConsole.mainLogger.info { "There are multiple ${extensionType.simpleName}s, please select one:" }
 
         val candidatesList = candidates.toList()

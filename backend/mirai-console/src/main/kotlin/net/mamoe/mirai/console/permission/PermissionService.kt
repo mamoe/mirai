@@ -11,31 +11,61 @@
 
 package net.mamoe.mirai.console.permission
 
-import net.mamoe.mirai.console.extension.SingletonExtensionPoint.Companion.findSingleton
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
+import net.mamoe.mirai.console.internal.permission.checkType
+import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import kotlin.reflect.KClass
-import kotlin.reflect.full.isSuperclassOf
 
 /**
+ * 权限服务. 用于承载 Console 的权限系统.
+ *
+ * ### 可扩展
+ * 权限服务可由插件扩展并覆盖默认实现.
+ *
  * [PermissionServiceProvider]
  */
-@ExperimentalPermission
+@PermissionImplementation
 public interface PermissionService<P : Permission> {
-    @ExperimentalPermission
+    /**
+     * [P] 的类型
+     */
     public val permissionType: KClass<P>
+
+    /**
+     * [RootPermission] 的实现
+     */
     public val rootPermission: P
 
     ///////////////////////////////////////////////////////////////////////////
 
+    /**
+     * 获取一个已经 [注册][register] 了的 [P]
+     */
     public operator fun get(id: PermissionId): P?
 
+    /**
+     * 获取所有已注册的指令列表. 应保证线程安全.
+     */
     public fun getRegisteredPermissions(): Sequence<P>
-    public fun getGrantedPermissions(permissibleIdentifier: PermissibleIdentifier): Sequence<P>
 
-    public fun testPermission(permissibleIdentifier: PermissibleIdentifier, permission: P): Boolean {
+    /**
+     * 获取 [PermitteeId] 和其父标识的所有被授予的所有直接和间接的权限列表
+     */
+    public fun getPermittedPermissions(permitteeId: PermitteeId): Sequence<P>
+
+    /**
+     * 判断 [permission] 对 [permission] 的权限.
+     *
+     * 返回 `true` 的意义:
+     * - 通常意义: [permitteeId] 拥有 [permission] 的 '能力'
+     * - 实现意义: [permitteeId] 自身或任意父标识 [PermissionService] 被授予高于或等于 [permission] 的权限
+     *
+     * @see Companion.testPermission 接收 [Permittee] 参数的扩展
+     */
+    public fun testPermission(permitteeId: PermitteeId, permission: P): Boolean {
         val permissionId = permission.id
-        val all = this[permissionId]?.parentsWithSelfSequence() ?: return false
-        return getGrantedPermissions(permissibleIdentifier).any { p ->
+        val all = this[permissionId]?.parentsWithSelf ?: return false
+        return getPermittedPermissions(permitteeId).any { p ->
             all.any { p.id == it.id }
         }
     }
@@ -43,27 +73,53 @@ public interface PermissionService<P : Permission> {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    @Throws(DuplicatedPermissionRegistrationException::class)
+    /**
+     * 申请并注册一个权限 [Permission].
+     *
+     * @throws PermissionRegistryConflictException 当已存在一个 [PermissionId] 时抛出.
+     */
+    @Throws(PermissionRegistryConflictException::class)
     public fun register(
         id: PermissionId,
         description: String,
-        parent: Permission = RootPermission
+        parent: Permission = RootPermission,
     ): P
 
     ///////////////////////////////////////////////////////////////////////////
 
-    public fun grant(permissibleIdentifier: PermissibleIdentifier, permission: P)
-    public fun deny(permissibleIdentifier: PermissibleIdentifier, permission: P)
+    /**
+     * 授予 [permitteeId] 以 [permission] 权限
+     *
+     * Console 内建的权限服务支持授予操作. 但插件扩展的权限服务可能不支持.
+     *
+     * @throws UnsupportedOperationException 当插件扩展的 [PermissionService] 不支持这样的操作时抛出.
+     */
+    public fun permit(permitteeId: PermitteeId, permission: P)
+
+    /**
+     * 撤销 [permitteeId] 的 [permission] 授权
+     *
+     * Console 内建的权限服务支持授予操作. 但插件扩展的权限服务可能不支持.
+     *
+     * @param recursive `true` 时递归撤销所有子权限.
+     * 例如, 若 [permission] 为 "*:*",
+     * recursive 为 `true` 时撤销全部权限 (因为所有权限都是 "*:*" 的子权限);
+     * 而为 `false` 时仅撤销 "*:*" 本身, 而不会影响子权限.
+     *
+     * @throws UnsupportedOperationException 当插件扩展的 [PermissionService] 不支持这样的操作时抛出.
+     */
+    public fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean)
 
     public companion object {
+        internal var instanceField: PermissionService<*>? = null
+
         @get:JvmName("getInstance")
         @JvmStatic
-        public val INSTANCE: PermissionService<out Permission> by lazy {
-            PermissionServiceProvider.findSingleton()?.instance ?: BuiltInPermissionService
-        }
+        public val INSTANCE: PermissionService<out Permission>
+            get() = instanceField ?: error("PermissionService is not yet initialized therefore cannot be used.")
 
         public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
-            get(id) ?: throw PermissionNotFoundException(id)
+            get(id) ?: throw NoSuchElementException("Permission not found: $id")
 
         internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
             PermissionId("plugin.${name.toLowerCase()}", id.toLowerCase())
@@ -72,81 +128,68 @@ public interface PermissionService<P : Permission> {
 
         public fun PermissionId.findCorrespondingPermissionOrFail(): Permission = INSTANCE.getOrFail(this)
 
-        public fun PermissibleIdentifier.grantPermission(permission: Permission) {
-            INSTANCE.checkType(permission::class).grant(this, permission)
+        public fun PermitteeId.grantPermission(permission: Permission) {
+            INSTANCE.checkType(permission::class).permit(this, permission)
         }
 
-        public fun PermissibleIdentifier.grantPermission(permissionId: PermissionId) {
+        public fun PermitteeId.grantPermission(permissionId: PermissionId) {
             grantPermission(permissionId.findCorrespondingPermissionOrFail())
         }
 
-        public fun PermissibleIdentifier.denyPermission(permission: Permission) {
-            INSTANCE.checkType(permission::class).deny(this, permission)
+        public fun PermitteeId.denyPermission(permission: Permission, recursive: Boolean) {
+            INSTANCE.checkType(permission::class).cancel(this, permission, recursive)
         }
 
-        public fun PermissibleIdentifier.denyPermission(permissionId: PermissionId) {
-            denyPermission(permissionId.findCorrespondingPermissionOrFail())
+        public fun PermitteeId.denyPermission(permissionId: PermissionId, recursive: Boolean) {
+            denyPermission(permissionId.findCorrespondingPermissionOrFail(), recursive)
         }
 
-        public fun Permissible.hasPermission(permission: Permission): Boolean =
+        public fun Permittee.hasPermission(permission: Permission): Boolean =
             permission.testPermission(this@hasPermission)
 
-        public fun PermissibleIdentifier.hasPermission(permission: Permission): Boolean =
+        public fun PermitteeId.hasPermission(permission: Permission): Boolean =
             permission.testPermission(this@hasPermission)
 
-        public fun PermissibleIdentifier.hasPermission(permissionId: PermissionId): Boolean {
+        public fun PermitteeId.hasPermission(permissionId: PermissionId): Boolean {
             val instance = permissionId.findCorrespondingPermissionOrFail()
             return INSTANCE.checkType(instance::class).testPermission(this@hasPermission, instance)
         }
 
-        public fun Permissible.hasPermission(permissionId: PermissionId): Boolean =
+        public fun Permittee.hasPermission(permissionId: PermissionId): Boolean =
             permissionId.testPermission(this@hasPermission)
 
-        public fun Permissible.getGrantedPermissions(): Sequence<Permission> =
-            INSTANCE.getGrantedPermissions(this@getGrantedPermissions.identifier)
+        public fun Permittee.getPermittedPermissions(): Sequence<Permission> =
+            INSTANCE.getPermittedPermissions(this@getPermittedPermissions.permitteeId)
 
-        public fun Permissible.grantPermission(vararg permissions: Permission) {
+        public fun Permittee.grantPermission(vararg permissions: Permission) {
             for (permission in permissions) {
-                INSTANCE.checkType(permission::class).grant(this.identifier, permission)
+                INSTANCE.checkType(permission::class).permit(this.permitteeId, permission)
             }
         }
 
-        public fun Permissible.denyPermission(vararg permissions: Permission) {
+        public fun Permittee.denyPermission(vararg permissions: Permission, recursive: Boolean) {
             for (permission in permissions) {
-                INSTANCE.checkType(permission::class).deny(this.identifier, permission)
+                INSTANCE.checkType(permission::class).cancel(this.permitteeId, permission, recursive)
             }
         }
 
-        public fun PermissibleIdentifier.getGrantedPermissions(): Sequence<Permission> =
-            INSTANCE.getGrantedPermissions(this@getGrantedPermissions)
+        public fun PermitteeId.getPermittedPermissions(): Sequence<Permission> =
+            INSTANCE.getPermittedPermissions(this@getPermittedPermissions)
 
-        public fun Permission.testPermission(permissible: Permissible): Boolean =
-            INSTANCE.checkType(this::class).testPermission(permissible.identifier, this@testPermission)
+        public fun Permission.testPermission(permittee: Permittee): Boolean =
+            INSTANCE.checkType(this::class).testPermission(permittee.permitteeId, this@testPermission)
 
-        public fun Permission.testPermission(permissibleIdentifier: PermissibleIdentifier): Boolean =
-            INSTANCE.checkType(this::class).testPermission(permissibleIdentifier, this@testPermission)
+        public fun Permission.testPermission(permitteeId: PermitteeId): Boolean =
+            INSTANCE.checkType(this::class).testPermission(permitteeId, this@testPermission)
 
-        public fun PermissionId.testPermission(permissible: Permissible): Boolean {
+        public fun PermissionId.testPermission(permittee: Permittee): Boolean {
+            val p = INSTANCE[this] ?: return false
+            return p.testPermission(permittee)
+        }
+
+        public fun PermissionId.testPermission(permissible: PermitteeId): Boolean {
             val p = INSTANCE[this] ?: return false
             return p.testPermission(permissible)
         }
-
-        public fun PermissionId.testPermission(permissible: PermissibleIdentifier): Boolean {
-            val p = INSTANCE[this] ?: return false
-            return p.testPermission(permissible)
-        }
-    }
-}
-
-@OptIn(ExperimentalPermission::class)
-internal fun PermissionService<*>.checkType(permissionType: KClass<out Permission>): PermissionService<Permission> {
-    return PermissionService.INSTANCE.run {
-        require(this.permissionType.isSuperclassOf(permissionType)) {
-            "Custom-constructed Permission instance is not allowed (Required ${this.permissionType}, found ${permissionType}. " +
-                    "Please obtain Permission from PermissionService.INSTANCE.register or PermissionService.INSTANCE.get"
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        this as PermissionService<Permission>
     }
 }

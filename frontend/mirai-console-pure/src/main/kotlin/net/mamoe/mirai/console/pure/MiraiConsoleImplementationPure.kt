@@ -17,7 +17,7 @@
     "INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING",
     "EXPOSED_SUPER_CLASS"
 )
-@file:OptIn(ConsoleInternalAPI::class, ConsoleFrontEndImplementation::class)
+@file:OptIn(ConsoleInternalApi::class, ConsoleFrontEndImplementation::class, ConsolePureExperimentalApi::class)
 
 package net.mamoe.mirai.console.pure
 
@@ -30,13 +30,14 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.plugin.DeferredPluginLoader
-import net.mamoe.mirai.console.plugin.PluginLoader
-import net.mamoe.mirai.console.plugin.jvm.JarPluginLoader
+import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.pure.ConsoleInputImpl.requestInput
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.pure.noconsole.AllEmptyLineReader
+import net.mamoe.mirai.console.pure.noconsole.NoConsole
 import net.mamoe.mirai.console.util.ConsoleInput
-import net.mamoe.mirai.console.util.ConsoleInternalAPI
+import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.NamedSupervisorJob
 import net.mamoe.mirai.utils.*
 import org.fusesource.jansi.Ansi
@@ -51,26 +52,23 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 /**
  * mirai-console-pure 后端实现
  *
  * @see MiraiConsolePureLoader CLI 入口点
  */
-@ConsoleExperimentalAPI
+@ConsoleExperimentalApi
 class MiraiConsoleImplementationPure
 @JvmOverloads constructor(
-    override val rootPath: Path = Paths.get("."),
-    override val builtInPluginLoaders: List<PluginLoader<*, *>> = Collections.unmodifiableList(
-        listOf(DeferredPluginLoader { JarPluginLoader })
-    ),
+    override val rootPath: Path = Paths.get(".").toAbsolutePath(),
+    override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader }),
     override val frontEndDescription: MiraiConsoleFrontEndDescription = ConsoleFrontEndDescImpl,
     override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl = ConsoleCommandSenderImplPure,
-    override val dataStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
+    override val dataStorageForJvmPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
     override val dataStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("data")),
-    override val configStorageForJarPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
-    override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config"))
+    override val configStorageForJvmPluginLoader: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
+    override val configStorageForBuiltIns: PluginDataStorage = MultiFilePluginDataStorage(rootPath.resolve("config")),
 ) : MiraiConsoleImplementation, CoroutineScope by CoroutineScope(
     NamedSupervisorJob("MiraiConsoleImplementationPure") +
             CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -119,6 +117,8 @@ private object ConsoleInputImpl : ConsoleInput {
 }
 
 val lineReader: LineReader by lazy {
+    if (ConsolePureSettings.noConsole) return@lazy AllEmptyLineReader
+
     LineReaderBuilder.builder()
         .terminal(terminal)
         .completer(NullCompleter())
@@ -126,6 +126,8 @@ val lineReader: LineReader by lazy {
 }
 
 val terminal: Terminal = run {
+    if (ConsolePureSettings.noConsole) return@run NoConsole
+
     val dumb = System.getProperty("java.class.path")
         .contains("idea_rt.jar") || System.getProperty("mirai.idea") !== null || System.getenv("mirai.idea") !== null
 

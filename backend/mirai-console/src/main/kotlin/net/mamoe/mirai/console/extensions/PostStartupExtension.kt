@@ -16,8 +16,6 @@ import net.mamoe.mirai.console.extension.FunctionExtension
  * 在 Console 启动完成后立即在主线程调用的扩展. 用于进行一些必要的延迟初始化.
  *
  * 这些扩展只会, 且一定会被调用正好一次.
- *
- * 此扩展可由所有插件提供
  */
 public fun interface PostStartupExtension : FunctionExtension {
     /**

@@ -20,7 +20,7 @@ import kotlin.annotation.AnnotationTarget.*
 @Retention(AnnotationRetention.SOURCE)
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(PROPERTY, FUNCTION, TYPE, CLASS)
-internal annotation class JavaFriendlyAPI
+internal annotation class JavaFriendlyApi
 
 /**
  * 标记为一个仅供 mirai-console 内部使用的 API.
@@ -32,8 +32,8 @@ internal annotation class JavaFriendlyAPI
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR, CLASS, FUNCTION, PROPERTY)
 @MustBeDocumented
-public annotation class ConsoleInternalAPI(
-    val message: String = ""
+public annotation class ConsoleInternalApi(
+    val message: String = "",
 )
 
 /**
@@ -46,6 +46,6 @@ public annotation class ConsoleInternalAPI(
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
-public annotation class ConsoleExperimentalAPI(
-    val message: String = ""
+public annotation class ConsoleExperimentalApi(
+    val message: String = "",
 )

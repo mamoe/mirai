@@ -11,8 +11,10 @@
 
 package net.mamoe.mirai.console.permission
 
-@ExperimentalPermission
-public class DuplicatedPermissionRegistrationException(
-    newInstance: Permission,
-    public val existingInstance: Permission
-) : Exception("Duplicated Permission registry. new: $newInstance, existing: $existingInstance")
+/**
+ * @see PermissionService.register
+ */
+public class PermissionRegistryConflictException(
+    public val newInstance: Permission,
+    public val existingInstance: Permission,
+) : Exception("Conflicted Permission registry. new: $newInstance, existing: $existingInstance")

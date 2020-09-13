@@ -14,10 +14,9 @@ package net.mamoe.mirai.console.plugin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.util.ConsoleExperimentalAPI
+import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import java.io.File
 import java.nio.file.Path
-import java.util.*
 
 /**
  * 插件管理器.
@@ -104,23 +103,7 @@ public interface PluginManager {
     public val pluginLoaders: List<PluginLoader<*, *>>
 
     /**
-     * 手动注册一个扩展的插件加载器. 在启动时会通过 [ServiceLoader] 加载, 但也可以手动注册.
-     *
-     * @see PluginLoader 插件加载器
-     */
-    @ConsoleExperimentalAPI
-    public fun PluginLoader<*, *>.register(): Boolean
-
-    /**
-     * 取消注册一个扩展的插件加载器
-     *
-     * @see PluginLoader 插件加载器
-     */
-    @ConsoleExperimentalAPI
-    public fun PluginLoader<*, *>.unregister(): Boolean
-
-    /**
-     * 获取插件的 [描述][PluginDescription], 通过 [PluginLoader.getDescription]
+     * 获取插件的 [描述][PluginDescription], 通过 [PluginLoader.getPluginDescription]
      */
     public val Plugin.description: PluginDescription
 
@@ -158,8 +141,6 @@ public interface PluginManager {
     public companion object INSTANCE : PluginManager by PluginManagerImpl {
         // due to Kotlin's bug
         public override val Plugin.description: PluginDescription get() = PluginManagerImpl.run { description }
-        public override fun PluginLoader<*, *>.register(): Boolean = PluginManagerImpl.run { register() }
-        public override fun PluginLoader<*, *>.unregister(): Boolean = PluginManagerImpl.run { unregister() }
         public override fun Plugin.disable(): Unit = PluginManagerImpl.run { disable() }
         public override fun Plugin.enable(): Unit = PluginManagerImpl.run { enable() }
         public override fun Plugin.load(): Unit = PluginManagerImpl.run { load() }
