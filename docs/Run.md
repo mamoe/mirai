@@ -4,6 +4,8 @@ Mirai Console 可以独立启动，也可以被嵌入到某个应用中。
 
 ## 使用第三方工具自动启动
 
+https://github.com/LXY1226/MiraiOK
+
 ## 独立启动
 
 ### 环境
