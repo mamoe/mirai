@@ -20,6 +20,8 @@ fun includeProject(projectPath: String, path: String? = null) {
 includeProject(":mirai-console", "backend/mirai-console")
 includeProject(":mirai-console.codegen", "backend/codegen")
 includeProject(":mirai-console-pure", "frontend/mirai-console-pure")
+includeProject(":mirai-console-intellij", "intellij-plugin")
+includeProject(":mirai-console-gradle", "gradle-plugin")
 
 @Suppress("ConstantConditionIf")
 if (!disableOldFrontEnds) {
