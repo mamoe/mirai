@@ -507,62 +507,6 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             }
         }
     },
-    //戳一戳信息等
-    0x122L to lambda528 { bot ->
-        val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
-        when (body.templId) {
-            //戳一戳
-            1135L, 1136L, 10043L -> {
-                //预置数据，服务器将不会提供己方已知消息
-                var from: Friend = bot.selfQQ
-                var action = ""
-                var target: Friend = bot.selfQQ
-                var suffix = ""
-                body.msgTemplParam?.forEach {
-                    val value = it.value.decodeToString()
-                    when (it.name.decodeToString()) {
-                        "action_str" -> action = value
-                        "uin_str1" -> from = bot.getFriend(value.toLong())
-                        "uin_str2" -> target = bot.getFriend(value.toLong())
-                        "suffix_str" -> suffix = value
-                    }
-                }
-                return@lambda528 sequenceOf(FriendNudgeEvent(from, action, target, suffix))
-
-            }
-            else -> {
-                return@lambda528 emptySequence()
-            }
-        }
-    },
-    //戳一戳信息等
-    0x122L to lambda528 { bot ->
-        val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
-        when (body.templId) {
-            //戳一戳
-            1135L, 1136L, 10043L -> {
-                //预置数据，服务器将不会提供己方已知消息
-                var from: Friend = bot.selfQQ
-                var action = ""
-                var target: Friend = bot.selfQQ
-                var suffix = ""
-                body.msgTemplParam?.forEach {
-                    val value = it.value.decodeToString()
-                    when (it.name.decodeToString()) {
-                        "action_str" -> action = value
-                        "uin_str1" -> from = bot.getFriend(value.toLong())
-                        "uin_str2" -> target = bot.getFriend(value.toLong())
-                        "suffix_str" -> suffix = value
-                    }
-                }
-                return@lambda528 sequenceOf(FriendNudgeEvent(from, action, target, suffix))
-
-            }
-            else -> {
-                return@lambda528 emptySequence()
-            }
-        }
-    },
     //好友输入状态
     0x115L to lambda528 { bot ->
         val body = vProtobuf.loadAs(Submsgtype0x115.SubMsgType0x115.MsgBody.serializer())
