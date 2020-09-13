@@ -16,6 +16,8 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 val COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME = FqName("net.mamoe.mirai.console.command.CompositeCommand.SubCommand")
 val SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME = FqName("net.mamoe.mirai.console.command.SimpleCommand.Handler")
 
+val Plugin_FQ_NAME = FqName("net.mamoe.mirai.console.plugin.Plugin")
+
 /**
  * For CompositeCommand.SubCommand
  */

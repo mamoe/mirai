@@ -6,6 +6,7 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+
 package net.mamoe.mirai.console.intellij.line.marker
 
 import com.intellij.psi.PsiElement
