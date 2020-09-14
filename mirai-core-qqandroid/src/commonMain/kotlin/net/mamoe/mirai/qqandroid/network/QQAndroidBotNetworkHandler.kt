@@ -265,7 +265,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             }
             // delay(200)
         }
-        logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
+        logger.info { "好友列表加载完成, 共 ${currentFriendCount} 个" }
         initFriendOk = true
     }
 
@@ -322,7 +322,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
             }
         }
-        logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
+        logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size} 个" }
         initGroupOk = true
     }
 

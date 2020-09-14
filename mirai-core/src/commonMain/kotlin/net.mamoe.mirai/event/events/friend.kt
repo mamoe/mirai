@@ -118,7 +118,7 @@ public data class FriendAvatarChangedEvent internal constructor(
  */
 public data class FriendNudgeEvent internal constructor(
     /**
-     * 戳一戳的发起者，可为Bot自身或好友
+     * 戳一戳的发起者，可为 [Bot] 自身或好友
      */
     public override val friend: Friend,
     /**
@@ -126,7 +126,7 @@ public data class FriendNudgeEvent internal constructor(
      */
     public val action: String,
     /**
-     * 戳一戳的目标，可为Bot自身或好友
+     * 戳一戳的目标，可为 [Bot] 自身或好友
      */
     public val target: Friend,
     /**

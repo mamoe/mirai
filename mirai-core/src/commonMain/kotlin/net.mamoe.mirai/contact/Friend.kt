@@ -81,7 +81,7 @@ public abstract class Friend : User(), CoroutineScope {
     }
 
     /**
-     * 发送戳一戳好友的消息，冷却时间为10秒。
+     * 发送戳一戳好友的消息，冷却时间为 10 秒。
      * 如对方已禁用该功能，发送将会失败且不会抛出异常。
      * 调用需要使用协议 [MiraiProtocol.ANDROID_PHONE]
      *
@@ -98,7 +98,7 @@ public abstract class Friend : User(), CoroutineScope {
     public abstract suspend fun nudge(): Boolean
 
     /**
-     * 发送戳一戳自己的消息，冷却时间为10秒。
+     * 发送戳一戳自己的消息，冷却时间为 10 秒。
      * 如Bot已禁用该功能，发送将会失败且不会抛出异常。
      * 调用需要使用协议 [MiraiProtocol.ANDROID_PHONE]
      *
