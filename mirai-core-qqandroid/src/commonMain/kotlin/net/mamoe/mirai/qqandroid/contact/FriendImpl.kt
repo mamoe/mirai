@@ -104,7 +104,7 @@ internal class FriendImpl(
     }
 
     override suspend fun nudgeBot(): Boolean {
-        return (bot.selfQQ as FriendImpl).nudge(this@FriendImpl)
+        return bot.selfQQ.checkIsFriendImpl().nudge(this@FriendImpl)
     }
 
     private suspend fun nudge(chatTarget: Friend): Boolean {
