@@ -26,7 +26,7 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NudgeManager
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NudgePacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.createToTemp
@@ -220,22 +220,25 @@ internal class MemberImpl constructor(
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
     }
 
-    override suspend fun nudge() {
-        require(bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
-            "Please use android phone protocol!"
+    override suspend fun nudge(): Boolean {
+        if (bot.configuration.protocol != BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
+            throw UnsupportedOperationException("nudge is supported only with protocol ANDROID_PHONE")
         }
         val coolDown = currentTimeMillis - _nudgeTimestamp;
-        require(coolDown > 10000L) {
+        check(coolDown > 10000L) {
             "Cooling, Please wait $coolDown ms and try again"
         }
         bot.network.run {
-            NudgeManager.Nudge.troopInvoke(
+            return NudgePacket.troopInvoke(
                 client = bot.client,
                 groupCode = group.id,
                 targetUin = this@MemberImpl.id,
-            ).sendAndExpect<NudgeManager.Nudge.Response>()
+            ).sendAndExpect<NudgePacket.Response>().success.also { success ->
+                if (success) {
+                    _nudgeTimestamp = currentTimeMillis
+                }
+            }
         }
-        _nudgeTimestamp = currentTimeMillis
     }
 
 

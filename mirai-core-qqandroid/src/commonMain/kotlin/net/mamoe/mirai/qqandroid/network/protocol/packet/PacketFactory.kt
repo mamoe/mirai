@@ -148,7 +148,7 @@ internal object KnownPacketFactories {
         TroopManagement.GetGroupInfo,
         TroopManagement.EditGroupNametag,
         TroopManagement.Kick,
-        NudgeManager.Nudge,
+        NudgePacket,
         Heartbeat.Alive,
         PbMessageSvc.PbMsgWithDraw,
         MultiMsg.ApplyUp,

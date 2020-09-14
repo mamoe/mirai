@@ -247,27 +247,27 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                 var from: Member = group.botAsMember
                 var target: Member = group.botAsMember
                 var suffix = ""
-                grayTip.msgTemplParam?.forEach {
-                    val value = it.value.decodeToString()
-                    when (it.name.decodeToString()) {
-                        "action_str" -> action = value
-                        "uin_str1" -> from = group[value.toLong()]
-                        "uin_str2" -> target = group[value.toLong()]
-                        "suffix_str" -> suffix = value
+                grayTip.msgTemplParam?.map {
+                    Pair(it.name.decodeToString(), it.value.decodeToString())
+                }?.asSequence()?.forEach { (key, value) ->
+                    run {
+                        when (key) {
+                            "action_str" -> action = value
+                            "uin_str1" -> from = group[value.toLong()]
+                            "uin_str2" -> target = group[value.toLong()]
+                            "suffix_str" -> suffix = value
+                        }
                     }
                 }
                 return@lambda732 sequenceOf(MemberNudgeEvent(from, action, target, suffix))
             }
-            //TODO:群聊活跃称号提示
-            1067L -> {
-
-            }
             else -> {
-
+                bot.logger.debug {
+                    "Unknown Transformers528 0x14 template, templId=${grayTip?.templId} PermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
+                }
+                return@lambda732 emptySequence()
             }
         }
-
-        return@lambda732 emptySequence()
     },
     // 传字符串信息
     0x10 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
@@ -484,25 +484,33 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
         when (body.templId) {
             //戳一戳
-            1135L, 1136L, 10043L -> {
+            1134L, 1135L, 1136L, 10043L -> {
+                println(body._miraiContentToString())
+
                 //预置数据，服务器将不会提供己方已知消息
                 var from: Friend = bot.selfQQ
                 var action = ""
                 var target: Friend = bot.selfQQ
                 var suffix = ""
-                body.msgTemplParam?.forEach {
-                    val value = it.value.decodeToString()
-                    when (it.name.decodeToString()) {
-                        "action_str" -> action = value
-                        "uin_str1" -> from = bot.getFriend(value.toLong())
-                        "uin_str2" -> target = bot.getFriend(value.toLong())
-                        "suffix_str" -> suffix = value
+                body.msgTemplParam?.map {
+                    Pair(it.name.decodeToString(), it.value.decodeToString())
+                }?.asSequence()?.forEach { (key, value) ->
+                    run {
+                        when (key) {
+                            "action_str" -> action = value
+                            "uin_str1" -> from = bot.getFriend(value.toLong())
+                            "uin_str2" -> target = bot.getFriend(value.toLong())
+                            "suffix_str" -> suffix = value
+                        }
                     }
                 }
-                return@lambda528 sequenceOf(FriendNudgeEvent(from, action, target, suffix))
+                return@lambda528 sequenceOf(FriendNudgeEvent(from, from, action, target, suffix))
 
             }
             else -> {
+                bot.logger.debug {
+                    "Unknown Transformers528 0x122L template\ntemplId=${body.templId}\nPermList=${body.msgTemplParam?._miraiContentToString()}"
+                }
                 return@lambda528 emptySequence()
             }
         }
