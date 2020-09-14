@@ -81,16 +81,38 @@ public abstract class Friend : User(), CoroutineScope {
     }
 
     /**
-     * 戳一戳该好友，时间间隔为10秒。
+     * 发送戳一戳好友的消息，冷却时间为10秒。
      * 如对方已禁用该功能，发送将会失败且不会抛出异常。
+     * 调用需要使用协议 [MiraiProtocol.ANDROID_PHONE]
      *
-     * 协议限制：手机协议 [MiraiProtocol.ANDROID_PHONE]
      *
+     * @see nudgeBot 戳一戳自己
      * @see FriendNudgeEvent 好友戳一戳事件
+     *
+     * @throws IllegalStateException 当仍处于冷却状态时
+     * @throws UnsupportedOperationException 当未使用安卓协议时 ([MiraiProtocol.ANDROID_PHONE])
+     *
+     * @return 是否成功发送
      */
     @JvmBlockingBridge
-    @JvmSynthetic
-    public abstract suspend fun nudge()
+    public abstract suspend fun nudge(): Boolean
+
+    /**
+     * 发送戳一戳自己的消息，冷却时间为10秒。
+     * 如Bot已禁用该功能，发送将会失败且不会抛出异常。
+     * 调用需要使用协议 [MiraiProtocol.ANDROID_PHONE]
+     *
+     *
+     * @see nudge 戳一戳好友
+     * @see FriendNudgeEvent 好友戳一戳事件
+     *
+     * @throws IllegalStateException 当仍处于冷却状态时
+     * @throws UnsupportedOperationException 当未使用安卓协议时 ([MiraiProtocol.ANDROID_PHONE])
+     *
+     * @return 是否成功发送
+     */
+    @JvmBlockingBridge
+    public abstract suspend fun nudgeBot(): Boolean
 
     final override fun toString(): String = "Friend($id)"
 }

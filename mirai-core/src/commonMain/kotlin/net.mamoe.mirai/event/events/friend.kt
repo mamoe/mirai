@@ -117,19 +117,23 @@ public data class FriendAvatarChangedEvent internal constructor(
  */
 public data class FriendNudgeEvent internal constructor(
     /**
-     * 戳一戳的发起者
+     * 戳一戳所在的好友会话，此为对话者
      */
     public override val friend: Friend,
+    /**
+     * 戳一戳的发起者，可为Bot自身或好友
+     */
+    public val from: Friend,
     /**
      * 戳一戳的动作
      */
     public val action: String,
     /**
-     * 戳一戳的目标
+     * 戳一戳的目标，可为Bot自身或好友
      */
     public val target: Friend,
     /**
-     * 戳一戳中设置的自定义文案
+     * 戳一戳中设置的自定义后缀
      */
     public val suffix: String
 ) : FriendEvent, Packet, AbstractEvent()

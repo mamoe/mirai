@@ -127,16 +127,19 @@ public abstract class Member : MemberJavaFriendlyAPI, User() {
     public abstract suspend fun unmute()
 
     /**
-     * 戳一戳该成员，时间间隔为10秒。
+     * 发送戳一戳该成员的消息，冷却时间为10秒。
      * 如对方已禁用该功能，发送将会失败且不会抛出异常。
-     *
-     * 协议限制：手机协议 [MiraiProtocol.ANDROID_PHONE]
+     * 调用需要使用协议 [MiraiProtocol.ANDROID_PHONE]
      *
      * @see MemberNudgeEvent 成员戳一戳事件
+     *
+     * @throws IllegalStateException 当仍处于冷却状态时
+     * @throws UnsupportedOperationException 当未使用安卓协议时 ([MiraiProtocol.ANDROID_PHONE])
+     *
+     * @return 是否成功发送
      */
     @JvmBlockingBridge
-    @JvmSynthetic
-    public abstract suspend fun nudge()
+    public abstract suspend fun nudge(): Boolean
 
     /**
      * 踢出该成员.
