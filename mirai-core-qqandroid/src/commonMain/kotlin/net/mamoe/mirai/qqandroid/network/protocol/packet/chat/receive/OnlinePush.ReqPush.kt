@@ -263,7 +263,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
             }
             else -> {
                 bot.logger.debug {
-                    "Unknown Transformers528 0x14 template, templId=${grayTip?.templId} PermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
+                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
                 }
                 return@lambda732 emptySequence()
             }
