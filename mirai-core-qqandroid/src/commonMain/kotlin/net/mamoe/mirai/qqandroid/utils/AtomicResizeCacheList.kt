@@ -73,9 +73,7 @@ internal class AtomicResizeCacheList<E>(private val retention: Long) {
      * No concurrency guaranteed on same [element]
      */
     private fun removeDuplication(element: E): Boolean {
-        val duplicate = list.firstOrNull { it.time.value != 0L && it.element == element } ?: return false
-        duplicate.time.value = 0
-        return true
+        return list.any { it.time.value != 0L && it.element == element }
     }
 
     fun ensureNoDuplication(element: E): Boolean {
