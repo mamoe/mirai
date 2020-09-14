@@ -14,6 +14,7 @@ package net.mamoe.mirai.console.permission
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.permission.parseFromStringImpl
 import net.mamoe.mirai.console.permission.AbstractPermitteeId.*
@@ -106,6 +107,33 @@ public interface PermitteeId {
  * 内建的 [PermitteeId].
  *
  * - 若指令 A 的权限被授予给 [AnyMember], 那么一个 [ExactMember] 可以执行这个指令.
+ *
+ * #### 字符串表示
+ *
+ * 当使用 [PermitteeId.asString] 时, 不同的类型的返回值如下表所示. 这些格式也适用于 [BuiltInCommands.PermissionCommand].
+ *
+ * (不区分大小写. 不区分 Bot).
+ *
+ *
+ * |    被许可人类型    | 字符串表示示例 | 备注                                  |
+ * |:----------------:|:-----------:|:-------------------------------------|
+ * |      控制台       |   console   |                                      |
+ * |      精确群       |   g123456   | 表示群, 而不表示群成员                   |
+ * |      精确好友      |   f123456   | 必须通过好友消息                        |
+ * |    精确临时会话    | t123456.789  | 群 123456 内的成员 789. 必须通过临时会话  |
+ * |     精确群成员     | m123456.789 | 群 123456 内的成员 789. 同时包含临时会话. |
+ * |      精确用户      |   u123456   | 同时包含群成员, 好友, 临时会话            |
+ * |      任意群       |     g*      |                                      |
+ * |  任意群的任意群员   |     m*      |                                      |
+ * |  精确群的任意群员   |  m123456.*  | 群 123456 内的任意成员. 同时包含临时会话.  |
+ * | 任意群的任意临时会话 |     t*      | 必须通过临时会话                        |
+ * | 精确群的任意临时会话 |  t123456.*  | 群 123456 内的任意成员. 必须通过临时会话   |
+ * |      任意好友      |     f*      |                                      |
+ * |      任意用户      |     u*      | 任何人在任何环境                        |
+ * |      任意对象      |      *      | 即任何人, 任何群, 控制台                 |
+ *
+ *
+ * #### 关系图
  *
  * ```
  *          Console                               AnyContact
