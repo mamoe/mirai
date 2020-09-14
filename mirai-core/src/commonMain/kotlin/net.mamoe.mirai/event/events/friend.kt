@@ -114,16 +114,13 @@ public data class FriendAvatarChangedEvent internal constructor(
 
 /**
  * [Friend] 的戳一戳事件.
+ * 因实现限制，无法获知发生于哪个好友会话中
  */
 public data class FriendNudgeEvent internal constructor(
     /**
-     * 戳一戳所在的好友会话，此为对话者
-     */
-    public override val friend: Friend,
-    /**
      * 戳一戳的发起者，可为Bot自身或好友
      */
-    public val from: Friend,
+    public override val friend: Friend,
     /**
      * 戳一戳的动作
      */

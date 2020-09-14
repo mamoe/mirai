@@ -485,8 +485,6 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         when (body.templId) {
             //戳一戳
             1134L, 1135L, 1136L, 10043L -> {
-                println(body._miraiContentToString())
-
                 //预置数据，服务器将不会提供己方已知消息
                 var from: Friend = bot.selfQQ
                 var action = ""
@@ -504,7 +502,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         }
                     }
                 }
-                return@lambda528 sequenceOf(FriendNudgeEvent(from, from, action, target, suffix))
+                return@lambda528 sequenceOf(FriendNudgeEvent(from, action, target, suffix))
 
             }
             else -> {
