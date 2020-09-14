@@ -494,7 +494,7 @@ public data class MemberUnmuteEvent internal constructor(
  */
 public data class MemberNudgeEvent internal constructor(
     /**
-     * 戳一戳的发起者
+     * 戳一戳的发起者，如果对象是Bot则为Bot的Member对象
      */
     public override val member: Member,
     /**
@@ -502,11 +502,11 @@ public data class MemberNudgeEvent internal constructor(
      */
     public val action: String,
     /**
-     * 戳一戳的目标
+     * 戳一戳的目标，如果对象是Bot则为Bot的Member对象
      */
     public val target: Member,
     /**
-     * 戳一戳中设置的自定义文案
+     * 戳一戳中设置的自定义后缀
      */
     public val suffix: String
 ) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
