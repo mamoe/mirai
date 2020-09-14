@@ -29,7 +29,7 @@ The community, (with `mirai-console`) that allows developers to share their plug
 - `JavaScript`(`Node.js`): [node-mirai](https://github.com/RedBeanN/node-mirai) The Node.js SDK for mirai.
 - `Go`: [gomirai](https://github.com/Logiase/gomirai) The GoLang SDK for mirai.
 - `Mozilla Rhino`: [mirai-rhinojs-sdk](https://github.com/StageGuard/mirai-rhinojs-sdk) The Mozilla Rhino (JavaScript) SDK for mirai.
-- `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) The Lua SDK for mirai-core, supporting Java extensions that act as a bridge between Java and natrive Lua.
+- `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) The Lua SDK for mirai-core, supporting Java extensions that act as a bridge between Java and native Lua.
 - `C++`: [mirai-cpp](https://github.com/cyanray/mirai-cpp) A simple C++ SDK using `mirai-api-http` for ALL platforms.
 - `C++`: [miraipp](https://github.com/Chlorie/miraipp-template) A sophisticated, modern mapping for `mirai-http-api` to C++, providing development documents.
 - `Rust`: [mirai-rs](https://github.com/HoshinoTented/mirai-rs) The Rust mapping for `mirai-http-api`.
@@ -90,7 +90,7 @@ implementation("net.mamoe:mirai-core-android:VERSION")
 
 ## Contribution
 **All kinds of contributions are welcomed.**  
-If you hold a interest in helping us implementing Mirai on JS, iOS or Native platforms, please email us `support@mamoe.net`.  
+If you hold an interest in helping us implementing Mirai on JS, iOS or Native platforms, please email us `support@mamoe.net`.  
 If you meet any problem or have any questions, feel free to file an issue. Our goal is to make Mirai easy to use.
 
 ## Acknowledgements
