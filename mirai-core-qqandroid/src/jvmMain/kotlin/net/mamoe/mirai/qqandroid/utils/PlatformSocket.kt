@@ -10,6 +10,7 @@
 package net.mamoe.mirai.qqandroid.utils
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
@@ -20,6 +21,7 @@ import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.net.Socket
 import java.net.SocketException
+import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -38,6 +40,7 @@ internal actual class PlatformSocket : Closeable {
         if (::socket.isInitialized) {
             socket.close()
         }
+        thread.shutdownNow()
     }
 
     @PublishedApi
@@ -67,15 +70,17 @@ internal actual class PlatformSocket : Closeable {
         }
     }
 
+    private val thread = Executors.newSingleThreadExecutor()
+
     /**
      * @throws ReadPacketInternalException
      */
-    actual suspend fun read(): ByteReadPacket {
-        return withContext(Dispatchers.IO) {
-            try {
+    actual suspend fun read(): ByteReadPacket = suspendCancellableCoroutine { cont ->
+        thread.submit {
+            kotlin.runCatching {
                 readChannel.readPacketAtMost(Long.MAX_VALUE)
-            } catch (e: IOException) {
-                throw ReadPacketInternalException(e)
+            }.let {
+                cont.resumeWith(it)
             }
         }
     }

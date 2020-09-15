@@ -47,9 +47,11 @@ public class Voice @MiraiInternalAPI constructor(
     }
 
     public val url: String?
-        get() =
-            if (_url.startsWith("http")) _url
-            else null
+        get() = when {
+            _url.isBlank() -> null
+            _url.startsWith("http") -> _url
+            else -> "http://grouptalk.c2c.qq.com$_url"
+        }
 
     private var _stringValue: String? = null
         get() = field ?: kotlin.run {

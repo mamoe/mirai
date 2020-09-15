@@ -580,12 +580,10 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                             val to = value.encodeToString()
                             if (uin == bot.id) {
                                 val from = bot.nick
-                                bot.cachedNick = to
-                                add(
-                                    BotNickChangedEvent(
-                                        bot, from, to
-                                    )
-                                )
+                                if (from != to) {
+                                    bot.nick = to
+                                    add(BotNickChangedEvent(bot, from, to))
+                                }
                             } else {
                                 val friend = (bot.getFriendOrNull(uin) ?: return@forEach) as FriendImpl
                                 val info = friend.friendInfo

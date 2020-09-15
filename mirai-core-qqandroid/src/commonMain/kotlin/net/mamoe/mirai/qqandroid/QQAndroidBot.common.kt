@@ -42,9 +42,13 @@ import net.mamoe.mirai.qqandroid.message.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.MultiMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.calculateValidationDataForGroup
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
@@ -250,10 +254,15 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val friends: ContactList<Friend> = ContactList(LockFreeLinkedList())
 
-    @JvmField internal var cachedNick: String? = null
-    override val nick: String get() = cachedNick ?: selfInfo.nick.also { cachedNick = it }
+    override lateinit var nick: String
 
-    internal lateinit var selfInfo: JceFriendInfo
+    internal var selfInfo: JceFriendInfo? = null
+        get() = field ?: error("selfInfo is not yet initialized")
+        set(it) {
+            checkNotNull(it)
+            field = it
+            nick = it.nick
+        }
 
     override val selfQQ: Friend by lazy {
         @OptIn(LowLevelAPI::class)
@@ -311,12 +320,22 @@ internal abstract class QQAndroidBotBase constructor(
         }.groups.asSequence().map { it.groupUin.shl(32) and it.groupCode }
     }
 
+    @Suppress(
+        "DeprecatedCallableAddReplaceWith",
+        "FunctionName",
+        "RedundantSuspendModifier",
+        "unused",
+        "unused_parameter"
+    )
+    @Deprecated("")
     @OptIn(LowLevelAPI::class)
-    override suspend fun _lowLevelQueryGroupInfo(groupCode: Long): GroupInfo = network.run {
+    suspend fun _lowLevelQueryGroupInfo(groupCode: Long, stTroopNum: StTroopNum): GroupInfo = network.run {
+        error("This should not be invoked")
+        /*
         TroopManagement.GetGroupInfo(
             client = bot.client,
             groupCode = groupCode
-        ).sendAndExpect<GroupInfoImpl>(retry = 3)
+        ).sendAndExpect<GroupInfoImpl>(retry = 3).also { it.stTroopNum = stTroopNum }*/
     }
 
     @OptIn(LowLevelAPI::class)
@@ -606,6 +625,30 @@ internal abstract class QQAndroidBotBase constructor(
         }
         val rep = data.await()
         return json.decodeFromString(GroupActiveData.serializer(), rep)
+    }
+
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    override suspend fun _lowLevelGetGroupHonorListData(groupId: Long, type: GroupHonorType): GroupHonorListData? {
+        val data = network.async {
+            MiraiPlatformUtils.Http.get<String> {
+                url("https://qun.qq.com/interactive/honorlist")
+                parameter("gc", groupId)
+                parameter("type", type.value)
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${id};" +
+                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                                " p_uin=o${id};" +
+                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                    )
+                }
+            }
+        }
+        val rep = data.await()
+        val jsonText = Regex("""window.__INITIAL_STATE__=(.+?)</script>""").find(rep)?.groupValues?.get(1)
+        return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
     }
 
     @JvmSynthetic
