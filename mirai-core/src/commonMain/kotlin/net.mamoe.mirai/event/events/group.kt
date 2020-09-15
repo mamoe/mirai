@@ -24,6 +24,7 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.jvm.*
@@ -129,6 +130,17 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
         public override fun toString(): String {
             return "BotJoinGroupEvent.Invite(invitor=$invitor)"
         }
+    }
+    /**
+     * 原群主通过 https://huifu.qq.com/ 恢复原来群主身份并入群,
+     * [Bot] 是原群主
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("1.3.0")
+    public data class Retrieve internal constructor(
+        public override val group: Group
+    ) : BotJoinGroupEvent() {
+        override fun toString(): String = "MemberJoinEvent.Retrieve(group=${group.id})"
     }
 }
 
@@ -259,6 +271,17 @@ public sealed class MemberJoinEvent(
         public override val member: Member
     ) : MemberJoinEvent(member) {
         public override fun toString(): String = "MemberJoinEvent.Active(member=${member.id})"
+    }
+
+    /**
+     * 原群主通过 https://huifu.qq.com/ 恢复原来群主身份并入群,
+     * 此时 [member] 的 [Member.permission] 肯定是 [MemberPermission.OWNER]
+     */
+    @SinceMirai("1.3.0")
+    public data class Retrieve internal constructor(
+        public override val member: Member
+    ) : MemberJoinEvent(member) {
+        override fun toString(): String = "MemberJoinEvent.Retrieve(member=${member.id})"
     }
 }
 
