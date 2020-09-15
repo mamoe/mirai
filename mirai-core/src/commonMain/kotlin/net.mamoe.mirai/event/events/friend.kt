@@ -115,6 +115,7 @@ public data class FriendAvatarChangedEvent internal constructor(
 /**
  * [Friend] 的戳一戳事件.
  */
+@SinceMirai("1.3.0")
 public data class FriendNudgeEvent internal constructor(
     /**
      * 发起戳一戳的好友会话，此处使用 [Friend] 指定
