@@ -145,15 +145,16 @@ internal object OnlinePushPbPushTransMsg :
                                 }, group.members[operator])
                             }
                         }
-                        else -> {
-                            throw contextualBugReportException(
-                                "解析 OnlinePush.PbPushTransMsg, msgType=${content.msgType}, type=$type",
-                                content._miraiContentToString(),
-                                null,
-                                "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作."
-                            )
-                        }
                     }
+                }
+                else -> {
+
+                    throw contextualBugReportException(
+                        "解析 OnlinePush.PbPushTransMsg, msgType=${content.msgType}",
+                        content._miraiContentToString(),
+                        null,
+                        "并描述此时机器人是否被踢出, 或是否有成员列表变更等动作."
+                    )
                 }
             }
         }
