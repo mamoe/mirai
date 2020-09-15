@@ -153,7 +153,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     when (val source = it.source) {
                         is OnlineMessageSource.Incoming.FromGroup -> {
                             transformOneMessage(At(source.sender))
-                            transformOneMessage(PlainText(" "))
+                            // transformOneMessage(PlainText(" "))
+                            // removed by https://github.com/mamoe/mirai/issues/524
+                            // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
                         }
                     }
                 }
