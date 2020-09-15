@@ -113,7 +113,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             }
             is At -> {
                 elements.add(ImMsgBody.Elem(text = it.toJceData()))
-                elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
+                // elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
+                // removed by https://github.com/mamoe/mirai/issues/524
+                // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
             }
             is PokeMessage -> {
                 elements.add(
