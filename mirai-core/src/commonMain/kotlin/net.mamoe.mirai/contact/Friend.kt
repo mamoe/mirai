@@ -12,16 +12,19 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
+import net.mamoe.mirai.event.events.FriendNudgeEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
+import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -76,6 +79,40 @@ public abstract class Friend : User(), CoroutineScope {
     suspend inline fun sendMessage(message: String): MessageReceipt<Friend> {
         return sendMessage(PlainText(message))
     }
+
+    /**
+     * 发送戳一戳好友的消息，冷却时间为 10 秒。
+     * 如对方已禁用该功能，发送将会失败且不会抛出异常。
+     * 调用需要使用协议 [MiraiProtocol.ANDROID_PHONE]
+     *
+     *
+     * @see nudgeBot 戳一戳自己
+     * @see FriendNudgeEvent 好友戳一戳事件
+     *
+     * @throws IllegalStateException 当仍处于冷却状态时
+     * @throws UnsupportedOperationException 当未使用安卓协议时 ([MiraiProtocol.ANDROID_PHONE])
+     *
+     * @return 是否成功发送
+     */
+    @JvmBlockingBridge
+    public abstract suspend fun nudge(): Boolean
+
+    /**
+     * 发送戳一戳自己的消息，冷却时间为 10 秒。
+     * 如Bot已禁用该功能，发送将会失败且不会抛出异常。
+     * 调用需要使用协议 [MiraiProtocol.ANDROID_PHONE]
+     *
+     *
+     * @see nudge 戳一戳好友
+     * @see FriendNudgeEvent 好友戳一戳事件
+     *
+     * @throws IllegalStateException 当仍处于冷却状态时
+     * @throws UnsupportedOperationException 当未使用安卓协议时 ([MiraiProtocol.ANDROID_PHONE])
+     *
+     * @return 是否成功发送
+     */
+    @JvmBlockingBridge
+    public abstract suspend fun nudgeBot(): Boolean
 
     final override fun toString(): String = "Friend($id)"
 }

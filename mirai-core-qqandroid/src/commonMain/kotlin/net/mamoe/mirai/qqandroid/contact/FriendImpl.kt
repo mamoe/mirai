@@ -38,13 +38,11 @@ import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.highway.postImage
 import net.mamoe.mirai.qqandroid.network.highway.sizeToString
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Cmd0x352
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NudgePacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
 import net.mamoe.mirai.qqandroid.utils.toUHexString
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -85,6 +83,9 @@ internal class FriendImpl(
     override val nick: String
         get() = friendInfo.nick
 
+    @Suppress("PropertyName")
+    var _nudgeTimestamp: Long = 0L
+
     @JvmSynthetic
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
@@ -95,6 +96,35 @@ internal class FriendImpl(
             tReceiptConstructor = { MessageReceipt(it, this, null) }
         ).also {
             logMessageSent(message)
+        }
+    }
+
+    override suspend fun nudge(): Boolean {
+        return nudge(this@FriendImpl)
+    }
+
+    override suspend fun nudgeBot(): Boolean {
+        return bot.selfQQ.checkIsFriendImpl().nudge(this@FriendImpl)
+    }
+
+    private suspend fun nudge(chatTarget: Friend): Boolean {
+        if (bot.configuration.protocol != BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
+            throw UnsupportedOperationException("nudge is supported only with protocol ANDROID_PHONE")
+        }
+        val coolDown = currentTimeMillis - _nudgeTimestamp;
+        check(coolDown > 10000L) {
+            "Cooling, Please wait $coolDown ms and try again"
+        }
+        bot.network.run {
+            return NudgePacket.friendInvoke(
+                client = bot.client,
+                targetUin = this@FriendImpl.id,
+                chatTargetUin = chatTarget.id
+            ).sendAndExpect<NudgePacket.Response>().success.also { success ->
+                if (success) {
+                    _nudgeTimestamp = currentTimeMillis
+                }
+            }
         }
     }
 
