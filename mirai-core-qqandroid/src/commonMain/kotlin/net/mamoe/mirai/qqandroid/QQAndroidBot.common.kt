@@ -622,6 +622,30 @@ internal abstract class QQAndroidBotBase constructor(
         return json.decodeFromString(GroupActiveData.serializer(), rep)
     }
 
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    override suspend fun _lowLevelGetGroupHonorListData(groupId: Long, type: GroupHonorType): GroupHonorListData? {
+        val data = network.async {
+            MiraiPlatformUtils.Http.get<String> {
+                url("https://qun.qq.com/interactive/honorlist")
+                parameter("gc", groupId)
+                parameter("type", type.value)
+                headers {
+                    append(
+                        "cookie",
+                        "uin=o${id};" +
+                                " skey=${client.wLoginSigInfo.sKey.data.encodeToString()};" +
+                                " p_uin=o${id};" +
+                                " p_skey=${client.wLoginSigInfo.psKeyMap["qun.qq.com"]?.data?.encodeToString()}; "
+                    )
+                }
+            }
+        }
+        val rep = data.await()
+        val jsonText = Regex("""window.__INITIAL_STATE__=(.+?)</script>""").find(rep)?.groupValues?.get(1)
+        return jsonText?.let { json.decodeFromString(GroupHonorListData.serializer(), it) }
+    }
+
     @JvmSynthetic
     @LowLevelAPI
     @MiraiExperimentalAPI
