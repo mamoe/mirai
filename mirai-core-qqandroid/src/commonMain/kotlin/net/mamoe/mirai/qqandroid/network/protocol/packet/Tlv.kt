@@ -638,13 +638,13 @@ internal fun BytePacketBuilder.t202(
 
 internal fun BytePacketBuilder.t177(
     buildTime: Long = 1571193922L, // wtLogin BuildTime
-    BuildVersion: String = "6.0.0.2413" // wtLogin SDK Version
+    buildVersion: String = "6.0.0.2413" // wtLogin SDK Version
 ) {
     writeShort(0x177)
     writeShortLVPacket {
         writeByte(1)
         writeInt(buildTime.toInt())
-        writeShortLVString(BuildVersion)
+        writeShortLVString(buildVersion)
     } shouldEqualsTo 0x11
 }
 
