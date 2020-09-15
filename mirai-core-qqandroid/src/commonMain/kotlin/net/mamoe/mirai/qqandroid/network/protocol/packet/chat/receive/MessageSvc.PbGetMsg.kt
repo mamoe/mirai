@@ -454,28 +454,11 @@ internal suspend fun QQAndroidBot.getNewGroup(groupCode: Long): Group? {
             .sendAndExpect<FriendList.GetTroopListSimplify.Response>(timeoutMillis = 10_000, retry = 5)
     }.groups.firstOrNull { it.groupCode == groupCode } ?: return null
 
-    @Suppress("DuplicatedCode")
     return GroupImpl(
         bot = this,
         coroutineContext = coroutineContext,
         id = groupCode,
-        groupInfo = _lowLevelQueryGroupInfo(troopNum.groupCode).apply {
-            this as GroupInfoImpl
-
-            if (this.delegate.groupName == null) {
-                this.delegate.groupName = troopNum.groupName
-            }
-
-            if (this.delegate.groupMemo == null) {
-                this.delegate.groupMemo = troopNum.groupMemo
-            }
-
-            if (this.delegate.groupUin == null) {
-                this.delegate.groupUin = troopNum.groupUin
-            }
-
-            this.delegate.groupCode = troopNum.groupCode
-        },
+        groupInfo = GroupInfoImpl(troopNum),
         members = _lowLevelQueryGroupMemberList(
             troopNum.groupUin,
             troopNum.groupCode,

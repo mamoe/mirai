@@ -42,9 +42,13 @@ import net.mamoe.mirai.qqandroid.message.*
 import net.mamoe.mirai.qqandroid.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.MultiMsg
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.calculateValidationDataForGroup
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
@@ -311,12 +315,22 @@ internal abstract class QQAndroidBotBase constructor(
         }.groups.asSequence().map { it.groupUin.shl(32) and it.groupCode }
     }
 
+    @Suppress(
+        "DeprecatedCallableAddReplaceWith",
+        "FunctionName",
+        "RedundantSuspendModifier",
+        "unused",
+        "unused_parameter"
+    )
+    @Deprecated("")
     @OptIn(LowLevelAPI::class)
-    override suspend fun _lowLevelQueryGroupInfo(groupCode: Long): GroupInfo = network.run {
+    suspend fun _lowLevelQueryGroupInfo(groupCode: Long, stTroopNum: StTroopNum): GroupInfo = network.run {
+        error("This should not be invoked")
+        /*
         TroopManagement.GetGroupInfo(
             client = bot.client,
             groupCode = groupCode
-        ).sendAndExpect<GroupInfoImpl>(retry = 3)
+        ).sendAndExpect<GroupInfoImpl>(retry = 3).also { it.stTroopNum = stTroopNum }*/
     }
 
     @OptIn(LowLevelAPI::class)
