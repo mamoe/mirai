@@ -246,7 +246,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
             // self info
             data.selfInfo?.run {
-                bot.cachedNick = null
                 bot.selfInfo = this
 //                            bot.remark = remark ?: ""
 //                            bot.sex = sex
@@ -272,28 +271,11 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     suspend fun StTroopNum.reloadGroup() {
         retryCatching(3) {
             bot.groups.delegate.addLast(
-                @Suppress("DuplicatedCode")
                 GroupImpl(
                     bot = bot,
                     coroutineContext = bot.coroutineContext,
                     id = groupCode,
-                    groupInfo = bot._lowLevelQueryGroupInfo(groupCode).apply {
-                        this as GroupInfoImpl
-
-                        if (this.delegate.groupName == null) {
-                            this.delegate.groupName = groupName
-                        }
-
-                        if (this.delegate.groupMemo == null) {
-                            this.delegate.groupMemo = groupMemo
-                        }
-
-                        if (this.delegate.groupUin == null) {
-                            this.delegate.groupUin = groupUin
-                        }
-
-                        this.delegate.groupCode = this@reloadGroup.groupCode
-                    },
+                    groupInfo = GroupInfoImpl(this),
                     members = bot._lowLevelQueryGroupMemberList(
                         groupUin,
                         groupCode,

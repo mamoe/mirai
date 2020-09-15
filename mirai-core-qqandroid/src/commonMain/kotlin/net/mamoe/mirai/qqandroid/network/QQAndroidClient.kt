@@ -14,6 +14,7 @@ package net.mamoe.mirai.qqandroid.network
 import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.io.core.*
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.network.LoginFailedException
@@ -212,6 +213,16 @@ internal open class QQAndroidClient(
         var syncCookie: ByteArray? = null
         var pubAccountCookie = EMPTY_BYTE_ARRAY
         var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
+
+
+        internal data class SyncPacketIdentifier(
+            val uid: Long,
+            val sequence: Int,
+            val time: Int
+        )
+
+        val packetIdList = LinkedList<SyncPacketIdentifier>()
+        val packetIdListLock = Mutex()
     }
 
     val c2cMessageSync = C2cMessageSyncData()

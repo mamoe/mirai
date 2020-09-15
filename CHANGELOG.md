@@ -3,6 +3,10 @@
 ## `1.2.3`  2020/9/11
 - 在同步事件失败时添加重试, 改善 #249, #482, #542, #567, #590
 - 修复不断重连同一个服务器的问题 (#589)
+- 修复 `BotJoinGroupEvent.Active` 和 `BotJoinGroupEvent.Invite` 没有继承 `BotJoinGroupEvent` 的问题 (#532 by [@yyuueexxiinngg](https://github.com/yyuueexxiinngg))
+- 修复 `EmptyMessageChain` 与其他 `MessageChain` 拼接时发生 `NoSuchElementException` 的问题 (#550, #561 by [@sandtechnology](https://github.com/sandtechnology))
+- 为 `Image.queryUrl` 添加 JvmBlockingBridge
+- 优化 `PermissionDeniedException` 的错误信息
 - 更新到 Kotlin `1.4.10`
 
 ## `1.2.2`  2020/8/22

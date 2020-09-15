@@ -24,11 +24,14 @@ import net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent
 import net.mamoe.mirai.event.events.BotLeaveEvent
 import net.mamoe.mirai.event.events.MemberLeaveEvent
 import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
+import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.MemberImpl
 import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
 import net.mamoe.mirai.qqandroid.message.contextualBugReportException
+import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
@@ -46,52 +49,149 @@ internal object OnlinePushPbPushTransMsg :
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
         val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
 
-
         if (!bot.client.pbPushTransMsgCacheList.ensureNoDuplication(content.msgSeq)) {
             return null
         }
+        // bot.network.logger.debug { content._miraiContentToString() }
+
 
         content.msgData.read<Unit> {
             when (content.msgType) {
                 44 -> {
+                    //                  3D C4 33 DD 01 FF CD 76 F4 03 C3 7E 2E 34
+                    //      群转让
+                    //      start with  3D C4 33 DD 01 FF
+                    //                  3D C4 33 DD 01 FF C3 7E 2E 34 CD 76 F4 03
+                    // 权限变更
+                    //                  3D C4 33 DD 01 00/01 .....
+                    //                  3D C4 33 DD 01 01 C3 7E 2E 34 01
                     this.discardExact(5)
-                    val var4 = readByte().toInt()
-                    var var5 = 0L
-                    val target = readUInt().toLong()
-                    if (var4 != 0 && var4 != 1) {
-                        var5 = readUInt().toLong()
-                    }
-
-                    val group = bot.getGroupByUin(content.fromUin) as GroupImpl
-
-                    if (var5 == 0L && this.remaining == 1L) {//管理员变更
-                        val newPermission =
-                            if (this.readByte().toInt() == 1) MemberPermission.ADMINISTRATOR
-                            else MemberPermission.MEMBER
-
-                        if (target == bot.id) {
-                            if (group.botPermission == newPermission) {
-                                return null
+                    when (val mode = readUByte().toInt()) {
+                        0xFF -> {
+                            // 群转让 / huifu.qq.com
+                            // From -> to
+                            val from = readUInt().toLong()
+                            val to = readUInt().toLong()
+                            val results = ArrayList<Packet>()
+                            // println("$from -> $to")
+                            if (to == bot.id) {
+                                if (bot.getGroupByUinOrNull(content.fromUin) == null) {
+                                    MessageSvcPbGetMsg.run {
+                                        results.add(BotJoinGroupEvent.Retrieve(
+                                            bot.createGroupForBot(content.fromUin)!!
+                                        ))
+                                    }
+                                }
+                            }
+                            val group = bot.getGroupByUin(content.fromUin) as GroupImpl
+                            if (from == bot.id) {
+                                if (group.botPermission != MemberPermission.MEMBER)
+                                    results.add(
+                                        BotGroupPermissionChangeEvent(
+                                            group, group.botPermission.also {
+                                                group.botAsMember.checkIsMemberImpl().permission =
+                                                    MemberPermission.MEMBER
+                                            },
+                                            MemberPermission.MEMBER
+                                        )
+                                    )
+                            } else {
+                                val member = group[from] as MemberImpl
+                                if (member.permission != MemberPermission.MEMBER) {
+                                    results.add(
+                                        MemberPermissionChangeEvent(
+                                            member,
+                                            member.permission.also { member.permission = MemberPermission.MEMBER },
+                                            MemberPermission.MEMBER
+                                        )
+                                    )
+                                }
+                            }
+                            if (to == bot.id) {
+                                if (group.botPermission != MemberPermission.OWNER) {
+                                    results.add(
+                                        BotGroupPermissionChangeEvent(
+                                            group,
+                                            group.botAsMember.permission.also {
+                                                group.botAsMember.checkIsMemberImpl().permission =
+                                                    MemberPermission.OWNER
+                                            },
+                                            MemberPermission.OWNER
+                                        )
+                                    )
+                                }
+                            } else {
+                                val newOwner = group.getOrNull(to) ?: group.newMember(object : MemberInfo {
+                                    override val nameCard: String
+                                        get() = ""
+                                    override val permission: MemberPermission
+                                        get() = MemberPermission.OWNER
+                                    override val specialTitle: String
+                                        get() = ""
+                                    override val muteTimestamp: Int
+                                        get() = 0
+                                    override val uin: Long
+                                        get() = to
+                                    override val nick: String
+                                        get() = ""
+                                }).also { owner ->
+                                    owner.checkIsMemberImpl().permission = MemberPermission.OWNER
+                                    group.members.delegate.addLast(owner)
+                                    results.add(MemberJoinEvent.Retrieve(owner))
+                                }
+                                if (newOwner.permission != MemberPermission.OWNER) {
+                                    results.add(
+                                        MemberPermissionChangeEvent(
+                                            newOwner,
+                                            newOwner.permission.also {
+                                                newOwner.checkIsMemberImpl().permission = MemberPermission.OWNER
+                                            },
+                                            MemberPermission.OWNER
+                                        )
+                                    )
+                                }
+                            }
+                            return MultiPacketByIterable(results)
+                        }
+                        else -> {
+                            var var5 = 0L
+                            val target = readUInt().toLong()
+                            if (mode != 0 && mode != 1) {
+                                var5 = readUInt().toLong()
                             }
 
-                            return BotGroupPermissionChangeEvent(
-                                group,
-                                group.botPermission.also {
-                                    group.botAsMember.checkIsMemberImpl().permission = newPermission
-                                },
-                                newPermission
-                            )
-                        } else {
-                            val member = group[target] as MemberImpl
-                            if (member.permission == newPermission) {
-                                return null
-                            }
+                            val group = bot.getGroupByUin(content.fromUin) as GroupImpl
 
-                            return MemberPermissionChangeEvent(
-                                member,
-                                member.permission.also { member.permission = newPermission },
-                                newPermission
-                            )
+                            if (var5 == 0L && this.remaining == 1L) {//管理员变更
+                                val newPermission =
+                                    if (this.readByte().toInt() == 1) MemberPermission.ADMINISTRATOR
+                                    else MemberPermission.MEMBER
+
+                                if (target == bot.id) {
+                                    if (group.botPermission == newPermission) {
+                                        return null
+                                    }
+
+                                    return BotGroupPermissionChangeEvent(
+                                        group,
+                                        group.botPermission.also {
+                                            group.botAsMember.checkIsMemberImpl().permission = newPermission
+                                        },
+                                        newPermission
+                                    )
+                                } else {
+                                    val member = group[target] as MemberImpl
+                                    if (member.permission == newPermission) {
+                                        return null
+                                    }
+
+                                    return MemberPermissionChangeEvent(
+                                        member,
+                                        member.permission.also { member.permission = newPermission },
+                                        newPermission
+                                    )
+                                }
+                            }
                         }
                     }
                 }
