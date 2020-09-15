@@ -104,7 +104,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
                 528 -> {
                     val notifyMsgBody = readJceStruct(MsgType0x210.serializer())
                     Transformers528[notifyMsgBody.uSubMsgType]
-                        ?.let { processor -> processor(notifyMsgBody, bot) }
+                        ?.let { processor -> processor(notifyMsgBody, bot, msgInfo) }
                         ?: kotlin.run {
                             bot.network.logger.debug {
                                 "unknown group 528 type 0x${notifyMsgBody.uSubMsgType.toUHexString("")}, data: " + notifyMsgBody.vProtobuf.toUHexString()
@@ -367,17 +367,28 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
     }
 )
 
-internal val ignoredLambda528: Lambda528 = lambda528 { emptySequence() }
+internal val ignoredLambda528: Lambda528 = lambda528 { _, _ -> emptySequence() }
 
 internal interface Lambda528 {
-    operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot): Sequence<Packet>
+    operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet>
 }
 
+@kotlin.internal.LowPriorityInOverloadResolution
 internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot) -> Sequence<Packet>): Lambda528 {
     return object : Lambda528 {
-        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot): Sequence<Packet> {
+        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
             return block(msg, bot)
         }
+
+    }
+}
+
+internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot, MsgInfo) -> Sequence<Packet>): Lambda528 {
+    return object : Lambda528 {
+        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
+            return block(msg, bot, msgInfo)
+        }
+
     }
 }
 
@@ -441,7 +452,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         bot.friends.delegate.addLast(new)
         return@lambda528 sequenceOf(FriendAddEvent(new))
     },
-    0xE2L to lambda528 {
+    0xE2L to lambda528 { _ ->
         // TODO: unknown. maybe messages.
         // 0A 35 08 00 10 A2 FF 8C F0 03 1A 1B E5 90 8C E6 84 8F E4 BD A0 E7 9A 84 E5 8A A0 E5 A5 BD E5 8F 8B E8 AF B7 E6 B1 82 22 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B 28 01
         // vProtobuf.loadAs(Msgtype0x210.serializer())
@@ -480,12 +491,13 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         } else emptySequence()
     },
     //戳一戳信息等
-    0x122L to lambda528 { bot ->
+    0x122L to lambda528 { bot, msgInfo ->
         val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
         when (body.templId) {
             //戳一戳
             1134L, 1135L, 1136L, 10043L -> {
                 //预置数据，服务器将不会提供己方已知消息
+                val chatTarget: Friend = bot.getFriend(msgInfo.lFromUin)
                 var from: Friend = bot.selfQQ
                 var action = ""
                 var target: Friend = bot.selfQQ
@@ -502,7 +514,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         }
                     }
                 }
-                return@lambda528 sequenceOf(FriendNudgeEvent(from, action, target, suffix))
+                return@lambda528 sequenceOf(FriendNudgeEvent(chatTarget, from, action, target, suffix))
 
             }
             else -> {
