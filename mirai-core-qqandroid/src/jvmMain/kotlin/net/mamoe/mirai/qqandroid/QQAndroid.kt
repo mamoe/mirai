@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -21,13 +21,13 @@ import net.mamoe.mirai.utils.Context
  * QQ for Android
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-public actual object QQAndroid : BotFactory {
+actual object QQAndroid : BotFactory {
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     @JvmName("newBot")
-    public actual override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
+    actual override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
         return QQAndroidBot(context, BotAccount(qq, password), configuration)
     }
 
@@ -35,14 +35,14 @@ public actual object QQAndroid : BotFactory {
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     @JvmName("newBot")
-    public fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
+    fun Bot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot =
         QQAndroidBot(BotAccount(qq, password), configuration)
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     @JvmName("newBot")
-    public actual override fun Bot(
+    actual override fun Bot(
         context: Context,
         qq: Long,
         passwordMd5: ByteArray,
@@ -53,7 +53,7 @@ public actual object QQAndroid : BotFactory {
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     @JvmName("newBot")
-    public fun Bot(
+    fun Bot(
         qq: Long,
         passwordMd5: ByteArray,
         configuration: BotConfiguration
@@ -63,5 +63,5 @@ public actual object QQAndroid : BotFactory {
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
-public inline fun QQAndroid.Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
+inline fun QQAndroid.Bot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
     this.Bot(qq, password, BotConfiguration().apply(configuration))

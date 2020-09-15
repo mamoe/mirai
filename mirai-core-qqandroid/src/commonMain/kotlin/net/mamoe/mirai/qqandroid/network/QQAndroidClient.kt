@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -46,14 +46,14 @@ private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray
 internal fun getRandomByteArray(length: Int): ByteArray = ByteArray(length) { Random.nextInt(0, 255).toByte() }
 
 internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
-    "msfwifi.3g.qq.com" to 8080,
     "42.81.169.46" to 8080,
     "42.81.172.81" to 80,
     "114.221.148.59" to 14000,
     "42.81.172.147" to 443,
     "125.94.60.146" to 80,
     "114.221.144.215" to 80,
-    "42.81.172.22" to 80
+    "42.81.172.22" to 80,
+    "msfwifi.3g.qq.com" to 8080,
 )
 
 /*
@@ -130,7 +130,7 @@ internal open class QQAndroidClient(
 
     internal suspend inline fun useNextServers(crossinline block: suspend (host: String, port: Int) -> Unit) {
         if (bot.client.serverList.isEmpty()) {
-            throw NoServerAvailableException(null)
+            bot.client.serverList.addAll(DefaultServerList)
         }
         retryCatching(bot.client.serverList.size, except = LoginFailedException::class) {
             val pair = bot.client.serverList[0]
@@ -159,8 +159,8 @@ internal open class QQAndroidClient(
 
     var openAppId: Long = 715019303L
 
-    val apkVersionName: ByteArray get() = "8.2.7".toByteArray()
-    val buildVer: String get() = "8.2.7.4410" // 8.2.0.1296
+    val apkVersionName: ByteArray get() = "8.4.8".toByteArray()
+    val buildVer: String get() = "8.4.8.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
 
     private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
