@@ -259,7 +259,10 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                         }
                     }
                 }
-                return@lambda732 sequenceOf(MemberNudgeEvent(from, action, target, suffix))
+                if (target.id == bot.id) {
+                    return@lambda732 sequenceOf(BotNudgedEvent(from, action, suffix))
+                }
+                return@lambda732 sequenceOf(MemberNudgedEvent(from, target, action, suffix))
             }
             else -> {
                 bot.logger.debug {
@@ -402,7 +405,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
     0x8AL to lambda528 { bot ->
         @Serializable
-        data class Sub8AMsgInfo(
+        class Sub8AMsgInfo(
             @ProtoNumber(1) val fromUin: Long,
             @ProtoNumber(2) val botUin: Long,
             @ProtoNumber(3) val srcId: Int,
@@ -416,7 +419,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         ) : ProtoBuf
 
         @Serializable
-        data class Sub8A(
+        class Sub8A(
             @ProtoNumber(1) val msgInfo: List<Sub8AMsgInfo>,
             @ProtoNumber(2) val appId: Int, // 1
             @ProtoNumber(3) val instId: Int, // 1
@@ -491,30 +494,27 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         } else emptySequence()
     },
     //戳一戳信息等
-    0x122L to lambda528 { bot, msgInfo ->
+    0x122L to lambda528 { bot, _ ->
         val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
         when (body.templId) {
             //戳一戳
             1134L, 1135L, 1136L, 10043L -> {
                 //预置数据，服务器将不会提供己方已知消息
-                val chatTarget: Friend = bot.getFriend(msgInfo.lFromUin)
                 var from: Friend = bot.selfQQ
                 var action = ""
                 var target: Friend = bot.selfQQ
                 var suffix = ""
-                body.msgTemplParam?.map {
-                    Pair(it.name.decodeToString(), it.value.decodeToString())
-                }?.asSequence()?.forEach { (key, value) ->
-                    run {
-                        when (key) {
-                            "action_str" -> action = value
-                            "uin_str1" -> from = bot.getFriend(value.toLong())
-                            "uin_str2" -> target = bot.getFriend(value.toLong())
-                            "suffix_str" -> suffix = value
-                        }
+                body.msgTemplParam?.asSequence()?.map {
+                    it.name.decodeToString() to it.value.decodeToString()
+                }?.forEach { (key, value) ->
+                    when (key) {
+                        "action_str" -> action = value
+                        "uin_str1" -> from = bot.getFriend(value.toLong())
+                        "uin_str2" -> target = bot.getFriend(value.toLong())
+                        "suffix_str" -> suffix = value
                     }
                 }
-                return@lambda528 sequenceOf(FriendNudgeEvent(chatTarget, from, action, target, suffix))
+                return@lambda528 sequenceOf(BotNudgedEvent(from, action, suffix))
 
             }
             else -> {

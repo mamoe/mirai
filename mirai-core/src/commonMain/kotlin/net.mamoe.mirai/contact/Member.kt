@@ -11,17 +11,19 @@
 
 package net.mamoe.mirai.contact
 
-import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.action.MemberNudge
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
-import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
@@ -127,21 +129,6 @@ public abstract class Member : MemberJavaFriendlyAPI, User() {
     public abstract suspend fun unmute()
 
     /**
-     * 发送戳一戳该成员的消息，冷却时间为 10 秒。
-     * 如对方已禁用该功能，发送将会失败且不会抛出异常。
-     * 调用需要使用协议 [MiraiProtocol.ANDROID_PHONE]
-     *
-     * @see MemberNudgeEvent 成员戳一戳事件
-     *
-     * @throws IllegalStateException 当仍处于冷却状态时
-     * @throws UnsupportedOperationException 当未使用安卓协议时 ([MiraiProtocol.ANDROID_PHONE])
-     *
-     * @return 是否成功发送
-     */
-    @JvmBlockingBridge
-    public abstract suspend fun nudge(): Boolean
-
-    /**
      * 踢出该成员.
      *
      * 管理员可踢出成员, 群主可踢出管理员和群员.
@@ -173,6 +160,15 @@ public abstract class Member : MemberJavaFriendlyAPI, User() {
      */
     @JvmSynthetic
     public abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
+
+    /**
+     * 创建一个 "戳一戳" 消息
+     *
+     * @see MemberNudge.sendTo 发送这个戳一戳消息
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("1.3.0")
+    public final override fun nudge(): Nudge = MemberNudge(this)
 
     /**
      * @see sendMessage

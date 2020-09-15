@@ -26,11 +26,13 @@ import net.mamoe.mirai.qqandroid.message.MessageSourceToTempImpl
 import net.mamoe.mirai.qqandroid.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.qqandroid.message.firstIsInstanceOrNull
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopMemberInfo
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NudgePacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.receive.createToTemp
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.getValue
+import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -219,28 +221,6 @@ internal class MemberImpl constructor(
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
     }
-
-    override suspend fun nudge(): Boolean {
-        if (bot.configuration.protocol != BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
-            throw UnsupportedOperationException("nudge is supported only with protocol ANDROID_PHONE")
-        }
-        val coolDown = currentTimeMillis - _nudgeTimestamp;
-        check(coolDown > 10000L) {
-            "Cooling, Please wait $coolDown ms and try again"
-        }
-        bot.network.run {
-            return NudgePacket.troopInvoke(
-                client = bot.client,
-                groupCode = group.id,
-                targetUin = this@MemberImpl.id,
-            ).sendAndExpect<NudgePacket.Response>().success.also { success ->
-                if (success) {
-                    _nudgeTimestamp = currentTimeMillis
-                }
-            }
-        }
-    }
-
 
     @JvmSynthetic
     override suspend fun kick(message: String) {

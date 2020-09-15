@@ -113,33 +113,6 @@ public data class FriendAvatarChangedEvent internal constructor(
 ) : FriendEvent, Packet, AbstractEvent()
 
 /**
- * [Friend] 的戳一戳事件.
- */
-@SinceMirai("1.3.0")
-public data class FriendNudgeEvent internal constructor(
-    /**
-     * 发起戳一戳的好友会话，此处使用 [Friend] 指定
-     */
-    public override val friend: Friend,
-    /**
-     * 戳一戳的发起者，可为 [Bot] 自身或好友
-     */
-    public val from: Friend,
-    /**
-     * 戳一戳的动作
-     */
-    public val action: String,
-    /**
-     * 戳一戳的目标，可为 [Bot] 自身或好友
-     */
-    public val target: Friend,
-    /**
-     * 戳一戳中设置的自定义后缀
-     */
-    public val suffix: String
-) : FriendEvent, Packet, AbstractEvent()
-
-/**
  * [Friend] 昵称改变事件, 在此事件广播时好友已经完成改名
  * @see BotNickChangedEvent
  */
@@ -149,7 +122,7 @@ public data class FriendNickChangedEvent internal constructor(
     public val from: String,
     public val to: String
 ) : FriendEvent, Packet, AbstractEvent()
-  
+
 /**
  * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
  */

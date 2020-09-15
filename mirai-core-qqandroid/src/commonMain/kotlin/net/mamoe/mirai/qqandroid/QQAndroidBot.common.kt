@@ -32,6 +32,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.qqandroid.contact.FriendImpl
@@ -45,10 +46,7 @@ import net.mamoe.mirai.qqandroid.network.highway.HighwayHelper
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.LongMsg
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.MultiMsg
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.PbMessageSvc
-import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.calculateValidationDataForGroup
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.MiraiPlatformUtils
@@ -229,6 +227,30 @@ internal class QQAndroidBot constructor(
             groupId = event.groupId,
             accept = accept
         )
+    }
+
+    @Suppress("CANNOT_OVERRIDE_INVISIBLE_MEMBER")
+    override suspend fun sendNudge(nudge: Nudge, receiver: Contact): Boolean {
+        if (configuration.protocol != BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
+            throw UnsupportedOperationException("nudge is supported only with protocol ANDROID_PHONE")
+        }
+
+        network.run {
+            return if (receiver is Group) {
+                receiver.checkIsGroupImpl()
+                NudgePacket.troopInvoke(
+                    client = client,
+                    messageReceiverGroupCode = receiver.id,
+                    nudgeTargetId = nudge.target.id,
+                ).sendAndExpect<NudgePacket.Response>().success
+            } else {
+                NudgePacket.friendInvoke(
+                    client = client,
+                    messageReceiverUin = receiver.id,
+                    nudgeTargetId = nudge.target.id,
+                ).sendAndExpect<NudgePacket.Response>().success
+            }
+        }
     }
 }
 

@@ -26,7 +26,7 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 internal object NudgePacket : OutgoingPacketFactory<NudgePacket.Response>("OidbSvc.0xed3") {
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
         with(readBytes().loadAs(OidbSso.OIDBSSOPkg.serializer())) {
-            return Response(result == 0, result);
+            return Response(result == 0, result)
         }
     }
 
@@ -36,8 +36,8 @@ internal object NudgePacket : OutgoingPacketFactory<NudgePacket.Response>("OidbS
 
     fun friendInvoke(
         client: QQAndroidClient,
-        targetUin: Long,
-        chatTargetUin: Long,
+        nudgeTargetId: Long,
+        messageReceiverUin: Long,
     ): OutgoingPacket {
         return buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -47,8 +47,8 @@ internal object NudgePacket : OutgoingPacketFactory<NudgePacket.Response>("OidbS
                     serviceType = 1,
                     result = 0,
                     bodybuffer = Cmd0xed3.ReqBody(
-                        toUin = targetUin,
-                        aioUin = chatTargetUin
+                        toUin = nudgeTargetId,
+                        aioUin = messageReceiverUin
                     ).toByteArray(Cmd0xed3.ReqBody.serializer())
                 )
             )
@@ -57,8 +57,8 @@ internal object NudgePacket : OutgoingPacketFactory<NudgePacket.Response>("OidbS
 
     fun troopInvoke(
         client: QQAndroidClient,
-        groupCode: Long,
-        targetUin: Long,
+        messageReceiverGroupCode: Long,
+        nudgeTargetId: Long,
     ): OutgoingPacket {
         return buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -68,8 +68,8 @@ internal object NudgePacket : OutgoingPacketFactory<NudgePacket.Response>("OidbS
                     serviceType = 1,
                     result = 0,
                     bodybuffer = Cmd0xed3.ReqBody(
-                        toUin = targetUin,
-                        groupCode = groupCode
+                        toUin = nudgeTargetId,
+                        groupCode = messageReceiverGroupCode
                     ).toByteArray(Cmd0xed3.ReqBody.serializer())
                 )
             )
