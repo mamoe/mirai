@@ -131,6 +131,17 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
             return "BotJoinGroupEvent.Invite(invitor=$invitor)"
         }
     }
+    /**
+     * 原群主通过 https://huifu.qq.com/ 恢复原来群主身份并入群,
+     * [Bot] 是原群主
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("1.3.0")
+    public data class Retrieve internal constructor(
+        public override val group: Group
+    ) : BotJoinGroupEvent() {
+        override fun toString(): String = "MemberJoinEvent.Retrieve(group=${group.id})"
+    }
 }
 
 // region 群设置

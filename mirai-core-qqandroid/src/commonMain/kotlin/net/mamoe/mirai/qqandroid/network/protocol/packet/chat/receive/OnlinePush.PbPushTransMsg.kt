@@ -21,10 +21,7 @@ import kotlinx.io.core.readUInt
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
-import net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent
-import net.mamoe.mirai.event.events.MemberJoinEvent
-import net.mamoe.mirai.event.events.MemberLeaveEvent
-import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.contact.GroupImpl
 import net.mamoe.mirai.qqandroid.contact.MemberImpl
@@ -71,9 +68,18 @@ internal object OnlinePushPbPushTransMsg :
                             // From -> to
                             val from = readUInt().toLong()
                             val to = readUInt().toLong()
-                            // println("$from -> $to")
-                            val group = bot.getGroupByUin(content.fromUin) as GroupImpl
                             val results = ArrayList<Packet>()
+                            // println("$from -> $to")
+                            if (to == bot.id) {
+                                if (bot.getGroupByUinOrNull(content.fromUin) == null) {
+                                    MessageSvcPbGetMsg.run {
+                                        results.add(BotJoinGroupEvent.Retrieve(
+                                            bot.createGroupForBot(content.fromUin)!!
+                                        ))
+                                    }
+                                }
+                            }
+                            val group = bot.getGroupByUin(content.fromUin) as GroupImpl
                             if (from == bot.id) {
                                 if (group.botPermission != MemberPermission.MEMBER)
                                     results.add(
@@ -97,34 +103,49 @@ internal object OnlinePushPbPushTransMsg :
                                     )
                                 }
                             }
-                            val newOwner = group.getOrNull(to) ?: group.newMember(object : MemberInfo {
-                                override val nameCard: String
-                                    get() = ""
-                                override val permission: MemberPermission
-                                    get() = MemberPermission.OWNER
-                                override val specialTitle: String
-                                    get() = ""
-                                override val muteTimestamp: Int
-                                    get() = 0
-                                override val uin: Long
-                                    get() = to
-                                override val nick: String
-                                    get() = ""
-                            }).also { owner ->
-                                owner.checkIsMemberImpl().permission = MemberPermission.OWNER
-                                group.members.delegate.addLast(owner)
-                                results.add(MemberJoinEvent.Retrieve(owner))
-                            }
-                            if (newOwner.permission != MemberPermission.OWNER) {
-                                results.add(
-                                    MemberPermissionChangeEvent(
-                                        newOwner,
-                                        newOwner.permission.also {
-                                            newOwner.checkIsMemberImpl().permission = MemberPermission.OWNER
-                                        },
-                                        MemberPermission.OWNER
+                            if (to == bot.id) {
+                                if (group.botPermission != MemberPermission.OWNER) {
+                                    results.add(
+                                        BotGroupPermissionChangeEvent(
+                                            group,
+                                            group.botAsMember.permission.also {
+                                                group.botAsMember.checkIsMemberImpl().permission =
+                                                    MemberPermission.OWNER
+                                            },
+                                            MemberPermission.OWNER
+                                        )
                                     )
-                                )
+                                }
+                            } else {
+                                val newOwner = group.getOrNull(to) ?: group.newMember(object : MemberInfo {
+                                    override val nameCard: String
+                                        get() = ""
+                                    override val permission: MemberPermission
+                                        get() = MemberPermission.OWNER
+                                    override val specialTitle: String
+                                        get() = ""
+                                    override val muteTimestamp: Int
+                                        get() = 0
+                                    override val uin: Long
+                                        get() = to
+                                    override val nick: String
+                                        get() = ""
+                                }).also { owner ->
+                                    owner.checkIsMemberImpl().permission = MemberPermission.OWNER
+                                    group.members.delegate.addLast(owner)
+                                    results.add(MemberJoinEvent.Retrieve(owner))
+                                }
+                                if (newOwner.permission != MemberPermission.OWNER) {
+                                    results.add(
+                                        MemberPermissionChangeEvent(
+                                            newOwner,
+                                            newOwner.permission.also {
+                                                newOwner.checkIsMemberImpl().permission = MemberPermission.OWNER
+                                            },
+                                            MemberPermission.OWNER
+                                        )
+                                    )
+                                }
                             }
                             return MultiPacketByIterable(results)
                         }
