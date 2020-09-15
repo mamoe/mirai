@@ -254,10 +254,15 @@ internal abstract class QQAndroidBotBase constructor(
 
     override val friends: ContactList<Friend> = ContactList(LockFreeLinkedList())
 
-    @JvmField internal var cachedNick: String? = null
-    override val nick: String get() = cachedNick ?: selfInfo.nick.also { cachedNick = it }
+    override lateinit var nick: String
 
-    internal lateinit var selfInfo: JceFriendInfo
+    internal var selfInfo: JceFriendInfo? = null
+        get() = field ?: error("selfInfo is not yet initialized")
+        set(it) {
+            checkNotNull(it)
+            field = it
+            nick = it.nick
+        }
 
     override val selfQQ: Friend by lazy {
         @OptIn(LowLevelAPI::class)
