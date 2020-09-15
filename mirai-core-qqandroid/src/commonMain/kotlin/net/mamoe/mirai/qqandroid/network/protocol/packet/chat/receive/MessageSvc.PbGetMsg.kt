@@ -17,6 +17,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
@@ -46,14 +47,12 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.qqandroid.utils.AtomicResizeCacheList
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.qqandroid.utils.read
 import net.mamoe.mirai.qqandroid.utils.toInt
 import net.mamoe.mirai.qqandroid.utils.toUHexString
 import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.secondsToMillis
 import net.mamoe.mirai.utils.warning
 import kotlin.random.Random
 
@@ -64,13 +63,9 @@ import kotlin.random.Random
 internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Response>("MessageSvc.PbGetMsg") {
 
 
-    private val msgSyncCache = AtomicResizeCacheList<Triple<Int, Int, Long>>(20.secondsToMillis)
-
-    private fun ensureNoDuplication(msg: MsgComm.Msg): Boolean {
-        return msgSyncCache.ensureNoDuplication(msg.msgHead.run {
-            Triple(msgSeq, msgTime, msgUid)
-        })
-    }
+    private val msgSignatureQueue = ArrayDeque<MsgSignature>()
+    private val msgSignatureSet = hashSetOf<MsgSignature>()
+    private val msgQueueMutex = Mutex()
 
     @Suppress("SpellCheckingInspection")
     operator fun invoke(
@@ -191,9 +186,17 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             }
             .mapNotNull<MsgComm.Msg, Packet> { msg ->
 
-                if (!ensureNoDuplication(msg)) {
+                val signature = msg.msgHead.run { Triple(msgSeq, msgTime, msgUid) }
+                msgQueueMutex.lock()
+                if (msgSignatureSet.size > 50) {
+                    msgSignatureSet.remove(msgSignatureQueue.removeFirst())
+                }
+                if (!msgSignatureSet.add(signature)) {
+                    msgQueueMutex.unlock()
                     return@mapNotNull null
                 }
+                msgQueueMutex.unlock()
+                msgSignatureQueue.addLast(signature)
 
                 suspend fun createGroupForBot(groupUin: Long): Group? {
                     val group = bot.getGroupByUinOrNull(groupUin)
@@ -443,6 +446,8 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         }
     }
 }
+
+typealias MsgSignature = Triple<Int, Int, Long>
 
 
 internal suspend fun QQAndroidBot.getNewGroup(groupCode: Long): Group? {
