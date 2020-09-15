@@ -118,6 +118,7 @@ public interface LowLevelBotAPIAccessor {
     /**
      * 获取群荣誉信息
      */
+    @SinceMirai("1.3.0")
     @LowLevelAPI
     @MiraiExperimentalAPI
     public suspend fun _lowLevelGetGroupHonorListData(groupId: Long, type: GroupHonorType): GroupHonorListData?
