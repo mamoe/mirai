@@ -20,10 +20,6 @@ import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.event.events.BotGroupPermissionChangeEvent
-import net.mamoe.mirai.event.events.BotLeaveEvent
-import net.mamoe.mirai.event.events.MemberLeaveEvent
-import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.qqandroid.QQAndroidBot
@@ -248,7 +244,6 @@ internal object OnlinePushPbPushTransMsg :
                     }
                 }
                 else -> {
-
                     throw contextualBugReportException(
                         "解析 OnlinePush.PbPushTransMsg, msgType=${content.msgType}",
                         content._miraiContentToString(),
