@@ -15,6 +15,7 @@ package net.mamoe.mirai
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
 import net.mamoe.mirai.utils.ContextImpl
+import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 构造 [Bot] 的工厂. 这是 [Bot] 唯一的构造方式.
@@ -52,6 +53,7 @@ public actual interface BotFactory {
         configuration: BotConfiguration
     ): Bot
 
+    @SinceMirai("1.3.0")
     public actual companion object INSTANCE : BotFactory {
         override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
             return factory.Bot(context, qq, password, configuration)
