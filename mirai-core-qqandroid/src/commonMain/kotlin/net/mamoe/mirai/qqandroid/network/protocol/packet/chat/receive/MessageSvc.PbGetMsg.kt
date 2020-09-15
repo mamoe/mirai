@@ -63,8 +63,8 @@ import kotlin.random.Random
 internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Response>("MessageSvc.PbGetMsg") {
 
 
-    private val msgSignatureQueue = ArrayDeque<MsgSignature>()
-    private val msgSignatureSet = hashSetOf<MsgSignature>()
+    private val msgSignatureQueue = ArrayDeque<Triple<Int, Int, Long>>()
+    private val msgSignatureSet = hashSetOf<Triple<Int, Int, Long>>()
     private val msgQueueMutex = Mutex()
 
     @Suppress("SpellCheckingInspection")
@@ -446,8 +446,6 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         }
     }
 }
-
-typealias MsgSignature = Triple<Int, Int, Long>
 
 
 internal suspend fun QQAndroidBot.getNewGroup(groupCode: Long): Group? {
