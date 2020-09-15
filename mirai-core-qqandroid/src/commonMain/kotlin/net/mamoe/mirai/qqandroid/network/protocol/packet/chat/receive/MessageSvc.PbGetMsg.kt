@@ -17,7 +17,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
@@ -62,10 +61,6 @@ import kotlin.random.Random
  */
 internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Response>("MessageSvc.PbGetMsg") {
 
-
-    private val msgUidQueue = ArrayDeque<Long>()
-    private val msgUidSet = hashSetOf<Long>()
-    private val msgQueueMutex = Mutex()
 
     @Suppress("SpellCheckingInspection")
     operator fun invoke(
@@ -137,7 +132,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         }
     }
 
-    suspend fun QQAndroidBot.createGroupForBot(groupUin: Long): Group? {
+    private suspend fun QQAndroidBot.createGroupForBot(groupUin: Long): Group? {
         val group = getGroupByUinOrNull(groupUin)
         if (group != null) {
             return null
@@ -195,19 +190,21 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             }.also {
                 MessageSvcPbDeleteMsg.delete(bot, it) // 删除消息
             }
-            .mapNotNull<MsgComm.Msg, Packet> { msg ->
+            .mapNotNull { msg ->
 
-                msgQueueMutex.lock()
-                val msgUid = msg.msgHead.msgUid
-                if (msgUidSet.size > 50) {
-                    msgUidSet.remove(msgUidQueue.removeFirst())
+                bot.client.c2cMessageSync.run {
+                    val identifier = QQAndroidClient.C2cMessageSyncData.SyncPacketIdentifier(
+                        uid = msg.msgHead.msgUid,
+                        sequence = msg.msgHead.msgSeq,
+                        time = msg.msgHead.msgTime
+                    )
+
+                    packetIdListLock.withLock {
+                        if (packetIdList.contains(identifier)) return@mapNotNull null // duplicate
+                        packetIdList.addLast(identifier)
+                        if (packetIdList.size >= 50) packetIdList.removeFirst()
+                    }
                 }
-                if (!msgUidSet.add(msgUid)) {
-                    msgQueueMutex.unlock()
-                    return@mapNotNull null
-                }
-                msgQueueMutex.unlock()
-                msgUidQueue.addLast(msgUid)
 
                 when (msg.msgHead.msgType) {
                     33 -> bot.groupListModifyLock.withLock {
