@@ -2422,3 +2422,17 @@ internal class Cmd0x6ce : ProtoBuf {
     ) : ProtoBuf
 }
 
+@Serializable
+internal class Cmd0xed3 : ProtoBuf {
+    @Serializable
+    internal class RspBody : ProtoBuf
+
+    @Serializable
+    internal class ReqBody(
+        @ProtoNumber(1) @JvmField val toUin: Long = 0L,
+        @ProtoNumber(2) @JvmField val groupCode: Long = 0L,
+        @ProtoNumber(3) @JvmField val msgSeq: Int = 0,
+        @ProtoNumber(4) @JvmField val msgRandom: Int = 0,
+        @ProtoNumber(5) @JvmField val aioUin: Long = 0L
+    ) : ProtoBuf
+}

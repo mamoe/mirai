@@ -124,6 +124,9 @@ internal class MemberImpl constructor(
     @Suppress("PropertyName")
     var _muteTimestamp: Int = memberInfo.muteTimestamp
 
+    @Suppress("PropertyName")
+    var _nudgeTimestamp: Long = 0L
+
     override val muteTimeRemaining: Int
         get() = if (_muteTimestamp == 0 || _muteTimestamp == 0xFFFFFFFF.toInt()) {
             0
@@ -218,7 +221,6 @@ internal class MemberImpl constructor(
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
     }
-
 
     @JvmSynthetic
     override suspend fun kick(message: String) {

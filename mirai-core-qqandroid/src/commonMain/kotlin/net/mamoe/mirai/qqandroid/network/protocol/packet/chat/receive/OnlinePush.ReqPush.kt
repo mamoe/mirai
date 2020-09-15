@@ -21,6 +21,8 @@ import kotlinx.io.core.readUInt
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
@@ -35,8 +37,9 @@ import net.mamoe.mirai.qqandroid.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x115
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x122
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
-import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x44
+import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0x44.Submsgtype0x44
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Submsgtype0xb3
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
@@ -99,7 +102,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
                 528 -> {
                     val notifyMsgBody = readJceStruct(MsgType0x210.serializer())
                     Transformers528[notifyMsgBody.uSubMsgType]
-                        ?.let { processor -> processor(notifyMsgBody, bot) }
+                        ?.let { processor -> processor(notifyMsgBody, bot, msgInfo) }
                         ?: kotlin.run {
                             bot.network.logger.debug {
                                 "unknown group 528 type 0x${notifyMsgBody.uSubMsgType.toUHexString("")}, data: " + notifyMsgBody.vProtobuf.toUHexString()
@@ -229,6 +232,44 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         return@lambda732 sequenceOf(GroupAllowAnonymousChatEvent(!new, new, group, operator))
     },
 
+    //系统提示
+    0x14 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
+
+        discardExact(1)
+        val grayTip = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer()).optGeneralGrayTip
+        when (grayTip?.templId) {
+            //戳一戳
+            10043L, 1134L, 1135L -> {
+                //预置数据，服务器将不会提供己方已知消息
+                var action = ""
+                var from: Member = group.botAsMember
+                var target: Member = group.botAsMember
+                var suffix = ""
+                grayTip.msgTemplParam?.map {
+                    Pair(it.name.decodeToString(), it.value.decodeToString())
+                }?.asSequence()?.forEach { (key, value) ->
+                    run {
+                        when (key) {
+                            "action_str" -> action = value
+                            "uin_str1" -> from = group[value.toLong()]
+                            "uin_str2" -> target = group[value.toLong()]
+                            "suffix_str" -> suffix = value
+                        }
+                    }
+                }
+                if (target.id == bot.id) {
+                    return@lambda732 sequenceOf(BotNudgedEvent(from, action, suffix))
+                }
+                return@lambda732 sequenceOf(MemberNudgedEvent(from, target, action, suffix))
+            }
+            else -> {
+                bot.logger.debug {
+                    "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
+                }
+                return@lambda732 emptySequence()
+            }
+        }
+    },
     // 传字符串信息
     0x10 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
         val dataBytes = readBytes(26)
@@ -327,17 +368,28 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
     }
 )
 
-internal val ignoredLambda528: Lambda528 = lambda528 { emptySequence() }
+internal val ignoredLambda528: Lambda528 = lambda528 { _, _ -> emptySequence() }
 
 internal interface Lambda528 {
-    operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot): Sequence<Packet>
+    operator fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet>
 }
 
+@kotlin.internal.LowPriorityInOverloadResolution
 internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot) -> Sequence<Packet>): Lambda528 {
     return object : Lambda528 {
-        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot): Sequence<Packet> {
+        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
             return block(msg, bot)
         }
+
+    }
+}
+
+internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot, MsgInfo) -> Sequence<Packet>): Lambda528 {
+    return object : Lambda528 {
+        override fun invoke(msg: MsgType0x210, bot: QQAndroidBot, msgInfo: MsgInfo): Sequence<Packet> {
+            return block(msg, bot, msgInfo)
+        }
+
     }
 }
 
@@ -351,7 +403,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
     0x8AL to lambda528 { bot ->
         @Serializable
-        data class Sub8AMsgInfo(
+        class Sub8AMsgInfo(
             @ProtoNumber(1) val fromUin: Long,
             @ProtoNumber(2) val botUin: Long,
             @ProtoNumber(3) val srcId: Int,
@@ -365,7 +417,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         ) : ProtoBuf
 
         @Serializable
-        data class Sub8A(
+        class Sub8A(
             @ProtoNumber(1) val msgInfo: List<Sub8AMsgInfo>,
             @ProtoNumber(2) val appId: Int, // 1
             @ProtoNumber(3) val instId: Int, // 1
@@ -401,7 +453,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         bot.friends.delegate.addLast(new)
         return@lambda528 sequenceOf(FriendAddEvent(new))
     },
-    0xE2L to lambda528 {
+    0xE2L to lambda528 { _ ->
         // TODO: unknown. maybe messages.
         // 0A 35 08 00 10 A2 FF 8C F0 03 1A 1B E5 90 8C E6 84 8F E4 BD A0 E7 9A 84 E5 8A A0 E5 A5 BD E5 8F 8B E8 AF B7 E6 B1 82 22 0C E6 BD 9C E6 B1 9F E7 BE A4 E5 8F 8B 28 01
         // vProtobuf.loadAs(Msgtype0x210.serializer())
@@ -409,7 +461,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         return@lambda528 emptySequence()
     },
     0x44L to lambda528 { bot ->
-        val msg = vProtobuf.loadAs(Submsgtype0x44.Submsgtype0x44.MsgBody.serializer())
+        val msg = vProtobuf.loadAs(Submsgtype0x44.MsgBody.serializer())
         when {
             msg.msgCleanCountMsg != null -> {
 
@@ -441,6 +493,38 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
         //ignore
         return@lambda528 emptySequence()
+    },
+    //戳一戳信息等
+    0x122L to lambda528 { bot, _ ->
+        val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
+        when (body.templId) {
+            //戳一戳
+            1134L, 1135L, 1136L, 10043L -> {
+                //预置数据，服务器将不会提供己方已知消息
+                var from: Friend = bot.selfQQ
+                var action = ""
+                var target: Friend = bot.selfQQ
+                var suffix = ""
+                body.msgTemplParam?.asSequence()?.map {
+                    it.name.decodeToString() to it.value.decodeToString()
+                }?.forEach { (key, value) ->
+                    when (key) {
+                        "action_str" -> action = value
+                        "uin_str1" -> from = bot.getFriend(value.toLong())
+                        "uin_str2" -> target = bot.getFriend(value.toLong())
+                        "suffix_str" -> suffix = value
+                    }
+                }
+                return@lambda528 sequenceOf(BotNudgedEvent(from, action, suffix))
+
+            }
+            else -> {
+                bot.logger.debug {
+                    "Unknown Transformers528 0x122L template\ntemplId=${body.templId}\nPermList=${body.msgTemplParam?._miraiContentToString()}"
+                }
+                return@lambda528 emptySequence()
+            }
+        }
     },
     //好友输入状态
     0x115L to lambda528 { bot ->

@@ -15,11 +15,17 @@ import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.action.FriendNudge
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -66,6 +72,15 @@ public abstract class User : Contact(), CoroutineScope {
      */
     @JvmSynthetic
     public abstract override suspend fun sendMessage(message: Message): MessageReceipt<User>
+
+    /**
+     * 创建一个 "戳一戳" 消息
+     *
+     * @see FriendNudge.sendTo 发送这个戳一戳消息
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("1.3.0")
+    public abstract fun nudge(): Nudge
 
     /**
      * @see sendMessage
