@@ -263,7 +263,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                 return@lambda732 sequenceOf(MemberNudgedEvent(from, target, action, suffix))
             }
             else -> {
-                bot.logger.debug {
+                bot.network.logger.debug {
                     "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
                 }
                 return@lambda732 emptySequence()
