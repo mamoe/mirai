@@ -191,20 +191,14 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                 MessageSvcPbDeleteMsg.delete(bot, it) // 删除消息
             }
             .mapNotNull { msg ->
-
-                bot.client.c2cMessageSync.run {
-                    val identifier = QQAndroidClient.C2cMessageSyncData.SyncPacketIdentifier(
-                        uid = msg.msgHead.msgUid,
-                        sequence = msg.msgHead.msgSeq,
-                        time = msg.msgHead.msgTime
+                if (!bot.client.c2cMessageSync.pbGetMessageCacheList.addCache(
+                        QQAndroidClient.MessageSvcSyncData.PbGetMessageSyncId(
+                            uid = msg.msgHead.msgUid,
+                            sequence = msg.msgHead.msgSeq,
+                            time = msg.msgHead.msgTime
+                        )
                     )
-
-                    packetIdListLock.withLock {
-                        if (packetIdList.contains(identifier)) return@mapNotNull null // duplicate
-                        packetIdList.addLast(identifier)
-                        if (packetIdList.size >= 50) packetIdList.removeFirst()
-                    }
-                }
+                ) return@mapNotNull null
 
                 when (msg.msgHead.msgType) {
                     33 -> bot.groupListModifyLock.withLock {

@@ -14,13 +14,13 @@ package net.mamoe.mirai.qqandroid.network
 import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.io.core.*
 import net.mamoe.mirai.data.OnlineStatus
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.qqandroid.BotAccount
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.protocol.SyncingCacheList
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FileStoragePushFSSvcListFuckKotlin
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
@@ -206,7 +206,7 @@ internal open class QQAndroidClient(
      */
     val protocolVersion: Short = 8001
 
-    class C2cMessageSyncData {
+    class MessageSvcSyncData {
         val firstNotify: AtomicBoolean = atomic(true)
 
         @Volatile
@@ -215,17 +215,17 @@ internal open class QQAndroidClient(
         var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
 
 
-        internal data class SyncPacketIdentifier(
+        internal data class PbGetMessageSyncId(
             val uid: Long,
             val sequence: Int,
             val time: Int
         )
 
-        val packetIdList = LinkedList<SyncPacketIdentifier>()
-        val packetIdListLock = Mutex()
+        val pbGetMessageCacheList = SyncingCacheList<PbGetMessageSyncId>()
+        val systemMsgNewGroupCacheList = SyncingCacheList<PbGetMessageSyncId>()
     }
 
-    val c2cMessageSync = C2cMessageSyncData()
+    val c2cMessageSync = MessageSvcSyncData()
 
     /*
      * 以下登录使用
