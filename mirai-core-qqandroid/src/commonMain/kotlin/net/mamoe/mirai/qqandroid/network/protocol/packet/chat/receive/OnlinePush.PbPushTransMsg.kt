@@ -29,6 +29,7 @@ import net.mamoe.mirai.qqandroid.contact.checkIsMemberImpl
 import net.mamoe.mirai.qqandroid.message.contextualBugReportException
 import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
 import net.mamoe.mirai.qqandroid.network.Packet
+import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.OnlinePushTrans
 import net.mamoe.mirai.qqandroid.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
@@ -45,7 +46,12 @@ internal object OnlinePushPbPushTransMsg :
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
         val content = this.readProtoBuf(OnlinePushTrans.PbMsgInfo.serializer())
 
-        if (!bot.client.pbPushTransMsgCacheList.ensureNoDuplication(content.msgSeq)) {
+        if (!bot.client.syncingController.pbPushTransMsgCacheList.addCache(
+                content.run {
+                    QQAndroidClient.MessageSvcSyncData.PbPushTransMsgSyncId(msgUid, msgSeq, msgTime)
+                }
+            )
+        ) {
             return null
         }
         // bot.network.logger.debug { content._miraiContentToString() }
@@ -73,9 +79,11 @@ internal object OnlinePushPbPushTransMsg :
                             if (to == bot.id) {
                                 if (bot.getGroupByUinOrNull(content.fromUin) == null) {
                                     MessageSvcPbGetMsg.run {
-                                        results.add(BotJoinGroupEvent.Retrieve(
-                                            bot.createGroupForBot(content.fromUin)!!
-                                        ))
+                                        results.add(
+                                            BotJoinGroupEvent.Retrieve(
+                                                bot.createGroupForBot(content.fromUin)!!
+                                            )
+                                        )
                                     }
                                 }
                             }

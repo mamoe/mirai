@@ -67,7 +67,11 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
         mapper: ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
     ): Sequence<Packet> {
         return asSequence().filter { msg ->
-            client.onlinePushCacheList.ensureNoDuplication(msg.shMsgSeq)
+            !client.syncingController.onlinePushReqPushCacheList.addCache(
+                QQAndroidClient.MessageSvcSyncData.OnlinePushReqPushSyncId(
+                    uid = msg.lMsgUid ?: 0, sequence = msg.shMsgSeq, time = msg.uMsgTime
+                )
+            )
         }.flatMap { it.vMsg.read { mapper(it) } }
     }
 
@@ -263,7 +267,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                 return@lambda732 sequenceOf(MemberNudgedEvent(from, target, action, suffix))
             }
             else -> {
-                bot.logger.debug {
+                bot.network.logger.debug {
                     "Unknown Transformers528 0x14 template\ntemplId=${grayTip?.templId}\nPermList=${grayTip?.msgTemplParam?._miraiContentToString()}"
                 }
                 return@lambda732 emptySequence()
