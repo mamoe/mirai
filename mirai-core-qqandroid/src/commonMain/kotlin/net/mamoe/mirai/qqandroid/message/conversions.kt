@@ -301,6 +301,17 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     return@forEach
                 }
             }
+
+
+            if (element is QuoteReply) {
+                // 客户端为兼容早期不支持 QuoteReply 的客户端而添加的 At
+                removeLastOrNull()?.let { rm ->
+                    if ((rm as? PlainText)?.content != " ") add(rm)
+                    else removeLastOrNull()?.let { rm2 ->
+                        if (rm2 !is At) add(rm2)
+                    }
+                }
+            }
             add(element)
             last = element
         }
@@ -320,7 +331,7 @@ internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, list: MessageChainBuilder) {
-    // (this._miraiContentToString())
+    (this._miraiContentToString().soutv())
     this.forEach { element ->
         when {
             element.srcMsg != null -> {
