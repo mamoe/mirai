@@ -193,7 +193,6 @@ internal open class QQAndroidClient(
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
     internal val onlinePushCacheList: AtomicResizeCacheList<Short> = AtomicResizeCacheList(20.secondsToMillis)
-    internal val pbPushTransMsgCacheList: AtomicResizeCacheList<Int> = AtomicResizeCacheList(20.secondsToMillis)
 
     val appClientVersion: Int = 0
 
@@ -229,6 +228,15 @@ internal open class QQAndroidClient(
         )
 
         val systemMsgNewGroupCacheList = SyncingCacheList<SystemMsgNewGroupSyncId>(10)
+
+
+        internal data class PbPushTransMsgSyncId(
+            val uid: Long,
+            val sequence: Int,
+            val time: Int
+        )
+
+        val pbPushTransMsgCacheList = SyncingCacheList<PbPushTransMsgSyncId>(10)
     }
 
     val syncingController = MessageSvcSyncData()
