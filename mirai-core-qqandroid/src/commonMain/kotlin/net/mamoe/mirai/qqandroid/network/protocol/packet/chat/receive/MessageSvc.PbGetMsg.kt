@@ -333,9 +333,12 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         if (!bot.firstLoginSucceed) {
                             return@mapNotNull null
                         }
-
                         friend.lastMessageSequence.loop {
-                            if (friend.lastMessageSequence.compareAndSet(it, msg.msgHead.msgSeq)) {
+                            if (friend.lastMessageSequence.compareAndSet(
+                                    it,
+                                    msg.msgHead.msgSeq
+                                ) && msg.contentHead?.autoReply != 1
+                            ) {
                                 return@mapNotNull FriendMessageEvent(
                                     friend,
                                     msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
