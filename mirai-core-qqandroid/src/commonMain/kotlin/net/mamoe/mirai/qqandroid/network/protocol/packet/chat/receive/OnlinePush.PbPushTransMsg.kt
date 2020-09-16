@@ -205,28 +205,41 @@ internal object OnlinePushPbPushTransMsg :
                     A8 32 51 A1
                     83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 39 32 46 45 30 36 31 41 33 37 36 43 44 35 37 35 37 39 45 37 32 34 44 37 37 30 36 46 39 39 43 35 35 33 33 31 34 44 32 44 46 35 45 42 43 31 31 36
                      */
-                    readUInt().toLong() // group, uin or code ?
-
-                    discardExact(1)
+                    readUInt().toLong() // groupUin
+                    readByte().toInt() // follow type
                     val target = readUInt().toLong()
                     val type = readUByte().toInt()
                     val operator = readUInt().toLong()
                     val groupUin = content.fromUin
 
                     when (type) {
-                        0x82 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
-                            val member = group.getOrNull(target) as? MemberImpl ?: return null
-                            return MemberLeaveEvent.Quit(member.also {
-                                member.cancel(CancellationException("Leaved actively"))
-                                group.members.delegate.remove(member)
-                            })
+                        2, 0x82 -> bot.getGroupByUinOrNull(groupUin)?.let { group ->
+                            if (target == bot.id) {
+                                return BotLeaveEvent.Active(group).also {
+                                    group.cancel(CancellationException("Leaved actively"))
+                                    bot.groups.delegate.remove(group)
+                                }
+                            } else {
+                                val member = group.getOrNull(target) as? MemberImpl ?: return null
+                                return MemberLeaveEvent.Quit(member.also {
+                                    member.cancel(CancellationException("Leaved actively"))
+                                    group.members.delegate.remove(member)
+                                })
+                            }
                         }
-                        0x83 -> bot.getGroupByUin(groupUin).let { group ->
-                            val member = group.getOrNull(target) as? MemberImpl ?: return null
-                            return MemberLeaveEvent.Kick(member.also {
-                                member.cancel(CancellationException("Leaved actively"))
-                                group.members.delegate.remove(member)
-                            }, group.members[operator])
+                        3, 0x83 -> bot.getGroupByUin(groupUin).let { group ->
+                            if (target == bot.id) {
+                                return BotLeaveEvent.Kick(group.members[operator]).also {
+                                    group.cancel(CancellationException("Being kicked"))
+                                    bot.groups.delegate.remove(group)
+                                }
+                            } else {
+                                val member = group.getOrNull(target) as? MemberImpl ?: return null
+                                return MemberLeaveEvent.Kick(member.also {
+                                    member.cancel(CancellationException("Being kicked"))
+                                    group.members.delegate.remove(member)
+                                }, group.members[operator])
+                            }
                         }
                     }
                 }
