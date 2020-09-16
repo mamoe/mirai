@@ -20,6 +20,8 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.message.contextualBugReportException
+import net.mamoe.mirai.qqandroid.network.MultiPacket
+import net.mamoe.mirai.qqandroid.network.MultiPacketByIterable
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.Structmsg
@@ -32,7 +34,7 @@ import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
 internal class NewContact {
 
     internal object SystemMsgNewFriend :
-        OutgoingPacketFactory<NewFriendRequestEvent?>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
+        OutgoingPacketFactory<MultiPacket<NewFriendRequestEvent>?>("ProfileService.Pb.ReqSystemMsgNew.Friend") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -56,20 +58,21 @@ internal class NewContact {
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): NewFriendRequestEvent? {
-            readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
-                val struct = friendmsgs?.firstOrNull()
-                return struct?.msg?.run {
-                    NewFriendRequestEvent(
-                        bot,
-                        struct.msgSeq,
-                        msgAdditional,
-                        struct.reqUin,
-                        groupCode,
-                        reqUinNick
-                    )
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MultiPacket<NewFriendRequestEvent>? {
+            return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
+                friendmsgs.mapNotNull { struct ->
+                    struct.msg?.run {
+                        NewFriendRequestEvent(
+                            bot,
+                            struct.msgSeq,
+                            msgAdditional,
+                            struct.reqUin,
+                            groupCode,
+                            reqUinNick
+                        )
+                    }
                 }
-            }
+            }.let { MultiPacketByIterable(it) }
         }
 
         internal object Action : OutgoingPacketFactory<Nothing?>("ProfileService.Pb.ReqSystemMsgAction.Friend") {
@@ -107,7 +110,7 @@ internal class NewContact {
 
 
     internal object SystemMsgNewGroup :
-        OutgoingPacketFactory<Packet?>("ProfileService.Pb.ReqSystemMsgNew.Group") {
+        OutgoingPacketFactory<MultiPacket<Packet>?>("ProfileService.Pb.ReqSystemMsgNew.Group") {
 
         operator fun invoke(client: QQAndroidClient) = buildOutgoingUniPacket(client) {
             writeProtoBuf(
@@ -143,11 +146,9 @@ internal class NewContact {
         }
 
 
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
-            readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
-                val struct = groupmsgs?.firstOrNull()
-
-                return struct?.msg?.run {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): MultiPacket<Packet>? {
+            return readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).groupmsgs.mapNotNull { struct ->
+                struct.msg?.run {
                     //this.soutv("SystemMsg")
                     when (subType) {
                         1 -> { // 处理被邀请入群 或 处理成员入群申请
@@ -212,7 +213,7 @@ internal class NewContact {
                         )
                     }
                 }
-            }
+            }.let { MultiPacketByIterable(it) }
         }
 
         internal object Action : OutgoingPacketFactory<Nothing?>("ProfileService.Pb.ReqSystemMsgAction.Group") {
