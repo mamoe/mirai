@@ -37,7 +37,7 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
                         "Manifest-Version" to "1",
                         "Implementation-Vendor" to "Mamoe Technologies",
                         "Implementation-Title" to target.name.toString(),
-                        "Implementation-Version" to target.version.toString() + "-" + gitVersion
+                        "Implementation-Version" to target.version.toString() + "+" + gitVersion
                     )
                 }
                 @Suppress("UNCHECKED_CAST")
