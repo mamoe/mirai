@@ -83,7 +83,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                 whisperSessionId = 0,
                 syncFlag = syncFlag,
                 //  serverBuf = from.serverBuf ?: EMPTY_BYTE_ARRAY,
-                syncCookie = syncCookie ?: client.c2cMessageSync.syncCookie
+                syncCookie = syncCookie ?: client.syncingController.syncCookie
                 ?: byteArrayOf()//.also { client.c2cMessageSync.syncCookie = it },
                 // syncFlag = client.c2cMessageSync.syncFlag,
                 //msgCtrlBuf = client.c2cMessageSync.msgCtrlBuf,
@@ -161,14 +161,14 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
         }
         when (resp.msgRspType) {
             0 -> {
-                bot.client.c2cMessageSync.syncCookie = resp.syncCookie
-                bot.client.c2cMessageSync.pubAccountCookie = resp.pubAccountCookie
+                bot.client.syncingController.syncCookie = resp.syncCookie
+                bot.client.syncingController.pubAccountCookie = resp.pubAccountCookie
             }
             1 -> {
-                bot.client.c2cMessageSync.syncCookie = resp.syncCookie
+                bot.client.syncingController.syncCookie = resp.syncCookie
             }
             2 -> {
-                bot.client.c2cMessageSync.pubAccountCookie = resp.pubAccountCookie
+                bot.client.syncingController.pubAccountCookie = resp.pubAccountCookie
 
             }
         }
@@ -176,7 +176,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 //        bot.logger.debug(resp.msgRspType._miraiContentToString())
 //        bot.logger.debug(resp.syncCookie._miraiContentToString())
 
-        bot.client.c2cMessageSync.msgCtrlBuf = resp.msgCtrlBuf
+        bot.client.syncingController.msgCtrlBuf = resp.msgCtrlBuf
 
         if (resp.uinPairMsgs == null) {
             return EmptyResponse
@@ -191,7 +191,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                 MessageSvcPbDeleteMsg.delete(bot, it) // 删除消息
             }
             .mapNotNull { msg ->
-                if (!bot.client.c2cMessageSync.pbGetMessageCacheList.addCache(
+                if (!bot.client.syncingController.pbGetMessageCacheList.addCache(
                         QQAndroidClient.MessageSvcSyncData.PbGetMessageSyncId(
                             uid = msg.msgHead.msgUid,
                             sequence = msg.msgHead.msgSeq,
@@ -418,7 +418,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
-                        bot.client.c2cMessageSync.syncCookie
+                        bot.client.syncingController.syncCookie
                     ).sendAndExpect<Packet>()
                 }
                 return
@@ -429,7 +429,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     MessageSvcPbGetMsg(
                         client,
                         MsgSvc.SyncFlag.CONTINUE,
-                        bot.client.c2cMessageSync.syncCookie
+                        bot.client.syncingController.syncCookie
                     ).sendAndExpect<Packet>()
                 }
                 return

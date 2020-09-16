@@ -31,13 +31,13 @@ internal object MessageSvcPushNotify : IncomingPacketFactory<RequestPushNotify>(
 
     override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
 
-        client.c2cMessageSync.firstNotify.loop { firstNotify ->
+        client.syncingController.firstNotify.loop { firstNotify ->
             network.run {
                 return MessageSvcPbGetMsg(
                     client,
                     MsgSvc.SyncFlag.START,
                     if (firstNotify) {
-                        if (!client.c2cMessageSync.firstNotify.compareAndSet(firstNotify, false)) {
+                        if (!client.syncingController.firstNotify.compareAndSet(firstNotify, false)) {
                             return@loop
                         }
                         null

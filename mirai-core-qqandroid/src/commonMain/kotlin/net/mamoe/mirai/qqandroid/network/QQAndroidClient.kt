@@ -222,10 +222,16 @@ internal open class QQAndroidClient(
         )
 
         val pbGetMessageCacheList = SyncingCacheList<PbGetMessageSyncId>()
-        val systemMsgNewGroupCacheList = SyncingCacheList<PbGetMessageSyncId>()
+
+        internal data class SystemMsgNewGroupSyncId(
+            val sequence: Long,
+            val time: Long
+        )
+
+        val systemMsgNewGroupCacheList = SyncingCacheList<SystemMsgNewGroupSyncId>(10)
     }
 
-    val c2cMessageSync = MessageSvcSyncData()
+    val syncingController = MessageSvcSyncData()
 
     /*
      * 以下登录使用
