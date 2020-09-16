@@ -6,12 +6,12 @@
 
 - 支持群恢复相关事件: `MemberJoinEvent.Retrieve`, `BotJoinGroupEvent.Retrieve` (#531 by @Karlatemp)
 - 群荣耀获取 (`Bot._lowLevelGetGroupHonorListData`) (#501 by @yyuueexxiinngg)
-- 戳一戳事件: `FriendNudgedEvent`, `MemberNudgedEvent`, `BotNudgedEvent`.(#600 by @sandtechnology)
+- 戳一戳事件: `MemberNudgedEvent`, `BotNudgedEvent`.(#600 by @sandtechnology)
 - 发送戳一戳: `Bot.nudge()`, `User.nudge()`
 - 为 `BotFactory` 添加伴生对象. 在顶层方法不方便使用时可使用伴生对象的 `Bot` 构建方法
 
 ### 优化和修复
-- **修复好友消息和事件同步相关问题: **
+- **修复好友消息和事件同步相关问题:**
   - 部分情况下无法同步好友消息 (#249)
   - BotInvitedJoinGroupRequestEvent 重复执行两次 (#449)
   - 群消息可能发送失败 (#527)
