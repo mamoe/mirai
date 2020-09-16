@@ -351,8 +351,13 @@ public abstract class Bot internal constructor(
     @JvmSynthetic
     public abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
 
+    @Deprecated(
+        "use member function.",
+        replaceWith = ReplaceWith("nudge.sendTo(contact)"),
+        level = DeprecationLevel.ERROR
+    )
     @SinceMirai("1.3.0")
-    internal abstract suspend fun sendNudge(nudge: Nudge, receiver: Contact): Boolean
+    public abstract suspend fun sendNudge(nudge: Nudge, receiver: Contact): Boolean
 
     // endregion
 

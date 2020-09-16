@@ -54,6 +54,7 @@ public sealed class Nudge {
     @JvmBlockingBridge
     @MiraiExperimentalAPI
     public suspend fun sendTo(receiver: Contact): Boolean {
+        @Suppress("DEPRECATION_ERROR")
         return receiver.bot.sendNudge(this, receiver)
     }
 
