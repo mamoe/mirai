@@ -56,13 +56,6 @@ public interface LowLevelBotAPIAccessor {
     public suspend fun _lowLevelQueryGroupList(): Sequence<Long>
 
     /**
-     * 向服务器查询群资料. 获得的仅为当前时刻的资料.
-     * 请优先使用 [Bot.getGroup] 然后查看群资料.
-     */
-    @LowLevelAPI
-    public suspend fun _lowLevelQueryGroupInfo(groupCode: Long): GroupInfo
-
-    /**
      * 向服务器查询群成员列表.
      * 请优先使用 [Bot.getGroup], [Group.members] 查看群成员.
      *
@@ -120,6 +113,15 @@ public interface LowLevelBotAPIAccessor {
     @LowLevelAPI
     @MiraiExperimentalAPI
     public suspend fun _lowLevelGetGroupActiveData(groupId: Long, page: Int = -1): GroupActiveData
+
+
+    /**
+     * 获取群荣誉信息
+     */
+    @SinceMirai("1.3.0")
+    @LowLevelAPI
+    @MiraiExperimentalAPI
+    public suspend fun _lowLevelGetGroupHonorListData(groupId: Long, type: GroupHonorType): GroupHonorListData?
 
 
     /**

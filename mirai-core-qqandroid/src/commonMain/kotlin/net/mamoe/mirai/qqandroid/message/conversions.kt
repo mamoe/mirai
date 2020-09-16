@@ -113,7 +113,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
             }
             is At -> {
                 elements.add(ImMsgBody.Elem(text = it.toJceData()))
-                elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
+                // elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
+                // removed by https://github.com/mamoe/mirai/issues/524
+                // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
             }
             is PokeMessage -> {
                 elements.add(
@@ -151,7 +153,9 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     when (val source = it.source) {
                         is OnlineMessageSource.Incoming.FromGroup -> {
                             transformOneMessage(At(source.sender))
-                            transformOneMessage(PlainText(" "))
+                            // transformOneMessage(PlainText(" "))
+                            // removed by https://github.com/mamoe/mirai/issues/524
+                            // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
                         }
                     }
                 }
@@ -297,6 +301,17 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     return@forEach
                 }
             }
+
+
+            if (element is QuoteReply) {
+                // 客户端为兼容早期不支持 QuoteReply 的客户端而添加的 At
+                removeLastOrNull()?.let { rm ->
+                    if ((rm as? PlainText)?.content != " ") add(rm)
+                    else removeLastOrNull()?.let { rm2 ->
+                        if (rm2 !is At) add(rm2)
+                    }
+                }
+            }
             add(element)
             last = element
         }
@@ -316,7 +331,7 @@ internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, list: MessageChainBuilder) {
-    // (this._miraiContentToString())
+    // (this._miraiContentToString().soutv())
     this.forEach { element ->
         when {
             element.srcMsg != null -> {

@@ -58,7 +58,7 @@ internal class NewContact {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): NewFriendRequestEvent? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
-                val struct = friendmsgs?.firstOrNull()
+                val struct = friendmsgs?.firstOrNull()// 会有重复且无法过滤, 不要用 map
                 return struct?.msg?.run {
                     NewFriendRequestEvent(
                         bot,
@@ -145,9 +145,16 @@ internal class NewContact {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Packet? {
             readBytes().loadAs(Structmsg.RspSystemMsgNew.serializer()).run {
-                val struct = groupmsgs?.firstOrNull()
+                val struct = groupmsgs?.firstOrNull() ?: return null // 会有重复且无法过滤, 不要用 map
 
-                return struct?.msg?.run {
+                if (!bot.client.syncingController.systemMsgNewGroupCacheList.addCache(
+                        QQAndroidClient.MessageSvcSyncData.SystemMsgNewGroupSyncId(struct.msgSeq, struct.msgTime)
+                    )
+                ) { // duplicate
+                    return null
+                }
+
+                return struct.msg?.run {
                     //this.soutv("SystemMsg")
                     when (subType) {
                         1 -> { // 处理被邀请入群 或 处理成员入群申请

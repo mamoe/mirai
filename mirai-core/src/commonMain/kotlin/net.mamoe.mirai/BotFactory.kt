@@ -13,6 +13,7 @@ package net.mamoe.mirai
 
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.Context
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
 
@@ -45,6 +46,9 @@ public expect interface BotFactory {
         passwordMd5: ByteArray,
         configuration: BotConfiguration = BotConfiguration.Default
     ): Bot
+
+    @SinceMirai("1.3.0")
+    public companion object INSTANCE : BotFactory
 }
 
 /**

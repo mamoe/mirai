@@ -80,7 +80,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 ),
                 msgSeq = source.sequenceId,
                 msgRand = source.internalId,
-                syncCookie = client.c2cMessageSync.syncCookie ?: byteArrayOf()
+                syncCookie = client.syncingController.syncCookie ?: byteArrayOf()
                 // msgVia = 1
             )
         )
@@ -110,7 +110,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 ),
                 msgSeq = source.sequenceId,
                 msgRand = source.internalId,
-                syncCookie = client.c2cMessageSync.syncCookie ?: byteArrayOf()
+                syncCookie = client.syncingController.syncCookie ?: byteArrayOf()
             )
         )
     }

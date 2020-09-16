@@ -14,13 +14,13 @@ import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.LowLevelAPI
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.qqandroid.QQAndroidBot
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.qqandroid.network.QQAndroidClient
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.ModifyGroupCardReq
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.RequestPacket
+import net.mamoe.mirai.qqandroid.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.stUinInfo
 import net.mamoe.mirai.qqandroid.network.protocol.data.proto.*
 import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacket
@@ -32,19 +32,19 @@ import net.mamoe.mirai.data.GroupInfo as MiraiGroupInfo
 
 @OptIn(LowLevelAPI::class)
 internal class GroupInfoImpl(
-    internal val delegate: Oidb0x88d.GroupInfo
+    private val stTroopNum: StTroopNum
 ) : MiraiGroupInfo, Packet, Packet.NoLog {
-    override val uin: Long get() = delegate.groupUin ?: error("cannot find groupUin")
-    override val owner: Long get() = delegate.groupOwner ?: error("cannot find groupOwner")
-    override val groupCode: Long get() = Group.calculateGroupCodeByGroupUin(uin)
-    override val memo: String get() = delegate.groupMemo ?: error("cannot find groupMemo")
-    override val name: String get() = delegate.groupName ?: delegate.longGroupName ?: error("cannot find groupName")
-    override val allowMemberInvite get() = delegate.groupFlagExt?.and(0x000000c0) != 0
-    override val allowAnonymousChat get() = delegate.groupFlagExt?.and(0x40000000) == 0
-    override val autoApprove get() = delegate.groupFlagext3?.and(0x00100000) == 0
-    override val confessTalk get() = delegate.groupFlagext3?.and(0x00002000) == 0
-    override val muteAll: Boolean get() = delegate.shutupTimestamp != 0
-    override val botMuteTimestamp: Int get() = delegate.shutupTimestampMe ?: 0
+    override val uin: Long get() = stTroopNum.groupUin
+    override val owner: Long get() = stTroopNum.dwGroupOwnerUin
+    override val groupCode: Long get() = stTroopNum.groupCode
+    override val memo: String get() = stTroopNum.groupMemo
+    override val name: String get() = stTroopNum.groupName
+    override val allowMemberInvite get() = stTroopNum.dwGroupFlagExt?.and(0x000000c0) != 0L
+    override val allowAnonymousChat get() = stTroopNum.dwGroupFlagExt?.and(0x40000000) == 0L
+    override val autoApprove get() = stTroopNum.dwGroupFlagExt3?.and(0x00100000) == 0L
+    override val confessTalk get() = stTroopNum.dwGroupFlagExt3?.and(0x00002000) == 0L
+    override val muteAll: Boolean get() = stTroopNum.dwShutUpTimestamp != 0L
+    override val botMuteTimestamp: Int get() = stTroopNum.dwMyShutUpTimestamp?.toInt() ?: 0
 }
 
 internal class TroopManagement {
@@ -88,6 +88,7 @@ internal class TroopManagement {
 
 
     internal object GetGroupInfo : OutgoingPacketFactory<GroupInfoImpl>("OidbSvc.0x88d_7") {
+        @Deprecated("")
         operator fun invoke(
             client: QQAndroidClient,
             groupCode: Long
@@ -107,8 +108,8 @@ internal class TroopManagement {
                                         groupFlagExt = 0,
                                         groupFlagext4 = 0,
                                         groupFlag = 0,
-                                        groupFlagext3 = 0,//获取confess
-                                        noFingerOpenFlag = 0,
+                                        groupFlagext3 = 1,//获取confess
+                                        noFingerOpenFlag = 1,
                                         cmduinFlagEx2 = 0,
                                         groupTypeFlag = 0,
                                         appPrivilegeFlag = 0,
@@ -135,12 +136,14 @@ internal class TroopManagement {
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): GroupInfoImpl {
+            error("deprecated")
+            /*
             with(
                 this.readBytes()
                     .loadAs(OidbSso.OIDBSSOPkg.serializer()).bodybuffer.loadAs(Oidb0x88d.RspBody.serializer()).stzrspgroupinfo!![0].stgroupinfo!!
             ) {
-                return GroupInfoImpl(this)
-            }
+                return GroupInfoImpl()
+            }*/
         }
     }
 

@@ -20,6 +20,7 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.qqandroid.BotAccount
 import net.mamoe.mirai.qqandroid.QQAndroidBot
+import net.mamoe.mirai.qqandroid.network.protocol.SyncingCacheList
 import net.mamoe.mirai.qqandroid.network.protocol.data.jce.FileStoragePushFSSvcListFuckKotlin
 import net.mamoe.mirai.qqandroid.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.qqandroid.network.protocol.packet.PacketLogger
@@ -191,9 +192,6 @@ internal open class QQAndroidClient(
     private val highwayDataTransSequenceIdForApplyUp: AtomicInt = atomic(77918)
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
-    internal val onlinePushCacheList: AtomicResizeCacheList<Short> = AtomicResizeCacheList(20.secondsToMillis)
-    internal val pbPushTransMsgCacheList: AtomicResizeCacheList<Int> = AtomicResizeCacheList(20.secondsToMillis)
-
     val appClientVersion: Int = 0
 
     var networkType: NetworkType = NetworkType.WIFI
@@ -205,16 +203,49 @@ internal open class QQAndroidClient(
      */
     val protocolVersion: Short = 8001
 
-    class C2cMessageSyncData {
+    class MessageSvcSyncData {
         val firstNotify: AtomicBoolean = atomic(true)
 
         @Volatile
         var syncCookie: ByteArray? = null
         var pubAccountCookie = EMPTY_BYTE_ARRAY
         var msgCtrlBuf: ByteArray = EMPTY_BYTE_ARRAY
+
+
+        internal data class PbGetMessageSyncId(
+            val uid: Long,
+            val sequence: Int,
+            val time: Int
+        )
+
+        val pbGetMessageCacheList = SyncingCacheList<PbGetMessageSyncId>()
+
+        internal data class SystemMsgNewGroupSyncId(
+            val sequence: Long,
+            val time: Long
+        )
+
+        val systemMsgNewGroupCacheList = SyncingCacheList<SystemMsgNewGroupSyncId>(10)
+
+
+        internal data class PbPushTransMsgSyncId(
+            val uid: Long,
+            val sequence: Int,
+            val time: Int
+        )
+
+        val pbPushTransMsgCacheList = SyncingCacheList<PbPushTransMsgSyncId>(10)
+
+        internal data class OnlinePushReqPushSyncId(
+            val uid: Long,
+            val sequence: Short,
+            val time: Long
+        )
+
+        val onlinePushReqPushCacheList = SyncingCacheList<OnlinePushReqPushSyncId>(50)
     }
 
-    val c2cMessageSync = C2cMessageSyncData()
+    val syncingController = MessageSvcSyncData()
 
     /*
      * 以下登录使用

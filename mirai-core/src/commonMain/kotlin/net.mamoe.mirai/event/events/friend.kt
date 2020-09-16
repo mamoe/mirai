@@ -112,8 +112,6 @@ public data class FriendAvatarChangedEvent internal constructor(
     public override val friend: Friend
 ) : FriendEvent, Packet, AbstractEvent()
 
-
-
 /**
  * [Friend] 昵称改变事件, 在此事件广播时好友已经完成改名
  * @see BotNickChangedEvent
@@ -124,7 +122,7 @@ public data class FriendNickChangedEvent internal constructor(
     public val from: String,
     public val to: String
 ) : FriendEvent, Packet, AbstractEvent()
-  
+
 /**
  * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
  */

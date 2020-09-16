@@ -18,10 +18,13 @@ import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -69,6 +72,15 @@ public abstract class Friend : User(), CoroutineScope {
      */
     @JvmSynthetic
     abstract override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
+
+    /**
+     * 创建一个 "戳一戳" 消息
+     *
+     * @see FriendNudge.sendTo 发送这个戳一戳消息
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("1.3.0")
+    public final override fun nudge(): FriendNudge = FriendNudge(this)
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
     @kotlin.internal.InlineOnly
