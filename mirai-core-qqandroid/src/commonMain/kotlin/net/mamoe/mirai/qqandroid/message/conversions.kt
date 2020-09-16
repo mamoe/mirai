@@ -331,7 +331,7 @@ internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, list: MessageChainBuilder) {
-    (this._miraiContentToString().soutv())
+    // (this._miraiContentToString().soutv())
     this.forEach { element ->
         when {
             element.srcMsg != null -> {
