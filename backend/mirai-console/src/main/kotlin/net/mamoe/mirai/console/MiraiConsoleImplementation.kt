@@ -189,6 +189,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         @ConsoleFrontEndImplementation
         @Throws(MalformedMiraiConsoleImplementationError::class)
         public fun MiraiConsoleImplementation.start(): Unit = initLock.withLock {
+            if (::instance.isInitialized) error("Mirai Console is already initialized.")
             this@Companion.instance = this
             MiraiConsoleImplementationBridge.doStart()
         }
