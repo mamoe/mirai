@@ -57,7 +57,6 @@ dependencies {
 
     compileOnly("org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}")
     compileOnly("org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}")
-    compileOnly(files("libs/ide-common.jar"))
 
     testApi(kotlin("test"))
     testApi(kotlin("test-junit5"))

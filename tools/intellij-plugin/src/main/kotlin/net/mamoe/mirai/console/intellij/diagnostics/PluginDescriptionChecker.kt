@@ -14,11 +14,17 @@ import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 
+/**
+ * Checks:
+ * - plugin id
+ * - plugin name
+ */
 class PluginDescriptionChecker : DeclarationChecker {
     override fun check(
         declaration: KtDeclaration,
         descriptor: DeclarationDescriptor,
         context: DeclarationCheckerContext,
     ) {
+
     }
 }

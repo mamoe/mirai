@@ -11,8 +11,6 @@ package net.mamoe.mirai.console.intellij.line.marker
 
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiReferenceExpression
-import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.nj2k.postProcessing.resolve
@@ -30,12 +28,6 @@ internal val KtPureClassOrObject.allSuperTypes: Sequence<KtSuperTypeListEntry>
 internal inline fun <reified E> PsiElement.findParent(): E? = this.parents.filterIsInstance<E>().firstOrNull()
 
 internal val KtClassOrObject.allSuperNames: Sequence<FqName> get() = allSuperTypes.mapNotNull { it.getKotlinFqName() }
-
-fun PsiReferenceExpression.hasBridgeCalls(): Boolean {
-    val resolved = this.resolve() as? KtLightMethod ?: return false
-
-    TODO()
-}
 
 val PsiElement.parents: Sequence<PsiElement>
     get() {
