@@ -9,7 +9,10 @@
 
 package net.mamoe.mirai.console.compiler.common.resolve
 
+import net.mamoe.mirai.console.compiler.common.castOrNull
+import org.jetbrains.kotlin.descriptors.annotations.Annotated
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.resolve.constants.EnumValue
 
 ///////////////////////////////////////////////////////////////////////////
 // Command
@@ -25,3 +28,33 @@ val SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME = FqName("net.mamoe.mirai.console.com
 val PLUGIN_FQ_NAME = FqName("net.mamoe.mirai.console.plugin.Plugin")
 val JVM_PLUGIN_DESCRIPTION_FQ_NAME = FqName("net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription")
 val SIMPLE_JVM_PLUGIN_DESCRIPTION_FQ_NAME = FqName("net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription")
+
+///////////////////////////////////////////////////////////////////////////
+// Resolve
+///////////////////////////////////////////////////////////////////////////
+
+val RESOLVE_CONTEXT_FQ_NAME = FqName("net.mamoe.mirai.console.compiler.common.ResolveContext")
+
+/**
+ * net.mamoe.mirai.console.compiler.common.ResolveContext.Kind
+ */
+enum class ResolveContextKind {
+    PLUGIN_ID,
+    PLUGIN_NAME,
+    PLUGIN_VERSION,
+
+    ;
+
+    companion object {
+        fun valueOfOrNull(string: String): ResolveContextKind? = ResolveContextKind.values().find { it.name == string }
+    }
+}
+
+fun Annotated.isResolveContext(kind: ResolveContextKind) = this.resolveContextKind == kind
+
+val Annotated.resolveContextKind: ResolveContextKind?
+    get() {
+        val ann = this.findAnnotation(RESOLVE_CONTEXT_FQ_NAME) ?: return null
+        val (_, enumEntryName) = ann.allValueArguments.castOrNull<EnumValue>()?.value ?: return null // undetermined kind
+        return ResolveContextKind.valueOf(enumEntryName.asString())
+    }

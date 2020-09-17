@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.intellij.Icons
+import net.mamoe.mirai.console.intellij.resolve.getElementForLineMark
 import net.mamoe.mirai.console.intellij.resolve.isSimpleCommandHandlerOrCompositeCommandSubCommand
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
