@@ -5,9 +5,6 @@ plugins {
     id("java")
     `maven-publish`
     id("com.jfrog.bintray")
-
-    id("org.jetbrains.intellij") version "0.4.16"
-
 }
 
 repositories {
@@ -15,7 +12,7 @@ repositories {
 }
 
 version = Versions.console
-description = "IntelliJ plugin for Mirai Console"
+description = "Mirai Console compiler common"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -24,35 +21,6 @@ java {
 
 tasks.withType(JavaCompile::class.java) {
     options.encoding = "UTF8"
-}
-
-// See https://github.com/JetBrains/gradle-intellij-plugin/
-intellij {
-    version = "2020.2.1"
-    isDownloadSources = true
-    updateSinceUntilBuild = false
-
-    setPlugins(
-        "org.jetbrains.kotlin:1.4.10-release-IJ2020.2-1@staging"
-    )
-}
-
-tasks.getByName("publishPlugin", org.jetbrains.intellij.tasks.PublishTask::class) {
-    val pluginKey = project.findProperty("jetbrains.hub.key")?.toString()
-    if (pluginKey != null) {
-        logger.info("Found jetbrains.hub.key")
-        setToken(pluginKey)
-    } else {
-        logger.info("jetbrains.hub.key not found")
-    }
-}
-
-tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
-    sinceBuild("193.*")
-    untilBuild("205.*")
-    changeNotes("""
-        Fix cancellation on analyzing augments
-    """.trimIndent())
 }
 
 kotlin {
@@ -86,8 +54,6 @@ kotlin {
 dependencies {
     api("org.jetbrains:annotations:19.0.0")
     api(kotlinx("coroutines-jdk8", Versions.coroutines))
-
-    api(project(":mirai-console-compiler-common"))
 
     compileOnly("org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}")
     compileOnly("org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}")
