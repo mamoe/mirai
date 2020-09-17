@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.plugin.jvm
 
 import net.mamoe.mirai.console.internal.plugin.ExportManagerImpl
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import kotlin.reflect.KClass
 
 /**
  * 插件的类导出管理器
@@ -71,6 +72,14 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
  */
 @ConsoleExperimentalApi
 public interface ExportManager {
+    /**
+     *  如果 [className] 能够通过 [ExportManager] 的规则, 返回 true
+     *
+     *  @param className [className] 是一个合法的满足 [ClassLoader] 的加载规则 的全限定名.
+     *  [className] 不应该是数组的全限定名或者JVM基本类型的名字.
+     *  See also: [ClassLoader.loadClass]
+     *  [ClassLoader#name](https://docs.oracle.com/javase/8/docs/api/java/lang/ClassLoader.html#name)
+     */
     public fun isExported(className: String): Boolean
 }
 
