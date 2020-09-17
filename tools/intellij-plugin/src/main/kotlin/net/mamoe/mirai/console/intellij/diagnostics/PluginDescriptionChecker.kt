@@ -7,19 +7,18 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.intellij
+package net.mamoe.mirai.console.intellij.diagnostics
 
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 
-class MiraiConsoleDeclarationChecker : DeclarationChecker {
+class PluginDescriptionChecker : DeclarationChecker {
     override fun check(
         declaration: KtDeclaration,
         descriptor: DeclarationDescriptor,
         context: DeclarationCheckerContext,
     ) {
-
     }
 }
