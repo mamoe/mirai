@@ -221,9 +221,9 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     }
 
     @Suppress("SpellCheckingInspection")
-    @Retention(AnnotationRetention.SOURCE)
+    @Retention(AnnotationRetention.BINARY)
     @DslMarker
-    private annotation class ILoveOmaeKumikoForever
+    internal annotation class ILoveOmaeKumikoForever
 
     @ILoveOmaeKumikoForever
     private inline fun phase(block: () -> Unit) {

@@ -226,7 +226,7 @@ constructor(
      * 标注一个 [JvmPluginDescription] DSL
      */
     @Suppress("SpellCheckingInspection")
-    @Retention(AnnotationRetention.SOURCE)
+    @Retention(AnnotationRetention.BINARY)
     @DslMarker
     internal annotation class ILoveKuriyamaMiraiForever // https://zh.moegirl.org.cn/zh-cn/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5
 }

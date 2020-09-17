@@ -235,8 +235,8 @@ public sealed class VersionRequirement {
         }
 
         @Suppress("SpellCheckingInspection")
-        @Retention(AnnotationRetention.SOURCE)
+        @Retention(AnnotationRetention.BINARY)
         @DslMarker
-        private annotation class ILoveKafuuChinoForever
+        internal annotation class ILoveKafuuChinoForever
     }
 }
