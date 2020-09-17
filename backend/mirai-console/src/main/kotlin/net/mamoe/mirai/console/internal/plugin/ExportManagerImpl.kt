@@ -28,6 +28,8 @@ internal class ExportManagerImpl(
     companion object {
         @JvmStatic
         fun parse(lines: Iterator<String>): ExportManagerImpl {
+            fun Boolean.without(value: Boolean) = if (this == value) null else this
+
             val rules = ArrayList<(String) -> Boolean?>()
             lines.asSequence().map { it.trim() }.filter { it.isNotBlank() }.filterNot {
                 it[0] == '#'
@@ -36,36 +38,24 @@ internal class ExportManagerImpl(
                 val argument = line.substringAfter(' ', missingDelimiterValue = "").trim()
 
                 when (command) {
-                    "export" -> {
-                        when {
-                            // export-all
-                            argument.isBlank() -> rules.add { true }
-                            // export package
-                            argument.endsWith(".") -> rules.add {
-                                if (it.startsWith(argument)) true else null
-                            }
-                            // export class
-                            else -> rules.add {
-                                if (it == argument) true else null
-                            }
-                        }
+                    "exports", "export-package" -> rules.add {
+                        it.startsWith(argument).without(false)
                     }
-                    "deny", "internal", "hidden" -> {
-                        when {
-                            // deny-all
-                            argument.isBlank() -> rules.add { false }
-                            // deny package
-                            argument.endsWith(".") -> rules.add {
-                                if (it.startsWith(argument)) false else null
-                            }
-                            // deny class
-                            else -> rules.add {
-                                if (it == argument) false else null
-                            }
-                        }
+                    "export", "export-class" -> rules.add {
+                        (it == argument).without(false)
                     }
-                    "export-all" -> rules.add { true }
-                    "deny-all", "hidden-all" -> rules.add { false }
+                    "protects", "protect-package" -> rules.add {
+                        if (it.startsWith(argument))
+                            false
+                        else null
+                    }
+                    "protect", "protect-class" -> rules.add {
+                        if (it == argument)
+                            false
+                        else null
+                    }
+                    "export-all", "export-plugin", "export-system" -> rules.add { true }
+                    "protect-all", "protect-plugin", "protect-system" -> rules.add { false }
                 }
             }
             return ExportManagerImpl(rules)

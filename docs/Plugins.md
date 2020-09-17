@@ -164,38 +164,55 @@ public final class JExample extends JavaPlugin {
 
 ### API 导出管理
 
-我们允许插件将一些内部实现hidden起来， 避免其他插件调用， 要启动这个特性，
-只需要在你的 resources 文件夹创建名为 `export-rules.txt` 的规则文件，便可以控制插件的类的公开规则
+允许插件将一些内部实现保护起来， 避免其他插件调用， 要启动这个特性，
+只需要创建名为 `export-rules.txt` 的规则文件，便可以控制插件的类的公开规则。
+
+如果正在使用 `Gradle` 项目, 该规则文件一般位于 `src/main/resources` 下
 
 Example:
 ```text
 
-# #开头的行我们都识别为注释, 你可以在规则文件里面写很多注释
+# #开头的行全部识别为注释
 
-# export 运行插件访问一个类, 或者一个包
+# export, 允许其他插件直接使用某个类
 
 # 导出了一个internal包的一个类
-export org.example.miraiconsole.myplugin.internal.OpenInternal
-
-# 导出了整个 api 包, 导出包和导出类的区别就是末尾是否存在 . 号
-export org.example.miraiconsole.myplugin.api.
-
-# deny, 不允许其他插件使用这个包, 要隐藏一个包的时候, 注意不要忘记最后的 . 号
 #
-# 别名: hidden, internal
-deny org.example.miraiconsole.myplugin.internal.
+# 别名: export-class
+export       org.example.miraiconsole.myplugin.internal.OpenInternal
+# 可以使用别名
+export-class org.example.miraiconsole.myplugin.internal.OpenInternal
 
-# 这条规则不会生效, 因为在这条规则前已经被上面的 deny 给隐藏了
+# 导出了整个 api 包
+#
+# 别名: export-package
+exports org.example.miraiconsole.myplugin.api
+
+# 保护 org.example.miraiconsole.myplugin.api2.Internal, 不允许其他插件直接使用
+#
+# 别名: protect-class
+protect org.example.miraiconsole.myplugin.api2.Internal
+
+# 保护整个包
+#
+# 别名: protect-package
+protects org.example.miraiconsole.myplugin.internal
+
+# 此规则不会生效, 因为在此条规则之前,
+# org.example.miraiconsole.myplugin.internal 已经被加入到保护域中
 export org.example.miraiconsole.myplugin.internal.NotOpenInternal
 
 
-# export-all, 导出全部内容, 当然在此规则之前的deny依然会生效
+# export-plugin, 允许其他插件使用除了已经被保护的全部类
 # 使用此规则会同时让此规则后的所有规则全部失效
-# export-all
+# 别名: export-all, export-system
+# export-plugin
 
-# 拒绝其他插件使用任何类, 除了之前已经explort的
-# 此规则会导致后面的所有规则全部失效
-deny-all
+
+# 将整个插件放入保护域中
+# 除了此规则之前显式 export 的类, 其他插件将不允许直接使用被保护的插件的任何类
+# 别名: protect-all, protect-system
+protect-plugin
 
 ```
 
