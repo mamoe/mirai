@@ -175,6 +175,15 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         internal lateinit var instance: MiraiConsoleImplementation
         private val initLock = ReentrantLock()
 
+        /**
+         * 可由前端调用, 获取当前的 [MiraiConsoleImplementation] 实例
+         *
+         * 必须在 [start] 之后才能使用.
+         */
+        @JvmStatic
+        @ConsoleFrontEndImplementation
+        public fun getInstance(): MiraiConsoleImplementation = instance
+
         /** 由前端调用, 初始化 [MiraiConsole] 实例并启动 */
         @JvmStatic
         @ConsoleFrontEndImplementation
