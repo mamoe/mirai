@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.compiler.common.resolve
 
 import net.mamoe.mirai.console.compiler.common.castOrNull
+import net.mamoe.mirai.console.compiler.common.firstValue
 import org.jetbrains.kotlin.descriptors.annotations.Annotated
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.constants.EnumValue
@@ -55,6 +56,6 @@ fun Annotated.isResolveContext(kind: ResolveContextKind) = this.resolveContextKi
 val Annotated.resolveContextKind: ResolveContextKind?
     get() {
         val ann = this.findAnnotation(RESOLVE_CONTEXT_FQ_NAME) ?: return null
-        val (_, enumEntryName) = ann.allValueArguments.castOrNull<EnumValue>()?.value ?: return null // undetermined kind
+        val (_, enumEntryName) = ann.allValueArguments.firstValue().castOrNull<EnumValue>()?.value ?: return null // undetermined kind
         return ResolveContextKind.valueOf(enumEntryName.asString())
     }

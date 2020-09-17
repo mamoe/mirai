@@ -9,8 +9,7 @@
 
 package net.mamoe.mirai.console.compiler.common.diagnostics
 
-import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_ID
-import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_NAME
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
 import org.jetbrains.kotlin.diagnostics.rendering.DiagnosticFactoryToRendererMap
 import org.jetbrains.kotlin.diagnostics.rendering.Renderers
@@ -18,13 +17,8 @@ import org.jetbrains.kotlin.diagnostics.rendering.Renderers
 object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
     private val MAP = DiagnosticFactoryToRendererMap("MiraiConsole").apply {
         put(
-            ILLEGAL_PLUGIN_ID,
-            "Illegal plugin id: '{0}'",
-            Renderers.STRING
-        )
-        put(
-            ILLEGAL_PLUGIN_NAME,
-            "Illegal plugin name: '{0}'",
+            ILLEGAL_PLUGIN_DESCRIPTION,
+            "{0}",
             Renderers.STRING
         )
     }

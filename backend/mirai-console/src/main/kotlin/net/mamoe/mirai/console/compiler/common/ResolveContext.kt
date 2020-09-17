@@ -17,11 +17,13 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
  * 标记一个参数的语境类型, 用于帮助编译器和 IntelliJ 插件进行语境推断.
  */
 @ConsoleExperimentalApi
-@Target(AnnotationTarget.VALUE_PARAMETER,
+@Target(
+    AnnotationTarget.VALUE_PARAMETER,
     AnnotationTarget.PROPERTY,
     AnnotationTarget.FIELD,
-    AnnotationTarget.EXPRESSION)
-@Retention(AnnotationRetention.SOURCE)
+    //AnnotationTarget.EXPRESSION
+)
+@Retention(AnnotationRetention.BINARY)
 public annotation class ResolveContext(
     val kind: Kind,
 ) {

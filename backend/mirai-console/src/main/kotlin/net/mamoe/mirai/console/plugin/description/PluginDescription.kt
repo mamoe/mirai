@@ -10,6 +10,8 @@
 package net.mamoe.mirai.console.plugin.description
 
 import com.vdurmont.semver4j.Semver
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.plugin.Plugin
 
 
@@ -46,6 +48,7 @@ public interface PluginDescription {
      * @see ID_REGEX
      * @see FORBIDDEN_ID_NAMES
      */
+    @ResolveContext(PLUGIN_ID)
     public val id: String
 
     /**
@@ -60,6 +63,7 @@ public interface PluginDescription {
      *
      * @see FORBIDDEN_ID_NAMES
      */
+    @ResolveContext(PLUGIN_NAME)
     public val name: String
 
     /**
@@ -88,6 +92,7 @@ public interface PluginDescription {
      *
      * @see Semver 语义化版本. 允许 [宽松][Semver.SemverType.LOOSE] 类型版本.
      */
+    @ResolveContext(PLUGIN_VERSION)
     public val version: Semver
 
     /**

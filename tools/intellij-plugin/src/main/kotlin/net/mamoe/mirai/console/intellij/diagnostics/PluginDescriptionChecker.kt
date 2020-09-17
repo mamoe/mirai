@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.intellij.diagnostics
 
 import com.intellij.psi.PsiElement
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
 import net.mamoe.mirai.console.intellij.resolve.findChildren
@@ -32,15 +33,36 @@ import kotlin.contracts.contract
  */
 class PluginDescriptionChecker : DeclarationChecker {
     companion object {
-        fun checkPluginName(declaration: KtDeclaration, value: String): Diagnostic? {
-            return null // TODO: 2020/9/18  checkPluginName
+        private val ID_REGEX: Regex = Regex("""([a-zA-Z]+(?:\.[a-zA-Z0-9]+)*)\.([a-zA-Z]+(?:-[a-zA-Z0-9]+)*)""")
+        private val FORBIDDEN_ID_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
+
+        fun checkPluginId(inspectionTarget: PsiElement, value: String): Diagnostic? {
+            if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin id cannot be blank")
+            if (value.none { it == '.' }) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget,
+                "'$value' is illegal. Plugin id must consist of both domain and name. ")
+
+            val lowercaseId = value.toLowerCase()
+
+            if (ID_REGEX.matchEntire(value) == null) {
+                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin does not match regex '${ID_REGEX.pattern}'.")
+            }
+
+            FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseId }?.let { illegal ->
+                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin id contains illegal word: '$illegal'.")
+            }
+            return null
         }
 
-        fun checkPluginId(declaration: KtDeclaration, value: String): Diagnostic? {
-            return null // TODO: 2020/9/18  checkPluginId
+        fun checkPluginName(inspectionTarget: PsiElement, value: String): Diagnostic? {
+            if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin name cannot be blank")
+            val lowercaseName = value.toLowerCase()
+            FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
+                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin name is illegal: '$illegal'.")
+            }
+            return null
         }
 
-        fun checkPluginVersion(declaration: KtDeclaration, value: String): Diagnostic? {
+        fun checkPluginVersion(inspectionTarget: PsiElement, value: String): Diagnostic? {
             return null // TODO: 2020/9/18  checkPluginVersion
         }
     }
@@ -56,15 +78,14 @@ class PluginDescriptionChecker : DeclarationChecker {
         }
     }
 
-    private val checkersMap: EnumMap<ResolveContextKind, (declaration: KtDeclaration, value: String) -> Diagnostic?> =
-        EnumMap<ResolveContextKind, (declaration: KtDeclaration, value: String) -> Diagnostic?>(ResolveContextKind::class.java).apply {
+    private val checkersMap: EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?> =
+        EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?>(ResolveContextKind::class.java).apply {
             put(ResolveContextKind.PLUGIN_NAME, ::checkPluginName)
             put(ResolveContextKind.PLUGIN_ID, ::checkPluginId)
             put(ResolveContextKind.PLUGIN_VERSION, ::checkPluginVersion)
         }
 
     fun check(
-        declaration: KtDeclaration,
         expression: KtCallExpression,
         context: DeclarationCheckerContext,
     ) {
@@ -76,7 +97,7 @@ class PluginDescriptionChecker : DeclarationChecker {
                     val value = argument.getArgumentExpression()
                         ?.resolveStringConstantValue(context.bindingContext) ?: continue
                     for ((kind, fn) in checkersMap) {
-                        if (parameterContextKind == kind) fn(declaration, value)?.let { context.report(it) }
+                        if (parameterContextKind == kind) fn(argument.asElement(), value)?.let { context.report(it) }
                     }
                 }
             }
@@ -93,11 +114,11 @@ class PluginDescriptionChecker : DeclarationChecker {
             is KtObjectDeclaration -> {
                 // check super type constructor
                 val superTypeCallEntry = declaration.findChildren<KtSuperTypeList>()?.findChildren<KtSuperTypeCallEntry>() ?: return
-                val constructorCall = superTypeCallEntry.findChildren<KtConstructorCalleeExpression>()?.resolveToCall() ?: return
+                // val constructorCall = superTypeCallEntry.findChildren<KtConstructorCalleeExpression>()?.resolveToCall() ?: return
                 val valueArgumentList = superTypeCallEntry.findChildren<KtValueArgumentList>() ?: return
                 valueArgumentList.arguments.asSequence().mapNotNull(KtValueArgument::getArgumentExpression).forEach {
                     if (it.shouldPerformCheck()) {
-                        check(declaration, it as KtCallExpression, context)
+                        check(it as KtCallExpression, context)
                     }
                 }
 
