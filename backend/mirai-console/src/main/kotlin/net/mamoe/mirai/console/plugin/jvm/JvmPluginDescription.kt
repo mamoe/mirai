@@ -12,6 +12,8 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import com.vdurmont.semver4j.Semver
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.description.VersionRequirement
@@ -37,15 +39,15 @@ public interface JvmPluginDescription : PluginDescription {
             /**
              * @see [PluginDescription.id]
              */
-            id: String,
+            @ResolveContext(PLUGIN_ID) id: String,
             /**
              * @see [PluginDescription.version]
              */
-            version: String,
+            @ResolveContext(PLUGIN_VERSION) version: String,
             /**
              * @see [PluginDescription.name]
              */
-            name: String = id,
+            @ResolveContext(PLUGIN_NAME) name: String = id,
             block: JvmPluginDescriptionBuilder.() -> Unit = {},
         ): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
 
@@ -60,15 +62,15 @@ public interface JvmPluginDescription : PluginDescription {
             /**
              * @see [PluginDescription.id]
              */
-            id: String,
+            @ResolveContext(PLUGIN_ID) id: String,
             /**
              * @see [PluginDescription.version]
              */
-            version: Semver,
+            @ResolveContext(PLUGIN_VERSION) version: Semver,
             /**
              * @see [PluginDescription.name]
              */
-            name: String = id,
+            @ResolveContext(PLUGIN_NAME) name: String = id,
             block: JvmPluginDescriptionBuilder.() -> Unit = {},
         ): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
     }
@@ -102,7 +104,10 @@ constructor(
     private var version: Semver,
 ) {
     @Suppress("DEPRECATION_ERROR")
-    public constructor(name: String, version: String) : this(name, Semver(version, Semver.SemverType.LOOSE))
+    public constructor(
+        @ResolveContext(PLUGIN_NAME) id: String,
+        @ResolveContext(PLUGIN_VERSION) version: String,
+    ) : this(id, Semver(version, Semver.SemverType.LOOSE))
 
     private var name: String = id
     private var author: String = ""
@@ -110,19 +115,22 @@ constructor(
     private var dependencies: MutableSet<PluginDependency> = mutableSetOf()
 
     @ILoveKuriyamaMiraiForever
-    public fun name(value: String): JvmPluginDescriptionBuilder = apply { this.name = value.trim() }
+    public fun name(@ResolveContext(PLUGIN_NAME) value: String): JvmPluginDescriptionBuilder =
+        apply { this.name = value.trim() }
 
     @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
     @ILoveKuriyamaMiraiForever
-    public fun version(value: String): JvmPluginDescriptionBuilder =
+    public fun version(@ResolveContext(PLUGIN_VERSION) value: String): JvmPluginDescriptionBuilder =
         apply { this.version = Semver(value, Semver.SemverType.LOOSE) }
 
     @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
     @ILoveKuriyamaMiraiForever
-    public fun version(value: Semver): JvmPluginDescriptionBuilder = apply { this.version = value }
+    public fun version(@ResolveContext(PLUGIN_VERSION) value: Semver): JvmPluginDescriptionBuilder =
+        apply { this.version = value }
 
     @ILoveKuriyamaMiraiForever
-    public fun id(value: String): JvmPluginDescriptionBuilder = apply { this.id = value.trim() }
+    public fun id(@ResolveContext(PLUGIN_ID) value: String): JvmPluginDescriptionBuilder =
+        apply { this.id = value.trim() }
 
     @ILoveKuriyamaMiraiForever
     public fun author(value: String): JvmPluginDescriptionBuilder = apply { this.author = value.trim() }
@@ -151,7 +159,7 @@ constructor(
      */
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
-        pluginId: String,
+        @ResolveContext(PLUGIN_ID) pluginId: String,
         isOptional: Boolean = false,
         versionRequirement: VersionRequirement,
     ): JvmPluginDescriptionBuilder = apply {
@@ -165,7 +173,7 @@ constructor(
      */
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
-        pluginId: String,
+        @ResolveContext(PLUGIN_ID) pluginId: String,
         versionRequirement: VersionRequirement,
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
@@ -178,7 +186,7 @@ constructor(
      */
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
-        pluginId: String,
+        @ResolveContext(PLUGIN_ID) pluginId: String,
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies.add(PluginDependency(pluginId, null, isOptional))
@@ -199,7 +207,7 @@ constructor(
      */
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
-        pluginId: String,
+        @ResolveContext(PLUGIN_ID) pluginId: String,
         isOptional: Boolean = false,
         versionRequirement: VersionRequirement.Builder.() -> VersionRequirement,
     ): JvmPluginDescriptionBuilder =
@@ -214,10 +222,13 @@ constructor(
     public fun build(): JvmPluginDescription =
         SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
 
+    /**
+     * 标注一个 [JvmPluginDescription] DSL
+     */
     @Suppress("SpellCheckingInspection")
     @Retention(AnnotationRetention.SOURCE)
     @DslMarker
-    private annotation class ILoveKuriyamaMiraiForever // https://zh.moegirl.org.cn/zh-cn/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5
+    internal annotation class ILoveKuriyamaMiraiForever // https://zh.moegirl.org.cn/zh-cn/%E6%A0%97%E5%B1%B1%E6%9C%AA%E6%9D%A5
 }
 
 /**
