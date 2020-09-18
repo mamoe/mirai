@@ -13,14 +13,12 @@ import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
-import net.mamoe.mirai.console.intellij.resolve.allChildrenWithSelf
-import net.mamoe.mirai.console.intellij.resolve.findChild
+import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
 import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValue
-import net.mamoe.mirai.console.intellij.resolve.valueParameters
+import net.mamoe.mirai.console.intellij.resolve.valueParametersWithArguments
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.idea.search.usagesSearch.descriptor
-import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import java.util.*
@@ -84,29 +82,30 @@ class PluginDescriptionChecker : DeclarationChecker {
             put(ResolveContextKind.PLUGIN_VERSION, ::checkPluginVersion)
         }
 
-    fun check(
-        expression: KtCallExpression,
-        context: DeclarationCheckerContext,
-    ) {
-        val call = expression.calleeExpression.getResolvedCallOrResolveToCall(context) ?: return // unresolved
-        for ((parameter, argument) in call.valueParameters.zip(call.valueArgumentsByIndex?.mapNotNull { it.arguments.firstOrNull() }.orEmpty())) {
-            val parameterContextKind = parameter.resolveContextKind
-            if (checkersMap.containsKey(parameterContextKind)) {
-                val value = argument.getArgumentExpression()
-                    ?.resolveStringConstantValue(context.bindingContext) ?: continue
-                for ((kind, fn) in checkersMap) {
-                    if (parameterContextKind == kind) fn(argument.asElement(), value)?.let { context.report(it) }
-                }
-            }
-        }
-    }
-
     override fun check(
         declaration: KtDeclaration,
         descriptor: DeclarationDescriptor,
         context: DeclarationCheckerContext,
     ) {
-        println("${declaration::class.qualifiedName}   $declaration")
+        declaration.resolveAllCalls(context.bindingContext)
+            .flatMap { call ->
+                call.valueParametersWithArguments().asSequence()
+            }
+            .mapNotNull { (p, a) ->
+                p.resolveContextKind?.takeIf { it in checkersMap }?.let { it to a }
+            }
+            .mapNotNull { (kind, argument) ->
+                argument.resolveStringConstantValue(context.bindingContext)?.let { const ->
+                    Triple(kind, argument, const)
+                }
+            }
+            .forEach { (parameterContextKind, argument, resolvedConstant) ->
+                for ((kind, fn) in checkersMap) {
+                    if (parameterContextKind == kind) fn(argument.asElement(), resolvedConstant)?.let { context.report(it) }
+                }
+            }
+        return
+        /*
         when (declaration) {
             is KtClassOrObject -> {
                 // check super type constructor
@@ -140,6 +139,6 @@ class PluginDescriptionChecker : DeclarationChecker {
                     }
                 }
             }
-        }
+        }*/
     }
 }

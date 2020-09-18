@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.idea.search.usagesSearch.descriptor
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.allChildren
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
@@ -94,12 +93,26 @@ fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
     this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
 
 val PsiElement.allChildrenWithSelf: Sequence<PsiElement>
-    get() {
-        return sequence {
-            yield(this@allChildrenWithSelf)
-            yieldAll(allChildren)
+    get() = sequence {
+        yield(this@allChildrenWithSelf)
+        for (child in children) {
+            yieldAll(child.allChildrenWithSelf)
         }
     }
+
+fun KtDeclaration.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
+    return allChildrenWithSelf
+        .filterIsInstance<KtCallExpression>()
+        .mapNotNull { it.calleeExpression?.getResolvedCallOrResolveToCall(bindingContext) }
+}
+
+fun ResolvedCall<*>.valueParametersWithArguments(): List<Pair<ValueParameterDescriptor, ValueArgument>> {
+    return this.valueParameters.zip(this.valueArgumentsByIndex?.mapNotNull { it.arguments.firstOrNull() }.orEmpty())
+}
+
+fun ValueArgument.resolveStringConstantValue(bindingContext: BindingContext): String? {
+    return this.getArgumentExpression()?.resolveStringConstantValue(bindingContext)
+}
 
 val PsiElement.allChildrenFlat: Sequence<PsiElement>
     get() {
