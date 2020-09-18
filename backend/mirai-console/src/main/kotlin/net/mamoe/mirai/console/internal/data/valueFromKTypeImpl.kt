@@ -143,7 +143,7 @@ internal fun KClass<*>.isPrimitiveOrBuiltInSerializableValue(): Boolean {
         Byte::class, Short::class, Int::class, Long::class,
         Boolean::class,
         Char::class, String::class,
-        Pair::class, Triple::class // TODO: 2020/6/24 支持 PairValue, TripleValue
+            //Pair::class, Triple::class // TODO: 2020/6/24 支持 PairValue, TripleValue
         -> return true
     }
 
