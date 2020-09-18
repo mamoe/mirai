@@ -37,6 +37,12 @@ class PluginDescriptionChecker : DeclarationChecker {
 
         private const val syntax = """类似于 "net.mamoe.mirai.example-plugin", 其中 "net.mamoe.mirai" 为 groupId, "example-plugin" 为插件名. """
 
+        /**
+         * https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+         */
+        private val SEMANTIC_VERSIONING_REGEX =
+            Regex("""^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?${'$'}""")
+
         fun checkPluginId(inspectionTarget: PsiElement, value: String): Diagnostic? {
             if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 不能为空. \n插件 Id$syntax")
             if (value.none { it == '.' }) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget,
@@ -64,7 +70,10 @@ class PluginDescriptionChecker : DeclarationChecker {
         }
 
         fun checkPluginVersion(inspectionTarget: PsiElement, value: String): Diagnostic? {
-            return null // TODO: 2020/9/18  checkPluginVersion
+            if (!SEMANTIC_VERSIONING_REGEX.matches(value)) {
+                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "版本号无效: '$value'. \nhttps://semver.org/lang/zh-CN/")
+            }
+            return null
         }
     }
 
