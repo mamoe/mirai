@@ -26,11 +26,15 @@ import net.mamoe.mirai.message.data.*
 public interface CommandManager {
     /**
      * 获取已经注册了的属于这个 [CommandOwner] 的指令列表.
+     *
+     * @return 这一时刻的浅拷贝.
      */
     public val CommandOwner.registeredCommands: List<Command>
 
     /**
      * 获取所有已经注册了指令列表.
+     *
+     * @return 这一时刻的浅拷贝.
      */
     public val allRegisteredCommands: List<Command>
 
@@ -71,19 +75,23 @@ public interface CommandManager {
     public fun Command.findDuplicate(): Command?
 
     /**
-     * 取消注册这个指令. 若指令未注册, 返回 `false`.
+     * 取消注册这个指令.
+     *
+     * 若指令未注册, 返回 `false`.
      */
     @JvmName("unregisterCommand")
     public fun Command.unregister(): Boolean
 
     /**
-     * 当 [this] 已经 [注册][register] 后返回 `true`
+     * 当 [this] 已经 [注册][register] 时返回 `true`
      */
     @JvmName("isCommandRegistered")
     public fun Command.isRegistered(): Boolean
 
     /**
-     * 解析并执行一个指令
+     * 解析并执行一个指令.
+     *
+     * 如要避免参数解析, 请使用 [Command.onCommand]
      *
      * ### 指令解析流程
      * 1. [message] 的第一个消息元素的 [内容][Message.contentToString] 被作为指令名, 在已注册指令列表中搜索. (包含 [Command.prefixOptional] 相关的处理)

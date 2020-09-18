@@ -19,7 +19,6 @@ import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.internal.command.isValidSubName
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.SingleMessage
 
 /**
  * 指令
@@ -36,7 +35,9 @@ public interface Command {
     /**
      * 指令名. 需要至少有一个元素. 所有元素都不能带有空格
      *
-     * @see Command.primaryName 获取主要指令名
+     * 第一个元素会作为主指令名.
+     *
+     * @see Command.primaryName 获取主指令名
      */
     public val names: Array<out String>
 
@@ -56,7 +57,9 @@ public interface Command {
     public val permission: Permission
 
     /**
-     * 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选
+     * 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选.
+     *
+     * 会影响消息语境中的解析.
      */
     public val prefixOptional: Boolean
 
@@ -69,7 +72,7 @@ public interface Command {
     /**
      * 在指令被执行时调用.
      *
-     * @param args 指令参数. 数组元素类型可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
+     * @param args 精确的指令参数. [MessageChain] 每个元素代表一个精确的参数.
      *
      * @see CommandManager.executeCommand 查看更多信息
      */
@@ -86,6 +89,9 @@ public interface Command {
     }
 }
 
+/**
+ * 调用 [Command.onCommand]
+ */
 @JvmSynthetic
 public suspend inline fun Command.onCommand(sender: CommandSender, args: MessageChain): Unit =
     sender.onCommand(args)
@@ -108,7 +114,7 @@ public abstract class AbstractCommand
     public override val prefixOptional: Boolean = false,
 ) : Command {
     public override val description: String = description.trimIndent()
-    public override val names: Array<out String> =
+    public final override val names: Array<out String> =
         names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).also { list ->
             list.firstOrNull { !it.isValidSubName() }?.let { error("Invalid name: $it") }
         }.toTypedArray()
