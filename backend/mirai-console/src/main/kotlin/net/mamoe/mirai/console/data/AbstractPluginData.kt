@@ -14,6 +14,9 @@ package net.mamoe.mirai.console.data
 import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.console.data.PluginData.ValueNode
 import net.mamoe.mirai.console.internal.data.PluginDataImpl
+import net.mamoe.mirai.console.internal.data.getAnnotationListForValueSerialization
+import net.mamoe.mirai.console.internal.data.valueName
+import kotlin.reflect.KProperty
 
 /**
  * [PluginData] 的默认实现. 支持使用 `by value()` 等委托方法创建 [Value] 并跟踪其改动.
@@ -37,6 +40,14 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
         apply { valueNodes.add(ValueNode(valueName, this, annotations, this.serializer)) }
 
     /**
+     * 使用 `by value()` 时自动调用此方法, 添加对 [Value] 的值修改的跟踪, 并创建 [ValueNode] 加入 [valueNodes]
+     */
+    public operator fun <T : SerializerAwareValue<*>> T.provideDelegate(
+        thisRef: Any?,
+        property: KProperty<*>,
+    ): T = track(property.valueName, property.getAnnotationListForValueSerialization())
+
+    /**
      * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用
      */
     public final override val updaterSerializer: KSerializer<Unit>
@@ -45,5 +56,14 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     /**
      * 当所属于这个 [PluginData] 的 [Value] 的 [值][Value.value] 被修改时被调用.
      */
-    public abstract override fun onValueChanged(value: Value<*>)
+    public override fun onValueChanged(value: Value<*>) {
+        // no-op by default
+    }
+
+    /**
+     * 当这个 [PluginData] 被放入一个 [PluginDataStorage] 时调用
+     */
+    public override fun onInit(owner: PluginDataHolder, storage: PluginDataStorage) {
+        // no-op by default
+    }
 }

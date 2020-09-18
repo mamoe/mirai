@@ -156,14 +156,6 @@ public interface PluginData {
     )
 
     /**
-     * 使用 `by value()` 时自动调用此方法, 添加对 [Value] 的值修改的跟踪, 并创建 [ValueNode] 加入 [valueNodes]
-     */
-    public operator fun <T : SerializerAwareValue<*>> T.provideDelegate(
-        thisRef: Any?,
-        property: KProperty<*>
-    ): T = track(property.valueName, property.getAnnotationListForValueSerialization())
-
-    /**
      * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
      */
     public fun <T : SerializerAwareValue<*>> T.track(
