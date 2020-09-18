@@ -138,6 +138,11 @@ public abstract class AbstractCommand
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
     public override val prefixOptional: Boolean = false,
 ) : Command {
+    init {
+        Command.checkCommandName(primaryName)
+        secondaryNames.forEach(Command::checkCommandName)
+    }
+
     public override val usage: String get() = description
     public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
 }
