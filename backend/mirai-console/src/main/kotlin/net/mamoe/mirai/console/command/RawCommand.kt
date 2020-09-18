@@ -41,7 +41,7 @@ public abstract class RawCommand(
     public override vararg val secondaryNames: String,
     /** 用法说明, 用于发送给用户 */
     public override val usage: String = "<no usages given>",
-    /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
+    /** 指令描述, 用于显示在 [BuiltInCommands.HelpCommand] */
     public override val description: String = "<no descriptions given>",
     /** 指令父权限 */
     parentPermission: Permission = owner.parentPermission,

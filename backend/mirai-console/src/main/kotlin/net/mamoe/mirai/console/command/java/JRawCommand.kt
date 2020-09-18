@@ -59,7 +59,7 @@ public abstract class JRawCommand
     public override var usage: String = "<no usages given>"
         protected set
 
-    /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
+    /** 指令描述, 用于显示在 [BuiltInCommands.HelpCommand] */
     public final override var description: String = "<no descriptions given>"
         protected set
 
