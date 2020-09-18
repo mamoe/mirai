@@ -92,17 +92,15 @@ class PluginDescriptionChecker : DeclarationChecker {
                 call.valueParametersWithArguments().asSequence()
             }
             .mapNotNull { (p, a) ->
-                p.resolveContextKind?.takeIf { it in checkersMap }?.let { it to a }
+                p.resolveContextKind?.let(checkersMap::get)?.let { it to a }
             }
             .mapNotNull { (kind, argument) ->
                 argument.resolveStringConstantValue(context.bindingContext)?.let { const ->
                     Triple(kind, argument, const)
                 }
             }
-            .forEach { (parameterContextKind, argument, resolvedConstant) ->
-                for ((kind, fn) in checkersMap) {
-                    if (parameterContextKind == kind) fn(argument.asElement(), resolvedConstant)?.let { context.report(it) }
-                }
+            .forEach { (fn, argument, resolvedConstant) ->
+                fn(argument.asElement(), resolvedConstant)?.let { context.report(it) }
             }
         return
         /*
