@@ -45,6 +45,7 @@ import net.mamoe.mirai.qqandroid.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.qqandroid.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.NewContact
+import net.mamoe.mirai.qqandroid.network.protocol.packet.chat.toLongUnsigned
 import net.mamoe.mirai.qqandroid.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.qqandroid.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.qqandroid.utils.io.serialization.writeProtoBuf
@@ -208,7 +209,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                             return@mapNotNull bot.createGroupForBot(msg.msgHead.fromUin)?.let {
                                 // package: 27 0B 60 E7 01 CA CC 69 8B 83 44 71 47 90 06 B9 DC C0 ED D4 B1 00 30 33 44 30 42 38 46 30 39 37 32 38 35 43 34 31 38 30 33 36 41 34 36 31 36 31 35 32 37 38 46 46 43 30 41 38 30 36 30 36 45 38 31 43 39 41 34 38 37
                                 // package: groupUin + 01 CA CC 69 8B 83 + invitorUin + length(06) + string + magicKey
-                                val invitorUin = msg.msgBody.msgContent.sliceArray(10..13).toInt().toLong()
+                                val invitorUin = msg.msgBody.msgContent.sliceArray(10..13).toInt().toLongUnsigned()
                                 BotJoinGroupEvent.Invite(it[invitorUin])
                             }
                         } else {
