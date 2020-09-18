@@ -14,8 +14,11 @@
 
 package net.mamoe.mirai.console.util
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
 
@@ -44,7 +47,7 @@ import net.mamoe.mirai.console.util.SemVersion.Companion.equals
  * 但是不允许 0.0.0.0 之类的存在
  *
  */
-@Serializable
+@Serializable(with = SemVersion.SemVersionAsStringSerializer::class)
 public data class SemVersion internal constructor(
     /** 核心版本号, 由主版本号, 次版本号和修订号组成, 其中修订号不一定存在 */
     public val mainVersion: IntArray,
@@ -61,6 +64,11 @@ public data class SemVersion internal constructor(
         /** 在 [version] 满足此要求时返回 true */
         public fun check(version: SemVersion): Boolean
     }
+
+    public object SemVersionAsStringSerializer : KSerializer<SemVersion> by String.serializer().map(
+        serializer = { it.toString() },
+        deserializer = { parse(it) }
+    )
 
     public companion object {
         private val SEM_VERSION_REGEX =
