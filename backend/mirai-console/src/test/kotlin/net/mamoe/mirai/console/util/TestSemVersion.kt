@@ -96,16 +96,6 @@ internal class TestSemVersion {
 
     @Test
     internal fun testSemVersionParsing() {
-        fun String.check() {
-            val sem = SemVersion.parse(this)
-            assert(this == sem.toString()) { "$this != $sem" }
-        }
-
-        fun String.checkInvalid() {
-            kotlin.runCatching { SemVersion.parse(this) }
-                .onSuccess { assert(false) { "$this not a invalid sem-version" } }
-                .onFailure { println("$this - $it") }
-        }
         "0.0".check()
         "1.0.0".check()
         "1.2.3.4.5.6.7.8".checkInvalid()
