@@ -12,6 +12,9 @@ package net.mamoe.mirai.console.permission
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PERMISSION_NAME
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PERMISSION_NAMESPACE
 import net.mamoe.mirai.console.internal.data.map
 
 
@@ -25,8 +28,8 @@ import net.mamoe.mirai.console.internal.data.map
  */
 @Serializable(with = PermissionId.PermissionIdAsStringSerializer::class)
 public data class PermissionId(
-    public val namespace: String,
-    public val name: String,
+    @ResolveContext(PERMISSION_NAMESPACE) public val namespace: String,
+    @ResolveContext(PERMISSION_NAME) public val name: String,
 ) {
     init {
         require(!namespace.contains(':')) {

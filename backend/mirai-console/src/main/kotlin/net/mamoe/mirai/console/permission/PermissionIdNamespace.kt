@@ -10,6 +10,8 @@
 package net.mamoe.mirai.console.permission
 
 import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PERMISSION_NAME
 
 /**
  * [PermissionId] 的命名空间. 用于提供 [PermissionId.namespace].
@@ -20,5 +22,5 @@ public interface PermissionIdNamespace {
      *
      * 在指令初始化时, 会申请对应权限. 此时 [name] 为 "command.$primaryName` 其中 [primaryName][Command.primaryName].
      */
-    public fun permissionId(name: String): PermissionId
+    public fun permissionId(@ResolveContext(PERMISSION_NAME) name: String): PermissionId
 }

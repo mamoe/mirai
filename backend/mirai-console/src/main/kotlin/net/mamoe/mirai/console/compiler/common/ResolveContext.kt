@@ -36,6 +36,11 @@ public annotation class ResolveContext(
         PLUGIN_NAME,
         PLUGIN_VERSION,
 
+        COMMAND_NAME,
+
+        PERMISSION_NAMESPACE,
+        PERMISSION_NAME,
+
         /**
          * Custom serializers allowed
          */

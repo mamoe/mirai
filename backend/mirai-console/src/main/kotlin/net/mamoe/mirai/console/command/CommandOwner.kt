@@ -10,6 +10,8 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PERMISSION_NAME
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionIdNamespace
@@ -36,5 +38,7 @@ public interface CommandOwner : PermissionIdNamespace {
 internal object ConsoleCommandOwner : CommandOwner {
     override val parentPermission: Permission get() = BuiltInCommands.parentPermission
 
-    override fun permissionId(name: String): PermissionId = PermissionId("console", name)
+    override fun permissionId(
+        @ResolveContext(PERMISSION_NAME) name: String,
+    ): PermissionId = PermissionId("console", name)
 }

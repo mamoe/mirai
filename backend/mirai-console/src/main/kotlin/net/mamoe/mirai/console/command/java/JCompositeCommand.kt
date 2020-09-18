@@ -14,6 +14,8 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.permission.Permission
 
 /**
@@ -69,8 +71,8 @@ import net.mamoe.mirai.console.permission.Permission
 public abstract class JCompositeCommand
 @JvmOverloads constructor(
     owner: CommandOwner,
-    primaryName: String,
-    vararg secondaryNames: String,
+    @ResolveContext(COMMAND_NAME) primaryName: String,
+    @ResolveContext(COMMAND_NAME) vararg secondaryNames: String,
     parentPermission: Permission = owner.parentPermission,
 ) : CompositeCommand(owner, primaryName, secondaryNames = secondaryNames, parentPermission = parentPermission) {
     /** 指令描述, 用于显示在 [BuiltInCommands.HelpCommand] */

@@ -15,6 +15,8 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.java.JCommand
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
@@ -37,12 +39,14 @@ public interface Command {
      *
      * 不允许包含 [空格][Char.isWhitespace], '.', ':'.
      */
+    @ResolveContext(COMMAND_NAME)
     public val primaryName: String
 
     /**
      * 次要指令名
      * @see Command.primaryName 获取主指令名
      */
+    @ResolveContext(COMMAND_NAME)
     public val secondaryNames: Array<out String>
 
     /**
@@ -102,7 +106,7 @@ public interface Command {
          * 检查指令名的合法性. 在非法时抛出 [IllegalArgumentException]
          */
         @Throws(IllegalArgumentException::class)
-        public fun checkCommandName(name: String) {
+        public fun checkCommandName(@ResolveContext(COMMAND_NAME) name: String) {
             when {
                 name.isBlank() -> throw IllegalArgumentException("Command name should not be blank.")
                 name.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces is not yet allowed in command name.")

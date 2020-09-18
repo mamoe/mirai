@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.console.permission
 
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.permission.checkType
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
@@ -129,8 +131,8 @@ public interface PermissionService<P : Permission> {
         public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
             get(id) ?: throw NoSuchElementException("Permission not found: $id")
 
-        internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
-            PermissionId("plugin.${name.toLowerCase()}", id.toLowerCase())
+        internal fun PermissionService<*>.allocatePermissionIdForPlugin(pluginName: String, @ResolveContext(COMMAND_NAME) permissionName: String) =
+            PermissionId("plugin.${pluginName.toLowerCase()}", permissionName.toLowerCase())
 
         public fun PermissionId.findCorrespondingPermission(): Permission? = INSTANCE[this]
 

@@ -169,7 +169,7 @@ public interface PermitteeId {
  *                                                          ExactTemp
  * ```
  */
-@Serializable(with = AbstractPermitteeId.AsStringSerializer::class)
+@Serializable(with = AsStringSerializer::class)
 public sealed class AbstractPermitteeId(
     public final override vararg val directParents: PermitteeId,
 ) : PermitteeId {

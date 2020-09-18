@@ -14,6 +14,8 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.permission.Permission
 
 /**
@@ -42,8 +44,8 @@ import net.mamoe.mirai.console.permission.Permission
  */
 public abstract class JSimpleCommand(
     owner: CommandOwner,
-    primaryName: String,
-    vararg secondaryNames: String,
+    @ResolveContext(COMMAND_NAME) primaryName: String,
+    @ResolveContext(COMMAND_NAME) vararg secondaryNames: String,
     basePermission: Permission,
 ) : SimpleCommand(owner, primaryName, secondaryNames = secondaryNames, parentPermission = basePermission) {
     public override var description: String = super.description
