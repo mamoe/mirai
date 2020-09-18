@@ -55,7 +55,14 @@ java -cp "./libs/*" net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader 
 
 然后就可以开始使用 mirai-console 了
 
-### mirai-console-terminal 前端参数
+#### mirai-console-terminal 前端参数
 使用 `./start-mirai-console --help` 查看 mirai-console-terminal 支持的启动参数
 
 [mirai-repo]: https://github.com/project-mirai/mirai-repo/tree/master/shadow
+
+
+### 启动 mirai-console-pure 前端
+
+与启动 `mirai-console-terminal` 前端大体相同
+- 下载 `mirai-console-terminal` 改成下载 `mirai-console-pure`
+- 启动入口从 `net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader` 改成 `net.mamoe.mirai.console.pure.MiraiConsolePureLoader`
