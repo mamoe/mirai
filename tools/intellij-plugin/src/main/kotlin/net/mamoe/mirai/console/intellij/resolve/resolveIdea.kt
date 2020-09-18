@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.intellij.resolve
 
+import com.intellij.psi.PsiDeclarationStatement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import net.mamoe.mirai.console.compiler.common.castOrNull
@@ -19,6 +20,8 @@ import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
+import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
+import org.jetbrains.kotlin.idea.search.usagesSearch.descriptor
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
@@ -28,6 +31,7 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.constants.StringValue
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
+import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
 
 
 /**
@@ -98,7 +102,7 @@ val PsiElement.allChildrenFlat: Sequence<PsiElement>
         }
     }
 
-inline fun <reified E : PsiElement> PsiElement.findChildren(): E? = this.children.find { it is E } as E?
+inline fun <reified E> PsiElement.findChild(): E? = this.children.find { it is E } as E?
 
 fun KtElement?.getResolvedCallOrResolveToCall(
     context: BindingContext,
@@ -111,10 +115,23 @@ val ResolvedCall<out CallableDescriptor>.valueParameters: List<ValueParameterDes
 
 fun KtExpression.resolveStringConstantValue(bindingContext: BindingContext): String? {
     when (this) {
+        is KtNameReferenceExpression -> {
+            when (val reference = references.firstIsInstance<KtSimpleNameReference>().resolve()) {
+                is KtDeclaration -> {
+                    val descriptor = reference.descriptor.castOrNull<VariableDescriptor>() ?: return null
+                    val compileTimeConstant = descriptor.compileTimeInitializer ?: return null
+                    return compileTimeConstant.castOrNull<StringValue>()?.value
+                }
+                is PsiDeclarationStatement -> {
+
+                }
+            }
+        }
         is KtStringTemplateExpression -> {
             if (hasInterpolation()) return null
             return entries.joinToString("") { it.text }
         }
+        /*
         is KtCallExpression -> {
             val callee = this.calleeExpression?.getResolvedCallOrResolveToCall(bindingContext)?.resultingDescriptor
             if (callee is VariableDescriptor) {
@@ -122,7 +139,7 @@ fun KtExpression.resolveStringConstantValue(bindingContext: BindingContext): Str
                 return compileTimeConstant.castOrNull<StringValue>()?.value
             }
             return null
-        }
+        }*/
         is KtConstantExpression -> {
             // TODO: 2020/9/18  KtExpression.resolveStringConstantValue: KtConstantExpression
         }

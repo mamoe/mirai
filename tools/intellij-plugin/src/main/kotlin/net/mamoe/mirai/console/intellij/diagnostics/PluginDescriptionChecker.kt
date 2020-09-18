@@ -13,7 +13,7 @@ import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
-import net.mamoe.mirai.console.intellij.resolve.findChildren
+import net.mamoe.mirai.console.intellij.resolve.findChild
 import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValue
 import net.mamoe.mirai.console.intellij.resolve.valueParameters
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
@@ -36,28 +36,30 @@ class PluginDescriptionChecker : DeclarationChecker {
         private val ID_REGEX: Regex = Regex("""([a-zA-Z]+(?:\.[a-zA-Z0-9]+)*)\.([a-zA-Z]+(?:-[a-zA-Z0-9]+)*)""")
         private val FORBIDDEN_ID_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
 
+        private const val syntax = """类似于 "net.mamoe.mirai.example-plugin", 其中 "net.mamoe.mirai" 为 groupId, "example-plugin" 为插件名. """
+
         fun checkPluginId(inspectionTarget: PsiElement, value: String): Diagnostic? {
-            if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin id cannot be blank")
+            if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 不能为空. \n插件 Id$syntax")
             if (value.none { it == '.' }) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget,
-                "'$value' is illegal. Plugin id must consist of both domain and name. ")
+                "插件 Id '$value' 无效. 插件 Id 必须同时包含 groupId 和插件名称. $syntax")
 
             val lowercaseId = value.toLowerCase()
 
             if (ID_REGEX.matchEntire(value) == null) {
-                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin does not match regex '${ID_REGEX.pattern}'.")
+                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 无效. 正确的插件 Id 应该满足正则表达式 '${ID_REGEX.pattern}', \n$syntax")
             }
 
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseId }?.let { illegal ->
-                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin id contains illegal word: '$illegal'.")
+                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件 Id. 确保插件 Id 不完全是这个名称.")
             }
             return null
         }
 
         fun checkPluginName(inspectionTarget: PsiElement, value: String): Diagnostic? {
-            if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin name cannot be blank")
+            if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件名不能为空.")
             val lowercaseName = value.toLowerCase()
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
-                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "Plugin name is illegal: '$illegal'.")
+                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件名. 确保插件名不完全是这个名称.")
             }
             return null
         }
@@ -90,15 +92,13 @@ class PluginDescriptionChecker : DeclarationChecker {
         context: DeclarationCheckerContext,
     ) {
         val call = expression.calleeExpression.getResolvedCallOrResolveToCall(context) ?: return // unresolved
-        call.valueArgumentsByIndex?.forEach { resolvedValueArgument ->
-            for ((parameter, argument) in call.valueParameters.zip(resolvedValueArgument.arguments)) {
-                val parameterContextKind = parameter.resolveContextKind
-                if (checkersMap.containsKey(parameterContextKind)) {
-                    val value = argument.getArgumentExpression()
-                        ?.resolveStringConstantValue(context.bindingContext) ?: continue
-                    for ((kind, fn) in checkersMap) {
-                        if (parameterContextKind == kind) fn(argument.asElement(), value)?.let { context.report(it) }
-                    }
+        for ((parameter, argument) in call.valueParameters.zip(call.valueArgumentsByIndex?.mapNotNull { it.arguments.firstOrNull() }.orEmpty())) {
+            val parameterContextKind = parameter.resolveContextKind
+            if (checkersMap.containsKey(parameterContextKind)) {
+                val value = argument.getArgumentExpression()
+                    ?.resolveStringConstantValue(context.bindingContext) ?: continue
+                for ((kind, fn) in checkersMap) {
+                    if (parameterContextKind == kind) fn(argument.asElement(), value)?.let { context.report(it) }
                 }
             }
         }
@@ -113,9 +113,9 @@ class PluginDescriptionChecker : DeclarationChecker {
         when (declaration) {
             is KtObjectDeclaration -> {
                 // check super type constructor
-                val superTypeCallEntry = declaration.findChildren<KtSuperTypeList>()?.findChildren<KtSuperTypeCallEntry>() ?: return
+                val superTypeCallEntry = declaration.findChild<KtSuperTypeList>()?.findChild<KtSuperTypeCallEntry>() ?: return
                 // val constructorCall = superTypeCallEntry.findChildren<KtConstructorCalleeExpression>()?.resolveToCall() ?: return
-                val valueArgumentList = superTypeCallEntry.findChildren<KtValueArgumentList>() ?: return
+                val valueArgumentList = superTypeCallEntry.findChild<KtValueArgumentList>() ?: return
                 valueArgumentList.arguments.asSequence().mapNotNull(KtValueArgument::getArgumentExpression).forEach {
                     if (it.shouldPerformCheck()) {
                         check(it as KtCallExpression, context)
@@ -126,10 +126,10 @@ class PluginDescriptionChecker : DeclarationChecker {
             is KtClassOrObject -> {
                 // check constructor
 
-                val superTypeCallEntry = declaration.findChildren<KtSuperTypeList>()?.findChildren<KtSuperTypeCallEntry>() ?: return
+                val superTypeCallEntry = declaration.findChild<KtSuperTypeList>()?.findChild<KtSuperTypeCallEntry>() ?: return
 
-                val constructorCall = superTypeCallEntry.findChildren<KtConstructorCalleeExpression>()?.resolveToCall() ?: return
-                val valueArgumentList = superTypeCallEntry.findChildren<KtValueArgumentList>() ?: return
+                val constructorCall = superTypeCallEntry.findChild<KtConstructorCalleeExpression>()?.resolveToCall() ?: return
+                val valueArgumentList = superTypeCallEntry.findChild<KtValueArgumentList>() ?: return
 
 
             }
