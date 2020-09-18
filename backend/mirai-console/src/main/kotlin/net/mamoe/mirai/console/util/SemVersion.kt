@@ -39,16 +39,14 @@ import net.mamoe.mirai.console.util.SemVersion.Companion.equals
  *   metadata    = "c25733b8"
  * )
  * ```
- * 其中 identifier 和 metadata 都是可选的, 该实现对于 mainVersion 的最大长度不作出限制,
- * 也建议 mainVersion 的长度不要过长或过短
- * 但是必须至少拥有两位及以上的版本描述符, (即必须拥有主版本号和次版本号).
- *
- * 比如 `1-M4` 是不合法的, 但是 `1.0-M4` 是合法的
+ * 其中 identifier 和 metadata 都是可选的.
+ * 对于核心版本号, 此实现稍微比 semver 宽松一些, 允许 x.y 的存在.
+ * 但是不允许 0.0.0.0 之类的存在
  *
  */
 @Serializable
 public data class SemVersion internal constructor(
-    /** 核心版本号, 至少包含一个主版本号和一个次版本号 */
+    /** 核心版本号, 由主版本号, 次版本号和修订号组成, 其中修订号不一定存在 */
     public val mainVersion: IntArray,
     /** 先行版本号识别符 */
     public val identifier: String? = null,
@@ -65,6 +63,9 @@ public data class SemVersion internal constructor(
     }
 
     public companion object {
+        private val SEM_VERSION_REGEX =
+            """^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$""".toRegex()
+
         /** 解析核心版本号, eg: `1.0.0` -> IntArray[1, 0, 0] */
         @JvmStatic
         private fun String.parseMainVersion(): IntArray =
@@ -78,14 +79,23 @@ public data class SemVersion internal constructor(
          * - 必须包含主版本号和次版本号
          * - 存在 先行版本号 的时候 先行版本号 不能为空
          * - 存在 元数据 的时候 元数据 不能为空
+         * - 核心版本号只允许 `x.y` 和 `x.y.z` 的存在
+         *     - `1.0-RC` 是合法的
+         *     - `1.0.0-RC` 也是合法的, 与 `1.0-RC` 一样
+         *     - `1.0.0.0-RC` 是不合法的, 将会抛出一个 [IllegalArgumentException]
          *
          * 注意情况:
          * - 第一个 `+` 之后的所有内容全部识别为元数据
          *     - `1.0+METADATA-M4`, metadata="METADATA-M4"
+         * - 如果不确定版本号是否合法, 可以使用 [regex101.com](https://regex101.com/r/vkijKf/1/) 进行检查
+         *     - 此实现使用的正则表达式为 `^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$`
          */
         @Throws(IllegalArgumentException::class, NumberFormatException::class)
         @JvmStatic
         public fun parse(version: String): SemVersion {
+            if (!SEM_VERSION_REGEX.matches(version)) {
+                throw IllegalArgumentException("`$version` not a valid version")
+            }
             var mainVersionEnd: Int = 0
             kotlin.run {
                 val iterator = version.iterator()
@@ -116,24 +126,9 @@ public data class SemVersion internal constructor(
                 }
             }
             return SemVersion(
-                mainVersion = version.substring(0, mainVersionEnd).also { mainVersion ->
-                    if (mainVersion.indexOf('.') == -1) {
-                        throw IllegalArgumentException("$mainVersion must has more than one label")
-                    }
-                    if (mainVersion.last() == '.') {
-                        throw IllegalArgumentException("Version string cannot end-with `.`")
-                    }
-                }.parseMainVersion(),
-                identifier = identifier?.also {
-                    if (it.isBlank()) {
-                        throw IllegalArgumentException("The identifier cannot be blank.")
-                    }
-                },
-                metadata = metadata?.also {
-                    if (it.isBlank()) {
-                        throw IllegalArgumentException("The metadata cannot be blank.")
-                    }
-                }
+                mainVersion = version.substring(0, mainVersionEnd).parseMainVersion(),
+                identifier = identifier,
+                metadata = metadata
             )
         }
 
@@ -153,7 +148,7 @@ public data class SemVersion internal constructor(
          *
          * 对于多个规则, 也允许使用 `||` 拼接在一起.
          * 例如:
-         * - `1.x || 2.x || 3.0`
+         * - `1.x || 2.x || 3.0.0`
          * - `<= 0.5.3 || >= 1.0.0`
          *
          * 特别注意:
