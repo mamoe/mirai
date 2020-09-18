@@ -10,12 +10,10 @@
 package net.mamoe.mirai.console.intellij.diagnostics
 
 import com.intellij.psi.PsiElement
+import net.mamoe.mirai.console.compiler.common.SERIALIZABLE_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
-import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME
-import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
-import net.mamoe.mirai.console.compiler.common.resolve.hasNoArgConstructor
-import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
+import net.mamoe.mirai.console.compiler.common.resolve.*
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCallsWithElement
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
@@ -41,24 +39,25 @@ class PluginDataValuesChecker : DeclarationChecker {
                 (p.isReified || p.resolveContextKind == ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR)
                     && t is SimpleType
             }.forEach { (e, callExpr) ->
-                val (_, t) = e
-                val classDescriptor = t.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>()
+                val (_, type) = e
+                val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>()
 
-                fun getInspectionTarget(): PsiElement {
-                    return callExpr.typeArguments.find { it.references.firstOrNull()?.canonicalText == t.fqName?.toString() } ?: callExpr
+                val inspectionTarget: PsiElement by lazy {
+                    callExpr.typeArguments.find { it.references.firstOrNull()?.canonicalText == type.fqName?.toString() } ?: callExpr
                 }
 
-                fun reportInspection() {
-                    context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
-                        getInspectionTarget(),
-                        t.fqName?.asString().toString())
+                if (classDescriptor == null
+                    || !classDescriptor.hasNoArgConstructor()
+                ) return@forEach context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
+                    inspectionTarget,
+                    type.fqName?.asString().toString())
+                )
+
+                if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME)) // TODO: 2020/9/18 external serializers
+                    return@forEach context.report(MiraiConsoleErrors.UNSERIALIZABLE_TYPE.on(
+                        inspectionTarget,
+                        type.fqName?.asString().toString())
                     )
-                }
-
-                when {
-                    classDescriptor == null -> reportInspection()
-                    !classDescriptor.hasNoArgConstructor() -> reportInspection()
-                }
             }
     }
 }

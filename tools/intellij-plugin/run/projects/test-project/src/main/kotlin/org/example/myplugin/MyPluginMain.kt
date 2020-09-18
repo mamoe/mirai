@@ -1,5 +1,6 @@
 package org.example.myplugin
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
@@ -26,6 +27,7 @@ object DataTest : AutoSavePluginConfig() {
     val pp by value<NoDefaultValue>()
 }
 
+@Serializable
 data class HasDefaultValue(
     val x: Int = 0,
 )

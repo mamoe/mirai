@@ -18,6 +18,7 @@ import static org.jetbrains.kotlin.diagnostics.Severity.ERROR;
 public interface MiraiConsoleErrors {
     DiagnosticFactory1<PsiElement, String> ILLEGAL_PLUGIN_DESCRIPTION = DiagnosticFactory1.create(ERROR);
     DiagnosticFactory1<PsiElement, String> NOT_CONSTRUCTABLE_TYPE = DiagnosticFactory1.create(ERROR);
+    DiagnosticFactory1<PsiElement, String> UNSERIALIZABLE_TYPE = DiagnosticFactory1.create(ERROR);
 
     @Deprecated
     Object _init = new Object() {

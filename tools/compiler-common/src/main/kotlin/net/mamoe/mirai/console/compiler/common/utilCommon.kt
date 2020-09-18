@@ -9,8 +9,10 @@
 
 package net.mamoe.mirai.console.compiler.common
 
+import org.jetbrains.kotlin.name.FqName
 import kotlin.contracts.contract
 
+val SERIALIZABLE_FQ_NAME = FqName("kotlinx.serialization.Serializable")
 
 fun <K, V> Map<K, V>.firstValue(): V = this.entries.first().value
 fun <K, V> Map<K, V>.firstKey(): K = this.entries.first().key
