@@ -5,13 +5,14 @@
  * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *
  */
 
-package net.mamoe.mirai.console.pure
+package net.mamoe.mirai.console.terminal
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.BuiltInCommands
@@ -20,18 +21,33 @@ import net.mamoe.mirai.console.command.CommandExecuteStatus
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.terminal.noconsole.NoConsole
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.utils.DefaultLogger
+import org.jline.reader.EndOfFileException
 import org.jline.reader.UserInterruptException
 
 val consoleLogger by lazy { DefaultLogger("console") }
 
-@OptIn(ConsoleInternalApi::class, ConsolePureExperimentalApi::class)
+@OptIn(ConsoleInternalApi::class, ConsoleTerminalExperimentalApi::class)
 internal fun startupConsoleThread() {
-    if (ConsolePureSettings.noConsole) return
+    if (terminal is NoConsole) return
 
-    MiraiConsole.launch(CoroutineName("Input")) {
+    MiraiConsole.launch(CoroutineName("Input Cancelling Daemon")) {
+        while (true) {
+            delay(2000)
+        }
+    }.invokeOnCompletion {
+        runCatching<Unit> {
+            terminal.close()
+            ConsoleInputImpl.thread.shutdownNow()
+            runCatching {
+                ConsoleInputImpl.executingCoroutine?.cancel(EndOfFileException())
+            }
+        }.exceptionOrNull()?.printStackTrace()
+    }
+    MiraiConsole.launch(CoroutineName("Console Command")) {
         while (true) {
             try {
                 val next = MiraiConsole.requestInput("").let {
@@ -65,17 +81,14 @@ internal fun startupConsoleThread() {
             } catch (e: CancellationException) {
                 return@launch
             } catch (e: UserInterruptException) {
-                MiraiConsole.cancel()
+                BuiltInCommands.StopCommand.run { ConsoleCommandSender.handle() }
+                return@launch
+            } catch (eof: EndOfFileException) {
+                consoleLogger.warning("Closing input service...")
                 return@launch
             } catch (e: Throwable) {
                 consoleLogger.error("Unhandled exception", e)
             }
         }
-    }
-
-    MiraiConsole.job.invokeOnCompletion {
-        runCatching {
-            terminal.close()
-        }.exceptionOrNull()?.printStackTrace()
     }
 }

@@ -151,6 +151,7 @@ internal abstract class JvmPluginInternal(
                 )
             )
             .also {
+                if (!MiraiConsole.isActive) return@also
                 BuiltInJvmPluginLoaderImpl.coroutineContext[Job]!!.invokeOnCompletion {
                     this.cancel()
                 }

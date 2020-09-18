@@ -10,12 +10,12 @@
 /*
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
-@file:OptIn(ConsolePureExperimentalApi::class)
+@file:OptIn(ConsoleTerminalExperimentalApi::class)
 
-package net.mamoe.mirai.console.pure.noconsole
+package net.mamoe.mirai.console.terminal.noconsole
 
-import net.mamoe.mirai.console.pure.ConsolePureExperimentalApi
-import net.mamoe.mirai.console.pure.ConsolePureSettings
+import net.mamoe.mirai.console.terminal.ConsoleTerminalExperimentalApi
+import net.mamoe.mirai.console.terminal.ConsoleTerminalSettings
 import org.jline.keymap.KeyMap
 import org.jline.reader.*
 import org.jline.terminal.Attributes
@@ -69,8 +69,8 @@ internal object AllIgnoredOutputStream : OutputStream() {
 }
 
 internal val SystemOutputPrintStream by lazy {
-    @OptIn(ConsolePureExperimentalApi::class)
-    if (ConsolePureSettings.setupAnsi) {
+    @OptIn(ConsoleTerminalExperimentalApi::class)
+    if (ConsoleTerminalSettings.setupAnsi) {
         org.fusesource.jansi.AnsiConsole.systemInstall()
     }
     System.out
@@ -81,16 +81,16 @@ internal object AllEmptyLineReader : LineReader {
 
     override fun printAbove(str: String?) {
         if (str == null) return
-        @OptIn(ConsolePureExperimentalApi::class)
-        if (ConsolePureSettings.noAnsi) {
+        @OptIn(ConsoleTerminalExperimentalApi::class)
+        if (ConsoleTerminalSettings.noAnsi) {
             SystemOutputPrintStream.println(ANSI_REGEX.replace(str, ""))
         } else SystemOutputPrintStream.println(str)
     }
 
-    @OptIn(ConsolePureExperimentalApi::class)
+    @OptIn(ConsoleTerminalExperimentalApi::class)
     override fun readLine(): String =
-        if (ConsolePureSettings.noConsoleSafeReading) ConsolePureSettings.noConsoleReadingReplacement
-        else error("Unsupported Reading line when console front-end closed.")
+        if (ConsoleTerminalSettings.noConsoleSafeReading) ConsoleTerminalSettings.noConsoleReadingReplacement
+        else throw EndOfFileException("Unsupported Reading line when console front-end closed.")
 
     // region
     private fun <T> ignored(): T = error("Ignored")

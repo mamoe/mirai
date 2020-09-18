@@ -5,12 +5,13 @@
  * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *
  */
 /*
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
 
-package net.mamoe.mirai.console.pure
+package net.mamoe.mirai.console.terminal
 
 @Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
@@ -23,10 +24,10 @@ package net.mamoe.mirai.console.pure
     AnnotationTarget.CONSTRUCTOR
 )
 @MustBeDocumented
-annotation class ConsolePureExperimentalApi
+annotation class ConsoleTerminalExperimentalApi
 
-@ConsolePureExperimentalApi
-public object ConsolePureSettings {
+@ConsoleTerminalExperimentalApi
+public object ConsoleTerminalSettings {
     @JvmField
     var setupAnsi: Boolean = System.getProperty("os.name")
         .toLowerCase()
