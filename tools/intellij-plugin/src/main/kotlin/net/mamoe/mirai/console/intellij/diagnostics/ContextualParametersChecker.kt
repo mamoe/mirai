@@ -24,11 +24,9 @@ import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import java.util.*
 
 /**
- * Checks:
- * - plugin id
- * - plugin name
+ * Checks paramters with [ResolveContextKind]
  */
-class PluginDescriptionChecker : DeclarationChecker {
+class ContextualParametersChecker : DeclarationChecker {
     companion object {
         private val ID_REGEX: Regex = Regex("""([a-zA-Z]+(?:\.[a-zA-Z0-9]+)*)\.([a-zA-Z]+(?:-[a-zA-Z0-9]+)*)""")
         private val FORBIDDEN_ID_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
@@ -103,40 +101,5 @@ class PluginDescriptionChecker : DeclarationChecker {
                 fn(argument.asElement(), resolvedConstant)?.let { context.report(it) }
             }
         return
-        /*
-        when (declaration) {
-            is KtClassOrObject -> {
-                // check super type constructor
-                val superTypeCallEntry = declaration.findChild<KtSuperTypeList>()?.findChild<KtSuperTypeCallEntry>() ?: return
-                // val constructorCall = superTypeCallEntry.findChildren<KtConstructorCalleeExpression>()?.resolveToCall() ?: return
-                val valueArgumentList = superTypeCallEntry.findChild<KtValueArgumentList>() ?: return
-                valueArgumentList.arguments.asSequence().mapNotNull(KtValueArgument::getArgumentExpression).forEach {
-                    for (child in it.allChildrenWithSelf) {
-                        if (child is LambdaArgument) {
-                            child.getLambdaExpression()?.bodyExpression?.statements?.forEach { statement ->
-                                if (statement is KtCallExpression) check(statement, context)
-                            }
-                        }
-                        if (child is KtCallExpression) {
-                            check(child, context)
-                        }
-                    }
-                }
-            }
-            else -> {
-                declaration.children.flatMap {
-                    when (it) {
-                        is KtCallExpression -> listOf(it)
-                        is KtLambdaExpression -> it.bodyExpression?.statements.orEmpty()
-                        else -> emptyList()
-                    }
-                }.forEach { element ->
-                    if (element is KtDeclaration) {
-                        val desc = element.descriptor ?: return@forEach
-                        check(element, desc, context)
-                    }
-                }
-            }
-        }*/
     }
 }
