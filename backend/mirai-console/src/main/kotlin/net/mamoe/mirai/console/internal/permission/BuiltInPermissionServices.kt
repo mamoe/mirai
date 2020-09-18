@@ -117,12 +117,12 @@ internal object BuiltInPermissionService : AbstractConcurrentPermissionService<P
 
     @Suppress("RedundantVisibilityModifier")
     internal class ConcurrentSaveData private constructor(
-        public override val saveName: String,
+        saveName: String,
         @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?,
-    ) : AutoSavePluginConfig() {
+    ) : AutoSavePluginConfig(saveName) {
         public val grantedPermissionMap: PluginDataExtensions.NotNullMutableMap<PermissionId, MutableSet<AbstractPermitteeId>>
-                by value<MutableMap<PermissionId, MutableSet<AbstractPermitteeId>>>(ConcurrentHashMap())
-                    .withDefault { CopyOnWriteArraySet() }
+            by value<MutableMap<PermissionId, MutableSet<AbstractPermitteeId>>>(ConcurrentHashMap())
+                .withDefault { CopyOnWriteArraySet() }
 
         public companion object {
             @JvmStatic

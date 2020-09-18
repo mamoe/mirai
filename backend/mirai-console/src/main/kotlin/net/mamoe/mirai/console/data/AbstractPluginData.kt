@@ -25,6 +25,11 @@ import kotlin.reflect.KProperty
  */
 public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     /**
+     * 这个 [PluginData] 保存时使用的名称.
+     */
+    public abstract override val saveName: String
+
+    /**
      * 添加了追踪的 [ValueNode] 列表, 即通过 `by value` 初始化的属性列表.
      *
      * 它们的修改会被跟踪, 并触发 [onValueChanged].
@@ -32,7 +37,7 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
      * @see provideDelegate
      */
     @ConsoleExperimentalApi
-    public override val valueNodes: MutableList<ValueNode<*>> = mutableListOf()
+    public val valueNodes: MutableList<ValueNode<*>> = mutableListOf()
 
     /**
      * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
@@ -61,7 +66,7 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     ): T = track(this, property.valueName, property.getAnnotationListForValueSerialization())
 
     /**
-     * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用
+     * 所有 [valueNodes] 更新和保存序列化器.
      */
     @ConsoleExperimentalApi
     public final override val updaterSerializer: KSerializer<Unit>

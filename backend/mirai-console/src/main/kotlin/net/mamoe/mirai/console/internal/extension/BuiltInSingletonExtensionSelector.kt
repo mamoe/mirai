@@ -16,9 +16,7 @@ internal object BuiltInSingletonExtensionSelector : SingletonExtensionSelector {
 
     internal val config: SaveData = SaveData()
 
-    internal class SaveData : AutoSavePluginConfig() {
-        override val saveName: String get() = "ExtensionSelector"
-
+    internal class SaveData : AutoSavePluginConfig("ExtensionSelector") {
         val value: MutableMap<String, String> by value()
     }
 

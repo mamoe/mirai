@@ -32,12 +32,11 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.full.findAnnotation
 
 /**
- * 一个插件内部的, 对用户隐藏的数据对象. 可包含对多个 [Value] 的值变更的跟踪.
+ * 一个插件内部的, 对用户隐藏的数据对象. 可包含对多个 [Value] 的值变更的跟踪. 典型的实现为 [AbstractPluginData].
  *
- * [PluginData] 不涉及有关数据的存储, 而是只维护数据结构: [属性节点列表][valueNodes].
+ * [AbstractPluginData] 不涉及有关数据的存储, 而是只维护数据结构: [属性节点列表][AbstractPluginData.valueNodes].
  *
  * 有关存储方案, 请查看 [PluginDataStorage].
  *
@@ -74,7 +73,7 @@ import kotlin.reflect.full.findAnnotation
  * val theList: MutableList<String> = AccountPluginData.list
  * ```
  *
- * 但也注意, 不要存储 `AccountPluginData.list`. 它可能受不到值跟踪. 若必要存储, 请使用 [PluginData.findBackingFieldValue]
+ * 但也注意, 不要存储 `AccountPluginData.list`. 它可能受不到值跟踪. 若必要存储, 请使用 [AbstractPluginData.findBackingFieldValue]
  *
  * ### 使用 Java
  *
@@ -110,22 +109,17 @@ import kotlin.reflect.full.findAnnotation
  */
 public interface PluginData {
     /**
-     * 这个 [PluginData] 保存时使用的名称. 默认通过 [ValueName] 获取, 否则使用 [类全名][KClass.qualifiedName] (即 [Class.getCanonicalName])
+     * 这个 [PluginData] 保存时使用的名称.
      */
     @ConsoleExperimentalApi
     public val saveName: String
-        get() {
-            val clazz = this::class
-            return clazz.findAnnotation<ValueName>()?.value
-                ?: clazz.qualifiedName
-                ?: throw IllegalArgumentException("Cannot find a serial name for ${this::class}")
-        }
 
     @ConsoleExperimentalApi
     public val updaterSerializer: KSerializer<Unit>
 
     /**
      * 当所属于这个 [PluginData] 的 [Value] 的 [值][Value.value] 被修改时被调用.
+     * 调用者为 [Value] 的实现.
      */
     @ConsoleExperimentalApi
     public fun onValueChanged(value: Value<*>)
@@ -202,7 +196,7 @@ public fun PluginData.value(default: String): SerializerAwareValue<String> = val
 @LowPriorityInOverloadResolution
 public inline fun <reified T> PluginData.value(
     default: T,
-    crossinline apply: T.() -> Unit = {}
+    crossinline apply: T.() -> Unit = {},
 ): SerializerAwareValue<T> =
     valueFromKType(typeOf0<T>(), default).also { it.value.apply() }
 
