@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.idea.search.usagesSearch.descriptor
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.allChildren
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
@@ -92,6 +93,14 @@ val KtAnnotationEntry.annotationClass: KtClass?
 fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
     this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
 
+val PsiElement.allChildrenWithSelf: Sequence<PsiElement>
+    get() {
+        return sequence {
+            yield(this@allChildrenWithSelf)
+            yieldAll(allChildren)
+        }
+    }
+
 val PsiElement.allChildrenFlat: Sequence<PsiElement>
     get() {
         return sequence {
@@ -123,7 +132,7 @@ fun KtExpression.resolveStringConstantValue(bindingContext: BindingContext): Str
                     return compileTimeConstant.castOrNull<StringValue>()?.value
                 }
                 is PsiDeclarationStatement -> {
-
+                    // TODO: 2020/9/18 compile-time constants from Java
                 }
             }
         }

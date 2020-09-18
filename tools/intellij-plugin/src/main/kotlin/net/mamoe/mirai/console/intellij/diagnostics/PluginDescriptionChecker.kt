@@ -13,18 +13,17 @@ import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
+import net.mamoe.mirai.console.intellij.resolve.allChildrenWithSelf
 import net.mamoe.mirai.console.intellij.resolve.findChild
 import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValue
 import net.mamoe.mirai.console.intellij.resolve.valueParameters
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.search.usagesSearch.descriptor
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import java.util.*
-import kotlin.contracts.contract
 
 /**
  * Checks:
@@ -69,17 +68,6 @@ class PluginDescriptionChecker : DeclarationChecker {
         }
     }
 
-    fun PsiElement.shouldPerformCheck(): Boolean {
-        contract {
-            returns(true) implies (this@shouldPerformCheck is KtCallExpression)
-        }
-        return when (this) {
-            is KtCallExpression,
-            -> true
-            else -> true
-        }
-    }
-
     private val checkersMap: EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?> =
         EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?>(ResolveContextKind::class.java).apply {
             put(ResolveContextKind.PLUGIN_NAME, ::checkPluginName)
@@ -111,30 +99,32 @@ class PluginDescriptionChecker : DeclarationChecker {
     ) {
         println("${declaration::class.qualifiedName}   $declaration")
         when (declaration) {
-            is KtObjectDeclaration -> {
+            is KtClassOrObject -> {
                 // check super type constructor
                 val superTypeCallEntry = declaration.findChild<KtSuperTypeList>()?.findChild<KtSuperTypeCallEntry>() ?: return
                 // val constructorCall = superTypeCallEntry.findChildren<KtConstructorCalleeExpression>()?.resolveToCall() ?: return
                 val valueArgumentList = superTypeCallEntry.findChild<KtValueArgumentList>() ?: return
                 valueArgumentList.arguments.asSequence().mapNotNull(KtValueArgument::getArgumentExpression).forEach {
-                    if (it.shouldPerformCheck()) {
-                        check(it as KtCallExpression, context)
+                    for (child in it.allChildrenWithSelf) {
+                        if (child is LambdaArgument) {
+                            child.getLambdaExpression()?.bodyExpression?.statements?.forEach { statement ->
+                                if (statement is KtCallExpression) check(statement, context)
+                            }
+                        }
+                        if (child is KtCallExpression) {
+                            check(child, context)
+                        }
                     }
                 }
-
-            }
-            is KtClassOrObject -> {
-                // check constructor
-
-                val superTypeCallEntry = declaration.findChild<KtSuperTypeList>()?.findChild<KtSuperTypeCallEntry>() ?: return
-
-                val constructorCall = superTypeCallEntry.findChild<KtConstructorCalleeExpression>()?.resolveToCall() ?: return
-                val valueArgumentList = superTypeCallEntry.findChild<KtValueArgumentList>() ?: return
-
-
             }
             else -> {
-                declaration.children.filter { it.shouldPerformCheck() }.forEach { element ->
+                declaration.children.flatMap {
+                    when (it) {
+                        is KtCallExpression -> listOf(it)
+                        is KtLambdaExpression -> it.bodyExpression?.statements.orEmpty()
+                        else -> emptyList()
+                    }
+                }.forEach { element ->
                     if (element is KtDeclaration) {
                         val desc = element.descriptor ?: return@forEach
                         check(element, desc, context)
