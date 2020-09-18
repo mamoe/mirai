@@ -501,7 +501,6 @@ public fun CommandSender.getBotOrNull(): Bot? {
  *
  * 控制台拥有一切指令的执行权限.
  */
-// 前端实现
 public object ConsoleCommandSender : AbstractCommandSender() {
     public const val NAME: String = "ConsoleCommandSender"
 
@@ -514,12 +513,15 @@ public object ConsoleCommandSender : AbstractCommandSender() {
     public override val permitteeId: AbstractPermitteeId.Console = AbstractPermitteeId.Console
 
     public override val coroutineContext: CoroutineContext by lazy { MiraiConsole.childScopeContext(NAME) }
+
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): Nothing? {
         MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
         return null
     }
 
-    public override suspend fun sendMessage(message: String): MessageReceipt<User>? {
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): Nothing? {
         MiraiConsoleImplementationBridge.consoleCommandSender.sendMessage(message)
         return null
     }
