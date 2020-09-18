@@ -52,7 +52,7 @@ public abstract class JRawCommand
      */
     public override val owner: CommandOwner,
     /** 指令名. 需要至少有一个元素. 所有元素都不能带有空格 */
-    public override vararg val names: String,
+    public override vararg val secondaryNames: String,
     parentPermission: Permission = owner.parentPermission,
 ) : Command {
     /** 用法说明, 用于发送给用户 */

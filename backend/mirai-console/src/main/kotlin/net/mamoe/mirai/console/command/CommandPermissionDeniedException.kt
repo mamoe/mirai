@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 
 /**

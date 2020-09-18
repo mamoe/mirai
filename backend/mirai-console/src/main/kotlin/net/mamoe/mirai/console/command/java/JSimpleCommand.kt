@@ -41,9 +41,10 @@ import net.mamoe.mirai.console.permission.Permission
  */
 public abstract class JSimpleCommand(
     owner: CommandOwner,
-    vararg names: String,
+    primaryName: String,
+    vararg secondaryNames: String,
     basePermission: Permission,
-) : SimpleCommand(owner, *names, parentPermission = basePermission) {
+) : SimpleCommand(owner, primaryName, secondaryNames = secondaryNames, parentPermission = basePermission) {
     public override var description: String = super.description
         protected set
 

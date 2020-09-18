@@ -77,6 +77,8 @@ public interface PermissionService<P : Permission> {
      * 申请并注册一个权限 [Permission].
      *
      * @throws PermissionRegistryConflictException 当已存在一个 [PermissionId] 时抛出.
+     *
+     * @return 申请到的 [Permission] 实例
      */
     @Throws(PermissionRegistryConflictException::class)
     public fun register(
@@ -90,16 +92,17 @@ public interface PermissionService<P : Permission> {
     /**
      * 授予 [permitteeId] 以 [permission] 权限
      *
-     * Console 内建的权限服务支持授予操作. 但插件扩展的权限服务可能不支持.
+     * Console 内建的权限服务支持此操作. 但插件扩展的权限服务可能不支持.
      *
      * @throws UnsupportedOperationException 当插件扩展的 [PermissionService] 不支持这样的操作时抛出.
      */
+    @Throws(UnsupportedOperationException::class)
     public fun permit(permitteeId: PermitteeId, permission: P)
 
     /**
      * 撤销 [permitteeId] 的 [permission] 授权
      *
-     * Console 内建的权限服务支持授予操作. 但插件扩展的权限服务可能不支持.
+     * Console 内建的权限服务支持此操作. 但插件扩展的权限服务可能不支持.
      *
      * @param recursive `true` 时递归撤销所有子权限.
      * 例如, 若 [permission] 为 "*:*",
@@ -108,6 +111,7 @@ public interface PermissionService<P : Permission> {
      *
      * @throws UnsupportedOperationException 当插件扩展的 [PermissionService] 不支持这样的操作时抛出.
      */
+    @Throws(UnsupportedOperationException::class)
     public fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean)
 
     public companion object {
@@ -118,6 +122,10 @@ public interface PermissionService<P : Permission> {
         public val INSTANCE: PermissionService<out Permission>
             get() = instanceField ?: error("PermissionService is not yet initialized therefore cannot be used.")
 
+        /**
+         * 获取一个权限, 失败时抛出 [NoSuchElementException]
+         */
+        @Throws(NoSuchElementException::class)
         public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
             get(id) ?: throw NoSuchElementException("Permission not found: $id")
 

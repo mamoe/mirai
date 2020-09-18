@@ -10,7 +10,6 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.contact.Group

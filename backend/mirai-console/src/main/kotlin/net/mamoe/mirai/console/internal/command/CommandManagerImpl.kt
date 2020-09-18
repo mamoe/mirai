@@ -14,7 +14,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
@@ -101,7 +100,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     override fun Command.register(override: Boolean): Boolean {
         if (this is CompositeCommand) this.subCommands // init lazy
         this.permission // init lazy
-        this.names // init lazy
+        this.secondaryNames // init lazy
         this.description // init lazy
         this.usage // init lazy
 
@@ -111,13 +110,13 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
             }
             registeredCommands.add(this@register)
             if (this.prefixOptional) {
-                for (name in this.names) {
+                for (name in this.secondaryNames) {
                     val lowerCaseName = name.toLowerCase()
                     optionalPrefixCommandMap[lowerCaseName] = this
                     requiredPrefixCommandMap[lowerCaseName] = this
                 }
             } else {
-                for (name in this.names) {
+                for (name in this.secondaryNames) {
                     val lowerCaseName = name.toLowerCase()
                     optionalPrefixCommandMap.remove(lowerCaseName) // ensure resolution consistency
                     requiredPrefixCommandMap[lowerCaseName] = this
@@ -128,15 +127,15 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     }
 
     override fun Command.findDuplicate(): Command? =
-        registeredCommands.firstOrNull { it.names intersectsIgnoringCase this.names }
+        registeredCommands.firstOrNull { it.secondaryNames intersectsIgnoringCase this.secondaryNames }
 
     override fun Command.unregister(): Boolean = modifyLock.withLock {
         if (this.prefixOptional) {
-            this.names.forEach {
+            this.secondaryNames.forEach {
                 optionalPrefixCommandMap.remove(it)
             }
         }
-        this.names.forEach {
+        this.secondaryNames.forEach {
             requiredPrefixCommandMap.remove(it)
         }
         registeredCommands.remove(this)

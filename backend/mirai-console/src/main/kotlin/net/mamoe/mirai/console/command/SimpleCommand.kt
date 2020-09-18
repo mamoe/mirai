@@ -50,12 +50,13 @@ import net.mamoe.mirai.message.data.MessageChain
  */
 public abstract class SimpleCommand(
     owner: CommandOwner,
-    vararg names: String,
+    primaryName: String,
+    vararg secondaryNames: String,
     description: String = "no description available",
     parentPermission: Permission = owner.parentPermission,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext,
-) : Command, AbstractReflectionCommand(owner, names, description, parentPermission, prefixOptional),
+) : Command, AbstractReflectionCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
     CommandArgumentContextAware {
 
     /**

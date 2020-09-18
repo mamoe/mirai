@@ -23,7 +23,6 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
-import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
@@ -190,6 +189,10 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             mainLogger.verbose { "Enabling plugins..." }
 
             PluginManagerImpl.enableAllLoadedPlugins()
+
+            for (registeredCommand in CommandManager.allRegisteredCommands) {
+                registeredCommand.permission // init
+            }
 
             mainLogger.info { "${PluginManagerImpl.plugins.size} plugin(s) enabled." }
         }

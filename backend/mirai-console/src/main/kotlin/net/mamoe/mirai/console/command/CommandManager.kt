@@ -53,8 +53,8 @@ public interface CommandManager {
      *
      * @param override 是否覆盖重名指令.
      *
-     * 若原有指令 P, 其 [Command.names] 为 'a', 'b', 'c'.
-     * 新指令 Q, 其 [Command.names] 为 'b', 将会覆盖原指令 A 注册的 'b'.
+     * 若原有指令 P, 其 [Command.secondaryNames] 为 'a', 'b', 'c'.
+     * 新指令 Q, 其 [Command.secondaryNames] 为 'b', 将会覆盖原指令 A 注册的 'b'.
      *
      * 即注册完成后, 'a' 和 'c' 将会解析到指令 P, 而 'b' 会解析到指令 Q.
      *

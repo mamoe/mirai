@@ -132,12 +132,12 @@ public object BuiltInCommands {
                 onFailure = { throwable ->
                     sendMessage(
                         "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
-                                if (this is CommandSenderOnMessage<*>) {
-                                    CommandManagerImpl.launch(CoroutineName("stacktrace delayer from Login")) {
-                                        fromEvent.nextMessageOrNull(60.secondsToMillis) { it.message.contentEquals("stacktrace") }
-                                    }
-                                    "\n 1 分钟内发送 stacktrace 以获取堆栈信息"
-                                } else ""
+                            if (this is CommandSenderOnMessage<*>) {
+                                CommandManagerImpl.launch(CoroutineName("stacktrace delayer from Login")) {
+                                    fromEvent.nextMessageOrNull(60.secondsToMillis) { it.message.contentEquals("stacktrace") }
+                                }
+                                "\n 1 分钟内发送 stacktrace 以获取堆栈信息"
+                            } else ""
                     )
 
                     throw throwable

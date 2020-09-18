@@ -69,11 +69,12 @@ import net.mamoe.mirai.console.permission.Permission
 public abstract class JCompositeCommand
 @JvmOverloads constructor(
     owner: CommandOwner,
-    vararg names: String,
+    primaryName: String,
+    vararg secondaryNames: String,
     parentPermission: Permission = owner.parentPermission,
-) : CompositeCommand(owner, *names, parentPermission = parentPermission) {
-    /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
-    public final override var description: String = "<no descriptions given>"
+) : CompositeCommand(owner, primaryName, secondaryNames = secondaryNames, parentPermission = parentPermission) {
+    /** 指令描述, 用于显示在 [BuiltInCommands.HelpCommand] */
+    public final override var description: String = "<no descriptions available>"
         protected set
 
     public final override var permission: Permission = super.permission

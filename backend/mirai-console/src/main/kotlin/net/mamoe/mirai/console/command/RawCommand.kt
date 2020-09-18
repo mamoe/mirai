@@ -35,8 +35,10 @@ public abstract class RawCommand(
      * @see CommandOwner
      */
     public override val owner: CommandOwner,
-    /** 指令名. 需要至少有一个元素. 所有元素都不能带有空格 */
-    public override vararg val names: String,
+    /** 主指令名. */
+    public override val primaryName: String,
+    /** 次要指令名. */
+    public override vararg val secondaryNames: String,
     /** 用法说明, 用于发送给用户 */
     public override val usage: String = "<no usages given>",
     /** 指令描述, 用于显示在 [BuiltInCommands.Help] */

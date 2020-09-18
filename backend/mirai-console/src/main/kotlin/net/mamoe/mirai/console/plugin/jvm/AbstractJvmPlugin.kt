@@ -37,7 +37,7 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
 
     public final override val loader: JvmPluginLoader get() = super<JvmPluginInternal>.loader
 
-    public final override fun permissionId(name: String): PermissionId = PermissionId(description.id, "command.$name")
+    public final override fun permissionId(name: String): PermissionId = PermissionId(description.id, name)
 
     /**
      * 重载 [PluginData]
