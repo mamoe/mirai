@@ -31,6 +31,12 @@ val JVM_PLUGIN_DESCRIPTION_FQ_NAME = FqName("net.mamoe.mirai.console.plugin.jvm.
 val SIMPLE_JVM_PLUGIN_DESCRIPTION_FQ_NAME = FqName("net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription")
 
 ///////////////////////////////////////////////////////////////////////////
+// PluginData
+///////////////////////////////////////////////////////////////////////////
+
+val PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME = FqName("net.mamoe.mirai.console.data.value")
+
+///////////////////////////////////////////////////////////////////////////
 // Resolve
 ///////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +50,7 @@ enum class ResolveContextKind {
     PLUGIN_NAME,
     PLUGIN_VERSION,
 
+    RESTRICTED_NO_ARG_CONSTRUCTOR
     ;
 
     companion object {

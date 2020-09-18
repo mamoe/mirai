@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.intellij
 
+import net.mamoe.mirai.console.intellij.diagnostics.PluginDataValuesChecker
 import net.mamoe.mirai.console.intellij.diagnostics.PluginDescriptionChecker
 import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.container.useInstance
@@ -22,5 +23,6 @@ class IDEContainerContributor : StorageComponentContainerContributor {
         moduleDescriptor: ModuleDescriptor,
     ) {
         container.useInstance(PluginDescriptionChecker())
+        container.useInstance(PluginDataValuesChecker())
     }
 }

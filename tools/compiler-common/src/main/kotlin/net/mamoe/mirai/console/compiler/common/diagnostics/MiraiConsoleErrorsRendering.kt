@@ -10,6 +10,7 @@
 package net.mamoe.mirai.console.compiler.common.diagnostics
 
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
 import org.jetbrains.kotlin.diagnostics.rendering.DiagnosticFactoryToRendererMap
 import org.jetbrains.kotlin.diagnostics.rendering.Renderers
@@ -19,6 +20,12 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
         put(
             ILLEGAL_PLUGIN_DESCRIPTION,
             "{0}",
+            Renderers.STRING
+        )
+
+        put(
+            NOT_CONSTRUCTABLE_TYPE,
+            "类型 {0} 无法通过反射直接构造, 需要提供默认值.",
             Renderers.STRING
         )
     }

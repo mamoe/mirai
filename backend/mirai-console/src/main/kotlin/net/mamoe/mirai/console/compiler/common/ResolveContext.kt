@@ -12,16 +12,17 @@
 package net.mamoe.mirai.console.compiler.common
 
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import kotlin.annotation.AnnotationTarget.*
 
 /**
  * 标记一个参数的语境类型, 用于帮助编译器和 IntelliJ 插件进行语境推断.
  */
 @ConsoleExperimentalApi
 @Target(
-    AnnotationTarget.VALUE_PARAMETER,
-    AnnotationTarget.PROPERTY,
-    AnnotationTarget.FIELD,
-    //AnnotationTarget.EXPRESSION
+    VALUE_PARAMETER,
+    PROPERTY, FIELD,
+    FUNCTION,
+    TYPE, TYPE_PARAMETER
 )
 @Retention(AnnotationRetention.BINARY)
 public annotation class ResolveContext(
@@ -34,5 +35,10 @@ public annotation class ResolveContext(
         PLUGIN_ID,
         PLUGIN_NAME,
         PLUGIN_VERSION,
+
+        /**
+         * Custom serializers allowed
+         */
+        RESTRICTED_NO_ARG_CONSTRUCTOR
     }
 }

@@ -18,9 +18,13 @@
 package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.KSerializer
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_NO_ARG_CONSTRUCTOR
 import net.mamoe.mirai.console.data.java.JAutoSavePluginData
 import net.mamoe.mirai.console.internal.data.*
+import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
+import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
@@ -98,7 +102,7 @@ import kotlin.reflect.full.findAnnotation
  *
  * 要查看详细的解释，请查看 [docs/PluginData.md](https://github.com/mamoe/mirai-console/blob/master/docs/PluginData.md)
  *
- * @see JvmPlugin.reloadPluginData 通过 [JvmPlugin] 获取指定 [PluginData] 实例.
+ * @see AbstractJvmPlugin.reloadPluginData 通过 [JvmPlugin] 获取指定 [PluginData] 实例.
  * @see PluginDataStorage [PluginData] 存储仓库
  * @see PluginDataExtensions 相关 [SerializerAwareValue] 映射函数
  */
@@ -321,6 +325,7 @@ public inline fun <reified T> PluginData.value(
  * 通过具体化类型创建一个 [SerializerAwareValue].
  * @see valueFromKType 查看更多实现信息
  */
+@ResolveContext(RESTRICTED_NO_ARG_CONSTRUCTOR)
 @LowPriorityInOverloadResolution
 public inline fun <reified T> PluginData.value(apply: T.() -> Unit = {}): SerializerAwareValue<T> =
     valueImpl<T>(typeOf0<T>(), T::class).also { it.value.apply() }

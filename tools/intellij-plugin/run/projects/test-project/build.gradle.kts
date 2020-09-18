@@ -22,7 +22,7 @@ dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
 
     val core = "1.3.0"
-    val console = "1.0-RC-dev-2"
+    val console = "1.0-RC-dev-3"
 
     compileOnly("net.mamoe:mirai-console:$console")
     compileOnly("net.mamoe:mirai-core:$core")

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2020 Mamoe Technologies and contributors.
+ *
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ * https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
+package net.mamoe.mirai.console.intellij.diagnostics
+
+import com.intellij.psi.PsiElement
+import net.mamoe.mirai.console.compiler.common.castOrNull
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
+import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
+import net.mamoe.mirai.console.compiler.common.resolve.hasNoArgConstructor
+import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
+import net.mamoe.mirai.console.intellij.resolve.resolveAllCallsWithElement
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.idea.inspections.collections.isCalling
+import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
+import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
+import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
+import org.jetbrains.kotlin.types.SimpleType
+
+
+class PluginDataValuesChecker : DeclarationChecker {
+    override fun check(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) {
+        val bindingContext = context.bindingContext
+        declaration.resolveAllCallsWithElement(bindingContext)
+            .filter { (call) -> call.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME) }
+            .filter { (call) ->
+                call.resultingDescriptor.resolveContextKind == ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR
+            }.flatMap { (call, element) ->
+                call.typeArguments.entries.associateWith { element }.asSequence()
+            }.filter { (e, _) ->
+                val (p, t) = e
+                (p.isReified || p.resolveContextKind == ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR)
+                    && t is SimpleType
+            }.forEach { (e, callExpr) ->
+                val (_, t) = e
+                val classDescriptor = t.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>()
+
+                fun getInspectionTarget(): PsiElement {
+                    return callExpr.typeArguments.find { it.references.firstOrNull()?.canonicalText == t.fqName?.toString() } ?: callExpr
+                }
+
+                fun reportInspection() {
+                    context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
+                        getInspectionTarget(),
+                        t.fqName?.asString().toString())
+                    )
+                }
+
+                when {
+                    classDescriptor == null -> reportInspection()
+                    !classDescriptor.hasNoArgConstructor() -> reportInspection()
+                }
+            }
+    }
+}

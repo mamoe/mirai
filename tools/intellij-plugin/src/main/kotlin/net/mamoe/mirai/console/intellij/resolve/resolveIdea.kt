@@ -11,10 +11,11 @@ package net.mamoe.mirai.console.intellij.resolve
 
 import com.intellij.psi.PsiDeclarationStatement
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiFile
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.resolve.COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.resolve.SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.allChildrenWithSelf
+import net.mamoe.mirai.console.compiler.common.resolve.findParent
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
@@ -67,15 +68,7 @@ fun KtConstructorCalleeExpression.getTypeAsUserType(): KtUserType? {
     return null
 }
 
-inline fun <reified E> PsiElement.findParent(): E? = this.parents.filterIsInstance<E>().firstOrNull()
-
 val KtClassOrObject.allSuperNames: Sequence<FqName> get() = allSuperTypes.mapNotNull { it.getKotlinFqName() }
-
-val PsiElement.parents: Sequence<PsiElement>
-    get() {
-        val seed = if (this is PsiFile) null else parent
-        return generateSequence(seed) { if (it is PsiFile) null else it.parent }
-    }
 
 fun getElementForLineMark(callElement: PsiElement): PsiElement =
     when (callElement) {
@@ -92,18 +85,21 @@ val KtAnnotationEntry.annotationClass: KtClass?
 fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
     this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
 
-val PsiElement.allChildrenWithSelf: Sequence<PsiElement>
-    get() = sequence {
-        yield(this@allChildrenWithSelf)
-        for (child in children) {
-            yieldAll(child.allChildrenWithSelf)
-        }
-    }
-
 fun KtDeclaration.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
     return allChildrenWithSelf
         .filterIsInstance<KtCallExpression>()
         .mapNotNull { it.calleeExpression?.getResolvedCallOrResolveToCall(bindingContext) }
+}
+
+fun KtDeclaration.resolveAllCallsWithElement(bindingContext: BindingContext): Sequence<Pair<ResolvedCall<out CallableDescriptor>, KtCallExpression>> {
+    return allChildrenWithSelf
+        .filterIsInstance<KtCallExpression>()
+        .mapNotNull {
+            val callee = it.calleeExpression ?: return@mapNotNull null
+            val resolved = callee.getResolvedCallOrResolveToCall(bindingContext) ?: return@mapNotNull null
+
+            resolved to it
+        }
 }
 
 fun ResolvedCall<*>.valueParametersWithArguments(): List<Pair<ValueParameterDescriptor, ValueArgument>> {

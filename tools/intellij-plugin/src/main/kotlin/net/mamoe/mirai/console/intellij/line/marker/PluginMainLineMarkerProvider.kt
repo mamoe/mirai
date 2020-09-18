@@ -17,10 +17,10 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
 import com.intellij.util.castSafelyTo
 import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.parents
 import net.mamoe.mirai.console.intellij.Icons
 import net.mamoe.mirai.console.intellij.resolve.allSuperNames
 import net.mamoe.mirai.console.intellij.resolve.getElementForLineMark
-import net.mamoe.mirai.console.intellij.resolve.parents
 import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtConstructor
