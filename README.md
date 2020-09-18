@@ -28,12 +28,11 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 前端:
 
-- `mirai-console-pure`: console 的轻量命令行前端.
+- `mirai-console-terminal`: console 的 Unix 终端界面前端.
 - `mirai-console-graphical`: console 的 JavaFX 图形化界面前端. (开发中)
-- `mirai-console-terminal`: console 的 Unix 终端界面前端. (开发中)
 
 
-**注意：`mirai-console` 后端和 pure 前端正在进行完全的重构, 所有 API 都不具有稳定性**
+**注意：`mirai-console` 后端和 terminal 前端正在进行完全的重构, 所有 API 都不具有稳定性**
 
 ### 使用
 
@@ -56,7 +55,7 @@ dependencies {
   implementation("net.mamoe:mirai-core:$CORE_VERSION") // mirai-core 的 API
   implementation("net.mamoe:mirai-console:$CONSOLE_VERSION") // 后端
   
-  testImplementation("net.mamoe:mirai-console-pure:$CONSOLE_VERSION") // 前端, 用于启动测试
+  testImplementation("net.mamoe:mirai-console-terminal:$CONSOLE_VERSION") // 前端, 用于启动测试
 }
 ```
 

@@ -66,10 +66,10 @@ ext.apply {
     this.set("shadowJar", x)
 }
 
-version = Versions.consolePure
+version = Versions.consoleTerminal
 
-description = "Console Pure CLI frontend for mirai"
+description = "Console Terminal CLI frontend for mirai"
 
-setupPublishing("mirai-console-pure", bintrayPkgName = "mirai-console-pure")
+setupPublishing("mirai-console-terminal", bintrayPkgName = "mirai-console-terminal")
 
 // endregion

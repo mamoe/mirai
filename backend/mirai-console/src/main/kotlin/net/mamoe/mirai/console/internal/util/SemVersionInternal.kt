@@ -184,8 +184,8 @@ internal object SemVersionInternal {
         identifier0 = identifier0.substring(ignoredSize)
         identifier1 = identifier1.substring(ignoredSize)
         // Multi-chunk comparing
-        val chunks0 = identifier0.split('-', '.', '_')
-        val chunks1 = identifier1.split('-', '.', '_')
+        val chunks0 = identifier0.split('-', '.')
+        val chunks1 = identifier1.split('-', '.')
         chunkLoop@ for (index in 0 until (max(chunks0.size, chunks1.size))) {
             val value0 = chunks0.getOrNull(index)
             val value1 = chunks1.getOrNull(index)

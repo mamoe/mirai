@@ -18,6 +18,7 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
@@ -146,6 +147,10 @@ public interface MiraiConsole : CoroutineScope {
                 else -> null!!
             }
         }
+
+        @ConsoleExperimentalApi("This is a low-level API and might be removed in the future.")
+        public val isActive: Boolean
+            get() = job.isActive
     }
 }
 

@@ -23,7 +23,7 @@ internal class TestSemVersion {
         fun String.sem(): SemVersion = SemVersion.parse(this)
         assert("1.0".sem() < "1.0.1".sem())
         assert("1.0.0".sem() == "1.0".sem())
-        assert("1.1".sem() > "1.0.0.1".sem())
+        assert("1.1".sem() > "1.0.0".sem())
         assert("1.0-M4".sem() < "1.0-M5".sem())
         assert("1.0-M5-dev-7".sem() < "1.0-M5-dev-15".sem())
         assert("1.0-M5-dev-79".sem() < "1.0-M5-dev-7001".sem())
@@ -54,7 +54,6 @@ internal class TestSemVersion {
         }
         SemVersion.parseRangeRequirement("1.0")
             .assert("1.0").assert("1.0.0")
-            .assert("1.0.0.0")
             .assertFalse("1.1.0").assertFalse("2.0.0")
         SemVersion.parseRangeRequirement("1.x")
             .assert("1.0").assert("1.1")
@@ -62,12 +61,12 @@ internal class TestSemVersion {
             .assertFalse("2.33")
         SemVersion.parseRangeRequirement("2.0 || 1.2.x")
             .assert("2.0").assert("2.0.0")
-            .assertFalse("2.1").assertFalse("2.0.0.1")
+            .assertFalse("2.1")
             .assert("1.2.5").assert("1.2.0").assertFalse("1.2")
             .assertFalse("1.0.0")
-        SemVersion.parseRangeRequirement("1.0.0 - 114.514.1919.810")
+        SemVersion.parseRangeRequirement("1.0.0 - 114.514.1919")
             .assert("1.0.0")
-            .assert("114.514").assert("114.514.1919.810")
+            .assert("114.514").assert("114.514.1919")
             .assertFalse("0.0.1")
             .assertFalse("4444.4444")
         SemVersion.parseRangeRequirement("[1.0.0, 19190.0]")
@@ -75,7 +74,7 @@ internal class TestSemVersion {
             .assert("19190.0").assertFalse("19198.10")
         SemVersion.parseRangeRequirement(" >= 1.0.0")
             .assert("1.0.0")
-            .assert("114.514.1919.810")
+            .assert("114.514.1919")
             .assertFalse("0.0.0")
             .assertFalse("0.98774587")
         SemVersion.parseRangeRequirement("> 1.0.0")
@@ -85,21 +84,21 @@ internal class TestSemVersion {
 
     }
 
+    private fun String.check() {
+        val sem = SemVersion.parse(this)
+        assert(this == sem.toString()) { "$this != $sem" }
+    }
+
+    private fun String.checkInvalid() {
+        kotlin.runCatching { SemVersion.parse(this) }
+            .onSuccess { assert(false) { "$this not a invalid sem-version" } }
+    }
+
     @Test
     internal fun testSemVersionParsing() {
-        fun String.check() {
-            val sem = SemVersion.parse(this)
-            assert(this == sem.toString()) { "$this != $sem" }
-        }
-
-        fun String.checkInvalid() {
-            kotlin.runCatching { SemVersion.parse(this) }
-                .onSuccess { assert(false) { "$this not a invalid sem-version" } }
-                .onFailure { println("$this - $it") }
-        }
         "0.0".check()
         "1.0.0".check()
-        "1.2.3.4.5.6.7.8".check()
+        "1.2.3.4.5.6.7.8".checkInvalid()
         "5555.0-A".check()
         "5555.0-A+METADATA".check()
         "5555.0+METADATA".check()
@@ -112,5 +111,82 @@ internal class TestSemVersion {
         "1.9+".checkInvalid()
         "5.1+68-7".check()
         "5.1+68-".check()
+    }
+    @Test
+    internal fun testSemVersionOfficial(){
+        """
+            1.0-RC
+            0.0.4
+            1.2.3
+            10.20.30
+            1.1.2-prerelease+meta
+            1.1.2+meta
+            1.1.2+meta-valid
+            1.0.0-alpha
+            1.0.0-beta
+            1.0.0-alpha.beta
+            1.0.0-alpha.beta.1
+            1.0.0-alpha.1
+            1.0.0-alpha0.valid
+            1.0.0-alpha.0valid
+            1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay
+            1.0.0-rc.1+build.1
+            2.0.0-rc.1+build.123
+            1.2.3-beta
+            10.2.3-DEV-SNAPSHOT
+            1.2.3-SNAPSHOT-123
+            1.0.0
+            2.0.0
+            1.1.7
+            2.0.0+build.1848
+            2.0.1-alpha.1227
+            1.0.0-alpha+beta
+            1.2.3----RC-SNAPSHOT.12.9.1--.12+788
+            1.2.3----R-S.12.9.1--.12+meta
+            1.2.3----RC-SNAPSHOT.12.9.1--.12
+            1.0.0+0.build.1-rc.10000aaa-kk-0.1
+            1.0.0-0A.is.legal
+        """.trimIndent().split('\n').asSequence()
+            .filter { it.isNotBlank() }.map { it.trim() }.forEach { it.check() }
+        """
+            1
+            1.2.3-0123
+            1.2.3-0123.0123
+            1.1.2+.123
+            +invalid
+            -invalid
+            -invalid+invalid
+            -invalid.01
+            alpha
+            alpha.beta
+            alpha.beta.1
+            alpha.1
+            alpha+beta
+            alpha_beta
+            alpha.
+            alpha..
+            beta
+            1.0.0-alpha_beta
+            -alpha.
+            1.0.0-alpha..
+            1.0.0-alpha..1
+            1.0.0-alpha...1
+            1.0.0-alpha....1
+            1.0.0-alpha.....1
+            1.0.0-alpha......1
+            1.0.0-alpha.......1
+            01.1.1
+            1.01.1
+            1.1.01
+            1.2.3.DEV
+            1.2.31.2.3----RC-SNAPSHOT.12.09.1--..12+788
+            1.2.31.2.3-RC
+            -1.0.3-gamma+b7718
+            +justmeta
+            9.8.7+meta+meta
+            9.8.7-whatever+meta+meta
+            99999999999999999999999.999999999999999999.99999999999999999----RC-SNAPSHOT.12.09.1--------------------------------..12
+        """.trimIndent().split('\n').asSequence()
+            .filter { it.isNotBlank() }.map { it.trim() }.forEach { it.checkInvalid() }
     }
 }
