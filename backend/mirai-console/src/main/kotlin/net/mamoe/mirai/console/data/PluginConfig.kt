@@ -37,4 +37,10 @@ import net.mamoe.mirai.console.data.java.JAutoSavePluginConfig
  *
  * @see PluginData
  */
-public interface PluginConfig : PluginData
+public interface PluginConfig : PluginData {
+    /**
+     * 警告: [PluginConfig] 的实现处于实验性阶段.
+     *
+     * 自主实现 [PluginConfig] 将得不到兼容性保障. 请仅考虑使用 [AutoSavePluginConfig]
+     */
+}
