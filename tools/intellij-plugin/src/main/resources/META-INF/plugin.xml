@@ -26,7 +26,7 @@
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <storageComponentContainerContributor
                 implementation="net.mamoe.mirai.console.intellij.IDEContainerContributor"/>
-        <!-- <quickFixContributor implementation="org.jetbrains.kotlinx.serialization.idea.quickfixes.SerializationQuickFixContributor"/> -->
+        <quickFixContributor implementation="net.mamoe.mirai.console.intellij.QuickFixRegistrar"/>
     </extensions>
 
     <idea-version since-build="193.*" until-build="203.*"/>

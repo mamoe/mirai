@@ -56,8 +56,8 @@ class PluginDataValuesChecker : DeclarationChecker {
                 if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME)) // TODO: 2020/9/18 external serializers
                     return@forEach context.report(MiraiConsoleErrors.UNSERIALIZABLE_TYPE.on(
                         inspectionTarget,
-                        type.fqName?.asString().toString())
-                    )
+                        classDescriptor
+                    ))
             }
     }
 }

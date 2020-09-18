@@ -31,7 +31,7 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
         put(
             UNSERIALIZABLE_TYPE,
             "类型 ''{0}'' 无法被自动序列化, 需要添加序列化器",
-            Renderers.STRING,
+            Renderers.FQ_NAMES_IN_TYPES,
         )
 
         put(
