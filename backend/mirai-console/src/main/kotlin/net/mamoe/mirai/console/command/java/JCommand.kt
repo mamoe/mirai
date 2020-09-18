@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.SingleMessage
 
 /**
  * 为 Java 用户添加协程帮助的 [Command].
@@ -33,9 +32,9 @@ public interface JCommand : Command {
     /**
      * 在指令被执行时调用.
      *
-     * @param args 指令参数. 数组元素类型可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
+     * @param args 精确的指令参数. [MessageChain] 每个元素代表一个精确的参数.
      *
      * @see CommandManager.executeCommand 查看更多信息
      */
-    public fun onCommand(sender: CommandSender, args: MessageChain) // overrides bridge
+    public fun onCommand(sender: CommandSender, args: MessageChain) // overrides blocking bridge
 }

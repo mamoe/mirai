@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.permission.Permission
  * Java 实现:
  * ```java
  * public final class MySimpleCommand extends JSimpleCommand {
+ *     public static final MySimpleCommand INSTANCE = new MySimpleCommand();
  *     private MySimpleCommand() {
  *         super(MyPlugin.INSTANCE, "tell")
  *         // 可选设置如下属性

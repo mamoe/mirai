@@ -157,7 +157,7 @@ public interface CommandManager {
     public companion object INSTANCE : CommandManager by CommandManagerImpl {
         // TODO: 2020/8/20 https://youtrack.jetbrains.com/issue/KT-41191
 
-        override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.run { registeredCommands }
+        override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.run { this@registeredCommands.registeredCommands }
         override fun CommandOwner.unregisterAllCommands(): Unit = CommandManagerImpl.run { unregisterAllCommands() }
         override fun Command.register(override: Boolean): Boolean = CommandManagerImpl.run { register(override) }
         override fun Command.findDuplicate(): Command? = CommandManagerImpl.run { findDuplicate() }

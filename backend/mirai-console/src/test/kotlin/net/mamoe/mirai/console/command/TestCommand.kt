@@ -79,7 +79,7 @@ internal class TestCommand {
 
             assertEquals(1, ConsoleCommandOwner.registeredCommands.size)
 
-            assertEquals(1, CommandManagerImpl.registeredCommands.size)
+            assertEquals(1, CommandManagerImpl._registeredCommands.size)
             assertEquals(2, CommandManagerImpl.requiredPrefixCommandMap.size)
         } finally {
             TestCompositeCommand.unregister()

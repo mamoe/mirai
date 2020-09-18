@@ -24,7 +24,7 @@ import net.mamoe.mirai.console.permission.Permission
  * public final class MyCompositeCommand extends CompositeCommand {
  *     public static final MyCompositeCommand INSTANCE = new MyCompositeCommand();
  *
- *     public MyCompositeCommand() {
+ *     private MyCompositeCommand() {
  *         super(MyPluginMain.INSTANCE, "manage") // "manage" 是主指令名
  *     }
  *

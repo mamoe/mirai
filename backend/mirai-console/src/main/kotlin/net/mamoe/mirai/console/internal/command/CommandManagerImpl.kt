@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
@@ -30,8 +31,9 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
         MiraiConsole.createLogger("command")
     }
 
+    @Suppress("ObjectPropertyName")
     @JvmField
-    internal val registeredCommands: MutableList<Command> = mutableListOf()
+    internal val _registeredCommands: MutableList<Command> = mutableListOf()
 
     @JvmField
     internal val requiredPrefixCommandMap: MutableMap<String, Command> = mutableMapOf()
@@ -88,8 +90,8 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     ///// IMPL
 
 
-    override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.registeredCommands.filter { it.owner == this }
-    override val allRegisteredCommands: List<Command> get() = registeredCommands.toList() // copy
+    override val CommandOwner.registeredCommands: List<Command> get() = _registeredCommands.filter { it.owner == this }
+    override val allRegisteredCommands: List<Command> get() = _registeredCommands.toList() // copy
     override val commandPrefix: String get() = "/"
     override fun CommandOwner.unregisterAllCommands() {
         for (registeredCommand in registeredCommands) {
@@ -99,24 +101,28 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
 
     override fun Command.register(override: Boolean): Boolean {
         if (this is CompositeCommand) this.subCommands // init lazy
-        this.permission // init lazy
-        this.secondaryNames // init lazy
-        this.description // init lazy
-        this.usage // init lazy
+        kotlin.runCatching {
+            this.permission // init lazy
+            this.secondaryNames // init lazy
+            this.description // init lazy
+            this.usage // init lazy
+        }.onFailure {
+            throw IllegalStateException("Failed to init command ${this@register}.", it)
+        }
 
         modifyLock.withLock {
             if (!override) {
                 if (findDuplicate() != null) return false
             }
-            registeredCommands.add(this@register)
+            _registeredCommands.add(this@register)
             if (this.prefixOptional) {
-                for (name in this.secondaryNames) {
+                for (name in this.allNames) {
                     val lowerCaseName = name.toLowerCase()
                     optionalPrefixCommandMap[lowerCaseName] = this
                     requiredPrefixCommandMap[lowerCaseName] = this
                 }
             } else {
-                for (name in this.secondaryNames) {
+                for (name in this.allNames) {
                     val lowerCaseName = name.toLowerCase()
                     optionalPrefixCommandMap.remove(lowerCaseName) // ensure resolution consistency
                     requiredPrefixCommandMap[lowerCaseName] = this
@@ -127,21 +133,21 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     }
 
     override fun Command.findDuplicate(): Command? =
-        registeredCommands.firstOrNull { it.secondaryNames intersectsIgnoringCase this.secondaryNames }
+        _registeredCommands.firstOrNull { it.allNames intersectsIgnoringCase this.allNames }
 
     override fun Command.unregister(): Boolean = modifyLock.withLock {
         if (this.prefixOptional) {
-            this.secondaryNames.forEach {
+            this.allNames.forEach {
                 optionalPrefixCommandMap.remove(it)
             }
         }
-        this.secondaryNames.forEach {
+        this.allNames.forEach {
             requiredPrefixCommandMap.remove(it)
         }
-        registeredCommands.remove(this)
+        _registeredCommands.remove(this)
     }
 
-    override fun Command.isRegistered(): Boolean = this in registeredCommands
+    override fun Command.isRegistered(): Boolean = this in _registeredCommands
 
     override suspend fun Command.execute(
         sender: CommandSender,
