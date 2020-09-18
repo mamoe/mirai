@@ -104,6 +104,7 @@ public interface Command {
         /**
          * 检查指令名的合法性. 在非法时抛出 [IllegalArgumentException]
          */
+        @JvmStatic
         @Throws(IllegalArgumentException::class)
         public fun checkCommandName(@ResolveContext(COMMAND_NAME) name: String) {
             when {

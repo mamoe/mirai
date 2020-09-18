@@ -32,6 +32,10 @@ public annotation class ResolveContext(
      * 元素数量可能在任意时间被改动
      */
     public enum class Kind {
+        ///////////////////////////////////////////////////////////////////////////
+        // ConstantKind
+        ///////////////////////////////////////////////////////////////////////////
+
         PLUGIN_ID,
         PLUGIN_NAME,
         PLUGIN_VERSION,
@@ -40,10 +44,11 @@ public annotation class ResolveContext(
 
         PERMISSION_NAMESPACE,
         PERMISSION_NAME,
+        PERMISSION_ID, // for parseFromString
 
         /**
          * Custom serializers allowed
          */
-        RESTRICTED_NO_ARG_CONSTRUCTOR
+        RESTRICTED_NO_ARG_CONSTRUCTOR,
     }
 }

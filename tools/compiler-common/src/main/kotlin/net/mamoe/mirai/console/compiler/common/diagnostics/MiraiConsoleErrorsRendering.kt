@@ -19,19 +19,47 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
         put(
             ILLEGAL_PLUGIN_DESCRIPTION,
             "{0}",
-            Renderers.STRING
+            Renderers.STRING,
         )
 
         put(
             NOT_CONSTRUCTABLE_TYPE,
-            "类型 {0} 无法通过反射直接构造, 需要提供默认值.",
-            Renderers.STRING
+            "类型 ''{0}'' 无法通过反射直接构造, 需要提供默认值.",
+            Renderers.STRING,
         )
 
         put(
             UNSERIALIZABLE_TYPE,
-            "类型 {0} 无法被自动序列化, 需要添加序列化器",
-            Renderers.STRING
+            "类型 ''{0}'' 无法被自动序列化, 需要添加序列化器",
+            Renderers.STRING,
+        )
+
+        put(
+            ILLEGAL_COMMAND_NAME,
+            "指令名 ''{0}'' 无效: {1}",
+            Renderers.STRING,
+            Renderers.STRING,
+        )
+
+        put(
+            ILLEGAL_PERMISSION_NAME,
+            "权限名 ''{0}'' 无效: {1}",
+            Renderers.STRING,
+            Renderers.STRING,
+        )
+
+        put(
+            ILLEGAL_PERMISSION_ID,
+            "权限 Id ''{0}'' 无效: {1}",
+            Renderers.STRING,
+            Renderers.STRING,
+        )
+
+        put(
+            ILLEGAL_PERMISSION_NAMESPACE,
+            "权限命名空间 ''{0}'' 无效: {1}",
+            Renderers.STRING,
+            Renderers.STRING,
         )
     }
 

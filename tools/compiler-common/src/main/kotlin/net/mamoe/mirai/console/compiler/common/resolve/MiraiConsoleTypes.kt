@@ -50,11 +50,17 @@ enum class ResolveContextKind {
     PLUGIN_NAME,
     PLUGIN_VERSION,
 
+    COMMAND_NAME,
+
+    PERMISSION_NAMESPACE,
+    PERMISSION_NAME,
+    PERMISSION_ID,
+
     RESTRICTED_NO_ARG_CONSTRUCTOR
     ;
 
     companion object {
-        fun valueOfOrNull(string: String): ResolveContextKind? = ResolveContextKind.values().find { it.name == string }
+        fun valueOfOrNull(string: String): ResolveContextKind? = values().find { it.name == string }
     }
 }
 

@@ -10,7 +10,7 @@
 package net.mamoe.mirai.console.intellij.diagnostics
 
 import com.intellij.psi.PsiElement
-import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.*
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
@@ -31,7 +31,7 @@ class ContextualParametersChecker : DeclarationChecker {
         private val ID_REGEX: Regex = Regex("""([a-zA-Z]+(?:\.[a-zA-Z0-9]+)*)\.([a-zA-Z]+(?:-[a-zA-Z0-9]+)*)""")
         private val FORBIDDEN_ID_NAMES: Array<String> = arrayOf("main", "console", "plugin", "config", "data")
 
-        private const val syntax = """类似于 "net.mamoe.mirai.example-plugin", 其中 "net.mamoe.mirai" 为 groupId, "example-plugin" 为插件名. """
+        private const val syntax = """类似于 "net.mamoe.mirai.example-plugin", 其中 "net.mamoe.mirai" 为 groupId, "example-plugin" 为插件名"""
 
         /**
          * https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
@@ -40,36 +40,73 @@ class ContextualParametersChecker : DeclarationChecker {
             Regex("""^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?${'$'}""")
 
         fun checkPluginId(inspectionTarget: PsiElement, value: String): Diagnostic? {
-            if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 不能为空. \n插件 Id$syntax")
-            if (value.none { it == '.' }) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget,
+            if (value.isBlank()) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 不能为空. \n插件 Id$syntax")
+            if (value.none { it == '.' }) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget,
                 "插件 Id '$value' 无效. 插件 Id 必须同时包含 groupId 和插件名称. $syntax")
 
             val lowercaseId = value.toLowerCase()
 
             if (ID_REGEX.matchEntire(value) == null) {
-                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 无效. 正确的插件 Id 应该满足正则表达式 '${ID_REGEX.pattern}', \n$syntax")
+                return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 无效. 正确的插件 Id 应该满足正则表达式 '${ID_REGEX.pattern}', \n$syntax")
             }
 
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseId }?.let { illegal ->
-                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件 Id. 确保插件 Id 不完全是这个名称.")
+                return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件 Id. 确保插件 Id 不完全是这个名称")
             }
             return null
         }
 
         fun checkPluginName(inspectionTarget: PsiElement, value: String): Diagnostic? {
-            if (value.isBlank()) return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件名不能为空.")
+            if (value.isBlank()) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件名不能为空")
             val lowercaseName = value.toLowerCase()
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
-                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件名. 确保插件名不完全是这个名称.")
+                return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "'$illegal' 不允许作为插件名. 确保插件名不完全是这个名称")
             }
             return null
         }
 
         fun checkPluginVersion(inspectionTarget: PsiElement, value: String): Diagnostic? {
             if (!SEMANTIC_VERSIONING_REGEX.matches(value)) {
-                return MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "版本号无效: '$value'. \nhttps://semver.org/lang/zh-CN/")
+                return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "版本号无效: '$value'. \nhttps://semver.org/lang/zh-CN/")
             }
             return null
+        }
+
+        fun checkCommandName(inspectionTarget: PsiElement, value: String): Diagnostic? {
+            return when {
+                value.isBlank() -> ILLEGAL_COMMAND_NAME.on(inspectionTarget, value, "指令名不能为空")
+                value.any { it.isWhitespace() } -> ILLEGAL_COMMAND_NAME.on(inspectionTarget, value, "暂时不允许指令名中存在空格")
+                value.contains(':') -> ILLEGAL_COMMAND_NAME.on(inspectionTarget, value, "指令名不允许包含 ':'")
+                value.contains('.') -> ILLEGAL_COMMAND_NAME.on(inspectionTarget, value, "指令名不允许包含 '.'")
+                else -> null
+            }
+        }
+
+        fun checkPermissionNamespace(inspectionTarget: PsiElement, value: String): Diagnostic? {
+            return when {
+                value.isBlank() -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "权限命名空间不能为空")
+                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "暂时不允许权限命名空间中存在空格")
+                value.contains(':') -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "权限命名空间不允许包含 ':'")
+                else -> null
+            }
+        }
+
+        fun checkPermissionName(inspectionTarget: PsiElement, value: String): Diagnostic? {
+            return when {
+                value.isBlank() -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "权限名称不能为空")
+                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "暂时不允许权限名称中存在空格")
+                value.contains(':') -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "权限名称不允许包含 ':'")
+                else -> null
+            }
+        }
+
+        fun checkPermissionId(inspectionTarget: PsiElement, value: String): Diagnostic? {
+            return when {
+                value.isBlank() -> ILLEGAL_PERMISSION_ID.on(inspectionTarget, value, "权限 Id 不能为空")
+                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_ID.on(inspectionTarget, value, "暂时不允许权限 Id 中存在空格")
+                value.count { it == ':' } != 1 -> ILLEGAL_PERMISSION_ID.on(inspectionTarget, value, "权限 Id 必须为 \"命名空间:名称\". 且命名空间和名称均不能包含 ':'")
+                else -> null
+            }
         }
     }
 
@@ -78,6 +115,10 @@ class ContextualParametersChecker : DeclarationChecker {
             put(ResolveContextKind.PLUGIN_NAME, ::checkPluginName)
             put(ResolveContextKind.PLUGIN_ID, ::checkPluginId)
             put(ResolveContextKind.PLUGIN_VERSION, ::checkPluginVersion)
+            put(ResolveContextKind.COMMAND_NAME, ::checkCommandName)
+            put(ResolveContextKind.PERMISSION_NAME, ::checkPermissionName)
+            put(ResolveContextKind.PERMISSION_NAMESPACE, ::checkPermissionNamespace)
+            put(ResolveContextKind.PERMISSION_ID, ::checkPermissionId)
         }
 
     override fun check(

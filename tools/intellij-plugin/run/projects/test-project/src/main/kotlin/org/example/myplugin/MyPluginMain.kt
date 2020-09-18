@@ -3,6 +3,8 @@ package org.example.myplugin
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.value
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 
@@ -17,6 +19,11 @@ object MyPluginMain : KotlinPlugin(
         id("")
     }
 ) {
+    override fun onEnable() {
+        super.onEnable()
+        PermissionService.INSTANCE.register(permissionId("dvs"), "ok")
+    }
+
     fun test() {
 
     }
