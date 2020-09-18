@@ -21,14 +21,16 @@ import kotlinx.serialization.KSerializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_NO_ARG_CONSTRUCTOR
 import net.mamoe.mirai.console.data.java.JAutoSavePluginData
-import net.mamoe.mirai.console.internal.data.*
+import net.mamoe.mirai.console.internal.data.createInstanceSmart
+import net.mamoe.mirai.console.internal.data.typeOf0
+import net.mamoe.mirai.console.internal.data.valueFromKTypeImpl
+import net.mamoe.mirai.console.internal.data.valueImpl
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.reloadPluginData
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
 import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
 
@@ -108,16 +110,6 @@ import kotlin.reflect.full.findAnnotation
  */
 public interface PluginData {
     /**
-     * 添加了追踪的 [ValueNode] 列表 (即使用 `by value()` 委托的属性), 即通过 `by value` 初始化的属性列表.
-     *
-     * 他们的修改会被跟踪, 并触发 [onValueChanged].
-     *
-     * @see provideDelegate
-     * @see track
-     */
-    public val valueNodes: MutableList<ValueNode<*>>
-
-    /**
      * 这个 [PluginData] 保存时使用的名称. 默认通过 [ValueName] 获取, 否则使用 [类全名][KClass.qualifiedName] (即 [Class.getCanonicalName])
      */
     @ConsoleExperimentalApi
@@ -129,56 +121,13 @@ public interface PluginData {
                 ?: throw IllegalArgumentException("Cannot find a serial name for ${this::class}")
         }
 
-    /**
-     * 由 [provideDelegate] 创建, 来自一个通过 `by value` 初始化的属性节点.
-     */
     @ConsoleExperimentalApi
-    public data class ValueNode<T>(
-        /**
-         * 节点名称.
-         *
-         * 如果属性带有 [ValueName], 则使用 [ValueName.value],
-         * 否则使用 [属性名称][KProperty.name]
-         */
-        val valueName: String,
-        /**
-         * 属性值代理
-         */
-        val value: Value<out T>,
-        /**
-         * 注解列表
-         */
-        val annotations: List<Annotation>,
-        /**
-         * 属性值更新器
-         */
-        val updaterSerializer: KSerializer<Unit>
-    )
-
-    /**
-     * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
-     */
-    public fun <T : SerializerAwareValue<*>> T.track(
-        /**
-         * 值名称.
-         *
-         * 如果属性带有 [ValueName], 则使用 [ValueName.value],
-         * 否则使用 [属性名称][KProperty.name]
-         *
-         * @see [ValueNode.value]
-         */
-        valueName: String,
-        annotations: List<Annotation>
-    ): T
-
-    /**
-     * 所有 [valueNodes] 更新和保存序列化器. 仅供内部使用
-     */
     public val updaterSerializer: KSerializer<Unit>
 
     /**
      * 当所属于这个 [PluginData] 的 [Value] 的 [值][Value.value] 被修改时被调用.
      */
+    @ConsoleExperimentalApi
     public fun onValueChanged(value: Value<*>)
 
     /**
@@ -188,62 +137,6 @@ public interface PluginData {
     public fun onInit(owner: PluginDataHolder, storage: PluginDataStorage)
 }
 
-/**
- * 获取这个 [KProperty] 委托的 [Value]
- *
- * 如, 对于
- * ```
- * object MyData : AutoSavePluginData(PluginMain) {
- *     val list: List<String> by value()
- * }
- *
- * val value: Value<List<String>> = MyData.findBackingFieldValue(MyData::list)
- * ```
- *
- * @see PluginData
- */
-public fun <T> PluginData.findBackingFieldValue(property: KProperty<T>): Value<out T>? =
-    findBackingFieldValue(property.valueName)
-
-/**
- * 获取这个 [KProperty] 委托的 [Value]
- *
- * 如, 对于
- * ```
- * object MyData : AutoSavePluginData(PluginMain) {
- *     @ValueName("theList")
- *     val list: List<String> by value()
- *     val int: Int by value()
- * }
- *
- * val value: Value<List<String>> = MyData.findBackingFieldValue("theList") // 需使用 @ValueName 标注的名称
- * val intValue: Value<Int> = MyData.findBackingFieldValue("int")
- * ```
- *
- * @see PluginData
- */
-public fun <T> PluginData.findBackingFieldValue(propertyValueName: String): Value<out T>? {
-    return this.valueNodes.find { it.valueName == propertyValueName }?.value as Value<T>
-}
-
-
-/**
- * 获取这个 [KProperty] 委托的 [Value]
- *
- * 如, 对于
- * ```
- * object MyData : AutoSavePluginData(PluginMain) {
- *     val list: List<String> by value()
- * }
- *
- * val value: PluginData.ValueNode<List<String>> = MyData.findBackingFieldValueNode(MyData::list)
- * ```
- *
- * @see PluginData
- */
-public fun <T> PluginData.findBackingFieldValueNode(property: KProperty<T>): PluginData.ValueNode<out T>? {
-    return this.valueNodes.find { it == property } as PluginData.ValueNode<out T>?
-}
 
 // don't default = 0, cause ambiguity
 //// region PluginData_value_primitives CODEGEN ////

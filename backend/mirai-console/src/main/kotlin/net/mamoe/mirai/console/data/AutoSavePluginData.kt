@@ -121,6 +121,7 @@ public open class AutoSavePluginData private constructor(
         }
     }
 
+    @ConsoleExperimentalApi
     public final override fun onValueChanged(value: Value<*>) {
         debuggingLogger1.error { "onValueChanged: $value" }
         if (::owner_.isInitialized) {

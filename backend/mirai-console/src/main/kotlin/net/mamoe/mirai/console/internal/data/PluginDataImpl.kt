@@ -18,8 +18,8 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import net.mamoe.mirai.console.data.AbstractPluginData.ValueNode
 import net.mamoe.mirai.console.data.PluginData
-import net.mamoe.mirai.console.data.PluginData.ValueNode
 import net.mamoe.mirai.console.data.Value
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.ValueName

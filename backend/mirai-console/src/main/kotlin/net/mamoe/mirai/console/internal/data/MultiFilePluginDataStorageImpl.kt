@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.console.internal.data
 
-import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
-import net.mamoe.mirai.console.data.PluginData
-import net.mamoe.mirai.console.data.PluginDataHolder
-import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
@@ -42,7 +39,7 @@ internal open class MultiFilePluginDataStorageImpl(
         } else {
             this.store(holder, instance) // save an initial copy
         }
-        logger.debug { "Successfully loaded PluginData: ${instance.saveName} (containing ${instance.valueNodes.size} properties)" }
+        logger.debug { "Successfully loaded PluginData: ${instance.saveName} (containing ${instance.castOrNull<AbstractPluginData>()?.valueNodes?.size} properties)" }
     }
 
     protected open fun getPluginDataFile(holder: PluginDataHolder, instance: PluginData): File {
@@ -83,7 +80,7 @@ internal open class MultiFilePluginDataStorageImpl(
                 throw IllegalStateException("Exception while saving $instance, saveName=${instance.saveName}", it)
             }
         )
-        logger.debug { "Successfully saved PluginData: ${instance.saveName} (containing ${instance.valueNodes.size} properties)" }
+        logger.debug { "Successfully saved PluginData: ${instance.saveName} (containing ${instance.castOrNull<AbstractPluginData>()?.valueNodes?.size} properties)" }
     }
 }
 

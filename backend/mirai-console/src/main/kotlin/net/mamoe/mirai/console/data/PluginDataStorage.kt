@@ -135,6 +135,7 @@ public interface MultiFilePluginDataStorage : PluginDataStorage {
     }
 }
 
+@ConsoleExperimentalApi
 @get:JvmSynthetic
 public inline val MultiFilePluginDataStorage.directory: File
     get() = this.directoryPath.toFile()
