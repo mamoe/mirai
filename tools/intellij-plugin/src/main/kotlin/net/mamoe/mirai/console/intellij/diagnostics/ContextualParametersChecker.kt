@@ -14,7 +14,7 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
-import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValue
+import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValues
 import net.mamoe.mirai.console.intellij.resolve.valueParametersWithArguments
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
@@ -93,12 +93,14 @@ class ContextualParametersChecker : DeclarationChecker {
                 p.resolveContextKind?.let(checkersMap::get)?.let { it to a }
             }
             .mapNotNull { (kind, argument) ->
-                argument.resolveStringConstantValue(context.bindingContext)?.let { const ->
+                argument.resolveStringConstantValues()?.let { const ->
                     Triple(kind, argument, const)
                 }
             }
-            .forEach { (fn, argument, resolvedConstant) ->
-                fn(argument.asElement(), resolvedConstant)?.let { context.report(it) }
+            .forEach { (fn, argument, resolvedConstants) ->
+                for (resolvedConstant in resolvedConstants) {
+                    fn(argument.asElement(), resolvedConstant)?.let { context.report(it) }
+                }
             }
         return
     }

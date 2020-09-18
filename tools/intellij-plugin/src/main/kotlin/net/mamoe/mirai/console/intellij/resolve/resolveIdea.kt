@@ -30,6 +30,8 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
+import org.jetbrains.kotlin.resolve.constants.ArrayValue
+import org.jetbrains.kotlin.resolve.constants.ConstantValue
 import org.jetbrains.kotlin.resolve.constants.StringValue
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
@@ -106,8 +108,8 @@ fun ResolvedCall<*>.valueParametersWithArguments(): List<Pair<ValueParameterDesc
     return this.valueParameters.zip(this.valueArgumentsByIndex?.mapNotNull { it.arguments.firstOrNull() }.orEmpty())
 }
 
-fun ValueArgument.resolveStringConstantValue(bindingContext: BindingContext): String? {
-    return this.getArgumentExpression()?.resolveStringConstantValue(bindingContext)
+fun ValueArgument.resolveStringConstantValues(): Sequence<String>? {
+    return this.getArgumentExpression()?.resolveStringConstantValues()
 }
 
 val PsiElement.allChildrenFlat: Sequence<PsiElement>
@@ -131,14 +133,24 @@ fun KtElement?.getResolvedCallOrResolveToCall(
 
 val ResolvedCall<out CallableDescriptor>.valueParameters: List<ValueParameterDescriptor> get() = this.resultingDescriptor.valueParameters
 
-fun KtExpression.resolveStringConstantValue(bindingContext: BindingContext): String? {
+fun ConstantValue<*>.selfOrChildrenConstantStrings(): Sequence<String> {
+    return when (this) {
+        is StringValue -> sequenceOf(value)
+        is ArrayValue -> sequence {
+            yieldAll(this@selfOrChildrenConstantStrings.selfOrChildrenConstantStrings())
+        }
+        else -> emptySequence()
+    }
+}
+
+fun KtExpression.resolveStringConstantValues(): Sequence<String> {
     when (this) {
         is KtNameReferenceExpression -> {
             when (val reference = references.firstIsInstance<KtSimpleNameReference>().resolve()) {
                 is KtDeclaration -> {
-                    val descriptor = reference.descriptor.castOrNull<VariableDescriptor>() ?: return null
-                    val compileTimeConstant = descriptor.compileTimeInitializer ?: return null
-                    return compileTimeConstant.castOrNull<StringValue>()?.value
+                    val descriptor = reference.descriptor.castOrNull<VariableDescriptor>() ?: return emptySequence()
+                    val compileTimeConstant = descriptor.compileTimeInitializer ?: return emptySequence()
+                    return compileTimeConstant.selfOrChildrenConstantStrings()
                 }
                 is PsiDeclarationStatement -> {
                     // TODO: 2020/9/18 compile-time constants from Java
@@ -146,8 +158,8 @@ fun KtExpression.resolveStringConstantValue(bindingContext: BindingContext): Str
             }
         }
         is KtStringTemplateExpression -> {
-            if (hasInterpolation()) return null
-            return entries.joinToString("") { it.text }
+            if (hasInterpolation()) return emptySequence()
+            return sequenceOf(entries.joinToString("") { it.text })
         }
         /*
         is KtCallExpression -> {
@@ -161,7 +173,6 @@ fun KtExpression.resolveStringConstantValue(bindingContext: BindingContext): Str
         is KtConstantExpression -> {
             // TODO: 2020/9/18  KtExpression.resolveStringConstantValue: KtConstantExpression
         }
-        else -> return null
     }
-    return null
+    return emptySequence()
 }
