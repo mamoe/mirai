@@ -17,7 +17,6 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.java.JCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
-import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.message.data.MessageChain
@@ -125,28 +124,3 @@ public interface Command {
 public suspend inline fun Command.onCommand(sender: CommandSender, args: MessageChain): Unit =
     sender.onCommand(args)
 
-/**
- * [Command] 的基础实现
- *
- * @see SimpleCommand
- * @see CompositeCommand
- * @see RawCommand
- */
-public abstract class AbstractCommand
-@JvmOverloads constructor(
-    public final override val owner: CommandOwner,
-    public final override val primaryName: String,
-    public final override val secondaryNames: Array<out String>,
-    public override val description: String = "<no description available>",
-    parentPermission: Permission = owner.parentPermission,
-    /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
-    public override val prefixOptional: Boolean = false,
-) : Command {
-    init {
-        Command.checkCommandName(primaryName)
-        secondaryNames.forEach(Command::checkCommandName)
-    }
-
-    public override val usage: String get() = description
-    public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
-}
