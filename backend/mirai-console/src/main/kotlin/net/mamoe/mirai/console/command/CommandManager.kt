@@ -116,7 +116,6 @@ public interface CommandManager {
      * @return 执行结果
      * @see executeCommand
      */
-    @JvmDefault
     @JvmBlockingBridge
     public suspend fun CommandSender.executeCommand(
         message: String,
@@ -139,7 +138,6 @@ public interface CommandManager {
      * 执行一个确切的指令
      * @see executeCommand 获取更多信息
      */
-    @JvmDefault
     @JvmBlockingBridge
     @JvmName("executeCommand")
     public suspend fun Command.execute(
