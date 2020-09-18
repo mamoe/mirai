@@ -31,6 +31,7 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 - `mirai-console-terminal`: console 的 Unix 终端界面前端.
 - `mirai-console-graphical`: console 的 JavaFX 图形化界面前端. (开发中)
 
+**注意：`mirai-console` 1.0-RC 发布之前, 前端请使用 `mirai-console-pure` 而不是 `mirai-console-terminal`**
 
 **注意：`mirai-console` 后端和 terminal 前端正在进行完全的重构, 所有 API 都不具有稳定性**
 
