@@ -18,6 +18,8 @@
 package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.serializersModuleOf
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_NO_ARG_CONSTRUCTOR
 import net.mamoe.mirai.console.data.java.JAutoSavePluginData
@@ -123,6 +125,15 @@ public interface PluginData {
      */
     @ConsoleExperimentalApi
     public fun onValueChanged(value: Value<*>)
+
+    /**
+     * 用于支持多态序列化.
+     *
+     * @see SerializersModule
+     * @see serializersModuleOf
+     */
+    @ConsoleExperimentalApi
+    public val serializersModule: SerializersModule
 
     /**
      * 当这个 [PluginData] 被放入一个 [PluginDataStorage] 时调用

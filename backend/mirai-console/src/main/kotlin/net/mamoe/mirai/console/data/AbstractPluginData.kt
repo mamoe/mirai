@@ -7,11 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "EXPOSED_SUPER_CLASS", "NOTHING_TO_INLINE")
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER", "EXPOSED_SUPER_CLASS", "NOTHING_TO_INLINE", "unused")
 
 package net.mamoe.mirai.console.data
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.modules.EmptySerializersModule
+import kotlinx.serialization.modules.SerializersModule
 import net.mamoe.mirai.console.internal.data.PluginDataImpl
 import net.mamoe.mirai.console.internal.data.getAnnotationListForValueSerialization
 import net.mamoe.mirai.console.internal.data.valueName
@@ -71,6 +73,9 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
     @ConsoleExperimentalApi
     public final override val updaterSerializer: KSerializer<Unit>
         get() = super.updaterSerializer
+
+    @ConsoleExperimentalApi
+    public override val serializersModule: SerializersModule = EmptySerializersModule
 
     /**
      * 当所属于这个 [PluginData] 的 [Value] 的 [值][Value.value] 被修改时被调用.
