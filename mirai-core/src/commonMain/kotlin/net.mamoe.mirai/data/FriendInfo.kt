@@ -16,4 +16,6 @@ public interface FriendInfo {
     public val uin: Long
 
     public val nick: String
+
+    public val remark: String
 }

@@ -291,6 +291,7 @@ internal abstract class QQAndroidBotBase constructor(
         _lowLevelNewFriend(object : FriendInfo {
             override val uin: Long get() = this@QQAndroidBotBase.id
             override val nick: String get() = this@QQAndroidBotBase.nick
+            override val remark: String get() = nick
         })
     }
 
@@ -799,6 +800,7 @@ internal abstract class QQAndroidBotBase constructor(
             bot.friends.delegate.addLast(bot._lowLevelNewFriend(object : FriendInfo {
                 override val uin: Long get() = fromId
                 override val nick: String get() = fromNick
+                override val remark: String                    get() = nick
             }))
         }
     }
@@ -854,6 +856,7 @@ internal abstract class QQAndroidBotBase constructor(
                         override val muteTimestamp: Int get() = 0
                         override val uin: Long get() = fromId
                         override val nick: String get() = fromNick
+                        override val remark: String get() = fromNick
                     }))
                 }
         }

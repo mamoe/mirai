@@ -31,8 +31,16 @@ import kotlin.jvm.*
  */
 public data class FriendRemarkChangeEvent internal constructor(
     public override val friend: Friend,
-    public val newName: String
-) : FriendEvent, Packet, AbstractEvent()
+    public val oldRemark: String,
+    public val newRemark: String
+) : FriendEvent, Packet, AbstractEvent() {
+    @Deprecated(
+        message = "Please use newRemark",
+        replaceWith = ReplaceWith("newRemark"),
+        level = DeprecationLevel.WARNING
+    )
+    val newName: String get() = newRemark
+}
 
 /**
  * 成功添加了一个新好友的事件

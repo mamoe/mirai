@@ -80,6 +80,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): ReqPushDecoded {
         val reqPushMsg = readUniPacket(OnlinePushPack.SvcReqPushMsg.serializer(), "req")
+        // bot.network.logger.debug { reqPushMsg._miraiContentToString() }
 
         val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
             when (msgInfo.shMsgType.toInt()) {
@@ -278,7 +279,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
     0x10 to lambda732 { group: GroupImpl, bot: QQAndroidBot ->
         val dataBytes = readBytes(26)
 
-        when (dataBytes[0].toInt()) {
+        when (dataBytes[0].toInt() and 0xFF) {
             59 -> { // TODO 应该在 Transformers528 处理
                 val size = readByte().toInt() // orthodox, don't `readUByte`
                 if (size < 0) {
@@ -317,6 +318,11 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
 
             0x2D -> {
                 // 修改群名. 在 Transformers528 0x27L 处理
+                return@lambda732 emptySequence()
+            }
+            99 -> {
+                bot.network.logger.debug { dataBytes.toUHexString() }
+                bot.network.logger.debug { readBytes().toUHexString() }
                 return@lambda732 emptySequence()
             }
             else -> {
@@ -453,6 +459,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         val new = bot._lowLevelNewFriend(object : FriendInfo {
             override val uin: Long get() = body.msgAddFrdNotify.fuin
             override val nick: String get() = body.msgAddFrdNotify.fuinNick
+            override val remark: String get() = ""
         })
         bot.friends.delegate.addLast(new)
         return@lambda528 sequenceOf(FriendAddEvent(new))
@@ -546,8 +553,12 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         fun ModFriendRemark.transform(bot: QQAndroidBot): Sequence<Packet> {
             return this.msgFrdRmk?.asSequence()?.mapNotNull {
                 val friend = bot.getFriendOrNull(it.fuin) ?: return@mapNotNull null
+                val old: String
+                friend.checkIsFriendImpl().friendInfo.checkIsInfoImpl()
+                    .also { info -> old = info.remark }
+                    .cachedRemark = it.rmkName
                 // TODO: 2020/4/10 ADD REMARK QUERY
-                FriendRemarkChangeEvent(friend, it.rmkName)
+                FriendRemarkChangeEvent(friend, old, it.rmkName)
             } ?: emptySequence()
         }
 
