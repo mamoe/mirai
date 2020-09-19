@@ -243,7 +243,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         val grayTip = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer()).optGeneralGrayTip
         when (grayTip?.templId) {
             //戳一戳
-            10043L, 1134L, 1135L -> {
+            10043L, 1134L, 1135L, 1136L -> {
                 //预置数据，服务器将不会提供己方已知消息
                 var action = ""
                 var from: Member = group.botAsMember
