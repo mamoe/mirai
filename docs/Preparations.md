@@ -2,26 +2,21 @@
 
 ***如果跳过本节内容，你很可能遇到无法解决的问题。***
 
-### 环境要求
+***此文档假设你是 JVM 平台的开发者。若不是，请参考[其他语言 SDK](https://github.com/mamoe/mirai#%E5%BC%80%E5%8F%91%E8%80%85)***
 
-*不接受降低最低版本要求的建议*
+### JVM 环境要求
 
-- JDK 11
+- 桌面 JVM：最低 Java 8，但推荐 Java 11
 - Android：Android SDK 26+ （Android 8.0)
-- Kotlin: 1.4
-
-*Mirai Console 需要的 Kotlin 版本会与 Kotlin 最新稳定版本同步。*
 
 ### 开发插件的准备工作
 
-- 安装并配置 JDK 11
+#### 安装 IDE 插件
 
-若使用 Java，或要修改 Mirai Console：
+推荐使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) 或 [Android Studio](https://developer.android.com/studio)。Mirai Console 提供 IntelliJ 插件来提升开发体验。
 
-- 使用 [IntelliJ IDEA](https://www.jetbrains.com/idea/) （或 `Android Studio`）。
-- IDE 需装有 [Kotlin Jvm Blocking Bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge) 插件 (先启动你的 IDE，再点击 [一键安装](https://plugins.jetbrains.com/embeddable/install/14816))
-
-若使用 Kotlin，无特别要求。
+- [Kotlin Jvm Blocking Bridge](https://github.com/mamoe/kotlin-jvm-blocking-bridge) ([JetBrains 插件仓库](https://plugins.jetbrains.com/plugin/14816-kotlin-jvm-blocking-bridge), [一键安装](https://plugins.jetbrains.com/embeddable/install/14816))：帮助 Java 用户调用 Kotlin suspend 函数
+- [Mirai Console IntelliJ](../tools/intellij-plugin/) ([JetBrains 插件仓库](https://plugins.jetbrains.com/plugin/15094-mirai-console), [一键安装](https://plugins.jetbrains.com/embeddable/install/15094))：提供错误检查等功能
 
 ## 前置知识
 
