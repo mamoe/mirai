@@ -8,7 +8,7 @@ import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 
-val T = "scas" + "pp" // 编译期常量
+val T = "org.example" // 编译期常量
 
 object MyPluginMain : KotlinPlugin(
     JvmPluginDescription(
@@ -16,7 +16,6 @@ object MyPluginMain : KotlinPlugin(
         "0.1.0",
     ) {
         name(".")
-        id("")
     }
 ) {
     override fun onEnable() {
@@ -29,7 +28,7 @@ object MyPluginMain : KotlinPlugin(
     }
 }
 
-object DataTest : AutoSavePluginConfig() {
+object DataTest : AutoSavePluginConfig("data") {
     val p by value<HasDefaultValue>()
     val pp by value<NoDefaultValue>()
 }
@@ -42,3 +41,5 @@ data class HasDefaultValue(
 data class NoDefaultValue(
     val y: Int,
 )
+
+val y = "傻逼 yellow"

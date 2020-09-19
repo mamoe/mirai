@@ -21,6 +21,13 @@
                                         implementationClass="net.mamoe.mirai.console.intellij.line.marker.CommandDeclarationLineMarkerProvider"/>
         <codeInsight.lineMarkerProvider language="kotlin"
                                         implementationClass="net.mamoe.mirai.console.intellij.line.marker.CommandDeclarationLineMarkerProvider"/>
+
+        <!--
+        <intentionAction>
+            <className>net.mamoe.mirai.console.intellij.diagnostics.fix.AbuseYellowIntention</className>
+            <category>Mirai</category>
+        </intentionAction>
+        -->
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
