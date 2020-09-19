@@ -49,7 +49,9 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 ### 使用
 
-**查看示例插件**: [mirai-console-example-plugin](https://github.com/Him188/mirai-console-example-plugin)
+**查看示例插件**
+- [mirai-console-example-plugin (Kotlin DSL)](https://github.com/Him188/mirai-console-example-plugin)
+- [mirai-console-example-plugin (Groovy DSL)](https://github.com/Karlatemp/mirai-console-example-plugin)
 
 正在更新中的文档：[参考文档](docs/README.md)
 
