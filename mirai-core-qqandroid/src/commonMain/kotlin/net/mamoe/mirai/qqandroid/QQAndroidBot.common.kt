@@ -800,7 +800,7 @@ internal abstract class QQAndroidBotBase constructor(
             bot.friends.delegate.addLast(bot._lowLevelNewFriend(object : FriendInfo {
                 override val uin: Long get() = fromId
                 override val nick: String get() = fromNick
-                override val remark: String                    get() = nick
+                override val remark: String get() = nick
             }))
         }
     }

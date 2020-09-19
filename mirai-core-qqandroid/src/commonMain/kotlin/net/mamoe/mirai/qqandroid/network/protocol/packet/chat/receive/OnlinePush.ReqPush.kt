@@ -320,11 +320,6 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                 // 修改群名. 在 Transformers528 0x27L 处理
                 return@lambda732 emptySequence()
             }
-            99 -> {
-                bot.network.logger.debug { dataBytes.toUHexString() }
-                bot.network.logger.debug { readBytes().toUHexString() }
-                return@lambda732 emptySequence()
-            }
             else -> {
                 /*
                 bot.network.logger.debug("unknown Transformer732 0xunknown type: ${dataBytes[0].toString(16)
