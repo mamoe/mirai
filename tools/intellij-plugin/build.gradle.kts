@@ -116,4 +116,4 @@ tasks {
     }
 }
 
-// setupPublishing("mirai-console-intellij")
+setupPublishing("mirai-console-intellij")

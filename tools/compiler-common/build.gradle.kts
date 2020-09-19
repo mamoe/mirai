@@ -71,4 +71,4 @@ tasks {
     }
 }
 
-// setupPublishing("mirai-console-intellij")
+setupPublishing("mirai-console-compiler-common")

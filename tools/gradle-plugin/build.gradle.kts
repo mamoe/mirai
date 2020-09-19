@@ -117,4 +117,4 @@ tasks.withType(JavaCompile::class.java) {
     options.encoding = "UTF8"
 }
 
-// setupPublishing("mirai-console-gradle")
+setupPublishing("mirai-console-gradle")
