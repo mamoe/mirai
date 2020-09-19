@@ -142,7 +142,7 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
     public data class Retrieve internal constructor(
         public override val group: Group
     ) : BotJoinGroupEvent() {
-        override fun toString(): String = "MemberJoinEvent.Retrieve(group=${group.id})"
+        override fun toString(): String = "BotJoinGroupEvent.Retrieve(group=${group.id})"
     }
 }
 
