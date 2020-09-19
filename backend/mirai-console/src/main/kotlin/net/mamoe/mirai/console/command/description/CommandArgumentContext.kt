@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.message.data.MessageContent
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -84,6 +85,8 @@ public interface CommandArgumentContext {
 
         PermissionId::class with PermissionIdArgumentParser
         PermitteeId::class with PermitteeIdArgumentParser
+
+        MessageContent::class with RawContentArgumentParser
     })
 }
 

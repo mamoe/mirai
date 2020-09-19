@@ -238,8 +238,34 @@ internal class TestCommand {
             }
         }
     }
+
+    @Test
+    fun `test optional argument command`() {
+        runBlocking {
+            val optionCommand = object : CompositeCommand(
+                ConsoleCommandOwner,
+                "testOptional"
+            ) {
+                @SubCommand
+                fun optional(arg1: String, arg2: String = "Here is optional", arg3: String?) {
+                    println(arg1)
+                    println(arg2)
+                    println(arg3)
+//                    println(arg3)
+                    Testing.ok(Unit)
+                }
+            }
+            optionCommand.withRegistration {
+                withTesting<Unit> {
+                    assertSuccess(sender.executeCommand("/testOptional optional 1"))
+                }
+            }
+        }
+    }
 }
 
 internal fun assertSuccess(result: CommandExecuteResult) {
-    assertTrue(result.isSuccess(), result.toString())
+    if (result.isFailure()) {
+        throw result.exception ?: AssertionError(result.toString())
+    }
 }

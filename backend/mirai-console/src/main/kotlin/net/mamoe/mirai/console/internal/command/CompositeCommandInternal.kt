@@ -21,7 +21,8 @@ import net.mamoe.mirai.message.data.*
 import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
-import kotlin.reflect.full.callSuspend
+import kotlin.reflect.KParameter
+import kotlin.reflect.full.callSuspendBy
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
@@ -131,8 +132,9 @@ internal abstract class AbstractReflectionCommand
         val params: Array<CommandParameter<*>>,
         val description: String,
         val permission: Permission,
-        val onCommand: suspend (sender: CommandSender, parsedArgs: Array<out Any>) -> Boolean,
+        val onCommand: suspend (sender: CommandSender, parsedArgs: Map<KParameter, Any?>) -> Boolean,
         val context: CommandArgumentContext,
+        val argumentBuilder: (sender: CommandSender) -> MutableMap<KParameter, Any?>,
     ) {
         val usage: String = createUsage(this@AbstractReflectionCommand)
 
@@ -151,21 +153,40 @@ internal abstract class AbstractReflectionCommand
             }
         }
 
+        private fun KParameter.isOptional(): Boolean {
+            return isOptional || this.type.isMarkedNullable
+        }
+
+        val minimalArgumentsSize = params.count {
+            !it.parameter.isOptional()
+        }
+
         @JvmField
         internal val bakedSubNames: Array<Array<String>> = names.map { it.bakeSubName() }.toTypedArray()
-        private fun parseArgs(sender: CommandSender, rawArgs: MessageChain, offset: Int): Array<out Any>? {
-            if (rawArgs.size < offset + this.params.size)
+        private fun parseArgs(sender: CommandSender, rawArgs: MessageChain, offset: Int): MutableMap<KParameter, Any?>? {
+            if (rawArgs.size < offset + minimalArgumentsSize)
                 return null
             //require(rawArgs.size >= offset + this.params.size) { "No enough args. Required ${params.size}, but given ${rawArgs.size - offset}" }
-
-            return Array(this.params.size) { index ->
-                val param = params[index]
-                val rawArg = rawArgs[offset + index]
-                when (rawArg) {
-                    is PlainText -> context[param.type]?.parse(rawArg.content, sender)
-                    is MessageContent -> context[param.type]?.parse(rawArg, sender)
-                    else -> throw IllegalArgumentException("Illegal Message kind: ${rawArg.kClassQualifiedNameOrTip}")
-                } ?: error("Cannot find a parser for $rawArg")
+            return argumentBuilder(sender).also { result ->
+                params.forEachIndexed { index, parameter ->
+                    val rawArg = rawArgs.getOrNull(offset + index)
+                    result[parameter.parameter] = when (rawArg) {
+                        null -> {
+                            val p = parameter.parameter
+                            when {
+                                p.isOptional -> return@forEachIndexed
+                                p.type.isMarkedNullable -> {
+                                    result[parameter.parameter] = null
+                                    return@forEachIndexed
+                                }
+                                else -> null
+                            }
+                        }
+                        is PlainText -> context[parameter.type]?.parse(rawArg.content, sender)
+                        is MessageContent -> context[parameter.type]?.parse(rawArg, sender)
+                        else -> throw IllegalArgumentException("Illegal Message kind: ${rawArg.kClassQualifiedNameOrTip}")
+                    } ?: error("Cannot find a parser for $rawArg")
+                }
             }
         }
     }
@@ -250,6 +271,10 @@ internal fun AbstractReflectionCommand.SubCommandDescriptor.createUsage(baseComm
         appendLine()
     }.trimEnd()
 
+internal fun <T1, R1, R2> ((T1) -> R1).then(then: (T1, R1) -> R2): ((T1) -> R2) {
+    return { a -> then.invoke(a, (this@then(a))) }
+}
+
 internal fun AbstractReflectionCommand.createSubCommand(
     function: KFunction<*>,
     context: CommandArgumentContext,
@@ -273,12 +298,17 @@ internal fun AbstractReflectionCommand.createSubCommand(
     check(!function.returnType.isMarkedNullable) {
         error("Return type of sub command ${function.name} must not be marked nullable in Kotlin, and must be marked with @NotNull or @NonNull explicitly in Java. (at ${this::class.qualifiedNameOrTip}.${function.name})")
     }
-
+    var argumentBuilder: (sender: CommandSender) -> MutableMap<KParameter, Any?> = { HashMap() }
     val parameters = function.parameters.toMutableList()
 
-    if (notStatic) parameters.removeAt(0) // instance
+    if (notStatic) {
+        val type = parameters.removeAt(0) // instance
+        argumentBuilder = argumentBuilder.then { _, map ->
+            map[type] = this@createSubCommand
+            map
+        }
+    }
 
-    var hasSenderParam = false
     check(parameters.isNotEmpty()) {
         "Parameters of sub command ${function.name} must not be empty. (Must have CommandSender as its receiver or first parameter or absent, followed by naturally typed params) (at ${this::class.qualifiedNameOrTip}.${function.name})"
     }
@@ -291,8 +321,11 @@ internal fun AbstractReflectionCommand.createSubCommand(
 
     (parameters.first()).let { receiver ->
         if ((receiver.type.classifier as? KClass<*>)?.isSubclassOf(CommandSender::class) == true) {
-            hasSenderParam = true
-            parameters.removeAt(0)
+            val senderType = parameters.removeAt(0)
+            argumentBuilder = argumentBuilder.then { sender, map ->
+                map[senderType] = sender
+                map
+            }
         }
     }
 
@@ -313,37 +346,32 @@ internal fun AbstractReflectionCommand.createSubCommand(
     //map parameter
     val params = parameters.map { param ->
 
-        if (param.isOptional) error("optional parameters are not yet supported. (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)")
+        // if (param.isOptional) error("optional parameters are not yet supported. (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)")
 
         val paramName = param.findAnnotation<CompositeCommand.Name>()?.value ?: param.name ?: "unknown"
         CommandParameter(
             paramName,
             (param.type.classifier as? KClass<*>)
-                ?: throw IllegalArgumentException("unsolved type reference from param " + param.name + ". (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)")
+                ?: throw IllegalArgumentException("unsolved type reference from param " + param.name + ". (at ${this::class.qualifiedNameOrTip}.${function.name}.$param)"),
+            param
         )
     }.toTypedArray()
+
+    // TODO: 2020/09/19 检查 optional/nullable 是否都在最后
 
     return SubCommandDescriptor(
         commandName,
         params,
         subDescription, // overridePermission?.value
         permission,//overridePermission?.value?.let { PermissionService.INSTANCE[PermissionId.parseFromString(it)] } ?: permission,
-        onCommand = { sender: CommandSender, args: Array<out Any> ->
-            val result = if (notStatic) {
-                if (hasSenderParam) {
-                    function.isSuspend
-                    function.callSuspend(this, sender, *args)
-                } else function.callSuspend(this, *args)
-            } else {
-                if (hasSenderParam) {
-                    function.callSuspend(sender, *args)
-                } else function.callSuspend(*args)
-            }
+        onCommand = { sender: CommandSender, args: Map<KParameter, Any?> ->
+            val result = function.callSuspendBy(args)
 
             checkNotNull(result) { "sub command return value is null (at ${this::class.qualifiedName}.${function.name})" }
 
             result as? Boolean ?: true // Unit, void is considered as true.
         },
-        context = context
+        context = context,
+        argumentBuilder = argumentBuilder
     )
 }

@@ -14,20 +14,25 @@ package net.mamoe.mirai.console.internal.command
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.description.CommandArgumentParser
 import java.lang.reflect.Parameter
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
+import kotlin.reflect.KParameter
 
+/*
 internal fun Parameter.toCommandParam(): CommandParameter<*> {
     val name = getAnnotation(CompositeCommand.Name::class.java)
     return CommandParameter(
         name?.value ?: this.name
         ?: throw IllegalArgumentException("Cannot construct CommandParam from a unnamed param"),
-        this.type.kotlin
+        this.type.kotlin,
+        null
     )
 }
+*/
 
 /**
  * 指令形式参数.
- * @see toCommandParam
  */
 internal data class CommandParameter<T : Any>(
     /**
@@ -37,9 +42,12 @@ internal data class CommandParameter<T : Any>(
     /**
      * 参数类型. 将从 [CompositeCommand.context] 中寻找 [CommandArgumentParser] 解析.
      */
-    val type: KClass<T> // exact type
+    val type: KClass<T>, // exact type
+    val parameter: KParameter, // source parameter
 ) {
-    constructor(name: String, type: KClass<T>, parser: CommandArgumentParser<T>) : this(name, type) {
+    constructor(name: String, type: KClass<T>, parameter: KParameter, parser: CommandArgumentParser<T>) : this(
+        name, type, parameter
+    ) {
         this._overrideParser = parser
     }
 
