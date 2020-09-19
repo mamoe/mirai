@@ -35,7 +35,4 @@
                 implementation="net.mamoe.mirai.console.intellij.IDEContainerContributor"/>
         <quickFixContributor implementation="net.mamoe.mirai.console.intellij.QuickFixRegistrar"/>
     </extensions>
-
-    <idea-version since-build="193.*" until-build="203.*"/>
-
 </idea-plugin>
