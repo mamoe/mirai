@@ -37,14 +37,15 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 ### 版本
 
 [Version]: https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?
+[Bintray Download]: https://bintray.com/him188moe/mirai/mirai-console/
 
 详见 [版本规范](docs/README.md#版本规范)
 
-| 版本类型 |   版本号    |
-|:------:|:----------:|
-|  稳定   |     -      |
-|  预览   |   1.0-M4   |
-|  开发   | ![Version] |
+| 版本类型 |    版本号     |
+|:------:|:------------:|
+|  稳定   |      -       |
+|  预览   |    1.0-M4    |
+|  开发   | [![Version]][Bintray Download] |
 
 ### 使用
 
@@ -54,7 +55,6 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 #### Gradle
 `CORE_VERSION`: [ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-core/)
-`CONSOLE_VERSION`: [ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-console/)
 
 
 build.gradle.kts
@@ -70,6 +70,8 @@ dependencies {
   testImplementation("net.mamoe:mirai-console-terminal:$CONSOLE_VERSION") // 前端, 用于启动测试
 }
 ```
+
+**注意：`mirai-console` 1.0-RC 发布之前, 前端请使用 `mirai-console-pure` 而不是 `mirai-console-terminal`**
 
 #### Maven
 同理 Gradle
