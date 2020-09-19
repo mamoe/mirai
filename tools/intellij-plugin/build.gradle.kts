@@ -50,8 +50,18 @@ tasks.getByName("publishPlugin", org.jetbrains.intellij.tasks.PublishTask::class
 tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
     sinceBuild("193.*")
     untilBuild("205.*")
+    pluginDescription("""
+        Plugin development support for <a href='https://github.com/mamoe/mirai-console'>Mirai Conosle</a>
+        
+        <h3>Features</h3>
+        <ul>
+            <li>Inspections for plugin properties, for example, checking PluginDescription.</li>
+            <li>Inspections for illegal calls.</li>
+            <li>Intentions for resolving serialization problems.</li>
+        </ul>
+    """.trimIndent())
     changeNotes("""
-        Fix cancellation on analyzing augments
+        Initial release
     """.trimIndent())
 }
 
