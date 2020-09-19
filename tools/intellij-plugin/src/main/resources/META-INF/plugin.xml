@@ -1,7 +1,7 @@
 <idea-plugin>
-    <id>net.mamoe.mirai-console-dev</id>
+    <id>net.mamoe.mirai-console</id>
 
-    <name>Mirai Console Dev</name>
+    <name>Mirai Console</name>
 
     <vendor
             email="support@mamoe.net"
@@ -35,7 +35,4 @@
                 implementation="net.mamoe.mirai.console.intellij.IDEContainerContributor"/>
         <quickFixContributor implementation="net.mamoe.mirai.console.intellij.QuickFixRegistrar"/>
     </extensions>
-
-    <idea-version since-build="193.*" until-build="203.*"/>
-
 </idea-plugin>

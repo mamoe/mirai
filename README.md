@@ -14,7 +14,6 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 </div>
 
 # mirai-console
-[ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-console/)
 
 高效率插件支持 QQ 机器人框架, 机器人核心来自 [mirai](https://github.com/mamoe/mirai)
 
@@ -35,6 +34,19 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 **注意：`mirai-console` 后端和 terminal 前端正在进行完全的重构, 所有 API 都不具有稳定性**
 
+### 版本
+
+[Version]: https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?
+[Bintray Download]: https://bintray.com/him188moe/mirai/mirai-console/
+
+详见 [版本规范](docs/README.md#版本规范)
+
+| 版本类型 |    版本号     |
+|:------:|:------------:|
+|  稳定   |      -       |
+|  预览   |    1.0-M4    |
+|  开发   | [![Version]][Bintray Download] |
+
 ### 使用
 
 **查看示例插件**: [mirai-console-example-plugin](https://github.com/Him188/mirai-console-example-plugin)
@@ -43,7 +55,6 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 
 #### Gradle
 `CORE_VERSION`: [ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-core/)
-`CONSOLE_VERSION`: [ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-console/)
 
 
 build.gradle.kts
@@ -59,6 +70,8 @@ dependencies {
   testImplementation("net.mamoe:mirai-console-terminal:$CONSOLE_VERSION") // 前端, 用于启动测试
 }
 ```
+
+**注意：`mirai-console` 1.0-RC 发布之前, 前端请使用 `mirai-console-pure` 而不是 `mirai-console-terminal`**
 
 #### Maven
 同理 Gradle
