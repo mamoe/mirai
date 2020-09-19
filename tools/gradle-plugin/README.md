@@ -9,7 +9,7 @@ Mirai Console Gradle 插件。
 ## 功能
 
 - 为 `main` 源集配置 `mirai-core`，`mirai-console` 依赖
-- 为 `test` 源集配置 `mirai-core-qqandroied`, `mirai-console-terminal` 的依赖 (用于启动测试)
+- 为 `test` 源集配置 `mirai-core-qqandroid`, `mirai-console-terminal` 的依赖 (用于启动测试)
 - 添加 mirai 依赖仓库链接
 - 配置插件 JAR 打包构建任务 `buildPlugin` (带依赖)
 
