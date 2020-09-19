@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2;
 import org.jetbrains.kotlin.diagnostics.Errors;
+import org.jetbrains.kotlin.psi.KtNamedDeclaration;
 
 import static org.jetbrains.kotlin.diagnostics.Severity.ERROR;
 
@@ -25,6 +26,8 @@ public interface MiraiConsoleErrors {
     DiagnosticFactory2<PsiElement, String, String> ILLEGAL_PERMISSION_NAME = DiagnosticFactory2.create(ERROR);
     DiagnosticFactory2<PsiElement, String, String> ILLEGAL_PERMISSION_ID = DiagnosticFactory2.create(ERROR);
     DiagnosticFactory2<PsiElement, String, String> ILLEGAL_PERMISSION_NAMESPACE = DiagnosticFactory2.create(ERROR);
+    DiagnosticFactory2<PsiElement, KtNamedDeclaration, String> ILLEGAL_COMMAND_REGISTER_USE = DiagnosticFactory2.create(ERROR);
+    DiagnosticFactory2<PsiElement, KtNamedDeclaration, String> ILLEGAL_PERMISSION_REGISTER_USE = DiagnosticFactory2.create(ERROR);
 
     @Deprecated
     Object _init = new Object() {

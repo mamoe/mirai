@@ -36,19 +36,16 @@ public annotation class ResolveContext(
         // ConstantKind
         ///////////////////////////////////////////////////////////////////////////
 
-        PLUGIN_ID,
-        PLUGIN_NAME,
-        PLUGIN_VERSION,
+        PLUGIN_ID, // ILLEGAL_PLUGIN_DESCRIPTION
+        PLUGIN_NAME, // ILLEGAL_PLUGIN_DESCRIPTION
+        PLUGIN_VERSION, // ILLEGAL_PLUGIN_DESCRIPTION
 
-        COMMAND_NAME,
+        COMMAND_NAME, // ILLEGAL_COMMAND_NAME
 
-        PERMISSION_NAMESPACE,
-        PERMISSION_NAME,
-        PERMISSION_ID, // for parseFromString
+        PERMISSION_NAMESPACE, // ILLEGAL_COMMAND_NAMESPACE
+        PERMISSION_NAME, // ILLEGAL_COMMAND_NAME
+        PERMISSION_ID, // ILLEGAL_COMMAND_ID
 
-        /**
-         * Custom serializers allowed
-         */
-        RESTRICTED_NO_ARG_CONSTRUCTOR,
+        RESTRICTED_NO_ARG_CONSTRUCTOR, // NOT_CONSTRUCTABLE_TYPE
     }
 }

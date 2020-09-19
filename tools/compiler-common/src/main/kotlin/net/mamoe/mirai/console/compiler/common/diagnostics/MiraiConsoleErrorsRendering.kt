@@ -61,6 +61,20 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
             Renderers.STRING,
             Renderers.STRING,
         )
+
+        put(
+            ILLEGAL_COMMAND_REGISTER_USE,
+            "''{0}'' 无法使用在 ''{1}'' 环境下.",
+            Renderers.DECLARATION_NAME,
+            Renderers.STRING
+        )
+
+        put(
+            ILLEGAL_PERMISSION_REGISTER_USE,
+            "''{0}'' 无法使用在 ''{1}'' 环境下.",
+            Renderers.DECLARATION_NAME,
+            Renderers.STRING
+        )
     }
 
     override fun getMap() = MAP

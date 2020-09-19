@@ -217,8 +217,8 @@ public inline fun <reified T> PluginData.value(
  */
 @ResolveContext(RESTRICTED_NO_ARG_CONSTRUCTOR)
 @LowPriorityInOverloadResolution
-public inline fun <reified T> PluginData.value(apply: T.() -> Unit = {}): SerializerAwareValue<T> =
-    valueImpl<T>(typeOf0<T>(), T::class).also { it.value.apply() }
+public inline fun <@ResolveContext(RESTRICTED_NO_ARG_CONSTRUCTOR) reified T>
+    PluginData.value(apply: T.() -> Unit = {}): SerializerAwareValue<T> = valueImpl<T>(typeOf0<T>(), T::class).also { it.value.apply() }
 
 @Suppress("UNCHECKED_CAST")
 @PublishedApi
