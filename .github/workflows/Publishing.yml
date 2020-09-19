@@ -46,6 +46,16 @@ jobs:
           :mirai-console-terminal:bintrayUpload
           -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
           -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+      - name: Gradle :mirai-console-compiler-common:bintrayUpload
+        run: ./gradlew
+          :mirai-console-compiler-common:bintrayUpload
+          -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+          -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+      - name: Gradle :mirai-console-intellij:bintrayUpload
+        run: ./gradlew
+          :mirai-console-intellij:bintrayUpload
+          -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+          -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
       - name: Publish Gradle plugin
         run: ./gradlew
           :mirai-console-gradle:publishPlugins
