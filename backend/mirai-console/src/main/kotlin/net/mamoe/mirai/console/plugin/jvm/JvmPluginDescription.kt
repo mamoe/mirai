@@ -11,12 +11,12 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
-import com.vdurmont.semver4j.Semver
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
-import net.mamoe.mirai.console.plugin.description.VersionRequirement
+import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.mirai.console.util.SemVersionRangeRequirementBuilder
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
@@ -66,7 +66,7 @@ public interface JvmPluginDescription : PluginDescription {
             /**
              * @see [PluginDescription.version]
              */
-            @ResolveContext(PLUGIN_VERSION) version: Semver,
+            @ResolveContext(PLUGIN_VERSION) version: SemVersion,
             /**
              * @see [PluginDescription.name]
              */
@@ -97,17 +97,15 @@ public interface JvmPluginDescription : PluginDescription {
  *
  * @see [JvmPluginDescription.invoke]
  */
-public class JvmPluginDescriptionBuilder
-@Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
-constructor(
+public class JvmPluginDescriptionBuilder(
     private var id: String,
-    private var version: Semver,
+    private var version: SemVersion,
 ) {
     @Suppress("DEPRECATION_ERROR")
     public constructor(
         @ResolveContext(PLUGIN_NAME) id: String,
         @ResolveContext(PLUGIN_VERSION) version: String,
-    ) : this(id, Semver(version, Semver.SemverType.LOOSE))
+    ) : this(id, SemVersion.parse(version))
 
     private var name: String = id
     private var author: String = ""
@@ -118,14 +116,12 @@ constructor(
     public fun name(@ResolveContext(PLUGIN_NAME) value: String): JvmPluginDescriptionBuilder =
         apply { this.name = value.trim() }
 
-    @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
     @ILoveKuriyamaMiraiForever
     public fun version(@ResolveContext(PLUGIN_VERSION) value: String): JvmPluginDescriptionBuilder =
-        apply { this.version = Semver(value, Semver.SemverType.LOOSE) }
+        apply { this.version = SemVersion.parse(value) }
 
-    @Deprecated("Semver 将会在 1.0-RC 被替换为 Console 自己实现的版本。请临时使用 String。", level = DeprecationLevel.ERROR)
     @ILoveKuriyamaMiraiForever
-    public fun version(@ResolveContext(PLUGIN_VERSION) value: Semver): JvmPluginDescriptionBuilder =
+    public fun version(@ResolveContext(PLUGIN_VERSION) value: SemVersion): JvmPluginDescriptionBuilder =
         apply { this.version = value }
 
     @ILoveKuriyamaMiraiForever
@@ -161,7 +157,7 @@ constructor(
     public fun dependsOn(
         @ResolveContext(PLUGIN_ID) pluginId: String,
         isOptional: Boolean = false,
-        versionRequirement: VersionRequirement,
+        versionRequirement: SemVersion.RangeRequirement,
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
     }
@@ -174,7 +170,7 @@ constructor(
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
         @ResolveContext(PLUGIN_ID) pluginId: String,
-        versionRequirement: VersionRequirement,
+        versionRequirement: SemVersion.RangeRequirement,
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
     }
@@ -203,17 +199,17 @@ constructor(
      * ```
      *
      * @see PluginDependency
-     * @see VersionRequirement.Builder
+     * @see SemVersionRangeRequirementBuilder
      */
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
         @ResolveContext(PLUGIN_ID) pluginId: String,
         isOptional: Boolean = false,
-        versionRequirement: VersionRequirement.Builder.() -> VersionRequirement,
+        versionRequirement: SemVersionRangeRequirementBuilder.() -> SemVersion.RangeRequirement,
     ): JvmPluginDescriptionBuilder =
         apply {
             this.dependencies.add(PluginDependency(pluginId,
-                VersionRequirement.Builder().run(versionRequirement),
+                SemVersionRangeRequirementBuilder.run(versionRequirement),
                 isOptional))
         }
 
@@ -259,7 +255,7 @@ public data class SimpleJvmPluginDescription
 )
 @JvmOverloads public constructor(
     public override val name: String,
-    public override val version: Semver,
+    public override val version: SemVersion,
     public override val id: String = name,
     public override val author: String = "",
     public override val info: String = "",
@@ -285,7 +281,7 @@ public data class SimpleJvmPluginDescription
         author: String = "",
         info: String = "",
         dependencies: Set<PluginDependency> = setOf(),
-    ) : this(name, Semver(version, Semver.SemverType.LOOSE), id, author, info, dependencies)
+    ) : this(name, SemVersion.parse(version), id, author, info, dependencies)
 
     init {
         require(!name.contains(':')) { "':' is forbidden in plugin name" }

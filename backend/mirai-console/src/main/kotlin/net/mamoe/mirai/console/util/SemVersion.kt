@@ -20,6 +20,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
@@ -89,7 +90,7 @@ public data class SemVersion internal constructor(
          */
         @Throws(IllegalArgumentException::class, NumberFormatException::class)
         @JvmStatic
-        public fun parse(version: String): SemVersion = SemVersionInternal.parse(version)
+        public fun parse(@ResolveContext(ResolveContext.Kind.PLUGIN_VERSION) version: String): SemVersion = SemVersionInternal.parse(version)
 
         /**
          * 解析一条依赖需求描述, 在无法解析的时候抛出 [IllegalArgumentException]

@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.console.plugin.description
 
+import net.mamoe.mirai.console.util.SemVersion
+
 /**
  * 插件的一个依赖的信息.
  *
@@ -29,7 +31,7 @@ public data class PluginDependency @JvmOverloads constructor(
      * ### 示例
      * `Requirement.buildIvy("[1.0, 2.0)")`
      */
-    public val versionRequirement: VersionRequirement? = null,
+    public val versionRequirement: SemVersion.RangeRequirement? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */

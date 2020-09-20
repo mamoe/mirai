@@ -23,7 +23,6 @@
 package net.mamoe.mirai.console.terminal
 
 
-import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
@@ -39,10 +38,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.terminal.ConsoleInputImpl.requestInput
 import net.mamoe.mirai.console.terminal.noconsole.AllEmptyLineReader
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.console.util.ConsoleInput
-import net.mamoe.mirai.console.util.ConsoleInternalApi
-import net.mamoe.mirai.console.util.NamedSupervisorJob
+import net.mamoe.mirai.console.util.*
 import net.mamoe.mirai.utils.*
 import org.fusesource.jansi.Ansi
 import org.jline.reader.LineReader
@@ -155,7 +151,7 @@ val terminal: Terminal = run {
 private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
     override val name: String get() = "Terminal"
     override val vendor: String get() = "Mamoe Technologies"
-    override val version: Semver = net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
+    override val version: SemVersion = net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
 }
 
 private val ANSI_RESET = Ansi().reset().toString()

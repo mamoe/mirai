@@ -101,8 +101,8 @@ tasks {
                                 })"""
                             }
                             .replace(
-                                Regex("""val version: Semver = Semver\(".*", Semver.SemverType.LOOSE\)""")
-                            ) { """val version: Semver = Semver("${project.version}", Semver.SemverType.LOOSE)""" }
+                                Regex("""val version: SemVersion = SemVersion.parse\(".*"\)""")
+                            ) { """val version: SemVersion = SemVersion.parse("${project.version}")""" }
                     )
                 }
         }

@@ -9,10 +9,10 @@
 
 package net.mamoe.mirai.console.plugin.description
 
-import com.vdurmont.semver4j.Semver
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.util.SemVersion
 
 
 /**
@@ -93,7 +93,7 @@ public interface PluginDescription {
      * @see Semver 语义化版本. 允许 [宽松][Semver.SemverType.LOOSE] 类型版本.
      */
     @ResolveContext(PLUGIN_VERSION)
-    public val version: Semver
+    public val version: SemVersion
 
     /**
      * 插件信息, 允许为空

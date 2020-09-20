@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console
 
-import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.CommandManager
@@ -20,6 +19,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalApi
+import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LoginSolver
@@ -43,8 +43,8 @@ fun initTestEnvironment() {
                     get() = "Test"
                 override val vendor: String
                     get() = "Test"
-                override val version: Semver
-                    get() = Semver("1.0.0")
+                override val version: SemVersion
+                    get() = SemVersion.parse("1.0.0")
 
             }
         override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader })
