@@ -44,7 +44,7 @@ fun initTestEnvironment() {
                 override val vendor: String
                     get() = "Test"
                 override val version: SemVersion
-                    get() = SemVersion.parse("1.0.0")
+                    get() = SemVersion("1.0.0")
 
             }
         override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader })

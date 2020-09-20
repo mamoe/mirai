@@ -105,7 +105,7 @@ public class JvmPluginDescriptionBuilder(
     public constructor(
         @ResolveContext(PLUGIN_NAME) id: String,
         @ResolveContext(PLUGIN_VERSION) version: String,
-    ) : this(id, SemVersion.parse(version))
+    ) : this(id, SemVersion(version))
 
     private var name: String = id
     private var author: String = ""
@@ -118,7 +118,7 @@ public class JvmPluginDescriptionBuilder(
 
     @ILoveKuriyamaMiraiForever
     public fun version(@ResolveContext(PLUGIN_VERSION) value: String): JvmPluginDescriptionBuilder =
-        apply { this.version = SemVersion.parse(value) }
+        apply { this.version = SemVersion(value) }
 
     @ILoveKuriyamaMiraiForever
     public fun version(@ResolveContext(PLUGIN_VERSION) value: SemVersion): JvmPluginDescriptionBuilder =
@@ -281,7 +281,7 @@ public data class SimpleJvmPluginDescription
         author: String = "",
         info: String = "",
         dependencies: Set<PluginDependency> = setOf(),
-    ) : this(name, SemVersion.parse(version), id, author, info, dependencies)
+    ) : this(name, SemVersion(version), id, author, info, dependencies)
 
     init {
         require(!name.contains(':')) { "':' is forbidden in plugin name" }

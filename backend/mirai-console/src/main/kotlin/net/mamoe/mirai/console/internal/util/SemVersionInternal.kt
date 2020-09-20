@@ -85,7 +85,7 @@ internal object SemVersionInternal {
     private fun String.parseRule(): SemVersion.RangeRequirement {
         val trimmed = trim()
         if (directVersion.matches(trimmed)) {
-            val parsed = SemVersion.parse(trimmed)
+            val parsed = SemVersion.invoke(trimmed)
             return SemVersion.RangeRequirement {
                 it.compareTo(parsed) == 0
             }
@@ -101,8 +101,8 @@ internal object SemVersionInternal {
             }
         }
         (versionRange.matchEntire(trimmed) ?: versionMathRange.matchEntire(trimmed))?.let { range ->
-            var start = SemVersion.parse(range.groupValues[1])
-            var end = SemVersion.parse(range.groupValues[4])
+            var start = SemVersion.invoke(range.groupValues[1])
+            var end = SemVersion.invoke(range.groupValues[4])
             if (start > end) {
                 val c = end
                 end = start
@@ -115,7 +115,7 @@ internal object SemVersionInternal {
         }
         versionRule.matchEntire(trimmed)?.let { result ->
             val operator = result.groupValues[1]
-            val version = SemVersion.parse(result.groupValues[7])
+            val version = SemVersion.invoke(result.groupValues[7])
             return when (operator) {
                 ">=" -> {
                     SemVersion.RangeRequirement { it >= version }

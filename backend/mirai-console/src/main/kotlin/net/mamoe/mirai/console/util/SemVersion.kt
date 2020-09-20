@@ -21,6 +21,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_VERSION
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
@@ -44,15 +45,20 @@ import net.mamoe.mirai.console.util.SemVersion.RangeRequirement
  * 对于核心版本号, 此实现稍微比 semver 宽松一些, 允许 x.y 的存在.
  *
  * @see RangeRequirement
+ * @see SemVersion.invoke
  */
 @Serializable(with = SemVersion.SemVersionAsStringSerializer::class)
-public data class SemVersion internal constructor(
+public data class SemVersion
+/**
+ * @see SemVersion.invoke 字符串解析
+ */
+internal constructor(
     /** 核心版本号, 由主版本号, 次版本号和修订号组成, 其中修订号不一定存在 */
     public val mainVersion: IntArray,
     /** 先行版本号识别符 */
     public val identifier: String? = null,
     /** 版本号元数据, 不参与版本号对比([compareTo]), 但是参与版本号严格对比([equals]) */
-    public val metadata: String? = null
+    public val metadata: String? = null,
 ) : Comparable<SemVersion> {
     /**
      * 一条依赖规则
@@ -65,7 +71,7 @@ public data class SemVersion internal constructor(
 
     public object SemVersionAsStringSerializer : KSerializer<SemVersion> by String.serializer().map(
         serializer = { it.toString() },
-        deserializer = { parse(it) }
+        deserializer = { SemVersion(it) }
     )
 
     public companion object {
@@ -90,7 +96,8 @@ public data class SemVersion internal constructor(
          */
         @Throws(IllegalArgumentException::class, NumberFormatException::class)
         @JvmStatic
-        public fun parse(@ResolveContext(ResolveContext.Kind.PLUGIN_VERSION) version: String): SemVersion = SemVersionInternal.parse(version)
+        @JvmName("parse")
+        public operator fun invoke(@ResolveContext(PLUGIN_VERSION) version: String): SemVersion = SemVersionInternal.parse(version)
 
         /**
          * 解析一条依赖需求描述, 在无法解析的时候抛出 [IllegalArgumentException]
@@ -121,7 +128,7 @@ public data class SemVersion internal constructor(
 
         /** @see [RangeRequirement.test] */
         @JvmStatic
-        public fun RangeRequirement.test(version: String): Boolean = test(parse(version))
+        public fun RangeRequirement.test(version: String): Boolean = test(invoke(version))
 
         /**
          * 当满足 [requirement] 时返回 true, 否则返回 false

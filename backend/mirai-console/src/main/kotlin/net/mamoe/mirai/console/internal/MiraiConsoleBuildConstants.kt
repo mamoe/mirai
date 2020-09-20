@@ -17,5 +17,5 @@ internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mira
     val buildDate: Instant = Instant.ofEpochSecond(1600596035)
 
     @JvmStatic
-    val version: SemVersion = SemVersion.parse("1.0-RC-dev-28")
+    val version: SemVersion = SemVersion("1.0-RC-dev-28")
 }
