@@ -19,10 +19,7 @@ import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.getGroupOrNull
-import net.mamoe.mirai.message.data.At
-import net.mamoe.mirai.message.data.MessageContent
-import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.*
 
 
 /**
@@ -81,14 +78,32 @@ public object StringArgumentParser : InternalCommandArgumentParserExtensions<Str
 }
 
 /**
+ * 解析 [String] 通过 [Image].
+ */
+public object ImageArgumentParser : InternalCommandArgumentParserExtensions<Image> {
+    public override fun parse(raw: String, sender: CommandSender): Image {
+        return kotlin.runCatching {
+            Image(raw)
+        }.getOrElse {
+            illegalArgument("无法解析 $raw 为图片.")
+        }
+    }
+
+    override fun parse(raw: MessageContent, sender: CommandSender): Image {
+        if (raw is Image) return raw
+        return super.parse(raw, sender)
+    }
+}
+
+/**
  * 当字符串内容为(不区分大小写) "true", "yes", "enabled"
  */
 public object BooleanArgumentParser : InternalCommandArgumentParserExtensions<Boolean> {
     public override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
         str.equals("true", ignoreCase = true)
-                || str.equals("yes", ignoreCase = true)
-                || str.equals("enabled", ignoreCase = true)
-                || str.equals("on", ignoreCase = true)
+            || str.equals("yes", ignoreCase = true)
+            || str.equals("enabled", ignoreCase = true)
+            || str.equals("on", ignoreCase = true)
     }
 }
 
@@ -365,10 +380,10 @@ internal interface InternalCommandArgumentParserExtensions<T : Any> : CommandArg
         } else {
             var index = 1
             illegalArgument("无法找到成员 $idOrCard。 多个成员满足搜索结果或匹配度不足: \n\n" +
-                    candidates.joinToString("\n", limit = 6) {
-                        val percentage = (it.second * 100).toDecimalPlace(0)
-                        "#${index++}(${percentage}%)${it.first.nameCardOrNick.truncate(10)}(${it.first.id})" // #1 15.4%
-                    }
+                candidates.joinToString("\n", limit = 6) {
+                    val percentage = (it.second * 100).toDecimalPlace(0)
+                    "#${index++}(${percentage}%)${it.first.nameCardOrNick.truncate(10)}(${it.first.id})" // #1 15.4%
+                }
             )
         }
     }
