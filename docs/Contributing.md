@@ -23,3 +23,10 @@ Mirai Console 项目由四个模块组成：后端，前端，Gradle 插件，In
 ```
 
 请前往各模块内的 README.md 查看详细说明。
+
+### 构建
+```shell script
+gradlew build
+```
+
+首次加载和构建 mirai-console 项目可能要花费数小时时间。
