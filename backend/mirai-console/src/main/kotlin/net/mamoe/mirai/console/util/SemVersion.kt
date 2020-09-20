@@ -64,7 +64,7 @@ internal constructor(
      * 一条依赖规则
      * @see [parseRangeRequirement]
      */
-    public fun interface Requirement {
+    public interface Requirement {
         /** 在 [version] 满足此要求时返回 true */
         public fun test(version: SemVersion): Boolean
     }
