@@ -35,4 +35,5 @@ jobs:
           publish_branch: master
           user_name: 'mamoebot'
           user_email: 'mamoebot@users.noreply.github.com'
+          keep_files: true
 
