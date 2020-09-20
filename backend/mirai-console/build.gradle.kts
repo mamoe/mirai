@@ -69,7 +69,6 @@ dependencies {
 
     smartApi(kotlinx("coroutines-jdk8", Versions.coroutines))
     smartApi("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
-    smartApi("com.vdurmont:semver4j:3.1.0")
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))
