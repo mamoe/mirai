@@ -14,7 +14,7 @@
 
 package net.mamoe.mirai.console.util
 
-import net.mamoe.mirai.console.util.SemVersion.Companion.check
+import net.mamoe.mirai.console.util.SemVersion.Companion.test
 import org.junit.jupiter.api.Test
 
 internal class TestSemVersion {
@@ -44,12 +44,12 @@ internal class TestSemVersion {
     @Test
     internal fun testRequirement() {
         fun SemVersion.RangeRequirement.assert(version: String): SemVersion.RangeRequirement {
-            assert(check(version)) { version }
+            assert(test(version)) { version }
             return this
         }
 
         fun SemVersion.RangeRequirement.assertFalse(version: String): SemVersion.RangeRequirement {
-            assert(!check(version)) { version }
+            assert(!test(version)) { version }
             return this
         }
         SemVersion.parseRangeRequirement("1.0")

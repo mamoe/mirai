@@ -59,7 +59,7 @@ public data class SemVersion internal constructor(
      */
     public fun interface RangeRequirement {
         /** 在 [version] 满足此要求时返回 true */
-        public fun check(version: SemVersion): Boolean
+        public fun test(version: SemVersion): Boolean
     }
 
     public object SemVersionAsStringSerializer : KSerializer<SemVersion> by String.serializer().map(
@@ -118,25 +118,25 @@ public data class SemVersion internal constructor(
         @JvmStatic
         public fun parseRangeRequirement(requirement: String): RangeRequirement = SemVersionInternal.parseRangeRequirement(requirement)
 
-        /** @see [RangeRequirement.check] */
+        /** @see [RangeRequirement.test] */
         @JvmStatic
-        public fun RangeRequirement.check(version: String): Boolean = check(parse(version))
+        public fun RangeRequirement.test(version: String): Boolean = test(parse(version))
 
         /**
          * 当满足 [requirement] 时返回 true, 否则返回 false
          */
         @JvmStatic
-        public fun SemVersion.satisfies(requirement: RangeRequirement): Boolean = requirement.check(this)
+        public fun SemVersion.satisfies(requirement: RangeRequirement): Boolean = requirement.test(this)
 
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun RangeRequirement.contains(version: SemVersion): Boolean = check(version)
+        public operator fun RangeRequirement.contains(version: SemVersion): Boolean = test(version)
 
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun RangeRequirement.contains(version: String): Boolean = check(version)
+        public operator fun RangeRequirement.contains(version: String): Boolean = test(version)
     }
 
     @Transient
