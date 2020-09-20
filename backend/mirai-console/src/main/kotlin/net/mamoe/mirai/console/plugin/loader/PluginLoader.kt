@@ -61,10 +61,9 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如无法读取插件信息等).
      *
      * @see PluginDescription 插件描述
-     * @see getPluginDescription 无 receiver, 接受参数的版本.
      */
     @Throws(PluginLoadException::class)
-    public fun getPluginDescription(plugin: P): D // Java signature: `public D getDescription(P)`
+    public fun getPluginDescription(plugin: P): D
 
     /**
      * 主动加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的主类实例

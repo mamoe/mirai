@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 import net.mamoe.mirai.console.plugin.loader.FilePluginLoader
 
 /**
- * 内建的 Jar (JVM) 插件加载器
+ * JVM 插件加载器
  */
 public interface JvmPluginLoader : CoroutineScope, FilePluginLoader<JvmPlugin, JvmPluginDescription> {
     /**
