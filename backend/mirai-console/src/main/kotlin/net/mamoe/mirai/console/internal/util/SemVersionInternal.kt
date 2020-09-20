@@ -69,8 +69,11 @@ internal object SemVersionInternal {
                 }
             }
         }
+        val mainVersion = version.substring(0, mainVersionEnd).parseMainVersion()
         return SemVersion(
-            mainVersion = version.substring(0, mainVersionEnd).parseMainVersion(),
+            major = mainVersion[0],
+            minor = mainVersion[1],
+            patch = mainVersion.getOrNull(2),
             identifier = identifier,
             metadata = metadata
         )
@@ -176,16 +179,12 @@ internal object SemVersionInternal {
 
         // If $this equals $other (without metadata),
         // return same.
-        if (other.mainVersion.contentEquals(source.mainVersion) && source.identifier == other.identifier) {
-            return 0
-        }
-        fun IntArray.getSafe(index: Int) = getOrElse(index) { 0 }
-
         // Compare main-version
-        for (index in 0 until (max(source.mainVersion.size, other.mainVersion.size))) {
-            val result = source.mainVersion.getSafe(index).compareTo(other.mainVersion.getSafe(index))
-            if (result != 0) return result
-        }
+
+        source.major.compareTo(other.major).takeUnless { it == 0 }?.let { return it }
+        source.minor.compareTo(other.minor).takeUnless { it == 0 }?.let { return it }
+        (source.patch ?: 0).compareTo(other.patch ?: 0).takeUnless { it == 0 }?.let { return it }
+
         // If main-versions are same.
         var identifier0 = source.identifier
         var identifier1 = other.identifier

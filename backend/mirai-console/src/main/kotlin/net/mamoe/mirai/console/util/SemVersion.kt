@@ -32,10 +32,13 @@ import net.mamoe.mirai.console.util.SemVersion.Requirement
  *
  * 解析示例:
  *
- * `1.0.0-M4+c25733b8` 将会解析出三个内容, mainVersion (核心版本号), [identifier] (先行版本号) 和 [metadata] (元数据).
+ * `1.0.0-M4+c25733b8` 将会解析出下面的内容,
+ * [major] (主本号), [minor] (次版本号), [patch] (修订号), [identifier] (先行版本号) 和 [metadata] (元数据).
  * ```
  * SemVersion(
- *   mainVersion = IntArray [1, 0, 0],
+ *   major = 1,
+ *   minor = 0,
+ *   patch = 0,
  *   identifier  = "M4"
  *   metadata    = "c25733b8"
  * )
@@ -53,8 +56,12 @@ public data class SemVersion
  * @see SemVersion.invoke 字符串解析
  */
 internal constructor(
-    /** 核心版本号, 由主版本号, 次版本号和修订号组成, 其中修订号不一定存在 */
-    public val mainVersion: IntArray,
+    /** 主版本号 */
+    public val major: Int,
+    /** 次版本号 */
+    public val minor: Int,
+    /** 修订号 */
+    public val patch: Int?,
     /** 先行版本号识别符 */
     public val identifier: String? = null,
     /** 版本号元数据, 不参与版本号对比([compareTo]), 但是参与版本号严格对比([equals]) */
@@ -151,14 +158,14 @@ internal constructor(
     @Transient
     private val toString: String by lazy(LazyThreadSafetyMode.NONE) {
         buildString {
-            mainVersion.joinTo(this, ".")
+            append(major)
+            append('.').append(minor)
+            patch?.let { append('.').append(it) }
             identifier?.let { identifier ->
-                append('-')
-                append(identifier)
+                append('-').append(identifier)
             }
             metadata?.let { metadata ->
-                append('+')
-                append(metadata)
+                append('+').append(metadata)
             }
         }
     }
@@ -169,7 +176,7 @@ internal constructor(
      * 将 [SemVersion] 转为 Kotlin data class 风格的 [String]
      */
     public fun toStructuredString(): String {
-        return "SemVersion(mainVersion=${mainVersion.contentToString()}, identifier=$identifier, metadata=$metadata)"
+        return "SemVersion(major=$major, minor=$minor, patch=$patch, identifier=$identifier, metadata=$metadata)"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -182,7 +189,8 @@ internal constructor(
     }
 
     override fun hashCode(): Int {
-        var result = mainVersion.contentHashCode()
+        var result = major shl minor
+        result *= (patch ?: 1)
         result = 31 * result + (identifier?.hashCode() ?: 0)
         result = 31 * result + (metadata?.hashCode() ?: 0)
         return result
