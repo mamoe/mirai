@@ -233,6 +233,6 @@ public data class SemVersion internal constructor(
      * if it's greater than [other].
      */
     public override operator fun compareTo(other: SemVersion): Int {
-        return SemVersionInternal.run { compareInternal(other) }
+        return SemVersionInternal.run { compareInternal(this@SemVersion, other) }
     }
 }
