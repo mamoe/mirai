@@ -20,8 +20,8 @@ import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
@@ -163,7 +163,7 @@ public class SimpleCommandArgumentContext(
  * ```
  * val context = buildCommandArgumentContext {
  *     Int::class with IntArgParser
- *     Member::class with ExistMemberArgParser
+ *     Member::class with ExistingMemberArgParser
  *     Group::class with { s: String, sender: CommandSender ->
  *          Bot.getInstance(s.toLong()).getGroup(s.toLong())
  *     }
