@@ -9,14 +9,12 @@
 
 package net.mamoe.mirai.console.data
 
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-
 /**
  * 序列化之后的名称.
  *
  * 例:
  * ```
- * object AccountPluginData : PluginData by ... {
+ * object AccountPluginData : AutoSavePluginData() {
  *    @ValueName("info")
  *    val map: Map<String, String> by value("a" to "b")
  * }
@@ -28,8 +26,10 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
  *   map:
  *     a: b
  * ```
+ *
+ * @see PluginData
+ * @see Value
  */
-@ConsoleExperimentalApi
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 public annotation class ValueName(val value: String)
