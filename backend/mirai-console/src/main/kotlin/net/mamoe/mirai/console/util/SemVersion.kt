@@ -124,11 +124,12 @@ internal constructor(
          */
         @Throws(IllegalArgumentException::class)
         @JvmStatic
-        public fun parseRangeRequirement(requirement: String): Requirement = SemVersionInternal.parseRangeRequirement(requirement)
+        public fun parseRangeRequirement(requirement: String): Requirement =
+            SemVersionInternal.parseRangeRequirement(requirement)
 
         /** @see [Requirement.test] */
         @JvmStatic
-        public fun Requirement.test(version: String): Boolean = test(invoke(version))
+        public fun Requirement.test(@ResolveContext(PLUGIN_VERSION) version: String): Boolean = test(invoke(version))
 
         /**
          * 当满足 [requirement] 时返回 true, 否则返回 false
@@ -144,7 +145,7 @@ internal constructor(
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun Requirement.contains(version: String): Boolean = test(version)
+        public operator fun Requirement.contains(@ResolveContext(PLUGIN_VERSION) version: String): Boolean = test(version)
     }
 
     @Transient
