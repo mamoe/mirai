@@ -26,11 +26,6 @@ internal object SemVersionInternal {
     private val versionMathRange =
         """\[([0-9]+(\.[0-9]+)+(|[\-+].+))\s*\,\s*([0-9]+(\.[0-9]+)+(|[\-+].+))\]""".toRegex()
     private val versionRule = """^((\>\=)|(\<\=)|(\=)|(\>)|(\<))\s*([0-9]+(\.[0-9]+)+(|[\-+].+))$""".toRegex()
-    private fun Collection<*>.dump() {
-        forEachIndexed { index, value ->
-            println("$index, $value")
-        }
-    }
 
     private val SEM_VERSION_REGEX =
         """^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$""".toRegex()
@@ -86,18 +81,18 @@ internal object SemVersionInternal {
         val trimmed = trim()
         if (directVersion.matches(trimmed)) {
             val parsed = SemVersion.invoke(trimmed)
-            return SemVersion.Requirement {
-                it.compareTo(parsed) == 0
+            return object : SemVersion.Requirement {
+                override fun test(version: SemVersion): Boolean = version.compareTo(parsed) == 0
             }
         }
         if (versionSelect.matches(trimmed)) {
             val regex = ("^" +
                 trimmed.replace(".", "\\.")
-                        .replace("x", ".+") +
-                    "$"
-                    ).toRegex()
-            return SemVersion.Requirement {
-                regex.matches(it.toString())
+                    .replace("x", ".+") +
+                "$"
+                ).toRegex()
+            return object : SemVersion.Requirement {
+                override fun test(version: SemVersion): Boolean = regex.matches(version.toString())
             }
         }
         (versionRange.matchEntire(trimmed) ?: versionMathRange.matchEntire(trimmed))?.let { range ->
@@ -109,44 +104,49 @@ internal object SemVersionInternal {
                 start = c
             }
             val compareRange = start..end
-            return SemVersion.Requirement {
-                it in compareRange
+            return object : SemVersion.Requirement {
+                override fun test(version: SemVersion): Boolean = version in compareRange
             }
         }
         versionRule.matchEntire(trimmed)?.let { result ->
             val operator = result.groupValues[1]
-            val version = SemVersion.invoke(result.groupValues[7])
+            val version1 = SemVersion.invoke(result.groupValues[7])
             return when (operator) {
                 ">=" -> {
-                    SemVersion.Requirement { it >= version }
+                    object : SemVersion.Requirement {
+                        override fun test(version: SemVersion): Boolean = version >= version1
+                    }
                 }
                 ">" -> {
-                    SemVersion.Requirement { it > version }
+                    object : SemVersion.Requirement {
+                        override fun test(version: SemVersion): Boolean = version > version1
+                    }
                 }
                 "<=" -> {
-                    SemVersion.Requirement { it <= version }
+                    object : SemVersion.Requirement {
+                        override fun test(version: SemVersion): Boolean = version <= version1
+                    }
                 }
                 "<" -> {
-                    SemVersion.Requirement { it < version }
+                    object : SemVersion.Requirement {
+                        override fun test(version: SemVersion): Boolean = version < version1
+                    }
                 }
                 "=" -> {
-                    SemVersion.Requirement { it.compareTo(version) == 0 }
+                    object : SemVersion.Requirement {
+                        override fun test(version: SemVersion): Boolean = version.compareTo(version1) == 0
+                    }
                 }
-                else -> throw AssertionError("operator=$operator, version=$version")
+                else -> error("operator=$operator, version=$version1")
             }
         }
-        throw UnsupportedOperationException("Cannot parse $this")
+        throw IllegalArgumentException("Cannot parse $this")
     }
 
     private fun SemVersion.Requirement.withRule(rule: String): SemVersion.Requirement {
         return object : SemVersion.Requirement {
-            override fun test(version: SemVersion): Boolean {
-                return this@withRule.test(version)
-            }
-
-            override fun toString(): String {
-                return rule
-            }
+            override fun test(version: SemVersion): Boolean = this@withRule.test(version)
+            override fun toString(): String = rule
         }
     }
 
@@ -159,11 +159,13 @@ internal object SemVersionInternal {
             it.parseRule().withRule(it)
         }.let { checks ->
             if (checks.size == 1) return checks[0]
-            SemVersion.Requirement {
-                checks.forEach { rule ->
-                    if (rule.test(it)) return@Requirement true
+            object : SemVersion.Requirement {
+                override fun test(version: SemVersion): Boolean {
+                    checks.forEach { rule ->
+                        if (rule.test(version)) return true
+                    }
+                    return false
                 }
-                return@Requirement false
             }.withRule(requirement)
         }
     }
