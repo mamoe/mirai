@@ -91,8 +91,8 @@ internal object SemVersionInternal {
 
     private fun SemVersion.RangeRequirement.withRule(rule: String): SemVersion.RangeRequirement {
         return object : SemVersion.RangeRequirement {
-            override fun check(version: SemVersion): Boolean {
-                return this@withRule.check(version)
+            override fun test(version: SemVersion): Boolean {
+                return this@withRule.test(version)
             }
 
             override fun toString(): String {
@@ -112,7 +112,7 @@ internal object SemVersionInternal {
             if (checks.size == 1) return checks[0]
             SemVersion.RangeRequirement {
                 checks.forEach { rule ->
-                    if (rule.check(it)) return@RangeRequirement true
+                    if (rule.test(it)) return@RangeRequirement true
                 }
                 return@RangeRequirement false
             }.withRule(requirement)
