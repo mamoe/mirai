@@ -33,7 +33,8 @@ intellij {
     updateSinceUntilBuild = false
 
     setPlugins(
-        "org.jetbrains.kotlin:1.4.10-release-IJ2020.2-1@staging"
+        "org.jetbrains.kotlin:1.4.10-release-IJ2020.2-1@staging",
+        "java"
     )
 }
 
@@ -116,4 +117,4 @@ tasks {
     }
 }
 
-// setupPublishing("mirai-console-intellij")
+setupPublishing("mirai-console-intellij")

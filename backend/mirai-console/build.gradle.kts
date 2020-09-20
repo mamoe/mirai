@@ -56,50 +56,28 @@ kotlin {
 }
 
 dependencies {
-    implementation("net.mamoe:mirai-core:${Versions.core}")
+    compileAndTestRuntime("net.mamoe:mirai-core:${Versions.core}")
+    compileAndTestRuntime(kotlin("stdlib", Versions.kotlinStdlib))
+    compileAndTestRuntime(kotlin("stdlib-jdk8", Versions.kotlinStdlib))
 
-    implementation(kotlinx("serialization-core", Versions.serialization))
-    implementation(kotlin("reflect"))
+    compileAndTestRuntime("org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}")
+    compileAndTestRuntime(kotlinx("coroutines-core", Versions.coroutines))
+    compileAndTestRuntime(kotlinx("serialization-core", Versions.serialization))
+    compileAndTestRuntime(kotlin("reflect"))
 
-    api("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
-    implementation("org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}")
-    api("org.jetbrains:annotations:19.0.0")
-    api(kotlinx("coroutines-jdk8", Versions.coroutines))
+    implementation("org.jetbrains:annotations:19.0.0")
 
-    api("com.vdurmont:semver4j:3.1.0")
+    smartApi(kotlinx("coroutines-jdk8", Versions.coroutines))
+    smartApi("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
+    smartApi("com.vdurmont:semver4j:3.1.0")
 
-    //api(kotlinx("collections-immutable", Versions.collectionsImmutable))
-
-    testApi(kotlinx("serialization-core", Versions.serialization))
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))
     testApi(kotlin("test"))
     testApi(kotlin("test-junit5"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
+    testApi("org.junit.jupiter:junit-jupiter-api:5.2.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
-
-
-//    val autoService = "1.0-rc7"
-//    kapt("com.google.auto.service", "auto-service", autoService)
-//    compileOnly("com.google.auto.service", "auto-service-annotations", autoService)
-}
-
-ext.apply {
-    // 傻逼 compileAndRuntime 没 exclude 掉
-    // 傻逼 gradle 第二次配置 task 会覆盖掉第一次的配置
-    val x: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar.() -> Unit = {
-        dependencyFilter.exclude {
-            when ("${it.moduleGroup}:${it.moduleName}") {
-                "net.mamoe:mirai-core" -> true
-                "org.jetbrains.kotlin:kotlin-stdlib" -> true
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8" -> true
-                "net.mamoe:mirai-core-qqandroid" -> true
-                else -> false
-            }
-        }
-    }
-    set("shadowJar", x)
 }
 
 tasks {
@@ -120,14 +98,14 @@ tasks {
                                 Regex("""val buildDate: Instant = Instant.ofEpochSecond\(.*\)""")
                             ) {
                                 """val buildDate: Instant = Instant.ofEpochSecond(${
-                                    Instant.now().getEpochSecond()
+                                    Instant.now().epochSecond
                                 })"""
                             }
                             .replace(
                                 Regex("""val version: Semver = Semver\(".*", Semver.SemverType.LOOSE\)""")
                             ) { """val version: Semver = Semver("${project.version}", Semver.SemverType.LOOSE)""" }
                     )
-            }
+                }
         }
     }
 }

@@ -54,7 +54,7 @@ internal fun org.gradle.api.Project.`publishing`(configure: org.gradle.api.publi
 inline fun Project.setupPublishing(
     artifactId: String,
     bintrayRepo: String = "mirai",
-    bintrayPkgName: String = "mirai-console",
+    bintrayPkgName: String = artifactId,
     vcs: String = "https://github.com/mamoe/mirai-console"
 ) {
 

@@ -7,8 +7,10 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.DependencyHandlerScope
+import org.gradle.kotlin.dsl.accessors.runtime.addDependencyTo
 
 @Suppress("unused")
 fun DependencyHandlerScope.kotlinx(id: String, version: String) = "org.jetbrains.kotlinx:kotlinx-$id:$version"
@@ -17,7 +19,29 @@ fun DependencyHandlerScope.kotlinx(id: String, version: String) = "org.jetbrains
 fun DependencyHandlerScope.ktor(id: String, version: String = Versions.ktor) = "io.ktor:ktor-$id:$version"
 
 @Suppress("unused")
-fun DependencyHandler.compileAndRuntime(any: Any) {
+fun DependencyHandler.compileAndTestRuntime(any: Any) {
     add("compileOnly", any)
-    add("runtimeOnly", any)
+    add("testRuntimeOnly", any)
+}
+
+fun DependencyHandler.smartApi(
+    dependencyNotation: String
+): ExternalModuleDependency {
+    return addDependencyTo(
+        this, "api", dependencyNotation
+    ) {
+        fun exclude(group: String, module: String) {
+            exclude(mapOf(
+                "group" to group,
+                "module" to module
+            ))
+        }
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
+        exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core-common")
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-core")
+        exclude("org.jetbrains.kotlinx", "kotlinx-serialization-common")
+        exclude("org.jetbrains.kotlinx", "kotlinx-serialization-core")
+    }
 }
