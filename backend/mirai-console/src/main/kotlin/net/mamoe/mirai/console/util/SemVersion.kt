@@ -188,22 +188,21 @@ public data class SemVersion internal constructor(
     }
 
     @Transient
-    private var toString: String? = null // For cache.
-    override fun toString(): String {
-        return toString ?: kotlin.run {
-            buildString {
-                mainVersion.joinTo(this, ".")
-                identifier?.let { identifier ->
-                    append('-')
-                    append(identifier)
-                }
-                metadata?.let { metadata ->
-                    append('+')
-                    append(metadata)
-                }
-            }.also { toString = it }
+    private val toString: String by lazy(LazyThreadSafetyMode.NONE) {
+        buildString {
+            mainVersion.joinTo(this, ".")
+            identifier?.let { identifier ->
+                append('-')
+                append(identifier)
+            }
+            metadata?.let { metadata ->
+                append('+')
+                append(metadata)
+            }
         }
     }
+
+    override fun toString(): String = toString
 
     /**
      * 将 [SemVersion] 转为 Kotlin data class 风格的 [String]
