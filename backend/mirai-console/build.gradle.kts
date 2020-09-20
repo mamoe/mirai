@@ -65,10 +65,9 @@ dependencies {
     compileAndTestRuntime(kotlinx("serialization-core", Versions.serialization))
     compileAndTestRuntime(kotlin("reflect"))
 
-    implementation("org.jetbrains:annotations:19.0.0")
-
+    smartImplementation("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
+    smartImplementation("org.jetbrains:annotations:19.0.0")
     smartApi(kotlinx("coroutines-jdk8", Versions.coroutines))
-    smartApi("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))
