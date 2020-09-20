@@ -27,8 +27,21 @@ fun DependencyHandler.compileAndTestRuntime(any: Any) {
 fun DependencyHandler.smartApi(
     dependencyNotation: String
 ): ExternalModuleDependency {
+    return smart("api", dependencyNotation)
+}
+
+fun DependencyHandler.smartImplementation(
+    dependencyNotation: String
+): ExternalModuleDependency {
+    return smart("implementation", dependencyNotation)
+}
+
+private fun DependencyHandler.smart(
+    configuration: String,
+    dependencyNotation: String
+): ExternalModuleDependency {
     return addDependencyTo(
-        this, "api", dependencyNotation
+        this, configuration, dependencyNotation
     ) {
         fun exclude(group: String, module: String) {
             exclude(mapOf(

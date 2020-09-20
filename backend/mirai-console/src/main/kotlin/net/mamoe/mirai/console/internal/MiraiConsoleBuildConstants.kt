@@ -9,13 +9,13 @@
 
 package net.mamoe.mirai.console.internal
 
-import com.vdurmont.semver4j.Semver
+import net.mamoe.mirai.console.util.SemVersion
 import java.time.Instant
 
 internal object MiraiConsoleBuildConstants { // auto-filled on build (task :mirai-console:fillBuildConstants)
     @JvmStatic
-    val buildDate: Instant = Instant.ofEpochSecond(1600522812)
+    val buildDate: Instant = Instant.ofEpochSecond(1600596035)
 
     @JvmStatic
-    val version: Semver = Semver("1.0-RC-dev-28", Semver.SemverType.LOOSE)
+    val version: SemVersion = SemVersion("1.0-RC-dev-28")
 }

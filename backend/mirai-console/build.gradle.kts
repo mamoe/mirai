@@ -65,11 +65,9 @@ dependencies {
     compileAndTestRuntime(kotlinx("serialization-core", Versions.serialization))
     compileAndTestRuntime(kotlin("reflect"))
 
-    implementation("org.jetbrains:annotations:19.0.0")
-
+    smartImplementation("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
+    smartImplementation("org.jetbrains:annotations:19.0.0")
     smartApi(kotlinx("coroutines-jdk8", Versions.coroutines))
-    smartApi("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")
-    smartApi("com.vdurmont:semver4j:3.1.0")
 
     testApi("net.mamoe:mirai-core-qqandroid:${Versions.core}")
     testApi(kotlin("stdlib-jdk8"))
@@ -102,8 +100,8 @@ tasks {
                                 })"""
                             }
                             .replace(
-                                Regex("""val version: Semver = Semver\(".*", Semver.SemverType.LOOSE\)""")
-                            ) { """val version: Semver = Semver("${project.version}", Semver.SemverType.LOOSE)""" }
+                                Regex("""val version: SemVersion = SemVersion.parse\(".*"\)""")
+                            ) { """val version: SemVersion = SemVersion.parse("${project.version}")""" }
                     )
                 }
         }

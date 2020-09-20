@@ -14,13 +14,13 @@
 
 package net.mamoe.mirai.console.util
 
-import net.mamoe.mirai.console.util.SemVersion.Companion.check
+import net.mamoe.mirai.console.util.SemVersion.Companion.test
 import org.junit.jupiter.api.Test
 
 internal class TestSemVersion {
     @Test
     internal fun testCompare() {
-        fun String.sem(): SemVersion = SemVersion.parse(this)
+        fun String.sem(): SemVersion = SemVersion.invoke(this)
         assert("1.0".sem() < "1.0.1".sem())
         assert("1.0.0".sem() == "1.0".sem())
         assert("1.1".sem() > "1.0.0".sem())
@@ -43,13 +43,13 @@ internal class TestSemVersion {
 
     @Test
     internal fun testRequirement() {
-        fun SemVersion.RangeRequirement.assert(version: String): SemVersion.RangeRequirement {
-            assert(check(version)) { version }
+        fun SemVersion.Requirement.assert(version: String): SemVersion.Requirement {
+            assert(test(version)) { version }
             return this
         }
 
-        fun SemVersion.RangeRequirement.assertFalse(version: String): SemVersion.RangeRequirement {
-            assert(!check(version)) { version }
+        fun SemVersion.Requirement.assertFalse(version: String): SemVersion.Requirement {
+            assert(!test(version)) { version }
             return this
         }
         SemVersion.parseRangeRequirement("1.0")
@@ -85,12 +85,12 @@ internal class TestSemVersion {
     }
 
     private fun String.check() {
-        val sem = SemVersion.parse(this)
+        val sem = SemVersion.invoke(this)
         assert(this == sem.toString()) { "$this != $sem" }
     }
 
     private fun String.checkInvalid() {
-        kotlin.runCatching { SemVersion.parse(this) }
+        kotlin.runCatching { SemVersion.invoke(this) }
             .onSuccess { assert(false) { "$this not a invalid sem-version" } }
     }
 

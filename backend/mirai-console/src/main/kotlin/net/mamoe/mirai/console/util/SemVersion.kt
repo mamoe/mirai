@@ -12,29 +12,27 @@
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.util
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_VERSION
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
+import net.mamoe.mirai.console.util.SemVersion.Requirement
 
 /**
- * 语义化版本支持
+ * [语义化版本](https://semver.org/lang/zh-CN/) 支持
  *
- * 在阅读此文件前, 请先阅读 https://semver.org/lang/zh-CN/
- * 该文档说明了语义化版本是什么, 此文件不再过多描述
+ * 解析示例:
  *
- * ----
- *
- * 这是一个例子 `1.0.0-M4+c25733b8`
- *
- * 将会解析出三个内容, mainVersion(核心版本号), identifier(先行版本号) 和 metadata(元数据).
- *
- * 对这个例子进行解析会得到
+ * `1.0.0-M4+c25733b8` 将会解析出三个内容, mainVersion (核心版本号), [identifier] (先行版本号) 和 [metadata] (元数据).
  * ```
  * SemVersion(
  *   mainVersion = IntArray [1, 0, 0],
@@ -43,47 +41,45 @@ import net.mamoe.mirai.console.util.SemVersion.Companion.equals
  * )
  * ```
  * 其中 identifier 和 metadata 都是可选的.
- * 对于核心版本号, 此实现稍微比 semver 宽松一些, 允许 x.y 的存在.
- * 但是不允许 0.0.0.0 之类的存在
  *
+ * 对于核心版本号, 此实现稍微比 semver 宽松一些, 允许 x.y 的存在.
+ *
+ * @see Requirement
+ * @see SemVersion.invoke
  */
 @Serializable(with = SemVersion.SemVersionAsStringSerializer::class)
-public data class SemVersion internal constructor(
+public data class SemVersion
+/**
+ * @see SemVersion.invoke 字符串解析
+ */
+internal constructor(
     /** 核心版本号, 由主版本号, 次版本号和修订号组成, 其中修订号不一定存在 */
     public val mainVersion: IntArray,
     /** 先行版本号识别符 */
     public val identifier: String? = null,
     /** 版本号元数据, 不参与版本号对比([compareTo]), 但是参与版本号严格对比([equals]) */
-    public val metadata: String? = null
+    public val metadata: String? = null,
 ) : Comparable<SemVersion> {
     /**
      * 一条依赖规则
      * @see [parseRangeRequirement]
      */
-    public fun interface RangeRequirement {
+    public interface Requirement {
         /** 在 [version] 满足此要求时返回 true */
-        public fun check(version: SemVersion): Boolean
+        public fun test(version: SemVersion): Boolean
     }
 
     public object SemVersionAsStringSerializer : KSerializer<SemVersion> by String.serializer().map(
         serializer = { it.toString() },
-        deserializer = { parse(it) }
+        deserializer = { SemVersion(it) }
     )
 
     public companion object {
-        private val SEM_VERSION_REGEX =
-            """^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$""".toRegex()
-
-        /** 解析核心版本号, eg: `1.0.0` -> IntArray[1, 0, 0] */
-        @JvmStatic
-        private fun String.parseMainVersion(): IntArray =
-            split('.').map { it.toInt() }.toIntArray()
-
         /**
          * 解析一个版本号, 将会返回一个 [SemVersion],
          * 如果发生解析错误将会抛出一个 [IllegalArgumentException] 或者 [NumberFormatException]
          *
-         * 对于版本号的组成, 我们有以下规定:
+         * 对于版本号的组成, 有以下规定:
          * - 必须包含主版本号和次版本号
          * - 存在 先行版本号 的时候 先行版本号 不能为空
          * - 存在 元数据 的时候 元数据 不能为空
@@ -100,45 +96,8 @@ public data class SemVersion internal constructor(
          */
         @Throws(IllegalArgumentException::class, NumberFormatException::class)
         @JvmStatic
-        public fun parse(version: String): SemVersion {
-            if (!SEM_VERSION_REGEX.matches(version)) {
-                throw IllegalArgumentException("`$version` not a valid version")
-            }
-            var mainVersionEnd: Int = 0
-            kotlin.run {
-                val iterator = version.iterator()
-                while (iterator.hasNext()) {
-                    val next = iterator.next()
-                    if (next == '-' || next == '+') {
-                        break
-                    }
-                    mainVersionEnd++
-                }
-            }
-            var identifier: String? = null
-            var metadata: String? = null
-            if (mainVersionEnd != version.length) {
-                when (version[mainVersionEnd]) {
-                    '-' -> {
-                        val metadataSplitter = version.indexOf('+', startIndex = mainVersionEnd)
-                        if (metadataSplitter == -1) {
-                            identifier = version.substring(mainVersionEnd + 1)
-                        } else {
-                            identifier = version.substring(mainVersionEnd + 1, metadataSplitter)
-                            metadata = version.substring(metadataSplitter + 1)
-                        }
-                    }
-                    '+' -> {
-                        metadata = version.substring(mainVersionEnd + 1)
-                    }
-                }
-            }
-            return SemVersion(
-                mainVersion = version.substring(0, mainVersionEnd).parseMainVersion(),
-                identifier = identifier,
-                metadata = metadata
-            )
-        }
+        @JvmName("parse")
+        public operator fun invoke(@ResolveContext(PLUGIN_VERSION) version: String): SemVersion = SemVersionInternal.parse(version)
 
         /**
          * 解析一条依赖需求描述, 在无法解析的时候抛出 [IllegalArgumentException]
@@ -154,7 +113,7 @@ public data class SemVersion internal constructor(
          * - `< 1.0.0-RC`     要求 1.0.0-RC 之前的版本, 不能是 1.0.0-RC
          * - `<= 1.0.0-RC`    要求 1.0.0-RC 或之前的版本, 可以是 1.0.0-RC
          *
-         * 对于多个规则, 也允许使用 `||` 拼接在一起.
+         * 对于多个规则, 也允许使用 `||` 拼接.
          * 例如:
          * - `1.x || 2.x || 3.0.0`
          * - `<= 0.5.3 || >= 1.0.0`
@@ -165,48 +124,46 @@ public data class SemVersion internal constructor(
          */
         @Throws(IllegalArgumentException::class)
         @JvmStatic
-        public fun parseRangeRequirement(requirement: String): RangeRequirement {
-            return SemVersionInternal.parseRangeRequirement(requirement)
-        }
+        public fun parseRangeRequirement(requirement: String): Requirement =
+            SemVersionInternal.parseRangeRequirement(requirement)
 
-        /** @see [RangeRequirement.check] */
+        /** @see [Requirement.test] */
         @JvmStatic
-        public fun RangeRequirement.check(version: String): Boolean = check(parse(version))
+        public fun Requirement.test(@ResolveContext(PLUGIN_VERSION) version: String): Boolean = test(invoke(version))
 
         /**
          * 当满足 [requirement] 时返回 true, 否则返回 false
          */
         @JvmStatic
-        public fun SemVersion.satisfies(requirement: RangeRequirement): Boolean = requirement.check(this)
+        public fun SemVersion.satisfies(requirement: Requirement): Boolean = requirement.test(this)
 
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun RangeRequirement.contains(version: SemVersion): Boolean = check(version)
+        public operator fun Requirement.contains(version: SemVersion): Boolean = test(version)
 
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun RangeRequirement.contains(version: String): Boolean = check(version)
+        public operator fun Requirement.contains(@ResolveContext(PLUGIN_VERSION) version: String): Boolean = test(version)
     }
 
     @Transient
-    private var toString: String? = null // For cache.
-    override fun toString(): String {
-        return toString ?: kotlin.run {
-            buildString {
-                mainVersion.joinTo(this, ".")
-                identifier?.let { identifier ->
-                    append('-')
-                    append(identifier)
-                }
-                metadata?.let { metadata ->
-                    append('+')
-                    append(metadata)
-                }
-            }.also { toString = it }
+    private val toString: String by lazy(LazyThreadSafetyMode.NONE) {
+        buildString {
+            mainVersion.joinTo(this, ".")
+            identifier?.let { identifier ->
+                append('-')
+                append(identifier)
+            }
+            metadata?.let { metadata ->
+                append('+')
+                append(metadata)
+            }
         }
     }
+
+    override fun toString(): String = toString
 
     /**
      * 将 [SemVersion] 转为 Kotlin data class 风格的 [String]
@@ -237,6 +194,6 @@ public data class SemVersion internal constructor(
      * if it's greater than [other].
      */
     public override operator fun compareTo(other: SemVersion): Int {
-        return SemVersionInternal.run { compareInternal(other) }
+        return SemVersionInternal.run { compareInternal(this@SemVersion, other) }
     }
 }

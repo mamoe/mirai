@@ -78,6 +78,35 @@ public object StringArgumentParser : InternalCommandArgumentParserExtensions<Str
 }
 
 /**
+ * 解析 [String] 通过 [Image].
+ */
+public object ImageArgumentParser : InternalCommandArgumentParserExtensions<Image> {
+    public override fun parse(raw: String, sender: CommandSender): Image {
+        return kotlin.runCatching {
+            Image(raw)
+        }.getOrElse {
+            illegalArgument("无法解析 $raw 为图片.")
+        }
+    }
+
+    override fun parse(raw: MessageContent, sender: CommandSender): Image {
+        if (raw is Image) return raw
+        return super.parse(raw, sender)
+    }
+}
+
+public object PlainTextArgumentParser : InternalCommandArgumentParserExtensions<PlainText> {
+    public override fun parse(raw: String, sender: CommandSender): PlainText {
+        return PlainText(raw)
+    }
+
+    override fun parse(raw: MessageContent, sender: CommandSender): PlainText {
+        if (raw is PlainText) return raw
+        return super.parse(raw, sender)
+    }
+}
+
+/**
  * 当字符串内容为(不区分大小写) "true", "yes", "enabled"
  */
 public object BooleanArgumentParser : InternalCommandArgumentParserExtensions<Boolean> {
