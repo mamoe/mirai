@@ -30,6 +30,7 @@ import kotlin.reflect.full.findAnnotation
  * @see PluginData
  */
 public open class AutoSavePluginData private constructor(
+    // KEEP THIS PRIMARY CONSTRUCTOR FOR FUTURE USE: WE'LL SUPPORT SERIALIZERS_MODULE FOR POLYMORPHISM
     @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?,
 ) : AbstractPluginData() {
     private lateinit var owner_: AutoSavePluginDataHolder
