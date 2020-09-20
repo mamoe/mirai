@@ -55,6 +55,21 @@ public sealed class CommandExecuteResult {
         public override val status: CommandExecuteStatus get() = CommandExecuteStatus.SUCCESSFUL
     }
 
+    /** 执行执行时发生了一个非法参数错误 */
+    public class IllegalArgument(
+        /** 指令执行时发生的错误 */
+        public override val exception: IllegalArgumentException,
+        /** 尝试执行的指令 */
+        public override val command: Command,
+        /** 尝试执行的指令名 */
+        public override val commandName: String,
+        /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
+        public override val args: MessageChain
+    ) : CommandExecuteResult() {
+        /** 指令最终执行状态, 总是 [CommandExecuteStatus.EXECUTION_EXCEPTION] */
+        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.ILLEGAL_ARGUMENT
+    }
+
     /** 指令执行过程出现了错误 */
     public class ExecutionFailed(
         /** 指令执行时发生的错误 */
@@ -119,7 +134,9 @@ public sealed class CommandExecuteResult {
         COMMAND_NOT_FOUND,
 
         /** 权限不足 */
-        PERMISSION_DENIED
+        PERMISSION_DENIED,
+        /** 非法参数 */
+        ILLEGAL_ARGUMENT,
     }
 }
 
@@ -136,6 +153,18 @@ public fun CommandExecuteResult.isSuccess(): Boolean {
         returns(false) implies (this@isSuccess !is CommandExecuteResult.Success)
     }
     return this is CommandExecuteResult.Success
+}
+
+/**
+ * 当 [this] 为 [CommandExecuteResult.IllegalArgument] 时返回 `true`
+ */
+@JvmSynthetic
+public fun CommandExecuteResult.isIllegalArgument(): Boolean {
+    contract {
+        returns(true) implies (this@isIllegalArgument is CommandExecuteResult.IllegalArgument)
+        returns(false) implies (this@isIllegalArgument !is CommandExecuteResult.IllegalArgument)
+    }
+    return this is CommandExecuteResult.IllegalArgument
 }
 
 /**

@@ -72,6 +72,10 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
                         intercept()
                     }
                 }
+                is CommandExecuteResult.IllegalArgument -> {
+                    result.exception.message?.let { sender.sendMessage(it) }
+                    intercept()
+                }
                 is CommandExecuteResult.Success -> {
                     intercept()
                 }
