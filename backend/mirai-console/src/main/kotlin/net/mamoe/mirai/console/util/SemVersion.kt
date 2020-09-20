@@ -12,6 +12,8 @@
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.util
 
 import kotlinx.serialization.KSerializer
@@ -21,20 +23,14 @@ import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
+import net.mamoe.mirai.console.util.SemVersion.RangeRequirement
 
 /**
- * 语义化版本支持
+ * [语义化版本](https://semver.org/lang/zh-CN/) 支持
  *
- * 在阅读此文件前, 请先阅读 https://semver.org/lang/zh-CN/
- * 该文档说明了语义化版本是什么, 此文件不再过多描述
+ * 解析示例:
  *
- * ----
- *
- * 这是一个例子 `1.0.0-M4+c25733b8`
- *
- * 将会解析出三个内容, mainVersion(核心版本号), identifier(先行版本号) 和 metadata(元数据).
- *
- * 对这个例子进行解析会得到
+ * `1.0.0-M4+c25733b8` 将会解析出三个内容, mainVersion (核心版本号), [identifier] (先行版本号) 和 [metadata] (元数据).
  * ```
  * SemVersion(
  *   mainVersion = IntArray [1, 0, 0],
@@ -43,9 +39,10 @@ import net.mamoe.mirai.console.util.SemVersion.Companion.equals
  * )
  * ```
  * 其中 identifier 和 metadata 都是可选的.
- * 对于核心版本号, 此实现稍微比 semver 宽松一些, 允许 x.y 的存在.
- * 但是不允许 0.0.0.0 之类的存在
  *
+ * 对于核心版本号, 此实现稍微比 semver 宽松一些, 允许 x.y 的存在.
+ *
+ * @see RangeRequirement
  */
 @Serializable(with = SemVersion.SemVersionAsStringSerializer::class)
 public data class SemVersion internal constructor(
@@ -83,7 +80,7 @@ public data class SemVersion internal constructor(
          * 解析一个版本号, 将会返回一个 [SemVersion],
          * 如果发生解析错误将会抛出一个 [IllegalArgumentException] 或者 [NumberFormatException]
          *
-         * 对于版本号的组成, 我们有以下规定:
+         * 对于版本号的组成, 有以下规定:
          * - 必须包含主版本号和次版本号
          * - 存在 先行版本号 的时候 先行版本号 不能为空
          * - 存在 元数据 的时候 元数据 不能为空
@@ -104,7 +101,7 @@ public data class SemVersion internal constructor(
             if (!SEM_VERSION_REGEX.matches(version)) {
                 throw IllegalArgumentException("`$version` not a valid version")
             }
-            var mainVersionEnd: Int = 0
+            var mainVersionEnd = 0
             kotlin.run {
                 val iterator = version.iterator()
                 while (iterator.hasNext()) {
@@ -154,7 +151,7 @@ public data class SemVersion internal constructor(
          * - `< 1.0.0-RC`     要求 1.0.0-RC 之前的版本, 不能是 1.0.0-RC
          * - `<= 1.0.0-RC`    要求 1.0.0-RC 或之前的版本, 可以是 1.0.0-RC
          *
-         * 对于多个规则, 也允许使用 `||` 拼接在一起.
+         * 对于多个规则, 也允许使用 `||` 拼接.
          * 例如:
          * - `1.x || 2.x || 3.0.0`
          * - `<= 0.5.3 || >= 1.0.0`
