@@ -30,7 +30,7 @@ import kotlin.reflect.full.findAnnotation
  * @see PluginData
  */
 public open class AutoSavePluginData private constructor(
-    @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?
+    @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?,
 ) : AbstractPluginData() {
     private lateinit var owner_: AutoSavePluginDataHolder
     private val autoSaveIntervalMillis_: LongRange get() = owner_.autoSaveIntervalMillis
@@ -45,7 +45,7 @@ public open class AutoSavePluginData private constructor(
         _saveName = saveName
     }
 
-    @Deprecated("请手动指定保存名称. 此构造器将在 1.0.0 删除", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("AutoSavePluginConfig"))
+    @Deprecated("请手动指定保存名称. 此构造器将在 1.0.0 删除", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("AutoSavePluginData(\"把我改成保存名称\")"))
     public constructor() : this(null) {
         val clazz = this::class
         _saveName = clazz.findAnnotation<ValueName>()?.value
@@ -72,7 +72,7 @@ public open class AutoSavePluginData private constructor(
                     ?.let { return@invokeOnCompletion }
                 MiraiConsole.mainLogger.error(
                     "An exception occurred when saving config ${this@AutoSavePluginData::class.qualifiedNameOrTip} " +
-                            "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner::class.qualifiedNameOrTip}",
+                        "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner::class.qualifiedNameOrTip}",
                     e
                 )
             }
