@@ -169,23 +169,23 @@ internal object SemVersionInternal {
     }
 
     @JvmStatic
-    fun SemVersion.compareInternal(other: SemVersion): Int {
+    fun compareInternal(source: SemVersion, other: SemVersion): Int {
         // ignored metadata in comparing
 
         // If $this equals $other (without metadata),
         // return same.
-        if (other.mainVersion.contentEquals(mainVersion) && identifier == other.identifier) {
+        if (other.mainVersion.contentEquals(source.mainVersion) && source.identifier == other.identifier) {
             return 0
         }
         fun IntArray.getSafe(index: Int) = getOrElse(index) { 0 }
 
         // Compare main-version
-        for (index in 0 until (max(mainVersion.size, other.mainVersion.size))) {
-            val result = mainVersion.getSafe(index).compareTo(other.mainVersion.getSafe(index))
+        for (index in 0 until (max(source.mainVersion.size, other.mainVersion.size))) {
+            val result = source.mainVersion.getSafe(index).compareTo(other.mainVersion.getSafe(index))
             if (result != 0) return result
         }
         // If main-versions are same.
-        var identifier0 = identifier
+        var identifier0 = source.identifier
         var identifier1 = other.identifier
         // If anyone doesn't have the identifier...
         if (identifier0 == null || identifier1 == null) {
