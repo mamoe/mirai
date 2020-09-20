@@ -21,6 +21,7 @@ import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.PlainText
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -75,7 +76,9 @@ public interface CommandArgumentContext {
         Long::class with LongArgumentParser
         Double::class with DoubleArgumentParser
         Float::class with FloatArgumentParser
+
         Image::class with ImageArgumentParser
+        PlainText::class with PlainTextArgumentParser
 
         Contact::class with ExistingContactArgumentParser
         User::class with ExistingUserArgumentParser

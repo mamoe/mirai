@@ -95,6 +95,17 @@ public object ImageArgumentParser : InternalCommandArgumentParserExtensions<Imag
     }
 }
 
+public object PlainTextArgumentParser : InternalCommandArgumentParserExtensions<PlainText> {
+    public override fun parse(raw: String, sender: CommandSender): PlainText {
+        return PlainText(raw)
+    }
+
+    override fun parse(raw: MessageContent, sender: CommandSender): PlainText {
+        if (raw is PlainText) return raw
+        return super.parse(raw, sender)
+    }
+}
+
 /**
  * 当字符串内容为(不区分大小写) "true", "yes", "enabled"
  */
