@@ -68,14 +68,6 @@ public data class SemVersion internal constructor(
     )
 
     public companion object {
-        private val SEM_VERSION_REGEX =
-            """^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$""".toRegex()
-
-        /** 解析核心版本号, eg: `1.0.0` -> IntArray[1, 0, 0] */
-        @JvmStatic
-        private fun String.parseMainVersion(): IntArray =
-            split('.').map { it.toInt() }.toIntArray()
-
         /**
          * 解析一个版本号, 将会返回一个 [SemVersion],
          * 如果发生解析错误将会抛出一个 [IllegalArgumentException] 或者 [NumberFormatException]
@@ -97,45 +89,7 @@ public data class SemVersion internal constructor(
          */
         @Throws(IllegalArgumentException::class, NumberFormatException::class)
         @JvmStatic
-        public fun parse(version: String): SemVersion {
-            if (!SEM_VERSION_REGEX.matches(version)) {
-                throw IllegalArgumentException("`$version` not a valid version")
-            }
-            var mainVersionEnd = 0
-            kotlin.run {
-                val iterator = version.iterator()
-                while (iterator.hasNext()) {
-                    val next = iterator.next()
-                    if (next == '-' || next == '+') {
-                        break
-                    }
-                    mainVersionEnd++
-                }
-            }
-            var identifier: String? = null
-            var metadata: String? = null
-            if (mainVersionEnd != version.length) {
-                when (version[mainVersionEnd]) {
-                    '-' -> {
-                        val metadataSplitter = version.indexOf('+', startIndex = mainVersionEnd)
-                        if (metadataSplitter == -1) {
-                            identifier = version.substring(mainVersionEnd + 1)
-                        } else {
-                            identifier = version.substring(mainVersionEnd + 1, metadataSplitter)
-                            metadata = version.substring(metadataSplitter + 1)
-                        }
-                    }
-                    '+' -> {
-                        metadata = version.substring(mainVersionEnd + 1)
-                    }
-                }
-            }
-            return SemVersion(
-                mainVersion = version.substring(0, mainVersionEnd).parseMainVersion(),
-                identifier = identifier,
-                metadata = metadata
-            )
-        }
+        public fun parse(version: String): SemVersion = SemVersionInternal.parse(version)
 
         /**
          * 解析一条依赖需求描述, 在无法解析的时候抛出 [IllegalArgumentException]
@@ -162,9 +116,7 @@ public data class SemVersion internal constructor(
          */
         @Throws(IllegalArgumentException::class)
         @JvmStatic
-        public fun parseRangeRequirement(requirement: String): RangeRequirement {
-            return SemVersionInternal.parseRangeRequirement(requirement)
-        }
+        public fun parseRangeRequirement(requirement: String): RangeRequirement = SemVersionInternal.parseRangeRequirement(requirement)
 
         /** @see [RangeRequirement.test] */
         @JvmStatic
