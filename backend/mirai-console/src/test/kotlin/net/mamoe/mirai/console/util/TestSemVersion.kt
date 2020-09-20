@@ -43,12 +43,12 @@ internal class TestSemVersion {
 
     @Test
     internal fun testRequirement() {
-        fun SemVersion.RangeRequirement.assert(version: String): SemVersion.RangeRequirement {
+        fun SemVersion.Requirement.assert(version: String): SemVersion.Requirement {
             assert(test(version)) { version }
             return this
         }
 
-        fun SemVersion.RangeRequirement.assertFalse(version: String): SemVersion.RangeRequirement {
+        fun SemVersion.Requirement.assertFalse(version: String): SemVersion.Requirement {
             assert(!test(version)) { version }
             return this
         }

@@ -82,21 +82,21 @@ internal object SemVersionInternal {
     }
 
     @JvmStatic
-    private fun String.parseRule(): SemVersion.RangeRequirement {
+    private fun String.parseRule(): SemVersion.Requirement {
         val trimmed = trim()
         if (directVersion.matches(trimmed)) {
             val parsed = SemVersion.invoke(trimmed)
-            return SemVersion.RangeRequirement {
+            return SemVersion.Requirement {
                 it.compareTo(parsed) == 0
             }
         }
         if (versionSelect.matches(trimmed)) {
             val regex = ("^" +
-                    trimmed.replace(".", "\\.")
+                trimmed.replace(".", "\\.")
                         .replace("x", ".+") +
                     "$"
                     ).toRegex()
-            return SemVersion.RangeRequirement {
+            return SemVersion.Requirement {
                 regex.matches(it.toString())
             }
         }
@@ -109,7 +109,7 @@ internal object SemVersionInternal {
                 start = c
             }
             val compareRange = start..end
-            return SemVersion.RangeRequirement {
+            return SemVersion.Requirement {
                 it in compareRange
             }
         }
@@ -118,19 +118,19 @@ internal object SemVersionInternal {
             val version = SemVersion.invoke(result.groupValues[7])
             return when (operator) {
                 ">=" -> {
-                    SemVersion.RangeRequirement { it >= version }
+                    SemVersion.Requirement { it >= version }
                 }
                 ">" -> {
-                    SemVersion.RangeRequirement { it > version }
+                    SemVersion.Requirement { it > version }
                 }
                 "<=" -> {
-                    SemVersion.RangeRequirement { it <= version }
+                    SemVersion.Requirement { it <= version }
                 }
                 "<" -> {
-                    SemVersion.RangeRequirement { it < version }
+                    SemVersion.Requirement { it < version }
                 }
                 "=" -> {
-                    SemVersion.RangeRequirement { it.compareTo(version) == 0 }
+                    SemVersion.Requirement { it.compareTo(version) == 0 }
                 }
                 else -> throw AssertionError("operator=$operator, version=$version")
             }
@@ -138,8 +138,8 @@ internal object SemVersionInternal {
         throw UnsupportedOperationException("Cannot parse $this")
     }
 
-    private fun SemVersion.RangeRequirement.withRule(rule: String): SemVersion.RangeRequirement {
-        return object : SemVersion.RangeRequirement {
+    private fun SemVersion.Requirement.withRule(rule: String): SemVersion.Requirement {
+        return object : SemVersion.Requirement {
             override fun test(version: SemVersion): Boolean {
                 return this@withRule.test(version)
             }
@@ -151,7 +151,7 @@ internal object SemVersionInternal {
     }
 
     @JvmStatic
-    fun parseRangeRequirement(requirement: String): SemVersion.RangeRequirement {
+    fun parseRangeRequirement(requirement: String): SemVersion.Requirement {
         if (requirement.isBlank()) {
             throw IllegalArgumentException("Invalid requirement: Empty requirement rule.")
         }
@@ -159,11 +159,11 @@ internal object SemVersionInternal {
             it.parseRule().withRule(it)
         }.let { checks ->
             if (checks.size == 1) return checks[0]
-            SemVersion.RangeRequirement {
+            SemVersion.Requirement {
                 checks.forEach { rule ->
-                    if (rule.test(it)) return@RangeRequirement true
+                    if (rule.test(it)) return@Requirement true
                 }
-                return@RangeRequirement false
+                return@Requirement false
             }.withRule(requirement)
         }
     }

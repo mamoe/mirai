@@ -11,16 +11,16 @@
 package net.mamoe.mirai.console.util
 
 /**
- * 构造 [SemVersion.RangeRequirement] 的 DSL
+ * 构造 [SemVersion.Requirement] 的 DSL
  */
 public object SemVersionRangeRequirementBuilder {
     /** @see [SemVersion.parseRangeRequirement] */
     @ILoveHim188moeForever
-    public fun parse(rule: String): SemVersion.RangeRequirement = SemVersion.parseRangeRequirement(rule)
+    public fun parse(rule: String): SemVersion.Requirement = SemVersion.parseRangeRequirement(rule)
 
     @ILoveHim188moeForever
-    public infix fun SemVersion.RangeRequirement.or(other: SemVersion.RangeRequirement): SemVersion.RangeRequirement {
-        return object : SemVersion.RangeRequirement {
+    public infix fun SemVersion.Requirement.or(other: SemVersion.Requirement): SemVersion.Requirement {
+        return object : SemVersion.Requirement {
             override fun test(version: SemVersion): Boolean {
                 return this@or.test(version) || other.test(version)
             }
@@ -32,17 +32,17 @@ public object SemVersionRangeRequirementBuilder {
     }
 
     @ILoveHim188moeForever
-    public infix fun String.or(other: String): SemVersion.RangeRequirement = parse(this) or parse(other)
+    public infix fun String.or(other: String): SemVersion.Requirement = parse(this) or parse(other)
 
     @ILoveHim188moeForever
-    public infix fun SemVersion.RangeRequirement.or(other: String): SemVersion.RangeRequirement = or(parse(other))
+    public infix fun SemVersion.Requirement.or(other: String): SemVersion.Requirement = or(parse(other))
 
     @ILoveHim188moeForever
-    public infix fun String.or(other: SemVersion.RangeRequirement): SemVersion.RangeRequirement = parse(this) or other
+    public infix fun String.or(other: SemVersion.Requirement): SemVersion.Requirement = parse(this) or other
 
     @ILoveHim188moeForever
-    public infix fun SemVersion.RangeRequirement.and(other: SemVersion.RangeRequirement): SemVersion.RangeRequirement {
-        return object : SemVersion.RangeRequirement {
+    public infix fun SemVersion.Requirement.and(other: SemVersion.Requirement): SemVersion.Requirement {
+        return object : SemVersion.Requirement {
             override fun test(version: SemVersion): Boolean {
                 return this@and.test(version) && other.test(version)
             }
@@ -54,17 +54,17 @@ public object SemVersionRangeRequirementBuilder {
     }
 
     @ILoveHim188moeForever
-    public infix fun String.and(other: String): SemVersion.RangeRequirement = parse(this) and parse(other)
+    public infix fun String.and(other: String): SemVersion.Requirement = parse(this) and parse(other)
 
     @ILoveHim188moeForever
-    public infix fun SemVersion.RangeRequirement.and(other: String): SemVersion.RangeRequirement = and(parse(other))
+    public infix fun SemVersion.Requirement.and(other: String): SemVersion.Requirement = and(parse(other))
 
     @ILoveHim188moeForever
-    public infix fun String.and(other: SemVersion.RangeRequirement): SemVersion.RangeRequirement = parse(this) and other
+    public infix fun String.and(other: SemVersion.Requirement): SemVersion.Requirement = parse(this) and other
 
     @Suppress("NOTHING_TO_INLINE")
     @ILoveHim188moeForever
-    public inline fun custom(rule: SemVersion.RangeRequirement): SemVersion.RangeRequirement = rule
+    public inline fun custom(rule: SemVersion.Requirement): SemVersion.Requirement = rule
 
     /**
      * 标注一个 [SemVersionRangeRequirementBuilder] DSL

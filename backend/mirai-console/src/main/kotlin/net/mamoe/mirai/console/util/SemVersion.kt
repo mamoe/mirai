@@ -25,7 +25,7 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_VERSIO
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
-import net.mamoe.mirai.console.util.SemVersion.RangeRequirement
+import net.mamoe.mirai.console.util.SemVersion.Requirement
 
 /**
  * [语义化版本](https://semver.org/lang/zh-CN/) 支持
@@ -44,7 +44,7 @@ import net.mamoe.mirai.console.util.SemVersion.RangeRequirement
  *
  * 对于核心版本号, 此实现稍微比 semver 宽松一些, 允许 x.y 的存在.
  *
- * @see RangeRequirement
+ * @see Requirement
  * @see SemVersion.invoke
  */
 @Serializable(with = SemVersion.SemVersionAsStringSerializer::class)
@@ -64,7 +64,7 @@ internal constructor(
      * 一条依赖规则
      * @see [parseRangeRequirement]
      */
-    public fun interface RangeRequirement {
+    public fun interface Requirement {
         /** 在 [version] 满足此要求时返回 true */
         public fun test(version: SemVersion): Boolean
     }
@@ -124,27 +124,27 @@ internal constructor(
          */
         @Throws(IllegalArgumentException::class)
         @JvmStatic
-        public fun parseRangeRequirement(requirement: String): RangeRequirement = SemVersionInternal.parseRangeRequirement(requirement)
+        public fun parseRangeRequirement(requirement: String): Requirement = SemVersionInternal.parseRangeRequirement(requirement)
 
-        /** @see [RangeRequirement.test] */
+        /** @see [Requirement.test] */
         @JvmStatic
-        public fun RangeRequirement.test(version: String): Boolean = test(invoke(version))
+        public fun Requirement.test(version: String): Boolean = test(invoke(version))
 
         /**
          * 当满足 [requirement] 时返回 true, 否则返回 false
          */
         @JvmStatic
-        public fun SemVersion.satisfies(requirement: RangeRequirement): Boolean = requirement.test(this)
+        public fun SemVersion.satisfies(requirement: Requirement): Boolean = requirement.test(this)
 
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun RangeRequirement.contains(version: SemVersion): Boolean = test(version)
+        public operator fun Requirement.contains(version: SemVersion): Boolean = test(version)
 
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun RangeRequirement.contains(version: String): Boolean = test(version)
+        public operator fun Requirement.contains(version: String): Boolean = test(version)
     }
 
     @Transient

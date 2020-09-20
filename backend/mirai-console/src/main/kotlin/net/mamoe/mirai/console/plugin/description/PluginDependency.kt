@@ -30,10 +30,9 @@ public data class PluginDependency @JvmOverloads constructor(
      *
      * 版本遵循 [语义化版本 2.0 规范](https://semver.org/lang/zh-CN/),
      *
-     * ### 示例
-     * `Requirement.buildIvy("[1.0, 2.0)")`
+     * @see SemVersion.Requirement
      */
-    public val versionRequirement: SemVersion.RangeRequirement? = null,
+    public val versionRequirement: SemVersion.Requirement? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */

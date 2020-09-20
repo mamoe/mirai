@@ -156,7 +156,7 @@ public class JvmPluginDescriptionBuilder(
     public fun dependsOn(
         @ResolveContext(PLUGIN_ID) pluginId: String,
         isOptional: Boolean = false,
-        versionRequirement: SemVersion.RangeRequirement,
+        versionRequirement: SemVersion.Requirement,
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
     }
@@ -169,7 +169,7 @@ public class JvmPluginDescriptionBuilder(
     @ILoveKuriyamaMiraiForever
     public fun dependsOn(
         @ResolveContext(PLUGIN_ID) pluginId: String,
-        versionRequirement: SemVersion.RangeRequirement,
+        versionRequirement: SemVersion.Requirement,
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
     }
@@ -204,7 +204,7 @@ public class JvmPluginDescriptionBuilder(
     public fun dependsOn(
         @ResolveContext(PLUGIN_ID) pluginId: String,
         isOptional: Boolean = false,
-        versionRequirement: SemVersionRangeRequirementBuilder.() -> SemVersion.RangeRequirement,
+        versionRequirement: SemVersionRangeRequirementBuilder.() -> SemVersion.Requirement,
     ): JvmPluginDescriptionBuilder =
         apply {
             this.dependencies.add(PluginDependency(pluginId,
