@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.console.plugin.description
 
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_ID
 import net.mamoe.mirai.console.util.SemVersion
 
 /**
@@ -22,7 +24,7 @@ public data class PluginDependency @JvmOverloads constructor(
     /**
      * 依赖插件 ID, [PluginDescription.id]
      */
-    public val id: String,
+    @ResolveContext(PLUGIN_ID) public val id: String,
     /**
      * 依赖版本号. 为 null 时则为不限制版本.
      *
@@ -48,7 +50,10 @@ public data class PluginDependency @JvmOverloads constructor(
     /**
      * @see PluginDependency
      */
-    public constructor(name: String, isOptional: Boolean = false) : this(
-        name, null, isOptional
+    public constructor(
+        @ResolveContext(PLUGIN_ID) id: String,
+        isOptional: Boolean = false,
+    ) : this(
+        id, null, isOptional
     )
 }
