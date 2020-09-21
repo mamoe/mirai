@@ -132,6 +132,18 @@ subprojects {
                         it.printStackTrace() // force show stacktrace
                         throw it
                     }
+                    runCatching {
+                        upload.GitHub.upload(
+                            file.inputStream().use { upload.GitHub.run { it.md5().hex().toByteArray(Charsets.UTF_8) } },
+                            project,
+                            "mirai-repo",
+                            "shadow/${project.name}/$filename.md5"
+                        )
+                    }.exceptionOrNull()?.let {
+                        System.err.println("GitHub Upload failed")
+                        it.printStackTrace() // force show stacktrace
+                        throw it
+                    }
                 }
             }
         }
