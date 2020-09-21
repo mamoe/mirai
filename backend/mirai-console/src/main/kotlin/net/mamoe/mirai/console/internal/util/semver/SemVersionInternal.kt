@@ -19,9 +19,8 @@ import kotlin.math.min
 internal object SemVersionInternal {
     private val directVersion = """^[0-9]+(\.[0-9]+)+(|[\-+].+)$""".toRegex()
     private val versionSelect = """^[0-9]+(\.[0-9]+)*\.x$""".toRegex()
-    private val versionRange = """([0-9]+(\.[0-9]+)+(|[\-+].+))\s*\-\s*([0-9]+(\.[0-9]+)+(|[\-+].+))""".toRegex()
     private val versionMathRange =
-        """\[([0-9]+(\.[0-9]+)+(|[\-+].+))\s*\,\s*([0-9]+(\.[0-9]+)+(|[\-+].+))\]""".toRegex()
+        """([\[\(])([0-9]+(\.[0-9]+)+(|[\-+].+))\s*\,\s*([0-9]+(\.[0-9]+)+(|[\-+].+))([\]\)])""".toRegex()
     private val versionRule = """^((\>\=)|(\<\=)|(\=)|(\>)|(\<))\s*([0-9]+(\.[0-9]+)+(|[\-+].+))$""".toRegex()
 
     private val SEM_VERSION_REGEX =
@@ -95,17 +94,35 @@ internal object SemVersionInternal {
                 override fun test(version: SemVersion): Boolean = regex.matches(version.toString())
             }
         }
-        (versionRange.matchEntire(trimmed) ?: versionMathRange.matchEntire(trimmed))?.let { range ->
-            var start = SemVersion.invoke(range.groupValues[1])
-            var end = SemVersion.invoke(range.groupValues[4])
+        versionMathRange.matchEntire(trimmed)?.let { range ->
+            // 1 mode
+            // 2 first
+            // 5 sec
+            // 8 type
+            var typeStart = range.groupValues[1][0]
+            var typeEnd = range.groupValues[8][0]
+            var start = SemVersion.invoke(range.groupValues[2])
+            var end = SemVersion.invoke(range.groupValues[5])
             if (start > end) {
                 val c = end
                 end = start
                 start = c
+                val x = typeEnd
+                typeEnd = typeStart
+                typeStart = x
             }
-            val compareRange = start..end
+            val a: (SemVersion) -> Boolean = when (typeStart) {
+                '[', ']' -> ({ start <= it })
+                '(', ')' -> ({ start < it })
+                else -> throw AssertionError()
+            }
+            val b: (SemVersion) -> Boolean = when (typeEnd) {
+                '[', ']' -> ({ it <= end })
+                '(', ')' -> ({ it < end })
+                else -> throw AssertionError()
+            }
             return object : SemVersion.Requirement {
-                override fun test(version: SemVersion): Boolean = version in compareRange
+                override fun test(version: SemVersion): Boolean = a(version) && b(version)
             }
         }
         versionRule.matchEntire(trimmed)?.let { result ->
