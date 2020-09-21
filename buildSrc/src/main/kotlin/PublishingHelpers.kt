@@ -1,5 +1,6 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NOTHING_TO_INLINE", "RemoveRedundantBackticks")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
@@ -7,6 +8,10 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.*
 import upload.Bintray
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
+import java.security.MessageDigest
 import java.util.*
 import kotlin.reflect.KProperty
 
@@ -51,6 +56,44 @@ internal fun org.gradle.api.Project.`publishing`(configure: org.gradle.api.publi
     (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("publishing", configure)
 
 
+fun InputStream.md5(): ByteArray {
+    val digest = MessageDigest.getInstance("md5")
+    digest.reset()
+    use { input ->
+        object : OutputStream() {
+            override fun write(b: Int) {
+                digest.update(b.toByte())
+            }
+        }.use { output ->
+            input.copyTo(output)
+        }
+    }
+    return digest.digest()
+}
+
+@OptIn(ExperimentalUnsignedTypes::class)
+@JvmOverloads
+fun ByteArray.toUHexString(
+    separator: String = " ",
+    offset: Int = 0,
+    length: Int = this.size - offset
+): String {
+    if (length == 0) {
+        return ""
+    }
+    val lastIndex = offset + length
+    return buildString(length * 2) {
+        this@toUHexString.forEachIndexed { index, it ->
+            if (index in offset until lastIndex) {
+                var ret = it.toUByte().toString(16).toUpperCase()
+                if (ret.length == 1) ret = "0$ret"
+                append(ret)
+                if (index < lastIndex - 1) append(separator)
+            }
+        }
+    }
+}
+
 inline fun Project.setupPublishing(
     artifactId: String,
     bintrayRepo: String = "mirai",
@@ -63,6 +106,32 @@ inline fun Project.setupPublishing(
             if (!Bintray.isBintrayAvailable(project)) {
                 error("bintray isn't available. ")
             }
+        }
+    }
+
+    afterEvaluate {
+
+        val shadowJar = tasks.filterIsInstance<ShadowJar>().firstOrNull() ?: return@afterEvaluate
+
+        tasks.register("shadowJarMd5") {
+            val outFiles = shadowJar.outputs.files.map { file ->
+                File(file.parentFile, file.name.removeSuffix(".jar").removeSuffix("-all") + "-all.jar.md5")
+            }
+
+            outFiles.forEach { file ->
+                outputs.files(file)
+            }
+
+            doLast {
+                for (file in outFiles) {
+                    file
+                        .also { it.createNewFile() }
+                        .writeText(file.inputStream().md5().toUHexString().trim(Char::isWhitespace))
+                }
+            }
+
+            tasks.getByName("publish").dependsOn(this)
+            tasks.getByName("bintrayUpload").dependsOn(this)
         }
     }
 
@@ -104,6 +173,11 @@ inline fun Project.setupPublishing(
             publications {
                 register("mavenJava", MavenPublication::class) {
                     from(components["java"])
+                    afterEvaluate {
+                        for (file in tasks.getByName("shadowJarMd5").outputs.files) {
+                            artifact(provider { file })
+                        }
+                    }
 
                     groupId = rootProject.group.toString()
                     this.artifactId = artifactId
