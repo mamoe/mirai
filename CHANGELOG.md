@@ -1,5 +1,14 @@
 # Version 1.x
 
+## `1.3.1` 2020/9/21
+
+### 新特性
+- 无
+
+### 优化和修复
+- 修复 `BotJoinGroupEvent.Retrieve` 的显示错误 (#606 by @Karlatemp)
+- 添加缺少的戳一戳模板 (#615 by @sandtechnology)
+
 ## `1.3.0`  2020/9/16
 
 ### 新特性
