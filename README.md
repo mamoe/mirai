@@ -62,8 +62,8 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 
 ## 选择版本
 
-[Version]: https://api.bintray.com/packages/him188moe/mirai/mirai/images/download.svg?
-[Bintray Download]: https://bintray.com/him188moe/mirai/mirai/
+[Version]: https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg
+[Bintray Download]: https://bintray.com/him188moe/mirai/mirai-core/
 
 | 版本类型 |    版本号     |
 |:------:|:------------:|
