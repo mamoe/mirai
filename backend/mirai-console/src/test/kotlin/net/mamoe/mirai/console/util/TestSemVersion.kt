@@ -90,6 +90,11 @@ internal class TestSemVersion {
             .assertFalse("0.98774587")
         SemVersion.parseRangeRequirement("> 1.0.0")
             .assertFalse("1.0.0")
+        SemVersion.parseRangeRequirement("!= 1.0.0 && != 2.0.0")
+            .assert("1.2.3").assert("2.1.1")
+            .assertFalse("1.0").assertFalse("1.0.0")
+            .assertFalse("2.0").assertFalse("2.0.0")
+            .assert("2.0.1").assert("1.0.1")
 
         SemVersion.parseRangeRequirement("> 1.0.0 || < 0.9.0")
             .assertFalse("1.0.0")

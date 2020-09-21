@@ -21,7 +21,7 @@ internal object SemVersionInternal {
     private val versionSelect = """^[0-9]+(\.[0-9]+)*\.x$""".toRegex()
     private val versionMathRange =
         """([\[\(])([0-9]+(\.[0-9]+)+(|[\-+].+))\s*\,\s*([0-9]+(\.[0-9]+)+(|[\-+].+))([\]\)])""".toRegex()
-    private val versionRule = """^((\>\=)|(\<\=)|(\=)|(\>)|(\<))\s*([0-9]+(\.[0-9]+)+(|[\-+].+))$""".toRegex()
+    private val versionRule = """^((\>\=)|(\<\=)|(\=)|(\!\=)|(\>)|(\<))\s*([0-9]+(\.[0-9]+)+(|[\-+].+))$""".toRegex()
 
     private val SEM_VERSION_REGEX =
         """^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$""".toRegex()
@@ -127,7 +127,7 @@ internal object SemVersionInternal {
         }
         versionRule.matchEntire(trimmed)?.let { result ->
             val operator = result.groupValues[1]
-            val version1 = SemVersion.invoke(result.groupValues[7])
+            val version1 = SemVersion.invoke(result.groupValues[8])
             return when (operator) {
                 ">=" -> {
                     object : SemVersion.Requirement {
@@ -152,6 +152,11 @@ internal object SemVersionInternal {
                 "=" -> {
                     object : SemVersion.Requirement {
                         override fun test(version: SemVersion): Boolean = version.compareTo(version1) == 0
+                    }
+                }
+                "!=" -> {
+                    object : SemVersion.Requirement {
+                        override fun test(version: SemVersion): Boolean = version.compareTo(version1) != 0
                     }
                 }
                 else -> error("operator=$operator, version=$version1")
