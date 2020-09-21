@@ -26,7 +26,7 @@ public object SemVersionRangeRequirementBuilder {
             }
 
             override fun toString(): String {
-                return "(${this@or}) or ($other)"
+                return "{${this@or}} || {$other}"
             }
         }
     }
@@ -48,7 +48,7 @@ public object SemVersionRangeRequirementBuilder {
             }
 
             override fun toString(): String {
-                return "(${this@and}) or ($other)"
+                return "{${this@and}} && {$other}"
             }
         }
     }
@@ -64,7 +64,12 @@ public object SemVersionRangeRequirementBuilder {
 
     @Suppress("NOTHING_TO_INLINE")
     @ILoveHim188moeForever
-    public inline fun custom(rule: SemVersion.Requirement): SemVersion.Requirement = rule
+    public fun custom(rule: (SemVersion) -> Boolean): SemVersion.Requirement = object : SemVersion.Requirement {
+        override fun test(version: SemVersion): Boolean = rule(version)
+        override fun toString(): String {
+            return "Custom{$rule}"
+        }
+    }
 
     /**
      * 标注一个 [SemVersionRangeRequirementBuilder] DSL

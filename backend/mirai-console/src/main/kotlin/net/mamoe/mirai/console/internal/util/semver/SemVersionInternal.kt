@@ -8,12 +8,9 @@
  *
  */
 
-/*
- * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
- */
+package net.mamoe.mirai.console.internal.util.semver
 
-package net.mamoe.mirai.console.internal.util
-
+import net.mamoe.mirai.console.internal.util.semver.RangeTokenReader.dump
 import net.mamoe.mirai.console.util.SemVersion
 import kotlin.math.max
 import kotlin.math.min
@@ -22,10 +19,9 @@ import kotlin.math.min
 internal object SemVersionInternal {
     private val directVersion = """^[0-9]+(\.[0-9]+)+(|[\-+].+)$""".toRegex()
     private val versionSelect = """^[0-9]+(\.[0-9]+)*\.x$""".toRegex()
-    private val versionRange = """([0-9]+(\.[0-9]+)+(|[\-+].+))\s*\-\s*([0-9]+(\.[0-9]+)+(|[\-+].+))""".toRegex()
     private val versionMathRange =
-        """\[([0-9]+(\.[0-9]+)+(|[\-+].+))\s*\,\s*([0-9]+(\.[0-9]+)+(|[\-+].+))\]""".toRegex()
-    private val versionRule = """^((\>\=)|(\<\=)|(\=)|(\>)|(\<))\s*([0-9]+(\.[0-9]+)+(|[\-+].+))$""".toRegex()
+        """([\[\(])([0-9]+(\.[0-9]+)+(|[\-+].+))\s*\,\s*([0-9]+(\.[0-9]+)+(|[\-+].+))([\]\)])""".toRegex()
+    private val versionRule = """^((\>\=)|(\<\=)|(\=)|(\!\=)|(\>)|(\<))\s*([0-9]+(\.[0-9]+)+(|[\-+].+))$""".toRegex()
 
     private val SEM_VERSION_REGEX =
         """^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$""".toRegex()
@@ -69,16 +65,19 @@ internal object SemVersionInternal {
                 }
             }
         }
+        val mainVersion = version.substring(0, mainVersionEnd).parseMainVersion()
         return SemVersion(
-            mainVersion = version.substring(0, mainVersionEnd).parseMainVersion(),
+            major = mainVersion[0],
+            minor = mainVersion[1],
+            patch = mainVersion.getOrNull(2),
             identifier = identifier,
             metadata = metadata
         )
     }
 
     @JvmStatic
-    private fun String.parseRule(): SemVersion.Requirement {
-        val trimmed = trim()
+    internal fun parseRule(rule: String): SemVersion.Requirement {
+        val trimmed = rule.trim()
         if (directVersion.matches(trimmed)) {
             val parsed = SemVersion.invoke(trimmed)
             return object : SemVersion.Requirement {
@@ -95,22 +94,40 @@ internal object SemVersionInternal {
                 override fun test(version: SemVersion): Boolean = regex.matches(version.toString())
             }
         }
-        (versionRange.matchEntire(trimmed) ?: versionMathRange.matchEntire(trimmed))?.let { range ->
-            var start = SemVersion.invoke(range.groupValues[1])
-            var end = SemVersion.invoke(range.groupValues[4])
+        versionMathRange.matchEntire(trimmed)?.let { range ->
+            // 1 mode
+            // 2 first
+            // 5 sec
+            // 8 type
+            var typeStart = range.groupValues[1][0]
+            var typeEnd = range.groupValues[8][0]
+            var start = SemVersion.invoke(range.groupValues[2])
+            var end = SemVersion.invoke(range.groupValues[5])
             if (start > end) {
                 val c = end
                 end = start
                 start = c
+                val x = typeEnd
+                typeEnd = typeStart
+                typeStart = x
             }
-            val compareRange = start..end
+            val a: (SemVersion) -> Boolean = when (typeStart) {
+                '[', ']' -> ({ start <= it })
+                '(', ')' -> ({ start < it })
+                else -> throw AssertionError()
+            }
+            val b: (SemVersion) -> Boolean = when (typeEnd) {
+                '[', ']' -> ({ it <= end })
+                '(', ')' -> ({ it < end })
+                else -> throw AssertionError()
+            }
             return object : SemVersion.Requirement {
-                override fun test(version: SemVersion): Boolean = version in compareRange
+                override fun test(version: SemVersion): Boolean = a(version) && b(version)
             }
         }
         versionRule.matchEntire(trimmed)?.let { result ->
             val operator = result.groupValues[1]
-            val version1 = SemVersion.invoke(result.groupValues[7])
+            val version1 = SemVersion.invoke(result.groupValues[8])
             return when (operator) {
                 ">=" -> {
                     object : SemVersion.Requirement {
@@ -137,10 +154,15 @@ internal object SemVersionInternal {
                         override fun test(version: SemVersion): Boolean = version.compareTo(version1) == 0
                     }
                 }
+                "!=" -> {
+                    object : SemVersion.Requirement {
+                        override fun test(version: SemVersion): Boolean = version.compareTo(version1) != 0
+                    }
+                }
                 else -> error("operator=$operator, version=$version1")
             }
         }
-        throw IllegalArgumentException("Cannot parse $this")
+        throw IllegalArgumentException("Cannot parse $rule")
     }
 
     private fun SemVersion.Requirement.withRule(rule: String): SemVersion.Requirement {
@@ -155,19 +177,16 @@ internal object SemVersionInternal {
         if (requirement.isBlank()) {
             throw IllegalArgumentException("Invalid requirement: Empty requirement rule.")
         }
-        return requirement.split("||").map {
-            it.parseRule().withRule(it)
-        }.let { checks ->
-            if (checks.size == 1) return checks[0]
-            object : SemVersion.Requirement {
-                override fun test(version: SemVersion): Boolean {
-                    checks.forEach { rule ->
-                        if (rule.test(version)) return true
-                    }
-                    return false
-                }
-            }.withRule(requirement)
-        }
+        val tokens = RangeTokenReader.parseToTokens(requirement)
+        val collected = RangeTokenReader.collect(requirement, tokens.iterator(), true)
+        RangeTokenReader.check(requirement, collected.iterator(), null)
+        return kotlin.runCatching {
+            RangeTokenReader.parse(requirement, RangeTokenReader.Token.Group(collected, 0)).withRule(requirement)
+        }.onFailure { error ->
+            throw IllegalArgumentException("Exception in parsing $requirement\n\n" + buildString {
+                collected.forEach { dump("", it) }
+            }, error)
+        }.getOrThrow()
     }
 
     @JvmStatic
@@ -176,16 +195,12 @@ internal object SemVersionInternal {
 
         // If $this equals $other (without metadata),
         // return same.
-        if (other.mainVersion.contentEquals(source.mainVersion) && source.identifier == other.identifier) {
-            return 0
-        }
-        fun IntArray.getSafe(index: Int) = getOrElse(index) { 0 }
-
         // Compare main-version
-        for (index in 0 until (max(source.mainVersion.size, other.mainVersion.size))) {
-            val result = source.mainVersion.getSafe(index).compareTo(other.mainVersion.getSafe(index))
-            if (result != 0) return result
-        }
+
+        source.major.compareTo(other.major).takeUnless { it == 0 }?.let { return it }
+        source.minor.compareTo(other.minor).takeUnless { it == 0 }?.let { return it }
+        (source.patch ?: 0).compareTo(other.patch ?: 0).takeUnless { it == 0 }?.let { return it }
+
         // If main-versions are same.
         var identifier0 = source.identifier
         var identifier1 = other.identifier
