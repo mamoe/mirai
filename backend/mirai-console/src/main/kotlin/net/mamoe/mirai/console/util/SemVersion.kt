@@ -23,7 +23,7 @@ import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_VERSION
 import net.mamoe.mirai.console.internal.data.map
-import net.mamoe.mirai.console.internal.util.SemVersionInternal
+import net.mamoe.mirai.console.internal.util.semver.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
 import net.mamoe.mirai.console.util.SemVersion.Requirement
 

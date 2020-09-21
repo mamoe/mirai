@@ -8,12 +8,9 @@
  *
  */
 
-/*
- * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
- */
+package net.mamoe.mirai.console.internal.util.semver
 
-package net.mamoe.mirai.console.internal.util
-
+import net.mamoe.mirai.console.internal.util.semver.RangeTokenReader.dump
 import net.mamoe.mirai.console.util.SemVersion
 import kotlin.math.max
 import kotlin.math.min
@@ -80,8 +77,8 @@ internal object SemVersionInternal {
     }
 
     @JvmStatic
-    private fun String.parseRule(): SemVersion.Requirement {
-        val trimmed = trim()
+    internal fun parseRule(rule: String): SemVersion.Requirement {
+        val trimmed = rule.trim()
         if (directVersion.matches(trimmed)) {
             val parsed = SemVersion.invoke(trimmed)
             return object : SemVersion.Requirement {
@@ -143,7 +140,7 @@ internal object SemVersionInternal {
                 else -> error("operator=$operator, version=$version1")
             }
         }
-        throw IllegalArgumentException("Cannot parse $this")
+        throw IllegalArgumentException("Cannot parse $rule")
     }
 
     private fun SemVersion.Requirement.withRule(rule: String): SemVersion.Requirement {
@@ -158,19 +155,16 @@ internal object SemVersionInternal {
         if (requirement.isBlank()) {
             throw IllegalArgumentException("Invalid requirement: Empty requirement rule.")
         }
-        return requirement.split("||").map {
-            it.parseRule().withRule(it)
-        }.let { checks ->
-            if (checks.size == 1) return checks[0]
-            object : SemVersion.Requirement {
-                override fun test(version: SemVersion): Boolean {
-                    checks.forEach { rule ->
-                        if (rule.test(version)) return true
-                    }
-                    return false
-                }
-            }.withRule(requirement)
-        }
+        val tokens = RangeTokenReader.parseToTokens(requirement)
+        val collected = RangeTokenReader.collect(requirement, tokens.iterator(), true)
+        RangeTokenReader.check(requirement, collected.iterator(), null)
+        return kotlin.runCatching {
+            RangeTokenReader.parse(requirement, RangeTokenReader.Token.Group(collected, 0)).withRule(requirement)
+        }.onFailure { error ->
+            throw IllegalArgumentException("Exception in parsing $requirement\n\n" + buildString {
+                collected.forEach { dump("", it) }
+            }, error)
+        }.getOrThrow()
     }
 
     @JvmStatic

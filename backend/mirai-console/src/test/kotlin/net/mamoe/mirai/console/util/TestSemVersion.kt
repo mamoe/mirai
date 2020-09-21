@@ -48,6 +48,12 @@ internal class TestSemVersion {
             return this
         }
 
+        fun assertInvalid(requirement: String) {
+            kotlin.runCatching {
+                SemVersion.parseRangeRequirement(requirement)
+            }.onSuccess { assert(false) { requirement } }
+        }
+
         fun SemVersion.Requirement.assertFalse(version: String): SemVersion.Requirement {
             assert(!test(version)) { version }
             return this
@@ -59,6 +65,8 @@ internal class TestSemVersion {
             .assert("1.0").assert("1.1")
             .assert("1.5").assert("1.14514")
             .assertFalse("2.33")
+        SemVersion.parseRangeRequirement("2.0||1.2.x")
+        SemVersion.parseRangeRequirement("{2.0||1.2.x} && 1.1.0 &&1.2.3")
         SemVersion.parseRangeRequirement("2.0 || 1.2.x")
             .assert("2.0").assert("2.0.0")
             .assertFalse("2.1")
@@ -79,9 +87,24 @@ internal class TestSemVersion {
             .assertFalse("0.98774587")
         SemVersion.parseRangeRequirement("> 1.0.0")
             .assertFalse("1.0.0")
-        kotlin.runCatching { SemVersion.parseRangeRequirement("WPOXAXW") }
-            .onSuccess { assert(false) }
 
+        SemVersion.parseRangeRequirement("> 1.0.0 || < 0.9.0")
+            .assertFalse("1.0.0")
+            .assert("0.8.0")
+            .assertFalse("0.9.0")
+        SemVersion.parseRangeRequirement("{>= 1.0.0 && <= 1.2.3} || {>= 2.0.0 && <= 2.2.3}")
+            .assertFalse("1.3.0")
+            .assert("1.0.0").assert("1.2.3")
+            .assertFalse("0.9.0")
+            .assert("2.0.0").assert("2.2.3").assertFalse("2.3.4")
+
+        assertInvalid("WPOXAXW")
+        assertInvalid("1.0.0 || 1.0.0 && 1.0.0")
+        assertInvalid("{")
+        assertInvalid("}")
+        assertInvalid("")
+        assertInvalid("1.5.78 &&")
+        assertInvalid("|| 1.0.0")
     }
 
     private fun String.check() {
@@ -112,8 +135,9 @@ internal class TestSemVersion {
         "5.1+68-7".check()
         "5.1+68-".check()
     }
+
     @Test
-    internal fun testSemVersionOfficial(){
+    internal fun testSemVersionOfficial() {
         """
             1.0-RC
             0.0.4
