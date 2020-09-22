@@ -17,7 +17,6 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.github.jengelman.gradle.plugins:shadow:6.0.0")
         classpath("com.android.tools.build:gradle:${Versions.Android.androidGradlePlugin}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.compiler}")
         classpath("org.jetbrains.kotlin:kotlin-serialization:${Versions.Kotlin.compiler}")
@@ -29,7 +28,7 @@ buildscript {
 plugins {
     id("org.jetbrains.dokka") version Versions.Kotlin.dokka apply false
     id("net.mamoe.kotlin-jvm-blocking-bridge") version Versions.blockingBridge apply false
-    // id("com.jfrog.bintray") version Versions.Publishing.bintray apply false
+    id("com.jfrog.bintray") version Versions.Publishing.bintray
 }
 
 // https://github.com/kotlin/binary-compatibility-validator
@@ -77,6 +76,9 @@ subprojects {
     }
 
     afterEvaluate {
+        if (name == "mirai-core-all") {
+            return@afterEvaluate
+        }
 
         apply(plugin = "com.github.johnrengelman.shadow")
         val kotlin =
