@@ -1,5 +1,6 @@
 @file:Suppress("UnstableApiUsage", "UNUSED_VARIABLE")
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.dokka.gradle.DokkaTask
 import java.time.Duration
 import kotlin.math.pow
@@ -16,7 +17,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.github.jengelman.gradle.plugins:shadow:5.2.0")
+        classpath("com.github.jengelman.gradle.plugins:shadow:6.0.0")
         classpath("com.android.tools.build:gradle:${Versions.Android.androidGradlePlugin}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.compiler}")
         classpath("org.jetbrains.kotlin:kotlin-serialization:${Versions.Kotlin.compiler}")
@@ -74,15 +75,19 @@ subprojects {
     if (this@subprojects.name == "java-test") {
         return@subprojects
     }
+
     afterEvaluate {
+
         apply(plugin = "com.github.johnrengelman.shadow")
         val kotlin =
             runCatching {
                 (this as ExtensionAware).extensions.getByName("kotlin") as? org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
             }.getOrNull() ?: return@afterEvaluate
 
-        val shadowJvmJar by tasks.creating(com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar::class) {
+        val shadowJvmJar by tasks.creating(ShadowJar::class) sd@{
+
             group = "mirai"
+            archiveClassifier.set("-all")
 
             val compilations =
                 kotlin.targets.filter { it.platformType == org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType.jvm }
@@ -90,17 +95,17 @@ subprojects {
 
             compilations.forEach {
                 dependsOn(it.compileKotlinTask)
-            }
-
-            compilations.forEach {
                 from(it.output)
             }
-            configurations = compilations.map { it.compileDependencyFiles as Configuration }
+
+            println(project.configurations.joinToString())
+
+            from(project.configurations.getByName("jvmRuntimeClasspath"))
 
             this.exclude { file ->
                 file.name.endsWith(".sf", ignoreCase = true)
-                    .also { if (it) println("excluded ${file.name}") }
             }
+
             this.manifest {
                 this.attributes(
                     "Manifest-Version" to 1,
@@ -110,6 +115,29 @@ subprojects {
                 )
             }
         }
+
+        val shadowJarMd5 = tasks.register("shadowJarMd5") {
+            dependsOn("shadowJvmJar")
+
+            val outFiles = shadowJvmJar.outputs.files.associateWith { file ->
+                File(file.parentFile, file.name.removeSuffix(".jar").removeSuffix("-all") + "-all.jar.md5")
+            }
+
+            outFiles.forEach { (_, output) ->
+                outputs.files(output)
+            }
+
+            doLast {
+                for ((origin, output) in outFiles) {
+                    output
+                        .also { it.createNewFile() }
+                        .writeText(origin.inputStream().md5().toUHexString("").trim(Char::isWhitespace))
+                }
+            }
+
+            tasks.getByName("publish").dependsOn(this)
+            tasks.getByName("bintrayUpload").dependsOn(this)
+        }.get()
 
         val githubUpload by tasks.creating {
             group = "mirai"
@@ -217,30 +245,6 @@ subprojects {
                         }
                     }
             }
-        }
-
-        val cuiCloudUpload by tasks.creating {
-            group = "mirai"
-            dependsOn(shadowJvmJar)
-
-            doFirst {
-                timeout.set(Duration.ofHours(3))
-                findLatestFile().let { (_, file) ->
-                    val filename = file.name
-                    println("Uploading file $filename")
-                    runCatching {
-                        upload.CuiCloud.upload(
-                            file,
-                            project
-                        )
-                    }.exceptionOrNull()?.let {
-                        System.err.println("CuiCloud Upload failed")
-                        it.printStackTrace() // force show stacktrace
-                        throw it
-                    }
-                }
-            }
-
         }
     }
 

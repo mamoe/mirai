@@ -26,9 +26,6 @@ import org.gradle.kotlin.dsl.provideDelegate
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
-import java.security.MessageDigest
 import java.util.*
 
 internal val Http = HttpClient(CIO) {
@@ -72,25 +69,6 @@ object GitHub {
                     "please specify by creating a file token.txt in project dir, " +
                     "or by providing JVM parameter 'github_token'"
         )
-    }
-
-    fun InputStream.md5(): ByteArray {
-        val digest = MessageDigest.getInstance("md5")
-        digest.reset()
-        use { input ->
-            object : OutputStream() {
-                override fun write(b: Int) {
-                    digest.update(b.toByte())
-                }
-
-                override fun write(b: ByteArray, off: Int, len: Int) {
-                    digest.update(b, off, len)
-                }
-            }.use { output ->
-                input.copyTo(output)
-            }
-        }
-        return digest.digest()
     }
 
     fun ByteArray.hex(): String = buildString(size * 2) {
