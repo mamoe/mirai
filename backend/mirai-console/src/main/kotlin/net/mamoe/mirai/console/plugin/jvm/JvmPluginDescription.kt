@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.util.SemVersion
-import net.mamoe.mirai.console.util.SemVersionRangeRequirementBuilder
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
@@ -186,31 +185,6 @@ public class JvmPluginDescriptionBuilder(
     ): JvmPluginDescriptionBuilder = apply {
         this.dependencies.add(PluginDependency(pluginId, null, isOptional))
     }
-
-    /**
-     * 示例:
-     *
-     * ```
-     * dependsOn("org.example.test-plugin") { "1.0.0".."1.2.0" }
-     * dependsOn("org.example.test-plugin") { npmPattern("1.x || >=2.5.0 || 5.0.0 - 7.2.3") }
-     * dependsOn("org.example.test-plugin") { ivyPattern("[1.0,2.0[") }
-     * dependsOn("org.example.test-plugin") { custom { it.toString() == "1.0.0" } }
-     * ```
-     *
-     * @see PluginDependency
-     * @see SemVersionRangeRequirementBuilder
-     */
-    @ILoveKuriyamaMiraiForever
-    public fun dependsOn(
-        @ResolveContext(PLUGIN_ID) pluginId: String,
-        isOptional: Boolean = false,
-        versionRequirement: SemVersionRangeRequirementBuilder.() -> SemVersion.Requirement,
-    ): JvmPluginDescriptionBuilder =
-        apply {
-            this.dependencies.add(PluginDependency(pluginId,
-                SemVersionRangeRequirementBuilder.run(versionRequirement),
-                isOptional))
-        }
 
 
     @Suppress("DEPRECATION_ERROR")
