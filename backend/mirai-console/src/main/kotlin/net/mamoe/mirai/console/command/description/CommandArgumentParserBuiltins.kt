@@ -31,7 +31,7 @@ public object IntArgumentParser : InternalCommandArgumentParserExtensions<Int> {
 }
 
 /**
- * 使用 [String.toInt] 解析
+ * 使用 [String.toLong] 解析
  */
 public object LongArgumentParser : InternalCommandArgumentParserExtensions<Long> {
     public override fun parse(raw: String, sender: CommandSender): Long =
@@ -39,7 +39,7 @@ public object LongArgumentParser : InternalCommandArgumentParserExtensions<Long>
 }
 
 /**
- * 使用 [String.toInt] 解析
+ * 使用 [String.toShort] 解析
  */
 public object ShortArgumentParser : InternalCommandArgumentParserExtensions<Short> {
     public override fun parse(raw: String, sender: CommandSender): Short =
@@ -47,7 +47,7 @@ public object ShortArgumentParser : InternalCommandArgumentParserExtensions<Shor
 }
 
 /**
- * 使用 [String.toInt] 解析
+ * 使用 [String.toByte] 解析
  */
 public object ByteArgumentParser : InternalCommandArgumentParserExtensions<Byte> {
     public override fun parse(raw: String, sender: CommandSender): Byte =
@@ -55,7 +55,7 @@ public object ByteArgumentParser : InternalCommandArgumentParserExtensions<Byte>
 }
 
 /**
- * 使用 [String.toInt] 解析
+ * 使用 [String.toDouble] 解析
  */
 public object DoubleArgumentParser : InternalCommandArgumentParserExtensions<Double> {
     public override fun parse(raw: String, sender: CommandSender): Double =
@@ -63,7 +63,7 @@ public object DoubleArgumentParser : InternalCommandArgumentParserExtensions<Dou
 }
 
 /**
- * 使用 [String.toInt] 解析
+ * 使用 [String.toFloat] 解析
  */
 public object FloatArgumentParser : InternalCommandArgumentParserExtensions<Float> {
     public override fun parse(raw: String, sender: CommandSender): Float =
