@@ -1,6 +1,5 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NOTHING_TO_INLINE", "RemoveRedundantBackticks")
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
@@ -8,7 +7,6 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.*
 import upload.Bintray
-import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.MessageDigest
@@ -109,32 +107,6 @@ inline fun Project.setupPublishing(
         }
     }
 
-    afterEvaluate {
-
-        val shadowJar = tasks.filterIsInstance<ShadowJar>().firstOrNull() ?: return@afterEvaluate
-
-        tasks.register("shadowJarMd5") {
-            val outFiles = shadowJar.outputs.files.map { file ->
-                File(file.parentFile, file.name.removeSuffix(".jar").removeSuffix("-all") + "-all.jar.md5")
-            }
-
-            outFiles.forEach { file ->
-                outputs.files(file)
-            }
-
-            doLast {
-                for (file in outFiles) {
-                    file
-                        .also { it.createNewFile() }
-                        .writeText(file.inputStream().md5().toUHexString().trim(Char::isWhitespace))
-                }
-            }
-
-            tasks.getByName("publish").dependsOn(this)
-            tasks.getByName("bintrayUpload").dependsOn(this)
-        }
-    }
-
     if (Bintray.isBintrayAvailable(project)) {
         bintray {
             val keyProps = Properties()
@@ -173,11 +145,6 @@ inline fun Project.setupPublishing(
             publications {
                 register("mavenJava", MavenPublication::class) {
                     from(components["java"])
-                    afterEvaluate {
-                        for (file in tasks.getByName("shadowJarMd5").outputs.files) {
-                            artifact(provider { file })
-                        }
-                    }
 
                     groupId = rootProject.group.toString()
                     this.artifactId = artifactId
