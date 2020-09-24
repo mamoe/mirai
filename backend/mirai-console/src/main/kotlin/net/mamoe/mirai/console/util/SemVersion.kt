@@ -23,7 +23,7 @@ import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_VERSION
 import net.mamoe.mirai.console.internal.data.map
-import net.mamoe.mirai.console.internal.util.SemVersionInternal
+import net.mamoe.mirai.console.internal.util.semver.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
 import net.mamoe.mirai.console.util.SemVersion.Requirement
 
@@ -32,10 +32,13 @@ import net.mamoe.mirai.console.util.SemVersion.Requirement
  *
  * 解析示例:
  *
- * `1.0.0-M4+c25733b8` 将会解析出三个内容, mainVersion (核心版本号), [identifier] (先行版本号) 和 [metadata] (元数据).
+ * `1.0.0-M4+c25733b8` 将会解析出下面的内容,
+ * [major] (主本号), [minor] (次版本号), [patch] (修订号), [identifier] (先行版本号) 和 [metadata] (元数据).
  * ```
  * SemVersion(
- *   mainVersion = IntArray [1, 0, 0],
+ *   major = 1,
+ *   minor = 0,
+ *   patch = 0,
  *   identifier  = "M4"
  *   metadata    = "c25733b8"
  * )
@@ -53,8 +56,12 @@ public data class SemVersion
  * @see SemVersion.invoke 字符串解析
  */
 internal constructor(
-    /** 核心版本号, 由主版本号, 次版本号和修订号组成, 其中修订号不一定存在 */
-    public val mainVersion: IntArray,
+    /** 主版本号 */
+    public val major: Int,
+    /** 次版本号 */
+    public val minor: Int,
+    /** 修订号 */
+    public val patch: Int?,
     /** 先行版本号识别符 */
     public val identifier: String? = null,
     /** 版本号元数据, 不参与版本号对比([compareTo]), 但是参与版本号严格对比([equals]) */
@@ -106,21 +113,28 @@ internal constructor(
          *
          * - `1.0.0-M4`       要求 1.0.0-M4 版本, 且只能是 1.0.0-M4 版本
          * - `1.x`            要求 1.x 版本
-         * - `1.0.0 - 1.2.0`  要求 1.0.0 到 1.2.0 的任意版本, 注意 `-` 两边必须要有空格
-         * - `[1.0.0, 1.2.0]` 与 `1.0.0 - 1.2.0` 一致
          * - `> 1.0.0-RC`     要求 1.0.0-RC 之后的版本, 不能是 1.0.0-RC
          * - `>= 1.0.0-RC`    要求 1.0.0-RC 或之后的版本, 可以是 1.0.0-RC
          * - `< 1.0.0-RC`     要求 1.0.0-RC 之前的版本, 不能是 1.0.0-RC
          * - `<= 1.0.0-RC`    要求 1.0.0-RC 或之前的版本, 可以是 1.0.0-RC
+         * - `!= 1.0.0-RC`    要求 除了1.0.0-RC 的任何版本
+         *     - `[1.0.0, 1.2.0]`
+         *     - `(1.0.0, 1.2.0]`
+         *     - `[1.0.0, 1.2.0)`
+         *     - `(1.0.0, 1.2.0)` [数学区间](https://baike.baidu.com/item/%E5%8C%BA%E9%97%B4/1273117)
          *
-         * 对于多个规则, 也允许使用 `||` 拼接.
+         * 对于多个规则, 允许使用逻辑符号 `{}`, `||`, `&&`
          * 例如:
          * - `1.x || 2.x || 3.0.0`
          * - `<= 0.5.3 || >= 1.0.0`
+         * - `{> 1.0 && < 1.5} || {> 1.8}`
+         * - `{> 1.0 && < 1.5} || {> 1.8}`
+         * - `> 1.0.0 && != 1.2.0`
          *
          * 特别注意:
          * - 依赖规则版本号不需要携带版本号元数据, 元数据不参与依赖需求的检查
          * - 如果目标版本号携带有先行版本号, 请不要忘记先行版本号
+         * - 因为 `()` 已经用于数学区间, 使用 `{}` 替代 `()`
          */
         @Throws(IllegalArgumentException::class)
         @JvmStatic
@@ -151,14 +165,14 @@ internal constructor(
     @Transient
     private val toString: String by lazy(LazyThreadSafetyMode.NONE) {
         buildString {
-            mainVersion.joinTo(this, ".")
+            append(major)
+            append('.').append(minor)
+            patch?.let { append('.').append(it) }
             identifier?.let { identifier ->
-                append('-')
-                append(identifier)
+                append('-').append(identifier)
             }
             metadata?.let { metadata ->
-                append('+')
-                append(metadata)
+                append('+').append(metadata)
             }
         }
     }
@@ -169,7 +183,7 @@ internal constructor(
      * 将 [SemVersion] 转为 Kotlin data class 风格的 [String]
      */
     public fun toStructuredString(): String {
-        return "SemVersion(mainVersion=${mainVersion.contentToString()}, identifier=$identifier, metadata=$metadata)"
+        return "SemVersion(major=$major, minor=$minor, patch=$patch, identifier=$identifier, metadata=$metadata)"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -182,7 +196,8 @@ internal constructor(
     }
 
     override fun hashCode(): Int {
-        var result = mainVersion.contentHashCode()
+        var result = major shl minor
+        result *= (patch ?: 1)
         result = 31 * result + (identifier?.hashCode() ?: 0)
         result = 31 * result + (metadata?.hashCode() ?: 0)
         return result

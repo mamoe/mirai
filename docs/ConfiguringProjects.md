@@ -40,7 +40,7 @@ Mirai 鼓励插件开发者将自己的作品开源，并为此提供了模板�
 
 ### 使用 Gradle 插件配置项目
 
-`VERSION` 可在
+`VERSION`: [选择版本](#选择版本)
 
 若使用 `build.gradle.kts`:
 ```kotlin

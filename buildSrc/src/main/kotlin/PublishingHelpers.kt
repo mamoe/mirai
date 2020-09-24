@@ -7,6 +7,9 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.*
 import upload.Bintray
+import java.io.InputStream
+import java.io.OutputStream
+import java.security.MessageDigest
 import java.util.*
 import kotlin.reflect.KProperty
 
@@ -50,6 +53,44 @@ internal operator fun <T> ExistingDomainObjectDelegate<out T>.getValue(receiver:
 internal fun org.gradle.api.Project.`publishing`(configure: org.gradle.api.publish.PublishingExtension.() -> Unit): Unit =
     (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("publishing", configure)
 
+
+fun InputStream.md5(): ByteArray {
+    val digest = MessageDigest.getInstance("md5")
+    digest.reset()
+    use { input ->
+        object : OutputStream() {
+            override fun write(b: Int) {
+                digest.update(b.toByte())
+            }
+        }.use { output ->
+            input.copyTo(output)
+        }
+    }
+    return digest.digest()
+}
+
+@OptIn(ExperimentalUnsignedTypes::class)
+@JvmOverloads
+fun ByteArray.toUHexString(
+    separator: String = " ",
+    offset: Int = 0,
+    length: Int = this.size - offset
+): String {
+    if (length == 0) {
+        return ""
+    }
+    val lastIndex = offset + length
+    return buildString(length * 2) {
+        this@toUHexString.forEachIndexed { index, it ->
+            if (index in offset until lastIndex) {
+                var ret = it.toUByte().toString(16).toUpperCase()
+                if (ret.length == 1) ret = "0$ret"
+                append(ret)
+                if (index < lastIndex - 1) append(separator)
+            }
+        }
+    }
+}
 
 inline fun Project.setupPublishing(
     artifactId: String,
