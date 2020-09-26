@@ -59,7 +59,8 @@ object MiraiConsoleTerminalLoader {
     @ConsoleTerminalExperimentalApi
     fun printHelpMessage() {
         val help = listOf(
-            "" to "Mirai-Console[Terminal FrontEnd] v" + kotlin.runCatching {
+            "" to "Mirai-Console[Terminal FrontEnd] v" + net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.versionConst,
+            "" to "             [          BackEnd] v" + kotlin.runCatching {
                 net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
             }.getOrElse { "<unknown>" },
             "" to "",

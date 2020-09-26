@@ -151,7 +151,9 @@ val terminal: Terminal = run {
 private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
     override val name: String get() = "Terminal"
     override val vendor: String get() = "Mamoe Technologies"
-    override val version: SemVersion = net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
+    // net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
+    // is console's version not frontend's version
+    override val version: SemVersion = SemVersion(net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.versionConst)
 }
 
 private val ANSI_RESET = Ansi().reset().toString()
