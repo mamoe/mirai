@@ -174,7 +174,7 @@ internal fun overrideSTD() {
                 logger = DefaultLogger("stdout").run { ({ line: String? -> info(line) }) }
             ),
             false,
-            Charsets.UTF_8
+            "UTF-8"
         )
     )
     System.setErr(
@@ -183,7 +183,7 @@ internal fun overrideSTD() {
                 logger = DefaultLogger("stderr").run { ({ line: String? -> warning(line) }) }
             ),
             false,
-            Charsets.UTF_8
+            "UTF-8"
         )
     )
 }
