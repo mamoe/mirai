@@ -172,14 +172,18 @@ internal fun overrideSTD() {
         PrintStream(
             BufferedOutputStream(
                 logger = DefaultLogger("stdout").run { ({ line: String? -> info(line) }) }
-            )
+            ),
+            false,
+            Charsets.UTF_8
         )
     )
     System.setErr(
         PrintStream(
             BufferedOutputStream(
                 logger = DefaultLogger("stderr").run { ({ line: String? -> warning(line) }) }
-            )
+            ),
+            false,
+            Charsets.UTF_8
         )
     )
 }
