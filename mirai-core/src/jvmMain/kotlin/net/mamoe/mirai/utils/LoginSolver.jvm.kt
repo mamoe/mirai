@@ -95,7 +95,7 @@ public class StandardCharImageLoginSolver(
                     if (img == null) {
                         logger.info("无法创建字符图片. 请查看文件")
                     } else {
-                        logger.info(img.createCharImg())
+                        logger.info("\n" + img.createCharImg())
                     }
                 } catch (throwable: Throwable) {
                     logger.info("创建字符图片时出错($throwable)。请查看文件")
