@@ -49,7 +49,7 @@ internal object WindowHelperJvm {
                         MiraiLogger.info(
                             """
                                 Mirai 正在使用桌面环境,
-                                如果你正在使用SSH, 或者无法访问桌面等原因.
+                                如果你正在使用SSH, 或无法访问桌面等,
                                 请将 `mirai.no-desktop` 添加到 JVM 系统属性中 (-Dmirai.no-desktop)
                                 然后重启 Mirai
                             """.trimIndent()
