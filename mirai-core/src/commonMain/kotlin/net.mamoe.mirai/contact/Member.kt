@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -16,10 +16,14 @@ import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.action.MemberNudge
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
@@ -156,6 +160,15 @@ public abstract class Member : MemberJavaFriendlyAPI, User() {
      */
     @JvmSynthetic
     public abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
+
+    /**
+     * 创建一个 "戳一戳" 消息
+     *
+     * @see MemberNudge.sendTo 发送这个戳一戳消息
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("1.3.0")
+    public final override fun nudge(): Nudge = MemberNudge(this)
 
     /**
      * @see sendMessage

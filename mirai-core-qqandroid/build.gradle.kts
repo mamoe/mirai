@@ -6,7 +6,7 @@ plugins {
     kotlin("plugin.serialization")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
-    id("com.jfrog.bintray") version Versions.Publishing.bintray
+    id("com.jfrog.bintray")
 }
 
 description = "Mirai Protocol implementation for QQ Android"

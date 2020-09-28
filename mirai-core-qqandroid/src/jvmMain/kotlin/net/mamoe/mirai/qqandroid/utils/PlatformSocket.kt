@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -10,10 +10,10 @@
 package net.mamoe.mirai.qqandroid.utils
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
-import kotlinx.io.core.ExperimentalIoApi
 import kotlinx.io.errors.IOException
 import kotlinx.io.streams.readPacketAtMost
 import kotlinx.io.streams.writePacket
@@ -21,6 +21,7 @@ import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.net.Socket
 import java.net.SocketException
+import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -39,6 +40,7 @@ internal actual class PlatformSocket : Closeable {
         if (::socket.isInitialized) {
             socket.close()
         }
+        thread.shutdownNow()
     }
 
     @PublishedApi
@@ -68,15 +70,17 @@ internal actual class PlatformSocket : Closeable {
         }
     }
 
+    private val thread = Executors.newSingleThreadExecutor()
+
     /**
      * @throws ReadPacketInternalException
      */
-    actual suspend fun read(): ByteReadPacket {
-        return withContext(Dispatchers.IO) {
-            try {
+    actual suspend fun read(): ByteReadPacket = suspendCancellableCoroutine { cont ->
+        thread.submit {
+            kotlin.runCatching {
                 readChannel.readPacketAtMost(Long.MAX_VALUE)
-            } catch (e: IOException) {
-                throw ReadPacketInternalException(e)
+            }.let {
+                cont.resumeWith(it)
             }
         }
     }
@@ -102,8 +106,8 @@ internal actual typealias SocketException = SocketException
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */

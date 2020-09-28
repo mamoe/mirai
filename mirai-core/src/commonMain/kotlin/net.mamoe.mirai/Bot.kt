@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -20,6 +20,9 @@ import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.action.BotNudge
+import net.mamoe.mirai.message.action.MemberNudge
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
@@ -217,6 +220,15 @@ public abstract class Bot internal constructor(
     public abstract suspend fun recall(source: MessageSource)
 
     /**
+     * 创建一个 "戳一戳" 消息
+     *
+     * @see MemberNudge.sendTo 发送这个戳一戳消息
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("1.3.0")
+    public fun nudge(): BotNudge = BotNudge(this)
+
+    /**
      * 获取图片下载链接
      *
      * @see Image.queryUrl [Image] 的扩展函数
@@ -338,6 +350,14 @@ public abstract class Bot internal constructor(
     @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore()"), level = DeprecationLevel.ERROR)
     @JvmSynthetic
     public abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
+
+    @Deprecated(
+        "use member function.",
+        replaceWith = ReplaceWith("nudge.sendTo(contact)"),
+        level = DeprecationLevel.ERROR
+    )
+    @SinceMirai("1.3.0")
+    public abstract suspend fun sendNudge(nudge: Nudge, receiver: Contact): Boolean
 
     // endregion
 

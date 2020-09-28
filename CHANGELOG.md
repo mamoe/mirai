@@ -1,5 +1,53 @@
 # Version 1.x
 
+## `1.3.1` 2020/9/21
+
+### 新特性
+- 无
+
+### 优化和修复
+- 修复 `BotJoinGroupEvent.Retrieve` 的显示错误 (#606 by @Karlatemp)
+- 添加缺少的戳一戳模板 (#615 by @sandtechnology)
+
+## `1.3.0`  2020/9/16
+
+### 新特性
+
+- 支持群恢复相关事件: `MemberJoinEvent.Retrieve`, `BotJoinGroupEvent.Retrieve` (#531 by @Karlatemp)
+- 群荣耀获取 (`Bot._lowLevelGetGroupHonorListData`) (#501 by @yyuueexxiinngg)
+- 戳一戳事件: `MemberNudgedEvent`, `BotNudgedEvent`.(#600 by @sandtechnology)
+- 发送戳一戳: `Bot.nudge()`, `User.nudge()`
+- 为 `BotFactory` 添加伴生对象. 在顶层方法不方便使用时可使用伴生对象的 `Bot` 构建方法
+
+### 优化和修复
+- **修复好友消息和事件同步相关问题:**
+  - 部分情况下无法同步好友消息 (#249)
+  - BotInvitedJoinGroupRequestEvent 重复执行两次 (#449)
+  - 群消息可能发送失败 (#527)
+  - 机器人启动后第二次被拉入群聊不会刷新群列表 (#580)
+  - 新群员入群事件只触发一次 (#590)
+  - 入群申请 MemberJoinRequestEvent 没有广播 (#542)
+  - 新成员入群未处理 (#567)
+- 修复 `At` 之后的多余空格的问题 (#557)
+- 修复 `QuoteReply` 前多余 `At` 和空格的问题 (#524)
+- 修复群信息初始值 (`isMuteAll`, `isAllowMemberInvite`, ...) (#286)
+- 修复 `Voice.url` 的域名缺失问题 (#584 by @Hieuzest)
+- 修复日志颜色污染的问题 (#596 by @Karlatemp)
+- 修复 `Bot.nick` 无法获取的问题 (#566)
+- 修复登录时 `IndexOutOfBoundsException` 的问题 (#598)
+- 修复 Bot 被踢出群收到的事件类型错误的问题 (#358) (#509 by @sandtechnology)
+- 修复 `Bot.close` 后必须收到一个数据包才会关闭的问题 (#557)
+- 优化 `PermissionDeniedException` 的消息内容
+
+## `1.2.3`  2020/9/11
+- 在同步事件失败时添加重试, 改善 #249, #482, #542, #567, #590
+- 修复不断重连同一个服务器的问题 (#589)
+- 修复 `BotJoinGroupEvent.Active` 和 `BotJoinGroupEvent.Invite` 没有继承 `BotJoinGroupEvent` 的问题 (#532 by [@yyuueexxiinngg](https://github.com/yyuueexxiinngg))
+- 修复 `EmptyMessageChain` 与其他 `MessageChain` 拼接时发生 `NoSuchElementException` 的问题 (#550, #561 by [@sandtechnology](https://github.com/sandtechnology))
+- 为 `Image.queryUrl` 添加 JvmBlockingBridge
+- 优化 `PermissionDeniedException` 的错误信息
+- 更新到 Kotlin `1.4.10`
+
 ## `1.2.2`  2020/8/22
 - 修复依赖冲突问题 (#523)
 

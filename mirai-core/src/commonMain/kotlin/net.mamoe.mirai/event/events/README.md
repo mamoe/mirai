@@ -21,6 +21,8 @@
   - 服务器主动要求更换另一个服务器: RequireReconnect
 - Bot 重新登录: BotReloginEvent
 - Bot 头像改变: BotAvatarChangedEvent
+- (`1.2.0+`) Bot 昵称改变: BotNickChangedEvent
+- (`1.3.0+`) Bot 被戳: BotNudgedEvent
 
 ### [消息](message.kt)
 - (`1.1.0-`) 主动发送消息: MessageSendEvent
@@ -81,9 +83,10 @@
 ##### 成员权限
 - 成员权限改变: MemberPermissionChangeEvent
 
-##### 禁言
+##### 动作
 - 群成员被禁言: MemberMuteEvent
 - 群成员被取消禁言: MemberUnmuteEvent
+- (`1.3.0+`) 群员被戳: MemberNudgedEvent
 
 ### [好友](friend.kt)
 - 好友昵称改变: FriendRemarkChangeEvent
@@ -91,3 +94,6 @@
 - 好友已被删除: FriendDeleteEvent
 - 一个账号请求添加机器人为好友: NewFriendRequestEvent
 - 好友头像改变: FriendAvatarChangedEvent
+- (`1.2.0+`) 好友昵称改变: FriendNickChangedEvent
+- (`1.2.0+`) 好友输入状态改变: FriendInputStatusChangedEvent
+- (`1.3.0+`) 好友被戳: FriendNudgedEvent

@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -59,7 +59,7 @@ public actual open class PlatformLogger @JvmOverloads constructor(
      */
     @SinceMirai("1.1.0")
     protected open fun printLog(message: String?, priority: SimpleLogger.LogPriority) {
-        if (isColored) output("${priority.color}$currentTimeFormatted ${priority.simpleName}/$identity: $message")
+        if (isColored) output("${priority.color}$currentTimeFormatted ${priority.simpleName}/$identity: $message${Color.RESET}")
         else output("$currentTimeFormatted ${priority.simpleName}/$identity: $message")
     }
 

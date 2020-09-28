@@ -29,10 +29,11 @@ jobs:
       - name: GitHub Pages Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
-          deploy_key: ${{ secrets.DOC_DEPLOY_KEY }}
+          personal_token: ${{ secrets.MAMOE_TOKEN }}
           publish_dir: ./mirai-core/build/dokka
           external_repository: project-mirai/mirai-doc
           publish_branch: master
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
+          user_name: 'mamoebot'
+          user_email: 'mamoebot@users.noreply.github.com'
+          keep_files: true
 

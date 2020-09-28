@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -246,7 +246,6 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
             // self info
             data.selfInfo?.run {
-                bot.cachedNick = null
                 bot.selfInfo = this
 //                            bot.remark = remark ?: ""
 //                            bot.sex = sex
@@ -272,28 +271,11 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
     suspend fun StTroopNum.reloadGroup() {
         retryCatching(3) {
             bot.groups.delegate.addLast(
-                @Suppress("DuplicatedCode")
                 GroupImpl(
                     bot = bot,
                     coroutineContext = bot.coroutineContext,
                     id = groupCode,
-                    groupInfo = bot._lowLevelQueryGroupInfo(groupCode).apply {
-                        this as GroupInfoImpl
-
-                        if (this.delegate.groupName == null) {
-                            this.delegate.groupName = groupName
-                        }
-
-                        if (this.delegate.groupMemo == null) {
-                            this.delegate.groupMemo = groupMemo
-                        }
-
-                        if (this.delegate.groupUin == null) {
-                            this.delegate.groupUin = groupUin
-                        }
-
-                        this.delegate.groupCode = this@reloadGroup.groupCode
-                    },
+                    groupInfo = GroupInfoImpl(this),
                     members = bot._lowLevelQueryGroupMemberList(
                         groupUin,
                         groupCode,

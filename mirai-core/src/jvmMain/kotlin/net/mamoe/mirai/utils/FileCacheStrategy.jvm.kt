@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -11,20 +11,16 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.*
-import kotlinx.io.streams.asInput
-import kotlinx.io.streams.asOutput
+import kotlinx.io.core.Input
+import kotlinx.io.core.readAvailable
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.internal.asReusableInput
 import java.awt.image.BufferedImage
 import java.io.*
 import java.net.URL
 import java.security.MessageDigest
-import java.util.*
 import javax.imageio.ImageIO
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-import kotlin.io.use
 
 /**
  * 缓存策略.

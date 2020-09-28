@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -22,8 +22,10 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.qqandroid.network.Packet
 import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.jvm.*
@@ -129,6 +131,18 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
         public override fun toString(): String {
             return "BotJoinGroupEvent.Invite(invitor=$invitor)"
         }
+    }
+
+    /**
+     * 原群主通过 https://huifu.qq.com/ 恢复原来群主身份并入群,
+     * [Bot] 是原群主
+     */
+    @MiraiExperimentalAPI
+    @SinceMirai("1.3.0")
+    public data class Retrieve internal constructor(
+        public override val group: Group
+    ) : BotJoinGroupEvent() {
+        override fun toString(): String = "BotJoinGroupEvent.Retrieve(group=${group.id})"
     }
 }
 
@@ -259,6 +273,17 @@ public sealed class MemberJoinEvent(
         public override val member: Member
     ) : MemberJoinEvent(member) {
         public override fun toString(): String = "MemberJoinEvent.Active(member=${member.id})"
+    }
+
+    /**
+     * 原群主通过 https://huifu.qq.com/ 恢复原来群主身份并入群,
+     * 此时 [member] 的 [Member.permission] 肯定是 [MemberPermission.OWNER]
+     */
+    @SinceMirai("1.3.0")
+    public data class Retrieve internal constructor(
+        public override val member: Member
+    ) : MemberJoinEvent(member) {
+        override fun toString(): String = "MemberJoinEvent.Retrieve(member=${member.id})"
     }
 }
 
@@ -484,6 +509,35 @@ public data class MemberUnmuteEvent internal constructor(
      */
     public override val operator: Member?
 ) : GroupMemberEvent, Packet, GroupOperableEvent, AbstractEvent()
+
+// endregion
+
+// region 戳一戳
+
+
+/**
+ * [Member] 被 [戳][Nudge] 的事件.
+ */
+@MiraiExperimentalAPI
+@SinceMirai("1.3.0")
+public data class MemberNudgedEvent internal constructor(
+    /**
+     * 戳一戳的发起人, 不可能是 bot
+     */
+    public val from: Member,
+    /**
+     * 戳一戳的目标 (被戳的群员), 不可能是 bot
+     */
+    public override val member: Member,
+    /**
+     * 戳一戳的动作名称
+     */
+    public val action: String,
+    /**
+     * 戳一戳中设置的自定义后缀
+     */
+    public val suffix: String,
+) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
 
 // endregion
 

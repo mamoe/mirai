@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -71,7 +71,19 @@ object GitHub {
         )
     }
 
-    fun upload(file: File, project: Project, repo: String, targetFilePath: String) = runBlocking {
+    fun ByteArray.hex(): String = buildString(size * 2) {
+        this@hex.forEach { byte ->
+            val uint = Integer.toHexString(byte.toInt() and 0xFF)
+            if (uint.length == 1) append('0')
+            append(uint)
+        }
+    }
+
+    fun upload(file: File, project: Project, repo: String, targetFilePath: String) = upload(
+        file.readBytes(), project, repo, targetFilePath
+    )
+
+    fun upload(source: ByteArray, project: Project, repo: String, targetFilePath: String) = runBlocking {
         val token = getGithubToken(project)
         println("token.length=${token.length}")
         val url = "https://api.github.com/repos/project-mirai/$repo/contents/$targetFilePath"
@@ -86,10 +98,10 @@ object GitHub {
                     )
                 }.getOrNull()
                 println("sha=$sha")
-                val content = String(Base64.getEncoder().encode(file.readBytes()))
+                val content = String(Base64.getEncoder().encode(source))
                 body = """
                     {
-                      "message": "automatically upload on release",
+                      "message": "Automatically upload on release ${project.name}:${project.version}",
                       "content": "$content"
                       ${if (sha == null) "" else """, "sha": "$sha" """}
                     }

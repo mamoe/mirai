@@ -6,7 +6,7 @@ plugins {
     kotlin("plugin.serialization")
     id("signing")
     `maven-publish`
-    id("com.jfrog.bintray") version Versions.Publishing.bintray
+    id("com.jfrog.bintray")
 }
 
 description = "Mirai serialization module"

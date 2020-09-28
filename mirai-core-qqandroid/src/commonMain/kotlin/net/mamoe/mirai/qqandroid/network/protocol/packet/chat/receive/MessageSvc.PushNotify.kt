@@ -1,8 +1,8 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 with Mamoe Exceptions license that can be found via the following link.
+ * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
@@ -31,13 +31,13 @@ internal object MessageSvcPushNotify : IncomingPacketFactory<RequestPushNotify>(
 
     override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
 
-        client.c2cMessageSync.firstNotify.loop { firstNotify ->
+        client.syncingController.firstNotify.loop { firstNotify ->
             network.run {
                 return MessageSvcPbGetMsg(
                     client,
                     MsgSvc.SyncFlag.START,
                     if (firstNotify) {
-                        if (!client.c2cMessageSync.firstNotify.compareAndSet(firstNotify, false)) {
+                        if (!client.syncingController.firstNotify.compareAndSet(firstNotify, false)) {
                             return@loop
                         }
                         null

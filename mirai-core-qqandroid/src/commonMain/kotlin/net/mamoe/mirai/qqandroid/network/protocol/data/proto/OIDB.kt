@@ -172,13 +172,13 @@ internal class Oidb0x88d : ProtoBuf {
         @ProtoNumber(12) @JvmField val groupDefaultPage: Int? = null,
         @ProtoNumber(13) @JvmField val groupInfoSeq: Int? = null,
         @ProtoNumber(14) @JvmField val groupRoamingTime: Int? = null,
-        @ProtoNumber(15) var groupName: String? = null,
-        @ProtoNumber(16) var groupMemo: String? = null,
+        @ProtoNumber(15) @JvmField val groupName: String? = null,
+        @ProtoNumber(16) @JvmField val groupMemo: String? = null,
         @ProtoNumber(17) @JvmField val ingGroupFingerMemo: String? = null,
         @ProtoNumber(18) @JvmField val ingGroupClassText: String? = null,
         @ProtoNumber(19) @JvmField val groupAllianceCode: List<Int>? = null,
         @ProtoNumber(20) @JvmField val groupExtraAdmNum: Int? = null,
-        @ProtoNumber(21) var groupUin: Long? = null,
+        @ProtoNumber(21) @JvmField val groupUin: Long? = null,
         @ProtoNumber(22) @JvmField val groupCurMsgSeq: Int? = null,
         @ProtoNumber(23) @JvmField val groupLastMsgTime: Int? = null,
         @ProtoNumber(24) @JvmField val ingGroupQuestion: String? = null,
@@ -258,7 +258,6 @@ internal class Oidb0x88d : ProtoBuf {
         @ProtoNumber(98) @JvmField val cmduinRingtoneId: Int? = null,
         @ProtoNumber(99) @JvmField val groupFlagext4: Int? = null,
         @ProtoNumber(100) @JvmField val groupFreezeReason: Int? = null,
-        @ProtoNumber(101) var groupCode: Long? = null // mirai 添加
     ) : ProtoBuf
 
     @Serializable
@@ -2423,3 +2422,17 @@ internal class Cmd0x6ce : ProtoBuf {
     ) : ProtoBuf
 }
 
+@Serializable
+internal class Cmd0xed3 : ProtoBuf {
+    @Serializable
+    internal class RspBody : ProtoBuf
+
+    @Serializable
+    internal class ReqBody(
+        @ProtoNumber(1) @JvmField val toUin: Long = 0L,
+        @ProtoNumber(2) @JvmField val groupCode: Long = 0L,
+        @ProtoNumber(3) @JvmField val msgSeq: Int = 0,
+        @ProtoNumber(4) @JvmField val msgRandom: Int = 0,
+        @ProtoNumber(5) @JvmField val aioUin: Long = 0L
+    ) : ProtoBuf
+}
