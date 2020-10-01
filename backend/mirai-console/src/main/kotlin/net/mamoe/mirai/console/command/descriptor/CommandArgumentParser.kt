@@ -9,7 +9,7 @@
 
 @file:Suppress("NOTHING_TO_INLINE", "unused")
 
-package net.mamoe.mirai.console.command.description
+package net.mamoe.mirai.console.command.descriptor
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager

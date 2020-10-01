@@ -9,7 +9,7 @@
 
 @file:Suppress("unused")
 
-package net.mamoe.mirai.console.command.description
+package net.mamoe.mirai.console.command.descriptor
 
 /**
  * 在解析参数时遇到的 _正常_ 错误. 如参数不符合规范等.

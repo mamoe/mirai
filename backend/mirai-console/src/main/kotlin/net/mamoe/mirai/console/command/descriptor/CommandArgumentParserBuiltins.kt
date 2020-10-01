@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.command.description
+package net.mamoe.mirai.console.command.descriptor
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.*

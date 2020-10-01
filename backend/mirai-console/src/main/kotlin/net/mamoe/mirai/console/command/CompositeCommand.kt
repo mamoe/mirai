@@ -17,7 +17,7 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.description.*
+import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand

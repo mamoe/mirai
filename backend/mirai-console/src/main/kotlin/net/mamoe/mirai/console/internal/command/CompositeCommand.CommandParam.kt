@@ -12,10 +12,7 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.CompositeCommand
-import net.mamoe.mirai.console.command.description.CommandArgumentParser
-import java.lang.reflect.Parameter
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentParser
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 

@@ -12,8 +12,8 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.command.description.CommandArgumentContext
-import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentContextAware
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
