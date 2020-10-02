@@ -127,8 +127,7 @@ val gitVersion: String by lazy {
         exec.waitFor()
         exec.inputStream.readBytes().toString(Charsets.UTF_8).trim().also {
             println("Git commit id: $it")
-        }
-    }.onFailure {
+        } }.onFailure {
         it.printStackTrace()
         return@lazy "UNKNOWN"
     }.getOrThrow()
