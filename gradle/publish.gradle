@@ -123,10 +123,12 @@ afterEvaluate {
 
                 case 'jvm':
                     it.artifactId = isKotlin137x ? "$variantName" : "$variantName-jvm"
+                    /*
                     def files = tasks.getByName("shadowJarMd5").outputs.files + tasks.getByName("shadowJvmJar").outputs.files
                     for (f in files) {
                         artifact f
                     }
+                    */
                     break
 
                 case 'js':
