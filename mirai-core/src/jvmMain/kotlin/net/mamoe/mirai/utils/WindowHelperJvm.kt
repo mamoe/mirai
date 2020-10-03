@@ -16,25 +16,66 @@ package net.mamoe.mirai.utils
 import kotlinx.coroutines.CompletableDeferred
 import java.awt.BorderLayout
 import java.awt.Desktop
+import java.awt.Dimension
+import java.awt.Toolkit
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.JFrame
 import javax.swing.JTextField
 import javax.swing.SwingUtilities
 
 // 隔离类代码
+@Suppress("DEPRECATION")
 internal object WindowHelperJvm {
-    internal val isDesktopSupported: Boolean =
-        kotlin.runCatching {
-            System.getProperty("mirai.no-desktop") === null && Desktop.isDesktopSupported()
-        }.getOrElse {
+    internal val isDesktopSupported: Boolean = kotlin.run {
+        if (System.getProperty("mirai.no-desktop") === null) {
+            kotlin.runCatching {
+                Class.forName("java.awt.Desktop")
+                Class.forName("java.awt.Toolkit")
+            }.onFailure { return@run false } // Android OS
+            kotlin.runCatching {
+                Toolkit.getDefaultToolkit()
+            }.onFailure { // AWT Error, #270
+                return@run false
+            }
+            kotlin.runCatching {
+                Desktop.isDesktopSupported().also { stat ->
+                    if (stat) {
+                        MiraiLogger.info(
+                            """
+                                Mirai 正在使用桌面环境,
+                                如果你正在使用SSH, 或无法访问桌面等,
+                                请将 `mirai.no-desktop` 添加到 JVM 系统属性中 (-Dmirai.no-desktop)
+                                然后重启 Mirai
+                            """.trimIndent()
+                        )
+                        MiraiLogger.info(
+                            """
+                                Mirai using DesktopCaptcha System.
+                                If you are running on SSH, cannot access desktop or more.
+                                Please add `mirai.no-desktop` to JVM properties (-Dmirai.no-desktop)
+                                Then restart mirai
+                            """.trimIndent()
+                        )
+                    }
+                }
+            }.getOrElse {
+                // Should not happen
+                MiraiLogger.warning("Exception in checking desktop support.", it)
+                false
+            }
+        } else {
             false
         }
+    }
 }
 
-internal class WindowInitialzier(private val initializer: WindowInitialzier.(JFrame) -> Unit) {
+internal class WindowInitializer(private val initializer: WindowInitializer.(JFrame) -> Unit) {
     private lateinit var frame0: JFrame
     val frame: JFrame get() = frame0
     fun java.awt.Component.append() {
@@ -51,12 +92,20 @@ internal class WindowInitialzier(private val initializer: WindowInitialzier.(JFr
     }
 }
 
-internal suspend fun openWindow(title: String = "", initializer: WindowInitialzier.(JFrame) -> Unit = {}): String {
-    return openWindow(title, WindowInitialzier(initializer))
+internal val windowIcon: BufferedImage? by lazy {
+    WindowHelperJvm::class.java.getResourceAsStream("project-mirai.png")?.use {
+        ImageIO.read(it)
+    }
 }
 
-internal suspend fun openWindow(title: String = "", initializer: WindowInitialzier = WindowInitialzier {}): String {
+internal suspend fun openWindow(title: String = "", initializer: WindowInitializer.(JFrame) -> Unit = {}): String {
+    return openWindow(title, WindowInitializer(initializer))
+}
+
+internal suspend fun openWindow(title: String = "", initializer: WindowInitializer = WindowInitializer {}): String {
     val frame = JFrame()
+    frame.iconImage = windowIcon
+    frame.minimumSize = Dimension(228, 62) // From Windows 10
     val value = JTextField()
     val def = CompletableDeferred<String>()
     value.addKeyListener(object : KeyListener {
@@ -89,9 +138,9 @@ internal suspend fun openWindow(title: String = "", initializer: WindowInitialzi
     frame.title = title
     frame.isVisible = true
 
-    val result = def.await().trim()
-    SwingUtilities.invokeLater {
-        frame.dispose()
+    return def.await().trim().also {
+        SwingUtilities.invokeLater {
+            frame.dispose()
+        }
     }
-    return result
 }
