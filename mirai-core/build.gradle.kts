@@ -4,19 +4,17 @@ plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
-    id("signing")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray")
+    java
 }
 
-description = "Mirai API module"
+description = "Mirai Protocol implementation for QQ Android"
 
 val isAndroidSDKAvailable: Boolean by project
 
 kotlin {
-    explicitApi()
-
     if (isAndroidSDKAvailable) {
         apply(from = rootProject.file("gradle/android.gradle"))
         android("android") {
@@ -37,8 +35,8 @@ kotlin {
         )
     }
 
-    jvm {
-        // withJava() // https://youtrack.jetbrains.com/issue/KT-39991
+    jvm("jvm") {
+        withJava()
     }
 
     sourceSets.apply {
@@ -56,50 +54,41 @@ kotlin {
             languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.UnstableExternalImage")
 
             languageSettings.progressiveMode = true
+
+            dependencies {
+                api(project(":mirai-core-api"))
+            }
         }
 
         val commonMain by getting {
             dependencies {
-                api(kotlin("serialization"))
-                api(kotlin("reflect"))
-
                 api1(kotlinx("serialization-core", Versions.Kotlin.serialization))
-                implementation1(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
-                api1(kotlinx("io", Versions.Kotlin.io))
-                api1(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
                 api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
-
-                implementation1("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
-
-                api1(ktor("client-cio"))
-                api1(ktor("client-core"))
-                api1(ktor("network"))
+                implementation1(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
+                api1("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
+                api1(kotlinx("io", Versions.Kotlin.io))
+                implementation1(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
             }
         }
 
-        commonTest {
+        val commonTest by getting {
             dependencies {
                 implementation(kotlin("test-annotations-common"))
                 implementation(kotlin("test-common"))
+                implementation(kotlin("script-runtime"))
             }
         }
 
         if (isAndroidSDKAvailable) {
             val androidMain by getting {
                 dependencies {
-                    api(kotlin("reflect"))
-
-                    api1(kotlinx("io-jvm", Versions.Kotlin.io))
-                    api1(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
-
-                    api1(ktor("client-android", Versions.Kotlin.ktor))
                 }
             }
 
             val androidTest by getting {
                 dependencies {
-                    implementation(kotlin("test"))
-                    implementation(kotlin("test-junit"))
+                    implementation(kotlin("test", Versions.Kotlin.compiler))
+                    implementation(kotlin("test-junit", Versions.Kotlin.compiler))
                     implementation(kotlin("test-annotations-common"))
                     implementation(kotlin("test-common"))
                 }
@@ -108,23 +97,18 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                api(kotlin("reflect"))
-                compileOnly("org.apache.logging.log4j:log4j-api:" + Versions.Logging.log4j)
-                compileOnly("org.slf4j:slf4j-api:" + Versions.Logging.slf4j)
-
-                api1(ktor("client-core-jvm", Versions.Kotlin.ktor))
+                implementation("org.bouncycastle:bcprov-jdk15on:1.64")
                 api1(kotlinx("io-jvm", Versions.Kotlin.io))
-                api1(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+                //    api(kotlinx("coroutines-debug", Versions.Kotlin.coroutines))
             }
         }
 
         val jvmTest by getting {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit"))
+                dependsOn(commonTest)
+                implementation(kotlin("test", Versions.Kotlin.compiler))
+                implementation(kotlin("test-junit", Versions.Kotlin.compiler))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
-
-                runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
     }
@@ -149,6 +133,7 @@ fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.api1(dependencyNo
     }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
+
 
 tasks.withType<com.jfrog.bintray.gradle.tasks.BintrayUploadTask> {
     doFirst {

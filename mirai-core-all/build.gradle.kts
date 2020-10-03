@@ -54,7 +54,7 @@ kotlin {
 
 dependencies {
     api(project(":mirai-core"))
-    api(project(":mirai-core-qqandroid"))
+    api(project(":mirai-core-api"))
 }
 
 setupPublishing("mirai-core-all")

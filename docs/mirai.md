@@ -20,9 +20,9 @@
 mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组成.
 
 
-- [`mirai-core`](../mirai-core) 是机器人服务支持**库**. 提供所有机器人相关 API. **本身只包含抽象类和接口, 使用时还需要同时依赖协议模块**.  
+- [`mirai-core`](../mirai-core-api) 是机器人服务支持**库**. 提供所有机器人相关 API. **本身只包含抽象类和接口, 使用时还需要同时依赖协议模块**.  
   可用的协议模块:
-  - [`mirai-core-qqandroid`](../mirai-core-qqandroid): Android QQ 8.3.0 版本协议实现. 
+  - [`mirai-core-qqandroid`](../mirai-core): Android QQ 8.3.0 版本协议实现.
 
   `mirai-core` 设计为一个 **`支持库`**, 意味着它可以被独立依赖, 在任意项目中使用. 详见下文.
 

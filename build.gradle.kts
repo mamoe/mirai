@@ -273,19 +273,19 @@ subprojects {
                         suppress = true
                     }
                     perPackageOption {
-                        prefix = "net.mamoe.mirai.qqandroid.utils"
+                        prefix = "net.mamoe.mirai.internal.utils"
                         suppress = true
                     }
                     perPackageOption {
-                        prefix = "net.mamoe.mirai.qqandroid.contact"
+                        prefix = "net.mamoe.mirai.internal.contact"
                         suppress = true
                     }
                     perPackageOption {
-                        prefix = "net.mamoe.mirai.qqandroid.message"
+                        prefix = "net.mamoe.mirai.internal.message"
                         suppress = true
                     }
                     perPackageOption {
-                        prefix = "net.mamoe.mirai.qqandroid.network"
+                        prefix = "net.mamoe.mirai.internal.network"
                         suppress = true
                     }
                 }
