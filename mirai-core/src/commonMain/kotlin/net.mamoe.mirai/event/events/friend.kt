@@ -20,7 +20,9 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.qqandroid.network.Packet
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.*
@@ -132,3 +134,57 @@ public data class FriendInputStatusChangedEvent internal constructor(
     public val inputting: Boolean
 
 ) : FriendEvent, Packet, AbstractEvent()
+
+/**
+ * 在 [Friend] 与 [Bot] 的对话中, [Friend] 被 [戳][Nudge] 事件
+ *
+ * 注: 此事件仅可能在私聊中发生
+ */
+@SinceMirai("2.0.0")
+@MiraiExperimentalAPI
+public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
+    /**
+     * 戳一戳的发起人, 为 [Bot] 的某一好友, 或是 [Bot.selfQQ]
+     */
+    public abstract val from: Friend
+
+    /**
+     * 戳一戳的动作名称
+     */
+    public abstract val action: String
+
+    /**
+     * 戳一戳中设置的自定义后缀
+     */
+    public abstract val suffix: String
+
+    /** 在 [Bot] 与 [Friend] 的对话中 [Friend] 戳了自己事件 */
+    @MiraiExperimentalAPI
+    public data class NudgedByHimself internal constructor(
+        override val action: String,
+        override val suffix: String,
+        override val friend: Friend
+    ) : FriendNudgedEvent() {
+        override fun toString(): String {
+            return "FriendNudgedEvent.NudgedByHimself(friend=$friend, action=$action, suffix=$suffix)"
+        }
+
+        override val from: Friend
+            get() = friend
+    }
+
+    /** [Bot] 戳了 [Friend] */
+    @MiraiExperimentalAPI
+    public data class NudgedByBot internal constructor(
+        override val action: String,
+        override val suffix: String,
+        override val friend: Friend
+    ) : FriendNudgedEvent() {
+        override fun toString(): String {
+            return "FriendNudgedEvent.NudgedByBot(friend=$friend, action=$action, suffix=$suffix)"
+        }
+
+        override val from: Friend
+            get() = bot.selfQQ
+    }
+}

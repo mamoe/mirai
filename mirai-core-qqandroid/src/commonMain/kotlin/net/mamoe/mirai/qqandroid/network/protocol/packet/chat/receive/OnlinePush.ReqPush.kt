@@ -262,7 +262,12 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     }
                 }
                 if (target.id == bot.id) {
-                    return@lambda732 sequenceOf(BotNudgedEvent(from, action, suffix))
+                    return@lambda732 sequenceOf(
+                        if (from.id == bot.id)
+                            BotNudgedEvent.InGroup.ByBot(action, suffix, group)
+                        else
+                            BotNudgedEvent.InGroup.ByMember(action, suffix, from)
+                    )
                 }
                 return@lambda732 sequenceOf(MemberNudgedEvent(from, target, action, suffix))
             }
@@ -519,8 +524,20 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         "suffix_str" -> suffix = value
                     }
                 }
-                return@lambda528 sequenceOf(BotNudgedEvent(from, action, suffix))
 
+                return@lambda528 sequenceOf(
+                    if (target.id == bot.id) {
+                        if (from.id == bot.id)
+                            BotNudgedEvent.InPrivateSession.ByBot(target, action, suffix)
+                        else
+                            BotNudgedEvent.InPrivateSession.ByFriend(target, action, suffix)
+                    } else {
+                        if (from.id == bot.id)
+                            FriendNudgedEvent.NudgedByBot(action, suffix, target)
+                        else
+                            FriendNudgedEvent.NudgedByHimself(action, suffix, target)
+                    }
+                )
             }
             else -> {
                 bot.logger.debug {
