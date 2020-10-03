@@ -9,7 +9,7 @@ plugins {
     id("net.mamoe.kotlin-jvm-blocking-bridge")
 }
 
-version = Versions.Mirai.version
+version = Versions.project
 description = "Mirai core shadowed"
 
 java {
@@ -22,34 +22,7 @@ tasks.withType(JavaCompile::class.java) {
 }
 
 kotlin {
-    explicitApiWarning()
-
-    sourceSets.all {
-        target.compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-                freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
-                //useIR = true
-            }
-        }
-        languageSettings.apply {
-            enableLanguageFeature("InlineClasses")
-            progressiveMode = true
-
-            useExperimentalAnnotation("kotlin.Experimental")
-            useExperimentalAnnotation("kotlin.RequiresOptIn")
-
-            useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
-            useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
-            useExperimentalAnnotation("net.mamoe.mirai.console.ConsoleFrontEndImplementation")
-            useExperimentalAnnotation("net.mamoe.mirai.console.util.ConsoleExperimentalApi")
-            useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
-            useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
-            useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
-            useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
-            useExperimentalAnnotation("net.mamoe.mirai.console.util.ConsoleInternalApi")
-        }
-    }
+    explicitApi()
 }
 
 dependencies {
@@ -57,4 +30,4 @@ dependencies {
     api(project(":mirai-core-api"))
 }
 
-setupPublishing("mirai-core-all")
+configurePublishing("mirai-core-all")

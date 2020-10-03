@@ -1,5 +1,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+
 plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
@@ -60,59 +62,70 @@ kotlin {
             }
         }
 
-        val commonMain by getting {
+        commonMain {
             dependencies {
-                api1(kotlinx("serialization-core", Versions.Kotlin.serialization))
-                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
-                implementation1(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
-                api1("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
-                api1(kotlinx("io", Versions.Kotlin.io))
-                implementation1(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
+                api1(`kotlinx-serialization-core`)
+                implementation1(`kotlinx-serialization-protobuf`)
+
+                api1(`kotlinx-atomicfu`)
+                api1(`kotlinx-coroutines-core`)
+
+                api1(`kotlinx-io`)
+                implementation1(`kotlinx-coroutines-io`)
             }
         }
 
-        val commonTest by getting {
+        commonTest {
             dependencies {
-                implementation(kotlin("test-annotations-common"))
-                implementation(kotlin("test-common"))
                 implementation(kotlin("script-runtime"))
             }
         }
 
         if (isAndroidSDKAvailable) {
-            val androidMain by getting {
+            androidMain {
                 dependencies {
                 }
             }
 
-            val androidTest by getting {
+            androidTest {
                 dependencies {
-                    implementation(kotlin("test", Versions.Kotlin.compiler))
-                    implementation(kotlin("test-junit", Versions.Kotlin.compiler))
+                    implementation(kotlin("test", Versions.kotlinCompiler))
+                    implementation(kotlin("test-junit", Versions.kotlinCompiler))
                     implementation(kotlin("test-annotations-common"))
                     implementation(kotlin("test-common"))
                 }
             }
         }
 
-        val jvmMain by getting {
+        jvmMain {
             dependencies {
                 implementation("org.bouncycastle:bcprov-jdk15on:1.64")
-                api1(kotlinx("io-jvm", Versions.Kotlin.io))
-                //    api(kotlinx("coroutines-debug", Versions.Kotlin.coroutines))
+                api1(`kotlinx-io-jvm`)
+                // api(kotlinx("coroutines-debug", Versions.coroutines))
             }
         }
 
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
-                dependsOn(commonTest)
-                implementation(kotlin("test", Versions.Kotlin.compiler))
-                implementation(kotlin("test-junit", Versions.Kotlin.compiler))
                 implementation("org.pcap4j:pcap4j-distribution:1.8.2")
             }
         }
     }
 }
+
+val NamedDomainObjectContainer<KotlinSourceSet>.androidMain: NamedDomainObjectProvider<KotlinSourceSet>
+    get() = named<KotlinSourceSet>("androidMain")
+
+val NamedDomainObjectContainer<KotlinSourceSet>.androidTest: NamedDomainObjectProvider<KotlinSourceSet>
+    get() = named<KotlinSourceSet>("androidTest")
+
+
+val NamedDomainObjectContainer<KotlinSourceSet>.jvmMain: NamedDomainObjectProvider<KotlinSourceSet>
+    get() = named<KotlinSourceSet>("jvmMain")
+
+val NamedDomainObjectContainer<KotlinSourceSet>.jvmTest: NamedDomainObjectProvider<KotlinSourceSet>
+    get() = named<KotlinSourceSet>("jvmTest")
+
 
 fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
     implementation(dependencyNotation) {

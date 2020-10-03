@@ -38,70 +38,38 @@ kotlin {
     }
 
     jvm {
-        // withJava() // https://youtrack.jetbrains.com/issue/KT-39991
+        withJava()
     }
 
-    sourceSets.apply {
-        all {
-            languageSettings.enableLanguageFeature("InlineClasses")
-            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.LowLevelAPI")
-            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
-            languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
-            languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
-            languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
-            languageSettings.useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.UnstableExternalImage")
-
-            languageSettings.progressiveMode = true
-        }
-
+    sourceSets {
         val commonMain by getting {
             dependencies {
                 api(kotlin("serialization"))
                 api(kotlin("reflect"))
 
-                api1(kotlinx("serialization-core", Versions.Kotlin.serialization))
-                implementation1(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
-                api1(kotlinx("io", Versions.Kotlin.io))
-                api1(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
-                api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
+                api1(`kotlinx-serialization-core`)
+                implementation1(`kotlinx-serialization-protobuf`)
+                api1(`kotlinx-io`)
+                api1(`kotlinx-coroutines-io`)
+                api(`kotlinx-coroutines-core`)
 
-                implementation1("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
+                implementation1(`kotlinx-atomicfu`)
 
-                api1(ktor("client-cio"))
-                api1(ktor("client-core"))
-                api1(ktor("network"))
-            }
-        }
-
-        commonTest {
-            dependencies {
-                implementation(kotlin("test-annotations-common"))
-                implementation(kotlin("test-common"))
+                api1(`ktor-client-cio`)
+                api1(`ktor-client-core`)
+                api1(`ktor-network`)
             }
         }
 
         if (isAndroidSDKAvailable) {
-            val androidMain by getting {
+            androidMain {
                 dependencies {
                     api(kotlin("reflect"))
 
-                    api1(kotlinx("io-jvm", Versions.Kotlin.io))
-                    api1(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+                    api1(`kotlinx-io-jvm`)
+                    api1(`kotlinx-coroutines-io-jvm`)
 
-                    api1(ktor("client-android", Versions.Kotlin.ktor))
-                }
-            }
-
-            val androidTest by getting {
-                dependencies {
-                    implementation(kotlin("test"))
-                    implementation(kotlin("test-junit"))
-                    implementation(kotlin("test-annotations-common"))
-                    implementation(kotlin("test-common"))
+                    api1(`ktor-client-android`)
                 }
             }
         }
@@ -109,26 +77,37 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 api(kotlin("reflect"))
-                compileOnly("org.apache.logging.log4j:log4j-api:" + Versions.Logging.log4j)
-                compileOnly("org.slf4j:slf4j-api:" + Versions.Logging.slf4j)
+                compileOnly(`log4j-api`)
+                compileOnly(slf4j)
 
-                api1(ktor("client-core-jvm", Versions.Kotlin.ktor))
-                api1(kotlinx("io-jvm", Versions.Kotlin.io))
-                api1(kotlinx("coroutines-io-jvm", Versions.Kotlin.coroutinesIo))
+                api1(`kotlinx-io-jvm`)
+                api1(`kotlinx-coroutines-io-jvm`)
             }
         }
 
         val jvmTest by getting {
             dependencies {
-                implementation(kotlin("test"))
-                implementation(kotlin("test-junit"))
-                implementation("org.pcap4j:pcap4j-distribution:1.8.2")
+                api("org.pcap4j:pcap4j-distribution:1.8.2")
 
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }
     }
 }
+
+val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.androidMain: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
+    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("androidMain")
+
+val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.androidTest: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
+    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("androidTest")
+
+
+val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.jvmMain: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
+    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("jvmMain")
+
+val NamedDomainObjectContainer<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>.jvmTest: NamedDomainObjectProvider<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>
+    get() = named<org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet>("jvmTest")
+
 
 fun org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler.implementation1(dependencyNotation: String) =
     implementation(dependencyNotation) {

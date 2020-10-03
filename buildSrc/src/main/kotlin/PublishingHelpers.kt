@@ -1,7 +1,6 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NOTHING_TO_INLINE", "RemoveRedundantBackticks")
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
@@ -9,7 +8,6 @@ import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.*
 import upload.Bintray
-import java.io.File
 import java.util.*
 import kotlin.reflect.KProperty
 
@@ -54,7 +52,7 @@ internal fun org.gradle.api.Project.`publishing`(configure: org.gradle.api.publi
     (this as org.gradle.api.plugins.ExtensionAware).extensions.configure("publishing", configure)
 
 
-inline fun Project.setupPublishing(
+inline fun Project.configurePublishing(
     artifactId: String,
     bintrayRepo: String = "mirai",
     bintrayPkgName: String = artifactId,
