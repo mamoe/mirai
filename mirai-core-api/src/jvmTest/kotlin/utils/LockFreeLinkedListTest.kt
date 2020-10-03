@@ -145,6 +145,7 @@ internal class LockFreeLinkedListTest {
         list.size shouldBeEqualTo 0
     }
 
+    @OptIn(ExperimentalUnsignedTypes::class)
     @Test
     fun withInlineClassElements() {
         val list = LockFreeLinkedList<UInt>()

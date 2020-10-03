@@ -209,6 +209,7 @@ internal inline fun <T : CustomMessageMetadata> T.customToStringImpl(factory: Cu
     return (factory as CustomMessage.Factory<T>).dump(this)
 }
 
+@OptIn(ExperimentalUnsignedTypes::class)
 @JvmOverloads
 @Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
 internal fun ByteArray.toUHexString(

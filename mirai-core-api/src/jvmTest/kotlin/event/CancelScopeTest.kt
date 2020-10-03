@@ -11,7 +11,7 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.subscribeAlways
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 
 

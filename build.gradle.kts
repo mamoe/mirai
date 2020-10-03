@@ -231,7 +231,8 @@ val experimentalAnnotations = arrayOf(
     "kotlin.experimental.ExperimentalTypeInference",
     "net.mamoe.mirai.utils.MiraiInternalAPI",
     "net.mamoe.mirai.utils.MiraiExperimentalAPI",
-    "net.mamoe.mirai.LowLevelAPI"
+    "net.mamoe.mirai.LowLevelAPI",
+    "kotlinx.serialization.ExperimentalSerializationApi"
 )
 
 fun Project.configureKotlinExperimentalUsages() {
