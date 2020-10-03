@@ -67,7 +67,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
         mapper: ByteReadPacket.(msgInfo: MsgInfo) -> Sequence<Packet>
     ): Sequence<Packet> {
         return asSequence().filter { msg ->
-            !client.syncingController.onlinePushReqPushCacheList.addCache(
+            client.syncingController.onlinePushReqPushCacheList.addCache(
                 QQAndroidClient.MessageSvcSyncData.OnlinePushReqPushSyncId(
                     uid = msg.lMsgUid ?: 0, sequence = msg.shMsgSeq, time = msg.uMsgTime
                 )
