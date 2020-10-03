@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 plugins {
     kotlin("multiplatform")
-    id("kotlinx-atomicfu")
+    // id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
