@@ -16,6 +16,12 @@ mirai 欢迎一切形式的代码贡献。你可以通过以下几种途径向 m
 
 ### 能做什么?
 
+#### 分支
+
+- `master`: 最新稳定版
+- `1.x`: 1.x 现有版本的开发
+- `dev`: 2.0 重构版本的开发
+
 **请基于 `master` 分支进行文档修改; 基于 `dev` 分支进行其他修改 (否则你的修改可能被关闭或不会立即合并)**
 
 - 代码优化: 优化任何功能设计或实现, 或是引入一个新的设计（请先通过 issue 与维护者达成共识）
@@ -25,7 +31,7 @@ mirai 欢迎一切形式的代码贡献。你可以通过以下几种途径向 m
 ### 注意事项
 - 尽量不要引用新的库
 - 遵守 Kotlin 官方代码规范（提交前使用 IDE 格式化代码 (commit 时勾选 'Reformat code')）
-- 不要手动拆解数据包. 请一定使用 `kotlinx.serialization` 拆解 ProtoBuf, 使用 `net.mamoe.mirai.qqandroid.utils.io.serialization.Tars` 拆解 Tars 数据包, 使用 `kotlinx.serialization` 拆解 Json 数据.
+- 不要手动拆解数据包. 请一定使用 `kotlinx.serialization` 拆解 ProtoBuf, 使用 `net.mamoe.mirai.internal.utils.io.serialization.Tars` 拆解 Tars 数据包, 使用 `kotlinx.serialization` 拆解 Json 数据.
 
 ## 社区
 
