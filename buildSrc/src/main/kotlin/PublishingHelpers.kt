@@ -73,6 +73,7 @@ inline fun Project.setupPublishing(
 
     // afterEvaluate {
 
+    /*
     val shadowJar = tasks.filterIsInstance<ShadowJar>().firstOrNull() ?: return//@afterEvaluate
 
     tasks.register("shadowJarMd5") {
@@ -97,6 +98,7 @@ inline fun Project.setupPublishing(
         tasks.getByName("publish").dependsOn(this)
         tasks.getByName("bintrayUpload").dependsOn(this)
     }
+    */
 
     if (Bintray.isBintrayAvailable(project)) {
         bintray {
@@ -136,11 +138,13 @@ inline fun Project.setupPublishing(
             publications {
                 register("mavenJava", MavenPublication::class) {
                     from(components["java"])
+                    /*
                     afterEvaluate {
                         for (file in tasks.getByName("shadowJarMd5").outputs.files) {
                             artifact(provider { file })
                         }
                     }
+                    */
 
                     groupId = rootProject.group.toString()
                     this.artifactId = artifactId

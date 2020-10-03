@@ -118,6 +118,7 @@ subprojects {
             }
         }
 
+        /*
         val shadowJarMd5 = tasks.register("shadowJarMd5") {
             dependsOn("shadowJvmJar")
 
@@ -140,6 +141,7 @@ subprojects {
             tasks.getByName("publish").dependsOn(this)
             tasks.getByName("bintrayUpload").dependsOn(this)
         }.get()
+        */
 
         val githubUpload by tasks.creating {
             group = "mirai"
