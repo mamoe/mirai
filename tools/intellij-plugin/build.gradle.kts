@@ -52,7 +52,7 @@ tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
     sinceBuild("193.*")
     untilBuild("205.*")
     pluginDescription("""
-        Plugin development support for <a href='https://github.com/mamoe/mirai-console'>Mirai Conosle</a>
+        Plugin development support for <a href='https://github.com/mamoe/mirai-console'>Mirai Console</a>
         
         <h3>Features</h3>
         <ul>
