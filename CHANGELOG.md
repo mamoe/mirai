@@ -1,5 +1,9 @@
 # Version 1.x
 
+## `1.3.2` 2020/10/04
+
+- 修复缓存过滤的错误导致的戳一戳等信息没法及时处理的问题
+
 ## `1.3.1` 2020/9/21
 
 ### 新特性
@@ -8,6 +12,7 @@
 ### 优化和修复
 - 修复 `BotJoinGroupEvent.Retrieve` 的显示错误 (#606 by @Karlatemp)
 - 添加缺少的戳一戳模板 (#615 by @sandtechnology)
+- 修复罕见情况下的群成员加群 `member -XXXX not found in XXXX`
 
 ## `1.3.0`  2020/9/16
 
