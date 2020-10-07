@@ -18,7 +18,6 @@ import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.permission.PermissionService.Companion.allocatePermissionIdForPlugin
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
@@ -26,7 +25,6 @@ import net.mamoe.mirai.console.plugin.ResourceContainer.Companion.asResourceCont
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin.Companion.onLoad
-import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.NamedSupervisorJob
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -50,7 +48,7 @@ internal abstract class JvmPluginInternal(
 
     final override val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
-            PermissionService.INSTANCE.allocatePermissionIdForPlugin(name, "*"),
+            PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, "*", PermissionService.PluginPermissionIdRequestType.ROOT_PERMISSION),
             "The base permission"
         )
     }
