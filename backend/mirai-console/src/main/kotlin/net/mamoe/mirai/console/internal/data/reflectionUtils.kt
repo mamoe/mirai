@@ -41,8 +41,8 @@ internal inline fun <reified T : PluginData> newPluginDataInstanceUsingReflectio
             ?: createInstanceOrNull()
             ?: throw IllegalArgumentException(
                 "Cannot create PluginData instance. " +
-                        "PluginDataHolder supports PluginData implemented as an object " +
-                        "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newPluginDataInstance implementation."
+                    "PluginDataHolder supports PluginData implemented as an object " +
+                    "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newPluginDataInstance implementation."
             )
     }
 }
@@ -53,6 +53,12 @@ internal fun KType.classifierAsKClass() = when (val t = classifier) {
     is KClass<*> -> t
     else -> error("Only KClass supported as classifier, got $t")
 } as KClass<Any>
+
+@Suppress("UNCHECKED_CAST")
+internal fun KType.classifierAsKClassOrNull() = when (val t = classifier) {
+    is KClass<*> -> t
+    else -> null
+} as KClass<Any>?
 
 @JvmSynthetic
 internal fun <T : Any> KClass<T>.createInstanceOrNull(): T? {

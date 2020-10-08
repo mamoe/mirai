@@ -7,9 +7,20 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.gradle
+package net.mamoe.mirai.console.util
 
-internal object VersionConstants {
-    const val CONSOLE_VERSION = "1.0-RC-dev-29" // value is written here automatically during build
-    const val CORE_VERSION = "1.3.0" // value is written here automatically during build
+import kotlin.contracts.contract
+
+public inline fun <reified T : Any> Any?.safeCast(): T? {
+    contract {
+        returnsNotNull() implies (this@safeCast is T)
+    }
+    return this as? T
+}
+
+public inline fun <reified T : Any> Any?.cast(): T {
+    contract {
+        returns() implies (this@cast is T)
+    }
+    return this as T
 }
