@@ -99,7 +99,7 @@ public abstract class CompositeCommand(
     public override val usage: String get() = super.usage
 
     /**
-     * [CommandArgumentParser] 的环境
+     * [CommandValueArgumentParser] 的环境
      */
     public final override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
 

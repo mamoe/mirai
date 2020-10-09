@@ -65,7 +65,7 @@ public sealed class CommandValueParameter<T> : ICommandParameter<T> {
     }
 
     /**
-     * Extended by [CommandArgumentParser]
+     * Extended by [CommandValueArgumentParser]
      */
     public abstract class Extended<T> : CommandValueParameter<T>()
 }

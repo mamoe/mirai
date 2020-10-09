@@ -16,8 +16,8 @@ package net.mamoe.mirai.console.command.descriptor
  *
  * [message] 将会发送给指令调用方.
  *
- * @see CommandArgumentParser
- * @see CommandArgumentParser.illegalArgument
+ * @see CommandValueArgumentParser
+ * @see CommandValueArgumentParser.illegalArgument
  */
 public class CommandArgumentParserException : RuntimeException {
     public constructor() : super()

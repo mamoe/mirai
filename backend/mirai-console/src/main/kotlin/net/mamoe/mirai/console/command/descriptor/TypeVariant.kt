@@ -16,6 +16,9 @@ import kotlin.reflect.typeOf
 
 @ExperimentalCommandDescriptors
 public interface TypeVariant<out OutType> {
+    /**
+     * The reified type of [OutType]
+     */
     public val outType: KType
 
     public fun mapValue(valueParameter: MessageContent): OutType
@@ -33,8 +36,8 @@ public interface TypeVariant<out OutType> {
 }
 
 @ExperimentalCommandDescriptors
-public object StringTypeVariant : TypeVariant<RawCommandArgument> {
+public object MessageContentTypeVariant : TypeVariant<MessageContent> {
     @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<String>()
-    override fun mapValue(valueParameter: RawCommandArgument): RawCommandArgument = valueParameter
+    override fun mapValue(valueParameter: MessageContent): MessageContent = valueParameter
 }

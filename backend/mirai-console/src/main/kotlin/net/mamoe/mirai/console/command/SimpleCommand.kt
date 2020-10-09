@@ -31,7 +31,7 @@ import net.mamoe.mirai.message.data.MessageChain
  * 简单的, 支持参数自动解析的指令.
  *
  * 要查看指令解析流程, 参考 [CommandManager.executeCommand]
- * 要查看参数解析方式, 参考 [CommandArgumentParser]
+ * 要查看参数解析方式, 参考 [CommandValueArgumentParser]
  *
  * Kotlin 实现:
  * ```

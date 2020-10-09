@@ -150,8 +150,8 @@ public object BuiltInCommands {
         ConsoleCommandOwner, "permission", "权限", "perm",
         description = "管理权限",
         overrideContext = buildCommandArgumentContext {
-            PermitteeId::class with PermitteeIdArgumentParser
-            Permission::class with PermissionIdArgumentParser.map { id ->
+            PermitteeId::class with PermitteeIdValueArgumentParser
+            Permission::class with PermissionIdValueArgumentParser.map { id ->
                 kotlin.runCatching {
                     id.findCorrespondingPermissionOrFail()
                 }.getOrElse { illegalArgument("指令不存在: $id", it) }

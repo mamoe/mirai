@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.CompositeCommand
-import net.mamoe.mirai.console.command.descriptor.CommandArgumentParser
+import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 
@@ -37,12 +37,12 @@ internal data class CommandParameter<T : Any>(
      */
     val name: String,
     /**
-     * 参数类型. 将从 [CompositeCommand.context] 中寻找 [CommandArgumentParser] 解析.
+     * 参数类型. 将从 [CompositeCommand.context] 中寻找 [CommandValueArgumentParser] 解析.
      */
     val type: KClass<T>, // exact type
     val parameter: KParameter, // source parameter
 ) {
-    constructor(name: String, type: KClass<T>, parameter: KParameter, parser: CommandArgumentParser<T>) : this(
+    constructor(name: String, type: KClass<T>, parameter: KParameter, parser: CommandValueArgumentParser<T>) : this(
         name, type, parameter
     ) {
         this._overrideParser = parser
@@ -50,14 +50,14 @@ internal data class CommandParameter<T : Any>(
 
     @Suppress("PropertyName")
     @JvmField
-    internal var _overrideParser: CommandArgumentParser<T>? = null
+    internal var _overrideParser: CommandValueArgumentParser<T>? = null
 
 
     /**
-     * 覆盖的 [CommandArgumentParser].
+     * 覆盖的 [CommandValueArgumentParser].
      *
-     * 如果非 `null`, 将不会从 [CommandArgumentContext] 寻找 [CommandArgumentParser]
+     * 如果非 `null`, 将不会从 [CommandArgumentContext] 寻找 [CommandValueArgumentParser]
      */
-    val overrideParser: CommandArgumentParser<T>? get() = _overrideParser
+    val overrideParser: CommandValueArgumentParser<T>? get() = _overrideParser
 }
 

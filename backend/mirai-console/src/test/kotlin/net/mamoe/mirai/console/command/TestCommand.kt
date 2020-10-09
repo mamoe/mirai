@@ -22,7 +22,7 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.registeredCommands
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
-import net.mamoe.mirai.console.command.descriptor.CommandArgumentParser
+import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.initTestEnvironment
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
@@ -191,7 +191,7 @@ internal class TestCommand {
                 ConsoleCommandOwner,
                 "test22",
                 overrideContext = buildCommandArgumentContext {
-                    add(object : CommandArgumentParser<MyClass> {
+                    add(object : CommandValueArgumentParser<MyClass> {
                         override fun parse(raw: String, sender: CommandSender): MyClass {
                             return MyClass(raw.toInt())
                         }

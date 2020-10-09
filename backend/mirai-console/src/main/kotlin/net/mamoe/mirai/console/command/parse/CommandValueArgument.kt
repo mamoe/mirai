@@ -10,8 +10,8 @@
 package net.mamoe.mirai.console.command.parse
 
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.descriptor.MessageContentTypeVariant
 import net.mamoe.mirai.console.command.descriptor.NoValueArgumentMappingException
-import net.mamoe.mirai.console.command.descriptor.StringTypeVariant
 import net.mamoe.mirai.console.command.descriptor.TypeVariant
 import net.mamoe.mirai.message.data.MessageContent
 import kotlin.reflect.full.isSubtypeOf
@@ -23,20 +23,29 @@ import kotlin.reflect.typeOf
  */
 public typealias RawCommandArgument = MessageContent
 
+/**
+ * @see CommandValueArgument
+ */
 @ExperimentalCommandDescriptors
 public interface CommandArgument
 
+/**
+ * @see InvariantCommandValueArgument
+ */
 @ExperimentalCommandDescriptors
 public interface CommandValueArgument : CommandArgument {
     public val value: RawCommandArgument
     public val typeVariants: List<TypeVariant<*>>
 }
 
+/**
+ * The [CommandValueArgument] that doesn't vary in type (remaining [MessageContent]).
+ */
 @ExperimentalCommandDescriptors
 public data class InvariantCommandValueArgument(
     public override val value: RawCommandArgument,
 ) : CommandValueArgument {
-    override val typeVariants: List<TypeVariant<*>> = listOf(StringTypeVariant)
+    override val typeVariants: List<TypeVariant<*>> = listOf(MessageContentTypeVariant)
 }
 
 @ExperimentalCommandDescriptors
