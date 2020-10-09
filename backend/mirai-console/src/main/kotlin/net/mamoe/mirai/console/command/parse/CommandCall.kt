@@ -14,8 +14,6 @@ package net.mamoe.mirai.console.command.parse
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
-import net.mamoe.mirai.console.command.resolve.CommandCallResolver
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * Unresolved [CommandCall].
@@ -33,10 +31,11 @@ public interface CommandCall {
      * Explicit value arguments
      */
     public val valueArguments: List<CommandValueArgument>
-
-    /**
-     * Custom data for [CommandCallResolver]
-     */
-    @ConsoleExperimentalApi
-    public val customData: Map<Any, Any>
 }
+
+@ExperimentalCommandDescriptors
+public class CommandCallImpl(
+    override val caller: CommandSender,
+    override val calleeName: String,
+    override val valueArguments: List<CommandValueArgument>,
+) : CommandCall

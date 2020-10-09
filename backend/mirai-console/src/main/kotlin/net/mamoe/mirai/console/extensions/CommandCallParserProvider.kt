@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.extension.AbstractExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
 
 /**
- * The resolver for a [CommandCall]
+ * The provider of [CommandCallParser]
  */
 @ExperimentalCommandDescriptors
 public interface CommandCallParserProvider : InstanceExtension<CommandCallParser> {

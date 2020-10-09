@@ -31,16 +31,18 @@ public interface CommandSignatureVariant {
 @ExperimentalCommandDescriptors
 public interface ICommandParameter<T : Any?> {
     public val name: String
-    public val type: KType
+
+    /**
+     * If [isOptional] is `false`, [defaultValue] is always `null`.
+     * Otherwise [defaultValue] may be `null` iff [T] is nullable.
+     */
     public val defaultValue: T?
+    public val isOptional: Boolean
 
-    public companion object {
-        @get:JvmStatic
-        @ExperimentalCommandDescriptors
-        public val ICommandParameter<*>.isOptional: Boolean
-            get() = this.defaultValue != null
-
-    }
+    /**
+     * Reified type of [T]
+     */
+    public val type: KType
 }
 
 @ExperimentalCommandDescriptors
@@ -54,13 +56,35 @@ public sealed class CommandValueParameter<T> : ICommandParameter<T> {
 
     public class StringConstant(
         public override val name: String,
-        public override val defaultValue: String,
     ) : CommandValueParameter<String>() {
-        override val type: KType get() = STRING_TYPE
+        public override val type: KType get() = STRING_TYPE
+        public override val defaultValue: Nothing? get() = null
+        public override val isOptional: Boolean get() = false
 
         private companion object {
             @OptIn(ExperimentalStdlibApi::class)
             val STRING_TYPE = typeOf<String>()
+        }
+    }
+
+    public class UserDefinedType<T>(
+        public override val name: String,
+        public override val defaultValue: T?,
+        public override val isOptional: Boolean,
+        public override val type: KType,
+    ) : CommandValueParameter<T>() {
+        public companion object {
+            @JvmStatic
+            public inline fun <reified T : Any> createOptional(name: String, defaultValue: T): UserDefinedType<T> {
+                @OptIn(ExperimentalStdlibApi::class)
+                return UserDefinedType(name, defaultValue, true, typeOf<T>())
+            }
+
+            @JvmStatic
+            public inline fun <reified T : Any> createRequired(name: String): UserDefinedType<T> {
+                @OptIn(ExperimentalStdlibApi::class)
+                return UserDefinedType(name, null, false, typeOf<T>())
+            }
         }
     }
 
