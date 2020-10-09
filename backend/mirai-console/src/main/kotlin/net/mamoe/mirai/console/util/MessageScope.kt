@@ -116,7 +116,6 @@ public interface MessageScope {
     /**
      * 立刻以此发送消息给所有在此 [MessageScope] 下的消息对象
      */
-    @JvmDefault
     @JvmBlockingBridge
     public suspend fun sendMessage(message: String)
 }
