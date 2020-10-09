@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.console.command.descriptor
 
+import net.mamoe.mirai.console.command.parse.RawCommandArgument
+import net.mamoe.mirai.message.data.MessageContent
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -16,23 +18,23 @@ import kotlin.reflect.typeOf
 public interface TypeVariant<out OutType> {
     public val outType: KType
 
-    public fun mapValue(valueParameter: String): OutType
+    public fun mapValue(valueParameter: MessageContent): OutType
 
     public companion object {
         @OptIn(ExperimentalStdlibApi::class)
         @JvmSynthetic
-        public inline operator fun <reified OutType> invoke(crossinline block: (valueParameter: String) -> OutType): TypeVariant<OutType> {
+        public inline operator fun <reified OutType> invoke(crossinline block: (valueParameter: RawCommandArgument) -> OutType): TypeVariant<OutType> {
             return object : TypeVariant<OutType> {
                 override val outType: KType = typeOf<OutType>()
-                override fun mapValue(valueParameter: String): OutType = block(valueParameter)
+                override fun mapValue(valueParameter: MessageContent): OutType = block(valueParameter)
             }
         }
     }
 }
 
 @ExperimentalCommandDescriptors
-public object StringTypeVariant : TypeVariant<String> {
+public object StringTypeVariant : TypeVariant<RawCommandArgument> {
     @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<String>()
-    override fun mapValue(valueParameter: String): String = valueParameter
+    override fun mapValue(valueParameter: RawCommandArgument): RawCommandArgument = valueParameter
 }
