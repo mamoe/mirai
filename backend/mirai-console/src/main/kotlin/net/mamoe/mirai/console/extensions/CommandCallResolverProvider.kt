@@ -10,11 +10,11 @@
 package net.mamoe.mirai.console.extensions
 
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
-import net.mamoe.mirai.console.command.parse.CommandCallParser
+import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.extension.AbstractExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
 
 @ExperimentalCommandDescriptors
-public interface CommandCallParserProvider : InstanceExtension<CommandCallParser> {
-    public companion object ExtensionPoint : AbstractExtensionPoint<CommandCallParserProvider>(CommandCallParserProvider::class)
+public interface CommandCallResolverProvider : InstanceExtension<CommandCallResolver> {
+    public companion object ExtensionPoint : AbstractExtensionPoint<CommandCallResolverProvider>(CommandCallResolverProvider::class)
 }

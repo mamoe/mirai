@@ -11,34 +11,32 @@
 
 package net.mamoe.mirai.console.command.parse
 
+import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
-import net.mamoe.mirai.console.command.descriptor.UnresolvedCommandCallException
-import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
-import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
-import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.command.resolve.CommandCallResolver
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
+/**
+ * Unresolved [CommandCall].
+ */
 @ExperimentalCommandDescriptors
 public interface CommandCall {
     public val caller: CommandSender
 
+    /**
+     * One of callee [Command]'s [Command.allNames]
+     */
     public val calleeName: String
+
+    /**
+     * Explicit value arguments
+     */
     public val valueArguments: List<CommandValueArgument>
 
-    public companion object {
-        @JvmStatic
-        public fun CommandCall.resolveOrNull(): ResolvedCommandCall? {
-            GlobalComponentStorage.run {
-                CommandCallResolverProvider.useExtensions { provider ->
-                    provider.instance.resolve(this@resolveOrNull)?.let { return it }
-                }
-            }
-            return null
-        }
-
-        @JvmStatic
-        public fun CommandCall.resolve(): ResolvedCommandCall {
-            return resolveOrNull() ?: throw UnresolvedCommandCallException(this)
-        }
-    }
+    /**
+     * Custom data for [CommandCallResolver]
+     */
+    @ConsoleExperimentalApi
+    public val customData: Map<Any, Any>
 }

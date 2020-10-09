@@ -24,7 +24,10 @@ import kotlin.reflect.typeOf
 public typealias RawCommandArgument = MessageContent
 
 @ExperimentalCommandDescriptors
-public interface CommandValueArgument {
+public interface CommandArgument
+
+@ExperimentalCommandDescriptors
+public interface CommandValueArgument : CommandArgument {
     public val value: RawCommandArgument
     public val typeVariants: List<TypeVariant<*>>
 }

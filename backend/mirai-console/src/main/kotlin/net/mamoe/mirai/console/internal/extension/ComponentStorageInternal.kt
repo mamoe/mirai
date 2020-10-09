@@ -20,6 +20,9 @@ import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
+/**
+ * The [ComponentStorage] containing all components provided by Mirai Console internals and installed plugins.
+ */
 internal object GlobalComponentStorage : AbstractConcurrentComponentStorage()
 internal interface ExtensionRegistry<out E : Extension> {
     val plugin: Plugin

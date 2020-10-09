@@ -11,15 +11,37 @@ package net.mamoe.mirai.console.command.resolve;
 
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.descriptor.CommandDescriptor
+import net.mamoe.mirai.console.command.descriptor.CommandSignatureVariant
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 
+/**
+ * The resolved [CommandCall].
+ */
 @ExperimentalCommandDescriptors
 public interface ResolvedCommandCall {
     public val caller: CommandSender
 
+    /**
+     * The callee [Command]
+     */
     public val callee: Command
+
+    /**
+     * The callee [CommandDescriptor], specifically a sub command from [CompositeCommand]
+     */
     public val calleeDescriptor: CommandDescriptor
+
+    /**
+     * The callee [CommandSignatureVariant]
+     */
+    public val calleeSignature: CommandSignatureVariant
+
+    /**
+     * Resolved value arguments arranged mapping the [CommandSignatureVariant.valueParameters] by index.
+     */
     public val valueArguments: List<CommandValueArgument>
 }
