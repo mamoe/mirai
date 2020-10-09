@@ -31,6 +31,13 @@ public data class PermissionId(
     @ResolveContext(PERMISSION_NAME) public val name: String,
 ) {
     init {
+        require(!namespace.contains(' ')) {
+            "' ' is not allowed in namespace"
+        }
+        require(!name.contains(' ')) {
+            "' ' is not allowed in id"
+        }
+
         require(!namespace.contains(':')) {
             "':' is not allowed in namespace"
         }
