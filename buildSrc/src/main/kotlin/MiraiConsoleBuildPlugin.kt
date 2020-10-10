@@ -36,8 +36,8 @@ class MiraiConsoleBuildPlugin : Plugin<Project> {
                     attributes(
                         "Manifest-Version" to "1",
                         "Implementation-Vendor" to "Mamoe Technologies",
-                        "Implementation-Title" to target.name.toString(),
-                        "Implementation-Version" to target.version.toString() + "-" + gitVersion
+                        "Implementation-Title" to target.name,
+                        "Implementation-Version" to target.version.toString() //+ "+" + gitVersion
                     )
                 }
                 @Suppress("UNCHECKED_CAST")
@@ -120,15 +120,16 @@ fun Project.findLatestFile(): Pair<String, File> {
         } ?: error("cannot find any file to upload")*/
 }
 
+/*
 val gitVersion: String by lazy {
     runCatching {
         val exec = Runtime.getRuntime().exec("git rev-parse HEAD")
         exec.waitFor()
         exec.inputStream.readBytes().toString(Charsets.UTF_8).trim().also {
             println("Git commit id: $it")
-        }
-    }.onFailure {
+        } }.onFailure {
         it.printStackTrace()
         return@lazy "UNKNOWN"
     }.getOrThrow()
 }
+*/

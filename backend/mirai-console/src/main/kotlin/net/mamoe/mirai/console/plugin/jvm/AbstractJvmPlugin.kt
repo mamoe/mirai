@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.data.PluginConfig
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.internal.plugin.JvmPluginInternal
 import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.minutesToMillis
 import net.mamoe.mirai.utils.secondsToMillis
@@ -37,7 +38,8 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
 
     public final override val loader: JvmPluginLoader get() = super<JvmPluginInternal>.loader
 
-    public final override fun permissionId(name: String): PermissionId = PermissionId(description.id, "command.$name")
+    public final override fun permissionId(name: String): PermissionId =
+        PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, "*", PermissionService.PluginPermissionIdRequestType.PERMISSION_ID)
 
     /**
      * 重载 [PluginData]

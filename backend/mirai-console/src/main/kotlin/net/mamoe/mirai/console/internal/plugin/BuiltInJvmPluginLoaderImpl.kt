@@ -68,12 +68,12 @@ internal object BuiltInJvmPluginLoaderImpl :
                     pluginClassLoader.declaredFilter = exportManagers[0]
                 }
             }.map { (f, pluginClassLoader) ->
-                f to (pluginClassLoader.findServices(
+                f to pluginClassLoader.findServices(
                     JvmPlugin::class,
                     KotlinPlugin::class,
                     AbstractJvmPlugin::class,
                     JavaPlugin::class
-                ).loadAllServices())
+                ).loadAllServices()
             }.flatMap { (f, list) ->
 
                 list.associateBy { f }.asSequence()
@@ -121,7 +121,9 @@ internal object BuiltInJvmPluginLoaderImpl :
 
     override fun disable(plugin: JvmPlugin) {
         if (!plugin.isEnabled) return
-        ensureActive()
+
+        if (MiraiConsole.isActive)
+            ensureActive()
 
         if (plugin is JvmPluginInternal) {
             plugin.internalOnDisable()

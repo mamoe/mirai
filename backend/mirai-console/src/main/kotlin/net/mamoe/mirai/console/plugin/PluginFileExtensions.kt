@@ -41,28 +41,24 @@ public interface PluginFileExtensions {
      * 从数据目录获取一个文件.
      * @see dataFolderPath
      */
-    @JvmDefault
     public fun resolveDataFile(relativePath: String): File = dataFolderPath.resolve(relativePath).toFile()
 
     /**
      * 从数据目录获取一个文件.
      * @see dataFolderPath
      */
-    @JvmDefault
     public fun resolveDataPath(relativePath: String): Path = dataFolderPath.resolve(relativePath)
 
     /**
      * 从数据目录获取一个文件.
      * @see dataFolderPath
      */
-    @JvmDefault
     public fun resolveDataFile(relativePath: Path): File = dataFolderPath.resolve(relativePath).toFile()
 
     /**
      * 从数据目录获取一个文件路径.
      * @see dataFolderPath
      */
-    @JvmDefault
     public fun resolveDataPath(relativePath: Path): Path = dataFolderPath.resolve(relativePath)
 
 
@@ -83,27 +79,23 @@ public interface PluginFileExtensions {
      * 从配置目录获取一个文件.
      * @see configFolderPath
      */
-    @JvmDefault
     public fun resolveConfigFile(relativePath: String): File = configFolderPath.resolve(relativePath).toFile()
 
     /**
      * 从配置目录获取一个文件.
      * @see configFolderPath
      */
-    @JvmDefault
     public fun resolveConfigPath(relativePath: String): Path = configFolderPath.resolve(relativePath)
 
     /**
      * 从配置目录获取一个文件.
      * @see configFolderPath
      */
-    @JvmDefault
     public fun resolveConfigFile(relativePath: Path): File = configFolderPath.resolve(relativePath).toFile()
 
     /**
      * 从配置目录获取一个文件路径.
      * @see configFolderPath
      */
-    @JvmDefault
     public fun resolveConfigPath(relativePath: Path): Path = configFolderPath.resolve(relativePath)
 }

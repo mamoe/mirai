@@ -37,7 +37,6 @@ public interface ResourceContainer {
      *
      * @return 资源文件内容. 在未找到文件时返回 `null`.
      */
-    @JvmDefault
     public fun getResource(path: String): String? = getResource(path, Charsets.UTF_8)
 
     /**
@@ -45,7 +44,6 @@ public interface ResourceContainer {
      *
      * @return 资源文件内容. 在未找到文件时返回 `null`.
      */
-    @JvmDefault
     public fun getResource(path: String, charset: Charset): String? =
         this.getResourceAsStream(path)?.use(InputStream::readBytes)?.let(::String)
 

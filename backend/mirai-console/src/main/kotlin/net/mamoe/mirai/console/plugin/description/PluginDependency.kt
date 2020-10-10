@@ -11,6 +11,10 @@
 
 package net.mamoe.mirai.console.plugin.description
 
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_ID
+import net.mamoe.mirai.console.util.SemVersion
+
 /**
  * 插件的一个依赖的信息.
  *
@@ -20,16 +24,15 @@ public data class PluginDependency @JvmOverloads constructor(
     /**
      * 依赖插件 ID, [PluginDescription.id]
      */
-    public val id: String,
+    @ResolveContext(PLUGIN_ID) public val id: String,
     /**
      * 依赖版本号. 为 null 时则为不限制版本.
      *
      * 版本遵循 [语义化版本 2.0 规范](https://semver.org/lang/zh-CN/),
      *
-     * ### 示例
-     * `Requirement.buildIvy("[1.0, 2.0)")`
+     * @see SemVersion.Requirement
      */
-    public val versionRequirement: VersionRequirement? = null,
+    public val versionRequirement: SemVersion.Requirement? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */
@@ -46,7 +49,10 @@ public data class PluginDependency @JvmOverloads constructor(
     /**
      * @see PluginDependency
      */
-    public constructor(name: String, isOptional: Boolean = false) : this(
-        name, null, isOptional
+    public constructor(
+        @ResolveContext(PLUGIN_ID) id: String,
+        isOptional: Boolean = false,
+    ) : this(
+        id, null, isOptional
     )
 }

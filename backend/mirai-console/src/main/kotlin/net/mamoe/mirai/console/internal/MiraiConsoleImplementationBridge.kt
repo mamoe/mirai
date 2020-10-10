@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.internal
 
-import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -23,7 +22,6 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.command.BuiltInCommands
-import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
@@ -48,6 +46,7 @@ import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
+import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.*
 import java.nio.file.Path
 import java.time.Instant
@@ -67,7 +66,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     private val instance: MiraiConsoleImplementation by MiraiConsoleImplementation.Companion::instance
     override val buildDate: Instant by MiraiConsoleBuildConstants::buildDate
-    override val version: Semver by MiraiConsoleBuildConstants::version
+    override val version: SemVersion by MiraiConsoleBuildConstants::version
     override val rootPath: Path by instance::rootPath
     override val frontEndDescription: MiraiConsoleFrontEndDescription by instance::frontEndDescription
 
@@ -191,6 +190,10 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
             PluginManagerImpl.enableAllLoadedPlugins()
 
+            for (registeredCommand in CommandManager.allRegisteredCommands) {
+                registeredCommand.permission // init
+            }
+
             mainLogger.info { "${PluginManagerImpl.plugins.size} plugin(s) enabled." }
         }
 
@@ -221,9 +224,9 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     }
 
     @Suppress("SpellCheckingInspection")
-    @Retention(AnnotationRetention.SOURCE)
+    @Retention(AnnotationRetention.BINARY)
     @DslMarker
-    private annotation class ILoveOmaeKumikoForever
+    internal annotation class ILoveOmaeKumikoForever
 
     @ILoveOmaeKumikoForever
     private inline fun phase(block: () -> Unit) {

@@ -108,12 +108,10 @@ public interface MiraiConsoleImplementation : CoroutineScope {
 
 
         @JvmSynthetic
-        @JvmDefault
         public override suspend fun sendMessage(message: Message): Unit =
             withContext(Dispatchers.IO) { sendMessageJ(message) }
 
         @JvmSynthetic
-        @JvmDefault
         public override suspend fun sendMessage(message: String): Unit =
             withContext(Dispatchers.IO) { sendMessageJ(message) }
     }
@@ -175,11 +173,21 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         internal lateinit var instance: MiraiConsoleImplementation
         private val initLock = ReentrantLock()
 
+        /**
+         * 可由前端调用, 获取当前的 [MiraiConsoleImplementation] 实例
+         *
+         * 必须在 [start] 之后才能使用.
+         */
+        @JvmStatic
+        @ConsoleFrontEndImplementation
+        public fun getInstance(): MiraiConsoleImplementation = instance
+
         /** 由前端调用, 初始化 [MiraiConsole] 实例并启动 */
         @JvmStatic
         @ConsoleFrontEndImplementation
         @Throws(MalformedMiraiConsoleImplementationError::class)
         public fun MiraiConsoleImplementation.start(): Unit = initLock.withLock {
+            if (::instance.isInitialized) error("Mirai Console is already initialized.")
             this@Companion.instance = this
             MiraiConsoleImplementationBridge.doStart()
         }

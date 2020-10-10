@@ -12,6 +12,8 @@ package net.mamoe.mirai.console.permission
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.internal.data.map
 
 
@@ -25,10 +27,17 @@ import net.mamoe.mirai.console.internal.data.map
  */
 @Serializable(with = PermissionId.PermissionIdAsStringSerializer::class)
 public data class PermissionId(
-    public val namespace: String,
-    public val name: String,
+    @ResolveContext(PERMISSION_NAMESPACE) public val namespace: String,
+    @ResolveContext(PERMISSION_NAME) public val name: String,
 ) {
     init {
+        require(!namespace.contains(' ')) {
+            "' ' is not allowed in namespace"
+        }
+        require(!name.contains(' ')) {
+            "' ' is not allowed in id"
+        }
+
         require(!namespace.contains(':')) {
             "':' is not allowed in namespace"
         }
@@ -54,11 +63,37 @@ public data class PermissionId(
          * @throws IllegalArgumentException 在解析失败时抛出.
          */
         @JvmStatic
-        public fun parseFromString(string: String): PermissionId {
+        public fun parseFromString(@ResolveContext(PERMISSION_ID) string: String): PermissionId {
             return kotlin.runCatching {
                 string.split(':').let { (namespace, id) -> PermissionId(namespace, id) }
             }.getOrElse {
                 throw IllegalArgumentException("Could not parse PermissionId from '$string'", it)
+            }
+        }
+
+        /**
+         * 检查 [PermissionId.name] 的合法性. 在非法时抛出 [IllegalArgumentException]
+         */
+        @JvmStatic
+        @Throws(IllegalArgumentException::class)
+        public fun checkPermissionIdName(@ResolveContext(PERMISSION_NAME) value: String) {
+            when {
+                value.isBlank() -> throw IllegalArgumentException("PermissionId.name should not be blank.")
+                value.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces is not yet allowed in PermissionId.name.")
+                value.contains(':') -> throw IllegalArgumentException("':' is forbidden in PermissionId.name.")
+            }
+        }
+
+        /**
+         * 检查 [PermissionId.namespace] 的合法性. 在非法时抛出 [IllegalArgumentException]
+         */
+        @JvmStatic
+        @Throws(IllegalArgumentException::class)
+        public fun checkPermissionIdNamespace(@ResolveContext(PERMISSION_NAME) value: String) {
+            when {
+                value.isBlank() -> throw IllegalArgumentException("PermissionId.namespace should not be blank.")
+                value.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces is not yet allowed in PermissionId.namespace.")
+                value.contains(':') -> throw IllegalArgumentException("':' is forbidden in PermissionId.namespace.")
             }
         }
     }

@@ -7,24 +7,28 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  *
  */
-
 @file:Suppress("MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.console.internal.plugin
 
 import net.mamoe.mirai.console.plugin.jvm.ExportManager
+import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-internal class LoadingDeniedException(name: String) : ClassNotFoundException(name)
-
 internal class JvmPluginClassLoader(
-    val source: Any,
-    urls: Array<URL>,
+    val file: File,
     parent: ClassLoader?,
-    val classLoaders: Collection<JvmPluginClassLoader>
-) : URLClassLoader(urls, parent) {
+    val classLoaders: Collection<JvmPluginClassLoader>,
+) : URLClassLoader(arrayOf(file.toURI().toURL()), parent) {
+    //// 只允许插件 getResource 时获取插件自身资源, #205
+    override fun getResources(name: String?): Enumeration<URL> = findResources(name)
+    override fun getResource(name: String?): URL? = findResource(name)
+    // getResourceAsStream 在 URLClassLoader 中通过 getResource 确定资源
+    //      因此无需 override getResourceAsStream
+
     override fun toString(): String {
         return "JvmPluginClassLoader{source=$source}"
     }
@@ -118,3 +122,5 @@ internal class JvmPluginClassLoader(
         }
     }
 }
+
+internal class LoadingDeniedException(name: String) : ClassNotFoundException(name)

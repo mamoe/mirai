@@ -13,9 +13,9 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command
 
 /**
- * 一个权限.
+ * 一个抽象的「权限」. 由 [PermissionService] 实现不同, [Permission] 可能会有多种实例. 但一个权限总是拥有确定的 [id].
  *
- * 由 [PermissionService] 实现不同, [Permission] 可能会有多种实例. 但一个权限总是拥有确定的 [id].
+ * 在匹配权限时, 应使用唯一的 [id] 作为依据. 而不应该使用 [Permission] 实例. 同时, [Permission] 也不适合存储.
  *
  * **注意**: 请不要手动实现这个接口. 总是从 [PermissionService.register] 获得实例.
  *
@@ -32,6 +32,7 @@ import net.mamoe.mirai.console.command.Command
  * #### 手动申请权限
  * [PermissionService.register]
  */
+@PermissionImplementation
 public interface Permission {
     /**
      * 唯一识别 ID. 所有权限的 [id] 都互不相同.
@@ -48,6 +49,8 @@ public interface Permission {
 
     /**
      * 父权限.
+     *
+     * 在检查权限时, 若一个 [Permittee] 拥有父
      *
      * [RootPermission] 的 parent 为自身
      */

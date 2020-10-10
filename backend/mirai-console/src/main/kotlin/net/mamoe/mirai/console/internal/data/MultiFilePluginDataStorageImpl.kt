@@ -9,10 +9,9 @@
 
 package net.mamoe.mirai.console.internal.data
 
-import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
-import net.mamoe.mirai.console.data.PluginData
-import net.mamoe.mirai.console.data.PluginDataHolder
-import net.mamoe.mirai.console.data.PluginDataStorage
+import kotlinx.serialization.json.Json
+import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
@@ -42,7 +41,7 @@ internal open class MultiFilePluginDataStorageImpl(
         } else {
             this.store(holder, instance) // save an initial copy
         }
-        logger.debug { "Successfully loaded PluginData: ${instance.saveName} (containing ${instance.valueNodes.size} properties)" }
+        logger.debug { "Successfully loaded PluginData: ${instance.saveName} (containing ${instance.castOrNull<AbstractPluginData>()?.valueNodes?.size} properties)" }
     }
 
     protected open fun getPluginDataFile(holder: PluginDataHolder, instance: PluginData): File {
@@ -62,28 +61,33 @@ internal open class MultiFilePluginDataStorageImpl(
         return file.toFile().also { it.createNewFile() }
     }
 
+    private val json = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+        isLenient = true
+        allowStructuredMapKeys = true
+    }
+
+    private val yaml = Yaml.default
+
     @ConsoleExperimentalApi
     public override fun store(holder: PluginDataHolder, instance: PluginData) {
-        val yaml =/* if (instance.saveName == "PermissionService") Json {
-            prettyPrint = true
-            ignoreUnknownKeys = true
-            isLenient = true
-            allowStructuredMapKeys = true
-        } /*Yaml(
-            configuration = YamlConfiguration(
-                mapSerialization = YamlConfiguration.MapSerialization.FLOW_MAP,
-                listSerialization = YamlConfiguration.ListSerialization.FLOW_SEQUENCE,
-                classSerialization = YamlConfiguration.MapSerialization.FLOW_MAP
-            )
-        )*/ else */Yaml.default
         getPluginDataFile(holder, instance).writeText(
             kotlin.runCatching {
                 yaml.encodeToString(instance.updaterSerializer, Unit)
+            }.recoverCatching {
+                // Just use mainLogger for convenience.
+                MiraiConsole.mainLogger.warning(
+                    "Could not save ${instance.saveName} in YAML format due to exception in YAML encoder. " +
+                        "Please report this exception and relevant configurations to https://github.com/mamoe/mirai-console/issues/new",
+                    it
+                )
+                json.encodeToString(instance.updaterSerializer, Unit)
             }.getOrElse {
                 throw IllegalStateException("Exception while saving $instance, saveName=${instance.saveName}", it)
             }
         )
-        logger.debug { "Successfully saved PluginData: ${instance.saveName} (containing ${instance.valueNodes.size} properties)" }
+        logger.debug { "Successfully saved PluginData: ${instance.saveName} (containing ${instance.castOrNull<AbstractPluginData>()?.valueNodes?.size} properties)" }
     }
 }
 

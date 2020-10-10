@@ -14,6 +14,8 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.description.buildCommandArgumentContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.permission.Permission
 
 /**
@@ -24,7 +26,7 @@ import net.mamoe.mirai.console.permission.Permission
  * public final class MyCompositeCommand extends CompositeCommand {
  *     public static final MyCompositeCommand INSTANCE = new MyCompositeCommand();
  *
- *     public MyCompositeCommand() {
+ *     private MyCompositeCommand() {
  *         super(MyPluginMain.INSTANCE, "manage") // "manage" 是主指令名
  *     }
  *
@@ -69,11 +71,12 @@ import net.mamoe.mirai.console.permission.Permission
 public abstract class JCompositeCommand
 @JvmOverloads constructor(
     owner: CommandOwner,
-    vararg names: String,
+    @ResolveContext(COMMAND_NAME) primaryName: String,
+    @ResolveContext(COMMAND_NAME) vararg secondaryNames: String,
     parentPermission: Permission = owner.parentPermission,
-) : CompositeCommand(owner, *names, parentPermission = parentPermission) {
-    /** 指令描述, 用于显示在 [BuiltInCommands.Help] */
-    public final override var description: String = "<no descriptions given>"
+) : CompositeCommand(owner, primaryName, secondaryNames = secondaryNames, parentPermission = parentPermission) {
+    /** 指令描述, 用于显示在 [BuiltInCommands.HelpCommand] */
+    public final override var description: String = "<no descriptions available>"
         protected set
 
     public final override var permission: Permission = super.permission

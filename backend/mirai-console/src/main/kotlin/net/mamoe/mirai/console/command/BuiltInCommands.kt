@@ -132,12 +132,12 @@ public object BuiltInCommands {
                 onFailure = { throwable ->
                     sendMessage(
                         "Login failed: ${throwable.localizedMessage ?: throwable.message ?: throwable.toString()}" +
-                                if (this is CommandSenderOnMessage<*>) {
-                                    CommandManagerImpl.launch(CoroutineName("stacktrace delayer from Login")) {
-                                        fromEvent.nextMessageOrNull(60.secondsToMillis) { it.message.contentEquals("stacktrace") }
-                                    }
-                                    "\n 1 分钟内发送 stacktrace 以获取堆栈信息"
-                                } else ""
+                            if (this is CommandSenderOnMessage<*>) {
+                                CommandManagerImpl.launch(CoroutineName("stacktrace delayer from Login")) {
+                                    fromEvent.nextMessageOrNull(60.secondsToMillis) { it.message.contentEquals("stacktrace") }
+                                }
+                                "\n 1 分钟内发送 stacktrace 以获取堆栈信息"
+                            } else ""
                     )
 
                     throw throwable
@@ -148,7 +148,7 @@ public object BuiltInCommands {
 
     public object PermissionCommand : CompositeCommand(
         ConsoleCommandOwner, "permission", "权限", "perm",
-        description = "Manage permissions",
+        description = "管理权限",
         overrideContext = buildCommandArgumentContext {
             PermitteeId::class with PermitteeIdArgumentParser
             Permission::class with PermissionIdArgumentParser.map { id ->
@@ -159,30 +159,47 @@ public object BuiltInCommands {
         },
     ), BuiltInCommandInternal {
         // TODO: 2020/9/10 improve Permission command
+
+        @Description("授权一个权限")
         @SubCommand("permit", "grant", "add")
-        public suspend fun CommandSender.permit(target: PermitteeId, permission: Permission) {
+        public suspend fun CommandSender.permit(
+            @Name("被许可人 ID") target: PermitteeId,
+            @Name("权限 ID") permission: Permission,
+        ) {
             target.grantPermission(permission)
             sendMessage("OK")
         }
 
+        @Description("取消授权一个权限")
         @SubCommand("cancel", "deny", "remove")
-        public suspend fun CommandSender.cancel(target: PermitteeId, permission: Permission) {
+        public suspend fun CommandSender.cancel(
+            @Name("被许可人 ID") target: PermitteeId,
+            @Name("权限 ID") permission: Permission,
+        ) {
             target.denyPermission(permission, false)
             sendMessage("OK")
         }
 
+        @Description("取消授权一个权限及其所有子权限")
         @SubCommand("cancelAll", "denyAll", "removeAll")
-        public suspend fun CommandSender.cancelAll(target: PermitteeId, permission: Permission) {
+        public suspend fun CommandSender.cancelAll(
+            @Name("被许可人 ID") target: PermitteeId,
+            @Name("权限 ID") permission: Permission,
+        ) {
             target.denyPermission(permission, true)
             sendMessage("OK")
         }
 
+        @Description("查看被授权权限列表")
         @SubCommand("permittedPermissions", "pp", "grantedPermissions", "gp")
-        public suspend fun CommandSender.permittedPermissions(target: PermitteeId) {
+        public suspend fun CommandSender.permittedPermissions(
+            @Name("被许可人 ID") target: PermitteeId,
+        ) {
             val grantedPermissions = target.getPermittedPermissions()
             sendMessage(grantedPermissions.joinToString("\n") { it.id.toString() })
         }
 
+        @Description("查看所有权限列表")
         @SubCommand("listPermissions", "lp")
         public suspend fun CommandSender.listPermissions() {
             sendMessage(PermissionService.INSTANCE.getRegisteredPermissions().joinToString("\n") { it.id.toString() })

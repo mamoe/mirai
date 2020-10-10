@@ -18,6 +18,9 @@
 package net.mamoe.mirai.console.plugin.jvm
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.mirai.console.compiler.common.RestrictedScope
+import net.mamoe.mirai.console.compiler.common.RestrictedScope.Kind.COMMAND_REGISTER
+import net.mamoe.mirai.console.compiler.common.RestrictedScope.Kind.PERMISSION_REGISTER
 import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.permission.PermissionIdNamespace
 import net.mamoe.mirai.console.plugin.Plugin
@@ -59,6 +62,7 @@ public interface JvmPlugin : Plugin, CoroutineScope,
      *
      * @receiver 组件容器
      */
+    @RestrictedScope(COMMAND_REGISTER, PERMISSION_REGISTER)
     public fun PluginComponentStorage.onLoad() {}
 
     /**

@@ -12,12 +12,12 @@
 
 package net.mamoe.mirai.console
 
-import com.vdurmont.semver4j.Semver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
+import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
@@ -28,6 +28,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
+import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -78,7 +79,7 @@ public interface MiraiConsole : CoroutineScope {
     /**
      * 此 Console 后端版本号
      */
-    public val version: Semver
+    public val version: SemVersion
 
 
     @ConsoleExperimentalApi
@@ -146,6 +147,10 @@ public interface MiraiConsole : CoroutineScope {
                 else -> null!!
             }
         }
+
+        @ConsoleExperimentalApi("This is a low-level API and might be removed in the future.")
+        public val isActive: Boolean
+            get() = job.isActive
     }
 }
 

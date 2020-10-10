@@ -17,7 +17,7 @@ import kotlin.test.assertSame
 
 @OptIn(ConsoleInternalApi::class)
 internal class PluginDataTest {
-    class MyPluginData : AutoSavePluginData() {
+    class MyPluginData : AutoSavePluginData("test") {
         var int by value(1)
         val map: MutableMap<String, String> by value()
         val map2: MutableMap<String, MutableMap<String, String>> by value()

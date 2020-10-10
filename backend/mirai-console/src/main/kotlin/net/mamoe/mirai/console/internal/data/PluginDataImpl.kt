@@ -18,9 +18,9 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import net.mamoe.mirai.console.data.AbstractPluginData
+import net.mamoe.mirai.console.data.AbstractPluginData.ValueNode
 import net.mamoe.mirai.console.data.PluginData
-import net.mamoe.mirai.console.data.PluginData.ValueNode
-import net.mamoe.mirai.console.data.Value
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.ValueName
 import net.mamoe.yamlkt.Comment
@@ -34,12 +34,25 @@ import kotlin.reflect.KAnnotatedElement
  * - Auto-saving
  */
 internal abstract class PluginDataImpl {
-    internal fun findNodeInstance(name: String): ValueNode<*>? = valueNodes.firstOrNull { it.valueName == name }
+    init {
+        @Suppress("LeakingThis")
+        check(this is AbstractPluginData)
+    }
 
-    internal abstract val valueNodes: MutableList<ValueNode<*>>
+    private fun findNodeInstance(name: String): ValueNode<*>? {
+        check(this is AbstractPluginData)
+        return valueNodes.firstOrNull { it.valueName == name }
+    }
 
     internal open val updaterSerializer: KSerializer<Unit> = object : KSerializer<Unit> {
-        override val descriptor: SerialDescriptor get() = dataUpdaterSerializerDescriptor
+        override val descriptor: SerialDescriptor by lazy {
+            check(this@PluginDataImpl is AbstractPluginData)
+            kotlinx.serialization.descriptors.buildClassSerialDescriptor((this@PluginDataImpl as PluginData).saveName) {
+                for (valueNode in valueNodes) valueNode.run {
+                    element(valueName, updaterSerializer.descriptor, annotations = annotations, isOptional = true)
+                }
+            }
+        }
 
         @Suppress("UNCHECKED_CAST")
         override fun deserialize(decoder: Decoder) {
@@ -84,6 +97,8 @@ internal abstract class PluginDataImpl {
 
         @Suppress("UNCHECKED_CAST")
         override fun serialize(encoder: Encoder, value: Unit) {
+            check(this@PluginDataImpl is AbstractPluginData)
+
             val descriptor = descriptor
             with(encoder.beginStructure(descriptor)) {
                 repeat(descriptor.elementsCount) { index ->
@@ -99,18 +114,6 @@ internal abstract class PluginDataImpl {
             }
         }
 
-    }
-
-    /**
-     * flatten
-     */
-    abstract fun onValueChanged(value: Value<*>)
-    private val dataUpdaterSerializerDescriptor by lazy {
-        kotlinx.serialization.descriptors.buildClassSerialDescriptor((this as PluginData).saveName) {
-            for (valueNode in valueNodes) valueNode.run {
-                element(valueName, updaterSerializer.descriptor, annotations = annotations, isOptional = true)
-            }
-        }
     }
 }
 

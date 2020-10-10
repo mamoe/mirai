@@ -9,7 +9,8 @@
 
 package net.mamoe.mirai.console
 
-import com.vdurmont.semver4j.Semver
+import net.mamoe.mirai.console.util.SemVersion
+
 
 /**
  * 有关前端实现的信息
@@ -28,7 +29,7 @@ public interface MiraiConsoleFrontEndDescription {
     /**
      * 此前端实现的名称
      */
-    public val version: Semver
+    public val version: SemVersion
 
     /**
      * 兼容的 [MiraiConsole] 后端版本号
@@ -37,11 +38,10 @@ public interface MiraiConsoleFrontEndDescription {
      *
      * 返回 `null` 表示禁止 [MiraiConsole] 后端检查版本兼容性.
      */
-    public val compatibleBackendVersion: Semver? get() = null
+    public val compatibleBackendVersion: SemVersion? get() = null
 
     /**
      * 返回显示在 [MiraiConsole] 启动时的信息
      */
-    @JvmDefault
     public fun render(): String = "Frontend ${name}: version ${version}, provided by $vendor"
 }

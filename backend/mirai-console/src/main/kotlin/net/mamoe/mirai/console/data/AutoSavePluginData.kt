@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.*
+import kotlin.reflect.full.findAnnotation
 
 /**
  * 链接自动保存的 [PluginData].
@@ -29,14 +30,29 @@ import net.mamoe.mirai.utils.*
  * @see PluginData
  */
 public open class AutoSavePluginData private constructor(
-    @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?
+    // KEEP THIS PRIMARY CONSTRUCTOR FOR FUTURE USE: WE'LL SUPPORT SERIALIZERS_MODULE FOR POLYMORPHISM
+    @Suppress("UNUSED_PARAMETER") primaryConstructorMark: Any?,
 ) : AbstractPluginData() {
     private lateinit var owner_: AutoSavePluginDataHolder
     private val autoSaveIntervalMillis_: LongRange get() = owner_.autoSaveIntervalMillis
     private lateinit var storage_: PluginDataStorage
 
-    public constructor() : this(null)
+    public final override val saveName: String
+        get() = _saveName
 
+    private lateinit var _saveName: String
+
+    public constructor(saveName: String) : this(null) {
+        _saveName = saveName
+    }
+
+    @Deprecated("请手动指定保存名称. 此构造器将在 1.0.0 删除", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("AutoSavePluginData(\"把我改成保存名称\")"))
+    public constructor() : this(null) {
+        val clazz = this::class
+        _saveName = clazz.findAnnotation<ValueName>()?.value
+            ?: clazz.qualifiedName
+                ?: throw IllegalArgumentException("Cannot find a serial name for ${this::class}")
+    }
 
     @ConsoleExperimentalApi
     override fun onInit(owner: PluginDataHolder, storage: PluginDataStorage) {
@@ -57,7 +73,7 @@ public open class AutoSavePluginData private constructor(
                     ?.let { return@invokeOnCompletion }
                 MiraiConsole.mainLogger.error(
                     "An exception occurred when saving config ${this@AutoSavePluginData::class.qualifiedNameOrTip} " +
-                            "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner::class.qualifiedNameOrTip}",
+                        "but CoroutineExceptionHandler not found in PluginDataHolder.coroutineContext for ${owner::class.qualifiedNameOrTip}",
                     e
                 )
             }
@@ -121,6 +137,7 @@ public open class AutoSavePluginData private constructor(
         }
     }
 
+    @ConsoleExperimentalApi
     public final override fun onValueChanged(value: Value<*>) {
         debuggingLogger1.error { "onValueChanged: $value" }
         if (::owner_.isInitialized) {

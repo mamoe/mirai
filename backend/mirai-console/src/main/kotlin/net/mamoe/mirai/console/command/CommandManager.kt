@@ -26,11 +26,15 @@ import net.mamoe.mirai.message.data.*
 public interface CommandManager {
     /**
      * 获取已经注册了的属于这个 [CommandOwner] 的指令列表.
+     *
+     * @return 这一时刻的浅拷贝.
      */
     public val CommandOwner.registeredCommands: List<Command>
 
     /**
      * 获取所有已经注册了指令列表.
+     *
+     * @return 这一时刻的浅拷贝.
      */
     public val allRegisteredCommands: List<Command>
 
@@ -49,8 +53,8 @@ public interface CommandManager {
      *
      * @param override 是否覆盖重名指令.
      *
-     * 若原有指令 P, 其 [Command.names] 为 'a', 'b', 'c'.
-     * 新指令 Q, 其 [Command.names] 为 'b', 将会覆盖原指令 A 注册的 'b'.
+     * 若原有指令 P, 其 [Command.secondaryNames] 为 'a', 'b', 'c'.
+     * 新指令 Q, 其 [Command.secondaryNames] 为 'b', 将会覆盖原指令 A 注册的 'b'.
      *
      * 即注册完成后, 'a' 和 'c' 将会解析到指令 P, 而 'b' 会解析到指令 Q.
      *
@@ -71,19 +75,23 @@ public interface CommandManager {
     public fun Command.findDuplicate(): Command?
 
     /**
-     * 取消注册这个指令. 若指令未注册, 返回 `false`.
+     * 取消注册这个指令.
+     *
+     * 若指令未注册, 返回 `false`.
      */
     @JvmName("unregisterCommand")
     public fun Command.unregister(): Boolean
 
     /**
-     * 当 [this] 已经 [注册][register] 后返回 `true`
+     * 当 [this] 已经 [注册][register] 时返回 `true`
      */
     @JvmName("isCommandRegistered")
     public fun Command.isRegistered(): Boolean
 
     /**
-     * 解析并执行一个指令
+     * 解析并执行一个指令.
+     *
+     * 如要避免参数解析, 请使用 [Command.onCommand]
      *
      * ### 指令解析流程
      * 1. [message] 的第一个消息元素的 [内容][Message.contentToString] 被作为指令名, 在已注册指令列表中搜索. (包含 [Command.prefixOptional] 相关的处理)
@@ -116,7 +124,6 @@ public interface CommandManager {
      * @return 执行结果
      * @see executeCommand
      */
-    @JvmDefault
     @JvmBlockingBridge
     public suspend fun CommandSender.executeCommand(
         message: String,
@@ -139,7 +146,6 @@ public interface CommandManager {
      * 执行一个确切的指令
      * @see executeCommand 获取更多信息
      */
-    @JvmDefault
     @JvmBlockingBridge
     @JvmName("executeCommand")
     public suspend fun Command.execute(
@@ -151,7 +157,7 @@ public interface CommandManager {
     public companion object INSTANCE : CommandManager by CommandManagerImpl {
         // TODO: 2020/8/20 https://youtrack.jetbrains.com/issue/KT-41191
 
-        override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.run { registeredCommands }
+        override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.run { this@registeredCommands.registeredCommands }
         override fun CommandOwner.unregisterAllCommands(): Unit = CommandManagerImpl.run { unregisterAllCommands() }
         override fun Command.register(override: Boolean): Boolean = CommandManagerImpl.run { register(override) }
         override fun Command.findDuplicate(): Command? = CommandManagerImpl.run { findDuplicate() }

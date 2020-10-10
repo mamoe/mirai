@@ -12,7 +12,6 @@
 package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.command.Command.Companion.primaryName
 import net.mamoe.mirai.console.command.description.CommandArgumentContext
 import net.mamoe.mirai.console.command.description.CommandArgumentContextAware
 import net.mamoe.mirai.console.internal.data.kClassQualifiedNameOrTip
@@ -42,19 +41,21 @@ internal object SimpleCommandSubCommandAnnotationResolver :
         function.hasAnnotation<SimpleCommand.Handler>()
 
     override fun getSubCommandNames(baseCommand: AbstractReflectionCommand, function: KFunction<*>): Array<out String> =
-        baseCommand.names
+        baseCommand.secondaryNames
 }
 
 internal abstract class AbstractReflectionCommand
 @JvmOverloads constructor(
     owner: CommandOwner,
-    names: Array<out String>,
+    primaryName: String,
+    secondaryNames: Array<out String>,
     description: String = "<no description available>",
     parentPermission: Permission = owner.parentPermission,
     prefixOptional: Boolean = false,
 ) : Command, AbstractCommand(
     owner,
-    names = names,
+    primaryName = primaryName,
+    secondaryNames = secondaryNames,
     description = description,
     parentPermission = parentPermission,
     prefixOptional = prefixOptional
@@ -251,7 +252,7 @@ internal fun AbstractReflectionCommand.SubCommandDescriptor.createUsage(baseComm
 
 internal fun AbstractReflectionCommand.createSubCommand(
     function: KFunction<*>,
-    context: CommandArgumentContext
+    context: CommandArgumentContext,
 ): AbstractReflectionCommand.SubCommandDescriptor {
     val notStatic = !function.hasAnnotation<JvmStatic>()
     //val overridePermission = null//function.findAnnotation<CompositeCommand.PermissionId>()//optional

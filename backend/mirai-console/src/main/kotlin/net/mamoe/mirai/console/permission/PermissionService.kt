@@ -11,9 +11,13 @@
 
 package net.mamoe.mirai.console.permission
 
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.permission.checkType
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
+import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.name
 import kotlin.reflect.KClass
 
 /**
@@ -77,6 +81,8 @@ public interface PermissionService<P : Permission> {
      * 申请并注册一个权限 [Permission].
      *
      * @throws PermissionRegistryConflictException 当已存在一个 [PermissionId] 时抛出.
+     *
+     * @return 申请到的 [Permission] 实例
      */
     @Throws(PermissionRegistryConflictException::class)
     public fun register(
@@ -85,21 +91,29 @@ public interface PermissionService<P : Permission> {
         parent: Permission = RootPermission,
     ): P
 
+    /** 为 [Plugin] 分配一个 [PermissionId] */
+    public fun allocatePermissionIdForPlugin(
+        plugin: Plugin,
+        @ResolveContext(COMMAND_NAME) permissionName: String,
+        reason: PluginPermissionIdRequestType
+    ): PermissionId = allocatePermissionIdForPluginDefaultImplement(plugin, permissionName, reason)
+
     ///////////////////////////////////////////////////////////////////////////
 
     /**
      * 授予 [permitteeId] 以 [permission] 权限
      *
-     * Console 内建的权限服务支持授予操作. 但插件扩展的权限服务可能不支持.
+     * Console 内建的权限服务支持此操作. 但插件扩展的权限服务可能不支持.
      *
      * @throws UnsupportedOperationException 当插件扩展的 [PermissionService] 不支持这样的操作时抛出.
      */
+    @Throws(UnsupportedOperationException::class)
     public fun permit(permitteeId: PermitteeId, permission: P)
 
     /**
      * 撤销 [permitteeId] 的 [permission] 授权
      *
-     * Console 内建的权限服务支持授予操作. 但插件扩展的权限服务可能不支持.
+     * Console 内建的权限服务支持此操作. 但插件扩展的权限服务可能不支持.
      *
      * @param recursive `true` 时递归撤销所有子权限.
      * 例如, 若 [permission] 为 "*:*",
@@ -108,7 +122,17 @@ public interface PermissionService<P : Permission> {
      *
      * @throws UnsupportedOperationException 当插件扩展的 [PermissionService] 不支持这样的操作时抛出.
      */
+    @Throws(UnsupportedOperationException::class)
     public fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean)
+
+    /** [Plugin] 尝试分配的 [PermissionId] 来源 */
+    public enum class PluginPermissionIdRequestType {
+        /** For [Plugin.parentPermission] */
+        ROOT_PERMISSION,
+
+        /** For [Plugin.permissionId] */
+        PERMISSION_ID
+    }
 
     public companion object {
         internal var instanceField: PermissionService<*>? = null
@@ -118,11 +142,21 @@ public interface PermissionService<P : Permission> {
         public val INSTANCE: PermissionService<out Permission>
             get() = instanceField ?: error("PermissionService is not yet initialized therefore cannot be used.")
 
+        /**
+         * 获取一个权限, 失败时抛出 [NoSuchElementException]
+         */
+        @Throws(NoSuchElementException::class)
         public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
             get(id) ?: throw NoSuchElementException("Permission not found: $id")
 
-        internal fun PermissionService<*>.allocatePermissionIdForPlugin(name: String, id: String) =
-            PermissionId("plugin.${name.toLowerCase()}", id.toLowerCase())
+        internal fun PermissionService<*>.allocatePermissionIdForPluginDefaultImplement(
+            plugin: Plugin,
+            @ResolveContext(COMMAND_NAME) permissionName: String,
+            reason: PluginPermissionIdRequestType
+        ) = PermissionId(
+            plugin.name.toLowerCase().replace(' ', '.'),
+            permissionName.toLowerCase().replace(' ', '.')
+        )
 
         public fun PermissionId.findCorrespondingPermission(): Permission? = INSTANCE[this]
 

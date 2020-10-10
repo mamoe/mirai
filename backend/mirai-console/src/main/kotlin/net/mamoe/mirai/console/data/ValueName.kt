@@ -14,7 +14,7 @@ package net.mamoe.mirai.console.data
  *
  * 例:
  * ```
- * object AccountPluginData : PluginData by ... {
+ * object AccountPluginData : AutoSavePluginData() {
  *    @ValueName("info")
  *    val map: Map<String, String> by value("a" to "b")
  * }
@@ -26,6 +26,9 @@ package net.mamoe.mirai.console.data
  *   map:
  *     a: b
  * ```
+ *
+ * @see PluginData
+ * @see Value
  */
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)

@@ -15,11 +15,11 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.java.JCommand
-import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
-import net.mamoe.mirai.console.internal.command.isValidSubName
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.SingleMessage
 
 /**
  * 指令
@@ -34,11 +34,19 @@ import net.mamoe.mirai.message.data.SingleMessage
  */
 public interface Command {
     /**
-     * 指令名. 需要至少有一个元素. 所有元素都不能带有空格
+     * 主指令名. 将会参与构成 [Permission.id].
      *
-     * @see Command.primaryName 获取主要指令名
+     * 不允许包含 [空格][Char.isWhitespace], '.', ':'.
      */
-    public val names: Array<out String>
+    @ResolveContext(COMMAND_NAME)
+    public val primaryName: String
+
+    /**
+     * 次要指令名
+     * @see Command.primaryName 获取主指令名
+     */
+    @ResolveContext(COMMAND_NAME)
+    public val secondaryNames: Array<out String>
 
     /**
      * 用法说明, 用于发送给用户. [usage] 一般包含 [description].
@@ -51,12 +59,18 @@ public interface Command {
     public val description: String
 
     /**
-     * 指令权限
+     * 此指令所分配的权限.
+     *
+     * ### 实现约束
+     * - [Permission.id] 应由 [CommandOwner.permissionId] 创建. 因此保证相同的 [PermissionId.namespace]
+     * - [PermissionId.name] 应为 [主指令名][primaryName]
      */
     public val permission: Permission
 
     /**
-     * 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选
+     * 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选.
+     *
+     * 会影响聊天语境中的解析.
      */
     public val prefixOptional: Boolean
 
@@ -69,7 +83,7 @@ public interface Command {
     /**
      * 在指令被执行时调用.
      *
-     * @param args 指令参数. 数组元素类型可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
+     * @param args 精确的指令参数. [MessageChain] 每个元素代表一个精确的参数.
      *
      * @see CommandManager.executeCommand 查看更多信息
      */
@@ -77,41 +91,37 @@ public interface Command {
     public suspend fun CommandSender.onCommand(args: MessageChain)
 
     public companion object {
+
         /**
-         * 主要指令名. 为 [Command.names] 的第一个元素.
+         * 获取所有指令名称 (包含 [primaryName] 和 [secondaryNames]).
+         *
+         * @return 数组大小至少为 1. 第一个元素总是 [primaryName]. 随后是保持原顺序的 [secondaryNames]
          */
         @JvmStatic
-        public val Command.primaryName: String
-            get() = names[0]
+        public val Command.allNames: Array<String>
+            get() = arrayOf(primaryName, *secondaryNames)
+
+        /**
+         * 检查指令名的合法性. 在非法时抛出 [IllegalArgumentException]
+         */
+        @JvmStatic
+        @Throws(IllegalArgumentException::class)
+        public fun checkCommandName(@ResolveContext(COMMAND_NAME) name: String) {
+            when {
+                name.isBlank() -> throw IllegalArgumentException("Command name should not be blank.")
+                name.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces is not yet allowed in command name.")
+                name.contains(':') -> throw IllegalArgumentException("':' is forbidden in command name.")
+                name.contains('.') -> throw IllegalArgumentException("'.' is forbidden in command name.")
+            }
+        }
     }
 }
 
+/**
+ * 调用 [Command.onCommand]
+ * @see Command.onCommand
+ */
 @JvmSynthetic
 public suspend inline fun Command.onCommand(sender: CommandSender, args: MessageChain): Unit =
     sender.onCommand(args)
 
-/**
- * [Command] 的基础实现
- *
- * @see SimpleCommand
- * @see CompositeCommand
- * @see RawCommand
- */
-public abstract class AbstractCommand
-@JvmOverloads constructor(
-    /** 指令拥有者. */
-    public override val owner: CommandOwner,
-    vararg names: String,
-    description: String = "<no description available>",
-    parentPermission: Permission = owner.parentPermission,
-    /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
-    public override val prefixOptional: Boolean = false,
-) : Command {
-    public override val description: String = description.trimIndent()
-    public override val names: Array<out String> =
-        names.map(String::trim).filterNot(String::isEmpty).map(String::toLowerCase).also { list ->
-            list.firstOrNull { !it.isValidSubName() }?.let { error("Invalid name: $it") }
-        }.toTypedArray()
-
-    public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
-}

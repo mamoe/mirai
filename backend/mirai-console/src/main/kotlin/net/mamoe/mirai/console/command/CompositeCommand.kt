@@ -18,9 +18,12 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.description.*
+import net.mamoe.mirai.console.compiler.common.ResolveContext
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
 import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
@@ -81,12 +84,13 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
  */
 public abstract class CompositeCommand(
     owner: CommandOwner,
-    vararg names: String,
+    @ResolveContext(COMMAND_NAME) primaryName: String,
+    @ResolveContext(COMMAND_NAME) vararg secondaryNames: String,
     description: String = "no description available",
     parentPermission: Permission = owner.parentPermission,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext,
-) : Command, AbstractReflectionCommand(owner, names, description, parentPermission, prefixOptional),
+) : Command, AbstractReflectionCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
     CommandArgumentContextAware {
 
     /**
@@ -105,7 +109,9 @@ public abstract class CompositeCommand(
      */
     @Retention(RUNTIME)
     @Target(FUNCTION)
-    protected annotation class SubCommand(vararg val value: String)
+    protected annotation class SubCommand(
+        @ResolveContext(COMMAND_NAME) vararg val value: String,
+    )
 
     /** 指令描述 */
     @Retention(RUNTIME)
@@ -113,6 +119,7 @@ public abstract class CompositeCommand(
     protected annotation class Description(val value: String)
 
     /** 参数名, 将参与构成 [usage] */
+    @ConsoleExperimentalApi("Classname might change")
     @Retention(RUNTIME)
     @Target(AnnotationTarget.VALUE_PARAMETER)
     protected annotation class Name(val value: String)

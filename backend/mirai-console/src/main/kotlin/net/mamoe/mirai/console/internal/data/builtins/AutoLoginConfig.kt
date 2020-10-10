@@ -6,10 +6,7 @@ import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.internal.util.md5
 import net.mamoe.mirai.console.internal.util.toUHexString
 
-internal object AutoLoginConfig : AutoSavePluginConfig() {
-    override val saveName: String
-        get() = "AutoLogin"
-
+internal object AutoLoginConfig : AutoSavePluginConfig("AutoLogin") {
     @ValueDescription(
         """
         账号和明文密码列表

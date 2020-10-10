@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.plugin
 
-import com.vdurmont.semver4j.Semver
 import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
 import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
@@ -20,6 +19,7 @@ import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.console.util.SemVersion
 
 /**
  * 表示一个 mirai-console 插件.
@@ -62,7 +62,7 @@ public inline val Plugin.name: String get() = this.description.name
 /**
  * 获取 [PluginDescription.version]
  */
-public inline val Plugin.version: Semver get() = this.description.version
+public inline val Plugin.version: SemVersion get() = this.description.version
 
 /**
  * 获取 [PluginDescription.info]

@@ -14,51 +14,33 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 </div>
 
 # mirai-console
-[ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-console/)
 
-高效率插件支持 QQ 机器人框架, 机器人核心来自 [mirai](https://github.com/mamoe/mirai)
+高效率 QQ 机器人框架，机器人核心来自 [mirai](https://github.com/mamoe/mirai)
 
-## 模块说明
+![Gradle CI](https://github.com/mamoe/mirai-console/workflows/Gradle%20CI/badge.svg?branch=master)
+[![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-console 由后端和前端一起工作. 使用时必须选择一个前端.
+## 开发
 
-- `mirai-console`: console 的后端, 包含插件管理, 指令系统, 配置系统.
+- **[准备工作 - 环境和前置知识](docs/Preparations.md)**
+- **[配置项目](docs/ConfiguringProjects.md)**
+- **[启动 Console](docs/Run.md)**
 
+### 后端插件开发基础
 
-
-前端:
-
-- `mirai-console-pure`: console 的轻量命令行前端.
-- `mirai-console-graphical`: console 的 JavaFX 图形化界面前端. (开发中)
-- `mirai-console-terminal`: console 的 Unix 终端界面前端. (开发中)
-
-
-**注意：`mirai-console` 后端和 pure 前端正在进行完全的重构, 所有 API 都不具有稳定性**
-
-### 使用
-
-**查看示例插件**: [mirai-console-example-plugin](https://github.com/Him188/mirai-console-example-plugin)
-
-正在更新中的文档：[参考文档](docs/README.md)
-
-#### Gradle
-`CORE_VERSION`: [ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-core/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-core/)
-`CONSOLE_VERSION`: [ ![Download](https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?) ](https://bintray.com/him188moe/mirai/mirai-console/)
+- 插件 - [Plugin 模块](docs/Plugins.md)
+- 指令 - [Command 模块](docs/Commands.md)
+- 存储 - [PluginData 模块](docs/PluginData.md)
+- 权限 - [Permission 模块](docs/Permissions.md)
 
 
-build.gradle.kts
-```kotlin
-repositories {
-  jcenter()
-}
+**示例插件**：
+- [mirai-console-example-plugin (Kotlin DSL)](https://github.com/Him188/mirai-console-example-plugin)
+- [mirai-console-example-plugin (Groovy DSL)](https://github.com/Karlatemp/mirai-console-example-plugin)
 
-dependencies {
-  implementation("net.mamoe:mirai-core:$CORE_VERSION") // mirai-core 的 API
-  implementation("net.mamoe:mirai-console:$CONSOLE_VERSION") // 后端
-  
-  testImplementation("net.mamoe:mirai-console-pure:$CONSOLE_VERSION") // 前端, 用于启动测试
-}
-```
+### 后端插件开发进阶
 
-#### Maven
-同理 Gradle
+- 扩展 - [Extension 模块和扩展点](docs/Extensions.md)
+
+### 实现前端
+- [FrontEnd](docs/FrontEnd.md)
