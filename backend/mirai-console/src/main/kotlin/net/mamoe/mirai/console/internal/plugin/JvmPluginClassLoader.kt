@@ -30,7 +30,7 @@ internal class JvmPluginClassLoader(
     //      因此无需 override getResourceAsStream
 
     override fun toString(): String {
-        return "JvmPluginClassLoader{source=$source}"
+        return "JvmPluginClassLoader{source=$file}"
     }
 
     private val cache = ConcurrentHashMap<String, Class<*>>()

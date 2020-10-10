@@ -24,7 +24,6 @@ import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 
 internal object BuiltInJvmPluginLoaderImpl :
     AbstractFilePluginLoader<JvmPlugin, JvmPluginDescription>(".jar"),
@@ -83,7 +82,7 @@ internal object BuiltInJvmPluginLoaderImpl :
         val filePlugins = this.filterNot {
             pluginFileToInstanceMap.containsKey(it)
         }.associateWith {
-            JvmPluginClassLoader(it, arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader, classLoaders)
+            JvmPluginClassLoader(it, MiraiConsole::class.java.classLoader, classLoaders)
         }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
         }.asSequence().findAllInstances().onEach {
