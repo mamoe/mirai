@@ -9,11 +9,18 @@
 
 package net.mamoe.mirai.console.command.descriptor
 
+import net.mamoe.mirai.console.command.parse.CommandCall
+import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.command.parse.RawCommandArgument
 import net.mamoe.mirai.message.data.MessageContent
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
+/**
+ * Implicit type variant specified by [CommandCallParser].
+ *
+ * [TypeVariant] is not necessary for all [CommandCall]s.
+ */
 @ExperimentalCommandDescriptors
 public interface TypeVariant<out OutType> {
     /**
