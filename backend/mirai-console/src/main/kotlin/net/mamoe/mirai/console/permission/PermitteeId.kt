@@ -266,13 +266,13 @@ public sealed class AbstractPermitteeId(
     /**
      * 表示唯一的一个好友
      *
-     * - **直接父标识符**: [ExactUser]
+     * - **直接父标识符**: [ExactUser], [AnyFriend]
      * - **间接父标识符**: [AnyUser], [AnyContact]
      * - 字符串表示: "f$id"
      */
     public data class ExactFriend(
         public val id: Long,
-    ) : AbstractPermitteeId(ExactUser(id)) {
+    ) : AbstractPermitteeId(ExactUser(id), AnyFriend) {
         override fun asString(): String = "f$id"
     }
 
@@ -304,7 +304,7 @@ public sealed class AbstractPermitteeId(
      * 表示唯一的一个 *在临时会话发送消息的* [群成员][Member]
      *
      * - **直接父标识符**: [ExactMember]
-     * - **间接父标识符**: [AnyUser], [AnyMember], [ExactUser], [AnyContact]
+     * - **间接父标识符**: [AnyUser], [AnyMember], [ExactUser], [AnyContact], [AnyMemberFromAnyGroup]
      * - 字符串表示: "t$groupId.$memberId"
      */
     public data class ExactTemp(
