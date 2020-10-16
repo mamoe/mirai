@@ -155,7 +155,7 @@ public interface PermissionService<P : Permission> {
             reason: PluginPermissionIdRequestType
         ) = PermissionId(
             plugin.name.toLowerCase().replace(' ', '.'),
-            permissionName
+            permissionName.toLowerCase()
         )
 
         public fun PermissionId.findCorrespondingPermission(): Permission? = INSTANCE[this]
