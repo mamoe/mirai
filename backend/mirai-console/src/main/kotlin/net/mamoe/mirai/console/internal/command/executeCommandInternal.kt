@@ -37,7 +37,7 @@ internal suspend fun CommandSender.executeCommandInternal(
             )
         },
         onFailure = { exception ->
-            return if (exception is IllegalArgumentException) CommandExecuteResult.IllegalArgument(
+            return if (exception is IllegalCommandArgumentException) CommandExecuteResult.IllegalArgument(
                 commandName = commandName,
                 command = command,
                 exception = exception,

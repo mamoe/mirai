@@ -282,6 +282,13 @@ public sealed class AbstractCommandSender : CommandSender, CoroutineScope {
         if (this is CommandSenderOnMessage<*>) {
             val cause = e.rootCauseOrSelf
 
+            // TODO: 2020/10/17
+            //      CommandArgumentParserException 作为 IllegalCommandArgumentException 不会再进入此函数
+            //      已在
+            //       - [console]  CommandManagerImpl.commandListener
+            //       - [terminal] ConsoleThread.kt
+            //      处理
+
             val message = cause
                 .takeIf { it is CommandArgumentParserException }?.message
                 ?: "${cause::class.simpleName.orEmpty()}: ${cause.message}"

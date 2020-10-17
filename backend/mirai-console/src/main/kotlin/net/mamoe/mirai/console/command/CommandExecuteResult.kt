@@ -58,7 +58,7 @@ public sealed class CommandExecuteResult {
     /** 执行执行时发生了一个非法参数错误 */
     public class IllegalArgument(
         /** 指令执行时发生的错误 */
-        public override val exception: IllegalArgumentException,
+        public override val exception: IllegalCommandArgumentException,
         /** 尝试执行的指令 */
         public override val command: Command,
         /** 尝试执行的指令名 */
@@ -180,7 +180,7 @@ public fun CommandExecuteResult.isExecutionException(): Boolean {
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.ExecutionFailed] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.PermissionDenied] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isPermissionDenied(): Boolean {
@@ -192,7 +192,7 @@ public fun CommandExecuteResult.isPermissionDenied(): Boolean {
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.ExecutionFailed] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.CommandNotFound] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isCommandNotFound(): Boolean {
@@ -204,7 +204,7 @@ public fun CommandExecuteResult.isCommandNotFound(): Boolean {
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.ExecutionFailed] 或 [CommandExecuteResult.CommandNotFound] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.ExecutionFailed], [CommandExecuteResult.IllegalArgument] 或 [CommandExecuteResult.CommandNotFound] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isFailure(): Boolean {
