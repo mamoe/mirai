@@ -9,19 +9,39 @@
 
 package net.mamoe.mirai.console.command.descriptor
 
+import net.mamoe.kjbb.JvmBlockingBridge
+import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isAcceptable
+import net.mamoe.mirai.console.command.descriptor.CommandValueParameter.UserDefinedType.Companion.createOptional
+import net.mamoe.mirai.console.command.descriptor.CommandValueParameter.UserDefinedType.Companion.createRequired
+import net.mamoe.mirai.console.command.parse.CommandValueArgument
+import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
+import net.mamoe.mirai.console.internal.data.classifierAsKClassOrNull
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.safeCast
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.typeOf
 
-@ExperimentalCommandDescriptors
-public interface CommandDescriptor {
-    public val overloads: List<CommandSignatureVariant>
-}
-
+/**
+ * @see CommandSignatureVariantImpl
+ */
 @ExperimentalCommandDescriptors
 public interface CommandSignatureVariant {
     public val valueParameters: List<CommandValueParameter<*>>
+
+    @JvmBlockingBridge
+    public suspend fun call(resolvedCommandCall: ResolvedCommandCall)
+}
+
+@ExperimentalCommandDescriptors
+public class CommandSignatureVariantImpl(
+    override val valueParameters: List<CommandValueParameter<*>>,
+    private val onCall: suspend CommandSignatureVariantImpl.(resolvedCommandCall: ResolvedCommandCall) -> Unit,
+) : CommandSignatureVariant {
+    override suspend fun call(resolvedCommandCall: ResolvedCommandCall) {
+        return onCall(resolvedCommandCall)
+    }
 }
 
 
@@ -43,23 +63,85 @@ public interface ICommandParameter<T : Any?> {
      * Reified type of [T]
      */
     public val type: KType
+
+    public val isVararg: Boolean
+
+    public fun accepts(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): Boolean =
+        accepting(argument, commandArgumentContext).isAcceptable
+
+    public fun accepting(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance
 }
 
 @ExperimentalCommandDescriptors
+public sealed class ArgumentAcceptance(
+    /**
+     * Higher means more acceptable
+     */
+    @ConsoleExperimentalApi
+    public val acceptanceLevel: Int,
+) {
+    public object Direct : ArgumentAcceptance(Int.MAX_VALUE)
+
+    public class WithTypeConversion(
+        public val typeVariant: TypeVariant<*>,
+    ) : ArgumentAcceptance(20)
+
+    public class WithContextualConversion(
+        public val parser: CommandValueArgumentParser<*>,
+    ) : ArgumentAcceptance(10)
+
+    public class ResolutionAmbiguity(
+        public val candidates: List<TypeVariant<*>>,
+    ) : ArgumentAcceptance(0)
+
+    public object Impossible : ArgumentAcceptance(-1)
+
+    public companion object {
+        @JvmStatic
+        public val ArgumentAcceptance.isAcceptable: Boolean
+            get() = acceptanceLevel > 0
+
+        @JvmStatic
+        public val ArgumentAcceptance.isNotAcceptable: Boolean
+            get() = acceptanceLevel <= 0
+    }
+}
+
+
+@ExperimentalCommandDescriptors
 public sealed class CommandValueParameter<T> : ICommandParameter<T> {
-    init {
-        @Suppress("LeakingThis")
+    internal fun validate() { // // TODO: 2020/10/18 net.mamoe.mirai.console.command.descriptor.CommandValueParameter.validate$mirai_console_mirai_console_main
         require(type.classifier?.safeCast<KClass<*>>()?.isInstance(defaultValue) == true) {
             "defaultValue is not instance of type"
         }
     }
 
+
+    public override fun accepting(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
+        val expectingType = this.type
+
+        if (argument.type.isSubtypeOf(expectingType)) return ArgumentAcceptance.Direct
+
+        argument.typeVariants.associateWith { typeVariant ->
+            if (typeVariant.outType.isSubtypeOf(expectingType)) {
+                // TODO: 2020/10/11 resolution ambiguity
+                return ArgumentAcceptance.WithTypeConversion(typeVariant)
+            }
+        }
+        expectingType.classifierAsKClassOrNull()?.let { commandArgumentContext?.get(it) }?.let { parser ->
+            return ArgumentAcceptance.WithContextualConversion(parser)
+        }
+        return ArgumentAcceptance.Impossible
+    }
+
     public class StringConstant(
         public override val name: String,
+        public val expectingValue: String,
     ) : CommandValueParameter<String>() {
         public override val type: KType get() = STRING_TYPE
         public override val defaultValue: Nothing? get() = null
         public override val isOptional: Boolean get() = false
+        public override val isVararg: Boolean get() = false
 
         private companion object {
             @OptIn(ExperimentalStdlibApi::class)
@@ -67,23 +149,28 @@ public sealed class CommandValueParameter<T> : ICommandParameter<T> {
         }
     }
 
+    /**
+     * @see createOptional
+     * @see createRequired
+     */
     public class UserDefinedType<T>(
         public override val name: String,
         public override val defaultValue: T?,
         public override val isOptional: Boolean,
+        public override val isVararg: Boolean,
         public override val type: KType,
     ) : CommandValueParameter<T>() {
         public companion object {
             @JvmStatic
-            public inline fun <reified T : Any> createOptional(name: String, defaultValue: T): UserDefinedType<T> {
+            public inline fun <reified T : Any> createOptional(name: String, isVararg: Boolean, defaultValue: T): UserDefinedType<T> {
                 @OptIn(ExperimentalStdlibApi::class)
-                return UserDefinedType(name, defaultValue, true, typeOf<T>())
+                return UserDefinedType(name, defaultValue, true, isVararg, typeOf<T>())
             }
 
             @JvmStatic
-            public inline fun <reified T : Any> createRequired(name: String): UserDefinedType<T> {
+            public inline fun <reified T : Any> createRequired(name: String, isVararg: Boolean): UserDefinedType<T> {
                 @OptIn(ExperimentalStdlibApi::class)
-                return UserDefinedType(name, null, false, typeOf<T>())
+                return UserDefinedType(name, null, false, isVararg, typeOf<T>())
             }
         }
     }

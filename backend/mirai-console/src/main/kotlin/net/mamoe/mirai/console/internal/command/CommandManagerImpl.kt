@@ -16,17 +16,15 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
+import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageContent
-import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.locks.ReentrantLock
 
-internal object CommandManagerImpl : CommandManager, CoroutineScope by CoroutineScope(MiraiConsole.job) {
+internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiConsole.childScope("CommandManagerImpl") {
     private val logger: MiraiLogger by lazy {
         MiraiConsole.createLogger("command")
     }
@@ -48,11 +46,11 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     /**
      * 从原始的 command 中解析出 Command 对象
      */
-    internal fun matchCommand(rawCommand: String): Command? {
-        if (rawCommand.startsWith(commandPrefix)) {
-            return requiredPrefixCommandMap[rawCommand.substringAfter(commandPrefix).toLowerCase()]
+    override fun matchCommand(commandName: String): Command? {
+        if (commandName.startsWith(commandPrefix)) {
+            return requiredPrefixCommandMap[commandName.substringAfter(commandPrefix).toLowerCase()]
         }
-        return optionalPrefixCommandMap[rawCommand.toLowerCase()]
+        return optionalPrefixCommandMap[commandName.toLowerCase()]
     }
 
     internal val commandListener: Listener<MessageEvent> by lazy {
@@ -65,7 +63,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
         ) {
             val sender = this.toCommandSender()
 
-            when (val result = sender.executeCommand(message)) {
+            when (val result = executeCommand(sender, message)) {
                 is CommandExecuteResult.PermissionDenied -> {
                     if (!result.command.prefixOptional || message.content.startsWith(CommandManager.commandPrefix)) {
                         sender.sendMessage("权限不足")
@@ -152,44 +150,4 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     }
 
     override fun Command.isRegistered(): Boolean = this in _registeredCommands
-
-    override suspend fun Command.execute(
-        sender: CommandSender,
-        arguments: Message,
-        checkPermission: Boolean
-    ): CommandExecuteResult {
-        return sender.executeCommandInternal(
-            this,
-            arguments.flattenCommandComponents(),
-            primaryName,
-            checkPermission
-        )
-    }
-
-    override suspend fun Command.execute(
-        sender: CommandSender,
-        arguments: String,
-        checkPermission: Boolean
-    ): CommandExecuteResult {
-        return sender.executeCommandInternal(
-            this,
-            arguments.flattenCommandComponents(),
-            primaryName,
-            checkPermission
-        )
-    }
-
-    override suspend fun CommandSender.executeCommand(
-        message: Message,
-        checkPermission: Boolean
-    ): CommandExecuteResult {
-        val msg = message.asMessageChain().filterIsInstance<MessageContent>()
-        if (msg.isEmpty()) return CommandExecuteResult.CommandNotFound("")
-        return executeCommandInternal(msg, msg[0].content.substringBefore(' '), checkPermission)
-    }
-
-    override suspend fun CommandSender.executeCommand(message: String, checkPermission: Boolean): CommandExecuteResult {
-        if (message.isBlank()) return CommandExecuteResult.CommandNotFound("")
-        return executeCommandInternal(message, message.substringBefore(' '), checkPermission)
-    }
 }

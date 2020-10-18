@@ -14,6 +14,7 @@ import net.mamoe.mirai.console.command.descriptor.MessageContentTypeVariant
 import net.mamoe.mirai.console.command.descriptor.NoValueArgumentMappingException
 import net.mamoe.mirai.console.command.descriptor.TypeVariant
 import net.mamoe.mirai.message.data.MessageContent
+import kotlin.reflect.KType
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.typeOf
 
@@ -34,6 +35,7 @@ public interface CommandArgument
  */
 @ExperimentalCommandDescriptors
 public interface CommandValueArgument : CommandArgument {
+    public val type: KType
     public val value: RawCommandArgument
     public val typeVariants: List<TypeVariant<*>>
 }
@@ -45,6 +47,8 @@ public interface CommandValueArgument : CommandArgument {
 public data class InvariantCommandValueArgument(
     public override val value: RawCommandArgument,
 ) : CommandValueArgument {
+    @OptIn(ExperimentalStdlibApi::class)
+    override val type: KType = typeOf<MessageContent>()
     override val typeVariants: List<TypeVariant<*>> = listOf(MessageContentTypeVariant)
 }
 
@@ -57,10 +61,14 @@ public fun <T> CommandValueArgument.mapValue(typeVariant: TypeVariant<T>): T = t
 public inline fun <reified T> CommandValueArgument.mapToType(): T =
     mapToTypeOrNull() ?: throw  NoValueArgumentMappingException(this, typeOf<T>())
 
+@OptIn(ExperimentalStdlibApi::class)
 @ExperimentalCommandDescriptors
-public inline fun <reified T> CommandValueArgument.mapToTypeOrNull(): T? {
+public fun <T> CommandValueArgument.mapToType(type: KType): T =
+    mapToTypeOrNull(type) ?: throw  NoValueArgumentMappingException(this, type)
+
+@ExperimentalCommandDescriptors
+public fun <T> CommandValueArgument.mapToTypeOrNull(expectingType: KType): T? {
     @OptIn(ExperimentalStdlibApi::class)
-    val expectingType = typeOf<T>()
     val result = typeVariants
         .filter { it.outType.isSubtypeOf(expectingType) }
         .also {
@@ -71,5 +79,12 @@ public inline fun <reified T> CommandValueArgument.mapToTypeOrNull(): T? {
                 acc
             else typeVariant
         }
+    @Suppress("UNCHECKED_CAST")
     return result.mapValue(value) as T
+}
+
+@ExperimentalCommandDescriptors
+public inline fun <reified T> CommandValueArgument.mapToTypeOrNull(): T? {
+    @OptIn(ExperimentalStdlibApi::class)
+    return mapToTypeOrNull(typeOf<T>())
 }

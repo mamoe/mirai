@@ -12,6 +12,8 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandExecuteResult.CommandExecuteStatus
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.contracts.contract
@@ -21,6 +23,8 @@ import kotlin.contracts.contract
  *
  * @see CommandExecuteStatus
  */
+@ConsoleExperimentalApi("Not yet implemented")
+@ExperimentalCommandDescriptors
 public sealed class CommandExecuteResult {
     /** 指令最终执行状态 */
     public abstract val status: CommandExecuteStatus

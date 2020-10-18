@@ -9,16 +9,15 @@
 
 package net.mamoe.mirai.console.command.java
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import net.mamoe.mirai.console.command.*
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
+import net.mamoe.mirai.console.command.BuiltInCommands
+import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.SingleMessage
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 供 Java 用户继承
@@ -46,6 +45,7 @@ import net.mamoe.mirai.message.data.SingleMessage
  *
  * @see JRawCommand
  */
+@ConsoleExperimentalApi("Not yet supported")
 public abstract class JRawCommand
 @JvmOverloads constructor(
     /**
@@ -72,19 +72,4 @@ public abstract class JRawCommand
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
     public final override var prefixOptional: Boolean = false
         protected set
-
-    /**
-     * 在指令被执行时调用.
-     *
-     * @param args 指令参数. 数组元素类型可能是 [SingleMessage] 或 [String]. 且已经以 ' ' 分割.
-     *
-     * @see CommandManager.execute 查看更多信息
-     */
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @JvmName("onCommand")
-    public abstract fun onCommand(sender: CommandSender, args: MessageChain)
-
-    public final override suspend fun CommandSender.onCommand(args: MessageChain) {
-        withContext(Dispatchers.IO) { onCommand(this@onCommand, args) }
-    }
 }

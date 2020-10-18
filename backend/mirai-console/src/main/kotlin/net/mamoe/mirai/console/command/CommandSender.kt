@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asMemberCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSender

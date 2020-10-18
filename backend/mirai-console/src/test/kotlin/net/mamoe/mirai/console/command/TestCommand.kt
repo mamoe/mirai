@@ -16,7 +16,6 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.Testing
 import net.mamoe.mirai.console.Testing.withTesting
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.registeredCommands

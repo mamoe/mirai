@@ -13,8 +13,8 @@ package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
-import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
+import kotlin.reflect.KType
 
 /*
 internal fun Parameter.toCommandParam(): CommandParameter<*> {
@@ -39,10 +39,10 @@ internal data class CommandParameter<T : Any>(
     /**
      * 参数类型. 将从 [CompositeCommand.context] 中寻找 [CommandValueArgumentParser] 解析.
      */
-    val type: KClass<T>, // exact type
+    val type: KType, // exact type
     val parameter: KParameter, // source parameter
 ) {
-    constructor(name: String, type: KClass<T>, parameter: KParameter, parser: CommandValueArgumentParser<T>) : this(
+    constructor(name: String, type: KType, parameter: KParameter, parser: CommandValueArgumentParser<T>) : this(
         name, type, parameter
     ) {
         this._overrideParser = parser

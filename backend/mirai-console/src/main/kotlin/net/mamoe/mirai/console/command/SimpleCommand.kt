@@ -61,6 +61,14 @@ public abstract class SimpleCommand(
 ) : Command, AbstractReflectionCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
     CommandArgumentContextAware {
 
+    @ExperimentalCommandDescriptors
+    override val overloads: List<CommandSignatureVariant> = listOf(
+        CommandSignatureVariantImpl(listOf(CommandValueParameter.UserDefinedType.createRequired<MessageChain>("args", true))) { call ->
+            val sender = call.caller
+            subCommands.single().onCommand(sender, call.resolvedValueArguments)
+        }
+    )
+
     /**
      * 自动根据带有 [Handler] 注解的函数签名生成 [usage]. 也可以被覆盖.
      */
@@ -75,10 +83,6 @@ public abstract class SimpleCommand(
      * 指令参数环境. 默认为 [CommandArgumentContext.Builtins] `+` `overrideContext`
      */
     public override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
-
-    public final override suspend fun CommandSender.onCommand(args: MessageChain) {
-        subCommands.single().parseAndExecute(this, args, false)
-    }
 
     internal override fun checkSubCommand(subCommands: Array<SubCommandDescriptor>) {
         super.checkSubCommand(subCommands)

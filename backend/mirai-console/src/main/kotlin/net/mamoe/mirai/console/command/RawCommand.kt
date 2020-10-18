@@ -11,14 +11,18 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
+import net.mamoe.mirai.console.command.descriptor.CommandSignatureVariant
+import net.mamoe.mirai.console.command.descriptor.CommandSignatureVariantImpl
+import net.mamoe.mirai.console.command.descriptor.CommandValueParameter
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.java.JRawCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageChainBuilder
 
 /**
  * 无参数解析, 接收原生参数的指令.
@@ -52,6 +56,15 @@ public abstract class RawCommand(
 ) : Command {
     public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
 
+    @ExperimentalCommandDescriptors
+    override val overloads: List<CommandSignatureVariant> = listOf(
+        CommandSignatureVariantImpl(listOf(CommandValueParameter.UserDefinedType.createRequired<MessageChain>("args", true))) { call ->
+            val sender = call.caller
+            val arguments = call.rawValueArguments
+            sender.onCommand(arguments.mapTo(MessageChainBuilder()) { it.value }.build())
+        }
+    )
+
     /**
      * 在指令被执行时调用.
      *
@@ -59,7 +72,7 @@ public abstract class RawCommand(
      *
      * @see CommandManager.execute 查看更多信息
      */
-    public abstract override suspend fun CommandSender.onCommand(args: MessageChain)
+    public abstract suspend fun CommandSender.onCommand(args: MessageChain)
 }
 
 

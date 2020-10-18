@@ -11,15 +11,16 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentContextAware
+import net.mamoe.mirai.console.command.descriptor.CommandSignatureVariant
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.java.JCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 指令
@@ -29,6 +30,8 @@ import net.mamoe.mirai.message.data.MessageChain
  * @see RawCommand 无参数解析, 接收原生参数的指令
  * @see CompositeCommand 复合指令
  * @see SimpleCommand 简单的, 支持参数自动解析的指令
+ *
+ * @see CommandArgumentContextAware
  *
  * @see JCommand 为 Java 用户添加协程帮助的 [Command]
  */
@@ -47,6 +50,13 @@ public interface Command {
      */
     @ResolveContext(COMMAND_NAME)
     public val secondaryNames: Array<out String>
+
+    /**
+     *
+     */
+    @ConsoleExperimentalApi("Property name is experimental")
+    @ExperimentalCommandDescriptors
+    public val overloads: List<CommandSignatureVariant>
 
     /**
      * 用法说明, 用于发送给用户. [usage] 一般包含 [description].
@@ -80,16 +90,6 @@ public interface Command {
      */
     public val owner: CommandOwner
 
-    /**
-     * 在指令被执行时调用.
-     *
-     * @param args 精确的指令参数. [MessageChain] 每个元素代表一个精确的参数.
-     *
-     * @see CommandManager.executeCommand 查看更多信息
-     */
-    @JvmBlockingBridge
-    public suspend fun CommandSender.onCommand(args: MessageChain)
-
     public companion object {
 
         /**
@@ -116,12 +116,3 @@ public interface Command {
         }
     }
 }
-
-/**
- * 调用 [Command.onCommand]
- * @see Command.onCommand
- */
-@JvmSynthetic
-public suspend inline fun Command.onCommand(sender: CommandSender, args: MessageChain): Unit =
-    sender.onCommand(args)
-

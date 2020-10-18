@@ -11,8 +11,6 @@ package net.mamoe.mirai.console.command.resolve
 
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCall
-import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
-import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 
 /**
  * The resolver converting a [CommandCall] into [ResolvedCommandCall] based on registered []
@@ -20,17 +18,4 @@ import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 @ExperimentalCommandDescriptors
 public interface CommandCallResolver {
     public fun resolve(call: CommandCall): ResolvedCommandCall?
-
-    public companion object {
-        @JvmStatic
-        @JvmName("resolveCall")
-        public fun CommandCall.resolve(): ResolvedCommandCall? {
-            GlobalComponentStorage.run {
-                CommandCallResolverProvider.useExtensions { provider ->
-                    provider.instance.resolve(this@resolve)?.let { return it }
-                }
-            }
-            return null
-        }
-    }
 }

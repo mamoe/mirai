@@ -124,12 +124,25 @@ public abstract class CompositeCommand(
     @Target(AnnotationTarget.VALUE_PARAMETER)
     protected annotation class Name(val value: String)
 
-    public final override suspend fun CommandSender.onCommand(args: MessageChain) {
-        matchSubCommand(args)?.parseAndExecute(this, args, true) ?: kotlin.run {
-            defaultSubCommand.onCommand(this, args)
+    @OptIn(ExperimentalCommandDescriptors::class)
+    override val overloads: List<CommandSignatureVariant> by lazy {
+        subCommands.flatMap { desc ->
+            desc.bakedSubNames.map { names ->
+                CommandSignatureVariantImpl(
+                    valueParameters =
+                    names.mapIndexed { index, s -> CommandValueParameter.StringConstant("p$index", s) } + desc.params.map {
+                        CommandValueParameter.UserDefinedType(it.name, null,
+                            isOptional = false,
+                            isVararg = false,
+                            type = it.type)
+                    },
+                    onCall = { resolvedCommandCall ->
+                        desc.onCommand(resolvedCommandCall.caller, resolvedCommandCall.resolvedValueArguments.drop(names.size))
+                    }
+                )
+            }
         }
     }
-
 
     protected override suspend fun CommandSender.onDefault(rawArgs: MessageChain) {
         sendMessage(usage)

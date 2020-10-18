@@ -14,6 +14,8 @@ import net.mamoe.mirai.message.data.MessageChain
  *
  * @see CommandCallResolver The call resolver for [CommandCall] to become [ResolvedCommandCall]
  * @see CommandCallParserProvider The extension point
+ *
+ * @see SpaceSeparatedCommandCallParser
  */
 @ConsoleExperimentalApi
 @ExperimentalCommandDescriptors
@@ -24,7 +26,7 @@ public interface CommandCallParser {
      *
      * @return `null` if unable to parse (i.e. due to syntax errors).
      */
-    public fun parse(sender: CommandSender, message: MessageChain): CommandCall?
+    public fun parse(caller: CommandSender, message: MessageChain): CommandCall?
 
     public companion object {
         /**
