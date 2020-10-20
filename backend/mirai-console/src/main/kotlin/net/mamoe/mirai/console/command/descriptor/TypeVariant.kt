@@ -12,7 +12,10 @@ package net.mamoe.mirai.console.command.descriptor
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.command.parse.RawCommandArgument
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageContent
+import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.message.data.content
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -45,6 +48,20 @@ public interface TypeVariant<out OutType> {
 @ExperimentalCommandDescriptors
 public object MessageContentTypeVariant : TypeVariant<MessageContent> {
     @OptIn(ExperimentalStdlibApi::class)
-    override val outType: KType = typeOf<String>()
+    override val outType: KType = typeOf<MessageContent>()
     override fun mapValue(valueParameter: MessageContent): MessageContent = valueParameter
+}
+
+@ExperimentalCommandDescriptors
+public object MessageChainTypeVariant : TypeVariant<MessageChain> {
+    @OptIn(ExperimentalStdlibApi::class)
+    override val outType: KType = typeOf<MessageChain>()
+    override fun mapValue(valueParameter: MessageContent): MessageChain = valueParameter.asMessageChain()
+}
+
+@ExperimentalCommandDescriptors
+public object ContentStringTypeVariant : TypeVariant<String> {
+    @OptIn(ExperimentalStdlibApi::class)
+    override val outType: KType = typeOf<String>()
+    override fun mapValue(valueParameter: MessageContent): String = valueParameter.content
 }

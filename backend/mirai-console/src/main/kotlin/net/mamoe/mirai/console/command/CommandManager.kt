@@ -211,6 +211,7 @@ public suspend fun Command.execute(
 ): CommandExecuteResult {
     // TODO: 2020/10/18  net.mamoe.mirai.console.command.CommandManager.execute
     val chain = buildMessageChain {
+        append(CommandManager.commandPrefix)
         append(this@execute.primaryName)
         append(' ')
         append(arguments)
