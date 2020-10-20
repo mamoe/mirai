@@ -2,6 +2,7 @@ package net.mamoe.mirai.console.command.parse
 
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.extensions.CommandCallParserProvider
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.MessageChain
@@ -20,4 +21,6 @@ public object SpaceSeparatedCommandCallParser : CommandCallParser {
             valueArguments = flatten.drop(1).map(::InvariantCommandValueArgument)
         )
     }
+
+    public object Provider : CommandCallParserProvider(SpaceSeparatedCommandCallParser)
 }

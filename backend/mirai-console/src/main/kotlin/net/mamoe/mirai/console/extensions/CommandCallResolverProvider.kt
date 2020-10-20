@@ -10,11 +10,13 @@
 package net.mamoe.mirai.console.extensions
 
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.resolve.BuiltInCommandCallResolver
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
-import net.mamoe.mirai.console.extension.AbstractExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
+import net.mamoe.mirai.console.extension.InstanceExtensionPoint
 
 @ExperimentalCommandDescriptors
-public interface CommandCallResolverProvider : InstanceExtension<CommandCallResolver> {
-    public companion object ExtensionPoint : AbstractExtensionPoint<CommandCallResolverProvider>(CommandCallResolverProvider::class)
+public open class CommandCallResolverProvider(override val instance: CommandCallResolver) : InstanceExtension<CommandCallResolver> {
+    public companion object ExtensionPoint :
+        InstanceExtensionPoint<CommandCallResolverProvider, CommandCallResolver>(CommandCallResolverProvider::class, BuiltInCommandCallResolver.Provider)
 }

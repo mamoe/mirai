@@ -6,6 +6,7 @@ import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isNotAcceptable
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
+import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.cast
 import net.mamoe.mirai.console.util.safeCast
@@ -14,6 +15,8 @@ import java.util.*
 @ConsoleExperimentalApi
 @ExperimentalCommandDescriptors
 public object BuiltInCommandCallResolver : CommandCallResolver {
+    public object Provider : CommandCallResolverProvider(BuiltInCommandCallResolver)
+
     override fun resolve(call: CommandCall): ResolvedCommandCall? {
         val callee = CommandManager.matchCommand(call.calleeName) ?: return null
 

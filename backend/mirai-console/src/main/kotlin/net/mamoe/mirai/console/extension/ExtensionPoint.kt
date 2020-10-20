@@ -24,6 +24,12 @@ public open class AbstractExtensionPoint<T : Extension>(
     public override val extensionType: KClass<T>,
 ) : ExtensionPoint<T>
 
+public open class InstanceExtensionPoint<E : InstanceExtension<T>, T>(
+    extensionType: KClass<E>,
+    public vararg val builtinImplementations: E,
+) : AbstractExtensionPoint<E>(extensionType)
+
+
 /**
  * 表示一个 [SingletonExtension] 的 [ExtensionPoint]
  */

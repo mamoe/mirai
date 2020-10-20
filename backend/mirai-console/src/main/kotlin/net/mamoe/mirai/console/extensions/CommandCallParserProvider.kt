@@ -11,13 +11,15 @@ package net.mamoe.mirai.console.extensions
 
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser
-import net.mamoe.mirai.console.extension.AbstractExtensionPoint
+import net.mamoe.mirai.console.command.parse.SpaceSeparatedCommandCallParser
 import net.mamoe.mirai.console.extension.InstanceExtension
+import net.mamoe.mirai.console.extension.InstanceExtensionPoint
 
 /**
  * The provider of [CommandCallParser]
  */
 @ExperimentalCommandDescriptors
-public interface CommandCallParserProvider : InstanceExtension<CommandCallParser> {
-    public companion object ExtensionPoint : AbstractExtensionPoint<CommandCallParserProvider>(CommandCallParserProvider::class)
+public open class CommandCallParserProvider(override val instance: CommandCallParser) : InstanceExtension<CommandCallParser> {
+    public companion object ExtensionPoint :
+        InstanceExtensionPoint<CommandCallParserProvider, CommandCallParser>(CommandCallParserProvider::class, SpaceSeparatedCommandCallParser.Provider)
 }

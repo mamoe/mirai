@@ -25,10 +25,10 @@ import kotlin.reflect.KClass
  */
 internal object GlobalComponentStorage : AbstractConcurrentComponentStorage()
 internal interface ExtensionRegistry<out E : Extension> {
-    val plugin: Plugin
+    val plugin: Plugin?
     val extension: E
 
-    operator fun component1(): Plugin {
+    operator fun component1(): Plugin? {
         return this.plugin
     }
 
@@ -38,21 +38,27 @@ internal interface ExtensionRegistry<out E : Extension> {
 }
 
 internal class LazyExtensionRegistry<out E : Extension>(
-    override val plugin: Plugin,
+    override val plugin: Plugin?,
     initializer: () -> E,
 ) : ExtensionRegistry<E> {
     override val extension: E by lazy { initializer() }
 }
 
 internal data class DataExtensionRegistry<out E : Extension>(
-    override val plugin: Plugin,
+    override val plugin: Plugin?,
     override val extension: E,
 ) : ExtensionRegistry<E>
 
 internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
     @Suppress("UNCHECKED_CAST")
     internal fun <T : Extension> ExtensionPoint<out T>.getExtensions(): Set<ExtensionRegistry<T>> {
-        return instances.getOrPut(this, ::CopyOnWriteArraySet) as Set<ExtensionRegistry<T>>
+        val userDefined = instances.getOrPut(this, ::CopyOnWriteArraySet) as Set<ExtensionRegistry<T>>
+
+        val builtins = if (this is InstanceExtensionPoint<*, *>) {
+            this.builtinImplementations.mapTo(HashSet()) { DataExtensionRegistry(null, it) } as Set<ExtensionRegistry<T>>
+        } else null
+
+        return builtins?.plus(userDefined) ?: userDefined
     }
 
     internal fun mergeWith(another: AbstractConcurrentComponentStorage) {
@@ -71,7 +77,7 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @kotlin.internal.LowPriorityInOverloadResolution
-    internal inline fun <T : Extension> ExtensionPoint<out T>.withExtensions(block: T.(plugin: Plugin) -> Unit) {
+    internal inline fun <T : Extension> ExtensionPoint<out T>.withExtensions(block: T.(plugin: Plugin?) -> Unit) {
         contract {
             callsInPlace(block)
         }
@@ -131,11 +137,11 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
 
     internal fun <T : Extension> ExtensionPoint<out T>.throwExtensionException(
         extension: T,
-        plugin: Plugin,
+        plugin: Plugin?,
         throwable: Throwable,
     ) {
         throw ExtensionException(
-            "Exception while executing extension '${extension.kClassQualifiedNameOrTip}' provided by plugin '${plugin.name}', registered for '${this.extensionType.qualifiedName}'",
+            "Exception while executing extension '${extension.kClassQualifiedNameOrTip}' provided by plugin '${plugin?.name ?: "<builtin>"}', registered for '${this.extensionType.qualifiedName}'",
             throwable
         )
     }
@@ -145,7 +151,7 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @kotlin.internal.LowPriorityInOverloadResolution
-    internal inline fun <T : Extension> ExtensionPoint<T>.useExtensions(block: (extension: T, plugin: Plugin) -> Unit): Unit =
+    internal inline fun <T : Extension> ExtensionPoint<T>.useExtensions(block: (extension: T, plugin: Plugin?) -> Unit): Unit =
         withExtensions(block)
 
     val instances: MutableMap<ExtensionPoint<*>, MutableSet<ExtensionRegistry<*>>> = ConcurrentHashMap()
@@ -157,9 +163,27 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
         instances.getOrPut(extensionPoint, ::CopyOnWriteArraySet).add(DataExtensionRegistry(plugin, extensionInstance))
     }
 
+    @JvmName("contribute1")
+    fun <T : Extension> contribute(
+        extensionPoint: ExtensionPoint<T>,
+        plugin: Plugin?,
+        extensionInstance: T,
+    ) {
+        instances.getOrPut(extensionPoint, ::CopyOnWriteArraySet).add(DataExtensionRegistry(plugin, extensionInstance))
+    }
+
     override fun <T : Extension> contribute(
         extensionPoint: ExtensionPoint<T>,
         plugin: Plugin,
+        lazyInstance: () -> T,
+    ) {
+        instances.getOrPut(extensionPoint, ::CopyOnWriteArraySet).add(LazyExtensionRegistry(plugin, lazyInstance))
+    }
+
+    @JvmName("contribute1")
+    fun <T : Extension> contribute(
+        extensionPoint: ExtensionPoint<T>,
+        plugin: Plugin?,
         lazyInstance: () -> T,
     ) {
         instances.getOrPut(extensionPoint, ::CopyOnWriteArraySet).add(LazyExtensionRegistry(plugin, lazyInstance))

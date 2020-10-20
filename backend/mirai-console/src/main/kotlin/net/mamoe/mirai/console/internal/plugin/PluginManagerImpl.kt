@@ -148,7 +148,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
         var count = 0
         GlobalComponentStorage.run {
             PluginLoaderProvider.useExtensions { ext, plugin ->
-                logger.info { "Loaded PluginLoader ${ext.instance} from ${plugin.name}" }
+                logger.info { "Loaded PluginLoader ${ext.instance} from ${plugin?.name ?: "<builtin>"}" }
                 _pluginLoaders.add(ext.instance)
                 count++
             }
