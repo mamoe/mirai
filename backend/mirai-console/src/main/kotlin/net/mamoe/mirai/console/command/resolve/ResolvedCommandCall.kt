@@ -50,13 +50,13 @@ public interface ResolvedCommandCall {
     @ConsoleExperimentalApi
     public val resolvedValueArguments: List<Any?>
 
-    public companion object {
-        @JvmStatic
-        @ExperimentalCommandDescriptors
-        public suspend fun ResolvedCommandCall.call() {
-            return this.calleeSignature.call(this)
-        }
-    }
+    public companion object
+}
+
+// Don't move into companion, compilation error
+@ExperimentalCommandDescriptors
+public suspend inline fun ResolvedCommandCall.call() {
+    return this@call.calleeSignature.call(this@call)
 }
 
 @ExperimentalCommandDescriptors

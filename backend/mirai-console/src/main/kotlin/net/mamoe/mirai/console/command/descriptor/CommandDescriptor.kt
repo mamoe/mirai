@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.command.descriptor
 
-import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isAcceptable
 import net.mamoe.mirai.console.command.descriptor.CommandValueParameter.UserDefinedType.Companion.createOptional
 import net.mamoe.mirai.console.command.descriptor.CommandValueParameter.UserDefinedType.Companion.createRequired
@@ -30,7 +29,6 @@ import kotlin.reflect.typeOf
 public interface CommandSignatureVariant {
     public val valueParameters: List<CommandValueParameter<*>>
 
-    @JvmBlockingBridge
     public suspend fun call(resolvedCommandCall: ResolvedCommandCall)
 }
 

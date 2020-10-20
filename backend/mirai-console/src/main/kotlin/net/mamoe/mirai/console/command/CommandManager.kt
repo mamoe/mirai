@@ -15,6 +15,7 @@
 
 package net.mamoe.mirai.console.command
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCall
@@ -22,7 +23,6 @@ import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
-import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall.Companion.call
 import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.executeCommand
@@ -122,34 +122,15 @@ public interface CommandManager {
      *
      * @return 执行结果
      */
-    // @JvmBlockingBridge
+    @JvmBlockingBridge
     @OptIn(ExperimentalCommandDescriptors::class)
     public suspend fun executeCommand(
         caller: CommandSender,
         message: Message,
         checkPermission: Boolean = true,
     ): CommandExecuteResult {
-        val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.CommandNotFound("")
-        val resolved = call.resolve() ?: return CommandExecuteResult.CommandNotFound(call.calleeName)
-
-        val command = resolved.callee
-
-        if (checkPermission && !command.permission.testPermission(caller)) {
-            return CommandExecuteResult.PermissionDenied(command, call.calleeName)
-        }
-
-        return kotlin.runCatching {
-            resolved.call()
-        }.fold(
-            onSuccess = {
-                CommandExecuteResult.Success(resolved.callee, call.calleeName, EmptyMessageChain)
-            },
-            onFailure = {
-                CommandExecuteResult.ExecutionFailed(it, resolved.callee, call.calleeName, EmptyMessageChain)
-            }
-        )
+        return executeCommandImpl(this, message, caller, checkPermission)
     }
-
 
     /**
      * 解析并执行一个指令
@@ -160,7 +141,7 @@ public interface CommandManager {
      * @return 执行结果
      * @see executeCommand
      */
-    // @JvmBlockingBridge
+    @JvmBlockingBridge
     public suspend fun CommandSender.executeCommand(
         message: String,
         checkPermission: Boolean = true,
@@ -190,6 +171,7 @@ public interface CommandManager {
 
     public companion object INSTANCE : CommandManager by CommandManagerImpl {
         // TODO: 2020/8/20 https://youtrack.jetbrains.com/issue/KT-41191
+
 
         override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.run { this@registeredCommands.registeredCommands }
         override fun CommandOwner.unregisterAllCommands(): Unit = CommandManagerImpl.run { unregisterAllCommands() }
@@ -235,3 +217,30 @@ public suspend fun Command.execute(
     }
     return CommandManager.executeCommand(sender, chain, checkPermission)
 }
+
+
+// Don't move into CommandManager, compilation error / VerifyError
+@OptIn(ExperimentalCommandDescriptors::class)
+internal suspend fun executeCommandImpl(
+    receiver: CommandManager,
+    message: Message,
+    caller: CommandSender,
+    checkPermission: Boolean,
+): CommandExecuteResult = with(receiver) {
+    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.CommandNotFound("")
+    val resolved = call.resolve() ?: return CommandExecuteResult.CommandNotFound(call.calleeName)
+
+    val command = resolved.callee
+
+    if (checkPermission && !command.permission.testPermission(caller)) {
+        return CommandExecuteResult.PermissionDenied(command, call.calleeName)
+    }
+
+    return try {
+        resolved.calleeSignature.call(resolved)
+        CommandExecuteResult.Success(resolved.callee, call.calleeName, EmptyMessageChain)
+    } catch (e: Throwable) {
+        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call.calleeName, EmptyMessageChain)
+    }
+}
+

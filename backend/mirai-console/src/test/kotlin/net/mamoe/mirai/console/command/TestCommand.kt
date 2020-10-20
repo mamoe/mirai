@@ -22,6 +22,7 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.registeredCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.initTestEnvironment
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
@@ -87,9 +88,11 @@ internal class TestCommand {
 
     @Test
     fun testSimpleExecute() = runBlocking {
-        assertEquals("test", withTesting<MessageChain> {
-            assertSuccess(TestSimpleCommand.execute(sender, "test"))
-        }.contentToString())
+        TestSimpleCommand.withRegistration {
+            assertEquals("test", withTesting<MessageChain> {
+                assertSuccess(TestSimpleCommand.execute(sender, "test"))
+            }.contentToString())
+        }
     }
 
     @Test
@@ -263,6 +266,7 @@ internal class TestCommand {
     }
 }
 
+@OptIn(ExperimentalCommandDescriptors::class)
 internal fun assertSuccess(result: CommandExecuteResult) {
     if (result.isFailure()) {
         throw result.exception ?: AssertionError(result.toString())
