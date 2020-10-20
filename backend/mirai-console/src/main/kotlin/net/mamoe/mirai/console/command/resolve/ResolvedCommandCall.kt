@@ -12,11 +12,14 @@ package net.mamoe.mirai.console.command.resolve
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext
 import net.mamoe.mirai.console.command.descriptor.CommandSignatureVariant
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.descriptor.NoValueArgumentMappingException
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
-import net.mamoe.mirai.console.command.parse.mapToType
+import net.mamoe.mirai.console.command.parse.mapToTypeOrNull
+import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.LazyThreadSafetyMode.PUBLICATION
 
@@ -65,10 +68,12 @@ public class ResolvedCommandCallImpl(
     override val callee: Command,
     override val calleeSignature: CommandSignatureVariant,
     override val rawValueArguments: List<CommandValueArgument>,
+    private val context: CommandArgumentContext,
 ) : ResolvedCommandCall {
     override val resolvedValueArguments: List<Any?> by lazy(PUBLICATION) {
         calleeSignature.valueParameters.zip(rawValueArguments).map { (parameter, argument) ->
-            argument.mapToType(parameter.type)
+            argument.mapToTypeOrNull(parameter.type) ?: context[parameter.type.classifierAsKClass()]?.parse(argument.value, caller)
+            ?: throw  NoValueArgumentMappingException(argument, parameter.type)
             // TODO: 2020/10/17 consider vararg and optional
         }
     }

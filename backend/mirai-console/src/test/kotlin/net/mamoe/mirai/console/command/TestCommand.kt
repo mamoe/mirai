@@ -136,12 +136,13 @@ internal class TestCommand {
 
     @Test
     fun `executing command by string command`() = runBlocking {
-        TestCompositeCommand.register()
-        val result = withTesting<Int> {
-            assertSuccess(sender.executeCommand("/testComposite mute 1"))
-        }
+        TestCompositeCommand.withRegistration {
+            val result = withTesting<Int> {
+                assertSuccess(sender.executeCommand("/testComposite mute 1"))
+            }
 
-        assertEquals(1, result)
+            assertEquals(1, result)
+        }
     }
 
     @Test

@@ -25,7 +25,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
 
         val signature = resolveImpl(callee, valueArguments, context) ?: return null
 
-        return ResolvedCommandCallImpl(call.caller, callee, signature, call.valueArguments)
+        return ResolvedCommandCallImpl(call.caller, callee, signature, call.valueArguments, context ?: EmptyCommandArgumentContext)
     }
 
     private data class ResolveData(

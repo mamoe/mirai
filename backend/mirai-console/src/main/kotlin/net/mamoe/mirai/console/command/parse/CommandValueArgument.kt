@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.command.parse
 
 import net.mamoe.mirai.console.command.descriptor.*
@@ -74,8 +76,8 @@ public fun <T> CommandValueArgument.mapToTypeOrNull(expectingType: KType): T? {
     @OptIn(ExperimentalStdlibApi::class)
     val result = typeVariants
         .filter { it.outType.isSubtypeOf(expectingType) }
-        .also {
-            if (it.isEmpty()) return null
+        .ifEmpty {
+            return null
         }
         .reduce { acc, typeVariant ->
             if (acc.outType.isSubtypeOf(typeVariant.outType))
