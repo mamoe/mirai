@@ -96,7 +96,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  */
 public interface MessageScope {
     /**
-     * 如果此 [MessageScope], 仅包含一个消息对象, 则 [realTarget] 指向这个对象.
+     * 如果此 [MessageScope] 仅包含一个消息对象, 则 [realTarget] 指向这个对象. 否则 [realTarget] 为 `null`.
      *
      * 对于 [CommandSender] 作为 [MessageScope], [realTarget] 总是指令执行者 [User], 即 [CommandSender.user]
      *
@@ -116,7 +116,6 @@ public interface MessageScope {
     /**
      * 立刻以此发送消息给所有在此 [MessageScope] 下的消息对象
      */
-    @JvmDefault
     @JvmBlockingBridge
     public suspend fun sendMessage(message: String)
 }

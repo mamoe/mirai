@@ -170,7 +170,6 @@ public interface CommandSender : CoroutineScope, Permittee {
      *
      * 对于 [MemberCommandSender], 这个函数总是发送给所在群
      */
-    @JvmDefault
     @JvmBlockingBridge
     public suspend fun sendMessage(message: String): MessageReceipt<Contact>?
 

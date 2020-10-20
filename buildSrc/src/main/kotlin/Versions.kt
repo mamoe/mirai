@@ -9,7 +9,7 @@
 
 object Versions {
     const val core = "1.3.0"
-    const val console = "1.0-RC-dev-29"
+    const val console = "1.0-RC-dev-30"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
@@ -26,6 +26,6 @@ object Versions {
 
     const val bintray = "1.8.5"
 
-    const val blockingBridge = "1.0.5"
+    const val blockingBridge = "1.1.0"
     const val yamlkt = "0.5.3"
 }

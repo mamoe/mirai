@@ -77,7 +77,6 @@ public interface CommandValueArgumentParser<out T : Any> {
      * @see CommandArgumentParserException
      */
     @Throws(CommandArgumentParserException::class)
-    @JvmDefault
     public fun parse(raw: MessageContent, sender: CommandSender): T = parse(raw.content, sender)
 }
 

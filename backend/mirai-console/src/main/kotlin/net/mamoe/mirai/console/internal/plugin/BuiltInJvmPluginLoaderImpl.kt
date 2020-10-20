@@ -42,7 +42,7 @@ internal object BuiltInJvmPluginLoaderImpl :
     override val dataStorage: PluginDataStorage
         get() = MiraiConsoleImplementationBridge.dataStorageForJvmPluginLoader
 
-    internal val classLoaders: MutableList<ClassLoader> = mutableListOf()
+    internal val classLoaders: MutableList<JvmPluginClassLoader> = mutableListOf()
 
     @Suppress("EXTENSION_SHADOWED_BY_MEMBER") // doesn't matter
     override fun getPluginDescription(plugin: JvmPlugin): JvmPluginDescription = plugin.description
@@ -68,7 +68,7 @@ internal object BuiltInJvmPluginLoaderImpl :
         val filePlugins = this.filterNot {
             pluginFileToInstanceMap.containsKey(it)
         }.associateWith {
-            URLClassLoader(arrayOf(it.toURI().toURL()), MiraiConsole::class.java.classLoader)
+            JvmPluginClassLoader(it, MiraiConsole::class.java.classLoader)
         }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
         }.asSequence().findAllInstances().onEach {

@@ -19,7 +19,6 @@ import net.mamoe.mirai.console.compiler.common.resolve.findParent
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
-import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
 import org.jetbrains.kotlin.idea.search.usagesSearch.descriptor
@@ -98,7 +97,7 @@ fun KtDeclaration.resolveAllCallsWithElement(bindingContext: BindingContext): Se
         .filterIsInstance<KtCallExpression>()
         .mapNotNull {
             val callee = it.calleeExpression ?: return@mapNotNull null
-            val resolved = callee.getResolvedCallOrResolveToCall(bindingContext) ?: return@mapNotNull null
+            val resolved = callee.getResolvedCall(bindingContext) ?: return@mapNotNull null
 
             resolved to it
         }
@@ -128,7 +127,7 @@ fun KtElement?.getResolvedCallOrResolveToCall(
     context: BindingContext,
     bodyResolveMode: BodyResolveMode = BodyResolveMode.PARTIAL,
 ): ResolvedCall<out CallableDescriptor>? {
-    return this?.getCall(context)?.getResolvedCall(context) ?: this?.resolveToCall(bodyResolveMode)
+    return this?.getCall(context)?.getResolvedCall(context)// ?: this?.resolveToCall(bodyResolveMode)
 }
 
 val ResolvedCall<out CallableDescriptor>.valueParameters: List<ValueParameterDescriptor> get() = this.resultingDescriptor.valueParameters

@@ -43,6 +43,5 @@ public interface MiraiConsoleFrontEndDescription {
     /**
      * 返回显示在 [MiraiConsole] 启动时的信息
      */
-    @JvmDefault
     public fun render(): String = "Frontend ${name}: version ${version}, provided by $vendor"
 }

@@ -41,7 +41,6 @@ public interface PluginDataHolder {
      * @see Companion.newPluginDataInstance
      * @see KClass.createType
      */
-    @JvmDefault
     public fun <T : PluginData> newPluginDataInstance(type: KType): T =
         newPluginDataInstanceUsingReflection<PluginData>(type) as T
 
@@ -64,7 +63,6 @@ public interface AutoSavePluginDataHolder : PluginDataHolder, CoroutineScope {
     /**
      * 仅支持确切的 [PluginData] 类型
      */
-    @JvmDefault
     public override fun <T : PluginData> newPluginDataInstance(type: KType): T {
         val classifier = type.classifier?.cast<KClass<PluginData>>()
         require(classifier != null && classifier.java == PluginData::class.java) {

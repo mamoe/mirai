@@ -108,12 +108,10 @@ public interface MiraiConsoleImplementation : CoroutineScope {
 
 
         @JvmSynthetic
-        @JvmDefault
         public override suspend fun sendMessage(message: Message): Unit =
             withContext(Dispatchers.IO) { sendMessageJ(message) }
 
         @JvmSynthetic
-        @JvmDefault
         public override suspend fun sendMessage(message: String): Unit =
             withContext(Dispatchers.IO) { sendMessageJ(message) }
     }

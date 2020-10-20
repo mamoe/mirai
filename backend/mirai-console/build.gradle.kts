@@ -100,8 +100,8 @@ tasks {
                                 })"""
                             }
                             .replace(
-                                Regex("""val version: SemVersion = SemVersion.parse\(".*"\)""")
-                            ) { """val version: SemVersion = SemVersion.parse("${project.version}")""" }
+                                Regex("""const val versionConst:\s+String\s+=\s+".*"""")
+                            ) { """const val versionConst: String = "${project.version}"""" }
                     )
                 }
         }

@@ -16,6 +16,8 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.permission.checkType
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
+import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.name
 import kotlin.reflect.KClass
 
 /**
@@ -89,6 +91,13 @@ public interface PermissionService<P : Permission> {
         parent: Permission = RootPermission,
     ): P
 
+    /** 为 [Plugin] 分配一个 [PermissionId] */
+    public fun allocatePermissionIdForPlugin(
+        plugin: Plugin,
+        @ResolveContext(COMMAND_NAME) permissionName: String,
+        reason: PluginPermissionIdRequestType
+    ): PermissionId = allocatePermissionIdForPluginDefaultImplement(plugin, permissionName, reason)
+
     ///////////////////////////////////////////////////////////////////////////
 
     /**
@@ -116,6 +125,15 @@ public interface PermissionService<P : Permission> {
     @Throws(UnsupportedOperationException::class)
     public fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean)
 
+    /** [Plugin] 尝试分配的 [PermissionId] 来源 */
+    public enum class PluginPermissionIdRequestType {
+        /** For [Plugin.parentPermission] */
+        ROOT_PERMISSION,
+
+        /** For [Plugin.permissionId] */
+        PERMISSION_ID
+    }
+
     public companion object {
         internal var instanceField: PermissionService<*>? = null
 
@@ -131,8 +149,14 @@ public interface PermissionService<P : Permission> {
         public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
             get(id) ?: throw NoSuchElementException("Permission not found: $id")
 
-        internal fun PermissionService<*>.allocatePermissionIdForPlugin(pluginName: String, @ResolveContext(COMMAND_NAME) permissionName: String) =
-            PermissionId("plugin.${pluginName.toLowerCase()}", permissionName.toLowerCase())
+        internal fun PermissionService<*>.allocatePermissionIdForPluginDefaultImplement(
+            plugin: Plugin,
+            @ResolveContext(COMMAND_NAME) permissionName: String,
+            reason: PluginPermissionIdRequestType
+        ) = PermissionId(
+            plugin.name.toLowerCase().replace(' ', '.'),
+            permissionName.toLowerCase()
+        )
 
         public fun PermissionId.findCorrespondingPermission(): Permission? = INSTANCE[this]
 
