@@ -21,6 +21,8 @@ object MyPluginMain : KotlinPlugin(
     override fun onEnable() {
         super.onEnable()
         PermissionService.INSTANCE.register(permissionId("dvs"), "ok")
+        PermissionService.INSTANCE.register(permissionId("perm with space"), "error")
+        PermissionId("Namespace with space", "Name with space")
     }
 
     fun test() {
