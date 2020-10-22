@@ -12,6 +12,9 @@ import net.mamoe.mirai.console.util.cast
 import net.mamoe.mirai.console.util.safeCast
 import java.util.*
 
+/**
+ * Builtin implementation of [CommandCallResolver]
+ */
 @ConsoleExperimentalApi
 @ExperimentalCommandDescriptors
 public object BuiltInCommandCallResolver : CommandCallResolver {

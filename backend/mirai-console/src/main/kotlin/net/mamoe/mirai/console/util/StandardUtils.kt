@@ -11,6 +11,10 @@ package net.mamoe.mirai.console.util
 
 import kotlin.contracts.contract
 
+/**
+ * Perform `this as? T`.
+ */
+@JvmSynthetic
 public inline fun <reified T : Any> Any?.safeCast(): T? {
     contract {
         returnsNotNull() implies (this@safeCast is T)
@@ -18,6 +22,10 @@ public inline fun <reified T : Any> Any?.safeCast(): T? {
     return this as? T
 }
 
+/**
+ * Perform `this as T`.
+ */
+@JvmSynthetic
 public inline fun <reified T : Any> Any?.cast(): T {
     contract {
         returns() implies (this@cast is T)

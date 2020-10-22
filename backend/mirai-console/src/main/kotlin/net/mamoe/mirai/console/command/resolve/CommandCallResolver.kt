@@ -11,9 +11,13 @@ package net.mamoe.mirai.console.command.resolve
 
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCall
+import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 
 /**
  * The resolver converting a [CommandCall] into [ResolvedCommandCall] based on registered []
+ *
+ * @see CommandCallResolverProvider The provider to instances of this class
+ * @see BuiltInCommandCallResolver The builtin implementation
  */
 @ExperimentalCommandDescriptors
 public interface CommandCallResolver {
