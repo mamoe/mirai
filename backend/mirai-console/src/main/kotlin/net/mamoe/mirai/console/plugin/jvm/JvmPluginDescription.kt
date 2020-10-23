@@ -176,6 +176,8 @@ public class JvmPluginDescriptionBuilder(
     /**
      * 无版本要求
      *
+     * @param isOptional [PluginDependency.isOptional]
+     *
      * @see PluginDependency
      */
     @ILoveKuriyamaMiraiForever
@@ -187,8 +189,8 @@ public class JvmPluginDescriptionBuilder(
     }
 
 
-    @Suppress("DEPRECATION_ERROR")
     public fun build(): JvmPluginDescription =
+        @Suppress("DEPRECATION_ERROR")
         SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
 
     /**
