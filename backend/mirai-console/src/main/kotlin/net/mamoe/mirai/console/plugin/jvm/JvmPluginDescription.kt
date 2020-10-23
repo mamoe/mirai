@@ -87,11 +87,11 @@ public interface JvmPluginDescription : PluginDescription {
  * ```
  *
  * #### Java Example
- * ```
+ * ```java
  * JvmPluginDescription desc = new JvmPluginDescriptionBuilder("org.example.example-plugin", "1.0.0")
  *    .info("This is an example plugin")
  *    .dependsOn("org.example.another-plugin")
- *    .build()
+ *    .build();
  * ```
  *
  * @see [JvmPluginDescription.invoke]
