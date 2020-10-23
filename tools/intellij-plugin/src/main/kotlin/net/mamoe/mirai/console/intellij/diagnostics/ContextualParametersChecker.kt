@@ -108,6 +108,12 @@ class ContextualParametersChecker : DeclarationChecker {
                 else -> null
             }
         }
+
+        @Suppress("UNUSED_PARAMETER")
+        fun checkVersionRequirement(inspectionTarget: PsiElement, value: String): Diagnostic? {
+            // TODO: 2020/10/23  checkVersionRequirement
+            return null
+        }
     }
 
     private val checkersMap: EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?> =
@@ -119,6 +125,7 @@ class ContextualParametersChecker : DeclarationChecker {
             put(ResolveContextKind.PERMISSION_NAME, ::checkPermissionName)
             put(ResolveContextKind.PERMISSION_NAMESPACE, ::checkPermissionNamespace)
             put(ResolveContextKind.PERMISSION_ID, ::checkPermissionId)
+            put(ResolveContextKind.VERSION_REQUIREMENT, ::checkVersionRequirement)
         }
 
     override fun check(
