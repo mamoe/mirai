@@ -119,7 +119,7 @@ public class JvmPluginDescriptionBuilder(
         apply { this.version = SemVersion(value) }
 
     @ILoveKuriyamaMiraiForever
-    public fun version(@ResolveContext(PLUGIN_VERSION) value: SemVersion): JvmPluginDescriptionBuilder =
+    public fun version(value: SemVersion): JvmPluginDescriptionBuilder =
         apply { this.version = value }
 
     @ILoveKuriyamaMiraiForever
