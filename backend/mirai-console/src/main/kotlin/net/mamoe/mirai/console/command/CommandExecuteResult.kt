@@ -90,9 +90,9 @@ public sealed class CommandExecuteResult {
     }
 
     /** 没有匹配的指令 */
-    public class CommandNotFound(
+    public class UnresolvedCall(
         /** 尝试执行的指令名 */
-        public override val commandName: String
+        public override val commandName: String,
     ) : CommandExecuteResult() {
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
@@ -196,19 +196,19 @@ public fun CommandExecuteResult.isPermissionDenied(): Boolean {
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.CommandNotFound] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.UnresolvedCall] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isCommandNotFound(): Boolean {
     contract {
-        returns(true) implies (this@isCommandNotFound is CommandExecuteResult.CommandNotFound)
-        returns(false) implies (this@isCommandNotFound !is CommandExecuteResult.CommandNotFound)
+        returns(true) implies (this@isCommandNotFound is CommandExecuteResult.UnresolvedCall)
+        returns(false) implies (this@isCommandNotFound !is CommandExecuteResult.UnresolvedCall)
     }
-    return this is CommandExecuteResult.CommandNotFound
+    return this is CommandExecuteResult.UnresolvedCall
 }
 
 /**
- * 当 [this] 为 [CommandExecuteResult.ExecutionFailed], [CommandExecuteResult.IllegalArgument] 或 [CommandExecuteResult.CommandNotFound] 时返回 `true`
+ * 当 [this] 为 [CommandExecuteResult.ExecutionFailed], [CommandExecuteResult.IllegalArgument] 或 [CommandExecuteResult.UnresolvedCall] 时返回 `true`
  */
 @JvmSynthetic
 public fun CommandExecuteResult.isFailure(): Boolean {

@@ -73,6 +73,7 @@ internal class TestCommand {
     fun testRegister() {
         try {
             ConsoleCommandOwner.unregisterAllCommands() // builtins
+            TestSimpleCommand.unregister()
 
             assertTrue(TestCompositeCommand.register())
             assertFalse(TestCompositeCommand.register())
@@ -80,7 +81,9 @@ internal class TestCommand {
             assertEquals(1, ConsoleCommandOwner.registeredCommands.size)
 
             assertEquals(1, CommandManagerImpl._registeredCommands.size)
-            assertEquals(2, CommandManagerImpl.requiredPrefixCommandMap.size)
+            assertEquals(2,
+                CommandManagerImpl.requiredPrefixCommandMap.size,
+                CommandManagerImpl.requiredPrefixCommandMap.entries.joinToString { it.toString() })
         } finally {
             TestCompositeCommand.unregister()
         }
@@ -107,24 +110,28 @@ internal class TestCommand {
 
     @Test
     fun testSimpleArgsSplitting() = runBlocking {
-        assertEquals(arrayOf("test", "ttt", "tt").joinToString(), withTesting<MessageChain> {
-            assertSuccess(TestSimpleCommand.execute(sender, PlainText("test ttt tt")))
-        }.joinToString())
+        TestSimpleCommand.withRegistration {
+            assertEquals(arrayOf("test", "ttt", "tt").joinToString(), withTesting<MessageChain> {
+                assertSuccess(TestSimpleCommand.execute(sender, PlainText("test ttt tt")))
+            }.joinToString())
+        }
     }
 
     val image = Image("/f8f1ab55-bf8e-4236-b55e-955848d7069f")
 
     @Test
     fun `PlainText and Image args splitting`() = runBlocking {
-        val result = withTesting<MessageChain> {
-            assertSuccess(TestSimpleCommand.execute(sender, buildMessageChain {
-                +"test"
-                +image
-                +"tt"
-            }))
+        TestSimpleCommand.withRegistration {
+            val result = withTesting<MessageChain> {
+                assertSuccess(TestSimpleCommand.execute(sender, buildMessageChain {
+                    +"test"
+                    +image
+                    +"tt"
+                }))
+            }
+            assertEquals<Any>(arrayOf("test", image, "tt").joinToString(), result.toTypedArray().joinToString())
+            assertSame(image, result[1])
         }
-        assertEquals<Any>(arrayOf("test", image, "tt").joinToString(), result.toTypedArray().joinToString())
-        assertSame(image, result[1])
     }
 
     @Test
@@ -147,9 +154,11 @@ internal class TestCommand {
 
     @Test
     fun `composite command executing`() = runBlocking {
-        assertEquals(1, withTesting {
-            assertSuccess(TestCompositeCommand.execute(sender, "mute 1"))
-        })
+        TestCompositeCommand.withRegistration {
+            assertEquals(1, withTesting {
+                assertSuccess(TestCompositeCommand.execute(sender, "mute 1"))
+            })
+        }
     }
 
     @Test
@@ -187,7 +196,7 @@ internal class TestCommand {
     fun `composite sub command parsing`() {
         runBlocking {
             class MyClass(
-                val value: Int
+                val value: Int,
             )
 
             val composite = object : CompositeCommand(
@@ -215,10 +224,12 @@ internal class TestCommand {
             composite.withRegistration {
                 assertEquals(333, withTesting<MyClass> { execute(sender, "mute 333") }.value)
                 assertEquals(2, withTesting<MyClass> {
-                    execute(sender, buildMessageChain {
-                        +"mute"
-                        +image
-                    })
+                    assertSuccess(
+                        execute(sender, buildMessageChain {
+                            +"mute"
+                            +image
+                        })
+                    )
                 }.value)
             }
         }

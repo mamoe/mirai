@@ -13,6 +13,7 @@ package net.mamoe.mirai.console.internal.command
 
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.descriptor.*
+import net.mamoe.mirai.console.internal.command.hasAnnotation
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
@@ -22,10 +23,7 @@ import kotlin.reflect.KAnnotatedElement
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
-import kotlin.reflect.full.callSuspendBy
-import kotlin.reflect.full.declaredFunctions
-import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.*
 
 internal object CompositeCommandSubCommandAnnotationResolver :
     AbstractReflectionCommand.SubCommandAnnotationResolver {
@@ -322,7 +320,9 @@ internal fun AbstractReflectionCommand.createSubCommand(
         subDescription, // overridePermission?.value
         permission,//overridePermission?.value?.let { PermissionService.INSTANCE[PermissionId.parseFromString(it)] } ?: permission,
         onCommand = { _: CommandSender, args ->
-            val result = function.callSuspendBy(parameters.zip(args).toMap())
+            val p = parameters.zip(args).toMap(LinkedHashMap())
+            if (notStatic) p[function.instanceParameter!!] = this@createSubCommand
+            val result = function.callSuspendBy(p)
 
             checkNotNull(result) { "sub command return value is null (at ${this::class.qualifiedName}.${function.name})" }
 

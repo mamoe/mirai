@@ -81,7 +81,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
                     sender.catchExecutionException(result.exception)
                     intercept()
                 }
-                is CommandExecuteResult.CommandNotFound -> {
+                is CommandExecuteResult.UnresolvedCall -> {
                     // noop
                 }
             }
@@ -140,11 +140,11 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
     override fun Command.unregister(): Boolean = modifyLock.withLock {
         if (this.prefixOptional) {
             this.allNames.forEach {
-                optionalPrefixCommandMap.remove(it)
+                optionalPrefixCommandMap.remove(it.toLowerCase())
             }
         }
         this.allNames.forEach {
-            requiredPrefixCommandMap.remove(it)
+            requiredPrefixCommandMap.remove(it.toLowerCase())
         }
         _registeredCommands.remove(this)
     }

@@ -62,12 +62,16 @@ public abstract class SimpleCommand(
     CommandArgumentContextAware {
 
     @ExperimentalCommandDescriptors
-    override val overloads: List<CommandSignatureVariant> = listOf(
-        CommandSignatureVariantImpl(listOf(CommandValueParameter.UserDefinedType.createRequired<MessageChain>("args", true))) { call ->
+    override val overloads: List<CommandSignatureVariant> by lazy {
+        CommandSignatureVariantImpl(
+            valueParameters = subCommands.single().params.map {
+                CommandValueParameter.UserDefinedType(it.name, null, isOptional = false, isVararg = false, type = it.type)
+            }
+        ) { call ->
             val sender = call.caller
             subCommands.single().onCommand(sender, call.resolvedValueArguments)
-        }
-    )
+        }.let { listOf(it) }
+    }
 
     /**
      * 自动根据带有 [Handler] 注解的函数签名生成 [usage]. 也可以被覆盖.
