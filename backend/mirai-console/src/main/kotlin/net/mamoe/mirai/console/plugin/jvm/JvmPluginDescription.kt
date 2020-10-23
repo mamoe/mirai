@@ -149,18 +149,6 @@ public class JvmPluginDescriptionBuilder(
     }
 
     /**
-     * @see PluginDependency
-     */
-    @ILoveKuriyamaMiraiForever
-    public fun dependsOn(
-        @ResolveContext(PLUGIN_ID) pluginId: String,
-        isOptional: Boolean = false,
-        versionRequirement: SemVersion.Requirement,
-    ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
-    }
-
-    /**
      * isOptional = false
      *
      * @see PluginDependency
@@ -169,8 +157,21 @@ public class JvmPluginDescriptionBuilder(
     public fun dependsOn(
         @ResolveContext(PLUGIN_ID) pluginId: String,
         versionRequirement: SemVersion.Requirement,
+        isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
+        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
+    }
+
+    /**
+     * @see PluginDependency
+     */
+    @ILoveKuriyamaMiraiForever
+    public fun dependsOn(
+        @ResolveContext(PLUGIN_ID) pluginId: String,
+        @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String,
+        isOptional: Boolean = false,
+    ): JvmPluginDescriptionBuilder = apply {
+        this.dependencies.add(PluginDependency(pluginId, SemVersion.parseRangeRequirement(versionRequirement), isOptional))
     }
 
     /**
