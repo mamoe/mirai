@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.util
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
+import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import net.mamoe.mirai.contact.*
 
 /**

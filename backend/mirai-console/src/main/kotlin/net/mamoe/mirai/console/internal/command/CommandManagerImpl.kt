@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
@@ -24,6 +25,7 @@ import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.locks.ReentrantLock
 
+@OptIn(ExperimentalCommandDescriptors::class)
 internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiConsole.childScope("CommandManagerImpl") {
     private val logger: MiraiLogger by lazy {
         MiraiConsole.createLogger("command")
@@ -102,7 +104,9 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
     }
 
     override fun Command.register(override: Boolean): Boolean {
-        if (this is CompositeCommand) this.subCommands // init lazy
+        if (this is CompositeCommand) {
+            this.overloads  // init lazy
+        }
         kotlin.runCatching {
             this.permission // init lazy
             this.secondaryNames // init lazy

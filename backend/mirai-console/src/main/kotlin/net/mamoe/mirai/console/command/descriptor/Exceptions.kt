@@ -13,8 +13,8 @@ package net.mamoe.mirai.console.command.descriptor
 
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.classifierAsKClassOrNull
+import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import kotlin.reflect.KType
 
 

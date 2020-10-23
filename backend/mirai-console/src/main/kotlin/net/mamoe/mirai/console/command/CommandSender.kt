@@ -26,8 +26,8 @@ import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSend
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.castOrNull
+import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.Permittee

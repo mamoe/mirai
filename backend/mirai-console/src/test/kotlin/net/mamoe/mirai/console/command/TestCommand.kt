@@ -261,7 +261,7 @@ internal class TestCommand {
                 "testOptional"
             ) {
                 @SubCommand
-                fun optional(arg1: String, arg2: String = "Here is optional", arg3: String?) {
+                fun optional(arg1: String, arg2: String = "Here is optional", arg3: String? = null) {
                     println(arg1)
                     println(arg2)
                     println(arg3)

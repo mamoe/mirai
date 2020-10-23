@@ -20,11 +20,10 @@ package net.mamoe.mirai.console.command
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
-import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
-import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
+import net.mamoe.mirai.console.internal.command.CommandReflector
+import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.message.data.MessageChain
 import kotlin.annotation.AnnotationRetention.RUNTIME
 import kotlin.annotation.AnnotationTarget.FUNCTION
 
@@ -90,13 +89,23 @@ public abstract class CompositeCommand(
     parentPermission: Permission = owner.parentPermission,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext,
-) : Command, AbstractReflectionCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
+) : Command, AbstractCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
     CommandArgumentContextAware {
+
+    private val reflector by lazy { CommandReflector(this, SimpleCommandSubCommandAnnotationResolver) }
+
+    @ExperimentalCommandDescriptors
+    public final override val overloads: List<CommandSignatureVariantFromKFunction> by lazy {
+        reflector.findSubCommands()
+    }
 
     /**
      * 自动根据带有 [SubCommand] 注解的函数签名生成 [usage]. 也可以被覆盖.
      */
-    public override val usage: String get() = super.usage
+    public override val usage: String by lazy {
+        @OptIn(ExperimentalCommandDescriptors::class)
+        reflector.generateUsage(overloads)
+    }
 
     /**
      * [CommandValueArgumentParser] 的环境
@@ -123,33 +132,6 @@ public abstract class CompositeCommand(
     @Retention(RUNTIME)
     @Target(AnnotationTarget.VALUE_PARAMETER)
     protected annotation class Name(val value: String)
-
-    @OptIn(ExperimentalCommandDescriptors::class)
-    override val overloads: List<CommandSignatureVariant> by lazy {
-        subCommands.flatMap { desc ->
-            desc.bakedSubNames.map { names ->
-                CommandSignatureVariantImpl(
-                    valueParameters =
-                    names.mapIndexed { index, s -> CommandValueParameter.StringConstant("p$index", s) } + desc.params.map {
-                        CommandValueParameter.UserDefinedType(it.name, null,
-                            isOptional = false,
-                            isVararg = false,
-                            type = it.type)
-                    },
-                    onCall = { resolvedCommandCall ->
-                        desc.onCommand(resolvedCommandCall.caller, resolvedCommandCall.resolvedValueArguments.drop(names.size))
-                    }
-                )
-            }
-        }
-    }
-
-    protected override suspend fun CommandSender.onDefault(rawArgs: MessageChain) {
-        sendMessage(usage)
-    }
-
-    internal final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
-        get() = CompositeCommandSubCommandAnnotationResolver
 }
 
 

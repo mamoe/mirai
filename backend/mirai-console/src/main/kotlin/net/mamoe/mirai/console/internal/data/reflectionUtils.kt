@@ -11,13 +11,14 @@ package net.mamoe.mirai.console.internal.data
 
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.ValueName
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
-import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
-import kotlin.reflect.KProperty
-import kotlin.reflect.KType
+import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
+
+internal val KClass<*>.qualifiedNameOrTip: String get() = this.qualifiedName ?: "<anonymous class>"
+
+internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): Boolean =
+    findAnnotation<T>() != null
 
 @Suppress("UNCHECKED_CAST")
 internal inline fun <reified T : Any> KType.toKClass(): KClass<out T> {
