@@ -35,7 +35,7 @@ public interface JvmPluginDescription : PluginDescription {
          */
         @JvmName("create")
         @JvmSynthetic
-        public operator fun invoke(
+        public inline operator fun invoke(
             /**
              * @see [PluginDescription.id]
              */
@@ -57,7 +57,7 @@ public interface JvmPluginDescription : PluginDescription {
          */
         @JvmName("create")
         @JvmSynthetic
-        public operator fun invoke(
+        public inline operator fun invoke(
             /**
              * @see [PluginDescription.id]
              */
