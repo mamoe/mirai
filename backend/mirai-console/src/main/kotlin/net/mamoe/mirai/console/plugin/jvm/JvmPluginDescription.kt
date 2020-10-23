@@ -65,7 +65,7 @@ public interface JvmPluginDescription : PluginDescription {
             /**
              * @see [PluginDescription.version]
              */
-            @ResolveContext(PLUGIN_VERSION) version: SemVersion,
+            version: SemVersion,
             /**
              * @see [PluginDescription.name]
              */
@@ -230,6 +230,6 @@ internal data class SimpleJvmPluginDescription
     ) : this(name, SemVersion(version), id, author, info, dependencies)
 
     init {
-        require(!name.contains(':')) { "':' is forbidden in plugin name" }
+        PluginDescription.checkPluginDescription(this)
     }
 }
