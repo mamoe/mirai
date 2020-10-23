@@ -97,7 +97,7 @@ public interface JvmPluginDescription : PluginDescription {
  * @see [JvmPluginDescription.invoke]
  */
 public class JvmPluginDescriptionBuilder(
-    private var id: String,
+    @ResolveContext(PLUGIN_ID) private var id: String,
     private var version: SemVersion,
 ) {
     public constructor(
