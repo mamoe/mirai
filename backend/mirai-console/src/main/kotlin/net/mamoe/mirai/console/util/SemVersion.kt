@@ -26,6 +26,7 @@ import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.semver.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
 import net.mamoe.mirai.console.util.SemVersion.Requirement
+import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 /**
  * [语义化版本](https://semver.org/lang/zh-CN/) 支持
@@ -163,7 +164,7 @@ internal constructor(
     }
 
     @Transient
-    private val toString: String by lazy(LazyThreadSafetyMode.NONE) {
+    private val toString: String by lazy(PUBLICATION) {
         buildString {
             append(major)
             append('.').append(minor)
