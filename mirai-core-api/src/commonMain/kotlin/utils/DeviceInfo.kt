@@ -17,6 +17,7 @@ import net.mamoe.mirai.utils.internal.getRandomByteArray
 import net.mamoe.mirai.utils.internal.getRandomIntString
 import net.mamoe.mirai.utils.internal.getRandomString
 import net.mamoe.mirai.utils.internal.md5
+import kotlin.jvm.JvmStatic
 
 @Serializable
 public class DeviceInfo(
@@ -53,6 +54,7 @@ public class DeviceInfo(
     )
 
     public companion object {
+        @JvmStatic
         public fun random(): DeviceInfo {
             return DeviceInfo(
                 display = "MIRAI.${getRandomString(6, '0'..'9')}.001".toByteArray(),
