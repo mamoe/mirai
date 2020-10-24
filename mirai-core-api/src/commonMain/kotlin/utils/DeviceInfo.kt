@@ -9,124 +9,101 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.io.core.toByteArray
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
+import net.mamoe.mirai.utils.internal.md5
 
-/**
- * 设备信息. 可通过继承 [SystemDeviceInfo] 来在默认的基础上修改
- */
-public abstract class DeviceInfo {
-    @Transient
-    public abstract val context: Context
-
-    public abstract val display: ByteArray
-    public abstract val product: ByteArray
-    public abstract val device: ByteArray
-    public abstract val board: ByteArray
-
-    public abstract val brand: ByteArray
-    public abstract val model: ByteArray
-    public abstract val bootloader: ByteArray
-    public abstract val fingerprint: ByteArray
-    public abstract val bootId: ByteArray
-
-    public abstract val procVersion: ByteArray
-    public abstract val baseBand: ByteArray
-
-    public abstract val version: Version
-
-    public abstract val simInfo: ByteArray
-
-    public abstract val osType: ByteArray
-
-    public abstract val macAddress: ByteArray
-
-    public abstract val wifiBSSID: ByteArray?
-    public abstract val wifiSSID: ByteArray?
-
-    public abstract val imsiMd5: ByteArray
-    public abstract val imei: String
-
+@Serializable
+public class DeviceInfo(
+    public val display: ByteArray,
+    public val product: ByteArray,
+    public val device: ByteArray,
+    public val board: ByteArray,
+    public val brand: ByteArray,
+    public val model: ByteArray,
+    public val bootloader: ByteArray,
+    public val fingerprint: ByteArray,
+    public val bootId: ByteArray,
+    public val procVersion: ByteArray,
+    public val baseBand: ByteArray,
+    public val version: Version,
+    public val simInfo: ByteArray,
+    public val osType: ByteArray,
+    public val macAddress: ByteArray,
+    public val wifiBSSID: ByteArray?,
+    public val wifiSSID: ByteArray?,
+    public val imsiMd5: ByteArray,
+    public val imei: String,
+    public val apn: ByteArray
+) {
+    public val androidId: ByteArray get() = display
     public val ipAddress: ByteArray get() = byteArrayOf(192.toByte(), 168.toByte(), 1, 123)
 
-    public abstract val androidId: ByteArray
+    @Serializable
+    public class Version(
+        public val incremental: ByteArray = "5891938".toByteArray(),
+        public val release: ByteArray = "10".toByteArray(),
+        public val codename: ByteArray = "REL".toByteArray(),
+        public val sdk: Int = 29
+    )
 
-    public abstract val apn: ByteArray
-
-    public fun generateDeviceInfoData(): ByteArray {
-        @Serializable
-        class DevInfo(
-            @ProtoNumber(1) val bootloader: ByteArray,
-            @ProtoNumber(2) val procVersion: ByteArray,
-            @ProtoNumber(3) val codename: ByteArray,
-            @ProtoNumber(4) val incremental: ByteArray,
-            @ProtoNumber(5) val fingerprint: ByteArray,
-            @ProtoNumber(6) val bootId: ByteArray,
-            @ProtoNumber(7) val androidId: ByteArray,
-            @ProtoNumber(8) val baseBand: ByteArray,
-            @ProtoNumber(9) val innerVersion: ByteArray
-        )
-
-        return ProtoBuf.encodeToByteArray(
-            DevInfo.serializer(), DevInfo(
-                bootloader,
-                procVersion,
-                version.codename,
-                version.incremental,
-                fingerprint,
-                bootId,
-                androidId,
-                baseBand,
-                version.incremental
+    public companion object {
+        public fun random(): DeviceInfo {
+            return DeviceInfo(
+                display = "MIRAI.${getRandomString(6, '0'..'9')}.001".toByteArray(),
+                product = "mirai".toByteArray(),
+                device = "mirai".toByteArray(),
+                board = "mirai".toByteArray(),
+                brand = "mamoe".toByteArray(),
+                model = "mirai".toByteArray(),
+                bootloader = "unknown".toByteArray(),
+                fingerprint = "mamoe/mirai/mirai:10/MIRAI.200122.001/${getRandomIntString(7)}:user/release-keys".toByteArray(),
+                bootId = ExternalImage.generateUUID(getRandomByteArray(16).md5()).toByteArray(),
+                procVersion = "Linux version 3.0.31-${getRandomString(8)} (android-build@xxx.xxx.xxx.xxx.com)".toByteArray(),
+                baseBand = byteArrayOf(),
+                version = Version(),
+                simInfo = "T-Mobile".toByteArray(),
+                osType = "android".toByteArray(),
+                macAddress = "02:00:00:00:00:00".toByteArray(),
+                wifiBSSID = "02:00:00:00:00:00".toByteArray(),
+                wifiSSID = "<unknown ssid>".toByteArray(),
+                imsiMd5 = getRandomByteArray(16).md5(),
+                imei = getRandomIntString(15),
+                apn = "wifi".toByteArray()
             )
-        )
-    }
-
-    public interface Version {
-        public val incremental: ByteArray
-        public val release: ByteArray
-        public val codename: ByteArray
-        public val sdk: Int
+        }
     }
 }
 
-@Serializable
-public class DeviceInfoData(
-    public override val display: ByteArray,
-    public override val product: ByteArray,
-    public override val device: ByteArray,
-    public override val board: ByteArray,
-    public override val brand: ByteArray,
-    public override val model: ByteArray,
-    public override val bootloader: ByteArray,
-    public override val fingerprint: ByteArray,
-    public override val bootId: ByteArray,
-    public override val procVersion: ByteArray,
-    public override val baseBand: ByteArray,
-    public override val version: VersionData,
-    public override val simInfo: ByteArray,
-    public override val osType: ByteArray,
-    public override val macAddress: ByteArray,
-    public override val wifiBSSID: ByteArray?,
-    public override val wifiSSID: ByteArray?,
-    public override val imsiMd5: ByteArray,
-    public override val imei: String,
-    public override val apn: ByteArray
-) : DeviceInfo() {
-    @Transient
-    public override lateinit var context: Context
-
-    public override val androidId: ByteArray get() = display
-
+public fun DeviceInfo.generateDeviceInfoData(): ByteArray {
     @Serializable
-    public class VersionData(
-        public override val incremental: ByteArray = SystemDeviceInfo.Version.incremental,
-        public override val release: ByteArray = SystemDeviceInfo.Version.release,
-        public override val codename: ByteArray = SystemDeviceInfo.Version.codename,
-        public override val sdk: Int = SystemDeviceInfo.Version.sdk
-    ) : Version
+    class DevInfo(
+        @ProtoNumber(1) val bootloader: ByteArray,
+        @ProtoNumber(2) val procVersion: ByteArray,
+        @ProtoNumber(3) val codename: ByteArray,
+        @ProtoNumber(4) val incremental: ByteArray,
+        @ProtoNumber(5) val fingerprint: ByteArray,
+        @ProtoNumber(6) val bootId: ByteArray,
+        @ProtoNumber(7) val androidId: ByteArray,
+        @ProtoNumber(8) val baseBand: ByteArray,
+        @ProtoNumber(9) val innerVersion: ByteArray
+    )
+
+    return ProtoBuf.encodeToByteArray(
+        DevInfo.serializer(), DevInfo(
+            bootloader,
+            procVersion,
+            version.codename,
+            version.incremental,
+            fingerprint,
+            bootId,
+            androidId,
+            baseBand,
+            version.incremental
+        )
+    )
 }
 
 /*

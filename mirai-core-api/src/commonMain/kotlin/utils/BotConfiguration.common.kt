@@ -53,7 +53,7 @@ public expect open class BotConfiguration() : BotConfigurationBase {
     public fun randomDeviceInfo()
 
     /**
-     * 使用特定由 [DeviceInfoData] 序列化产生的 JSON 的设备信息
+     * 使用特定由 [DeviceInfo] 序列化产生的 JSON 的设备信息
      *
      * @see deviceInfo
      */
@@ -251,5 +251,5 @@ internal val deviceInfoStub: (Context) -> DeviceInfo = {
     MiraiLogger.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
     @Suppress("DEPRECATION")
     MiraiLogger.warning("Device info isn't specified. Please refer to BotConfiguration.deviceInfo for more information")
-    SystemDeviceInfo()
+    DeviceInfo.random()
 }

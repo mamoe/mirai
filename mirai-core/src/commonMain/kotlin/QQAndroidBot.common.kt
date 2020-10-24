@@ -264,7 +264,7 @@ internal abstract class QQAndroidBotBase constructor(
             context,
             account,
             bot = @Suppress("LeakingThis") this as QQAndroidBot,
-            device = configuration.deviceInfo?.invoke(context) ?: SystemDeviceInfo(context)
+            device = configuration.deviceInfo?.invoke(context) ?: DeviceInfo.random()
         )
     internal var firstLoginSucceed: Boolean = false
 
