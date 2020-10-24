@@ -45,17 +45,12 @@ internal class MiraiConsoleLoggerUnused(
         delegateLogger.logger = logger
         logger
     }
-    override val isEnabled: Boolean
-        get() = super.isEnabled
+    override val isEnabled: Boolean get() = logger.isEnabled
 
     override fun debug0(message: String?, e: Throwable?) = logger.debug(message, e)
-
     override fun error0(message: String?, e: Throwable?) = logger.error(message, e)
-
     override fun info0(message: String?, e: Throwable?) = logger.info(message, e)
-
     override fun verbose0(message: String?, e: Throwable?) = logger.verbose(message, e)
-
     override fun warning0(message: String?, e: Throwable?) = logger.warning(message, e)
 
 }

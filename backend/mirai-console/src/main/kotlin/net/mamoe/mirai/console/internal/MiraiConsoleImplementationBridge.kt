@@ -112,6 +112,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
                 ConsoleDataScope.addAndReloadConfig(LoggerConfig)
             }
         }
+
         phase `greeting`@{
             val buildDateFormatted =
                 buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -120,6 +121,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             mainLogger.info { "Backend: version $version, built on $buildDateFormatted." }
             mainLogger.info { frontEndDescription.render() }
         }
+
         phase `check coroutineContext`@{
             if (coroutineContext[Job] == null) {
                 throw MalformedMiraiConsoleImplementationError("The coroutineContext given to MiraiConsole must have a Job in it.")
