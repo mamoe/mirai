@@ -36,8 +36,11 @@ internal object CompositeCommandSubCommandAnnotationResolver :
     override fun hasAnnotation(ownerCommand: Command, function: KFunction<*>) =
         function.hasAnnotation<CompositeCommand.SubCommand>()
 
-    override fun getSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String> =
-        function.findAnnotation<CompositeCommand.SubCommand>()!!.value
+    override fun getSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String> {
+        val annotated = function.findAnnotation<CompositeCommand.SubCommand>()!!.value
+        return if (annotated.isEmpty()) arrayOf(function.name)
+        else annotated
+    }
 
     override fun getAnnotatedName(ownerCommand: Command, parameter: KParameter): String? =
         parameter.findAnnotation<CompositeCommand.Name>()?.value
@@ -190,7 +193,7 @@ internal class CommandReflector(
             .map { function ->
 
                 val functionNameAsValueParameter =
-                    annotationResolver.getSubCommandNames(command, function).map { createStringConstantParameter(it) }
+                    annotationResolver.getSubCommandNames(command, function).mapIndexed { index, s -> createStringConstantParameter(index, s) }
 
                 val functionValueParameters =
                     function.valueParameters.associateBy { it.toUserDefinedCommandParameter() }
@@ -202,7 +205,10 @@ internal class CommandReflector(
                 ) { call ->
                     val args = LinkedHashMap<KParameter, Any?>()
 
-                    call.resolvedValueArguments.forEach { (commandParameter, value) ->
+                    for ((commandParameter, value) in call.resolvedValueArguments) {
+                        if (commandParameter is AbstractCommandValueParameter.StringConstant) {
+                            continue
+                        }
                         val functionParameter =
                             functionValueParameters[commandParameter] ?: error("Could not find a corresponding function parameter '${commandParameter.name}'")
                         args[functionParameter] = value
@@ -224,8 +230,8 @@ internal class CommandReflector(
         return CommandReceiverParameter(this.type.isMarkedNullable, this.type)
     }
 
-    private fun createStringConstantParameter(expectingValue: String): AbstractCommandValueParameter.StringConstant {
-        return AbstractCommandValueParameter.StringConstant(null, expectingValue)
+    private fun createStringConstantParameter(index: Int, expectingValue: String): AbstractCommandValueParameter.StringConstant {
+        return AbstractCommandValueParameter.StringConstant("#$index", expectingValue)
     }
 
     private fun KParameter.toUserDefinedCommandParameter(): AbstractCommandValueParameter.UserDefinedType<*> {
