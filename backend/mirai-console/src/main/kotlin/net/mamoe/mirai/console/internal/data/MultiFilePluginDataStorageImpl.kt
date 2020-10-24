@@ -73,7 +73,9 @@ internal open class MultiFilePluginDataStorageImpl(
     public override fun store(holder: PluginDataHolder, instance: PluginData) {
         getPluginDataFile(holder, instance).writeText(
             kotlin.runCatching {
-                yaml.encodeToString(instance.updaterSerializer, Unit)
+                yaml.encodeToString(instance.updaterSerializer, Unit).also {
+                    yaml.decodeAnyFromString(it) // test yaml
+                }
             }.recoverCatching {
                 // Just use mainLogger for convenience.
                 MiraiConsole.mainLogger.warning(
