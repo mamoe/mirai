@@ -109,7 +109,7 @@ public fun <T : Any> CommandValueArgumentParser<T>.parse(raw: Any, sender: Comma
 
     return when (raw) {
         is String -> parse(raw, sender)
-        is SingleMessage -> parse(raw, sender)
+        is MessageContent -> parse(raw, sender)
         else -> throw IllegalArgumentException("Illegal raw argument type: ${raw::class.qualifiedName}")
     }
 }
