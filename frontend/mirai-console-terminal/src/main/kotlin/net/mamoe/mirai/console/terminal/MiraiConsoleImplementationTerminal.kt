@@ -33,6 +33,8 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.logging.MiraiConsoleLoggerController
+import net.mamoe.mirai.console.logging.MiraiConsoleLoggerControllerForFrontend
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.terminal.ConsoleInputImpl.requestInput
@@ -81,7 +83,9 @@ class MiraiConsoleImplementationTerminal
         return DefaultLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
-    override fun createLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
+    override val loggerController: MiraiConsoleLoggerController = object : MiraiConsoleLoggerControllerForFrontend() {
+        override fun newLoggerImpl(identity: String?): MiraiLogger = LoggerCreator(identity)
+    }
 
     init {
         with(rootPath.toFile()) {
@@ -151,6 +155,7 @@ val terminal: Terminal = run {
 private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
     override val name: String get() = "Terminal"
     override val vendor: String get() = "Mamoe Technologies"
+
     // net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
     // is console's version not frontend's version
     override val version: SemVersion = SemVersion(net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.versionConst)
