@@ -16,11 +16,11 @@ import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.Testing
 import net.mamoe.mirai.console.Testing.withTesting
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.getRegisteredCommands
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.registeredCommands
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.registerCommand
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterCommand
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
@@ -78,20 +78,20 @@ internal class TestCommand {
     @Test
     fun testRegister() {
         try {
-            ConsoleCommandOwner.unregisterAllCommands() // builtins
-            TestSimpleCommand.unregister()
+            unregisterAllCommands(ConsoleCommandOwner) // builtins
+            unregisterCommand(TestSimpleCommand)
 
             assertTrue(TestCompositeCommand.register())
             assertFalse(TestCompositeCommand.register())
 
-            assertEquals(1, ConsoleCommandOwner.registeredCommands.size)
+            assertEquals(1, getRegisteredCommands(ConsoleCommandOwner).size)
 
             assertEquals(1, CommandManagerImpl._registeredCommands.size)
             assertEquals(2,
                 CommandManagerImpl.requiredPrefixCommandMap.size,
                 CommandManagerImpl.requiredPrefixCommandMap.entries.joinToString { it.toString() })
         } finally {
-            TestCompositeCommand.unregister()
+            unregisterCommand(TestCompositeCommand)
         }
     }
 
@@ -194,7 +194,7 @@ internal class TestCommand {
                 }
             }
 
-            composite.register()
+            registerCommand(composite)
 
             println(composite.overloads.joinToString())
 

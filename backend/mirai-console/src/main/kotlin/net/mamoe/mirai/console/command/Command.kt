@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentContextAware
 import net.mamoe.mirai.console.command.descriptor.CommandSignatureVariant
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
@@ -25,7 +24,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 /**
  * 指令
  *
- * @see CommandManager.register 注册这个指令
+ * @see CommandManager.registerCommand 注册这个指令
  *
  * @see RawCommand 无参数解析, 接收原生参数的指令
  * @see CompositeCommand 复合指令
@@ -52,7 +51,7 @@ public interface Command {
     public val secondaryNames: Array<out String>
 
     /**
-     *
+     * 指令可能的参数列表.
      */
     @ConsoleExperimentalApi("Property name is experimental")
     @ExperimentalCommandDescriptors
@@ -64,12 +63,12 @@ public interface Command {
     public val usage: String
 
     /**
-     * 指令描述, 用于显示在 [BuiltInCommands.HelpCommand]
+     * 描述, 用于显示在 [BuiltInCommands.HelpCommand]
      */
     public val description: String
 
     /**
-     * 此指令所分配的权限.
+     * 为此指令分配的权限.
      *
      * ### 实现约束
      * - [Permission.id] 应由 [CommandOwner.permissionId] 创建. 因此保证相同的 [PermissionId.namespace]
@@ -82,6 +81,8 @@ public interface Command {
      *
      * 会影响聊天语境中的解析.
      */
+    @ExperimentalCommandDescriptors
+    @ConsoleExperimentalApi
     public val prefixOptional: Boolean
 
     /**
@@ -109,7 +110,7 @@ public interface Command {
         public fun checkCommandName(@ResolveContext(COMMAND_NAME) name: String) {
             when {
                 name.isBlank() -> throw IllegalArgumentException("Command name should not be blank.")
-                name.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces is not yet allowed in command name.")
+                name.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces are not yet allowed in command name.")
                 name.contains(':') -> throw IllegalArgumentException("':' is forbidden in command name.")
                 name.contains('.') -> throw IllegalArgumentException("'.' is forbidden in command name.")
             }

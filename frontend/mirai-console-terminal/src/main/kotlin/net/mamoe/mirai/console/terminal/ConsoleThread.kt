@@ -15,11 +15,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.BuiltInCommands
-import net.mamoe.mirai.console.command.CommandExecuteStatus
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
-import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
 import net.mamoe.mirai.console.util.ConsoleInternalApi
