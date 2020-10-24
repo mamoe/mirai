@@ -21,7 +21,7 @@ import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.CommandReflector
-import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
+import net.mamoe.mirai.console.internal.command.CompositeCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.annotation.AnnotationRetention.RUNTIME
@@ -92,7 +92,7 @@ public abstract class CompositeCommand(
 ) : Command, AbstractCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
     CommandArgumentContextAware {
 
-    private val reflector by lazy { CommandReflector(this, SimpleCommandSubCommandAnnotationResolver) }
+    private val reflector by lazy { CommandReflector(this, CompositeCommandSubCommandAnnotationResolver) }
 
     @ExperimentalCommandDescriptors
     public final override val overloads: List<CommandSignatureVariantFromKFunction> by lazy {

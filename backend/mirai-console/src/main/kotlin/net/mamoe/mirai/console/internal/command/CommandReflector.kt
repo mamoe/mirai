@@ -156,18 +156,27 @@ internal class CommandReflector(
 
     companion object {
 
-        private fun <T> CommandValueParameter<T>.render(): String {
+        private fun <T> AbstractCommandValueParameter<T>.render(): String {
             return when (this) {
-                is CommandValueParameter.Extended,
-                is CommandValueParameter.UserDefinedType<*>,
+                is AbstractCommandValueParameter.Extended,
+                is AbstractCommandValueParameter.UserDefinedType<*>,
                 -> {
                     "<${this.name ?: this.type.classifierAsKClass().simpleName}>"
                 }
-                is CommandValueParameter.StringConstant -> {
+                is AbstractCommandValueParameter.StringConstant -> {
                     this.expectingValue
                 }
             }
         }
+    }
+
+    fun validate(variants: List<CommandSignatureVariantFromKFunctionImpl>) {
+
+        data class ErasedParameters(
+            val name: String,
+            val x: String,
+        )
+        variants
     }
 
     @Throws(IllegalCommandDeclarationException::class)
@@ -184,14 +193,26 @@ internal class CommandReflector(
                     annotationResolver.getSubCommandNames(command, function).map { createStringConstantParameter(it) }
 
                 val functionValueParameters =
-                    function.valueParameters.map { it.toUserDefinedCommandParameter() }
+                    function.valueParameters.associateBy { it.toUserDefinedCommandParameter() }
 
                 CommandSignatureVariantFromKFunctionImpl(
                     receiverParameter = function.extensionReceiverParameter?.toCommandReceiverParameter(),
-                    valueParameters = functionNameAsValueParameter + functionValueParameters,
+                    valueParameters = functionNameAsValueParameter + functionValueParameters.keys,
                     originFunction = function
                 ) { call ->
-                    function.callSuspend(command, *call.resolvedValueArguments.toTypedArray())
+                    val args = LinkedHashMap<KParameter, Any?>()
+
+                    call.resolvedValueArguments.forEach { (commandParameter, value) ->
+                        val functionParameter =
+                            functionValueParameters[commandParameter] ?: error("Could not find a corresponding function parameter '${commandParameter.name}'")
+                        args[functionParameter] = value
+                    }
+
+                    val instanceParameter = function.instanceParameter
+                    if (instanceParameter != null) {
+                        args[instanceParameter] = command
+                    }
+                    function.callSuspendBy(args)
                 }
             }.toList()
     }
@@ -203,12 +224,12 @@ internal class CommandReflector(
         return CommandReceiverParameter(this.type.isMarkedNullable, this.type)
     }
 
-    private fun createStringConstantParameter(expectingValue: String): CommandValueParameter.StringConstant {
-        return CommandValueParameter.StringConstant(null, expectingValue)
+    private fun createStringConstantParameter(expectingValue: String): AbstractCommandValueParameter.StringConstant {
+        return AbstractCommandValueParameter.StringConstant(null, expectingValue)
     }
 
-    private fun KParameter.toUserDefinedCommandParameter(): CommandValueParameter.UserDefinedType<KParameter> {
-        return CommandValueParameter.UserDefinedType(nameForCommandParameter(), this, this.isOptional, this.isVararg, this.type)
+    private fun KParameter.toUserDefinedCommandParameter(): AbstractCommandValueParameter.UserDefinedType<*> {
+        return AbstractCommandValueParameter.UserDefinedType<Any?>(nameForCommandParameter(), this.isOptional, this.isVararg, this.type) // Any? is erased
     }
 
     private fun KParameter.nameForCommandParameter(): String? = annotationResolver.getAnnotatedName(command, this) ?: this.name

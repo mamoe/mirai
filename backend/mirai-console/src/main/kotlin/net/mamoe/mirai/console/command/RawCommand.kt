@@ -58,7 +58,7 @@ public abstract class RawCommand(
     override val overloads: List<CommandSignatureVariant> = listOf(
         CommandSignatureVariantImpl(
             receiverParameter = CommandReceiverParameter(false, typeOf0<CommandSender>()),
-            valueParameters = listOf(CommandValueParameter.UserDefinedType.createRequired<MessageChain>("args", true))
+            valueParameters = listOf(AbstractCommandValueParameter.UserDefinedType.createRequired<MessageChain>("args", true))
         ) { call ->
             val sender = call.caller
             val arguments = call.rawValueArguments

@@ -10,14 +10,14 @@
 package net.mamoe.mirai.console.command.descriptor
 
 import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.UserDefinedType.Companion.createOptional
+import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.UserDefinedType.Companion.createRequired
 import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isAcceptable
-import net.mamoe.mirai.console.command.descriptor.CommandValueParameter.UserDefinedType.Companion.createOptional
-import net.mamoe.mirai.console.command.descriptor.CommandValueParameter.UserDefinedType.Companion.createRequired
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
+import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.internal.data.classifierAsKClassOrNull
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.console.util.safeCast
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KType
@@ -32,7 +32,7 @@ public interface CommandSignatureVariant {
     @ConsoleExperimentalApi
     public val receiverParameter: CommandReceiverParameter<out CommandSender>?
 
-    public val valueParameters: List<CommandValueParameter<*>>
+    public val valueParameters: List<AbstractCommandValueParameter<*>>
 
     public suspend fun call(resolvedCommandCall: ResolvedCommandCall)
 }
@@ -44,11 +44,23 @@ public interface CommandSignatureVariantFromKFunction : CommandSignatureVariant 
 }
 
 @ExperimentalCommandDescriptors
+public abstract class AbstractCommandSignatureVariant : CommandSignatureVariant {
+    override fun toString(): String {
+        val receiverParameter = receiverParameter
+        return if (receiverParameter == null) {
+            "CommandSignatureVariant(${valueParameters.joinToString()})"
+        } else {
+            "CommandSignatureVariant($receiverParameter, ${valueParameters.joinToString()})"
+        }
+    }
+}
+
+@ExperimentalCommandDescriptors
 public open class CommandSignatureVariantImpl(
     override val receiverParameter: CommandReceiverParameter<out CommandSender>?,
-    override val valueParameters: List<CommandValueParameter<*>>,
+    override val valueParameters: List<AbstractCommandValueParameter<*>>,
     private val onCall: suspend CommandSignatureVariantImpl.(resolvedCommandCall: ResolvedCommandCall) -> Unit,
-) : CommandSignatureVariant {
+) : CommandSignatureVariant, AbstractCommandSignatureVariant() {
     override suspend fun call(resolvedCommandCall: ResolvedCommandCall) {
         return onCall(resolvedCommandCall)
     }
@@ -58,10 +70,10 @@ public open class CommandSignatureVariantImpl(
 @ExperimentalCommandDescriptors
 public open class CommandSignatureVariantFromKFunctionImpl(
     override val receiverParameter: CommandReceiverParameter<out CommandSender>?,
-    override val valueParameters: List<CommandValueParameter<*>>,
+    override val valueParameters: List<AbstractCommandValueParameter<*>>,
     override val originFunction: KFunction<*>,
     private val onCall: suspend CommandSignatureVariantFromKFunctionImpl.(resolvedCommandCall: ResolvedCommandCall) -> Unit,
-) : CommandSignatureVariantFromKFunction {
+) : CommandSignatureVariantFromKFunction, AbstractCommandSignatureVariant() {
     override suspend fun call(resolvedCommandCall: ResolvedCommandCall) {
         return onCall(resolvedCommandCall)
     }
@@ -69,10 +81,10 @@ public open class CommandSignatureVariantFromKFunctionImpl(
 
 
 /**
- * Inherited instances must be [ICommandValueParameter] or [CommandReceiverParameter]
+ * Inherited instances must be [CommandValueParameter] or [CommandReceiverParameter]
  */
 @ExperimentalCommandDescriptors
-public interface ICommandParameter<T : Any?> {
+public interface CommandParameter<T : Any?> {
     public val name: String?
 
     public val isOptional: Boolean
@@ -83,17 +95,21 @@ public interface ICommandParameter<T : Any?> {
     public val type: KType
 }
 
+@ExperimentalCommandDescriptors
+public abstract class AbstractCommandParameter<T> : CommandParameter<T> {
+    override fun toString(): String = buildString {
+        append(name)
+        append(": ")
+        append(type.classifierAsKClass().simpleName)
+        append(if (type.isMarkedNullable) "?" else "")
+    }
+}
+
 /**
- * Inherited instances must be [CommandValueParameter]
+ * Inherited instances must be [AbstractCommandValueParameter]
  */
 @ExperimentalCommandDescriptors
-public interface ICommandValueParameter<T : Any?> : ICommandParameter<T> {
-
-    /**
-     * If [isOptional] is `false`, [defaultValue] is always `null`.
-     * Otherwise [defaultValue] may be `null` iff [T] is nullable.
-     */
-    public val defaultValue: T?
+public interface CommandValueParameter<T : Any?> : CommandParameter<T> {
 
     public val isVararg: Boolean
 
@@ -142,8 +158,14 @@ public sealed class ArgumentAcceptance(
 public class CommandReceiverParameter<T : CommandSender>(
     override val isOptional: Boolean,
     override val type: KType,
-) : ICommandParameter<T> {
+) : CommandParameter<T>, AbstractCommandParameter<T>() {
     override val name: String get() = PARAMETER_NAME
+
+    init {
+        check(type.classifier is KClass<*>) {
+            "CommandReceiverParameter.type.classifier must be KClass."
+        }
+    }
 
     public companion object {
         public const val PARAMETER_NAME: String = "<receiver>"
@@ -152,13 +174,14 @@ public class CommandReceiverParameter<T : CommandSender>(
 
 
 @ExperimentalCommandDescriptors
-public sealed class CommandValueParameter<T> : ICommandValueParameter<T> {
-    internal fun validate() { // // TODO: 2020/10/18 net.mamoe.mirai.console.command.descriptor.CommandValueParameter.validate$mirai_console_mirai_console_main
-        require(type.classifier?.safeCast<KClass<*>>()?.isInstance(defaultValue) == true) {
-            "defaultValue is not instance of type"
+public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>, AbstractCommandParameter<T>() {
+    override fun toString(): String = buildString {
+        if (isVararg) append("vararg ")
+        append(super.toString())
+        if (isOptional) {
+            append(" = ...")
         }
     }
-
 
     public override fun accepting(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
         val expectingType = this.type
@@ -182,11 +205,21 @@ public sealed class CommandValueParameter<T> : ICommandValueParameter<T> {
         @ConsoleExperimentalApi
         public override val name: String?,
         public val expectingValue: String,
-    ) : CommandValueParameter<String>() {
+    ) : AbstractCommandValueParameter<String>() {
         public override val type: KType get() = STRING_TYPE
-        public override val defaultValue: Nothing? get() = null
         public override val isOptional: Boolean get() = false
         public override val isVararg: Boolean get() = false
+
+        init {
+            require(expectingValue.isNotBlank()) {
+                "expectingValue must not be blank"
+            }
+            require(expectingValue.none(Char::isWhitespace)) {
+                "expectingValue must not contain whitespace"
+            }
+        }
+
+        override fun toString(): String = "<$expectingValue>"
 
         private companion object {
             @OptIn(ExperimentalStdlibApi::class)
@@ -200,22 +233,27 @@ public sealed class CommandValueParameter<T> : ICommandValueParameter<T> {
      */
     public class UserDefinedType<T>(
         public override val name: String?,
-        public override val defaultValue: T?,
         public override val isOptional: Boolean,
         public override val isVararg: Boolean,
         public override val type: KType,
-    ) : CommandValueParameter<T>() {
+    ) : AbstractCommandValueParameter<T>() {
+        init {
+            requireNotNull(type.classifierAsKClassOrNull()) {
+                "CommandReceiverParameter.type.classifier must be KClass."
+            }
+        }
+
         public companion object {
             @JvmStatic
-            public inline fun <reified T : Any> createOptional(name: String, isVararg: Boolean, defaultValue: T): UserDefinedType<T> {
+            public inline fun <reified T : Any> createOptional(name: String, isVararg: Boolean): UserDefinedType<T> {
                 @OptIn(ExperimentalStdlibApi::class)
-                return UserDefinedType(name, defaultValue, true, isVararg, typeOf<T>())
+                return UserDefinedType(name, true, isVararg, typeOf<T>())
             }
 
             @JvmStatic
             public inline fun <reified T : Any> createRequired(name: String, isVararg: Boolean): UserDefinedType<T> {
                 @OptIn(ExperimentalStdlibApi::class)
-                return UserDefinedType(name, null, false, isVararg, typeOf<T>())
+                return UserDefinedType(name, false, isVararg, typeOf<T>())
             }
         }
     }
@@ -223,5 +261,8 @@ public sealed class CommandValueParameter<T> : ICommandValueParameter<T> {
     /**
      * Extended by [CommandValueArgumentParser]
      */
-    public abstract class Extended<T> : CommandValueParameter<T>()
+    @ConsoleExperimentalApi
+    public abstract class Extended<T> : AbstractCommandValueParameter<T>() {
+        abstract override fun toString(): String
+    }
 }

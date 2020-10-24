@@ -31,14 +31,22 @@ import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 object TestCompositeCommand : CompositeCommand(
     ConsoleCommandOwner,
     "testComposite", "tsC"
 ) {
     @SubCommand
-    fun mute(seconds: Int) {
+    fun mute(seconds: Int = 60) {
+        Testing.ok(seconds)
+    }
+
+    @SubCommand
+    fun mute(target: Long, seconds: Int) {
         Testing.ok(seconds)
     }
 }
@@ -54,6 +62,7 @@ internal val sender by lazy { ConsoleCommandSender }
 internal val owner by lazy { ConsoleCommandOwner }
 
 
+@OptIn(ExperimentalCommandDescriptors::class)
 internal class TestCommand {
     companion object {
         @JvmStatic
@@ -153,6 +162,13 @@ internal class TestCommand {
     }
 
     @Test
+    fun `composite command descriptors`() {
+        val overloads = TestCompositeCommand.overloads
+        assertEquals("CommandSignatureVariant(seconds: Int = ...)", overloads[0].toString())
+        assertEquals("CommandSignatureVariant(target: Long, seconds: Int)", overloads[1].toString())
+    }
+
+    @Test
     fun `composite command executing`() = runBlocking {
         TestCompositeCommand.withRegistration {
             assertEquals(1, withTesting {
@@ -176,19 +192,19 @@ internal class TestCommand {
 
                 @Suppress("UNUSED_PARAMETER")
                 @SubCommand
-                fun mute(seconds: Int, arg2: Int) {
+                fun mute(seconds: Int, arg2: Int = 1) {
                     Testing.ok(2)
                 }
             }
 
-            assertFailsWith<IllegalStateException> {
-                composite.register()
-            }
-            /*
+            composite.register()
+
+            println(composite.overloads.joinToString())
+
             composite.withRegistration {
-                assertEquals(1, withTesting { execute(sender, "tr", "mute 123") }) // one args, resolves to mute(Int)
-                assertEquals(2, withTesting { execute(sender, "tr", "mute 123 123") })
-            }*/
+                assertEquals(1, withTesting { assertSuccess(composite.execute(sender, "mute 123")) }) // one arg, resolves to mute(Int)
+                assertEquals(2, withTesting { assertSuccess(composite.execute(sender, "mute 123 1")) }) // two arg, resolved to mute(Int, Int)
+            }
         }
     }
 
