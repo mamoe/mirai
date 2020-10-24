@@ -22,9 +22,9 @@ internal class MiraiConsoleLoggerUnused(
     internal lateinit var delegateLogger: MiraiDelegateLogger
     private val logger: MiraiLogger by lazy {
         val logger = if (controller.cacheLoggers) {
-            val reference = controller.allocateLoggerRegistration(identity)
+            val reference = controller.getLoggerRegistration(identity)
             if (reference.compareAndSet(null, InitializeLock)) {
-                val logger = MiraiConsoleLogger(controller, controller.newLoggerImpl(identity))
+                val logger = MiraiConsoleLogger(controller, controller.newLogger(identity))
                 reference.set(logger)
                 logger
             } else {
@@ -40,7 +40,7 @@ internal class MiraiConsoleLoggerUnused(
                 logger
             }
         } else {
-            MiraiConsoleLogger(controller, controller.newLoggerImpl(identity))
+            MiraiConsoleLogger(controller, controller.newLogger(identity))
         }
         delegateLogger.logger = logger
         logger

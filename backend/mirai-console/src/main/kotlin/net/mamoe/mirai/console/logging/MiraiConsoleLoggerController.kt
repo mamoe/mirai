@@ -16,11 +16,35 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
 import java.util.concurrent.atomic.AtomicReference
 
+/**
+ * 日志控制系统
+ *
+ * @see [MiraiConsoleLoggerControllerPlatformBase]
+ * @see [MiraiConsoleLoggerControllerForFrontend]
+ */
 @ConsoleExperimentalApi
 @ConsoleFrontEndImplementation
 public interface MiraiConsoleLoggerController {
+    /** 是否应该记录该等级的日志 */
     public fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean
+    /** 是否应该对 [newLogger] 的结果进行缓存 */
     public val cacheLoggers: Boolean
-    public fun newLoggerImpl(identity: String?): MiraiLogger
-    public fun allocateLoggerRegistration(identity: String?): AtomicReference<Any>
+    /**
+     * 创建一个新的 [MiraiLogger]
+     *
+     * 实现细节:
+     * - 应当直接创建一个新的 [MiraiLogger], 且不进行任何持久性操作,
+     *   例如 放置到字段, 放入任意集合 等
+     * - 即不需要在此方法中把 [MiraiLogger] 放入任意缓存
+     */
+    public fun newLogger(identity: String?): MiraiLogger
+    /**
+     * 获取对应的 Registration
+     *
+     * 实现细节:
+     * - 如果 [identity] 存在对应 Registration, 直接返回先前的 Registration
+     * - [identity] 不存在对应 Registration时, 创建新的 Registration 并存储起来
+     * - 注意并发性
+     */
+    public fun getLoggerRegistration(identity: String?): AtomicReference<Any>
 }

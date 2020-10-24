@@ -84,7 +84,7 @@ class MiraiConsoleImplementationTerminal
     }
 
     override val loggerController: MiraiConsoleLoggerController = object : MiraiConsoleLoggerControllerForFrontend() {
-        override fun newLoggerImpl(identity: String?): MiraiLogger = LoggerCreator(identity)
+        override fun newLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
     }
 
     init {

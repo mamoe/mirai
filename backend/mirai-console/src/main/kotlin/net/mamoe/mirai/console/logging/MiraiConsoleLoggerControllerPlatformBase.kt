@@ -22,15 +22,12 @@ import java.util.concurrent.atomic.AtomicReference
 public abstract class MiraiConsoleLoggerControllerPlatformBase : MiraiConsoleLoggerController {
 
     override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean = true
-
-    override val cacheLoggers: Boolean
-        get() = true
-
+    override val cacheLoggers: Boolean get() = true
     protected val registrations: ConcurrentHashMap<Any, AtomicReference<Any>> = ConcurrentHashMap()
 
     protected object NilIdentityPlaceholder
 
-    override fun allocateLoggerRegistration(identity: String?): AtomicReference<Any> =
+    override fun getLoggerRegistration(identity: String?): AtomicReference<Any> =
         registrations.computeIfAbsent(identity ?: NilIdentityPlaceholder) { AtomicReference() }
 
 }

@@ -74,7 +74,7 @@ fun initTestEnvironment() {
 
         override val loggerController: MiraiConsoleLoggerController = object:MiraiConsoleLoggerControllerPlatformBase(){
             override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean = true
-            override fun newLoggerImpl(identity: String?): MiraiLogger = PlatformLogger(identity)
+            override fun newLogger(identity: String?): MiraiLogger = PlatformLogger(identity)
         }
 
         override val coroutineContext: CoroutineContext = SupervisorJob() + CoroutineExceptionHandler { _, throwable ->
