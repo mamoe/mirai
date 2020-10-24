@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.permission.checkType
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.plugin.description
 import net.mamoe.mirai.console.plugin.name
 import kotlin.reflect.KClass
 
@@ -154,7 +155,7 @@ public interface PermissionService<P : Permission> {
             @ResolveContext(COMMAND_NAME) permissionName: String,
             reason: PluginPermissionIdRequestType
         ) = PermissionId(
-            plugin.name.toLowerCase().replace(' ', '.'),
+            plugin.description.id.toLowerCase(),
             permissionName.toLowerCase()
         )
 

@@ -31,10 +31,10 @@ public data class PermissionId(
     @ResolveContext(PERMISSION_NAME) public val name: String,
 ) {
     init {
-        require(!namespace.contains(' ')) {
+        require(namespace.none { it.isWhitespace() }) {
             "' ' is not allowed in namespace"
         }
-        require(!name.contains(' ')) {
+        require(name.none { it.isWhitespace() }) {
             "' ' is not allowed in name"
         }
 

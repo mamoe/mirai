@@ -35,7 +35,7 @@ public interface JvmPluginDescription : PluginDescription {
          */
         @JvmName("create")
         @JvmSynthetic
-        public operator fun invoke(
+        public inline operator fun invoke(
             /**
              * @see [PluginDescription.id]
              */
@@ -57,7 +57,7 @@ public interface JvmPluginDescription : PluginDescription {
          */
         @JvmName("create")
         @JvmSynthetic
-        public operator fun invoke(
+        public inline operator fun invoke(
             /**
              * @see [PluginDescription.id]
              */
@@ -65,7 +65,7 @@ public interface JvmPluginDescription : PluginDescription {
             /**
              * @see [PluginDescription.version]
              */
-            @ResolveContext(PLUGIN_VERSION) version: SemVersion,
+            version: SemVersion,
             /**
              * @see [PluginDescription.name]
              */
@@ -87,17 +87,17 @@ public interface JvmPluginDescription : PluginDescription {
  * ```
  *
  * #### Java Example
- * ```
+ * ```java
  * JvmPluginDescription desc = new JvmPluginDescriptionBuilder("org.example.example-plugin", "1.0.0")
  *    .info("This is an example plugin")
  *    .dependsOn("org.example.another-plugin")
- *    .build()
+ *    .build();
  * ```
  *
  * @see [JvmPluginDescription.invoke]
  */
 public class JvmPluginDescriptionBuilder(
-    private var id: String,
+    @ResolveContext(PLUGIN_ID) private var id: String,
     private var version: SemVersion,
 ) {
     public constructor(
@@ -119,7 +119,7 @@ public class JvmPluginDescriptionBuilder(
         apply { this.version = SemVersion(value) }
 
     @ILoveKuriyamaMiraiForever
-    public fun version(@ResolveContext(PLUGIN_VERSION) value: SemVersion): JvmPluginDescriptionBuilder =
+    public fun version(value: SemVersion): JvmPluginDescriptionBuilder =
         apply { this.version = value }
 
     @ILoveKuriyamaMiraiForever
@@ -149,18 +149,6 @@ public class JvmPluginDescriptionBuilder(
     }
 
     /**
-     * @see PluginDependency
-     */
-    @ILoveKuriyamaMiraiForever
-    public fun dependsOn(
-        @ResolveContext(PLUGIN_ID) pluginId: String,
-        isOptional: Boolean = false,
-        versionRequirement: SemVersion.Requirement,
-    ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
-    }
-
-    /**
      * isOptional = false
      *
      * @see PluginDependency
@@ -169,12 +157,27 @@ public class JvmPluginDescriptionBuilder(
     public fun dependsOn(
         @ResolveContext(PLUGIN_ID) pluginId: String,
         versionRequirement: SemVersion.Requirement,
+        isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies.add(PluginDependency(pluginId, versionRequirement, false))
+        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
+    }
+
+    /**
+     * @see PluginDependency
+     */
+    @ILoveKuriyamaMiraiForever
+    public fun dependsOn(
+        @ResolveContext(PLUGIN_ID) pluginId: String,
+        @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String,
+        isOptional: Boolean = false,
+    ): JvmPluginDescriptionBuilder = apply {
+        this.dependencies.add(PluginDependency(pluginId, SemVersion.parseRangeRequirement(versionRequirement), isOptional))
     }
 
     /**
      * 无版本要求
+     *
+     * @param isOptional [PluginDependency.isOptional]
      *
      * @see PluginDependency
      */
@@ -187,8 +190,8 @@ public class JvmPluginDescriptionBuilder(
     }
 
 
-    @Suppress("DEPRECATION_ERROR")
     public fun build(): JvmPluginDescription =
+        @Suppress("DEPRECATION_ERROR")
         SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
 
     /**
@@ -227,6 +230,6 @@ internal data class SimpleJvmPluginDescription
     ) : this(name, SemVersion(version), id, author, info, dependencies)
 
     init {
-        require(!name.contains(':')) { "':' is forbidden in plugin name" }
+        PluginDescription.checkPluginDescription(this)
     }
 }

@@ -182,7 +182,7 @@ internal inline fun AtomicLong.updateWhen(condition: (Long) -> Boolean, update: 
     while (true) {
         val current = value
         if (condition(current)) {
-            if (compareAndSet(0, update(current))) {
+            if (compareAndSet(current, update(current))) {
                 return true
             } else continue
         }

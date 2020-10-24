@@ -85,7 +85,7 @@ class ContextualParametersChecker : DeclarationChecker {
         fun checkPermissionNamespace(inspectionTarget: PsiElement, value: String): Diagnostic? {
             return when {
                 value.isBlank() -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "权限命名空间不能为空")
-                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "暂时不允许权限命名空间中存在空格")
+                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "不允许权限命名空间中存在空格")
                 value.contains(':') -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "权限命名空间不允许包含 ':'")
                 else -> null
             }
@@ -94,7 +94,7 @@ class ContextualParametersChecker : DeclarationChecker {
         fun checkPermissionName(inspectionTarget: PsiElement, value: String): Diagnostic? {
             return when {
                 value.isBlank() -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "权限名称不能为空")
-                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "暂时不允许权限名称中存在空格")
+                value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "不允许权限名称中存在空格")
                 value.contains(':') -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "权限名称不允许包含 ':'")
                 else -> null
             }
@@ -108,6 +108,12 @@ class ContextualParametersChecker : DeclarationChecker {
                 else -> null
             }
         }
+
+        @Suppress("UNUSED_PARAMETER")
+        fun checkVersionRequirement(inspectionTarget: PsiElement, value: String): Diagnostic? {
+            // TODO: 2020/10/23  checkVersionRequirement
+            return null
+        }
     }
 
     private val checkersMap: EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?> =
@@ -119,6 +125,7 @@ class ContextualParametersChecker : DeclarationChecker {
             put(ResolveContextKind.PERMISSION_NAME, ::checkPermissionName)
             put(ResolveContextKind.PERMISSION_NAMESPACE, ::checkPermissionNamespace)
             put(ResolveContextKind.PERMISSION_ID, ::checkPermissionId)
+            put(ResolveContextKind.VERSION_REQUIREMENT, ::checkVersionRequirement)
         }
 
     override fun check(

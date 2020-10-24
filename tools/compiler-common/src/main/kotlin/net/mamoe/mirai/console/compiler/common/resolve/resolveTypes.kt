@@ -57,6 +57,8 @@ enum class ResolveContextKind {
     PLUGIN_NAME,
     PLUGIN_VERSION,
 
+    VERSION_REQUIREMENT,
+
     COMMAND_NAME,
 
     PERMISSION_NAMESPACE,

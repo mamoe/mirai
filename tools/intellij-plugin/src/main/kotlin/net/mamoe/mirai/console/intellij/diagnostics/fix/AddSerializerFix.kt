@@ -25,7 +25,7 @@ class AddSerializerFix(
     element: KtClassOrObject,
 ) : KotlinCrossLanguageQuickFixAction<KtModifierListOwner>(element), KotlinUniversalQuickFix {
 
-    override fun getFamilyName(): String = "添加注解"
+    override fun getFamilyName(): String = "Mirai Console"
     override fun getText(): String = "添加 @Serializable"
 
     override fun invokeImpl(project: Project, editor: Editor?, file: PsiFile) {

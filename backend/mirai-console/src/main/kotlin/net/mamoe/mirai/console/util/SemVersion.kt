@@ -22,10 +22,12 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_VERSION
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.VERSION_REQUIREMENT
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.semver.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
 import net.mamoe.mirai.console.util.SemVersion.Requirement
+import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 /**
  * [语义化版本](https://semver.org/lang/zh-CN/) 支持
@@ -138,7 +140,7 @@ internal constructor(
          */
         @Throws(IllegalArgumentException::class)
         @JvmStatic
-        public fun parseRangeRequirement(requirement: String): Requirement =
+        public fun parseRangeRequirement(@ResolveContext(VERSION_REQUIREMENT) requirement: String): Requirement =
             SemVersionInternal.parseRangeRequirement(requirement)
 
         /** @see [Requirement.test] */
@@ -150,6 +152,12 @@ internal constructor(
          */
         @JvmStatic
         public fun SemVersion.satisfies(requirement: Requirement): Boolean = requirement.test(this)
+
+        /**
+         * 当满足 [requirement] 时返回 true, 否则返回 false
+         */
+        @JvmStatic
+        public fun SemVersion.satisfies(@ResolveContext(VERSION_REQUIREMENT) requirement: String): Boolean = parseRangeRequirement(requirement).test(this)
 
         /** for Kotlin only */
         @JvmStatic
@@ -163,7 +171,7 @@ internal constructor(
     }
 
     @Transient
-    private val toString: String by lazy(LazyThreadSafetyMode.NONE) {
+    private val toString: String by lazy(PUBLICATION) {
         buildString {
             append(major)
             append('.').append(minor)
