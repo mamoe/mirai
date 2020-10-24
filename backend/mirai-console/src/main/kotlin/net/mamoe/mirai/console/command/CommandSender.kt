@@ -20,15 +20,14 @@ import kotlinx.coroutines.launch
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.execute
 import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asMemberCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
-import net.mamoe.mirai.console.command.description.CommandArgumentParserException
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.data.castOrNull
+import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.Permittee
@@ -280,6 +279,13 @@ public sealed class AbstractCommandSender : CommandSender, CoroutineScope {
     override suspend fun catchExecutionException(e: Throwable) {
         if (this is CommandSenderOnMessage<*>) {
             val cause = e.rootCauseOrSelf
+
+            // TODO: 2020/10/17
+            //      CommandArgumentParserException 作为 IllegalCommandArgumentException 不会再进入此函数
+            //      已在
+            //       - [console]  CommandManagerImpl.commandListener
+            //       - [terminal] ConsoleThread.kt
+            //      处理
 
             val message = cause
                 .takeIf { it is CommandArgumentParserException }?.message

@@ -14,7 +14,7 @@ package net.mamoe.mirai.console.data
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
+import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.*

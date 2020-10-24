@@ -9,7 +9,7 @@
 
 @file:Suppress("NOTHING_TO_INLINE", "unused")
 
-package net.mamoe.mirai.console.command.description
+package net.mamoe.mirai.console.command.descriptor
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager
@@ -32,27 +32,27 @@ import kotlin.contracts.contract
  * ```
  * suspend fun CommandSender.mute(target: Member, duration: Int)
  * ```
- * [CommandManager] 总是从 [SimpleCommand.context] 搜索一个 [T] 为 [Member] 的 [CommandArgumentParser], 并调用其 [CommandArgumentParser.parse]
+ * [CommandManager] 总是从 [SimpleCommand.context] 搜索一个 [T] 为 [Member] 的 [CommandValueArgumentParser], 并调用其 [CommandValueArgumentParser.parse]
  *
  * ### 内建指令解析器
- * - 基础类型: [ByteArgumentParser], [ShortArgumentParser], [IntArgumentParser], [LongArgumentParser]
- * [FloatArgumentParser], [DoubleArgumentParser],
- * [BooleanArgumentParser], [StringArgumentParser]
+ * - 基础类型: [ByteValueArgumentParser], [ShortValueArgumentParser], [IntValueArgumentParser], [LongValueArgumentParser]
+ * [FloatValueArgumentParser], [DoubleValueArgumentParser],
+ * [BooleanValueArgumentParser], [StringValueArgumentParser]
  *
- * - [Bot]: [ExistingBotArgumentParser]
- * - [Friend]: [ExistingFriendArgumentParser]
- * - [Group]: [ExistingGroupArgumentParser]
- * - [Member]: [ExistingMemberArgumentParser]
- * - [User]: [ExistingUserArgumentParser]
- * - [Contact]: [ExistingContactArgumentParser]
+ * - [Bot]: [ExistingBotValueArgumentParser]
+ * - [Friend]: [ExistingFriendValueArgumentParser]
+ * - [Group]: [ExistingGroupValueArgumentParser]
+ * - [Member]: [ExistingMemberValueArgumentParser]
+ * - [User]: [ExistingUserValueArgumentParser]
+ * - [Contact]: [ExistingContactValueArgumentParser]
  *
  *
  * @see SimpleCommand 简单指令
  * @see CompositeCommand 复合指令
  *
- * @see buildCommandArgumentContext 指令参数环境, 即 [CommandArgumentParser] 的集合
+ * @see buildCommandArgumentContext 指令参数环境, 即 [CommandValueArgumentParser] 的集合
  */
-public interface CommandArgumentParser<out T : Any> {
+public interface CommandValueArgumentParser<out T : Any> {
     /**
      * 解析一个字符串为 [T] 类型参数
      *
@@ -83,14 +83,14 @@ public interface CommandArgumentParser<out T : Any> {
 /**
  * 使用原 [this] 解析, 成功后使用 [mapper] 映射为另一个类型.
  */
-public fun <T : Any, R : Any> CommandArgumentParser<T>.map(
-    mapper: CommandArgumentParser<R>.(T) -> R
-): CommandArgumentParser<R> = MappingCommandArgumentParser(this, mapper)
+public fun <T : Any, R : Any> CommandValueArgumentParser<T>.map(
+    mapper: CommandValueArgumentParser<R>.(T) -> R,
+): CommandValueArgumentParser<R> = MappingCommandValueArgumentParser(this, mapper)
 
-private class MappingCommandArgumentParser<T : Any, R : Any>(
-    private val original: CommandArgumentParser<T>,
-    private val mapper: CommandArgumentParser<R>.(T) -> R
-) : CommandArgumentParser<R> {
+private class MappingCommandValueArgumentParser<T : Any, R : Any>(
+    private val original: CommandValueArgumentParser<T>,
+    private val mapper: CommandValueArgumentParser<R>.(T) -> R,
+) : CommandValueArgumentParser<R> {
     override fun parse(raw: String, sender: CommandSender): R = mapper(original.parse(raw, sender))
     override fun parse(raw: MessageContent, sender: CommandSender): R = mapper(original.parse(raw, sender))
 }
@@ -102,14 +102,14 @@ private class MappingCommandArgumentParser<T : Any, R : Any>(
  */
 @JvmSynthetic
 @Throws(IllegalArgumentException::class)
-public fun <T : Any> CommandArgumentParser<T>.parse(raw: Any, sender: CommandSender): T {
+public fun <T : Any> CommandValueArgumentParser<T>.parse(raw: Any, sender: CommandSender): T {
     contract {
         returns() implies (raw is String || raw is SingleMessage)
     }
 
     return when (raw) {
         is String -> parse(raw, sender)
-        is SingleMessage -> parse(raw, sender)
+        is MessageContent -> parse(raw, sender)
         else -> throw IllegalArgumentException("Illegal raw argument type: ${raw::class.qualifiedName}")
     }
 }
@@ -122,7 +122,7 @@ public fun <T : Any> CommandArgumentParser<T>.parse(raw: Any, sender: CommandSen
 @Suppress("unused")
 @JvmSynthetic
 @Throws(CommandArgumentParserException::class)
-public inline fun CommandArgumentParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing {
+public inline fun CommandValueArgumentParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing {
     throw CommandArgumentParserException(message, cause)
 }
 
@@ -133,9 +133,9 @@ public inline fun CommandArgumentParser<*>.illegalArgument(message: String, caus
  */
 @Throws(CommandArgumentParserException::class)
 @JvmSynthetic
-public inline fun CommandArgumentParser<*>.checkArgument(
+public inline fun CommandValueArgumentParser<*>.checkArgument(
     condition: Boolean,
-    crossinline message: () -> String = { "Check failed." }
+    crossinline message: () -> String = { "Check failed." },
 ) {
     contract {
         returns() implies condition

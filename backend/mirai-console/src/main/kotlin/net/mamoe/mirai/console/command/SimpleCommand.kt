@@ -18,20 +18,23 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
-import net.mamoe.mirai.console.command.description.*
+import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.java.JSimpleCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
-import net.mamoe.mirai.console.internal.command.AbstractReflectionCommand
+import net.mamoe.mirai.console.internal.command.CommandReflector
+import net.mamoe.mirai.console.internal.command.IllegalCommandDeclarationException
 import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import kotlin.annotation.AnnotationTarget.FUNCTION
+import kotlin.annotation.AnnotationTarget.VALUE_PARAMETER
 
 /**
  * 简单的, 支持参数自动解析的指令.
  *
  * 要查看指令解析流程, 参考 [CommandManager.executeCommand]
- * 要查看参数解析方式, 参考 [CommandArgumentParser]
+ * 要查看参数解析方式, 参考 [CommandValueArgumentParser]
  *
  * Kotlin 实现:
  * ```
@@ -58,39 +61,41 @@ public abstract class SimpleCommand(
     parentPermission: Permission = owner.parentPermission,
     prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext,
-) : Command, AbstractReflectionCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
+) : Command, AbstractCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
     CommandArgumentContextAware {
+
+    private val reflector by lazy { CommandReflector(this, SimpleCommandSubCommandAnnotationResolver) }
+
+    @ExperimentalCommandDescriptors
+    public final override val overloads: List<CommandSignatureVariantFromKFunction> by lazy {
+        reflector.findSubCommands().also {
+            if (it.isEmpty())
+                throw IllegalCommandDeclarationException(this, "SimpleCommand must have at least one subcommand, whereas zero present.")
+        }
+    }
 
     /**
      * 自动根据带有 [Handler] 注解的函数签名生成 [usage]. 也可以被覆盖.
      */
-    public override val usage: String get() = super.usage
+    public override val usage: String by lazy {
+        @OptIn(ExperimentalCommandDescriptors::class)
+        reflector.generateUsage(overloads)
+    }
 
     /**
      * 标注指令处理器
      */
+    @Target(FUNCTION)
     protected annotation class Handler
+
+    /** 参数名, 将参与构成 [usage] */
+    @ConsoleExperimentalApi("Classname might change")
+    @Target(VALUE_PARAMETER)
+    protected annotation class Name(val value: String)
 
     /**
      * 指令参数环境. 默认为 [CommandArgumentContext.Builtins] `+` `overrideContext`
      */
     public override val context: CommandArgumentContext = CommandArgumentContext.Builtins + overrideContext
-
-    public final override suspend fun CommandSender.onCommand(args: MessageChain) {
-        subCommands.single().parseAndExecute(this, args, false)
-    }
-
-    internal override fun checkSubCommand(subCommands: Array<SubCommandDescriptor>) {
-        super.checkSubCommand(subCommands)
-        check(subCommands.size == 1) { "There can only be exactly one function annotated with Handler at this moment as overloading is not yet supported." }
-    }
-
-    @Deprecated("prohibited", level = DeprecationLevel.HIDDEN)
-    internal override suspend fun CommandSender.onDefault(rawArgs: MessageChain) {
-        sendMessage(usage)
-    }
-
-    internal final override val subCommandAnnotationResolver: SubCommandAnnotationResolver
-        get() = SimpleCommandSubCommandAnnotationResolver
 }
 

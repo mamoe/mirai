@@ -52,7 +52,7 @@ internal object BuiltInSingletonExtensionSelector : SingletonExtensionSelector {
         val candidatesList = candidates.toList()
 
         for ((index, candidate) in candidatesList.withIndex()) {
-            MiraiConsole.mainLogger.info { "${index + 1}. '${candidate.extension}' from '${candidate.plugin.name}'" }
+            MiraiConsole.mainLogger.info { "${index + 1}. '${candidate.extension}' from '${candidate.plugin?.name ?: "<builtin>"}'" }
         }
 
         MiraiConsole.mainLogger.info { "Please choose a number from 1 to ${candidatesList.count()}" }

@@ -9,13 +9,8 @@
 
 package net.mamoe.mirai.console.command.java
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
-import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 为 Java 用户添加协程帮助的 [Command].
@@ -24,17 +19,7 @@ import net.mamoe.mirai.message.data.MessageChain
  *
  * @see Command
  */
+@ConsoleExperimentalApi("Not yet supported")
 public interface JCommand : Command {
-    public override suspend fun CommandSender.onCommand(args: MessageChain) {
-        withContext(Dispatchers.IO) { onCommand(this@onCommand, args) }
-    }
-
-    /**
-     * 在指令被执行时调用.
-     *
-     * @param args 精确的指令参数. [MessageChain] 每个元素代表一个精确的参数.
-     *
-     * @see CommandManager.executeCommand 查看更多信息
-     */
-    public fun onCommand(sender: CommandSender, args: MessageChain) // overrides blocking bridge
+    // TODO: 2020/10/18 JCommand
 }

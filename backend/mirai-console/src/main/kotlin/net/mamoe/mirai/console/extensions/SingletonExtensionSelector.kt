@@ -29,7 +29,7 @@ import kotlin.reflect.KClass
  */
 public interface SingletonExtensionSelector : FunctionExtension {
     public data class Registry<T : Extension>(
-        val plugin: Plugin,
+        val plugin: Plugin?,
         val extension: T,
     )
 
@@ -55,11 +55,11 @@ public interface SingletonExtensionSelector : FunctionExtension {
                 instances.isEmpty() -> BuiltInSingletonExtensionSelector
                 instances.size == 1 -> {
                     instances.single().also { (plugin, ext) ->
-                        MiraiConsole.mainLogger.info { "Loaded SingletonExtensionSelector: $ext from ${plugin.name}" }
+                        MiraiConsole.mainLogger.info { "Loaded SingletonExtensionSelector: $ext from ${plugin?.name ?: "<builtin>"}" }
                     }.extension
                 }
                 else -> {
-                    error("Found too many SingletonExtensionSelectors: ${instances.joinToString { (p, i) -> "'$i' from '${p.name}'" }}. Check your plugins and ensure there is only one external SingletonExtensionSelectors")
+                    error("Found too many SingletonExtensionSelectors: ${instances.joinToString { (p, i) -> "'$i' from '${p?.name ?: "<builtin>"}'" }}. Check your plugins and ensure there is only one external SingletonExtensionSelectors")
                 }
             }
         }

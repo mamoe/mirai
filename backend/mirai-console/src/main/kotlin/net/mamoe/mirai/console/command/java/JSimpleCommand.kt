@@ -13,10 +13,11 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.SimpleCommand
-import net.mamoe.mirai.console.command.description.CommandArgumentContext
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * Java 实现:
@@ -42,6 +43,7 @@ import net.mamoe.mirai.console.permission.Permission
  * @see SimpleCommand
  * @see [CommandManager.executeCommand]
  */
+@ConsoleExperimentalApi("Not yet supported")
 public abstract class JSimpleCommand(
     owner: CommandOwner,
     @ResolveContext(COMMAND_NAME) primaryName: String,

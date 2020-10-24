@@ -129,10 +129,10 @@ public interface PermissionService<P : Permission> {
     /** [Plugin] 尝试分配的 [PermissionId] 来源 */
     public enum class PluginPermissionIdRequestType {
         /** For [Plugin.parentPermission] */
-        ROOT_PERMISSION,
+        PLUGIN_ROOT_PERMISSION,
 
         /** For [Plugin.permissionId] */
-        PERMISSION_ID
+        NORMAL
     }
 
     public companion object {

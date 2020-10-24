@@ -16,7 +16,6 @@ import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.SerializableValue.Companion.serializableValueWith
 import net.mamoe.mirai.console.data.SerializerAwareValue
 import net.mamoe.mirai.console.data.valueFromKType
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
 import kotlin.contracts.contract
 import kotlin.reflect.KClass
 import kotlin.reflect.KType

@@ -15,18 +15,25 @@ import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.findDuplicate
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
+import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
+import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
+import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.message.data.EmptyMessageChain
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.locks.ReentrantLock
 
-internal object CommandManagerImpl : CommandManager, CoroutineScope by CoroutineScope(MiraiConsole.job) {
+@OptIn(ExperimentalCommandDescriptors::class)
+internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiConsole.childScope("CommandManagerImpl") {
     private val logger: MiraiLogger by lazy {
         MiraiConsole.createLogger("command")
     }
@@ -48,11 +55,11 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     /**
      * 从原始的 command 中解析出 Command 对象
      */
-    internal fun matchCommand(rawCommand: String): Command? {
-        if (rawCommand.startsWith(commandPrefix)) {
-            return requiredPrefixCommandMap[rawCommand.substringAfter(commandPrefix).toLowerCase()]
+    override fun matchCommand(commandName: String): Command? {
+        if (commandName.startsWith(commandPrefix)) {
+            return requiredPrefixCommandMap[commandName.substringAfter(commandPrefix).toLowerCase()]
         }
-        return optionalPrefixCommandMap[rawCommand.toLowerCase()]
+        return optionalPrefixCommandMap[commandName.toLowerCase()]
     }
 
     internal val commandListener: Listener<MessageEvent> by lazy {
@@ -65,12 +72,16 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
         ) {
             val sender = this.toCommandSender()
 
-            when (val result = sender.executeCommand(message)) {
+            when (val result = executeCommand(sender, message)) {
                 is CommandExecuteResult.PermissionDenied -> {
                     if (!result.command.prefixOptional || message.content.startsWith(CommandManager.commandPrefix)) {
                         sender.sendMessage("权限不足")
                         intercept()
                     }
+                }
+                is CommandExecuteResult.IllegalArgument -> {
+                    result.exception.message?.let { sender.sendMessage(it) }
+                    intercept()
                 }
                 is CommandExecuteResult.Success -> {
                     intercept()
@@ -79,7 +90,7 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
                     sender.catchExecutionException(result.exception)
                     intercept()
                 }
-                is CommandExecuteResult.CommandNotFound -> {
+                is CommandExecuteResult.UnresolvedCall -> {
                     // noop
                 }
             }
@@ -90,102 +101,90 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by Coroutine
     ///// IMPL
 
 
-    override val CommandOwner.registeredCommands: List<Command> get() = _registeredCommands.filter { it.owner == this }
+    override fun getRegisteredCommands(owner: CommandOwner): List<Command> = _registeredCommands.filter { it.owner == owner }
     override val allRegisteredCommands: List<Command> get() = _registeredCommands.toList() // copy
     override val commandPrefix: String get() = "/"
-    override fun CommandOwner.unregisterAllCommands() {
-        for (registeredCommand in registeredCommands) {
-            registeredCommand.unregister()
+    override fun unregisterAllCommands(owner: CommandOwner) {
+        for (registeredCommand in getRegisteredCommands(owner)) {
+            unregisterCommand(registeredCommand)
         }
     }
 
-    override fun Command.register(override: Boolean): Boolean {
-        if (this is CompositeCommand) this.subCommands // init lazy
+    override fun registerCommand(command: Command, override: Boolean): Boolean {
+        if (command is CompositeCommand) {
+            command.overloads  // init lazy
+        }
         kotlin.runCatching {
-            this.permission // init lazy
-            this.secondaryNames // init lazy
-            this.description // init lazy
-            this.usage // init lazy
+            command.permission // init lazy
+            command.secondaryNames // init lazy
+            command.description // init lazy
+            command.usage // init lazy
         }.onFailure {
-            throw IllegalStateException("Failed to init command ${this@register}.", it)
+            throw IllegalStateException("Failed to init command ${command}.", it)
         }
 
-        modifyLock.withLock {
+        this@CommandManagerImpl.modifyLock.withLock {
             if (!override) {
-                if (findDuplicate() != null) return false
+                if (command.findDuplicate() != null) return false
             }
-            _registeredCommands.add(this@register)
-            if (this.prefixOptional) {
-                for (name in this.allNames) {
+            this@CommandManagerImpl._registeredCommands.add(command)
+            if (command.prefixOptional) {
+                for (name in command.allNames) {
                     val lowerCaseName = name.toLowerCase()
-                    optionalPrefixCommandMap[lowerCaseName] = this
-                    requiredPrefixCommandMap[lowerCaseName] = this
+                    this@CommandManagerImpl.optionalPrefixCommandMap[lowerCaseName] = command
+                    this@CommandManagerImpl.requiredPrefixCommandMap[lowerCaseName] = command
                 }
             } else {
-                for (name in this.allNames) {
+                for (name in command.allNames) {
                     val lowerCaseName = name.toLowerCase()
-                    optionalPrefixCommandMap.remove(lowerCaseName) // ensure resolution consistency
-                    requiredPrefixCommandMap[lowerCaseName] = this
+                    this@CommandManagerImpl.optionalPrefixCommandMap.remove(lowerCaseName) // ensure resolution consistency
+                    this@CommandManagerImpl.requiredPrefixCommandMap[lowerCaseName] = command
                 }
             }
             return true
         }
     }
 
-    override fun Command.findDuplicate(): Command? =
-        _registeredCommands.firstOrNull { it.allNames intersectsIgnoringCase this.allNames }
+    override fun findDuplicateCommand(command: Command): Command? =
+        _registeredCommands.firstOrNull { it.allNames intersectsIgnoringCase command.allNames }
 
-    override fun Command.unregister(): Boolean = modifyLock.withLock {
-        if (this.prefixOptional) {
-            this.allNames.forEach {
-                optionalPrefixCommandMap.remove(it)
+    override fun unregisterCommand(command: Command): Boolean = modifyLock.withLock {
+        if (command.prefixOptional) {
+            command.allNames.forEach {
+                optionalPrefixCommandMap.remove(it.toLowerCase())
             }
         }
-        this.allNames.forEach {
-            requiredPrefixCommandMap.remove(it)
+        command.allNames.forEach {
+            requiredPrefixCommandMap.remove(it.toLowerCase())
         }
-        _registeredCommands.remove(this)
+        _registeredCommands.remove(command)
     }
 
-    override fun Command.isRegistered(): Boolean = this in _registeredCommands
+    override fun isCommandRegistered(command: Command): Boolean = command in _registeredCommands
+}
 
-    override suspend fun Command.execute(
-        sender: CommandSender,
-        arguments: Message,
-        checkPermission: Boolean
-    ): CommandExecuteResult {
-        return sender.executeCommandInternal(
-            this,
-            arguments.flattenCommandComponents(),
-            primaryName,
-            checkPermission
-        )
+
+// Don't move into CommandManager, compilation error / VerifyError
+@OptIn(ExperimentalCommandDescriptors::class)
+internal suspend fun executeCommandImpl(
+    message: Message,
+    caller: CommandSender,
+    checkPermission: Boolean,
+): CommandExecuteResult {
+    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCall("")
+    val resolved = call.resolve() ?: return CommandExecuteResult.UnresolvedCall(call.calleeName)
+
+    val command = resolved.callee
+
+    if (checkPermission && !command.permission.testPermission(caller)) {
+        return CommandExecuteResult.PermissionDenied(command, call.calleeName)
     }
 
-    override suspend fun Command.execute(
-        sender: CommandSender,
-        arguments: String,
-        checkPermission: Boolean
-    ): CommandExecuteResult {
-        return sender.executeCommandInternal(
-            this,
-            arguments.flattenCommandComponents(),
-            primaryName,
-            checkPermission
-        )
-    }
-
-    override suspend fun CommandSender.executeCommand(
-        message: Message,
-        checkPermission: Boolean
-    ): CommandExecuteResult {
-        val msg = message.asMessageChain().filterIsInstance<MessageContent>()
-        if (msg.isEmpty()) return CommandExecuteResult.CommandNotFound("")
-        return executeCommandInternal(msg, msg[0].content.substringBefore(' '), checkPermission)
-    }
-
-    override suspend fun CommandSender.executeCommand(message: String, checkPermission: Boolean): CommandExecuteResult {
-        if (message.isBlank()) return CommandExecuteResult.CommandNotFound("")
-        return executeCommandInternal(message, message.substringBefore(' '), checkPermission)
+    return try {
+        resolved.calleeSignature.call(resolved)
+        CommandExecuteResult.Success(resolved.callee, call.calleeName, EmptyMessageChain)
+    } catch (e: Throwable) {
+        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call.calleeName, EmptyMessageChain)
     }
 }
+
