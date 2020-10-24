@@ -12,23 +12,22 @@
 package net.mamoe.mirai.console.plugin
 
 import net.mamoe.mirai.console.command.CommandOwner
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.getPluginDescription
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.SemVersion
+import kotlin.DeprecationLevel.ERROR
 
 /**
  * 表示一个 mirai-console 插件.
  *
- * @see PluginManager.enable 启用一个插件
- * @see PluginManager.disable 禁用一个插件
+ * @see PluginManager.enablePlugin 启用一个插件
+ * @see PluginManager.disablePlugin 禁用一个插件
  * @see PluginManager.description 获取一个插件的 [描述][PluginDescription]
  *
- * @see PluginDescription 插件描述， 需由 [PluginLoader] 帮助提供（[PluginLoader.description]）
+ * @see PluginDescription 插件描述， 需由 [PluginLoader] 帮助提供（[PluginLoader.getPluginDescription]）
  * @see JvmPlugin Java, Kotlin 或其他 JVM 平台插件
  * @see PluginFileExtensions 支持文件系统存储的扩展
  *
@@ -38,8 +37,8 @@ public interface Plugin : CommandOwner {
     /**
      * 判断此插件是否已启用
      *
-     * @see PluginManager.enable 启用一个插件
-     * @see PluginManager.disable 禁用一个插件
+     * @see PluginManager.enablePlugin 启用一个插件
+     * @see PluginManager.disablePlugin 禁用一个插件
      */
     public val isEnabled: Boolean
 
@@ -49,32 +48,42 @@ public interface Plugin : CommandOwner {
     public val loader: PluginLoader<*, *>
 }
 
-/**
- * 获取 [PluginDescription]
- */
-public inline val Plugin.description: PluginDescription get() = this.safeLoader.getPluginDescription(this)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@kotlin.internal.LowPriorityInOverloadResolution
+@Deprecated(
+    "Moved to companion for a better Java API. ",
+    ReplaceWith("this.description", "net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.description"),
+    level = ERROR
+)
+public inline val Plugin.description: PluginDescription
+    get() = getPluginDescription(this) // resolved to net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.getDescription
 
 /**
- * 获取 [PluginDescription.name`]
+ * 获取 [PluginDescription.name]
  */
-public inline val Plugin.name: String get() = this.description.name
+public inline val Plugin.name: String get() = getPluginDescription(this).name
+
+/**
+ * 获取 [PluginDescription.id]
+ */
+public inline val Plugin.id: String get() = getPluginDescription(this).id
 
 /**
  * 获取 [PluginDescription.version]
  */
-public inline val Plugin.version: SemVersion get() = this.description.version
+public inline val Plugin.version: SemVersion get() = getPluginDescription(this).version
 
 /**
  * 获取 [PluginDescription.info]
  */
-public inline val Plugin.info: String get() = this.description.info
+public inline val Plugin.info: String get() = getPluginDescription(this).info
 
 /**
  * 获取 [PluginDescription.author]
  */
-public inline val Plugin.author: String get() = this.description.author
+public inline val Plugin.author: String get() = getPluginDescription(this).author
 
 /**
  * 获取 [PluginDescription.dependencies]
  */
-public inline val Plugin.dependencies: Set<PluginDependency> get() = this.description.dependencies
+public inline val Plugin.dependencies: Set<PluginDependency> get() = getPluginDescription(this).dependencies

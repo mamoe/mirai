@@ -105,45 +105,52 @@ public interface PluginManager {
     /**
      * 获取插件的 [描述][PluginDescription], 通过 [PluginLoader.getPluginDescription]
      */
-    public val Plugin.description: PluginDescription
+    public fun getPluginDescription(plugin: Plugin): PluginDescription
 
     /**
      * 禁用这个插件
      *
      * @see PluginLoader.disable
      */
-    public fun Plugin.disable(): Unit = safeLoader.disable(this)
+    public fun disablePlugin(plugin: Plugin): Unit = plugin.safeLoader.disable(plugin)
 
     /**
      * 加载这个插件
      *
      * @see PluginLoader.load
      */
-    public fun Plugin.load(): Unit = safeLoader.load(this)
+    public fun loadPlugin(plugin: Plugin): Unit = plugin.safeLoader.load(plugin)
 
     /**
      * 启用这个插件
      *
      * @see PluginLoader.enable
      */
-    public fun Plugin.enable(): Unit = safeLoader.enable(this)
-
-    /**
-     * 经过泛型类型转换的 [Plugin.loader]
-     */
-    @get:JvmSynthetic
-    @Suppress("UNCHECKED_CAST")
-    public val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
-        get() = this.loader as PluginLoader<P, PluginDescription>
+    public fun enablePlugin(plugin: Plugin): Unit = plugin.safeLoader.enable(plugin)
 
     // endregion
 
     public companion object INSTANCE : PluginManager by PluginManagerImpl {
-        // due to Kotlin's bug
-        public override val Plugin.description: PluginDescription get() = PluginManagerImpl.run { description }
-        public override fun Plugin.disable(): Unit = PluginManagerImpl.run { disable() }
-        public override fun Plugin.enable(): Unit = PluginManagerImpl.run { enable() }
-        public override fun Plugin.load(): Unit = PluginManagerImpl.run { load() }
-        public override val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription> get() = PluginManagerImpl.run { safeLoader }
+        /**
+         * 经过泛型类型转换的 [Plugin.loader]
+         */
+        @get:JvmSynthetic
+        @Suppress("UNCHECKED_CAST")
+        public inline val <P : Plugin> P.safeLoader: PluginLoader<P, PluginDescription>
+            get() = this.loader as PluginLoader<P, PluginDescription>
+
+
+        @get:JvmSynthetic
+        public inline val Plugin.description: PluginDescription
+            get() = getPluginDescription(this)
+
+        @JvmSynthetic
+        public inline fun Plugin.disable(): Unit = disablePlugin(this)
+
+        @JvmSynthetic
+        public inline fun Plugin.enable(): Unit = enablePlugin(this)
+
+        @JvmSynthetic
+        public inline fun Plugin.load(): Unit = loadPlugin(this)
     }
 }
