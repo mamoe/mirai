@@ -48,7 +48,7 @@ internal abstract class JvmPluginInternal(
 
     final override val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
-            PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, "*", PermissionService.PluginPermissionIdRequestType.ROOT_PERMISSION),
+            PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, "*", PermissionService.PluginPermissionIdRequestType.PLUGIN_ROOT_PERMISSION),
             "The base permission"
         )
     }

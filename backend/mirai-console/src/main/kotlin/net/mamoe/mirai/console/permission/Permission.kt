@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.permission
 
 import net.mamoe.mirai.console.command.BuiltInCommands
@@ -65,10 +67,10 @@ public interface Permission {
          * @see RootPermission 推荐 Kotlin 用户使用.
          */
         @JvmStatic
-        public fun getRootPermission(): Permission = PermissionService.INSTANCE.rootPermission
+        public fun getRootPermission(): Permission = RootPermission
 
         /**
-         * 递归获取 [Permission.parent], `permission.parent.parent`, permission.parent.parent` ... 直到 [Permission.parent] 为它自己.
+         * 递归获取 [Permission.parent], `permission.parent.parent`, permission.parent.parent.parent` ... 直到 [Permission.parent] 为它自己.
          */
         @get:JvmStatic
         public val Permission.parentsWithSelf: Sequence<Permission>
@@ -82,5 +84,5 @@ public interface Permission {
  * 根权限. 是所有权限的父权限. 权限 ID 为 "*:*"
  */
 @get:JvmSynthetic
-public val RootPermission: Permission
+public inline val RootPermission: Permission // It might be removed in the future, so make it inline to avoid ABI changes.
     get() = PermissionService.INSTANCE.rootPermission
