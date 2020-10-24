@@ -19,8 +19,9 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageChainBuilder
+import net.mamoe.mirai.message.data.buildMessageChain
 
 /**
  * 无参数解析, 接收原生参数的指令.
@@ -58,11 +59,11 @@ public abstract class RawCommand(
     override val overloads: List<CommandSignatureVariant> = listOf(
         CommandSignatureVariantImpl(
             receiverParameter = CommandReceiverParameter(false, typeOf0<CommandSender>()),
-            valueParameters = listOf(AbstractCommandValueParameter.UserDefinedType.createRequired<MessageChain>("args", true))
+            valueParameters = listOf(AbstractCommandValueParameter.UserDefinedType.createRequired<Array<out Message>>("args", true))
         ) { call ->
             val sender = call.caller
             val arguments = call.rawValueArguments
-            sender.onCommand(arguments.mapTo(MessageChainBuilder()) { it.value }.build())
+            sender.onCommand(buildMessageChain { arguments.forEach { +it.value } })
         }
     )
 

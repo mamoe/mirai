@@ -6,9 +6,12 @@ import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isNotAcceptable
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
+import net.mamoe.mirai.console.command.parse.DefaultCommandValueArgument
 import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.safeCast
+import net.mamoe.mirai.message.data.EmptyMessageChain
+import net.mamoe.mirai.message.data.asMessageChain
 
 /**
  * Builtin implementation of [CommandCallResolver]
@@ -26,11 +29,16 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
 
         val signature = resolveImpl(callee, valueArguments, context) ?: return null
 
-        return ResolvedCommandCallImpl(call.caller, callee, signature, call.valueArguments, context ?: EmptyCommandArgumentContext)
+        return ResolvedCommandCallImpl(call.caller,
+            callee,
+            signature.variant,
+            signature.zippedArguments.map { it.second },
+            context ?: EmptyCommandArgumentContext)
     }
 
     private data class ResolveData(
         val variant: CommandSignatureVariant,
+        val zippedArguments: List<Pair<AbstractCommandValueParameter<*>, CommandValueArgument>>,
         val argumentAcceptances: List<ArgumentAcceptanceWithIndex>,
         val remainingParameters: List<AbstractCommandValueParameter<*>>,
     ) {
@@ -46,32 +54,60 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
         callee: Command,
         valueArguments: List<CommandValueArgument>,
         context: CommandArgumentContext?,
-    ): CommandSignatureVariant? {
+    ): ResolveData? {
+
 
         callee.overloads
             .mapNotNull l@{ signature ->
-                val zipped = signature.valueParameters.zip(valueArguments)
+                val valueParameters = signature.valueParameters
 
-                val remaining = signature.valueParameters.drop(zipped.size)
+                val zipped = valueParameters.zip(valueArguments).toMutableList()
 
-                if (remaining.any { !it.isOptional }) return@l null // not enough args
+                val remainingParameters = valueParameters.drop(zipped.size).toMutableList()
 
-                ResolveData(
-                    variant = signature,
-                    argumentAcceptances = zipped.mapIndexed { index, (parameter, argument) ->
-                        val accepting = parameter.accepting(argument, context)
-                        if (accepting.isNotAcceptable) {
-                            return@l null // argument type not assignable
+                if (remainingParameters.any { !it.isOptional && !it.isVararg }) return@l null // not enough args. // vararg can be empty.
+
+                if (zipped.isEmpty()) {
+                    ResolveData(
+                        variant = signature,
+                        zippedArguments = emptyList(),
+                        argumentAcceptances = emptyList(),
+                        remainingParameters = remainingParameters,
+                    )
+                } else {
+                    if (valueArguments.size > valueParameters.size && zipped.last().first.isVararg) {
+                        // merge vararg arguments
+                        val (varargParameter, varargFirstArgument)
+                            = zipped.removeLast()
+
+                        zipped.add(varargParameter to DefaultCommandValueArgument(valueArguments.drop(zipped.size).map { it.value }.asMessageChain()))
+                    } else {
+                        // add default empty vararg argument
+                        val remainingVararg = remainingParameters.find { it.isVararg }
+                        if (remainingVararg != null) {
+                            zipped.add(remainingVararg to DefaultCommandValueArgument(EmptyMessageChain))
+                            remainingParameters.remove(remainingVararg)
                         }
-                        ArgumentAcceptanceWithIndex(index, accepting)
-                    },
-                    remainingParameters = remaining
-                )
+                    }
+
+                    ResolveData(
+                        variant = signature,
+                        zippedArguments = zipped,
+                        argumentAcceptances = zipped.mapIndexed { index, (parameter, argument) ->
+                            val accepting = parameter.accepting(argument, context)
+                            if (accepting.isNotAcceptable) {
+                                return@l null // argument type not assignable
+                            }
+                            ArgumentAcceptanceWithIndex(index, accepting)
+                        },
+                        remainingParameters = remainingParameters
+                    )
+                }
             }
-            .also { result -> result.singleOrNull()?.let { return it.variant } }
+            .also { result -> result.singleOrNull()?.let { return it } }
             .takeLongestMatches()
             .ifEmpty { return null }
-            .also { result -> result.singleOrNull()?.let { return it.variant } }
+            .also { result -> result.singleOrNull()?.let { return it } }
             // take single ArgumentAcceptance.Direct
             .also { list ->
 
@@ -79,7 +115,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                     .flatMap { phase ->
                         phase.argumentAcceptances.filter { it.acceptance is ArgumentAcceptance.Direct }.map { phase to it }
                     }
-                candidates.singleOrNull()?.let { return it.first.variant } // single Direct
+                candidates.singleOrNull()?.let { return it.first } // single Direct
                 if (candidates.distinctBy { it.second.index }.size != candidates.size) {
                     // Resolution ambiguity
                     /*

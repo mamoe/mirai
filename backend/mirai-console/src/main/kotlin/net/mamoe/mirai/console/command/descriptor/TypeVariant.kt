@@ -11,11 +11,10 @@ package net.mamoe.mirai.console.command.descriptor
 
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandCallParser
-import net.mamoe.mirai.console.command.parse.RawCommandArgument
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageContent
-import net.mamoe.mirai.message.data.asMessageChain
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.console.command.parse.CommandValueArgument
+import net.mamoe.mirai.console.internal.data.castOrNull
+import net.mamoe.mirai.console.internal.data.kClassQualifiedName
+import net.mamoe.mirai.message.data.*
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
@@ -31,15 +30,18 @@ public interface TypeVariant<out OutType> {
      */
     public val outType: KType
 
-    public fun mapValue(valueParameter: MessageContent): OutType
+    /**
+     * @see CommandValueArgument.value
+     */
+    public fun mapValue(valueParameter: Message): OutType
 
     public companion object {
         @OptIn(ExperimentalStdlibApi::class)
         @JvmSynthetic
-        public inline operator fun <reified OutType> invoke(crossinline block: (valueParameter: RawCommandArgument) -> OutType): TypeVariant<OutType> {
+        public inline operator fun <reified OutType> invoke(crossinline block: (valueParameter: Message) -> OutType): TypeVariant<OutType> {
             return object : TypeVariant<OutType> {
                 override val outType: KType = typeOf<OutType>()
-                override fun mapValue(valueParameter: MessageContent): OutType = block(valueParameter)
+                override fun mapValue(valueParameter: Message): OutType = block(valueParameter)
             }
         }
     }
@@ -49,19 +51,20 @@ public interface TypeVariant<out OutType> {
 public object MessageContentTypeVariant : TypeVariant<MessageContent> {
     @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<MessageContent>()
-    override fun mapValue(valueParameter: MessageContent): MessageContent = valueParameter
+    override fun mapValue(valueParameter: Message): MessageContent =
+        valueParameter.castOrNull<MessageContent>() ?: error("Accepts MessageContent only but given ${valueParameter.kClassQualifiedName}")
 }
 
 @ExperimentalCommandDescriptors
 public object MessageChainTypeVariant : TypeVariant<MessageChain> {
     @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<MessageChain>()
-    override fun mapValue(valueParameter: MessageContent): MessageChain = valueParameter.asMessageChain()
+    override fun mapValue(valueParameter: Message): MessageChain = valueParameter.asMessageChain()
 }
 
 @ExperimentalCommandDescriptors
 public object ContentStringTypeVariant : TypeVariant<String> {
     @OptIn(ExperimentalStdlibApi::class)
     override val outType: KType = typeOf<String>()
-    override fun mapValue(valueParameter: MessageContent): String = valueParameter.content
+    override fun mapValue(valueParameter: Message): String = valueParameter.content
 }

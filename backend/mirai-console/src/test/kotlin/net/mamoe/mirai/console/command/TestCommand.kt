@@ -31,10 +31,7 @@ import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertSame
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 object TestCompositeCommand : CompositeCommand(
     ConsoleCommandOwner,
@@ -293,6 +290,47 @@ internal class TestCommand {
             }
         }
     }
+
+    @Test
+    fun `test vararg`() {
+        runBlocking {
+            val optionCommand = object : CompositeCommand(
+                ConsoleCommandOwner,
+                "test"
+            ) {
+                @SubCommand
+                fun vararg(arg1: Int, vararg x: String) {
+                    assertEquals(1, arg1)
+                    Testing.ok(x)
+                }
+            }
+            optionCommand.withRegistration {
+                assertArrayEquals(
+                    emptyArray<String>(),
+                    withTesting {
+                        assertSuccess(sender.executeCommand("/test vararg 1"))
+                    }
+                )
+
+                assertArrayEquals(
+                    arrayOf("s"),
+                    withTesting<Array<String>> {
+                        assertSuccess(sender.executeCommand("/test vararg 1 s"))
+                    }
+                )
+                assertArrayEquals(
+                    arrayOf("s", "s", "s"),
+                    withTesting {
+                        assertSuccess(sender.executeCommand("/test vararg 1 s s s"))
+                    }
+                )
+            }
+        }
+    }
+}
+
+fun <T> assertArrayEquals(expected: Array<out T>, actual: Array<out T>, message: String? = null) {
+    asserter.assertEquals(message, expected.contentToString(), actual.contentToString())
 }
 
 @OptIn(ExperimentalCommandDescriptors::class)

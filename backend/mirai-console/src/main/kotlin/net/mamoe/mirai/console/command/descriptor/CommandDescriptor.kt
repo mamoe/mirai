@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.internal.data.classifierAsKClassOrNull
+import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -173,6 +174,9 @@ public class CommandReceiverParameter<T : CommandSender>(
 }
 
 
+internal val ANY_TYPE = typeOf0<Any>()
+internal val ARRAY_OUT_ANY_TYPE = typeOf0<Array<out Any?>>()
+
 @ExperimentalCommandDescriptors
 public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>, AbstractCommandParameter<T>() {
     override fun toString(): String = buildString {
@@ -184,8 +188,19 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
     }
 
     public override fun accepting(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
-        val expectingType = this.type
+        if (isVararg) {
+            val arrayElementType = this.type.arguments.single() // Array<T>
+            return acceptingImpl(arrayElementType.type ?: ANY_TYPE, argument, commandArgumentContext)
+        }
 
+        return acceptingImpl(this.type, argument, commandArgumentContext)
+    }
+
+    private fun acceptingImpl(
+        expectingType: KType,
+        argument: CommandValueArgument,
+        commandArgumentContext: CommandArgumentContext?,
+    ): ArgumentAcceptance {
         if (argument.type.isSubtypeOf(expectingType)) return ArgumentAcceptance.Direct
 
         argument.typeVariants.associateWith { typeVariant ->
@@ -239,8 +254,12 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
     ) : AbstractCommandValueParameter<T>() {
         init {
             requireNotNull(type.classifierAsKClassOrNull()) {
-                "CommandReceiverParameter.type.classifier must be KClass."
+                "type.classifier must be KClass."
             }
+            if (isVararg)
+                check(type.isSubtypeOf(ARRAY_OUT_ANY_TYPE)) {
+                    "type must be subtype of Array if vararg. Given $type."
+                }
         }
 
         public companion object {

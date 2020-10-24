@@ -12,17 +12,17 @@
 package net.mamoe.mirai.console.command.parse
 
 import net.mamoe.mirai.console.command.descriptor.*
+import net.mamoe.mirai.console.internal.data.castOrInternalError
+import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageContent
+import net.mamoe.mirai.message.data.SingleMessage
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.typeOf
 
-
-/**
- * For developing use, to be inlined in the future.
- */
-public typealias RawCommandArgument = MessageContent
 
 /**
  * @see CommandValueArgument
@@ -36,7 +36,12 @@ public interface CommandArgument
 @ExperimentalCommandDescriptors
 public interface CommandValueArgument : CommandArgument {
     public val type: KType
-    public val value: RawCommandArgument
+
+    /**
+     * [MessageContent] if single argument
+     * [MessageChain] is vararg
+     */
+    public val value: Message
     public val typeVariants: List<TypeVariant<*>>
 }
 
@@ -46,7 +51,7 @@ public interface CommandValueArgument : CommandArgument {
 @ConsoleExperimentalApi
 @ExperimentalCommandDescriptors
 public data class DefaultCommandValueArgument(
-    public override val value: RawCommandArgument,
+    public override val value: Message,
 ) : CommandValueArgument {
     @OptIn(ExperimentalStdlibApi::class)
     override val type: KType = typeOf<MessageContent>()
@@ -73,6 +78,38 @@ public fun <T> CommandValueArgument.mapToType(type: KType): T =
 
 @ExperimentalCommandDescriptors
 public fun <T> CommandValueArgument.mapToTypeOrNull(expectingType: KType): T? {
+    if (expectingType.isSubtypeOf(ARRAY_OUT_ANY_TYPE)) {
+        val arrayElementType = expectingType.arguments.single().type ?: ANY_TYPE
+
+        val result = ArrayList<Any?>()
+
+        when (val value = value) {
+            is MessageChain -> {
+                for (message in value) {
+                    result.add(mapToTypeOrNullImpl(arrayElementType, message))
+                }
+            }
+            else -> { // single
+                value.castOrInternalError<SingleMessage>()
+                result.add(mapToTypeOrNullImpl(arrayElementType, value))
+            }
+        }
+
+
+        @Suppress("UNCHECKED_CAST")
+        return result.toArray(arrayElementType.createArray(result.size)) as T
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    return mapToTypeOrNullImpl(expectingType, value) as T
+}
+
+private fun KType.createArray(size: Int): Array<Any?> {
+    return java.lang.reflect.Array.newInstance(this.classifierAsKClass().javaObjectType, size).castOrInternalError()
+}
+
+@OptIn(ExperimentalCommandDescriptors::class)
+private fun CommandValueArgument.mapToTypeOrNullImpl(expectingType: KType, value: Message): Any? {
     @OptIn(ExperimentalStdlibApi::class)
     val result = typeVariants
         .filter { it.outType.isSubtypeOf(expectingType) }
@@ -85,7 +122,7 @@ public fun <T> CommandValueArgument.mapToTypeOrNull(expectingType: KType): T? {
             else typeVariant
         }
     @Suppress("UNCHECKED_CAST")
-    return result.mapValue(value) as T
+    return result.mapValue(value)
 }
 
 @ExperimentalCommandDescriptors
