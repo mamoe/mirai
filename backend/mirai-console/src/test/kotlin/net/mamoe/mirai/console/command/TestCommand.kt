@@ -164,8 +164,8 @@ internal class TestCommand {
     @Test
     fun `composite command descriptors`() {
         val overloads = TestCompositeCommand.overloads
-        assertEquals("CommandSignatureVariant(seconds: Int = ...)", overloads[0].toString())
-        assertEquals("CommandSignatureVariant(target: Long, seconds: Int)", overloads[1].toString())
+        assertEquals("CommandSignatureVariant(<mute>, seconds: Int = ...)", overloads[0].toString())
+        assertEquals("CommandSignatureVariant(<mute>, target: Long, seconds: Int)", overloads[1].toString())
     }
 
     @Test
@@ -225,6 +225,7 @@ internal class TestCommand {
                         }
 
                         override fun parse(raw: MessageContent, sender: CommandSender): MyClass {
+                            if (raw is PlainText) return parse(raw.content, sender)
                             assertSame(image, raw)
                             return MyClass(2)
                         }
@@ -238,7 +239,7 @@ internal class TestCommand {
             }
 
             composite.withRegistration {
-                assertEquals(333, withTesting<MyClass> { execute(sender, "mute 333") }.value)
+                assertEquals(333, withTesting<MyClass> { assertSuccess(execute(sender, "mute 333")) }.value)
                 assertEquals(2, withTesting<MyClass> {
                     assertSuccess(
                         execute(sender, buildMessageChain {

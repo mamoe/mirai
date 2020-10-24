@@ -8,9 +8,7 @@ import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.console.util.cast
 import net.mamoe.mirai.console.util.safeCast
-import java.util.*
 
 /**
  * Builtin implementation of [CommandCallResolver]
@@ -34,7 +32,10 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
     private data class ResolveData(
         val variant: CommandSignatureVariant,
         val argumentAcceptances: List<ArgumentAcceptanceWithIndex>,
-    )
+        val remainingParameters: List<AbstractCommandValueParameter<*>>,
+    ) {
+        val remainingOptionalCount: Int = remainingParameters.count { it.isOptional }
+    }
 
     private data class ArgumentAcceptanceWithIndex(
         val index: Int,
@@ -51,15 +52,21 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
             .mapNotNull l@{ signature ->
                 val zipped = signature.valueParameters.zip(valueArguments)
 
-                if (signature.valueParameters.drop(zipped.size).any { !it.isOptional }) return@l null // not enough args
+                val remaining = signature.valueParameters.drop(zipped.size)
 
-                ResolveData(signature, zipped.mapIndexed { index, (parameter, argument) ->
-                    val accepting = parameter.accepting(argument, context)
-                    if (accepting.isNotAcceptable) {
-                        return@l null // argument type not assignable
-                    }
-                    ArgumentAcceptanceWithIndex(index, accepting)
-                })
+                if (remaining.any { !it.isOptional }) return@l null // not enough args
+
+                ResolveData(
+                    variant = signature,
+                    argumentAcceptances = zipped.mapIndexed { index, (parameter, argument) ->
+                        val accepting = parameter.accepting(argument, context)
+                        if (accepting.isNotAcceptable) {
+                            return@l null // argument type not assignable
+                        }
+                        ArgumentAcceptanceWithIndex(index, accepting)
+                    },
+                    remainingParameters = remaining
+                )
             }
             .also { result -> result.singleOrNull()?.let { return it.variant } }
             .takeLongestMatches()
@@ -117,11 +124,13 @@ fun main() {
 }
      */
 
-    private fun List<ResolveData>.takeLongestMatches(): List<ResolveData> {
+    private fun List<ResolveData>.takeLongestMatches(): Collection<ResolveData> {
         if (isEmpty()) return emptyList()
-        return associateByTo(TreeMap(Comparator.reverseOrder())) { it.variant.valueParameters.size }.let { m ->
-            val firstKey = m.keys.first().cast<Int>()
-            m.filter { it.key == firstKey }.map { it.value.cast() }
+        return associateWith {
+            it.variant.valueParameters.size - it.remainingOptionalCount * 1.001 // slightly lower priority with optional defaults.
+        }.let { m ->
+            val maxMatch = m.values.maxByOrNull { it }
+            m.filter { it.value == maxMatch }.keys
         }
     }
 }
