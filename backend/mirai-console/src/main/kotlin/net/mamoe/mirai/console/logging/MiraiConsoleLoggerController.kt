@@ -11,6 +11,7 @@
 package net.mamoe.mirai.console.logging
 
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
@@ -36,6 +37,10 @@ public interface MiraiConsoleLoggerController {
      * - 应当直接创建一个新的 [MiraiLogger], 且不进行任何持久性操作,
      *   例如 放置到字段, 放入任意集合 等
      * - 即不需要在此方法中把 [MiraiLogger] 放入任意缓存
+     *
+     * * **注意**: [MiraiConsole] 会将 [net.mamoe.mirai.utils.DefaultLogger] 设置为 `MiraiConsole::createLogger`.
+     * `MiraiConsole::createLogger` 会使用 [MiraiConsoleLoggerController.newLogger]
+     * 因此不要在 [newLogger] 中调用 [net.mamoe.mirai.utils.DefaultLogger]
      */
     public fun newLogger(identity: String?): MiraiLogger
     /**
