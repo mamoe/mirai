@@ -17,8 +17,8 @@ import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.permission.checkType
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.plugin.Plugin
-import net.mamoe.mirai.console.plugin.description
-import net.mamoe.mirai.console.plugin.name
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.description
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.reflect.KClass
 
 /**
@@ -93,6 +93,7 @@ public interface PermissionService<P : Permission> {
     ): P
 
     /** 为 [Plugin] 分配一个 [PermissionId] */
+    @ConsoleExperimentalApi
     public fun allocatePermissionIdForPlugin(
         plugin: Plugin,
         @ResolveContext(COMMAND_NAME) permissionName: String,
@@ -127,6 +128,7 @@ public interface PermissionService<P : Permission> {
     public fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean)
 
     /** [Plugin] 尝试分配的 [PermissionId] 来源 */
+    @ConsoleExperimentalApi
     public enum class PluginPermissionIdRequestType {
         /** For [Plugin.parentPermission] */
         PLUGIN_ROOT_PERMISSION,
