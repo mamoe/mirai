@@ -15,7 +15,7 @@ import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
 import net.mamoe.mirai.utils.SimpleLogger
 
 internal class MiraiConsoleLogger(
-    private val controller: MiraiConsoleLoggerController,
+    private val controller: LoggerController,
     val logger: MiraiLogger
 ) : MiraiLoggerPlatformBase() {
     override val identity: String? get() = logger.identity

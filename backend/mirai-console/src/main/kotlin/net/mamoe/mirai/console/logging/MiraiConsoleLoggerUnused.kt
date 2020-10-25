@@ -14,7 +14,7 @@ import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
 
 internal class MiraiConsoleLoggerUnused(
-    val controller: MiraiConsoleLoggerController,
+    val controller: LoggerController,
     override val identity: String?
 ) : MiraiLoggerPlatformBase() {
     internal object InitializeLock

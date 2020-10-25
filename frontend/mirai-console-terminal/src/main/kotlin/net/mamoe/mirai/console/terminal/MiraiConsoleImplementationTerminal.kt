@@ -33,8 +33,8 @@ import net.mamoe.mirai.console.MiraiConsoleFrontEndDescription
 import net.mamoe.mirai.console.MiraiConsoleImplementation
 import net.mamoe.mirai.console.data.MultiFilePluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
-import net.mamoe.mirai.console.logging.MiraiConsoleLoggerController
-import net.mamoe.mirai.console.logging.MiraiConsoleLoggerControllerForFrontend
+import net.mamoe.mirai.console.logging.LoggerController
+import net.mamoe.mirai.console.logging.LoggerControllerForFrontend
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.terminal.ConsoleInputImpl.requestInput
@@ -83,7 +83,7 @@ class MiraiConsoleImplementationTerminal
         return DefaultLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
-    override val loggerController: MiraiConsoleLoggerController = object : MiraiConsoleLoggerControllerForFrontend() {
+    override val loggerController: LoggerController = object : LoggerControllerForFrontend() {
         override fun newLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
     }
 

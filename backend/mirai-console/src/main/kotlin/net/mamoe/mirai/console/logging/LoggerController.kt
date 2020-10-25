@@ -20,12 +20,12 @@ import java.util.concurrent.atomic.AtomicReference
 /**
  * 日志控制系统
  *
- * @see [MiraiConsoleLoggerControllerPlatformBase]
- * @see [MiraiConsoleLoggerControllerForFrontend]
+ * @see [LoggerControllerPlatformBase]
+ * @see [LoggerControllerForFrontend]
  */
 @ConsoleExperimentalApi
 @ConsoleFrontEndImplementation
-public interface MiraiConsoleLoggerController {
+public interface LoggerController {
     /** 是否应该记录该等级的日志 */
     public fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean
     /** 是否应该对 [newLogger] 的结果进行缓存 */
@@ -39,7 +39,7 @@ public interface MiraiConsoleLoggerController {
      * - 即不需要在此方法中把 [MiraiLogger] 放入任意缓存
      *
      * * **注意**: [MiraiConsole] 会将 [net.mamoe.mirai.utils.DefaultLogger] 设置为 `MiraiConsole::createLogger`.
-     * `MiraiConsole::createLogger` 会使用 [MiraiConsoleLoggerController.newLogger]
+     * `MiraiConsole::createLogger` 会使用 [LoggerController.newLogger]
      * 因此不要在 [newLogger] 中调用 [net.mamoe.mirai.utils.DefaultLogger]
      */
     public fun newLogger(identity: String?): MiraiLogger

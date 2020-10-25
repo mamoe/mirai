@@ -38,8 +38,8 @@ import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
-import net.mamoe.mirai.console.logging.MiraiConsoleLoggerController
-import net.mamoe.mirai.console.logging.MiraiConsoleLoggerControllerForFrontend
+import net.mamoe.mirai.console.logging.LoggerController
+import net.mamoe.mirai.console.logging.LoggerControllerForFrontend
 import net.mamoe.mirai.console.logging.MiraiConsoleLoggerUnused
 import net.mamoe.mirai.console.logging.MiraiDelegateLogger
 import net.mamoe.mirai.console.permission.PermissionService
@@ -87,7 +87,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
     override val configStorageForBuiltIns: PluginDataStorage by instance::configStorageForBuiltIns
     override val consoleInput: ConsoleInput by instance::consoleInput
-    override val loggerController: MiraiConsoleLoggerController by instance::loggerController
+    override val loggerController: LoggerController by instance::loggerController
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
         instance.createLoginSolver(requesterBot, configuration)
@@ -108,7 +108,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     @Suppress("RemoveRedundantBackticks")
     internal fun doStart() {
         phase `setup logger controller`@{
-            if (loggerController is MiraiConsoleLoggerControllerForFrontend) {
+            if (loggerController is LoggerControllerForFrontend) {
                 ConsoleDataScope.addAndReloadConfig(LoggerConfig)
             }
         }

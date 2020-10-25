@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference
 @Suppress("MemberVisibilityCanBePrivate")
 @ConsoleExperimentalApi
 @ConsoleFrontEndImplementation
-public abstract class MiraiConsoleLoggerControllerPlatformBase : MiraiConsoleLoggerController {
+public abstract class LoggerControllerPlatformBase : LoggerController {
 
     override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean = true
     override val cacheLoggers: Boolean get() = true
