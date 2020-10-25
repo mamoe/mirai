@@ -25,10 +25,10 @@ import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegistered
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.permission.PermissionService.Companion.denyPermission
+import net.mamoe.mirai.console.permission.PermissionService.Companion.cancel
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
 import net.mamoe.mirai.console.permission.PermissionService.Companion.getPermittedPermissions
-import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
+import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
@@ -170,7 +170,7 @@ public object BuiltInCommands {
             @Name("被许可人 ID") target: PermitteeId,
             @Name("权限 ID") permission: Permission,
         ) {
-            target.grantPermission(permission)
+            target.permit(permission)
             sendMessage("OK")
         }
 
@@ -180,7 +180,7 @@ public object BuiltInCommands {
             @Name("被许可人 ID") target: PermitteeId,
             @Name("权限 ID") permission: Permission,
         ) {
-            target.denyPermission(permission, false)
+            target.cancel(permission, false)
             sendMessage("OK")
         }
 
@@ -190,7 +190,7 @@ public object BuiltInCommands {
             @Name("被许可人 ID") target: PermitteeId,
             @Name("权限 ID") permission: Permission,
         ) {
-            target.denyPermission(permission, true)
+            target.cancel(permission, true)
             sendMessage("OK")
         }
 
