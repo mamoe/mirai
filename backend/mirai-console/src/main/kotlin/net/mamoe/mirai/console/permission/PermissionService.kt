@@ -139,15 +139,15 @@ public interface PermissionService<P : Permission> {
     public fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean)
 
     public companion object {
-        internal var instanceField: PermissionService<*>? = null
-
         /**
          * [PermissionService] 实例
+         *
+         * @see PermissionServiceProvider.selectedInstance
          */
         @get:JvmName("getInstance")
         @JvmStatic
         public val INSTANCE: PermissionService<out Permission>
-            get() = instanceField ?: error("PermissionService is not yet initialized therefore cannot be used.")
+            get() = PermissionServiceProvider.selectedInstance
 
         /**
          * 获取一个权限, 失败时抛出 [NoSuchElementException]

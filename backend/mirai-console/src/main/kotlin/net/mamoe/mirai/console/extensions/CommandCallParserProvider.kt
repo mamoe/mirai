@@ -12,14 +12,24 @@ package net.mamoe.mirai.console.extensions
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser
 import net.mamoe.mirai.console.command.parse.SpaceSeparatedCommandCallParser
+import net.mamoe.mirai.console.extension.AbstractInstanceExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
-import net.mamoe.mirai.console.extension.InstanceExtensionPoint
 
 /**
  * The provider of [CommandCallParser]
  */
 @ExperimentalCommandDescriptors
-public open class CommandCallParserProvider(override val instance: CommandCallParser) : InstanceExtension<CommandCallParser> {
+public interface CommandCallParserProvider : InstanceExtension<CommandCallParser> {
     public companion object ExtensionPoint :
-        InstanceExtensionPoint<CommandCallParserProvider, CommandCallParser>(CommandCallParserProvider::class, SpaceSeparatedCommandCallParser.Provider)
+        AbstractInstanceExtensionPoint<CommandCallParserProvider, CommandCallParser>(CommandCallParserProvider::class,
+            SpaceSeparatedCommandCallParser.Provider)
+}
+
+
+@ExperimentalCommandDescriptors
+public class CommandCallParserProviderImpl(override val instance: CommandCallParser) : CommandCallParserProvider
+
+@ExperimentalCommandDescriptors
+public class LazyCommandCallParserProviderImpl(instanceCalculator: () -> CommandCallParser) : CommandCallParserProvider {
+    override val instance: CommandCallParser by lazy(instanceCalculator)
 }

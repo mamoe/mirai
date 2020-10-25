@@ -9,9 +9,9 @@
 
 package net.mamoe.mirai.console.extensions
 
-import net.mamoe.mirai.console.extension.AbstractExtensionPoint
+import net.mamoe.mirai.console.extension.AbstractSingletonExtensionPoint
 import net.mamoe.mirai.console.extension.SingletonExtension
-import net.mamoe.mirai.console.extension.SingletonExtensionPoint
+import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.permission.PermissionService
 
 /**
@@ -21,8 +21,7 @@ import net.mamoe.mirai.console.permission.PermissionService
  */
 public interface PermissionServiceProvider : SingletonExtension<PermissionService<*>> {
     public companion object ExtensionPoint :
-        AbstractExtensionPoint<PermissionServiceProvider>(PermissionServiceProvider::class),
-        SingletonExtensionPoint<PermissionServiceProvider>
+        AbstractSingletonExtensionPoint<PermissionServiceProvider, PermissionService<*>>(PermissionServiceProvider::class, BuiltInPermissionService)
 }
 
 /**

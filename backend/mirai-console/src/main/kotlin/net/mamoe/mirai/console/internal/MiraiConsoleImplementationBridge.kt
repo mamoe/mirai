@@ -163,9 +163,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
 
-            PermissionService.instanceField = GlobalComponentStorage.run {
-                PermissionServiceProvider.findSingletonInstance(BuiltInPermissionService)
-            }
+            PermissionServiceProvider.selectedInstance // init
 
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {

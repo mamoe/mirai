@@ -3,6 +3,7 @@ package net.mamoe.mirai.console.command.parse
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.extensions.CommandCallParserProvider
+import net.mamoe.mirai.console.extensions.CommandCallParserProviderImpl
 import net.mamoe.mirai.console.internal.command.flattenCommandComponents
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.MessageChain
@@ -22,5 +23,5 @@ public object SpaceSeparatedCommandCallParser : CommandCallParser {
         )
     }
 
-    public object Provider : CommandCallParserProvider(SpaceSeparatedCommandCallParser)
+    public object Provider : CommandCallParserProvider by CommandCallParserProviderImpl(SpaceSeparatedCommandCallParser)
 }
