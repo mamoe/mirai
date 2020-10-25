@@ -217,7 +217,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         }
 
         GlobalComponentStorage.run {
-            PostStartupExtension.useExtensions { it() }
+            PostStartupExtension.useExtensions { it() } // exceptions thrown will be caught by caller of `doStart`.
         }
 
         mainLogger.info { "mirai-console started successfully." }

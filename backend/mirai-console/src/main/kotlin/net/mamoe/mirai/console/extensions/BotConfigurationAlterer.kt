@@ -21,6 +21,7 @@ import net.mamoe.mirai.utils.BotConfiguration
  *
  * @see MiraiConsole.addBot
  */
+@Suppress("SpellCheckingInspection") // alterer
 public fun interface BotConfigurationAlterer : FunctionExtension {
 
     /**

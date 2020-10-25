@@ -37,6 +37,7 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
  * 直接实现接口 [PluginLoader] 或 [FilePluginLoader], 并注册 [PluginLoaderProvider]
  *
  * @see JvmPluginLoader Jar 插件加载器
+ * @see PluginLoaderProvider 扩展
  */
 public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**

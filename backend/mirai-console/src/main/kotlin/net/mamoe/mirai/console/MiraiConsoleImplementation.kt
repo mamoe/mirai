@@ -30,6 +30,7 @@ import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.system.exitProcess
 
 
 /**
@@ -176,7 +177,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         /**
          * 可由前端调用, 获取当前的 [MiraiConsoleImplementation] 实例
          *
-         * 必须在 [start] 之后才能使用.
+         * 必须在 [start] 之后才能使用, 否则抛出 [UninitializedPropertyAccessException]
          */
         @JvmStatic
         @ConsoleFrontEndImplementation
@@ -189,7 +190,22 @@ public interface MiraiConsoleImplementation : CoroutineScope {
         public fun MiraiConsoleImplementation.start(): Unit = initLock.withLock {
             if (::instance.isInitialized) error("Mirai Console is already initialized.")
             this@Companion.instance = this
-            MiraiConsoleImplementationBridge.doStart()
+            kotlin.runCatching {
+                MiraiConsoleImplementationBridge.doStart()
+            }.onFailure { e ->
+                kotlin.runCatching {
+                    MiraiConsole.mainLogger.error("Failed to init MiraiConsole.", e)
+                }.onFailure {
+                    e.printStackTrace()
+                }
+
+                kotlin.runCatching {
+                    MiraiConsole.cancel()
+                }.onFailure {
+                    it.printStackTrace()
+                }
+                exitProcess(1)
+            }
         }
     }
 }

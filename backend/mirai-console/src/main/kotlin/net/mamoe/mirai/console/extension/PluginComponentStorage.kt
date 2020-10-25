@@ -56,6 +56,7 @@ public class PluginComponentStorage(
     public fun contributeSingletonExtensionSelector(lazyInstance: () -> SingletonExtensionSelector): Unit =
         contribute(SingletonExtensionSelector, plugin, lazyInstance)
 
+    @Suppress("SpellCheckingInspection") // alterer
     /** 注册一个 [BotConfigurationAlterer] */
     public fun contributeBotConfigurationAlterer(instance: BotConfigurationAlterer): Unit =
         contribute(BotConfigurationAlterer, plugin, lazyInstance = { instance })
