@@ -13,6 +13,7 @@ import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.descriptor.*
+import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Companion.parse
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.parse.mapToTypeOrNull

@@ -12,6 +12,7 @@
 package net.mamoe.mirai.console.command.descriptor
 
 import net.mamoe.mirai.console.command.IllegalCommandArgumentException
+import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueArgumentParser.Companion.illegalArgument
 
 /**
  * 在解析参数时遇到的 _正常_ 错误. 如参数不符合规范等.
@@ -20,7 +21,7 @@ import net.mamoe.mirai.console.command.IllegalCommandArgumentException
  *
  * @see IllegalCommandArgumentException
  * @see CommandValueArgumentParser
- * @see CommandValueArgumentParser.illegalArgument
+ * @see AbstractCommandValueArgumentParser.illegalArgument
  */
 public class CommandArgumentParserException : IllegalCommandArgumentException {
     public constructor() : super()

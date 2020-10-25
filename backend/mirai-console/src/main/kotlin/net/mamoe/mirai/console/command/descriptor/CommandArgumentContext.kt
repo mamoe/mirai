@@ -23,6 +23,8 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.MessageContent
 import net.mamoe.mirai.message.data.PlainText
+import kotlin.contracts.InvocationKind.EXACTLY_ONCE
+import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -49,9 +51,17 @@ public interface CommandArgumentContext {
     public data class ParserPair<T : Any>(
         val klass: KClass<T>,
         val parser: CommandValueArgumentParser<T>,
-    )
+    ) {
+        public companion object {
+            @JvmStatic
+            public fun <T : Any> ParserPair<T>.toPair(): Pair<KClass<T>, CommandValueArgumentParser<T>> = klass to parser
+        }
+    }
 
-    public operator fun <T : Any> get(klass: KClass<out T>): CommandValueArgumentParser<T>?
+    /**
+     * 获取一个 [kClass] 类型的解析器.
+     */
+    public operator fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>?
 
     public fun toList(): List<ParserPair<*>>
 
@@ -59,7 +69,7 @@ public interface CommandArgumentContext {
         /**
          * For Java callers.
          *
-         * @see [EmptyCommandArgumentContext]
+         * @see EmptyCommandArgumentContext
          */
         @JvmStatic
         public val EMPTY: CommandArgumentContext = EmptyCommandArgumentContext
@@ -108,6 +118,9 @@ public interface CommandArgumentContextAware {
     public val context: CommandArgumentContext
 }
 
+/**
+ * @see CommandArgumentContext.EMPTY
+ */
 public object EmptyCommandArgumentContext : CommandArgumentContext by SimpleCommandArgumentContext(listOf())
 
 /**
@@ -117,8 +130,8 @@ public operator fun CommandArgumentContext.plus(replacer: CommandArgumentContext
     if (replacer == EmptyCommandArgumentContext) return this
     if (this == EmptyCommandArgumentContext) return replacer
     return object : CommandArgumentContext {
-        override fun <T : Any> get(klass: KClass<out T>): CommandValueArgumentParser<T>? =
-            replacer[klass] ?: this@plus[klass]
+        override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? =
+            replacer[kClass] ?: this@plus[kClass]
 
         override fun toList(): List<ParserPair<*>> = replacer.toList() + this@plus.toList()
     }
@@ -132,9 +145,9 @@ public operator fun CommandArgumentContext.plus(replacer: List<ParserPair<*>>): 
     if (this == EmptyCommandArgumentContext) return SimpleCommandArgumentContext(replacer)
     return object : CommandArgumentContext {
         @Suppress("UNCHECKED_CAST")
-        override fun <T : Any> get(klass: KClass<out T>): CommandValueArgumentParser<T>? =
-            replacer.firstOrNull { klass.isSubclassOf(it.klass) }?.parser as CommandValueArgumentParser<T>?
-                ?: this@plus[klass]
+        override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? =
+            replacer.firstOrNull { kClass.isSubclassOf(it.klass) }?.parser as CommandValueArgumentParser<T>?
+                ?: this@plus[kClass]
 
         override fun toList(): List<ParserPair<*>> = replacer.toList() + this@plus.toList()
     }
@@ -149,9 +162,9 @@ public operator fun CommandArgumentContext.plus(replacer: List<ParserPair<*>>): 
 public class SimpleCommandArgumentContext(
     public val list: List<ParserPair<*>>,
 ) : CommandArgumentContext {
-    override fun <T : Any> get(klass: KClass<out T>): CommandValueArgumentParser<T>? =
-        (this.list.firstOrNull { klass == it.klass }?.parser
-            ?: this.list.firstOrNull { klass.isSubclassOf(it.klass) }?.parser) as CommandValueArgumentParser<T>?
+    override fun <T : Any> get(kClass: KClass<T>): CommandValueArgumentParser<T>? =
+        (this.list.firstOrNull { kClass == it.klass }?.parser
+            ?: this.list.firstOrNull { kClass.isSubclassOf(it.klass) }?.parser) as CommandValueArgumentParser<T>?
 
     override fun toList(): List<ParserPair<*>> = list
 }
@@ -192,6 +205,9 @@ public class SimpleCommandArgumentContext(
  */
 @JvmSynthetic
 public fun buildCommandArgumentContext(block: CommandArgumentContextBuilder.() -> Unit): CommandArgumentContext {
+    contract {
+        callsInPlace(block, EXACTLY_ONCE)
+    }
     return CommandArgumentContextBuilder().apply(block).build()
 }
 

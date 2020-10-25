@@ -18,7 +18,6 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 供 Java 用户继承
@@ -46,7 +45,6 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
  *
  * @see JRawCommand
  */
-@ConsoleExperimentalApi("Not yet supported")
 public abstract class JRawCommand
 @JvmOverloads constructor(
     /**

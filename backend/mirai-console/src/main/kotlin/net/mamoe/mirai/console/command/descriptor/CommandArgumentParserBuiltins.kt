@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("EXPOSED_SUPER_CLASS")
+
 package net.mamoe.mirai.console.command.descriptor
 
 import net.mamoe.mirai.Bot
@@ -25,7 +27,7 @@ import net.mamoe.mirai.message.data.*
 /**
  * 使用 [String.toInt] 解析
  */
-public object IntValueArgumentParser : InternalCommandValueArgumentParserExtensions<Int> {
+public object IntValueArgumentParser : InternalCommandValueArgumentParserExtensions<Int>() {
     public override fun parse(raw: String, sender: CommandSender): Int =
         raw.toIntOrNull() ?: illegalArgument("无法解析 $raw 为整数")
 }
@@ -33,7 +35,7 @@ public object IntValueArgumentParser : InternalCommandValueArgumentParserExtensi
 /**
  * 使用 [String.toLong] 解析
  */
-public object LongValueArgumentParser : InternalCommandValueArgumentParserExtensions<Long> {
+public object LongValueArgumentParser : InternalCommandValueArgumentParserExtensions<Long>() {
     public override fun parse(raw: String, sender: CommandSender): Long =
         raw.toLongOrNull() ?: illegalArgument("无法解析 $raw 为长整数")
 }
@@ -41,7 +43,7 @@ public object LongValueArgumentParser : InternalCommandValueArgumentParserExtens
 /**
  * 使用 [String.toShort] 解析
  */
-public object ShortValueArgumentParser : InternalCommandValueArgumentParserExtensions<Short> {
+public object ShortValueArgumentParser : InternalCommandValueArgumentParserExtensions<Short>() {
     public override fun parse(raw: String, sender: CommandSender): Short =
         raw.toShortOrNull() ?: illegalArgument("无法解析 $raw 为短整数")
 }
@@ -49,7 +51,7 @@ public object ShortValueArgumentParser : InternalCommandValueArgumentParserExten
 /**
  * 使用 [String.toByte] 解析
  */
-public object ByteValueArgumentParser : InternalCommandValueArgumentParserExtensions<Byte> {
+public object ByteValueArgumentParser : InternalCommandValueArgumentParserExtensions<Byte>() {
     public override fun parse(raw: String, sender: CommandSender): Byte =
         raw.toByteOrNull() ?: illegalArgument("无法解析 $raw 为字节")
 }
@@ -57,7 +59,7 @@ public object ByteValueArgumentParser : InternalCommandValueArgumentParserExtens
 /**
  * 使用 [String.toDouble] 解析
  */
-public object DoubleValueArgumentParser : InternalCommandValueArgumentParserExtensions<Double> {
+public object DoubleValueArgumentParser : InternalCommandValueArgumentParserExtensions<Double>() {
     public override fun parse(raw: String, sender: CommandSender): Double =
         raw.toDoubleOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
@@ -65,7 +67,7 @@ public object DoubleValueArgumentParser : InternalCommandValueArgumentParserExte
 /**
  * 使用 [String.toFloat] 解析
  */
-public object FloatValueArgumentParser : InternalCommandValueArgumentParserExtensions<Float> {
+public object FloatValueArgumentParser : InternalCommandValueArgumentParserExtensions<Float>() {
     public override fun parse(raw: String, sender: CommandSender): Float =
         raw.toFloatOrNull() ?: illegalArgument("无法解析 $raw 为小数")
 }
@@ -73,14 +75,14 @@ public object FloatValueArgumentParser : InternalCommandValueArgumentParserExten
 /**
  * 直接返回 [String], 或取用 [SingleMessage.contentToString]
  */
-public object StringValueArgumentParser : InternalCommandValueArgumentParserExtensions<String> {
+public object StringValueArgumentParser : InternalCommandValueArgumentParserExtensions<String>() {
     public override fun parse(raw: String, sender: CommandSender): String = raw
 }
 
 /**
  * 解析 [String] 通过 [Image].
  */
-public object ImageValueArgumentParser : InternalCommandValueArgumentParserExtensions<Image> {
+public object ImageValueArgumentParser : InternalCommandValueArgumentParserExtensions<Image>() {
     public override fun parse(raw: String, sender: CommandSender): Image {
         return kotlin.runCatching {
             Image(raw)
@@ -95,7 +97,7 @@ public object ImageValueArgumentParser : InternalCommandValueArgumentParserExten
     }
 }
 
-public object PlainTextValueArgumentParser : InternalCommandValueArgumentParserExtensions<PlainText> {
+public object PlainTextValueArgumentParser : InternalCommandValueArgumentParserExtensions<PlainText>() {
     public override fun parse(raw: String, sender: CommandSender): PlainText {
         return PlainText(raw)
     }
@@ -109,7 +111,7 @@ public object PlainTextValueArgumentParser : InternalCommandValueArgumentParserE
 /**
  * 当字符串内容为(不区分大小写) "true", "yes", "enabled"
  */
-public object BooleanValueArgumentParser : InternalCommandValueArgumentParserExtensions<Boolean> {
+public object BooleanValueArgumentParser : InternalCommandValueArgumentParserExtensions<Boolean>() {
     public override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
         str.equals("true", ignoreCase = true)
             || str.equals("yes", ignoreCase = true)
@@ -121,7 +123,7 @@ public object BooleanValueArgumentParser : InternalCommandValueArgumentParserExt
 /**
  * 根据 [Bot.id] 解析一个登录后的 [Bot]
  */
-public object ExistingBotValueArgumentParser : InternalCommandValueArgumentParserExtensions<Bot> {
+public object ExistingBotValueArgumentParser : InternalCommandValueArgumentParserExtensions<Bot>() {
     public override fun parse(raw: String, sender: CommandSender): Bot =
         if (raw == "~") sender.inferBotOrFail()
         else raw.findBotOrFail()
@@ -136,7 +138,7 @@ public object ExistingBotValueArgumentParser : InternalCommandValueArgumentParse
 /**
  * 解析任意一个存在的好友.
  */
-public object ExistingFriendValueArgumentParser : InternalCommandValueArgumentParserExtensions<Friend> {
+public object ExistingFriendValueArgumentParser : InternalCommandValueArgumentParserExtensions<Friend>() {
     private val syntax = """
         - `botId.friendId`
         - `botId.friendNick` (模糊搜索, 寻找最优匹配)
@@ -175,7 +177,7 @@ public object ExistingFriendValueArgumentParser : InternalCommandValueArgumentPa
 /**
  * 解析任意一个存在的群.
  */
-public object ExistingGroupValueArgumentParser : InternalCommandValueArgumentParserExtensions<Group> {
+public object ExistingGroupValueArgumentParser : InternalCommandValueArgumentParserExtensions<Group>() {
     private val syntax = """
         - `botId.groupId`
         - `~` (指代指令调用人自己所在群. 仅群聊天环境下)
@@ -202,7 +204,7 @@ public object ExistingGroupValueArgumentParser : InternalCommandValueArgumentPar
     }
 }
 
-public object ExistingUserValueArgumentParser : InternalCommandValueArgumentParserExtensions<User> {
+public object ExistingUserValueArgumentParser : InternalCommandValueArgumentParserExtensions<User>() {
     private val syntax: String = """
          - `botId.groupId.memberId`
          - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
@@ -246,7 +248,7 @@ public object ExistingUserValueArgumentParser : InternalCommandValueArgumentPars
 }
 
 
-public object ExistingContactValueArgumentParser : InternalCommandValueArgumentParserExtensions<Contact> {
+public object ExistingContactValueArgumentParser : InternalCommandValueArgumentParserExtensions<Contact>() {
     private val syntax: String = """
          - `botId.groupId.memberId`
          - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
@@ -286,7 +288,7 @@ public object ExistingContactValueArgumentParser : InternalCommandValueArgumentP
 /**
  * 解析任意一个群成员.
  */
-public object ExistingMemberValueArgumentParser : InternalCommandValueArgumentParserExtensions<Member> {
+public object ExistingMemberValueArgumentParser : InternalCommandValueArgumentParserExtensions<Member>() {
     private val syntax: String = """
          - `botId.groupId.memberId`
          - `botId.groupId.memberCard` (模糊搜索, 寻找最优匹配)
@@ -333,7 +335,7 @@ public object ExistingMemberValueArgumentParser : InternalCommandValueArgumentPa
     }
 }
 
-public object PermissionIdValueArgumentParser : CommandValueArgumentParser<PermissionId> {
+public object PermissionIdValueArgumentParser : InternalCommandValueArgumentParserExtensions<PermissionId>() {
     override fun parse(raw: String, sender: CommandSender): PermissionId {
         return kotlin.runCatching { PermissionId.parseFromString(raw) }.getOrElse {
             illegalArgument("无法解析 $raw 为 PermissionId")
@@ -341,7 +343,7 @@ public object PermissionIdValueArgumentParser : CommandValueArgumentParser<Permi
     }
 }
 
-public object PermitteeIdValueArgumentParser : CommandValueArgumentParser<PermitteeId> {
+public object PermitteeIdValueArgumentParser : InternalCommandValueArgumentParserExtensions<PermitteeId>() {
     override fun parse(raw: String, sender: CommandSender): PermitteeId {
         return if (raw == "~") sender.permitteeId
         else kotlin.runCatching { AbstractPermitteeId.parseFromString(raw) }.getOrElse {
@@ -363,26 +365,26 @@ public object RawContentValueArgumentParser : CommandValueArgumentParser<Message
     override fun parse(raw: MessageContent, sender: CommandSender): MessageContent = raw
 }
 
-internal interface InternalCommandValueArgumentParserExtensions<T : Any> : CommandValueArgumentParser<T> {
-    fun String.parseToLongOrFail(): Long = toLongOrNull() ?: illegalArgument("无法解析 $this 为整数")
+internal abstract class InternalCommandValueArgumentParserExtensions<T : Any> : AbstractCommandValueArgumentParser<T>() {
+    private fun String.parseToLongOrFail(): Long = toLongOrNull() ?: illegalArgument("无法解析 $this 为整数")
 
-    fun Long.findBotOrFail(): Bot = Bot.getInstanceOrNull(this) ?: illegalArgument("无法找到 Bot: $this")
+    protected fun Long.findBotOrFail(): Bot = Bot.getInstanceOrNull(this) ?: illegalArgument("无法找到 Bot: $this")
 
-    fun String.findBotOrFail(): Bot =
+    protected fun String.findBotOrFail(): Bot =
         Bot.getInstanceOrNull(this.parseToLongOrFail()) ?: illegalArgument("无法找到 Bot: $this")
 
-    fun Bot.findGroupOrFail(id: Long): Group = getGroupOrNull(id) ?: illegalArgument("无法找到群: $this")
+    protected fun Bot.findGroupOrFail(id: Long): Group = getGroupOrNull(id) ?: illegalArgument("无法找到群: $this")
 
-    fun Bot.findGroupOrFail(id: String): Group =
+    protected fun Bot.findGroupOrFail(id: String): Group =
         getGroupOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到群: $this")
 
-    fun Bot.findFriendOrFail(id: String): Friend =
+    protected fun Bot.findFriendOrFail(id: String): Friend =
         getFriendOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到好友: $this")
 
-    fun Bot.findMemberOrFail(id: String): Friend =
+    protected fun Bot.findMemberOrFail(id: String): Friend =
         getFriendOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到群员: $this")
 
-    fun Group.findMemberOrFail(idOrCard: String): Member {
+    protected fun Group.findMemberOrFail(idOrCard: String): Member {
         if (idOrCard == "\$") return members.randomOrNull() ?: illegalArgument("当前语境下无法推断随机群员")
         idOrCard.toLongOrNull()?.let { getOrNull(it) }?.let { return it }
         this.members.singleOrNull { it.nameCardOrNick.contains(idOrCard) }?.let { return it }
@@ -405,23 +407,21 @@ internal interface InternalCommandValueArgumentParserExtensions<T : Any> : Comma
         }
     }
 
-    fun CommandSender.inferBotOrFail(): Bot =
+    protected fun CommandSender.inferBotOrFail(): Bot =
         (this as? UserCommandSender)?.bot
             ?: Bot.botInstancesSequence.singleOrNull()
             ?: illegalArgument("当前语境下无法推断目标 Bot, 因为目前有多个 Bot 在线.")
 
-    fun CommandSender.inferGroupOrFail(): Group =
+    protected fun CommandSender.inferGroupOrFail(): Group =
         inferGroup() ?: illegalArgument("当前语境下无法推断目标群")
 
-    fun CommandSender.inferGroup(): Group? = (this as? GroupAwareCommandSender)?.group
+    protected fun CommandSender.inferGroup(): Group? = (this as? GroupAwareCommandSender)?.group
 
-    fun CommandSender.inferFriendOrFail(): Friend =
+    protected fun CommandSender.inferFriendOrFail(): Friend =
         (this as? FriendCommandSender)?.user ?: illegalArgument("当前语境下无法推断目标好友")
 }
 
-internal fun Double.toDecimalPlace(n: Int): String {
-    return "%.${n}f".format(this)
-}
+internal fun Double.toDecimalPlace(n: Int): String = "%.${n}f".format(this)
 
 internal fun String.truncate(lengthLimit: Int, replacement: String = "..."): String = buildString {
     var lengthSum = 0

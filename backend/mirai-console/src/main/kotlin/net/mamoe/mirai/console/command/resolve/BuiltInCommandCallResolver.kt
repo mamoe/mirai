@@ -77,7 +77,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                 } else {
                     if (valueArguments.size > valueParameters.size && zipped.last().first.isVararg) {
                         // merge vararg arguments
-                        val (varargParameter, varargFirstArgument)
+                        val (varargParameter, _)
                             = zipped.removeLast()
 
                         zipped.add(varargParameter to DefaultCommandValueArgument(valueArguments.drop(zipped.size).map { it.value }.asMessageChain()))

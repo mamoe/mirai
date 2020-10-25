@@ -18,7 +18,6 @@ import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.permission.Permission
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * 复合指令. 指令注册时候会通过反射构造指令解析器.
@@ -70,7 +69,6 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
  *
  * @see buildCommandArgumentContext
  */
-@ConsoleExperimentalApi("Not yet supported")
 public abstract class JCompositeCommand
 @JvmOverloads constructor(
     owner: CommandOwner,

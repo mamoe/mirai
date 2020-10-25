@@ -14,7 +14,6 @@ package net.mamoe.mirai.console.command
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentContextAware
 import net.mamoe.mirai.console.command.descriptor.CommandSignatureVariant
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
-import net.mamoe.mirai.console.command.java.JCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.permission.Permission
@@ -31,8 +30,6 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
  * @see SimpleCommand 简单的, 支持参数自动解析的指令
  *
  * @see CommandArgumentContextAware
- *
- * @see JCommand 为 Java 用户添加协程帮助的 [Command]
  */
 public interface Command {
     /**

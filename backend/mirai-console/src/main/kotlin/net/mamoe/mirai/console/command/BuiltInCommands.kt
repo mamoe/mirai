@@ -15,7 +15,11 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.command.descriptor.*
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
+import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Companion.map
+import net.mamoe.mirai.console.command.descriptor.PermissionIdValueArgumentParser
+import net.mamoe.mirai.console.command.descriptor.PermitteeIdValueArgumentParser
+import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.internal.util.runIgnoreException
@@ -154,7 +158,7 @@ public object BuiltInCommands {
             Permission::class with PermissionIdValueArgumentParser.map { id ->
                 kotlin.runCatching {
                     id.findCorrespondingPermissionOrFail()
-                }.getOrElse { illegalArgument("指令不存在: $id", it) }
+                }.getOrElse { throw CommandArgumentParserException("指令不存在: $id", it) }
             }
         },
     ), BuiltInCommandInternal {

@@ -16,10 +16,9 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
+import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Companion.parse
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.data.MessageContent
-import net.mamoe.mirai.message.data.SingleMessage
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -78,68 +77,76 @@ public interface CommandValueArgumentParser<out T : Any> {
      */
     @Throws(CommandArgumentParserException::class)
     public fun parse(raw: MessageContent, sender: CommandSender): T = parse(raw.content, sender)
+
+    public companion object {
+        /**
+         * 解析一个字符串或 [SingleMessage] 为 [T] 类型参数
+         *
+         * @throws IllegalArgumentException 当 [raw] 既不是 [SingleMessage], 也不是 [String] 时抛出.
+         *
+         * @see CommandValueArgumentParser.parse
+         */
+        @JvmStatic
+        @Throws(IllegalArgumentException::class)
+        public fun <T : Any> CommandValueArgumentParser<T>.parse(raw: Message, sender: CommandSender): T {
+            return when (raw) {
+                is PlainText -> parse(raw.content, sender)
+                is MessageContent -> parse(raw, sender)
+                else -> throw IllegalArgumentException("Illegal raw argument type: ${raw::class.qualifiedName}")
+            }
+        }
+
+        /**
+         * 使用原 [this] 解析, 成功后使用 [mapper] 映射为另一个类型.
+         */
+        @JvmStatic
+        public fun <Original : Any, Result : Any> CommandValueArgumentParser<Original>.map(
+            mapper: MappingCommandValueArgumentParser<Original, Result>.(Original) -> Result,
+        ): CommandValueArgumentParser<Result> = MappingCommandValueArgumentParser(this, mapper)
+    }
 }
 
 /**
- * 使用原 [this] 解析, 成功后使用 [mapper] 映射为另一个类型.
+ * @see CommandValueArgumentParser 的基础实现.
  */
-public fun <T : Any, R : Any> CommandValueArgumentParser<T>.map(
-    mapper: CommandValueArgumentParser<R>.(T) -> R,
-): CommandValueArgumentParser<R> = MappingCommandValueArgumentParser(this, mapper)
+public abstract class AbstractCommandValueArgumentParser<T : Any> : CommandValueArgumentParser<T> {
+    public companion object {
+        /**
+         * 抛出一个 [CommandArgumentParserException] 的捷径
+         *
+         * @throws CommandArgumentParserException
+         */
+        @JvmStatic
+        @JvmSynthetic
+        @Throws(CommandArgumentParserException::class)
+        protected inline fun CommandValueArgumentParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing =
+            throw CommandArgumentParserException(message, cause)
 
-private class MappingCommandValueArgumentParser<T : Any, R : Any>(
+        /**
+         * 检查参数 [condition]. 当它为 `false` 时调用 [message] 并以其返回值作为消息, 抛出异常 [CommandArgumentParserException]
+         *
+         * @throws CommandArgumentParserException
+         */
+        @JvmStatic
+        @Throws(CommandArgumentParserException::class)
+        @JvmSynthetic
+        protected inline fun CommandValueArgumentParser<*>.checkArgument(
+            condition: Boolean,
+            crossinline message: () -> String = { "Check failed." },
+        ) {
+            contract {
+                returns() implies condition
+                callsInPlace(message, InvocationKind.AT_MOST_ONCE)
+            }
+            if (!condition) illegalArgument(message())
+        }
+    }
+}
+
+public class MappingCommandValueArgumentParser<T : Any, R : Any>(
     private val original: CommandValueArgumentParser<T>,
-    private val mapper: CommandValueArgumentParser<R>.(T) -> R,
-) : CommandValueArgumentParser<R> {
+    private val mapper: MappingCommandValueArgumentParser<T, R>.(T) -> R,
+) : AbstractCommandValueArgumentParser<R>() {
     override fun parse(raw: String, sender: CommandSender): R = mapper(original.parse(raw, sender))
     override fun parse(raw: MessageContent, sender: CommandSender): R = mapper(original.parse(raw, sender))
-}
-
-/**
- * 解析一个字符串或 [SingleMessage] 为 [T] 类型参数
- *
- * @throws IllegalArgumentException 当 [raw] 既不是 [SingleMessage], 也不是 [String] 时抛出.
- */
-@JvmSynthetic
-@Throws(IllegalArgumentException::class)
-public fun <T : Any> CommandValueArgumentParser<T>.parse(raw: Any, sender: CommandSender): T {
-    contract {
-        returns() implies (raw is String || raw is SingleMessage)
-    }
-
-    return when (raw) {
-        is String -> parse(raw, sender)
-        is MessageContent -> parse(raw, sender)
-        else -> throw IllegalArgumentException("Illegal raw argument type: ${raw::class.qualifiedName}")
-    }
-}
-
-/**
- * 抛出一个 [CommandArgumentParserException] 的捷径
- *
- * @throws CommandArgumentParserException
- */
-@Suppress("unused")
-@JvmSynthetic
-@Throws(CommandArgumentParserException::class)
-public inline fun CommandValueArgumentParser<*>.illegalArgument(message: String, cause: Throwable? = null): Nothing {
-    throw CommandArgumentParserException(message, cause)
-}
-
-/**
- * 检查参数 [condition]. 当它为 `false` 时调用 [message] 并以其返回值作为消息, 抛出异常 [CommandArgumentParserException]
- *
- * @throws CommandArgumentParserException
- */
-@Throws(CommandArgumentParserException::class)
-@JvmSynthetic
-public inline fun CommandValueArgumentParser<*>.checkArgument(
-    condition: Boolean,
-    crossinline message: () -> String = { "Check failed." },
-) {
-    contract {
-        returns() implies condition
-        callsInPlace(message, InvocationKind.AT_MOST_ONCE)
-    }
-    if (!condition) illegalArgument(message())
 }
