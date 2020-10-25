@@ -37,9 +37,9 @@ public interface ResolvedCommandCall {
     public val callee: Command
 
     /**
-     * The callee [CommandSignatureVariant], specifically a sub command from [CompositeCommand]
+     * The callee [CommandSignature], specifically a sub command from [CompositeCommand]
      */
-    public val calleeSignature: CommandSignatureVariant
+    public val calleeSignature: CommandSignature
 
     /**
      * Original arguments
@@ -47,7 +47,7 @@ public interface ResolvedCommandCall {
     public val rawValueArguments: List<CommandValueArgument>
 
     /**
-     * Resolved value arguments arranged mapping the [CommandSignatureVariant.valueParameters] by index.
+     * Resolved value arguments arranged mapping the [CommandSignature.valueParameters] by index.
      *
      * **Implementation details**: Lazy calculation.
      */
@@ -73,7 +73,7 @@ public suspend inline fun ResolvedCommandCall.call() {
 public class ResolvedCommandCallImpl(
     override val caller: CommandSender,
     override val callee: Command,
-    override val calleeSignature: CommandSignatureVariant,
+    override val calleeSignature: CommandSignature,
     override val rawValueArguments: List<CommandValueArgument>,
     private val context: CommandArgumentContext,
 ) : ResolvedCommandCall {

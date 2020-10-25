@@ -11,6 +11,7 @@ import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.buildMessageChain
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
+import kotlin.reflect.KType
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.*
 
@@ -133,7 +134,7 @@ internal class CommandReflector(
         // if (isAbstract) illegalDeclaration("Command function cannot be abstract")
     }
 
-    fun generateUsage(overloads: Iterable<CommandSignatureVariantFromKFunction>): String {
+    fun generateUsage(overloads: Iterable<CommandSignatureFromKFunction>): String {
         return overloads.joinToString("\n") { subcommand ->
             buildString {
                 if (command.prefixOptional) {
@@ -173,17 +174,45 @@ internal class CommandReflector(
         }
     }
 
-    fun validate(variants: List<CommandSignatureVariantFromKFunctionImpl>) {
+    fun validate(signatures: List<CommandSignatureFromKFunctionImpl>) {
 
-        data class ErasedParameters(
-            val name: String,
-            val x: String,
+        data class ErasedParameterInfo(
+            val index: Int,
+            val name: String?,
+            val type: KType, // ignore nullability
+            val additional: String?,
         )
-        variants
+
+        data class ErasedVariantInfo(
+            val receiver: ErasedParameterInfo?,
+            val valueParameters: List<ErasedParameterInfo>,
+        )
+
+        fun CommandParameter<*>.toErasedParameterInfo(index: Int): ErasedParameterInfo {
+            return ErasedParameterInfo(index,
+                this.name,
+                this.type.withNullability(false),
+                if (this is AbstractCommandValueParameter.StringConstant) this.expectingValue else null)
+        }
+
+        val candidates = signatures.map { variant ->
+            variant to ErasedVariantInfo(
+                variant.receiverParameter?.toErasedParameterInfo(0),
+                variant.valueParameters.mapIndexed { index, parameter -> parameter.toErasedParameterInfo(index) }
+            )
+        }
+
+        val groups = candidates.groupBy { it.second }
+
+        val clashes = groups.entries.find { (_, value) ->
+            value.size > 1
+        } ?: return
+
+        throw CommandDeclarationClashException(command, clashes.value.map { it.first })
     }
 
     @Throws(IllegalCommandDeclarationException::class)
-    fun findSubCommands(): List<CommandSignatureVariantFromKFunctionImpl> {
+    fun findSubCommands(): List<CommandSignatureFromKFunctionImpl> {
         return command::class.functions // exclude static later
             .asSequence()
             .filter { it.isSubCommandFunction() }
@@ -198,7 +227,7 @@ internal class CommandReflector(
                 val functionValueParameters =
                     function.valueParameters.associateBy { it.toUserDefinedCommandParameter() }
 
-                CommandSignatureVariantFromKFunctionImpl(
+                CommandSignatureFromKFunctionImpl(
                     receiverParameter = function.extensionReceiverParameter?.toCommandReceiverParameter(),
                     valueParameters = functionNameAsValueParameter + functionValueParameters.keys,
                     originFunction = function

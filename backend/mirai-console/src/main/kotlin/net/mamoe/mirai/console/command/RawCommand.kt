@@ -56,8 +56,8 @@ public abstract class RawCommand(
     public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
 
     @ExperimentalCommandDescriptors
-    override val overloads: List<CommandSignatureVariant> = listOf(
-        CommandSignatureVariantImpl(
+    override val overloads: List<CommandSignature> = listOf(
+        CommandSignatureImpl(
             receiverParameter = CommandReceiverParameter(false, typeOf0<CommandSender>()),
             valueParameters = listOf(AbstractCommandValueParameter.UserDefinedType.createRequired<Array<out Message>>("args", true))
         ) { call ->

@@ -17,7 +17,6 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.java.JSimpleCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
@@ -67,8 +66,9 @@ public abstract class SimpleCommand(
     private val reflector by lazy { CommandReflector(this, SimpleCommandSubCommandAnnotationResolver) }
 
     @ExperimentalCommandDescriptors
-    public final override val overloads: List<CommandSignatureVariantFromKFunction> by lazy {
+    public final override val overloads: List<CommandSignatureFromKFunction> by lazy {
         reflector.findSubCommands().also {
+            reflector.validate(it)
             if (it.isEmpty())
                 throw IllegalCommandDeclarationException(this, "SimpleCommand must have at least one subcommand, whereas zero present.")
         }

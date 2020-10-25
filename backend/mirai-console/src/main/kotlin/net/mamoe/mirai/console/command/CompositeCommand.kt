@@ -95,8 +95,10 @@ public abstract class CompositeCommand(
     private val reflector by lazy { CommandReflector(this, CompositeCommandSubCommandAnnotationResolver) }
 
     @ExperimentalCommandDescriptors
-    public final override val overloads: List<CommandSignatureVariantFromKFunction> by lazy {
-        reflector.findSubCommands()
+    public final override val overloads: List<CommandSignatureFromKFunction> by lazy {
+        reflector.findSubCommands().also {
+            reflector.validate(it)
+        }
     }
 
     /**

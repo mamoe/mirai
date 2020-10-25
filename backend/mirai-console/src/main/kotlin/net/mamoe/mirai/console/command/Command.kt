@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentContextAware
-import net.mamoe.mirai.console.command.descriptor.CommandSignatureVariant
+import net.mamoe.mirai.console.command.descriptor.CommandSignature
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
@@ -52,7 +52,7 @@ public interface Command {
      */
     @ConsoleExperimentalApi("Property name is experimental")
     @ExperimentalCommandDescriptors
-    public val overloads: List<CommandSignatureVariant>
+    public val overloads: List<CommandSignature>
 
     /**
      * 用法说明, 用于发送给用户. [usage] 一般包含 [description].

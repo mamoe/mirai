@@ -31,13 +31,13 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
 
         return ResolvedCommandCallImpl(call.caller,
             callee,
-            signature.variant,
+            signature.signature,
             signature.zippedArguments.map { it.second },
             context ?: EmptyCommandArgumentContext)
     }
 
     private data class ResolveData(
-        val variant: CommandSignatureVariant,
+        val signature: CommandSignature,
         val zippedArguments: List<Pair<AbstractCommandValueParameter<*>, CommandValueArgument>>,
         val argumentAcceptances: List<ArgumentAcceptanceWithIndex>,
         val remainingParameters: List<AbstractCommandValueParameter<*>>,
@@ -69,7 +69,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
 
                 if (zipped.isEmpty()) {
                     ResolveData(
-                        variant = signature,
+                        signature = signature,
                         zippedArguments = emptyList(),
                         argumentAcceptances = emptyList(),
                         remainingParameters = remainingParameters,
@@ -91,7 +91,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                     }
 
                     ResolveData(
-                        variant = signature,
+                        signature = signature,
                         zippedArguments = zipped,
                         argumentAcceptances = zipped.mapIndexed { index, (parameter, argument) ->
                             val accepting = parameter.accepting(argument, context)
@@ -163,7 +163,7 @@ fun main() {
     private fun List<ResolveData>.takeLongestMatches(): Collection<ResolveData> {
         if (isEmpty()) return emptyList()
         return associateWith {
-            it.variant.valueParameters.size - it.remainingOptionalCount * 1.001 // slightly lower priority with optional defaults.
+            it.signature.valueParameters.size - it.remainingOptionalCount * 1.001 // slightly lower priority with optional defaults.
         }.let { m ->
             val maxMatch = m.values.maxByOrNull { it }
             m.filter { it.value == maxMatch }.keys
