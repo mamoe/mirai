@@ -15,16 +15,20 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.command.description.*
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
+import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Companion.map
+import net.mamoe.mirai.console.command.descriptor.PermissionIdValueArgumentParser
+import net.mamoe.mirai.console.command.descriptor.PermitteeIdValueArgumentParser
+import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.permission.PermissionService.Companion.denyPermission
+import net.mamoe.mirai.console.permission.PermissionService.Companion.cancel
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
 import net.mamoe.mirai.console.permission.PermissionService.Companion.getPermittedPermissions
-import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
+import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
@@ -150,11 +154,11 @@ public object BuiltInCommands {
         ConsoleCommandOwner, "permission", "权限", "perm",
         description = "管理权限",
         overrideContext = buildCommandArgumentContext {
-            PermitteeId::class with PermitteeIdArgumentParser
-            Permission::class with PermissionIdArgumentParser.map { id ->
+            PermitteeId::class with PermitteeIdValueArgumentParser
+            Permission::class with PermissionIdValueArgumentParser.map { id ->
                 kotlin.runCatching {
                     id.findCorrespondingPermissionOrFail()
-                }.getOrElse { illegalArgument("指令不存在: $id", it) }
+                }.getOrElse { throw CommandArgumentParserException("指令不存在: $id", it) }
             }
         },
     ), BuiltInCommandInternal {
@@ -166,7 +170,7 @@ public object BuiltInCommands {
             @Name("被许可人 ID") target: PermitteeId,
             @Name("权限 ID") permission: Permission,
         ) {
-            target.grantPermission(permission)
+            target.permit(permission)
             sendMessage("OK")
         }
 
@@ -176,7 +180,7 @@ public object BuiltInCommands {
             @Name("被许可人 ID") target: PermitteeId,
             @Name("权限 ID") permission: Permission,
         ) {
-            target.denyPermission(permission, false)
+            target.cancel(permission, false)
             sendMessage("OK")
         }
 
@@ -186,7 +190,7 @@ public object BuiltInCommands {
             @Name("被许可人 ID") target: PermitteeId,
             @Name("权限 ID") permission: Permission,
         ) {
-            target.denyPermission(permission, true)
+            target.cancel(permission, true)
             sendMessage("OK")
         }
 

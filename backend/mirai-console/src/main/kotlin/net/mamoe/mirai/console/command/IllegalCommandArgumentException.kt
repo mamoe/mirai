@@ -5,21 +5,23 @@
  * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *
  */
 
 @file:Suppress("unused")
 
-package net.mamoe.mirai.console.command.description
+package net.mamoe.mirai.console.command
+
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 
 /**
- * 在解析参数时遇到的 _正常_ 错误. 如参数不符合规范等.
+ * 在处理参数时遇到的 _正常_ 错误. 如参数不符合规范, 参数值越界等.
  *
  * [message] 将会发送给指令调用方.
  *
- * @see CommandArgumentParser
- * @see CommandArgumentParser.illegalArgument
+ * @see CommandArgumentParserException
  */
-public class CommandArgumentParserException : RuntimeException {
+public open class IllegalCommandArgumentException : IllegalArgumentException {
     public constructor() : super()
     public constructor(message: String?) : super(message)
     public constructor(message: String?, cause: Throwable?) : super(message, cause)

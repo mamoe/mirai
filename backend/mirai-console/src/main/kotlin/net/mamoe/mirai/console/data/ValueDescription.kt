@@ -9,6 +9,8 @@
 
 package net.mamoe.mirai.console.data
 
+import kotlinx.serialization.SerialInfo
+
 /**
  * 序列化之后的注释.
  *
@@ -30,6 +32,7 @@ package net.mamoe.mirai.console.data
  *     a: b
  * ```
  */
+@SerialInfo
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 public annotation class ValueDescription(val value: String)

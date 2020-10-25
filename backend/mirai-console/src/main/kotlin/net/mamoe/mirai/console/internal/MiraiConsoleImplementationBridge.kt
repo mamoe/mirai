@@ -41,7 +41,7 @@ import net.mamoe.mirai.console.internal.util.autoHexToBytes
 import net.mamoe.mirai.console.logging.*
 import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.permission.PermissionService
-import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
+import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.RootPermission
 import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
@@ -177,9 +177,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
 
-            PermissionService.instanceField = GlobalComponentStorage.run {
-                PermissionServiceProvider.findSingletonInstance(BuiltInPermissionService)
-            }
+            PermissionServiceProvider.selectedInstance // init
 
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {
@@ -188,7 +186,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
                 }
             }
 
-            ConsoleCommandSender.grantPermission(RootPermission)
+            ConsoleCommandSender.permit(RootPermission)
         }
 
         phase `prepare commands`@{
@@ -231,7 +229,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         }
 
         GlobalComponentStorage.run {
-            PostStartupExtension.useExtensions { it() }
+            PostStartupExtension.useExtensions { it() } // exceptions thrown will be caught by caller of `doStart`.
         }
 
         mainLogger.info { "mirai-console started successfully." }

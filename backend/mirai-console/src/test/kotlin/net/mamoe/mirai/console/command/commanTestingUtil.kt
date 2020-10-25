@@ -10,13 +10,13 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterCommand
 
 inline fun <T : Command, R> T.withRegistration(block: T.() -> R): R {
     this.register()
     try {
         return block()
     } finally {
-        this.unregister()
+        unregisterCommand(this)
     }
 }

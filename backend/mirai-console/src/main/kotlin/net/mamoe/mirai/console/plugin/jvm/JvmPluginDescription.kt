@@ -43,7 +43,7 @@ public interface JvmPluginDescription : PluginDescription {
             /**
              * @see [PluginDescription.version]
              */
-            @ResolveContext(PLUGIN_VERSION) version: String,
+            @ResolveContext(SEMANTIC_VERSION) version: String,
             /**
              * @see [PluginDescription.name]
              */
@@ -102,7 +102,7 @@ public class JvmPluginDescriptionBuilder(
 ) {
     public constructor(
         @ResolveContext(PLUGIN_ID) id: String,
-        @ResolveContext(PLUGIN_VERSION) version: String,
+        @ResolveContext(SEMANTIC_VERSION) version: String,
     ) : this(id, SemVersion(version))
 
     private var name: String = id
@@ -115,7 +115,7 @@ public class JvmPluginDescriptionBuilder(
         apply { this.name = value.trim() }
 
     @ILoveKuriyamaMiraiForever
-    public fun version(@ResolveContext(PLUGIN_VERSION) value: String): JvmPluginDescriptionBuilder =
+    public fun version(@ResolveContext(SEMANTIC_VERSION) value: String): JvmPluginDescriptionBuilder =
         apply { this.version = SemVersion(value) }
 
     @ILoveKuriyamaMiraiForever

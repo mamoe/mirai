@@ -37,9 +37,9 @@
 [`RawCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/RawCommand.kt
 [`CommandManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandManager.kt
 [`CommandSender`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandSender.kt
-[`CommandArgumentParser`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/description/CommandArgumentParser.kt
-[`CommandArgumentContext`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/description/CommandArgumentContext.kt
-[`CommandArgumentContext.BuiltIns`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/description/CommandArgumentContext.kt#L66
+[`CommandArgumentParser`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/descriptor/CommandArgumentParser.kt
+[`CommandArgumentContext`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/descriptor/CommandArgumentContext.kt
+[`CommandArgumentContext.BuiltIns`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/descriptor/CommandArgumentContext.kt#L66
 
 [`MessageScope`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/MessageScope.kt
 
@@ -113,7 +113,7 @@ interface CommandArgumentParser<out T : Any> {
 支持原生数据类型，`Contact` 及其子类，`Bot`。
 
 #### 构建 [`CommandArgumentContext`]
-查看源码内注释：[CommandArgumentContext.kt: Line 146](../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/description/CommandArgumentContext.kt#L146-L183)
+查看源码内注释：[CommandArgumentContext.kt: Line 146](../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/descriptor/CommandArgumentContext.kt#L146-L183)
 
 ### 支持参数解析的 [`Command`] 实现
 Mirai Console 内建 [`SimpleCommand`] 与 [`CompositeCommand`] 拥有 [`CommandArgumentContext`]，在处理参数时会首先解析参数再传递给插件的实现。

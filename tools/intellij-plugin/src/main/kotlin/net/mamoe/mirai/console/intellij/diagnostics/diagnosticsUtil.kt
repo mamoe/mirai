@@ -15,7 +15,6 @@ import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
-import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 
 fun DeclarationCheckerContext.report(diagnostic: Diagnostic) {
     return this.trace.report(diagnostic)
@@ -25,7 +24,6 @@ val DeclarationCheckerContext.bindingContext get() = this.trace.bindingContext
 
 fun KtElement?.getResolvedCallOrResolveToCall(
     context: DeclarationCheckerContext,
-    bodyResolveMode: BodyResolveMode = BodyResolveMode.PARTIAL,
 ): ResolvedCall<out CallableDescriptor>? {
-    return this.getResolvedCallOrResolveToCall(context.bindingContext, bodyResolveMode)
+    return this.getResolvedCallOrResolveToCall(context.bindingContext)
 }

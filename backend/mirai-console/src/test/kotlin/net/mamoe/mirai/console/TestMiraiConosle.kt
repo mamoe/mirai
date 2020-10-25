@@ -89,7 +89,7 @@ internal object Testing {
     internal var cont: Continuation<Any?>? = null
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun <R> withTesting(timeout: Long = 5000L, block: suspend () -> Unit): R {
+    suspend fun <R> withTesting(timeout: Long = 50000L, block: suspend () -> Unit): R {
         @Suppress("RemoveExplicitTypeArguments") // bug
         return if (timeout != -1L) {
             withTimeout<R>(timeout) {

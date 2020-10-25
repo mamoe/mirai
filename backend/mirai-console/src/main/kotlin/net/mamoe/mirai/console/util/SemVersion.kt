@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
-import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_VERSION
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.SEMANTIC_VERSION
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.VERSION_REQUIREMENT
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.semver.SemVersionInternal
@@ -47,10 +47,10 @@ import kotlin.LazyThreadSafetyMode.PUBLICATION
  * ```
  * 其中 identifier 和 metadata 都是可选的.
  *
- * 对于核心版本号, 此实现稍微比 semver 宽松一些, 允许 x.y 的存在.
+ * 对于核心版本号, 此实现稍微比语义化版本规范宽松一些, 允许 x.y 的存在.
  *
- * @see Requirement
- * @see SemVersion.invoke
+ * @see Requirement 版本号要修
+ * @see SemVersion.invoke 由字符串解析
  */
 @Serializable(with = SemVersion.SemVersionAsStringSerializer::class)
 public data class SemVersion
@@ -69,6 +69,15 @@ internal constructor(
     /** 版本号元数据, 不参与版本号对比([compareTo]), 但是参与版本号严格对比([equals]) */
     public val metadata: String? = null,
 ) : Comparable<SemVersion> {
+
+    init {
+        require(major >= 0) { "major must >= 0" }
+        require(minor >= 0) { "minor must >= 0" }
+        if (patch != null) require(patch >= 0) { "patch must >= 0" }
+        if (identifier != null) require(identifier.none(Char::isWhitespace)) { "identifier must not contain whitespace" }
+        if (metadata != null) require(metadata.none(Char::isWhitespace)) { "metadata must not contain whitespace" }
+    }
+
     /**
      * 一条依赖规则
      * @see [parseRangeRequirement]
@@ -103,10 +112,10 @@ internal constructor(
          * - 如果不确定版本号是否合法, 可以使用 [regex101.com](https://regex101.com/r/vkijKf/1/) 进行检查
          *     - 此实现使用的正则表达式为 `^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$`
          */
-        @Throws(IllegalArgumentException::class, NumberFormatException::class)
         @JvmStatic
         @JvmName("parse")
-        public operator fun invoke(@ResolveContext(PLUGIN_VERSION) version: String): SemVersion = SemVersionInternal.parse(version)
+        @Throws(IllegalArgumentException::class, NumberFormatException::class)
+        public operator fun invoke(@ResolveContext(SEMANTIC_VERSION) version: String): SemVersion = SemVersionInternal.parse(version)
 
         /**
          * 解析一条依赖需求描述, 在无法解析的时候抛出 [IllegalArgumentException]
@@ -138,14 +147,15 @@ internal constructor(
          * - 如果目标版本号携带有先行版本号, 请不要忘记先行版本号
          * - 因为 `()` 已经用于数学区间, 使用 `{}` 替代 `()`
          */
-        @Throws(IllegalArgumentException::class)
         @JvmStatic
+        @Throws(IllegalArgumentException::class)
         public fun parseRangeRequirement(@ResolveContext(VERSION_REQUIREMENT) requirement: String): Requirement =
             SemVersionInternal.parseRangeRequirement(requirement)
 
         /** @see [Requirement.test] */
         @JvmStatic
-        public fun Requirement.test(@ResolveContext(PLUGIN_VERSION) version: String): Boolean = test(invoke(version))
+        @Throws(IllegalArgumentException::class, NumberFormatException::class)
+        public fun Requirement.test(@ResolveContext(SEMANTIC_VERSION) version: String): Boolean = test(invoke(version))
 
         /**
          * 当满足 [requirement] 时返回 true, 否则返回 false
@@ -157,6 +167,7 @@ internal constructor(
          * 当满足 [requirement] 时返回 true, 否则返回 false
          */
         @JvmStatic
+        @Throws(IllegalArgumentException::class)
         public fun SemVersion.satisfies(@ResolveContext(VERSION_REQUIREMENT) requirement: String): Boolean = parseRangeRequirement(requirement).test(this)
 
         /** for Kotlin only */
@@ -167,7 +178,7 @@ internal constructor(
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun Requirement.contains(@ResolveContext(PLUGIN_VERSION) version: String): Boolean = test(version)
+        public operator fun Requirement.contains(@ResolveContext(SEMANTIC_VERSION) version: String): Boolean = test(version)
     }
 
     @Transient
@@ -185,7 +196,10 @@ internal constructor(
         }
     }
 
-    override fun toString(): String = toString
+    /**
+     * 返回类似 `1.0.0-M4+c25733b8` 的字符串.
+     */
+    public override fun toString(): String = toString
 
     /**
      * 将 [SemVersion] 转为 Kotlin data class 风格的 [String]
@@ -194,27 +208,60 @@ internal constructor(
         return "SemVersion(major=$major, minor=$minor, patch=$patch, identifier=$identifier, metadata=$metadata)"
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as SemVersion
-
-        return compareTo(other) == 0 && other.identifier == identifier && other.metadata == metadata
+    /**
+     * 比较 `this` 和 [other].
+     *
+     * @param deep 为 `true` 时进行深度比较, 相当于 [equals]. 为 `false` 时相当于 `compareTo(other) == 0`
+     * @see compareTo
+     */
+    public fun equals(other: SemVersion, deep: Boolean): Boolean {
+        return if (deep) {
+            (other.major == major
+                && other.minor == minor
+                && other.patch == patch
+                && other.identifier == identifier
+                && other.metadata == metadata)
+        } else {
+            this.compareTo(other) == 0
+        }
     }
 
-    override fun hashCode(): Int {
-        var result = major shl minor
-        result *= (patch ?: 1)
+    /**
+     * 深度比较 `this` 和 [other], 当且仅当 [major], [patch], [minor], [identifier], [metadata] 完全相同时返回 `true`.
+     *
+     * 如: `1.0.0-RC` != `1.0-RC`
+     *
+     * @see compareTo
+     */
+    public override fun equals(other: Any?): Boolean {
+        if (other === null) return false
+        if (this === other) return true
+        if (javaClass != other.javaClass) return false
+        return equals(other as SemVersion, deep = true)
+    }
+
+    public override fun hashCode(): Int {
+        var result = major.hashCode()
+        result = 31 * result + minor.hashCode()
+        result = 31 * result + (patch?.hashCode() ?: 0)
         result = 31 * result + (identifier?.hashCode() ?: 0)
         result = 31 * result + (metadata?.hashCode() ?: 0)
         return result
     }
 
     /**
-     * Compares this object with the specified object for order. Returns zero if this object is equal
-     * to the specified [other] object, a negative number if it's less than [other], or a positive number
-     * if it's greater than [other].
+     * 比较 `this` 和 [other] 的实际版本大小.
+     *
+     * 如:
+     * - `SemVersion("1.0.0-RC").compareTo(SemVersion("1.0-RC")) == 0` (然而对他们进行 [equals] 判断会返回 `false`)
+     * - `SemVersion("1.3.0") > SemVersion("1.1.0") == true` (因为 1.3.0 比 1.1.0 更高)
+     *
+     *
+     * @return 当 `this` 比 [other] 更高时返回一个正数.
+     * 当 `this` 比 [other] 更低时返回一个负数.
+     * 当 `this` 与 [other] 版本大小相等时返回 0.
+     *
+     * @see equals
      */
     public override operator fun compareTo(other: SemVersion): Int {
         return SemVersionInternal.run { compareInternal(this@SemVersion, other) }

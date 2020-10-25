@@ -12,7 +12,7 @@ package net.mamoe.mirai.console.intellij.diagnostics
 import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.*
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
-import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKind
+import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
 import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValues
 import net.mamoe.mirai.console.intellij.resolve.valueParametersWithArguments
@@ -134,12 +134,18 @@ class ContextualParametersChecker : DeclarationChecker {
         context: DeclarationCheckerContext,
     ) {
         declaration.resolveAllCalls(context.bindingContext)
+            .asSequence()
             .flatMap { call ->
                 call.valueParametersWithArguments().asSequence()
             }
             .mapNotNull { (p, a) ->
-                p.resolveContextKind?.let(checkersMap::get)?.let { it to a }
+                p.resolveContextKinds
+                    ?.map(checkersMap::get)
+                    ?.mapNotNull {
+                        if (it == null) null else it to a
+                    }
             }
+            .flatMap { it.asSequence() }
             .mapNotNull { (kind, argument) ->
                 argument.resolveStringConstantValues()?.let { const ->
                     Triple(kind, argument, const)
