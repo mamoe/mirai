@@ -127,7 +127,7 @@ fun Project.configureDokka() {
 @Suppress("NOTHING_TO_INLINE") // or error
 fun Project.configureJvmTarget() {
     tasks.withType(KotlinJvmCompile::class.java) {
-        kotlinOptions.jvmTarget = "8"
+        kotlinOptions.jvmTarget = "1.8"
     }
 
     extensions.findByType(JavaPluginExtension::class.java)?.run {
