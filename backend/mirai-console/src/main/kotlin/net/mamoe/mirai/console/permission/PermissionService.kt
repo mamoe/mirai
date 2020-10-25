@@ -97,8 +97,7 @@ public interface PermissionService<P : Permission> {
     public fun allocatePermissionIdForPlugin(
         plugin: Plugin,
         @ResolveContext(COMMAND_NAME) permissionName: String,
-        reason: PluginPermissionIdRequestType
-    ): PermissionId = allocatePermissionIdForPluginDefaultImplement(plugin, permissionName, reason)
+    ): PermissionId = allocatePermissionIdForPluginDefaultImplement(plugin, permissionName)
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -127,16 +126,6 @@ public interface PermissionService<P : Permission> {
     @Throws(UnsupportedOperationException::class)
     public fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean)
 
-    /** [Plugin] 尝试分配的 [PermissionId] 来源 */
-    @ConsoleExperimentalApi
-    public enum class PluginPermissionIdRequestType {
-        /** For [Plugin.parentPermission] */
-        PLUGIN_ROOT_PERMISSION,
-
-        /** For [Plugin.permissionId] */
-        NORMAL
-    }
-
     public companion object {
         internal var instanceField: PermissionService<*>? = null
 
@@ -155,7 +144,6 @@ public interface PermissionService<P : Permission> {
         internal fun PermissionService<*>.allocatePermissionIdForPluginDefaultImplement(
             plugin: Plugin,
             @ResolveContext(COMMAND_NAME) permissionName: String,
-            reason: PluginPermissionIdRequestType
         ) = PermissionId(
             plugin.description.id.toLowerCase(),
             permissionName.toLowerCase()

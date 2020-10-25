@@ -13,6 +13,7 @@ import net.mamoe.mirai.console.command.BuiltInCommands
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandOwner
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
 import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
@@ -70,6 +71,7 @@ public abstract class JRawCommand
         protected set
 
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
+    @ExperimentalCommandDescriptors
     public final override var prefixOptional: Boolean = false
         protected set
 }

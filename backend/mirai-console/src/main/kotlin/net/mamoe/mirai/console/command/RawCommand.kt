@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.java.JRawCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
@@ -51,6 +50,7 @@ public abstract class RawCommand(
     /** 指令父权限 */
     parentPermission: Permission = owner.parentPermission,
     /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
+    @OptIn(ExperimentalCommandDescriptors::class)
     public override val prefixOptional: Boolean = false,
 ) : Command {
     public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }

@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
-import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_VERSION
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.SEMANTIC_VERSION
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.VERSION_REQUIREMENT
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.semver.SemVersionInternal
@@ -115,7 +115,7 @@ internal constructor(
         @JvmStatic
         @JvmName("parse")
         @Throws(IllegalArgumentException::class, NumberFormatException::class)
-        public operator fun invoke(@ResolveContext(PLUGIN_VERSION) version: String): SemVersion = SemVersionInternal.parse(version)
+        public operator fun invoke(@ResolveContext(SEMANTIC_VERSION) version: String): SemVersion = SemVersionInternal.parse(version)
 
         /**
          * 解析一条依赖需求描述, 在无法解析的时候抛出 [IllegalArgumentException]
@@ -155,7 +155,7 @@ internal constructor(
         /** @see [Requirement.test] */
         @JvmStatic
         @Throws(IllegalArgumentException::class, NumberFormatException::class)
-        public fun Requirement.test(@ResolveContext(PLUGIN_VERSION) version: String): Boolean = test(invoke(version))
+        public fun Requirement.test(@ResolveContext(SEMANTIC_VERSION) version: String): Boolean = test(invoke(version))
 
         /**
          * 当满足 [requirement] 时返回 true, 否则返回 false
@@ -178,7 +178,7 @@ internal constructor(
         /** for Kotlin only */
         @JvmStatic
         @JvmSynthetic
-        public operator fun Requirement.contains(@ResolveContext(PLUGIN_VERSION) version: String): Boolean = test(version)
+        public operator fun Requirement.contains(@ResolveContext(SEMANTIC_VERSION) version: String): Boolean = test(version)
     }
 
     @Transient
