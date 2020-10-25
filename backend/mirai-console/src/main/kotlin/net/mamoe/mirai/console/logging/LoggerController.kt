@@ -28,8 +28,6 @@ import java.util.concurrent.atomic.AtomicReference
 public interface LoggerController {
     /** 是否应该记录该等级的日志 */
     public fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean
-    /** 是否应该对 [newLogger] 的结果进行缓存 */
-    public val cacheLoggers: Boolean
     /**
      * 创建一个新的 [MiraiLogger]
      *
@@ -43,13 +41,4 @@ public interface LoggerController {
      * 因此不要在 [newLogger] 中调用 [net.mamoe.mirai.utils.DefaultLogger]
      */
     public fun newLogger(identity: String?): MiraiLogger
-    /**
-     * 获取对应的 Registration
-     *
-     * 实现细节:
-     * - 如果 [identity] 存在对应 Registration, 直接返回先前的 Registration
-     * - [identity] 不存在对应 Registration时, 创建新的 Registration 并存储起来
-     * - 注意并发性
-     */
-    public fun getLoggerRegistration(identity: String?): AtomicReference<Any>
 }

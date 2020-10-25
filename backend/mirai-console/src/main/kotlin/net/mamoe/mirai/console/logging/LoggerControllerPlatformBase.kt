@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.logging
 
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
@@ -22,12 +23,5 @@ import java.util.concurrent.atomic.AtomicReference
 public abstract class LoggerControllerPlatformBase : LoggerController {
 
     override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean = true
-    override val cacheLoggers: Boolean get() = true
-    protected val registrations: ConcurrentHashMap<Any, AtomicReference<Any>> = ConcurrentHashMap()
-
-    protected object NilIdentityPlaceholder
-
-    override fun getLoggerRegistration(identity: String?): AtomicReference<Any> =
-        registrations.computeIfAbsent(identity ?: NilIdentityPlaceholder) { AtomicReference() }
 
 }

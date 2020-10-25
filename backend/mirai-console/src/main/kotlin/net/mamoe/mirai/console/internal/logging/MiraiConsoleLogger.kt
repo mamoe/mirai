@@ -8,8 +8,9 @@
  *
  */
 
-package net.mamoe.mirai.console.logging
+package net.mamoe.mirai.console.internal.logging
 
+import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.MiraiLoggerPlatformBase
 import net.mamoe.mirai.utils.SimpleLogger

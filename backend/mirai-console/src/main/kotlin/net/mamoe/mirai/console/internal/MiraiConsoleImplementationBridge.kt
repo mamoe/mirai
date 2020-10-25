@@ -38,10 +38,8 @@ import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
-import net.mamoe.mirai.console.logging.LoggerController
-import net.mamoe.mirai.console.logging.LoggerControllerForFrontend
-import net.mamoe.mirai.console.logging.MiraiConsoleLoggerUnused
-import net.mamoe.mirai.console.logging.MiraiDelegateLogger
+import net.mamoe.mirai.console.logging.*
+import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.grantPermission
 import net.mamoe.mirai.console.permission.RootPermission
@@ -99,10 +97,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
     override fun createLogger(identity: String?): MiraiLogger {
         val controller = loggerController
-        val logger = MiraiConsoleLoggerUnused(controller, identity)
-        val delegate = MiraiDelegateLogger(logger)
-        logger.delegateLogger = delegate
-        return delegate
+        return MiraiConsoleLogger(controller, controller.newLogger(identity))
     }
 
     @Suppress("RemoveRedundantBackticks")
