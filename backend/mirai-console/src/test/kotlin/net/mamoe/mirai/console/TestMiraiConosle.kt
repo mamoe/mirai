@@ -71,9 +71,8 @@ fun initTestEnvironment() {
         override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
             LoginSolver.Default
 
-        override val loggerController: LoggerController = object : LoggerController {
-            override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean = true
-            override fun newLogger(identity: String?): MiraiLogger = PlatformLogger(identity)
+        override fun createLogger(identity: String?): MiraiLogger {
+            return PlatformLogger(identity)
         }
 
         override val coroutineContext: CoroutineContext = SupervisorJob() + CoroutineExceptionHandler { _, throwable ->

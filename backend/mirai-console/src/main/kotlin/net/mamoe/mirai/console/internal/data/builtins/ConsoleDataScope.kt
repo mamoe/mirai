@@ -11,10 +11,7 @@ package net.mamoe.mirai.console.internal.data.builtins
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.data.AutoSavePluginDataHolder
-import net.mamoe.mirai.console.data.PluginConfig
-import net.mamoe.mirai.console.data.PluginData
-import net.mamoe.mirai.console.data.PluginDataStorage
+import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.minutesToMillis
@@ -27,6 +24,11 @@ internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope("Co
     fun addAndReloadConfig(config: PluginConfig) {
         configs.add(config)
         ConsoleBuiltInPluginConfigStorage.load(ConsoleBuiltInPluginConfigHolder, config)
+    }
+
+    fun dropConfig(config: PluginConfig) {
+        configs.remove(config)
+        (config as? AutoSavePluginConfig)?.destroy()
     }
 
     fun reloadAll() {

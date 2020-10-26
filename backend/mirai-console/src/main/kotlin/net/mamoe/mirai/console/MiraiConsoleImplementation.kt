@@ -26,6 +26,7 @@ import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.MiraiLogger
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
@@ -164,11 +165,12 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     public fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver
 
     /**
-     * 日志控制器
+     * 创建一个 [MiraiLogger].
      *
-     * @see [LoggerControllerImpl]
+     * **注意**: [MiraiConsole] 会将 [net.mamoe.mirai.utils.DefaultLogger] 设置为 `MiraiConsole::createLogger`.
+     * 因此不要在 [createLogger] 中调用 [net.mamoe.mirai.utils.DefaultLogger]
      */
-    public val loggerController: LoggerController
+    public fun createLogger(identity: String?): MiraiLogger
 
     public companion object {
         internal lateinit var instance: MiraiConsoleImplementation

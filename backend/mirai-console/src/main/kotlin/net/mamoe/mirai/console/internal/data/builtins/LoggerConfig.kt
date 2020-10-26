@@ -13,8 +13,7 @@ package net.mamoe.mirai.console.internal.data.builtins
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
-import net.mamoe.mirai.utils.SimpleLogger
-import java.util.*
+import net.mamoe.mirai.console.logging.LogPriority
 
 internal object LoggerConfig : AutoSavePluginConfig("Logger") {
     @ValueDescription("""
@@ -29,30 +28,4 @@ internal object LoggerConfig : AutoSavePluginConfig("Logger") {
         mapOf("example.logger" to LogPriority.NONE)
     )
 
-    enum class LogPriority {
-        ALL(null),
-        VERBOSE,
-        DEBUG,
-        INFO,
-        WARNING,
-        ERROR,
-        NONE(null);
-
-        var mapped: SimpleLogger.LogPriority? = null
-
-        // resolve <clinit> NullPointerException
-        private object Holder {
-            @JvmField
-            val mapping = EnumMap<SimpleLogger.LogPriority, LogPriority>(SimpleLogger.LogPriority::class.java)
-        }
-        companion object {
-            fun by(priority: SimpleLogger.LogPriority): LogPriority = Holder.mapping[priority]!!
-        }
-        constructor(void: Nothing?)
-        constructor() {
-            mapped = SimpleLogger.LogPriority.valueOf(name)
-            Holder.mapping[mapped] = this
-        }
-
-    }
 }

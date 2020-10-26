@@ -8,20 +8,14 @@
  *
  */
 
-package net.mamoe.mirai.console.logging
+package net.mamoe.mirai.console.internal.logging
 
-import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.utils.SimpleLogger
 
-/**
- * 日志控制系统
- *
- * @see [LoggerControllerImpl]
- */
-@ConsoleExperimentalApi
-public interface LoggerController {
-    /** 是否应该记录该等级的日志 */
-    public fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean
-
+internal class LoggerControllerDelegate(
+    @Volatile
+    var delegate: LoggerController
+) : LoggerController {
+    override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean = delegate.shouldLog(identity, priority)
 }

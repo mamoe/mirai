@@ -83,8 +83,8 @@ class MiraiConsoleImplementationTerminal
         return DefaultLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
-    override val loggerController: LoggerController = object : LoggerControllerImpl() {
-        override fun newLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
+    override fun createLogger(identity: String?): MiraiLogger {
+        return LoggerCreator(identity)
     }
 
     init {

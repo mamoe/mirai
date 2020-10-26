@@ -12,20 +12,21 @@ package net.mamoe.mirai.console.internal.logging
 
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
+import net.mamoe.mirai.console.logging.LogPriority
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.utils.SimpleLogger
 
 @ConsoleFrontEndImplementation
 @ConsoleInternalApi
-public abstract class LoggerControllerImpl : LoggerController {
+internal object LoggerControllerImpl : LoggerController {
 
     private fun shouldLog(
-        priority: LoggerConfig.LogPriority,
-        settings: LoggerConfig.LogPriority
+        priority: LogPriority,
+        settings: LogPriority
     ): Boolean = settings <= priority
 
-    private fun shouldLog(identity: String?, priority: LoggerConfig.LogPriority): Boolean {
+    private fun shouldLog(identity: String?, priority: LogPriority): Boolean {
         return if (identity == null) {
             shouldLog(priority, LoggerConfig.defaultPriority)
         } else {
@@ -34,6 +35,6 @@ public abstract class LoggerControllerImpl : LoggerController {
     }
 
     override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean =
-        shouldLog(identity, LoggerConfig.LogPriority.by(priority))
+        shouldLog(identity, LogPriority.by(priority))
 
 }
