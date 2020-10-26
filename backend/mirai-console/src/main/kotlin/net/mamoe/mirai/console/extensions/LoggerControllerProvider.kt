@@ -12,13 +12,14 @@ package net.mamoe.mirai.console.extensions
 
 import net.mamoe.mirai.console.extension.AbstractSingletonExtensionPoint
 import net.mamoe.mirai.console.extension.SingletonExtension
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
 
 public interface LoggerControllerProvider : SingletonExtension<LoggerController> {
     public companion object ExtensionPoint :
-        AbstractSingletonExtensionPoint<LoggerControllerProvider, LoggerController>(LoggerControllerProvider::class, LoggerControllerImpl)
+        AbstractSingletonExtensionPoint<LoggerControllerProvider, LoggerController>(LoggerControllerProvider::class, MiraiConsoleImplementationBridge.frontendLoggerController)
 
 }
 

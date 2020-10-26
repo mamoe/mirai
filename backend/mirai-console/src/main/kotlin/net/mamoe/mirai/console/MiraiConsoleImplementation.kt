@@ -172,6 +172,11 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      */
     public fun createLogger(identity: String?): MiraiLogger
 
+    /**
+     * 前端预先定义的 [LoggerController], 以允许前端使用自己的配置系统
+     */
+    public val loggerController: LoggerController get() = LoggerControllerImpl
+
     public companion object {
         internal lateinit var instance: MiraiConsoleImplementation
         private val initLock = ReentrantLock()

@@ -38,7 +38,6 @@ import net.mamoe.mirai.console.internal.extension.BuiltInSingletonExtensionSelec
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.logging.LoggerControllerDelegate
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
-import net.mamoe.mirai.console.internal.logging.LoggerControllerTrusted
 import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
@@ -88,9 +87,11 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
     override val configStorageForBuiltIns: PluginDataStorage by instance::configStorageForBuiltIns
     override val consoleInput: ConsoleInput by instance::consoleInput
-    private val loggerController = LoggerControllerDelegate(LoggerControllerTrusted)
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
         instance.createLoginSolver(requesterBot, configuration)
+
+    internal val frontendLoggerController = instance.loggerController
+    override val loggerController: LoggerControllerDelegate = LoggerControllerDelegate(frontendLoggerController)
 
     init {
         DefaultLogger = this::createLogger
@@ -106,9 +107,11 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     internal fun doStart() {
 
         phase `pre setup logger controller`@{
-            loggerController.delegate = LoggerControllerImpl
-            // Relaod LoggerConfig first.
-            ConsoleDataScope.addAndReloadConfig(LoggerConfig)
+            loggerController.delegate = frontendLoggerController
+            if (frontendLoggerController === LoggerControllerImpl) {
+                // Relaod LoggerConfig first.
+                ConsoleDataScope.addAndReloadConfig(LoggerConfig)
+            }
         }
 
         phase `greeting`@{
@@ -179,7 +182,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         phase `setup logger controller`@{
             val selected = LoggerControllerProvider.selectedInstance
-            if (selected !== LoggerControllerImpl) {
+            if (selected !== frontendLoggerController) {
                 ConsoleDataScope.dropConfig(LoggerConfig)
                 loggerController.delegate = selected
             }
