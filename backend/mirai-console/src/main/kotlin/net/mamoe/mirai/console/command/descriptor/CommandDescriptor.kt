@@ -22,6 +22,7 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KType
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.typeOf
 
@@ -183,8 +184,12 @@ public class CommandReceiverParameter<T : CommandSender>(
     override val name: String get() = PARAMETER_NAME
 
     init {
-        check(type.classifier is KClass<*>) {
+        val classifier = type.classifier
+        require(classifier is KClass<*>) {
             "CommandReceiverParameter.type.classifier must be KClass."
+        }
+        require(classifier.isSubclassOf(CommandSender::class)) {
+            "CommandReceiverParameter.type.classifier must be subclass of CommandSender."
         }
     }
 
