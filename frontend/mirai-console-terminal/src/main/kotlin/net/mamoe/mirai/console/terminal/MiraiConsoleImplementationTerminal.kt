@@ -83,9 +83,7 @@ class MiraiConsoleImplementationTerminal
         return DefaultLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
-    override fun createLogger(identity: String?): MiraiLogger {
-        return LoggerCreator(identity)
-    }
+    override fun createLogger(identity: String?): MiraiLogger = LoggerCreator(identity)
 
     init {
         with(rootPath.toFile()) {
