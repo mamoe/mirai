@@ -19,7 +19,7 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.logging.LoggerController
-import net.mamoe.mirai.console.logging.LoggerControllerForFrontend
+import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -166,7 +166,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
     /**
      * 日志控制器
      *
-     * @see [LoggerControllerForFrontend]
+     * @see [LoggerControllerImpl]
      */
     public val loggerController: LoggerController
 

@@ -8,16 +8,17 @@
  *
  */
 
-package net.mamoe.mirai.console.logging
+package net.mamoe.mirai.console.internal.logging
 
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
+import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.utils.SimpleLogger
 
 @ConsoleFrontEndImplementation
 @ConsoleInternalApi
-public abstract class LoggerControllerForFrontend : LoggerControllerPlatformBase() {
+public abstract class LoggerControllerImpl : LoggerController {
 
     private fun shouldLog(
         priority: LoggerConfig.LogPriority,

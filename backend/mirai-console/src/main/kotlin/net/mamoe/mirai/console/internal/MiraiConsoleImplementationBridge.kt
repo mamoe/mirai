@@ -35,11 +35,12 @@ import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.extension.BuiltInSingletonExtensionSelector
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
+import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
-import net.mamoe.mirai.console.logging.*
-import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
+import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.RootPermission
@@ -103,7 +104,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     @Suppress("RemoveRedundantBackticks")
     internal fun doStart() {
         phase `setup logger controller`@{
-            if (loggerController is LoggerControllerForFrontend) {
+            if (loggerController is LoggerControllerImpl) {
                 ConsoleDataScope.addAndReloadConfig(LoggerConfig)
             }
         }

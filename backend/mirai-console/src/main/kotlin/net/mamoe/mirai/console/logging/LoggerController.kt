@@ -12,22 +12,22 @@ package net.mamoe.mirai.console.logging
 
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.MiraiConsole
+import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SimpleLogger
-import java.util.concurrent.atomic.AtomicReference
 
 /**
  * 日志控制系统
  *
- * @see [LoggerControllerPlatformBase]
- * @see [LoggerControllerForFrontend]
+ * @see [LoggerControllerImpl]
  */
 @ConsoleExperimentalApi
 @ConsoleFrontEndImplementation
 public interface LoggerController {
     /** 是否应该记录该等级的日志 */
     public fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean
+
     /**
      * 创建一个新的 [MiraiLogger]
      *

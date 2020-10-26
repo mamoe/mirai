@@ -15,7 +15,6 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.data.MemoryPluginDataStorage
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.logging.LoggerController
-import net.mamoe.mirai.console.logging.LoggerControllerPlatformBase
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -72,7 +71,7 @@ fun initTestEnvironment() {
         override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
             LoginSolver.Default
 
-        override val loggerController: LoggerController = object : LoggerControllerPlatformBase() {
+        override val loggerController: LoggerController = object : LoggerController {
             override fun shouldLog(identity: String?, priority: SimpleLogger.LogPriority): Boolean = true
             override fun newLogger(identity: String?): MiraiLogger = PlatformLogger(identity)
         }
