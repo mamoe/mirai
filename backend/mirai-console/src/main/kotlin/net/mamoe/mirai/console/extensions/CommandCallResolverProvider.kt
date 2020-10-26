@@ -16,8 +16,16 @@ import net.mamoe.mirai.console.extension.AbstractInstanceExtensionPoint
 import net.mamoe.mirai.console.extension.InstanceExtension
 
 @ExperimentalCommandDescriptors
-public open class CommandCallResolverProvider(override val instance: CommandCallResolver) : InstanceExtension<CommandCallResolver> {
+public interface CommandCallResolverProvider : InstanceExtension<CommandCallResolver> {
     public companion object ExtensionPoint :
         AbstractInstanceExtensionPoint<CommandCallResolverProvider, CommandCallResolver>(CommandCallResolverProvider::class,
             BuiltInCommandCallResolver.Provider)
+}
+
+@ExperimentalCommandDescriptors
+public class CommandCallResolverProviderImpl(override val instance: CommandCallResolver) : CommandCallResolverProvider
+
+@ExperimentalCommandDescriptors
+public class CommandCallResolverProviderImplLazy(instanceCalculator: () -> CommandCallResolver) : CommandCallResolverProvider {
+    override val instance: CommandCallResolver by lazy(instanceCalculator)
 }

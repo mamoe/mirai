@@ -2,12 +2,15 @@ package net.mamoe.mirai.console.command.resolve
 
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandManager
+import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isNotAcceptable
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.parse.DefaultCommandValueArgument
 import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
+import net.mamoe.mirai.console.extensions.CommandCallResolverProviderImpl
+import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.safeCast
 import net.mamoe.mirai.message.data.EmptyMessageChain
@@ -19,7 +22,7 @@ import net.mamoe.mirai.message.data.asMessageChain
 @ConsoleExperimentalApi
 @ExperimentalCommandDescriptors
 public object BuiltInCommandCallResolver : CommandCallResolver {
-    public object Provider : CommandCallResolverProvider(BuiltInCommandCallResolver)
+    public object Provider : CommandCallResolverProvider by CommandCallResolverProviderImpl(BuiltInCommandCallResolver)
 
     override fun resolve(call: CommandCall): ResolvedCommandCall? {
         val callee = CommandManager.matchCommand(call.calleeName) ?: return null
@@ -27,7 +30,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
         val valueArguments = call.valueArguments
         val context = callee.safeCast<CommandArgumentContextAware>()?.context
 
-        val signature = resolveImpl(callee, valueArguments, context) ?: return null
+        val signature = resolveImpl(call.caller, callee, valueArguments, context) ?: return null
 
         return ResolvedCommandCallImpl(call.caller,
             callee,
@@ -51,14 +54,18 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
     )
 
     private fun resolveImpl(
+        caller: CommandSender,
         callee: Command,
         valueArguments: List<CommandValueArgument>,
         context: CommandArgumentContext?,
     ): ResolveData? {
 
-
         callee.overloads
             .mapNotNull l@{ signature ->
+                if (signature.receiverParameter?.type?.classifierAsKClass()?.isInstance(caller) == false) {
+                    return@l null // not compatible receiver
+                }
+
                 val valueParameters = signature.valueParameters
 
                 val zipped = valueParameters.zip(valueArguments).toMutableList()

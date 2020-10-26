@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.extension
 
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser
+import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.extensions.*
 import net.mamoe.mirai.console.internal.extension.AbstractConcurrentComponentStorage
 import net.mamoe.mirai.console.permission.PermissionService
@@ -77,7 +78,7 @@ public class PluginComponentStorage(
     /** 注册一个 [PermissionServiceProvider] */
     @OverloadResolutionByLambdaReturnType
     public fun contributePermissionService(lazyInstance: () -> PermissionService<*>): Unit =
-        contribute(PermissionServiceProvider, plugin, LazyPermissionServiceProviderImpl(lazyInstance))
+        contribute(PermissionServiceProvider, plugin, PermissionServiceProviderImplLazy(lazyInstance))
 
     /** 注册一个 [PermissionServiceProvider] */
     @JvmName("contributePermissionServiceProvider")
@@ -90,7 +91,7 @@ public class PluginComponentStorage(
     /** 注册一个 [PluginLoaderProvider] */
     @OverloadResolutionByLambdaReturnType
     public fun contributePluginLoader(lazyInstance: () -> PluginLoader<*, *>): Unit =
-        contribute(PluginLoaderProvider, plugin, LazyPluginLoaderProviderImpl(lazyInstance))
+        contribute(PluginLoaderProvider, plugin, PluginLoaderProviderImplLazy(lazyInstance))
 
     /** 注册一个 [PluginLoaderProvider] */
     @JvmName("contributePluginLoaderProvider")
@@ -104,7 +105,7 @@ public class PluginComponentStorage(
     @ExperimentalCommandDescriptors
     @OverloadResolutionByLambdaReturnType
     public fun contributeCommandCallParser(lazyInstance: () -> CommandCallParser): Unit =
-        contribute(CommandCallParserProvider, plugin, LazyCommandCallParserProviderImpl(lazyInstance))
+        contribute(CommandCallParserProvider, plugin, CommandCallParserProviderImplLazy(lazyInstance))
 
     /** 注册一个 [CommandCallParserProvider] */
     @ExperimentalCommandDescriptors
@@ -112,4 +113,19 @@ public class PluginComponentStorage(
     @OverloadResolutionByLambdaReturnType
     public fun contributeCommandCallParser(provider: CommandCallParserProvider): Unit =
         contribute(CommandCallParserProvider, plugin, provider)
+
+    /////////////////////////////////////
+
+    /** 注册一个 [CommandCallResolverProvider] */
+    @ExperimentalCommandDescriptors
+    @OverloadResolutionByLambdaReturnType
+    public fun contributeCommandCallResolver(lazyInstance: () -> CommandCallResolver): Unit =
+        contribute(CommandCallResolverProvider, plugin, CommandCallResolverProviderImplLazy(lazyInstance))
+
+    /** 注册一个 [CommandCallResolverProvider] */
+    @ExperimentalCommandDescriptors
+    @JvmName("contributeCommandCallResolverProvider")
+    @OverloadResolutionByLambdaReturnType
+    public fun contributeCommandCallParser(provider: CommandCallResolverProvider): Unit =
+        contribute(CommandCallResolverProvider, plugin, provider)
 }
