@@ -29,13 +29,20 @@ public open class NoValueArgumentMappingException(
     public val forType: KType,
 ) : CommandResolutionException("Cannot find a CommandArgument mapping for ${forType.qualifiedName}")
 
+public open class CommandResolutionException : RuntimeException {
+    public constructor() : super()
+    public constructor(message: String?) : super(message)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(cause: Throwable?) : super(cause)
+}
+
 @ExperimentalCommandDescriptors
 public open class CommandDeclarationClashException(
     public val command: Command,
     public val signatures: List<CommandSignature>,
-) : CommandResolutionException("Command declaration clash: \n${signatures.joinToString("\n")}")
+) : CommandDeclarationException("Declaration clash for command '${command.primaryName}': \n${signatures.joinToString("\n")}")
 
-public open class CommandResolutionException : RuntimeException {
+public open class CommandDeclarationException : RuntimeException {
     public constructor() : super()
     public constructor(message: String?) : super(message)
     public constructor(message: String?, cause: Throwable?) : super(message, cause)
