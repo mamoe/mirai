@@ -32,6 +32,6 @@ public class PermissionServiceProviderImpl(override val instance: PermissionServ
 /**
  * @see PermissionServiceProvider
  */
-public class LazyPermissionServiceProviderImpl(initializer: () -> PermissionService<*>) : PermissionServiceProvider {
+public class PermissionServiceProviderImplLazy(initializer: () -> PermissionService<*>) : PermissionServiceProvider {
     override val instance: PermissionService<*> by lazy(initializer)
 }

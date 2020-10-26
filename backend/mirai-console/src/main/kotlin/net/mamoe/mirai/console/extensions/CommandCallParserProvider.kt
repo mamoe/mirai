@@ -30,6 +30,6 @@ public interface CommandCallParserProvider : InstanceExtension<CommandCallParser
 public class CommandCallParserProviderImpl(override val instance: CommandCallParser) : CommandCallParserProvider
 
 @ExperimentalCommandDescriptors
-public class LazyCommandCallParserProviderImpl(instanceCalculator: () -> CommandCallParser) : CommandCallParserProvider {
+public class CommandCallParserProviderImplLazy(instanceCalculator: () -> CommandCallParser) : CommandCallParserProvider {
     override val instance: CommandCallParser by lazy(instanceCalculator)
 }
