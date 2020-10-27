@@ -77,7 +77,6 @@ internal class TestCommand {
 
     @Test
     fun testRegister() {
-        error(TestCompositeCommand.usage)
         try {
             unregisterAllCommands(ConsoleCommandOwner) // builtins
             unregisterCommand(TestSimpleCommand)
