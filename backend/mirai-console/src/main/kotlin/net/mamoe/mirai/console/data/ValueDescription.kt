@@ -35,4 +35,9 @@ import kotlinx.serialization.SerialInfo
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-public annotation class ValueDescription(val value: String)
+public annotation class ValueDescription(
+    /**
+     * 将会被 [String.trimIndent] 处理.
+     */
+    val value: String,
+)

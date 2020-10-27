@@ -58,9 +58,8 @@ public abstract class SimpleCommand(
     @ResolveContext(COMMAND_NAME) vararg secondaryNames: String,
     description: String = "no description available",
     parentPermission: Permission = owner.parentPermission,
-    prefixOptional: Boolean = false,
     overrideContext: CommandArgumentContext = EmptyCommandArgumentContext,
-) : Command, AbstractCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission, prefixOptional),
+) : Command, AbstractCommand(owner, primaryName, secondaryNames = secondaryNames, description, parentPermission),
     CommandArgumentContextAware {
 
     private val reflector by lazy { CommandReflector(this, SimpleCommandSubCommandAnnotationResolver) }

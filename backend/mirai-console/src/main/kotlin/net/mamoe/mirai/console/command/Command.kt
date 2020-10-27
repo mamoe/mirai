@@ -77,6 +77,9 @@ public interface Command {
      * 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选.
      *
      * 会影响聊天语境中的解析.
+     *
+     * #### 实验性 API
+     * 由于指令解析允许被扩展, 此属性可能不适用所有解析器, 因此还未决定是否保留.
      */
     @ExperimentalCommandDescriptors
     @ConsoleExperimentalApi

@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.java.JRawCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
-import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
+import net.mamoe.mirai.console.internal.command.findOrCreateCommandPermission
 import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.message.data.Message
@@ -53,7 +53,7 @@ public abstract class RawCommand(
     @OptIn(ExperimentalCommandDescriptors::class)
     public override val prefixOptional: Boolean = false,
 ) : Command {
-    public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
+    public override val permission: Permission by lazy { findOrCreateCommandPermission(parentPermission) }
 
     @ExperimentalCommandDescriptors
     override val overloads: List<CommandSignature> = listOf(

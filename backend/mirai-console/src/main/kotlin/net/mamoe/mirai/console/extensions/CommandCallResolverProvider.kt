@@ -26,6 +26,6 @@ public interface CommandCallResolverProvider : InstanceExtension<CommandCallReso
 public class CommandCallResolverProviderImpl(override val instance: CommandCallResolver) : CommandCallResolverProvider
 
 @ExperimentalCommandDescriptors
-public class CommandCallResolverProviderImplLazy(instanceCalculator: () -> CommandCallResolver) : CommandCallResolverProvider {
-    override val instance: CommandCallResolver by lazy(instanceCalculator)
+public class CommandCallResolverProviderImplLazy(initializer: () -> CommandCallResolver) : CommandCallResolverProvider {
+    override val instance: CommandCallResolver by lazy(initializer)
 }

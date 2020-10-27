@@ -7,9 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.internal.command.createOrFindCommandPermission
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.internal.command.findOrCreateCommandPermission
 import net.mamoe.mirai.console.permission.Permission
 
 /**
@@ -26,14 +29,17 @@ public abstract class AbstractCommand
     public final override val secondaryNames: Array<out String>,
     public override val description: String = "<no description available>",
     parentPermission: Permission = owner.parentPermission,
-    /** 为 `true` 时表示 [指令前缀][CommandManager.commandPrefix] 可选 */
-    public override val prefixOptional: Boolean = false,
 ) : Command {
+
+    @ExperimentalCommandDescriptors
+    override val prefixOptional: Boolean
+        get() = false
+
     init {
         Command.checkCommandName(primaryName)
         secondaryNames.forEach(Command.Companion::checkCommandName)
     }
 
     public override val usage: String get() = description
-    public override val permission: Permission by lazy { createOrFindCommandPermission(parentPermission) }
+    public override val permission: Permission by lazy { findOrCreateCommandPermission(parentPermission) }
 }

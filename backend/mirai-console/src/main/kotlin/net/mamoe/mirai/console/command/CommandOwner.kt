@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregisterAllCommands
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PERMISSION_NAME
 import net.mamoe.mirai.console.permission.Permission
@@ -34,11 +33,13 @@ public interface CommandOwner : PermissionIdNamespace {
 
 /**
  * 代表控制台所有者. 所有的 mirai-console 内建的指令都属于 [ConsoleCommandOwner].
+ *
+ * 插件注册指令时不应该使用 [ConsoleCommandOwner].
  */
-internal object ConsoleCommandOwner : CommandOwner {
-    override val parentPermission: Permission get() = BuiltInCommands.parentPermission
+public object ConsoleCommandOwner : CommandOwner {
+    public override val parentPermission: Permission get() = BuiltInCommands.parentPermission
 
-    override fun permissionId(
+    public override fun permissionId(
         @ResolveContext(PERMISSION_NAME) name: String,
     ): PermissionId = PermissionId("console", name)
 }

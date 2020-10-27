@@ -35,7 +35,7 @@ import kotlin.DeprecationLevel.ERROR
  */
 public interface Plugin : CommandOwner {
     /**
-     * 判断此插件是否已启用
+     * 当插件已启用时返回 `true`, 否则表示插件未启用.
      *
      * @see PluginManager.enablePlugin 启用一个插件
      * @see PluginManager.disablePlugin 禁用一个插件

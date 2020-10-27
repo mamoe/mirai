@@ -58,6 +58,7 @@ internal fun Group.fuzzySearchMember(
     disambiguationRate: Double = 0.1,
 ): List<Pair<Member, Double>> {
     val candidates = (this.members + botAsMember)
+        .asSequence()
         .associateWith { it.nameCard.fuzzyMatchWith(nameCardTarget) }
         .filter { it.value >= minRate }
         .toList()
@@ -79,7 +80,7 @@ internal fun Group.fuzzySearchMember(
     }
 }
 
-internal fun Command.createOrFindCommandPermission(parent: Permission): Permission {
+internal fun Command.findOrCreateCommandPermission(parent: Permission): Permission {
     val id = owner.permissionId("command.$primaryName")
     return PermissionService.INSTANCE[id] ?: PermissionService.INSTANCE.register(id, description, parent)
 }

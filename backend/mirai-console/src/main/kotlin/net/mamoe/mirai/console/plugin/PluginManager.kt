@@ -140,16 +140,28 @@ public interface PluginManager {
             get() = this.loader as PluginLoader<P, PluginDescription>
 
 
+        /**
+         * @see getPluginDescription
+         */
         @get:JvmSynthetic
         public inline val Plugin.description: PluginDescription
             get() = getPluginDescription(this)
 
+        /**
+         * @see disablePlugin
+         */
         @JvmSynthetic
         public inline fun Plugin.disable(): Unit = disablePlugin(this)
 
+        /**
+         * @see enablePlugin
+         */
         @JvmSynthetic
         public inline fun Plugin.enable(): Unit = enablePlugin(this)
 
+        /**
+         * @see loadPlugin
+         */
         @JvmSynthetic
         public inline fun Plugin.load(): Unit = loadPlugin(this)
     }

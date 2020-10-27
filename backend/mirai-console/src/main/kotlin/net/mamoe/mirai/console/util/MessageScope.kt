@@ -72,6 +72,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *     val duration = Random.nextInt(1, 15)
  *     target.mute(duration)
  *
+ *
  *     // 不使用 MessageScope, 无用的样板代码
  *     val thisGroup = this.getGroupOrNull()
  *     val message = "${this.name} 禁言 ${target.nameCardOrNick} $duration 秒"
@@ -80,11 +81,13 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *     }
  *     sendMessage(message)
  *
+ *
  *     // 使用 MessageScope, 清晰逻辑
  *     // 表示至少发送给 `this`, 当 `this` 的真实发信对象与 `target.group` 不同时, 还额外发送给 `target.group`
  *     this.scopeWith(target.group) {
  *         sendMessage("${name} 禁言了 ${target.nameCardOrNick} $duration 秒")
  *     }
+ *
  *
  *     // 同样地, 可以扩展用法, 同时私聊指令执行者:
  *     // this.scopeWith(
@@ -132,6 +135,8 @@ public inline operator fun <R, MS : MessageScope> MS.invoke(action: MS.() -> R):
 
 /*
  * 实现提示: 以下所有代码都通过 codegen 模块中 net.mamoe.mirai.console.codegen.MessageScopeCodegen 生成. 请不要手动修改它们.
+ *
+ * 建议阅读 [MessageScope] 的文档.
  */
 
 //// region MessageScopeBuilders CODEGEN ////

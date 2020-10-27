@@ -37,10 +37,4 @@ import net.mamoe.mirai.console.data.PluginData
  * @see JAutoSavePluginData
  * @see PluginConfig
  */
-public abstract class JAutoSavePluginConfig : AutoSavePluginConfig, PluginConfig {
-    @Deprecated("请手动指定保存名称. 此构造器将在 1.0.0 删除", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("JAutoSavePluginConfig(\"把我改成保存名称\")"))
-    @Suppress("DEPRECATION_ERROR")
-    public constructor() : super()
-
-    public constructor(saveName: String) : super(saveName)
-}
+public abstract class JAutoSavePluginConfig public constructor(saveName: String) : AutoSavePluginConfig(saveName), PluginConfig

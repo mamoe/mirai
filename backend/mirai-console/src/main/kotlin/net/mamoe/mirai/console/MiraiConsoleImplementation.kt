@@ -47,7 +47,7 @@ public annotation class ConsoleFrontEndImplementation
 /**
  * 实现 [MiraiConsole] 的接口
  *
- * **注意**: 随着 Console 的更新, 在版本号 `x.y.z` 的 `y` 修改时此接口可能就会变动. 意味着前端实现着需要跟随 Console 更新.
+ * **注意**: 随着 Console 的更新, 在版本号 `x.y.z` 的 `y` 修改时此接口可能就会发生 ABI 变动. 意味着前端实现着需要跟随 Console 更新.
  *
  * @see MiraiConsoleImplementation.start 启动
  */

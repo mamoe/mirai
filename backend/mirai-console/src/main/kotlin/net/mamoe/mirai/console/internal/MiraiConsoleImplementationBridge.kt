@@ -226,6 +226,9 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     @DslMarker
     internal annotation class ILoveOmaeKumikoForever
 
+    /**
+     * 表示一个初始化阶段, 无实际作用.
+     */
     @ILoveOmaeKumikoForever
     private inline fun phase(block: () -> Unit) {
         contract {

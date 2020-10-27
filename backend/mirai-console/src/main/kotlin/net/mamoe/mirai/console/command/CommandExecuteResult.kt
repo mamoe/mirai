@@ -21,6 +21,8 @@ import kotlin.contracts.contract
 /**
  * 指令的执行返回
  *
+ * 注意: 现阶段
+ *
  * @see CommandExecuteStatus
  */
 @ConsoleExperimentalApi("Not yet implemented")
@@ -144,12 +146,14 @@ public sealed class CommandExecuteResult {
     }
 }
 
+@ExperimentalCommandDescriptors
 @Suppress("RemoveRedundantQualifierName")
 public typealias CommandExecuteStatus = CommandExecuteResult.CommandExecuteStatus
 
 /**
  * 当 [this] 为 [CommandExecuteResult.Success] 时返回 `true`
  */
+@ExperimentalCommandDescriptors
 @JvmSynthetic
 public fun CommandExecuteResult.isSuccess(): Boolean {
     contract {
@@ -162,6 +166,7 @@ public fun CommandExecuteResult.isSuccess(): Boolean {
 /**
  * 当 [this] 为 [CommandExecuteResult.IllegalArgument] 时返回 `true`
  */
+@ExperimentalCommandDescriptors
 @JvmSynthetic
 public fun CommandExecuteResult.isIllegalArgument(): Boolean {
     contract {
@@ -174,6 +179,7 @@ public fun CommandExecuteResult.isIllegalArgument(): Boolean {
 /**
  * 当 [this] 为 [CommandExecuteResult.ExecutionFailed] 时返回 `true`
  */
+@ExperimentalCommandDescriptors
 @JvmSynthetic
 public fun CommandExecuteResult.isExecutionException(): Boolean {
     contract {
@@ -186,6 +192,7 @@ public fun CommandExecuteResult.isExecutionException(): Boolean {
 /**
  * 当 [this] 为 [CommandExecuteResult.PermissionDenied] 时返回 `true`
  */
+@ExperimentalCommandDescriptors
 @JvmSynthetic
 public fun CommandExecuteResult.isPermissionDenied(): Boolean {
     contract {
@@ -198,6 +205,7 @@ public fun CommandExecuteResult.isPermissionDenied(): Boolean {
 /**
  * 当 [this] 为 [CommandExecuteResult.UnresolvedCall] 时返回 `true`
  */
+@ExperimentalCommandDescriptors
 @JvmSynthetic
 public fun CommandExecuteResult.isCommandNotFound(): Boolean {
     contract {
@@ -210,6 +218,7 @@ public fun CommandExecuteResult.isCommandNotFound(): Boolean {
 /**
  * 当 [this] 为 [CommandExecuteResult.ExecutionFailed], [CommandExecuteResult.IllegalArgument] 或 [CommandExecuteResult.UnresolvedCall] 时返回 `true`
  */
+@ExperimentalCommandDescriptors
 @JvmSynthetic
 public fun CommandExecuteResult.isFailure(): Boolean {
     contract {

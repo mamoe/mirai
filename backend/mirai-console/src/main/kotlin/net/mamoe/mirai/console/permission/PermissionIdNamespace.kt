@@ -20,7 +20,7 @@ public interface PermissionIdNamespace {
     /**
      * 创建一个此命名空间下的 [PermitteeId].
      *
-     * 在指令初始化时, 会申请对应权限. 此时 [name] 为 "command.$primaryName` 其中 [primaryName][Command.primaryName].
+     * 在指令初始化时, 会申请对应权限. 此时 [name] 为 `command.$primaryName` 其中 [primaryName][Command.primaryName].
      */
     public fun permissionId(@ResolveContext(PERMISSION_NAME) name: String): PermissionId
 }

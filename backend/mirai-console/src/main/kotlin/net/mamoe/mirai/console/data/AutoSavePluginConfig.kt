@@ -23,10 +23,4 @@ import kotlinx.coroutines.Job
  * @see PluginConfig
  * @see AutoSavePluginData
  */
-public open class AutoSavePluginConfig : AutoSavePluginData, PluginConfig {
-    @Deprecated("请手动指定保存名称. 此构造器将在 1.0.0 删除", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("AutoSavePluginConfig(\"把我改成保存名称\")"))
-    @Suppress("DEPRECATION_ERROR")
-    public constructor() : super()
-
-    public constructor(saveName: String) : super(saveName)
-}
+public open class AutoSavePluginConfig public constructor(saveName: String) : AutoSavePluginData(saveName), PluginConfig

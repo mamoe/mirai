@@ -9,8 +9,6 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
-
 /**
  * 在 [CommandManager.executeCommand] 中, [CommandSender] 未拥有 [Command.permission] 所要求的权限时抛出的异常.
  *
@@ -24,7 +22,7 @@ public class CommandPermissionDeniedException(
     /**
      * 执行过程发生异常的指令
      */
-    public val command: Command
+    public val command: Command,
 ) : RuntimeException("Permission denied while executing command '${command.primaryName}'") {
     public override fun toString(): String =
         "CommandPermissionDeniedException(command=$command)"

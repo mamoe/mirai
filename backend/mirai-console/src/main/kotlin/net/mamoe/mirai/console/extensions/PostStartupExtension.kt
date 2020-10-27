@@ -24,10 +24,10 @@ public fun interface PostStartupExtension : FunctionExtension {
     /**
      * 将在 Console 主线程执行.
      *
-     * @throws Exception 所有抛出的 [Exception] 都会被捕获并包装为 [ExtensionException] 抛出, 并停止 [MiraiConsole]
-     *
      * #### 内部实现细节
      * 在 [MiraiConsoleImplementationBridge.doStart] 所有 [MiraiConsoleImplementationBridge.phase] 执行完成后顺序调用.
+     *
+     * @throws Exception 所有抛出的 [Exception] 都会被捕获并包装为 [ExtensionException] 抛出, 并停止 [MiraiConsole]
      */
     @Throws(Exception::class)
     public operator fun invoke()

@@ -98,12 +98,15 @@ import kotlin.reflect.KType
  * ```
  * // MyPluginData.nestedMap: MutableMap<Long, List<Long>> by value()
  * val newList = MyPluginData.map.getOrPut(1, ::mutableListOf)
- * newList.add(1) // 不会添加到 MyPluginData.nestedMap 中, 因为 `mutableListOf` 创建的 MutableList 被非引用地添加进了 MyPluginData.nestedMap
+ * newList.add(1) // 不会添加到 MyPluginData.nestedMap 中, 因为 `mutableListOf` 创建的 MutableList 被非引用 (浅拷贝) 地添加进了 MyPluginData.nestedMap
  * ```
  *
  * 一个解决方案是对 [SerializerAwareValue] 做映射或相关修改. 如 [PluginDataExtensions].
  *
  * 要查看详细的解释，请查看 [docs/PluginData.md](https://github.com/mamoe/mirai-console/blob/master/docs/PluginData.md)
+ *
+ * ## 实现注意
+ * 此类型处于实验性阶段. 使用其中定义的属性和函数是安全的, 但将来可能会新增成员抽象函数.
  *
  * @see AbstractJvmPlugin.reloadPluginData 通过 [JvmPlugin] 获取指定 [PluginData] 实例.
  * @see PluginDataStorage [PluginData] 存储仓库

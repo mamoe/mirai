@@ -43,11 +43,10 @@ internal class JavaPluginSchedulerImpl internal constructor(parentCoroutineConte
         }
     }
 
-    override fun <R> delayed(delayMillis: Long, runnable: Callable<R>): CompletableFuture<Void?> {
+    override fun <R> delayed(delayMillis: Long, callable: Callable<R>): CompletableFuture<R> {
         return future {
             delay(delayMillis)
-            withContext(Dispatchers.IO) { runnable.call() }
-            null
+            withContext(Dispatchers.IO) { callable.call() }
         }
     }
 

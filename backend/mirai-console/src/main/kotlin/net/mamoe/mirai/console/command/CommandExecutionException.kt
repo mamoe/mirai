@@ -11,10 +11,8 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
-
 /**
- * 在 [CommandManager.executeCommand] 中, [Command.onCommand] 抛出异常时包装的异常.
+ * 在 [CommandManager.executeCommand] 中抛出异常时包装的异常.
  */
 public class CommandExecutionException(
     /**
@@ -29,7 +27,7 @@ public class CommandExecutionException(
      * 匹配到的指令名
      */
     public val name: String,
-    cause: Throwable
+    cause: Throwable,
 ) : RuntimeException(
     "Exception while executing command '${command.primaryName}'",
     cause

@@ -19,6 +19,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 
 /**
@@ -48,9 +49,9 @@ public interface JavaPluginScheduler : CoroutineScope {
     /**
      * 新增一个 Delayed Task (延迟任务)
      *
-     * 在延迟 [delayMillis] 后执行 [runnable]
+     * 在延迟 [delayMillis] 后执行 [callable]
      */
-    public fun <R> delayed(delayMillis: Long, runnable: Callable<R>): CompletableFuture<Void?>
+    public fun <R> delayed(delayMillis: Long, callable: Callable<R>): CompletableFuture<R>
 
     /**
      * 异步执行一个任务, 最终返回 [Future], 与 Java 使用方法无异, 但效率更高且可以在插件关闭时停止
@@ -68,7 +69,8 @@ public interface JavaPluginScheduler : CoroutineScope {
          */
         @JvmStatic
         @JvmName("create")
-        public operator fun invoke(parentCoroutineContext: CoroutineContext): JavaPluginScheduler =
+        @JvmOverloads
+        public operator fun invoke(parentCoroutineContext: CoroutineContext = EmptyCoroutineContext): JavaPluginScheduler =
             JavaPluginSchedulerImpl(parentCoroutineContext)
     }
 }

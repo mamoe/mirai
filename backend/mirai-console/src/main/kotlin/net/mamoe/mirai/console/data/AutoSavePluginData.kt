@@ -18,7 +18,6 @@ import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
 import net.mamoe.mirai.console.internal.plugin.updateWhen
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.*
-import kotlin.reflect.full.findAnnotation
 
 /**
  * 链接自动保存的 [PluginData].
@@ -44,14 +43,6 @@ public open class AutoSavePluginData private constructor(
 
     public constructor(saveName: String) : this(null) {
         _saveName = saveName
-    }
-
-    @Deprecated("请手动指定保存名称. 此构造器将在 1.0.0 删除", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("AutoSavePluginData(\"把我改成保存名称\")"))
-    public constructor() : this(null) {
-        val clazz = this::class
-        _saveName = clazz.findAnnotation<ValueName>()?.value
-            ?: clazz.qualifiedName
-                ?: throw IllegalArgumentException("Cannot find a serial name for ${this::class}")
     }
 
     @ConsoleExperimentalApi

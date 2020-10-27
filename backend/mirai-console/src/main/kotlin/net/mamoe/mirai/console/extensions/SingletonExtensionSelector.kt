@@ -28,13 +28,16 @@ import kotlin.reflect.KClass
  * 如有多个 [SingletonExtensionSelector] 注册, 将会停止服务器.
  */
 public interface SingletonExtensionSelector : FunctionExtension {
+    /**
+     * 表示一个插件注册的 [Extension]
+     */
     public data class Registry<T : Extension>(
         val plugin: Plugin?,
         val extension: T,
     )
 
     /**
-     * @return null 表示使用 builtin
+     * @return `null` 表示使用 Console 内置的 [SingletonExtensionSelector]
      */
     public fun <T : Extension> selectSingleton(
         extensionType: KClass<T>,

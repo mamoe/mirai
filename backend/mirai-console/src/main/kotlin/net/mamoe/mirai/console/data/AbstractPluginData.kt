@@ -23,6 +23,9 @@ import kotlin.reflect.KProperty
 /**
  * [PluginData] 的默认实现. 支持使用 `by value()` 等委托方法创建 [Value] 并跟踪其改动.
  *
+ * ### 实现注意
+ * 此类型处于实验性阶段. 使用其中定义的属性和函数是安全的, 但将来可能会新增成员抽象函数.
+ *
  * @see PluginData
  */
 public abstract class AbstractPluginData : PluginData, PluginDataImpl() {

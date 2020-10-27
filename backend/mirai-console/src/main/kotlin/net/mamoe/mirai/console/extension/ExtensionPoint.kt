@@ -50,7 +50,8 @@ public interface InstanceExtensionPoint<T : InstanceExtension<*>> : ExtensionPoi
 public interface FunctionExtensionPoint<T : FunctionExtension> : ExtensionPoint<T>
 
 
-public abstract class AbstractInstanceExtensionPoint<E : InstanceExtension<T>, T>(
+public abstract class AbstractInstanceExtensionPoint<E : InstanceExtension<T>, T>
+@ConsoleExperimentalApi constructor(
     extensionType: KClass<E>,
     /**
      * 内建的实现列表.
@@ -59,7 +60,8 @@ public abstract class AbstractInstanceExtensionPoint<E : InstanceExtension<T>, T
     public vararg val builtinImplementations: E,
 ) : AbstractExtensionPoint<E>(extensionType)
 
-public abstract class AbstractSingletonExtensionPoint<E : SingletonExtension<T>, T>(
+public abstract class AbstractSingletonExtensionPoint<E : SingletonExtension<T>, T>
+@ConsoleExperimentalApi constructor(
     extensionType: KClass<E>,
     /**
      * 内建的实现.
