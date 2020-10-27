@@ -21,6 +21,7 @@ import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.error
+import net.mamoe.mirai.utils.generateDeviceInfoData
 
 internal class WtLogin {
     /**

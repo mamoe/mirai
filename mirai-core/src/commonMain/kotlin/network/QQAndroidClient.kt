@@ -75,7 +75,7 @@ internal open class QQAndroidClient(
     context: Context,
     val account: BotAccount,
     val ecdh: ECDH = ECDH(),
-    val device: DeviceInfo = SystemDeviceInfo(context),
+    val device: DeviceInfo,
     bot: QQAndroidBot
 ) {
     @Suppress("INVISIBLE_MEMBER")
