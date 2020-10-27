@@ -9,6 +9,9 @@
 
 package net.mamoe.mirai.console.extension
 
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.parse.CommandCallParser
+import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.extensions.*
 import net.mamoe.mirai.console.internal.extension.AbstractConcurrentComponentStorage
 import net.mamoe.mirai.console.permission.PermissionService
@@ -35,7 +38,7 @@ public class PluginComponentStorage(
     ): Unit = contribute(extensionPoint, plugin, lazyInstance)
 
     /**
-     * 注册一个扩展
+     * 注册一个扩展. [E] 必须拥有伴生对象为 [ExtensionPoint].
      */
     public inline fun <reified E : Extension> contribute(
         noinline lazyInstance: () -> E,
@@ -56,6 +59,7 @@ public class PluginComponentStorage(
     public fun contributeSingletonExtensionSelector(lazyInstance: () -> SingletonExtensionSelector): Unit =
         contribute(SingletonExtensionSelector, plugin, lazyInstance)
 
+    @Suppress("SpellCheckingInspection") // alterer
     /** 注册一个 [BotConfigurationAlterer] */
     public fun contributeBotConfigurationAlterer(instance: BotConfigurationAlterer): Unit =
         contribute(BotConfigurationAlterer, plugin, lazyInstance = { instance })
@@ -73,27 +77,55 @@ public class PluginComponentStorage(
 
     /** 注册一个 [PermissionServiceProvider] */
     @OverloadResolutionByLambdaReturnType
-    public fun contributePermissionService(
-        lazyInstance: () -> PermissionService<*>,
-    ): Unit = contribute(PermissionServiceProvider, plugin, LazyPermissionServiceProviderImpl(lazyInstance))
+    public fun contributePermissionService(lazyInstance: () -> PermissionService<*>): Unit =
+        contribute(PermissionServiceProvider, plugin, PermissionServiceProviderImplLazy(lazyInstance))
 
     /** 注册一个 [PermissionServiceProvider] */
     @JvmName("contributePermissionServiceProvider")
     @OverloadResolutionByLambdaReturnType
-    public fun contributePermissionService(
-        lazyProvider: () -> PermissionServiceProvider,
-    ): Unit = contribute(PermissionServiceProvider, plugin, lazyProvider)
+    public fun contributePermissionService(lazyProvider: () -> PermissionServiceProvider): Unit =
+        contribute(PermissionServiceProvider, plugin, lazyProvider)
 
     /////////////////////////////////////
 
     /** 注册一个 [PluginLoaderProvider] */
     @OverloadResolutionByLambdaReturnType
     public fun contributePluginLoader(lazyInstance: () -> PluginLoader<*, *>): Unit =
-        contribute(PluginLoaderProvider, plugin, LazyPluginLoaderProviderImpl(lazyInstance))
+        contribute(PluginLoaderProvider, plugin, PluginLoaderProviderImplLazy(lazyInstance))
 
     /** 注册一个 [PluginLoaderProvider] */
     @JvmName("contributePluginLoaderProvider")
     @OverloadResolutionByLambdaReturnType
     public fun contributePluginLoader(lazyProvider: () -> PluginLoaderProvider): Unit =
-        contribute(PluginLoaderProvider, plugin, lazyProvider)
+        contribute(PluginLoaderProvider, plugin, lazyProvider) // lazy for safety
+
+    /////////////////////////////////////
+
+    /** 注册一个 [CommandCallParserProvider] */
+    @ExperimentalCommandDescriptors
+    @OverloadResolutionByLambdaReturnType
+    public fun contributeCommandCallParser(lazyInstance: () -> CommandCallParser): Unit =
+        contribute(CommandCallParserProvider, plugin, CommandCallParserProviderImplLazy(lazyInstance))
+
+    /** 注册一个 [CommandCallParserProvider] */
+    @ExperimentalCommandDescriptors
+    @JvmName("contributeCommandCallParserProvider")
+    @OverloadResolutionByLambdaReturnType
+    public fun contributeCommandCallParser(provider: CommandCallParserProvider): Unit =
+        contribute(CommandCallParserProvider, plugin, provider)
+
+    /////////////////////////////////////
+
+    /** 注册一个 [CommandCallResolverProvider] */
+    @ExperimentalCommandDescriptors
+    @OverloadResolutionByLambdaReturnType
+    public fun contributeCommandCallResolver(lazyInstance: () -> CommandCallResolver): Unit =
+        contribute(CommandCallResolverProvider, plugin, CommandCallResolverProviderImplLazy(lazyInstance))
+
+    /** 注册一个 [CommandCallResolverProvider] */
+    @ExperimentalCommandDescriptors
+    @JvmName("contributeCommandCallResolverProvider")
+    @OverloadResolutionByLambdaReturnType
+    public fun contributeCommandCallParser(provider: CommandCallResolverProvider): Unit =
+        contribute(CommandCallResolverProvider, plugin, provider)
 }

@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.permission.AbstractPermitteeId.*
 
 internal fun parseFromStringImpl(string: String): AbstractPermitteeId {
     val str = string.trim { it.isWhitespace() }.toLowerCase()
+    if (str == "*") return AnyContact
     if (str == "console") return Console
     if (str.isNotEmpty()) {
         when (str[0]) {

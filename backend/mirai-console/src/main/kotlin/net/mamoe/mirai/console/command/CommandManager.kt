@@ -8,7 +8,7 @@
  */
 
 @file:Suppress(
-    "NOTHING_TO_INLINE", "unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE",
+    "NOTHING_TO_INLINE", "unused",
     "MemberVisibilityCanBePrivate", "INAPPLICABLE_JVM_NAME"
 )
 @file:JvmName("CommandManagerKt")
@@ -16,21 +16,21 @@
 package net.mamoe.mirai.console.command
 
 import net.mamoe.kjbb.JvmBlockingBridge
+import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.parse.CommandCall
+import net.mamoe.mirai.console.command.parse.CommandCallParser
+import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.executeCommand
+import net.mamoe.mirai.console.internal.command.executeCommandImpl
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.message.data.*
 
 /**
  * 指令管理器
  */
 public interface CommandManager {
-    /**
-     * 获取已经注册了的属于这个 [CommandOwner] 的指令列表.
-     *
-     * @return 这一时刻的浅拷贝.
-     */
-    public val CommandOwner.registeredCommands: List<Command>
-
     /**
      * 获取所有已经注册了指令列表.
      *
@@ -44,9 +44,17 @@ public interface CommandManager {
     public val commandPrefix: String
 
     /**
-     * 取消注册所有属于 [this] 的指令
+     * 获取已经注册了的属于这个 [CommandOwner] 的指令列表.
+     *
+     * @return 这一时刻的浅拷贝.
      */
-    public fun CommandOwner.unregisterAllCommands()
+    public fun getRegisteredCommands(owner: CommandOwner): List<Command>
+
+
+    /**
+     * 取消注册所有属于 [owner] 的指令
+     */
+    public fun unregisterAllCommands(owner: CommandOwner)
 
     /**
      * 注册一个指令.
@@ -65,35 +73,31 @@ public interface CommandManager {
      *
      * 注意: [内建指令][BuiltInCommands] 也可以被覆盖.
      */
-    @JvmName("registerCommand")
-    public fun Command.register(override: Boolean = false): Boolean
+    public fun registerCommand(command: Command, override: Boolean = false): Boolean
 
     /**
      * 查找并返回重名的指令. 返回重名指令.
      */
-    @JvmName("findCommandDuplicate")
-    public fun Command.findDuplicate(): Command?
+    public fun findDuplicateCommand(command: Command): Command?
 
     /**
      * 取消注册这个指令.
      *
      * 若指令未注册, 返回 `false`.
      */
-    @JvmName("unregisterCommand")
-    public fun Command.unregister(): Boolean
+    public fun unregisterCommand(command: Command): Boolean
 
     /**
-     * 当 [this] 已经 [注册][register] 时返回 `true`
+     * 当 [command] 已经 [注册][registerCommand] 时返回 `true`
      */
-    @JvmName("isCommandRegistered")
-    public fun Command.isRegistered(): Boolean
+    public fun isCommandRegistered(command: Command): Boolean
 
     /**
      * 解析并执行一个指令.
      *
-     * 如要避免参数解析, 请使用 [Command.onCommand]
-     *
      * ### 指令解析流程
+     * 1. [CommandCallParser] 将 [MessageChain] 解析为 [CommandCall]
+     * 2. [CommandCallResolver] 将 [CommandCall] 解析为 []
      * 1. [message] 的第一个消息元素的 [内容][Message.contentToString] 被作为指令名, 在已注册指令列表中搜索. (包含 [Command.prefixOptional] 相关的处理)
      * 2. 参数语法分析.
      *   在当前的实现下, [message] 被以空格和 [SingleMessage] 分割.
@@ -101,118 +105,154 @@ public interface CommandManager {
      *   注意: 字符串与消息元素之间不需要空格, 会被强制分割. 如 "bar[mirai:image:]" 会被分割为 "bar" 和 [Image] 类型的消息元素.
      * 3. 参数解析. 各类型指令实现不同. 详见 [RawCommand], [CompositeCommand], [SimpleCommand]
      *
-     * ### 未来的扩展
-     * 在将来, 参数语法分析过程可能会被扩展, 允许插件自定义处理方式, 因此可能不会简单地使用空格分隔.
+     * ### 扩展
+     * 参数语法分析过程可能会被扩展, 插件可以自定义处理方式 ([CommandCallParser]), 因此可能不会简单地使用空格分隔.
      *
      * @param message 一条完整的指令. 如 "/managers add 123456.123456"
      * @param checkPermission 为 `true` 时检查权限
      *
+     * @see CommandCallParser
+     * @see CommandCallResolver
+     *
+     * @see CommandSender.executeCommand
+     * @see Command.execute
+     *
      * @return 执行结果
      */
+    @ExperimentalCommandDescriptors
     @JvmBlockingBridge
-    public suspend fun CommandSender.executeCommand(
+    public suspend fun executeCommand(
+        caller: CommandSender,
         message: Message,
         checkPermission: Boolean = true,
-    ): CommandExecuteResult
-
-    /**
-     * 解析并执行一个指令
-     *
-     * @param message 一条完整的指令. 如 "/managers add 123456.123456"
-     * @param checkPermission 为 `true` 时检查权限
-     *
-     * @return 执行结果
-     * @see executeCommand
-     */
-    @JvmBlockingBridge
-    public suspend fun CommandSender.executeCommand(
-        message: String,
-        checkPermission: Boolean = true,
-    ): CommandExecuteResult = executeCommand(PlainText(message).asMessageChain(), checkPermission)
+    ): CommandExecuteResult {
+        return executeCommandImpl(message, caller, checkPermission)
+    }
 
     /**
      * 执行一个确切的指令
+     *
+     * @param command 目标指令
+     * @param arguments 参数列表
+     *
      * @see executeCommand 获取更多信息
+     * @see Command.execute
      */
-    @JvmBlockingBridge
+    @ConsoleExperimentalApi
     @JvmName("executeCommand")
-    public suspend fun Command.execute(
+    @ExperimentalCommandDescriptors
+    @JvmSynthetic
+    public suspend fun executeCommand(
         sender: CommandSender,
+        command: Command,
         arguments: Message = EmptyMessageChain,
         checkPermission: Boolean = true,
-    ): CommandExecuteResult
+    ): CommandExecuteResult {
+        // TODO: 2020/10/18  net.mamoe.mirai.console.command.CommandManager.execute
+        val chain = buildMessageChain {
+            append(CommandManager.commandPrefix)
+            append(command.primaryName)
+            append(' ')
+            append(arguments)
+        }
+        return CommandManager.executeCommand(sender, chain, checkPermission)
+    }
 
     /**
-     * 执行一个确切的指令
-     * @see executeCommand 获取更多信息
+     * 从 [指令名称][commandName] 匹配对应的 [Command].
+     *
+     * #### 实现细节
+     * - [commandName] 带有 [commandPrefix] 时可以匹配到所有指令
+     * - [commandName] 不带有 [commandPrefix] 时只能匹配到 [Command.prefixOptional] 的指令
+     *
+     * @param commandName 可能带有或不带有 [commandPrefix].
      */
-    @JvmBlockingBridge
-    @JvmName("executeCommand")
-    public suspend fun Command.execute(
-        sender: CommandSender,
-        arguments: String = "",
-        checkPermission: Boolean = true,
-    ): CommandExecuteResult = execute(sender, PlainText(arguments).asMessageChain(), checkPermission)
+    public fun matchCommand(commandName: String): Command?
 
     public companion object INSTANCE : CommandManager by CommandManagerImpl {
-        // TODO: 2020/8/20 https://youtrack.jetbrains.com/issue/KT-41191
-
-        override val CommandOwner.registeredCommands: List<Command> get() = CommandManagerImpl.run { this@registeredCommands.registeredCommands }
-        override fun CommandOwner.unregisterAllCommands(): Unit = CommandManagerImpl.run { unregisterAllCommands() }
-        override fun Command.register(override: Boolean): Boolean = CommandManagerImpl.run { register(override) }
-        override fun Command.findDuplicate(): Command? = CommandManagerImpl.run { findDuplicate() }
-        override fun Command.unregister(): Boolean = CommandManagerImpl.run { unregister() }
-        override fun Command.isRegistered(): Boolean = CommandManagerImpl.run { isRegistered() }
-        override val commandPrefix: String get() = CommandManagerImpl.commandPrefix
-        override val allRegisteredCommands: List<Command>
-            get() = CommandManagerImpl.allRegisteredCommands
-
-
-        override suspend fun Command.execute(
-            sender: CommandSender,
-            arguments: Message,
-            checkPermission: Boolean,
-        ): CommandExecuteResult =
-            CommandManagerImpl.run { execute(sender, arguments = arguments, checkPermission = checkPermission) }
-
-        override suspend fun CommandSender.executeCommand(
-            message: String,
-            checkPermission: Boolean,
-        ): CommandExecuteResult = CommandManagerImpl.run { executeCommand(message, checkPermission) }
-
-        override suspend fun Command.execute(
-            sender: CommandSender,
-            arguments: String,
-            checkPermission: Boolean,
-        ): CommandExecuteResult = CommandManagerImpl.run { execute(sender, arguments, checkPermission) }
-
-        override suspend fun CommandSender.executeCommand(
-            message: Message,
-            checkPermission: Boolean,
-        ): CommandExecuteResult = CommandManagerImpl.run { executeCommand(message, checkPermission) }
 
         /**
-         * 执行一个确切的指令
-         * @see execute 获取更多信息
+         * @see CommandManager.getRegisteredCommands
          */
-        public suspend fun CommandSender.execute(
-            command: Command,
-            arguments: Message,
-            checkPermission: Boolean = true,
-        ): CommandExecuteResult {
-            return command.execute(this, arguments, checkPermission)
-        }
+        @get:JvmName("registeredCommands0")
+        @get:JvmSynthetic
+        public inline val CommandOwner.registeredCommands: List<Command>
+            get() = getRegisteredCommands(this)
 
         /**
-         * 执行一个确切的指令
-         * @see execute 获取更多信息
+         * @see CommandManager.registerCommand
          */
-        public suspend fun CommandSender.execute(
-            command: Command,
-            arguments: String,
-            checkPermission: Boolean = true,
-        ): CommandExecuteResult {
-            return command.execute(this, arguments, checkPermission)
-        }
+        @JvmSynthetic
+        public inline fun Command.register(override: Boolean = false): Boolean = registerCommand(this, override)
+
+        /**
+         * @see CommandManager.unregisterCommand
+         */
+        @JvmSynthetic
+        public inline fun Command.unregister(): Boolean = unregisterCommand(this)
+
+        /**
+         * @see CommandManager.isCommandRegistered
+         */
+        @get:JvmSynthetic
+        public inline val Command.isRegistered: Boolean
+            get() = isCommandRegistered(this)
+
+        /**
+         * @see CommandManager.unregisterAll
+         */
+        @JvmSynthetic
+        public inline fun CommandOwner.unregisterAll(): Unit = unregisterAllCommands(this)
+
+        /**
+         * @see CommandManager.findDuplicate
+         */
+        @JvmSynthetic
+        public inline fun Command.findDuplicate(): Command? = findDuplicateCommand(this)
+
     }
 }
+
+/**
+ * 解析并执行一个指令
+ *
+ * @param message 一条完整的指令. 如 "/managers add 123456.123456"
+ * @param checkPermission 为 `true` 时检查权限
+ *
+ * @return 执行结果
+ * @see executeCommand
+ */
+@JvmName("execute0")
+@ExperimentalCommandDescriptors
+@JvmSynthetic
+public suspend inline fun CommandSender.executeCommand(
+    message: String,
+    checkPermission: Boolean = true,
+): CommandExecuteResult = CommandManager.executeCommand(this, PlainText(message).asMessageChain(), checkPermission)
+
+
+/**
+ * 执行一个确切的指令
+ * @see executeCommand 获取更多信息
+ */
+@JvmName("execute0")
+@ExperimentalCommandDescriptors
+@JvmSynthetic
+public suspend inline fun Command.execute(
+    sender: CommandSender,
+    arguments: Message = EmptyMessageChain,
+    checkPermission: Boolean = true,
+): CommandExecuteResult = CommandManager.executeCommand(sender, this, arguments, checkPermission)
+
+/**
+ * 执行一个确切的指令
+ * @see executeCommand 获取更多信息
+ */
+@JvmName("execute0")
+@ExperimentalCommandDescriptors
+@JvmSynthetic
+public suspend inline fun Command.execute(
+    sender: CommandSender,
+    arguments: String = "",
+    checkPermission: Boolean = true,
+): CommandExecuteResult = execute(sender, PlainText(arguments), checkPermission)

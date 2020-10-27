@@ -15,11 +15,8 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.console.MiraiConsole
-import net.mamoe.mirai.console.command.BuiltInCommands
-import net.mamoe.mirai.console.command.CommandExecuteStatus
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.CommandManager.INSTANCE.executeCommand
-import net.mamoe.mirai.console.command.ConsoleCommandSender
+import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.requestInput
@@ -29,7 +26,7 @@ import org.jline.reader.UserInterruptException
 
 val consoleLogger by lazy { DefaultLogger("console") }
 
-@OptIn(ConsoleInternalApi::class, ConsoleTerminalExperimentalApi::class)
+@OptIn(ConsoleInternalApi::class, ConsoleTerminalExperimentalApi::class, ExperimentalCommandDescriptors::class)
 internal fun startupConsoleThread() {
     if (terminal is NoConsole) return
 
@@ -64,6 +61,9 @@ internal fun startupConsoleThread() {
                 val result = ConsoleCommandSender.executeCommand(next)
                 when (result.status) {
                     CommandExecuteStatus.SUCCESSFUL -> {
+                    }
+                    CommandExecuteStatus.ILLEGAL_ARGUMENT -> {
+                        result.exception?.message?.let { consoleLogger.warning(it) }
                     }
                     CommandExecuteStatus.EXECUTION_EXCEPTION -> {
                         result.exception?.let(consoleLogger::error)

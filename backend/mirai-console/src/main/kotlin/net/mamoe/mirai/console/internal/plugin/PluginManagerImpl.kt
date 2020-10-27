@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.internal.data.mkdir
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.safeLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPlugin
@@ -60,18 +61,17 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     override val pluginLoaders: List<PluginLoader<*, *>>
         get() = _pluginLoaders.toList()
 
-    override val Plugin.description: PluginDescription
-        get() = if (this is JvmPlugin) {
-            this.safeLoader.getPluginDescription(this)
-        } else resolvedPlugins.firstOrNull { it == this }
-            ?.loader?.cast<PluginLoader<Plugin, PluginDescription>>()
-            ?.getPluginDescription(this)
-            ?: error("Plugin is unloaded")
+    override fun getPluginDescription(plugin: Plugin): PluginDescription = if (plugin is JvmPlugin) {
+        plugin.safeLoader.getPluginDescription(plugin)
+    } else resolvedPlugins.firstOrNull { it == plugin }
+        ?.loader?.cast<PluginLoader<Plugin, PluginDescription>>()
+        ?.getPluginDescription(plugin)
+        ?: error("Plugin is unloaded")
 
 
     init {
         MiraiConsole.coroutineContext[Job]!!.invokeOnCompletion {
-            plugins.forEach { it.disable() }
+            plugins.forEach { disablePlugin(it) }
         }
     }
 
@@ -98,10 +98,10 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
             this.enable(plugin as P)
         }.fold(
             onSuccess = {
-                logger.info { "Successfully enabled plugin ${plugin.description.name}" }
+                logger.info { "Successfully enabled plugin ${getPluginDescription(plugin).name}" }
             },
             onFailure = {
-                logger.info { "Cannot enable plugin ${plugin.description.name}" }
+                logger.info { "Cannot enable plugin ${getPluginDescription(plugin).name}" }
                 throw it
             }
         )
@@ -148,7 +148,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
         var count = 0
         GlobalComponentStorage.run {
             PluginLoaderProvider.useExtensions { ext, plugin ->
-                logger.info { "Loaded PluginLoader ${ext.instance} from ${plugin.name}" }
+                logger.info { "Loaded PluginLoader ${ext.instance} from ${plugin?.name ?: "<builtin>"}" }
                 _pluginLoaders.add(ext.instance)
                 count++
             }
@@ -166,7 +166,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
     }
 
     internal fun enableAllLoadedPlugins() {
-        resolvedPlugins.forEach { it.enable() }
+        resolvedPlugins.forEach { enablePlugin(it) }
     }
 
     @kotlin.jvm.Throws(PluginLoadException::class)
@@ -180,7 +180,7 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
 
     private fun List<PluginLoader<*, *>>.listAndSortAllPlugins(): List<PluginDescriptionWithLoader> {
         return flatMap { loader ->
-            loader.listPlugins().map { plugin -> plugin.description.wrapWith(loader, plugin) }
+            loader.listPlugins().map { plugin -> getPluginDescription(plugin).wrapWith(loader, plugin) }
         }.sortByDependencies()
     }
 

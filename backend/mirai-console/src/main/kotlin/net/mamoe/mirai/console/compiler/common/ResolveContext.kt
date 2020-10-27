@@ -11,22 +11,21 @@
 
 package net.mamoe.mirai.console.compiler.common
 
-import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.data.PluginData
+import net.mamoe.mirai.console.data.value
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.plugin.description.PluginDescription
+import net.mamoe.mirai.console.util.SemVersion
 import kotlin.annotation.AnnotationTarget.*
 
 /**
  * 标记一个参数的语境类型, 用于帮助编译器和 IntelliJ 插件进行语境推断.
  */
-@ConsoleExperimentalApi
-@Target(
-    VALUE_PARAMETER,
-    PROPERTY, FIELD,
-    FUNCTION,
-    TYPE, TYPE_PARAMETER
-)
+@Target(VALUE_PARAMETER, PROPERTY, FIELD, FUNCTION, TYPE, TYPE_PARAMETER)
 @Retention(AnnotationRetention.BINARY)
 public annotation class ResolveContext(
-    val kind: Kind,
+    vararg val kinds: Kind,
 ) {
     /**
      * 元素数量可能在任意时间被改动
@@ -36,16 +35,57 @@ public annotation class ResolveContext(
         // ConstantKind
         ///////////////////////////////////////////////////////////////////////////
 
-        PLUGIN_ID, // ILLEGAL_PLUGIN_DESCRIPTION
-        PLUGIN_NAME, // ILLEGAL_PLUGIN_DESCRIPTION
-        PLUGIN_VERSION, // ILLEGAL_PLUGIN_DESCRIPTION
+        /*
+         * WARNING: IF YOU CHANGE NAMES HERE,
+         * YOU SHOULD ALSO CHANGE THEIR COUNTERPARTS AT net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
+         */
 
+        /**
+         * @see PluginDescription.id
+         */
+        PLUGIN_ID, // ILLEGAL_PLUGIN_DESCRIPTION
+
+        /**
+         * @see PluginDescription.name
+         */
+        PLUGIN_NAME, // ILLEGAL_PLUGIN_DESCRIPTION
+
+        /**
+         * @see PluginDescription.version
+         * @see SemVersion.Companion.invoke
+         */
+        SEMANTIC_VERSION, // ILLEGAL_PLUGIN_DESCRIPTION
+
+        /**
+         * @see SemVersion.Companion.parseRangeRequirement
+         */
+        VERSION_REQUIREMENT, // ILLEGAL_VERSION_REQUIREMENT // TODO
+
+        /**
+         * @see Command.allNames
+         */
         COMMAND_NAME, // ILLEGAL_COMMAND_NAME
 
-        PERMISSION_NAMESPACE, // ILLEGAL_COMMAND_NAMESPACE
-        PERMISSION_NAME, // ILLEGAL_COMMAND_NAME
-        PERMISSION_ID, // ILLEGAL_COMMAND_ID
+        /**
+         * @see PermissionId.name
+         */
+        PERMISSION_NAMESPACE, // ILLEGAL_PERMISSION_NAMESPACE
 
+        /**
+         * @see PermissionId.name
+         */
+        PERMISSION_NAME, // ILLEGAL_PERMISSION_NAME
+
+        /**
+         * @see PermissionId.parseFromString
+         */
+        PERMISSION_ID, // ILLEGAL_PERMISSION_ID
+
+        /**
+         * 标注一个泛型, 要求这个泛型必须拥有一个公开无参 (或所有参数都可选) 构造器.
+         *
+         * @see PluginData.value
+         */
         RESTRICTED_NO_ARG_CONSTRUCTOR, // NOT_CONSTRUCTABLE_TYPE
     }
 }

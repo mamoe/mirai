@@ -31,12 +31,12 @@ class PluginDataValuesChecker : DeclarationChecker {
         declaration.resolveAllCallsWithElement(bindingContext)
             .filter { (call) -> call.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME) }
             .filter { (call) ->
-                call.resultingDescriptor.resolveContextKind == ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR
+                call.resultingDescriptor.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) == true
             }.flatMap { (call, element) ->
                 call.typeArguments.entries.associateWith { element }.asSequence()
             }.filter { (e, _) ->
                 val (p, t) = e
-                (p.isReified || p.resolveContextKind == ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR)
+                (p.isReified || p.resolveContextKinds?.contains(ResolveContextKind.RESTRICTED_NO_ARG_CONSTRUCTOR) == true)
                     && t is SimpleType
             }.forEach { (e, callExpr) ->
                 val (_, type) = e

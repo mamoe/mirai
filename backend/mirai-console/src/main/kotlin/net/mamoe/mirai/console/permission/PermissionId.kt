@@ -31,24 +31,24 @@ public data class PermissionId(
     @ResolveContext(PERMISSION_NAME) public val name: String,
 ) {
     init {
-        require(!namespace.contains(' ')) {
+        require(namespace.none { it.isWhitespace() }) {
             "' ' is not allowed in namespace"
         }
-        require(!name.contains(' ')) {
-            "' ' is not allowed in id"
+        require(name.none { it.isWhitespace() }) {
+            "' ' is not allowed in name"
         }
 
         require(!namespace.contains(':')) {
             "':' is not allowed in namespace"
         }
         require(!name.contains(':')) {
-            "':' is not allowed in id"
+            "':' is not allowed in name"
         }
     }
 
     public object PermissionIdAsStringSerializer : KSerializer<PermissionId> by String.serializer().map(
         serializer = { it.namespace + ":" + it.name },
-        deserializer = { it.split(':').let { (namespace, id) -> PermissionId(namespace, id) } }
+        deserializer = ::parseFromString
     )
 
     /**
@@ -76,11 +76,11 @@ public data class PermissionId(
          */
         @JvmStatic
         @Throws(IllegalArgumentException::class)
-        public fun checkPermissionIdName(@ResolveContext(PERMISSION_NAME) value: String) {
+        public fun checkPermissionIdName(@ResolveContext(PERMISSION_NAME) name: String) {
             when {
-                value.isBlank() -> throw IllegalArgumentException("PermissionId.name should not be blank.")
-                value.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces is not yet allowed in PermissionId.name.")
-                value.contains(':') -> throw IllegalArgumentException("':' is forbidden in PermissionId.name.")
+                name.isBlank() -> throw IllegalArgumentException("PermissionId.name should not be blank.")
+                name.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces are not yet allowed in PermissionId.name.")
+                name.contains(':') -> throw IllegalArgumentException("':' is forbidden in PermissionId.name.")
             }
         }
 
@@ -89,11 +89,11 @@ public data class PermissionId(
          */
         @JvmStatic
         @Throws(IllegalArgumentException::class)
-        public fun checkPermissionIdNamespace(@ResolveContext(PERMISSION_NAME) value: String) {
+        public fun checkPermissionIdNamespace(@ResolveContext(PERMISSION_NAME) namespace: String) {
             when {
-                value.isBlank() -> throw IllegalArgumentException("PermissionId.namespace should not be blank.")
-                value.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces is not yet allowed in PermissionId.namespace.")
-                value.contains(':') -> throw IllegalArgumentException("':' is forbidden in PermissionId.namespace.")
+                namespace.isBlank() -> throw IllegalArgumentException("PermissionId.namespace should not be blank.")
+                namespace.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces are not yet allowed in PermissionId.namespace.")
+                namespace.contains(':') -> throw IllegalArgumentException("':' is forbidden in PermissionId.namespace.")
             }
         }
     }

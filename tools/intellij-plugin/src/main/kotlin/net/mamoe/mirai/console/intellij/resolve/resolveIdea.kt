@@ -32,7 +32,6 @@ import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.constants.ArrayValue
 import org.jetbrains.kotlin.resolve.constants.ConstantValue
 import org.jetbrains.kotlin.resolve.constants.StringValue
-import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
 
 
@@ -125,9 +124,8 @@ inline fun <reified E> PsiElement.findChild(): E? = this.children.find { it is E
 
 fun KtElement?.getResolvedCallOrResolveToCall(
     context: BindingContext,
-    bodyResolveMode: BodyResolveMode = BodyResolveMode.PARTIAL,
 ): ResolvedCall<out CallableDescriptor>? {
-    return this?.getCall(context)?.getResolvedCall(context)// ?: this?.resolveToCall(bodyResolveMode)
+    return this?.getCall(context)?.getResolvedCall(context)
 }
 
 val ResolvedCall<out CallableDescriptor>.valueParameters: List<ValueParameterDescriptor> get() = this.resultingDescriptor.valueParameters

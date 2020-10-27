@@ -92,7 +92,7 @@ public interface PluginDescription {
      *
      * @see Semver 语义化版本. 允许 [宽松][Semver.SemverType.LOOSE] 类型版本.
      */
-    @ResolveContext(PLUGIN_VERSION)
+    @ResolveContext(SEMANTIC_VERSION)
     public val version: SemVersion
 
     /**

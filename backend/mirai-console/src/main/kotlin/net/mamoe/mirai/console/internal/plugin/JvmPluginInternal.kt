@@ -48,7 +48,7 @@ internal abstract class JvmPluginInternal(
 
     final override val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
-            PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, "*", PermissionService.PluginPermissionIdRequestType.ROOT_PERMISSION),
+            PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, "*"),
             "The base permission"
         )
     }
@@ -182,7 +182,7 @@ internal inline fun AtomicLong.updateWhen(condition: (Long) -> Boolean, update: 
     while (true) {
         val current = value
         if (condition(current)) {
-            if (compareAndSet(0, update(current))) {
+            if (compareAndSet(current, update(current))) {
                 return true
             } else continue
         }

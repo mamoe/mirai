@@ -11,13 +11,14 @@ package net.mamoe.mirai.console.internal.data
 
 import net.mamoe.mirai.console.data.PluginData
 import net.mamoe.mirai.console.data.ValueName
-import net.mamoe.mirai.console.internal.command.qualifiedNameOrTip
-import kotlin.reflect.KClass
-import kotlin.reflect.KParameter
-import kotlin.reflect.KProperty
-import kotlin.reflect.KType
+import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.isSubclassOf
+
+internal val KClass<*>.qualifiedNameOrTip: String get() = this.qualifiedName ?: "<anonymous class>"
+
+internal inline fun <reified T : Annotation> KAnnotatedElement.hasAnnotation(): Boolean =
+    findAnnotation<T>() != null
 
 @Suppress("UNCHECKED_CAST")
 internal inline fun <reified T : Any> KType.toKClass(): KClass<out T> {
@@ -41,8 +42,8 @@ internal inline fun <reified T : PluginData> newPluginDataInstanceUsingReflectio
             ?: createInstanceOrNull()
             ?: throw IllegalArgumentException(
                 "Cannot create PluginData instance. " +
-                        "PluginDataHolder supports PluginData implemented as an object " +
-                        "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newPluginDataInstance implementation."
+                    "PluginDataHolder supports PluginData implemented as an object " +
+                    "or the ones with a constructor which either has no parameters or all parameters of which are optional, by default newPluginDataInstance implementation."
             )
     }
 }
@@ -53,6 +54,12 @@ internal fun KType.classifierAsKClass() = when (val t = classifier) {
     is KClass<*> -> t
     else -> error("Only KClass supported as classifier, got $t")
 } as KClass<Any>
+
+@Suppress("UNCHECKED_CAST")
+internal fun KType.classifierAsKClassOrNull() = when (val t = classifier) {
+    is KClass<*> -> t
+    else -> null
+} as KClass<Any>?
 
 @JvmSynthetic
 internal fun <T : Any> KClass<T>.createInstanceOrNull(): T? {

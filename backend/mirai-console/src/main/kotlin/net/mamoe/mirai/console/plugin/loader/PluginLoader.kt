@@ -14,8 +14,7 @@ package net.mamoe.mirai.console.plugin.loader
 import net.mamoe.mirai.console.extensions.PluginLoaderProvider
 import net.mamoe.mirai.console.plugin.Plugin
 import net.mamoe.mirai.console.plugin.PluginManager
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.disable
-import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enable
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.enablePlugin
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 
@@ -38,6 +37,7 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
  * 直接实现接口 [PluginLoader] 或 [FilePluginLoader], 并注册 [PluginLoaderProvider]
  *
  * @see JvmPluginLoader Jar 插件加载器
+ * @see PluginLoaderProvider 扩展
  */
 public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
@@ -66,9 +66,9 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     public fun getPluginDescription(plugin: P): D
 
     /**
-     * 主动加载一个插件 (实例), 但不 [启用][enable] 它. 返回加载成功的主类实例
+     * 主动加载一个插件 (实例), 但不 [启用][enablePlugin] 它. 返回加载成功的主类实例
      *
-     * **实现注意**: Console 不会把一个已经启用了的插件再次调用 [load] 或 [enable], 但不排除意外情况. 实现本函数时应在这种情况时立即抛出异常 [IllegalStateException].
+     * **实现注意**: Console 不会把一个已经启用了的插件再次调用 [load] 或 [enablePlugin], 但不排除意外情况. 实现本函数时应在这种情况时立即抛出异常 [IllegalStateException].
      *
      * **实现细节**: 此函数只允许抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
@@ -82,7 +82,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
     /**
      * 主动启用这个插件.
      *
-     * **实现注意**: Console 不会把一个已经启用了的插件再次调用 [load] 或 [enable], 但不排除意外情况. 实现本函数时应在这种情况时立即抛出异常 [IllegalStateException].
+     * **实现注意**: Console 不会把一个已经启用了的插件再次调用 [load] 或 [enablePlugin], 但不排除意外情况. 实现本函数时应在这种情况时立即抛出异常 [IllegalStateException].
      *
      * **实现细节**: 此函数可抛出 [PluginLoadException] 作为正常失败原因, 其他任意异常都属于意外错误.
      * 当异常发生时, 插件将会直接被放弃加载, 并影响依赖它的其他插件.
@@ -90,7 +90,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
      * @throws IllegalStateException 在插件已经被加载时抛出. 这属于意料之外的情况.
      *
-     * @see PluginManager.enable
+     * @see PluginManager.enablePlugin
      */
     @Throws(IllegalStateException::class, PluginLoadException::class)
     public fun enable(plugin: P)
@@ -103,7 +103,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      *
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
      *
-     * @see PluginManager.disable
+     * @see PluginManager.disablePlugin
      */
     @Throws(IllegalStateException::class, PluginLoadException::class)
     public fun disable(plugin: P)

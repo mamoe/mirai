@@ -39,7 +39,7 @@ public abstract class AbstractJvmPlugin @JvmOverloads constructor(
     public final override val loader: JvmPluginLoader get() = super<JvmPluginInternal>.loader
 
     public final override fun permissionId(name: String): PermissionId =
-        PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, "*", PermissionService.PluginPermissionIdRequestType.PERMISSION_ID)
+        PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, name)
 
     /**
      * 重载 [PluginData]

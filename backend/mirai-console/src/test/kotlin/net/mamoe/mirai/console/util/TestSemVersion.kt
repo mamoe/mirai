@@ -22,7 +22,8 @@ internal class TestSemVersion {
     internal fun testCompare() {
         fun String.sem(): SemVersion = SemVersion.invoke(this)
         assert("1.0".sem() < "1.0.1".sem())
-        assert("1.0.0".sem() == "1.0".sem())
+        assert("1.0.0".sem() != "1.0".sem())
+        assert("1.0.0".sem().compareTo("1.0".sem()) == 0)
         assert("1.1".sem() > "1.0.0".sem())
         assert("1.0-M4".sem() < "1.0-M5".sem())
         assert("1.0-M5-dev-7".sem() < "1.0-M5-dev-15".sem())

@@ -17,7 +17,8 @@ import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.permission.checkType
 import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.plugin.Plugin
-import net.mamoe.mirai.console.plugin.name
+import net.mamoe.mirai.console.plugin.PluginManager.INSTANCE.description
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.reflect.KClass
 
 /**
@@ -26,7 +27,7 @@ import kotlin.reflect.KClass
  * ### 可扩展
  * 权限服务可由插件扩展并覆盖默认实现.
  *
- * [PermissionServiceProvider]
+ * @see PermissionServiceProvider 相应扩展
  */
 @PermissionImplementation
 public interface PermissionService<P : Permission> {
@@ -49,11 +50,15 @@ public interface PermissionService<P : Permission> {
 
     /**
      * 获取所有已注册的指令列表. 应保证线程安全.
+     *
+     * 备注: Java 实现者使用 `CollectionsKt.asSequence(Collection)` 构造 [Sequence]
      */
     public fun getRegisteredPermissions(): Sequence<P>
 
     /**
      * 获取 [PermitteeId] 和其父标识的所有被授予的所有直接和间接的权限列表
+     *
+     * 备注: Java 实现者使用 `CollectionsKt.asSequence(Collection)` 构造 [Sequence]
      */
     public fun getPermittedPermissions(permitteeId: PermitteeId): Sequence<P>
 
@@ -82,7 +87,12 @@ public interface PermissionService<P : Permission> {
      *
      * @throws PermissionRegistryConflictException 当已存在一个 [PermissionId] 时抛出.
      *
+     * @param description 描述. 将会展示给用户.
+     *
      * @return 申请到的 [Permission] 实例
+     *
+     * @see get 获取一个已注册的权限
+     * @see getOrFail 获取一个已注册的权限
      */
     @Throws(PermissionRegistryConflictException::class)
     public fun register(
@@ -92,11 +102,14 @@ public interface PermissionService<P : Permission> {
     ): P
 
     /** 为 [Plugin] 分配一个 [PermissionId] */
+    @ConsoleExperimentalApi
     public fun allocatePermissionIdForPlugin(
         plugin: Plugin,
         @ResolveContext(COMMAND_NAME) permissionName: String,
-        reason: PluginPermissionIdRequestType
-    ): PermissionId = allocatePermissionIdForPluginDefaultImplement(plugin, permissionName, reason)
+    ): PermissionId = PermissionId(
+        plugin.description.id.toLowerCase(),
+        permissionName.toLowerCase()
+    )
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -125,102 +138,184 @@ public interface PermissionService<P : Permission> {
     @Throws(UnsupportedOperationException::class)
     public fun cancel(permitteeId: PermitteeId, permission: P, recursive: Boolean)
 
-    /** [Plugin] 尝试分配的 [PermissionId] 来源 */
-    public enum class PluginPermissionIdRequestType {
-        /** For [Plugin.parentPermission] */
-        ROOT_PERMISSION,
-
-        /** For [Plugin.permissionId] */
-        PERMISSION_ID
-    }
-
     public companion object {
-        internal var instanceField: PermissionService<*>? = null
-
+        /**
+         * [PermissionService] 实例
+         *
+         * @see PermissionServiceProvider.selectedInstance
+         */
         @get:JvmName("getInstance")
         @JvmStatic
         public val INSTANCE: PermissionService<out Permission>
-            get() = instanceField ?: error("PermissionService is not yet initialized therefore cannot be used.")
+            get() = PermissionServiceProvider.selectedInstance
 
         /**
          * 获取一个权限, 失败时抛出 [NoSuchElementException]
+         *
+         * @see register 申请并注册一个权限
          */
+        @JvmStatic
         @Throws(NoSuchElementException::class)
         public fun <P : Permission> PermissionService<P>.getOrFail(id: PermissionId): P =
             get(id) ?: throw NoSuchElementException("Permission not found: $id")
 
-        internal fun PermissionService<*>.allocatePermissionIdForPluginDefaultImplement(
-            plugin: Plugin,
-            @ResolveContext(COMMAND_NAME) permissionName: String,
-            reason: PluginPermissionIdRequestType
-        ) = PermissionId(
-            plugin.name.toLowerCase().replace(' ', '.'),
-            permissionName.toLowerCase().replace(' ', '.')
-        )
+        /**
+         * @see findCorrespondingPermission
+         */
+        @JvmStatic
+        public val PermissionId.correspondingPermission: Permission?
+            get() = findCorrespondingPermission()
 
+        /**
+         * @see get
+         */
+        @JvmStatic
         public fun PermissionId.findCorrespondingPermission(): Permission? = INSTANCE[this]
 
+        /**
+         * @see getOrFail
+         * @throws NoSuchElementException
+         */
+        @Throws(NoSuchElementException::class)
+        @JvmStatic
         public fun PermissionId.findCorrespondingPermissionOrFail(): Permission = INSTANCE.getOrFail(this)
 
-        public fun PermitteeId.grantPermission(permission: Permission) {
+        /**
+         * @see PermissionService.permit
+         */
+        @JvmStatic
+        @JvmName("permit0") // clash, not JvmSynthetic to allow possible calls from Java.
+        public fun PermitteeId.permit(permission: Permission) {
             INSTANCE.checkType(permission::class).permit(this, permission)
         }
 
-        public fun PermitteeId.grantPermission(permissionId: PermissionId) {
-            grantPermission(permissionId.findCorrespondingPermissionOrFail())
+        /**
+         * @see PermissionService.permit
+         * @throws NoSuchElementException
+         */
+        @JvmStatic
+        @Throws(NoSuchElementException::class)
+        public fun PermitteeId.permit(permissionId: PermissionId) {
+            permit(permissionId.findCorrespondingPermissionOrFail())
         }
 
-        public fun PermitteeId.denyPermission(permission: Permission, recursive: Boolean) {
+        /**
+         * @see PermissionService.cancel
+         */
+        @JvmSynthetic
+        @JvmStatic
+        @JvmName("cancel0") // clash, not JvmSynthetic to allow possible calls from Java.
+        public fun PermitteeId.cancel(permission: Permission, recursive: Boolean) {
             INSTANCE.checkType(permission::class).cancel(this, permission, recursive)
         }
 
-        public fun PermitteeId.denyPermission(permissionId: PermissionId, recursive: Boolean) {
-            denyPermission(permissionId.findCorrespondingPermissionOrFail(), recursive)
+        /**
+         * @see PermissionService.cancel
+         * @throws NoSuchElementException
+         */
+        @JvmStatic
+        @Throws(NoSuchElementException::class)
+        public fun PermitteeId.cancel(permissionId: PermissionId, recursive: Boolean) {
+            cancel(permissionId.findCorrespondingPermissionOrFail(), recursive)
         }
 
+        /**
+         * @see PermissionService.testPermission
+         */
+        @JvmStatic
         public fun Permittee.hasPermission(permission: Permission): Boolean =
             permission.testPermission(this@hasPermission)
 
+        /**
+         * @see PermissionService.testPermission
+         */
+        @JvmStatic
         public fun PermitteeId.hasPermission(permission: Permission): Boolean =
             permission.testPermission(this@hasPermission)
 
+        /**
+         * @see PermissionService.testPermission
+         * @throws NoSuchElementException
+         */
+        @JvmStatic
+        @Throws(NoSuchElementException::class)
         public fun PermitteeId.hasPermission(permissionId: PermissionId): Boolean {
             val instance = permissionId.findCorrespondingPermissionOrFail()
             return INSTANCE.checkType(instance::class).testPermission(this@hasPermission, instance)
         }
 
+        /**
+         * @see PermissionService.testPermission
+         */
+        @JvmStatic
         public fun Permittee.hasPermission(permissionId: PermissionId): Boolean =
             permissionId.testPermission(this@hasPermission)
 
+
+        /**
+         * @see PermissionService.getPermittedPermissions
+         */
+        @JvmStatic
         public fun Permittee.getPermittedPermissions(): Sequence<Permission> =
             INSTANCE.getPermittedPermissions(this@getPermittedPermissions.permitteeId)
 
-        public fun Permittee.grantPermission(vararg permissions: Permission) {
+
+        /**
+         * @see PermissionService.permit
+         */
+        @JvmStatic
+        public fun Permittee.permit(vararg permissions: Permission) {
             for (permission in permissions) {
                 INSTANCE.checkType(permission::class).permit(this.permitteeId, permission)
             }
         }
 
-        public fun Permittee.denyPermission(vararg permissions: Permission, recursive: Boolean) {
+        /**
+         * @see PermissionService.cancel
+         */
+        @JvmStatic
+        public fun Permittee.cancel(vararg permissions: Permission, recursive: Boolean) {
             for (permission in permissions) {
                 INSTANCE.checkType(permission::class).cancel(this.permitteeId, permission, recursive)
             }
         }
 
+        /**
+         * @see PermissionService.getPermittedPermissions
+         */
+        @JvmSynthetic
+        @JvmStatic
+        @JvmName("getPermittedPermissions0") // clash, not JvmSynthetic to allow possible calls from Java.
         public fun PermitteeId.getPermittedPermissions(): Sequence<Permission> =
             INSTANCE.getPermittedPermissions(this@getPermittedPermissions)
 
+        /**
+         * @see PermissionService.testPermission
+         */
+        @JvmStatic
         public fun Permission.testPermission(permittee: Permittee): Boolean =
             INSTANCE.checkType(this::class).testPermission(permittee.permitteeId, this@testPermission)
 
+        /**
+         * @see PermissionService.testPermission
+         */
+        @JvmStatic
         public fun Permission.testPermission(permitteeId: PermitteeId): Boolean =
             INSTANCE.checkType(this::class).testPermission(permitteeId, this@testPermission)
 
+        /**
+         * @see PermissionService.testPermission
+         */
+        @JvmStatic
         public fun PermissionId.testPermission(permittee: Permittee): Boolean {
             val p = INSTANCE[this] ?: return false
             return p.testPermission(permittee)
         }
 
+        /**
+         * @see PermissionService.testPermission
+         */
+        @JvmStatic
         public fun PermissionId.testPermission(permissible: PermitteeId): Boolean {
             val p = INSTANCE[this] ?: return false
             return p.testPermission(permissible)

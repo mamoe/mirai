@@ -7,24 +7,72 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.console.extension
 
+import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
+import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.reflect.KClass
 
+
 /**
- * 由 [Extension] 的 `companion` 实现.
+ * 由 [Extension] 的伴生对象实现.
+ *
+ * @see AbstractExtensionPoint
  */
 public interface ExtensionPoint<T : Extension> {
+    /**
+     * 扩展实例 [T] 的类型
+     */
     public val extensionType: KClass<T>
 }
 
-public open class AbstractExtensionPoint<T : Extension>(
+public abstract class AbstractExtensionPoint<T : Extension>(
     public override val extensionType: KClass<T>,
 ) : ExtensionPoint<T>
+
 
 /**
  * 表示一个 [SingletonExtension] 的 [ExtensionPoint]
  */
 public interface SingletonExtensionPoint<T : SingletonExtension<*>> : ExtensionPoint<T>
+
+/**
+ * 表示一个 [InstanceExtension] 的 [ExtensionPoint]
+ */
+public interface InstanceExtensionPoint<T : InstanceExtension<*>> : ExtensionPoint<T>
+
+/**
+ * 表示一个 [FunctionExtension] 的 [ExtensionPoint]
+ */
+public interface FunctionExtensionPoint<T : FunctionExtension> : ExtensionPoint<T>
+
+
+public abstract class AbstractInstanceExtensionPoint<E : InstanceExtension<T>, T>(
+    extensionType: KClass<E>,
+    /**
+     * 内建的实现列表.
+     */
+    @ConsoleExperimentalApi
+    public vararg val builtinImplementations: E,
+) : AbstractExtensionPoint<E>(extensionType)
+
+public abstract class AbstractSingletonExtensionPoint<E : SingletonExtension<T>, T>(
+    extensionType: KClass<E>,
+    /**
+     * 内建的实现.
+     */
+    @ConsoleExperimentalApi
+    public val builtinImplementation: T,
+) : AbstractExtensionPoint<E>(extensionType), SingletonExtensionPoint<E> {
+
+    /**
+     * 由 [SingletonExtensionSelector] 选择后的实例.
+     */
+    @ConsoleExperimentalApi
+    public val selectedInstance: T by lazy {
+        GlobalComponentStorage.run { this@AbstractSingletonExtensionPoint.findSingletonInstance(extensionType, builtinImplementation) }
+    }
+}

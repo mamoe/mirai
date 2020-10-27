@@ -18,13 +18,6 @@ import kotlin.math.max
 import kotlin.math.min
 
 
-internal infix fun Array<String>.matchesBeginning(list: List<Any>): Boolean {
-    this.forEachIndexed { index, any ->
-        if (list[index] != any) return false
-    }
-    return true
-}
-
 internal infix fun Array<out String>.intersectsIgnoringCase(other: Array<out String>): Boolean {
     val max = this.size.coerceAtMost(other.size)
     for (i in 0 until max) {

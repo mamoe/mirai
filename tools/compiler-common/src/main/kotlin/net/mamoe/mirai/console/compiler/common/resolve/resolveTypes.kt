@@ -13,6 +13,7 @@ import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.firstValue
 import org.jetbrains.kotlin.descriptors.annotations.Annotated
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.resolve.constants.ArrayValue
 import org.jetbrains.kotlin.resolve.constants.EnumValue
 
 ///////////////////////////////////////////////////////////////////////////
@@ -57,6 +58,8 @@ enum class ResolveContextKind {
     PLUGIN_NAME,
     PLUGIN_VERSION,
 
+    VERSION_REQUIREMENT,
+
     COMMAND_NAME,
 
     PERMISSION_NAMESPACE,
@@ -71,11 +74,14 @@ enum class ResolveContextKind {
     }
 }
 
-fun Annotated.isResolveContext(kind: ResolveContextKind) = this.resolveContextKind == kind
-
-val Annotated.resolveContextKind: ResolveContextKind?
+val Annotated.resolveContextKinds: List<ResolveContextKind>?
     get() {
         val ann = this.findAnnotation(RESOLVE_CONTEXT_FQ_NAME) ?: return null
-        val (_, enumEntryName) = ann.allValueArguments.firstValue().castOrNull<EnumValue>()?.value ?: return null // undetermined kind
-        return ResolveContextKind.valueOf(enumEntryName.asString())
+        val kinds =
+            ann.allValueArguments.firstValue().castOrNull<ArrayValue>()?.value?.mapNotNull { it.castOrNull<EnumValue>()?.value }
+                ?: return null // undetermined kind
+
+        return kinds.map { (_, enumEntryName) ->
+            ResolveContextKind.valueOf(enumEntryName.asString())
+        }
     }

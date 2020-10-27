@@ -12,12 +12,19 @@ package net.mamoe.mirai.console.extensions
 import net.mamoe.mirai.console.extension.AbstractExtensionPoint
 import net.mamoe.mirai.console.extension.Extension
 import net.mamoe.mirai.console.extension.InstanceExtension
+import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 
 /**
  * 提供扩展 [PluginLoader]
  *
+ * @see PluginComponentStorage.contributePluginLoader
+ *
+ *
  * @see Extension
+ * @see PluginLoader
+ *
+ * @see PluginLoaderProviderImplLazy
  */
 public interface PluginLoaderProvider : InstanceExtension<PluginLoader<*, *>> {
     public companion object ExtensionPoint : AbstractExtensionPoint<PluginLoaderProvider>(PluginLoaderProvider::class)
@@ -25,6 +32,6 @@ public interface PluginLoaderProvider : InstanceExtension<PluginLoader<*, *>> {
 
 public class PluginLoaderProviderImpl(override val instance: PluginLoader<*, *>) : PluginLoaderProvider
 
-public class LazyPluginLoaderProviderImpl(initializer: () -> PluginLoader<*, *>) : PluginLoaderProvider {
+public class PluginLoaderProviderImplLazy(initializer: () -> PluginLoader<*, *>) : PluginLoaderProvider {
     override val instance: PluginLoader<*, *> by lazy(initializer)
 }

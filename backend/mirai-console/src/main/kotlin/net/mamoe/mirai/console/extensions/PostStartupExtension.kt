@@ -9,8 +9,11 @@
 
 package net.mamoe.mirai.console.extensions
 
+import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.extension.AbstractExtensionPoint
+import net.mamoe.mirai.console.extension.ExtensionException
 import net.mamoe.mirai.console.extension.FunctionExtension
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 
 /**
  * 在 Console 启动完成后立即在主线程调用的扩展. 用于进行一些必要的延迟初始化.
@@ -20,7 +23,13 @@ import net.mamoe.mirai.console.extension.FunctionExtension
 public fun interface PostStartupExtension : FunctionExtension {
     /**
      * 将在 Console 主线程执行.
+     *
+     * @throws Exception 所有抛出的 [Exception] 都会被捕获并包装为 [ExtensionException] 抛出, 并停止 [MiraiConsole]
+     *
+     * #### 内部实现细节
+     * 在 [MiraiConsoleImplementationBridge.doStart] 所有 [MiraiConsoleImplementationBridge.phase] 执行完成后顺序调用.
      */
+    @Throws(Exception::class)
     public operator fun invoke()
 
     public companion object ExtensionPoint : AbstractExtensionPoint<PostStartupExtension>(PostStartupExtension::class)
