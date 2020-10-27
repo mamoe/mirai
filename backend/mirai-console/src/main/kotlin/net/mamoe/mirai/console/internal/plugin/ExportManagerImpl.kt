@@ -36,21 +36,14 @@ internal class ExportManagerImpl(
             }.forEach { line ->
                 val command = line.substringBefore(' ')
                 val argument = line.substringAfter(' ', missingDelimiterValue = "").trim()
+                val argumentPackage = "$argument."
 
                 when (command) {
-                    "exports", "export-package" -> rules.add {
-                        it.startsWith(argument).without(false)
+                    "exports" -> rules.add {
+                        (it == argument || it.startsWith(argumentPackage)).without(false)
                     }
-                    "export", "export-class" -> rules.add {
-                        (it == argument).without(false)
-                    }
-                    "protects", "protect-package" -> rules.add {
-                        if (it.startsWith(argument))
-                            false
-                        else null
-                    }
-                    "protect", "protect-class" -> rules.add {
-                        if (it == argument)
+                    "protects" -> rules.add {
+                        if (it == argument || it.startsWith(argumentPackage))
                             false
                         else null
                     }

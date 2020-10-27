@@ -174,24 +174,19 @@ Example:
 
 # #开头的行全部识别为注释
 
-# export, 允许其他插件直接使用某个类
+# exports, 允许其他插件直接使用某个类
 
 # 导出了一个internal包的一个类
 #
-# 别名: export-class
-export       org.example.miraiconsole.myplugin.internal.OpenInternal
-# 可以使用别名
-export-class org.example.miraiconsole.myplugin.internal.OpenInternal
+exports org.example.miraiconsole.myplugin.internal.OpenInternal
 
 # 导出了整个 api 包
 #
-# 别名: export-package
 exports org.example.miraiconsole.myplugin.api
 
 # 保护 org.example.miraiconsole.myplugin.api2.Internal, 不允许其他插件直接使用
 #
-# 别名: protect-class
-protect org.example.miraiconsole.myplugin.api2.Internal
+protects org.example.miraiconsole.myplugin.api2.Internal
 
 # 保护整个包
 #
@@ -200,7 +195,7 @@ protects org.example.miraiconsole.myplugin.internal
 
 # 此规则不会生效, 因为在此条规则之前,
 # org.example.miraiconsole.myplugin.internal 已经被加入到保护域中
-export org.example.miraiconsole.myplugin.internal.NotOpenInternal
+exports org.example.miraiconsole.myplugin.internal.NotOpenInternal
 
 
 # export-plugin, 允许其他插件使用除了已经被保护的全部类
