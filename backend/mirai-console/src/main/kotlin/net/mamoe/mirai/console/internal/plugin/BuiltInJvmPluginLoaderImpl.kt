@@ -23,7 +23,6 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
-import java.net.URLClassLoader
 import java.util.concurrent.ConcurrentHashMap
 
 internal object BuiltInJvmPluginLoaderImpl :
@@ -52,8 +51,22 @@ internal object BuiltInJvmPluginLoaderImpl :
     override fun Sequence<File>.extractPlugins(): List<JvmPlugin> {
         ensureActive()
 
-        fun Sequence<Map.Entry<File, ClassLoader>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
-            return map { (f, pluginClassLoader) ->
+        fun Sequence<Map.Entry<File, JvmPluginClassLoader>>.findAllInstances(): Sequence<Map.Entry<File, JvmPlugin>> {
+            return onEach { (_, pluginClassLoader) ->
+                val exportManagers = pluginClassLoader.findServices(
+                    ExportManager::class
+                ).loadAllServices()
+                if (exportManagers.isEmpty()) {
+                    val rules = pluginClassLoader.getResourceAsStream("export-rules.txt")
+                    if (rules == null)
+                        pluginClassLoader.declaredFilter = StandardExportManagers.AllExported
+                    else rules.bufferedReader(Charsets.UTF_8).useLines {
+                        pluginClassLoader.declaredFilter = ExportManagerImpl.parse(it.iterator())
+                    }
+                } else {
+                    pluginClassLoader.declaredFilter = exportManagers[0]
+                }
+            }.map { (f, pluginClassLoader) ->
                 f to pluginClassLoader.findServices(
                     JvmPlugin::class,
                     KotlinPlugin::class,
@@ -61,6 +74,7 @@ internal object BuiltInJvmPluginLoaderImpl :
                     JavaPlugin::class
                 ).loadAllServices()
             }.flatMap { (f, list) ->
+
                 list.associateBy { f }.asSequence()
             }
         }
@@ -68,7 +82,7 @@ internal object BuiltInJvmPluginLoaderImpl :
         val filePlugins = this.filterNot {
             pluginFileToInstanceMap.containsKey(it)
         }.associateWith {
-            JvmPluginClassLoader(it, MiraiConsole::class.java.classLoader)
+            JvmPluginClassLoader(it, MiraiConsole::class.java.classLoader, classLoaders)
         }.onEach { (_, classLoader) ->
             classLoaders.add(classLoader)
         }.asSequence().findAllInstances().onEach {
