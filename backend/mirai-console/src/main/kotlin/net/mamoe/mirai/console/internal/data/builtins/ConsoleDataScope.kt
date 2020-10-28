@@ -26,11 +26,6 @@ internal object ConsoleDataScope : CoroutineScope by MiraiConsole.childScope("Co
         ConsoleBuiltInPluginConfigStorage.load(ConsoleBuiltInPluginConfigHolder, config)
     }
 
-    fun dropConfig(config: PluginConfig) {
-        configs.remove(config)
-        (config as? AutoSavePluginConfig)?.destroy()
-    }
-
     fun reloadAll() {
         data.forEach { dt ->
             ConsoleBuiltInPluginDataStorage.load(ConsoleBuiltInPluginDataHolder, dt)
