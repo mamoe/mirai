@@ -48,6 +48,10 @@ public abstract class Friend : User(), CoroutineScope {
      * 昵称
      */
     public abstract override val nick: String
+    /**
+     * 好友备注
+     */
+    public abstract val remark: String
 
     /**
      * 头像下载链接

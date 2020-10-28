@@ -56,9 +56,22 @@ import kotlin.time.measureTime
 internal class FriendInfoImpl(
     @JvmField private val jceFriendInfo: net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo
 ) : FriendInfo {
-    @JvmField internal var cachedNick: String? = null
+    @JvmField
+    var cachedNick: String? = null
     override val nick: String get() = cachedNick ?: jceFriendInfo.nick.also { cachedNick = it }
     override val uin: Long get() = jceFriendInfo.friendUin
+    @JvmField
+    var cachedRemark: String? = null
+    override val remark: String get() = cachedRemark ?: jceFriendInfo.remark.also { cachedRemark = it }
+}
+
+@OptIn(ExperimentalContracts::class)
+internal inline fun FriendInfo.checkIsInfoImpl(): FriendInfoImpl {
+    contract {
+        returns() implies (this@checkIsInfoImpl is FriendInfoImpl)
+    }
+    check(this is FriendInfoImpl) { "A Friend instance is not instance of FriendImpl. Don't interlace two protocol implementations together!" }
+    return this
 }
 
 @OptIn(ExperimentalContracts::class)
@@ -84,6 +97,8 @@ internal class FriendImpl(
     override val bot: QQAndroidBot by bot.unsafeWeakRef()
     override val nick: String
         get() = friendInfo.nick
+    override val remark: String
+        get() = friendInfo.remark
 
     @JvmSynthetic
     @Suppress("DuplicatedCode")

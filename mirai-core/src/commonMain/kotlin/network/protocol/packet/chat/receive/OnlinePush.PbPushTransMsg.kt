@@ -138,6 +138,8 @@ internal object OnlinePushPbPushTransMsg :
                                         get() = to
                                     override val nick: String
                                         get() = ""
+                                    override val remark: String
+                                        get() = ""
                                 }).also { owner ->
                                     owner.checkIsMemberImpl().permission = MemberPermission.OWNER
                                     group.members.delegate.addLast(owner)

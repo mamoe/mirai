@@ -266,6 +266,7 @@ internal class GroupImpl(
             override val muteTimestamp = 0
             override val uin = 80000000L
             override val nick = name
+            override val remark: String = "匿名"
         }
     )
 
