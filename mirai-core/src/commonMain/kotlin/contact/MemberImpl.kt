@@ -54,6 +54,10 @@ internal class MemberImpl constructor(
 
     override val id: Long = qq.id
     override val nick: String = qq.nick
+    override val remark: String
+        get() {
+            return (this.asFriendOrNull() ?: return "").remark
+        }
 
     @Suppress("UNCHECKED_CAST")
     @JvmSynthetic

@@ -50,6 +50,17 @@ public abstract class User : Contact(), CoroutineScope {
     public abstract val nick: String
 
     /**
+     * 备注信息
+     *
+     * 仅 [Bot] 与 [User] 存在好友关系的时候才可能存在备注
+     *
+     * [Bot] 与 [User] 没有好友关系时永远为空[字符串][String] ("")
+     *
+     * @see [User.remarkOrNick]
+     */
+    public abstract val remark: String
+
+    /**
      * 头像下载链接
      */
     public open val avatarUrl: String
@@ -108,3 +119,25 @@ public abstract class User : Contact(), CoroutineScope {
 
     public abstract override fun toString(): String
 }
+
+/**
+ * 获取非空备注或昵称.
+ *
+ * 若 [备注][User.remark] 不为空则返回备注, 为空则返回 [User.nick]
+ */
+public val User.remarkOrNick: String get() = this.remark.takeIf { it.isNotEmpty() } ?: this.nick
+
+/**
+ * 获取非空备注或群名片.
+ *
+ * 若 [备注][User.remark] 不为空则返回备注, 为空则返回 [Member.nameCard]
+ */
+public val Member.remarkOrNameCard: String get() = this.remark.takeIf { it.isNotEmpty() } ?: this.nameCard
+
+/**
+ * 获取非空备注或群名片或昵称.
+ *
+ * 若 [备注][User.remark] 不为空则返回备注, 为空则返回 [Member.nameCardOrNick]
+ */
+public val Member.remarkOrNameCardOrNick: String get() = this.remark.takeIf { it.isNotEmpty() } ?: this.nameCardOrNick
+

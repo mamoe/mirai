@@ -51,7 +51,7 @@ public abstract class Friend : User(), CoroutineScope {
     /**
      * 好友备注
      */
-    public abstract val remark: String
+    public abstract override val remark: String
 
     /**
      * 头像下载链接
