@@ -130,7 +130,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             override val uin: Long get() = msgHead.authUin
             override val nick: String = msgHead.authNick.takeIf { it.isNotEmpty() }
                 ?: msgHead.fromNick
-            override val remark: String get() = nick
+            override val remark: String get() = ""
         }
     }
 

@@ -274,5 +274,5 @@ internal class MemberInfoImpl(
     }
     override val specialTitle: String = jceInfo.sSpecialTitle ?: ""
     override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
-    override val remark: String = jceInfo.nick
+    override val remark: String = jceInfo.autoRemark ?: ""
 }
