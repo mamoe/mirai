@@ -21,8 +21,8 @@ kotlin.sourceSets.all {
 dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
 
-    val core = "1.3.0"
-    val console = "1.0-RC-dev-28"
+    val core = "1.3.2"
+    val console = "1.0-RC-dev-33"
 
     compileOnly("net.mamoe:mirai-console:$console")
     compileOnly("net.mamoe:mirai-core:$core")

@@ -120,7 +120,7 @@ class ContextualParametersChecker : DeclarationChecker {
         EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?>(ResolveContextKind::class.java).apply {
             put(ResolveContextKind.PLUGIN_NAME, ::checkPluginName)
             put(ResolveContextKind.PLUGIN_ID, ::checkPluginId)
-            put(ResolveContextKind.PLUGIN_VERSION, ::checkPluginVersion)
+            put(ResolveContextKind.SEMANTIC_VERSION, ::checkPluginVersion)
             put(ResolveContextKind.COMMAND_NAME, ::checkCommandName)
             put(ResolveContextKind.PERMISSION_NAME, ::checkPermissionName)
             put(ResolveContextKind.PERMISSION_NAMESPACE, ::checkPermissionNamespace)

@@ -56,7 +56,7 @@ val RESOLVE_CONTEXT_FQ_NAME = FqName("net.mamoe.mirai.console.compiler.common.Re
 enum class ResolveContextKind {
     PLUGIN_ID,
     PLUGIN_NAME,
-    PLUGIN_VERSION,
+    SEMANTIC_VERSION,
 
     VERSION_REQUIREMENT,
 
