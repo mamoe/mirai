@@ -36,8 +36,6 @@ public open class AutoSavePluginData private constructor(
     private lateinit var owner_: AutoSavePluginDataHolder
     private val autoSaveIntervalMillis_: LongRange get() = owner_.autoSaveIntervalMillis
     private lateinit var storage_: PluginDataStorage
-    private var authSaveJob: Job? = null
-    private var completionHandle: DisposableHandle? = null
 
     public final override val saveName: String
         get() = _saveName
@@ -57,26 +55,17 @@ public open class AutoSavePluginData private constructor(
     }
 
     @ConsoleExperimentalApi
-    public fun destroy() {
-        completionHandle?.dispose()
-        authSaveJob?.cancel()
-        completionHandle = null
-        authSaveJob = null
-    }
-
-    @ConsoleExperimentalApi
     override fun onInit(owner: PluginDataHolder, storage: PluginDataStorage) {
         check(owner is AutoSavePluginDataHolder) { "owner must be AutoSavePluginDataHolder for AutoSavePluginData" }
 
         if (this::storage_.isInitialized) {
             check(storage == this.storage_) { "AutoSavePluginData is already initialized with one storage and cannot be reinitialized with another." }
-            destroy() // Destroy old jobs
         }
 
         this.storage_ = storage
         this.owner_ = owner
 
-        completionHandle = owner_.coroutineContext[Job]?.invokeOnCompletion {
+        owner_.coroutineContext[Job]?.invokeOnCompletion {
             kotlin.runCatching {
                 doSave()
             }.onFailure { e ->
@@ -91,7 +80,7 @@ public open class AutoSavePluginData private constructor(
         }
 
         if (shouldPerformAutoSaveWheneverChanged()) {
-            authSaveJob = owner_.launch(CoroutineName("AutoSavePluginData.timedAutoSave: ${this::class.qualifiedNameOrTip}")) {
+            owner_.launch(CoroutineName("AutoSavePluginData.timedAutoSave: ${this::class.qualifiedNameOrTip}")) {
                 while (isActive) {
                     try {
                         delay(autoSaveIntervalMillis_.last)  // 定时自动保存一次, 用于 kts 序列化的对象
