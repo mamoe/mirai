@@ -90,7 +90,7 @@ public interface PluginDescription {
      * - `v1.0` (不允许 "v")
      * - `V1.0` (不允许 "V")
      *
-     * @see Semver 语义化版本. 允许 [宽松][Semver.SemverType.LOOSE] 类型版本.
+     * @see SemVersion 语义化版本.
      */
     @ResolveContext(SEMANTIC_VERSION)
     public val version: SemVersion
@@ -116,7 +116,7 @@ public interface PluginDescription {
          *
          * @see PluginDescription.id
          */
-        public val ID_REGEX: Regex = Regex("""([a-zA-Z]+(?:\.[a-zA-Z0-9]+)*)\.([a-zA-Z]+(?:-[a-zA-Z0-9]+)*)""")
+        public val ID_REGEX: Regex = Regex("""([a-zA-Z][a-zA-Z0-9]*(?:\.[a-zA-Z][a-zA-Z0-9]*)*)\.([a-zA-Z][a-zA-Z0-9]*(?:-[a-zA-Z0-9]+)*)""")
 
         /**
          * 在 [PluginDescription.id] 和 [PluginDescription.name] 中禁止用的完全匹配名称列表.

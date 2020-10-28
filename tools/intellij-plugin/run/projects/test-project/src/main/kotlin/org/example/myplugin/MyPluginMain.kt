@@ -13,7 +13,7 @@ const val T = "org.example" // 编译期常量
 object MyPluginMain : KotlinPlugin(
     JvmPluginDescription(
         T,
-        "1.0.0-M4",
+        "1.0-M4",
     ) {
         name(".")
     }
