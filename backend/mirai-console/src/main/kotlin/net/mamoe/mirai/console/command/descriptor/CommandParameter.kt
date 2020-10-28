@@ -104,7 +104,7 @@ public class CommandReceiverParameter<T : CommandSender>(
     override val isOptional: Boolean,
     override val type: KType,
 ) : CommandParameter<T>, AbstractCommandParameter<T>() {
-    override val name: String get() = PARAMETER_NAME
+    override val name: String get() = NAME
 
     init {
         val classifier = type.classifier
@@ -117,7 +117,7 @@ public class CommandReceiverParameter<T : CommandSender>(
     }
 
     public companion object {
-        public const val PARAMETER_NAME: String = "<receiver>"
+        public const val NAME: String = "<receiver>"
     }
 }
 
