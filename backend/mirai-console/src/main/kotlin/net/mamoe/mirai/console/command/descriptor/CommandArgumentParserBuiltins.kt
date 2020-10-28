@@ -109,7 +109,7 @@ public object PlainTextValueArgumentParser : InternalCommandValueArgumentParserE
 }
 
 /**
- * 当字符串内容为(不区分大小写) "true", "yes", "enabled"
+ * 当字符串内容为(不区分大小写) "true", "yes", "enabled", "on", "1"
  */
 public object BooleanValueArgumentParser : InternalCommandValueArgumentParserExtensions<Boolean>() {
     public override fun parse(raw: String, sender: CommandSender): Boolean = raw.trim().let { str ->
@@ -117,6 +117,7 @@ public object BooleanValueArgumentParser : InternalCommandValueArgumentParserExt
             || str.equals("yes", ignoreCase = true)
             || str.equals("enabled", ignoreCase = true)
             || str.equals("on", ignoreCase = true)
+            || str.equals("1", ignoreCase = true)
     }
 }
 
