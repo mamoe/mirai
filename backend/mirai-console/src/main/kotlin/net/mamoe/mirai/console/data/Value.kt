@@ -156,6 +156,7 @@ public interface SerializerAwareValue<T> : Value<T> {
  * 注意: 目前这些类型都会被装箱, 由于泛型 T. 在将来可能会有优化处理.
  * *Primitive* 仅表示一个类型是上面 9 种类型之一.
  */
+@ConsoleExperimentalApi
 public interface PrimitiveValue<T> : Value<T>
 
 
@@ -164,46 +165,55 @@ public interface PrimitiveValue<T> : Value<T>
 /**
  * 表示一个不可空 [Byte] [Value].
  */
+@ConsoleExperimentalApi
 public interface ByteValue : PrimitiveValue<Byte>
 
 /**
  * 表示一个不可空 [Short] [Value].
  */
+@ConsoleExperimentalApi
 public interface ShortValue : PrimitiveValue<Short>
 
 /**
  * 表示一个不可空 [Int] [Value].
  */
+@ConsoleExperimentalApi
 public interface IntValue : PrimitiveValue<Int>
 
 /**
  * 表示一个不可空 [Long] [Value].
  */
+@ConsoleExperimentalApi
 public interface LongValue : PrimitiveValue<Long>
 
 /**
  * 表示一个不可空 [Float] [Value].
  */
+@ConsoleExperimentalApi
 public interface FloatValue : PrimitiveValue<Float>
 
 /**
  * 表示一个不可空 [Double] [Value].
  */
+@ConsoleExperimentalApi
 public interface DoubleValue : PrimitiveValue<Double>
 
 /**
  * 表示一个不可空 [Char] [Value].
  */
+@ConsoleExperimentalApi
 public interface CharValue : PrimitiveValue<Char>
 
 /**
  * 表示一个不可空 [Boolean] [Value].
  */
+@ConsoleExperimentalApi
 public interface BooleanValue : PrimitiveValue<Boolean>
 
 /**
  * 表示一个不可空 [String] [Value].
  */
+@ConsoleExperimentalApi
 public interface StringValue : PrimitiveValue<String>
 
 //// endregion PrimitiveValues CODEGEN ////
