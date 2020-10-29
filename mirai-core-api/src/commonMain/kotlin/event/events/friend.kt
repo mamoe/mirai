@@ -39,7 +39,7 @@ public data class FriendRemarkChangeEvent internal constructor(
     @Deprecated(
         message = "Please use newRemark",
         replaceWith = ReplaceWith("newRemark"),
-        level = DeprecationLevel.WARNING
+        level = DeprecationLevel.ERROR
     )
     val newName: String get() = newRemark
 }

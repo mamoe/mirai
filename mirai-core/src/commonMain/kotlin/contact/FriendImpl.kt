@@ -56,13 +56,9 @@ import kotlin.time.measureTime
 internal class FriendInfoImpl(
     @JvmField private val jceFriendInfo: net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo
 ) : FriendInfo {
-    @JvmField
-    var cachedNick: String? = null
-    override val nick: String get() = cachedNick ?: jceFriendInfo.nick.also { cachedNick = it }
+    override var nick: String = jceFriendInfo.nick
     override val uin: Long get() = jceFriendInfo.friendUin
-    @JvmField
-    var cachedRemark: String? = null
-    override val remark: String get() = cachedRemark ?: jceFriendInfo.remark.also { cachedRemark = it }
+    override var remark: String = jceFriendInfo.remark
 }
 
 @OptIn(ExperimentalContracts::class)

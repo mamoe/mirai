@@ -568,7 +568,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 val old: String
                 friend.checkIsFriendImpl().friendInfo.checkIsInfoImpl()
                     .also { info -> old = info.remark }
-                    .cachedRemark = it.rmkName
+                    .remark = it.rmkName
                 // TODO: 2020/4/10 ADD REMARK QUERY
                 FriendRemarkChangeEvent(friend, old, it.rmkName)
             } ?: emptySequence()
@@ -701,7 +701,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                                 val from = info.nick
                                 when (info) {
                                     is FriendInfoImpl -> {
-                                        info.cachedNick = to
+                                        info.nick = to
                                     }
                                     is MemberInfoImpl -> {
                                         info._nick = to
