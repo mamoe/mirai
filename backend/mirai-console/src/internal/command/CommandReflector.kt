@@ -153,13 +153,13 @@ internal class CommandReflector(
                 } else {
                     append(CommandManager.commandPrefix)
                 }
-                if (command is CompositeCommand) {
+                //if (command is CompositeCommand) {
                     append(command.primaryName)
                     append(" ")
-                }
+                //}
                 append(subcommand.valueParameters.joinToString(" ") { it.render() })
                 annotationResolver.getDescription(command, subcommand.originFunction)?.let { description ->
-                    append("   ")
+                    append("    # ")
                     append(description)
                 }
             }

@@ -76,8 +76,13 @@ public object BuiltInCommands {
         @Handler
         public suspend fun CommandSender.handle() {
             sendMessage(
-                allRegisteredCommands.joinToString("\n\n") { "◆ ${it.usage}" }.lines().filterNot(String::isBlank)
-                    .joinToString("\n")
+                allRegisteredCommands
+                    .joinToString("\n\n") { command ->
+                        val lines = command.usage.lines()
+                        if (lines.isEmpty()) "/${command.primaryName} ${command.description}"
+                        else
+                            "◆ " + lines.first() + "\n" + lines.drop(1).joinToString("\n") { "  $it" }
+                    }.lines().filterNot(String::isBlank).joinToString("\n")
             )
         }
     }
