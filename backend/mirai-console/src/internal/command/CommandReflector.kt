@@ -230,10 +230,10 @@ internal class CommandReflector(
             .onEach { it.checkNames() }
             .flatMap { function ->
                 val names = annotationResolver.getSubCommandNames(command, function)
-                if (names.isEmpty()) sequenceOf(createMapEntry(function, null))
-                else names.associateBy { function }.asSequence()
+                if (names.isEmpty()) sequenceOf(createMapEntry(null, function))
+                else names.associateWith { function }.asSequence()
             }
-            .map { (function, name) ->
+            .map { (name, function) ->
 
                 val functionNameAsValueParameter =
                     name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameter(index, s) }
