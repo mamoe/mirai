@@ -4,10 +4,10 @@ Mirai Console 拥有灵活的 Extensions API，支持扩展 Console 的一些服
 
 Extensions 属于插件开发的进阶内容。
 
-[`Extension`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/extension/Extension.kt
-[`ExtensionPoint`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/extension/ExtensionPoint.kt
-[`PluginComponentStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/extension/PluginComponentStorage.kt
-[`ComponentStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/extension/ComponentStorage.kt
+[`Extension`]: ../backend/mirai-console/src/extension/Extension.kt
+[`ExtensionPoint`]: ../backend/mirai-console/src/extension/ExtensionPoint.kt
+[`PluginComponentStorage`]: ../backend/mirai-console/src/extension/PluginComponentStorage.kt
+[`ComponentStorage`]: ../backend/mirai-console/src/extension/ComponentStorage.kt
 
 ## [扩展][`Extension`]
 
@@ -34,4 +34,4 @@ object MyPlugin : KotlinPlugin( /* ... */ ) {
 
 ### 可用扩展
 
-查看 [extensions](../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/extensions/)。每个文件对应一个扩展。
+查看 [extensions](../backend/mirai-console/src/extensions)。每个文件对应一个扩展。

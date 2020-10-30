@@ -1,47 +1,47 @@
 # Mirai Console Backend - Commands
 
 
-[`Plugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/Plugin.kt
-[`PluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/description/PluginDescription.kt
-[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/loader/PluginLoader.kt
-[`PluginManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginManager.kt
-[`JvmPluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginLoader.kt
-[`JvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPlugin.kt
-[`JvmPluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription.kt
-[`AbstractJvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin.kt
-[`KotlinPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/KotlinPlugin.kt
-[`JavaPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPlugin.kt
+[`Plugin`]: ../backend/mirai-console/src/plugin/Plugin.kt
+[`PluginDescription`]: ../backend/mirai-console/src/plugin/description/PluginDescription.kt
+[`PluginLoader`]: ../backend/mirai-console/src/plugin/loader/PluginLoader.kt
+[`PluginManager`]: ../backend/mirai-console/src/plugin/PluginManager.kt
+[`JvmPluginLoader`]: ../backend/mirai-console/src/plugin/jvm/JvmPluginLoader.kt
+[`JvmPlugin`]: ../backend/mirai-console/src/plugin/jvm/JvmPlugin.kt
+[`JvmPluginDescription`]: ../backend/mirai-console/src/plugin/jvm/JvmPluginDescription.kt
+[`AbstractJvmPlugin`]: ../backend/mirai-console/src/plugin/jvm/AbstractJvmPlugin.kt
+[`KotlinPlugin`]: ../backend/mirai-console/src/plugin/jvm/KotlinPlugin.kt
+[`JavaPlugin`]: ../backend/mirai-console/src/plugin/jvm/JavaPlugin.kt
 
 
-[`Value`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/Value.kt
-[`PluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginData.kt
-[`AbstractPluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AbstractPluginData.kt
-[`AutoSavePluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AutoSavePluginData.kt
-[`AutoSavePluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AutoSavePluginConfig.kt
-[`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
-[`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
-[`MultiFilePluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt#L116
-[`MemoryPluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt#L100
-[`AutoSavePluginDataHolder`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataHolder.kt#L45
-[`PluginDataHolder`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataHolder.kt
-[`PluginDataExtensions`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataExtensions.kt
+[`Value`]: ../backend/mirai-console/src/data/Value.kt
+[`PluginData`]: ../backend/mirai-console/src/data/PluginData.kt
+[`AbstractPluginData`]: ../backend/mirai-console/src/data/AbstractPluginData.kt
+[`AutoSavePluginData`]: ../backend/mirai-console/src/data/AutoSavePluginData.kt
+[`AutoSavePluginConfig`]: ../backend/mirai-console/src/data/AutoSavePluginConfig.kt
+[`PluginConfig`]: ../backend/mirai-console/src/data/PluginConfig.kt
+[`PluginDataStorage`]: ../backend/mirai-console/src/data/PluginDataStorage.kt
+[`MultiFilePluginDataStorage`]: ../backend/mirai-console/src/data/PluginDataStorage.kt#L116
+[`MemoryPluginDataStorage`]: ../backend/mirai-console/src/data/PluginDataStorage.kt#L100
+[`AutoSavePluginDataHolder`]: ../backend/mirai-console/src/data/PluginDataHolder.kt#L45
+[`PluginDataHolder`]: ../backend/mirai-console/src/data/PluginDataHolder.kt
+[`PluginDataExtensions`]: ../backend/mirai-console/src/data/PluginDataExtensions.kt
 
-[`MiraiConsole`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsole.kt
-[`MiraiConsoleImplementation`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleImplementation.kt
-<!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleFrontEnd.kt-->
+[`MiraiConsole`]: ../backend/mirai-console/src/MiraiConsole.kt
+[`MiraiConsoleImplementation`]: ../backend/mirai-console/src/MiraiConsoleImplementation.kt
+<!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/MiraiConsoleFrontEnd.kt-->
 
-[`Command`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/Command.kt
-[`AbstractCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/Command.kt#L90
-[`CompositeCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CompositeCommand.kt
-[`SimpleCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/SimpleCommand.kt
-[`RawCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/RawCommand.kt
-[`CommandManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandManager.kt
-[`CommandSender`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandSender.kt
-[`CommandArgumentParser`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/descriptor/CommandArgumentParser.kt
-[`CommandArgumentContext`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/descriptor/CommandArgumentContext.kt
-[`CommandArgumentContext.BuiltIns`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/descriptor/CommandArgumentContext.kt#L66
+[`Command`]: ../backend/mirai-console/src/command/Command.kt
+[`AbstractCommand`]: ../backend/mirai-console/src/command/Command.kt#L90
+[`CompositeCommand`]: ../backend/mirai-console/src/command/CompositeCommand.kt
+[`SimpleCommand`]: ../backend/mirai-console/src/command/SimpleCommand.kt
+[`RawCommand`]: ../backend/mirai-console/src/command/RawCommand.kt
+[`CommandManager`]: ../backend/mirai-console/src/command/CommandManager.kt
+[`CommandSender`]: ../backend/mirai-console/src/command/CommandSender.kt
+[`CommandValueArgumentParser`]: ../backend/mirai-console/src/command/descriptor/CommandValueArgumentParser.kt
+[`CommandArgumentContext`]: ../backend/mirai-console/src/command/descriptor/CommandArgumentContext.kt
+[`CommandArgumentContext.BuiltIns`]: ../backend/mirai-console/src/command/descriptor/CommandArgumentContext.kt#L66
 
-[`MessageScope`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/MessageScope.kt
+[`MessageScope`]: ../backend/mirai-console/src/util/MessageScope.kt
 
 ## [`Command`]
 
@@ -95,7 +95,7 @@ abstract override suspend fun CommandSender.onCommand(args: MessageChain)
 
 Mirai Console 为了简化处理指令时的解析过程，设计了参数智能解析。
 
-### [`CommandArgumentParser`]
+### [`CommandValueArgumentParser`]
 ```kotlin
 interface CommandArgumentParser<out T : Any> {
     fun parse(raw: String, sender: CommandSender): T
@@ -107,13 +107,13 @@ interface CommandArgumentParser<out T : Any> {
 
 ### [`CommandArgumentContext`]
 
-是 `Class` 到 [`CommandArgumentParser`] 的映射。作用是为某一个类型分配解析器。
+是 `Class` 到 [`CommandValueArgumentParser`] 的映射。作用是为某一个类型分配解析器。
 
 #### [内建 `CommandArgumentContext`][`CommandArgumentContext.BuiltIns`]
 支持原生数据类型，`Contact` 及其子类，`Bot`。
 
 #### 构建 [`CommandArgumentContext`]
-查看源码内注释：[CommandArgumentContext.kt: Line 146](../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/descriptor/CommandArgumentContext.kt#L146-L183)
+查看源码内注释：[CommandArgumentContext.kt: Line 146](../backend/mirai-console/src/command/descriptor/CommandArgumentContext.kt#L146-L183)
 
 ### 支持参数解析的 [`Command`] 实现
 Mirai Console 内建 [`SimpleCommand`] 与 [`CompositeCommand`] 拥有 [`CommandArgumentContext`]，在处理参数时会首先解析参数再传递给插件的实现。
@@ -140,8 +140,8 @@ object MySimpleCommand : SimpleCommand(
 1. 被分割为 `/`, `"tell"`, `"123456"`, `"Hello"`
 2. `MySimpleCommand` 被匹配到，根据 `/` 和 `"test"`。`"123456"`, `"Hello"` 被作为指令的原生参数。
 3. 由于 `MySimpleCommand` 定义的 `handle` 需要两个参数, `User` 和 `String`，`"123456"` 需要转换成 `User`，`"Hello"` 需要转换成 `String`。
-4. Console 在 [内建 `CommandArgumentContext`][`CommandArgumentContext.BuiltIns`] 寻找适合于 `User` 的 [`CommandArgumentParser`]
-5. `"123456"` 被传入这个 [`CommandArgumentParser`]，得到 `User`
+4. Console 在 [内建 `CommandArgumentContext`][`CommandArgumentContext.BuiltIns`] 寻找适合于 `User` 的 [`CommandValueArgumentParser`]
+5. `"123456"` 被传入这个 [`CommandValueArgumentParser`]，得到 `User`
 6. `"Hello"` 也会按照 4~5 的步骤转换为 `String` 类型的参数
 7. 解析完成的参数被传入 `handle`
 
@@ -253,7 +253,7 @@ ConsoleCommandSender    AbstractUserCommandSender        |                      
               +-----------------------------+----------------------------+---------------+
  ```
 
-有关类型的详细信息，请查看 [CommandSender.kt](../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandSender.kt#L48-L135)
+有关类型的详细信息，请查看 [CommandSender.kt](../backend/mirai-console/src/command/CommandSender.kt#L48-L135)
 
 ### 获取
 
@@ -263,4 +263,4 @@ ConsoleCommandSender    AbstractUserCommandSender        |                      
 
 表示几个消息对象的’域‘，即消息对象的集合。用于最小化将同一条消息发送给多个类型不同的目标的付出。
 
-参考 [MessageScope](../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/MessageScope.kt#L28-L99)
+参考 [MessageScope](../backend/mirai-console/src/util/MessageScope.kt#L28-L99)

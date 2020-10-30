@@ -8,12 +8,12 @@ import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 
-val T = "org.example" // 编译期常量
+const val T = "org.example" // 编译期常量
 
 object MyPluginMain : KotlinPlugin(
     JvmPluginDescription(
         T,
-        "0.1.0",
+        "1.0-M4",
     ) {
         name(".")
     }

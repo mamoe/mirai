@@ -1,4 +1,9 @@
 @file:Suppress("UnstableApiUsage")
+
+import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
+import org.jetbrains.kotlin.utils.addToStdlib.safeAs
+
 plugins {
     kotlin("jvm") version Versions.kotlinCompiler
     kotlin("plugin.serialization") version Versions.kotlinCompiler
@@ -28,6 +33,129 @@ subprojects {
     afterEvaluate {
         apply<MiraiConsoleBuildPlugin>()
 
-        setJavaCompileTarget()
+        configureJvmTarget()
+        configureEncoding()
+        configureKotlinExperimentalUsages()
+        configureKotlinCompilerSettings()
+        configureKotlinTestSettings()
+        configureSourceSets()
     }
 }
+
+val experimentalAnnotations = arrayOf(
+    "kotlin.RequiresOptIn",
+    "kotlin.ExperimentalUnsignedTypes",
+    // "kotlin.ExperimentalStdlibApi",
+    "kotlin.contracts.ExperimentalContracts",
+    "kotlin.experimental.ExperimentalTypeInference",
+    // "kotlinx.coroutines.ExperimentalCoroutinesApi",
+    "io.ktor.util.KtorExperimentalAPI",
+    "kotlin.time.ExperimentalTime"
+)
+
+
+fun Project.configureJvmTarget() {
+    tasks.withType(KotlinJvmCompile::class.java) {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+
+    extensions.findByType(JavaPluginExtension::class.java)?.run {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+fun Project.useIr() {
+    tasks {
+        withType(KotlinJvmCompile::class.java) {
+            kotlinOptions.useIR = true
+        }
+    }
+}
+
+fun Project.configureKotlinTestSettings() {
+    tasks.withType(Test::class) {
+        useJUnitPlatform()
+    }
+    when {
+        isKotlinJvmProject -> {
+            dependencies {
+                testImplementation(kotlin("test-junit5"))
+
+                testApi("org.junit.jupiter:junit-jupiter-api:5.2.0")
+                testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+            }
+        }
+        isKotlinMpp -> {
+            kotlinSourceSets?.forEach { sourceSet ->
+                if (sourceSet.name == "common") {
+                    sourceSet.dependencies {
+                        implementation(kotlin("test"))
+                        implementation(kotlin("test-annotations-common"))
+                    }
+                } else {
+                    sourceSet.dependencies {
+                        implementation(kotlin("test-junit5"))
+
+                        implementation("org.junit.jupiter:junit-jupiter-api:5.2.0")
+                        implementation("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun Project.configureKotlinCompilerSettings() {
+    val kotlinCompilations = kotlinCompilations ?: return
+    for (kotlinCompilation in kotlinCompilations) with(kotlinCompilation) {
+        if (isKotlinJvmProject) {
+            @Suppress("UNCHECKED_CAST")
+            this as KotlinCompilation<KotlinJvmOptions>
+        }
+        kotlinOptions.freeCompilerArgs += "-Xjvm-default=all"
+    }
+}
+
+fun Project.configureEncoding() {
+    tasks.withType(JavaCompile::class.java) {
+        options.encoding = "UTF8"
+    }
+}
+
+fun Project.configureSourceSets() {
+    sourceSets {
+        findByName("main")?.apply {
+            resources.setSrcDirs(listOf(projectDir.resolve("resources")))
+            java.setSrcDirs(listOf(projectDir.resolve("src")))
+        }
+        findByName("test")?.apply {
+            resources.setSrcDirs(listOf(projectDir.resolve("resources")))
+            java.setSrcDirs(listOf(projectDir.resolve("test")))
+        }
+    }
+}
+
+fun Project.configureKotlinExperimentalUsages() {
+    val sourceSets = kotlinSourceSets ?: return
+
+    for (target in sourceSets) {
+        experimentalAnnotations.forEach { a ->
+            target.languageSettings.useExperimentalAnnotation(a)
+            //target.languageSettings.enableLanguageFeature("InlineClasses")
+        }
+    }
+}
+
+val Project.kotlinSourceSets get() = extensions.findByName("kotlin").safeAs<KotlinProjectExtension>()?.sourceSets
+
+val Project.kotlinTargets
+    get() =
+        extensions.findByName("kotlin").safeAs<KotlinSingleTargetExtension>()?.target?.let { listOf(it) }
+            ?: extensions.findByName("kotlin").safeAs<KotlinMultiplatformExtension>()?.targets
+
+val Project.isKotlinJvmProject: Boolean get() = extensions.findByName("kotlin") is KotlinJvmProjectExtension
+val Project.isKotlinMpp: Boolean get() = extensions.findByName("kotlin") is KotlinMultiplatformExtension
+
+val Project.kotlinCompilations
+    get() = kotlinTargets?.flatMap { it.compilations }

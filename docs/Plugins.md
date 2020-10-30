@@ -1,37 +1,39 @@
 # Mirai Console Backend - Plugins
 
-[`Plugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/Plugin.kt
-[`PluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/description/PluginDescription.kt
-[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/loader/PluginLoader.kt
-[`PluginManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginManager.kt
-[`JvmPluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginLoader.kt
-[`JvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPlugin.kt
-[`JvmPluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription.kt
-[`AbstractJvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin.kt
-[`KotlinPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/KotlinPlugin.kt
-[`JavaPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPlugin.kt
+[`Plugin`]: ../backend/mirai-console/src/plugin/Plugin.kt
+[`PluginDescription`]: ../backend/mirai-console/src/plugin/description/PluginDescription.kt
+[`PluginLoader`]: ../backend/mirai-console/src/plugin/loader/PluginLoader.kt
+[`PluginManager`]: ../backend/mirai-console/src/plugin/PluginManager.kt
+[`JvmPluginLoader`]: ../backend/mirai-console/src/plugin/jvm/JvmPluginLoader.kt
+[`JvmPlugin`]: ../backend/mirai-console/src/plugin/jvm/JvmPlugin.kt
+[`JvmPluginDescription`]: ../backend/mirai-console/src/plugin/jvm/JvmPluginDescription.kt
+[`AbstractJvmPlugin`]: ../backend/mirai-console/src/plugin/jvm/AbstractJvmPlugin.kt
+[`KotlinPlugin`]: ../backend/mirai-console/src/plugin/jvm/KotlinPlugin.kt
+[`JavaPlugin`]: ../backend/mirai-console/src/plugin/jvm/JavaPlugin.kt
 
 
-[`PluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginData.kt
-[`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
-[`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
+[`PluginData`]: ../backend/mirai-console/src/data/PluginData.kt
+[`PluginConfig`]: ../backend/mirai-console/src/data/PluginConfig.kt
+[`PluginDataStorage`]: ../backend/mirai-console/src/data/PluginDataStorage.kt
 
-[`MiraiConsole`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsole.kt
-[`MiraiConsoleImplementation`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleImplementation.kt
-<!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleFrontEnd.kt-->
+[`ExportManager`]: ../backend/mirai-console/src/plugin/jvm/ExportManager.kt
 
-[`Command`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/Command.kt
-[`CompositeCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CompositeCommand.kt
-[`SimpleCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/SimpleCommand.kt
-[`RawCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/RawCommand.kt
-[`CommandManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandManager.kt
+[`MiraiConsole`]: ../backend/mirai-console/src/MiraiConsole.kt
+[`MiraiConsoleImplementation`]: ../backend/mirai-console/src/MiraiConsoleImplementation.kt
+<!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/MiraiConsoleFrontEnd.kt-->
 
-[`Annotations`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/Annotations.kt
-[`ConsoleInput`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/ConsoleInput.kt
-[`JavaPluginScheduler`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
-[`ResourceContainer`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/ResourceContainer.kt
-[`PluginFileExtensions`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginFileExtensions.kt
-[`AutoSavePluginDataHolder`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataHolder.kt#L45
+[`Command`]: ../backend/mirai-console/src/command/Command.kt
+[`CompositeCommand`]: ../backend/mirai-console/src/command/CompositeCommand.kt
+[`SimpleCommand`]: ../backend/mirai-console/src/command/SimpleCommand.kt
+[`RawCommand`]: ../backend/mirai-console/src/command/RawCommand.kt
+[`CommandManager`]: ../backend/mirai-console/src/command/CommandManager.kt
+
+[`Annotations`]: ../backend/mirai-console/src/util/Annotations.kt
+[`ConsoleInput`]: ../backend/mirai-console/src/util/ConsoleInput.kt
+[`JavaPluginScheduler`]: ../backend/mirai-console/src/plugin/jvm/JavaPluginScheduler.kt
+[`ResourceContainer`]: ../backend/mirai-console/src/plugin/ResourceContainer.kt
+[`PluginFileExtensions`]: ../backend/mirai-console/src/plugin/PluginFileExtensions.kt
+[`AutoSavePluginDataHolder`]: ../backend/mirai-console/src/data/PluginDataHolder.kt#L45
 
 [Kotlin]: https://www.kotlincn.net/
 [Java]: https://www.java.com/zh_CN/
@@ -159,6 +161,68 @@ public final class JExample extends JavaPlugin {
 
 多个插件的加载是*顺序的*，意味着若一个插件的 `onLoad()` 等回调处理缓慢，后续插件的加载也会被延后，即使它们可能没有依赖关系。  
 因此请尽量让 `onLoad()`，`onEnable()`，`onDisable()`快速返回。
+
+### API 导出管理
+
+允许插件将一些内部实现保护起来， 避免其他插件调用， 要启动这个特性，
+只需要创建名为 `export-rules.txt` 的规则文件，便可以控制插件的类的公开规则。
+
+如果正在使用 `Gradle` 项目, 该规则文件一般位于 `src/main/resources` 下
+
+Example:
+```text
+
+# #开头的行全部识别为注释
+
+# exports, 允许其他插件直接使用某个类
+
+# 导出了一个internal包的一个类
+#
+exports org.example.miraiconsole.myplugin.internal.OpenInternal
+
+# 导出了整个 api 包
+#
+exports org.example.miraiconsole.myplugin.api
+
+# 保护 org.example.miraiconsole.myplugin.api2.Internal, 不允许其他插件直接使用
+#
+protects org.example.miraiconsole.myplugin.api2.Internal
+
+# 保护整个包
+#
+# 别名: protect-package
+protects org.example.miraiconsole.myplugin.internal
+
+# 此规则不会生效, 因为在此条规则之前,
+# org.example.miraiconsole.myplugin.internal 已经被加入到保护域中
+exports org.example.miraiconsole.myplugin.internal.NotOpenInternal
+
+
+# export-plugin, 允许其他插件使用除了已经被保护的全部类
+# 使用此规则会同时让此规则后的所有规则全部失效
+# 别名: export-all, export-system
+# export-plugin
+
+
+# 将整个插件放入保护域中
+# 除了此规则之前显式 export 的类, 其他插件将不允许直接使用被保护的插件的任何类
+# 别名: protect-all, protect-system
+protect-plugin
+
+```
+
+插件也可以通过 Service 来自定义导出控制
+
+Example:
+```kotlin
+@AutoService(ExportManager::class)
+object MyExportManager: ExportManager {
+    override fun isExported(className: String): Boolean {
+        println("  <== $className")
+        return true
+    }
+}
+```
 
 ### 插件生命周期
 

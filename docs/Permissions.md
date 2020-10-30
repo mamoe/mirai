@@ -2,15 +2,15 @@
 
 权限系统。
 
-[`PermissionService`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/permission/PermissionService.kt
-[`Permission`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/permission/Permission.kt
-[`RootPermission`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/permission/Permission.kt#L82
-[`PermissionId`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/permission/PermissionId.kt
-[`PermissionIdNamespace`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/permission/PermissionIdNamespace.kt
-[`Permittee`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/permission/Permittee.kt
-[`PermitteeId`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/permission/PermitteeId.kt
-[`AbstractPermitteeId`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/permission/PermitteeId.kt#L77
-[`CommandSender`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandSender.kt
+[`PermissionService`]: ../backend/mirai-console/src/permission/PermissionService.kt
+[`Permission`]: ../backend/mirai-console/src/permission/Permission.kt
+[`RootPermission`]: ../backend/mirai-console/src/permission/Permission.kt#L82
+[`PermissionId`]: ../backend/mirai-console/src/permission/PermissionId.kt
+[`PermissionIdNamespace`]: ../backend/mirai-console/src/permission/PermissionIdNamespace.kt
+[`Permittee`]: ../backend/mirai-console/src/permission/Permittee.kt
+[`PermitteeId`]: ../backend/mirai-console/src/permission/PermitteeId.kt
+[`AbstractPermitteeId`]: ../backend/mirai-console/src/permission/PermitteeId.kt#L77
+[`CommandSender`]: ../backend/mirai-console/src/command/CommandSender.kt
 
 ## 权限
 
