@@ -1,39 +1,39 @@
 # Mirai Console Backend - Plugins
 
-[`Plugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/Plugin.kt
-[`PluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/description/PluginDescription.kt
-[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/loader/PluginLoader.kt
-[`PluginManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginManager.kt
-[`JvmPluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginLoader.kt
-[`JvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPlugin.kt
-[`JvmPluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription.kt
-[`AbstractJvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin.kt
-[`KotlinPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/KotlinPlugin.kt
-[`JavaPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPlugin.kt
+[`Plugin`]: ../backend/mirai-console/src/plugin/Plugin.kt
+[`PluginDescription`]: ../backend/mirai-console/src/plugin/description/PluginDescription.kt
+[`PluginLoader`]: ../backend/mirai-console/src/plugin/loader/PluginLoader.kt
+[`PluginManager`]: ../backend/mirai-console/src/plugin/PluginManager.kt
+[`JvmPluginLoader`]: ../backend/mirai-console/src/plugin/jvm/JvmPluginLoader.kt
+[`JvmPlugin`]: ../backend/mirai-console/src/plugin/jvm/JvmPlugin.kt
+[`JvmPluginDescription`]: ../backend/mirai-console/src/plugin/jvm/JvmPluginDescription.kt
+[`AbstractJvmPlugin`]: ../backend/mirai-console/src/plugin/jvm/AbstractJvmPlugin.kt
+[`KotlinPlugin`]: ../backend/mirai-console/src/plugin/jvm/KotlinPlugin.kt
+[`JavaPlugin`]: ../backend/mirai-console/src/plugin/jvm/JavaPlugin.kt
 
 
-[`PluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginData.kt
-[`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
-[`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
+[`PluginData`]: ../backend/mirai-console/src/data/PluginData.kt
+[`PluginConfig`]: ../backend/mirai-console/src/data/PluginConfig.kt
+[`PluginDataStorage`]: ../backend/mirai-console/src/data/PluginDataStorage.kt
 
-[`ExportManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/ExportManager.kt
+[`ExportManager`]: ../backend/mirai-console/src/plugin/jvm/ExportManager.kt
 
-[`MiraiConsole`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsole.kt
-[`MiraiConsoleImplementation`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleImplementation.kt
-<!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleFrontEnd.kt-->
+[`MiraiConsole`]: ../backend/mirai-console/src/MiraiConsole.kt
+[`MiraiConsoleImplementation`]: ../backend/mirai-console/src/MiraiConsoleImplementation.kt
+<!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/MiraiConsoleFrontEnd.kt-->
 
-[`Command`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/Command.kt
-[`CompositeCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CompositeCommand.kt
-[`SimpleCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/SimpleCommand.kt
-[`RawCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/RawCommand.kt
-[`CommandManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandManager.kt
+[`Command`]: ../backend/mirai-console/src/command/Command.kt
+[`CompositeCommand`]: ../backend/mirai-console/src/command/CompositeCommand.kt
+[`SimpleCommand`]: ../backend/mirai-console/src/command/SimpleCommand.kt
+[`RawCommand`]: ../backend/mirai-console/src/command/RawCommand.kt
+[`CommandManager`]: ../backend/mirai-console/src/command/CommandManager.kt
 
-[`Annotations`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/Annotations.kt
-[`ConsoleInput`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/ConsoleInput.kt
-[`JavaPluginScheduler`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
-[`ResourceContainer`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/ResourceContainer.kt
-[`PluginFileExtensions`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginFileExtensions.kt
-[`AutoSavePluginDataHolder`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataHolder.kt#L45
+[`Annotations`]: ../backend/mirai-console/src/util/Annotations.kt
+[`ConsoleInput`]: ../backend/mirai-console/src/util/ConsoleInput.kt
+[`JavaPluginScheduler`]: ../backend/mirai-console/src/plugin/jvm/JavaPluginScheduler.kt
+[`ResourceContainer`]: ../backend/mirai-console/src/plugin/ResourceContainer.kt
+[`PluginFileExtensions`]: ../backend/mirai-console/src/plugin/PluginFileExtensions.kt
+[`AutoSavePluginDataHolder`]: ../backend/mirai-console/src/data/PluginDataHolder.kt#L45
 
 [Kotlin]: https://www.kotlincn.net/
 [Java]: https://www.java.com/zh_CN/

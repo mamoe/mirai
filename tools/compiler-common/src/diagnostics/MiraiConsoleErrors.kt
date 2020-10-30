@@ -6,36 +6,53 @@
  *
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+package net.mamoe.mirai.console.compiler.common.diagnostics
 
-package net.mamoe.mirai.console.compiler.common.diagnostics;
+import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1.create
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2.create
+import org.jetbrains.kotlin.diagnostics.Errors
+import org.jetbrains.kotlin.diagnostics.Severity.ERROR
+import org.jetbrains.kotlin.psi.KtNamedDeclaration
 
-import com.intellij.psi.PsiElement;
-import org.jetbrains.kotlin.descriptors.ClassDescriptor;
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1;
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2;
-import org.jetbrains.kotlin.diagnostics.Errors;
-import org.jetbrains.kotlin.psi.KtNamedDeclaration;
+object MiraiConsoleErrors {
+    @JvmStatic
+    val ILLEGAL_PLUGIN_DESCRIPTION = create<PsiElement, String>(ERROR)
 
-import static org.jetbrains.kotlin.diagnostics.Severity.ERROR;
+    @JvmStatic
+    val NOT_CONSTRUCTABLE_TYPE = create<PsiElement, String>(ERROR)
 
-public interface MiraiConsoleErrors {
-    DiagnosticFactory1<PsiElement, String> ILLEGAL_PLUGIN_DESCRIPTION = DiagnosticFactory1.create(ERROR);
-    DiagnosticFactory1<PsiElement, String> NOT_CONSTRUCTABLE_TYPE = DiagnosticFactory1.create(ERROR);
-    DiagnosticFactory1<PsiElement, ClassDescriptor> UNSERIALIZABLE_TYPE = DiagnosticFactory1.create(ERROR);
-    DiagnosticFactory2<PsiElement, String, String> ILLEGAL_COMMAND_NAME = DiagnosticFactory2.create(ERROR);
-    DiagnosticFactory2<PsiElement, String, String> ILLEGAL_PERMISSION_NAME = DiagnosticFactory2.create(ERROR);
-    DiagnosticFactory2<PsiElement, String, String> ILLEGAL_PERMISSION_ID = DiagnosticFactory2.create(ERROR);
-    DiagnosticFactory2<PsiElement, String, String> ILLEGAL_PERMISSION_NAMESPACE = DiagnosticFactory2.create(ERROR);
-    DiagnosticFactory2<PsiElement, KtNamedDeclaration, String> ILLEGAL_COMMAND_REGISTER_USE = DiagnosticFactory2.create(ERROR);
-    DiagnosticFactory2<PsiElement, KtNamedDeclaration, String> ILLEGAL_PERMISSION_REGISTER_USE = DiagnosticFactory2.create(ERROR);
+    @JvmStatic
+    val UNSERIALIZABLE_TYPE = create<PsiElement, ClassDescriptor>(ERROR)
 
-    @Deprecated
-    Object _init = new Object() {
-        {
+    @JvmStatic
+    val ILLEGAL_COMMAND_NAME = create<PsiElement, String, String>(ERROR)
+
+    @JvmStatic
+    val ILLEGAL_PERMISSION_NAME = create<PsiElement, String, String>(ERROR)
+
+    @JvmStatic
+    val ILLEGAL_PERMISSION_ID = create<PsiElement, String, String>(ERROR)
+
+    @JvmStatic
+    val ILLEGAL_PERMISSION_NAMESPACE = create<PsiElement, String, String>(ERROR)
+
+    @JvmStatic
+    val ILLEGAL_COMMAND_REGISTER_USE = create<PsiElement, KtNamedDeclaration, String>(ERROR)
+
+    @JvmStatic
+    val ILLEGAL_PERMISSION_REGISTER_USE = create<PsiElement, KtNamedDeclaration, String>(ERROR)
+
+    @Suppress("ObjectPropertyName", "unused")
+    @JvmStatic
+    @Deprecated("", level = DeprecationLevel.ERROR)
+    val _init: Any = object : Any() {
+        init {
             Errors.Initializer.initializeFactoryNamesAndDefaultErrorMessages(
-                    MiraiConsoleErrors.class,
-                    MiraiConsoleErrorsRendering.INSTANCE
-            );
+                MiraiConsoleErrors::class.java,
+                MiraiConsoleErrorsRendering
+            )
         }
-    };
+    }
 }

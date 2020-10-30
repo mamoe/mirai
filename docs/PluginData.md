@@ -1,45 +1,45 @@
 # Mirai Console Backend - PluginData
 
-[`Plugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/Plugin.kt
-[`PluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/description/PluginDescription.kt
-[`PluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/loader/PluginLoader.kt
-[`PluginManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginManager.kt
-[`JvmPluginLoader`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginLoader.kt
-[`JvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPlugin.kt
-[`JvmPluginDescription`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JvmPluginDescription.kt
-[`AbstractJvmPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/AbstractJvmPlugin.kt
-[`KotlinPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/KotlinPlugin.kt
-[`JavaPlugin`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPlugin.kt
+[`Plugin`]: ../backend/mirai-console/src/plugin/Plugin.kt
+[`PluginDescription`]: ../backend/mirai-console/src/plugin/description/PluginDescription.kt
+[`PluginLoader`]: ../backend/mirai-console/src/plugin/loader/PluginLoader.kt
+[`PluginManager`]: ../backend/mirai-console/src/plugin/PluginManager.kt
+[`JvmPluginLoader`]: ../backend/mirai-console/src/plugin/jvm/JvmPluginLoader.kt
+[`JvmPlugin`]: ../backend/mirai-console/src/plugin/jvm/JvmPlugin.kt
+[`JvmPluginDescription`]: ../backend/mirai-console/src/plugin/jvm/JvmPluginDescription.kt
+[`AbstractJvmPlugin`]: ../backend/mirai-console/src/plugin/jvm/AbstractJvmPlugin.kt
+[`KotlinPlugin`]: ../backend/mirai-console/src/plugin/jvm/KotlinPlugin.kt
+[`JavaPlugin`]: ../backend/mirai-console/src/plugin/jvm/JavaPlugin.kt
 
 
-[`Value`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/Value.kt
-[`PluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginData.kt
-[`AbstractPluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AbstractPluginData.kt
-[`AutoSavePluginData`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AutoSavePluginData.kt
-[`AutoSavePluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/AutoSavePluginConfig.kt
-[`PluginConfig`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginConfig.kt
-[`PluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt
-[`MultiFilePluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt#L116
-[`MemoryPluginDataStorage`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataStorage.kt#L100
-[`AutoSavePluginDataHolder`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataHolder.kt#L45
-[`PluginDataHolder`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataHolder.kt
-[`PluginDataExtensions`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/PluginDataExtensions.kt
+[`Value`]: ../backend/mirai-console/src/data/Value.kt
+[`PluginData`]: ../backend/mirai-console/src/data/PluginData.kt
+[`AbstractPluginData`]: ../backend/mirai-console/src/data/AbstractPluginData.kt
+[`AutoSavePluginData`]: ../backend/mirai-console/src/data/AutoSavePluginData.kt
+[`AutoSavePluginConfig`]: ../backend/mirai-console/src/data/AutoSavePluginConfig.kt
+[`PluginConfig`]: ../backend/mirai-console/src/data/PluginConfig.kt
+[`PluginDataStorage`]: ../backend/mirai-console/src/data/PluginDataStorage.kt
+[`MultiFilePluginDataStorage`]: ../backend/mirai-console/src/data/PluginDataStorage.kt#L116
+[`MemoryPluginDataStorage`]: ../backend/mirai-console/src/data/PluginDataStorage.kt#L100
+[`AutoSavePluginDataHolder`]: ../backend/mirai-console/src/data/PluginDataHolder.kt#L45
+[`PluginDataHolder`]: ../backend/mirai-console/src/data/PluginDataHolder.kt
+[`PluginDataExtensions`]: ../backend/mirai-console/src/data/PluginDataExtensions.kt
 
-[`MiraiConsole`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsole.kt
-[`MiraiConsoleImplementation`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleImplementation.kt
-<!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/MiraiConsoleFrontEnd.kt-->
+[`MiraiConsole`]: ../backend/mirai-console/src/MiraiConsole.kt
+[`MiraiConsoleImplementation`]: ../backend/mirai-console/src/MiraiConsoleImplementation.kt
+<!--[MiraiConsoleFrontEnd]: ../backend/mirai-console/src/MiraiConsoleFrontEnd.kt-->
 
-[`Command`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/Command.kt
-[`CompositeCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CompositeCommand.kt
-[`SimpleCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/SimpleCommand.kt
-[`RawCommand`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/RawCommand.kt
-[`CommandManager`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/command/CommandManager.kt
+[`Command`]: ../backend/mirai-console/src/command/Command.kt
+[`CompositeCommand`]: ../backend/mirai-console/src/command/CompositeCommand.kt
+[`SimpleCommand`]: ../backend/mirai-console/src/command/SimpleCommand.kt
+[`RawCommand`]: ../backend/mirai-console/src/command/RawCommand.kt
+[`CommandManager`]: ../backend/mirai-console/src/command/CommandManager.kt
 
-[`Annotations`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/Annotations.kt
-[`ConsoleInput`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/util/ConsoleInput.kt
-[`JavaPluginScheduler`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/jvm/JavaPluginScheduler.kt
-[`ResourceContainer`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/ResourceContainer.kt
-[`PluginFileExtensions`]: ../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/plugin/PluginFileExtensions.kt
+[`Annotations`]: ../backend/mirai-console/src/util/Annotations.kt
+[`ConsoleInput`]: ../backend/mirai-console/src/util/ConsoleInput.kt
+[`JavaPluginScheduler`]: ../backend/mirai-console/src/plugin/jvm/JavaPluginScheduler.kt
+[`ResourceContainer`]: ../backend/mirai-console/src/plugin/ResourceContainer.kt
+[`PluginFileExtensions`]: ../backend/mirai-console/src/plugin/PluginFileExtensions.kt
 
 [Kotlin]: https://www.kotlincn.net/
 [Java]: https://www.java.com/zh_CN/
@@ -116,7 +116,7 @@ object MyData : AutoSavePluginData() {
 *由于 Java 语法局限，为 Kotlin 而设计的 PluginData 在 Java 使用很复杂。*  
 *即使 Mirai Console 为 Java 提供适配器，也强烈推荐 Java 用户在项目中混用 Kotlin 代码来完成数据模型定义。*
 
-参考 [JAutoSavePluginData](../backend/mirai-console/src/main/kotlin/net/mamoe/mirai/console/data/java/JAutoSavePluginData.kt#L69)
+参考 [JAutoSavePluginData](../backend/mirai-console/src/data/java/JAutoSavePluginData.kt#L69)
 
 ### 非引用赋值
 由于实现特殊, 赋值时不会写其引用. 即:
