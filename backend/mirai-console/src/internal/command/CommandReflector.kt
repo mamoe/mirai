@@ -66,7 +66,7 @@ internal object SimpleCommandSubCommandAnnotationResolver :
         function.hasAnnotation<SimpleCommand.Handler>()
 
     override fun getSubCommandNames(ownerCommand: Command, function: KFunction<*>): Array<out String> =
-        ownerCommand.secondaryNames
+        emptyArray()
 
     override fun getAnnotatedName(ownerCommand: Command, parameter: KParameter): String? =
         parameter.findAnnotation<SimpleCommand.Name>()?.value
@@ -154,8 +154,8 @@ internal class CommandReflector(
                     append(CommandManager.commandPrefix)
                 }
                 //if (command is CompositeCommand) {
-                    append(command.primaryName)
-                    append(" ")
+                append(command.primaryName)
+                append(" ")
                 //}
                 append(subcommand.valueParameters.joinToString(" ") { it.render() })
                 annotationResolver.getDescription(command, subcommand.originFunction)?.let { description ->
@@ -228,10 +228,16 @@ internal class CommandReflector(
             .onEach { it.checkExtensionReceiver() }
             .onEach { it.checkModifiers() }
             .onEach { it.checkNames() }
-            .map { function ->
+            .flatMap { function ->
+                val names = annotationResolver.getSubCommandNames(command, function)
+                if (names.isEmpty()) sequenceOf(createMapEntry(function, null))
+                else names.associateBy { function }.asSequence()
+            }
+            .map { (function, name) ->
 
                 val functionNameAsValueParameter =
-                    annotationResolver.getSubCommandNames(command, function).mapIndexed { index, s -> createStringConstantParameter(index, s) }
+                    name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameter(index, s) }
+                        .orEmpty()
 
                 val functionValueParameters =
                     function.valueParameters.associateBy { it.toUserDefinedCommandParameter() }
@@ -272,6 +278,11 @@ internal class CommandReflector(
                     function.callSuspendBy(args)
                 }
             }.toList()
+    }
+
+    private fun <K, V> createMapEntry(key: K, value: V) = object : Map.Entry<K, V> {
+        override val key: K get() = key
+        override val value: V get() = value
     }
 
     private fun KParameter.toCommandReceiverParameter(): CommandReceiverParameter<out CommandSender> {
