@@ -11,8 +11,6 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 - `mirai-console-terminal`: 终端前端，适用于 JVM。
 - [`MiraiAndroid`](https://github.com/mzdluo123/MiraiAndroid): Android 应用前端。
 
-**注意：`mirai-console` 1.0-RC 发布之前, 前端请使用 `mirai-console-pure` 而不是 `mirai-console-terminal`**
-
 ## 选择版本
 
 有关各类版本的区别，参考 [版本规范](Appendix.md#版本规范)
@@ -20,10 +18,10 @@ console 由后端和前端一起工作. 使用时必须选择一个前端.
 [Version]: https://api.bintray.com/packages/him188moe/mirai/mirai-console/images/download.svg?
 [Bintray Download]: https://bintray.com/him188moe/mirai/mirai-console/
 
-| 版本类型 |    版本号     |
-|:------:|:------------:|
-|  稳定   |      -       |
-|  预览   |    1.0-M4    |
+| 版本类型 |             版本号              |
+|:------:|:------------------------------:|
+|  稳定   |               -                |
+|  预览   |            1.0-RC-1            |
 |  开发   | [![Version]][Bintray Download] |
 
 ## 配置项目
@@ -73,7 +71,6 @@ dependencies {
   compileOnly("net.mamoe:mirai-core:$CORE_VERSION") // mirai-core 的 API
   compileOnly("net.mamoe:mirai-console:$CONSOLE_VERSION") // 后端
   
-  testImplementation("net.mamoe:mirai-console-terminal:$CONSOLE_VERSION") // 前端, 用于启动测试
   testImplementation("net.mamoe:mirai-console-terminal:$CONSOLE_VERSION") // 前端, 用于启动测试
 }
 ```
