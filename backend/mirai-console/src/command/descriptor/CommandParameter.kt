@@ -186,7 +186,7 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         override fun toString(): String = "<$expectingValue>"
 
         override fun acceptingImpl(expectingType: KType, argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
-            return if (argument.type.isSubtypeOf(expectingType) && argument.value.content == expectingValue) {
+            return if (argument.value.content == expectingValue) {
                 ArgumentAcceptance.Direct
             } else ArgumentAcceptance.Impossible
         }
