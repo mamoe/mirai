@@ -254,6 +254,10 @@ internal class CommandReflector(
 
                     val instanceParameter = function.instanceParameter
                     if (instanceParameter != null) {
+                        check(instanceParameter.type.classifierAsKClass().isInstance(command)) {
+                            "Bad command call resolved. " +
+                                "Function expects instance parameter ${instanceParameter.type} whereas actual instance is ${command::class}."
+                        }
                         args[instanceParameter] = command
                     }
 
