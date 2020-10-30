@@ -71,7 +71,7 @@ internal object SimpleCommandSubCommandAnnotationResolver :
     override fun getAnnotatedName(ownerCommand: Command, parameter: KParameter): String? =
         parameter.findAnnotation<SimpleCommand.Name>()?.value
 
-    override fun getDescription(ownerCommand: Command, function: KFunction<*>): String? =
+    override fun getDescription(ownerCommand: Command, function: KFunction<*>): String =
         ownerCommand.description
 }
 
@@ -274,7 +274,7 @@ internal class CommandReflector(
             }.toList()
     }
 
-    private fun KParameter.toCommandReceiverParameter(): CommandReceiverParameter<out CommandSender>? {
+    private fun KParameter.toCommandReceiverParameter(): CommandReceiverParameter<out CommandSender> {
         check(!this.isVararg) { "Receiver cannot be vararg." }
         check(this.type.classifierAsKClass().isSubclassOf(CommandSender::class)) { "Receiver must be subclass of CommandSender" }
 
