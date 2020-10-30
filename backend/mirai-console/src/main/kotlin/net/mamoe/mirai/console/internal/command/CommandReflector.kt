@@ -256,6 +256,15 @@ internal class CommandReflector(
                     if (instanceParameter != null) {
                         args[instanceParameter] = command
                     }
+
+                    val receiverParameter = function.extensionReceiverParameter
+                    if (receiverParameter != null) {
+                        check(receiverParameter.type.classifierAsKClass().isInstance(call.caller)) {
+                            "Bad command call resolved. " +
+                                "Function expects receiver parameter ${receiverParameter.type} whereas actual is ${call.caller::class}."
+                        }
+                        args[receiverParameter] = call.caller
+                    }
                     function.callSuspendBy(args)
                 }
             }.toList()
