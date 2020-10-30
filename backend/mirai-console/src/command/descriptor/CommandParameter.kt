@@ -18,6 +18,7 @@ import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.internal.data.classifierAsKClassOrNull
 import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.message.data.content
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
@@ -144,7 +145,7 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         return acceptingImpl(this.type, argument, commandArgumentContext)
     }
 
-    private fun acceptingImpl(
+    protected open fun acceptingImpl(
         expectingType: KType,
         argument: CommandValueArgument,
         commandArgumentContext: CommandArgumentContext?,
@@ -183,6 +184,12 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         }
 
         override fun toString(): String = "<$expectingValue>"
+
+        override fun acceptingImpl(expectingType: KType, argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
+            return if (argument.type.isSubtypeOf(expectingType) && argument.value.content == expectingValue) {
+                ArgumentAcceptance.Direct
+            } else ArgumentAcceptance.Impossible
+        }
 
         private companion object {
             @OptIn(ExperimentalStdlibApi::class)
