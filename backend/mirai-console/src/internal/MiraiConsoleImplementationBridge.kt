@@ -106,7 +106,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         phase `setup logger controller`@{
             if (loggerController === LoggerControllerImpl) {
-                // Relaod LoggerConfig.
+                // Reload LoggerConfig.
                 ConsoleDataScope.addAndReloadConfig(LoggerConfig)
             }
         }
