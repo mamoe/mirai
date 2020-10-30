@@ -57,7 +57,7 @@ import java.nio.file.Paths
 @ConsoleExperimentalApi
 class MiraiConsoleImplementationTerminal
 @JvmOverloads constructor(
-    override val rootPath: Path = Paths.get(".").toAbsolutePath(),
+    override val rootPath: Path = Paths.get(System.getProperty("user.dir", ".")).toAbsolutePath(),
     override val builtInPluginLoaders: List<Lazy<PluginLoader<*, *>>> = listOf(lazy { JvmPluginLoader }),
     override val frontEndDescription: MiraiConsoleFrontEndDescription = ConsoleFrontEndDescImpl,
     override val consoleCommandSender: MiraiConsoleImplementation.ConsoleCommandSenderImpl = ConsoleCommandSenderImplTerminal,
