@@ -71,7 +71,7 @@ public object BuiltInCommands {
 
     public object HelpCommand : SimpleCommand(
         ConsoleCommandOwner, "help",
-        description = "Command list",
+        description = "查看指令帮助",
     ), BuiltInCommandInternal {
         @Handler
         public suspend fun CommandSender.handle() {
@@ -95,7 +95,7 @@ public object BuiltInCommands {
 
     public object StopCommand : SimpleCommand(
         ConsoleCommandOwner, "stop", "shutdown", "exit",
-        description = "Stop the whole world.",
+        description = "关闭 Mirai Console",
     ), BuiltInCommandInternal {
 
         private val closingLock = Mutex()
@@ -130,10 +130,10 @@ public object BuiltInCommands {
 
     public object LoginCommand : SimpleCommand(
         ConsoleCommandOwner, "login", "登录",
-        description = "Log in a bot account.",
+        description = "登录一个账号",
     ), BuiltInCommandInternal {
         @Handler
-        public suspend fun CommandSender.handle(id: Long, password: String) {
+        public suspend fun CommandSender.handle(@Name("qq") id: Long, password: String) {
             kotlin.runCatching {
                 MiraiConsole.addBot(id, password).alsoLogin()
             }.fold(
