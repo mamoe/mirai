@@ -1,5 +1,14 @@
 # Version 1.x
 
+## `1.3.3` 2020/10/31
+
+- 更新依赖版本:
+  - kotlinx-coroutines 1.3.9 -> 1.4.0;
+  - **kotlinx-serialization 1.0.0-RC -> 1.0.1;** (有 breaking change, 见 [kotlinx.serialization v1.0.0-RC2](https://github.com/Kotlin/kotlinx.serialization/releases/tag/v1.0.0-RC2))
+  - ktor 1.3.2 -> 1.4.1;
+  - kotlin-jvm-blocking-bridge 1.0.5 -> 1.1.0;
+- 修复 `DeviceInfo` 序列化问题
+
 ## `1.3.2` 2020/10/04
 
 - 修复缓存过滤的错误导致的戳一戳等信息没法及时处理的问题
