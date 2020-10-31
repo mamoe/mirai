@@ -63,6 +63,7 @@ kotlin {
                 api1(kotlinx("serialization-core", Versions.Kotlin.serialization))
                 api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))
                 implementation1(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
+                implementation1(kotlinx("serialization-json", Versions.Kotlin.serialization))
                 api1("org.jetbrains.kotlinx:atomicfu:${Versions.Kotlin.atomicFU}")
                 api1(kotlinx("io", Versions.Kotlin.io))
                 implementation1(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))

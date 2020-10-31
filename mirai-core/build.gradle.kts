@@ -65,6 +65,7 @@ kotlin {
 
                 api1(kotlinx("serialization-core", Versions.Kotlin.serialization))
                 implementation1(kotlinx("serialization-protobuf", Versions.Kotlin.serialization))
+                implementation1(kotlinx("serialization-json", Versions.Kotlin.serialization))
                 api1(kotlinx("io", Versions.Kotlin.io))
                 api1(kotlinx("coroutines-io", Versions.Kotlin.coroutinesIo))
                 api(kotlinx("coroutines-core", Versions.Kotlin.coroutines))

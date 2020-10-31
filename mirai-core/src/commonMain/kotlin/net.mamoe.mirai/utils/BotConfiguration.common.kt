@@ -13,7 +13,6 @@ package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
@@ -157,12 +156,12 @@ public open class BotConfigurationBase internal constructor() {
     @SinceMirai("1.1.0")
     @MiraiExperimentalAPI
     public var json: Json = kotlin.runCatching {
-        @OptIn(UnstableDefault::class)
         Json {
             isLenient = true
+            encodeDefaults = true // required for mirai 1.x
             ignoreUnknownKeys = true
         }
-    }.getOrElse { Json {} }
+    }.getOrElse { Json.Default }
 
     /**
      * 不显示网络日志. 不推荐.

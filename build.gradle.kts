@@ -9,9 +9,9 @@ buildscript {
     repositories {
         mavenLocal()
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        jcenter()
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         maven(url = "https://kotlin.bintray.com/kotlinx")
-        jcenter()
         google()
         mavenCentral()
     }
