@@ -58,8 +58,7 @@ internal class ProtoBufWithNullableSupport(override val serializersModule: Seria
 
         @Suppress("OverridingDeprecatedMember")
         override fun beginStructure(
-            descriptor: SerialDescriptor,
-            vararg typeSerializers: KSerializer<*>
+            descriptor: SerialDescriptor
         ): CompositeEncoder = when (descriptor.kind) {
             StructureKind.LIST -> RepeatedWriter(encoder, currentTag)
             StructureKind.CLASS, StructureKind.OBJECT, is PolymorphicKind -> ObjectWriter(currentTagOrNull, encoder)

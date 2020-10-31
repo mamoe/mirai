@@ -44,9 +44,10 @@ internal class TarsDecoder(
 
     }
 
-    private val SimpleByteArrayReader: SimpleByteArrayReaderImpl = SimpleByteArrayReaderImpl()
+    private val SimpleByteArrayReader: SimpleByteArrayReaderImpl = SimpleByteArrayReaderImpl(serializersModule)
 
-    private inner class SimpleByteArrayReaderImpl : AbstractDecoder() {
+    private inner class SimpleByteArrayReaderImpl(override val serializersModule: SerializersModule) :
+        AbstractDecoder() {
         override fun decodeSequentially(): Boolean = true
 
         override fun endStructure(descriptor: SerialDescriptor) {
@@ -79,9 +80,9 @@ internal class TarsDecoder(
         }
     }
 
-    private val ListReader: ListReaderImpl = ListReaderImpl()
+    private val ListReader: ListReaderImpl = ListReaderImpl(serializersModule)
 
-    private inner class ListReaderImpl : AbstractDecoder() {
+    private inner class ListReaderImpl(override val serializersModule: SerializersModule) : AbstractDecoder() {
         override fun decodeSequentially(): Boolean = true
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int = error("should not be reached")
         override fun endStructure(descriptor: SerialDescriptor) {
@@ -113,9 +114,9 @@ internal class TarsDecoder(
     }
 
 
-    private val MapReader: MapReaderImpl = MapReaderImpl()
+    private val MapReader: MapReaderImpl = MapReaderImpl(serializersModule)
 
-    private inner class MapReaderImpl : AbstractDecoder() {
+    private inner class MapReaderImpl(override val serializersModule: SerializersModule) : AbstractDecoder() {
         override fun decodeSequentially(): Boolean = true
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int = error("stub")
 
