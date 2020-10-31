@@ -15,12 +15,12 @@ internal class PbMultiMsgItem(
 
     @Serializable
 internal class PbMultiMsgNew(
-        @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg>? = null
+        @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg> = emptyList()
     ) : ProtoBuf
 
     @Serializable
 internal class PbMultiMsgTransmit(
-        @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg>? = null,
-        @ProtoNumber(2) @JvmField val pbItemList: List<MsgTransmit.PbMultiMsgItem>? = null
+        @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg> = emptyList(),
+        @ProtoNumber(2) @JvmField val pbItemList: List<MsgTransmit.PbMultiMsgItem> = emptyList()
     ) : ProtoBuf
 }

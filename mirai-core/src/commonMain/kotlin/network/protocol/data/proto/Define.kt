@@ -26,7 +26,7 @@ internal class Common : ProtoBuf {
         @ProtoNumber(8) @JvmField val msgBindFri: BindInfo? = null,
         @ProtoNumber(11) @JvmField val desc: String = "",
         @ProtoNumber(31) @JvmField val level: Int = 0,
-        @ProtoNumber(36) @JvmField val taskinfos: List<MedalTaskInfo>? = null,
+        @ProtoNumber(36) @JvmField val taskinfos: List<MedalTaskInfo> = emptyList(),
         @ProtoNumber(40) @JvmField val point: Int = 0,
         @ProtoNumber(41) @JvmField val pointLevel2: Int = 0,
         @ProtoNumber(42) @JvmField val pointLevel3: Int = 0,
@@ -67,7 +67,7 @@ internal class AppointDefine : ProtoBuf {
     @Serializable
     internal class ADFeedContent(
         @ProtoNumber(1) @JvmField val msgUserInfo: UserInfo? = null,
-        @ProtoNumber(2) @JvmField val strPicUrl: List<String> = listOf(),
+        @ProtoNumber(2) @JvmField val strPicUrl: List<String> = emptyList(),
         @ProtoNumber(3) @JvmField val msgText: RichText? = null,
         @ProtoNumber(4) @JvmField val attendInfo: String = "",
         @ProtoNumber(5) @JvmField val actionUrl: String = "",
@@ -79,7 +79,7 @@ internal class AppointDefine : ProtoBuf {
 
     @Serializable
     internal class RichText(
-        @ProtoNumber(1) @JvmField val msgElems: List<Elem>? = null
+        @ProtoNumber(1) @JvmField val msgElems: List<Elem> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -164,7 +164,7 @@ internal class AppointDefine : ProtoBuf {
     @Serializable
     internal class InterestTag(
         @ProtoNumber(1) @JvmField val tagType: Int = 0,
-        @ProtoNumber(2) @JvmField val msgTagList: List<InterestItem>? = null
+        @ProtoNumber(2) @JvmField val msgTagList: List<InterestItem> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -210,9 +210,9 @@ internal class AppointDefine : ProtoBuf {
         @ProtoNumber(5) @JvmField val publishTime: Long = 0,
         @ProtoNumber(6) @JvmField val praiseCount: Int = 0,
         @ProtoNumber(7) @JvmField val praiseFlag: Int = 0,
-        @ProtoNumber(8) @JvmField val msgPraiseUser: List<StrangerInfo>? = null,
+        @ProtoNumber(8) @JvmField val msgPraiseUser: List<StrangerInfo> = emptyList(),
         @ProtoNumber(9) @JvmField val commentCount: Int = 0,
-        @ProtoNumber(10) @JvmField val msgCommentList: List<FeedComment>? = null,
+        @ProtoNumber(10) @JvmField val msgCommentList: List<FeedComment> = emptyList(),
         @ProtoNumber(11) @JvmField val commentRetAll: Int = 0,
         @ProtoNumber(12) @JvmField val hotFlag: Int = 0,
         @ProtoNumber(13) @JvmField val svrReserved: Long = 0L,
@@ -221,12 +221,12 @@ internal class AppointDefine : ProtoBuf {
 
     @Serializable
     internal class HotTopicList(
-        @ProtoNumber(1) @JvmField val topicList: List<HotTopic>? = null
+        @ProtoNumber(1) @JvmField val topicList: List<HotTopic> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class FeedContent(
-        @ProtoNumber(1) @JvmField val strPicUrl: List<String> = listOf(),
+        @ProtoNumber(1) @JvmField val strPicUrl: List<String> = emptyList(),
         @ProtoNumber(2) @JvmField val msgText: RichText? = null,
         @ProtoNumber(3) @JvmField val hrefUrl: String = "",
         @ProtoNumber(5) @JvmField val groupName: String = "",
@@ -254,7 +254,7 @@ internal class AppointDefine : ProtoBuf {
 
     @Serializable
     internal class RecentFreshFeed(
-        @ProtoNumber(1) @JvmField val freshFeedInfo: List<FreshFeedInfo>? = null,
+        @ProtoNumber(1) @JvmField val freshFeedInfo: List<FreshFeedInfo> = emptyList(),
         @ProtoNumber(2) @JvmField val uid: Long = 0L
     ) : ProtoBuf
 
@@ -286,8 +286,8 @@ internal class AppointDefine : ProtoBuf {
     @Serializable
     internal class LBSInfo(
         @ProtoNumber(1) @JvmField val msgGps: GPS? = null,
-        @ProtoNumber(2) @JvmField val msgWifis: List<Wifi>? = null,
-        @ProtoNumber(3) @JvmField val msgCells: List<Cell>? = null
+        @ProtoNumber(2) @JvmField val msgWifis: List<Wifi> = emptyList(),
+        @ProtoNumber(3) @JvmField val msgCells: List<Cell> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -304,10 +304,10 @@ internal class AppointDefine : ProtoBuf {
 
     @Serializable
     internal class FeedsCookie(
-        @ProtoNumber(1) @JvmField val strList: List<String> = listOf(),
+        @ProtoNumber(1) @JvmField val strList: List<String> = emptyList(),
         @ProtoNumber(2) @JvmField val pose: Int = 0,
         @ProtoNumber(3) @JvmField val cookie: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(4) @JvmField val uint64Topics: List<Long>? = null
+        @ProtoNumber(4) @JvmField val uint64Topics: List<Long> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -386,13 +386,13 @@ internal class AppointDefine : ProtoBuf {
 
     @Serializable
     internal class HotFreshFeedList(
-        @ProtoNumber(1) @JvmField val msgFeeds: List<HotUserFeed>? = null,
+        @ProtoNumber(1) @JvmField val msgFeeds: List<HotUserFeed> = emptyList(),
         @ProtoNumber(2) @JvmField val updateTime: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class RptInterestTag(
-        @ProtoNumber(1) @JvmField val interestTags: List<InterestTag>? = null
+        @ProtoNumber(1) @JvmField val interestTags: List<InterestTag> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -452,8 +452,8 @@ internal class AppointDefine : ProtoBuf {
         @ProtoNumber(1) @JvmField val lableId: Int = 0,
         @ProtoNumber(2) @JvmField val lableMsgPre: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val lableMsgLast: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(4) @JvmField val interstName: List<ByteArray>? = null,
-        @ProtoNumber(5) @JvmField val interstType: List<Int>? = null
+        @ProtoNumber(4) @JvmField val interstName: List<ByteArray> = emptyList(),
+        @ProtoNumber(5) @JvmField val interstType: List<Int> = emptyList()
     ) : ProtoBuf
 
     @Serializable

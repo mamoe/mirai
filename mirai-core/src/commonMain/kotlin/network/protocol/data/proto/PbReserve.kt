@@ -49,7 +49,7 @@ internal class ResvAttr(
         @ProtoNumber(40) @JvmField val groupConfessSig: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(41) @JvmField val subfontId: Long = 0L,
         @ProtoNumber(42) @JvmField val msgFlagType: Int = 0,
-        @ProtoNumber(43) @JvmField val uint32CustomFeatureid: List<Int>? = null,
+        @ProtoNumber(43) @JvmField val uint32CustomFeatureid: List<Int> = emptyList(),
         @ProtoNumber(44) @JvmField val richCardNameVer: Int = 0,
         @ProtoNumber(47) @JvmField val msgInfoFlag: Int = 0,
         @ProtoNumber(48) @JvmField val serviceMsgType: Int = 0,

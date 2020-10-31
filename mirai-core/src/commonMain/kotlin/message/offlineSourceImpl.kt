@@ -74,7 +74,7 @@ internal class OfflineMessageSourceImplBySourceMsg(
 
     override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
     override val sequenceId: Int
-        get() = delegate.origSeqs?.first() ?: error("cannot find sequenceId")
+        get() = delegate.origSeqs.firstOrNull() ?: error("cannot find sequenceId")
     override val internalId: Int
         get() = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer()).origUids?.toInt() ?: 0
     override val time: Int get() = delegate.time

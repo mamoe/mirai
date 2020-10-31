@@ -180,14 +180,14 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 
         bot.client.syncingController.msgCtrlBuf = resp.msgCtrlBuf
 
-        if (resp.uinPairMsgs == null) {
+        if (resp.uinPairMsgs.isEmpty()) {
             return EmptyResponse
         }
 
         val messages = resp.uinPairMsgs.asFlow()
-            .filterNot { it.msg == null }
+            .filterNot { it.msg.isEmpty() }
             .flatMapConcat {
-                it.msg!!.asFlow()
+                it.msg.asFlow()
                     .filter { msg: MsgComm.Msg -> msg.msgHead.msgTime > it.lastReadTime.toLong() and 4294967295L }
             }.also {
                 MessageSvcPbDeleteMsg.delete(bot, it) // 删除消息

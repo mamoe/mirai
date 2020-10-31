@@ -57,17 +57,17 @@ internal class ReqBody(
         @ProtoNumber(1) @JvmField val subcmd: Int = 0,
         @ProtoNumber(2) @JvmField val termType: Int = 0,
         @ProtoNumber(3) @JvmField val platformType: Int = 0,
-        @ProtoNumber(4) @JvmField val msgUpReq: List<LongMsg.MsgUpReq>? = null,
-        @ProtoNumber(5) @JvmField val msgDownReq: List<LongMsg.MsgDownReq>? = null,
-        @ProtoNumber(6) @JvmField val msgDelReq: List<LongMsg.MsgDeleteReq>? = null,
+        @ProtoNumber(4) @JvmField val msgUpReq: List<LongMsg.MsgUpReq> = emptyList(),
+        @ProtoNumber(5) @JvmField val msgDownReq: List<LongMsg.MsgDownReq> = emptyList(),
+        @ProtoNumber(6) @JvmField val msgDelReq: List<LongMsg.MsgDeleteReq> = emptyList(),
         @ProtoNumber(10) @JvmField val agentType: Int = 0
     ) : ProtoBuf
 
     @Serializable
 internal class RspBody(
         @ProtoNumber(1) @JvmField val subcmd: Int = 0,
-        @ProtoNumber(2) @JvmField val msgUpRsp: List<LongMsg.MsgUpRsp>? = null,
-        @ProtoNumber(3) @JvmField val msgDownRsp: List<LongMsg.MsgDownRsp>? = null,
-        @ProtoNumber(4) @JvmField val msgDelRsp: List<LongMsg.MsgDeleteRsp>? = null
+        @ProtoNumber(2) @JvmField val msgUpRsp: List<LongMsg.MsgUpRsp> = emptyList(),
+        @ProtoNumber(3) @JvmField val msgDownRsp: List<LongMsg.MsgDownRsp> = emptyList(),
+        @ProtoNumber(4) @JvmField val msgDelRsp: List<LongMsg.MsgDeleteRsp> = emptyList()
     ) : ProtoBuf
 }

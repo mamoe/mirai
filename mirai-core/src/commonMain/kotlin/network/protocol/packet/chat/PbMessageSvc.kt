@@ -147,13 +147,13 @@ internal class PbMessageSvc {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp = readProtoBuf(MsgSvc.PbMsgWithDrawResp.serializer())
-            resp.groupWithDraw?.firstOrNull()?.let {
+            resp.groupWithDraw.firstOrNull()?.let {
                 if (it.result != 0) {
                     return Response.Failed(it.result, it.errmsg)
                 }
                 return Response.Success
             }
-            resp.c2cWithDraw?.firstOrNull()?.let {
+            resp.c2cWithDraw.firstOrNull()?.let {
                 if (it.result != 2 && it.result != 3) {
                     return Response.Failed(it.result, it.errmsg)
                 }

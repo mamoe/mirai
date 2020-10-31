@@ -11,7 +11,7 @@ internal class Oidb0x8a0 : ProtoBuf {
     @Serializable
     internal class RspBody(
         @ProtoNumber(1) @JvmField val optUint64GroupCode: Long = 0L,
-        @ProtoNumber(2) @JvmField val msgKickResult: List<KickResult>? = null
+        @ProtoNumber(2) @JvmField val msgKickResult: List<KickResult> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -31,8 +31,8 @@ internal class Oidb0x8a0 : ProtoBuf {
     @Serializable
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val optUint64GroupCode: Long = 0L,
-        @ProtoNumber(2) @JvmField val msgKickList: List<KickMemberInfo>? = null,
-        @ProtoNumber(3) @JvmField val kickList: List<Long>? = null,
+        @ProtoNumber(2) @JvmField val msgKickList: List<KickMemberInfo> = emptyList(),
+        @ProtoNumber(3) @JvmField val kickList: List<Long> = emptyList(),
         @ProtoNumber(4) @JvmField val kickFlag: Int = 0,
         @ProtoNumber(5) @JvmField val kickMsg: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
@@ -49,15 +49,15 @@ internal class Oidb0x8fc : ProtoBuf {
 
     @Serializable
     internal class CommCardNameBuf(
-        @ProtoNumber(1) @JvmField val richCardName: List<RichCardNameElem>? = null
+        @ProtoNumber(1) @JvmField val richCardName: List<RichCardNameElem> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(2) @JvmField val showFlag: Int = 0,
-        @ProtoNumber(3) @JvmField val memLevelInfo: List<MemberInfo>? = null,
-        @ProtoNumber(4) @JvmField val levelName: List<LevelName>? = null,
+        @ProtoNumber(3) @JvmField val memLevelInfo: List<MemberInfo> = emptyList(),
+        @ProtoNumber(4) @JvmField val levelName: List<LevelName> = emptyList(),
         @ProtoNumber(5) @JvmField val updateTime: Int = 0,
         @ProtoNumber(6) @JvmField val officeMode: Int = 0,
         @ProtoNumber(7) @JvmField val groupOpenAppid: Int = 0,
@@ -82,7 +82,7 @@ internal class Oidb0x8fc : ProtoBuf {
         @ProtoNumber(13) @JvmField val job: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(14) @JvmField val tribeLevel: Int = 0,
         @ProtoNumber(15) @JvmField val tribePoint: Int = 0,
-        @ProtoNumber(16) @JvmField val richCardName: List<CardNameElem>? = null,
+        @ProtoNumber(16) @JvmField val richCardName: List<CardNameElem> = emptyList(),
         @ProtoNumber(17) @JvmField val commRichCardName: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -176,7 +176,7 @@ internal class Oidb0x88d : ProtoBuf {
         @ProtoNumber(16) @JvmField val groupMemo: String? = null,
         @ProtoNumber(17) @JvmField val ingGroupFingerMemo: String? = null,
         @ProtoNumber(18) @JvmField val ingGroupClassText: String? = null,
-        @ProtoNumber(19) @JvmField val groupAllianceCode: List<Int>? = null,
+        @ProtoNumber(19) @JvmField val groupAllianceCode: List<Int> = emptyList(),
         @ProtoNumber(20) @JvmField val groupExtraAdmNum: Int? = null,
         @ProtoNumber(21) @JvmField val groupUin: Long? = null,
         @ProtoNumber(22) @JvmField val groupCurMsgSeq: Int? = null,
@@ -198,7 +198,7 @@ internal class Oidb0x88d : ProtoBuf {
         @ProtoNumber(38) @JvmField val certificationType: Int? = null,
         @ProtoNumber(39) @JvmField val ingCertificationText: String? = null,
         @ProtoNumber(40) @JvmField val ingGroupRichFingerMemo: String? = null,
-        @ProtoNumber(41) @JvmField val tagRecord: List<TagRecord>? = null,
+        @ProtoNumber(41) @JvmField val tagRecord: List<TagRecord> = emptyList(),
         @ProtoNumber(42) @JvmField val groupGeoInfo: GroupGeoInfo? = null,
         @ProtoNumber(43) @JvmField val headPortraitSeq: Int? = null,
         @ProtoNumber(44) @JvmField val msgHeadPortrait: GroupHeadPortrait? = null,
@@ -271,24 +271,24 @@ internal class Oidb0x88d : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val stzrspgroupinfo: List<RspGroupInfo>? = null,
+        @ProtoNumber(1) @JvmField val stzrspgroupinfo: List<RspGroupInfo> = emptyList(),
         @ProtoNumber(2) @JvmField val errorinfo: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val appid: Int = 0,
-        @ProtoNumber(2) @JvmField val stzreqgroupinfo: List<ReqGroupInfo>? = null,
+        @ProtoNumber(2) @JvmField val stzreqgroupinfo: List<ReqGroupInfo> = emptyList(),
         @ProtoNumber(3) @JvmField val pcClientVersion: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class GroupHeadPortrait(
         @ProtoNumber(1) @JvmField val picCnt: Int = 0,
-        @ProtoNumber(2) @JvmField val msgInfo: List<GroupHeadPortraitInfo>? = null,
+        @ProtoNumber(2) @JvmField val msgInfo: List<GroupHeadPortraitInfo> = emptyList(),
         @ProtoNumber(3) @JvmField val defaultId: Int = 0,
         @ProtoNumber(4) @JvmField val verifyingPicCnt: Int = 0,
-        @ProtoNumber(5) @JvmField val msgVerifyingpicInfo: List<GroupHeadPortraitInfo>? = null
+        @ProtoNumber(5) @JvmField val msgVerifyingpicInfo: List<GroupHeadPortraitInfo> = emptyList()
     ) : ProtoBuf
 }
 
@@ -320,7 +320,7 @@ internal class Oidb0x89a : ProtoBuf {
         @ProtoNumber(16) @JvmField val addOption: Int? = null,
         @ProtoNumber(17) @JvmField val shutupTime: Int? = null,
         @ProtoNumber(18) @JvmField val groupTypeFlag: Int? = null,
-        @ProtoNumber(19) @JvmField val stringGroupTag: List<ByteArray>? = null,
+        @ProtoNumber(19) @JvmField val stringGroupTag: List<ByteArray> = emptyList(),
         @ProtoNumber(20) @JvmField val msgGroupGeoInfo: GroupGeoInfo? = null,
         @ProtoNumber(21) @JvmField val groupClassExt: Int? = null,
         @ProtoNumber(22) @JvmField val ingGroupClassText: ByteArray? = null,
@@ -384,13 +384,13 @@ internal class Cmd0x7cb : ProtoBuf {
     internal class RspBody(
         @ProtoNumber(1) @JvmField val timeStamp: Int = 0,
         @ProtoNumber(2) @JvmField val timeGap: Int = 0,
-        @ProtoNumber(3) @JvmField val commentConfigs: List<CommentConfig>? = null,
+        @ProtoNumber(3) @JvmField val commentConfigs: List<CommentConfig> = emptyList(),
         @ProtoNumber(4) @JvmField val attendTipsToA: String = "",
         @ProtoNumber(5) @JvmField val firstMsgTips: String = "",
-        @ProtoNumber(6) @JvmField val cancleConfig: List<ConfigItem>? = null,
+        @ProtoNumber(6) @JvmField val cancleConfig: List<ConfigItem> = emptyList(),
         @ProtoNumber(7) @JvmField val msgDateRequest: DateRequest? = null,
-        @ProtoNumber(8) @JvmField val msgHotLocale: List<ByteArray>? = null,//List<AppointDefine.LocaleInfo>
-        @ProtoNumber(9) @JvmField val msgTopicList: List<TopicConfig>? = null,
+        @ProtoNumber(8) @JvmField val msgHotLocale: List<ByteArray> = emptyList(),//List<AppointDefine.LocaleInfo>
+        @ProtoNumber(9) @JvmField val msgTopicList: List<TopicConfig> = emptyList(),
         @ProtoNumber(10) @JvmField val travelMsgTips: String = "",
         @ProtoNumber(11) @JvmField val travelProfileTips: String = "",
         @ProtoNumber(12) @JvmField val travelAttenTips: String = "",
@@ -400,7 +400,7 @@ internal class Cmd0x7cb : ProtoBuf {
     @Serializable
     internal class CommentConfig(
         @ProtoNumber(1) @JvmField val appointSubject: Int = 0,
-        @ProtoNumber(2) @JvmField val msgConfigs: List<ConfigItem>? = null
+        @ProtoNumber(2) @JvmField val msgConfigs: List<ConfigItem> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -461,7 +461,7 @@ internal class GroupAppPb : ProtoBuf {
     @Serializable
     internal class AppList(
         @ProtoNumber(1) @JvmField val hash: String = "",
-        @ProtoNumber(2) @JvmField val infos: List<AppInfo>? = null
+        @ProtoNumber(2) @JvmField val infos: List<AppInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -507,7 +507,7 @@ internal class Cmd0x5fd : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgComment: List<AppointDefine.DateComment>? = null,
+        @ProtoNumber(1) @JvmField val msgComment: List<AppointDefine.DateComment> = emptyList(),
         @ProtoNumber(2) @JvmField val errorTips: String = "",
         @ProtoNumber(3) @JvmField val clearCacheFlag: Int = 0,
         @ProtoNumber(4) @JvmField val commentWording: String = "",
@@ -533,7 +533,7 @@ internal class Oidb0xbcb : ProtoBuf {
 
     @Serializable
     internal class CheckUrlRsp(
-        @ProtoNumber(1) @JvmField val results: List<UrlCheckResult>? = null,
+        @ProtoNumber(1) @JvmField val results: List<UrlCheckResult> = emptyList(),
         @ProtoNumber(2) @JvmField val nextReqDuration: Int = 0
     ) : ProtoBuf
 
@@ -551,7 +551,7 @@ internal class Oidb0xbcb : ProtoBuf {
 
     @Serializable
     internal class CheckUrlReq(
-        @ProtoNumber(1) @JvmField val url: List<String> = listOf(),
+        @ProtoNumber(1) @JvmField val url: List<String> = emptyList(),
         @ProtoNumber(2) @JvmField val refer: String = "",
         @ProtoNumber(3) @JvmField val plateform: String = "",
         @ProtoNumber(4) @JvmField val qqPfTo: String = "",
@@ -616,7 +616,7 @@ internal class Oidb0xbe8 : ProtoBuf {
         @ProtoNumber(3) @JvmField val reqOfPopupFlag: Int = 0,
         @ProtoNumber(4) @JvmField val rstOfPopupFlag: Int = 0,
         @ProtoNumber(5) @JvmField val mqq808WelcomepageFlag: Int = 0,
-        @ProtoNumber(6) @JvmField val msgPopupResult: List<PopupResult>? = null
+        @ProtoNumber(6) @JvmField val msgPopupResult: List<PopupResult> = emptyList()
     ) : ProtoBuf
 }
 
@@ -626,13 +626,13 @@ internal class Cmd0x7de : ProtoBuf {
     internal class UserProfile(
         @ProtoNumber(1) @JvmField val msgPublisherInfo: AppointDefine.PublisherInfo? = null,
         @ProtoNumber(2) @JvmField val msgAppointsInfo: AppointDefine.AppointInfo? = null,
-        @ProtoNumber(3) @JvmField val msgVistorInfo: List<AppointDefine.StrangerInfo>? = null
+        @ProtoNumber(3) @JvmField val msgVistorInfo: List<AppointDefine.StrangerInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class RspBody(
         @ProtoNumber(1) @JvmField val msgHead: BusiRespHead? = null,
-        @ProtoNumber(2) @JvmField val msgUserList: List<UserProfile>? = null,
+        @ProtoNumber(2) @JvmField val msgUserList: List<UserProfile> = emptyList(),
         @ProtoNumber(3) @JvmField val ended: Int = 0,
         @ProtoNumber(4) @JvmField val cookie: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
@@ -675,7 +675,7 @@ internal class Cmd0x7a8 : ProtoBuf {
         @ProtoNumber(12) @JvmField val readReport: Int = 0,
         @ProtoNumber(13) @JvmField val sortType: Int = 0,
         @ProtoNumber(14) @JvmField val onlyNew: Int = 0,
-        @ProtoNumber(15) @JvmField val filterMedalIds: List<Int>? = null,
+        @ProtoNumber(15) @JvmField val filterMedalIds: List<Int> = emptyList(),
         @ProtoNumber(16) @JvmField val onlySummary: Int = 0,
         @ProtoNumber(17) @JvmField val doScan: Int = 0,
         @ProtoNumber(18) @JvmField val startTimestamp: Int = 0
@@ -688,7 +688,7 @@ internal class Cmd0x7a8 : ProtoBuf {
         @ProtoNumber(3) @JvmField val friCount: Int = 0,
         @ProtoNumber(4) @JvmField val metalCount: Int = 0,
         @ProtoNumber(5) @JvmField val metalTotal: Int = 0,
-        @ProtoNumber(6) @JvmField val msgMedal: List<Common.MedalInfo>? = null,
+        @ProtoNumber(6) @JvmField val msgMedal: List<Common.MedalInfo> = emptyList(),
         @ProtoNumber(8) @JvmField val totalPoint: Int = 0,
         @ProtoNumber(9) @JvmField val int32NewCount: Int = 0,
         @ProtoNumber(10) @JvmField val int32UpgradeCount: Int = 0,
@@ -717,7 +717,7 @@ internal class Cmd0x5fe : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgComment: List<AppointDefine.DateComment>? = null,
+        @ProtoNumber(1) @JvmField val msgComment: List<AppointDefine.DateComment> = emptyList(),
         @ProtoNumber(2) @JvmField val errorTips: String = "",
         @ProtoNumber(3) @JvmField val fetchOldOver: Int = 0,
         @ProtoNumber(4) @JvmField val fetchNewOver: Int = 0
@@ -732,7 +732,7 @@ internal class Oidb0xc35 : ProtoBuf {
     @Serializable
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val uin: Long = 0L,
-        @ProtoNumber(2) @JvmField val msgExposeInfo: List<ExposeItem>? = null
+        @ProtoNumber(2) @JvmField val msgExposeInfo: List<ExposeItem> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -806,8 +806,8 @@ internal class Cmd0xccb : ProtoBuf {
         @ProtoNumber(1) @JvmField val type: Int = 0,
         @ProtoNumber(2) @JvmField val destUin: Long = 0L,
         @ProtoNumber(3) @JvmField val groupCode: Long = 0L,
-        @ProtoNumber(4) @JvmField val c2cMsg: List<C2cMsgInfo>? = null,
-        @ProtoNumber(5) @JvmField val groupMsg: List<GroupMsgInfo>? = null
+        @ProtoNumber(4) @JvmField val c2cMsg: List<C2cMsgInfo> = emptyList(),
+        @ProtoNumber(5) @JvmField val groupMsg: List<GroupMsgInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -815,8 +815,8 @@ internal class Cmd0xccb : ProtoBuf {
         @ProtoNumber(1) @JvmField val type: Int = 0,
         @ProtoNumber(2) @JvmField val destUin: Long = 0L,
         @ProtoNumber(3) @JvmField val groupCode: Long = 0L,
-        @ProtoNumber(4) @JvmField val c2cMsg: List<C2cMsgInfo>? = null,
-        @ProtoNumber(5) @JvmField val groupMsg: List<GroupMsgInfo>? = null,
+        @ProtoNumber(4) @JvmField val c2cMsg: List<C2cMsgInfo> = emptyList(),
+        @ProtoNumber(5) @JvmField val groupMsg: List<GroupMsgInfo> = emptyList(),
         @ProtoNumber(6) @JvmField val resId: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -892,16 +892,16 @@ internal class Oidb0x5e1 : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(11) @JvmField val msgUinData: List<UdcUinData>? = null,
-        @ProtoNumber(12) @JvmField val uint64UnfinishedUins: List<Long>? = null
+        @ProtoNumber(11) @JvmField val msgUinData: List<UdcUinData> = emptyList(),
+        @ProtoNumber(12) @JvmField val uint64UnfinishedUins: List<Long> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val uint64Uins: List<Long>? = null,
+        @ProtoNumber(1) @JvmField val uint64Uins: List<Long> = emptyList(),
         @ProtoNumber(2) @JvmField val startTime: Int = 0,
         @ProtoNumber(3) @JvmField val maxPackageSize: Int = 0,
-        @ProtoNumber(4) @JvmField val bytesOpenid: List<ByteArray>? = null,
+        @ProtoNumber(4) @JvmField val bytesOpenid: List<ByteArray> = emptyList(),
         @ProtoNumber(5) @JvmField val appid: Int = 0,
         @ProtoNumber(20002) @JvmField val reqNick: Int = 0,
         @ProtoNumber(20003) @JvmField val reqCountry: Int = 0,
@@ -950,20 +950,20 @@ internal class Oidb0x5e1 : ProtoBuf {
 internal class Oidb0xc90 : ProtoBuf {
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val communityBid: List<Long>? = null,
+        @ProtoNumber(1) @JvmField val communityBid: List<Long> = emptyList(),
         @ProtoNumber(2) @JvmField val page: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class CommunityWebInfo(
-        @ProtoNumber(1) @JvmField val communityInfoItem: List<CommunityConfigInfo>? = null,
+        @ProtoNumber(1) @JvmField val communityInfoItem: List<CommunityConfigInfo> = emptyList(),
         @ProtoNumber(2) @JvmField val page: Int = 0,
         @ProtoNumber(3) @JvmField val end: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val communityInfoItem: List<CommunityConfigInfo>? = null,
+        @ProtoNumber(1) @JvmField val communityInfoItem: List<CommunityConfigInfo> = emptyList(),
         @ProtoNumber(2) @JvmField val jumpConcernCommunityUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val communityTitleWording: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val moreUrlWording: ByteArray = EMPTY_BYTE_ARRAY,
@@ -1055,7 +1055,7 @@ internal class Cmd0x7dc : ProtoBuf {
     internal class RspBody(
         @ProtoNumber(1) @JvmField val seq: Int = 0,
         @ProtoNumber(2) @JvmField val wording: String = "",
-        @ProtoNumber(3) @JvmField val msgAppointInfo: List<AppointDefine.AppointInfo>? = null
+        @ProtoNumber(3) @JvmField val msgAppointInfo: List<AppointDefine.AppointInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -1080,7 +1080,7 @@ internal class Cmd0x7cd : ProtoBuf {
         @ProtoNumber(1) @JvmField val stamp: Int = 0,
         @ProtoNumber(2) @JvmField val over: Int = 0,
         @ProtoNumber(3) @JvmField val next: Int = 0,
-        @ProtoNumber(4) @JvmField val msgAppointsInfo: List<AppointBrife>? = null
+        @ProtoNumber(4) @JvmField val msgAppointsInfo: List<AppointBrife> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -1089,7 +1089,7 @@ internal class Cmd0x7cd : ProtoBuf {
         @ProtoNumber(2) @JvmField val start: Int = 0,
         @ProtoNumber(3) @JvmField val want: Int = 0,
         @ProtoNumber(4) @JvmField val msgLbsInfo: AppointDefine.LBSInfo? = null,
-        @ProtoNumber(5) @JvmField val msgAppointIds: List<AppointDefine.AppointID>? = null,
+        @ProtoNumber(5) @JvmField val msgAppointIds: List<AppointDefine.AppointID> = emptyList(),
         @ProtoNumber(6) @JvmField val appointOperation: Int = 0,
         @ProtoNumber(100) @JvmField val requestUin: Long = 0L
     ) : ProtoBuf
@@ -1272,9 +1272,9 @@ internal class Oidb0xb60 : ProtoBuf {
 
     @Serializable
     internal class GetPrivilegeRsp(
-        @ProtoNumber(1) @JvmField val apiGroups: List<Int>? = null,
+        @ProtoNumber(1) @JvmField val apiGroups: List<Int> = emptyList(),
         @ProtoNumber(2) @JvmField val nextReqDuration: Int = 0,
-        @ProtoNumber(3) @JvmField val apiNames: List<String> = listOf()
+        @ProtoNumber(3) @JvmField val apiNames: List<String> = emptyList()
     ) : ProtoBuf
 }
 
@@ -1295,12 +1295,12 @@ internal class Cmd0x5fc : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgEventList: List<AppointDefine.DateEvent>? = null,
-        @ProtoNumber(2) @JvmField val actAppointIds: List<AppointDefine.AppointID>? = null,
+        @ProtoNumber(1) @JvmField val msgEventList: List<AppointDefine.DateEvent> = emptyList(),
+        @ProtoNumber(2) @JvmField val actAppointIds: List<AppointDefine.AppointID> = emptyList(),
         @ProtoNumber(3) @JvmField val maxEventId: Long = 0L,
         @ProtoNumber(4) @JvmField val errorTips: String = "",
-        @ProtoNumber(5) @JvmField val msgNearbyEventList: List<AppointDefine.NearbyEvent>? = null,
-        @ProtoNumber(6) @JvmField val msgFeedEventList: List<AppointDefine.FeedEvent>? = null,
+        @ProtoNumber(5) @JvmField val msgNearbyEventList: List<AppointDefine.NearbyEvent> = emptyList(),
+        @ProtoNumber(6) @JvmField val msgFeedEventList: List<AppointDefine.FeedEvent> = emptyList(),
         @ProtoNumber(7) @JvmField val maxFreshEventId: Long = 0L
     ) : ProtoBuf
 }
@@ -1326,7 +1326,7 @@ internal class Oidb0xc0b : ProtoBuf {
         @ProtoNumber(2) @JvmField val canGetCoinCount: Int = 0,
         @ProtoNumber(3) @JvmField val coinIconUrl: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val lastCompletedTaskStamp: Long = 0L,
-        @ProtoNumber(6) @JvmField val cmsWording: List<KanDianCMSActivityInfo>? = null,
+        @ProtoNumber(6) @JvmField val cmsWording: List<KanDianCMSActivityInfo> = emptyList(),
         @ProtoNumber(7) @JvmField val lastCmsActivityStamp: Long = 0L,
         @ProtoNumber(8) @JvmField val msgKandianCoinRemind: KanDianCoinRemind? = null,
         @ProtoNumber(9) @JvmField val msgKandianTaskRemind: KanDianTaskRemind? = null
@@ -1393,10 +1393,10 @@ internal class Cmd0x7ce : ProtoBuf {
         @ProtoNumber(3) @JvmField val score: Int = 0,
         @ProtoNumber(4) @JvmField val joinOver: Int = 0,
         @ProtoNumber(5) @JvmField val joinNext: Int = 0,
-        @ProtoNumber(6) @JvmField val msgStrangerInfo: List<AppointDefine.StrangerInfo>? = null,
+        @ProtoNumber(6) @JvmField val msgStrangerInfo: List<AppointDefine.StrangerInfo> = emptyList(),
         @ProtoNumber(7) @JvmField val viewOver: Int = 0,
         @ProtoNumber(8) @JvmField val viewNext: Int = 0,
-        @ProtoNumber(9) @JvmField val msgVistorInfo: List<AppointDefine.StrangerInfo>? = null,
+        @ProtoNumber(9) @JvmField val msgVistorInfo: List<AppointDefine.StrangerInfo> = emptyList(),
         @ProtoNumber(10) @JvmField val meJoin: Int = 0,
         @ProtoNumber(12) @JvmField val canProfile: Int = 0,
         @ProtoNumber(13) @JvmField val profileErrmsg: String = "",
@@ -1405,27 +1405,27 @@ internal class Cmd0x7ce : ProtoBuf {
         @ProtoNumber(16) @JvmField val sigC2C: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(17) @JvmField val uin: Long = 0L,
         @ProtoNumber(18) @JvmField val limited: Int = 0,
-        @ProtoNumber(19) @JvmField val msgCommentList: List<AppointDefine.DateComment>? = null,
+        @ProtoNumber(19) @JvmField val msgCommentList: List<AppointDefine.DateComment> = emptyList(),
         @ProtoNumber(20) @JvmField val commentOver: Int = 0,
         @ProtoNumber(23) @JvmField val meInvited: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgAppointsInfo: List<AppintDetail>? = null,
+        @ProtoNumber(1) @JvmField val msgAppointsInfo: List<AppintDetail> = emptyList(),
         @ProtoNumber(2) @JvmField val secureFlag: Int = 0,
         @ProtoNumber(3) @JvmField val secureTips: String = ""
     ) : ProtoBuf
 
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val appointIds: List<AppointDefine.AppointID>? = null,
+        @ProtoNumber(1) @JvmField val appointIds: List<AppointDefine.AppointID> = emptyList(),
         @ProtoNumber(2) @JvmField val joinStart: Int = 0,
         @ProtoNumber(3) @JvmField val joinWant: Int = 0,
         @ProtoNumber(4) @JvmField val viewStart: Int = 0,
         @ProtoNumber(5) @JvmField val viewWant: Int = 0,
         @ProtoNumber(6) @JvmField val msgLbsInfo: AppointDefine.LBSInfo? = null,
-        @ProtoNumber(7) @JvmField val uint64Uins: List<Long>? = null,
+        @ProtoNumber(7) @JvmField val uint64Uins: List<Long> = emptyList(),
         @ProtoNumber(8) @JvmField val viewCommentCount: Int = 0,
         @ProtoNumber(100) @JvmField val requestUin: Long = 0L
     ) : ProtoBuf
@@ -1446,7 +1446,7 @@ internal class Cmd0x7db : ProtoBuf {
         @ProtoNumber(1) @JvmField val msgAppointId: AppointDefine.AppointID? = null,
         @ProtoNumber(2) @JvmField val appointAction: Int = 0,
         @ProtoNumber(3) @JvmField val overwrite: Int = 0,
-        @ProtoNumber(4) @JvmField val msgAppointIds: List<AppointDefine.AppointID>? = null
+        @ProtoNumber(4) @JvmField val msgAppointIds: List<AppointDefine.AppointID> = emptyList()
     ) : ProtoBuf
 }
 
@@ -1455,7 +1455,7 @@ internal class Oidb0xc6c : ProtoBuf {
     @Serializable
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val uin: Long = 0L,
-        @ProtoNumber(2) @JvmField val msgGroupInfo: List<GroupInfo>? = null
+        @ProtoNumber(2) @JvmField val msgGroupInfo: List<GroupInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -1486,13 +1486,13 @@ internal class Oidb0xc05 : ProtoBuf {
     @Serializable
     internal class GetCreateAppListRsp(
         @ProtoNumber(1) @JvmField val totalCount: Int = 0,
-        @ProtoNumber(2) @JvmField val appinfos: List<Qqconnect.Appinfo>? = null
+        @ProtoNumber(2) @JvmField val appinfos: List<Qqconnect.Appinfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class GetAuthAppListRsp(
         @ProtoNumber(1) @JvmField val totalCount: Int = 0,
-        @ProtoNumber(2) @JvmField val appinfos: List<Qqconnect.Appinfo>? = null,
+        @ProtoNumber(2) @JvmField val appinfos: List<Qqconnect.Appinfo> = emptyList(),
         @ProtoNumber(3) @JvmField val curIndex: Int = 0
     ) : ProtoBuf
 
@@ -1513,7 +1513,7 @@ internal class Oidb0xc05 : ProtoBuf {
 internal class Cmd0x7da : ProtoBuf {
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val msgAppointIds: List<AppointDefine.AppointID>? = null,
+        @ProtoNumber(1) @JvmField val msgAppointIds: List<AppointDefine.AppointID> = emptyList(),
         @ProtoNumber(2) @JvmField val appointOperation: Int = 0,
         @ProtoNumber(3) @JvmField val operationReason: Int = 0,
         @ProtoNumber(4) @JvmField val overwrite: Int = 0
@@ -1522,7 +1522,7 @@ internal class Cmd0x7da : ProtoBuf {
     @Serializable
     internal class RspBody(
         @ProtoNumber(1) @JvmField val wording: String = "",
-        @ProtoNumber(2) @JvmField val msgAppointInfo: List<AppointDefine.AppointInfo>? = null,
+        @ProtoNumber(2) @JvmField val msgAppointInfo: List<AppointDefine.AppointInfo> = emptyList(),
         @ProtoNumber(3) @JvmField val operationReason: Int = 0
     ) : ProtoBuf
 }
@@ -1531,8 +1531,8 @@ internal class Cmd0x7da : ProtoBuf {
 internal class Qqconnect : ProtoBuf {
     @Serializable
     internal class MobileAppInfo(
-        @ProtoNumber(11) @JvmField val androidAppInfo: List<AndroidAppInfo>? = null,
-        @ProtoNumber(12) @JvmField val iosAppInfo: List<IOSAppInfo>? = null
+        @ProtoNumber(11) @JvmField val androidAppInfo: List<AndroidAppInfo> = emptyList(),
+        @ProtoNumber(12) @JvmField val iosAppInfo: List<IOSAppInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -1567,7 +1567,7 @@ internal class Qqconnect : ProtoBuf {
         @ProtoNumber(28) @JvmField val universalLink: String = "",
         @ProtoNumber(29) @JvmField val qqconnectFeature: Int = 0,
         @ProtoNumber(30) @JvmField val isHatchery: Int = 0,
-        @ProtoNumber(31) @JvmField val testUinList: List<Long>? = null,
+        @ProtoNumber(31) @JvmField val testUinList: List<Long> = emptyList(),
         @ProtoNumber(100) @JvmField val templateMsgConfig: TemplateMsgConfig? = null,
         @ProtoNumber(101) @JvmField val miniAppInfo: MiniAppInfo? = null,
         @ProtoNumber(102) @JvmField val webAppInfo: WebAppInfo? = null,
@@ -1695,19 +1695,19 @@ internal class Oidb0xc26 : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgPersons: List<MayKnowPerson>? = null,
-        @ProtoNumber(2) @JvmField val entryInuse: List<Int> = listOf(),
-        @ProtoNumber(3) @JvmField val entryClose: List<Int> = listOf(),
+        @ProtoNumber(1) @JvmField val msgPersons: List<MayKnowPerson> = emptyList(),
+        @ProtoNumber(2) @JvmField val entryInuse: List<Int> = emptyList(),
+        @ProtoNumber(3) @JvmField val entryClose: List<Int> = emptyList(),
         @ProtoNumber(4) @JvmField val nextGap: Int = 0,
         @ProtoNumber(5) @JvmField val timestamp: Int = 0,
         @ProtoNumber(6) @JvmField val msgUp: Int = 0,
-        @ProtoNumber(7) @JvmField val entryDelays: List<EntryDelay>? = null,
+        @ProtoNumber(7) @JvmField val entryDelays: List<EntryDelay> = emptyList(),
         @ProtoNumber(8) @JvmField val listSwitch: Int = 0,
         @ProtoNumber(9) @JvmField val addPageListSwitch: Int = 0,
         @ProtoNumber(10) @JvmField val emRspDataType: Int /* enum */ = 1,
-        @ProtoNumber(11) @JvmField val msgRgroupItems: List<RecommendInfo>? = null,
+        @ProtoNumber(11) @JvmField val msgRgroupItems: List<RecommendInfo> = emptyList(),
         @ProtoNumber(12) @JvmField val boolIsNewuser: Boolean = false,
-        @ProtoNumber(13) @JvmField val msgTables: List<TabInfo>? = null,
+        @ProtoNumber(13) @JvmField val msgTables: List<TabInfo> = emptyList(),
         @ProtoNumber(14) @JvmField val cookies: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -1743,14 +1743,14 @@ internal class Oidb0xc26 : ProtoBuf {
         @ProtoNumber(17) @JvmField val mobileName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(18) @JvmField val token: String = "",
         @ProtoNumber(19) @JvmField val onlineState: Int = 0,
-        @ProtoNumber(20) @JvmField val msgLabels: List<Label>? = null,
+        @ProtoNumber(20) @JvmField val msgLabels: List<Label> = emptyList(),
         @ProtoNumber(21) @JvmField val sourceid: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class RecommendInfo(
         @ProtoNumber(1) @JvmField val woring: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(2) @JvmField val msgGroups: List<RgroupInfo>? = null
+        @ProtoNumber(2) @JvmField val msgGroups: List<RgroupInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -1760,7 +1760,7 @@ internal class Oidb0xc26 : ProtoBuf {
         @ProtoNumber(3) @JvmField val groupName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val groupMemo: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val memberNum: Int = 0,
-        @ProtoNumber(6) @JvmField val groupLabel: List<RgoupLabel>? = null,
+        @ProtoNumber(6) @JvmField val groupLabel: List<RgoupLabel> = emptyList(),
         @ProtoNumber(7) @JvmField val groupFlagExt: Int = 0,
         @ProtoNumber(8) @JvmField val groupFlag: Int = 0,
         @ProtoNumber(9) @JvmField val source: Int /* enum */ = 1,
@@ -1774,9 +1774,9 @@ internal class Oidb0xc26 : ProtoBuf {
 
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val filterUins: List<Long>? = null,
+        @ProtoNumber(1) @JvmField val filterUins: List<Long> = emptyList(),
         @ProtoNumber(2) @JvmField val phoneBook: Int = 0,
-        @ProtoNumber(3) @JvmField val expectedUins: List<Long>? = null,
+        @ProtoNumber(3) @JvmField val expectedUins: List<Long> = emptyList(),
         @ProtoNumber(4) @JvmField val emEntry: Int /* enum */ = 1,
         @ProtoNumber(5) @JvmField val fetchRgroup: Int = 0,
         @ProtoNumber(6) @JvmField val tabId: Int = 0,
@@ -1803,7 +1803,7 @@ internal class Oidb0xc26 : ProtoBuf {
 internal class Cmd0xac6 : ProtoBuf {
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val results: List<OperateResult>? = null,
+        @ProtoNumber(1) @JvmField val results: List<OperateResult> = emptyList(),
         @ProtoNumber(4) @JvmField val metalCount: Int = 0,
         @ProtoNumber(5) @JvmField val metalTotal: Int = 0,
         @ProtoNumber(9) @JvmField val int32NewCount: Int = 0,
@@ -1813,7 +1813,7 @@ internal class Cmd0xac6 : ProtoBuf {
 
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val medals: List<MedalReport>? = null,
+        @ProtoNumber(1) @JvmField val medals: List<MedalReport> = emptyList(),
         @ProtoNumber(2) @JvmField val clean: Int = 0
     ) : ProtoBuf
 
@@ -1861,7 +1861,7 @@ internal class Cmd0x7cf : ProtoBuf {
         @ProtoNumber(2) @JvmField val start: Int = 0,
         @ProtoNumber(3) @JvmField val want: Int = 0,
         @ProtoNumber(4) @JvmField val reqValidOnly: Int = 0,
-        @ProtoNumber(5) @JvmField val msgAppointIds: List<AppointDefine.AppointID>? = null,
+        @ProtoNumber(5) @JvmField val msgAppointIds: List<AppointDefine.AppointID> = emptyList(),
         @ProtoNumber(6) @JvmField val appointOperation: Int = 0,
         @ProtoNumber(100) @JvmField val requestUin: Long = 0L
     ) : ProtoBuf
@@ -1871,7 +1871,7 @@ internal class Cmd0x7cf : ProtoBuf {
         @ProtoNumber(1) @JvmField val stamp: Int = 0,
         @ProtoNumber(2) @JvmField val over: Int = 0,
         @ProtoNumber(3) @JvmField val next: Int = 0,
-        @ProtoNumber(4) @JvmField val msgAppointsInfo: List<AppointDefine.AppointInfo>? = null,
+        @ProtoNumber(4) @JvmField val msgAppointsInfo: List<AppointDefine.AppointInfo> = emptyList(),
         @ProtoNumber(5) @JvmField val unreadCount: Int = 0
     ) : ProtoBuf
 }
@@ -1899,7 +1899,7 @@ internal class Cmd0xac7 : ProtoBuf {
 
     @Serializable
     internal class ReceiveMessageDevices(
-        @ProtoNumber(1) @JvmField val devices: List<DeviceInfo>? = null
+        @ProtoNumber(1) @JvmField val devices: List<DeviceInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -1914,7 +1914,7 @@ internal class Cmd0xac7 : ProtoBuf {
 internal class Cmd0x5fa : ProtoBuf {
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgStrangerInfo: List<AppointDefine.StrangerInfo>? = null,
+        @ProtoNumber(1) @JvmField val msgStrangerInfo: List<AppointDefine.StrangerInfo> = emptyList(),
         @ProtoNumber(2) @JvmField val reachStart: Int = 0,
         @ProtoNumber(3) @JvmField val reachEnd: Int = 0
     ) : ProtoBuf
@@ -1949,7 +1949,7 @@ internal class FavoriteCKVData : ProtoBuf {
     @Serializable
     internal class KandianFavoriteItem(
         @ProtoNumber(1) @JvmField val msgFavoriteExtInfo: KandianFavoriteBizData? = null,
-        @ProtoNumber(2) @JvmField val bytesCid: List<ByteArray>? = null,
+        @ProtoNumber(2) @JvmField val bytesCid: List<ByteArray> = emptyList(),
         @ProtoNumber(3) @JvmField val type: Int = 0,
         @ProtoNumber(4) @JvmField val status: Int = 0,
         @ProtoNumber(5) @JvmField val msgAuthor: Author? = null,
@@ -1966,7 +1966,7 @@ internal class FavoriteCKVData : ProtoBuf {
         @ProtoNumber(2) @JvmField val title: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(3) @JvmField val publisher: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val brief: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(5) @JvmField val msgPicInfo: List<PicInfo>? = null,
+        @ProtoNumber(5) @JvmField val msgPicInfo: List<PicInfo> = emptyList(),
         @ProtoNumber(6) @JvmField val type: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(7) @JvmField val resourceUri: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
@@ -1975,7 +1975,7 @@ internal class FavoriteCKVData : ProtoBuf {
     internal class UserFavoriteList(
         @ProtoNumber(1) @JvmField val uin: Long = 0L,
         @ProtoNumber(2) @JvmField val modifyTs: Long = 0L,
-        @ProtoNumber(100) @JvmField val msgFavoriteItems: List<FavoriteItem>? = null
+        @ProtoNumber(100) @JvmField val msgFavoriteItems: List<FavoriteItem> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -2038,14 +2038,14 @@ internal class Oidb0xccd : ProtoBuf {
     @Serializable
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val int64Uin: Long = 0L,
-        @ProtoNumber(2) @JvmField val appids: List<Int>? = null,
+        @ProtoNumber(2) @JvmField val appids: List<Int> = emptyList(),
         @ProtoNumber(3) @JvmField val platform: Int = 0
     ) : ProtoBuf
 
     @Serializable
     internal class RspBody(
         @ProtoNumber(1) @JvmField val errcode: Int = 0,
-        @ProtoNumber(2) @JvmField val results: List<Result>? = null
+        @ProtoNumber(2) @JvmField val results: List<Result> = emptyList()
     ) : ProtoBuf
 }
 
@@ -2053,7 +2053,7 @@ internal class Oidb0xccd : ProtoBuf {
 internal class Oidb0xc36 : ProtoBuf {
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val uint64Uins: List<Long>? = null
+        @ProtoNumber(1) @JvmField val uint64Uins: List<Long> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -2085,7 +2085,7 @@ internal class Oidb0x87c : ProtoBuf {
 internal class Cmd0xbf2 : ProtoBuf {
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val phoneAddrBook: List<PhoneAddrBook>? = null,
+        @ProtoNumber(1) @JvmField val phoneAddrBook: List<PhoneAddrBook> = emptyList(),
         @ProtoNumber(2) @JvmField val end: Int = 0,
         @ProtoNumber(3) @JvmField val nextIndex: Long = 0
     ) : ProtoBuf
@@ -2123,7 +2123,7 @@ internal class Cmd0x6cd : ProtoBuf {
         @ProtoNumber(11) @JvmField val msgRedpointExtraInfo: RepointExtraInfo? = null,
         @ProtoNumber(12) @JvmField val configVersion: String = "",
         @ProtoNumber(13) @JvmField val doActivity: Int = 0,
-        @ProtoNumber(14) @JvmField val msgUnreadMsg: List<MessageRec>? = null
+        @ProtoNumber(14) @JvmField val msgUnreadMsg: List<MessageRec> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -2134,14 +2134,14 @@ internal class Cmd0x6cd : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgRedpoint: List<RedpointInfo>? = null,
-        @ProtoNumber(2) @JvmField val unfinishedRedpoint: List<PullRedpointReq>? = null
+        @ProtoNumber(1) @JvmField val msgRedpoint: List<RedpointInfo> = emptyList(),
+        @ProtoNumber(2) @JvmField val unfinishedRedpoint: List<PullRedpointReq> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val lastPullRedpoint: List<PullRedpointReq>? = null,
-        @ProtoNumber(2) @JvmField val unfinishedRedpoint: List<PullRedpointReq>? = null,
+        @ProtoNumber(1) @JvmField val lastPullRedpoint: List<PullRedpointReq> = emptyList(),
+        @ProtoNumber(2) @JvmField val unfinishedRedpoint: List<PullRedpointReq> = emptyList(),
         @ProtoNumber(3) @JvmField val msgPullSingleTask: PullRedpointReq? = null,
         @ProtoNumber(4) @JvmField val retMsgRec: Int = 0
     ) : ProtoBuf
@@ -2235,7 +2235,7 @@ internal class Cmd0x8b4 : ProtoBuf {
         @ProtoNumber(2) @JvmField val groupName: String = "",
         @ProtoNumber(3) @JvmField val faceUrl: String = "",
         @ProtoNumber(4) @JvmField val setDisplayTime: Int = 0,
-        // @SerialId(5) @JvmField val groupLabel: List<GroupLabel.Label>? = null,
+        // @SerialId(5) @JvmField val groupLabel: List<GroupLabel.Label> = emptyList(),
         @ProtoNumber(6) @JvmField val textIntro: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(7) @JvmField val richIntro: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
@@ -2254,8 +2254,8 @@ internal class Cmd0x8b4 : ProtoBuf {
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val flag: Int = 0,
         @ProtoNumber(21) @JvmField val tag: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(22) @JvmField val groupInfo: List<GroupInfo>? = null,
-        @ProtoNumber(23) @JvmField val textLabel: List<ByteArray>? = null
+        @ProtoNumber(22) @JvmField val groupInfo: List<GroupInfo> = emptyList(),
+        @ProtoNumber(23) @JvmField val textLabel: List<ByteArray> = emptyList()
     ) : ProtoBuf
 }
 
@@ -2263,7 +2263,7 @@ internal class Cmd0x8b4 : ProtoBuf {
 internal class Cmd0x682 : ProtoBuf {
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgChatinfo: List<ChatInfo>? = null
+        @ProtoNumber(1) @JvmField val msgChatinfo: List<ChatInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -2281,7 +2281,7 @@ internal class Cmd0x682 : ProtoBuf {
 
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val uint64Touinlist: List<Long>? = null
+        @ProtoNumber(1) @JvmField val uint64Touinlist: List<Long> = emptyList()
     ) : ProtoBuf
 }
 
@@ -2306,7 +2306,7 @@ internal class Cmd0x6f5 : ProtoBuf {
     @Serializable
     internal class RspBody(
         @ProtoNumber(1) @JvmField val configVersion: String = "",
-        @ProtoNumber(2) @JvmField val taskInfo: List<TaskInfo>? = null
+        @ProtoNumber(2) @JvmField val taskInfo: List<TaskInfo> = emptyList()
     ) : ProtoBuf
 }
 
@@ -2314,7 +2314,7 @@ internal class Cmd0x6f5 : ProtoBuf {
 internal class Oidb0xb7e : ProtoBuf {
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val topItem: List<DiandianTopConfig>? = null
+        @ProtoNumber(1) @JvmField val topItem: List<DiandianTopConfig> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -2357,7 +2357,7 @@ internal class Oidb0xc2f : ProtoBuf {
 
     @Serializable
     internal class GetFollowUserRecommendListRsp(
-        @ProtoNumber(1) @JvmField val msgRecommendList: List<RecommendAccountInfo>? = null,
+        @ProtoNumber(1) @JvmField val msgRecommendList: List<RecommendAccountInfo> = emptyList(),
         @ProtoNumber(2) @JvmField val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -2418,7 +2418,7 @@ internal class Cmd0x6ce : ProtoBuf {
 
     @Serializable
     internal class ReqBody(
-        @ProtoNumber(1) @JvmField val msgReadReq: List<ReadRedpointReq>? = null
+        @ProtoNumber(1) @JvmField val msgReadReq: List<ReadRedpointReq> = emptyList()
     ) : ProtoBuf
 }
 

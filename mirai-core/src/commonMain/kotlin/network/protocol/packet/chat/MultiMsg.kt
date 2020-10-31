@@ -139,7 +139,7 @@ internal class MultiMsg {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val body = readProtoBuf(MultiMsg.RspBody.serializer())
-            val response = body.multimsgApplyupRsp!!.first()
+            val response = body.multimsgApplyupRsp.first()
             return when (response.result) {
                 0 -> Response.RequireUpload(response)
                 193 -> Response.MessageTooLarge
