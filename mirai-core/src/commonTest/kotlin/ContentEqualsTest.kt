@@ -6,12 +6,27 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-package  net.mamoe.mirai.message.data
+package  net.mamoe.mirai.internal.utils
 
+import net.mamoe.mirai.message.data.ConstrainSingle
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.buildMessageChain
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleMessage>, Any() {
+    companion object Key : Message.Key<TestConstrainSingleMessage> {
+        override val typeName: String
+            get() = "TestMessage"
+    }
+
+    override fun toString(): String = "<TestConstrainSingleMessage#${super.hashCode()}>"
+
+    override val key: Message.Key<TestConstrainSingleMessage>
+        get() = Key
+}
 
 internal class ContentEqualsTest {
 
