@@ -155,7 +155,7 @@ internal class MsgComm : ProtoBuf {
         @ProtoNumber(1) @JvmField val lastReadTime: Int = 0,
         @ProtoNumber(2) @JvmField val peerUin: Long = 0L,
         @ProtoNumber(3) @JvmField val msgCompleted: Int = 0,
-        @ProtoNumber(4) @JvmField val msg: List<Msg>? = null,
+        @ProtoNumber(4) @JvmField val msg: List<Msg> = emptyList(),
         @ProtoNumber(5) @JvmField val unreadMsgNum: Int = 0,
         @ProtoNumber(8) @JvmField val c2cType: Int = 0,
         @ProtoNumber(9) @JvmField val serviceType: Int = 0,

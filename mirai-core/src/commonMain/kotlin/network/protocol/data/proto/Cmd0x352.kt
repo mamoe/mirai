@@ -61,19 +61,19 @@ internal class Cmd0x352 : ProtoBuf {
         @ProtoNumber(2) @JvmField val clientIp: Int = 0,
         @ProtoNumber(3) @JvmField val result: Int = 0,
         @ProtoNumber(4) @JvmField val failMsg: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(5) @JvmField val bytesThumbDownUrl: List<ByteArray>? = null,
-        @ProtoNumber(6) @JvmField val bytesOriginalDownUrl: List<ByteArray>? = null,
+        @ProtoNumber(5) @JvmField val bytesThumbDownUrl: List<ByteArray> = emptyList(),
+        @ProtoNumber(6) @JvmField val bytesOriginalDownUrl: List<ByteArray> = emptyList(),
         @ProtoNumber(7) @JvmField val msgImgInfo: ImgInfo? = null,
-        @ProtoNumber(8) @JvmField val uint32DownIp: List<Int>? = null,
-        @ProtoNumber(9) @JvmField val uint32DownPort: List<Int>? = null,
+        @ProtoNumber(8) @JvmField val uint32DownIp: List<Int> = emptyList(),
+        @ProtoNumber(9) @JvmField val uint32DownPort: List<Int> = emptyList(),
         @ProtoNumber(10) @JvmField val thumbDownPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(11) @JvmField val originalDownPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(12) @JvmField val downDomain: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(13) @JvmField val bytesBigDownUrl: List<ByteArray>? = null,
+        @ProtoNumber(13) @JvmField val bytesBigDownUrl: List<ByteArray> = emptyList(),
         @ProtoNumber(14) @JvmField val bigDownPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(15) @JvmField val bigThumbDownPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(16) @JvmField val httpsUrlFlag: Int = 0,
-        @ProtoNumber(26) @JvmField val msgDownIp6: List<IPv6Info>? = null,
+        @ProtoNumber(26) @JvmField val msgDownIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -98,19 +98,19 @@ internal class Cmd0x352 : ProtoBuf {
     @Serializable
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val subcmd: Int = 0, //2是GetImgUrlReq 1是UploadImgReq
-        @ProtoNumber(2) @JvmField val msgTryupImgReq: List<TryUpImgReq>? = null,// optional
-        @ProtoNumber(3) @JvmField val msgGetimgUrlReq: List<GetImgUrlReq>? = null,// optional
-        @ProtoNumber(4) @JvmField val msgDelImgReq: List<DelImgReq>? = null,
+        @ProtoNumber(2) @JvmField val msgTryupImgReq: List<TryUpImgReq> = emptyList(),// optional
+        @ProtoNumber(3) @JvmField val msgGetimgUrlReq: List<GetImgUrlReq> = emptyList(),// optional
+        @ProtoNumber(4) @JvmField val msgDelImgReq: List<DelImgReq> = emptyList(),
         @ProtoNumber(10) @JvmField val netType: Int = 3// 数据网络=5
     ) : ProtoBuf
 
     @Serializable
     internal class RspBody(
         @ProtoNumber(1) @JvmField val subcmd: Int = 0,
-        @ProtoNumber(2) @JvmField val msgTryupImgRsp: List<TryUpImgRsp>? = null,
-        @ProtoNumber(3) @JvmField val msgGetimgUrlRsp: List<GetImgUrlRsp>? = null,
+        @ProtoNumber(2) @JvmField val msgTryupImgRsp: List<TryUpImgRsp> = emptyList(),
+        @ProtoNumber(3) @JvmField val msgGetimgUrlRsp: List<GetImgUrlRsp> = emptyList(),
         @ProtoNumber(4) @JvmField val boolNewBigchan: Boolean = false,
-        @ProtoNumber(5) @JvmField val msgDelImgRsp: List<DelImgRsp>? = null,
+        @ProtoNumber(5) @JvmField val msgDelImgRsp: List<DelImgRsp> = emptyList(),
         @ProtoNumber(10) @JvmField val failMsg: String? = ""
     ) : ProtoBuf
 
@@ -159,8 +159,8 @@ internal class Cmd0x352 : ProtoBuf {
         @ProtoNumber(4) @JvmField val failMsg: String? = "",
         @ProtoNumber(5) @JvmField val boolFileExit: Boolean = false,
         @ProtoNumber(6) @JvmField val msgImgInfo: ImgInfo? = null,
-        @ProtoNumber(7) @JvmField val uint32UpIp: List<Int>? = null,
-        @ProtoNumber(8) @JvmField val uint32UpPort: List<Int>? = null,
+        @ProtoNumber(7) @JvmField val uint32UpIp: List<Int> = emptyList(),
+        @ProtoNumber(8) @JvmField val uint32UpPort: List<Int> = emptyList(),
         @ProtoNumber(9) @JvmField val upUkey: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(10) @JvmField val upResid: String = "",
         @ProtoNumber(11) @JvmField val upUuid: String = "",
@@ -168,7 +168,7 @@ internal class Cmd0x352 : ProtoBuf {
         @ProtoNumber(13) @JvmField val blockSize: Long = 0L,
         @ProtoNumber(14) @JvmField val encryptDstip: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(15) @JvmField val roamdays: Int = 0,
-        @ProtoNumber(26) @JvmField val msgUpIp6: List<IPv6Info>? = null,
+        @ProtoNumber(26) @JvmField val msgUpIp6: List<IPv6Info> = emptyList(),
         @ProtoNumber(27) @JvmField val clientIp6: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(60) @JvmField val thumbDownPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(61) @JvmField val originalDownPara: ByteArray = EMPTY_BYTE_ARRAY,

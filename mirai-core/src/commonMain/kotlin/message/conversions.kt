@@ -262,8 +262,9 @@ internal fun MsgComm.Msg.toMessageChain(
 // These two functions have difference method signature, don't combine.
 
 internal fun ImMsgBody.SourceMsg.toMessageChain(bot: Bot, groupIdOrZero: Long): MessageChain {
-    val elements = this.elems!!
-
+    val elements = this.elems
+    if (elements.isEmpty())
+        error("elements for SourceMsg is empty")
     return buildMessageChain(elements.size + 1) {
         +OfflineMessageSourceImplBySourceMsg(delegate = this@toMessageChain, bot = bot, groupIdOrZero = groupIdOrZero)
         elements.joinToMessageChain(groupIdOrZero, bot, this)

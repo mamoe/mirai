@@ -30,7 +30,7 @@ internal class GoldMsgTipsElem(
         @ProtoNumber(5) @JvmField val total: Int = 0,
         @ProtoNumber(6) @JvmField val interval: Int = 0,
         @ProtoNumber(7) @JvmField val finish: Int = 0,
-        @ProtoNumber(8) @JvmField val uin: List<Long>? = null,
+        @ProtoNumber(8) @JvmField val uin: List<Long> = emptyList(),
         @ProtoNumber(9) @JvmField val action: Int = 0
     ) : ProtoBuf
 
@@ -38,7 +38,7 @@ internal class GoldMsgTipsElem(
 internal class MessageRecallReminder(
         @ProtoNumber(1) @JvmField val uin: Long = 0L,
         @ProtoNumber(2) @JvmField val nickname: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(3) @JvmField val recalledMsgList: List<MessageMeta> = listOf(),
+        @ProtoNumber(3) @JvmField val recalledMsgList: List<MessageMeta> = emptyList(),
         @ProtoNumber(4) @JvmField val reminderContent: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val userdef: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf {

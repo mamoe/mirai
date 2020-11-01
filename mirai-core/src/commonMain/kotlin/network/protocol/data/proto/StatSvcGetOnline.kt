@@ -34,6 +34,6 @@ internal class StatSvcGetOnline {
         @ProtoNumber(3) @JvmField val uin: Long = 0L,
         @ProtoNumber(4) @JvmField val appid: Int = 0,
         @ProtoNumber(5) @JvmField val timeInterval: Int = 0,
-        @ProtoNumber(6) @JvmField val msgInstances: List<StatSvcGetOnline.Instance>? = null
+        @ProtoNumber(6) @JvmField val msgInstances: List<StatSvcGetOnline.Instance> = emptyList()
     ) : ProtoBuf
 }

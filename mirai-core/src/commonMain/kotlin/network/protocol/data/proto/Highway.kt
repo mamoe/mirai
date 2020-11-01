@@ -53,7 +53,7 @@ internal class BdhExtinfo : ProtoBuf {
     internal class QQVoiceExtRsp(
         @ProtoNumber(1) @JvmField val qid: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val int32Retcode: Int = 0,
-        @ProtoNumber(3) @JvmField val msgResult: List<QQVoiceResult>? = null
+        @ProtoNumber(3) @JvmField val msgResult: List<QQVoiceResult> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -93,8 +93,8 @@ internal class BdhExtinfo : ProtoBuf {
         @ProtoNumber(4) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(5) @JvmField val clientType: Int = 0,
         @ProtoNumber(6) @JvmField val msgThumbinfo: PicInfo? = null,
-        @ProtoNumber(7) @JvmField val msgMergeVideoinfo: List<VideoInfo>? = null,
-        @ProtoNumber(8) @JvmField val msgDropVideoinfo: List<VideoInfo>? = null,
+        @ProtoNumber(7) @JvmField val msgMergeVideoinfo: List<VideoInfo> = emptyList(),
+        @ProtoNumber(8) @JvmField val msgDropVideoinfo: List<VideoInfo> = emptyList(),
         @ProtoNumber(9) @JvmField val businessType: Int = 0,
         @ProtoNumber(10) @JvmField val subBusinessType: Int = 0
     ) : ProtoBuf
@@ -234,7 +234,7 @@ internal class CSDataHighwayHead : ProtoBuf {
     @Serializable
     internal class QueryHoleRsp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
-        @ProtoNumber(2) @JvmField val dataHole: List<DataHole>? = null,
+        @ProtoNumber(2) @JvmField val dataHole: List<DataHole> = emptyList(),
         @ProtoNumber(3) @JvmField val boolCompFlag: Boolean = false
     ) : ProtoBuf
 
@@ -288,15 +288,15 @@ internal class HwConfigPersistentPB : ProtoBuf {
     @Serializable
     internal class HwConfigItemPB(
         @ProtoNumber(1) @JvmField val ingKey: String = "",
-        @ProtoNumber(2) @JvmField val endPointList: List<HwEndPointPB>? = null
+        @ProtoNumber(2) @JvmField val endPointList: List<HwEndPointPB> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class HwConfigPB(
-        @ProtoNumber(1) @JvmField val configItemList: List<HwConfigItemPB>? = null,
-        @ProtoNumber(2) @JvmField val netSegConfList: List<HwNetSegConfPB>? = null,
-        @ProtoNumber(3) @JvmField val shortVideoNetConf: List<HwNetSegConfPB>? = null,
-        @ProtoNumber(4) @JvmField val configItemListIp6: List<HwConfigItemPB>? = null
+        @ProtoNumber(1) @JvmField val configItemList: List<HwConfigItemPB> = emptyList(),
+        @ProtoNumber(2) @JvmField val netSegConfList: List<HwNetSegConfPB> = emptyList(),
+        @ProtoNumber(3) @JvmField val shortVideoNetConf: List<HwNetSegConfPB> = emptyList(),
+        @ProtoNumber(4) @JvmField val configItemListIp6: List<HwConfigItemPB> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -344,7 +344,7 @@ internal class Subcmd0x501 : ProtoBuf {
         @ProtoNumber(4) @JvmField val loginSigType: Int = 0,
         @ProtoNumber(5) @JvmField val loginSigTicket: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(6) @JvmField val requestFlag: Int = 0,
-        @ProtoNumber(7) @JvmField val uint32ServiceTypes: List<Int>? = null,
+        @ProtoNumber(7) @JvmField val uint32ServiceTypes: List<Int> = emptyList(),
         @ProtoNumber(8) @JvmField val bid: Int = 0,
         @ProtoNumber(9) @JvmField val term: Int = 0,
         @ProtoNumber(10) @JvmField val plat: Int = 0,
@@ -356,7 +356,7 @@ internal class Subcmd0x501 : ProtoBuf {
     internal class SubCmd0x501Rspbody(
         @ProtoNumber(1) @JvmField val httpconnSigSession: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val sessionKey: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(3) @JvmField val msgHttpconnAddrs: List<SrvAddrs>? = null,
+        @ProtoNumber(3) @JvmField val msgHttpconnAddrs: List<SrvAddrs> = emptyList(),
         @ProtoNumber(4) @JvmField val preConnection: Int = 0,
         @ProtoNumber(5) @JvmField val csConn: Int = 0,
         @ProtoNumber(6) @JvmField val msgIpLearnConf: IpLearnConf? = null,
@@ -440,14 +440,14 @@ internal class Subcmd0x501 : ProtoBuf {
         @Serializable
         internal class PTVConf(
             @ProtoNumber(1) @JvmField val channelType: Int = 0,
-            @ProtoNumber(2) @JvmField val msgNetsegconf: List<NetSegConf>? = null,
+            @ProtoNumber(2) @JvmField val msgNetsegconf: List<NetSegConf> = emptyList(),
             @ProtoNumber(3) @JvmField val boolOpenHardwareCodec: Boolean = false
         ) : ProtoBuf
 
         @Serializable
         internal class ShortVideoConf(
             @ProtoNumber(1) @JvmField val channelType: Int = 0,
-            @ProtoNumber(2) @JvmField val msgNetsegconf: List<NetSegConf>? = null,
+            @ProtoNumber(2) @JvmField val msgNetsegconf: List<NetSegConf> = emptyList(),
             @ProtoNumber(3) @JvmField val boolOpenHardwareCodec: Boolean = false,
             @ProtoNumber(4) @JvmField val boolSendAheadSignal: Boolean = false
         ) : ProtoBuf
@@ -455,10 +455,10 @@ internal class Subcmd0x501 : ProtoBuf {
         @Serializable
         internal class SrvAddrs(
             @ProtoNumber(1) @JvmField val serviceType: Int = 0,
-            @ProtoNumber(2) @JvmField val msgAddrs: List<IpAddr>? = null,
+            @ProtoNumber(2) @JvmField val msgAddrs: List<IpAddr> = emptyList(),
             @ProtoNumber(3) @JvmField val fragmentSize: Int = 0,
-            @ProtoNumber(4) @JvmField val msgNetsegconf: List<NetSegConf>? = null,
-            @ProtoNumber(5) @JvmField val msgAddrsV6: List<Ip6Addr>? = null
+            @ProtoNumber(4) @JvmField val msgNetsegconf: List<NetSegConf> = emptyList(),
+            @ProtoNumber(5) @JvmField val msgAddrsV6: List<Ip6Addr> = emptyList()
         ) : ProtoBuf
     }
 }

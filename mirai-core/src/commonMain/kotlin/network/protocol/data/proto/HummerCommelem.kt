@@ -175,7 +175,7 @@ internal class HummerCommelem : ProtoBuf {
             @ProtoNumber(2) @JvmField val confessorUin: Long = 0L,
             @ProtoNumber(3) @JvmField val confessorSex: Int = 0,
             @ProtoNumber(4) @JvmField val sysmsgFlag: Int = 0,
-            @ProtoNumber(5) @JvmField val confessItems: List<GroupConfessItem>? = null,
+            @ProtoNumber(5) @JvmField val confessItems: List<GroupConfessItem> = emptyList(),
             @ProtoNumber(6) @JvmField val totalTopicCount: Int = 0
         ) : ProtoBuf
     }

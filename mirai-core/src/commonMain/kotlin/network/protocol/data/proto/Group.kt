@@ -30,7 +30,7 @@ internal class GroupLabel : ProtoBuf {
     @Serializable
     internal class RspBody(
         @ProtoNumber(1) @JvmField val error: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(2) @JvmField val groupInfo: List<GroupInfo>? = null
+        @ProtoNumber(2) @JvmField val groupInfo: List<GroupInfo> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -42,7 +42,7 @@ internal class GroupLabel : ProtoBuf {
     internal class GroupInfo(
         @ProtoNumber(1) @JvmField val int32Result: Int = 0,
         @ProtoNumber(2) @JvmField val groupCode: Long = 0L,
-        @ProtoNumber(3) @JvmField val groupLabel: List<Label>? = null
+        @ProtoNumber(3) @JvmField val groupLabel: List<Label> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -57,7 +57,7 @@ internal class GroupLabel : ProtoBuf {
         @ProtoNumber(1) @JvmField val sourceId: SourceId? = null,
         @ProtoNumber(2) @JvmField val uinInfo: UinInfo? = null,
         @ProtoNumber(3) @JvmField val numberLabel: Int = 5,
-        @ProtoNumber(4) @JvmField val groupCode: List<Long>? = null,
+        @ProtoNumber(4) @JvmField val groupCode: List<Long> = emptyList(),
         @ProtoNumber(5) @JvmField val labelStyle: Int = 0
     ) : ProtoBuf
 

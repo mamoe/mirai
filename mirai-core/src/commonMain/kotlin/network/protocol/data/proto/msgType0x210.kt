@@ -159,8 +159,8 @@ internal class Submsgtype0x111 {
         @Serializable
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val type: Long = 0L,
-            @ProtoNumber(2) @JvmField val msgAddRecommendPersons: List<MayKnowPerson>? = null,
-            @ProtoNumber(3) @JvmField val uint64DelUins: List<Long>? = null
+            @ProtoNumber(2) @JvmField val msgAddRecommendPersons: List<MayKnowPerson> = emptyList(),
+            @ProtoNumber(3) @JvmField val uint64DelUins: List<Long> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -213,8 +213,8 @@ internal class Submsgtype0x116 {
 
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgMemberJoin: List<MemberInfo>? = null,
-            @ProtoNumber(2) @JvmField val msgMemberQuit: List<MemberInfo>? = null,
+            @ProtoNumber(1) @JvmField val msgMemberJoin: List<MemberInfo> = emptyList(),
+            @ProtoNumber(2) @JvmField val msgMemberQuit: List<MemberInfo> = emptyList(),
             @ProtoNumber(3) @JvmField val groupId: Int = 0,
             @ProtoNumber(4) @JvmField val roomId: Int = 0,
             @ProtoNumber(5) @JvmField val inviteListTotalCount: Int = 0,
@@ -229,7 +229,7 @@ internal class Submsgtype0x117 {
         @Serializable
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val uin: Long = 0L,
-            @ProtoNumber(2) @JvmField val uint32MoudleId: List<Int>? = null
+            @ProtoNumber(2) @JvmField val uint32MoudleId: List<Int> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -292,7 +292,7 @@ internal class Submsgtype0x11a {
         @Serializable
         internal class UserData(
             @ProtoNumber(1) @JvmField val ip: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoNumber(2) @JvmField val fixed32Port: List<Int>? = null,
+            @ProtoNumber(2) @JvmField val fixed32Port: List<Int> = emptyList(),
             @ProtoNumber(3) @JvmField val ssid: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(4) @JvmField val bssid: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(5) @JvmField val enumPlatform: Int /* enum */ = 1
@@ -348,10 +348,10 @@ internal class Submsgtype0x11f {
             @ProtoNumber(3) @JvmField val versionCtrl: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(4) @JvmField val aioType: Int = 0,
             @ProtoNumber(5) @JvmField val operUin: Long = 0L,
-            @ProtoNumber(6) @JvmField val uint64ToUin: List<Long>? = null,
+            @ProtoNumber(6) @JvmField val uint64ToUin: List<Long> = emptyList(),
             @ProtoNumber(7) @JvmField val grayTips: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(8) @JvmField val msgSeq: Long = 0L,
-            @ProtoNumber(9) @JvmField val msgMediaUin: List<MediaUserInfo>? = null,
+            @ProtoNumber(9) @JvmField val msgMediaUin: List<MediaUserInfo> = emptyList(),
             @ProtoNumber(10) @JvmField val msgPerSetting: PersonalSetting? = null,
             @ProtoNumber(11) @JvmField val playMode: Int = 0,
             @ProtoNumber(99) @JvmField val mediaType: Int = 0,
@@ -401,7 +401,7 @@ internal class Submsgtype0x122 {
             @ProtoNumber(4) @JvmField val c2cType: Int = 0,
             @ProtoNumber(5) @JvmField val serviceType: Int = 0,
             @ProtoNumber(6) @JvmField val templId: Long = 0L,
-            @ProtoNumber(7) @JvmField val msgTemplParam: List<TemplParam>? = null,
+            @ProtoNumber(7) @JvmField val msgTemplParam: List<TemplParam> = emptyList(),
             @ProtoNumber(8) @JvmField val content: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(10) @JvmField val tipsSeqId: Long = 0L,
             @ProtoNumber(100) @JvmField val pbReserv: ByteArray = EMPTY_BYTE_ARRAY
@@ -426,7 +426,7 @@ internal class Submsgtype0x123 {
             @ProtoNumber(4) @JvmField val c2cType: Int = 0,
             @ProtoNumber(5) @JvmField val serviceType: Int = 0,
             @ProtoNumber(6) @JvmField val templId: Long = 0L,
-            @ProtoNumber(7) @JvmField val templParam: List<TemplParam>? = null,
+            @ProtoNumber(7) @JvmField val templParam: List<TemplParam> = emptyList(),
             @ProtoNumber(8) @JvmField val templContent: ByteArray = EMPTY_BYTE_ARRAY
         ) : ProtoBuf
 
@@ -545,7 +545,7 @@ internal class Submsgtype0x26 {
         @Serializable
         internal class AppNotifyContent(
             @ProtoNumber(1) @JvmField val text: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoNumber(2) @JvmField val optMsgAppNotifyUser: List<AppNotifyUser>? = null
+            @ProtoNumber(2) @JvmField val optMsgAppNotifyUser: List<AppNotifyUser> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -577,7 +577,7 @@ internal class Submsgtype0x26 {
         @Serializable
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val subCmd: Int = 0,
-            @ProtoNumber(2) @JvmField val msgSubcmd0x1PushBody: List<SubCmd0x1UpdateAppUnreadNum>? = null,
+            @ProtoNumber(2) @JvmField val msgSubcmd0x1PushBody: List<SubCmd0x1UpdateAppUnreadNum> = emptyList(),
             @ProtoNumber(3) @JvmField val msgSubcmd0x2PushBody: SubCmd0x2UpdateAppList? = null,
             @ProtoNumber(4) @JvmField val msgSubcmd0x3PushBody: SubCmd0x3UpdateDiscussAppInfo? = null,
             @ProtoNumber(5) @JvmField val msgSubcmd0x4PushBody: SubCmd0x4UpdateApp? = null
@@ -593,8 +593,8 @@ internal class Submsgtype0x26 {
 
             @Serializable
             internal class SubCmd0x2UpdateAppList(
-                @ProtoNumber(1) @JvmField val msgAppId: List<AppID>? = null,
-                @ProtoNumber(2) @JvmField val uint32TimeStamp: List<Int>? = null,
+                @ProtoNumber(1) @JvmField val msgAppId: List<AppID> = emptyList(),
+                @ProtoNumber(2) @JvmField val uint32TimeStamp: List<Int> = emptyList(),
                 @ProtoNumber(3) @JvmField val groupCode: Long = 0L
             ) : ProtoBuf
 
@@ -682,7 +682,7 @@ internal class Submsgtype0x27 {
 
         @Serializable
         internal class DelFriend(
-            @ProtoNumber(1) @JvmField val uint64Uins: List<Long>? = null
+            @ProtoNumber(1) @JvmField val uint64Uins: List<Long> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -746,8 +746,8 @@ internal class Submsgtype0x27 {
         @Serializable
         internal class FriendGroup(
             @ProtoNumber(1) @JvmField val fuin: Long = 0L,
-            @ProtoNumber(2) @JvmField val uint32OldGroupId: List<Int>? = null,
-            @ProtoNumber(3) @JvmField val uint32NewGroupId: List<Int>? = null
+            @ProtoNumber(2) @JvmField val uint32OldGroupId: List<Int> = emptyList(),
+            @ProtoNumber(3) @JvmField val uint32NewGroupId: List<Int> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -816,7 +816,7 @@ internal class Submsgtype0x27 {
         internal class ModConfProfile(
             @ProtoNumber(1) @JvmField val uin: Long = 0L,
             @ProtoNumber(2) @JvmField val confUin: Int = 0,
-            @ProtoNumber(3) @JvmField val msgProfileInfos: List<ProfileInfo>? = null
+            @ProtoNumber(3) @JvmField val msgProfileInfos: List<ProfileInfo> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -829,24 +829,24 @@ internal class Submsgtype0x27 {
 
         @Serializable
         internal class ModFrdRoamPriv(
-            @ProtoNumber(1) @JvmField val msgRoamPriv: List<OneRoamPriv>? = null
+            @ProtoNumber(1) @JvmField val msgRoamPriv: List<OneRoamPriv> = emptyList()
         ) : ProtoBuf
 
         @Serializable
         internal class ModFriendGroup(
-            @ProtoNumber(1) @JvmField val msgFrdGroup: List<FriendGroup>? = null
+            @ProtoNumber(1) @JvmField val msgFrdGroup: List<FriendGroup> = emptyList()
         ) : ProtoBuf
 
         @Serializable
         internal class ModFriendRemark(
-            @ProtoNumber(1) @JvmField val msgFrdRmk: List<FriendRemark>? = null
+            @ProtoNumber(1) @JvmField val msgFrdRmk: List<FriendRemark> = emptyList()
         ) : ProtoBuf
 
         @Serializable
         internal class ModGroupMemberProfile(
             @ProtoNumber(1) @JvmField val groupUin: Long = 0L,
             @ProtoNumber(2) @JvmField val uin: Long = 0L,
-            @ProtoNumber(3) @JvmField val msgGroupMemberProfileInfos: List<GroupMemberProfileInfo>? = null,
+            @ProtoNumber(3) @JvmField val msgGroupMemberProfileInfos: List<GroupMemberProfileInfo> = emptyList(),
             @ProtoNumber(4) @JvmField val groupCode: Long = 0L
         ) : ProtoBuf
 
@@ -859,14 +859,14 @@ internal class Submsgtype0x27 {
         @Serializable
         internal class ModGroupProfile(
             @ProtoNumber(1) @JvmField val groupUin: Long = 0L,
-            @ProtoNumber(2) @JvmField val msgGroupProfileInfos: List<GroupProfileInfo>? = null,
+            @ProtoNumber(2) @JvmField val msgGroupProfileInfos: List<GroupProfileInfo> = emptyList(),
             @ProtoNumber(3) @JvmField val groupCode: Long = 0L,
             @ProtoNumber(4) @JvmField val cmdUin: Long = 0L
         ) : ProtoBuf
 
         @Serializable
         internal class ModGroupSort(
-            @ProtoNumber(1) @JvmField val msgGroupsort: List<GroupSort>? = null
+            @ProtoNumber(1) @JvmField val msgGroupsort: List<GroupSort> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -878,12 +878,12 @@ internal class Submsgtype0x27 {
         @Serializable
         internal class ModProfile(
             @ProtoNumber(1) @JvmField val uin: Long = 0L,
-            @ProtoNumber(2) @JvmField val msgProfileInfos: List<ProfileInfo>? = null
+            @ProtoNumber(2) @JvmField val msgProfileInfos: List<ProfileInfo> = emptyList()
         ) : ProtoBuf
 
         @Serializable
         internal class ModSnsGeneralInfo(
-            @ProtoNumber(1) @JvmField val msgSnsGeneralInfos: List<SnsUpateBuffer>? = null
+            @ProtoNumber(1) @JvmField val msgSnsGeneralInfos: List<SnsUpateBuffer> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -897,7 +897,7 @@ internal class Submsgtype0x27 {
 
         @Serializable
         internal class SubMsgType0x27MsgBody(
-            @ProtoNumber(1) @JvmField val msgModInfos: List<ForwardBody> = listOf()
+            @ProtoNumber(1) @JvmField val msgModInfos: List<ForwardBody> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -985,13 +985,13 @@ internal class Submsgtype0x27 {
             @ProtoNumber(1) @JvmField val uin: Long = 0L,
             @ProtoNumber(2) @JvmField val code: Long = 0L,
             @ProtoNumber(3) @JvmField val result: Int = 0,
-            @ProtoNumber(400) @JvmField val msgSnsUpdateItem: List<SnsUpdateItem>? = null,
-            @ProtoNumber(401) @JvmField val uint32Idlist: List<Int>? = null
+            @ProtoNumber(400) @JvmField val msgSnsUpdateItem: List<SnsUpdateItem> = emptyList(),
+            @ProtoNumber(401) @JvmField val uint32Idlist: List<Int> = emptyList()
         ) : ProtoBuf
 
         @Serializable
         internal class SnsUpdateFlag(
-            @ProtoNumber(1) @JvmField val msgUpdateSnsFlag: List<SnsUpdateOneFlag>? = null
+            @ProtoNumber(1) @JvmField val msgUpdateSnsFlag: List<SnsUpdateOneFlag> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -1029,12 +1029,12 @@ internal class Submsgtype0x28 {
 
         @Serializable
         internal class RspFollowList(
-            @ProtoNumber(1) @JvmField val msgFollowlist: List<FollowList>? = null
+            @ProtoNumber(1) @JvmField val msgFollowlist: List<FollowList> = emptyList()
         ) : ProtoBuf
 
         @Serializable
         internal class RspTypeList(
-            @ProtoNumber(1) @JvmField val msgTypelist: List<TypeList>? = null
+            @ProtoNumber(1) @JvmField val msgTypelist: List<TypeList> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -1051,8 +1051,8 @@ internal class Submsgtype0x30 {
     internal class SubMsgType0x30 : ProtoBuf {
         @Serializable
         internal class BlockListNotify(
-            @ProtoNumber(1) @JvmField val msgBlockUinInfo: List<BlockUinInfo>? = null,
-            @ProtoNumber(2) @JvmField val uint64DelUin: List<Long>? = null
+            @ProtoNumber(1) @JvmField val msgBlockUinInfo: List<BlockUinInfo> = emptyList(),
+            @ProtoNumber(2) @JvmField val uint64DelUin: List<Long> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -1154,7 +1154,7 @@ internal class Submsgtype0x3f {
     internal class SubMsgType0x3f : ProtoBuf {
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgPubunikey: List<PubUniKey>? = null
+            @ProtoNumber(1) @JvmField val msgPubunikey: List<PubUniKey> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -1188,7 +1188,7 @@ internal class Submsgtype0x41 {
             @ProtoNumber(1) @JvmField val gameName: String = "",
             @ProtoNumber(2) @JvmField val gamePic: String = "",
             @ProtoNumber(3) @JvmField val moreInfo: String = "",
-            @ProtoNumber(4) @JvmField val msgGameRsts: List<UinResult>? = null,
+            @ProtoNumber(4) @JvmField val msgGameRsts: List<UinResult> = emptyList(),
             @ProtoNumber(5) @JvmField val gameSubheading: String = "",
             @ProtoNumber(6) @JvmField val uin: Long = 0L,
             @ProtoNumber(7) @JvmField val nickname: ByteArray = EMPTY_BYTE_ARRAY
@@ -1235,7 +1235,7 @@ internal class Submsgtype0x44 {
             @ProtoNumber(5) @JvmField val processflag: Int = 0,
             @ProtoNumber(6) @JvmField val sourceid: Int = 0,
             @ProtoNumber(7) @JvmField val sourcesubid: Int = 0,
-            @ProtoNumber(8) @JvmField val strWording: List<String> = listOf()
+            @ProtoNumber(8) @JvmField val strWording: List<String> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -1291,7 +1291,7 @@ internal class Submsgtype0x48 {
         @ProtoNumber(3) @JvmField val title: String = "",
         @ProtoNumber(4) @JvmField val secondTitle: String = "",
         @ProtoNumber(5) @JvmField val thirdTitle: String = "",
-        @ProtoNumber(6) @JvmField val wordingList: List<String> = listOf()
+        @ProtoNumber(6) @JvmField val wordingList: List<String> = emptyList()
     ) : ProtoBuf
 }
 
@@ -1317,7 +1317,7 @@ internal class Submsgtype0x4b {
         @ProtoNumber(7) @JvmField val pushMsgHelper: String = "",
         @ProtoNumber(8) @JvmField val pushMsgAlbum: String = "",
         @ProtoNumber(9) @JvmField val usrTotal: Int = 0,
-        @ProtoNumber(10) @JvmField val uint64User: List<Long>? = null
+        @ProtoNumber(10) @JvmField val uint64User: List<Long> = emptyList()
     ) : ProtoBuf
 
     internal class Submsgtype0x4b : ProtoBuf {
@@ -1332,7 +1332,7 @@ internal class Submsgtype0x4b {
             @ProtoNumber(7) @JvmField val pushMsgHelper: String = "",
             @ProtoNumber(8) @JvmField val pushMsgAlbum: String = "",
             @ProtoNumber(9) @JvmField val usrTotal: Int = 0,
-            @ProtoNumber(10) @JvmField val uint64User: List<Long>? = null
+            @ProtoNumber(10) @JvmField val uint64User: List<Long> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -1342,7 +1342,7 @@ internal class Submsgtype0x4e {
     internal class Submsgtype0x4e : ProtoBuf {
         @Serializable
         internal class GroupBulletin(
-            @ProtoNumber(1) @JvmField val msgContent: List<Content>? = null
+            @ProtoNumber(1) @JvmField val msgContent: List<Content> = emptyList()
         ) : ProtoBuf {
             @Serializable
             internal class Content(
@@ -1369,7 +1369,7 @@ internal class Submsgtype0x54 {
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val peerType: Int /* enum */ = 1,
             @ProtoNumber(2) @JvmField val peerUin: Long = 0L,
-            @ProtoNumber(3) @JvmField val taskList: List<TaskInfo>? = null
+            @ProtoNumber(3) @JvmField val taskList: List<TaskInfo> = emptyList()
         ) : ProtoBuf {
             @Serializable
             internal class TaskInfo(
@@ -1451,7 +1451,7 @@ internal class Submsgtype0x67 {
 
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgGrpinfo: List<GroupInfo>? = null
+            @ProtoNumber(1) @JvmField val msgGrpinfo: List<GroupInfo> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -1519,7 +1519,7 @@ internal class Submsgtype0x6f {
             @ProtoNumber(4) @JvmField val age: Int = 0,
             @ProtoNumber(5) @JvmField val coverstory: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(6) @JvmField val storysTotalNum: Long = 0L,
-            @ProtoNumber(7) @JvmField val msgVideoInfo: List<VideoInfo>? = null,
+            @ProtoNumber(7) @JvmField val msgVideoInfo: List<VideoInfo> = emptyList(),
             @ProtoNumber(8) @JvmField val wording: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(9) @JvmField val qqUin: Long = 0L
         ) : ProtoBuf
@@ -1589,7 +1589,7 @@ internal class Submsgtype0x6f {
 
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgModInfos: List<ForwardBody>? = null
+            @ProtoNumber(1) @JvmField val msgModInfos: List<ForwardBody> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -1602,11 +1602,11 @@ internal class Submsgtype0x6f {
         @Serializable
         internal class QimFriendNotify(
             @ProtoNumber(1) @JvmField val opType: Int = 0,
-            @ProtoNumber(2) @JvmField val uint64Uins: List<Long>? = null,
+            @ProtoNumber(2) @JvmField val uint64Uins: List<Long> = emptyList(),
             @ProtoNumber(3) @JvmField val fansUnreadCount: Long = 0L,
             @ProtoNumber(4) @JvmField val fansTotalCount: Long = 0L,
             @ProtoNumber(5) @JvmField val pushTime: Long = 0L,
-            @ProtoNumber(6) @JvmField val bytesMobiles: List<ByteArray>? = null
+            @ProtoNumber(6) @JvmField val bytesMobiles: List<ByteArray> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -1634,7 +1634,7 @@ internal class Submsgtype0x6f {
 
         @Serializable
         internal class QimRecomendMsg(
-            @ProtoNumber(1) @JvmField val msgRecomendList: List<QimRecomendInfo>? = null,
+            @ProtoNumber(1) @JvmField val msgRecomendList: List<QimRecomendInfo> = emptyList(),
             @ProtoNumber(2) @JvmField val timestamp: Long = 0L
         ) : ProtoBuf
 
@@ -1685,13 +1685,13 @@ internal class Submsgtype0x71 {
     internal class Submsgtype0x71 : ProtoBuf {
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgAppInfo: List<ReportAppInfo>? = null,
+            @ProtoNumber(1) @JvmField val msgAppInfo: List<ReportAppInfo> = emptyList(),
             @ProtoNumber(2) @JvmField val uiUin: Long = 0L
         ) : ProtoBuf
 
         @Serializable
         internal class RedDisplayInfo(
-            @ProtoNumber(1) @JvmField val msgRedTypeInfo: List<RedTypeInfo>? = null,
+            @ProtoNumber(1) @JvmField val msgRedTypeInfo: List<RedTypeInfo> = emptyList(),
             @ProtoNumber(2) @JvmField val msgTabDisplayInfo: RedTypeInfo? = null
         ) : ProtoBuf
 
@@ -1731,7 +1731,7 @@ internal class Submsgtype0x71 {
         internal class ReportVersion(
             @ProtoNumber(1) @JvmField val int32PlantId: Int = 0,
             @ProtoNumber(2) @JvmField val boolAllver: Boolean = false,
-            @ProtoNumber(3) @JvmField val strVersion: List<String> = listOf()
+            @ProtoNumber(3) @JvmField val strVersion: List<String> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -1755,9 +1755,9 @@ internal class Submsgtype0x76 {
     internal class SubMsgType0x76 : ProtoBuf {
         @Serializable
         internal class BirthdayNotify(
-            @ProtoNumber(1) @JvmField val msgOneFriend: List<OneBirthdayFriend>? = null,
+            @ProtoNumber(1) @JvmField val msgOneFriend: List<OneBirthdayFriend> = emptyList(),
             @ProtoNumber(2) @JvmField val reserved: Int = 0,
-            @ProtoNumber(3) @JvmField val giftMsg: List<OneGiftMessage>? = null,
+            @ProtoNumber(3) @JvmField val giftMsg: List<OneGiftMessage> = emptyList(),
             @ProtoNumber(4) @JvmField val topPicUrl: String = "",
             @ProtoNumber(5) @JvmField val extend: String = ""
         ) : ProtoBuf
@@ -1765,12 +1765,12 @@ internal class Submsgtype0x76 {
         @Serializable
         internal class GeoGraphicNotify(
             @ProtoNumber(1) @JvmField val localCity: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoNumber(2) @JvmField val msgOneFriend: List<OneGeoGraphicFriend>? = null
+            @ProtoNumber(2) @JvmField val msgOneFriend: List<OneGeoGraphicFriend> = emptyList()
         ) : ProtoBuf
 
         @Serializable
         internal class MemorialDayNotify(
-            @ProtoNumber(1) @JvmField val anniversaryInfo: List<OneMemorialDayInfo>? = null
+            @ProtoNumber(1) @JvmField val anniversaryInfo: List<OneMemorialDayInfo> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -1858,9 +1858,9 @@ internal class Submsgtype0x7c {
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val uin: Long = 0L,
             @ProtoNumber(2) @JvmField val int32Cmd: Int = 0,
-            @ProtoNumber(3) @JvmField val stringCmdExt: List<String> = listOf(),
+            @ProtoNumber(3) @JvmField val stringCmdExt: List<String> = emptyList(),
             @ProtoNumber(4) @JvmField val seq: Long = 0L,
-            @ProtoNumber(5) @JvmField val stringSeqExt: List<String> = listOf()
+            @ProtoNumber(5) @JvmField val stringSeqExt: List<String> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -1893,7 +1893,7 @@ internal class Submsgtype0x83 {
     internal class SubMsgType0x83 : ProtoBuf {
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgParams: List<MsgParams>? = null,
+            @ProtoNumber(1) @JvmField val msgParams: List<MsgParams> = emptyList(),
             @ProtoNumber(2) @JvmField val seq: Long = 0L,
             @ProtoNumber(3) @JvmField val groupId: Long = 0L
         ) : ProtoBuf
@@ -1961,7 +1961,7 @@ internal class Submsgtype0x87 {
         @Serializable
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val friendMsgTypeFlag: Long = 0L,
-            @ProtoNumber(2) @JvmField val msgMsgNotify: List<MsgNotify>? = null,
+            @ProtoNumber(2) @JvmField val msgMsgNotify: List<MsgNotify> = emptyList(),
             @ProtoNumber(3) @JvmField val msgMsgNotifyUnread: MsgNotifyUnread? = null
         ) : ProtoBuf
 
@@ -1989,7 +1989,7 @@ internal class Submsgtype0x89 {
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val uiUin: Long = 0L,
             @ProtoNumber(2) @JvmField val pushRedTs: Int = 0,
-            @ProtoNumber(3) @JvmField val msgNumRed: List<NumRedBusiInfo>? = null
+            @ProtoNumber(3) @JvmField val msgNumRed: List<NumRedBusiInfo> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -2020,7 +2020,7 @@ internal class Submsgtype0x8d {
             @ProtoNumber(1) @JvmField val channelId: Long = 0L,
             @ProtoNumber(2) @JvmField val channelName: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(3) @JvmField val wording: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoNumber(4) @JvmField val topArticleIdList: List<Long>? = null
+            @ProtoNumber(4) @JvmField val topArticleIdList: List<Long> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -2063,7 +2063,7 @@ internal class Submsgtype0x8d {
 
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgNotifyInfos: List<NotifyBody>? = null,
+            @ProtoNumber(1) @JvmField val msgNotifyInfos: List<NotifyBody> = emptyList(),
             @ProtoNumber(2) @JvmField val redSpotNotifyBody: RedSpotNotifyBody? = null
         ) : ProtoBuf
 
@@ -2088,7 +2088,7 @@ internal class Submsgtype0x8d {
         @Serializable
         internal class RedSpotNotifyBody(
             @ProtoNumber(1) @JvmField val time: Int = 0,
-            @ProtoNumber(2) @JvmField val newChannelList: List<Long>? = null,
+            @ProtoNumber(2) @JvmField val newChannelList: List<Long> = emptyList(),
             @ProtoNumber(3) @JvmField val guideWording: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(4) @JvmField val msgChannelNotify: ChannelNotify? = null
         ) : ProtoBuf
@@ -2123,7 +2123,7 @@ internal class Submsgtype0x90 {
         internal class DpNotifyMsgBdoy(
             @ProtoNumber(1) @JvmField val pid: Int = 0,
             @ProtoNumber(2) @JvmField val din: Long = 0L,
-            @ProtoNumber(3) @JvmField val msgNotifyInfo: List<NotifyItem>? = null,
+            @ProtoNumber(3) @JvmField val msgNotifyInfo: List<NotifyItem> = emptyList(),
             @ProtoNumber(4) @JvmField val extendInfo: String = ""
         ) : ProtoBuf
 
@@ -2216,7 +2216,7 @@ internal class Submsgtype0x93 {
             @ProtoNumber(3) @JvmField val enumMsgType: Int /* enum */ = 1,
             @ProtoNumber(4) @JvmField val extMsg: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(5) @JvmField val reqUin: Long = 0L,
-            @ProtoNumber(6) @JvmField val msgLiteMailIndex: List<LiteMailIndexInfo>? = null
+            @ProtoNumber(6) @JvmField val msgLiteMailIndex: List<LiteMailIndexInfo> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -2314,7 +2314,7 @@ internal class Submsgtype0x9b {
         @Serializable
         internal class PbOfficeNotify(
             @ProtoNumber(1) @JvmField val optUint32MyofficeFlag: Int = 0,
-            @ProtoNumber(2) @JvmField val uint64Appid: List<Long>? = null
+            @ProtoNumber(2) @JvmField val uint64Appid: List<Long> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -2332,7 +2332,7 @@ internal class Submsgtype0x9d {
         @Serializable
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val subCmd: Int = 0,
-            @ProtoNumber(2) @JvmField val lolaModuleUpdate: List<ModuleUpdateNotify>? = null
+            @ProtoNumber(2) @JvmField val lolaModuleUpdate: List<ModuleUpdateNotify> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -2384,7 +2384,7 @@ internal class Submsgtype0xa1 {
             @ProtoNumber(2) @JvmField val qid: Long = 0L,
             @ProtoType(ProtoIntegerType.FIXED) @ProtoNumber(3) @JvmField val fixed32UpdateTime: Int = 0,
             @ProtoNumber(4) @JvmField val teamCreatedDestroied: Int = 0,
-            @ProtoNumber(5) @JvmField val uint64OfficeFaceChangedUins: List<Long>? = null
+            @ProtoNumber(5) @JvmField val uint64OfficeFaceChangedUins: List<Long> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -2468,7 +2468,7 @@ internal class Submsgtype0xaa {
             @ProtoNumber(11) @JvmField val buildTeamTime: Long = 0L,
             @ProtoNumber(12) @JvmField val leaderUin: String = "",
             @ProtoNumber(13) @JvmField val uin32LeaderStatus: Int = 0,
-            @ProtoNumber(14) @JvmField val inviteSourceList: List<InviteSource>? = null
+            @ProtoNumber(14) @JvmField val inviteSourceList: List<InviteSource> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -2612,7 +2612,7 @@ internal class Submsgtype0xae {
         @Serializable
         internal class PushPeopleMayKnowV2(
             @ProtoType(ProtoIntegerType.FIXED) @ProtoNumber(1) @JvmField val fixed32Timestamp: Int = 0,
-            @ProtoNumber(2) @JvmField val msgFriendList: List<PersonMayKnow>? = null,
+            @ProtoNumber(2) @JvmField val msgFriendList: List<PersonMayKnow> = emptyList(),
             @ProtoNumber(3) @JvmField val roleName: ByteArray = EMPTY_BYTE_ARRAY
         ) : ProtoBuf
     }
@@ -2724,7 +2724,7 @@ internal class Submsgtype0xbe {
             @ProtoNumber(2) @JvmField val groupCode: Long = 0L,
             @ProtoNumber(3) @JvmField val notifyType: Int = 0,
             @ProtoNumber(4) @JvmField val onlineLevel: Int = 0,
-            @ProtoNumber(5) @JvmField val msgMedalList: List<Medal>? = null
+            @ProtoNumber(5) @JvmField val msgMedalList: List<Medal> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -2802,7 +2802,7 @@ internal class Submsgtype0xc5 {
             @ProtoNumber(10) @JvmField val msgCommentArticle: CommentInfo? = null,
             @ProtoNumber(11) @JvmField val msgLikeArticle: LikeInfo? = null,
             @ProtoNumber(12) @JvmField val msgBbInfo: BBInfo? = null,
-            @ProtoNumber(13) @JvmField val redPointInfo: List<RedPointInfo>? = null
+            @ProtoNumber(13) @JvmField val redPointInfo: List<RedPointInfo> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -2927,7 +2927,7 @@ internal class Submsgtype0xc7 {
 
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgModInfos: List<ForwardBody>? = null
+            @ProtoNumber(1) @JvmField val msgModInfos: List<ForwardBody> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -2939,8 +2939,8 @@ internal class Submsgtype0xc7 {
             @ProtoNumber(5) @JvmField val msgRelationalChainInfoOld: RelationalChainInfo? = null,
             @ProtoNumber(6) @JvmField val msgRelationalChainInfoNew: RelationalChainInfo? = null,
             @ProtoNumber(7) @JvmField val msgToDegradeInfo: ToDegradeInfo? = null,
-            @ProtoNumber(20) @JvmField val relationalChainInfos: List<RelationalChainInfos>? = null,
-            @ProtoNumber(100) @JvmField val uint32FeatureId: List<Int>? = null
+            @ProtoNumber(20) @JvmField val relationalChainInfos: List<RelationalChainInfos> = emptyList(),
+            @ProtoNumber(100) @JvmField val uint32FeatureId: List<Int> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -2960,7 +2960,7 @@ internal class Submsgtype0xc7 {
 
         @Serializable
         internal class ToDegradeInfo(
-            @ProtoNumber(1) @JvmField val toDegradeItem: List<ToDegradeItem>? = null,
+            @ProtoNumber(1) @JvmField val toDegradeItem: List<ToDegradeItem> = emptyList(),
             @ProtoNumber(2) @JvmField val nick: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(3) @JvmField val notifyTime: Long = 0L
         ) : ProtoBuf
@@ -3020,7 +3020,7 @@ internal class Submsgtype0xc9 {
             @ProtoNumber(2) @JvmField val fromUin: Long = 0L,
             @ProtoNumber(3) @JvmField val actionUin: Long = 0L,
             @ProtoNumber(4) @JvmField val source: Int /* enum */ = 0,
-            @ProtoNumber(5) @JvmField val msgBusinessMsg: List<BusinessMsg>? = null,
+            @ProtoNumber(5) @JvmField val msgBusinessMsg: List<BusinessMsg> = emptyList(),
             @ProtoNumber(6) @JvmField val boolNewFriend: Boolean = false
         ) : ProtoBuf
     }
@@ -3032,7 +3032,7 @@ internal class Submsgtype0xca {
         @Serializable
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val uin: Long = 0L,
-            @ProtoNumber(2) @JvmField val msgList: List<MsgContent>? = null
+            @ProtoNumber(2) @JvmField val msgList: List<MsgContent> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -3192,9 +3192,9 @@ internal class Submsgtype0xdc {
     internal class Submsgtype0xdc : ProtoBuf {
         @Serializable
         internal class MsgBody(
-            @ProtoNumber(1) @JvmField val msgList: List<MsgContent>? = null,
+            @ProtoNumber(1) @JvmField val msgList: List<MsgContent> = emptyList(),
             @ProtoNumber(2) @JvmField val msgType: Int = 0,
-            @ProtoNumber(3) @JvmField val msgList0x02: List<MsgContent>? = null,
+            @ProtoNumber(3) @JvmField val msgList0x02: List<MsgContent> = emptyList(),
             @ProtoNumber(4) @JvmField val minQqVer: String = ""
         ) : ProtoBuf
 
@@ -3225,10 +3225,10 @@ internal class Submsgtype0xdd {
         @Serializable
         internal class MsgBody(
             @ProtoNumber(1) @JvmField val msgType: Int = 0,
-            @ProtoNumber(2) @JvmField val uint64InviteUin: List<Long>? = null,
+            @ProtoNumber(2) @JvmField val uint64InviteUin: List<Long> = emptyList(),
             @ProtoNumber(3) @JvmField val inviteLeader: Long = 0L,
             @ProtoNumber(4) @JvmField val msgPoiInfo: WifiPOIInfo? = null,
-            @ProtoNumber(5) @JvmField val msgPlayerState: List<PlayerState>? = null
+            @ProtoNumber(5) @JvmField val msgPlayerState: List<PlayerState> = emptyList()
         ) : ProtoBuf {
             @Serializable
             internal class PlayerState(
@@ -3272,7 +3272,7 @@ internal class Submsgtype0xdd {
                 @ProtoNumber(24) @JvmField val tvPkFlag: Int = 0,
                 @ProtoNumber(25) @JvmField val subType: Int = 0,
                 @ProtoNumber(26) @JvmField val lastMsgSeq: Long = 0L,
-                @ProtoNumber(27) @JvmField val msgSeatsInfo: List<SeatsInfo>? = null,
+                @ProtoNumber(27) @JvmField val msgSeatsInfo: List<SeatsInfo> = emptyList(),
                 @ProtoNumber(28) @JvmField val flowerNum: Long = 0L,
                 @ProtoNumber(29) @JvmField val flowerPoint: Long = 0L,
                 @ProtoNumber(31) @JvmField val favoritesTime: Long = 0L,
@@ -3316,7 +3316,7 @@ internal class Submsgtype0xdf {
         @Serializable
         internal class MsgBody(
             // @ProtoNumber(1) @JvmField val msgGameState: ApolloGameStatus.STCMGameMessage? = null,
-            @ProtoNumber(2) @JvmField val uint32UinList: List<Int>? = null
+            @ProtoNumber(2) @JvmField val uint32UinList: List<Int> = emptyList()
         ) : ProtoBuf
     }
 }
@@ -3566,7 +3566,7 @@ internal class Submsgtype0xee {
         internal class ContextInfo(
             @ProtoNumber(1) @JvmField val id: Long = 0L,
             @ProtoNumber(2) @JvmField val title: ByteArray = EMPTY_BYTE_ARRAY,
-            @ProtoNumber(3) @JvmField val msgPicList: List<PictureInfo>? = null,
+            @ProtoNumber(3) @JvmField val msgPicList: List<PictureInfo> = emptyList(),
             @ProtoNumber(4) @JvmField val jumpUrl: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(5) @JvmField val orangeWord: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(6) @JvmField val brief: ByteArray = EMPTY_BYTE_ARRAY,
@@ -3592,7 +3592,7 @@ internal class Submsgtype0xee {
             @ProtoNumber(1) @JvmField val id: ByteArray = EMPTY_BYTE_ARRAY,
             @ProtoNumber(2) @JvmField val seq: Long = 0L,
             @ProtoNumber(3) @JvmField val bid: Int = 0,
-            @ProtoNumber(11) @JvmField val msgNotifyList: List<NotifyInfo>? = null
+            @ProtoNumber(11) @JvmField val msgNotifyList: List<NotifyInfo> = emptyList()
         ) : ProtoBuf
 
         @Serializable
@@ -3671,7 +3671,7 @@ internal class Submsgtype0xf9 {
             @ProtoNumber(8) @JvmField val templateID: Int = 0,
             @ProtoNumber(9) @JvmField val url: String = "",
             @ProtoNumber(10) @JvmField val msgMsgCommonData: MsgCommonData? = null,
-            @ProtoNumber(11) @JvmField val msgVideo: List<Video>? = null,
+            @ProtoNumber(11) @JvmField val msgVideo: List<Video> = emptyList(),
             @ProtoNumber(12) @JvmField val pushTime: Int = 0,
             @ProtoNumber(13) @JvmField val invalidTime: Int = 0,
             @ProtoNumber(14) @JvmField val maxExposureTime: Int = 0

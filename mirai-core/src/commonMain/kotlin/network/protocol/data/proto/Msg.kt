@@ -398,7 +398,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(4) @JvmField val pttChangeBit: Int = 0,
         @ProtoNumber(5) @JvmField val vipStatus: Int = 0,
         @ProtoNumber(6) @JvmField val compatibleId: Int = 0,
-        @ProtoNumber(7) @JvmField val insts: List<Inst>? = null,
+        @ProtoNumber(7) @JvmField val insts: List<Inst> = emptyList(),
         @ProtoNumber(8) @JvmField val msgRptCnt: Int = 0,
         @ProtoNumber(9) @JvmField val srcInst: Inst? = null,
         @ProtoNumber(10) @JvmField val longtitude: Int = 0,
@@ -454,7 +454,7 @@ internal class ImMsgBody : ProtoBuf {
 
         @Serializable
         internal class Turntable(
-            @ProtoNumber(1) @JvmField val uint64UinList: List<Long>? = null,
+            @ProtoNumber(1) @JvmField val uint64UinList: List<Long> = emptyList(),
             @ProtoNumber(2) @JvmField val hitUin: Long = 0L,
             @ProtoNumber(3) @JvmField val hitUinNick: String = ""
         )
@@ -620,7 +620,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(8) @JvmField val reserved: Int = 0,
         @ProtoNumber(9) @JvmField val subcmd: Int = 0,
         @ProtoNumber(10) @JvmField val microCloud: Int = 0,
-        @ProtoNumber(11) @JvmField val bytesFileUrls: List<ByteArray>? = listOf(),
+        @ProtoNumber(11) @JvmField val bytesFileUrls: List<ByteArray> = emptyList(),
         @ProtoNumber(12) @JvmField val downloadFlag: Int = 0,
         @ProtoNumber(50) @JvmField val dangerEvel: Int = 0,
         @ProtoNumber(51) @JvmField val lifeTime: Int = 0,
@@ -703,8 +703,8 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(2) @JvmField val pcPtlEnd: Int = 0,
         @ProtoNumber(3) @JvmField val macPtlBegin: Int = 0,
         @ProtoNumber(4) @JvmField val macPtlEnd: Int = 0,
-        @ProtoNumber(5) @JvmField val ptlsSupport: List<Int>? = null,
-        @ProtoNumber(6) @JvmField val ptlsNotSupport: List<Int>? = null
+        @ProtoNumber(5) @JvmField val ptlsSupport: List<Int> = emptyList(),
+        @ProtoNumber(6) @JvmField val ptlsNotSupport: List<Int> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -731,7 +731,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(20) @JvmField val downPara: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(29) @JvmField val format: Int = 0,
         @ProtoNumber(30) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(31) @JvmField val bytesPttUrls: List<ByteArray>? = listOf(),
+        @ProtoNumber(31) @JvmField val bytesPttUrls: List<ByteArray> = emptyList(),
         @ProtoNumber(32) @JvmField val downloadFlag: Int = 0
     ) : ProtoBuf
 
@@ -786,7 +786,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(17) @JvmField val pcBody: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(18) @JvmField val ingIndex: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(19) @JvmField val redchannel: Int = 0,
-        @ProtoNumber(20) @JvmField val grapUin: List<Long>? = null,
+        @ProtoNumber(20) @JvmField val grapUin: List<Long> = emptyList(),
         @ProtoNumber(21) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -879,11 +879,11 @@ internal class ImMsgBody : ProtoBuf {
 
     @Serializable
     internal class SourceMsg(
-        @ProtoNumber(1) @JvmField val origSeqs: List<Int>? = null,
+        @ProtoNumber(1) @JvmField val origSeqs: List<Int> = emptyList(),
         @ProtoNumber(2) @JvmField val senderUin: Long = 0L,
         @ProtoNumber(3) @JvmField val time: Int = 0,
         @ProtoNumber(4) @JvmField val flag: Int = 0,
-        @ProtoNumber(5) @JvmField val elems: List<Elem>? = null,
+        @ProtoNumber(5) @JvmField val elems: List<Elem> = emptyList(),
         @ProtoNumber(6) @JvmField val type: Int = 0,
         @ProtoNumber(7) @JvmField val richMsg: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(8) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY,
@@ -956,8 +956,8 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(17) @JvmField val fileHeight: Int = 0,
         @ProtoNumber(18) @JvmField val subBusiType: Int = 0,
         @ProtoNumber(19) @JvmField val videoAttr: Int = 0,
-        @ProtoNumber(20) @JvmField val bytesThumbFileUrls: List<ByteArray>? = null,
-        @ProtoNumber(21) @JvmField val bytesVideoFileUrls: List<ByteArray>? = null,
+        @ProtoNumber(20) @JvmField val bytesThumbFileUrls: List<ByteArray> = emptyList(),
+        @ProtoNumber(21) @JvmField val bytesVideoFileUrls: List<ByteArray> = emptyList(),
         @ProtoNumber(22) @JvmField val thumbDownloadFlag: Int = 0,
         @ProtoNumber(23) @JvmField val videoDownloadFlag: Int = 0,
         @ProtoNumber(24) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
@@ -1071,8 +1071,8 @@ internal class ImMsgHead : ProtoBuf {
 
     @Serializable
     internal class InstCtrl(
-        @ProtoNumber(1) @JvmField val msgSendToInst: List<InstInfo>? = listOf(),
-        @ProtoNumber(2) @JvmField val msgExcludeInst: List<InstInfo>? = listOf(),
+        @ProtoNumber(1) @JvmField val msgSendToInst: List<InstInfo> = emptyList(),
+        @ProtoNumber(2) @JvmField val msgExcludeInst: List<InstInfo> = emptyList(),
         @ProtoNumber(3) @JvmField val msgFromInst: InstInfo? = InstInfo()
     ) : ProtoBuf
 
@@ -1180,10 +1180,10 @@ internal class ObjMsg : ProtoBuf {
     internal class ObjMsg(
         @ProtoNumber(1) @JvmField val msgType: Int = 0,
         @ProtoNumber(2) @JvmField val title: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(3) @JvmField val bytesAbstact: List<ByteArray>? = null,
+        @ProtoNumber(3) @JvmField val bytesAbstact: List<ByteArray> = emptyList(),
         @ProtoNumber(5) @JvmField val titleExt: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(6) @JvmField val msgPic: List<MsgPic>? = null,
-        @ProtoNumber(7) @JvmField val msgContentInfo: List<MsgContentInfo>? = null,
+        @ProtoNumber(6) @JvmField val msgPic: List<MsgPic> = emptyList(),
+        @ProtoNumber(7) @JvmField val msgContentInfo: List<MsgContentInfo> = emptyList(),
         @ProtoNumber(8) @JvmField val reportIdShow: Int = 0
     ) : ProtoBuf
 }

@@ -31,10 +31,10 @@ internal class Vec0xd50 : ProtoBuf {
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(1) @JvmField val msgUpdateData: List<ExtSnsFrdData>? = null,
+        @ProtoNumber(1) @JvmField val msgUpdateData: List<ExtSnsFrdData> = emptyList(),
         @ProtoNumber(11) @JvmField val over: Int = 0,
         @ProtoNumber(12) @JvmField val nextStart: Int = 0,
-        @ProtoNumber(13) @JvmField val uint64UnfinishedUins: List<Long>? = null
+        @ProtoNumber(13) @JvmField val uint64UnfinishedUins: List<Long> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -44,7 +44,7 @@ internal class Vec0xd50 : ProtoBuf {
         @ProtoNumber(3) @JvmField val startTime: Int = 0,
         @ProtoNumber(4) @JvmField val startIndex: Int = 0,
         @ProtoNumber(5) @JvmField val reqNum: Int = 0,
-        @ProtoNumber(6) @JvmField val uinList: List<Long>? = null,
+        @ProtoNumber(6) @JvmField val uinList: List<Long> = emptyList(),
         @ProtoNumber(91001) @JvmField val reqMusicSwitch: Int = 0,
         @ProtoNumber(101001) @JvmField val reqMutualmarkAlienation: Int = 0,
         @ProtoNumber(141001) @JvmField val reqMutualmarkScore: Int = 0,
@@ -64,19 +64,19 @@ internal class Vec0xd6b : ProtoBuf {
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val maxPkgSize: Int = 0,
         @ProtoNumber(2) @JvmField val startTime: Int = 0,
-        @ProtoNumber(11) @JvmField val uinList: List<Long>? = null
+        @ProtoNumber(11) @JvmField val uinList: List<Long> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class RspBody(
-        @ProtoNumber(11) @JvmField val msgMutualmarkData: List<MutualMarkData>? = null,
-        @ProtoNumber(12) @JvmField val uint64UnfinishedUins: List<Long>? = null
+        @ProtoNumber(11) @JvmField val msgMutualmarkData: List<MutualMarkData> = emptyList(),
+        @ProtoNumber(12) @JvmField val uint64UnfinishedUins: List<Long> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class MutualMarkData(
         @ProtoNumber(1) @JvmField val frdUin: Long = 0L,
         @ProtoNumber(2) @JvmField val result: Int = 0
-        // @SerialId(11) @JvmField val mutualmarkInfo: List<Mutualmark.MutualMark>? = null
+        // @SerialId(11) @JvmField val mutualmarkInfo: List<Mutualmark.MutualMark> = emptyList()
     ) : ProtoBuf
 }

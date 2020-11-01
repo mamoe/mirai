@@ -43,7 +43,7 @@ internal class LongConn {
                 return Response.Failed(resp.failMsg)
             }
             check(resp.subcmd == 1)
-            val imgRsp = resp.msgTryupImgRsp!!.first()
+            val imgRsp = resp.msgTryupImgRsp.first()
             if (imgRsp.result != 0) {
                 return Response.Failed(imgRsp.failMsg ?: "")
             }
@@ -51,7 +51,7 @@ internal class LongConn {
             return if (imgRsp.boolFileExit) {
                 Response.FileExists(imgRsp.upResid, imgRsp.msgImgInfo!!)
             } else {
-                Response.RequireUpload(imgRsp.upResid, imgRsp.uint32UpIp!!, imgRsp.uint32UpPort!!, imgRsp.upUkey)
+                Response.RequireUpload(imgRsp.upResid, imgRsp.uint32UpIp, imgRsp.uint32UpPort, imgRsp.upUkey)
             }
         }
 

@@ -29,7 +29,7 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(2) @JvmField val errmsg: String = "",
         @ProtoNumber(3) @JvmField val syncCookie: ByteArray? = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val syncFlag: SyncFlag = SyncFlag.CONTINUE,
-        @ProtoNumber(5) @JvmField val uinPairMsgs: List<MsgComm.UinPairMsg>? = null,
+        @ProtoNumber(5) @JvmField val uinPairMsgs: List<MsgComm.UinPairMsg> = emptyList(),
         @ProtoNumber(6) @JvmField val bindUin: Long = 0L,
         @ProtoNumber(7) @JvmField val msgRspType: Int = 0,
         @ProtoNumber(8) @JvmField val pubAccountCookie: ByteArray = EMPTY_BYTE_ARRAY,
@@ -42,7 +42,7 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(1) @JvmField val subCmd: Int = 0,
         @ProtoNumber(2) @JvmField val groupType: Int = 0,
         @ProtoNumber(3) @JvmField val groupCode: Long = 0L,
-        @ProtoNumber(4) @JvmField val msgList: List<MessageInfo>? = null,
+        @ProtoNumber(4) @JvmField val msgList: List<MessageInfo> = emptyList(),
         @ProtoNumber(5) @JvmField val userdef: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf {
         @Serializable
@@ -141,8 +141,8 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbMsgWithDrawResp(
-        @ProtoNumber(1) @JvmField val c2cWithDraw: List<PbC2CMsgWithDrawResp>? = null,
-        @ProtoNumber(2) @JvmField val groupWithDraw: List<PbGroupMsgWithDrawResp>? = null
+        @ProtoNumber(1) @JvmField val c2cWithDraw: List<PbC2CMsgWithDrawResp> = emptyList(),
+        @ProtoNumber(2) @JvmField val groupWithDraw: List<PbGroupMsgWithDrawResp> = emptyList()
     ) : ProtoBuf
 
     @Serializable
@@ -153,8 +153,8 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbMsgWithDrawReq(
-        @ProtoNumber(1) @JvmField val c2cWithDraw: List<PbC2CMsgWithDrawReq>? = null,
-        @ProtoNumber(2) @JvmField val groupWithDraw: List<PbGroupMsgWithDrawReq>? = null
+        @ProtoNumber(1) @JvmField val c2cWithDraw: List<PbC2CMsgWithDrawReq> = emptyList(),
+        @ProtoNumber(2) @JvmField val groupWithDraw: List<PbGroupMsgWithDrawReq> = emptyList()
     ) : ProtoBuf
 
     internal enum class SyncFlag {
@@ -200,7 +200,7 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(3) @JvmField val discussUin: Long = 0L,
         @ProtoNumber(4) @JvmField val returnEndSeq: Long = 0L,
         @ProtoNumber(5) @JvmField val returnBeginSeq: Long = 0L,
-        @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg>? = null,
+        @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg> = emptyList(),
         @ProtoNumber(7) @JvmField val lastGetTime: Long = 0L,
         @ProtoNumber(8) @JvmField val discussInfoSeq: Long = 0L
     ) : ProtoBuf
@@ -221,7 +221,7 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(3) @JvmField val subCmd: Int = 0,
         @ProtoNumber(4) @JvmField val groupType: Int = 0,
         @ProtoNumber(5) @JvmField val groupCode: Long = 0L,
-        @ProtoNumber(6) @JvmField val failedMsgList: List<MessageResult>? = null,
+        @ProtoNumber(6) @JvmField val failedMsgList: List<MessageResult> = emptyList(),
         @ProtoNumber(7) @JvmField val userdef: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf {
         @Serializable
@@ -247,7 +247,7 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbC2CMsgWithDrawReq(
-        @ProtoNumber(1) @JvmField val msgInfo: List<MsgInfo>? = null,
+        @ProtoNumber(1) @JvmField val msgInfo: List<MsgInfo> = emptyList(),
         @ProtoNumber(2) @JvmField val longMessageFlag: Int = 0,
         @ProtoNumber(3) @JvmField val reserved: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(4) @JvmField val subCmd: Int = 0
@@ -291,7 +291,7 @@ internal class MsgSvc : ProtoBuf {
     internal class PbPullGroupMsgSeqResp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val errmsg: String = "",
-        @ProtoNumber(3) @JvmField val groupInfoResp: List<GroupInfoResp>? = null
+        @ProtoNumber(3) @JvmField val groupInfoResp: List<GroupInfoResp> = emptyList()
     ) : ProtoBuf {
         @Serializable
         internal class GroupInfoResp(
@@ -333,7 +333,7 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbSearchRoamMsgInCloudResp(
-        @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg>? = null,
+        @ProtoNumber(1) @JvmField val msg: List<MsgComm.Msg> = emptyList(),
         @ProtoNumber(2) @JvmField val serializeRspbody: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -349,7 +349,7 @@ internal class MsgSvc : ProtoBuf {
     @Serializable
     internal class PbUnReadMsgSeqResp(
         @ProtoNumber(1) @JvmField val c2cUnreadInfo: PbC2CUnReadMsgNumResp? = null,
-        @ProtoNumber(2) @JvmField val binduinUnreadInfo: List<PbBindUinUnReadMsgNumResp>? = null,
+        @ProtoNumber(2) @JvmField val binduinUnreadInfo: List<PbBindUinUnReadMsgNumResp> = emptyList(),
         @ProtoNumber(3) @JvmField val groupUnreadInfo: PbPullGroupMsgSeqResp? = null,
         @ProtoNumber(4) @JvmField val discussUnreadInfo: PbPullDiscussMsgSeqResp? = null,
         @ProtoNumber(5) @JvmField val thirdqqUnreadInfo: PbThirdQQUnReadMsgNumResp? = null
@@ -357,7 +357,7 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbDeleteMsgReq(
-        @ProtoNumber(1) @JvmField val msgItems: List<MsgItem>? = null
+        @ProtoNumber(1) @JvmField val msgItems: List<MsgItem> = emptyList()
     ) : ProtoBuf {
         @Serializable
         internal class MsgItem(
@@ -372,7 +372,7 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class MultiMsgAssist(
-        @ProtoNumber(1) @JvmField val repeatedRouting: List<RoutingHead>? = null,
+        @ProtoNumber(1) @JvmField val repeatedRouting: List<RoutingHead> = emptyList(),
         @ProtoNumber(2) @JvmField val msgUse: Int /* enum */ = 1,
         @ProtoNumber(3) @JvmField val tempId: Long = 0L,
         @ProtoNumber(4) @JvmField val vedioLen: Long = 0L,
@@ -384,8 +384,8 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbMsgReadedReportReq(
-        @ProtoNumber(1) @JvmField val grpReadReport: List<PbGroupReadedReportReq>? = null,
-        @ProtoNumber(2) @JvmField val disReadReport: List<PbDiscussReadedReportReq>? = null,
+        @ProtoNumber(1) @JvmField val grpReadReport: List<PbGroupReadedReportReq> = emptyList(),
+        @ProtoNumber(2) @JvmField val disReadReport: List<PbDiscussReadedReportReq> = emptyList(),
         @ProtoNumber(3) @JvmField val c2cReadReport: PbC2CReadedReportReq? = null,
         @ProtoNumber(4) @JvmField val bindUinReadReport: PbBindUinMsgReadedConfirmReq? = null
     ) : ProtoBuf
@@ -397,7 +397,7 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(3) @JvmField val peerUin: Long = 0L,
         @ProtoNumber(4) @JvmField val lastMsgtime: Long = 0L,
         @ProtoNumber(5) @JvmField val random: Long = 0L,
-        @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg>? = null,
+        @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg> = emptyList(),
         @ProtoNumber(7) @JvmField val iscomplete: Int = 0
     ) : ProtoBuf
 
@@ -492,7 +492,7 @@ internal class MsgSvc : ProtoBuf {
     internal class PbC2CMsgWithDrawResp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val errmsg: String = "",
-        @ProtoNumber(3) @JvmField val msgStatus: List<MsgStatus>? = null,
+        @ProtoNumber(3) @JvmField val msgStatus: List<MsgStatus> = emptyList(),
         @ProtoNumber(4) @JvmField val subCmd: Int = 0
     ) : ProtoBuf {
         @Serializable
@@ -530,8 +530,8 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbMsgReadedReportResp(
-        @ProtoNumber(1) @JvmField val grpReadReport: List<PbGroupReadedReportResp>? = null,
-        @ProtoNumber(2) @JvmField val disReadReport: List<PbDiscussReadedReportResp>? = null,
+        @ProtoNumber(1) @JvmField val grpReadReport: List<PbGroupReadedReportResp> = emptyList(),
+        @ProtoNumber(2) @JvmField val disReadReport: List<PbDiscussReadedReportResp> = emptyList(),
         @ProtoNumber(3) @JvmField val c2cReadReport: PbC2CReadedReportResp? = null,
         @ProtoNumber(4) @JvmField val bindUinReadReport: PbBindUinMsgReadedConfirmResp? = null
     ) : ProtoBuf
@@ -540,7 +540,7 @@ internal class MsgSvc : ProtoBuf {
     internal class PbThirdQQUnReadMsgNumResp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val errmsg: String = "",
-        @ProtoNumber(3) @JvmField val thirdqqRespInfo: List<ThirdQQRespInfo>? = null,
+        @ProtoNumber(3) @JvmField val thirdqqRespInfo: List<ThirdQQRespInfo> = emptyList(),
         @ProtoNumber(4) @JvmField val interval: Int = 0
     ) : ProtoBuf {
         @Serializable
@@ -598,7 +598,7 @@ internal class MsgSvc : ProtoBuf {
     @Serializable
     internal class PbUnReadMsgSeqReq(
         @ProtoNumber(1) @JvmField val c2cUnreadInfo: PbC2CUnReadMsgNumReq? = null,
-        @ProtoNumber(2) @JvmField val binduinUnreadInfo: List<PbBindUinUnReadMsgNumReq>? = null,
+        @ProtoNumber(2) @JvmField val binduinUnreadInfo: List<PbBindUinUnReadMsgNumReq> = emptyList(),
         @ProtoNumber(3) @JvmField val groupUnreadInfo: PbPullGroupMsgSeqReq? = null,
         @ProtoNumber(4) @JvmField val discussUnreadInfo: PbPullDiscussMsgSeqReq? = null,
         @ProtoNumber(5) @JvmField val thirdqqUnreadInfo: PbThirdQQUnReadMsgNumReq? = null
@@ -608,7 +608,7 @@ internal class MsgSvc : ProtoBuf {
     internal class PbPullDiscussMsgSeqResp(
         @ProtoNumber(1) @JvmField val result: Int = 0,
         @ProtoNumber(2) @JvmField val errmsg: String = "",
-        @ProtoNumber(3) @JvmField val discussInfoResp: List<DiscussInfoResp>? = null
+        @ProtoNumber(3) @JvmField val discussInfoResp: List<DiscussInfoResp> = emptyList()
     ) : ProtoBuf {
         @Serializable
         internal class DiscussInfoResp(
@@ -620,7 +620,7 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbPullDiscussMsgSeqReq(
-        @ProtoNumber(1) @JvmField val discussInfoReq: List<DiscussInfoReq>? = null
+        @ProtoNumber(1) @JvmField val discussInfoReq: List<DiscussInfoReq> = emptyList()
     ) : ProtoBuf {
         @Serializable
         internal class DiscussInfoReq(
@@ -656,7 +656,7 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(3) @JvmField val peerUin: Long = 0L,
         @ProtoNumber(4) @JvmField val lastMsgtime: Long = 0L,
         @ProtoNumber(5) @JvmField val random: Long = 0L,
-        @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg>? = null,
+        @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg> = emptyList(),
         @ProtoNumber(7) @JvmField val sig: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
@@ -669,7 +669,7 @@ internal class MsgSvc : ProtoBuf {
     @Serializable
     internal class PbC2CReadedReportReq(
         @ProtoNumber(1) @JvmField val syncCookie: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(2) @JvmField val pairInfo: List<UinPairReadInfo>? = null
+        @ProtoNumber(2) @JvmField val pairInfo: List<UinPairReadInfo> = emptyList()
     ) : ProtoBuf {
         @Serializable
         internal class UinPairReadInfo(
@@ -709,7 +709,7 @@ internal class MsgSvc : ProtoBuf {
 
     @Serializable
     internal class PbPullGroupMsgSeqReq(
-        @ProtoNumber(1) @JvmField val groupInfoReq: List<GroupInfoReq>? = null
+        @ProtoNumber(1) @JvmField val groupInfoReq: List<GroupInfoReq> = emptyList()
     ) : ProtoBuf {
         @Serializable
         internal class GroupInfoReq(
@@ -741,12 +741,12 @@ internal class MsgSvc : ProtoBuf {
         @ProtoNumber(3) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(4) @JvmField val returnBeginSeq: Long = 0L,
         @ProtoNumber(5) @JvmField val returnEndSeq: Long = 0L,
-        @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg>? = null
+        @ProtoNumber(6) @JvmField val msg: List<MsgComm.Msg> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class PbThirdQQUnReadMsgNumReq(
-        @ProtoNumber(1) @JvmField val thirdqqReqInfo: List<ThirdQQReqInfo>? = null,
+        @ProtoNumber(1) @JvmField val thirdqqReqInfo: List<ThirdQQReqInfo> = emptyList(),
         @ProtoNumber(2) @JvmField val source: Int = 0
     ) : ProtoBuf {
         @Serializable

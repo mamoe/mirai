@@ -80,16 +80,15 @@ internal class PttStore {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
-            resp0.msgTryupPttRsp ?: error("cannot find `msgTryupPttRsp` from `Cmd0x388.RspBody`")
-            val resp = resp0.msgTryupPttRsp.first()
+            val resp = resp0.msgTryupPttRsp.firstOrNull() ?: error("cannot find `msgTryupPttRsp` from `Cmd0x388.RspBody`")
             if (resp.failMsg != null) {
                 throw IllegalStateException(resp.failMsg.encodeToString())
             }
             return Response.RequireUpload(
                 fileId = resp.fileid,
                 uKey = resp.upUkey,
-                uploadIpList = resp.uint32UpIp!!,
-                uploadPortList = resp.uint32UpPort!!,
+                uploadIpList = resp.uint32UpIp,
+                uploadPortList = resp.uint32UpPort,
                 fileKey = resp.fileKey
             )
 
@@ -145,16 +144,15 @@ internal class PttStore {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
-            resp0.msgGetpttUrlRsp ?: error("cannot find `msgGetpttUrlRsp` from `Cmd0x388.RspBody`")
-            val resp = resp0.msgGetpttUrlRsp.first()
+            val resp = resp0.msgGetpttUrlRsp.firstOrNull() ?: error("cannot find `msgGetpttUrlRsp` from `Cmd0x388.RspBody`")
             if (!resp.failMsg.contentEquals(EMPTY_BYTE_ARRAY)) {
                 throw IllegalStateException(resp.failMsg.encodeToString())
             }
             return Response.DownLoadInfo(
                 downDomain = resp.downDomain,
                 downPara = resp.downPara,
-                uint32DownIp = resp.uint32DownIp!!,
-                uint32DownPort = resp.uint32DownPort!!,
+                uint32DownIp = resp.uint32DownIp,
+                uint32DownPort = resp.uint32DownPort,
                 strDomain = resp.strDomain
             )
         }
