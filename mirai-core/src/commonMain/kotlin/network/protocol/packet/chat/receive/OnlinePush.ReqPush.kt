@@ -250,9 +250,9 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                 var from: Member = group.botAsMember
                 var target: Member = group.botAsMember
                 var suffix = ""
-                grayTip.msgTemplParam?.map {
+                grayTip.msgTemplParam.map {
                     Pair(it.name.decodeToString(), it.value.decodeToString())
-                }?.asSequence()?.forEach { (key, value) ->
+                }.asSequence().forEach { (key, value) ->
                     run {
                         when (key) {
                             "action_str" -> action = value
@@ -516,9 +516,9 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 var action = ""
                 var target: Friend = bot.selfQQ
                 var suffix = ""
-                body.msgTemplParam?.asSequence()?.map {
+                body.msgTemplParam.asSequence().map {
                     it.name.decodeToString() to it.value.decodeToString()
-                }?.forEach { (key, value) ->
+                }.forEach { (key, value) ->
                     when (key) {
                         "action_str" -> action = value
                         "uin_str1" -> from = bot.getFriend(value.toLong())
@@ -543,7 +543,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             }
             else -> {
                 bot.logger.debug {
-                    "Unknown Transformers528 0x122L template\ntemplId=${body.templId}\nPermList=${body.msgTemplParam?._miraiContentToString()}"
+                    "Unknown Transformers528 0x122L template\ntemplId=${body.templId}\nPermList=${body.msgTemplParam._miraiContentToString()}"
                 }
                 return@lambda528 emptySequence()
             }
@@ -563,7 +563,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     // 群相关,  ModFriendRemark, DelFriend, ModGroupProfile
     0x27L to lambda528 { bot ->
         fun ModFriendRemark.transform(bot: QQAndroidBot): Sequence<Packet> {
-            return this.msgFrdRmk?.asSequence()?.mapNotNull {
+            return this.msgFrdRmk.asSequence().mapNotNull {
                 val friend = bot.getFriendOrNull(it.fuin) ?: return@mapNotNull null
                 val old: String
                 friend.checkIsFriendImpl().friendInfo.checkIsInfoImpl()
@@ -571,20 +571,20 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                     .remark = it.rmkName
                 // TODO: 2020/4/10 ADD REMARK QUERY
                 FriendRemarkChangeEvent(friend, old, it.rmkName)
-            } ?: emptySequence()
+            }
         }
 
         fun DelFriend.transform(bot: QQAndroidBot): Sequence<Packet> {
-            return this.uint64Uins?.asSequence()?.mapNotNull {
+            return this.uint64Uins.asSequence().mapNotNull {
                 val friend = bot.getFriendOrNull(it) ?: return@mapNotNull null
                 if (bot.friends.delegate.remove(friend)) {
                     FriendDeleteEvent(friend)
                 } else null
-            } ?: emptySequence()
+            }
         }
 
         fun ModGroupProfile.transform(bot: QQAndroidBot): Sequence<Packet> {
-            return this.msgGroupProfileInfos?.asSequence()?.mapNotNull { info ->
+            return this.msgGroupProfileInfos.asSequence().mapNotNull { info ->
                 when (info.field) {
                     1 -> {
                         // 群名
@@ -635,11 +635,11 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
                     else -> null
                 }
-            } ?: emptySequence()
+            }
         }
 
         fun ModGroupMemberProfile.transform(bot: QQAndroidBot): Sequence<Packet> {
-            return this.msgGroupMemberProfileInfos?.asSequence()?.mapNotNull { info ->
+            return this.msgGroupMemberProfileInfos.asSequence().mapNotNull { info ->
                 when (info.field) {
                     1 -> { // name card
                         val new = info.value
@@ -670,7 +670,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         return@mapNotNull null
                     }
                 }
-            } ?: emptySequence()
+            }
         }
 
         fun ModCustomFace.transform(bot: QQAndroidBot): Sequence<Packet> {
@@ -684,7 +684,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         fun ModProfile.transform(bot: QQAndroidBot): Sequence<Packet> {
             return ArrayList<Packet>().apply {
                 var containsUnknown = false
-                msgProfileInfos?.forEach { modified ->
+                msgProfileInfos.forEach { modified ->
                     when (modified.field) {
                         20002 -> { // 昵称修改
                             val value = modified.value
@@ -724,7 +724,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         }
                     }
                 }
-                if (msgProfileInfos == null || msgProfileInfos.isEmpty() || containsUnknown) {
+                if (msgProfileInfos.isEmpty() || containsUnknown) {
                     bot.network.logger.debug {
                         "Transformers528 0x27L: new data: ${_miraiContentToString()}"
                     }

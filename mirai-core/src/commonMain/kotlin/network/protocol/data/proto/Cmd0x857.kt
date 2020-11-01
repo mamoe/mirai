@@ -98,7 +98,7 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(4) @JvmField val c2cType: Int = 0,
         @ProtoNumber(5) @JvmField val serviceType: Int = 0,
         @ProtoNumber(6) @JvmField val templId: Long = 0L,
-        @ProtoNumber(7) @JvmField val msgTemplParam: List<TemplParam>? = null,
+        @ProtoNumber(7) @JvmField val msgTemplParam: List<TemplParam> = emptyList(),
         @ProtoNumber(8) @JvmField val content: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(10) @JvmField val tipsSeqId: Long = 0L,
         @ProtoNumber(100) @JvmField val pbReserv: ByteArray = EMPTY_BYTE_ARRAY
@@ -113,7 +113,7 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(5) @JvmField val total: Int = 0,
         @ProtoNumber(6) @JvmField val interval: Int = 0,
         @ProtoNumber(7) @JvmField val finish: Int = 0,
-        @ProtoNumber(8) @JvmField val uin: List<Long>? = null,
+        @ProtoNumber(8) @JvmField val uin: List<Long> = emptyList(),
         @ProtoNumber(9) @JvmField val action: Int = 0
     ) : ProtoBuf
 
@@ -130,8 +130,8 @@ internal class TroopTips0x857 : ProtoBuf {
 
     @Serializable
     internal class InstCtrl(
-        @ProtoNumber(1) @JvmField val msgSendToInst: List<InstInfo>? = null,
-        @ProtoNumber(2) @JvmField val msgExcludeInst: List<InstInfo>? = null,
+        @ProtoNumber(1) @JvmField val msgSendToInst: List<InstInfo> = emptyList(),
+        @ProtoNumber(2) @JvmField val msgExcludeInst: List<InstInfo> = emptyList(),
         @ProtoNumber(3) @JvmField val msgFromInst: InstInfo? = null
     ) : ProtoBuf
 
@@ -201,7 +201,7 @@ internal class TroopTips0x857 : ProtoBuf {
     internal class MessageRecallReminder(
         @ProtoNumber(1) @JvmField val uin: Long = 0L,
         @ProtoNumber(2) @JvmField val nickname: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(3) @JvmField val recalledMsgList: List<MessageMeta> = listOf(),
+        @ProtoNumber(3) @JvmField val recalledMsgList: List<MessageMeta> = emptyList(),
         @ProtoNumber(4) @JvmField val reminderContent: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(5) @JvmField val userdef: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(6) @JvmField val groupType: Int = 0,
@@ -288,7 +288,7 @@ internal class TroopTips0x857 : ProtoBuf {
     @Serializable
     internal class ReqBody(
         @ProtoNumber(1) @JvmField val optUint64GroupCode: Long = 0L,
-        @ProtoNumber(2) @JvmField val uint64Memberuins: List<Long>? = null,
+        @ProtoNumber(2) @JvmField val uint64Memberuins: List<Long> = emptyList(),
         @ProtoNumber(3) @JvmField val optUint32Offline: Int = 0,
         @ProtoNumber(4) @JvmField val msgInstCtrl: InstCtrl? = null,
         @ProtoNumber(5) @JvmField val optBytesMsg: ByteArray = EMPTY_BYTE_ARRAY,
@@ -351,19 +351,19 @@ internal class TroopTips0x857 : ProtoBuf {
         @ProtoNumber(2) @JvmField val gameRoom: Long = 0L,
         @ProtoNumber(3) @JvmField val enumGameState: Int = 0,
         @ProtoNumber(4) @JvmField val gameRound: Int = 0,
-        @ProtoNumber(5) @JvmField val roles: List<Role>? = null,
+        @ProtoNumber(5) @JvmField val roles: List<Role> = emptyList(),
         @ProtoNumber(6) @JvmField val speaker: Long = 0L,
         @ProtoNumber(7) @JvmField val judgeUin: Long = 0L,
         @ProtoNumber(8) @JvmField val judgeWords: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(9) @JvmField val enumOperation: Int = 0,
         @ProtoNumber(10) @JvmField val srcUser: Long = 0L,
         @ProtoNumber(11) @JvmField val dstUser: Long = 0L,
-        @ProtoNumber(12) @JvmField val deadUsers: List<Long>? = null,
+        @ProtoNumber(12) @JvmField val deadUsers: List<Long> = emptyList(),
         @ProtoNumber(13) @JvmField val gameResult: Int = 0,
         @ProtoNumber(14) @JvmField val timeoutSec: Int = 0,
         @ProtoNumber(15) @JvmField val killConfirmed: Int = 0,
         @ProtoNumber(16) @JvmField val judgeNickname: ByteArray = EMPTY_BYTE_ARRAY,
-        @ProtoNumber(17) @JvmField val votedTieUsers: List<Long>? = null
+        @ProtoNumber(17) @JvmField val votedTieUsers: List<Long> = emptyList()
     ) : ProtoBuf {
         @Serializable
         internal class GameRecord(

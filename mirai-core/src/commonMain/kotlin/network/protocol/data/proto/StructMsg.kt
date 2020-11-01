@@ -147,7 +147,7 @@ internal class Structmsg : ProtoBuf {
     @Serializable
     internal class RspNextSystemMsg(
         @ProtoNumber(1) @JvmField val head: RspHead? = null,
-        @ProtoNumber(2) @JvmField val msgs: List<StructMsg>? = null,
+        @ProtoNumber(2) @JvmField val msgs: List<StructMsg> = emptyList(),
         @ProtoNumber(3) @JvmField val followingFriendSeq: Long = 0L,
         @ProtoNumber(4) @JvmField val followingGroupSeq: Long = 0L,
         @ProtoNumber(5) @JvmField val checktype: Int /* enum */ = 1,
@@ -159,7 +159,7 @@ internal class Structmsg : ProtoBuf {
     @Serializable
     internal class RspSystemMsg(
         @ProtoNumber(1) @JvmField val head: RspHead? = null,
-        @ProtoNumber(2) @JvmField val msgs: List<StructMsg>? = null,
+        @ProtoNumber(2) @JvmField val msgs: List<StructMsg> = emptyList(),
         @ProtoNumber(3) @JvmField val unreadCount: Int = 0,
         @ProtoNumber(4) @JvmField val latestFriendSeq: Long = 0L,
         @ProtoNumber(5) @JvmField val latestGroupSeq: Long = 0L,
@@ -186,8 +186,8 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(5) @JvmField val latestGroupSeq: Long = 0L,
         @ProtoNumber(6) @JvmField val followingFriendSeq: Long = 0L,
         @ProtoNumber(7) @JvmField val followingGroupSeq: Long = 0L,
-        @ProtoNumber(9) @JvmField val friendmsgs: List<StructMsg>? = null,
-        @ProtoNumber(10) @JvmField val groupmsgs: List<StructMsg>? = null,
+        @ProtoNumber(9) @JvmField val friendmsgs: List<StructMsg> = emptyList(),
+        @ProtoNumber(10) @JvmField val groupmsgs: List<StructMsg> = emptyList(),
         @ProtoNumber(11) @JvmField val msgRibbonFriend: StructMsg? = null,
         @ProtoNumber(12) @JvmField val msgRibbonGroup: StructMsg? = null,
         @ProtoNumber(13) @JvmField val msgDisplay: String = "",
@@ -227,7 +227,7 @@ internal class Structmsg : ProtoBuf {
         @ProtoNumber(6) @JvmField val msgDecided: String = "",
         @ProtoNumber(7) @JvmField val srcId: Int = 0,
         @ProtoNumber(8) @JvmField val subSrcId: Int = 0,
-        @ProtoNumber(9) @JvmField val actions: List<SystemMsgAction>? = null,
+        @ProtoNumber(9) @JvmField val actions: List<SystemMsgAction> = emptyList(),
         @ProtoNumber(10) @JvmField val groupCode: Long = 0L,
         @ProtoNumber(11) @JvmField val actionUin: Long = 0L,
         @ProtoNumber(12) @JvmField val groupMsgType: Int = 0,

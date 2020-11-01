@@ -85,9 +85,13 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         } else {
             extraInfo?.groupCard?.takeIf { it.isNotEmpty() }?.run {
                 kotlin.runCatching {
-                    if (this[0] == 0x0A.toByte())
-                        loadAs(Oidb0x8fc.CommCardNameBuf.serializer()).richCardName?.joinToString("") { it.text.encodeToString() }
-                    else return@runCatching null
+                    if (this[0] == 0x0A.toByte()) {
+                        val nameBuf = loadAs(Oidb0x8fc.CommCardNameBuf.serializer())
+                        if (nameBuf.richCardName.isNotEmpty()) {
+                            return@runCatching nameBuf.richCardName.joinToString("") { it.text.encodeToString() }
+                        }
+                    }
+                    return@runCatching null
                 }.getOrNull() ?: encodeToString()
             } ?: pbPushMsg.msg.msgHead.groupInfo.groupCard.takeIf { it.isNotEmpty() }
             ?: sender.nameCardOrNick // 没有 extraInfo 就从 head 里取

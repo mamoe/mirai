@@ -9,7 +9,7 @@ internal class MsgRevokeUserDef : ProtoBuf {
     @Serializable
     internal class MsgInfoUserDef(
         @ProtoNumber(1) @JvmField val longMessageFlag: Int = 0,
-        @ProtoNumber(2) @JvmField val longMsgInfo: List<MsgInfoDef>? = null,
+        @ProtoNumber(2) @JvmField val longMsgInfo: List<MsgInfoDef> = emptyList(),
         @ProtoNumber(3) @JvmField val fileUuid: List<String> = listOf()
     ) : ProtoBuf {
         @Serializable
@@ -25,6 +25,6 @@ internal class MsgRevokeUserDef : ProtoBuf {
 internal class UinTypeUserDef(
         @ProtoNumber(1) @JvmField val fromUinType: Int = 0,
         @ProtoNumber(2) @JvmField val fromGroupCode: Long = 0L,
-        @ProtoNumber(3) @JvmField val fileUuid: List<String> = listOf()
+        @ProtoNumber(3) @JvmField val fileUuid: List<String> = emptyList()
     ) : ProtoBuf
 }
