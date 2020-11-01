@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("unused")
@@ -12,8 +12,8 @@
 package net.mamoe.mirai.network
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.SinceMirai
 
 /**
@@ -31,14 +31,14 @@ public sealed class LoginFailedException(
 /**
  * 密码输入错误 (有时候也会是其他错误, 如 `"当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。"`)
  */
-public class WrongPasswordException @MiraiInternalAPI constructor(
+public class WrongPasswordException @MiraiInternalApi constructor(
     message: String?
 ) : LoginFailedException(true, message)
 
 /**
  * 无可用服务器
  */
-public class NoServerAvailableException @MiraiInternalAPI constructor(
+public class NoServerAvailableException @MiraiInternalApi constructor(
     public override val cause: Throwable?
 ) : LoginFailedException(false, "no server available")
 
@@ -46,20 +46,20 @@ public class NoServerAvailableException @MiraiInternalAPI constructor(
  * 服务器要求稍后重试
  */
 @SinceMirai("1.2.0")
-public class RetryLaterException @MiraiInternalAPI constructor() :
+public class RetryLaterException @MiraiInternalApi constructor() :
     LoginFailedException(false, "server requests retrial later")
 
 /**
  * 无标准输入或 Kotlin 不支持此输入.
  */
-public class NoStandardInputForCaptchaException @MiraiInternalAPI constructor(
+public class NoStandardInputForCaptchaException @MiraiInternalApi constructor(
     public override val cause: Throwable?
 ) : LoginFailedException(true, "no standard input for captcha")
 
 /**
  * 需要短信验证时抛出. mirai 目前还不支持短信验证.
  */
-@MiraiExperimentalAPI("Will be removed when SMS login is supported")
+@MiraiExperimentalApi("Will be removed when SMS login is supported")
 public class UnsupportedSMSLoginException(message: String?) : LoginFailedException(true, message)
 
 /**

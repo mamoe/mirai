@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -17,15 +17,17 @@
     "DEPRECATION",
     "UnusedImport",
     "EXPOSED_SUPER_CLASS",
-    "DEPRECATION_ERROR"
+    "DEPRECATION_ERROR", "NOTHING_TO_INLINE"
 )
 
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.sendImage
 import kotlin.js.JsName
 import kotlin.jvm.JvmMultifileClass
@@ -51,7 +53,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * ### 下载图片
  * @see Image.queryUrl 扩展函数. 查询图片下载链接
- * @see Bot.queryImageUrl 查询图片下载链接 (Java 使用)
+ * @see Mirai.queryImageUrl 查询图片下载链接 (Java 使用)
  *
  * 查看平台 `actual` 定义以获取上传方式扩展.
  *
@@ -89,15 +91,20 @@ public expect interface Image : Message, MessageContent, CodableMessage {
 
     final override fun contentToString(): String = "[图片]"
     */
+}
 
-    @Deprecated(
-        """
-        不要自行实现 Image, 它必须由协议模块实现, 否则会无法发送也无法解析.
-    """, level = DeprecationLevel.HIDDEN
-    )
-    @Suppress("PropertyName")
-    @get:JvmSynthetic
-    internal val DoNotImplementThisClass: Nothing?
+/**
+ * 所有 [Image] 实现的基类.
+ */
+public abstract class AbstractImage : Image { // make sealed in 1.3.0 ?
+    private var _stringValue: String? = null
+        get() = field ?: kotlin.run {
+            field = "[mirai:image:$imageId]"
+            field
+        }
+
+    final override fun toString(): String = _stringValue!!
+    final override fun contentToString(): String = "[图片]"
 }
 
 /**
@@ -116,7 +123,8 @@ public val Image.md5: ByteArray
  * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
  */
 // NotOnlineImage
-public abstract class FriendImage internal constructor() : AbstractImage() { // change to sealed in the future.
+public abstract class FriendImage @MiraiInternalApi public constructor() :
+    AbstractImage() { // change to sealed in the future.
     public companion object Key : Message.Key<FriendImage> {
         public override val typeName: String get() = "FriendImage"
     }
@@ -129,7 +137,8 @@ public abstract class FriendImage internal constructor() : AbstractImage() { // 
  * @see Image 查看更多说明
  */
 // CustomFace
-public abstract class GroupImage internal constructor() : AbstractImage() { // change to sealed in the future.
+public abstract class GroupImage @MiraiInternalApi public constructor() :
+    AbstractImage() { // change to sealed in the future.
     public companion object Key : Message.Key<GroupImage> {
         public override val typeName: String get() = "GroupImage"
     }
@@ -176,12 +185,7 @@ public val GROUP_IMAGE_ID_REGEX: Regex = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{
 @Suppress("FunctionName", "DEPRECATION")
 @JsName("newImage")
 @JvmName("newImage")
-public fun Image(imageId: String): OfflineImage = when {
-    imageId matches FRIEND_IMAGE_ID_REGEX_1 -> OfflineFriendImage(imageId)
-    imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
-    imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
-    else -> throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")
-}
+public inline fun Image(imageId: String): Image = Mirai.createImage(imageId)
 
 /**
  * 查询原图下载链接.
@@ -195,11 +199,7 @@ public fun Image(imageId: String): OfflineImage = when {
 //@JvmBlockingBridge
 @JvmSynthetic
 public suspend fun Image.queryUrl(): String {
-    @Suppress("DEPRECATION")
-    return when (this) {
-        is ConstOriginUrlAware -> this.originUrl
-        is DeferredOriginUrlAware -> this.getUrl(firstOnlineBotInstance)
-        is SuspendDeferredOriginUrlAware -> this.getUrl(firstOnlineBotInstance)
-        else -> error("Internal error: unsupported Image class: ${this::class}")
-    }
+    val bot = Bot._instances.peekFirst()?.get() ?: error("No Bot available to query image url")
+    return Mirai.queryImageUrl(bot, this)
+
 }

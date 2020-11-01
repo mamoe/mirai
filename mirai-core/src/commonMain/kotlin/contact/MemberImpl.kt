@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
@@ -14,7 +14,7 @@ package net.mamoe.mirai.internal.contact
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
-import net.mamoe.mirai.LowLevelAPI
+import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
@@ -38,7 +38,7 @@ import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmSynthetic
 
-@OptIn(LowLevelAPI::class)
+@OptIn(LowLevelApi::class)
 @Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl constructor(
     val qq: FriendImpl, // 不要 WeakRef
@@ -258,7 +258,7 @@ internal fun Member.checkIsMemberImpl(): MemberImpl {
     return this
 }
 
-@OptIn(LowLevelAPI::class)
+@OptIn(LowLevelApi::class)
 internal class MemberInfoImpl(
     jceInfo: StTroopMemberInfo,
     groupOwnerId: Long

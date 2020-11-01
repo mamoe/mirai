@@ -1,32 +1,26 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 @file:Suppress(
     "EXPERIMENTAL_API_USAGE", "unused", "FunctionName", "NOTHING_TO_INLINE", "UnusedImport",
-    "EXPERIMENTAL_OVERRIDE", "CanBeParameter", "MemberVisibilityCanBePrivate"
+    "EXPERIMENTAL_OVERRIDE", "CanBeParameter", "MemberVisibilityCanBePrivate", "INAPPLICABLE_JVM_NAME",
+    "EXPOSED_SUPER_CLASS"
 )
 
 package net.mamoe.mirai
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
-import net.mamoe.mirai.message.action.Nudge
-import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmField
 import kotlin.jvm.JvmStatic
 import kotlin.jvm.JvmSynthetic
@@ -48,10 +42,9 @@ public suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  *
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
-@Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
 public abstract class Bot internal constructor(
     public val configuration: BotConfiguration
-) : CoroutineScope, LowLevelBotAPIAccessor, BotJavaFriendlyAPI, ContactOrBot {
+) : CoroutineScope, ContactOrBot {
     public final override val coroutineContext: CoroutineContext = // for id
         configuration.parentCoroutineContext
             .plus(SupervisorJob(configuration.parentCoroutineContext[Job]))
@@ -124,7 +117,7 @@ public abstract class Bot internal constructor(
      * 在 JVM 的默认实现为 `class ContextImpl : Context`
      * 在 Android 实现为 `android.content.Context`
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public abstract val context: Context
 
     /**
@@ -151,10 +144,10 @@ public abstract class Bot internal constructor(
     // region contacts
 
     /**
-     * [User.id] 与 [Bot.id] 相同的 [_lowLevelNewFriend] 实例
+     * [User.id] 与 [Bot.id] 相同的 [Friend] 实例
      */
-    @MiraiExperimentalAPI
-    public abstract val selfQQ: Friend
+    @MiraiExperimentalApi
+    public abstract val asFriend: Friend
 
 
     /**
@@ -183,8 +176,6 @@ public abstract class Bot internal constructor(
 
     // endregion
 
-    // region network
-
     /**
      * 登录, 或重新登录.
      * 这个函数总是关闭一切现有网路任务 (但不会关闭其他任务), 然后重新登录并重新缓存好友列表和群列表.
@@ -196,169 +187,15 @@ public abstract class Bot internal constructor(
      */
     @JvmSynthetic
     public abstract suspend fun login()
-    // endregion
-
-
-    // region actions
-
-    /**
-     * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
-     *
-     * [Bot] 撤回自己的消息不需要权限.
-     * [Bot] 撤回群员的消息需要管理员权限.
-     *
-     * @param source 消息源. 可从 [MessageReceipt.source] 获得, 或从消息事件中的 [MessageChain] 获得, 或通过 [buildMessageSource] 构建.
-     *
-     * @throws PermissionDeniedException 当 [Bot] 无权限操作时抛出
-     * @throws IllegalStateException 当这条消息已经被撤回时抛出 (仅同步主动操作)
-     *
-     * @see Bot.recall (扩展函数) 接受参数 [MessageChain]
-     * @see MessageSource.recall 撤回消息扩展
-     */
-    @JvmSynthetic
-    public abstract suspend fun recall(source: MessageSource)
 
     /**
      * 创建一个 "戳一戳" 消息
      *
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     @SinceMirai("1.3.0")
     public fun nudge(): BotNudge = BotNudge(this)
-
-    /**
-     * 获取图片下载链接
-     *
-     * @see Image.queryUrl [Image] 的扩展函数
-     */
-    @PlannedRemoval("1.2.0")
-    @Deprecated(
-        "use extension.",
-        replaceWith = ReplaceWith("image.queryUrl()", imports = ["queryUrl"]),
-        level = DeprecationLevel.ERROR
-    )
-    @JvmSynthetic
-    public abstract suspend fun queryImageUrl(image: Image): String
-
-    /**
-     * 构造一个 [OfflineMessageSource]
-     *
-     * @param id 即 [MessageSource.id]
-     * @param internalId 即 [MessageSource.internalId]
-     *
-     * @param fromUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
-     * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
-     */
-    @MiraiExperimentalAPI("This is very experimental and is subject to change.")
-    public abstract fun constructMessageSource(
-        kind: OfflineMessageSource.Kind,
-        fromUin: Long, targetUin: Long,
-        id: Int, time: Int, internalId: Int,
-        originalMessage: MessageChain
-    ): OfflineMessageSource
-
-
-    /**
-     * 通过好友验证
-     *
-     * @param event 好友验证的事件对象
-     */
-    @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"), level = DeprecationLevel.ERROR)
-    @JvmSynthetic
-    public abstract suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent)
-
-    /**
-     * 拒绝好友验证
-     *
-     * @param event 好友验证的事件对象
-     * @param blackList 拒绝后是否拉入黑名单
-     */
-    @PlannedRemoval("1.2.0")
-    @Deprecated(
-        "use member function.",
-        replaceWith = ReplaceWith("event.reject(blackList)"),
-        level = DeprecationLevel.ERROR
-    )
-    @JvmSynthetic
-    public abstract suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean = false)
-
-    /**
-     * 通过加群验证（需管理员权限）
-     *
-     * @param event 加群验证的事件对象
-     */
-    @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"), level = DeprecationLevel.ERROR)
-    @JvmSynthetic
-    public abstract suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent)
-
-    /**
-     * 拒绝加群验证（需管理员权限）
-     *
-     * @param event 加群验证的事件对象
-     * @param blackList 拒绝后是否拉入黑名单
-     */
-    @PlannedRemoval("1.2.0")
-    @Deprecated(
-        "use member function.",
-        replaceWith = ReplaceWith("event.reject(blackList)"),
-        level = DeprecationLevel.HIDDEN
-    )
-    public abstract suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
-
-    @JvmSynthetic
-    public abstract suspend fun rejectMemberJoinRequest(
-        event: MemberJoinRequestEvent,
-        blackList: Boolean = false,
-        message: String = ""
-    )
-
-    /**
-     * 忽略加群验证（需管理员权限）
-     *
-     * @param event 加群验证的事件对象
-     * @param blackList 忽略后是否拉入黑名单
-     */
-    @PlannedRemoval("1.2.0")
-    @Deprecated(
-        "use member function.",
-        replaceWith = ReplaceWith("event.ignore(blackList)"),
-        level = DeprecationLevel.ERROR
-    )
-    @JvmSynthetic
-    public abstract suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean = false)
-
-    /**
-     * 接收邀请入群（需管理员权限）
-     *
-     * @param event 邀请入群的事件对象
-     */
-    @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.accept()"), level = DeprecationLevel.ERROR)
-    @JvmSynthetic
-    public abstract suspend fun acceptInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
-
-    /**
-     * 忽略邀请入群（需管理员权限）
-     *
-     * @param event 邀请入群的事件对象
-     */
-    @PlannedRemoval("1.2.0")
-    @Deprecated("use member function.", replaceWith = ReplaceWith("event.ignore()"), level = DeprecationLevel.ERROR)
-    @JvmSynthetic
-    public abstract suspend fun ignoreInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent)
-
-    @Deprecated(
-        "use member function.",
-        replaceWith = ReplaceWith("nudge.sendTo(contact)"),
-        level = DeprecationLevel.ERROR
-    )
-    @SinceMirai("1.3.0")
-    public abstract suspend fun sendNudge(nudge: Nudge, receiver: Contact): Boolean
-
-    // endregion
 
     /**
      * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob].
@@ -388,53 +225,6 @@ public val Bot.supervisorJob: CompletableJob
  */
 @JvmSynthetic
 public suspend inline fun Bot.join(): Unit = this.coroutineContext[Job]!!.join()
-
-/**
- * 撤回这条消息.
- *
- * [Bot] 撤回自己的消息不需要权限, 但需要在发出后 2 分钟内撤回.
- * [Bot] 撤回群员的消息需要管理员权限, 可在任意时间撤回.
- *
- * @throws PermissionDeniedException 当 [Bot] 无权限操作时
- * @see Bot.recall
- */
-@JvmSynthetic
-public suspend inline fun Bot.recall(message: MessageChain): Unit =
-    this.recall(message.source)
-
-/**
- * 在一段时间后撤回这个消息源所指代的消息.
- *
- * @param millis 延迟的时间, 单位为毫秒
- * @param coroutineContext 额外的 [CoroutineContext]
- * @see recall
- */
-@JvmSynthetic
-public inline fun CoroutineScope.recallIn(
-    source: MessageSource,
-    millis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    delay(millis)
-    source.recall()
-}
-
-/**
- * 在一段时间后撤回这条消息.
- *
- * @param millis 延迟的时间, 单位为毫秒
- * @param coroutineContext 额外的 [CoroutineContext]
- * @see recall
- */
-@JvmSynthetic
-public inline fun CoroutineScope.recallIn(
-    message: MessageChain,
-    millis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = this.launch(coroutineContext + CoroutineName("MessageRecall")) {
-    delay(millis)
-    message.recall()
-}
 
 /**
  * 关闭这个 [Bot], 停止一切相关活动. 所有引用都会被释放.

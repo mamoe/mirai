@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -15,6 +15,7 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
@@ -22,7 +23,7 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.jvm.*
@@ -97,10 +98,10 @@ public data class NewFriendRequestEvent internal constructor(
     public val fromGroup: Group? = if (fromGroupId == 0L) null else bot.getGroup(fromGroupId)
 
     @JvmSynthetic
-    public suspend fun accept(): Unit = bot.acceptNewFriendRequest(this)
+    public suspend fun accept(): Unit = Mirai.acceptNewFriendRequest(this)
 
     @JvmSynthetic
-    public suspend fun reject(blackList: Boolean = false): Unit = bot.rejectNewFriendRequest(this, blackList)
+    public suspend fun reject(blackList: Boolean = false): Unit = Mirai.rejectNewFriendRequest(this, blackList)
 
 
     @JavaFriendlyAPI
@@ -149,10 +150,10 @@ public data class FriendInputStatusChangedEvent internal constructor(
  * 注: 此事件仅可能在私聊中发生
  */
 @SinceMirai("2.0.0")
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
     /**
-     * 戳一戳的发起人, 为 [Bot] 的某一好友, 或是 [Bot.selfQQ]
+     * 戳一戳的发起人, 为 [Bot] 的某一好友, 或是 [Bot.asFriend]
      */
     public abstract val from: Friend
 
@@ -167,7 +168,7 @@ public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
     public abstract val suffix: String
 
     /** 在 [Bot] 与 [Friend] 的对话中 [Friend] 戳了自己事件 */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public data class NudgedByHimself internal constructor(
         override val action: String,
         override val suffix: String,
@@ -182,7 +183,7 @@ public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
     }
 
     /** [Bot] 戳了 [Friend] */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public data class NudgedByBot internal constructor(
         override val action: String,
         override val suffix: String,
@@ -193,6 +194,6 @@ public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
         }
 
         override val from: Friend
-            get() = bot.selfQQ
+            get() = bot.asFriend
     }
 }

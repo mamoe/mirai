@@ -1,14 +1,14 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@file:OptIn(LowLevelAPI::class)
+@file:OptIn(LowLevelApi::class)
 
 package net.mamoe.mirai.internal.contact
 
@@ -16,14 +16,17 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.io.core.Closeable
-import net.mamoe.mirai.LowLevelAPI
+import net.mamoe.mirai.LowLevelApi
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.MessageSourceToGroupImpl
+import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
@@ -251,7 +254,7 @@ internal class GroupImpl(
 
     override fun newMember(memberInfo: MemberInfo): Member {
         return MemberImpl(
-            bot._lowLevelNewFriend(memberInfo) as FriendImpl,
+            Mirai._lowLevelNewFriend(bot, memberInfo) as FriendImpl,
             this,
             this.coroutineContext,
             memberInfo
@@ -313,7 +316,7 @@ internal class GroupImpl(
                 )
             }
 
-            return bot.lowLevelSendGroupLongOrForwardMessage(this.id, message.nodeList, false, message)
+            return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(bot, this.id, message.nodeList, false, message)
         }
 
         val msg: MessageChain = if (message !is LongMessage && message !is ForwardMessageInternal) {
@@ -338,7 +341,8 @@ internal class GroupImpl(
             }
 
             if (length > 702 || imageCnt > 2) {
-                return bot.lowLevelSendGroupLongOrForwardMessage(
+                return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
+                    bot,
                     this.id,
                     listOf(
                         ForwardMessage.Node(
@@ -402,7 +406,7 @@ internal class GroupImpl(
     @Suppress("DEPRECATION")
     @OptIn(ExperimentalTime::class)
     @JvmSynthetic
-    override suspend fun uploadImage(image: ExternalImage): OfflineGroupImage = try {
+    override suspend fun uploadImage(image: ExternalImage): Image = try {
         @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
             image.input.init(bot.configuration.fileCacheStrategy)
@@ -456,7 +460,7 @@ internal class GroupImpl(
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     @SinceMirai("1.2.0")
     override suspend fun uploadVoice(input: InputStream): Voice {
         val content = ByteArray(input.available())

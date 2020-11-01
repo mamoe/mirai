@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -14,11 +14,12 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -41,7 +42,7 @@ public fun OnlineMessageSource.toOffline(): OfflineMessageSource =
  *
  * @see buildMessageSource 查看更多说明
  */
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @JvmName("copySource")
 public fun MessageSource.copyAmend(
     block: MessageSourceAmender.() -> Unit
@@ -103,10 +104,11 @@ public interface MessageSourceAmender {
  * ```
  */
 @JvmSynthetic
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 public fun Bot.buildMessageSource(block: MessageSourceBuilder.() -> Unit): MessageSource {
     val builder = MessageSourceBuilderImpl().apply(block)
-    return constructMessageSource(
+    return Mirai.constructMessageSource(
+        this,
         builder.kind ?: error("You must call `Contact.sendTo(Contact)` when `buildMessageSource`"),
         builder.fromUin,
         builder.targetUin,

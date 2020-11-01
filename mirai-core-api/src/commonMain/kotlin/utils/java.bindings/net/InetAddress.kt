@@ -1,3 +1,12 @@
+/*
+ * Copyright 2019-2020 Mamoe Technologies and contributors.
+ *
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 @file:Suppress(
     "unused",
     "NO_ACTUAL_FOR_EXPECT",
@@ -53,14 +62,19 @@ public expect open class InetAddress : java.io.Serializable {
     public companion object {
         @JvmStatic
         public open fun getByAddress(host: String, addr: ByteArray): InetAddress
+
         @JvmStatic
         public open fun getByName(host: String): InetAddress
+
         @JvmStatic
         public open fun getAllByName(host: String): Array<InetAddress>
+
         @JvmStatic
         public open fun getLoopbackAddress(): InetAddress
+
         @JvmStatic
         public open fun getByAddress(addr: ByteArray): InetAddress
+
         @JvmStatic
         public open fun getLocalHost(): InetAddress
     }

@@ -1,3 +1,12 @@
+/*
+ * Copyright 2019-2020 Mamoe Technologies and contributors.
+ *
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
+ *
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
+ */
+
 package net.mamoe.mirai.data
 
 import kotlinx.serialization.KSerializer
@@ -9,14 +18,14 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmStatic
 
 /**
  * 群荣誉信息
  */
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @SinceMirai("1.3.0")
 public enum class GroupHonorType(public val value: Int) {
     TALKATIVE(1),       // 龙王
@@ -27,13 +36,14 @@ public enum class GroupHonorType(public val value: Int) {
     ACTIVE(7),          // 活跃头衔
     EXCLUSIVE(8),       // 特殊头衔
     MANAGE(9);          // 管理头衔
+
     internal companion object {
         @JvmStatic
         internal fun deserializeFromInt(value: Int): GroupHonorType = values().first { it.value == value }
     }
 }
 
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @SinceMirai("1.3.0")
 @Serializable
 public data class GroupHonorListData(

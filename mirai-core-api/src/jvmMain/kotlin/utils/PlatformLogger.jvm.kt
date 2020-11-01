@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmName("Utils")
@@ -112,7 +112,7 @@ public actual open class PlatformLogger @JvmOverloads constructor(
 
     private val currentTimeFormatted get() = timeFormat.format(Date())
 
-    @MiraiExperimentalAPI("This is subject to change.")
+    @MiraiExperimentalApi("This is subject to change.")
     @SinceMirai("1.1.0")
     protected enum class Color(private val format: String) {
         RESET("\u001b[0m"),

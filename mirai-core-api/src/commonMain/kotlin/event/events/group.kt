@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -15,6 +15,7 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -24,7 +25,7 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -39,7 +40,7 @@ public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
     /**
      * 机器人主动退出一个群.
      */
-    @MiraiExperimentalAPI("目前此事件类型不一定正确. 部分被踢出情况也会广播此事件.")
+    @MiraiExperimentalApi("目前此事件类型不一定正确. 部分被踢出情况也会广播此事件.")
     public data class Active internal constructor(
         public override val group: Group
     ) : BotLeaveEvent() {
@@ -49,7 +50,7 @@ public sealed class BotLeaveEvent : BotEvent, Packet, AbstractEvent() {
     /**
      * 机器人被管理员或群主踢出群.
      */
-    @MiraiExperimentalAPI("BotLeaveEvent 的子类可能在将来改动. 使用 BotLeaveEvent 以保证兼容性.")
+    @MiraiExperimentalApi("BotLeaveEvent 的子类可能在将来改动. 使用 BotLeaveEvent 以保证兼容性.")
     public data class Kick internal constructor(
         public override val operator: Member
     ) : BotLeaveEvent(),
@@ -107,7 +108,7 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
     /**
      * 不确定. 可能是主动加入
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public data class Active internal constructor(
         public override val group: Group
     ) : BotJoinGroupEvent() {
@@ -119,7 +120,7 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
      *
      * 此时服务器基于 Bot 的 QQ 设置自动同意了请求.
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public data class Invite internal constructor(
         /**
          * 邀请人
@@ -137,7 +138,7 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
      * 原群主通过 https://huifu.qq.com/ 恢复原来群主身份并入群,
      * [Bot] 是原群主
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     @SinceMirai("1.3.0")
     public data class Retrieve internal constructor(
         public override val group: Group
@@ -341,20 +342,20 @@ public data class BotInvitedJoinGroupRequestEvent internal constructor(
     internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     @JvmSynthetic
-    public suspend fun accept(): Unit = bot.acceptInvitedJoinGroupRequest(this)
+    public suspend fun accept(): Unit = Mirai.acceptInvitedJoinGroupRequest(this)
 
     @JvmSynthetic
-    public suspend fun ignore(): Unit = bot.ignoreInvitedJoinGroupRequest(this)
+    public suspend fun ignore(): Unit = Mirai.ignoreInvitedJoinGroupRequest(this)
 
     @JavaFriendlyAPI
     @JvmName("accept")
     public fun __acceptBlockingForJava__(): Unit =
-        runBlocking { bot.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+        runBlocking { Mirai.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
 
     @JavaFriendlyAPI
     @JvmName("ignore")
     public fun __ignoreBlockingForJava__(): Unit =
-        runBlocking { bot.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
+        runBlocking { Mirai.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
 }
 
 /**
@@ -385,36 +386,37 @@ public data class MemberJoinRequestEvent internal constructor(
     public val group: Group get() = this.bot.getGroup(groupId)
 
     @JvmField
+    @PublishedApi
     internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
 
     @JvmSynthetic
-    public suspend fun accept(): Unit = bot.acceptMemberJoinRequest(this)
+    public suspend fun accept(): Unit = Mirai.acceptMemberJoinRequest(this)
 
     @JvmSynthetic
     @JvmOverloads
     public suspend fun reject(blackList: Boolean = false, message: String = ""): Unit =
-        bot.rejectMemberJoinRequest(this, blackList, message)
+        Mirai.rejectMemberJoinRequest(this, blackList, message)
 
     @JvmSynthetic
-    public suspend fun ignore(blackList: Boolean = false): Unit = bot.ignoreMemberJoinRequest(this, blackList)
+    public suspend fun ignore(blackList: Boolean = false): Unit = Mirai.ignoreMemberJoinRequest(this, blackList)
 
 
     @JavaFriendlyAPI
     @JvmName("accept")
     public fun __acceptBlockingForJava__(): Unit =
-        runBlocking { bot.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
+        runBlocking { Mirai.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("reject")
     public fun __rejectBlockingForJava__(blackList: Boolean = false, message: String = ""): Unit =
-        runBlocking { bot.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList, message) }
+        runBlocking { Mirai.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList, message) }
 
     @JavaFriendlyAPI
     @JvmOverloads
     @JvmName("ignore")
     public fun __ignoreBlockingForJava__(blackList: Boolean = false): Unit =
-        runBlocking { bot.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
+        runBlocking { Mirai.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
 // endregion
@@ -518,7 +520,7 @@ public data class MemberUnmuteEvent internal constructor(
 /**
  * [Member] 被 [戳][Nudge] 的事件.
  */
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @SinceMirai("1.3.0")
 public data class MemberNudgedEvent internal constructor(
     /**

@@ -1,13 +1,13 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:OptIn(LowLevelAPI::class)
+@file:OptIn(LowLevelApi::class)
 @file:Suppress(
     "EXPERIMENTAL_API_USAGE",
     "DEPRECATION_ERROR",
@@ -23,7 +23,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.io.core.Closeable
-import net.mamoe.mirai.LowLevelAPI
+import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.broadcast
@@ -134,7 +134,7 @@ internal class FriendImpl(
 
         @Suppress("UNCHECKED_CAST", "DEPRECATION")
         when (response) {
-            is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId)
+            is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.internal.message.OfflineFriendImage(response.resourceId)
                 .also {
                     ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
@@ -168,7 +168,7 @@ internal class FriendImpl(
                 )*/
                 // 为什么不能 ??
 
-                net.mamoe.mirai.message.data.OfflineFriendImage(response.resourceId).also {
+                net.mamoe.mirai.internal.message.OfflineFriendImage(response.resourceId).also {
                     ImageUploadEvent.Succeed(this@FriendImpl, image, it).broadcast()
                 }
             }

@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("EXPERIMENTAL_API_USAGE")
@@ -18,7 +18,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.WeakRefProperty
 
@@ -72,7 +72,7 @@ internal abstract class BotNetworkHandler : CoroutineScope {
      * @throws WrongPasswordException 密码错误时
      */
     @Suppress("SpellCheckingInspection")
-    @MiraiInternalAPI
+    @MiraiInternalApi
     abstract suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable? = null)
 
     /**
@@ -80,7 +80,7 @@ internal abstract class BotNetworkHandler : CoroutineScope {
      *
      * 不要使用这个 API. 它会在登录完成后被自动调用.
      */
-    @MiraiInternalAPI
+    @MiraiInternalApi
     open suspend fun init() {
     }
 

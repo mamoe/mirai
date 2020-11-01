@@ -1,17 +1,17 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 package net.mamoe.mirai.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 群公告数据类
@@ -20,7 +20,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalAPI
  * 发公告时只需要填写text，其他参数可为默认值
  *
  */
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncementList(
     val ec: Int,  //状态码 0 是正常的
@@ -29,7 +29,7 @@ public data class GroupAnnouncementList(
     val inst: List<GroupAnnouncement>? = null  //置顶列表？
 )
 
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncement(
     @SerialName("u") val sender: Long = 0,
@@ -42,7 +42,7 @@ public data class GroupAnnouncement(
     val fid: String? = null      //公告的id
 )
 
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncementMsg(
     val text: String,
@@ -50,7 +50,7 @@ public data class GroupAnnouncementMsg(
     val title: String? = null
 )
 
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @Serializable
 public data class GroupAnnouncementSettings(
     @SerialName("is_show_edit_card") val isShowEditCard: Int = 0,

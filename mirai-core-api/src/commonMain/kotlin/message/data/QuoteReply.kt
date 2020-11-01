@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -13,14 +13,9 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmSynthetic
 
 
@@ -69,64 +64,3 @@ public inline val QuoteReply.bot: Bot
  */
 @JvmSynthetic
 public suspend inline fun QuoteReply.recallSource(): Unit = this.source.recall()
-
-/**
- * 在一段时间后撤回引用的源消息
- */
-@JvmOverloads
-public inline fun QuoteReply.recallSourceIn(
-    millis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = this.source.recallIn(millis, coroutineContext)
-
-
-//// 因语义不明而弃用的 API, 兼容到 1.3.0
-
-@PlannedRemoval("1.3.0")
-@get:JvmSynthetic
-@Deprecated("use source.id for clearer semantics", ReplaceWith("source.id"))
-public inline val QuoteReply.id: Int
-    get() = source.id
-
-@PlannedRemoval("1.3.0")
-@get:JvmSynthetic
-@Deprecated("use source.internalId for clearer semantics", ReplaceWith("source.internalId"))
-public inline val QuoteReply.internalId: Int
-    get() = source.internalId
-
-@PlannedRemoval("1.3.0")
-@get:JvmSynthetic
-@Deprecated("use source.fromId for clearer semantics", ReplaceWith("source.fromId"))
-public inline val QuoteReply.fromId: Long
-    get() = source.fromId
-
-@PlannedRemoval("1.3.0")
-@get:JvmSynthetic
-@Deprecated("use source.targetId for clearer semantics", ReplaceWith("source.targetId"))
-public inline val QuoteReply.targetId: Long
-    get() = source.targetId
-
-@PlannedRemoval("1.3.0")
-@get:JvmSynthetic
-@Deprecated("use source.originalMessage for clearer semantics", ReplaceWith("source.originalMessage"))
-public inline val QuoteReply.originalMessage: MessageChain
-    get() = source.originalMessage
-
-@PlannedRemoval("1.3.0")
-@get:JvmSynthetic
-@Deprecated("use source.time for clearer semantics", ReplaceWith("source.time"))
-public inline val QuoteReply.time: Int
-    get() = source.time
-
-@PlannedRemoval("1.3.0")
-@Deprecated("use recallSourceIn for clearer semantics", ReplaceWith("recallSourceIn(millis, coroutineContext)"))
-@JvmOverloads
-public inline fun QuoteReply.recallIn(
-    millis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = recallSourceIn(millis, coroutineContext)
-
-@PlannedRemoval("1.3.0")
-@Deprecated("use recallSource for clearer semantics", ReplaceWith("this.recallSource()"))
-@JvmSynthetic
-public suspend inline fun QuoteReply.recall(): Unit = recallSource()

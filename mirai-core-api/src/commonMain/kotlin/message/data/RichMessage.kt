@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmName("MessageUtils")
@@ -13,7 +13,7 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.annotation.AnnotationTarget.*
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -34,7 +34,7 @@ public interface RichMessage : MessageContent {
     /**
      * **注意**: 富文本消息的 [RichMessage.contentEquals] 和 [RichMessage.toString] 都不稳定. 将来可能在没有任何警告的情况下改变格式.
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public override fun contentToString(): String = this.content
 
     /**
@@ -46,13 +46,13 @@ public interface RichMessage : MessageContent {
      * 一些模板
      * @suppress 此 API 不稳定, 可能在任意时刻被删除
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public companion object Templates : Message.Key<RichMessage> {
 
         /**
          * @suppress 此 API 不稳定, 可能在任意时刻被删除
          */
-        @MiraiExperimentalAPI
+        @MiraiExperimentalApi
         public fun share(
             url: String,
             title: String? = null,
@@ -150,11 +150,11 @@ commonElem=CommonElem#750141174 {
  */
 @Suppress("DEPRECATION_ERROR")
 @JvmSynthetic
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 public inline fun buildXmlMessage(serviceId: Int, block: @XmlMessageDsl XmlMessageBuilder.() -> Unit): ServiceMessage =
     ServiceMessage(serviceId, XmlMessageBuilder().apply(block).text)
 
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @Target(CLASS, FUNCTION, TYPE)
 @DslMarker
 public annotation class XmlMessageDsl
@@ -162,7 +162,7 @@ public annotation class XmlMessageDsl
 /**
  * @suppress 此 API 不稳定
  */
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @XmlMessageDsl
 public class XmlMessageBuilder(
     public var templateId: Int = 1,
@@ -225,7 +225,7 @@ public class XmlMessageBuilder(
     }
 }
 
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 internal class LongMessage internal constructor(content: String, val resId: String) : ServiceMessage(35, content) {
     companion object Key : Message.Key<LongMessage> {
         override val typeName: String get() = "LongMessage"

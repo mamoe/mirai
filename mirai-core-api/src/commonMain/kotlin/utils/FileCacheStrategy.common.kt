@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 package net.mamoe.mirai.utils
@@ -21,13 +21,13 @@ import kotlin.contracts.contract
  *
  * 图片上传时默认使用文件缓存.
  */
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 public expect interface FileCacheStrategy {
     /**
      * 将 [input] 缓存为 [ExternalImage].
      * 此函数应 close 这个 [Input]
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     @Throws(IOException::class)
     public fun newImageCache(input: Input): ExternalImage
 
@@ -35,25 +35,25 @@ public expect interface FileCacheStrategy {
      * 将 [input] 缓存为 [ExternalImage].
      * 此 [input] 的内容应是不变的.
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     @Throws(IOException::class)
     public fun newImageCache(input: ByteArray): ExternalImage
 
     /**
      * 默认的缓存方案. 在 JVM 平台使用系统临时文件.
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public object PlatformDefault : FileCacheStrategy
 
     /**
      * 使用内存直接存储所有图片文件.
      */
     public object MemoryCache : FileCacheStrategy {
-        @MiraiExperimentalAPI
+        @MiraiExperimentalApi
         @Throws(IOException::class)
         public override fun newImageCache(input: Input): ExternalImage
 
-        @MiraiExperimentalAPI
+        @MiraiExperimentalApi
         @Throws(IOException::class)
         public override fun newImageCache(input: ByteArray): ExternalImage
     }

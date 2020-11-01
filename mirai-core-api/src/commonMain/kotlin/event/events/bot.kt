@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("unused", "FunctionName")
@@ -17,10 +17,9 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.MiraiInternalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.SinceMirai
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
@@ -61,7 +60,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      * 被服务器断开
      */
     @SinceMirai("1.1.0")
-    @MiraiInternalAPI("This is very experimental and might be changed")
+    @MiraiInternalApi("This is very experimental and might be changed")
     public data class MsfOffline internal constructor(
         public override val bot: Bot,
         public override val cause: Throwable?
@@ -78,7 +77,7 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
      * 因 returnCode = -10008 等原因掉线
      */
-    @MiraiInternalAPI("This is very experimental and might be changed")
+    @MiraiInternalApi("This is very experimental and might be changed")
     @SinceMirai("1.2.0")
     public data class PacketFactory10008 internal constructor(
         public override val bot: Bot,
@@ -88,13 +87,13 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
      * 服务器主动要求更换另一个服务器
      */
-    @MiraiInternalAPI
+    @MiraiInternalApi
     public data class RequireReconnect internal constructor(
         public override val bot: Bot
     ) : BotOfflineEvent(), Packet,
         BotPassiveEvent
 
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public interface CauseAware {
         public val cause: Throwable?
     }
@@ -128,11 +127,11 @@ public data class BotNickChangedEvent(
 ) : BotEvent, Packet, AbstractEvent()
 
 
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @SinceMirai("1.3.0")
 public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
     /**
-     * 戳一戳的发起人，为 [Bot] 的某一好友, 或某一群员, 或 [Bot.selfQQ]
+     * 戳一戳的发起人，为 [Bot] 的某一好友, 或某一群员, 或 [Bot.asFriend]
      */
     public abstract val from: User
 
@@ -142,7 +141,7 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
     /** 戳一戳中设置的自定义后缀 */
     public abstract val suffix: String
 
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     @SinceMirai("2.0.0")
     /** [Bot] 在群聊中被戳 */
     public sealed class InGroup : BotNudgedEvent(), GroupMemberEvent {
@@ -178,7 +177,7 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
         }
     }
 
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     @SinceMirai("2.0.0")
     /** [Bot] 在私聊中被戳 */
     public sealed class InPrivateSession : BotNudgedEvent(), FriendEvent {
@@ -205,7 +204,7 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
             override val action: String,
             override val suffix: String
         ) : InPrivateSession() {
-            override val from: Friend get() = bot.selfQQ
+            override val from: Friend get() = bot.asFriend
             override fun toString(): String {
                 return "BotNudgedEvent.InPrivateSession.ByBot(friend=$friend, action=$action, suffix=$suffix)"
             }
@@ -246,7 +245,7 @@ public data class BotNudgedEvent internal constructor(
  *
  * @see MessageEvent.subject
  */
-@MiraiExperimentalAPI
+@MiraiExperimentalApi
 @SinceMirai("2.0.0")
 public val BotNudgedEvent.subject: Contact
     get() = when (val inlineFrom = from) {

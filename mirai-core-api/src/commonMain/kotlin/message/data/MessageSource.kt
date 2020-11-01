@@ -1,10 +1,10 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:JvmMultifileClass
@@ -13,17 +13,14 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.quote
 import net.mamoe.mirai.message.recall
-import net.mamoe.mirai.recallIn
 import net.mamoe.mirai.utils.LazyProperty
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.jvm.JvmMultifileClass
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmSynthetic
@@ -361,27 +358,10 @@ public inline fun MessageChain.quote(): QuoteReply = QuoteReply(this.source)
  * @throws PermissionDeniedException 当 [Bot] 无权限操作时
  * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
  *
- * @see Bot.recall
+ * @see Mirai.recall
  */
 @JvmSynthetic
-public suspend inline fun MessageSource.recall(): Unit = bot.recall(this)
-
-/**
- * 在一段时间后撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
- *
- * [Bot] 撤回自己的消息不需要权限.
- * [Bot] 撤回群员的消息需要管理员权限.
- *
- * @throws PermissionDeniedException 当 [Bot] 无权限操作时
- * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
- *
- * @see Bot.recall
- */
-@JvmSynthetic
-public inline fun MessageSource.recallIn(
-    timeMillis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = bot.recallIn(this, timeMillis, coroutineContext)
+public suspend inline fun MessageSource.recall(): Unit = Mirai.recall(bot, this)
 
 // For MessageChain
 
@@ -451,28 +431,7 @@ public val MessageChain.source: MessageSource
  * @throws PermissionDeniedException 当 [Bot] 无权限操作时
  * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
  *
- * @see Bot.recall
+ * @see Mirai.recall
  */
 @JvmSynthetic
 public suspend inline fun MessageChain.recall(): Unit = this.source.recall()
-
-/**
- * 在一段时间后撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
- *
- * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
- *
- * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
- *
- * [Bot] 撤回自己的消息不需要权限.
- * [Bot] 撤回群员的消息需要管理员权限.
- *
- * @throws PermissionDeniedException 当 [Bot] 无权限操作时
- * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
- *
- * @see Bot.recall
- */
-@JvmSynthetic
-public inline fun MessageChain.recallIn(
-    millis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = source.recallIn(millis, coroutineContext)

@@ -1,27 +1,20 @@
 /*
  * Copyright 2019-2020 Mamoe Technologies and contributors.
  *
- * 此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
- * Use of this source code is governed by the GNU AFFERO GENERAL PUBLIC LICENSE version 3 license that can be found via the following link.
+ *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
+ *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
  *
- * https://github.com/mamoe/mirai/blob/master/LICENSE
+ *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
 @file:Suppress("NOTHING_TO_INLINE", "FunctionName", "unused")
 
 package net.mamoe.mirai.message
 
-import kotlinx.coroutines.Job
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.recallIn
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
-import net.mamoe.mirai.utils.internal.runBlocking
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmName
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.jvm.JvmSynthetic
 
 /**
@@ -41,7 +34,7 @@ import kotlin.jvm.JvmSynthetic
  * @see MessageReceipt.sourceId 源 id
  * @see MessageReceipt.sourceTime 源时间
  */
-public open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The constructor is subject to change.") constructor(
+public open class MessageReceipt<out C : Contact> @MiraiExperimentalApi("The constructor is subject to change.") constructor(
     /**
      * 指代发送出去的消息.
      */
@@ -54,93 +47,24 @@ public open class MessageReceipt<out C : Contact> @MiraiExperimentalAPI("The con
     /**
      * @see Group.botAsMember
      */
-    @MiraiExperimentalAPI("This is subject to change.")
+    @MiraiExperimentalApi("This is subject to change.")
     public val botAsMember: Member?
 ) {
     /**
      * 是否为发送给群的消息的回执
      */
     public val isToGroup: Boolean get() = target is Group
-
-    /**
-     * 引用这条消息并回复.
-     *
-     * 仅供 Java 使用.
-     *
-     * 仅供 Java 使用: `MessageReceipt.quoteReply(message)`
-     */
-    @JavaFriendlyAPI
-    @JvmName("quoteReply")
-    public fun __quoteReplyBlockingForJava__(message: Message): MessageReceipt<C> {
-        return runBlocking { return@runBlocking quoteReply(message) }
-    }
-
-    /**
-     * 引用这条消息并回复.
-     *
-     * 仅供 Java 使用: `MessageReceipt.quoteReply(message)`
-     */
-    @JavaFriendlyAPI
-    @JvmName("quoteReply")
-    public fun __quoteReplyBlockingForJava__(message: String): MessageReceipt<C> {
-        return runBlocking { quoteReply(message) }
-    }
-
-    /**
-     * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
-     *
-     * 仅供 Java 使用: `MessageReceipt.recall()`
-     */
-    @JavaFriendlyAPI
-    @JvmName("recall")
-    public fun __recallBlockingForJava__() {
-        return runBlocking { recall() }
-    }
-
-    /**
-     * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
-     *
-     * 仅供 Java 使用: `MessageReceipt.recallIn(timeMillis)`
-     */
-    @JavaFriendlyAPI
-    @JvmName("recallIn")
-    public fun __recallInBlockingForJava__(timeMillis: Long): Job {
-        return recallIn(timeMillis = timeMillis)
-    }
-
-    /**
-     * 引用这条消息.
-     *
-     * 仅供 Java 使用: `MessageReceipt.quote()`
-     */
-    @JavaFriendlyAPI
-    @JvmName("quote")
-    public fun __quoteBlockingForJava__(): QuoteReply {
-        return this.quote()
-    }
 }
 
 /**
  * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
  *
- * @see Bot.recall
+ * @see Mirai.recall
  * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
  */
 public suspend inline fun MessageReceipt<*>.recall() {
-    return target.bot.recall(source)
+    return Mirai.recall(target.bot, source)
 }
-
-/**
- * 在一段时间后撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
- *
- * @param timeMillis 延迟时间, 单位为毫秒
- * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
- */
-public inline fun MessageReceipt<*>.recallIn(
-    timeMillis: Long,
-    coroutineContext: CoroutineContext = EmptyCoroutineContext
-): Job = source.recallIn(timeMillis, coroutineContext)
-
 
 /**
  * 引用这条消息.
