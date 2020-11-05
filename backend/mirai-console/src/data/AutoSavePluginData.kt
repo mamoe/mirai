@@ -91,7 +91,7 @@ public open class AutoSavePluginData private constructor(
     internal var lastAutoSaveJob_: Job? = null
 
     @JvmField
-    internal val currentFirstStartTime_ = atomic(0L)
+    internal val currentFirstStartTime_ = atomic(MAGIC_NUMBER_CFST_INIT)
 
     /**
      * @return `true` 时, 一段时间后, 即使无属性改变, 也会进行保存.
@@ -103,7 +103,7 @@ public open class AutoSavePluginData private constructor(
 
     private val updaterBlock: suspend CoroutineScope.() -> Unit = l@{
         if (::storage_.isInitialized) {
-            currentFirstStartTime_.updateWhen({ it == 0L }, { currentTimeMillis })
+            currentFirstStartTime_.updateWhen({ it == MAGIC_NUMBER_CFST_INIT }, { currentTimeMillis })
             try {
                 delay(autoSaveIntervalMillis_.first.coerceAtLeast(1000)) // for safety
             } catch (e: CancellationException) {
@@ -117,8 +117,8 @@ public open class AutoSavePluginData private constructor(
                 }
             } else {
                 if (currentFirstStartTime_.updateWhen(
-                        { currentTimeMillis - it >= autoSaveIntervalMillis_.last },
-                        { 0 })
+                        { it != MAGIC_NUMBER_CFST_INIT && currentTimeMillis - it >= autoSaveIntervalMillis_.last },
+                        { MAGIC_NUMBER_CFST_INIT })
                 ) {
                     withContext(owner_.coroutineContext) {
                         doSave()
@@ -169,3 +169,5 @@ internal inline fun <R> MiraiLogger.runCatchingLog(message: (Throwable) -> Strin
         error(message(it), it)
     }.getOrNull()
 }
+
+private const val MAGIC_NUMBER_CFST_INIT: Long = Long.MAX_VALUE
