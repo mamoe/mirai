@@ -50,7 +50,7 @@ class PluginMainLineMarkerProvider : LineMarkerProvider {
             "Mirai Console Plugin"
         },
         null,
-        GutterIconRenderer.Alignment.RIGHT
+        GutterIconRenderer.Alignment.CENTER
     ) {
         override fun createGutterRenderer(): GutterIconRenderer? {
             return object : LineMarkerInfo.LineMarkerGutterIconRenderer<PsiElement>(this) {
