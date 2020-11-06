@@ -155,7 +155,7 @@ public interface MiraiConsole : CoroutineScope {
 
 
     /**
-     * 该前端是否支持使用 Ansi 输出彩色信息
+     * 是否支持使用 Ansi 输出彩色信息
      *
      * 注: 不是每个前端都可能提供 `org.fusesource.jansi:jansi` 库支持,
      * 请不要直接使用 `org.fusesource.jansi:jansi`
