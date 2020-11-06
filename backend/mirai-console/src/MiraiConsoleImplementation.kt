@@ -170,6 +170,13 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      */
     public fun createLogger(identity: String?): MiraiLogger
 
+    /**
+     * 该前端是否支持使用 Ansi 输出彩色信息
+     *
+     * 注: 若为 `true`, 建议携带 `org.fusesource.jansi:jansi`
+     */
+    public val isAnsiSupport: Boolean get() = false
+
     public companion object {
         internal lateinit var instance: MiraiConsoleImplementation
         private val initLock = ReentrantLock()

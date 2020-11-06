@@ -82,6 +82,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
     override val configStorageForBuiltIns: PluginDataStorage by instance::configStorageForBuiltIns
     override val consoleInput: ConsoleInput by instance::consoleInput
+    override val isAnsiSupport: Boolean by instance::isAnsiSupport
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
         instance.createLoginSolver(requesterBot, configuration)
