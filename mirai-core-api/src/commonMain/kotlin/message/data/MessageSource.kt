@@ -14,6 +14,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.MessageEvent
@@ -358,7 +359,7 @@ public inline fun MessageChain.quote(): QuoteReply = QuoteReply(this.source)
  * @throws PermissionDeniedException 当 [Bot] 无权限操作时
  * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
  *
- * @see Mirai.recall
+ * @see IMirai.recall
  */
 @JvmSynthetic
 public suspend inline fun MessageSource.recall(): Unit = Mirai.recall(bot, this)
@@ -431,7 +432,7 @@ public val MessageChain.source: MessageSource
  * @throws PermissionDeniedException 当 [Bot] 无权限操作时
  * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
  *
- * @see Mirai.recall
+ * @see IMirai.recall
  */
 @JvmSynthetic
 public suspend inline fun MessageChain.recall(): Unit = this.source.recall()

@@ -11,7 +11,8 @@ package net.mamoe.mirai
 
 import java.util.*
 
-internal actual fun findMiraiInstance(): Mirai {
-    return ServiceLoader.load(Mirai::class.java).findFirst().orElse(null)
-        ?: Class.forName("net.mamoe.mirai.internal.MiraiImpl").kotlin.objectInstance as Mirai
+@JvmSynthetic
+internal actual fun findMiraiInstance(): IMirai {
+    return ServiceLoader.load(IMirai::class.java).firstOrNull()
+        ?: Class.forName("net.mamoe.mirai.internal.MiraiImpl").kotlin.objectInstance as IMirai
 }

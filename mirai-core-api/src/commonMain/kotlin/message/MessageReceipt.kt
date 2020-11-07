@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.message
 
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
@@ -59,7 +60,7 @@ public open class MessageReceipt<out C : Contact> @MiraiExperimentalApi("The con
 /**
  * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
  *
- * @see Mirai.recall
+ * @see IMirai.recall
  * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
  */
 public suspend inline fun MessageReceipt<*>.recall() {

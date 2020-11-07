@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
-import kotlinx.atomicfu.loop
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -441,6 +440,13 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                 return
             }
         }
+    }
+}
+
+// kotlin bug, don't remove
+private inline fun kotlinx.atomicfu.AtomicInt.loop(action: (Int) -> Unit): Nothing {
+    while (true) {
+        action(value)
     }
 }
 

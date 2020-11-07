@@ -13,15 +13,12 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.quote
 import net.mamoe.mirai.message.recall
-import net.mamoe.mirai.recall
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.WeakRefProperty
@@ -96,13 +93,13 @@ public abstract class Contact : ContactOrBot, CoroutineScope {
 }
 
 /**
- * @see Mirai.recall
+ * @see IMirai.recall
  */
 @JvmSynthetic
 public suspend inline fun Contact.recall(source: MessageChain): Unit = Mirai.recall(bot, source)
 
 /**
- * @see Mirai.recall
+ * @see IMirai.recall
  */
 @JvmSynthetic
 public suspend inline fun Contact.recall(source: MessageSource): Unit = Mirai.recall(bot, source)

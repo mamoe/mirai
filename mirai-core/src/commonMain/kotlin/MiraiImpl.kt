@@ -49,7 +49,14 @@ import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 @OptIn(LowLevelApi::class)
-internal object MiraiImpl : Mirai, LowLevelApiAccessor {
+// not object for ServiceLoader.
+internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
+    companion object INSTANCE : MiraiImpl() {
+        @Suppress("ObjectPropertyName", "unused")
+        @Deprecated("", level = DeprecationLevel.HIDDEN)
+        private val _init = Mirai.let { }
+    }
+
     override val BotFactory: BotFactory
         get() = BotFactoryImpl
 
@@ -76,7 +83,7 @@ internal object MiraiImpl : Mirai, LowLevelApiAccessor {
 
     override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
+        check(event.responded.compareAndSet(expect = false, update = true)) {
             "the request $event has already been responded"
         }
 
@@ -121,7 +128,7 @@ internal object MiraiImpl : Mirai, LowLevelApiAccessor {
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean, message: String) {
         checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
+        check(event.responded.compareAndSet(expect = false, update = true)) {
             "the request $this has already been responded"
         }
 
@@ -181,7 +188,7 @@ internal object MiraiImpl : Mirai, LowLevelApiAccessor {
 
     private suspend fun solveInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent, accept: Boolean) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(false, true)) {
+        check(event.responded.compareAndSet(expect = false, update = true)) {
             "the request $this has already been responded"
         }
 
@@ -551,7 +558,7 @@ internal object MiraiImpl : Mirai, LowLevelApiAccessor {
         message: Collection<ForwardMessage.INode>,
         isLong: Boolean,
         forwardMessage: ForwardMessage?
-    ): MessageReceipt<Group> = bot.asQQAndroidBot().run {
+    ): MessageReceipt<Group> = with(bot.asQQAndroidBot()) {
         message.forEach {
             it.message.ensureSequenceIdAvailable()
         }
@@ -614,7 +621,7 @@ internal object MiraiImpl : Mirai, LowLevelApiAccessor {
                 }
             }
 
-            return if (isLong) {
+            if (isLong) {
                 group.sendMessage(
                     RichMessage.longMessage(
                         brief = message.joinToString(limit = 27) { it.message.contentToString() },

@@ -6,7 +6,7 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-package  net.mamoe.mirai.internal.utils
+package net.mamoe.mirai.internal
 
 import net.mamoe.mirai.message.data.ConstrainSingle
 import net.mamoe.mirai.message.data.Image

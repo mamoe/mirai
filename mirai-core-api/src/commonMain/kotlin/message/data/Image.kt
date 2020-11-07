@@ -23,6 +23,7 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.CodableMessage
@@ -53,7 +54,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * ### 下载图片
  * @see Image.queryUrl 扩展函数. 查询图片下载链接
- * @see Mirai.queryImageUrl 查询图片下载链接 (Java 使用)
+ * @see IMirai.queryImageUrl 查询图片下载链接 (Java 使用)
  *
  * 查看平台 `actual` 定义以获取上传方式扩展.
  *
