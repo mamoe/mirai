@@ -140,7 +140,4 @@ public actual open class PlatformLogger @JvmOverloads constructor(
 
 @get:JvmSynthetic
 internal val Throwable.stackTraceString
-    get() = ByteArrayOutputStream().run {
-        printStackTrace(PrintStream(this))
-        String(this.toByteArray())
-    }
+    get() = this.stackTraceToString()
