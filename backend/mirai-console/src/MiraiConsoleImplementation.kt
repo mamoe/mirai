@@ -175,7 +175,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      *
      * 注: 若为 `true`, 建议携带 `org.fusesource.jansi:jansi`
      */
-    public val isAnsiSupport: Boolean get() = false
+    public val isAnsiSupported: Boolean get() = false
 
     public companion object {
         internal lateinit var instance: MiraiConsoleImplementation

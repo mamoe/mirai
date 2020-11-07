@@ -163,7 +163,7 @@ public interface MiraiConsole : CoroutineScope {
      * @see [AnsiMessageBuilder]
      */
     @ConsoleExperimentalApi
-    public val isAnsiSupport: Boolean
+    public val isAnsiSupported: Boolean
 }
 
 /**

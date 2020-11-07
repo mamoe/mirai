@@ -75,7 +75,7 @@ class MiraiConsoleImplementationTerminal
                 MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
             }) {
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
-    override val isAnsiSupport: Boolean get() = true
+    override val isAnsiSupported: Boolean get() = true
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
         return DefaultLoginSolver(input = { requestInput("LOGIN> ") })
