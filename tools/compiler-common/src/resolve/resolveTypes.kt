@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.compiler.common.resolve
 
 import net.mamoe.mirai.console.compiler.common.castOrNull
@@ -70,7 +72,7 @@ enum class ResolveContextKind {
     ;
 
     companion object {
-        fun valueOfOrNull(string: String): ResolveContextKind? = values().find { it.name == string }
+        fun valueOfOrNull(string: String) = values().find { it.name == string }
     }
 }
 

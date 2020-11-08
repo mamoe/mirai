@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
-import net.mamoe.mirai.console.intellij.resolve.getResolvedCallOrResolveToCall
+import net.mamoe.mirai.console.intellij.resolve.getResolvedCall
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.psi.KtElement
@@ -22,8 +22,8 @@ fun DeclarationCheckerContext.report(diagnostic: Diagnostic) {
 
 val DeclarationCheckerContext.bindingContext get() = this.trace.bindingContext
 
-fun KtElement?.getResolvedCallOrResolveToCall(
+fun KtElement?.getResolvedCall(
     context: DeclarationCheckerContext,
 ): ResolvedCall<out CallableDescriptor>? {
-    return this.getResolvedCallOrResolveToCall(context.bindingContext)
+    return this.getResolvedCall(context.bindingContext)
 }

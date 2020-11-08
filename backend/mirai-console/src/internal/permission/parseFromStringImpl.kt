@@ -39,7 +39,7 @@ internal fun parseFromStringImpl(string: String): AbstractPermitteeId {
                 val arg = str.substring(1)
                 if (arg == "*") return AnyContact
             }
-            'm' -> kotlin.run {
+            'm' -> run {
                 val arg = str.substring(1)
                 if (arg == "*") return AnyMemberFromAnyGroup
                 else {
@@ -56,7 +56,7 @@ internal fun parseFromStringImpl(string: String): AbstractPermitteeId {
                     }
                 }
             }
-            't' -> kotlin.run {
+            't' -> run {
                 val arg = str.substring(1)
                 if (arg == "*") return AnyTempFromAnyGroup
                 else {

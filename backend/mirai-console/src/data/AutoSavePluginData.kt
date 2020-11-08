@@ -170,4 +170,5 @@ internal inline fun <R> MiraiLogger.runCatchingLog(message: (Throwable) -> Strin
     }.getOrNull()
 }
 
+@Suppress("SpellCheckingInspection")
 private const val MAGIC_NUMBER_CFST_INIT: Long = Long.MAX_VALUE

@@ -88,7 +88,7 @@ fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
 fun KtDeclaration.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
     return allChildrenWithSelf
         .filterIsInstance<KtCallExpression>()
-        .mapNotNull { it.calleeExpression?.getResolvedCallOrResolveToCall(bindingContext) }
+        .mapNotNull { it.calleeExpression?.getResolvedCall(bindingContext) }
 }
 
 fun KtDeclaration.resolveAllCallsWithElement(bindingContext: BindingContext): Sequence<Pair<ResolvedCall<out CallableDescriptor>, KtCallExpression>> {
@@ -122,7 +122,7 @@ val PsiElement.allChildrenFlat: Sequence<PsiElement>
 
 inline fun <reified E> PsiElement.findChild(): E? = this.children.find { it is E } as E?
 
-fun KtElement?.getResolvedCallOrResolveToCall(
+fun KtElement?.getResolvedCall(
     context: BindingContext,
 ): ResolvedCall<out CallableDescriptor>? {
     return this?.getCall(context)?.getResolvedCall(context)

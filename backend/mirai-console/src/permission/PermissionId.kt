@@ -31,19 +31,8 @@ public data class PermissionId(
     @ResolveContext(PERMISSION_NAME) public val name: String,
 ) {
     init {
-        require(namespace.none { it.isWhitespace() }) {
-            "' ' is not allowed in namespace"
-        }
-        require(name.none { it.isWhitespace() }) {
-            "' ' is not allowed in name"
-        }
-
-        require(!namespace.contains(':')) {
-            "':' is not allowed in namespace"
-        }
-        require(!name.contains(':')) {
-            "':' is not allowed in name"
-        }
+        checkPermissionIdName(name)
+        checkPermissionIdName(namespace)
     }
 
     public object PermissionIdAsStringSerializer : KSerializer<PermissionId> by String.serializer().map(
@@ -79,7 +68,7 @@ public data class PermissionId(
         public fun checkPermissionIdName(@ResolveContext(PERMISSION_NAME) name: String) {
             when {
                 name.isBlank() -> throw IllegalArgumentException("PermissionId.name should not be blank.")
-                name.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces are not yet allowed in PermissionId.name.")
+                name.any(Char::isWhitespace) -> throw IllegalArgumentException("Spaces are not yet allowed in PermissionId.name.")
                 name.contains(':') -> throw IllegalArgumentException("':' is forbidden in PermissionId.name.")
             }
         }
@@ -92,7 +81,7 @@ public data class PermissionId(
         public fun checkPermissionIdNamespace(@ResolveContext(PERMISSION_NAME) namespace: String) {
             when {
                 namespace.isBlank() -> throw IllegalArgumentException("PermissionId.namespace should not be blank.")
-                namespace.any { it.isWhitespace() } -> throw IllegalArgumentException("Spaces are not yet allowed in PermissionId.namespace.")
+                namespace.any(Char::isWhitespace) -> throw IllegalArgumentException("Spaces are not yet allowed in PermissionId.namespace.")
                 namespace.contains(':') -> throw IllegalArgumentException("':' is forbidden in PermissionId.namespace.")
             }
         }

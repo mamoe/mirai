@@ -43,7 +43,7 @@
 
 - Java 中的「方法」在 Kotlin 中均被称为「函数」。
 - Kotlin 默认的访问权限是 `public`。如 Kotlin `class Test` 相当于 Java 的 `public class Test {}`
-- Kotlin 的函数定义 `fun test(int: Int): String` 相当于 Java 的方法定义 `public String test(int int)`
+- Kotlin 的函数定义 `fun test(int: Int): String` 相当于 Java 的方法定义 `public String test(int integer)`
 
 ### 在 Java 使用 Mirai Console 中的 Kotlin `suspend` 函数
 

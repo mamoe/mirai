@@ -7,9 +7,12 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console
 
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.mirai.utils.MiraiExperimentalAPI
 
 
 /**
@@ -38,6 +41,7 @@ public interface MiraiConsoleFrontEndDescription {
      *
      * 返回 `null` 表示禁止 [MiraiConsole] 后端检查版本兼容性.
      */
+    @MiraiExperimentalAPI
     public val compatibleBackendVersion: SemVersion? get() = null
 
     /**

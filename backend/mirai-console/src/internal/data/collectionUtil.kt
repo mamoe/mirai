@@ -11,11 +11,6 @@
 
 package net.mamoe.mirai.console.internal.data
 
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.serializer
-import net.mamoe.yamlkt.Yaml
-import kotlin.reflect.KClass
-
 // TODO: 2020/6/24 优化性能: 引入一个 comparator 之类来替代将 Int 包装为 Value<Int> 后进行 containsKey 比较的方法
 
 
@@ -245,6 +240,8 @@ internal inline fun <E, R> MutableSet<E>.shadowMap(
     }
 }
 
+/*
+
 internal inline fun <T> dynamicList(crossinline supplier: () -> List<T>): List<T> {
     return object : List<T> {
         override val size: Int get() = supplier().size
@@ -304,7 +301,6 @@ internal inline fun <T> dynamicMutableList(crossinline supplier: () -> MutableLi
     }
 }
 
-
 internal inline fun <T> dynamicMutableSet(crossinline supplier: () -> MutableSet<T>): MutableSet<T> {
     return object : MutableSet<T> {
         override val size: Int get() = supplier().size
@@ -322,7 +318,7 @@ internal inline fun <T> dynamicMutableSet(crossinline supplier: () -> MutableSet
         override fun hashCode(): Int = supplier().hashCode()
     }
 }
-
+*/
 @Suppress("UNCHECKED_CAST", "USELESS_CAST") // type inference bug
 internal inline fun <K, V> MutableMap<K, V>.observable(crossinline onChanged: () -> Unit): MutableMap<K, V> {
     return object : MutableMap<K, V>, Map<K, V> by (this as Map<K, V>) {
@@ -472,7 +468,7 @@ internal inline fun <T> MutableSet<T>.observable(crossinline onChanged: () -> Un
     }
 }
 
-
+/*
 @OptIn(InternalSerializationApi::class)
 internal fun <R : Any> Any.smartCastPrimitive(clazz: KClass<R>): R {
     kotlin.runCatching {
@@ -482,3 +478,4 @@ internal fun <R : Any> Any.smartCastPrimitive(clazz: KClass<R>): R {
     }
 }
 
+*/

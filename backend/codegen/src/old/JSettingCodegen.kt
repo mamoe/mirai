@@ -20,7 +20,7 @@ open class JClazz(val primitiveName: String, val packageName: String) {
     open val funName: String = "value"
 }
 
-class JListClazz(val item: JClazz) : JClazz("List<${item.packageName}>", "List<${item.packageName}>") {
+class JListClazz(item: JClazz) : JClazz("List<${item.packageName}>", "List<${item.packageName}>") {
     override val funName = item.primitiveName.toLowerCase() + "List"
 }
 

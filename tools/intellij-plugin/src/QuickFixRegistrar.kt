@@ -23,6 +23,7 @@ class QuickFixRegistrar : QuickFixContributor {
             quickFixes.register(this, *factory)
         }
 
+        @Suppress("unused")
         fun DiagnosticFactory<*>.registerActions(vararg action: IntentionAction) {
             quickFixes.register(this, *action)
         }
