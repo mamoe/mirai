@@ -83,6 +83,9 @@ public open class AnsiMessageBuilder internal constructor(
     public companion object {
         private val DROP_ANSI_PATTERN = """\u001b\[([0-9]+)(;[0-9]+)*m""".toRegex()
 
+        /**
+         * 从 [String] 中剔除 ansi 控制符
+         */
         @JvmStatic
         public fun String.dropAnsi(): String = DROP_ANSI_PATTERN.replace(this, "")
 
@@ -107,6 +110,9 @@ public open class AnsiMessageBuilder internal constructor(
             noAnsi: Boolean = false
         ): AnsiMessageBuilder = invoke(StringBuilder(capacity), noAnsi)
 
+        /**
+         * 判断 [sender] 是否支持带 ansi 控制符的正确显示
+         */
         @ConsoleExperimentalApi
         @JvmStatic
         public fun isAnsiSupported(sender: CommandSender): Boolean =
@@ -114,6 +120,9 @@ public open class AnsiMessageBuilder internal constructor(
                 MiraiConsoleImplementationBridge.isAnsiSupported
             } else false
 
+        /**
+         * 往 [StringBuilder] 追加 ansi 控制符
+         */
         public inline fun StringBuilder.appendAnsi(
             noAnsi: Boolean = false,
             action: AnsiMessageBuilder.() -> Unit
@@ -172,12 +181,23 @@ public open class AnsiMessageBuilder internal constructor(
     /////////////////////////////////////////////////////////////////////////////////
 }
 
+/**
+ * 构建一条 ansi 信息
+ *
+ * @see [AnsiMessageBuilder]
+ */
 public inline fun buildAnsiMessage(
     capacity: Int = 16,
     action: AnsiMessageBuilder.() -> Unit
 ): String = AnsiMessageBuilder(capacity, false).apply(action).toString()
 
 // 不在 top-level 使用者会得到 Internal error: Couldn't inline sendAnsiMessage
+
+/**
+ * 向 [CommandSender] 发送一条带有 ansi 控制符的信息
+ *
+ * @see [AnsiMessageBuilder]
+ */
 public suspend inline fun CommandSender.sendAnsiMessage(
     capacity: Int = 16,
     builder: AnsiMessageBuilder.() -> Unit
@@ -189,6 +209,11 @@ public suspend inline fun CommandSender.sendAnsiMessage(
     )
 }
 
+/**
+ * 向 [CommandSender] 发送一条带有 ansi 控制符的信息
+ *
+ * @see [AnsiMessageBuilder.Companion.dropAnsi]
+ */
 public suspend inline fun CommandSender.sendAnsiMessage(message: String) {
     sendMessage(
         if (AnsiMessageBuilder.isAnsiSupported(this))
