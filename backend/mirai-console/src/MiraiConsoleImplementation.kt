@@ -18,6 +18,8 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.logging.LoggerController
+import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -169,6 +171,11 @@ public interface MiraiConsoleImplementation : CoroutineScope {
      * 因此不要在 [createLogger] 中调用 [net.mamoe.mirai.utils.DefaultLogger]
      */
     public fun createLogger(identity: String?): MiraiLogger
+
+    /**
+     * 前端预先定义的 [LoggerController], 以允许前端使用自己的配置系统
+     */
+    public val loggerController: LoggerController get() = LoggerControllerImpl
 
     public companion object {
         internal lateinit var instance: MiraiConsoleImplementation

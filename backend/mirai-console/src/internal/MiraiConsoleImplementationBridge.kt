@@ -31,12 +31,16 @@ import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
+import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.extension.BuiltInSingletonExtensionSelector
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
+import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
+import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
+import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.RootPermission
@@ -82,18 +86,31 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val dataStorageForBuiltIns: PluginDataStorage by instance::dataStorageForBuiltIns
     override val configStorageForBuiltIns: PluginDataStorage by instance::configStorageForBuiltIns
     override val consoleInput: ConsoleInput by instance::consoleInput
-
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
         instance.createLoginSolver(requesterBot, configuration)
+
+    override val loggerController: LoggerController by instance::loggerController
 
     init {
         DefaultLogger = this::createLogger
     }
 
-    override fun createLogger(identity: String?): MiraiLogger = instance.createLogger(identity)
+
+    override fun createLogger(identity: String?): MiraiLogger {
+        val controller = loggerController
+        return MiraiConsoleLogger(controller, instance.createLogger(identity))
+    }
 
     @Suppress("RemoveRedundantBackticks")
     internal fun doStart() {
+
+        phase `setup logger controller`@{
+            if (loggerController === LoggerControllerImpl) {
+                // Reload LoggerConfig.
+                ConsoleDataScope.addAndReloadConfig(LoggerConfig)
+            }
+        }
+
         phase `greeting`@{
             val buildDateFormatted =
                 buildDate.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
@@ -159,6 +176,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
                 ConsoleDataScope.addAndReloadConfig(instance.config)
             }
         }
+
 
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
