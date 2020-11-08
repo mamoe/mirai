@@ -9,8 +9,10 @@
 
 package net.mamoe.mirai.console.logging
 
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.SimpleLogger
 
+@ConsoleExperimentalApi
 public abstract class AbstractLoggerController : LoggerController {
 
     protected open fun shouldLog(
