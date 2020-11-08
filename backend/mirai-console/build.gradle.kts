@@ -63,6 +63,7 @@ dependencies {
     compileAndTestRuntime("org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}")
     compileAndTestRuntime(kotlinx("coroutines-core", Versions.coroutines))
     compileAndTestRuntime(kotlinx("serialization-core", Versions.serialization))
+    compileAndTestRuntime(kotlinx("serialization-json", Versions.serialization))
     compileAndTestRuntime(kotlin("reflect"))
 
     smartImplementation("net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}")

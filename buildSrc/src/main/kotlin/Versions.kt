@@ -10,7 +10,7 @@
 @file:Suppress("MemberVisibilityCanBePrivate")
 
 object Versions {
-    const val core = "1.3.2"
+    const val core = "1.3.3"
     const val console = "1.0-RC-1"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
@@ -18,8 +18,8 @@ object Versions {
     const val kotlinCompiler = "1.4.20-RC"
     const val kotlinStdlib = "1.4.10"
 
-    const val coroutines = "1.3.9"
-    const val serialization = "1.0.0-RC"
+    const val coroutines = "1.4.0"
+    const val serialization = "1.0.1"
     const val ktor = "1.4.1"
     const val atomicFU = "0.14.4"
 
@@ -28,5 +28,5 @@ object Versions {
     const val bintray = "1.8.5"
 
     const val blockingBridge = "1.4.0"
-    const val yamlkt = "0.5.3"
+    const val yamlkt = "0.7.0"
 }
