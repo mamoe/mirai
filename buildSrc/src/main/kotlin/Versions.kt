@@ -13,8 +13,8 @@ object Versions {
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
-    const val kotlinCompiler = "1.4.10"
-    const val kotlinStdlib = kotlinCompiler
+    const val kotlinCompiler = "1.4.20-RC"
+    const val kotlinStdlib = "1.4.10"
 
     const val coroutines = "1.3.9"
     const val collectionsImmutable = "0.3.2"
@@ -26,6 +26,6 @@ object Versions {
 
     const val bintray = "1.8.5"
 
-    const val blockingBridge = "1.1.0"
+    const val blockingBridge = "1.4.0"
     const val yamlkt = "0.5.3"
 }
