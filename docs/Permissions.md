@@ -40,7 +40,7 @@ data class PermissionId(
 
 [`PermissionId`] 是 [`Permission`] 的唯一标识符。知道 [`PermissionId`] 就可以获取到对应的 [`Permission`]。
 
-字符串表示为 "$namespace:$name"，如 "console:command.stop", "*:*"
+字符串表示为 "$namespace:$name"，如 "console:command.stop", "\*:\*"
 
 #### 命名空间
 
