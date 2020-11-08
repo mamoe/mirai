@@ -12,7 +12,6 @@ package net.mamoe.mirai.console.internal.logging
 import net.mamoe.mirai.console.ConsoleFrontEndImplementation
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
 import net.mamoe.mirai.console.logging.AbstractLoggerController
-import net.mamoe.mirai.console.logging.LogPriority
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 
 @ConsoleFrontEndImplementation

@@ -12,19 +12,19 @@ package net.mamoe.mirai.console.internal.data.builtins
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.ValueDescription
 import net.mamoe.mirai.console.data.value
-import net.mamoe.mirai.console.logging.LogPriority
+import net.mamoe.mirai.console.logging.AbstractLoggerController
 
 internal object LoggerConfig : AutoSavePluginConfig("Logger") {
     @ValueDescription("""
         日志输出等级 可选值: ALL, VERBOSE, DEBUG, INFO, WARNING, ERROR, NONE
     """)
-    val defaultPriority by value(LogPriority.INFO)
+    val defaultPriority by value(AbstractLoggerController.LogPriority.INFO)
 
     @ValueDescription("""
         特定日志记录器输出等级
     """)
-    val loggers: Map<String, LogPriority> by value(
-        mapOf("example.logger" to LogPriority.NONE)
+    val loggers: Map<String, AbstractLoggerController.LogPriority> by value(
+        mapOf("example.logger" to AbstractLoggerController.LogPriority.NONE)
     )
 
 }
