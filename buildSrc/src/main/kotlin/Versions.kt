@@ -27,6 +27,6 @@ object Versions {
 
     const val bintray = "1.8.5"
 
-    const val blockingBridge = "1.4.0"
-    const val yamlkt = "0.7.0"
+    const val blockingBridge = "1.4.1"
+    const val yamlkt = "0.7.1"
 }
