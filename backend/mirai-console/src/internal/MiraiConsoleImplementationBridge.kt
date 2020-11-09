@@ -28,6 +28,7 @@ import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
+import net.mamoe.mirai.console.internal.command.CommandConfig
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
@@ -139,6 +140,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         phase `load configurations`@{
             mainLogger.verbose { "Loading configurations..." }
+            ConsoleDataScope.addAndReloadConfig(CommandConfig)
             ConsoleDataScope.reloadAll()
         }
 
