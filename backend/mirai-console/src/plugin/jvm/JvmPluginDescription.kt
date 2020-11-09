@@ -29,51 +29,78 @@ import net.mamoe.mirai.console.util.SemVersion
  */
 public interface JvmPluginDescription : PluginDescription {
     public companion object {
-        /**
-         * 构建 [JvmPluginDescription]
-         * @see JvmPluginDescriptionBuilder
-         */
+        @Suppress("UNUSED_PARAMETER")
+        @Deprecated(
+            "Use top-level function instead",
+            ReplaceWith("JvmPluginDescription(id, version, block)", "net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription"),
+            DeprecationLevel.ERROR
+        )
         @JvmName("create")
-        @JvmSynthetic
-        public inline operator fun invoke(
-            /**
-             * @see [PluginDescription.id]
-             */
+        public inline fun invoke(
             @ResolveContext(PLUGIN_ID) id: String,
-            /**
-             * @see [PluginDescription.version]
-             */
             @ResolveContext(SEMANTIC_VERSION) version: String,
-            /**
-             * @see [PluginDescription.name]
-             */
             @ResolveContext(PLUGIN_NAME) name: String = id,
             block: JvmPluginDescriptionBuilder.() -> Unit = {},
-        ): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
+        ): JvmPluginDescription = error("Shouldn't be called")
 
-        /**
-         * 构建 [JvmPluginDescription]
-         * @see JvmPluginDescriptionBuilder
-         */
+        @Suppress("UNUSED_PARAMETER")
+        @Deprecated(
+            "Use top-level function instead",
+            ReplaceWith("JvmPluginDescription(id, version, block)", "net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription"),
+            DeprecationLevel.ERROR
+        )
         @JvmName("create")
         @JvmSynthetic
-        public inline operator fun invoke(
-            /**
-             * @see [PluginDescription.id]
-             */
+        public inline fun invoke(
             @ResolveContext(PLUGIN_ID) id: String,
-            /**
-             * @see [PluginDescription.version]
-             */
             version: SemVersion,
-            /**
-             * @see [PluginDescription.name]
-             */
             @ResolveContext(PLUGIN_NAME) name: String = id,
             block: JvmPluginDescriptionBuilder.() -> Unit = {},
-        ): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
+        ): JvmPluginDescription = error("Shouldn't be called")
     }
 }
+
+/**
+ * 构建 [JvmPluginDescription]
+ * @see JvmPluginDescriptionBuilder
+ */
+@JvmSynthetic
+public inline fun JvmPluginDescription(
+    /**
+     * @see [PluginDescription.id]
+     */
+    @ResolveContext(PLUGIN_ID) id: String,
+    /**
+     * @see [PluginDescription.version]
+     */
+    @ResolveContext(SEMANTIC_VERSION) version: String,
+    /**
+     * @see [PluginDescription.name]
+     */
+    @ResolveContext(PLUGIN_NAME) name: String = id,
+    block: JvmPluginDescriptionBuilder.() -> Unit = {},
+): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
+
+/**
+ * 构建 [JvmPluginDescription]
+ * @see JvmPluginDescriptionBuilder
+ */
+@JvmSynthetic
+public inline fun JvmPluginDescription(
+    /**
+     * @see [PluginDescription.id]
+     */
+    @ResolveContext(PLUGIN_ID) id: String,
+    /**
+     * @see [PluginDescription.version]
+     */
+    version: SemVersion,
+    /**
+     * @see [PluginDescription.name]
+     */
+    @ResolveContext(PLUGIN_NAME) name: String = id,
+    block: JvmPluginDescriptionBuilder.() -> Unit = {},
+): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
 
 /**
  * [JvmPluginDescription] 构建器.
