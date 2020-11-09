@@ -11,8 +11,12 @@
 
 package net.mamoe.mirai.console.plugin.description
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_ID
+import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.util.SemVersion
 
 /**
@@ -20,7 +24,8 @@ import net.mamoe.mirai.console.util.SemVersion
  *
  * @see PluginDescription.dependencies
  */
-public data class PluginDependency @JvmOverloads constructor(
+@Serializable(with = PluginDependency.PluginDependencyAsStringSerializer::class)
+public class PluginDependency @JvmOverloads constructor(
     /**
      * 依赖插件 ID, [PluginDescription.id]
      */
@@ -54,5 +59,54 @@ public data class PluginDependency @JvmOverloads constructor(
         isOptional: Boolean = false,
     ) : this(
         id, null, isOptional
+    )
+
+    public override fun toString(): String = buildString {
+        append(id)
+        versionRequirement?.rule?.let(::append)
+        if (isOptional) {
+            append('?')
+        }
+    }
+
+    public override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PluginDependency
+
+        if (id != other.id) return false
+        if (versionRequirement?.rule != other.versionRequirement?.rule) return false
+        if (isOptional != other.isOptional) return false
+
+        return true
+    }
+
+    public override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + (versionRequirement?.rule?.hashCode() ?: 0)
+        result = 31 * result + isOptional.hashCode()
+        return result
+    }
+
+    public companion object {
+        /**
+         * 解析 "$id:$versionRequirement?"
+         */
+        @JvmStatic
+        @Throws(IllegalArgumentException::class)
+        public fun parseFromString(string: String): PluginDependency {
+            require(string.isNotEmpty()) { "string is empty." }
+            val optional = string.endsWith('?')
+            val (id, version) = string.removeSuffix("?").let {
+                it.substringBeforeLast(':') to it.substringAfterLast(':', "")
+            }
+            return PluginDependency(id, SemVersion.parseRangeRequirement(version), optional)
+        }
+    }
+
+    public object PluginDependencyAsStringSerializer : KSerializer<PluginDependency> by String.serializer().map(
+        serializer = { it.toString() },
+        deserializer = { parseFromString(it) }
     )
 }
