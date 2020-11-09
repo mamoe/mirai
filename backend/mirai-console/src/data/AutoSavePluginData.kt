@@ -146,7 +146,7 @@ public open class AutoSavePluginData private constructor(
 }
 
 internal val debuggingLogger1 by lazy {
-    DefaultLogger("debug").withSwitch(false)
+    DefaultLogger("console.debug").withSwitch(false)
 }
 
 @Suppress("RESULT_CLASS_IN_RETURN_TYPE")

@@ -24,7 +24,10 @@ internal object LoggerConfig : AutoSavePluginConfig("Logger") {
         特定日志记录器输出等级
     """)
     val loggers: Map<String, AbstractLoggerController.LogPriority> by value(
-        mapOf("example.logger" to AbstractLoggerController.LogPriority.NONE)
+        mapOf(
+            "example.logger" to AbstractLoggerController.LogPriority.NONE,
+            "console.debug" to AbstractLoggerController.LogPriority.NONE,
+        )
     )
 
 }

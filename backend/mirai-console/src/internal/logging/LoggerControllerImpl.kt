@@ -17,11 +17,14 @@ import net.mamoe.mirai.console.util.ConsoleInternalApi
 @ConsoleFrontEndImplementation
 @ConsoleInternalApi
 internal object LoggerControllerImpl : AbstractLoggerController() {
+    internal var initialized = false
 
-    override fun getPriority(identity: String?): LogPriority = if (identity == null) {
-        LoggerConfig.defaultPriority
-    } else {
-        LoggerConfig.loggers[identity] ?: LoggerConfig.defaultPriority
+    override fun getPriority(identity: String?): LogPriority {
+        if (!initialized) return LogPriority.NONE
+        return if (identity == null) {
+            LoggerConfig.defaultPriority
+        } else {
+            LoggerConfig.loggers[identity] ?: LoggerConfig.defaultPriority
+        }
     }
-
 }
