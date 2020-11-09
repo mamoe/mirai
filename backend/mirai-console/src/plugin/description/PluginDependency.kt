@@ -25,7 +25,7 @@ import net.mamoe.mirai.console.util.SemVersion
  * @see PluginDescription.dependencies
  */
 @Serializable(with = PluginDependency.PluginDependencyAsStringSerializer::class)
-public class PluginDependency @JvmOverloads constructor(
+public data class PluginDependency @JvmOverloads constructor(
     /**
      * 依赖插件 ID, [PluginDescription.id]
      */
@@ -37,7 +37,7 @@ public class PluginDependency @JvmOverloads constructor(
      *
      * @see SemVersion.Requirement
      */
-    public val versionRequirement: SemVersion.Requirement? = null,
+    public val versionRequirement: String? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */
@@ -63,30 +63,10 @@ public class PluginDependency @JvmOverloads constructor(
 
     public override fun toString(): String = buildString {
         append(id)
-        versionRequirement?.rule?.let(::append)
+        versionRequirement?.let(::append)
         if (isOptional) {
             append('?')
         }
-    }
-
-    public override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as PluginDependency
-
-        if (id != other.id) return false
-        if (versionRequirement?.rule != other.versionRequirement?.rule) return false
-        if (isOptional != other.isOptional) return false
-
-        return true
-    }
-
-    public override fun hashCode(): Int {
-        var result = id.hashCode()
-        result = 31 * result + (versionRequirement?.rule?.hashCode() ?: 0)
-        result = 31 * result + isOptional.hashCode()
-        return result
     }
 
     public companion object {
@@ -101,7 +81,7 @@ public class PluginDependency @JvmOverloads constructor(
             val (id, version) = string.removeSuffix("?").let {
                 it.substringBeforeLast(':') to it.substringAfterLast(':', "")
             }
-            return PluginDependency(id, SemVersion.parseRangeRequirement(version), optional)
+            return PluginDependency(id, version, optional)
         }
     }
 

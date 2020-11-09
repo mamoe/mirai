@@ -28,7 +28,7 @@ import net.mamoe.mirai.console.plugin.loader.PluginLoadException
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
-import net.mamoe.mirai.console.util.SemVersion.Companion.contains
+import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.info
 import java.io.File
 import java.nio.file.Path
@@ -248,8 +248,8 @@ internal fun List<PluginDescription>.findDependency(dependency: PluginDependency
 }
 
 internal fun PluginDescription.checkSatisfies(dependency: PluginDependency, plugin: PluginDescription) {
-    val requirement = dependency.versionRequirement
-    if (requirement != null && this.version !in requirement) {
+    val requirement = dependency.versionRequirement ?: return
+    if (SemVersion.parseRangeRequirement(requirement).test(this.version)) {
         throw PluginLoadException("Plugin '${plugin.id}' ('${plugin.id}') requires '${dependency.id}' with version $requirement while the resolved is ${this.version}")
     }
 }

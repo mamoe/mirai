@@ -192,20 +192,6 @@ public class JvmPluginDescriptionBuilder(
     }
 
     /**
-     * isOptional = false
-     *
-     * @see PluginDependency
-     */
-    @ILoveKuriyamaMiraiForever
-    public fun dependsOn(
-        @ResolveContext(PLUGIN_ID) pluginId: String,
-        versionRequirement: SemVersion.Requirement,
-        isOptional: Boolean = false,
-    ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
-    }
-
-    /**
      * @see PluginDependency
      */
     @ILoveKuriyamaMiraiForever
@@ -214,7 +200,7 @@ public class JvmPluginDescriptionBuilder(
         @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String,
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies.add(PluginDependency(pluginId, SemVersion.parseRangeRequirement(versionRequirement), isOptional))
+        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
     }
 
     /**
@@ -255,7 +241,7 @@ public class JvmPluginDescriptionBuilder(
 internal data class SimpleJvmPluginDescription
 @JvmOverloads constructor(
     override val id: String,
-    override val name: String = id,
+    override val name: String,
     override val version: SemVersion,
     override val author: String = "",
     override val info: String = "",
