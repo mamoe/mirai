@@ -81,9 +81,33 @@ internal constructor(
      * 一条依赖规则
      * @see [parseRangeRequirement]
      */
-    public interface Requirement {
+    @Serializable(Requirement.RequirementAsStringSerializer::class)
+    public data class Requirement internal constructor(
+        /**
+         * 规则的字符串表示方式
+         *
+         * @see [SemVersion.parseRangeRequirement]
+         */
+        val rule: String
+    ) {
+        @Transient
+        private val impl = SemVersionInternal.parseRangeRequirement(rule)
+
         /** 在 [version] 满足此要求时返回 true */
-        public fun test(version: SemVersion): Boolean
+        public fun test(version: SemVersion): Boolean {
+            return impl.test(version)
+        }
+
+        public object RequirementAsStringSerializer : KSerializer<Requirement> by String.serializer().map(
+            serializer = { it.rule },
+            deserializer = { parseRangeRequirement(it) }
+        )
+
+        public companion object {
+            @JvmSynthetic
+            public operator fun invoke(@ResolveContext(VERSION_REQUIREMENT) requirement: String): Requirement =
+                parseRangeRequirement(requirement)
+        }
     }
 
     public object SemVersionAsStringSerializer : KSerializer<SemVersion> by String.serializer().map(
@@ -149,7 +173,7 @@ internal constructor(
         @JvmStatic
         @Throws(IllegalArgumentException::class)
         public fun parseRangeRequirement(@ResolveContext(VERSION_REQUIREMENT) requirement: String): Requirement =
-            SemVersionInternal.parseRangeRequirement(requirement)
+            Requirement(requirement)
 
         /** @see [Requirement.test] */
         @JvmStatic

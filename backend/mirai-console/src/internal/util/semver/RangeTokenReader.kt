@@ -189,7 +189,7 @@ internal object RangeTokenReader {
         }
     }
 
-    fun parse(source: String, token: Token): SemVersion.Requirement {
+    fun parse(source: String, token: Token): RequirementInternal {
         return when (token) {
             is Token.Group -> {
                 if (token.values.size == 1) {
@@ -206,7 +206,7 @@ internal object RangeTokenReader {
                     }.map { parse(source, it) }.toList()
                     when (logic.first()) {
                         TokenType.OR -> {
-                            return object : SemVersion.Requirement {
+                            return object : RequirementInternal {
                                 override fun test(version: SemVersion): Boolean {
                                     rules.forEach { if (it.test(version)) return true }
                                     return false
@@ -214,7 +214,7 @@ internal object RangeTokenReader {
                             }
                         }
                         TokenType.AND -> {
-                            return object : SemVersion.Requirement {
+                            return object : RequirementInternal {
                                 override fun test(version: SemVersion): Boolean {
                                     rules.forEach { if (!it.test(version)) return false }
                                     return true
