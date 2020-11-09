@@ -174,7 +174,8 @@ internal class CommandReflector(
                 is AbstractCommandValueParameter.Extended,
                 is AbstractCommandValueParameter.UserDefinedType<*>,
                 -> {
-                    "<${this.name ?: this.type.classifierAsKClass().simpleName}>"
+                    val nameToRender = this.name ?: this.type.classifierAsKClass().simpleName
+                    if (isOptional) "[$nameToRender]" else "<$nameToRender>"
                 }
                 is AbstractCommandValueParameter.StringConstant -> {
                     this.expectingValue
