@@ -11,11 +11,15 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.yamlkt.Yaml
+import sun.reflect.CallerSensitive
+import sun.reflect.Reflection
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
@@ -57,6 +61,18 @@ public interface JvmPluginDescription : PluginDescription {
             @ResolveContext(PLUGIN_NAME) name: String = id,
             block: JvmPluginDescriptionBuilder.() -> Unit = {},
         ): JvmPluginDescription = error("Shouldn't be called")
+
+        @JvmStatic
+        @CallerSensitive
+        public fun loadFromResource(filename: String = "config.yaml"): JvmPluginDescription {
+            val callerClass = Reflection.getCallerClass()
+            val stream = callerClass.getResourceAsStream(filename) ?: callerClass.classLoader.getResourceAsStream(filename)
+            ?: error("Cannot find plugin description resource")
+
+            val bytes = stream.use { it.readBytes() }
+
+            return Yaml.default.decodeFromString(SimpleJvmPluginDescription.serializer(), String(bytes))
+        }
     }
 }
 
@@ -121,7 +137,7 @@ public inline fun JvmPluginDescription(
  *    .build();
  * ```
  *
- * @see [JvmPluginDescription.invoke]
+ * @see [JvmPluginDescription]
  */
 public class JvmPluginDescriptionBuilder(
     @ResolveContext(PLUGIN_ID) private var id: String,
@@ -219,7 +235,7 @@ public class JvmPluginDescriptionBuilder(
 
     public fun build(): JvmPluginDescription =
         @Suppress("DEPRECATION_ERROR")
-        SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
+        SimpleJvmPluginDescription(id, name, version, author, info, dependencies)
 
     /**
      * 标注一个 [JvmPluginDescription] DSL
@@ -235,11 +251,12 @@ public class JvmPluginDescriptionBuilder(
  *
  * @see JvmPluginDescription
  */
+@Serializable
 internal data class SimpleJvmPluginDescription
 @JvmOverloads constructor(
-    override val name: String,
+    override val id: String,
+    override val name: String = id,
     override val version: SemVersion,
-    override val id: String = name,
     override val author: String = "",
     override val info: String = "",
     override val dependencies: Set<PluginDependency> = setOf(),
@@ -248,13 +265,13 @@ internal data class SimpleJvmPluginDescription
     @Suppress("DEPRECATION_ERROR")
     @JvmOverloads
     constructor(
-        name: String,
+        id: String,
+        name: String = id,
         version: String,
-        id: String = name,
         author: String = "",
         info: String = "",
         dependencies: Set<PluginDependency> = setOf(),
-    ) : this(name, SemVersion(version), id, author, info, dependencies)
+    ) : this(id, name, SemVersion(version), author, info, dependencies)
 
     init {
         PluginDescription.checkPluginDescription(this)
