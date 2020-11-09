@@ -21,7 +21,7 @@ fun DependencyHandlerScope.ktor(id: String, version: String = Versions.ktor) = "
 @Suppress("unused")
 fun DependencyHandler.compileAndTestRuntime(any: Any) {
     add("compileOnly", any)
-    add("testRuntimeOnly", any)
+    add("testImplementation", any)
 }
 
 fun DependencyHandler.smartApi(
