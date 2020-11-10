@@ -56,7 +56,7 @@ dependencies {
     api(kotlinx("coroutines-jdk8", Versions.coroutines))
 
     compileOnly("org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}")
-    compileOnly("org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}")
+    testRuntimeOnly("org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}")
 
     testApi(kotlin("test"))
     testApi(kotlin("test-junit5"))
