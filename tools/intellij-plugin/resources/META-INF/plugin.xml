@@ -32,6 +32,12 @@
         <codeInsight.lineMarkerProvider language="kotlin"
                                         implementationClass="net.mamoe.mirai.console.intellij.line.marker.CommandDeclarationLineMarkerProvider"/>
 
+        <localInspection groupPath="Mirai console" language="kotlin" shortName="PluginMainServiceNotConfigured"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="plugin.service.not.configured.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.plugin.service.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.PluginMainServiceNotConfiguredInspection"/>
+
         <!--
         <intentionAction>
             <className>net.mamoe.mirai.console.intellij.diagnostics.fix.AbuseYellowIntention</className>

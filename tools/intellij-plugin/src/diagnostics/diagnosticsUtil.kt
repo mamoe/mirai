@@ -9,16 +9,19 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
+import com.intellij.util.castSafelyTo
 import net.mamoe.mirai.console.compiler.common.castOrNull
+import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.parents
+import net.mamoe.mirai.console.intellij.resolve.allSuperNames
 import net.mamoe.mirai.console.intellij.resolve.getResolvedCall
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.KtTypeReference
-import org.jetbrains.kotlin.psi.KtUserType
+import org.jetbrains.kotlin.nj2k.postProcessing.resolve
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 
@@ -41,3 +44,12 @@ fun KtTypeReference.isReferencing(fqName: FqName): Boolean {
 val KtTypeReference.referencedUserType: KtUserType? get() = this.typeElement.castOrNull()
 
 fun KtTypeReference.resolveReferencedType() = referencedUserType?.referenceExpression?.mainReference?.resolve()
+
+fun KtReferenceExpression.resolveMiraiPluginDeclaration(): KtClassOrObject? {
+    val main =
+        parents.filterIsInstance<KtClassOrObject>().firstOrNull() ?: return null
+    val kotlinPluginClass =
+        resolve().castSafelyTo<KtConstructor<*>>()?.parent?.castSafelyTo<KtClass>() ?: return null
+    if (kotlinPluginClass.allSuperNames.none { it == PLUGIN_FQ_NAME }) return null
+    return main
+}

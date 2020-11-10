@@ -29,6 +29,3 @@ object MyPluginMain : KotlinPlugin(
 
     }
 }
-
-
-val y = "傻逼 yellow"

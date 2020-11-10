@@ -15,27 +15,16 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
-import com.intellij.util.castSafelyTo
-import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_FQ_NAME
-import net.mamoe.mirai.console.compiler.common.resolve.parents
 import net.mamoe.mirai.console.intellij.Icons
-import net.mamoe.mirai.console.intellij.resolve.allSuperNames
+import net.mamoe.mirai.console.intellij.diagnostics.resolveMiraiPluginDeclaration
 import net.mamoe.mirai.console.intellij.resolve.getElementForLineMark
-import org.jetbrains.kotlin.nj2k.postProcessing.resolve
-import org.jetbrains.kotlin.psi.KtClass
-import org.jetbrains.kotlin.psi.KtConstructor
-import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 
 class PluginMainLineMarkerProvider : LineMarkerProvider {
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
         if (element !is KtReferenceExpression) return null
-        val objectDeclaration =
-            element.parents.filterIsInstance<KtObjectDeclaration>().firstOrNull() ?: return null
-        val kotlinPluginClass =
-            element.resolve().castSafelyTo<KtConstructor<*>>()?.parent?.castSafelyTo<KtClass>() ?: return null
-        if (kotlinPluginClass.allSuperNames.none { it == PLUGIN_FQ_NAME }) return null
-        return Info(getElementForLineMark(objectDeclaration))
+        val main = element.resolveMiraiPluginDeclaration() ?: return null
+        return Info(getElementForLineMark(main))
     }
 
     @Suppress("DEPRECATION")
