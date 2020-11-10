@@ -8,7 +8,7 @@ on:
   push:
     # Sequence of patterns matched against refs/tags
     tags:
-      - '*-dev*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - '*-dev*'
 
 jobs:
   build:

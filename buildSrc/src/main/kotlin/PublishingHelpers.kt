@@ -84,6 +84,10 @@ inline fun Project.setupPublishing(
 
             user = Bintray.getUser(project)
             key = Bintray.getKey(project)
+
+            publish = true
+            override = true
+
             setPublications("mavenJava")
             setConfigurations("archives")
 
