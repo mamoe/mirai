@@ -15,3 +15,17 @@ object MySimpleCommand000 : SimpleCommand(
 
     }
 }
+
+object DataTest : AutoSavePluginConfig("data") {
+    val pp by value<NoDefaultValue>(NoDefaultValue(1))
+}
+
+@Serializable
+data class HasDefaultValue(
+    val x: Int = 0,
+)
+
+@Serializable
+data class NoDefaultValue(
+    val y: Int,
+)

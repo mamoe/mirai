@@ -31,17 +31,4 @@ object MyPluginMain : KotlinPlugin(
 }
 
 
-object DataTest : AutoSavePluginConfig("data") {
-    val pp by value<NoDefaultValue>()
-}
-
-@Serializable
-data class HasDefaultValue(
-    val x: Int = 0,
-)
-
-data class NoDefaultValue(
-    val y: Int,
-)
-
 val y = "傻逼 yellow"

@@ -16,13 +16,14 @@ import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.diagnostics.Severity.ERROR
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtNamedDeclaration
+import org.jetbrains.kotlin.psi.KtTypeProjection
 
 object MiraiConsoleErrors {
     @JvmField
     val ILLEGAL_PLUGIN_DESCRIPTION = create<PsiElement, String>(ERROR)
 
     @JvmField
-    val NOT_CONSTRUCTABLE_TYPE = create<PsiElement, KtCallExpression, String>(ERROR)
+    val NOT_CONSTRUCTABLE_TYPE = create<KtTypeProjection, KtCallExpression, String>(ERROR)
 
     @JvmField
     val UNSERIALIZABLE_TYPE = create<PsiElement, ClassDescriptor>(ERROR)

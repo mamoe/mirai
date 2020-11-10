@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
-import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.SERIALIZABLE_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
@@ -42,10 +41,10 @@ class PluginDataValuesChecker : DeclarationChecker {
                 val (_, type) = e
                 val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>()
 
-                val inspectionTarget: PsiElement by lazy {
-                    val fqName = type.fqName ?: return@lazy callExpr
-                    callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true } ?: callExpr
-                }
+                val inspectionTarget = kotlin.run {
+                    val fqName = type.fqName ?: return@run null
+                    callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true }
+                } ?: return@forEach
 
                 if (classDescriptor == null
                     || !classDescriptor.hasNoArgConstructor()

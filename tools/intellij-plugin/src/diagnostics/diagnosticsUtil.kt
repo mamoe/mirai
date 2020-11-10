@@ -38,4 +38,6 @@ fun KtTypeReference.isReferencing(fqName: FqName): Boolean {
     return resolveReferencedType()?.getKotlinFqName() == fqName
 }
 
-fun KtTypeReference.resolveReferencedType() = this.typeElement.castOrNull<KtUserType>()?.referenceExpression?.mainReference?.resolve()
+val KtTypeReference.referencedUserType: KtUserType? get() = this.typeElement.castOrNull()
+
+fun KtTypeReference.resolveReferencedType() = referencedUserType?.referenceExpression?.mainReference?.resolve()
