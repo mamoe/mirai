@@ -30,8 +30,8 @@ object MyPluginMain : KotlinPlugin(
     }
 }
 
+
 object DataTest : AutoSavePluginConfig("data") {
-    val p by value<HasDefaultValue>()
     val pp by value<NoDefaultValue>()
 }
 

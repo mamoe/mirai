@@ -9,10 +9,16 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
+import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.intellij.resolve.getResolvedCall
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
+import org.jetbrains.kotlin.idea.references.mainReference
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtTypeReference
+import org.jetbrains.kotlin.psi.KtUserType
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 
@@ -27,3 +33,9 @@ fun KtElement?.getResolvedCall(
 ): ResolvedCall<out CallableDescriptor>? {
     return this.getResolvedCall(context.bindingContext)
 }
+
+fun KtTypeReference.isReferencing(fqName: FqName): Boolean {
+    return resolveReferencedType()?.getKotlinFqName() == fqName
+}
+
+fun KtTypeReference.resolveReferencedType() = this.typeElement.castOrNull<KtUserType>()?.referenceExpression?.mainReference?.resolve()

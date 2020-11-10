@@ -43,13 +43,15 @@ class PluginDataValuesChecker : DeclarationChecker {
                 val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>()
 
                 val inspectionTarget: PsiElement by lazy {
-                    callExpr.typeArguments.find { it.references.firstOrNull()?.canonicalText == type.fqName?.toString() } ?: callExpr
+                    val fqName = type.fqName ?: return@lazy callExpr
+                    callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true } ?: callExpr
                 }
 
                 if (classDescriptor == null
                     || !classDescriptor.hasNoArgConstructor()
                 ) return@forEach context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
                     inspectionTarget,
+                    callExpr,
                     type.fqName?.asString().toString())
                 )
 
