@@ -109,6 +109,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             if (loggerController === LoggerControllerImpl) {
                 // Reload LoggerConfig.
                 ConsoleDataScope.addAndReloadConfig(LoggerConfig)
+                LoggerControllerImpl.initialized = true
             }
         }
 

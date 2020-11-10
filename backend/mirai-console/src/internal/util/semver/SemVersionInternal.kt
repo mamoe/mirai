@@ -75,11 +75,11 @@ internal object SemVersionInternal {
     }
 
     @JvmStatic
-    internal fun parseRule(rule: String): SemVersion.Requirement {
+    internal fun parseRule(rule: String): RequirementInternal {
         val trimmed = rule.trim()
         if (directVersion.matches(trimmed)) {
             val parsed = SemVersion.invoke(trimmed)
-            return object : SemVersion.Requirement {
+            return object : RequirementInternal {
                 override fun test(version: SemVersion): Boolean = version.compareTo(parsed) == 0
             }
         }
@@ -89,7 +89,7 @@ internal object SemVersionInternal {
                     .replace("x", ".+") +
                 "$"
                 ).toRegex()
-            return object : SemVersion.Requirement {
+            return object : RequirementInternal {
                 override fun test(version: SemVersion): Boolean = regex.matches(version.toString())
             }
         }
@@ -120,7 +120,7 @@ internal object SemVersionInternal {
                 '(', ')' -> ({ it < end })
                 else -> throw AssertionError()
             }
-            return object : SemVersion.Requirement {
+            return object : RequirementInternal {
                 override fun test(version: SemVersion): Boolean = a(version) && b(version)
             }
         }
@@ -129,32 +129,32 @@ internal object SemVersionInternal {
             val version1 = SemVersion.invoke(result.groupValues[8])
             return when (operator) {
                 ">=" -> {
-                    object : SemVersion.Requirement {
+                    object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version >= version1
                     }
                 }
                 ">" -> {
-                    object : SemVersion.Requirement {
+                    object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version > version1
                     }
                 }
                 "<=" -> {
-                    object : SemVersion.Requirement {
+                    object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version <= version1
                     }
                 }
                 "<" -> {
-                    object : SemVersion.Requirement {
+                    object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version < version1
                     }
                 }
                 "=" -> {
-                    object : SemVersion.Requirement {
+                    object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version.compareTo(version1) == 0
                     }
                 }
                 "!=" -> {
-                    object : SemVersion.Requirement {
+                    object : RequirementInternal {
                         override fun test(version: SemVersion): Boolean = version.compareTo(version1) != 0
                     }
                 }
@@ -164,15 +164,9 @@ internal object SemVersionInternal {
         throw IllegalArgumentException("Cannot parse $rule")
     }
 
-    private fun SemVersion.Requirement.withRule(rule: String): SemVersion.Requirement {
-        return object : SemVersion.Requirement {
-            override fun test(version: SemVersion): Boolean = this@withRule.test(version)
-            override fun toString(): String = rule
-        }
-    }
 
     @JvmStatic
-    fun parseRangeRequirement(requirement: String): SemVersion.Requirement {
+    fun parseRangeRequirement(requirement: String): RequirementInternal {
         if (requirement.isBlank()) {
             throw IllegalArgumentException("Invalid requirement: Empty requirement rule.")
         }
@@ -180,7 +174,7 @@ internal object SemVersionInternal {
         val collected = RangeTokenReader.collect(requirement, tokens.iterator(), true)
         RangeTokenReader.check(requirement, collected.iterator(), null)
         return kotlin.runCatching {
-            RangeTokenReader.parse(requirement, RangeTokenReader.Token.Group(collected, 0)).withRule(requirement)
+            RangeTokenReader.parse(requirement, RangeTokenReader.Token.Group(collected, 0))
         }.onFailure { error ->
             throw IllegalArgumentException("Exception in parsing $requirement\n\n" + buildString {
                 collected.forEach { dump("", it) }

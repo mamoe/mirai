@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.event.Listener
@@ -30,6 +31,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.SimpleLogger
 import java.util.concurrent.locks.ReentrantLock
 
 @OptIn(ExperimentalCommandDescriptors::class)
@@ -75,7 +77,9 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
             when (val result = executeCommand(sender, message)) {
                 is CommandExecuteResult.PermissionDenied -> {
                     if (!result.command.prefixOptional || message.content.startsWith(CommandManager.commandPrefix)) {
-                        sender.sendMessage("权限不足")
+                        if (MiraiConsoleImplementationBridge.loggerController.shouldLog("console.debug", SimpleLogger.LogPriority.DEBUG)) {
+                            sender.sendMessage("权限不足")
+                        }
                         intercept()
                     }
                 }
