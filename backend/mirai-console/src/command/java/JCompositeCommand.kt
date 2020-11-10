@@ -77,7 +77,7 @@ public abstract class JCompositeCommand
     parentPermission: Permission = owner.parentPermission,
 ) : CompositeCommand(owner, primaryName, secondaryNames = secondaryNames, parentPermission = parentPermission) {
     /** 指令描述, 用于显示在 [BuiltInCommands.HelpCommand] */
-    public final override var description: String = "<no descriptions available>"
+    public final override var description: String = super.description
         protected set
 
     public final override var permission: Permission = super.permission
