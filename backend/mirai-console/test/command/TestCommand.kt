@@ -48,6 +48,15 @@ object TestCompositeCommand : CompositeCommand(
     }
 }
 
+object TestRawCommand : RawCommand(
+    ConsoleCommandOwner,
+    "testRaw"
+) {
+    override suspend fun CommandSender.onCommand(args: MessageChain) {
+        Testing.ok(args)
+    }
+}
+
 
 object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
     override suspend fun CommandSender.onCommand(args: MessageChain) {
@@ -101,6 +110,17 @@ internal class TestCommand {
             assertEquals("test", withTesting<MessageChain> {
                 assertSuccess(TestSimpleCommand.execute(sender, "test"))
             }.contentToString())
+        }
+    }
+
+    @Test
+    fun `test raw command`() = runBlocking {
+        TestRawCommand.withRegistration {
+            val result = withTesting<MessageChain> {
+                assertSuccess(TestRawCommand.execute(sender, PlainText("a1"), PlainText("a2"), PlainText("a3")))
+            }
+            assertEquals(3, result.size)
+            assertEquals("a1, a2, a3", result.joinToString())
         }
     }
 
