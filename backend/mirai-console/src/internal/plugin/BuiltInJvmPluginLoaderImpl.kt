@@ -70,7 +70,6 @@ internal object BuiltInJvmPluginLoaderImpl :
                 f to pluginClassLoader.findServices(
                     JvmPlugin::class,
                     KotlinPlugin::class,
-                    AbstractJvmPlugin::class,
                     JavaPlugin::class
                 ).loadAllServices()
             }.flatMap { (f, list) ->
