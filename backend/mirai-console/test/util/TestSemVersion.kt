@@ -44,6 +44,16 @@ internal class TestSemVersion {
     }
 
     @Test
+    internal fun testRequirementCopy() {
+        fun SemVersion.Requirement.check(a: SemVersion.Requirement.() -> SemVersion.Requirement) {
+            assert(a().impl !== this.impl)
+        }
+        SemVersion.parseRangeRequirement("1.0").check { copy() }
+        SemVersion.parseRangeRequirement("1.0").check { copy("2.0") }
+        SemVersion.parseRangeRequirement("1.0").check { copy("1.0") }
+    }
+
+    @Test
     internal fun testRequirement() {
         fun SemVersion.Requirement.assert(version: String): SemVersion.Requirement {
             assert(test(version)) { version }
