@@ -94,9 +94,7 @@ internal constructor(
         private val impl = SemVersionInternal.parseRangeRequirement(rule)
 
         /** 在 [version] 满足此要求时返回 true */
-        public fun test(version: SemVersion): Boolean {
-            return impl.test(version)
-        }
+        public fun test(version: SemVersion): Boolean = impl.test(version)
 
         public object RequirementAsStringSerializer : KSerializer<Requirement> by String.serializer().map(
             serializer = { it.rule },
