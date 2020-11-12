@@ -94,6 +94,14 @@ internal constructor(
          */
         val rule: String,
     ) {
+        init {
+            kotlin.runCatching {
+                parseRangeRequirement(rule)
+            }.onFailure {
+                throw java.lang.IllegalArgumentException("Syntax error: $rule", it)
+            }
+        }
+
         @Transient
         private val impl = SemVersionInternal.parseRangeRequirement(rule)
 
