@@ -14,12 +14,11 @@ package net.mamoe.mirai.console.plugin.jvm
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
+import net.mamoe.mirai.console.internal.util.getCallerClassloader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.yamlkt.Yaml
-import sun.reflect.CallerSensitive
-import sun.reflect.Reflection
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
@@ -62,12 +61,19 @@ public interface JvmPluginDescription : PluginDescription {
             block: JvmPluginDescriptionBuilder.() -> Unit = {},
         ): JvmPluginDescription = error("Shouldn't be called")
 
+        /**
+         * 从 [pluginClassloader] 读取资源文件 [filename] 并以 YAML 格式解析为 [SimpleJvmPluginDescription]
+         *
+         * @param filename [ClassLoader.getResourceAsStream] 的参数 `name`
+         * @param pluginClassloader 默认通过 [Thread.getStackTrace] 获取调用方 [Class] 然后获取其 [Class.getClassLoader].
+         */
+        @JvmOverloads
         @JvmStatic
-        @CallerSensitive
-        public fun loadFromResource(filename: String = "config.yaml"): JvmPluginDescription {
-            val callerClass = Reflection.getCallerClass()
-            val stream = callerClass.getResourceAsStream(filename) ?: callerClass.classLoader.getResourceAsStream(filename)
-            ?: error("Cannot find plugin description resource")
+        public fun loadFromResource(
+            filename: String = "plugin.yml",
+            pluginClassloader: ClassLoader = getCallerClassloader() ?: error("Cannot find caller classloader, please specify manually."),
+        ): JvmPluginDescription {
+            val stream = pluginClassloader.getResourceAsStream(filename) ?: error("Cannot find plugin description resource '$filename'")
 
             val bytes = stream.use { it.readBytes() }
 

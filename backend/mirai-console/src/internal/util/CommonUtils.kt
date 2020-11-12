@@ -28,3 +28,19 @@ internal inline fun <reified E : Throwable> runIgnoreException(block: () -> Unit
         throw e
     }
 }
+
+internal fun getCallerClassloader(): ClassLoader? {
+    return runCatching {
+        /*
+        java.base/java.lang.Thread.getStackTrace(Thread.java:1598)
+        net.mamoe.mirai.console.internal.util.CommonUtils.getCallerClassloader(CommonUtils.kt:37)
+        net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription$Companion.loadFromResource$default(JvmPluginDescription.kt:67)
+        net.mamoe.mirai.console.KotlinP.<init>(TestMiraiConosle.kt:34)
+        net.mamoe.mirai.console.KotlinP.<clinit>(TestMiraiConosle.kt:34)
+        net.mamoe.mirai.console.TestMiraiConosleKt.main(TestMiraiConosle.kt:37)
+        net.mamoe.mirai.console.TestMiraiConosleKt.main(TestMiraiConosle.kt)
+         */
+        val traces = Thread.currentThread().stackTrace
+        Class.forName(traces[3].className).classLoader
+    }.getOrNull()
+}
