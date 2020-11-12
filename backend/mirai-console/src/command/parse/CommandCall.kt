@@ -14,9 +14,13 @@ package net.mamoe.mirai.console.command.parse
 import net.mamoe.mirai.console.command.Command
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 
 /**
  * Unresolved [CommandCall].
+ *
+ * @see CommandCallParser
+ * @see CommandCallResolver
  */
 @ExperimentalCommandDescriptors
 public interface CommandCall {
