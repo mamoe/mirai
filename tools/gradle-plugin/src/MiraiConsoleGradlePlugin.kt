@@ -96,6 +96,9 @@ class MiraiConsoleGradlePlugin : Plugin<Project> {
                 compilations.forEach {
                     dependsOn(it.compileKotlinTask)
                     from(it.output)
+                    for (allKotlinSourceSet in it.allKotlinSourceSets) {
+                        from(allKotlinSourceSet.resources)
+                    }
                 }
 
                 from(project.configurations.getByName("runtimeClasspath").copyRecursive { dependency ->
