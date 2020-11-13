@@ -2,6 +2,7 @@ package org.example.myplugin
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
@@ -28,4 +29,10 @@ object MyPluginMain : KotlinPlugin(
     fun test() {
 
     }
+}
+
+
+object MyData : AutoSavePluginData("") {
+    val value by value("")
+    val value2 by value<Map<String, String>>()
 }
