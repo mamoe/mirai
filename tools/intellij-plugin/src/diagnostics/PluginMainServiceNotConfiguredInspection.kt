@@ -14,14 +14,17 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.progress.impl.CancellationCheck.Companion.runWithCancellationCheck
 import com.intellij.psi.PsiElementVisitor
 import net.mamoe.mirai.console.compiler.common.resolve.AUTO_SERVICE
+import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_FQ_NAME
 import net.mamoe.mirai.console.intellij.diagnostics.fix.ConfigurePluginMainServiceFix
+import net.mamoe.mirai.console.intellij.resolve.allSuperNames
 import net.mamoe.mirai.console.intellij.resolve.hasAnnotation
 import org.jetbrains.kotlin.idea.debugger.readAction
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.idea.util.module
 import org.jetbrains.kotlin.idea.util.rootManager
 import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.psi.referenceExpressionVisitor
+import org.jetbrains.kotlin.psi.KtObjectDeclaration
+import org.jetbrains.kotlin.psi.classOrObjectVisitor
 import java.util.*
 
 /*
@@ -39,19 +42,20 @@ class PluginMainServiceNotConfiguredInspection : AbstractKotlinInspection() {
     }
 
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
-        return referenceExpressionVisitor visitor@{ referenceExpr ->
-            val ktClass = referenceExpr.resolveMiraiPluginDeclaration() ?: return@visitor
-            val fqName = ktClass.fqName?.asString() ?: return@visitor
+        return classOrObjectVisitor visitor@{ element ->
+            if (element !is KtObjectDeclaration) return@visitor
+            if (element.allSuperNames.none { it == PLUGIN_FQ_NAME }) return@visitor
+            val fqName = element.fqName?.asString() ?: return@visitor
 
-            val found = isServiceConfiguredWithAutoService(ktClass)
-                || isServiceConfiguredWithResource(ktClass, fqName)
+            val found = isServiceConfiguredWithAutoService(element)
+                || isServiceConfiguredWithResource(element, fqName)
 
             if (!found) {
                 holder.registerProblem(
-                    ktClass.nameIdentifier ?: ktClass.identifyingElement ?: ktClass,
+                    element.nameIdentifier ?: element.identifyingElement ?: element,
                     "插件主类服务未配置",
                     ProblemHighlightType.WARNING,
-                    ConfigurePluginMainServiceFix(ktClass)
+                    ConfigurePluginMainServiceFix(element)
                 )
             }
         }
