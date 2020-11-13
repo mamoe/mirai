@@ -32,6 +32,7 @@ dependencies {
 
     smartImplementation(yamlkt)
     smartImplementation(`jetbrains-annotations`)
+    smartImplementation(`caller-finder`)
     smartApi(`kotlinx-coroutines-jdk8`)
 
     testApi(`mirai-core-qqandroid`)
