@@ -94,21 +94,16 @@ internal constructor(
          */
         val rule: String,
     ) {
-        init {
-            kotlin.runCatching {
-                parseRangeRequirement(rule)
-            }.onFailure {
-                throw java.lang.IllegalArgumentException("Syntax error: $rule", it)
-            }
-        }
 
         @Transient
-        private val impl = SemVersionInternal.parseRangeRequirement(rule)
+        internal val impl = kotlin.runCatching {
+            SemVersionInternal.parseRangeRequirement(rule)
+        }.getOrElse {
+            throw java.lang.IllegalArgumentException("Syntax error: $rule", it)
+        }
 
         /** 在 [version] 满足此要求时返回 true */
-        public fun test(version: SemVersion): Boolean {
-            return impl.test(version)
-        }
+        public fun test(version: SemVersion): Boolean = impl.test(version)
 
         /**
          * 序列化为字符串, [rule]. 从字符串反序列化, [parseRangeRequirement].
