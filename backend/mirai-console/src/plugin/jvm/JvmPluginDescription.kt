@@ -67,7 +67,7 @@ public interface JvmPluginDescription : PluginDescription {
          * @param filename [ClassLoader.getResourceAsStream] 的参数 `name`
          * @param pluginClassloader 默认通过 [Thread.getStackTrace] 获取调用方 [Class] 然后获取其 [Class.getClassLoader].
          */
-        @JvmOverloads
+        // @JvmOverloads // compiler error
         @JvmStatic
         public fun loadFromResource(
             filename: String = "plugin.yml",

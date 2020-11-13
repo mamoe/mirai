@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.console.internal.util
 
+import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+
 internal inline fun <reified E : Throwable, R> runIgnoreException(block: () -> R): R? {
     try {
         return block()
@@ -41,6 +43,7 @@ internal fun getCallerClassloader(): ClassLoader? {
         net.mamoe.mirai.console.TestMiraiConosleKt.main(TestMiraiConosle.kt)
          */
         val traces = Thread.currentThread().stackTrace
-        Class.forName(traces[3].className).classLoader
+        val classname = traces[3].className
+        BuiltInJvmPluginLoaderImpl.classLoaders.firstOrNull { it.findClass(classname, true) != null }
     }.getOrNull()
 }
