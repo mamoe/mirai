@@ -57,5 +57,9 @@ internal actual class DeferredReusableInput actual constructor(
         return delegate?.asInput() ?: error("DeferredReusableInput not yet initialized")
     }
 
+    override fun release() {
+        return delegate?.release() ?: error("DeferredReusableInput not yet initialized")
+    }
+
     actual val initialized: Boolean get() = delegate != null
 }

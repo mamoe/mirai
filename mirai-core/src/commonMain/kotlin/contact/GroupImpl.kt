@@ -15,7 +15,6 @@ package net.mamoe.mirai.internal.contact
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
@@ -403,11 +402,10 @@ internal class GroupImpl(
         return result.getOrThrow()
     }
 
-    @Suppress("DEPRECATION")
+    @Suppress("DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @OptIn(ExperimentalTime::class)
     @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): Image = try {
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
             image.input.init(bot.configuration.fileCacheStrategy)
         }
@@ -451,7 +449,7 @@ internal class GroupImpl(
             }
         }
     } finally {
-        (image.input as? Closeable)?.close()
+        image.input.release()
     }
 
     /**

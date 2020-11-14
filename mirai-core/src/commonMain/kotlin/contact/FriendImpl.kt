@@ -22,7 +22,6 @@ import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.io.core.Closeable
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
@@ -110,8 +109,8 @@ internal class FriendImpl(
     }
 
     @JvmSynthetic
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     override suspend fun uploadImage(image: ExternalImage): Image = try {
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
         if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
             image.input.init(bot.configuration.fileCacheStrategy)
         }
@@ -178,7 +177,6 @@ internal class FriendImpl(
             }
         }
     } finally {
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        (image.input as? Closeable)?.close()
+        image.input.release()
     }
 }

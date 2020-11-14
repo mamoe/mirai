@@ -51,6 +51,10 @@ internal actual fun ByteArray.asReusableInput(): ReusableInput {
         override fun asInput(): Input {
             return ByteArrayInputStream(this@asReusableInput).asInput()
         }
+
+        override fun release() {
+            // nothing to do
+        }
     }
 }
 
@@ -69,7 +73,6 @@ internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
 
                 override fun close() {
                     stream.close()
-                    if (deleteOnClose) this@asReusableInput.delete()
                 }
             }
         }
@@ -81,6 +84,11 @@ internal fun File.asReusableInput(deleteOnClose: Boolean): ReusableInput {
         override fun asInput(): Input {
             return inputStream().asInput()
         }
+
+        override fun release() {
+            if (deleteOnClose) this@asReusableInput.delete()
+        }
+
     }
 }
 
@@ -99,7 +107,6 @@ internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): Reusa
 
                 override fun close() {
                     stream.close()
-                    if (deleteOnClose) this@asReusableInput.delete()
                 }
             }
         }
@@ -110,6 +117,10 @@ internal fun File.asReusableInput(deleteOnClose: Boolean, md5: ByteArray): Reusa
 
         override fun asInput(): Input {
             return inputStream().asInput()
+        }
+
+        override fun release() {
+            if (deleteOnClose) this@asReusableInput.delete()
         }
     }
 }

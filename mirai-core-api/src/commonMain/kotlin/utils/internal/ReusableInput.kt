@@ -23,4 +23,6 @@ internal interface ReusableInput {
      * Remember to close.
      */
     fun asInput(): Input
+
+    fun release()
 }
