@@ -51,6 +51,11 @@ public fun File.toExternalImage(deleteOnClose: Boolean = false): ExternalImage {
 public fun InputStream.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
 
 /**
+ * 将 [ByteArray] 委托为 [ExternalImage].
+ */
+public fun ByteArray.toExternalImage(): ExternalImage = ExternalImage(DeferredReusableInput(this, null))
+
+/**
  * 将 [URL] 委托为 [ExternalImage].
  *
  * 只会在上传图片时才读取 [URL] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
