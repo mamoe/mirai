@@ -62,7 +62,16 @@ internal fun startupConsoleThread() {
                     is Success -> {
                     }
                     is IllegalArgument -> {
-                        result.exception.message?.let { consoleLogger.warning(it) } ?: kotlin.run {
+                        result.exception.message?.let { msg ->
+                            val err = result.exception
+                            if ((err.suppressed?.size ?: 0) != 0) {
+                                // 该 IllegalArgument 错误还存在其他附加错误
+                                consoleLogger.warning(result.exception)
+                            } else {
+                                consoleLogger.warning(msg)
+                                err.cause?.let { consoleLogger.warning(it) }
+                            }
+                        } ?: kotlin.run {
                             consoleLogger.warning(result.exception)
                         }
                     }
