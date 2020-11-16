@@ -7,20 +7,31 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:OptIn(ExperimentalCommandDescriptors::class)
+
 package net.mamoe.mirai.console.terminal
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.CommandExecuteResult.*
+import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.StringConstant
+import net.mamoe.mirai.console.command.descriptor.CommandReceiverParameter
+import net.mamoe.mirai.console.command.descriptor.CommandValueParameter
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
+import net.mamoe.mirai.console.command.parse.CommandCall
+import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
 import net.mamoe.mirai.console.util.ConsoleInternalApi
+import net.mamoe.mirai.console.util.cast
 import net.mamoe.mirai.console.util.requestInput
+import net.mamoe.mirai.console.util.safeCast
 import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.warning
 import org.jline.reader.EndOfFileException
 import org.jline.reader.UserInterruptException
+import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 val consoleLogger by lazy { DefaultLogger("console") }
 
@@ -84,7 +95,7 @@ internal fun startupConsoleThread() {
                         consoleLogger.warning { "权限不足." }
                     }
                     is UnmatchedSignature -> {
-                        consoleLogger.warning { "参数不匹配: " + result.failureReasons.joinToString("\n") { it.render() } }
+                        consoleLogger.warning { "参数不匹配, 你是否想执行: \n" + result.failureReasons.render(result.command, result.call) }
                     }
                     is Failure -> {
                         consoleLogger.warning { result.toString() }
@@ -108,14 +119,37 @@ internal fun startupConsoleThread() {
 }
 
 @OptIn(ExperimentalCommandDescriptors::class)
-internal fun UnmatchedCommandSignature.render(): String {
-    return this.signature.toString() + "    ${failureReason.render()}"
+private fun List<UnmatchedCommandSignature>.render(command: Command, call: CommandCall): String {
+    val list =
+        this.filter lambda@{ signature ->
+            if (signature.failureReason.safeCast<FailureReason.InapplicableValueArgument>()?.parameter is StringConstant) return@lambda false
+            if (signature.signature.valueParameters.anyStringConstantUnmatched(call.valueArguments)) return@lambda false
+            true
+        }
+    if (list.isEmpty()) {
+        return command.usage
+    }
+    return list.joinToString("\n") { it.render(command) }
+}
+
+private fun List<CommandValueParameter<*>>.anyStringConstantUnmatched(arguments: List<CommandValueArgument>): Boolean {
+    return this.zip(arguments).any { (parameter, argument) ->
+        parameter is StringConstant && !parameter.accepts(argument, null)
+    }
+}
+
+@OptIn(ExperimentalCommandDescriptors::class)
+internal fun UnmatchedCommandSignature.render(command: Command): String {
+    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+    val usage = net.mamoe.mirai.console.internal.command.CommandReflector.generateUsage(command, null, listOf(this.signature))
+    return usage.trim() + "    (${failureReason.render()})"
 }
 
 @OptIn(ExperimentalCommandDescriptors::class)
 internal fun FailureReason.render(): String {
     return when (this) {
         is FailureReason.InapplicableArgument -> "参数类型错误"
+        is FailureReason.InapplicableReceiverArgument -> "需要由 ${this.parameter.renderAsName()} 执行"
         is FailureReason.TooManyArguments -> "参数过多"
         is FailureReason.NotEnoughArguments -> "参数不足"
         is FailureReason.ResolutionAmbiguity -> "调用歧义"
@@ -123,5 +157,21 @@ internal fun FailureReason.render(): String {
             // should not happen, render it anyway.
             "参数长度不匹配"
         }
+    }
+}
+
+@OptIn(ExperimentalCommandDescriptors::class)
+internal fun CommandReceiverParameter<*>.renderAsName(): String {
+    val classifier = this.type.classifier.cast<KClass<out CommandSender>>()
+    return when {
+        classifier.isSubclassOf(ConsoleCommandSender::class) -> "控制台"
+        classifier.isSubclassOf(FriendCommandSenderOnMessage::class) -> "好友私聊"
+        classifier.isSubclassOf(FriendCommandSender::class) -> "好友"
+        classifier.isSubclassOf(MemberCommandSenderOnMessage::class) -> "群内发言"
+        classifier.isSubclassOf(MemberCommandSender::class) -> "群成员"
+        classifier.isSubclassOf(TempCommandSenderOnMessage::class) -> "临时会话"
+        classifier.isSubclassOf(TempCommandSender::class) -> "临时好友"
+        classifier.isSubclassOf(UserCommandSender::class) -> "用户"
+        else -> classifier.simpleName ?: classifier.toString()
     }
 }
