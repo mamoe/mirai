@@ -165,10 +165,11 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
     }
 
     @ConsoleExperimentalApi
-    public class StringConstant(
+    public data class StringConstant(
         @ConsoleExperimentalApi
         public override val name: String?,
         public val expectingValue: String,
+        public val ignoreCase: Boolean,
     ) : AbstractCommandValueParameter<String>() {
         public override val type: KType get() = STRING_TYPE
         public override val isOptional: Boolean get() = false
@@ -186,7 +187,7 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         override fun toString(): String = "<$expectingValue>"
 
         override fun acceptingImpl(expectingType: KType, argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
-            return if (argument.value.content == expectingValue) {
+            return if (argument.value.content.equals(expectingValue, ignoreCase)) {
                 ArgumentAcceptance.Direct
             } else ArgumentAcceptance.Impossible
         }
@@ -201,7 +202,7 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
      * @see createOptional
      * @see createRequired
      */
-    public class UserDefinedType<T>(
+    public data class UserDefinedType<T>(
         public override val name: String?,
         public override val isOptional: Boolean,
         public override val isVararg: Boolean,
