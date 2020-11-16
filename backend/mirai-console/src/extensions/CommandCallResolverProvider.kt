@@ -12,14 +12,13 @@ package net.mamoe.mirai.console.extensions
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.resolve.BuiltInCommandCallResolver
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
-import net.mamoe.mirai.console.extension.AbstractInstanceExtensionPoint
-import net.mamoe.mirai.console.extension.InstanceExtension
+import net.mamoe.mirai.console.extension.AbstractSingletonExtensionPoint
+import net.mamoe.mirai.console.extension.SingletonExtension
 
 @ExperimentalCommandDescriptors
-public interface CommandCallResolverProvider : InstanceExtension<CommandCallResolver> {
+public interface CommandCallResolverProvider : SingletonExtension<CommandCallResolver> {
     public companion object ExtensionPoint :
-        AbstractInstanceExtensionPoint<CommandCallResolverProvider, CommandCallResolver>(CommandCallResolverProvider::class,
-            BuiltInCommandCallResolver.Provider)
+        AbstractSingletonExtensionPoint<CommandCallResolverProvider, CommandCallResolver>(CommandCallResolverProvider::class, BuiltInCommandCallResolver)
 }
 
 @ExperimentalCommandDescriptors

@@ -17,8 +17,6 @@ import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.i
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.parse.DefaultCommandValueArgument
-import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
-import net.mamoe.mirai.console.extensions.CommandCallResolverProviderImpl
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.safeCast
@@ -31,21 +29,20 @@ import net.mamoe.mirai.message.data.asMessageChain
 @ConsoleExperimentalApi
 @ExperimentalCommandDescriptors
 public object BuiltInCommandCallResolver : CommandCallResolver {
-    public object Provider : CommandCallResolverProvider by CommandCallResolverProviderImpl(BuiltInCommandCallResolver)
-
-    override fun resolve(call: CommandCall): ResolvedCommandCall? {
-        val callee = CommandManager.matchCommand(call.calleeName) ?: return null
+    override fun resolve(call: CommandCall): CommandResolveResult {
+        val callee = CommandManager.matchCommand(call.calleeName) ?: return CommandResolveResult(null)
 
         val valueArguments = call.valueArguments
         val context = callee.safeCast<CommandArgumentContextAware>()?.context
 
-        val signature = resolveImpl(call.caller, callee, valueArguments, context) ?: return null
+        val signature = resolveImpl(call.caller, callee, valueArguments, context) ?: return CommandResolveResult(null)
 
-        return ResolvedCommandCallImpl(call.caller,
+        return CommandResolveResult(ResolvedCommandCallImpl(call.caller,
             callee,
             signature.signature,
             signature.zippedArguments.map { it.second },
             context ?: EmptyCommandArgumentContext)
+        )
     }
 
     private data class ResolveData(
