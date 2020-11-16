@@ -11,10 +11,12 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
+import io.github.karlatemp.caller.CallerFinder
+import io.github.karlatemp.caller.StackFrame
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
-import net.mamoe.mirai.console.internal.util.getCallerClassloader
+import net.mamoe.mirai.console.internal.util.findLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
 import net.mamoe.mirai.console.util.SemVersion
@@ -65,13 +67,13 @@ public interface JvmPluginDescription : PluginDescription {
          * 从 [pluginClassloader] 读取资源文件 [filename] 并以 YAML 格式解析为 [SimpleJvmPluginDescription]
          *
          * @param filename [ClassLoader.getResourceAsStream] 的参数 `name`
-         * @param pluginClassloader 默认通过 [Thread.getStackTrace] 获取调用方 [Class] 然后获取其 [Class.getClassLoader].
+         * @param pluginClassloader 默认通过 [CallerFinder.getCaller] 获取调用方 [StackFrame] 然后获取其 [Class.getClassLoader].
          */
-        @JvmOverloads
+        // @JvmOverloads // compiler error
         @JvmStatic
         public fun loadFromResource(
             filename: String = "plugin.yml",
-            pluginClassloader: ClassLoader = getCallerClassloader() ?: error("Cannot find caller classloader, please specify manually."),
+            pluginClassloader: ClassLoader = CallerFinder.getCaller()?.findLoader() ?: error("Cannot find caller classloader, please specify manually."),
         ): JvmPluginDescription {
             val stream = pluginClassloader.getResourceAsStream(filename) ?: error("Cannot find plugin description resource '$filename'")
 

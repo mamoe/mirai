@@ -9,10 +9,7 @@
 
 package net.mamoe.mirai.console.terminal
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
@@ -30,12 +27,13 @@ internal fun startupConsoleThread() {
     if (terminal is NoConsole) return
 
     MiraiConsole.launch(CoroutineName("Input Cancelling Daemon")) {
-        while (true) {
+        while (isActive) {
             delay(2000)
         }
     }.invokeOnCompletion {
         runCatching<Unit> {
-            terminal.close()
+            // 应该仅关闭用户输入
+            terminal.reader().shutdown()
             ConsoleInputImpl.thread.shutdownNow()
             runCatching {
                 ConsoleInputImpl.executingCoroutine?.cancel(EndOfFileException())

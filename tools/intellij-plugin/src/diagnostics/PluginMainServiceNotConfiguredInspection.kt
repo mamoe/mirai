@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.intellij.diagnostics
 
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.progress.impl.CancellationCheck.Companion.runWithCancellationCheck
 import com.intellij.psi.PsiElementVisitor
 import net.mamoe.mirai.console.compiler.common.resolve.AUTO_SERVICE
 import net.mamoe.mirai.console.intellij.diagnostics.fix.ConfigurePluginMainServiceFix
@@ -64,14 +65,16 @@ class PluginMainServiceNotConfiguredInspection : AbstractKotlinInspection() {
         ktClass: KtClassOrObject,
         fqName: String,
     ): Boolean {
-        val sourceRoots = ktClass.module?.rootManager?.sourceRoots ?: return false
-        val services = sourceRoots.asSequence().flatMap { file ->
-            SERVICE_FILE_NAMES.asSequence().mapNotNull { serviceFileName ->
-                file.findFileByRelativePath("META-INF/services/$serviceFileName")
+        return runWithCancellationCheck {
+            val sourceRoots = ktClass.module?.rootManager?.sourceRoots ?: return@runWithCancellationCheck false
+            val services = sourceRoots.asSequence().flatMap { file ->
+                SERVICE_FILE_NAMES.asSequence().mapNotNull { serviceFileName ->
+                    file.findFileByRelativePath("META-INF/services/$serviceFileName")
+                }
             }
-        }
-        return services.any { serviceFile ->
-            serviceFile.readAction { f -> f.inputStream.bufferedReader().use { it.readLine() }.trim() == fqName }
+            return@runWithCancellationCheck services.any { serviceFile ->
+                serviceFile.readAction { f -> f.inputStream.bufferedReader().use { it.readLine() }.trim() == fqName }
+            }
         }
     }
 }

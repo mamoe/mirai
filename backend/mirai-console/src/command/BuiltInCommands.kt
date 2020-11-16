@@ -102,29 +102,31 @@ public object BuiltInCommands {
 
         @Handler
         public suspend fun CommandSender.handle() {
-            kotlin.runCatching {
-                closingLock.withLock {
-                    sendMessage("Stopping mirai-console")
-                    kotlin.runCatching {
-                        runIgnoreException<CancellationException> { MiraiConsole.job.cancelAndJoin() }
-                    }.fold(
-                        onSuccess = {
-                            runIgnoreException<EventCancelledException> { sendMessage("mirai-console stopped successfully.") }
-                        },
-                        onFailure = {
-                            if (it is CancellationException) return@fold
-                            @OptIn(ConsoleInternalApi::class)
-                            MiraiConsole.mainLogger.error("Exception in stop", it)
-                            runIgnoreException<EventCancelledException> {
-                                sendMessage(
-                                    it.localizedMessage ?: it.message ?: it.toString()
-                                )
+            GlobalScope.launch {
+                kotlin.runCatching {
+                    closingLock.withLock {
+                        if (!MiraiConsole.isActive) return@withLock
+                        sendMessage("Stopping mirai-console")
+                        kotlin.runCatching {
+                            MiraiConsole.job.cancelAndJoin()
+                        }.fold(
+                            onSuccess = {
+                                runIgnoreException<EventCancelledException> { sendMessage("mirai-console stopped successfully.") }
+                            },
+                            onFailure = {
+                                @OptIn(ConsoleInternalApi::class)
+                                MiraiConsole.mainLogger.error("Exception in stop", it)
+                                runIgnoreException<EventCancelledException> {
+                                    sendMessage(
+                                        it.localizedMessage ?: it.message ?: it.toString()
+                                    )
+                                }
                             }
-                        }
-                    )
-                }
-            }.exceptionOrNull()?.let(MiraiConsole.mainLogger::error)
-            exitProcess(0)
+                        )
+                    }
+                }.exceptionOrNull()?.let(MiraiConsole.mainLogger::error)
+                exitProcess(0)
+            }
         }
     }
 
