@@ -177,11 +177,11 @@ internal suspend fun executeCommandImpl(
     caller: CommandSender,
     checkPermission: Boolean,
 ): CommandExecuteResult {
-    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCommand()
+    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCommand(null)
     val resolved = call.resolve().fold(
         onSuccess = { it },
         onFailure = { return it }
-    )
+    ) ?: return CommandExecuteResult.UnresolvedCommand(call)
 
     val command = resolved.callee
 

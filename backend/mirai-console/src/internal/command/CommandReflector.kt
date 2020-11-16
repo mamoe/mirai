@@ -144,30 +144,34 @@ internal class CommandReflector(
     }
 
     fun generateUsage(overloads: Iterable<CommandSignatureFromKFunction>): String {
-        return overloads.joinToString("\n") { subcommand ->
-            buildString {
-                if (command.prefixOptional) {
-                    append("(")
-                    append(CommandManager.commandPrefix)
-                    append(")")
-                } else {
-                    append(CommandManager.commandPrefix)
-                }
-                //if (command is CompositeCommand) {
-                append(command.primaryName)
-                append(" ")
-                //}
-                append(subcommand.valueParameters.joinToString(" ") { it.render() })
-                annotationResolver.getDescription(command, subcommand.originFunction)?.let { description ->
-                    append("    # ")
-                    append(description)
+        return generateUsage(command, annotationResolver, overloads)
+    }
+
+    companion object {
+        fun generateUsage(command: Command, annotationResolver: SubCommandAnnotationResolver?, overloads: Iterable<CommandSignature>): String {
+            return overloads.joinToString("\n") { subcommand ->
+                buildString {
+                    if (command.prefixOptional) {
+                        append("(")
+                        append(CommandManager.commandPrefix)
+                        append(")")
+                    } else {
+                        append(CommandManager.commandPrefix)
+                    }
+                    //if (command is CompositeCommand) {
+                    append(command.primaryName)
+                    append(" ")
+                    //}
+                    append(subcommand.valueParameters.joinToString(" ") { it.render() })
+                    if (annotationResolver != null && subcommand is CommandSignatureFromKFunction) {
+                        annotationResolver.getDescription(command, subcommand.originFunction)?.let { description ->
+                            append("    # ")
+                            append(description)
+                        }
+                    }
                 }
             }
         }
-    }
-
-
-    companion object {
 
         private fun <T> AbstractCommandValueParameter<T>.render(): String {
             return when (this) {

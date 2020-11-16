@@ -79,7 +79,7 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
             val failureReasons = unmatchedCommandSignatures.toMutableList()
             val rA = FailureReason.ResolutionAmbiguity(resolutionAmbiguities)
             failureReasons.addAll(resolutionAmbiguities.map { UnmatchedCommandSignature(it, rA) })
-            return CommandExecuteResult.UnmatchedSignature(command, unmatchedCommandSignatures)
+            return CommandExecuteResult.UnmatchedSignature(command, call, unmatchedCommandSignatures)
         }
 
     }

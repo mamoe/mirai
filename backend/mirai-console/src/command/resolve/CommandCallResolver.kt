@@ -33,16 +33,15 @@ public class CommandResolveResult private constructor(
         get() = value.safeCast()
 
     public inline fun <R> fold(
-        onSuccess: (ResolvedCommandCall) -> R,
+        onSuccess: (ResolvedCommandCall?) -> R,
         onFailure: (CommandExecuteResult.Failure) -> R,
     ): R {
         contract {
             callsInPlace(onSuccess, InvocationKind.AT_MOST_ONCE)
             callsInPlace(onFailure, InvocationKind.AT_MOST_ONCE)
         }
-        call?.let(onSuccess)?.let { return it }
         failure?.let(onFailure)?.let { return it }
-        throw kotlin.AssertionError()
+        return call.let(onSuccess)
     }
 
     public constructor(call: ResolvedCommandCall?) : this(call as Any?)

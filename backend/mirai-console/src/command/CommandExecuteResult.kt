@@ -83,15 +83,15 @@ public sealed class CommandExecuteResult {
     ) : Failure()
 
     /** 没有匹配的指令 */
-    public class UnresolvedCommand : Failure() {
+    public class UnresolvedCommand(
+        /** 解析的 [CommandCall] (如果匹配到) */
+        public override val call: CommandCall?,
+    ) : Failure() {
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
 
         /** 尝试执行的指令, 总是 `null` */
         public override val command: Nothing? get() = null
-
-        /** 解析的 [CommandCall] (如果匹配到) */
-        public override val call: CommandCall? get() = null
 
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall? get() = null
@@ -114,6 +114,8 @@ public sealed class CommandExecuteResult {
     public class UnmatchedSignature(
         /** 尝试执行的指令 */
         public override val command: Command,
+        /** 解析的 [CommandCall] (如果匹配到) */
+        public override val call: CommandCall,
         /** 尝试执行的指令 */
         @ExperimentalCommandDescriptors
         @ConsoleExperimentalApi
@@ -121,9 +123,6 @@ public sealed class CommandExecuteResult {
     ) : Failure() {
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
-
-        /** 解析的 [CommandCall] (如果匹配到) */
-        public override val call: CommandCall? get() = null
 
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall? get() = null
