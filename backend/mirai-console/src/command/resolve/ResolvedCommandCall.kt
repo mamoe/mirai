@@ -20,7 +20,6 @@ import net.mamoe.mirai.console.command.parse.mapToTypeOrNull
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.cast
-import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 /**
  * The resolved [CommandCall].
@@ -77,7 +76,7 @@ public class ResolvedCommandCallImpl(
     override val rawValueArguments: List<CommandValueArgument>,
     private val context: CommandArgumentContext,
 ) : ResolvedCommandCall {
-    override val resolvedValueArguments: List<ResolvedCommandValueArgument<*>> by lazy(PUBLICATION) {
+    override val resolvedValueArguments: List<ResolvedCommandValueArgument<*>> by lazy {
         calleeSignature.valueParameters.zip(rawValueArguments).map { (parameter, argument) ->
             val value = argument.mapToTypeOrNull(parameter.type) ?: context[parameter.type.classifierAsKClass()]?.parse(argument.value, caller)
             ?: throw  NoValueArgumentMappingException(argument, parameter.type)
