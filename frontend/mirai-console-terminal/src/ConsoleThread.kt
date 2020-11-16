@@ -12,11 +12,14 @@ package net.mamoe.mirai.console.terminal
 import kotlinx.coroutines.*
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
+import net.mamoe.mirai.console.command.CommandExecuteResult.*
+import net.mamoe.mirai.console.command.CommandExecuteResult.CommandExecuteStatus.*
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.terminal.noconsole.NoConsole
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.warning
 import org.jline.reader.EndOfFileException
 import org.jline.reader.UserInterruptException
 
@@ -55,21 +58,28 @@ internal fun startupConsoleThread() {
                     continue
                 }
                 // consoleLogger.debug("INPUT> $next")
-                val result = ConsoleCommandSender.executeCommand(next)
-                when (result.status) {
-                    CommandExecuteStatus.SUCCESSFUL -> {
+                when (val result = ConsoleCommandSender.executeCommand(next)) {
+                    is Success -> {
                     }
-                    CommandExecuteStatus.ILLEGAL_ARGUMENT -> {
-                        result.exception?.message?.let { consoleLogger.warning(it) }
+                    is IllegalArgument -> {
+                        result.exception.message?.let { consoleLogger.warning(it) } ?: kotlin.run {
+                            consoleLogger.warning(result.exception)
+                        }
                     }
-                    CommandExecuteStatus.EXECUTION_EXCEPTION -> {
-                        result.exception?.let(consoleLogger::error)
+                    is ExecutionFailed -> {
+                        consoleLogger.error(result.exception)
                     }
-                    CommandExecuteStatus.COMMAND_NOT_FOUND -> {
-                        consoleLogger.warning("未知指令: ${result.commandName}, 输入 ? 获取帮助")
+                    is UnresolvedCommand -> {
+                        consoleLogger.warning { "未知指令: ${result.commandName}, 输入 ? 获取帮助" }
                     }
-                    CommandExecuteStatus.PERMISSION_DENIED -> {
-                        consoleLogger.warning("Permission denied.")
+                    is PermissionDenied -> {
+                        consoleLogger.warning { "权限不足." }
+                    }
+                    is UnmatchedSignature -> {
+                        consoleLogger.warning { "参数不匹配: " + result.failureReasons.joinToString("\n") { it.render() } }
+                    }
+                    is Failure -> {
+                        consoleLogger.warning { result.toString() }
                     }
                 }
             } catch (e: InterruptedException) {
@@ -85,6 +95,25 @@ internal fun startupConsoleThread() {
             } catch (e: Throwable) {
                 consoleLogger.error("Unhandled exception", e)
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalCommandDescriptors::class)
+internal fun UnmatchedCommandSignature.render(): String {
+    return this.signature.toString() + "    ${failureReason.render()}"
+}
+
+@OptIn(ExperimentalCommandDescriptors::class)
+internal fun FailureReason.render(): String {
+    return when (this) {
+        is FailureReason.InapplicableArgument -> "参数类型错误"
+        is FailureReason.TooManyArguments -> "参数过多"
+        is FailureReason.NotEnoughArguments -> "参数不足"
+        is FailureReason.ResolutionAmbiguity -> "调用歧义"
+        is FailureReason.ArgumentLengthMismatch -> {
+            // should not happen, render it anyway.
+            "参数长度不匹配"
         }
     }
 }

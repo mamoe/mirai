@@ -75,15 +75,15 @@ public sealed class ArgumentAcceptance(
 ) {
     public object Direct : ArgumentAcceptance(Int.MAX_VALUE)
 
-    public class WithTypeConversion(
+    public data class WithTypeConversion(
         public val typeVariant: TypeVariant<*>,
     ) : ArgumentAcceptance(20)
 
-    public class WithContextualConversion(
+    public data class WithContextualConversion(
         public val parser: CommandValueArgumentParser<*>,
     ) : ArgumentAcceptance(10)
 
-    public class ResolutionAmbiguity(
+    public data class ResolutionAmbiguity(
         public val candidates: List<TypeVariant<*>>,
     ) : ArgumentAcceptance(0)
 
@@ -101,7 +101,7 @@ public sealed class ArgumentAcceptance(
 }
 
 @ExperimentalCommandDescriptors
-public class CommandReceiverParameter<T : CommandSender>(
+public data class CommandReceiverParameter<T : CommandSender>(
     override val isOptional: Boolean,
     override val type: KType,
 ) : CommandParameter<T>, AbstractCommandParameter<T>() {

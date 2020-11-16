@@ -40,9 +40,9 @@ public class CommandResolveResult private constructor(
             callsInPlace(onSuccess, InvocationKind.AT_MOST_ONCE)
             callsInPlace(onFailure, InvocationKind.AT_MOST_ONCE)
         }
-        call?.let(onSuccess)
-        failure?.let(onFailure)
-        null!!
+        call?.let(onSuccess)?.let { return it }
+        failure?.let(onFailure)?.let { return it }
+        throw kotlin.AssertionError()
     }
 
     public constructor(call: ResolvedCommandCall?) : this(call as Any?)

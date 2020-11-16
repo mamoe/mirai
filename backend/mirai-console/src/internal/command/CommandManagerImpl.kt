@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.findDuplicate
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
@@ -94,7 +95,9 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
                     sender.catchExecutionException(result.exception)
                     intercept()
                 }
-                is CommandExecuteResult.UnresolvedCall -> {
+                is CommandExecuteResult.UnmatchedSignature,
+                is CommandExecuteResult.UnresolvedCommand,
+                -> {
                     // noop
                 }
             }
@@ -175,20 +178,25 @@ internal suspend fun executeCommandImpl(
     caller: CommandSender,
     checkPermission: Boolean,
 ): CommandExecuteResult {
-    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCall("")
-    val resolved = call.resolve() ?: return CommandExecuteResult.UnresolvedCall(call.calleeName)
+    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCommand("")
+    val resolved = call.resolve().fold(
+        onSuccess = { it },
+        onFailure = { return it }
+    )
 
     val command = resolved.callee
 
     if (checkPermission && !command.permission.testPermission(caller)) {
-        return CommandExecuteResult.PermissionDenied(command, call.calleeName)
+        return CommandExecuteResult.PermissionDenied(command, call, resolved, call.calleeName)
     }
 
     return try {
         resolved.calleeSignature.call(resolved)
-        CommandExecuteResult.Success(resolved.callee, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.Success(resolved.callee, call, resolved, call.calleeName, EmptyMessageChain)
+    } catch (e: CommandArgumentParserException) {
+        CommandExecuteResult.IllegalArgument(e, resolved.callee, call, resolved, call.calleeName, EmptyMessageChain)
     } catch (e: Throwable) {
-        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call, resolved, call.calleeName, EmptyMessageChain)
     }
 }
 
