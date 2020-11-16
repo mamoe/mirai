@@ -58,9 +58,7 @@ public open class CommandDeclarationException : RuntimeException {
  * @see CommandValueArgumentParser
  * @see AbstractCommandValueArgumentParser.illegalArgument
  */
-public class CommandArgumentParserException : IllegalCommandArgumentException {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
+public class CommandArgumentParserException @JvmOverloads constructor(
+    message: String,
+    cause: Throwable? = null,
+) : IllegalCommandArgumentException(message, cause)

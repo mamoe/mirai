@@ -23,9 +23,7 @@ import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
  *
  * @see CommandArgumentParserException
  */
-public open class IllegalCommandArgumentException : IllegalArgumentException {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
+public open class IllegalCommandArgumentException @JvmOverloads constructor(
+    message: String,
+    cause: Throwable? = null,
+) : IllegalArgumentException(message, cause)
