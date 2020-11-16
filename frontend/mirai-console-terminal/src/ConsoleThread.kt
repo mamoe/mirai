@@ -71,19 +71,11 @@ internal fun startupConsoleThread() {
                 when (val result = ConsoleCommandSender.executeCommand(next)) {
                     is Success -> {
                     }
-                    is IllegalArgument -> {
-                        result.exception.message?.let { msg ->
-                            val err = result.exception
-                            if ((err.suppressed?.size ?: 0) != 0) {
-                                // 该 IllegalArgument 错误还存在其他附加错误
-                                consoleLogger.warning(result.exception)
-                            } else {
-                                consoleLogger.warning(msg)
-                                err.cause?.let { consoleLogger.warning(it) }
-                            }
-                        } ?: kotlin.run {
-                            consoleLogger.warning(result.exception)
-                        }
+                    is IllegalArgument -> { // user wouldn't want stacktrace for a parser error unless it is in debugging mode (to do).
+                        val message = result.exception.message
+                        if (message != null) {
+                            consoleLogger.warning(message)
+                        } else consoleLogger.warning(result.exception)
                     }
                     is ExecutionFailed -> {
                         consoleLogger.error(result.exception)
