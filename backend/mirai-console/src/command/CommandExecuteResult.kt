@@ -11,7 +11,6 @@
 
 package net.mamoe.mirai.console.command
 
-import net.mamoe.mirai.console.command.CommandExecuteResult.CommandExecuteStatus
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
@@ -29,9 +28,6 @@ import kotlin.contracts.contract
 @ConsoleExperimentalApi("Not yet implemented")
 @ExperimentalCommandDescriptors
 public sealed class CommandExecuteResult {
-    /** 指令最终执行状态 */
-    public abstract val status: CommandExecuteStatus
-
     /** 指令执行时发生的错误 (如果有) */
     public abstract val exception: Throwable?
 
@@ -57,9 +53,6 @@ public sealed class CommandExecuteResult {
     ) : CommandExecuteResult() {
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
-
-        /** 指令最终执行状态, 总是 [CommandExecuteStatus.SUCCESSFUL] */
-        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.SUCCESSFUL
     }
 
     /** 指令执行失败 */
@@ -75,10 +68,7 @@ public sealed class CommandExecuteResult {
         public override val call: CommandCall,
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall,
-    ) : Failure() {
-        /** 指令最终执行状态, 总是 [CommandExecuteStatus.EXECUTION_EXCEPTION] */
-        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.ILLEGAL_ARGUMENT
-    }
+    ) : Failure()
 
     /** 指令方法调用过程出现了错误 */
     public class ExecutionFailed(
@@ -90,10 +80,7 @@ public sealed class CommandExecuteResult {
         public override val call: CommandCall,
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall,
-    ) : Failure() {
-        /** 指令最终执行状态, 总是 [CommandExecuteStatus.EXECUTION_EXCEPTION] */
-        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.EXECUTION_EXCEPTION
-    }
+    ) : Failure()
 
     /** 没有匹配的指令 */
     public class UnresolvedCommand : Failure() {
@@ -108,9 +95,6 @@ public sealed class CommandExecuteResult {
 
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall? get() = null
-
-        /** 指令最终执行状态, 总是 [CommandExecuteStatus.UNRESOLVED_COMMAND] */
-        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.UNRESOLVED_COMMAND
     }
 
     /** 权限不足 */
@@ -124,9 +108,6 @@ public sealed class CommandExecuteResult {
     ) : Failure() {
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
-
-        /** 指令最终执行状态, 总是 [CommandExecuteStatus.PERMISSION_DENIED] */
-        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.PERMISSION_DENIED
     }
 
     /** 没有匹配的指令 */
@@ -146,32 +127,6 @@ public sealed class CommandExecuteResult {
 
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall? get() = null
-
-        /** 指令最终执行状态, 总是 [CommandExecuteStatus.UNMATCHED_SIGNATURE] */
-        public override val status: CommandExecuteStatus get() = CommandExecuteStatus.UNMATCHED_SIGNATURE
-    }
-
-    /**
-     * 指令的执行状态
-     */
-    public enum class CommandExecuteStatus {
-        /** 指令执行成功 */
-        SUCCESSFUL,
-
-        /** 指令执行过程出现了错误 */
-        EXECUTION_EXCEPTION,
-
-        /** 没有匹配的指令 */
-        UNMATCHED_SIGNATURE,
-
-        /** 没有匹配的指令 */
-        UNRESOLVED_COMMAND,
-
-        /** 权限不足 */
-        PERMISSION_DENIED,
-
-        /** 非法参数 */
-        ILLEGAL_ARGUMENT,
     }
 }
 
@@ -211,10 +166,6 @@ public sealed class FailureReason {
     public object TooManyArguments : ArgumentLengthMismatch()
     public object NotEnoughArguments : ArgumentLengthMismatch()
 }
-
-@ExperimentalCommandDescriptors
-@Suppress("RemoveRedundantQualifierName")
-public typealias CommandExecuteStatus = CommandExecuteResult.CommandExecuteStatus
 
 /**
  * 当 [this] 为 [CommandExecuteResult.Success] 时返回 `true`
