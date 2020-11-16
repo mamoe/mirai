@@ -17,8 +17,6 @@ import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
 import kotlin.contracts.contract
 
 /**
@@ -46,12 +44,6 @@ public sealed class CommandExecuteResult {
     /** 解析的 [ResolvedCommandCall] (如果匹配到) */
     public abstract val resolvedCall: ResolvedCommandCall?
 
-    /** 尝试执行的指令名 (如果匹配到) */
-    public abstract val commandName: String?
-
-    /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-    public abstract val args: MessageChain?
-
     // abstract val to allow smart casting
 
     /** 指令执行成功 */
@@ -62,10 +54,6 @@ public sealed class CommandExecuteResult {
         public override val call: CommandCall,
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall,
-        /** 尝试执行的指令名 */
-        public override val commandName: String,
-        /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        public override val args: MessageChain,
     ) : CommandExecuteResult() {
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
@@ -87,10 +75,6 @@ public sealed class CommandExecuteResult {
         public override val call: CommandCall,
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall,
-        /** 尝试执行的指令名 */
-        public override val commandName: String,
-        /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        public override val args: MessageChain,
     ) : Failure() {
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.EXECUTION_EXCEPTION] */
         public override val status: CommandExecuteStatus get() = CommandExecuteStatus.ILLEGAL_ARGUMENT
@@ -106,20 +90,13 @@ public sealed class CommandExecuteResult {
         public override val call: CommandCall,
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall,
-        /** 尝试执行的指令名 */
-        public override val commandName: String,
-        /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        public override val args: MessageChain,
     ) : Failure() {
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.EXECUTION_EXCEPTION] */
         public override val status: CommandExecuteStatus get() = CommandExecuteStatus.EXECUTION_EXCEPTION
     }
 
     /** 没有匹配的指令 */
-    public class UnresolvedCommand(
-        /** 尝试执行的指令名 */
-        public override val commandName: String,
-    ) : Failure() {
+    public class UnresolvedCommand : Failure() {
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
 
@@ -131,9 +108,6 @@ public sealed class CommandExecuteResult {
 
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall? get() = null
-
-        /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        public override val args: Nothing? get() = null
 
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.UNRESOLVED_COMMAND] */
         public override val status: CommandExecuteStatus get() = CommandExecuteStatus.UNRESOLVED_COMMAND
@@ -147,12 +121,7 @@ public sealed class CommandExecuteResult {
         public override val call: CommandCall,
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall,
-        /** 尝试执行的指令名 */
-        public override val commandName: String,
     ) : Failure() {
-        /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        public override val args: Nothing? get() = null
-
         /** 指令执行时发生的错误, 总是 `null` */
         public override val exception: Nothing? get() = null
 
@@ -162,8 +131,6 @@ public sealed class CommandExecuteResult {
 
     /** 没有匹配的指令 */
     public class UnmatchedSignature(
-        /** 尝试执行的指令名 */
-        public override val commandName: String,
         /** 尝试执行的指令 */
         public override val command: Command,
         /** 尝试执行的指令 */
@@ -179,9 +146,6 @@ public sealed class CommandExecuteResult {
 
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall? get() = null
-
-        /** 基础分割后的实际参数列表, 元素类型可能为 [Message] 或 [String] */
-        public override val args: Nothing? get() = null
 
         /** 指令最终执行状态, 总是 [CommandExecuteStatus.UNMATCHED_SIGNATURE] */
         public override val status: CommandExecuteStatus get() = CommandExecuteStatus.UNMATCHED_SIGNATURE

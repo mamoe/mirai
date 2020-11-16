@@ -70,7 +70,7 @@ internal fun startupConsoleThread() {
                         consoleLogger.error(result.exception)
                     }
                     is UnresolvedCommand -> {
-                        consoleLogger.warning { "未知指令: ${result.commandName}, 输入 ? 获取帮助" }
+                        consoleLogger.warning { "未知指令: ${next}, 输入 ? 获取帮助" }
                     }
                     is PermissionDenied -> {
                         consoleLogger.warning { "权限不足." }

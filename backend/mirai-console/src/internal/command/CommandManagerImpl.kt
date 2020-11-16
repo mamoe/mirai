@@ -27,7 +27,6 @@ import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.message.data.EmptyMessageChain
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.message.data.content
@@ -178,7 +177,7 @@ internal suspend fun executeCommandImpl(
     caller: CommandSender,
     checkPermission: Boolean,
 ): CommandExecuteResult {
-    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCommand("")
+    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCommand()
     val resolved = call.resolve().fold(
         onSuccess = { it },
         onFailure = { return it }
@@ -187,16 +186,16 @@ internal suspend fun executeCommandImpl(
     val command = resolved.callee
 
     if (checkPermission && !command.permission.testPermission(caller)) {
-        return CommandExecuteResult.PermissionDenied(command, call, resolved, call.calleeName)
+        return CommandExecuteResult.PermissionDenied(command, call, resolved)
     }
 
     return try {
         resolved.calleeSignature.call(resolved)
-        CommandExecuteResult.Success(resolved.callee, call, resolved, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.Success(resolved.callee, call, resolved)
     } catch (e: CommandArgumentParserException) {
-        CommandExecuteResult.IllegalArgument(e, resolved.callee, call, resolved, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.IllegalArgument(e, resolved.callee, call, resolved)
     } catch (e: Throwable) {
-        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call, resolved, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call, resolved)
     }
 }
 
