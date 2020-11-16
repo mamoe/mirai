@@ -241,7 +241,7 @@ internal class CommandReflector(
             .map { (name, function) ->
 
                 val functionNameAsValueParameter =
-                    name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameter(index, s) }
+                    name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameterForName(index, s) }
                         .orEmpty()
 
                 val functionValueParameters =
@@ -297,8 +297,8 @@ internal class CommandReflector(
         return CommandReceiverParameter(this.type.isMarkedNullable, this.type)
     }
 
-    private fun createStringConstantParameter(index: Int, expectingValue: String): AbstractCommandValueParameter.StringConstant {
-        return AbstractCommandValueParameter.StringConstant("#$index", expectingValue)
+    private fun createStringConstantParameterForName(index: Int, expectingValue: String): AbstractCommandValueParameter.StringConstant {
+        return AbstractCommandValueParameter.StringConstant("#$index", expectingValue, true)
     }
 
     private fun KParameter.toUserDefinedCommandParameter(): AbstractCommandValueParameter.UserDefinedType<*> {
