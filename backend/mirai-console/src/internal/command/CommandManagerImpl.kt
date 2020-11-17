@@ -193,11 +193,8 @@ internal suspend fun executeCommandImpl(
         }
 
     val resolved = call
-        .resolve().fold(
-            onSuccess = { it },
-            onFailure = { return it }
-        )
-        .ifNull { return CommandExecuteResult.UnresolvedCommand(call) }
+        .resolve()
+        .getOrElse { return it }
         .let { raw ->
             raw.intercepted()
                 .getOrElse { return CommandExecuteResult.Intercepted(call, raw, null, it) }

@@ -32,20 +32,33 @@ public class CommandResolveResult private constructor(
     public val failure: CommandExecuteResult.Failure?
         get() = value.safeCast()
 
-    public inline fun <R> fold(
-        onSuccess: (ResolvedCommandCall?) -> R,
-        onFailure: (CommandExecuteResult.Failure) -> R,
-    ): R {
-        contract {
-            callsInPlace(onSuccess, InvocationKind.AT_MOST_ONCE)
-            callsInPlace(onFailure, InvocationKind.AT_MOST_ONCE)
-        }
-        failure?.let(onFailure)?.let { return it }
-        return call.let(onSuccess)
-    }
-
     public constructor(call: ResolvedCommandCall?) : this(call as Any?)
     public constructor(failure: CommandExecuteResult.Failure) : this(failure as Any)
+}
+
+@OptIn(ExperimentalCommandDescriptors::class)
+public inline fun <R> CommandResolveResult.fold(
+    onSuccess: (ResolvedCommandCall?) -> R,
+    onFailure: (CommandExecuteResult.Failure) -> R,
+): R {
+    contract {
+        callsInPlace(onSuccess, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(onFailure, InvocationKind.AT_MOST_ONCE)
+    }
+    failure?.let(onFailure)?.let { return it }
+    return call.let(onSuccess)
+}
+
+
+@OptIn(ExperimentalCommandDescriptors::class)
+public inline fun CommandResolveResult.getOrElse(
+    onFailure: (CommandExecuteResult.Failure) -> ResolvedCommandCall,
+): ResolvedCommandCall {
+    contract {
+        callsInPlace(onFailure, InvocationKind.AT_MOST_ONCE)
+    }
+    failure?.let(onFailure)?.let { return it }
+    return call!!
 }
 
 /**
