@@ -19,6 +19,7 @@ import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
 import net.mamoe.mirai.console.internal.util.findLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.yamlkt.Yaml
 
@@ -34,35 +35,6 @@ import net.mamoe.yamlkt.Yaml
  */
 public interface JvmPluginDescription : PluginDescription {
     public companion object {
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            "Use top-level function instead",
-            ReplaceWith("JvmPluginDescription(id, version, block)", "net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription"),
-            DeprecationLevel.ERROR
-        )
-        @JvmName("create")
-        public inline fun invoke(
-            @ResolveContext(PLUGIN_ID) id: String,
-            @ResolveContext(SEMANTIC_VERSION) version: String,
-            @ResolveContext(PLUGIN_NAME) name: String = id,
-            block: JvmPluginDescriptionBuilder.() -> Unit = {},
-        ): JvmPluginDescription = error("Shouldn't be called")
-
-        @Suppress("UNUSED_PARAMETER")
-        @Deprecated(
-            "Use top-level function instead",
-            ReplaceWith("JvmPluginDescription(id, version, block)", "net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription"),
-            DeprecationLevel.ERROR
-        )
-        @JvmName("create")
-        @JvmSynthetic
-        public inline fun invoke(
-            @ResolveContext(PLUGIN_ID) id: String,
-            version: SemVersion,
-            @ResolveContext(PLUGIN_NAME) name: String = id,
-            block: JvmPluginDescriptionBuilder.() -> Unit = {},
-        ): JvmPluginDescription = error("Shouldn't be called")
-
         /**
          * 从 [pluginClassloader] 读取资源文件 [filename] 并以 YAML 格式解析为 [SimpleJvmPluginDescription]
          *
@@ -71,6 +43,7 @@ public interface JvmPluginDescription : PluginDescription {
          */
         // @JvmOverloads // compiler error
         @JvmStatic
+        @ConsoleExperimentalApi
         public fun loadFromResource(
             filename: String = "plugin.yml",
             pluginClassloader: ClassLoader = CallerFinder.getCaller()?.findLoader() ?: error("Cannot find caller classloader, please specify manually."),
