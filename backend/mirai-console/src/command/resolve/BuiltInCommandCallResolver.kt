@@ -9,16 +9,12 @@
 
 package net.mamoe.mirai.console.command.resolve
 
-import net.mamoe.mirai.console.command.Command
-import net.mamoe.mirai.console.command.CommandManager
-import net.mamoe.mirai.console.command.CommandSender
+import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isNotAcceptable
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
 import net.mamoe.mirai.console.command.parse.DefaultCommandValueArgument
-import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
-import net.mamoe.mirai.console.extensions.CommandCallResolverProviderImpl
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.safeCast
@@ -31,21 +27,26 @@ import net.mamoe.mirai.message.data.asMessageChain
 @ConsoleExperimentalApi
 @ExperimentalCommandDescriptors
 public object BuiltInCommandCallResolver : CommandCallResolver {
-    public object Provider : CommandCallResolverProvider by CommandCallResolverProviderImpl(BuiltInCommandCallResolver)
-
-    override fun resolve(call: CommandCall): ResolvedCommandCall? {
-        val callee = CommandManager.matchCommand(call.calleeName) ?: return null
+    override fun resolve(call: CommandCall): CommandResolveResult {
+        val callee = CommandManager.matchCommand(call.calleeName) ?: return CommandResolveResult(null)
 
         val valueArguments = call.valueArguments
         val context = callee.safeCast<CommandArgumentContextAware>()?.context
 
-        val signature = resolveImpl(call.caller, callee, valueArguments, context) ?: return null
+        val errorSink = ErrorSink()
+        val signature = resolveImpl(call.caller, callee, valueArguments, context, errorSink) ?: kotlin.run {
+            return CommandResolveResult(errorSink.createFailure(call, callee))
+        }
 
-        return ResolvedCommandCallImpl(call.caller,
-            callee,
-            signature.signature,
-            signature.zippedArguments.map { it.second },
-            context ?: EmptyCommandArgumentContext)
+        return CommandResolveResult(
+            ResolvedCommandCallImpl(
+                call.caller,
+                callee,
+                signature.signature,
+                signature.zippedArguments.map { it.second },
+                context ?: EmptyCommandArgumentContext
+            )
+        )
     }
 
     private data class ResolveData(
@@ -62,76 +63,121 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
         val acceptance: ArgumentAcceptance,
     )
 
+    private class ErrorSink {
+        private val unmatchedCommandSignatures = mutableListOf<UnmatchedCommandSignature>()
+        private val resolutionAmbiguities = mutableListOf<CommandSignature>()
+
+        fun reportUnmatched(failure: UnmatchedCommandSignature) {
+            unmatchedCommandSignatures.add(failure)
+        }
+
+        fun reportAmbiguity(resolutionAmbiguity: CommandSignature) {
+            resolutionAmbiguities.add(resolutionAmbiguity)
+        }
+
+        fun createFailure(call: CommandCall, command: Command): CommandExecuteResult.Failure {
+            val failureReasons = unmatchedCommandSignatures.toMutableList()
+            val rA = FailureReason.ResolutionAmbiguity(resolutionAmbiguities)
+            failureReasons.addAll(resolutionAmbiguities.map { UnmatchedCommandSignature(it, rA) })
+            return CommandExecuteResult.UnmatchedSignature(command, call, unmatchedCommandSignatures)
+        }
+
+    }
+
+    private
+    fun CommandSignature.toResolveData(
+        caller: CommandSender,
+        valueArguments: List<CommandValueArgument>,
+        context: CommandArgumentContext?,
+        errorSink: ErrorSink,
+    ): ResolveData? {
+        val signature = this
+        val receiverParameter = signature.receiverParameter
+        if (receiverParameter?.type?.classifierAsKClass()?.isInstance(caller) == false) {
+            errorSink.reportUnmatched(
+                UnmatchedCommandSignature(signature, FailureReason.InapplicableReceiverArgument(receiverParameter, caller))
+            )// not compatible receiver
+            return null
+        }
+
+        val valueParameters = signature.valueParameters
+
+        val zipped = valueParameters.zip(valueArguments).toMutableList()
+
+        val remainingParameters = valueParameters.drop(zipped.size).toMutableList()
+
+        if (remainingParameters.any { !it.isOptional && !it.isVararg }) {
+            errorSink.reportUnmatched(UnmatchedCommandSignature(signature, FailureReason.NotEnoughArguments))// not enough args. // vararg can be empty.
+            return null
+        }
+
+        return if (zipped.isEmpty()) {
+            ResolveData(
+                signature = signature,
+                zippedArguments = emptyList(),
+                argumentAcceptances = emptyList(),
+                remainingParameters = remainingParameters,
+            )
+        } else {
+            if (valueArguments.size > valueParameters.size && zipped.last().first.isVararg) {
+                // merge vararg arguments
+                val (varargParameter, _)
+                    = zipped.removeLast()
+
+                zipped.add(varargParameter to DefaultCommandValueArgument(valueArguments.drop(zipped.size).map { it.value }.asMessageChain()))
+            } else {
+                // add default empty vararg argument
+                val remainingVararg = remainingParameters.find { it.isVararg }
+                if (remainingVararg != null) {
+                    zipped.add(remainingVararg to DefaultCommandValueArgument(EmptyMessageChain))
+                    remainingParameters.remove(remainingVararg)
+                }
+            }
+
+            ResolveData(
+                signature = signature,
+                zippedArguments = zipped,
+                argumentAcceptances = zipped.mapIndexed { index, (parameter, argument) ->
+                    val accepting = parameter.accepting(argument, context)
+                    if (accepting.isNotAcceptable) {
+                        errorSink.reportUnmatched(UnmatchedCommandSignature(signature,
+                            FailureReason.InapplicableValueArgument(parameter, argument)))// argument type not assignable
+                        return null
+                    }
+                    ArgumentAcceptanceWithIndex(index, accepting)
+                },
+                remainingParameters = remainingParameters
+            )
+        }
+    }
+
     private fun resolveImpl(
         caller: CommandSender,
         callee: Command,
         valueArguments: List<CommandValueArgument>,
         context: CommandArgumentContext?,
+        errorSink: ErrorSink,
     ): ResolveData? {
 
         callee.overloads
             .mapNotNull l@{ signature ->
-                if (signature.receiverParameter?.type?.classifierAsKClass()?.isInstance(caller) == false) {
-                    return@l null // not compatible receiver
-                }
-
-                val valueParameters = signature.valueParameters
-
-                val zipped = valueParameters.zip(valueArguments).toMutableList()
-
-                val remainingParameters = valueParameters.drop(zipped.size).toMutableList()
-
-                if (remainingParameters.any { !it.isOptional && !it.isVararg }) return@l null // not enough args. // vararg can be empty.
-
-                if (zipped.isEmpty()) {
-                    ResolveData(
-                        signature = signature,
-                        zippedArguments = emptyList(),
-                        argumentAcceptances = emptyList(),
-                        remainingParameters = remainingParameters,
-                    )
-                } else {
-                    if (valueArguments.size > valueParameters.size && zipped.last().first.isVararg) {
-                        // merge vararg arguments
-                        val (varargParameter, _)
-                            = zipped.removeLast()
-
-                        zipped.add(varargParameter to DefaultCommandValueArgument(valueArguments.drop(zipped.size).map { it.value }.asMessageChain()))
-                    } else {
-                        // add default empty vararg argument
-                        val remainingVararg = remainingParameters.find { it.isVararg }
-                        if (remainingVararg != null) {
-                            zipped.add(remainingVararg to DefaultCommandValueArgument(EmptyMessageChain))
-                            remainingParameters.remove(remainingVararg)
-                        }
-                    }
-
-                    ResolveData(
-                        signature = signature,
-                        zippedArguments = zipped,
-                        argumentAcceptances = zipped.mapIndexed { index, (parameter, argument) ->
-                            val accepting = parameter.accepting(argument, context)
-                            if (accepting.isNotAcceptable) {
-                                return@l null // argument type not assignable
-                            }
-                            ArgumentAcceptanceWithIndex(index, accepting)
-                        },
-                        remainingParameters = remainingParameters
-                    )
-                }
+                signature.toResolveData(caller, valueArguments, context, errorSink)
             }
-            .also { result -> result.singleOrNull()?.let { return it } }
+            .also { result -> result.takeSingleResolveData()?.let { return it } }
             .takeLongestMatches()
             .ifEmpty { return null }
-            .also { result -> result.singleOrNull()?.let { return it } }
+            .also { result -> result.takeSingleResolveData()?.let { return it } }
             // take single ArgumentAcceptance.Direct
             .also { list ->
 
                 val candidates = list
+                    .asSequence().filterIsInstance<ResolveData>()
                     .flatMap { phase ->
                         phase.argumentAcceptances.filter { it.acceptance is ArgumentAcceptance.Direct }.map { phase to it }
-                    }
+                    }.toList()
+
                 candidates.singleOrNull()?.let { return it.first } // single Direct
+
                 if (candidates.distinctBy { it.second.index }.size != candidates.size) {
                     // Resolution ambiguity
                     /*
@@ -145,12 +191,16 @@ public object BuiltInCommandCallResolver : CommandCallResolver {
                     fun foo(a: AA, c: C) = 1
                      */
                     // The call is foo(AA(), C()) or foo(A(), CC())
-                    return null
+
+                    candidates.forEach { candidate -> errorSink.reportAmbiguity(candidate.first.signature) }
+
                 }
             }
 
         return null
     }
+
+    private fun Collection<Any>.takeSingleResolveData() = asSequence().filterIsInstance<ResolveData>().singleOrNull()
 
     /*
 

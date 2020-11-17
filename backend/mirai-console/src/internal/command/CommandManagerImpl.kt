@@ -17,6 +17,7 @@ import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.findDuplicate
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
@@ -26,7 +27,6 @@ import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.message.data.EmptyMessageChain
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.message.data.content
@@ -94,7 +94,9 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
                     sender.catchExecutionException(result.exception)
                     intercept()
                 }
-                is CommandExecuteResult.UnresolvedCall -> {
+                is CommandExecuteResult.UnmatchedSignature,
+                is CommandExecuteResult.UnresolvedCommand,
+                -> {
                     // noop
                 }
             }
@@ -175,20 +177,25 @@ internal suspend fun executeCommandImpl(
     caller: CommandSender,
     checkPermission: Boolean,
 ): CommandExecuteResult {
-    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCall("")
-    val resolved = call.resolve() ?: return CommandExecuteResult.UnresolvedCall(call.calleeName)
+    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCommand(null)
+    val resolved = call.resolve().fold(
+        onSuccess = { it },
+        onFailure = { return it }
+    ) ?: return CommandExecuteResult.UnresolvedCommand(call)
 
     val command = resolved.callee
 
     if (checkPermission && !command.permission.testPermission(caller)) {
-        return CommandExecuteResult.PermissionDenied(command, call.calleeName)
+        return CommandExecuteResult.PermissionDenied(command, call, resolved)
     }
 
     return try {
         resolved.calleeSignature.call(resolved)
-        CommandExecuteResult.Success(resolved.callee, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.Success(resolved.callee, call, resolved)
+    } catch (e: CommandArgumentParserException) {
+        CommandExecuteResult.IllegalArgument(e, resolved.callee, call, resolved)
     } catch (e: Throwable) {
-        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call, resolved)
     }
 }
 

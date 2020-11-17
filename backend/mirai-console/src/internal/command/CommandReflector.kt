@@ -144,30 +144,34 @@ internal class CommandReflector(
     }
 
     fun generateUsage(overloads: Iterable<CommandSignatureFromKFunction>): String {
-        return overloads.joinToString("\n") { subcommand ->
-            buildString {
-                if (command.prefixOptional) {
-                    append("(")
-                    append(CommandManager.commandPrefix)
-                    append(")")
-                } else {
-                    append(CommandManager.commandPrefix)
-                }
-                //if (command is CompositeCommand) {
-                append(command.primaryName)
-                append(" ")
-                //}
-                append(subcommand.valueParameters.joinToString(" ") { it.render() })
-                annotationResolver.getDescription(command, subcommand.originFunction)?.let { description ->
-                    append("    # ")
-                    append(description)
+        return generateUsage(command, annotationResolver, overloads)
+    }
+
+    companion object {
+        fun generateUsage(command: Command, annotationResolver: SubCommandAnnotationResolver?, overloads: Iterable<CommandSignature>): String {
+            return overloads.joinToString("\n") { subcommand ->
+                buildString {
+                    if (command.prefixOptional) {
+                        append("(")
+                        append(CommandManager.commandPrefix)
+                        append(")")
+                    } else {
+                        append(CommandManager.commandPrefix)
+                    }
+                    //if (command is CompositeCommand) {
+                    append(command.primaryName)
+                    append(" ")
+                    //}
+                    append(subcommand.valueParameters.joinToString(" ") { it.render() })
+                    if (annotationResolver != null && subcommand is CommandSignatureFromKFunction) {
+                        annotationResolver.getDescription(command, subcommand.originFunction)?.let { description ->
+                            append("    # ")
+                            append(description)
+                        }
+                    }
                 }
             }
         }
-    }
-
-
-    companion object {
 
         private fun <T> AbstractCommandValueParameter<T>.render(): String {
             return when (this) {
@@ -237,7 +241,7 @@ internal class CommandReflector(
             .map { (name, function) ->
 
                 val functionNameAsValueParameter =
-                    name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameter(index, s) }
+                    name?.split(' ')?.mapIndexed { index, s -> createStringConstantParameterForName(index, s) }
                         .orEmpty()
 
                 val functionValueParameters =
@@ -293,8 +297,8 @@ internal class CommandReflector(
         return CommandReceiverParameter(this.type.isMarkedNullable, this.type)
     }
 
-    private fun createStringConstantParameter(index: Int, expectingValue: String): AbstractCommandValueParameter.StringConstant {
-        return AbstractCommandValueParameter.StringConstant("#$index", expectingValue)
+    private fun createStringConstantParameterForName(index: Int, expectingValue: String): AbstractCommandValueParameter.StringConstant {
+        return AbstractCommandValueParameter.StringConstant("#$index", expectingValue, true)
     }
 
     private fun KParameter.toUserDefinedCommandParameter(): AbstractCommandValueParameter.UserDefinedType<*> {

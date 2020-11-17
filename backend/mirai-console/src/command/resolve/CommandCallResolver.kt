@@ -9,11 +9,44 @@
 
 package net.mamoe.mirai.console.command.resolve
 
+import net.mamoe.mirai.console.command.CommandExecuteResult
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.extensions.CommandCallResolverProvider
 import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
+import net.mamoe.mirai.console.util.safeCast
+import org.jetbrains.annotations.Contract
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+
+@ExperimentalCommandDescriptors
+public class CommandResolveResult private constructor(
+    internal val value: Any?,
+) {
+    @get:Contract(pure = true)
+    public val call: ResolvedCommandCall?
+        get() = value.safeCast()
+
+    @get:Contract(pure = true)
+    public val failure: CommandExecuteResult.Failure?
+        get() = value.safeCast()
+
+    public inline fun <R> fold(
+        onSuccess: (ResolvedCommandCall?) -> R,
+        onFailure: (CommandExecuteResult.Failure) -> R,
+    ): R {
+        contract {
+            callsInPlace(onSuccess, InvocationKind.AT_MOST_ONCE)
+            callsInPlace(onFailure, InvocationKind.AT_MOST_ONCE)
+        }
+        failure?.let(onFailure)?.let { return it }
+        return call.let(onSuccess)
+    }
+
+    public constructor(call: ResolvedCommandCall?) : this(call as Any?)
+    public constructor(failure: CommandExecuteResult.Failure) : this(failure as Any)
+}
 
 /**
  * The resolver converting a [CommandCall] into [ResolvedCommandCall] based on registered []
@@ -23,19 +56,17 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
  */
 @ExperimentalCommandDescriptors
 public interface CommandCallResolver {
-    public fun resolve(call: CommandCall): ResolvedCommandCall?
+    public fun resolve(call: CommandCall): CommandResolveResult
 
     public companion object {
         @JvmName("resolveCall")
         @ConsoleExperimentalApi
         @ExperimentalCommandDescriptors
-        public fun CommandCall.resolve(): ResolvedCommandCall? {
+        public fun CommandCall.resolve(): CommandResolveResult {
             GlobalComponentStorage.run {
-                CommandCallResolverProvider.useExtensions { provider ->
-                    provider.instance.resolve(this@resolve)?.let { return it }
-                }
+                val instance = CommandCallResolverProvider.findSingletonInstance(CommandCallResolverProvider.builtinImplementation)
+                return instance.resolve(this@resolve)
             }
-            return null
         }
     }
 }

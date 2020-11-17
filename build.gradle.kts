@@ -26,6 +26,7 @@ allprojects {
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         jcenter()
         mavenCentral()
+        maven(url = "https://dl.bintray.com/karlatemp/misc")
     }
 }
 

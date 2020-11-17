@@ -75,15 +75,15 @@ public sealed class ArgumentAcceptance(
 ) {
     public object Direct : ArgumentAcceptance(Int.MAX_VALUE)
 
-    public class WithTypeConversion(
+    public data class WithTypeConversion(
         public val typeVariant: TypeVariant<*>,
     ) : ArgumentAcceptance(20)
 
-    public class WithContextualConversion(
+    public data class WithContextualConversion(
         public val parser: CommandValueArgumentParser<*>,
     ) : ArgumentAcceptance(10)
 
-    public class ResolutionAmbiguity(
+    public data class ResolutionAmbiguity(
         public val candidates: List<TypeVariant<*>>,
     ) : ArgumentAcceptance(0)
 
@@ -101,7 +101,7 @@ public sealed class ArgumentAcceptance(
 }
 
 @ExperimentalCommandDescriptors
-public class CommandReceiverParameter<T : CommandSender>(
+public data class CommandReceiverParameter<T : CommandSender>(
     override val isOptional: Boolean,
     override val type: KType,
 ) : CommandParameter<T>, AbstractCommandParameter<T>() {
@@ -165,10 +165,11 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
     }
 
     @ConsoleExperimentalApi
-    public class StringConstant(
+    public data class StringConstant(
         @ConsoleExperimentalApi
         public override val name: String?,
         public val expectingValue: String,
+        public val ignoreCase: Boolean,
     ) : AbstractCommandValueParameter<String>() {
         public override val type: KType get() = STRING_TYPE
         public override val isOptional: Boolean get() = false
@@ -186,7 +187,7 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         override fun toString(): String = "<$expectingValue>"
 
         override fun acceptingImpl(expectingType: KType, argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
-            return if (argument.value.content == expectingValue) {
+            return if (argument.value.content.equals(expectingValue, ignoreCase)) {
                 ArgumentAcceptance.Direct
             } else ArgumentAcceptance.Impossible
         }
@@ -201,7 +202,7 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
      * @see createOptional
      * @see createRequired
      */
-    public class UserDefinedType<T>(
+    public data class UserDefinedType<T>(
         public override val name: String?,
         public override val isOptional: Boolean,
         public override val isVararg: Boolean,

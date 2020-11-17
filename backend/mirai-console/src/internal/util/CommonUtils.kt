@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.console.internal.util
 
+import io.github.karlatemp.caller.StackFrame
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
 
 internal inline fun <reified E : Throwable, R> runIgnoreException(block: () -> R): R? {
@@ -31,19 +32,9 @@ internal inline fun <reified E : Throwable> runIgnoreException(block: () -> Unit
     }
 }
 
-internal fun getCallerClassloader(): ClassLoader? {
+internal fun StackFrame.findLoader(): ClassLoader? {
+    classInstance?.let { return it.classLoader }
     return runCatching {
-        /*
-        java.base/java.lang.Thread.getStackTrace(Thread.java:1598)
-        net.mamoe.mirai.console.internal.util.CommonUtils.getCallerClassloader(CommonUtils.kt:37)
-        net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription$Companion.loadFromResource$default(JvmPluginDescription.kt:67)
-        net.mamoe.mirai.console.KotlinP.<init>(TestMiraiConosle.kt:34)
-        net.mamoe.mirai.console.KotlinP.<clinit>(TestMiraiConosle.kt:34)
-        net.mamoe.mirai.console.TestMiraiConosleKt.main(TestMiraiConosle.kt:37)
-        net.mamoe.mirai.console.TestMiraiConosleKt.main(TestMiraiConosle.kt)
-         */
-        val traces = Thread.currentThread().stackTrace
-        val classname = traces[3].className
-        BuiltInJvmPluginLoaderImpl.classLoaders.firstOrNull { it.findClass(classname, true) != null }
+        BuiltInJvmPluginLoaderImpl.classLoaders.firstOrNull { it.findClass(className, true) != null }
     }.getOrNull()
 }
