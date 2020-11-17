@@ -7,12 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:JvmName("CommonUtils")
+@file:JvmName("CommonUtils") // maintain binary compatibility
 
 package net.mamoe.mirai.console.internal.util
 
 import io.github.karlatemp.caller.StackFrame
 import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 internal inline fun <reified E : Throwable, R> runIgnoreException(block: () -> R): R? {
     try {
@@ -37,4 +39,10 @@ internal fun StackFrame.findLoader(): ClassLoader? {
     return runCatching {
         BuiltInJvmPluginLoaderImpl.classLoaders.firstOrNull { it.findClass(className, true) != null }
     }.getOrNull()
+}
+
+@PublishedApi
+internal inline fun assertionError(message: () -> String): Nothing {
+    contract { callsInPlace(message, InvocationKind.EXACTLY_ONCE) }
+    throw AssertionError(message())
 }
