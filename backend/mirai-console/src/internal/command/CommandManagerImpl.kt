@@ -20,8 +20,11 @@ import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
+import net.mamoe.mirai.console.command.resolve.CommandCallInterceptor.Companion.intercepted
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
+import net.mamoe.mirai.console.command.resolve.getOrElse
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.event.Listener
@@ -173,15 +176,32 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
 // Don't move into CommandManager, compilation error / VerifyError
 @OptIn(ExperimentalCommandDescriptors::class)
 internal suspend fun executeCommandImpl(
-    message: Message,
+    message0: Message,
     caller: CommandSender,
     checkPermission: Boolean,
 ): CommandExecuteResult {
-    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCommand(null)
-    val resolved = call.resolve().fold(
-        onSuccess = { it },
-        onFailure = { return it }
-    ) ?: return CommandExecuteResult.UnresolvedCommand(call)
+    val message = message0
+        .intercepted(caller)
+        .getOrElse { return CommandExecuteResult.Intercepted(null, null, null, it) }
+
+    val call = message.asMessageChain()
+        .parseCommandCall(caller)
+        .ifNull { return CommandExecuteResult.UnresolvedCommand(null) }
+        .let { raw ->
+            raw.intercepted()
+                .getOrElse { return CommandExecuteResult.Intercepted(raw, null, null, it) }
+        }
+
+    val resolved = call
+        .resolve().fold(
+            onSuccess = { it },
+            onFailure = { return it }
+        )
+        .ifNull { return CommandExecuteResult.UnresolvedCommand(call) }
+        .let { raw ->
+            raw.intercepted()
+                .getOrElse { return CommandExecuteResult.Intercepted(call, raw, null, it) }
+        }
 
     val command = resolved.callee
 
