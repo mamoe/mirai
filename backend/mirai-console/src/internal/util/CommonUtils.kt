@@ -41,10 +41,17 @@ internal fun StackFrame.findLoader(): ClassLoader? {
     }.getOrNull()
 }
 
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@kotlin.internal.LowPriorityInOverloadResolution
 internal inline fun <T : Any> T?.ifNull(block: () -> T): T {
     contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
     return this ?: block()
 }
+
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated("Useless ifNull on not null value.")
+@JvmName("ifNull1")
+internal inline fun <T : Any> T.ifNull(block: () -> T): T = this
 
 @PublishedApi
 internal inline fun assertionError(message: () -> String = { "Reached an unexpected branch." }): Nothing {
