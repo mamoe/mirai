@@ -208,6 +208,8 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         public override val isVararg: Boolean,
         public override val type: KType,
     ) : AbstractCommandValueParameter<T>() {
+        override fun toString(): String = super.toString()
+
         init {
             requireNotNull(type.classifierAsKClassOrNull()) {
                 "type.classifier must be KClass."
@@ -237,7 +239,5 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
      * Extended by [CommandValueArgumentParser]
      */
     @ConsoleExperimentalApi
-    public abstract class Extended<T> : AbstractCommandValueParameter<T>() {
-        abstract override fun toString(): String
-    }
+    public abstract class Extended<T> : AbstractCommandValueParameter<T>() // For implementer: take care of toString()
 }

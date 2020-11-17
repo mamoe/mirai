@@ -181,8 +181,8 @@ internal class TestCommand {
     @Test
     fun `composite command descriptors`() {
         val overloads = TestCompositeCommand.overloads
-        assertEquals("CommandSignatureVariant(<mute>, seconds: Int = ...)", overloads[0].toString())
-        assertEquals("CommandSignatureVariant(<mute>, target: Long, seconds: Int)", overloads[1].toString())
+        assertEquals("CommandSignature(<mute>, seconds: Int = ...)", overloads[0].toString())
+        assertEquals("CommandSignature(<mute>, target: Long, seconds: Int)", overloads[1].toString())
     }
 
     @Test
