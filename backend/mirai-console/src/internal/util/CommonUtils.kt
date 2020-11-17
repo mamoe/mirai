@@ -41,8 +41,27 @@ internal fun StackFrame.findLoader(): ClassLoader? {
     }.getOrNull()
 }
 
+internal inline fun <T : Any> T?.ifNull(block: () -> T): T {
+    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
+    return this ?: block()
+}
+
 @PublishedApi
-internal inline fun assertionError(message: () -> String): Nothing {
+internal inline fun assertionError(message: () -> String = { "Reached an unexpected branch." }): Nothing {
     contract { callsInPlace(message, InvocationKind.EXACTLY_ONCE) }
     throw AssertionError(message())
 }
+
+@PublishedApi
+internal inline fun assertUnreachable(message: () -> String = { "Reached an unexpected branch." }): Nothing {
+    contract { callsInPlace(message, InvocationKind.EXACTLY_ONCE) }
+    throw AssertionError(message())
+}
+
+@MarkerUnreachableClause
+@PublishedApi
+internal inline val UNREACHABLE_CLAUSE: Nothing
+    get() = assertUnreachable()
+
+@DslMarker
+private annotation class MarkerUnreachableClause
