@@ -14,6 +14,7 @@ import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.
 import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.UserDefinedType.Companion.createRequired
 import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isAcceptable
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
+import net.mamoe.mirai.console.command.resolve.ResolvedCommandValueArgument
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.internal.data.classifierAsKClassOrNull
 import net.mamoe.mirai.console.internal.data.typeOf0
@@ -52,13 +53,31 @@ public abstract class AbstractCommandParameter<T> : CommandParameter<T> {
 }
 
 /**
- * Inherited instances must be [AbstractCommandValueParameter]
+ * Inherited instances must be [AbstractCommandValueParameter].
+ *
+ * ### Implementation details
+ *
+ * [CommandValueParameter] should:
+ * - implement [equals], [hashCode] since used in [ResolvedCommandValueArgument].
+ * - implement [toString] to produce user-friendly textual representation of this parameter with type info.
+ *
  */
 @ExperimentalCommandDescriptors
 public interface CommandValueParameter<T : Any?> : CommandParameter<T> {
 
     public val isVararg: Boolean
 
+    /**
+     * Checks whether this [CommandValueParameter] accepts [argument].
+     *
+     * An [argument] can be accepted if:
+     * - [CommandValueArgument.type] is subtype of, or equals to [CommandValueParameter.type] (nullability considered), or
+     * - [CommandValueArgument.typeVariants] produces
+     *
+     * @return `true` if [argument] may be accepted through any approach mentioned above.
+     *
+     * @see accepting
+     */
     public fun accepts(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): Boolean =
         accepting(argument, commandArgumentContext).isAcceptable
 

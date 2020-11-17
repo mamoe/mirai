@@ -12,29 +12,45 @@
 package net.mamoe.mirai.console.command.parse
 
 import net.mamoe.mirai.console.command.Command
+import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
+import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
+import net.mamoe.mirai.message.data.MessageChain
 
 /**
  * Unresolved [CommandCall].
  *
+ * ### Implementation details
+ * [CommandCall] should be _immutable_,
+ * meaning all of its properties must be *pure* and should be implemented as an immutable property, or delegated by a lazy initializer.
+ *
  * @see CommandCallParser
  * @see CommandCallResolver
+ *
+ * @see ResolvedCommandCall
  */
 @ExperimentalCommandDescriptors
 public interface CommandCall {
+    /**
+     * The [CommandSender] responsible to this call.
+     */
     public val caller: CommandSender
 
     /**
-     * One of callee [Command]'s [Command.allNames]
+     * One of callee [Command]'s [Command.allNames].
+     *
+     * Generally [CommandCallResolver] use [calleeName] to find target [Command] registered in [CommandManager]
      */
     public val calleeName: String
 
     /**
-     * Explicit value arguments
+     * Explicit value arguments parsed from raw [MessageChain] or implicit ones deduced by the [CommandCallResolver].
      */
     public val valueArguments: List<CommandValueArgument>
+
+    // maybe add contextual arguments, i.e. from MessageMetadata
 }
 
 @ExperimentalCommandDescriptors
