@@ -21,12 +21,7 @@ import kotlin.contracts.contract
 
 /**
  * 指令的执行返回
- *
- * 注意: 现阶段
- *
- * @see CommandExecuteStatus
  */
-@ConsoleExperimentalApi("Not yet implemented")
 @ExperimentalCommandDescriptors
 public sealed class CommandExecuteResult {
     /** 指令执行时发生的错误 (如果有) */
