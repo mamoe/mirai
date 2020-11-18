@@ -22,6 +22,9 @@ import net.mamoe.mirai.console.command.descriptor.PermitteeIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
@@ -214,6 +217,85 @@ public object BuiltInCommands {
         @SubCommand("listPermissions", "lp")
         public suspend fun CommandSender.listPermissions() {
             sendMessage(PermissionService.INSTANCE.getRegisteredPermissions().joinToString("\n") { it.id.toString() })
+        }
+    }
+
+
+    public object AutoLoginCommand : CompositeCommand(
+        ConsoleCommandOwner, "autoLogin", "自动登录",
+        description = "自动登录设置",
+    ), BuiltInCommandInternal {
+
+        @Description("添加自动登录")
+        @SubCommand
+        public suspend fun CommandSender.add(account: Long, password: String, passwordKind: PasswordKind = PLAIN) {
+            val accountStr = account.toString()
+            if (AutoLoginConfig.accounts.any { it.account == accountStr }) {
+                sendMessage("已有相同账号在自动登录配置中. 请先删除该账号.")
+                return
+            }
+            AutoLoginConfig.accounts.add(AutoLoginConfig.Account(accountStr, Password(passwordKind, password)))
+            sendMessage("已成功添加 '$account'.")
+        }
+
+        @Description("清除所有配置")
+        @SubCommand
+        public suspend fun CommandSender.clear() {
+            AutoLoginConfig.accounts.clear()
+            sendMessage("已清除所有自动登录配置.")
+        }
+
+        @Description("删除一个账号")
+        @SubCommand
+        public suspend fun CommandSender.remove(account: Long) {
+            val accountStr = account.toString()
+            if (AutoLoginConfig.accounts.removeIf { it.account == accountStr }) {
+                sendMessage("已成功删除 '$account'.")
+                return
+            }
+            sendMessage("账号 '$account' 未配置自动登录.")
+        }
+
+        @Description("设置一个账号的一个配置项")
+        @SubCommand
+        public suspend fun CommandSender.setConfig(account: Long, configKey: ConfigurationKey, value: String) {
+            val accountStr = account.toString()
+
+            val oldAccount = AutoLoginConfig.accounts.find { it.account == accountStr } ?: kotlin.run {
+                sendMessage("未找到账号 $account.")
+                return
+            }
+
+            if (value.isEmpty()) return removeConfig(account, configKey)
+
+            val newAccount = oldAccount.copy(configuration = oldAccount.configuration.toMutableMap().apply {
+                put(configKey, value)
+            })
+
+            AutoLoginConfig.accounts.remove(oldAccount)
+            AutoLoginConfig.accounts.add(newAccount)
+
+            sendMessage("成功修改 '$account' 的配置 '$configKey' 为 '$value'")
+        }
+
+        @Description("删除一个账号的一个配置项")
+        @SubCommand
+        public suspend fun CommandSender.removeConfig(account: Long, configKey: ConfigurationKey) {
+            val accountStr = account.toString()
+
+            val oldAccount = AutoLoginConfig.accounts.find { it.account == accountStr } ?: kotlin.run {
+                sendMessage("未找到账号 $account.")
+                return
+            }
+
+            val newAccount = oldAccount.copy(configuration = oldAccount.configuration.toMutableMap().apply {
+                remove(configKey)
+            })
+
+            AutoLoginConfig.accounts.remove(oldAccount)
+            AutoLoginConfig.accounts.add(newAccount)
+
+            sendMessage("成功删除 '$account' 的配置 '$configKey'.")
         }
     }
 }
