@@ -43,6 +43,7 @@ import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
+import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
@@ -51,6 +52,7 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.SemVersion
@@ -186,22 +188,22 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
 
-            PermissionServiceProvider.selectedInstance // init
-
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {
                     ConsoleDataScope.addAndReloadConfig(ps.config)
                     mainLogger.verbose { "Reloaded PermissionService settings." }
+                } else {
+                    mainLogger.info { "Loaded PermissionService from plugin ${PermissionServiceProvider.providerPlugin?.name}" }
                 }
             }
 
-            ConsoleCommandSender.permit(RootPermission)
+            runIgnoreException<UnsupportedOperationException> { ConsoleCommandSender.permit(RootPermission) }
         }
 
         phase `prepare commands`@{
             mainLogger.verbose { "Loading built-in commands..." }
             BuiltInCommands.registerAll()
-            mainLogger.verbose { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
+            mainLogger.info { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
             CommandManager
             // CommandManagerImpl.commandListener // start
         }
