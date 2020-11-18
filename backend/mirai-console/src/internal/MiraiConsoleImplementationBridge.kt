@@ -29,7 +29,6 @@ import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandConfig
-import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
@@ -201,7 +200,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             BuiltInCommands.registerAll()
             mainLogger.verbose { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
             CommandManager
-            CommandManagerImpl.commandListener // start
+            // CommandManagerImpl.commandListener // start
         }
 
         phase `enable plugins`@{

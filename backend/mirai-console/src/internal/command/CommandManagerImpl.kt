@@ -28,6 +28,7 @@ import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.event.Listener
+import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Message
@@ -67,35 +68,48 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
         return optionalPrefixCommandMap[commandName.toLowerCase()]
     }
 
+    @Deprecated("Deprecated since 1.0.0, to be extended by plugin.")
     internal val commandListener: Listener<MessageEvent> by lazy {
         subscribeAlways(
             coroutineContext = CoroutineExceptionHandler { _, throwable ->
                 logger.error(throwable)
             },
-            concurrency = Listener.ConcurrencyKind.CONCURRENT,
-            priority = Listener.EventPriority.HIGH
+            concurrency = CONCURRENT,
+            priority = Listener.EventPriority.NORMAL
         ) {
             val sender = this.toCommandSender()
 
+            fun isDebugging(command: Command?): Boolean {
+                if (command?.prefixOptional == false || message.content.startsWith(CommandManager.commandPrefix)) {
+                    if (MiraiConsoleImplementationBridge.loggerController.shouldLog("console.debug", SimpleLogger.LogPriority.DEBUG)) {
+                        return true
+                    }
+                }
+                return false
+            }
+
             when (val result = executeCommand(sender, message)) {
                 is CommandExecuteResult.PermissionDenied -> {
-                    if (!result.command.prefixOptional || message.content.startsWith(CommandManager.commandPrefix)) {
-                        if (MiraiConsoleImplementationBridge.loggerController.shouldLog("console.debug", SimpleLogger.LogPriority.DEBUG)) {
-                            sender.sendMessage("权限不足")
-                        }
-                        intercept()
+                    if (isDebugging(result.command)) {
+                        sender.sendMessage("权限不足. ${CommandManager.commandPrefix}${result.command.primaryName} 需要权限 ${result.command.permission.id}.")
+                        // intercept()
                     }
                 }
                 is CommandExecuteResult.IllegalArgument -> {
                     result.exception.message?.let { sender.sendMessage(it) }
-                    intercept()
+                    // intercept()
                 }
                 is CommandExecuteResult.Success -> {
-                    intercept()
+                    //  intercept()
                 }
                 is CommandExecuteResult.ExecutionFailed -> {
                     sender.catchExecutionException(result.exception)
-                    intercept()
+                    // intercept()
+                }
+                is CommandExecuteResult.Intercepted -> {
+                    if (isDebugging(result.command)) {
+                        sender.sendMessage("指令执行被拦截, 原因: ${result.reason}")
+                    }
                 }
                 is CommandExecuteResult.UnmatchedSignature,
                 is CommandExecuteResult.UnresolvedCommand,
