@@ -143,7 +143,7 @@ public interface MiraiConsole : CoroutineScope {
             return when (password) {
                 is ByteArray -> Bot(id, password, config)
                 is String -> Bot(id, password, config)
-                else -> null!!
+                else -> throw IllegalArgumentException("Bad password type: `${password.javaClass.name}`. Require ByteArray or String")
             }
         }
 
