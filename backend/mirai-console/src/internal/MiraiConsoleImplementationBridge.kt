@@ -30,6 +30,9 @@ import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.ConfigurationKey.protocol
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
 import net.mamoe.mirai.console.internal.data.castOrNull
@@ -217,20 +220,40 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         phase `auto-login bots`@{
             runBlocking {
-                for ((id, password) in AutoLoginConfig.plainPasswords.filterNot { it.key == 123456654321L }) {
-                    mainLogger.info { "Auto-login $id" }
-                    MiraiConsole.addBot(id, password).alsoLogin()
+                val accounts = AutoLoginConfig.accounts.toList()
+                for (account in accounts) {
+                    val id = kotlin.runCatching {
+                        account.account.toLong()
+                    }.getOrElse {
+                        error("Bad auto-login account: '${account.account}'")
+                    }
+                    if (id == 123456L) continue
+                    val config = BotConfiguration()
+                    for ((key, value) in account.configuration) {
+                        runCatching {
+                            when (key) {
+                                protocol -> config.protocol = BotConfiguration.MiraiProtocol.valueOf(value.toString())
+                            }
+                        }.onFailure {
+                            error("Bad auto-login config value for $key for account $id")
+                        }
+                    }
+                    when (account.password.kind) {
+                        PLAIN -> {
+                            mainLogger.info { "Auto-login ${account.account}" }
+                            MiraiConsole.addBot(id, account.password.value).alsoLogin()
+                        }
+                        MD5 -> {
+                            val md5 = kotlin.runCatching {
+                                account.password.value.autoHexToBytes()
+                            }.getOrElse {
+                                error("Bad auto-login md5: '${account.password.value}' for account $id")
+                            }
+                            MiraiConsole.addBot(id, md5).alsoLogin()
+                        }
+                    }
                 }
 
-                for ((id, password) in AutoLoginConfig.md5Passwords.filterNot { it.key == 123456654321L }) {
-                    mainLogger.info { "Auto-login $id" }
-                    val x = runCatching {
-                        password.autoHexToBytes()
-                    }.getOrElse {
-                        error("Bad auto-login md5: '$password'")
-                    }
-                    MiraiConsole.addBot(id, x).alsoLogin()
-                }
             }
         }
 

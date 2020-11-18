@@ -11,7 +11,7 @@
 
 object Versions {
     const val core = "1.3.3"
-    const val console = "1.0-RC2-dev-6"
+    const val console = "1.0.0-dev-1"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
@@ -34,7 +34,7 @@ object Versions {
     const val blockingBridge = "1.4.1"
 
     @Suppress("SpellCheckingInspection")
-    const val yamlkt = "0.7.1"
+    const val yamlkt = "0.7.3"
 
     const val intellijGradlePlugin = "0.4.16"
 }
