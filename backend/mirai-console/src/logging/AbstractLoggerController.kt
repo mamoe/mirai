@@ -18,7 +18,7 @@ public abstract class AbstractLoggerController : LoggerController {
 
     protected open fun shouldLog(
         priority: LogPriority,
-        settings: LogPriority
+        settings: LogPriority,
     ): Boolean = settings <= priority
 
     protected abstract fun getPriority(identity: String?): LogPriority

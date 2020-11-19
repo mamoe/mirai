@@ -154,7 +154,7 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
     internal inline fun <T : Extension> ExtensionPoint<T>.useExtensions(block: (extension: T, plugin: Plugin?) -> Unit): Unit =
         withExtensions(block)
 
-    val instances: MutableMap<ExtensionPoint<*>, MutableSet<ExtensionRegistry<*>>> = ConcurrentHashMap()
+    private val instances: MutableMap<ExtensionPoint<*>, MutableSet<ExtensionRegistry<*>>> = ConcurrentHashMap()
     override fun <T : Extension> contribute(
         extensionPoint: ExtensionPoint<T>,
         plugin: Plugin,
