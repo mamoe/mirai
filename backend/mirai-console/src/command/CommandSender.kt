@@ -14,9 +14,7 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
@@ -24,11 +22,9 @@ import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asMemberCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
-import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
-import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.Permittee
 import net.mamoe.mirai.console.permission.PermitteeId
@@ -173,9 +169,6 @@ public interface CommandSender : CoroutineScope, Permittee {
     @JvmBlockingBridge
     public suspend fun sendMessage(message: String): MessageReceipt<Contact>?
 
-    @ConsoleExperimentalApi("This is unstable and might get changed")
-    public suspend fun catchExecutionException(e: Throwable)
-
     public companion object {
 
         ///////////////////////////////////////////////////////////////////////////
@@ -274,37 +267,6 @@ public sealed class AbstractCommandSender : CommandSender, CoroutineScope {
     public abstract override val subject: Contact?
     public abstract override val user: User?
     public abstract override fun toString(): String
-
-    @ConsoleExperimentalApi("This is unstable and might get changed")
-    override suspend fun catchExecutionException(e: Throwable) {
-        if (this is CommandSenderOnMessage<*>) {
-            val cause = e.rootCauseOrSelf
-
-            // TODO: 2020/10/17
-            //      CommandArgumentParserException 作为 IllegalCommandArgumentException 不会再进入此函数
-            //      已在
-            //       - [console]  CommandManagerImpl.commandListener
-            //       - [terminal] ConsoleThread.kt
-            //      处理
-
-            val message = cause
-                .takeIf { it is CommandArgumentParserException }?.message
-                ?: "${cause::class.simpleName.orEmpty()}: ${cause.message}"
-
-            // TODO: 2020/8/30 优化 net.mamoe.mirai.console.command.CommandSender.catchExecutionException
-
-            sendMessage(message) // \n\n60 秒内发送 stacktrace 查看堆栈信息
-            this@AbstractCommandSender.launch(CoroutineName("stacktrace delayer from command")) {
-                if (fromEvent.nextMessageOrNull(60_000) {
-                        it.message.contentEquals("stacktrace") || it.message.contentEquals("stack")
-                    } != null) {
-                    sendMessage(e.stackTraceToString())
-                }
-            }
-        } else {
-            sendMessage(e.stackTraceToString())
-        }
-    }
 }
 
 /**
@@ -603,7 +565,7 @@ public sealed class AbstractUserCommandSender : UserCommandSender, AbstractComma
 }
 
 /**
- * 代表一个 [好友][Friend] 执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * 代表一个 [好友][Friend] 执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
  * @see FriendCommandSenderOnMessage 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令
  */
 public open class FriendCommandSender internal constructor(
@@ -622,7 +584,7 @@ public open class FriendCommandSender internal constructor(
 }
 
 /**
- * 代表一个 [群员][Member] 执行指令, 但不一定是通过群内发消息方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * 代表一个 [群员][Member] 执行指令, 但不一定是通过群内发消息方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
  * @see MemberCommandSenderOnMessage 代表一个真实的 [群员][Member] 主动在群内发送消息执行指令.
  */
 public open class MemberCommandSender internal constructor(
@@ -644,7 +606,7 @@ public open class MemberCommandSender internal constructor(
 }
 
 /**
- * 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
  * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
  */
 public open class TempCommandSender internal constructor(
