@@ -10,32 +10,23 @@
 package net.mamoe.mirai.console.internal.command
 
 import kotlinx.atomicfu.locks.withLock
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.findDuplicate
-import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
 import net.mamoe.mirai.console.command.resolve.CommandCallInterceptor.Companion.intercepted
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
 import net.mamoe.mirai.console.command.resolve.getOrElse
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
-import net.mamoe.mirai.event.Listener
-import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.asMessageChain
-import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.SimpleLogger
 import java.util.concurrent.locks.ReentrantLock
 
 @OptIn(ExperimentalCommandDescriptors::class)
@@ -67,60 +58,6 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
         }
         return optionalPrefixCommandMap[commandName.toLowerCase()]
     }
-
-    @Deprecated("Deprecated since 1.0.0, to be extended by plugin.")
-    internal val commandListener: Listener<MessageEvent> by lazy {
-        subscribeAlways(
-            coroutineContext = CoroutineExceptionHandler { _, throwable ->
-                logger.error(throwable)
-            },
-            concurrency = CONCURRENT,
-            priority = Listener.EventPriority.NORMAL
-        ) {
-            val sender = this.toCommandSender()
-
-            fun isDebugging(command: Command?): Boolean {
-                if (command?.prefixOptional == false || message.content.startsWith(CommandManager.commandPrefix)) {
-                    if (MiraiConsoleImplementationBridge.loggerController.shouldLog("console.debug", SimpleLogger.LogPriority.DEBUG)) {
-                        return true
-                    }
-                }
-                return false
-            }
-
-            when (val result = executeCommand(sender, message)) {
-                is CommandExecuteResult.PermissionDenied -> {
-                    if (isDebugging(result.command)) {
-                        sender.sendMessage("权限不足. ${CommandManager.commandPrefix}${result.command.primaryName} 需要权限 ${result.command.permission.id}.")
-                        // intercept()
-                    }
-                }
-                is CommandExecuteResult.IllegalArgument -> {
-                    result.exception.message?.let { sender.sendMessage(it) }
-                    // intercept()
-                }
-                is CommandExecuteResult.Success -> {
-                    //  intercept()
-                }
-                is CommandExecuteResult.ExecutionFailed -> {
-                    sender.catchExecutionException(result.exception)
-                    // intercept()
-                }
-                is CommandExecuteResult.Intercepted -> {
-                    if (isDebugging(result.command)) {
-                        sender.sendMessage("指令执行被拦截, 原因: ${result.reason}")
-                    }
-                }
-                is CommandExecuteResult.UnmatchedSignature,
-                is CommandExecuteResult.UnresolvedCommand,
-                -> {
-                    // noop
-                }
-            }
-        }
-    }
-
-
     ///// IMPL
 
 
