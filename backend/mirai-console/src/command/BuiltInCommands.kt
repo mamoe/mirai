@@ -339,7 +339,7 @@ public object BuiltInCommands {
     }
 
     public object StatusCommand : SimpleCommand(
-        ConsoleCommandOwner, "status", "状态",
+        ConsoleCommandOwner, "status", "states", "状态",
         description = "获取 Mirai Console 运行状态"
     ), BuiltInCommandInternal {
         @Handler
