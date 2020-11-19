@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Com
 import net.mamoe.mirai.console.command.descriptor.PermissionIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.PermitteeIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
+import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
@@ -27,6 +28,7 @@ import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegistered
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
+import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
@@ -350,6 +352,20 @@ public object BuiltInCommands {
                 append("Running MiraiConsole v${MiraiConsoleBuildConstants.versionConst}, built on ").append(buildDateFormatted)
                     .append(".\n")
                 append(MiraiConsoleImplementationBridge.frontEndDescription.render()).append("\n\n")
+                append("Permission Service: ").append(
+                    if (PermissionService.INSTANCE is BuiltInPermissionService) {
+                        "Built In Permission Service"
+                    } else {
+                        val plugin = PermissionServiceProvider.providerPlugin
+                        if (plugin == null) {
+                            PermissionService.INSTANCE.toString()
+                        } else {
+                            "${plugin.name} v${plugin.version}"
+                        }
+                    }
+                )
+                append("\n\n")
+
                 append("Plugins: ")
                 if (PluginManagerImpl.resolvedPlugins.isEmpty()) {
                     append("<none>")
