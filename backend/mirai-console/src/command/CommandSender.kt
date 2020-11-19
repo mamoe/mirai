@@ -43,7 +43,7 @@ import kotlin.coroutines.CoroutineContext
 /**
  * 指令发送者.
  *
- * 只有 [CommandSender] 才能 [执行指令][CommandManager.execute]
+ * 只有 [CommandSender] 才能 [执行指令][CommandManager.executeCommand]
  *
  * ## 获得指令发送者
  * - [MessageEvent.toCommandSender]
@@ -70,7 +70,7 @@ import kotlin.coroutines.CoroutineContext
  * - [AbstractUserCommandSender] 代表用户
  * - [ConsoleCommandSender] 代表控制台
  *
- * 二级子类, 当指令由插件 [主动执行][CommandManager.execute] 时, 插件应使用 [toCommandSender] 或 [asCommandSender], 因此,
+ * 二级子类, 当指令由插件 [主动执行][CommandManager.executeCommand] 时, 插件应使用 [toCommandSender] 或 [asCommandSender], 因此,
  * - 若在群聊环境, 对应 [CommandSender] 为 [MemberCommandSender]
  * - 若在私聊环境, 对应 [CommandSender] 为 [FriendCommandSender]
  * - 若在临时会话环境, 对应 [CommandSender] 为 [TempCommandSender]
@@ -270,120 +270,51 @@ public sealed class AbstractCommandSender : CommandSender, CoroutineScope {
 }
 
 /**
- * 当 [this] 为 [AbstractCommandSender] 时返回.
- *
- * 正常情况下, 所有 [CommandSender] 都应该继承 [AbstractCommandSender]
- *
- * 在需要类型智能转换等情况时可使用此函数.
- *
- * ### 契约
- * 本函数定义契约,
- * - 若函数正常返回, Kotlin 编译器认为 [this] 是 [AbstractCommandSender] 实例并执行智能类型转换.
- *
- * @return `this`
- */
-public fun CommandSender.checkIsAbstractCommandSender(): AbstractCommandSender {
-    contract {
-        returns() implies (this@checkIsAbstractCommandSender is AbstractCommandSender)
-    }
-    check(this is AbstractCommandSender) { "A CommandSender must extend AbstractCommandSender" }
-    return this
-}
-
-/**
- * 当 [this] 为 [AbstractUserCommandSender] 时返回.
- *
- * 正常情况下, 所有 [UserCommandSender] 都应该继承 [AbstractUserCommandSender]
- *
- * 在需要类型智能转换等情况时可使用此函数.
- *
- * ### 契约
- * 本函数定义契约,
- * - 若函数正常返回, Kotlin 编译器认为 [this] 是 [AbstractUserCommandSender] 实例并执行智能类型转换.
- *
- * @return `this`
- */
-public fun UserCommandSender.checkIsAbstractUserCommandSender(): AbstractUserCommandSender {
-    contract {
-        returns() implies (this@checkIsAbstractUserCommandSender is AbstractUserCommandSender)
-    }
-    check(this is AbstractUserCommandSender) { "A UserCommandSender must extend AbstractUserCommandSender" }
-    return this
-}
-
-/**
  * 当 [this] 为 [ConsoleCommandSender] 时返回 `true`
- *
- * ### 契约
- * 本函数定义契约,
- * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
- * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
  */
 public fun CommandSender.isConsole(): Boolean {
     contract {
         returns(true) implies (this@isConsole is ConsoleCommandSender)
-        returns(false) implies (this@isConsole is UserCommandSender)
     }
-    this.checkIsAbstractCommandSender()
     return this is ConsoleCommandSender
 }
 
 /**
- * 当 [this] 不为 [ConsoleCommandSender], 即为 [UserCommandSender] 时返回 `true`.
- *
- * ### 契约
- * 本函数定义契约,
- * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
- * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
+ * 当 [this] 不为 [ConsoleCommandSender] 时返回 `true`
  */
 public fun CommandSender.isNotConsole(): Boolean {
     contract {
-        returns(true) implies (this@isNotConsole is UserCommandSender)
-        returns(false) implies (this@isNotConsole is ConsoleCommandSender)
+        returns(true) implies (this@isNotConsole !is ConsoleCommandSender)
     }
-    this.checkIsAbstractCommandSender()
     return this !is ConsoleCommandSender
 }
 
 /**
  * 当 [this] 为 [UserCommandSender] 时返回 `true`
- *
- * ### 契约
- * 本函数定义契约,
- * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
- * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
  */
 public fun CommandSender.isUser(): Boolean {
     contract {
         returns(true) implies (this@isUser is UserCommandSender)
-        returns(false) implies (this@isUser is ConsoleCommandSender)
     }
-    this.checkIsAbstractCommandSender()
     return this is UserCommandSender
 }
 
 /**
  * 当 [this] 不为 [UserCommandSender], 即为 [ConsoleCommandSender] 时返回 `true`
- *
- * ### 契约
- * 本函数定义契约,
- * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
- * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
  */
 public fun CommandSender.isNotUser(): Boolean {
     contract {
         returns(true) implies (this@isNotUser is ConsoleCommandSender)
-        returns(false) implies (this@isNotUser is UserCommandSender)
     }
-    this.checkIsAbstractCommandSender()
     return this !is UserCommandSender
 }
 
 /**
- * 折叠 [AbstractCommandSender] 的两种可能性.
+ * 折叠 [AbstractCommandSender] 的可能性.
  *
  * - 当 [this] 为 [ConsoleCommandSender] 时执行 [ifIsConsole]
  * - 当 [this] 为 [UserCommandSender] 时执行 [ifIsUser]
+ * - 否则执行 [otherwise]
  *
  * ### 示例
  * ```
@@ -400,20 +331,23 @@ public fun CommandSender.isNotUser(): Boolean {
  * )
  * ```
  *
- * @return [ifIsConsole] 或 [ifIsUser] 执行结果.
+ * @return [ifIsConsole], [ifIsUser] 或 [otherwise] 执行结果.
  */
 @JvmSynthetic
 public inline fun <R> CommandSender.fold(
     ifIsConsole: ConsoleCommandSender.() -> R,
     ifIsUser: UserCommandSender.() -> R,
+    otherwise: CommandSender.() -> R = { error("CommandSender ${this::class.qualifiedName} is not supported") },
 ): R {
     contract {
         callsInPlace(ifIsConsole, InvocationKind.AT_MOST_ONCE)
         callsInPlace(ifIsUser, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(otherwise, InvocationKind.AT_MOST_ONCE)
     }
-    return when (val sender = this.checkIsAbstractCommandSender()) {
+    return when (val sender = this) {
         is ConsoleCommandSender -> ifIsConsole(sender)
-        is AbstractUserCommandSender -> ifIsUser(sender)
+        is UserCommandSender -> ifIsUser(sender)
+        else -> otherwise(sender)
     }
 }
 
@@ -439,7 +373,7 @@ public inline fun <R> UserCommandSender.foldContext(
         callsInPlace(inGroup, InvocationKind.AT_MOST_ONCE)
         callsInPlace(inPrivate, InvocationKind.AT_MOST_ONCE)
     }
-    return when (val sender = this.checkIsAbstractUserCommandSender()) {
+    return when (val sender = this) {
         is MemberCommandSender -> inGroup(sender)
         else -> inPrivate(sender)
     }
