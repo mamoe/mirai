@@ -20,11 +20,14 @@ import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Com
 import net.mamoe.mirai.console.command.descriptor.PermissionIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.PermitteeIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
+import net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
+import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
@@ -33,12 +36,19 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorres
 import net.mamoe.mirai.console.permission.PermissionService.Companion.getPermittedPermissions
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
+import net.mamoe.mirai.console.plugin.name
+import net.mamoe.mirai.console.plugin.version
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.secondsToMillis
+import java.lang.management.ManagementFactory
+import java.lang.management.MemoryUsage
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
+import kotlin.math.floor
 import kotlin.system.exitProcess
 
 
@@ -323,6 +333,85 @@ public object BuiltInCommands {
             AutoLoginConfig.accounts.add(newAccount)
 
             sendMessage("成功删除 '$account' 的配置 '$configKey'.")
+        }
+    }
+
+    public object StatusCommand : SimpleCommand(
+        ConsoleCommandOwner, "status", "状态",
+        description = "获取 Mirai Console 运行状态"
+    ), BuiltInCommandInternal {
+        @Handler
+        public suspend fun CommandSender.handle() {
+            sendMessage(buildString {
+                val buildDateFormatted =
+                    MiraiConsoleBuildConstants.buildDate.atZone(ZoneId.systemDefault())
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+
+                append("Running MiraiConsole v${MiraiConsoleBuildConstants.versionConst}, built on ").append(buildDateFormatted)
+                    .append(".\n")
+                append(MiraiConsoleImplementationBridge.frontEndDescription.render()).append("\n\n")
+                append("Plugins: ")
+                if (PluginManagerImpl.resolvedPlugins.isEmpty()) {
+                    append("<none>")
+                } else {
+                    PluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
+                        "${plugin.name} v${plugin.version}"
+                    }
+                }
+                append("\n\n")
+                val memoryMXBean = ManagementFactory.getMemoryMXBean()
+
+                append("Object Pending Finalization Count: ")
+                    .append(memoryMXBean.objectPendingFinalizationCount)
+                    .append("\n")
+
+                append("    Heap Memory: ")
+                renderMemoryUsage(memoryMXBean.heapMemoryUsage)
+                append("\nNon-Heap Memory: ")
+                renderMemoryUsage(memoryMXBean.nonHeapMemoryUsage)
+            })
+        }
+
+        private const val MEM_B = 1024L
+        private const val MEM_KB = 1024L shl 10
+        private const val MEM_MB = 1024L shl 20
+        private const val MEM_GB = 1024L shl 30
+
+        @Suppress("NOTHING_TO_INLINE")
+        private inline fun StringBuilder.appendDouble(number: Double): StringBuilder =
+            append(floor(number * 100) / 100)
+
+        private fun StringBuilder.renderMemoryUsageNumber(num: Long) {
+            when {
+                num == -1L -> {
+                    append(num)
+                }
+                num < MEM_B -> {
+                    append(num).append("B")
+                }
+                num < MEM_KB -> {
+                    appendDouble(num / 1024.0).append("KB")
+                }
+                num < MEM_MB -> {
+                    appendDouble((num ushr 10) / 1024.0).append("MB")
+                }
+                else -> {
+                    appendDouble((num ushr 20) / 1024.0).append("GB")
+                }
+            }
+        }
+
+
+        private fun StringBuilder.renderMemoryUsage(usage: MemoryUsage) {
+            append("(committed / init / used / max) [")
+            renderMemoryUsageNumber(usage.committed)
+            append(", ")
+            renderMemoryUsageNumber(usage.init)
+            append(", ")
+            renderMemoryUsageNumber(usage.used)
+            append(", ")
+            renderMemoryUsageNumber(usage.max)
+            append("]")
         }
     }
 }
