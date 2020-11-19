@@ -224,6 +224,9 @@ public object BuiltInCommands {
     public object AutoLoginCommand : CompositeCommand(
         ConsoleCommandOwner, "autoLogin", "自动登录",
         description = "自动登录设置",
+        overrideContext = buildCommandArgumentContext {
+            ConfigurationKey::class with ConfigurationKey.Parser
+        }
     ), BuiltInCommandInternal {
 
         @Description("添加自动登录")
