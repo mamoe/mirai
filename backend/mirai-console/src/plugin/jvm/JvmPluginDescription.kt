@@ -218,7 +218,7 @@ public class JvmPluginDescriptionBuilder(
  *
  * @see JvmPluginDescription
  */
-@Serializable
+@Serializable // Keep this file in public API files. Might turn to `public` in the future.
 internal data class SimpleJvmPluginDescription
 @JvmOverloads constructor(
     override val id: String,
