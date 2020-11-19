@@ -30,7 +30,7 @@ public interface PermissionServiceProvider : SingletonExtension<PermissionServic
             GlobalComponentStorage.run {
                 val instance = PermissionService.INSTANCE
                 if (instance is BuiltInPermissionService) return@lazy null
-                PermissionServiceProvider.getExtensions().find { it.extension === instance }?.plugin
+                PermissionServiceProvider.getExtensions().find { it.extension.instance === instance }?.plugin
             }
         }
     }
