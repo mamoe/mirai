@@ -228,6 +228,30 @@ public object BuiltInCommands {
             ConfigurationKey::class with ConfigurationKey.Parser
         }
     ), BuiltInCommandInternal {
+        @Description("查看自动登录账号列表")
+        @SubCommand
+        public suspend fun CommandSender.list() {
+            sendMessage(buildString {
+                for (account in AutoLoginConfig.accounts) {
+                    if (account.account == "123456") continue
+                    append("- ")
+                    append("账号: ")
+                    append(account.account)
+                    appendLine()
+                    append("  密码: ")
+                    append(account.password.value)
+                    appendLine()
+
+                    if (account.configuration.isNotEmpty()) {
+                        appendLine("  配置:")
+                        for ((key, value) in account.configuration) {
+                            append("    $key = $value")
+                        }
+                        appendLine()
+                    }
+                }
+            })
+        }
 
         @Description("添加自动登录")
         @SubCommand
