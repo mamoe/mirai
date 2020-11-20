@@ -11,12 +11,12 @@
 
 object Versions {
     const val core = "1.3.3"
-    const val console = "1.0.0-dev-2"
+    const val console = "1.0.0"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
-    const val kotlinCompiler = "1.4.20-RC"
-    const val kotlinStdlib = "1.4.10"
+    const val kotlinCompiler = "1.4.20"
+    const val kotlinStdlib = "1.4.20"
 
     const val kotlinIntellijPlugin = "1.4.20-RC-IJ2020.2-1" // -release
     const val intellij = "2020.2.1"
