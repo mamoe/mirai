@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Bintray Publish
+name: Dev Tag Publishing
 
 # Controls when the action will run. Triggers the workflow on push or pull request 
 # events but only for the master branch
@@ -9,9 +9,6 @@ on:
     # Sequence of patterns matched against refs/tags
     tags:
       - '*-dev*'
-  release:
-    types:
-      - created
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
