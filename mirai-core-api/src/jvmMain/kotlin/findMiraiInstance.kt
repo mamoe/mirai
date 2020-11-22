@@ -14,5 +14,5 @@ import java.util.*
 @JvmSynthetic
 internal actual fun findMiraiInstance(): IMirai {
     return ServiceLoader.load(IMirai::class.java).firstOrNull()
-        ?: Class.forName("net.mamoe.mirai.internal.MiraiImpl").kotlin.objectInstance as IMirai
+        ?: Class.forName("net.mamoe.mirai.internal.MiraiImpl\$INSTANCE").kotlin.objectInstance as IMirai
 }
