@@ -238,20 +238,25 @@ val experimentalAnnotations = arrayOf(
     "kotlin.RequiresOptIn",
     "kotlin.contracts.ExperimentalContracts",
     "kotlin.experimental.ExperimentalTypeInference",
+    "kotlin.ExperimentalUnsignedTypes",
+    "kotlin.time.ExperimentalTime",
+
+    "kotlinx.serialization.ExperimentalSerializationApi",
+
     "net.mamoe.mirai.utils.MiraiInternalApi",
     "net.mamoe.mirai.utils.MiraiExperimentalApi",
     "net.mamoe.mirai.LowLevelApi",
-    "kotlinx.serialization.ExperimentalSerializationApi"
+    "net.mamoe.mirai.utils.UnstableExternalImage"
 )
 
 fun Project.configureKotlinExperimentalUsages() {
     val sourceSets = kotlinSourceSets ?: return
 
     for (target in sourceSets) {
+        target.languageSettings.progressiveMode = true
+        target.languageSettings.enableLanguageFeature("InlineClasses")
         experimentalAnnotations.forEach { a ->
             target.languageSettings.useExperimentalAnnotation(a)
-            target.languageSettings.progressiveMode = true
-            target.languageSettings.enableLanguageFeature("InlineClasses")
         }
     }
 }
