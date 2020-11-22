@@ -20,12 +20,12 @@
 object Versions {
     const val project = "2.0-M1"
 
-    const val kotlinCompiler = "1.4.10"
-    const val kotlinStdlib = "1.4.10"
-    const val coroutines = "1.3.9"
+    const val kotlinCompiler = "1.4.20"
+    const val kotlinStdlib = "1.4.20"
+    const val coroutines = "1.4.0"
     const val atomicFU = "0.14.4"
-    const val serialization = "1.0.0-RC"
-    const val ktor = "1.4.1"
+    const val serialization = "1.0.1"
+    const val ktor = "1.4.2"
 
     const val binaryValidator = "0.2.3"
 
@@ -33,7 +33,7 @@ object Versions {
     const val coroutinesIo = "0.1.16"
     const val dokka = "0.10.1"
 
-    const val blockingBridge = "1.1.0"
+    const val blockingBridge = "1.4.1"
 
     const val androidGradlePlugin = "3.5.3"
 
