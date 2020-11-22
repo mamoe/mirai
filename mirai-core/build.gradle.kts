@@ -52,20 +52,6 @@ kotlin {
 
     sourceSets.apply {
         all {
-            languageSettings.enableLanguageFeature("InlineClasses")
-            languageSettings.useExperimentalAnnotation("kotlin.Experimental")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiInternalAPI")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.MiraiExperimentalAPI")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.LowLevelAPI")
-            languageSettings.useExperimentalAnnotation("kotlin.ExperimentalUnsignedTypes")
-            languageSettings.useExperimentalAnnotation("kotlin.experimental.ExperimentalTypeInference")
-            languageSettings.useExperimentalAnnotation("kotlin.time.ExperimentalTime")
-            languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
-            languageSettings.useExperimentalAnnotation("kotlinx.serialization.ExperimentalSerializationApi")
-            languageSettings.useExperimentalAnnotation("net.mamoe.mirai.utils.UnstableExternalImage")
-
-            languageSettings.progressiveMode = true
-
             dependencies {
                 api(project(":mirai-core-api"))
             }
