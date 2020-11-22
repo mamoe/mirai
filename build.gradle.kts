@@ -14,6 +14,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
 import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 
 buildscript {
@@ -137,6 +138,11 @@ fun Project.configureDokka() {
 fun Project.configureJvmTarget() {
     tasks.withType(KotlinJvmCompile::class.java) {
         kotlinOptions.jvmTarget = "1.8"
+    }
+
+    kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
+        target.compilations.all { kotlinOptions.jvmTarget = "1.8" }
+        target.testRuns["test"].executionTask.configure { useJUnitPlatform() }
     }
 
     extensions.findByType(JavaPluginExtension::class.java)?.run {

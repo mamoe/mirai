@@ -23,6 +23,14 @@ description = "Mirai API module"
 
 val isAndroidSDKAvailable: Boolean by project
 
+afterEvaluate {
+    tasks.getByName("compileKotlinCommon").enabled = false
+    tasks.getByName("compileTestKotlinCommon").enabled = false
+
+    tasks.getByName("compileCommonMainKotlinMetadata").enabled = false
+    tasks.getByName("compileKotlinMetadata").enabled = false
+}
+
 kotlin {
     explicitApi()
 
@@ -46,9 +54,17 @@ kotlin {
         )
     }
 
-    jvm {
-        withJava()
+    jvm("common") {
+        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "common")
     }
+
+    jvm("jvm") {
+        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "jvm")
+    }
+
+//    jvm("android") {
+//        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "android")
+//    }
 
     sourceSets {
         val commonMain by getting {
@@ -57,6 +73,7 @@ kotlin {
                 api(kotlin("reflect"))
 
                 api1(`kotlinx-serialization-core`)
+                api1(`kotlinx-serialization-json`)
                 implementation1(`kotlinx-serialization-protobuf`)
                 api1(`kotlinx-io`)
                 api1(`kotlinx-coroutines-io`)

@@ -18,8 +18,6 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.message.nextMessage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -463,14 +461,15 @@ internal suspend inline fun <R> withSilentTimeoutOrCoroutineScope(
 }
 
 @PublishedApi
-internal val SELECT_MESSAGE_STUB = Any()
+internal val SELECT_MESSAGE_STUB: Any = Any()
 
 @PublishedApi
-internal val ExceptionHandlerIgnoringCancellationException = CoroutineExceptionHandler { _, throwable ->
-    if (throwable !is CancellationException) {
-        throw throwable
+internal val ExceptionHandlerIgnoringCancellationException: CoroutineExceptionHandler =
+    CoroutineExceptionHandler { _, throwable ->
+        if (throwable !is CancellationException) {
+            throw throwable
+        }
     }
-}
 
 @PublishedApi
 @BuilderInference
@@ -582,7 +581,7 @@ internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl
     filterContext: Boolean,
     priority: Listener.EventPriority,
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
-) = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
+): Unit = withSilentTimeoutOrCoroutineScope(timeoutMillis) {
     var deferred: CompletableDeferred<Boolean>? = CompletableDeferred()
     coroutineContext[Job]!!.invokeOnCompletion {
         deferred?.cancel()

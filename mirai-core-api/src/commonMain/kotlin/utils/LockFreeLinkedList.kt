@@ -11,10 +11,10 @@
 
 package net.mamoe.mirai.utils
 
+import kotlinx.atomicfu.AtomicBoolean
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.loop
-import kotlin.jvm.JvmOverloads
 
 /**
  * Collect all the elements into a [MutableList] then cast it as a [List]
@@ -230,7 +230,7 @@ internal open class LockFreeLinkedList<E> {
     internal fun <E> LockFreeLinkedListNode<E>.compareAndSetNextNodeRef(
         expect: LockFreeLinkedListNode<E>,
         update: LockFreeLinkedListNode<E>
-    ) =
+    ): Boolean =
         this.nextNodeRef.compareAndSet(expect, update)
 
     override fun toString(): String = "[" + asSequence().joinToString() + "]"
@@ -812,7 +812,7 @@ internal open class LockFreeLinkedListNode<E>(
     open val nodeValue: E get() = initialNodeValue ?: error("Internal error: nodeValue is not initialized")
 
     @PublishedApi
-    internal val removed = atomic(false)
+    internal val removed: AtomicBoolean = atomic(false)
 
     @Suppress("LeakingThis")
     internal val nextNodeRef: AtomicRef<LockFreeLinkedListNode<E>> = atomic(nextNode ?: this)

@@ -13,15 +13,12 @@ package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
 
 /**
  * [Bot] 配置.
@@ -157,7 +154,6 @@ public open class BotConfigurationBase internal constructor() {
     @SinceMirai("1.1.0")
     @MiraiExperimentalApi
     public var json: Json = kotlin.runCatching {
-        @OptIn(UnstableDefault::class)
         Json {
             isLenient = true
             ignoreUnknownKeys = true

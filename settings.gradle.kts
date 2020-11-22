@@ -23,4 +23,4 @@ rootProject.name = "mirai"
 
 include(":mirai-core-api")
 include(":mirai-core")
-include(":mirai-core-all")
+// include(":mirai-core-all")

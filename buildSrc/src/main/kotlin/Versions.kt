@@ -8,6 +8,9 @@
  */
 
 @file:Suppress("ObjectPropertyName", "ObjectPropertyName", "unused")
+
+import org.gradle.api.attributes.Attribute
+
 /*
 * Copyright 2019-2020 Mamoe Technologies and contributors.
 *
@@ -22,7 +25,7 @@ object Versions {
 
     const val kotlinCompiler = "1.4.20"
     const val kotlinStdlib = "1.4.20"
-    const val coroutines = "1.4.0"
+    const val coroutines = "1.4.1"
     const val atomicFU = "0.14.4"
     const val serialization = "1.0.1"
     const val ktor = "1.4.2"
@@ -71,3 +74,5 @@ val `ktor-client-serialization-jvm` = ktor("client-serialization-jvm", Versions.
 
 const val slf4j = "org.slf4j:slf4j-api:" + Versions.slf4j
 const val `log4j-api` = "org.apache.logging.log4j:log4j-api:" + Versions.log4j
+
+val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.target.platform", String::class.java)

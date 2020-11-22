@@ -25,6 +25,11 @@ description = "Mirai Protocol implementation for QQ Android"
 
 val isAndroidSDKAvailable: Boolean by project
 
+afterEvaluate {
+    tasks.getByName("compileKotlinCommon").enabled = false
+    tasks.getByName("compileTestKotlinCommon").enabled = false
+}
+
 kotlin {
     if (isAndroidSDKAvailable) {
         apply(from = rootProject.file("gradle/android.gradle"))
@@ -46,9 +51,18 @@ kotlin {
         )
     }
 
-    jvm("jvm") {
-        withJava()
+    jvm("common") {
+        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "common")
     }
+
+    jvm("jvm") {
+        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "jvm")
+    }
+
+    /*
+    jvm("android") {
+        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "android")
+    }*/
 
     sourceSets.apply {
         all {
@@ -60,6 +74,7 @@ kotlin {
         commonMain {
             dependencies {
                 api1(`kotlinx-serialization-core`)
+                api1(`kotlinx-serialization-json`)
                 implementation1(`kotlinx-serialization-protobuf`)
 
                 api1(`kotlinx-atomicfu`)

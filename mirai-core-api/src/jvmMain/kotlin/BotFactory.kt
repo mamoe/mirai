@@ -71,7 +71,8 @@ public actual interface BotFactory {
 
     @SinceMirai("1.3.0")
     public actual companion object INSTANCE : BotFactory {
-        override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
+        @Suppress("ACTUAL_WITHOUT_EXPECT")
+        actual override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot {
             return factory.Bot(context, qq, password, configuration)
         }
 
@@ -79,7 +80,13 @@ public actual interface BotFactory {
             return factory.Bot(qq, password, configuration)
         }
 
-        override fun Bot(context: Context, qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot {
+        @Suppress("ACTUAL_WITHOUT_EXPECT")
+        actual override fun Bot(
+            context: Context,
+            qq: Long,
+            passwordMd5: ByteArray,
+            configuration: BotConfiguration
+        ): Bot {
             return factory.Bot(context, qq, passwordMd5, configuration)
         }
 
