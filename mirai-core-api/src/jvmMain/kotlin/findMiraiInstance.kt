@@ -10,9 +10,10 @@
 package net.mamoe.mirai
 
 import java.util.*
+import kotlin.reflect.full.companionObjectInstance
 
 @JvmSynthetic
 internal actual fun findMiraiInstance(): IMirai {
     return ServiceLoader.load(IMirai::class.java).firstOrNull()
-        ?: Class.forName("net.mamoe.mirai.internal.MiraiImpl\$INSTANCE").kotlin.objectInstance as IMirai
+        ?: Class.forName("net.mamoe.mirai.internal.MiraiImpl").kotlin.companionObjectInstance as IMirai
 }
