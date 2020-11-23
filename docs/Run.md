@@ -22,12 +22,34 @@ Mirai Console 可以独立启动，也可以被嵌入到某个应用中。
 
 只有 mirai-console 前端才有入口点 `main` 方法。目前只有一个 terminal 前端可用。
 
+#### 从JCenter下载模块
+
+mirai 在版本发布时会将发布的构建存放与 [mirai-bintray-repo]。
+
+- mirai-core 会提供 [mirai-core-all]
+- mirai-console 与其各个模块都会提供 `-all` 的 Shadowed 构建
+
+```shell script
+# 注: 自行更换对应版本号
+
+# Download Mirai Core All
+
+curl -L https://maven.aliyun.com/repository/public/net/mamoe/mirai-core-all/1.3.3/mirai-core-all-1.3.3-all.jar -o mirai-core-all-1.3.3.jar
+
+# Download Mirai Console All
+
+curl -L https://maven.aliyun.com/repository/public/net/mamoe/mirai-console/1.0.0/mirai-console-1.0.0-all.jar -o mirai-console-1.0.0.jar
+
+# Download Mirai Console Terminal
+
+curl -L https://maven.aliyun.com/repository/public/net/mamoe/mirai-console-terminal/1.0.0/mirai-console-terminal-1.0.0-all.jar -o mirai-console-terminal-1.0.0.jar
+
+```
+
 ### 启动 mirai-console-terminal 前端
 
-mirai 在版本发布时会同时发布打包依赖的 Shadow JAR，存放在 [mirai-repo]。
-
-1. 在 [mirai-repo] 下载如下三个模块的最新版本文件并放到一个文件夹内 (如 `libs`)：
-   - mirai-core-qqandroid
+1. 下载如下三个模块的最新版本文件并放到一个文件夹内 (如 `libs`)(详见 [下载模块](#从JCenter下载模块))：
+   - mirai-core-all
    - mirai-console
    - mirai-console-terminal
 
@@ -51,6 +73,7 @@ pause
 Linux:
 ```shell script
 #!/usr/bin/env bash
+echo -e '\033]2;Mirai Console\007'
 java -cp "./libs/*" net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader $*
 ```
 
@@ -59,11 +82,14 @@ java -cp "./libs/*" net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader 
 #### mirai-console-terminal 前端参数
 使用 `./start-mirai-console --help` 查看 mirai-console-terminal 支持的启动参数
 
-[mirai-repo]: https://github.com/project-mirai/mirai-repo/tree/master/shadow
-
 
 ### 启动 mirai-console-pure 前端
 
 与启动 `mirai-console-terminal` 前端大体相同
 - 下载 `mirai-console-terminal` 改成下载 `mirai-console-pure`
 - 启动入口从 `net.mamoe.mirai.console.terminal.MiraiConsoleTerminalLoader` 改成 `net.mamoe.mirai.console.pure.MiraiConsolePureLoader`
+
+
+[mirai-repo]: https://github.com/project-mirai/mirai-repo/tree/master/shadow
+[mirai-bintray-repo]: https://bintray.com/him188moe/mirai
+[mirai-core-all]: https://bintray.com/him188moe/mirai/mirai-core-all
