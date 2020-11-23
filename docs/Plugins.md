@@ -135,7 +135,7 @@ public final class JExample extends JavaPlugin {
 由 Console 初始化（仅在某些静态初始化不可用的情况下使用）:
 ```java
 public final class JExample extends JavaPlugin {
-    private static final JExample instance;
+    private static JExample instance;
     public static JExample getInstance() {
         return instance;
     }
