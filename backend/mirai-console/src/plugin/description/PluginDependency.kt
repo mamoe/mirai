@@ -66,7 +66,7 @@ public data class PluginDependency @JvmOverloads constructor(
     public override fun toString(): String = buildString {
         append(id)
         versionRequirement?.let {
-            append(":")
+            append(':')
             append(it)
         }
         if (isOptional) {
@@ -83,10 +83,14 @@ public data class PluginDependency @JvmOverloads constructor(
         public fun parseFromString(string: String): PluginDependency {
             require(string.isNotEmpty()) { "string is empty." }
             val optional = string.endsWith('?')
-            val (id, version) = string.removeSuffix("?").let {
-                it.substringBeforeLast(':') to it.substringAfterLast(':', "")
+            val (id, version) = string.removeSuffix("?").let { rule ->
+                if (rule.contains(':')) {
+                    rule.substringBeforeLast(':') to rule.substringAfterLast(':')
+                } else {
+                    rule to null
+                }
             }
-            return PluginDependency(id, version.takeIf(String::isNotBlank), optional)
+            return PluginDependency(id, version, optional)
         }
     }
 
