@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_ID
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.VERSION_REQUIREMENT
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.util.SemVersion
 
@@ -37,7 +38,7 @@ public data class PluginDependency @JvmOverloads constructor(
      *
      * @see SemVersion.Requirement
      */
-    public val versionRequirement: String? = null,
+    @ResolveContext(VERSION_REQUIREMENT) public val versionRequirement: String? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */
@@ -46,6 +47,7 @@ public data class PluginDependency @JvmOverloads constructor(
     init {
         kotlin.runCatching {
             PluginDescription.checkPluginId(id)
+            if (versionRequirement != null) SemVersion.parseRangeRequirement(versionRequirement)
         }.getOrElse {
             throw IllegalArgumentException(it)
         }
@@ -63,7 +65,10 @@ public data class PluginDependency @JvmOverloads constructor(
 
     public override fun toString(): String = buildString {
         append(id)
-        versionRequirement?.let(::append)
+        versionRequirement?.let {
+            append(':')
+            append(it)
+        }
         if (isOptional) {
             append('?')
         }
@@ -78,8 +83,12 @@ public data class PluginDependency @JvmOverloads constructor(
         public fun parseFromString(string: String): PluginDependency {
             require(string.isNotEmpty()) { "string is empty." }
             val optional = string.endsWith('?')
-            val (id, version) = string.removeSuffix("?").let {
-                it.substringBeforeLast(':') to it.substringAfterLast(':', "")
+            val (id, version) = string.removeSuffix("?").let { rule ->
+                if (rule.contains(':')) {
+                    rule.substringBeforeLast(':') to rule.substringAfterLast(':')
+                } else {
+                    rule to null
+                }
             }
             return PluginDependency(id, version, optional)
         }

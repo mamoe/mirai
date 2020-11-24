@@ -20,22 +20,38 @@ import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Com
 import net.mamoe.mirai.console.command.descriptor.PermissionIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.PermitteeIdValueArgumentParser
 import net.mamoe.mirai.console.command.descriptor.buildCommandArgumentContext
+import net.mamoe.mirai.console.extensions.PermissionServiceProvider
+import net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants
+import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.command.CommandManagerImpl.allRegisteredCommands
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.*
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
+import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
+import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.cancel
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
 import net.mamoe.mirai.console.permission.PermissionService.Companion.getPermittedPermissions
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
+import net.mamoe.mirai.console.plugin.name
+import net.mamoe.mirai.console.plugin.version
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.secondsToMillis
+import java.lang.management.ManagementFactory
+import java.lang.management.MemoryUsage
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.concurrent.thread
+import kotlin.math.floor
 import kotlin.system.exitProcess
 
 
@@ -205,15 +221,224 @@ public object BuiltInCommands {
         @SubCommand("permittedPermissions", "pp", "grantedPermissions", "gp")
         public suspend fun CommandSender.permittedPermissions(
             @Name("被许可人 ID") target: PermitteeId,
+            @Name("包括重复") all: Boolean = false,
         ) {
-            val grantedPermissions = target.getPermittedPermissions()
-            sendMessage(grantedPermissions.joinToString("\n") { it.id.toString() })
+            var grantedPermissions = target.getPermittedPermissions().toList()
+            if (!all) {
+                grantedPermissions = grantedPermissions.filter { thisPerm ->
+                    grantedPermissions.none { other -> thisPerm.parentsWithSelf.drop(1).any { it == other } }
+                }
+            }
+            if (grantedPermissions.isEmpty()) {
+                sendMessage("${target.asString()} 未被授予任何权限. 使用 `${CommandManager.commandPrefix}permission grant` 给予权限.")
+            } else {
+                sendMessage(grantedPermissions.joinToString("\n") { it.id.toString() })
+            }
         }
 
         @Description("查看所有权限列表")
         @SubCommand("listPermissions", "lp")
         public suspend fun CommandSender.listPermissions() {
             sendMessage(PermissionService.INSTANCE.getRegisteredPermissions().joinToString("\n") { it.id.toString() })
+        }
+    }
+
+
+    public object AutoLoginCommand : CompositeCommand(
+        ConsoleCommandOwner, "autoLogin", "自动登录",
+        description = "自动登录设置",
+        overrideContext = buildCommandArgumentContext {
+            ConfigurationKey::class with ConfigurationKey.Parser
+        }
+    ), BuiltInCommandInternal {
+        @Description("查看自动登录账号列表")
+        @SubCommand
+        public suspend fun CommandSender.list() {
+            sendMessage(buildString {
+                for (account in AutoLoginConfig.accounts) {
+                    if (account.account == "123456") continue
+                    append("- ")
+                    append("账号: ")
+                    append(account.account)
+                    appendLine()
+                    append("  密码: ")
+                    append(account.password.value)
+                    appendLine()
+
+                    if (account.configuration.isNotEmpty()) {
+                        appendLine("  配置:")
+                        for ((key, value) in account.configuration) {
+                            append("    $key = $value")
+                        }
+                        appendLine()
+                    }
+                }
+            })
+        }
+
+        @Description("添加自动登录")
+        @SubCommand
+        public suspend fun CommandSender.add(account: Long, password: String, passwordKind: PasswordKind = PLAIN) {
+            val accountStr = account.toString()
+            if (AutoLoginConfig.accounts.any { it.account == accountStr }) {
+                sendMessage("已有相同账号在自动登录配置中. 请先删除该账号.")
+                return
+            }
+            AutoLoginConfig.accounts.add(AutoLoginConfig.Account(accountStr, Password(passwordKind, password)))
+            sendMessage("已成功添加 '$account'.")
+        }
+
+        @Description("清除所有配置")
+        @SubCommand
+        public suspend fun CommandSender.clear() {
+            AutoLoginConfig.accounts.clear()
+            sendMessage("已清除所有自动登录配置.")
+        }
+
+        @Description("删除一个账号")
+        @SubCommand
+        public suspend fun CommandSender.remove(account: Long) {
+            val accountStr = account.toString()
+            if (AutoLoginConfig.accounts.removeIf { it.account == accountStr }) {
+                sendMessage("已成功删除 '$account'.")
+                return
+            }
+            sendMessage("账号 '$account' 未配置自动登录.")
+        }
+
+        @Description("设置一个账号的一个配置项")
+        @SubCommand
+        public suspend fun CommandSender.setConfig(account: Long, configKey: ConfigurationKey, value: String) {
+            val accountStr = account.toString()
+
+            val oldAccount = AutoLoginConfig.accounts.find { it.account == accountStr } ?: kotlin.run {
+                sendMessage("未找到账号 $account.")
+                return
+            }
+
+            if (value.isEmpty()) return removeConfig(account, configKey)
+
+            val newAccount = oldAccount.copy(configuration = oldAccount.configuration.toMutableMap().apply {
+                put(configKey, value)
+            })
+
+            AutoLoginConfig.accounts.remove(oldAccount)
+            AutoLoginConfig.accounts.add(newAccount)
+
+            sendMessage("成功修改 '$account' 的配置 '$configKey' 为 '$value'")
+        }
+
+        @Description("删除一个账号的一个配置项")
+        @SubCommand
+        public suspend fun CommandSender.removeConfig(account: Long, configKey: ConfigurationKey) {
+            val accountStr = account.toString()
+
+            val oldAccount = AutoLoginConfig.accounts.find { it.account == accountStr } ?: kotlin.run {
+                sendMessage("未找到账号 $account.")
+                return
+            }
+
+            val newAccount = oldAccount.copy(configuration = oldAccount.configuration.toMutableMap().apply {
+                remove(configKey)
+            })
+
+            AutoLoginConfig.accounts.remove(oldAccount)
+            AutoLoginConfig.accounts.add(newAccount)
+
+            sendMessage("成功删除 '$account' 的配置 '$configKey'.")
+        }
+    }
+
+    public object StatusCommand : SimpleCommand(
+        ConsoleCommandOwner, "status", "states", "状态",
+        description = "获取 Mirai Console 运行状态"
+    ), BuiltInCommandInternal {
+        @Handler
+        public suspend fun CommandSender.handle() {
+            sendMessage(buildString {
+                val buildDateFormatted =
+                    MiraiConsoleBuildConstants.buildDate.atZone(ZoneId.systemDefault())
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+
+                append("Running MiraiConsole v${MiraiConsoleBuildConstants.versionConst}, built on ").append(buildDateFormatted)
+                    .append(".\n")
+                append(MiraiConsoleImplementationBridge.frontEndDescription.render()).append("\n\n")
+                append("Permission Service: ").append(
+                    if (PermissionService.INSTANCE is BuiltInPermissionService) {
+                        "Built In Permission Service"
+                    } else {
+                        val plugin = PermissionServiceProvider.providerPlugin
+                        if (plugin == null) {
+                            PermissionService.INSTANCE.toString()
+                        } else {
+                            "${plugin.name} v${plugin.version}"
+                        }
+                    }
+                )
+                append("\n\n")
+
+                append("Plugins: ")
+                if (PluginManagerImpl.resolvedPlugins.isEmpty()) {
+                    append("<none>")
+                } else {
+                    PluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
+                        "${plugin.name} v${plugin.version}"
+                    }
+                }
+                append("\n\n")
+                val memoryMXBean = ManagementFactory.getMemoryMXBean()
+
+                append("Object Pending Finalization Count: ")
+                    .append(memoryMXBean.objectPendingFinalizationCount)
+                    .append("\n")
+
+                append("    Heap Memory: ")
+                renderMemoryUsage(memoryMXBean.heapMemoryUsage)
+                append("\nNon-Heap Memory: ")
+                renderMemoryUsage(memoryMXBean.nonHeapMemoryUsage)
+            })
+        }
+
+        private const val MEM_B = 1024L
+        private const val MEM_KB = 1024L shl 10
+        private const val MEM_MB = 1024L shl 20
+        private const val MEM_GB = 1024L shl 30
+
+        @Suppress("NOTHING_TO_INLINE")
+        private inline fun StringBuilder.appendDouble(number: Double): StringBuilder =
+            append(floor(number * 100) / 100)
+
+        private fun StringBuilder.renderMemoryUsageNumber(num: Long) {
+            when {
+                num == -1L -> {
+                    append(num)
+                }
+                num < MEM_B -> {
+                    append(num).append("B")
+                }
+                num < MEM_KB -> {
+                    appendDouble(num / 1024.0).append("KB")
+                }
+                num < MEM_MB -> {
+                    appendDouble((num ushr 10) / 1024.0).append("MB")
+                }
+                else -> {
+                    appendDouble((num ushr 20) / 1024.0).append("GB")
+                }
+            }
+        }
+
+
+        private fun StringBuilder.renderMemoryUsage(usage: MemoryUsage) {
+            append("(committed / init / used / max) [")
+            renderMemoryUsageNumber(usage.committed)
+            append(", ")
+            renderMemoryUsageNumber(usage.init)
+            append(", ")
+            renderMemoryUsageNumber(usage.used)
+            append(", ")
+            renderMemoryUsageNumber(usage.max)
+            append("]")
         }
     }
 }

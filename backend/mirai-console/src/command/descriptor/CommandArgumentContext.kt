@@ -71,7 +71,7 @@ public interface CommandArgumentContext {
          *
          * @see EmptyCommandArgumentContext
          */
-        @JvmStatic
+        @JvmField // public static final CommandArgumentContext EMPTY;
         public val EMPTY: CommandArgumentContext = EmptyCommandArgumentContext
     }
 

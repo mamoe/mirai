@@ -42,6 +42,12 @@ public interface CommandValueArgument : CommandArgument {
      * [MessageChain] is vararg
      */
     public val value: Message
+
+    /**
+     * Intrinsic variants of this argument.
+     *
+     * @see TypeVariant
+     */
     public val typeVariants: List<TypeVariant<*>>
 }
 

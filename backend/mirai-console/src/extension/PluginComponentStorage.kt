@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.extension
 
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser
+import net.mamoe.mirai.console.command.resolve.CommandCallInterceptor
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver
 import net.mamoe.mirai.console.extensions.*
 import net.mamoe.mirai.console.internal.extension.AbstractConcurrentComponentStorage
@@ -128,4 +129,19 @@ public class PluginComponentStorage(
     @OverloadResolutionByLambdaReturnType
     public fun contributeCommandCallParser(provider: CommandCallResolverProvider): Unit =
         contribute(CommandCallResolverProvider, plugin, provider)
+
+    /////////////////////////////////////
+
+    /** 注册一个 [CommandCallInterceptorProvider] */
+    @ExperimentalCommandDescriptors
+    @OverloadResolutionByLambdaReturnType
+    public fun contributeCommandCallInterceptor(lazyInstance: () -> CommandCallInterceptor): Unit =
+        contribute(CommandCallInterceptorProvider, plugin, CommandCallInterceptorProviderImplLazy(lazyInstance))
+
+    /** 注册一个 [CommandCallInterceptorProvider] */
+    @ExperimentalCommandDescriptors
+    @JvmName("contributeCommandCallInterceptorProvider")
+    @OverloadResolutionByLambdaReturnType
+    public fun contributeCommandCallParser(provider: CommandCallInterceptorProvider): Unit =
+        contribute(CommandCallInterceptorProvider, plugin, provider)
 }

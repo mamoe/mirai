@@ -15,16 +15,17 @@ import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
+import net.mamoe.mirai.console.compiler.common.resolve.PLUGIN_FQ_NAME
 import net.mamoe.mirai.console.intellij.Icons
-import net.mamoe.mirai.console.intellij.diagnostics.resolveMiraiPluginDeclaration
+import net.mamoe.mirai.console.intellij.resolve.allSuperNames
 import net.mamoe.mirai.console.intellij.resolve.getElementForLineMark
-import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.jetbrains.kotlin.psi.KtObjectDeclaration
 
 class PluginMainLineMarkerProvider : LineMarkerProvider {
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
-        if (element !is KtReferenceExpression) return null
-        val main = element.resolveMiraiPluginDeclaration() ?: return null
-        return Info(getElementForLineMark(main))
+        if (element !is KtObjectDeclaration) return null
+        if (element.allSuperNames.any { it == PLUGIN_FQ_NAME }) return Info(getElementForLineMark(element))
+        return null
     }
 
     @Suppress("DEPRECATION")

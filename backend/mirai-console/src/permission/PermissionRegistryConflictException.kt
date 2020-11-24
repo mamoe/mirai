@@ -17,4 +17,4 @@ package net.mamoe.mirai.console.permission
 public class PermissionRegistryConflictException(
     public val newInstance: Permission,
     public val existingInstance: Permission,
-) : Exception("Conflicted Permission registry. new: $newInstance, existing: $existingInstance")
+) : Exception("Conflicting Permission registry. new: $newInstance, existing: $existingInstance")

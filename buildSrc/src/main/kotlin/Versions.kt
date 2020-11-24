@@ -11,12 +11,12 @@
 
 object Versions {
     const val core = "1.3.3"
-    const val console = "1.0-RC2-dev-6"
+    const val console = "1.0.1-dev-1"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
-    const val kotlinCompiler = "1.4.20-RC"
-    const val kotlinStdlib = "1.4.10"
+    const val kotlinCompiler = "1.4.20"
+    const val kotlinStdlib = "1.4.20"
 
     const val kotlinIntellijPlugin = "1.4.20-RC-IJ2020.2-1" // -release
     const val intellij = "2020.2.1"
@@ -34,7 +34,7 @@ object Versions {
     const val blockingBridge = "1.4.1"
 
     @Suppress("SpellCheckingInspection")
-    const val yamlkt = "0.7.1"
+    const val yamlkt = "0.7.3"
 
     const val intellijGradlePlugin = "0.4.16"
 }

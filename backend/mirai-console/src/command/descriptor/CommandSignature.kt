@@ -58,9 +58,9 @@ public abstract class AbstractCommandSignature : CommandSignature {
     override fun toString(): String {
         val receiverParameter = receiverParameter
         return if (receiverParameter == null) {
-            "CommandSignatureVariant(${valueParameters.joinToString()})"
+            "CommandSignature(${valueParameters.joinToString()})"
         } else {
-            "CommandSignatureVariant($receiverParameter, ${valueParameters.joinToString()})"
+            "CommandSignature($receiverParameter, ${valueParameters.joinToString()})"
         }
     }
 }

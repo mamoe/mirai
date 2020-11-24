@@ -16,7 +16,10 @@ import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.SimpleCommand
+import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Companion.map
 import net.mamoe.mirai.console.command.descriptor.CommandValueArgumentParser.Companion.parse
+import net.mamoe.mirai.console.permission.PermissionId
+import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import kotlin.contracts.InvocationKind
@@ -44,6 +47,9 @@ import kotlin.contracts.contract
  * - [Member]: [ExistingMemberValueArgumentParser]
  * - [User]: [ExistingUserValueArgumentParser]
  * - [Contact]: [ExistingContactValueArgumentParser]
+ *
+ * - [PermitteeId]: [PermitteeIdValueArgumentParser]
+ * - [PermissionId]: [PermissionIdValueArgumentParser]
  *
  *
  * @see SimpleCommand 简单指令
@@ -143,6 +149,9 @@ public abstract class AbstractCommandValueArgumentParser<T : Any> : CommandValue
     }
 }
 
+/**
+ * @see CommandValueArgumentParser.map
+ */
 public class MappingCommandValueArgumentParser<T : Any, R : Any>(
     private val original: CommandValueArgumentParser<T>,
     private val mapper: MappingCommandValueArgumentParser<T, R>.(T) -> R,

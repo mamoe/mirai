@@ -29,8 +29,9 @@ import net.mamoe.mirai.console.extensions.PermissionServiceProvider
 import net.mamoe.mirai.console.extensions.PostStartupExtension
 import net.mamoe.mirai.console.extensions.SingletonExtensionSelector
 import net.mamoe.mirai.console.internal.command.CommandConfig
-import net.mamoe.mirai.console.internal.command.CommandManagerImpl
 import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.MD5
+import net.mamoe.mirai.console.internal.data.builtins.AutoLoginConfig.Account.PasswordKind.PLAIN
 import net.mamoe.mirai.console.internal.data.builtins.ConsoleDataScope
 import net.mamoe.mirai.console.internal.data.builtins.LoggerConfig
 import net.mamoe.mirai.console.internal.data.castOrNull
@@ -41,6 +42,7 @@ import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.autoHexToBytes
+import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
@@ -49,6 +51,7 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.AbstractJvmPlugin
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.SemVersion
@@ -184,24 +187,24 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
         phase `load PermissionService`@{
             mainLogger.verbose { "Loading PermissionService..." }
 
-            PermissionServiceProvider.selectedInstance // init
-
             PermissionService.INSTANCE.let { ps ->
                 if (ps is BuiltInPermissionService) {
                     ConsoleDataScope.addAndReloadConfig(ps.config)
                     mainLogger.verbose { "Reloaded PermissionService settings." }
+                } else {
+                    mainLogger.info { "Loaded PermissionService from plugin ${PermissionServiceProvider.providerPlugin?.name}" }
                 }
             }
 
-            ConsoleCommandSender.permit(RootPermission)
+            runIgnoreException<UnsupportedOperationException> { ConsoleCommandSender.permit(RootPermission) }
         }
 
         phase `prepare commands`@{
             mainLogger.verbose { "Loading built-in commands..." }
             BuiltInCommands.registerAll()
-            mainLogger.verbose { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
+            mainLogger.info { "Prepared built-in commands: ${BuiltInCommands.all.joinToString { it.primaryName }}" }
             CommandManager
-            CommandManagerImpl.commandListener // start
+            // CommandManagerImpl.commandListener // start
         }
 
         phase `enable plugins`@{
@@ -218,20 +221,44 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
 
         phase `auto-login bots`@{
             runBlocking {
-                for ((id, password) in AutoLoginConfig.plainPasswords.filterNot { it.key == 123456654321L }) {
-                    mainLogger.info { "Auto-login $id" }
-                    MiraiConsole.addBot(id, password).alsoLogin()
+                val accounts = AutoLoginConfig.accounts.toList()
+                for (account in accounts) {
+                    val id = kotlin.runCatching {
+                        account.account.toLong()
+                    }.getOrElse {
+                        error("Bad auto-login account: '${account.account}'")
+                    }
+                    if (id == 123456L) continue
+                    fun BotConfiguration.configBot() {
+                        mainLogger.info { "Auto-login ${account.account}" }
+
+                        account.configuration[AutoLoginConfig.Account.ConfigurationKey.protocol]
+                            ?.let { protocol ->
+                                this.protocol = runCatching {
+                                    BotConfiguration.MiraiProtocol.valueOf(protocol.toString())
+                                }.getOrElse {
+                                    throw IllegalArgumentException(
+                                        "Bad auto-login config value for `protocol` for account $id",
+                                        it
+                                    )
+                                }
+                            }
+                    }
+                    when (account.password.kind) {
+                        PLAIN -> {
+                            MiraiConsole.addBot(id, account.password.value, BotConfiguration::configBot).alsoLogin()
+                        }
+                        MD5 -> {
+                            val md5 = kotlin.runCatching {
+                                account.password.value.autoHexToBytes()
+                            }.getOrElse {
+                                error("Bad auto-login md5: '${account.password.value}' for account $id")
+                            }
+                            MiraiConsole.addBot(id, md5, BotConfiguration::configBot).alsoLogin()
+                        }
+                    }
                 }
 
-                for ((id, password) in AutoLoginConfig.md5Passwords.filterNot { it.key == 123456654321L }) {
-                    mainLogger.info { "Auto-login $id" }
-                    val x = runCatching {
-                        password.autoHexToBytes()
-                    }.getOrElse {
-                        error("Bad auto-login md5: '$password'")
-                    }
-                    MiraiConsole.addBot(id, x).alsoLogin()
-                }
             }
         }
 

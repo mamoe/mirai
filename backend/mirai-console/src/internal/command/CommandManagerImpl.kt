@@ -10,28 +10,23 @@
 package net.mamoe.mirai.console.internal.command
 
 import kotlinx.atomicfu.locks.withLock
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.findDuplicate
-import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
+import net.mamoe.mirai.console.command.resolve.CommandCallInterceptor.Companion.intercepted
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
-import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
+import net.mamoe.mirai.console.command.resolve.getOrElse
+import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
-import net.mamoe.mirai.event.Listener
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.asMessageChain
-import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.SimpleLogger
 import java.util.concurrent.locks.ReentrantLock
 
 @OptIn(ExperimentalCommandDescriptors::class)
@@ -63,47 +58,6 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
         }
         return optionalPrefixCommandMap[commandName.toLowerCase()]
     }
-
-    internal val commandListener: Listener<MessageEvent> by lazy {
-        subscribeAlways(
-            coroutineContext = CoroutineExceptionHandler { _, throwable ->
-                logger.error(throwable)
-            },
-            concurrency = Listener.ConcurrencyKind.CONCURRENT,
-            priority = Listener.EventPriority.HIGH
-        ) {
-            val sender = this.toCommandSender()
-
-            when (val result = executeCommand(sender, message)) {
-                is CommandExecuteResult.PermissionDenied -> {
-                    if (!result.command.prefixOptional || message.content.startsWith(CommandManager.commandPrefix)) {
-                        if (MiraiConsoleImplementationBridge.loggerController.shouldLog("console.debug", SimpleLogger.LogPriority.DEBUG)) {
-                            sender.sendMessage("权限不足")
-                        }
-                        intercept()
-                    }
-                }
-                is CommandExecuteResult.IllegalArgument -> {
-                    result.exception.message?.let { sender.sendMessage(it) }
-                    intercept()
-                }
-                is CommandExecuteResult.Success -> {
-                    intercept()
-                }
-                is CommandExecuteResult.ExecutionFailed -> {
-                    sender.catchExecutionException(result.exception)
-                    intercept()
-                }
-                is CommandExecuteResult.UnmatchedSignature,
-                is CommandExecuteResult.UnresolvedCommand,
-                -> {
-                    // noop
-                }
-            }
-        }
-    }
-
-
     ///// IMPL
 
 
@@ -173,15 +127,29 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
 // Don't move into CommandManager, compilation error / VerifyError
 @OptIn(ExperimentalCommandDescriptors::class)
 internal suspend fun executeCommandImpl(
-    message: Message,
+    message0: Message,
     caller: CommandSender,
     checkPermission: Boolean,
 ): CommandExecuteResult {
-    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCommand(null)
-    val resolved = call.resolve().fold(
-        onSuccess = { it },
-        onFailure = { return it }
-    ) ?: return CommandExecuteResult.UnresolvedCommand(call)
+    val message = message0
+        .intercepted(caller)
+        .getOrElse { return CommandExecuteResult.Intercepted(null, null, null, it) }
+
+    val call = message.asMessageChain()
+        .parseCommandCall(caller)
+        .ifNull { return CommandExecuteResult.UnresolvedCommand(null) }
+        .let { raw ->
+            raw.intercepted()
+                .getOrElse { return CommandExecuteResult.Intercepted(raw, null, null, it) }
+        }
+
+    val resolved = call
+        .resolve()
+        .getOrElse { return it }
+        .let { raw ->
+            raw.intercepted()
+                .getOrElse { return CommandExecuteResult.Intercepted(call, raw, null, it) }
+        }
 
     val command = resolved.callee
 

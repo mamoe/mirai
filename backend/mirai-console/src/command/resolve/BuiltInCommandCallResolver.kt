@@ -28,7 +28,7 @@ import net.mamoe.mirai.message.data.asMessageChain
 @ExperimentalCommandDescriptors
 public object BuiltInCommandCallResolver : CommandCallResolver {
     override fun resolve(call: CommandCall): CommandResolveResult {
-        val callee = CommandManager.matchCommand(call.calleeName) ?: return CommandResolveResult(null)
+        val callee = CommandManager.matchCommand(call.calleeName) ?: return CommandResolveResult(CommandExecuteResult.UnresolvedCommand(call))
 
         val valueArguments = call.valueArguments
         val context = callee.safeCast<CommandArgumentContextAware>()?.context

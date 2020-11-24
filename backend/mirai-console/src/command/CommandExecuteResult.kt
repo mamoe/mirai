@@ -14,18 +14,14 @@ package net.mamoe.mirai.console.command
 import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.parse.CommandCall
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
+import net.mamoe.mirai.console.command.resolve.InterceptedReason
 import net.mamoe.mirai.console.command.resolve.ResolvedCommandCall
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import kotlin.contracts.contract
 
 /**
  * 指令的执行返回
- *
- * 注意: 现阶段
- *
- * @see CommandExecuteStatus
  */
-@ConsoleExperimentalApi("Not yet implemented")
 @ExperimentalCommandDescriptors
 public sealed class CommandExecuteResult {
     /** 指令执行时发生的错误 (如果有) */
@@ -95,6 +91,21 @@ public sealed class CommandExecuteResult {
 
         /** 解析的 [ResolvedCommandCall] (如果匹配到) */
         public override val resolvedCall: ResolvedCommandCall? get() = null
+    }
+
+    /** 没有匹配的指令 */
+    public class Intercepted(
+        /** 解析的 [CommandCall] (如果匹配到) */
+        public override val call: CommandCall?,
+        /** 解析的 [ResolvedCommandCall] (如果匹配到) */
+        public override val resolvedCall: ResolvedCommandCall?,
+        /** 尝试执行的指令 (如果匹配到) */
+        public override val command: Command?,
+        /** 拦截原因 */
+        public val reason: InterceptedReason,
+    ) : Failure() {
+        /** 指令执行时发生的错误, 总是 `null` */
+        public override val exception: Nothing? get() = null
     }
 
     /** 权限不足 */
