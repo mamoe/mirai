@@ -81,7 +81,7 @@ public data class PluginDependency @JvmOverloads constructor(
             val (id, version) = string.removeSuffix("?").let {
                 it.substringBeforeLast(':') to it.substringAfterLast(':', "")
             }
-            return PluginDependency(id, version, optional)
+            return PluginDependency(id, version.takeIf(String::isNotBlank), optional)
         }
     }
 
