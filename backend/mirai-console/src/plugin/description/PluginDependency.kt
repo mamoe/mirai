@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.PLUGIN_ID
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.VERSION_REQUIREMENT
 import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.util.SemVersion
 
@@ -37,7 +38,7 @@ public data class PluginDependency @JvmOverloads constructor(
      *
      * @see SemVersion.Requirement
      */
-    public val versionRequirement: String? = null,
+    @ResolveContext(VERSION_REQUIREMENT) public val versionRequirement: String? = null,
     /**
      * 若为 `false`, 插件在找不到此依赖时也能正常加载.
      */
