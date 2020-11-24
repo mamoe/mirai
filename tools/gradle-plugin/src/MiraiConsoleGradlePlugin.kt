@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
@@ -33,9 +34,9 @@ class MiraiConsoleGradlePlugin : Plugin<Project> {
         internal const val BINTRAY_REPOSITORY_URL = "https://dl.bintray.com/him188moe/mirai"
     }
 
-    private fun KotlinSourceSet.configureSourceSet(project: Project) {
+    private fun KotlinSourceSet.configureSourceSet(project: Project, target: KotlinTarget) {
         languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
-        dependencies { configureDependencies(project, this@configureSourceSet) }
+        dependencies { configureDependencies(project, this@configureSourceSet, target) }
     }
 
     private fun Project.configureTarget(target: KotlinTarget) {
@@ -48,24 +49,37 @@ class MiraiConsoleGradlePlugin : Plugin<Project> {
                 if (!miraiExtension.dontConfigureKotlinJvmDefault) freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
             }
         }
-        target.compilations.flatMap { it.allKotlinSourceSets }.forEach { sourceSet ->
-            sourceSet.configureSourceSet(project)
+        when (target.platformType) {
+            KotlinPlatformType.jvm,
+            KotlinPlatformType.androidJvm,
+            KotlinPlatformType.common
+            -> {
+                target.compilations.flatMap { it.allKotlinSourceSets }.forEach { sourceSet ->
+                    sourceSet.configureSourceSet(project, target)
+                }
+            }
+            else -> {
+            }
         }
     }
 
     @Suppress("SpellCheckingInspection")
-    private fun KotlinDependencyHandler.configureDependencies(project: Project, sourceSet: KotlinSourceSet) {
+    private fun KotlinDependencyHandler.configureDependencies(project: Project, sourceSet: KotlinSourceSet, target: KotlinTarget) {
         val miraiExtension = project.miraiExtension
 
+        val isJvm = target.platformType == KotlinPlatformType.jvm || target.platformType == KotlinPlatformType.androidJvm
+
         if (!miraiExtension.noCore) compileOnly("net.mamoe:mirai-core:${miraiExtension.coreVersion}")
-        if (!miraiExtension.noConsole) compileOnly("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
+        if (!miraiExtension.noConsole && isJvm) compileOnly("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
 
         if (sourceSet.name.endsWith("test", ignoreCase = true)) {
             if (!miraiExtension.noCore) api("net.mamoe:mirai-core:${miraiExtension.coreVersion}")
-            if (!miraiExtension.noConsole) api("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
+            if (!miraiExtension.noConsole && isJvm) api("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
             if (!miraiExtension.noTestCoreQQAndroid) api("net.mamoe:mirai-core-qqandroid:${miraiExtension.coreVersion}")
-            when (miraiExtension.useTestConsoleFrontEnd) {
-                MiraiConsoleFrontEndKind.TERMINAL -> api("net.mamoe:mirai-console-terminal:${miraiExtension.consoleVersion}")
+            if (isJvm) {
+                when (miraiExtension.useTestConsoleFrontEnd) {
+                    MiraiConsoleFrontEndKind.TERMINAL -> api("net.mamoe:mirai-console-terminal:${miraiExtension.consoleVersion}")
+                }
             }
         }
     }
