@@ -43,6 +43,9 @@
 [为什么不支持热加载和卸载插件？]: QA.md#为什么不支持热加载和卸载插件
 [使用 AutoService]: QA.md#使用-autoservice
 
+[MCI]: ../tools/intellij-plugin/
+[MiraiPixel]: ../tools/intellij-plugin/resources/icons/pluginMainDeclaration.png
+
 Mirai Console 运行在 [JVM]，支持使用 [Kotlin] 或 [Java] 语言编写的插件。
 
 ## 通用的插件接口 - [`Plugin`]
@@ -63,29 +66,85 @@ interface Plugin : CommandOwner { // CommandOwner 是空的 interface
 
 [`Plugin`] 接口拥有强扩展性，以支持 Mirai Console 统一管理使用其他编程语言编写的插件 （详见进阶章节 [扩展 - PluginLoader](Extensions.md)）。
 
+## 插件加载器 - [`PluginLoader`]
+
+Mirai Console 使用不同的插件加载器来加载不同类型插件。
+
+Mirai Console 内置 [`JvmPluginLoader`] 以加载 JVM 平台插件（见下文），并允许这些插件注册扩展的插件加载器（见章节 [扩展](Extensions.md))
+
 ## JVM 平台插件接口 - [`JvmPlugin`]
 
-所有的 JVM 插件都必须实现 [`JvmPlugin`]（否则不会被 [`JvmPluginLoader`] 加载）。  
+所有的 JVM 插件（特别地，`jar` 插件）都必须实现 [`JvmPlugin`]（否则不会被 [`JvmPluginLoader`] 加载）。  
 Mirai Console 提供一些基础的实现，即 [`AbstractJvmPlugin`]，并将 [`JvmPlugin`] 分为 [`KotlinPlugin`] 和 [`JavaPlugin`]。
 
-### 主类和描述
+### 主类
+
+JVM 平台插件的主类应被实现为一个单例（Kotlin `object`，Java 静态初始化的类，详见下文示例）。
 
 **Kotlin 使用者的插件主类应继承 [`KotlinPlugin`]。**  
 **其他 JVM 语言（如 Java）使用者的插件主类应继承 [`JavaPlugin`]。**
 
-#### 描述
-插件描述需要在主类构造器传递给 `super`。因此插件不需要 `plugin.yml`, `plugin.xml` 等配置文件来指示信息。
+#### 定义主类
 
-Mirai Console 使用类似 `ServiceLoader` 的机制加载插件。  
-在 Kotlin，可（[使用 AutoService]）自动配置 service 信息。  
-在 Kotlin 或其他语言，可手动创建 service 文件： 在 `jar` 内 `META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin` 文件内存放插件主类全名（以纯文本 UTF-8 存储，文件内容只包含一行插件主类全名）.
+Mirai Console 使用类似 Java `ServiceLoader` 但更灵活的机制加载插件。
 
+一个正确的主类定义可以是以下三种任一：
+
+1. Kotlin (`public`) `object`
+```kotlin
+object A : KotlinPlugin( /* 描述 */ )
+```
+
+2. Java (`public`) 静态初始化单例 `class`
+```java
+public final class A extends JavaPlugin {
+    public static final A INSTANCE = new A(); // 必须 public static, 必须名为 INSTANCE
+    private A() {
+        super( /* 描述 */ );
+    }
+}
+```
+
+3. Java (`public`) `class`  
+注意：这种由 Mirai Console 构造插件实例的方法是不推荐的。请首选上述静态初始化方法。
+```java
+public final class A extends JavaPlugin {
+    public A() { // 必须公开且无参
+        super( /* 描述 */ );
+    }
+}
+```
+
+#### 确认主类正确定义
+
+在 [Mirai Console IntelliJ 插件][MCI] 的帮助下，一个正确的插件主类定义的行号处会显示 Mirai 像素风格形象图：![MiraiPixel]
+
+![PluginMainDeclaration](.images/PluginMainDeclaration.png)
+
+#### 配置主类服务
+
+[Mirai Console IntelliJ 插件][MCI] 会自动检查主类服务的配置。在没有正确配置时，IDE 将会警告并为你自动配置：  
+![PluginMainServiceNotConfigured](.images/PluginMainServiceNotConfigured.png)
+
+##### 手动配置主类服务
+
+若无法使用 IntelliJ 插件，可在资源目录 `META-INF/services/net.mamoe.mirai.console.plugin.jvm.JvmPlugin` 文件内存放插件主类全名（以纯文本 UTF-8 存储，文件内容只包含一行插件主类全名）。
+
+在 Kotlin，也可（[使用 AutoService]）自动配置 service 信息。
+
+### 描述
+
+插件描述需要在主类构造器传递给 `super`。可以选择直接提供或从 JAR 资源文件读取。
 
 有关插件版本号的限制：
 - 插件自身的版本要求遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/) 规范, 合格的版本例如: `1.0.0`, `1.0`, `1.0-M1`, `1.0-pre-1`
 - 插件依赖的版本遵循 [语义化版本 2.0.0](https://semver.org/lang/zh-CN/) 规范, 同时支持 [Apache Ivy 风格表示方法](http://ant.apache.org/ivy/history/latest-milestone/settings/version-matchers.html).
 
 有关描述的详细信息可在开发时查看源码内文档。
+
+### 主类的完整示例
+
+基于上文，你现在有以下三种主类定义方式。
 
 #### 实现 Kotlin 插件主类
 
@@ -109,7 +168,7 @@ object SchedulePlugin : KotlinPlugin(
 }
 ```
 
-#### 实现 Java 插件
+#### 实现 Java 插件主类
 
 一个 Java 插件的主类通常需:
 - 继承 [`JavaPlugin`]
