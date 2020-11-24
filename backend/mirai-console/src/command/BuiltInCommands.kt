@@ -32,6 +32,7 @@ import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.internal.plugin.PluginManagerImpl
 import net.mamoe.mirai.console.internal.util.runIgnoreException
 import net.mamoe.mirai.console.permission.Permission
+import net.mamoe.mirai.console.permission.Permission.Companion.parentsWithSelf
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.permission.PermissionService.Companion.cancel
 import net.mamoe.mirai.console.permission.PermissionService.Companion.findCorrespondingPermissionOrFail
@@ -220,9 +221,19 @@ public object BuiltInCommands {
         @SubCommand("permittedPermissions", "pp", "grantedPermissions", "gp")
         public suspend fun CommandSender.permittedPermissions(
             @Name("被许可人 ID") target: PermitteeId,
+            @Name("包括重复") all: Boolean = false,
         ) {
-            val grantedPermissions = target.getPermittedPermissions()
-            sendMessage(grantedPermissions.joinToString("\n") { it.id.toString() })
+            var grantedPermissions = target.getPermittedPermissions().toList()
+            if (!all) {
+                grantedPermissions = grantedPermissions.filter { thisPerm ->
+                    grantedPermissions.none { other -> thisPerm.parentsWithSelf.drop(1).any { it == other } }
+                }
+            }
+            if (grantedPermissions.isEmpty()) {
+                sendMessage("${target.asString()} 未被授予任何权限. 使用 `${CommandManager.commandPrefix}permission grant` 给予权限.")
+            } else {
+                sendMessage(grantedPermissions.joinToString("\n") { it.id.toString() })
+            }
         }
 
         @Description("查看所有权限列表")
