@@ -46,6 +46,7 @@ public data class PluginDependency @JvmOverloads constructor(
     init {
         kotlin.runCatching {
             PluginDescription.checkPluginId(id)
+            if (versionRequirement != null) SemVersion.parseRangeRequirement(versionRequirement)
         }.getOrElse {
             throw IllegalArgumentException(it)
         }
@@ -63,7 +64,10 @@ public data class PluginDependency @JvmOverloads constructor(
 
     public override fun toString(): String = buildString {
         append(id)
-        versionRequirement?.let(::append)
+        versionRequirement?.let {
+            append(":")
+            append(it)
+        }
         if (isOptional) {
             append('?')
         }
