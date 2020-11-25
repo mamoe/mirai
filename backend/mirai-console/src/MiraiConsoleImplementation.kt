@@ -18,8 +18,8 @@ import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.data.PluginDataStorage
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
-import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
+import net.mamoe.mirai.console.logging.LoggerController
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
 import net.mamoe.mirai.console.util.ConsoleInput
@@ -185,12 +185,27 @@ public interface MiraiConsoleImplementation : CoroutineScope {
          * 可由前端调用, 获取当前的 [MiraiConsoleImplementation] 实例
          *
          * 必须在 [start] 之后才能使用, 否则抛出 [UninitializedPropertyAccessException]
+         *
+         * @see isInitialized
          */
         @JvmStatic
         @ConsoleFrontEndImplementation
         public fun getInstance(): MiraiConsoleImplementation = instance
 
-        /** 由前端调用, 初始化 [MiraiConsole] 实例并启动 */
+        /**
+         * 当 [MiraiConsoleImplementation] 已经初始化后返回 `true`
+         */
+        @JvmStatic
+        @ConsoleFrontEndImplementation
+        public val isInitialized: Boolean
+            get() = ::instance.isInitialized
+
+        /**
+         * 由前端调用, 初始化 [MiraiConsole] 实例并启动
+         *
+         * @see getInstance
+         * @see isInitialized
+         */
         @JvmStatic
         @ConsoleFrontEndImplementation
         @Throws(MalformedMiraiConsoleImplementationError::class)
