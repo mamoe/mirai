@@ -78,7 +78,6 @@ internal open class MultiFilePluginDataStorageImpl(
                 yaml.encodeToString(instance.updaterSerializer, Unit).also {
                     yamlRendered = it
                     yaml.decodeAnyFromString(it) // test yaml
-                    error("Test error")
                 }
             }.recoverCatching { exception ->
                 // Just use mainLogger for convenience.
