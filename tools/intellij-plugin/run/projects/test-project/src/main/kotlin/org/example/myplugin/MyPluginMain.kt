@@ -32,6 +32,9 @@ object MyPluginMain : KotlinPlugin(
 }
 
 
+val x = "弱智黄色"
+
+
 object MyData : AutoSavePluginData("") {
     val value by value("")
     val value2 by value<Map<String, String>>()

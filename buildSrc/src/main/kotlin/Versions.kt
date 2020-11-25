@@ -18,8 +18,8 @@ object Versions {
     const val kotlinCompiler = "1.4.20"
     const val kotlinStdlib = "1.4.20"
 
-    const val kotlinIntellijPlugin = "1.4.20-RC-IJ2020.2-1" // -release
-    const val intellij = "2020.2.1"
+    const val kotlinIntellijPlugin = "1.4.20-release-IJ2020.2-1" // keep to newest as kotlinCompiler
+    const val intellij = "2020.2.1" // don't update easily unless you want your disk space -= 500MB
 
 
     const val coroutines = "1.4.0"
@@ -34,7 +34,7 @@ object Versions {
     const val blockingBridge = "1.4.1"
 
     @Suppress("SpellCheckingInspection")
-    const val yamlkt = "0.7.3"
+    const val yamlkt = "0.7.4"
 
     const val intellijGradlePlugin = "0.4.16"
 }
@@ -42,7 +42,7 @@ object Versions {
 const val `kotlin-compiler` = "org.jetbrains.kotlin:kotlin-compiler:${Versions.kotlinCompiler}"
 
 const val `kotlin-stdlib` = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlinStdlib}"
-const val `kotlin-stdlib-jdk8` = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlinStdlib}"
+const val `kotlin-stdlib-jdk8` = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlinStdlib}"
 const val `kotlin-reflect` = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlinStdlib}"
 const val `kotlin-test` = "org.jetbrains.kotlin:kotlin-test:${Versions.kotlinStdlib}"
 const val `kotlin-test-junit5` = "org.jetbrains.kotlin:kotlin-test-junit5:${Versions.kotlinStdlib}"
