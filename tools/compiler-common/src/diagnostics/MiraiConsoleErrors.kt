@@ -18,6 +18,11 @@ import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtNamedDeclaration
 import org.jetbrains.kotlin.psi.KtTypeProjection
 
+/**
+ * 如何增加一个错误:
+ * 1. 在 [MiraiConsoleErrors] 添加
+ * 2. 在 [MiraiConsoleErrorsRendering] 添加对应的 render
+ */
 object MiraiConsoleErrors {
     @JvmField
     val ILLEGAL_PLUGIN_DESCRIPTION = create<PsiElement, String>(ERROR)

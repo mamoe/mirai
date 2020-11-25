@@ -116,6 +116,7 @@ class ContextualParametersChecker : DeclarationChecker {
         @Suppress("UNUSED_PARAMETER")
         fun checkVersionRequirement(inspectionTarget: PsiElement, value: String): Diagnostic? {
             // TODO: 2020/10/23  checkVersionRequirement
+            // 实现: 先在 MiraiConsoleErrors 添加一个 error, 再检测 value 并 report 一个错误.
             return null
         }
     }
