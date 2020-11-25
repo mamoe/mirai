@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.internal.data
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.*
+import net.mamoe.mirai.console.internal.util.report.ReportGenerator
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.SilentLogger
@@ -71,17 +72,40 @@ internal open class MultiFilePluginDataStorageImpl(
 
     @ConsoleExperimentalApi
     public override fun store(holder: PluginDataHolder, instance: PluginData) {
+        var yamlRendered: String? = null
         getPluginDataFile(holder, instance).writeText(
             kotlin.runCatching {
                 yaml.encodeToString(instance.updaterSerializer, Unit).also {
+                    yamlRendered = it
                     yaml.decodeAnyFromString(it) // test yaml
+                    error("Test error")
                 }
-            }.recoverCatching {
+            }.recoverCatching { exception ->
                 // Just use mainLogger for convenience.
                 MiraiConsole.mainLogger.warning(
                     "Could not save ${instance.saveName} in YAML format due to exception in YAML encoder. " +
                         "Please report this exception and relevant configurations to https://github.com/mamoe/mirai-console/issues/new",
-                    it
+                    exception
+                )
+                val reportPath = ReportGenerator.generateReport("YamlKt-Format-") {
+                    pw.println("Could not save ${instance.saveName} in YAML format due to exception in YAML encoder. ")
+                    pw.println("Please report this exception and relevant configurations to https://github.com/mamoe/mirai-console/issues/new")
+                    pw.println()
+                    yamlRendered?.let {
+                        title("Rendered YAML")
+                        pw.println(it)
+                        pw.println()
+                    }
+                    title("Exception")
+                    renderException(exception)
+                    renderCurrentThread()
+                }
+                MiraiConsole.mainLogger.warning(
+                    "Could not save ${instance.saveName} in YAML format due to exception in YAML encoder. " +
+                        "Please report this exception and relevant configurations to https://github.com/mamoe/mirai-console/issues/new"
+                )
+                MiraiConsole.mainLogger.warning(
+                    "Error Report location: $reportPath"
                 )
                 json.encodeToString(instance.updaterSerializer, Unit)
             }.getOrElse {
