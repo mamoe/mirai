@@ -105,7 +105,7 @@ internal object BuiltInJvmPluginLoaderImpl :
         }
         runCatching {
             check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
-            plugin.internalOnLoad(plugin.componentStorage)
+            plugin.internalOnLoad()
         }.getOrElse {
             throw PluginLoadException("Exception while loading ${plugin.description.name}", it)
         }
