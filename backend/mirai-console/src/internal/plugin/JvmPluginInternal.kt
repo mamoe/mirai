@@ -54,6 +54,7 @@ internal abstract class JvmPluginInternal(
     }
 
     final override var isEnabled: Boolean = false
+        internal set
 
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
     final override fun getResourceAsStream(path: String): InputStream? =
