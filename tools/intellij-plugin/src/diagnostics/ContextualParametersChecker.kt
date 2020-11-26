@@ -15,11 +15,14 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.IL
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAME
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAMESPACE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_VERSION_REQUIREMENT
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
 import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValues
 import net.mamoe.mirai.console.intellij.resolve.valueParametersWithArguments
+import net.mamoe.mirai.console.intellij.util.RequirementHelper
+import net.mamoe.mirai.console.intellij.util.RequirementParser
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -45,8 +48,10 @@ class ContextualParametersChecker : DeclarationChecker {
 
         fun checkPluginId(inspectionTarget: PsiElement, value: String): Diagnostic? {
             if (value.isBlank()) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 不能为空. \n插件 Id$syntax")
-            if (value.none { it == '.' }) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget,
-                "插件 Id '$value' 无效. 插件 Id 必须同时包含 groupId 和插件名称. $syntax")
+            if (value.none { it == '.' }) return ILLEGAL_PLUGIN_DESCRIPTION.on(
+                inspectionTarget,
+                "插件 Id '$value' 无效. 插件 Id 必须同时包含 groupId 和插件名称. $syntax"
+            )
 
             val lowercaseId = value.toLowerCase()
 
@@ -115,9 +120,12 @@ class ContextualParametersChecker : DeclarationChecker {
 
         @Suppress("UNUSED_PARAMETER")
         fun checkVersionRequirement(inspectionTarget: PsiElement, value: String): Diagnostic? {
-            // TODO: 2020/10/23  checkVersionRequirement
-            // 实现: 先在 MiraiConsoleErrors 添加一个 error, 再检测 value 并 report 一个错误.
-            return null
+            return try {
+                RequirementHelper.RequirementChecker.processLine(RequirementParser.TokenReader(value))
+                null
+            } catch (err: Throwable) {
+                ILLEGAL_VERSION_REQUIREMENT.on(inspectionTarget, value, err.message ?: err.toString())
+            }
         }
     }
 

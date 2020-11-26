@@ -51,6 +51,9 @@ object MiraiConsoleErrors {
     @JvmField
     val ILLEGAL_PERMISSION_REGISTER_USE = create<PsiElement, KtNamedDeclaration, String>(ERROR)
 
+    @JvmField
+    val ILLEGAL_VERSION_REQUIREMENT = create<PsiElement, String, String>(ERROR)
+
     @Suppress("ObjectPropertyName", "unused")
     @JvmField
     @Deprecated("", level = DeprecationLevel.ERROR)

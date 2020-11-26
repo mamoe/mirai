@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.IL
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAMESPACE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_REGISTER_USE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_VERSION_REQUIREMENT
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.UNSERIALIZABLE_TYPE
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
@@ -85,6 +86,13 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
             ILLEGAL_PERMISSION_REGISTER_USE,
             "''{0}'' 无法使用在 ''{1}'' 环境下.",
             Renderers.DECLARATION_NAME,
+            Renderers.STRING
+        )
+
+        put(
+            ILLEGAL_VERSION_REQUIREMENT,
+            "{1}",
+            Renderers.STRING,
             Renderers.STRING
         )
     }
