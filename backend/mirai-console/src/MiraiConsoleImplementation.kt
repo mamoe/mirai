@@ -185,27 +185,12 @@ public interface MiraiConsoleImplementation : CoroutineScope {
          * 可由前端调用, 获取当前的 [MiraiConsoleImplementation] 实例
          *
          * 必须在 [start] 之后才能使用, 否则抛出 [UninitializedPropertyAccessException]
-         *
-         * @see isInitialized
          */
         @JvmStatic
         @ConsoleFrontEndImplementation
         public fun getInstance(): MiraiConsoleImplementation = instance
 
-        /**
-         * 当 [MiraiConsoleImplementation] 已经初始化后返回 `true`
-         */
-        @JvmStatic
-        @ConsoleFrontEndImplementation
-        public val isInitialized: Boolean
-            get() = ::instance.isInitialized
-
-        /**
-         * 由前端调用, 初始化 [MiraiConsole] 实例并启动
-         *
-         * @see getInstance
-         * @see isInitialized
-         */
+        /** 由前端调用, 初始化 [MiraiConsole] 实例并启动 */
         @JvmStatic
         @ConsoleFrontEndImplementation
         @Throws(MalformedMiraiConsoleImplementationError::class)
