@@ -9,10 +9,14 @@ Mirai Console Gradle 插件。
 ## 功能
 
 - 为 `main` 源集配置 `mirai-core`，`mirai-console` 依赖
-- 为 `test` 源集配置 `mirai-core-qqandroid`, `mirai-console-terminal` 的依赖 (用于启动测试)
-- 添加 mirai 依赖仓库链接
-- 配置插件 JAR 打包构建任务 `buildPlugin` (带依赖)
+- 为 `test` 源集配置 `mirai-core-qqandroid`, `mirai-console-terminal` 的依赖 （用于启动测试）
+- 配置 Kotlin 编译目标为 Java 1.8
+- 配置 Kotlin 编译器 jvm-default 设置为 `all`, 即为所有接口中的默认实现生成 Java 1.8 起支持的 `default` 方法
+- 配置 Java 编译目标为 Java 1.8
+- 配置 Java 编译编码为 UTF-8
+- 配置插件 JAR 打包构建任务 `buildPlugin`（带依赖, 成品 JAR 可以被 Mirai Console 加载）
 
+支持 Kotlin 多平台项目（Multiplatform Projects）。每个 JVM 或 Android 目标平台都会被如上配置，对应打包任务带有编译目标的名称，如 `buildPluginJvm`
 
 ### `buildPlugin`
 
@@ -20,7 +24,7 @@ Mirai Console Gradle 插件。
 
 #### 执行 `buildPlugin`
 ```shell script
-$ gradlew buildPlugin
+./gradlew buildPlugin
 ```
 
 打包结果存放在 `build/mirai/` 目录下。
@@ -45,3 +49,5 @@ mirai {
     excludeDependency("com.google.code.gson", "gson")
 }
 ```
+
+插件一般不需要手动排除依赖。Mirai Console 已经包含的依赖都会自动在打包过程中被排除。
