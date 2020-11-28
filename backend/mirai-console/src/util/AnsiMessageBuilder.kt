@@ -146,9 +146,8 @@ public open class AnsiMessageBuilder public constructor(
          * 往 [StringBuilder] 追加 ansi 控制符
          */
         public inline fun StringBuilder.appendAnsi(
-            noAnsi: Boolean = false,
             action: AnsiMessageBuilder.() -> Unit
-        ): AnsiMessageBuilder = from(this, noAnsi).apply(action)
+        ): AnsiMessageBuilder = from(this).apply(action)
 
     }
 
