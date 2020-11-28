@@ -30,6 +30,7 @@ import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.nio.file.Path
@@ -140,6 +141,9 @@ public interface MiraiConsole : CoroutineScope {
             var config = BotConfiguration().apply {
                 fileBasedDeviceInfo()
                 redirectNetworkLogToDirectory()
+                this.botLoggerSupplier = {
+                    DefaultLogger("Bot.${it.id}")
+                }
                 parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
 
                 this.loginSolver = MiraiConsoleImplementationBridge.createLoginSolver(id, this)

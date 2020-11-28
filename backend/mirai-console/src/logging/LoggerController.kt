@@ -9,14 +9,17 @@
 
 package net.mamoe.mirai.console.logging
 
-import net.mamoe.mirai.console.internal.logging.LoggerControllerImpl
+import net.mamoe.mirai.console.MiraiConsoleImplementation
+import net.mamoe.mirai.console.internal.logging.MiraiConsoleLogger
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.utils.SimpleLogger
 
 /**
  * 日志控制系统
  *
- * @see [LoggerControllerImpl]
+ * @see [AbstractLoggerController]
+ * @see [MiraiConsoleImplementation.loggerController]
+ * @see [MiraiConsoleLogger]
  */
 @ConsoleExperimentalApi
 public interface LoggerController {
