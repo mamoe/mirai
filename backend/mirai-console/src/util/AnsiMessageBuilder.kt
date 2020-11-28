@@ -21,9 +21,13 @@ public open class AnsiMessageBuilder public constructor(
     override fun toString(): String = delegate.toString()
 
     /**
-     * 在添加 ansi code 的时候建议使用此方法.
+     * 同 [append] 方法, 在 `noAnsi=true` 的时候会忽略此函数的调用
      *
-     * 在 `noAnsi=true` 的时候会忽略此函数的调用
+     * 参考资料:
+     * - [ANSI转义序列](https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97)
+     * - [ANSI转义序列#颜色](https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97#%E9%A2%9C%E8%89%B2)
+     *
+     * @param code Ansi 操作码
      *
      * @see from
      * @see builder
@@ -102,6 +106,11 @@ public open class AnsiMessageBuilder public constructor(
         @JvmStatic
         public fun String.dropAnsi(): String = DROP_ANSI_PATTERN.replace(this, "")
 
+        /**
+         * 使用 [builder] 封装一个 [AnsiMessageBuilder]
+         *
+         * @param noAnsi 为 `true` 时忽略全部与 ansi 有关的方法的调用
+         */
         @JvmStatic
         @JvmOverloads
         public fun from(
@@ -113,6 +122,8 @@ public open class AnsiMessageBuilder public constructor(
 
         /**
          * @param capacity [StringBuilder] 的初始化大小
+         *
+         * @param noAnsi 为 `true` 时忽略全部与 ansi 有关的方法的调用
          */
         @JvmStatic
         @JvmOverloads
@@ -158,6 +169,11 @@ public open class AnsiMessageBuilder public constructor(
 }
 
 /**
+ * @param capacity [StringBuilder] 初始化大小
+ */
+public fun AnsiMessageBuilder(capacity: Int = 16): AnsiMessageBuilder = AnsiMessageBuilder(StringBuilder(capacity))
+
+/**
  * 构建一条 ansi 信息
  *
  * @see [AnsiMessageBuilder]
@@ -198,5 +214,3 @@ public suspend inline fun CommandSender.sendAnsiMessage(message: String) {
             message.dropAnsi()
     )
 }
-
-public fun AnsiMessageBuilder(capacity: Int = 16): AnsiMessageBuilder = AnsiMessageBuilder(StringBuilder(capacity))
