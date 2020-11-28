@@ -9,13 +9,19 @@
 
 package net.mamoe.mirai.console.gradle
 
+import com.google.gson.Gson
+import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.getValue
 import org.gradle.kotlin.dsl.provideDelegate
 import org.gradle.kotlin.dsl.registering
+import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import java.io.File
 
 
 private val Project.selfAndParentProjects: Sequence<Project>
@@ -29,17 +35,105 @@ private fun Project.findPropertySmart(propName: String): String? {
 }
 
 private fun Project.findPropertySmartOrFail(propName: String): String {
-    return findPropertySmart(propName) ?: error("[Mirai Console] Cannot find property for publication: $propName. Please check your 'mirai' configuration.")
+    return findPropertySmart(propName)
+        ?: error("[Mirai Console] Cannot find property for publication: '$propName'. Please check your 'mirai' configuration.")
 }
 
-internal fun Project.registerPublishPluginTask() {
+internal fun Project.configurePublishing() {
+    if (!miraiExtension.publishingEnabled) return
+    val isSingleTarget = kotlinJvmOrAndroidTargets.size == 1
+
+    kotlinJvmOrAndroidTargets.forEach {
+        registerPublishPluginTasks(it, isSingleTarget)
+        registerMavenPublications(it, isSingleTarget)
+    }
+
+    registerBintrayPublish()
+}
+
+private inline fun <reified T : Task> TaskContainer.getSingleTask(): T = filterIsInstance<T>().single()
+
+private fun Project.registerPublishPluginTasks() {
+    val isSingleTarget = kotlinJvmOrAndroidTargets.size == 1
+    kotlinJvmOrAndroidTargets.forEach { registerPublishPluginTasks(it, isSingleTarget) }
+}
+
+// effectively public
+internal data class PluginMetadata(
+    val groupId: String,
+    val artifactId: String,
+    val version: String,
+    val description: String?,
+    val dependencies: List<String>
+)
+
+internal fun String.wrapNameWithPlatform(target: KotlinTarget, isSingleTarget: Boolean): String {
+    return if (isSingleTarget) this else "$this${target.name.capitalize()}"
+}
+
+private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTarget: Boolean) {
+    val generateMetadataTask =
+        tasks.register("generatePluginMetadata".wrapNameWithPlatform(target, isSingleTarget)).get().apply {
+            group = "mirai"
+
+            val metadataFile =
+                project.buildDir.resolve("mirai").resolve(if (isSingleTarget) "mirai-plugin.metadata" else "mirai-plugin-${target.name}.metadata")
+            outputs.file(metadataFile)
+
+
+
+            doLast {
+                val mirai = miraiExtension
+
+                val output = outputs.files.singleFile
+                output.parentFile.mkdir()
+
+                val dependencies = configurations[target.compilations["main"].apiConfigurationName].allDependencies.map {
+                    "${it.group}:${it.name}:${it.version}"
+                }
+
+                val json = Gson().toJson(PluginMetadata(
+                    groupId = mirai.publishing.groupId ?: project.group.toString(),
+                    artifactId = mirai.publishing.artifactId ?: project.name,
+                    version = mirai.publishing.version ?: project.version.toString(),
+                    description = mirai.publishing.description ?: project.description,
+                    dependencies = dependencies
+                ))
+
+                logger.info("Generated mirai plugin metadata json: $json")
+
+                output.writeText(json)
+            }
+        }
+
+    val bintrayUpload = tasks.getByName(BintrayUploadTask.getTASK_NAME()).dependsOn(
+        "buildPlugin".wrapNameWithPlatform(target, isSingleTarget),
+        generateMetadataTask,
+        // "shadowJar",
+        tasks.filterIsInstance<BuildMiraiPluginTask>().single { it.target == target }
+    )
+    tasks.register("publishPlugin".wrapNameWithPlatform(target, isSingleTarget)).get().apply {
+        group = "mirai"
+        dependsOn(bintrayUpload)
+    }
+}
+
+internal inline fun File.renamed(block: File.(nameWithoutExtension: String) -> String): File = this.resolveSibling(block(this, nameWithoutExtension))
+
+private fun Project.registerBintrayPublish() {
     val mirai = miraiExtension
 
     bintray {
         user = mirai.publishing.user ?: findPropertySmartOrFail("bintray.user")
         key = mirai.publishing.key ?: findPropertySmartOrFail("bintray.key")
 
-        setPublications("mavenJava")
+        val targets = kotlinJvmOrAndroidTargets
+        if (targets.size == 1) {
+            setPublications("mavenJava")
+        } else {
+            setPublications(*targets.map { "mavenJava".wrapNameWithPlatform(it, false) }.toTypedArray())
+        }
+
         setConfigurations("archives")
 
         publish = mirai.publishing.publish
@@ -49,12 +143,17 @@ internal fun Project.registerPublishPluginTask() {
             repo = mirai.publishing.repo ?: findPropertySmartOrFail("bintray.repo")
             name = mirai.publishing.packageName ?: findPropertySmartOrFail("bintray.package")
             userOrg = mirai.publishing.org ?: findPropertySmart("bintray.org")
+            desc = mirai.publishing.description ?: project.description
 
             mirai.publishing.bintrayPackageConfigConfigs.forEach { it.invoke(this) }
         }
 
         mirai.publishing.bintrayConfigs.forEach { it.invoke(this) }
     }
+}
+
+private fun Project.registerMavenPublications(target: KotlinTarget, isSingleTarget: Boolean) {
+    val mirai = miraiExtension
 
     @Suppress("DEPRECATION")
     val sourcesJar by tasks.registering(Jar::class) {
@@ -70,7 +169,7 @@ internal fun Project.registerPublishPluginTask() {
                 url = uri("$buildDir/repo")
             }
         }*/
-        publications.register("mavenJava", MavenPublication::class.java) { publication ->
+        publications.register("mavenJava".wrapNameWithPlatform(target, isSingleTarget), MavenPublication::class.java) { publication ->
             with(publication) {
                 from(components["java"])
 
@@ -89,9 +188,11 @@ internal fun Project.registerPublishPluginTask() {
                 }
 
                 artifact(sourcesJar.get())
-
-                // TODO: 2020/11/28 -miraip metadata artifact
-                // TODO: 2020/11/28 -all shadowed artifact
+                artifact(tasks.filterIsInstance<BuildMiraiPluginTask>().single { it.target == target })
+                artifact(mapOf(
+                    "source" to tasks.getByName("generatePluginMetadata".wrapNameWithPlatform(target, isSingleTarget)).outputs.files.singleFile,
+                    "extension" to "metadata"
+                ))
 
                 mirai.publishing.mavenPublicationConfigs.forEach { it.invoke(this) }
             }

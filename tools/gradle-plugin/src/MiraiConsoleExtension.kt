@@ -13,8 +13,10 @@ package net.mamoe.mirai.console.gradle
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.jfrog.bintray.gradle.BintrayExtension
+import com.jfrog.bintray.gradle.BintrayPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.XmlProvider
+import org.gradle.api.plugins.PluginContainer
 import org.gradle.api.publish.maven.MavenPublication
 
 /**
@@ -126,31 +128,44 @@ public open class MiraiConsoleExtension {
     /**
      * Bintray 插件成品 JAR 发布 配置.
      *
-     * @see Publishing
+     * @see PluginPublishing
      * @since 1.1.0
      */
-    public val publishing: Publishing = Publishing()
+    public val publishing: PluginPublishing = PluginPublishing()
 
     /**
-     * 控制自动配置 Bintray 发布
-     * @since 1.1.0
-     */
-    public var publishingEnabled: Boolean = true
-
-    /**
-     * Bintray 插件成品 JAR 发布 配置.
+     * 控制自动配置 Bintray 发布. 默认为 `false`, 表示不自动配置发布.
      *
-     * @see [Publishing]
+     * 开启后将会:
+     * - 创建名为 "mavenJava" 的 [MavenPublication]
+     * - [应用][PluginContainer.apply] [BintrayPlugin], 配置 Bintray 相关参数
+     * - 创建 task "publishPlugin"
+     *
      * @since 1.1.0
      */
-    public inline fun publishing(block: Publishing.() -> Unit): Unit = publishing.run(block)
+    public var publishingEnabled: Boolean = false
 
     /**
+     * 开启自动配置 Bintray 插件成品 JAR 发布, 并以 [configure] 配置 [PluginPublishing].
+     *
+     * @see [PluginPublishing]
      * @see publishingEnabled
      * @since 1.1.0
      */
-    public fun disablePublishing() {
-        publishingEnabled = false
+    public inline fun publishing(crossinline configure: PluginPublishing.() -> Unit) {
+        publishingEnabled = true
+        publishing.run(configure)
+    }
+
+    /**
+     * 开启自动配置 Bintray 插件成品 JAR 发布.
+     *
+     * @see [PluginPublishing]
+     * @see publishingEnabled
+     * @since 1.1.0
+     */
+    public fun publishing() {
+        publishingEnabled = true
     }
 
     /**
@@ -166,36 +181,37 @@ public open class MiraiConsoleExtension {
      * 4. [System.getenv] "PROP"
      *
      * @see publishing
+     * @see publishingEnabled
      * @since 1.1.0
      */
-    public class Publishing internal constructor() {
+    public class PluginPublishing internal constructor() {
         ///////////////////////////////////////////////////////////////////////////
         // Required arguments
         ///////////////////////////////////////////////////////////////////////////
 
         /**
          * Bintray 账户名. 必须.
-         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.user"
+         * 若为 `null`, 将会以 [PluginPublishing] 中描述的步骤获取 "bintray.user"
          *
-         * @see [Publishing]
+         * @see [PluginPublishing]
          */
         public var user: String? = null
 
         /**
          * Bintray 账户 key. 必须.
-         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.key"
+         * 若为 `null`, 将会以 [PluginPublishing] 中描述的步骤获取 "bintray.key"
          */
         public var key: String? = null
 
         /**
          * 目标仓库名称. 必须.
-         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.repo"
+         * 若为 `null`, 将会以 [PluginPublishing] 中描述的步骤获取 "bintray.repo"
          */
         public var repo: String? = null
 
         /**
          * 目标仓库名称. 必须.
-         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.package"
+         * 若为 `null`, 将会以 [PluginPublishing] 中描述的步骤获取 "bintray.package"
          */
         public var packageName: String? = null
 
@@ -227,11 +243,16 @@ public open class MiraiConsoleExtension {
          */
         public var version: String? = null
 
+        /**
+         * 发布的描述, 默认为 `project.description`
+         */
+        public var description: String? = null
+
         // Bintray
 
         /**
          * Bintray organization 名. 可选.
-         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.org".
+         * 若为 `null`, 将会以 [PluginPublishing] 中描述的步骤获取 "bintray.org".
          * 仍然无法获取时发布到 [user] 账号下的仓库 [repo], 否则发布到指定 [org] 下的仓库 [repo].
          */
         public var org: String? = null
@@ -256,29 +277,29 @@ public open class MiraiConsoleExtension {
         /**
          * 自定义配置 [BintrayExtension]，覆盖
          */
-        public fun bintray(config: BintrayExtension.() -> Unit) {
-            bintrayConfigs.add(config)
+        public fun bintray(configure: BintrayExtension.() -> Unit) {
+            bintrayConfigs.add(configure)
         }
 
         /**
          * 自定义配置 [BintrayExtension.PackageConfig]
          */
-        public fun packageConfig(config: BintrayExtension.PackageConfig.() -> Unit) {
-            bintrayPackageConfigConfigs.add(config)
+        public fun packageConfig(configure: BintrayExtension.PackageConfig.() -> Unit) {
+            bintrayPackageConfigConfigs.add(configure)
         }
 
         /**
          * 自定义配置 maven pom.xml [XmlProvider]
          */
-        public fun mavenPom(config: XmlProvider.() -> Unit) {
-            mavenPomConfigs.add(config)
+        public fun mavenPom(configure: XmlProvider.() -> Unit) {
+            mavenPomConfigs.add(configure)
         }
 
         /**
          * 自定义配置 [MavenPublication]
          */
-        public fun mavenPublication(config: MavenPublication.() -> Unit) {
-            mavenPublicationConfigs.add(config)
+        public fun mavenPublication(configure: MavenPublication.() -> Unit) {
+            mavenPublicationConfigs.add(configure)
         }
     }
 }

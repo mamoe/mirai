@@ -13,7 +13,7 @@
 package net.mamoe.mirai.console.gradle
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.jfrog.bintray.gradle.BintrayPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
@@ -101,18 +101,18 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
 
         tasks.findByName("shadowJar")?.enabled = false
 
-        fun registerBuildPluginTask(target: KotlinTarget, isSinglePlatform: Boolean) {
-            tasks.create(if (isSinglePlatform) "buildPlugin" else "buildPlugin${target.name.capitalize()}", ShadowJar::class.java).apply shadow@{
+        fun registerBuildPluginTask(target: KotlinTarget, isSingleTarget: Boolean) {
+            tasks.create("buildPlugin".wrapNameWithPlatform(target, isSingleTarget), BuildMiraiPluginTask::class.java).apply shadow@{
                 group = "mirai"
+                targetField = target
+
+                archiveExtension.set("mirai.jar")
 
                 val compilations = target.compilations.filter { it.name == MAIN_COMPILATION_NAME }
 
                 compilations.forEach {
                     dependsOn(it.compileKotlinTask)
-                    from(it.output)
-                    for (allKotlinSourceSet in it.allKotlinSourceSets) {
-                        from(allKotlinSourceSet.resources)
-                    }
+                    from(it.output.allOutputs)
                 }
 
                 from(project.configurations.getByName("runtimeClasspath").copyRecursive { dependency ->
@@ -142,18 +142,20 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
     }
 
     override fun apply(target: Project): Unit = with(target) {
-        target.extensions.create("mirai", MiraiConsoleExtension::class.java)
+        extensions.create("mirai", MiraiConsoleExtension::class.java)
 
-        target.plugins.apply(JavaPlugin::class.java)
-        target.plugins.apply(ShadowPlugin::class.java)
-
-        target.repositories.maven { it.setUrl(BINTRAY_REPOSITORY_URL) }
+        plugins.apply(JavaPlugin::class.java)
+        plugins.apply("org.gradle.maven-publish")
+        plugins.apply("org.gradle.maven")
+        plugins.apply(ShadowPlugin::class.java)
+        plugins.apply(BintrayPlugin::class.java)
+        repositories.maven { it.setUrl(BINTRAY_REPOSITORY_URL) }
 
         afterEvaluate {
             configureCompileTarget()
             kotlinTargets.forEach { configureTarget(it) }
             registerBuildPluginTasks()
-            registerPublishPluginTask()
+            configurePublishing()
         }
     }
 }
@@ -172,3 +174,6 @@ internal val Project.kotlinTargets: Collection<KotlinTarget>
             else -> error("[MiraiConsole] Internal error: kotlinExtension is neither KotlinMultiplatformExtension nor KotlinSingleTargetExtension")
         }
     }
+
+internal val Project.kotlinJvmOrAndroidTargets: Collection<KotlinTarget>
+    get() = kotlinTargets.filter { it.platformType == KotlinPlatformType.jvm || it.platformType == KotlinPlatformType.androidJvm }
