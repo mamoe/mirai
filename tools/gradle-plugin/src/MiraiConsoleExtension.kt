@@ -12,7 +12,10 @@
 package net.mamoe.mirai.console.gradle
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.jfrog.bintray.gradle.BintrayExtension
 import org.gradle.api.JavaVersion
+import org.gradle.api.XmlProvider
+import org.gradle.api.publish.maven.MavenPublication
 
 /**
  * ```
@@ -118,6 +121,165 @@ open class MiraiConsoleExtension {
      */
     fun excludeDependency(group: String, name: String) {
         excludedDependencies.add(ExcludedDependency(group, name))
+    }
+
+    /**
+     * Bintray 插件成品 JAR 发布 配置.
+     *
+     * @see Publishing
+     * @since 1.1.0
+     */
+    val publishing: Publishing = Publishing()
+
+    /**
+     * 控制自动配置 Bintray 发布
+     * @since 1.1.0
+     */
+    var publishingEnabled = true
+
+    /**
+     * Bintray 插件成品 JAR 发布 配置.
+     *
+     * @see [Publishing]
+     * @since 1.1.0
+     */
+    inline fun publishing(block: Publishing.() -> Unit) = publishing.run(block)
+
+    /**
+     * @see publishingEnabled
+     * @since 1.1.0
+     */
+    fun disablePublishing() {
+        publishingEnabled = false
+    }
+
+    /**
+     * Bintray 插件成品 JAR 发布 配置.
+     *
+     * 对于一个属性 PROP, 会按以下顺序依次尝试读取:
+     * 1. Gradle 参数
+     *   - "gradle.properties"
+     *   - ext
+     *   - Gradle -P 启动参数
+     * 2. [System.getProperty] "PROP"
+     * 3. 当前和所有父 project 根目录下 "PROP" 文件的内容
+     * 4. [System.getenv] "PROP"
+     *
+     * @see publishing
+     * @since 1.1.0
+     */
+    class Publishing internal constructor() {
+        ///////////////////////////////////////////////////////////////////////////
+        // Required arguments
+        ///////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Bintray 账户名. 必须.
+         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.user"
+         *
+         * @see [Publishing]
+         */
+        var user: String? = null
+
+        /**
+         * Bintray 账户 key. 必须.
+         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.key"
+         */
+        var key: String? = null
+
+        /**
+         * 目标仓库名称. 必须.
+         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.repo"
+         */
+        var repo: String? = null
+
+        /**
+         * 目标仓库名称. 必须.
+         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.package"
+         */
+        var packageName: String? = null
+
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Optional arguments
+        ///////////////////////////////////////////////////////////////////////////
+
+        // Artifact
+
+        /**
+         * 发布的 artifact id. 默认为 `project.name`.
+         *
+         * artifact id 是类似于 "net.mamoe:mirai-console:1.1.0" 中的 "mirai-console"
+         */
+        var artifactId: String? = null
+
+        /**
+         * 发布的 group id. 默认为 `project.group`.
+         *
+         * group id 是类似于 "net.mamoe:mirai-console:1.1.0" 中的 "net.mamoe"
+         */
+        var groupId: String? = null
+
+        /**
+         * 发布的版本号, 默认为 `project.version`
+         *
+         * 版本号是类似于 "net.mamoe:mirai-console:1.1.0" 中的 "1.1.0"
+         */
+        var version: String? = null
+
+        // Bintray
+
+        /**
+         * Bintray organization 名. 可选.
+         * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.org".
+         * 仍然无法获取时发布到 [user] 账号下的仓库 [repo], 否则发布到指定 [org] 下的仓库 [repo].
+         */
+        var org: String? = null
+
+        /**
+         * 上传后自动发布. 默认 `true`.
+         */
+        var publish: Boolean = true
+
+        /**
+         * 当文件冲突时覆盖. 默认 `false`.
+         */
+        var override: Boolean = false
+
+        // Custom configurations
+
+        internal val bintrayConfigs = mutableListOf<BintrayExtension.() -> Unit>()
+        internal val bintrayPackageConfigConfigs = mutableListOf<BintrayExtension.PackageConfig.() -> Unit>()
+        internal val mavenPomConfigs = mutableListOf<XmlProvider.() -> Unit>()
+        internal val mavenPublicationConfigs = mutableListOf<MavenPublication.() -> Unit>()
+
+        /**
+         * 自定义配置 [BintrayExtension]，覆盖
+         */
+        fun bintray(config: BintrayExtension.() -> Unit) {
+            bintrayConfigs.add(config)
+        }
+
+        /**
+         * 自定义配置 [BintrayExtension.PackageConfig]
+         */
+        fun packageConfig(config: BintrayExtension.PackageConfig.() -> Unit) {
+            bintrayPackageConfigConfigs.add(config)
+        }
+
+        /**
+         * 自定义配置 maven pom.xml [XmlProvider]
+         */
+        fun mavenPom(config: XmlProvider.() -> Unit) {
+            mavenPomConfigs.add(config)
+        }
+
+        /**
+         * 自定义配置 [MavenPublication]
+         */
+        fun mavenPublication(config: MavenPublication.() -> Unit) {
+            mavenPublicationConfigs.add(config)
+        }
     }
 }
 

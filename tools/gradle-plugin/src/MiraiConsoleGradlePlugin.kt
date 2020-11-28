@@ -151,8 +151,9 @@ class MiraiConsoleGradlePlugin : Plugin<Project> {
 
         afterEvaluate {
             configureCompileTarget()
-            registerBuildPluginTasks()
             kotlinTargets.forEach { configureTarget(it) }
+            registerBuildPluginTasks()
+            registerPublishPluginTask()
         }
     }
 }
