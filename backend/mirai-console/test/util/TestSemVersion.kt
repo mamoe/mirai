@@ -16,6 +16,7 @@ package net.mamoe.mirai.console.util
 
 import net.mamoe.mirai.console.util.SemVersion.Companion.test
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFails
 
 internal class TestSemVersion {
     @Test
@@ -43,6 +44,16 @@ internal class TestSemVersion {
     }
 
     @Test
+    internal fun testRequirementCopy() {
+        fun SemVersion.Requirement.check(a: SemVersion.Requirement.() -> SemVersion.Requirement) {
+            assert(a().impl !== this.impl)
+        }
+        SemVersion.parseRangeRequirement("1.0").check { copy() }
+        SemVersion.parseRangeRequirement("1.0").check { copy("2.0") }
+        SemVersion.parseRangeRequirement("1.0").check { copy("1.0") }
+    }
+
+    @Test
     internal fun testRequirement() {
         fun SemVersion.Requirement.assert(version: String): SemVersion.Requirement {
             assert(test(version)) { version }
@@ -50,9 +61,9 @@ internal class TestSemVersion {
         }
 
         fun assertInvalid(requirement: String) {
-            kotlin.runCatching {
+            assertFails(requirement) {
                 SemVersion.parseRangeRequirement(requirement)
-            }.onSuccess { assert(false) { requirement } }
+            }
         }
 
         fun SemVersion.Requirement.assertFalse(version: String): SemVersion.Requirement {

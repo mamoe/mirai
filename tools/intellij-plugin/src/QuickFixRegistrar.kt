@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.intellij
 import com.intellij.codeInsight.intention.IntentionAction
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.intellij.diagnostics.fix.AddSerializerFix
+import net.mamoe.mirai.console.intellij.diagnostics.fix.ProvideDefaultValueFix
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import org.jetbrains.kotlin.idea.quickfix.KotlinIntentionActionsFactory
 import org.jetbrains.kotlin.idea.quickfix.QuickFixContributor
@@ -23,10 +24,12 @@ class QuickFixRegistrar : QuickFixContributor {
             quickFixes.register(this, *factory)
         }
 
+        @Suppress("unused")
         fun DiagnosticFactory<*>.registerActions(vararg action: IntentionAction) {
             quickFixes.register(this, *action)
         }
 
         MiraiConsoleErrors.UNSERIALIZABLE_TYPE.registerFactory(AddSerializerFix)
+        MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.registerFactory(ProvideDefaultValueFix)
     }
 }

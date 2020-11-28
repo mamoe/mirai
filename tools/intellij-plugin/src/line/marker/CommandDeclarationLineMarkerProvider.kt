@@ -41,7 +41,7 @@ class CommandDeclarationLineMarkerProvider : LineMarkerProvider {
         null,
         GutterIconRenderer.Alignment.RIGHT
     ) {
-        override fun createGutterRenderer(): GutterIconRenderer? {
+        override fun createGutterRenderer(): GutterIconRenderer {
             return object : LineMarkerInfo.LineMarkerGutterIconRenderer<PsiElement>(this) {
                 override fun getClickAction(): AnAction? = null
             }

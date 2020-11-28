@@ -57,6 +57,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
 """.trimIndent()
 
 fun genAllValueUseSite(): String = buildString {
+    @Suppress("SpellCheckingInspection")
     fun appendln(@Language("kt") code: String) {
         this.appendLine(code.trimIndent())
     }
@@ -112,6 +113,7 @@ fun genAllValueUseSite(): String = buildString {
 
     // SPECIAL
     appendLine()
+    @Suppress("unused", "SpellCheckingInspection", "KDocUnresolvedReference")
     appendln(
         """
             fun <T : PluginData> PluginData.value(default: T): Value<T> {
@@ -153,7 +155,7 @@ fun genAllValueUseSite(): String = buildString {
                 ""${'"'}
                 这种只保存引用的 Value 可能会导致意料之外的结果, 在使用时须保持谨慎.
                 对值的改变不会触发自动保存, 也不会同步到 UI 中. 在 UI 中只能编辑序列化之后的值.
-            ""${'"'}, level = RequiresOptIn.Level.WARNING
+            ""${'"'}, level = RequiresOptIn.Level.WARNING,
             )
             @Retention(AnnotationRetention.BINARY)
             @Target(AnnotationTarget.FUNCTION)

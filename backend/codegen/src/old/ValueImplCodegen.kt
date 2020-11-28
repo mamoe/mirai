@@ -52,6 +52,7 @@ import kotlinx.serialization.builtins.*
 import net.mamoe.mirai.console.data.*
 """.trimIndent()
 
+@Suppress("SpellCheckingInspection")
 fun genAllValueImpl(): String = buildString {
     fun appendln(@Language("kt") code: String) {
         this.appendLine(code.trimIndent())
@@ -118,6 +119,7 @@ fun genAllValueImpl(): String = buildString {
 
     for (collectionName in listOf("List", "Set")) {
         for (number in NUMBERS + OTHER_PRIMITIVES) {
+            @Suppress("unused")
             appendln(
                 """
                 @JvmName("valueImplMutable${number}${collectionName}")
@@ -164,6 +166,7 @@ fun genAllValueImpl(): String = buildString {
     appendLine()
 
 
+    @Suppress("unused")
     appendln(
         """
             internal fun <T : PluginData> PluginData.valueImpl(default: T): Value<T> {
@@ -230,6 +233,7 @@ fun genPrimitiveValueImpl(
     """.trimIndent() + "\n"
 
 
+@Suppress("SpellCheckingInspection")
 fun genCollectionValueImpl(
     collectionName: String,
     kotlinTypeName: String,

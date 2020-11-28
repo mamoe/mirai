@@ -26,6 +26,7 @@ allprojects {
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         jcenter()
         mavenCentral()
+        maven(url = "https://dl.bintray.com/karlatemp/misc")
     }
 }
 
@@ -43,14 +44,23 @@ subprojects {
 }
 
 val experimentalAnnotations = arrayOf(
+    "kotlin.Experimental",
     "kotlin.RequiresOptIn",
     "kotlin.ExperimentalUnsignedTypes",
-    // "kotlin.ExperimentalStdlibApi",
+    "kotlin.ExperimentalStdlibApi",
     "kotlin.contracts.ExperimentalContracts",
+    "kotlin.time.ExperimentalTime",
     "kotlin.experimental.ExperimentalTypeInference",
-    // "kotlinx.coroutines.ExperimentalCoroutinesApi",
+    "kotlinx.coroutines.ExperimentalCoroutinesApi",
+    "kotlinx.serialization.ExperimentalSerializationApi",
+    "kotlin.io.path.ExperimentalPathApi",
     "io.ktor.util.KtorExperimentalAPI",
-    "kotlin.time.ExperimentalTime"
+
+    "net.mamoe.mirai.utils.MiraiInternalAPI",
+    "net.mamoe.mirai.utils.MiraiExperimentalAPI",
+    "net.mamoe.mirai.console.ConsoleFrontEndImplementation",
+    "net.mamoe.mirai.console.util.ConsoleExperimentalApi",
+    "net.mamoe.mirai.console.util.ConsoleInternalApi"
 )
 
 
@@ -139,10 +149,11 @@ fun Project.configureSourceSets() {
 fun Project.configureKotlinExperimentalUsages() {
     val sourceSets = kotlinSourceSets ?: return
 
-    for (target in sourceSets) {
+    for (target in sourceSets) target.languageSettings.run {
+        enableLanguageFeature("InlineClasses")
+        progressiveMode = true
         experimentalAnnotations.forEach { a ->
-            target.languageSettings.useExperimentalAnnotation(a)
-            //target.languageSettings.enableLanguageFeature("InlineClasses")
+            useExperimentalAnnotation(a)
         }
     }
 }

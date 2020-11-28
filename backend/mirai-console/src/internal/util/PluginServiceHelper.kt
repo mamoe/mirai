@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.internal.util
 
 import net.mamoe.mirai.console.internal.data.cast
@@ -18,7 +20,6 @@ import java.util.*
 import kotlin.reflect.KClass
 import java.lang.reflect.Member as JReflectionMember
 
-@Suppress("unused")
 internal class ServiceList<T>(
     internal val classLoader: ClassLoader,
     internal val delegate: List<String>
@@ -38,8 +39,8 @@ internal object PluginServiceHelper {
         return delegate.mapNotNull { classLoader.loadService<T>(it) }
     }
 
-    fun <T : Any> ClassLoader.loadService(
-        classname: String
+    private fun <T : Any> ClassLoader.loadService(
+        classname: String,
     ): T? {
         @Suppress("UNCHECKED_CAST")
         return kotlin.runCatching {

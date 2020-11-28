@@ -11,8 +11,11 @@ package net.mamoe.mirai.console.extensions
 
 import net.mamoe.mirai.console.extension.AbstractSingletonExtensionPoint
 import net.mamoe.mirai.console.extension.SingletonExtension
+import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.internal.permission.BuiltInPermissionService
 import net.mamoe.mirai.console.permission.PermissionService
+import net.mamoe.mirai.console.plugin.Plugin
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 
 /**
  * [权限服务][PermissionService] 提供器.
@@ -21,7 +24,16 @@ import net.mamoe.mirai.console.permission.PermissionService
  */
 public interface PermissionServiceProvider : SingletonExtension<PermissionService<*>> {
     public companion object ExtensionPoint :
-        AbstractSingletonExtensionPoint<PermissionServiceProvider, PermissionService<*>>(PermissionServiceProvider::class, BuiltInPermissionService)
+        AbstractSingletonExtensionPoint<PermissionServiceProvider, PermissionService<*>>(PermissionServiceProvider::class, BuiltInPermissionService) {
+        @ConsoleExperimentalApi
+        public val providerPlugin: Plugin? by lazy {
+            GlobalComponentStorage.run {
+                val instance = PermissionService.INSTANCE
+                if (instance is BuiltInPermissionService) return@lazy null
+                PermissionServiceProvider.getExtensions().find { it.extension.instance === instance }?.plugin
+            }
+        }
+    }
 }
 
 /**

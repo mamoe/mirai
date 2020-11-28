@@ -21,20 +21,18 @@ import net.mamoe.mirai.console.util.ConsoleInput
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.PlatformLogger
+import net.mamoe.mirai.utils.*
 import java.nio.file.Path
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
+import kotlin.io.path.createTempDirectory
 import kotlin.test.assertNotNull
 
-@OptIn(ConsoleInternalApi::class)
+@OptIn(ConsoleInternalApi::class, kotlin.io.path.ExperimentalPathApi::class)
 fun initTestEnvironment() {
     object : MiraiConsoleImplementation {
-        override val rootPath: Path = createTempDir().toPath()
+        override val rootPath: Path = createTempDirectory()
 
         @ConsoleExperimentalApi
         override val frontEndDescription: MiraiConsoleFrontEndDescription

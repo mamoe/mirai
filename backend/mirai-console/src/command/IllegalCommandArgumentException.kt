@@ -18,11 +18,12 @@ import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
  *
  * [message] 将会发送给指令调用方.
  *
+ * 如果指令调用方是 [ConsoleCommandSender],
+ * 还会将 [cause], [suppressedExceptions] 发送给 [ConsoleCommandSender] (如果存在)
+ *
  * @see CommandArgumentParserException
  */
-public open class IllegalCommandArgumentException : IllegalArgumentException {
-    public constructor() : super()
-    public constructor(message: String?) : super(message)
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-    public constructor(cause: Throwable?) : super(cause)
-}
+public open class IllegalCommandArgumentException @JvmOverloads constructor(
+    message: String,
+    cause: Throwable? = null,
+) : IllegalArgumentException(message, cause)

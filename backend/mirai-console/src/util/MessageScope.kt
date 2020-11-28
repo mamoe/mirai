@@ -555,7 +555,7 @@ private class CombinedScope(
 private class CommandSenderAsMessageScope(
     private val sender: CommandSender,
 ) : MessageScope {
-    override val realTarget: Any?
+    override val realTarget: Any
         get() = sender.user ?: sender // ConsoleCommandSender
 
     override suspend fun sendMessage(message: Message) {
@@ -570,7 +570,7 @@ private class CommandSenderAsMessageScope(
 private class ContactAsMessageScope(
     private val sender: Contact,
 ) : MessageScope {
-    override val realTarget: Any?
+    override val realTarget: Any
         get() = sender
 
     override suspend fun sendMessage(message: Message) {

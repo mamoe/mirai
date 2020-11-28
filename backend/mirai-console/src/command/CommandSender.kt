@@ -14,9 +14,7 @@
 
 package net.mamoe.mirai.console.command
 
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.MiraiConsole
@@ -24,11 +22,9 @@ import net.mamoe.mirai.console.command.CommandSender.Companion.asCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asMemberCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.asTempCommandSender
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
-import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.internal.data.castOrNull
 import net.mamoe.mirai.console.internal.data.qualifiedNameOrTip
-import net.mamoe.mirai.console.internal.plugin.rootCauseOrSelf
 import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.Permittee
 import net.mamoe.mirai.console.permission.PermitteeId
@@ -47,7 +43,7 @@ import kotlin.coroutines.CoroutineContext
 /**
  * 指令发送者.
  *
- * 只有 [CommandSender] 才能 [执行指令][CommandManager.execute]
+ * 只有 [CommandSender] 才能 [执行指令][CommandManager.executeCommand]
  *
  * ## 获得指令发送者
  * - [MessageEvent.toCommandSender]
@@ -74,7 +70,7 @@ import kotlin.coroutines.CoroutineContext
  * - [AbstractUserCommandSender] 代表用户
  * - [ConsoleCommandSender] 代表控制台
  *
- * 二级子类, 当指令由插件 [主动执行][CommandManager.execute] 时, 插件应使用 [toCommandSender] 或 [asCommandSender], 因此,
+ * 二级子类, 当指令由插件 [主动执行][CommandManager.executeCommand] 时, 插件应使用 [toCommandSender] 或 [asCommandSender], 因此,
  * - 若在群聊环境, 对应 [CommandSender] 为 [MemberCommandSender]
  * - 若在私聊环境, 对应 [CommandSender] 为 [FriendCommandSender]
  * - 若在临时会话环境, 对应 [CommandSender] 为 [TempCommandSender]
@@ -172,9 +168,6 @@ public interface CommandSender : CoroutineScope, Permittee {
      */
     @JvmBlockingBridge
     public suspend fun sendMessage(message: String): MessageReceipt<Contact>?
-
-    @ConsoleExperimentalApi("This is unstable and might get changed")
-    public suspend fun catchExecutionException(e: Throwable)
 
     public companion object {
 
@@ -274,154 +267,54 @@ public sealed class AbstractCommandSender : CommandSender, CoroutineScope {
     public abstract override val subject: Contact?
     public abstract override val user: User?
     public abstract override fun toString(): String
-
-    @ConsoleExperimentalApi("This is unstable and might get changed")
-    override suspend fun catchExecutionException(e: Throwable) {
-        if (this is CommandSenderOnMessage<*>) {
-            val cause = e.rootCauseOrSelf
-
-            // TODO: 2020/10/17
-            //      CommandArgumentParserException 作为 IllegalCommandArgumentException 不会再进入此函数
-            //      已在
-            //       - [console]  CommandManagerImpl.commandListener
-            //       - [terminal] ConsoleThread.kt
-            //      处理
-
-            val message = cause
-                .takeIf { it is CommandArgumentParserException }?.message
-                ?: "${cause::class.simpleName.orEmpty()}: ${cause.message}"
-
-            // TODO: 2020/8/30 优化 net.mamoe.mirai.console.command.CommandSender.catchExecutionException
-
-            sendMessage(message) // \n\n60 秒内发送 stacktrace 查看堆栈信息
-            this@AbstractCommandSender.launch(CoroutineName("stacktrace delayer from command")) {
-                if (fromEvent.nextMessageOrNull(60_000) {
-                        it.message.contentEquals("stacktrace") || it.message.contentEquals("stack")
-                    } != null) {
-                    sendMessage(e.stackTraceToString())
-                }
-            }
-        } else {
-            sendMessage(e.stackTraceToString())
-        }
-    }
-}
-
-/**
- * 当 [this] 为 [AbstractCommandSender] 时返回.
- *
- * 正常情况下, 所有 [CommandSender] 都应该继承 [AbstractCommandSender]
- *
- * 在需要类型智能转换等情况时可使用此函数.
- *
- * ### 契约
- * 本函数定义契约,
- * - 若函数正常返回, Kotlin 编译器认为 [this] 是 [AbstractCommandSender] 实例并执行智能类型转换.
- *
- * @return `this`
- */
-public fun CommandSender.checkIsAbstractCommandSender(): AbstractCommandSender {
-    contract {
-        returns() implies (this@checkIsAbstractCommandSender is AbstractCommandSender)
-    }
-    check(this is AbstractCommandSender) { "A CommandSender must extend AbstractCommandSender" }
-    return this
-}
-
-/**
- * 当 [this] 为 [AbstractUserCommandSender] 时返回.
- *
- * 正常情况下, 所有 [UserCommandSender] 都应该继承 [AbstractUserCommandSender]
- *
- * 在需要类型智能转换等情况时可使用此函数.
- *
- * ### 契约
- * 本函数定义契约,
- * - 若函数正常返回, Kotlin 编译器认为 [this] 是 [AbstractUserCommandSender] 实例并执行智能类型转换.
- *
- * @return `this`
- */
-public fun UserCommandSender.checkIsAbstractUserCommandSender(): AbstractUserCommandSender {
-    contract {
-        returns() implies (this@checkIsAbstractUserCommandSender is AbstractUserCommandSender)
-    }
-    check(this is AbstractUserCommandSender) { "A UserCommandSender must extend AbstractUserCommandSender" }
-    return this
 }
 
 /**
  * 当 [this] 为 [ConsoleCommandSender] 时返回 `true`
- *
- * ### 契约
- * 本函数定义契约,
- * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
- * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
  */
 public fun CommandSender.isConsole(): Boolean {
     contract {
         returns(true) implies (this@isConsole is ConsoleCommandSender)
-        returns(false) implies (this@isConsole is UserCommandSender)
     }
-    this.checkIsAbstractCommandSender()
     return this is ConsoleCommandSender
 }
 
 /**
- * 当 [this] 不为 [ConsoleCommandSender], 即为 [UserCommandSender] 时返回 `true`.
- *
- * ### 契约
- * 本函数定义契约,
- * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
- * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
+ * 当 [this] 不为 [ConsoleCommandSender] 时返回 `true`
  */
 public fun CommandSender.isNotConsole(): Boolean {
     contract {
-        returns(true) implies (this@isNotConsole is UserCommandSender)
-        returns(false) implies (this@isNotConsole is ConsoleCommandSender)
+        returns(true) implies (this@isNotConsole !is ConsoleCommandSender)
     }
-    this.checkIsAbstractCommandSender()
     return this !is ConsoleCommandSender
 }
 
 /**
  * 当 [this] 为 [UserCommandSender] 时返回 `true`
- *
- * ### 契约
- * 本函数定义契约,
- * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
- * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
  */
 public fun CommandSender.isUser(): Boolean {
     contract {
         returns(true) implies (this@isUser is UserCommandSender)
-        returns(false) implies (this@isUser is ConsoleCommandSender)
     }
-    this.checkIsAbstractCommandSender()
     return this is UserCommandSender
 }
 
 /**
  * 当 [this] 不为 [UserCommandSender], 即为 [ConsoleCommandSender] 时返回 `true`
- *
- * ### 契约
- * 本函数定义契约,
- * - 若返回 `true`, Kotlin 编译器认为 [this] 是 [ConsoleCommandSender] 实例并执行智能类型转换.
- * - 若返回 `false`, Kotlin 编译器认为 [this] 是 [UserCommandSender] 实例并执行智能类型转换.
  */
 public fun CommandSender.isNotUser(): Boolean {
     contract {
         returns(true) implies (this@isNotUser is ConsoleCommandSender)
-        returns(false) implies (this@isNotUser is UserCommandSender)
     }
-    this.checkIsAbstractCommandSender()
     return this !is UserCommandSender
 }
 
 /**
- * 折叠 [AbstractCommandSender] 的两种可能性.
+ * 折叠 [AbstractCommandSender] 的可能性.
  *
  * - 当 [this] 为 [ConsoleCommandSender] 时执行 [ifIsConsole]
  * - 当 [this] 为 [UserCommandSender] 时执行 [ifIsUser]
+ * - 否则执行 [otherwise]
  *
  * ### 示例
  * ```
@@ -438,20 +331,23 @@ public fun CommandSender.isNotUser(): Boolean {
  * )
  * ```
  *
- * @return [ifIsConsole] 或 [ifIsUser] 执行结果.
+ * @return [ifIsConsole], [ifIsUser] 或 [otherwise] 执行结果.
  */
 @JvmSynthetic
 public inline fun <R> CommandSender.fold(
     ifIsConsole: ConsoleCommandSender.() -> R,
     ifIsUser: UserCommandSender.() -> R,
+    otherwise: CommandSender.() -> R = { error("CommandSender ${this::class.qualifiedName} is not supported") },
 ): R {
     contract {
         callsInPlace(ifIsConsole, InvocationKind.AT_MOST_ONCE)
         callsInPlace(ifIsUser, InvocationKind.AT_MOST_ONCE)
+        callsInPlace(otherwise, InvocationKind.AT_MOST_ONCE)
     }
-    return when (val sender = this.checkIsAbstractCommandSender()) {
+    return when (val sender = this) {
         is ConsoleCommandSender -> ifIsConsole(sender)
-        is AbstractUserCommandSender -> ifIsUser(sender)
+        is UserCommandSender -> ifIsUser(sender)
+        else -> otherwise(sender)
     }
 }
 
@@ -477,7 +373,7 @@ public inline fun <R> UserCommandSender.foldContext(
         callsInPlace(inGroup, InvocationKind.AT_MOST_ONCE)
         callsInPlace(inPrivate, InvocationKind.AT_MOST_ONCE)
     }
-    return when (val sender = this.checkIsAbstractUserCommandSender()) {
+    return when (val sender = this) {
         is MemberCommandSender -> inGroup(sender)
         else -> inPrivate(sender)
     }
@@ -603,7 +499,7 @@ public sealed class AbstractUserCommandSender : UserCommandSender, AbstractComma
 }
 
 /**
- * 代表一个 [好友][Friend] 执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * 代表一个 [好友][Friend] 执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
  * @see FriendCommandSenderOnMessage 代表一个真实的 [好友][Friend] 主动在私聊消息执行指令
  */
 public open class FriendCommandSender internal constructor(
@@ -622,7 +518,7 @@ public open class FriendCommandSender internal constructor(
 }
 
 /**
- * 代表一个 [群员][Member] 执行指令, 但不一定是通过群内发消息方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * 代表一个 [群员][Member] 执行指令, 但不一定是通过群内发消息方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
  * @see MemberCommandSenderOnMessage 代表一个真实的 [群员][Member] 主动在群内发送消息执行指令.
  */
 public open class MemberCommandSender internal constructor(
@@ -644,7 +540,7 @@ public open class MemberCommandSender internal constructor(
 }
 
 /**
- * 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.execute])
+ * 代表一个 [群员][Member] 通过临时会话执行指令, 但不一定是通过私聊方式, 也有可能是由插件在代码直接执行 ([CommandManager.executeCommand])
  * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
  */
 public open class TempCommandSender internal constructor(

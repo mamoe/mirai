@@ -107,10 +107,8 @@ fun codegen(targetFile: String, block: CodegenScope.() -> Unit) {
         println("Codegen target: ${it.absolutePath}")
     }.apply {
         writeText(
-            CodegenScope().apply(block).also { list ->
-                list.forEach {
-                    println("Applying replacement: $it")
-                }
+            CodegenScope().apply(block).onEach {
+                println("Applying replacement: $it")
             }.applyTo(readText())
         )
     }

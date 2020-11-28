@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
-import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.SERIALIZABLE_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
@@ -19,10 +18,12 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
+import org.jetbrains.kotlin.js.descriptorUtils.getJetTypeFqName
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import org.jetbrains.kotlin.types.SimpleType
+import org.jetbrains.kotlinx.serialization.compiler.resolve.*
 
 
 class PluginDataValuesChecker : DeclarationChecker {
@@ -40,20 +41,23 @@ class PluginDataValuesChecker : DeclarationChecker {
                     && t is SimpleType
             }.forEach { (e, callExpr) ->
                 val (_, type) = e
-                val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>()
+                val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>() ?: return@forEach
 
-                val inspectionTarget: PsiElement by lazy {
-                    callExpr.typeArguments.find { it.references.firstOrNull()?.canonicalText == type.fqName?.toString() } ?: callExpr
-                }
+                if (canBeSerializedInternally(classDescriptor)) return@forEach
 
-                if (classDescriptor == null
-                    || !classDescriptor.hasNoArgConstructor()
-                ) return@forEach context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
-                    inspectionTarget,
-                    type.fqName?.asString().toString())
-                )
+                val inspectionTarget = kotlin.run {
+                    val fqName = type.fqName ?: return@run null
+                    callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true }
+                } ?: return@forEach
 
-                if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME)) // TODO: 2020/9/18 external serializers
+                if (!classDescriptor.hasNoArgConstructor())
+                    return@forEach context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
+                        inspectionTarget,
+                        callExpr,
+                        type.fqName?.asString().toString())
+                    )
+
+                if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME))
                     return@forEach context.report(MiraiConsoleErrors.UNSERIALIZABLE_TYPE.on(
                         inspectionTarget,
                         classDescriptor
@@ -61,3 +65,54 @@ class PluginDataValuesChecker : DeclarationChecker {
             }
     }
 }
+
+private fun canBeSerializedInternally(descriptor: ClassDescriptor): Boolean {
+    @Suppress("UNUSED_VARIABLE") val name = when (descriptor.defaultType.getJetTypeFqName(false)) {
+        "kotlin.Unit" -> "UnitSerializer"
+        "Z", "kotlin.Boolean" -> "BooleanSerializer"
+        "B", "kotlin.Byte" -> "ByteSerializer"
+        "S", "kotlin.Short" -> "ShortSerializer"
+        "I", "kotlin.Int" -> "IntSerializer"
+        "J", "kotlin.Long" -> "LongSerializer"
+        "F", "kotlin.Float" -> "FloatSerializer"
+        "D", "kotlin.Double" -> "DoubleSerializer"
+        "C", "kotlin.Char" -> "CharSerializer"
+        "kotlin.String" -> "StringSerializer"
+        "kotlin.Pair" -> "PairSerializer"
+        "kotlin.Triple" -> "TripleSerializer"
+        "kotlin.collections.Collection", "kotlin.collections.List",
+        "kotlin.collections.ArrayList", "kotlin.collections.MutableList",
+        -> "ArrayListSerializer"
+        "kotlin.collections.Set", "kotlin.collections.LinkedHashSet", "kotlin.collections.MutableSet" -> "LinkedHashSetSerializer"
+        "kotlin.collections.HashSet" -> "HashSetSerializer"
+        "kotlin.collections.Map", "kotlin.collections.LinkedHashMap", "kotlin.collections.MutableMap" -> "LinkedHashMapSerializer"
+        "kotlin.collections.HashMap" -> "HashMapSerializer"
+        "kotlin.collections.Map.Entry" -> "MapEntrySerializer"
+        "kotlin.ByteArray" -> "ByteArraySerializer"
+        "kotlin.ShortArray" -> "ShortArraySerializer"
+        "kotlin.IntArray" -> "IntArraySerializer"
+        "kotlin.LongArray" -> "LongArraySerializer"
+        "kotlin.CharArray" -> "CharArraySerializer"
+        "kotlin.FloatArray" -> "FloatArraySerializer"
+        "kotlin.DoubleArray" -> "DoubleArraySerializer"
+        "kotlin.BooleanArray" -> "BooleanArraySerializer"
+        "java.lang.Boolean" -> "BooleanSerializer"
+        "java.lang.Byte" -> "ByteSerializer"
+        "java.lang.Short" -> "ShortSerializer"
+        "java.lang.Integer" -> "IntSerializer"
+        "java.lang.Long" -> "LongSerializer"
+        "java.lang.Float" -> "FloatSerializer"
+        "java.lang.Double" -> "DoubleSerializer"
+        "java.lang.Character" -> "CharSerializer"
+        "java.lang.String" -> "StringSerializer"
+        "java.util.Collection", "java.util.List", "java.util.ArrayList" -> "ArrayListSerializer"
+        "java.util.Set", "java.util.LinkedHashSet" -> "LinkedHashSetSerializer"
+        "java.util.HashSet" -> "HashSetSerializer"
+        "java.util.Map", "java.util.LinkedHashMap" -> "LinkedHashMapSerializer"
+        "java.util.HashMap" -> "HashMapSerializer"
+        "java.util.Map.Entry" -> "MapEntrySerializer"
+        else -> return false
+    }
+    return true
+}
+

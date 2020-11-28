@@ -11,11 +11,17 @@
 
 package net.mamoe.mirai.console.plugin.jvm
 
+import io.github.karlatemp.caller.CallerFinder
+import io.github.karlatemp.caller.StackFrame
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.*
+import net.mamoe.mirai.console.internal.util.findLoader
 import net.mamoe.mirai.console.plugin.description.PluginDependency
 import net.mamoe.mirai.console.plugin.description.PluginDescription
+import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.SemVersion
+import net.mamoe.yamlkt.Yaml
 
 /**
  * JVM 插件的描述. 通常作为 `plugin.yml`
@@ -30,50 +36,68 @@ import net.mamoe.mirai.console.util.SemVersion
 public interface JvmPluginDescription : PluginDescription {
     public companion object {
         /**
-         * 构建 [JvmPluginDescription]
-         * @see JvmPluginDescriptionBuilder
+         * 从 [pluginClassloader] 读取资源文件 [filename] 并以 YAML 格式解析为 [SimpleJvmPluginDescription]
+         *
+         * @param filename [ClassLoader.getResourceAsStream] 的参数 `name`
+         * @param pluginClassloader 默认通过 [CallerFinder.getCaller] 获取调用方 [StackFrame] 然后获取其 [Class.getClassLoader].
          */
-        @JvmName("create")
-        @JvmSynthetic
-        public inline operator fun invoke(
-            /**
-             * @see [PluginDescription.id]
-             */
-            @ResolveContext(PLUGIN_ID) id: String,
-            /**
-             * @see [PluginDescription.version]
-             */
-            @ResolveContext(SEMANTIC_VERSION) version: String,
-            /**
-             * @see [PluginDescription.name]
-             */
-            @ResolveContext(PLUGIN_NAME) name: String = id,
-            block: JvmPluginDescriptionBuilder.() -> Unit = {},
-        ): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
+        // @JvmOverloads // compiler error
+        @JvmStatic
+        @ConsoleExperimentalApi
+        public fun loadFromResource(
+            filename: String = "plugin.yml",
+            pluginClassloader: ClassLoader = CallerFinder.getCaller()?.findLoader() ?: error("Cannot find caller classloader, please specify manually."),
+        ): JvmPluginDescription {
+            val stream = pluginClassloader.getResourceAsStream(filename) ?: error("Cannot find plugin description resource '$filename'")
 
-        /**
-         * 构建 [JvmPluginDescription]
-         * @see JvmPluginDescriptionBuilder
-         */
-        @JvmName("create")
-        @JvmSynthetic
-        public inline operator fun invoke(
-            /**
-             * @see [PluginDescription.id]
-             */
-            @ResolveContext(PLUGIN_ID) id: String,
-            /**
-             * @see [PluginDescription.version]
-             */
-            version: SemVersion,
-            /**
-             * @see [PluginDescription.name]
-             */
-            @ResolveContext(PLUGIN_NAME) name: String = id,
-            block: JvmPluginDescriptionBuilder.() -> Unit = {},
-        ): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
+            val bytes = stream.use { it.readBytes() }
+
+            return Yaml.default.decodeFromString(SimpleJvmPluginDescription.serializer(), String(bytes))
+        }
     }
 }
+
+/**
+ * 构建 [JvmPluginDescription]
+ * @see JvmPluginDescriptionBuilder
+ */
+@JvmSynthetic
+public inline fun JvmPluginDescription(
+    /**
+     * @see [PluginDescription.id]
+     */
+    @ResolveContext(PLUGIN_ID) id: String,
+    /**
+     * @see [PluginDescription.version]
+     */
+    @ResolveContext(SEMANTIC_VERSION) version: String,
+    /**
+     * @see [PluginDescription.name]
+     */
+    @ResolveContext(PLUGIN_NAME) name: String = id,
+    block: JvmPluginDescriptionBuilder.() -> Unit = {},
+): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
+
+/**
+ * 构建 [JvmPluginDescription]
+ * @see JvmPluginDescriptionBuilder
+ */
+@JvmSynthetic
+public inline fun JvmPluginDescription(
+    /**
+     * @see [PluginDescription.id]
+     */
+    @ResolveContext(PLUGIN_ID) id: String,
+    /**
+     * @see [PluginDescription.version]
+     */
+    version: SemVersion,
+    /**
+     * @see [PluginDescription.name]
+     */
+    @ResolveContext(PLUGIN_NAME) name: String = id,
+    block: JvmPluginDescriptionBuilder.() -> Unit = {},
+): JvmPluginDescription = JvmPluginDescriptionBuilder(id, version).apply { name(name) }.apply(block).build()
 
 /**
  * [JvmPluginDescription] 构建器.
@@ -94,7 +118,7 @@ public interface JvmPluginDescription : PluginDescription {
  *    .build();
  * ```
  *
- * @see [JvmPluginDescription.invoke]
+ * @see [JvmPluginDescription]
  */
 public class JvmPluginDescriptionBuilder(
     @ResolveContext(PLUGIN_ID) private var id: String,
@@ -149,20 +173,6 @@ public class JvmPluginDescriptionBuilder(
     }
 
     /**
-     * isOptional = false
-     *
-     * @see PluginDependency
-     */
-    @ILoveKuriyamaMiraiForever
-    public fun dependsOn(
-        @ResolveContext(PLUGIN_ID) pluginId: String,
-        versionRequirement: SemVersion.Requirement,
-        isOptional: Boolean = false,
-    ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
-    }
-
-    /**
      * @see PluginDependency
      */
     @ILoveKuriyamaMiraiForever
@@ -171,7 +181,7 @@ public class JvmPluginDescriptionBuilder(
         @ResolveContext(VERSION_REQUIREMENT) versionRequirement: String,
         isOptional: Boolean = false,
     ): JvmPluginDescriptionBuilder = apply {
-        this.dependencies.add(PluginDependency(pluginId, SemVersion.parseRangeRequirement(versionRequirement), isOptional))
+        this.dependencies.add(PluginDependency(pluginId, versionRequirement, isOptional))
     }
 
     /**
@@ -192,7 +202,7 @@ public class JvmPluginDescriptionBuilder(
 
     public fun build(): JvmPluginDescription =
         @Suppress("DEPRECATION_ERROR")
-        SimpleJvmPluginDescription(name, version, id, author, info, dependencies)
+        SimpleJvmPluginDescription(id, name, version, author, info, dependencies)
 
     /**
      * 标注一个 [JvmPluginDescription] DSL
@@ -208,11 +218,12 @@ public class JvmPluginDescriptionBuilder(
  *
  * @see JvmPluginDescription
  */
+@Serializable // Keep this file in public API files. Might turn to `public` in the future.
 internal data class SimpleJvmPluginDescription
 @JvmOverloads constructor(
+    override val id: String,
     override val name: String,
     override val version: SemVersion,
-    override val id: String = name,
     override val author: String = "",
     override val info: String = "",
     override val dependencies: Set<PluginDependency> = setOf(),
@@ -221,13 +232,13 @@ internal data class SimpleJvmPluginDescription
     @Suppress("DEPRECATION_ERROR")
     @JvmOverloads
     constructor(
-        name: String,
+        id: String,
+        name: String = id,
         version: String,
-        id: String = name,
         author: String = "",
         info: String = "",
         dependencies: Set<PluginDependency> = setOf(),
-    ) : this(name, SemVersion(version), id, author, info, dependencies)
+    ) : this(id, name, SemVersion(version), author, info, dependencies)
 
     init {
         PluginDescription.checkPluginDescription(this)

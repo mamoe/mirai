@@ -23,6 +23,7 @@ internal class PluginDataTest {
         val map2: MutableMap<String, MutableMap<String, String>> by value()
     }
 
+    @Suppress("unused")
     private val jsonPrettyPrint = Json { prettyPrint = true }
     private val json = Json {}
 

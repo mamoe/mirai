@@ -20,15 +20,21 @@ import net.mamoe.mirai.console.command.parse.mapToTypeOrNull
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.cast
-import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 /**
  * The resolved [CommandCall].
+ *
+ * ### Implementation details
+ * [ResolvedCommandCall] should be _immutable_,
+ * meaning all of its properties must be *pure* and should be implemented as an immutable property, or delegated by a lazy initializer.
  *
  * @see ResolvedCommandCallImpl
  */
 @ExperimentalCommandDescriptors
 public interface ResolvedCommandCall {
+    /**
+     * The [CommandSender] responsible to this call.
+     */
     public val caller: CommandSender
 
     /**
@@ -49,7 +55,7 @@ public interface ResolvedCommandCall {
     /**
      * Resolved value arguments arranged mapping the [CommandSignature.valueParameters] by index.
      *
-     * **Implementation details**: Lazy calculation.
+     * **Default implementation details**: Lazy calculation.
      */
     @ConsoleExperimentalApi
     public val resolvedValueArguments: List<ResolvedCommandValueArgument<*>>
@@ -57,18 +63,30 @@ public interface ResolvedCommandCall {
     public companion object
 }
 
+/**
+ * Resolved [CommandValueParameter] for [ResolvedCommandCall.resolvedValueArguments]
+ */
 @ExperimentalCommandDescriptors
 public data class ResolvedCommandValueArgument<T>(
     val parameter: CommandValueParameter<T>,
+    /**
+     * Argument value expected by the [parameter]
+     */
     val value: T,
 )
 
 // Don't move into companion, compilation error
+/**
+ * Invoke this resolved call.
+ */
 @ExperimentalCommandDescriptors
 public suspend inline fun ResolvedCommandCall.call() {
     return this@call.calleeSignature.call(this@call)
 }
 
+/**
+ * Default implementation.
+ */
 @ExperimentalCommandDescriptors
 public class ResolvedCommandCallImpl(
     override val caller: CommandSender,
@@ -77,7 +95,7 @@ public class ResolvedCommandCallImpl(
     override val rawValueArguments: List<CommandValueArgument>,
     private val context: CommandArgumentContext,
 ) : ResolvedCommandCall {
-    override val resolvedValueArguments: List<ResolvedCommandValueArgument<*>> by lazy(PUBLICATION) {
+    override val resolvedValueArguments: List<ResolvedCommandValueArgument<*>> by lazy {
         calleeSignature.valueParameters.zip(rawValueArguments).map { (parameter, argument) ->
             val value = argument.mapToTypeOrNull(parameter.type) ?: context[parameter.type.classifierAsKClass()]?.parse(argument.value, caller)
             ?: throw  NoValueArgumentMappingException(argument, parameter.type)

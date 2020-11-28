@@ -240,9 +240,9 @@ public suspend inline fun CommandSender.executeCommand(
 @JvmSynthetic
 public suspend inline fun Command.execute(
     sender: CommandSender,
-    arguments: Message = EmptyMessageChain,
+    vararg arguments: Message = emptyArray(),
     checkPermission: Boolean = true,
-): CommandExecuteResult = CommandManager.executeCommand(sender, this, arguments, checkPermission)
+): CommandExecuteResult = CommandManager.executeCommand(sender, this, arguments.asMessageChain(), checkPermission)
 
 /**
  * 执行一个确切的指令
@@ -255,4 +255,4 @@ public suspend inline fun Command.execute(
     sender: CommandSender,
     arguments: String = "",
     checkPermission: Boolean = true,
-): CommandExecuteResult = execute(sender, PlainText(arguments), checkPermission)
+): CommandExecuteResult = execute(sender, PlainText(arguments), checkPermission = checkPermission)

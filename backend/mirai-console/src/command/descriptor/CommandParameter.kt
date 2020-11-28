@@ -14,6 +14,7 @@ import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.
 import net.mamoe.mirai.console.command.descriptor.AbstractCommandValueParameter.UserDefinedType.Companion.createRequired
 import net.mamoe.mirai.console.command.descriptor.ArgumentAcceptance.Companion.isAcceptable
 import net.mamoe.mirai.console.command.parse.CommandValueArgument
+import net.mamoe.mirai.console.command.resolve.ResolvedCommandValueArgument
 import net.mamoe.mirai.console.internal.data.classifierAsKClass
 import net.mamoe.mirai.console.internal.data.classifierAsKClassOrNull
 import net.mamoe.mirai.console.internal.data.typeOf0
@@ -52,13 +53,31 @@ public abstract class AbstractCommandParameter<T> : CommandParameter<T> {
 }
 
 /**
- * Inherited instances must be [AbstractCommandValueParameter]
+ * Inherited instances must be [AbstractCommandValueParameter].
+ *
+ * ### Implementation details
+ *
+ * [CommandValueParameter] should:
+ * - implement [equals], [hashCode] since used in [ResolvedCommandValueArgument].
+ * - implement [toString] to produce user-friendly textual representation of this parameter with type info.
+ *
  */
 @ExperimentalCommandDescriptors
 public interface CommandValueParameter<T : Any?> : CommandParameter<T> {
 
     public val isVararg: Boolean
 
+    /**
+     * Checks whether this [CommandValueParameter] accepts [argument].
+     *
+     * An [argument] can be accepted if:
+     * - [CommandValueArgument.type] is subtype of, or equals to [CommandValueParameter.type] (nullability considered), or
+     * - [CommandValueArgument.typeVariants] produces
+     *
+     * @return `true` if [argument] may be accepted through any approach mentioned above.
+     *
+     * @see accepting
+     */
     public fun accepts(argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): Boolean =
         accepting(argument, commandArgumentContext).isAcceptable
 
@@ -75,15 +94,15 @@ public sealed class ArgumentAcceptance(
 ) {
     public object Direct : ArgumentAcceptance(Int.MAX_VALUE)
 
-    public class WithTypeConversion(
+    public data class WithTypeConversion(
         public val typeVariant: TypeVariant<*>,
     ) : ArgumentAcceptance(20)
 
-    public class WithContextualConversion(
+    public data class WithContextualConversion(
         public val parser: CommandValueArgumentParser<*>,
     ) : ArgumentAcceptance(10)
 
-    public class ResolutionAmbiguity(
+    public data class ResolutionAmbiguity(
         public val candidates: List<TypeVariant<*>>,
     ) : ArgumentAcceptance(0)
 
@@ -101,7 +120,7 @@ public sealed class ArgumentAcceptance(
 }
 
 @ExperimentalCommandDescriptors
-public class CommandReceiverParameter<T : CommandSender>(
+public data class CommandReceiverParameter<T : CommandSender>(
     override val isOptional: Boolean,
     override val type: KType,
 ) : CommandParameter<T>, AbstractCommandParameter<T>() {
@@ -165,10 +184,11 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
     }
 
     @ConsoleExperimentalApi
-    public class StringConstant(
+    public data class StringConstant(
         @ConsoleExperimentalApi
         public override val name: String?,
         public val expectingValue: String,
+        public val ignoreCase: Boolean,
     ) : AbstractCommandValueParameter<String>() {
         public override val type: KType get() = STRING_TYPE
         public override val isOptional: Boolean get() = false
@@ -186,7 +206,7 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
         override fun toString(): String = "<$expectingValue>"
 
         override fun acceptingImpl(expectingType: KType, argument: CommandValueArgument, commandArgumentContext: CommandArgumentContext?): ArgumentAcceptance {
-            return if (argument.value.content == expectingValue) {
+            return if (argument.value.content.equals(expectingValue, ignoreCase)) {
                 ArgumentAcceptance.Direct
             } else ArgumentAcceptance.Impossible
         }
@@ -201,12 +221,14 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
      * @see createOptional
      * @see createRequired
      */
-    public class UserDefinedType<T>(
+    public data class UserDefinedType<T>(
         public override val name: String?,
         public override val isOptional: Boolean,
         public override val isVararg: Boolean,
         public override val type: KType,
     ) : AbstractCommandValueParameter<T>() {
+        override fun toString(): String = super.toString()
+
         init {
             requireNotNull(type.classifierAsKClassOrNull()) {
                 "type.classifier must be KClass."
@@ -236,7 +258,5 @@ public sealed class AbstractCommandValueParameter<T> : CommandValueParameter<T>,
      * Extended by [CommandValueArgumentParser]
      */
     @ConsoleExperimentalApi
-    public abstract class Extended<T> : AbstractCommandValueParameter<T>() {
-        abstract override fun toString(): String
-    }
+    public abstract class Extended<T> : AbstractCommandValueParameter<T>() // For implementer: take care of toString()
 }

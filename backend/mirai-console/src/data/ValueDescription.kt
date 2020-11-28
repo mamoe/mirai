@@ -31,13 +31,15 @@ import kotlinx.serialization.SerialInfo
  *   map:
  *     a: b
  * ```
+ *
+ * @see net.mamoe.yamlkt.Comment
  */
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 public annotation class ValueDescription(
     /**
-     * 将会被 [String.trimIndent] 处理.
+     * 将会被 [String.trimIndent] 处理
      */
     val value: String,
 )

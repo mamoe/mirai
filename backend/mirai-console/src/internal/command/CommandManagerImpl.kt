@@ -10,25 +10,22 @@
 package net.mamoe.mirai.console.internal.command
 
 import kotlinx.atomicfu.locks.withLock
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.command.*
 import net.mamoe.mirai.console.command.Command.Companion.allNames
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.findDuplicate
-import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
+import net.mamoe.mirai.console.command.descriptor.CommandArgumentParserException
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.command.parse.CommandCallParser.Companion.parseCommandCall
+import net.mamoe.mirai.console.command.resolve.CommandCallInterceptor.Companion.intercepted
 import net.mamoe.mirai.console.command.resolve.CommandCallResolver.Companion.resolve
+import net.mamoe.mirai.console.command.resolve.getOrElse
+import net.mamoe.mirai.console.internal.util.ifNull
 import net.mamoe.mirai.console.permission.PermissionService.Companion.testPermission
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
-import net.mamoe.mirai.event.Listener
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.message.data.EmptyMessageChain
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.asMessageChain
-import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.locks.ReentrantLock
 
@@ -61,49 +58,12 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
         }
         return optionalPrefixCommandMap[commandName.toLowerCase()]
     }
-
-    internal val commandListener: Listener<MessageEvent> by lazy {
-        subscribeAlways(
-            coroutineContext = CoroutineExceptionHandler { _, throwable ->
-                logger.error(throwable)
-            },
-            concurrency = Listener.ConcurrencyKind.CONCURRENT,
-            priority = Listener.EventPriority.HIGH
-        ) {
-            val sender = this.toCommandSender()
-
-            when (val result = executeCommand(sender, message)) {
-                is CommandExecuteResult.PermissionDenied -> {
-                    if (!result.command.prefixOptional || message.content.startsWith(CommandManager.commandPrefix)) {
-                        sender.sendMessage("权限不足")
-                        intercept()
-                    }
-                }
-                is CommandExecuteResult.IllegalArgument -> {
-                    result.exception.message?.let { sender.sendMessage(it) }
-                    intercept()
-                }
-                is CommandExecuteResult.Success -> {
-                    intercept()
-                }
-                is CommandExecuteResult.ExecutionFailed -> {
-                    sender.catchExecutionException(result.exception)
-                    intercept()
-                }
-                is CommandExecuteResult.UnresolvedCall -> {
-                    // noop
-                }
-            }
-        }
-    }
-
-
     ///// IMPL
 
 
     override fun getRegisteredCommands(owner: CommandOwner): List<Command> = _registeredCommands.filter { it.owner == owner }
     override val allRegisteredCommands: List<Command> get() = _registeredCommands.toList() // copy
-    override val commandPrefix: String get() = "/"
+    override val commandPrefix: String get() = CommandConfig.commandPrefix
     override fun unregisterAllCommands(owner: CommandOwner) {
         for (registeredCommand in getRegisteredCommands(owner)) {
             unregisterCommand(registeredCommand)
@@ -167,24 +127,43 @@ internal object CommandManagerImpl : CommandManager, CoroutineScope by MiraiCons
 // Don't move into CommandManager, compilation error / VerifyError
 @OptIn(ExperimentalCommandDescriptors::class)
 internal suspend fun executeCommandImpl(
-    message: Message,
+    message0: Message,
     caller: CommandSender,
     checkPermission: Boolean,
 ): CommandExecuteResult {
-    val call = message.asMessageChain().parseCommandCall(caller) ?: return CommandExecuteResult.UnresolvedCall("")
-    val resolved = call.resolve() ?: return CommandExecuteResult.UnresolvedCall(call.calleeName)
+    val message = message0
+        .intercepted(caller)
+        .getOrElse { return CommandExecuteResult.Intercepted(null, null, null, it) }
+
+    val call = message.asMessageChain()
+        .parseCommandCall(caller)
+        .ifNull { return CommandExecuteResult.UnresolvedCommand(null) }
+        .let { raw ->
+            raw.intercepted()
+                .getOrElse { return CommandExecuteResult.Intercepted(raw, null, null, it) }
+        }
+
+    val resolved = call
+        .resolve()
+        .getOrElse { return it }
+        .let { raw ->
+            raw.intercepted()
+                .getOrElse { return CommandExecuteResult.Intercepted(call, raw, null, it) }
+        }
 
     val command = resolved.callee
 
     if (checkPermission && !command.permission.testPermission(caller)) {
-        return CommandExecuteResult.PermissionDenied(command, call.calleeName)
+        return CommandExecuteResult.PermissionDenied(command, call, resolved)
     }
 
     return try {
         resolved.calleeSignature.call(resolved)
-        CommandExecuteResult.Success(resolved.callee, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.Success(resolved.callee, call, resolved)
+    } catch (e: CommandArgumentParserException) {
+        CommandExecuteResult.IllegalArgument(e, resolved.callee, call, resolved)
     } catch (e: Throwable) {
-        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call.calleeName, EmptyMessageChain)
+        CommandExecuteResult.ExecutionFailed(e, resolved.callee, call, resolved)
     }
 }
 

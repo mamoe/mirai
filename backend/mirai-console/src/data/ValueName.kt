@@ -23,7 +23,7 @@ package net.mamoe.mirai.console.data
  * 将被保存为配置 (YAML 作为示例):
  * ```yaml
  * AccountPluginData:
- *   map:
+ *   info:
  *     a: b
  * ```
  *

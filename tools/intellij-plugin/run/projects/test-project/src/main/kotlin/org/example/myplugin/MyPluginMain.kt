@@ -2,6 +2,7 @@ package org.example.myplugin
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.AutoSavePluginData
 import net.mamoe.mirai.console.data.value
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermissionService
@@ -30,18 +31,11 @@ object MyPluginMain : KotlinPlugin(
     }
 }
 
-object DataTest : AutoSavePluginConfig("data") {
-    val p by value<HasDefaultValue>()
-    val pp by value<NoDefaultValue>()
+
+val x = "弱智黄色"
+
+
+object MyData : AutoSavePluginData("") {
+    val value by value("")
+    val value2 by value<Map<String, String>>()
 }
-
-@Serializable
-data class HasDefaultValue(
-    val x: Int = 0,
-)
-
-data class NoDefaultValue(
-    val y: Int,
-)
-
-val y = "傻逼 yellow"

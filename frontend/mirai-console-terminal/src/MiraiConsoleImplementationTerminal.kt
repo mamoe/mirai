@@ -104,53 +104,44 @@ val lineReader: LineReader by lazy {
 val terminal: Terminal = run {
     if (ConsoleTerminalSettings.noConsole) return@run NoConsole
 
-    val dumb = System.getProperty("java.class.path")
-        .contains("idea_rt.jar") || System.getProperty("mirai.idea") !== null || System.getenv("mirai.idea") !== null
-
-    runCatching {
-        TerminalBuilder.builder()
-            .dumb(dumb)
-            .paused(true)
-            .build()
-            .let { terminal ->
-                if (terminal is AbstractWindowsTerminal) {
-                    val pumpField = runCatching {
-                        AbstractWindowsTerminal::class.java.getDeclaredField("pump").also {
-                            it.isAccessible = true
-                        }
-                    }.onFailure { err ->
-                        err.printStackTrace()
-                        return@let terminal.also { it.resume() }
-                    }.getOrThrow()
-                    var response = terminal
-                    terminal.setOnClose {
-                        response = NoConsole
+    TerminalBuilder.builder()
+        .name("Mirai Console")
+        .system(true)
+        .jansi(true)
+        .dumb(true)
+        .paused(true)
+        .build()
+        .let { terminal ->
+            if (terminal is AbstractWindowsTerminal) {
+                val pumpField = runCatching {
+                    AbstractWindowsTerminal::class.java.getDeclaredField("pump").also {
+                        it.isAccessible = true
                     }
-                    terminal.resume()
-                    val pumpThread = pumpField[terminal] as? Thread ?: return@let NoConsole
-                    @Suppress("ControlFlowWithEmptyBody")
-                    while (pumpThread.state == Thread.State.NEW);
-                    Thread.sleep(1000)
-                    terminal.setOnClose(null)
-                    return@let response
+                }.onFailure { err ->
+                    err.printStackTrace()
+                    return@let terminal.also { it.resume() }
+                }.getOrThrow()
+                var response = terminal
+                terminal.setOnClose {
+                    response = NoConsole
                 }
                 terminal.resume()
-                terminal
+                val pumpThread = pumpField[terminal] as? Thread ?: return@let NoConsole
+                @Suppress("ControlFlowWithEmptyBody")
+                while (pumpThread.state == Thread.State.NEW);
+                Thread.sleep(1000)
+                terminal.setOnClose(null)
+                return@let response
             }
-    }.recoverCatching {
-        TerminalBuilder.builder()
-            .jansi(true)
-            .build()
-    }.recoverCatching {
-        TerminalBuilder.builder()
-            .system(true)
-            .build()
-    }.getOrThrow()
+            terminal.resume()
+            terminal
+        }
 }
 
 private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
     override val name: String get() = "Terminal"
     override val vendor: String get() = "Mamoe Technologies"
+
     // net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.version
     // is console's version not frontend's version
     override val version: SemVersion = SemVersion(net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.versionConst)

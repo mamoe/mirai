@@ -22,6 +22,9 @@ import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
 import org.jetbrains.kotlin.diagnostics.rendering.DiagnosticFactoryToRendererMap
 import org.jetbrains.kotlin.diagnostics.rendering.Renderers
 
+/**
+ * @see MiraiConsoleErrors
+ */
 object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
     private val MAP = DiagnosticFactoryToRendererMap("MiraiConsole").apply {
         put(
@@ -32,7 +35,8 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
 
         put(
             NOT_CONSTRUCTABLE_TYPE,
-            "类型 ''{0}'' 无法通过反射直接构造, 需要提供默认值.",
+            "类型 ''{1}'' 无法通过反射直接构造, 需要提供默认值.",
+            Renderers.EMPTY,
             Renderers.STRING,
         )
 

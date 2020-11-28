@@ -14,45 +14,50 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1.create
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2.create
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.diagnostics.Severity.ERROR
+import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtNamedDeclaration
+import org.jetbrains.kotlin.psi.KtTypeProjection
 
+/**
+ * 如何增加一个错误:
+ * 1. 在 [MiraiConsoleErrors] 添加
+ * 2. 在 [MiraiConsoleErrorsRendering] 添加对应的 render
+ */
 object MiraiConsoleErrors {
-    @JvmStatic
+    @JvmField
     val ILLEGAL_PLUGIN_DESCRIPTION = create<PsiElement, String>(ERROR)
 
-    @JvmStatic
-    val NOT_CONSTRUCTABLE_TYPE = create<PsiElement, String>(ERROR)
+    @JvmField
+    val NOT_CONSTRUCTABLE_TYPE = create<KtTypeProjection, KtCallExpression, String>(ERROR)
 
-    @JvmStatic
+    @JvmField
     val UNSERIALIZABLE_TYPE = create<PsiElement, ClassDescriptor>(ERROR)
 
-    @JvmStatic
+    @JvmField
     val ILLEGAL_COMMAND_NAME = create<PsiElement, String, String>(ERROR)
 
-    @JvmStatic
+    @JvmField
     val ILLEGAL_PERMISSION_NAME = create<PsiElement, String, String>(ERROR)
 
-    @JvmStatic
+    @JvmField
     val ILLEGAL_PERMISSION_ID = create<PsiElement, String, String>(ERROR)
 
-    @JvmStatic
+    @JvmField
     val ILLEGAL_PERMISSION_NAMESPACE = create<PsiElement, String, String>(ERROR)
 
-    @JvmStatic
+    @JvmField
     val ILLEGAL_COMMAND_REGISTER_USE = create<PsiElement, KtNamedDeclaration, String>(ERROR)
 
-    @JvmStatic
+    @JvmField
     val ILLEGAL_PERMISSION_REGISTER_USE = create<PsiElement, KtNamedDeclaration, String>(ERROR)
 
     @Suppress("ObjectPropertyName", "unused")
-    @JvmStatic
+    @JvmField
     @Deprecated("", level = DeprecationLevel.ERROR)
-    val _init: Any = object : Any() {
-        init {
-            Errors.Initializer.initializeFactoryNamesAndDefaultErrorMessages(
-                MiraiConsoleErrors::class.java,
-                MiraiConsoleErrorsRendering
-            )
-        }
+    val _init: Any = run {
+        Errors.Initializer.initializeFactoryNamesAndDefaultErrorMessages(
+            MiraiConsoleErrors::class.java,
+            MiraiConsoleErrorsRendering
+        )
     }
 }

@@ -7,7 +7,7 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("FunctionName", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "PRE_RELEASE_CLASS")
+@file:Suppress("FunctionName", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "PRE_RELEASE_CLASS", "unused")
 
 package net.mamoe.mirai.console.codegen
 
@@ -59,9 +59,9 @@ class CodegenScope : MutableList<Replacer> by mutableListOf() {
 
     @CodegenDsl
     operator fun Codegen.invoke(ktTypes: Collection<KtType>) {
-        add(Replacer {
-            it + buildString {
-                ktTypes.forEach { applyTo(this, it) }
+        add(Replacer { str ->
+            str + buildString {
+                ktTypes.forEach { ktType -> applyTo(this, ktType) }
             }
         })
     }

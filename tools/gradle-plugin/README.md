@@ -4,7 +4,7 @@ Mirai Console Gradle 插件。
 
 ## 使用
 
-参考 [ConfiguringProjects](../../docs/ConfiguringProjects.md#gradle)[
+参考 [ConfiguringProjects](../../docs/ConfiguringProjects.md)
 
 ## 功能
 
@@ -34,7 +34,7 @@ mirai { // this: MiraiConsoleExtension
 }
 ```
 
-DSL 详见 [MiraiConsoleExtension](src/main/kotlin/net/mamoe/mirai/console/gradle/MiraiConsoleExtension.kt)。
+DSL 详见 [MiraiConsoleExtension](src/MiraiConsoleExtension.kt)。
 
 #### 排除依赖
 

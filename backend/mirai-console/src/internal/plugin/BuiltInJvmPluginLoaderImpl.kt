@@ -20,6 +20,7 @@ import net.mamoe.mirai.console.internal.util.PluginServiceHelper.loadAllServices
 import net.mamoe.mirai.console.plugin.jvm.*
 import net.mamoe.mirai.console.plugin.loader.AbstractFilePluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoadException
+import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
@@ -70,7 +71,6 @@ internal object BuiltInJvmPluginLoaderImpl :
                 f to pluginClassLoader.findServices(
                     JvmPlugin::class,
                     KotlinPlugin::class,
-                    AbstractJvmPlugin::class,
                     JavaPlugin::class
                 ).loadAllServices()
             }.flatMap { (f, list) ->
@@ -94,20 +94,25 @@ internal object BuiltInJvmPluginLoaderImpl :
         return filePlugins.toSet().map { it.value }
     }
 
+    private val loadedPlugins = ConcurrentHashMap<JvmPlugin, Unit>()
+
     @Throws(PluginLoadException::class)
     override fun load(plugin: JvmPlugin) {
         ensureActive()
 
+        if (loadedPlugins.put(plugin, Unit) != null) {
+            error("Plugin '${plugin.name}' is already loaded and cannot be reloaded.")
+        }
         runCatching {
-            check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin" }
-            plugin.internalOnLoad(plugin.componentStorage)
+            check(plugin is JvmPluginInternal) { "A JvmPlugin must extend AbstractJvmPlugin to be loaded by JvmPluginLoader.BuiltIn" }
+            plugin.internalOnLoad()
         }.getOrElse {
             throw PluginLoadException("Exception while loading ${plugin.description.name}", it)
         }
     }
 
     override fun enable(plugin: JvmPlugin) {
-        if (plugin.isEnabled) return
+        if (plugin.isEnabled) error("Plugin '${plugin.name}' is already enabled and cannot be re-enabled.")
         ensureActive()
         runCatching {
             if (plugin is JvmPluginInternal) {
@@ -119,7 +124,7 @@ internal object BuiltInJvmPluginLoaderImpl :
     }
 
     override fun disable(plugin: JvmPlugin) {
-        if (!plugin.isEnabled) return
+        if (!plugin.isEnabled) error("Plugin '${plugin.name}' is not already disabled and cannot be re-disabled.")
 
         if (MiraiConsole.isActive)
             ensureActive()

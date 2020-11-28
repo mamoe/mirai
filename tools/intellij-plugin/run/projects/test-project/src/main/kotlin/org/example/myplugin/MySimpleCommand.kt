@@ -1,7 +1,10 @@
 package org.example.myplugin
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
+import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.value
 
 object MySimpleCommand000 : SimpleCommand(
     MyPluginMain, "foo",
@@ -12,3 +15,17 @@ object MySimpleCommand000 : SimpleCommand(
 
     }
 }
+
+object DataTest : AutoSavePluginConfig("data") {
+    val pp by value<NoDefaultValue>(NoDefaultValue(1))
+}
+
+@Serializable
+data class HasDefaultValue(
+    val x: Int = 0,
+)
+
+@Serializable
+data class NoDefaultValue(
+    val y: Int,
+)

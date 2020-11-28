@@ -7,6 +7,8 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.console.compiler.common.resolve
 
 import net.mamoe.mirai.console.compiler.common.castOrNull
@@ -17,10 +19,11 @@ import org.jetbrains.kotlin.resolve.constants.ArrayValue
 import org.jetbrains.kotlin.resolve.constants.EnumValue
 
 ///////////////////////////////////////////////////////////////////////////
-// Serializer
+// OTHERS
 ///////////////////////////////////////////////////////////////////////////
 
 val SERIALIZABLE_FQ_NAME = FqName("kotlinx.serialization.Serializable")
+val AUTO_SERVICE = FqName("com.google.auto.service.AutoService")
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -70,7 +73,7 @@ enum class ResolveContextKind {
     ;
 
     companion object {
-        fun valueOfOrNull(string: String): ResolveContextKind? = values().find { it.name == string }
+        fun valueOfOrNull(string: String) = values().find { it.name == string }
     }
 }
 

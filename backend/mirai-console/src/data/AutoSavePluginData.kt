@@ -146,7 +146,7 @@ public open class AutoSavePluginData private constructor(
 }
 
 internal val debuggingLogger1 by lazy {
-    DefaultLogger("debug").withSwitch(false)
+    DefaultLogger("console.debug").withSwitch(false)
 }
 
 @Suppress("RESULT_CLASS_IN_RETURN_TYPE")
@@ -170,4 +170,5 @@ internal inline fun <R> MiraiLogger.runCatchingLog(message: (Throwable) -> Strin
     }.getOrNull()
 }
 
+@Suppress("SpellCheckingInspection")
 private const val MAGIC_NUMBER_CFST_INIT: Long = Long.MAX_VALUE

@@ -11,6 +11,7 @@ package net.mamoe.mirai.console.intellij.resolve
 
 import com.intellij.psi.PsiDeclarationStatement
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.parentsWithSelf
 import net.mamoe.mirai.console.compiler.common.castOrNull
 import net.mamoe.mirai.console.compiler.common.resolve.COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.resolve.SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME
@@ -19,9 +20,9 @@ import net.mamoe.mirai.console.compiler.common.resolve.findParent
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
+import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
-import org.jetbrains.kotlin.idea.search.usagesSearch.descriptor
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
@@ -32,6 +33,7 @@ import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.constants.ArrayValue
 import org.jetbrains.kotlin.resolve.constants.ConstantValue
 import org.jetbrains.kotlin.resolve.constants.StringValue
+import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
 
 
@@ -53,7 +55,8 @@ val KtPureClassOrObject.allSuperTypes: Sequence<KtSuperTypeListEntry>
     get() = sequence {
         yieldAll(superTypeListEntries)
         for (list in superTypeListEntries.asSequence()) {
-            yieldAll((list.typeAsUserType?.referenceExpression?.resolve() as? KtClass)?.allSuperTypes.orEmpty())
+            yieldAll((list.typeAsUserType?.referenceExpression?.resolve()?.parentsWithSelf?.filterIsInstance<KtClass>()
+                ?.firstOrNull())?.allSuperTypes.orEmpty())
         }
     }
 
@@ -88,7 +91,7 @@ fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
 fun KtDeclaration.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
     return allChildrenWithSelf
         .filterIsInstance<KtCallExpression>()
-        .mapNotNull { it.calleeExpression?.getResolvedCallOrResolveToCall(bindingContext) }
+        .mapNotNull { it.calleeExpression?.getResolvedCall(bindingContext) }
 }
 
 fun KtDeclaration.resolveAllCallsWithElement(bindingContext: BindingContext): Sequence<Pair<ResolvedCall<out CallableDescriptor>, KtCallExpression>> {
@@ -122,7 +125,7 @@ val PsiElement.allChildrenFlat: Sequence<PsiElement>
 
 inline fun <reified E> PsiElement.findChild(): E? = this.children.find { it is E } as E?
 
-fun KtElement?.getResolvedCallOrResolveToCall(
+fun KtElement?.getResolvedCall(
     context: BindingContext,
 ): ResolvedCall<out CallableDescriptor>? {
     return this?.getCall(context)?.getResolvedCall(context)
@@ -145,7 +148,7 @@ fun KtExpression.resolveStringConstantValues(): Sequence<String> {
         is KtNameReferenceExpression -> {
             when (val reference = references.firstIsInstance<KtSimpleNameReference>().resolve()) {
                 is KtDeclaration -> {
-                    val descriptor = reference.descriptor.castOrNull<VariableDescriptor>() ?: return emptySequence()
+                    val descriptor = reference.resolveToDescriptorIfAny(BodyResolveMode.FULL).castOrNull<VariableDescriptor>() ?: return emptySequence()
                     val compileTimeConstant = descriptor.compileTimeInitializer ?: return emptySequence()
                     return compileTimeConstant.selfOrChildrenConstantStrings()
                 }

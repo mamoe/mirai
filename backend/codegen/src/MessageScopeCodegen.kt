@@ -26,10 +26,6 @@ internal fun <A> Array<A>.arrangements(): List<Pair<A, A>> {
     return result
 }
 
-internal fun <A> Array<A>.distinctArrangements(): List<Pair<A, A>> {
-    return this.arrangements().distinctBy { it.first.toString().hashCode() + it.second.toString().hashCode() }
-}
-
 internal object MessageScopeCodegen {
     object IterableMessageScopeBuildersCodegen : RegionCodegen("MessageScope.kt"), DefaultInvoke {
         @JvmStatic
@@ -181,7 +177,7 @@ internal object MessageScopeCodegen {
                         ReplaceWith(
                             "this.asMessageScope()(action)",
                             "net.mamoe.mirai.console.util.asMessageScope", 
-                            "net.mamoe.mirai.console.util.invoke"
+                            "net.mamoe.mirai.console.util.invoke",
                         )
                     )
                     public inline fun <R> ${a}.scopeWith(action: MessageScope.() -> R): R = asMessageScope()(action)

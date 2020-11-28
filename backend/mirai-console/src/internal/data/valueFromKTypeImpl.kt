@@ -102,7 +102,7 @@ internal fun PluginData.valueFromKTypeImpl(type: KType): SerializerAwareValue<*>
     }
 }
 
-internal fun KClass<*>.createInstanceSmart(): Any? {
+internal fun KClass<*>.createInstanceSmart(): Any {
     return when (this) {
         Byte::class -> 0.toByte()
         Short::class -> 0.toShort()

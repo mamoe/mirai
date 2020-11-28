@@ -26,12 +26,13 @@ import net.mamoe.mirai.console.internal.data.map
 import net.mamoe.mirai.console.internal.util.semver.SemVersionInternal
 import net.mamoe.mirai.console.util.SemVersion.Companion.equals
 import net.mamoe.mirai.console.util.SemVersion.Requirement
+import net.mamoe.mirai.console.util.SemVersion.SemVersionAsStringSerializer
 import kotlin.LazyThreadSafetyMode.PUBLICATION
 
 /**
  * [语义化版本](https://semver.org/lang/zh-CN/) 支持
  *
- * 解析示例:
+ * ### 解析示例
  *
  * `1.0.0-M4+c25733b8` 将会解析出下面的内容,
  * [major] (主本号), [minor] (次版本号), [patch] (修订号), [identifier] (先行版本号) 和 [metadata] (元数据).
@@ -48,10 +49,13 @@ import kotlin.LazyThreadSafetyMode.PUBLICATION
  *
  * 对于核心版本号, 此实现稍微比语义化版本规范宽松一些, 允许 x.y 的存在.
  *
+ * ### 序列化
+ * 使用 [SemVersionAsStringSerializer], [SemVersion] 被序列化为 [toString] 的字符串.
+ *
  * @see Requirement 版本号要修
  * @see SemVersion.invoke 由字符串解析
  */
-@Serializable(with = SemVersion.SemVersionAsStringSerializer::class)
+@Serializable(with = SemVersionAsStringSerializer::class)
 public data class SemVersion
 /**
  * @see SemVersion.invoke 字符串解析
@@ -81,11 +85,47 @@ internal constructor(
      * 一条依赖规则
      * @see [parseRangeRequirement]
      */
-    public interface Requirement {
+    @Serializable(Requirement.RequirementAsStringSerializer::class)
+    public data class Requirement internal constructor(
+        /**
+         * 规则的字符串表示方式
+         *
+         * @see [SemVersion.parseRangeRequirement]
+         */
+        val rule: String,
+    ) {
+
+        @Transient
+        internal val impl = kotlin.runCatching {
+            SemVersionInternal.parseRangeRequirement(rule)
+        }.getOrElse {
+            throw java.lang.IllegalArgumentException("Syntax error: $rule", it)
+        }
+
         /** 在 [version] 满足此要求时返回 true */
-        public fun test(version: SemVersion): Boolean
+        public fun test(version: SemVersion): Boolean = impl.test(version)
+
+        /**
+         * 序列化为字符串, [rule]. 从字符串反序列化, [parseRangeRequirement].
+         */
+        public object RequirementAsStringSerializer : KSerializer<Requirement> by String.serializer().map(
+            serializer = { it.rule },
+            deserializer = { parseRangeRequirement(it) }
+        )
+
+        public companion object {
+            /**
+             * @see parseRangeRequirement
+             */
+            @JvmSynthetic
+            public operator fun invoke(@ResolveContext(VERSION_REQUIREMENT) requirement: String): Requirement =
+                parseRangeRequirement(requirement)
+        }
     }
 
+    /**
+     * 使用 [SemVersion.toString] 序列化, 使用 [SemVersion.invoke] 反序列化.
+     */
     public object SemVersionAsStringSerializer : KSerializer<SemVersion> by String.serializer().map(
         serializer = { it.toString() },
         deserializer = { SemVersion(it) }
@@ -148,8 +188,8 @@ internal constructor(
          */
         @JvmStatic
         @Throws(IllegalArgumentException::class)
-        public fun parseRangeRequirement(@ResolveContext(VERSION_REQUIREMENT) requirement: String): Requirement =
-            SemVersionInternal.parseRangeRequirement(requirement)
+        public fun parseRangeRequirement(@ResolveContext(VERSION_REQUIREMENT) rule: String): Requirement =
+            Requirement(rule)
 
         /** @see [Requirement.test] */
         @JvmStatic
@@ -201,7 +241,11 @@ internal constructor(
     public override fun toString(): String = toString
 
     /**
-     * 将 [SemVersion] 转为 Kotlin data class 风格的 [String]
+     * 将 [SemVersion] 转为 Kotlin data class 风格的 [String].
+     *
+     * ```
+     * return "SemVersion(major=$major, minor=$minor, patch=$patch, identifier=$identifier, metadata=$metadata)"
+     * ```
      */
     public fun toStructuredString(): String {
         return "SemVersion(major=$major, minor=$minor, patch=$patch, identifier=$identifier, metadata=$metadata)"

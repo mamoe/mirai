@@ -7,9 +7,14 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:JvmName("CommonUtils")
+@file:JvmName("CommonUtils") // maintain binary compatibility
 
 package net.mamoe.mirai.console.internal.util
+
+import io.github.karlatemp.caller.StackFrame
+import net.mamoe.mirai.console.internal.plugin.BuiltInJvmPluginLoaderImpl
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 internal inline fun <reified E : Throwable, R> runIgnoreException(block: () -> R): R? {
     try {
@@ -28,3 +33,42 @@ internal inline fun <reified E : Throwable> runIgnoreException(block: () -> Unit
         throw e
     }
 }
+
+internal fun StackFrame.findLoader(): ClassLoader? {
+    classInstance?.let { return it.classLoader }
+    return runCatching {
+        BuiltInJvmPluginLoaderImpl.classLoaders.firstOrNull { it.findClass(className, true) != null }
+    }.getOrNull()
+}
+
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@kotlin.internal.LowPriorityInOverloadResolution
+internal inline fun <T : Any> T?.ifNull(block: () -> T): T {
+    contract { callsInPlace(block, InvocationKind.AT_MOST_ONCE) }
+    return this ?: block()
+}
+
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated("Useless ifNull on not null value.")
+@JvmName("ifNull1")
+internal inline fun <T : Any> T.ifNull(block: () -> T): T = this
+
+@PublishedApi
+internal inline fun assertionError(message: () -> String = { "Reached an unexpected branch." }): Nothing {
+    contract { callsInPlace(message, InvocationKind.EXACTLY_ONCE) }
+    throw AssertionError(message())
+}
+
+@PublishedApi
+internal inline fun assertUnreachable(message: () -> String = { "Reached an unexpected branch." }): Nothing {
+    contract { callsInPlace(message, InvocationKind.EXACTLY_ONCE) }
+    throw AssertionError(message())
+}
+
+@MarkerUnreachableClause
+@PublishedApi
+internal inline val UNREACHABLE_CLAUSE: Nothing
+    get() = assertUnreachable()
+
+@DslMarker
+private annotation class MarkerUnreachableClause
