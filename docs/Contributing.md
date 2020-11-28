@@ -31,9 +31,15 @@ Mirai Console 项目由四个模块组成：后端，前端，Gradle 插件，In
 
 首次加载和构建 mirai-console 项目可能要花费数小时时间。
 
-### 发布版本
+## 贡献代码
 
-（针对拥有 Mirai Console write 权限的项目成员）
+### 代码风格
+- 请优先使用 Kotlin
+- 请遵守 [Kotlin 官方代码风格](https://www.kotlincn.net/docs/reference/coding-conventions.html)
+
+## 发布版本
+
+（以下内容针对拥有 Mirai Console write 权限的项目成员）
 
 若你要发布一个 Mirai Console dev release：
 
