@@ -25,41 +25,41 @@ import org.gradle.api.publish.maven.MavenPublication
  * ```
  */
 // must be open
-open class MiraiConsoleExtension {
+public open class MiraiConsoleExtension {
     /**
      * 为 `true` 时不自动添加 mirai-core 的依赖
      *
      * 默认: `false`
      */
-    var noCore: Boolean = false
+    public var noCore: Boolean = false
 
     /**
      * 为 `true` 时不自动为 test 模块添加 mirai-core-qqandroid 的依赖.
      *
      * 默认: `false`
      */
-    var noTestCoreQQAndroid: Boolean = false
+    public var noTestCoreQQAndroid: Boolean = false
 
     /**
      * 为 `true` 时不自动添加 mirai-console 的依赖.
      *
      * 默认: `false`
      */
-    var noConsole: Boolean = false
+    public var noConsole: Boolean = false
 
     /**
      * 自动添加的 mirai-core 和 mirai-core-qqandroid 的版本.
      *
      * 默认: 与本 Gradle 插件编译时的 mirai-core 版本相同. [VersionConstants.CORE_VERSION]
      */
-    var coreVersion: String = VersionConstants.CORE_VERSION
+    public var coreVersion: String = VersionConstants.CORE_VERSION
 
     /**
      * 自动添加的 mirai-console 后端和前端的版本.
      *
      * 默认: 与本 Gradle 插件版本相同. [VersionConstants.CONSOLE_VERSION]
      */
-    var consoleVersion: String = VersionConstants.CONSOLE_VERSION
+    public var consoleVersion: String = VersionConstants.CONSOLE_VERSION
 
     /**
      * 自动为 test 模块添加的前端依赖名称
@@ -68,7 +68,7 @@ open class MiraiConsoleExtension {
      *
      * 默认: [MiraiConsoleFrontEndKind.TERMINAL]
      */
-    var useTestConsoleFrontEnd: MiraiConsoleFrontEndKind? = MiraiConsoleFrontEndKind.TERMINAL
+    public var useTestConsoleFrontEnd: MiraiConsoleFrontEndKind? = MiraiConsoleFrontEndKind.TERMINAL
 
     /**
      * Java 和 Kotlin 编译目标. 至少为 [JavaVersion.VERSION_1_8].
@@ -77,7 +77,7 @@ open class MiraiConsoleExtension {
      *
      * 默认: [JavaVersion.VERSION_1_8]
      */
-    var jvmTarget: JavaVersion = JavaVersion.VERSION_1_8
+    public var jvmTarget: JavaVersion = JavaVersion.VERSION_1_8
 
     /**
      * 默认会配置 Kotlin 编译器参数 "-Xjvm-default=all". 将此项设置为 `false` 可避免配置.
@@ -86,7 +86,7 @@ open class MiraiConsoleExtension {
      *
      * 默认: `false`
      */
-    var dontConfigureKotlinJvmDefault: Boolean = false
+    public var dontConfigureKotlinJvmDefault: Boolean = false
 
     internal val shadowConfigurations: MutableList<ShadowJar.() -> Unit> = mutableListOf()
     internal val excludedDependencies: MutableSet<ExcludedDependency> = mutableSetOf()
@@ -99,7 +99,7 @@ open class MiraiConsoleExtension {
     /**
      * 配置 [ShadowJar] (即打包插件)
      */
-    fun configureShadow(configure: ShadowJar.() -> Unit) {
+    public fun configureShadow(configure: ShadowJar.() -> Unit) {
         shadowConfigurations.add(configure)
     }
 
@@ -108,7 +108,7 @@ open class MiraiConsoleExtension {
      *
      * @param notation 格式为 "groupId:name". 如 "org.jetbrains.kotlin:kotlin-stdlib"
      */
-    fun excludeDependency(notation: String) {
+    public fun excludeDependency(notation: String) {
         requireNotNull(notation.count { it == ':' } == 1) { "Invalid dependency notation $notation." }
         excludedDependencies.add(ExcludedDependency(notation.substringBefore(':'), notation.substringAfter(':')))
     }
@@ -119,7 +119,7 @@ open class MiraiConsoleExtension {
      * @param group 如 "org.jetbrains.kotlin"
      * @param name 如 "kotlin-stdlib"
      */
-    fun excludeDependency(group: String, name: String) {
+    public fun excludeDependency(group: String, name: String) {
         excludedDependencies.add(ExcludedDependency(group, name))
     }
 
@@ -129,13 +129,13 @@ open class MiraiConsoleExtension {
      * @see Publishing
      * @since 1.1.0
      */
-    val publishing: Publishing = Publishing()
+    public val publishing: Publishing = Publishing()
 
     /**
      * 控制自动配置 Bintray 发布
      * @since 1.1.0
      */
-    var publishingEnabled = true
+    public var publishingEnabled: Boolean = true
 
     /**
      * Bintray 插件成品 JAR 发布 配置.
@@ -143,13 +143,13 @@ open class MiraiConsoleExtension {
      * @see [Publishing]
      * @since 1.1.0
      */
-    inline fun publishing(block: Publishing.() -> Unit) = publishing.run(block)
+    public inline fun publishing(block: Publishing.() -> Unit): Unit = publishing.run(block)
 
     /**
      * @see publishingEnabled
      * @since 1.1.0
      */
-    fun disablePublishing() {
+    public fun disablePublishing() {
         publishingEnabled = false
     }
 
@@ -168,7 +168,7 @@ open class MiraiConsoleExtension {
      * @see publishing
      * @since 1.1.0
      */
-    class Publishing internal constructor() {
+    public class Publishing internal constructor() {
         ///////////////////////////////////////////////////////////////////////////
         // Required arguments
         ///////////////////////////////////////////////////////////////////////////
@@ -179,25 +179,25 @@ open class MiraiConsoleExtension {
          *
          * @see [Publishing]
          */
-        var user: String? = null
+        public var user: String? = null
 
         /**
          * Bintray 账户 key. 必须.
          * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.key"
          */
-        var key: String? = null
+        public var key: String? = null
 
         /**
          * 目标仓库名称. 必须.
          * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.repo"
          */
-        var repo: String? = null
+        public var repo: String? = null
 
         /**
          * 目标仓库名称. 必须.
          * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.package"
          */
-        var packageName: String? = null
+        public var packageName: String? = null
 
 
         ///////////////////////////////////////////////////////////////////////////
@@ -211,21 +211,21 @@ open class MiraiConsoleExtension {
          *
          * artifact id 是类似于 "net.mamoe:mirai-console:1.1.0" 中的 "mirai-console"
          */
-        var artifactId: String? = null
+        public var artifactId: String? = null
 
         /**
          * 发布的 group id. 默认为 `project.group`.
          *
          * group id 是类似于 "net.mamoe:mirai-console:1.1.0" 中的 "net.mamoe"
          */
-        var groupId: String? = null
+        public var groupId: String? = null
 
         /**
          * 发布的版本号, 默认为 `project.version`
          *
          * 版本号是类似于 "net.mamoe:mirai-console:1.1.0" 中的 "1.1.0"
          */
-        var version: String? = null
+        public var version: String? = null
 
         // Bintray
 
@@ -234,17 +234,17 @@ open class MiraiConsoleExtension {
          * 若为 `null`, 将会以 [Publishing] 中描述的步骤获取 "bintray.org".
          * 仍然无法获取时发布到 [user] 账号下的仓库 [repo], 否则发布到指定 [org] 下的仓库 [repo].
          */
-        var org: String? = null
+        public var org: String? = null
 
         /**
          * 上传后自动发布. 默认 `true`.
          */
-        var publish: Boolean = true
+        public var publish: Boolean = true
 
         /**
          * 当文件冲突时覆盖. 默认 `false`.
          */
-        var override: Boolean = false
+        public var override: Boolean = false
 
         // Custom configurations
 
@@ -256,33 +256,36 @@ open class MiraiConsoleExtension {
         /**
          * 自定义配置 [BintrayExtension]，覆盖
          */
-        fun bintray(config: BintrayExtension.() -> Unit) {
+        public fun bintray(config: BintrayExtension.() -> Unit) {
             bintrayConfigs.add(config)
         }
 
         /**
          * 自定义配置 [BintrayExtension.PackageConfig]
          */
-        fun packageConfig(config: BintrayExtension.PackageConfig.() -> Unit) {
+        public fun packageConfig(config: BintrayExtension.PackageConfig.() -> Unit) {
             bintrayPackageConfigConfigs.add(config)
         }
 
         /**
          * 自定义配置 maven pom.xml [XmlProvider]
          */
-        fun mavenPom(config: XmlProvider.() -> Unit) {
+        public fun mavenPom(config: XmlProvider.() -> Unit) {
             mavenPomConfigs.add(config)
         }
 
         /**
          * 自定义配置 [MavenPublication]
          */
-        fun mavenPublication(config: MavenPublication.() -> Unit) {
+        public fun mavenPublication(config: MavenPublication.() -> Unit) {
             mavenPublicationConfigs.add(config)
         }
     }
 }
 
-enum class MiraiConsoleFrontEndKind {
+/**
+ * @see MiraiConsoleExtension.useTestConsoleFrontEnd
+ */
+public enum class MiraiConsoleFrontEndKind {
     TERMINAL,
 }

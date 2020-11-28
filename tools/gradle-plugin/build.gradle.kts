@@ -33,6 +33,10 @@ dependencies {
 version = Versions.console
 description = "Gradle plugin for Mirai Console"
 
+kotlin {
+    explicitApi()
+}
+
 pluginBundle {
     website = "https://github.com/mamoe/mirai-console"
     vcsUrl = "https://github.com/mamoe/mirai-console"

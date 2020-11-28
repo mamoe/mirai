@@ -29,8 +29,8 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
-class MiraiConsoleGradlePlugin : Plugin<Project> {
-    companion object {
+public class MiraiConsoleGradlePlugin : Plugin<Project> {
+    public companion object {
         internal const val BINTRAY_REPOSITORY_URL = "https://dl.bintray.com/him188moe/mirai"
     }
 
