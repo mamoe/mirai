@@ -84,7 +84,17 @@ public open class AnsiMessageBuilder public constructor(
     }
 
     public companion object {
-        private val DROP_ANSI_PATTERN = """\u001b\[([0-9]+)(;[0-9]+)*m""".toRegex()
+        // CSI序列由ESC [、若干个（包括0个）“参数字节”、若干个“中间字节”，以及一个“最终字节”组成。各部分的字符范围如下：
+        //
+        // CSI序列在ESC [之后各个组成部分的字符范围[12]:5.4
+        // 组成部分	字符范围	ASCII
+        // 参数字节	0x30–0x3F	0–9:;<=>?
+        // 中间字节	0x20–0x2F	空格、!"#$%&'()*+,-./
+        // 最终字节	0x40–0x7E	@A–Z[\]^_`a–z{|}~
+        //
+        // @see https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97#CSI%E5%BA%8F%E5%88%97
+        @Suppress("RegExpRedundantEscape")
+        private val DROP_ANSI_PATTERN = """\u001b\[([\u0030-\u003F])*?([\u0020-\u002F])*?[\u0040-\u007E]""".toRegex()
 
         /**
          * 从 [String] 中剔除 ansi 控制符
