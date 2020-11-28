@@ -75,6 +75,7 @@ class MiraiConsoleImplementationTerminal
                 MiraiConsole.mainLogger.error("Exception in coroutine $coroutineName", throwable)
             }) {
     override val consoleInput: ConsoleInput get() = ConsoleInputImpl
+    override val isAnsiSupported: Boolean get() = true
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
         return DefaultLoginSolver(input = { requestInput("LOGIN> ") })
@@ -146,7 +147,7 @@ private object ConsoleFrontEndDescImpl : MiraiConsoleFrontEndDescription {
     override val version: SemVersion = SemVersion(net.mamoe.mirai.console.internal.MiraiConsoleBuildConstants.versionConst)
 }
 
-private val ANSI_RESET = Ansi().reset().toString()
+internal val ANSI_RESET = Ansi().reset().toString()
 
 internal val LoggerCreator: (identity: String?) -> MiraiLogger = {
     PlatformLogger(identity = it, output = { line ->

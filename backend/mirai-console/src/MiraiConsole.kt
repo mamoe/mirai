@@ -24,6 +24,7 @@ import net.mamoe.mirai.console.plugin.PluginManager
 import net.mamoe.mirai.console.plugin.center.PluginCenter
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginLoader
 import net.mamoe.mirai.console.plugin.loader.PluginLoader
+import net.mamoe.mirai.console.util.AnsiMessageBuilder
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
@@ -90,6 +91,17 @@ public interface MiraiConsole : CoroutineScope {
     @ConsoleExperimentalApi
     public fun createLogger(identity: String?): MiraiLogger
 
+    /**
+     * 是否支持使用 Ansi 输出彩色信息
+     *
+     * 注: 不是每个前端都可能提供 `org.fusesource.jansi:jansi` 库支持,
+     * 请不要直接使用 `org.fusesource.jansi:jansi`
+     *
+     * @see [AnsiMessageBuilder]
+     */
+    @ConsoleExperimentalApi
+    public val isAnsiSupported: Boolean
+
     public companion object INSTANCE : MiraiConsole by MiraiConsoleImplementationBridge {
         /**
          * 获取 [MiraiConsole] 的 [Job]
@@ -151,6 +163,8 @@ public interface MiraiConsole : CoroutineScope {
         public val isActive: Boolean
             get() = job.isActive
     }
+
+
 }
 
 /**
