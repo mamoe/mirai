@@ -131,53 +131,18 @@ public open class AnsiMessageBuilder internal constructor(
     }
 
     /////////////////////////////////////////////////////////////////////////////////
-    override fun append(c: Char): AnsiMessageBuilder {
-        delegate.append(c); return this
-    }
-
-    override fun append(csq: CharSequence?): AnsiMessageBuilder {
-        delegate.append(csq); return this
-    }
-
-    override fun append(csq: CharSequence?, start: Int, end: Int): AnsiMessageBuilder {
-        delegate.append(csq, start, end); return this
-    }
-
-    public fun append(any: Any?): AnsiMessageBuilder {
-        delegate.append(any); return this
-    }
-
-    public fun append(value: String): AnsiMessageBuilder {
-        delegate.append(value); return this
-    }
-
-    public fun append(value: String, start: Int, end: Int): AnsiMessageBuilder {
-        delegate.append(value, start, end); return this
-    }
-
-    public fun append(value: Boolean): AnsiMessageBuilder {
-        delegate.append(value); return this
-    }
-
-    public fun append(value: Float): AnsiMessageBuilder {
-        delegate.append(value); return this
-    }
-
-    public fun append(value: Double): AnsiMessageBuilder {
-        delegate.append(value); return this
-    }
-
-    public fun append(value: Int): AnsiMessageBuilder {
-        delegate.append(value); return this
-    }
-
-    public fun append(value: Long): AnsiMessageBuilder {
-        delegate.append(value); return this
-    }
-
-    public fun append(value: Short): AnsiMessageBuilder {
-        delegate.append(value); return this
-    }
+    override fun append(c: Char): AnsiMessageBuilder = apply { delegate.append(c) }
+    override fun append(csq: CharSequence?): AnsiMessageBuilder = apply { delegate.append(csq) }
+    override fun append(csq: CharSequence?, start: Int, end: Int): AnsiMessageBuilder = apply { delegate.append(csq, start, end) }
+    public fun append(any: Any?): AnsiMessageBuilder = apply { delegate.append(any) }
+    public fun append(value: String): AnsiMessageBuilder = apply { delegate.append(value) }
+    public fun append(value: String, start: Int, end: Int): AnsiMessageBuilder = apply { delegate.append(value, start, end) }
+    public fun append(value: Boolean): AnsiMessageBuilder = apply { delegate.append(value) }
+    public fun append(value: Float): AnsiMessageBuilder = apply { delegate.append(value) }
+    public fun append(value: Double): AnsiMessageBuilder = apply { delegate.append(value) }
+    public fun append(value: Int): AnsiMessageBuilder = apply { delegate.append(value) }
+    public fun append(value: Long): AnsiMessageBuilder = apply { delegate.append(value) }
+    public fun append(value: Short): AnsiMessageBuilder = apply { delegate.append(value) }
     /////////////////////////////////////////////////////////////////////////////////
 }
 
