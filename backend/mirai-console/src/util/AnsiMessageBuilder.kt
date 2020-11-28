@@ -30,7 +30,7 @@ public open class AnsiMessageBuilder public constructor(
      * @param code Ansi 操作码
      *
      * @see from
-     * @see builder
+     * @see create
      */
     public open fun ansi(code: String): AnsiMessageBuilder = append(code)
 
@@ -142,7 +142,7 @@ public open class AnsiMessageBuilder public constructor(
          */
         @JvmStatic
         @JvmOverloads
-        public fun builder(
+        public fun create(
             capacity: Int = 16,
             noAnsi: Boolean = false
         ): AnsiMessageBuilder = from(StringBuilder(capacity), noAnsi)
@@ -195,7 +195,7 @@ public fun AnsiMessageBuilder(capacity: Int = 16): AnsiMessageBuilder = AnsiMess
 public inline fun buildAnsiMessage(
     capacity: Int = 16,
     action: AnsiMessageBuilder.() -> Unit
-): String = AnsiMessageBuilder.builder(capacity, false).apply(action).toString()
+): String = AnsiMessageBuilder.create(capacity, false).apply(action).toString()
 
 // 不在 top-level 使用者会得到 Internal error: Couldn't inline sendAnsiMessage
 
@@ -209,7 +209,7 @@ public suspend inline fun CommandSender.sendAnsiMessage(
     builder: AnsiMessageBuilder.() -> Unit
 ) {
     sendMessage(
-        AnsiMessageBuilder.builder(capacity, noAnsi = !AnsiMessageBuilder.isAnsiSupported(this))
+        AnsiMessageBuilder.create(capacity, noAnsi = !AnsiMessageBuilder.isAnsiSupported(this))
             .apply(builder)
             .toString()
     )
