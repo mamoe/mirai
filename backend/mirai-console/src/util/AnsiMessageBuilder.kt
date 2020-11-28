@@ -15,7 +15,7 @@ import net.mamoe.mirai.console.command.ConsoleCommandSender
 import net.mamoe.mirai.console.internal.MiraiConsoleImplementationBridge
 import net.mamoe.mirai.console.util.AnsiMessageBuilder.Companion.dropAnsi
 
-public open class AnsiMessageBuilder internal constructor(
+public open class AnsiMessageBuilder public constructor(
     public val delegate: StringBuilder
 ) : Appendable {
     override fun toString(): String = delegate.toString()
@@ -24,6 +24,9 @@ public open class AnsiMessageBuilder internal constructor(
      * 在添加 ansi code 的时候建议使用此方法.
      *
      * 在 `noAnsi=true` 的时候会忽略此函数的调用
+     *
+     * @see from
+     * @see builder
      */
     public open fun ansi(code: String): AnsiMessageBuilder = append(code)
 
@@ -90,9 +93,8 @@ public open class AnsiMessageBuilder internal constructor(
         public fun String.dropAnsi(): String = DROP_ANSI_PATTERN.replace(this, "")
 
         @JvmStatic
-        @JvmName("builder") // Java Factory Style
         @JvmOverloads
-        public operator fun invoke(
+        public fun from(
             builder: StringBuilder,
             noAnsi: Boolean = false
         ): AnsiMessageBuilder = if (noAnsi) {
@@ -103,12 +105,11 @@ public open class AnsiMessageBuilder internal constructor(
          * @param capacity [StringBuilder] 的初始化大小
          */
         @JvmStatic
-        @JvmName("builder") // Java Factory Style
         @JvmOverloads
-        public operator fun invoke(
+        public fun builder(
             capacity: Int = 16,
             noAnsi: Boolean = false
-        ): AnsiMessageBuilder = invoke(StringBuilder(capacity), noAnsi)
+        ): AnsiMessageBuilder = from(StringBuilder(capacity), noAnsi)
 
         /**
          * 判断 [sender] 是否支持带 ansi 控制符的正确显示
@@ -126,7 +127,7 @@ public open class AnsiMessageBuilder internal constructor(
         public inline fun StringBuilder.appendAnsi(
             noAnsi: Boolean = false,
             action: AnsiMessageBuilder.() -> Unit
-        ): AnsiMessageBuilder = invoke(this, noAnsi).apply(action)
+        ): AnsiMessageBuilder = from(this, noAnsi).apply(action)
 
     }
 
@@ -154,7 +155,7 @@ public open class AnsiMessageBuilder internal constructor(
 public inline fun buildAnsiMessage(
     capacity: Int = 16,
     action: AnsiMessageBuilder.() -> Unit
-): String = AnsiMessageBuilder(capacity, false).apply(action).toString()
+): String = AnsiMessageBuilder.builder(capacity, false).apply(action).toString()
 
 // 不在 top-level 使用者会得到 Internal error: Couldn't inline sendAnsiMessage
 
@@ -168,7 +169,7 @@ public suspend inline fun CommandSender.sendAnsiMessage(
     builder: AnsiMessageBuilder.() -> Unit
 ) {
     sendMessage(
-        AnsiMessageBuilder(capacity, noAnsi = !AnsiMessageBuilder.isAnsiSupported(this))
+        AnsiMessageBuilder.builder(capacity, noAnsi = !AnsiMessageBuilder.isAnsiSupported(this))
             .apply(builder)
             .toString()
     )
@@ -187,3 +188,5 @@ public suspend inline fun CommandSender.sendAnsiMessage(message: String) {
             message.dropAnsi()
     )
 }
+
+public fun AnsiMessageBuilder(capacity: Int = 16): AnsiMessageBuilder = AnsiMessageBuilder(StringBuilder(capacity))
