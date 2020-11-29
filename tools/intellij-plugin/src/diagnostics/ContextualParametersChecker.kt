@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.intellij.diagnostics
 
-import com.intellij.psi.PsiElement
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_NAME
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_ID
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAME
@@ -26,9 +25,12 @@ import net.mamoe.mirai.console.intellij.util.RequirementParser
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.ValueArgument
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import java.util.*
+import kotlin.reflect.KFunction2
 
 /**
  * Checks parameters with [ResolveContextKind]
@@ -46,7 +48,7 @@ class ContextualParametersChecker : DeclarationChecker {
         private val SEMANTIC_VERSIONING_REGEX =
             Regex("""^(0|[1-9]\d*)\.(0|[1-9]\d*)(?:\.(0|[1-9]\d*))?(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?${'$'}""")
 
-        fun checkPluginId(inspectionTarget: PsiElement, value: String): Diagnostic? {
+        fun checkPluginId(inspectionTarget: KtElement, value: String): Diagnostic? {
             if (value.isBlank()) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件 Id 不能为空. \n插件 Id$syntax")
             if (value.none { it == '.' }) return ILLEGAL_PLUGIN_DESCRIPTION.on(
                 inspectionTarget,
@@ -65,7 +67,7 @@ class ContextualParametersChecker : DeclarationChecker {
             return null
         }
 
-        fun checkPluginName(inspectionTarget: PsiElement, value: String): Diagnostic? {
+        fun checkPluginName(inspectionTarget: KtElement, value: String): Diagnostic? {
             if (value.isBlank()) return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "插件名不能为空")
             val lowercaseName = value.toLowerCase()
             FORBIDDEN_ID_NAMES.firstOrNull { it == lowercaseName }?.let { illegal ->
@@ -74,14 +76,14 @@ class ContextualParametersChecker : DeclarationChecker {
             return null
         }
 
-        fun checkPluginVersion(inspectionTarget: PsiElement, value: String): Diagnostic? {
+        fun checkPluginVersion(inspectionTarget: KtElement, value: String): Diagnostic? {
             if (!SEMANTIC_VERSIONING_REGEX.matches(value)) {
                 return ILLEGAL_PLUGIN_DESCRIPTION.on(inspectionTarget, "版本号无效: '$value'. \nhttps://semver.org/lang/zh-CN/")
             }
             return null
         }
 
-        fun checkCommandName(inspectionTarget: PsiElement, value: String): Diagnostic? {
+        fun checkCommandName(inspectionTarget: KtElement, value: String): Diagnostic? {
             return when {
                 value.isBlank() -> ILLEGAL_COMMAND_NAME.on(inspectionTarget, value, "指令名不能为空")
                 value.any { it.isWhitespace() } -> ILLEGAL_COMMAND_NAME.on(inspectionTarget, value, "暂时不允许指令名中存在空格")
@@ -91,7 +93,7 @@ class ContextualParametersChecker : DeclarationChecker {
             }
         }
 
-        fun checkPermissionNamespace(inspectionTarget: PsiElement, value: String): Diagnostic? {
+        fun checkPermissionNamespace(inspectionTarget: KtElement, value: String): Diagnostic? {
             return when {
                 value.isBlank() -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "权限命名空间不能为空")
                 value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAMESPACE.on(inspectionTarget, value, "不允许权限命名空间中存在空格")
@@ -100,7 +102,7 @@ class ContextualParametersChecker : DeclarationChecker {
             }
         }
 
-        fun checkPermissionName(inspectionTarget: PsiElement, value: String): Diagnostic? {
+        fun checkPermissionName(inspectionTarget: KtElement, value: String): Diagnostic? {
             return when {
                 value.isBlank() -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "权限名称不能为空")
                 value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_NAME.on(inspectionTarget, value, "不允许权限名称中存在空格")
@@ -109,7 +111,7 @@ class ContextualParametersChecker : DeclarationChecker {
             }
         }
 
-        fun checkPermissionId(inspectionTarget: PsiElement, value: String): Diagnostic? {
+        fun checkPermissionId(inspectionTarget: KtElement, value: String): Diagnostic? {
             return when {
                 value.isBlank() -> ILLEGAL_PERMISSION_ID.on(inspectionTarget, value, "权限 Id 不能为空")
                 value.any { it.isWhitespace() } -> ILLEGAL_PERMISSION_ID.on(inspectionTarget, value, "暂时不允许权限 Id 中存在空格")
@@ -119,7 +121,7 @@ class ContextualParametersChecker : DeclarationChecker {
         }
 
         @Suppress("UNUSED_PARAMETER")
-        fun checkVersionRequirement(inspectionTarget: PsiElement, value: String): Diagnostic? {
+        fun checkVersionRequirement(inspectionTarget: KtElement, value: String): Diagnostic? {
             return try {
                 RequirementHelper.RequirementChecker.processLine(RequirementParser.TokenReader(value))
                 null
@@ -129,8 +131,26 @@ class ContextualParametersChecker : DeclarationChecker {
         }
     }
 
-    private val checkersMap: EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?> =
-        EnumMap<ResolveContextKind, (declaration: PsiElement, value: String) -> Diagnostic?>(ResolveContextKind::class.java).apply {
+    fun interface ElementChecker {
+        operator fun invoke(declaration: KtElement, valueArgument: ValueArgument, value: String?): Diagnostic?
+    }
+
+    private val stringCheckersMap: EnumMap<ResolveContextKind, ElementChecker> =
+        EnumMap<ResolveContextKind, ElementChecker>(ResolveContextKind::class.java).apply {
+
+            fun put(key: ResolveContextKind, value: KFunction2<KtElement, String, Diagnostic?>): ElementChecker? {
+                return put(key) { d, _, v ->
+                    if (v != null) value(d, v)
+                    else null
+                }
+            }
+
+            fun put(key: ResolveContextKind, value: KFunction2<KtElement, ValueArgument, Diagnostic?>): ElementChecker? {
+                return put(key) { d, v, _ ->
+                    value(d, v)
+                }
+            }
+
             put(ResolveContextKind.PLUGIN_NAME, ::checkPluginName)
             put(ResolveContextKind.PLUGIN_ID, ::checkPluginId)
             put(ResolveContextKind.SEMANTIC_VERSION, ::checkPluginVersion)
@@ -153,20 +173,20 @@ class ContextualParametersChecker : DeclarationChecker {
             }
             .mapNotNull { (p, a) ->
                 p.resolveContextKinds
-                    ?.map(checkersMap::get)
+                    ?.map(stringCheckersMap::get)
                     ?.mapNotNull {
                         if (it == null) null else it to a
                     }
             }
             .flatMap { it.asSequence() }
             .mapNotNull { (kind, argument) ->
-                argument.resolveStringConstantValues()?.let { const ->
-                    Triple(kind, argument, const)
-                }
+                Triple(kind, argument, argument.resolveStringConstantValues())
             }
             .forEach { (fn, argument, resolvedConstants) ->
-                for (resolvedConstant in resolvedConstants) {
-                    fn(argument.asElement(), resolvedConstant)?.let { context.report(it) }
+                if (resolvedConstants == null) {
+                    fn(argument.asElement(), argument, null)?.let { context.report(it) }
+                } else for (resolvedConstant in resolvedConstants) {
+                    fn(argument.asElement(), argument, resolvedConstant)?.let { context.report(it) }
                 }
             }
         return
