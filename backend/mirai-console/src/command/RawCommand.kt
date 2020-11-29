@@ -15,6 +15,7 @@ import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.java.JRawCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.internal.command.findOrCreateCommandPermission
 import net.mamoe.mirai.console.internal.data.typeOf0
 import net.mamoe.mirai.console.permission.Permission
@@ -38,11 +39,14 @@ public abstract class RawCommand(
      * 指令拥有者.
      * @see CommandOwner
      */
+    @ResolveContext(RESTRICTED_CONSOLE_COMMAND_OWNER)
     public override val owner: CommandOwner,
     /** 主指令名. */
-    @ResolveContext(COMMAND_NAME) public override val primaryName: String,
+    @ResolveContext(COMMAND_NAME)
+    public override val primaryName: String,
     /** 次要指令名. */
-    @ResolveContext(COMMAND_NAME) public override vararg val secondaryNames: String,
+    @ResolveContext(COMMAND_NAME)
+    public override vararg val secondaryNames: String,
     /** 用法说明, 用于发送给用户 */
     public override val usage: String = "<no usages given>",
     /** 指令描述, 用于显示在 [BuiltInCommands.HelpCommand] */

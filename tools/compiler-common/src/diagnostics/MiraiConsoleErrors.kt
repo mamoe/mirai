@@ -15,10 +15,7 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1.create
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2.create
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.diagnostics.Severity.ERROR
-import org.jetbrains.kotlin.psi.KtCallExpression
-import org.jetbrains.kotlin.psi.KtNamedDeclaration
-import org.jetbrains.kotlin.psi.KtTypeProjection
-import org.jetbrains.kotlin.psi.KtTypeReference
+import org.jetbrains.kotlin.psi.*
 
 /**
  * 如何增加一个错误:
@@ -58,6 +55,9 @@ object MiraiConsoleErrors {
 
 //    @JvmField
 //    val INAPPLICABLE_COMMAND_ANNOTATION = create<PsiElement, String>(ERROR)
+
+    @JvmField
+    val RESTRICTED_CONSOLE_COMMAND_OWNER = create<KtElement>(ERROR)
 
     @JvmField
     val ILLEGAL_COMMAND_DECLARATION_RECEIVER = create<KtTypeReference>(ERROR)

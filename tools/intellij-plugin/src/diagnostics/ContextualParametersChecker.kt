@@ -15,6 +15,8 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.IL
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAMESPACE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_VERSION_REQUIREMENT
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RESTRICTED_CONSOLE_COMMAND_OWNER
+import net.mamoe.mirai.console.compiler.common.resolve.COMMAND_SENDER_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
@@ -24,9 +26,8 @@ import net.mamoe.mirai.console.intellij.util.RequirementHelper
 import net.mamoe.mirai.console.intellij.util.RequirementParser
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.psi.KtDeclaration
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.ValueArgument
+import org.jetbrains.kotlin.idea.inspections.collections.isCalling
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import java.util.*
@@ -129,25 +130,41 @@ class ContextualParametersChecker : DeclarationChecker {
                 ILLEGAL_VERSION_REQUIREMENT.on(inspectionTarget, value, err.message ?: err.toString())
             }
         }
+
+        fun checkConsoleCommandOwner(context: DeclarationCheckerContext, inspectionTarget: KtElement, argument: ValueArgument): Diagnostic? {
+            val expr = argument.getArgumentExpression() ?: return null
+
+            if (expr is KtReferenceExpression) {
+                expr.getResolvedCall(context)?.isCalling(COMMAND_SENDER_FQ_NAME) ?: return null
+            }
+
+            return RESTRICTED_CONSOLE_COMMAND_OWNER.on(inspectionTarget)
+        }
     }
 
     fun interface ElementChecker {
-        operator fun invoke(declaration: KtElement, valueArgument: ValueArgument, value: String?): Diagnostic?
+        operator fun invoke(context: DeclarationCheckerContext, declaration: KtElement, valueArgument: ValueArgument, value: String?): Diagnostic?
     }
 
-    private val stringCheckersMap: EnumMap<ResolveContextKind, ElementChecker> =
+    private val checkersMap: EnumMap<ResolveContextKind, ElementChecker> =
         EnumMap<ResolveContextKind, ElementChecker>(ResolveContextKind::class.java).apply {
 
             fun put(key: ResolveContextKind, value: KFunction2<KtElement, String, Diagnostic?>): ElementChecker? {
-                return put(key) { d, _, v ->
+                return put(key) { _, d, _, v ->
                     if (v != null) value(d, v)
                     else null
                 }
             }
 
             fun put(key: ResolveContextKind, value: KFunction2<KtElement, ValueArgument, Diagnostic?>): ElementChecker? {
-                return put(key) { d, v, _ ->
+                return put(key) { _, d, v, _ ->
                     value(d, v)
+                }
+            }
+
+            fun put(key: ResolveContextKind, value: (DeclarationCheckerContext, KtElement, ValueArgument) -> Diagnostic?): ElementChecker? {
+                return put(key) { c, d, v, _ ->
+                    value(c, d, v)
                 }
             }
 
@@ -159,6 +176,7 @@ class ContextualParametersChecker : DeclarationChecker {
             put(ResolveContextKind.PERMISSION_NAMESPACE, ::checkPermissionNamespace)
             put(ResolveContextKind.PERMISSION_ID, ::checkPermissionId)
             put(ResolveContextKind.VERSION_REQUIREMENT, ::checkVersionRequirement)
+            put(ResolveContextKind.RESTRICTED_CONSOLE_COMMAND_OWNER, ::checkConsoleCommandOwner)
         }
 
     override fun check(
@@ -166,6 +184,17 @@ class ContextualParametersChecker : DeclarationChecker {
         descriptor: DeclarationDescriptor,
         context: DeclarationCheckerContext,
     ) {
+        when (declaration) {
+            is KtClassOrObject -> {
+
+            }
+
+            is KtNamedFunction -> {
+
+            }
+
+        }
+
         declaration.resolveAllCalls(context.bindingContext)
             .asSequence()
             .flatMap { call ->
@@ -173,7 +202,7 @@ class ContextualParametersChecker : DeclarationChecker {
             }
             .mapNotNull { (p, a) ->
                 p.resolveContextKinds
-                    ?.map(stringCheckersMap::get)
+                    ?.map(checkersMap::get)
                     ?.mapNotNull {
                         if (it == null) null else it to a
                     }
@@ -182,11 +211,12 @@ class ContextualParametersChecker : DeclarationChecker {
             .mapNotNull { (kind, argument) ->
                 Triple(kind, argument, argument.resolveStringConstantValues())
             }
-            .forEach { (fn, argument, resolvedConstants) ->
-                if (resolvedConstants == null) {
-                    fn(argument.asElement(), argument, null)?.let { context.report(it) }
+            .forEach { (fn, argument, resolvedConstantsSequence) ->
+                val resolvedConstants = resolvedConstantsSequence?.toList().orEmpty()
+                if (resolvedConstants.isEmpty()) {
+                    fn(context, argument.asElement(), argument, null)?.let { context.report(it) }
                 } else for (resolvedConstant in resolvedConstants) {
-                    fn(argument.asElement(), argument, resolvedConstant)?.let { context.report(it) }
+                    fn(context, argument.asElement(), argument, resolvedConstant)?.let { context.report(it) }
                 }
             }
         return

@@ -123,8 +123,8 @@ fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
 
 fun KtDeclaration.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
     return allChildrenWithSelf
-        .filterIsInstance<KtCallExpression>()
-        .mapNotNull { it.calleeExpression?.getResolvedCall(bindingContext) }
+        .filterIsInstance<KtElement>()
+        .mapNotNull { it.getResolvedCall(bindingContext) }
 }
 
 fun KtDeclaration.resolveAllCallsWithElement(bindingContext: BindingContext): Sequence<Pair<ResolvedCall<out CallableDescriptor>, KtCallExpression>> {

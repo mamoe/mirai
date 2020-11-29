@@ -59,7 +59,7 @@ public annotation class ResolveContext(
         /**
          * @see SemVersion.Companion.parseRangeRequirement
          */
-        VERSION_REQUIREMENT, // ILLEGAL_VERSION_REQUIREMENT // TODO
+        VERSION_REQUIREMENT, // ILLEGAL_VERSION_REQUIREMENT
 
         /**
          * @see Command.allNames
@@ -87,5 +87,7 @@ public annotation class ResolveContext(
          * @see PluginData.value
          */
         RESTRICTED_NO_ARG_CONSTRUCTOR, // NOT_CONSTRUCTABLE_TYPE
+
+        RESTRICTED_CONSOLE_COMMAND_OWNER,
     }
 }

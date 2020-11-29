@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.command.descriptor.CommandArgumentContext
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.permission.Permission
 
 /**
@@ -43,7 +44,7 @@ import net.mamoe.mirai.console.permission.Permission
  * @see [CommandManager.executeCommand]
  */
 public abstract class JSimpleCommand(
-    owner: CommandOwner,
+    @ResolveContext(RESTRICTED_CONSOLE_COMMAND_OWNER) owner: CommandOwner,
     @ResolveContext(COMMAND_NAME) primaryName: String,
     @ResolveContext(COMMAND_NAME) vararg secondaryNames: String,
     basePermission: Permission,

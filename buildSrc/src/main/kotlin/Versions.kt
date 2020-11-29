@@ -11,7 +11,7 @@
 
 object Versions {
     const val core = "1.3.3"
-    const val console = "1.1.0-dev-30"
+    const val console = "1.1.0-dev-32"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
