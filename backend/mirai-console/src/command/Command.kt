@@ -117,19 +117,5 @@ public interface Command {
                 name.contains('.') -> throw IllegalArgumentException("'.' is forbidden in command name.")
             }
         }
-
-        /**
-         * 检查指令 [owner] 的合法性, 在非法时抛出 [IllegalArgumentException]
-         */
-        @JvmStatic
-        @Throws(IllegalArgumentException::class)
-        public fun checkCommandOwner(command: Command) {
-            val owner = command.owner
-            if (owner is ConsoleCommandOwner) {
-                if (command.javaClass.enclosingClass != BuiltInCommands::class.java) {
-                    throw IllegalArgumentException("ConsoleCommandOwner is not allowed")
-                }
-            }
-        }
     }
 }

@@ -37,8 +37,6 @@ public abstract class AbstractCommand
 
     init {
         Command.checkCommandName(primaryName)
-        @Suppress("LeakingThis")
-        Command.checkCommandOwner(this)
         secondaryNames.forEach(Command.Companion::checkCommandName)
     }
 
