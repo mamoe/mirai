@@ -7,8 +7,13 @@ import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.value
 
-object MySimpleCommand000 : SimpleCommand(
+object MySimpleCommand0001 : SimpleCommand(
     ConsoleCommandOwner, "foo",
+    description = "示例指令"
+) {}
+
+object MySimpleCommand000 : SimpleCommand(
+    MyPluginMain, "foo",
     description = "示例指令"
 ) {
     @Handler

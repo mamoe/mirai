@@ -16,7 +16,7 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.IL
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_VERSION_REQUIREMENT
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RESTRICTED_CONSOLE_COMMAND_OWNER
-import net.mamoe.mirai.console.compiler.common.resolve.COMMAND_SENDER_FQ_NAME
+import net.mamoe.mirai.console.compiler.common.resolve.CONSOLE_COMMAND_OWNER_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
@@ -135,10 +135,12 @@ class ContextualParametersChecker : DeclarationChecker {
             val expr = argument.getArgumentExpression() ?: return null
 
             if (expr is KtReferenceExpression) {
-                expr.getResolvedCall(context)?.isCalling(COMMAND_SENDER_FQ_NAME) ?: return null
+                if (expr.getResolvedCall(context)?.isCalling(CONSOLE_COMMAND_OWNER_FQ_NAME) == true) {
+                    return RESTRICTED_CONSOLE_COMMAND_OWNER.on(inspectionTarget)
+                }
             }
 
-            return RESTRICTED_CONSOLE_COMMAND_OWNER.on(inspectionTarget)
+            return null
         }
     }
 
