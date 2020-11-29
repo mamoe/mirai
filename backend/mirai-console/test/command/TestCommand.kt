@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.*
 
 object TestCompositeCommand : CompositeCommand(
-    ConsoleCommandOwner,
+    owner,
     "testComposite", "tsC"
 ) {
     @SubCommand
@@ -49,7 +49,7 @@ object TestCompositeCommand : CompositeCommand(
 }
 
 object TestRawCommand : RawCommand(
-    ConsoleCommandOwner,
+    owner,
     "testRaw"
 ) {
     override suspend fun CommandSender.onCommand(args: MessageChain) {
@@ -65,7 +65,9 @@ object TestSimpleCommand : RawCommand(owner, "testSimple", "tsS") {
 }
 
 internal val sender by lazy { ConsoleCommandSender }
-internal val owner by lazy { ConsoleCommandOwner }
+
+internal object TestUnitCommandOwner : CommandOwner by ConsoleCommandOwner
+internal val owner by lazy { TestUnitCommandOwner }
 
 
 @OptIn(ExperimentalCommandDescriptors::class)
@@ -88,12 +90,13 @@ internal class TestCommand {
     fun testRegister() {
         try {
             unregisterAllCommands(ConsoleCommandOwner) // builtins
+            unregisterAllCommands(owner) // testing unit
             unregisterCommand(TestSimpleCommand)
 
             assertTrue(TestCompositeCommand.register())
             assertFalse(TestCompositeCommand.register())
 
-            assertEquals(1, getRegisteredCommands(ConsoleCommandOwner).size)
+            assertEquals(1, getRegisteredCommands(owner).size)
 
             assertEquals(1, CommandManagerImpl._registeredCommands.size)
             assertEquals(2,
@@ -198,7 +201,7 @@ internal class TestCommand {
     fun `composite sub command resolution conflict`() {
         runBlocking {
             val composite = object : CompositeCommand(
-                ConsoleCommandOwner,
+                owner,
                 "tr"
             ) {
                 @Suppress("UNUSED_PARAMETER")
@@ -233,7 +236,7 @@ internal class TestCommand {
             )
 
             val composite = object : CompositeCommand(
-                ConsoleCommandOwner,
+                owner,
                 "test22",
                 overrideContext = buildCommandArgumentContext {
                     add(object : CommandValueArgumentParser<MyClass> {
@@ -291,7 +294,7 @@ internal class TestCommand {
     fun `test optional argument command`() {
         runBlocking {
             val optionCommand = object : CompositeCommand(
-                ConsoleCommandOwner,
+                owner,
                 "testOptional"
             ) {
                 @SubCommand
@@ -315,7 +318,7 @@ internal class TestCommand {
     fun `test vararg`() {
         runBlocking {
             val optionCommand = object : CompositeCommand(
-                ConsoleCommandOwner,
+                owner,
                 "test"
             ) {
                 @SubCommand
