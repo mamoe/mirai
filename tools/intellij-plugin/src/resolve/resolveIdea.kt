@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.intellij.resolve
 
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiDeclarationStatement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.parentsWithSelf
@@ -60,6 +61,19 @@ val KtPureClassOrObject.allSuperTypes: Sequence<KtSuperTypeListEntry>
         }
     }
 
+val PsiClass.allSuperTypes: Sequence<PsiClass>
+    get() = sequence {
+        interfaces.forEach {
+            yield(it)
+            yieldAll(it.allSuperTypes)
+        }
+        val superClass = superClass
+        if (superClass != null) {
+            yield(superClass)
+            yieldAll(superClass.allSuperTypes)
+        }
+    }
+
 fun KtConstructorCalleeExpression.getTypeAsUserType(): KtUserType? {
     val reference = typeReference
     if (reference != null) {
@@ -71,7 +85,26 @@ fun KtConstructorCalleeExpression.getTypeAsUserType(): KtUserType? {
     return null
 }
 
+fun KtClassOrObject.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqName)
+fun KtClass.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqName)
+
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@kotlin.internal.LowPriorityInOverloadResolution
+fun PsiElement.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqName)
+
 val KtClassOrObject.allSuperNames: Sequence<FqName> get() = allSuperTypes.mapNotNull { it.getKotlinFqName() }
+val PsiClass.allSuperNames: Sequence<FqName> get() = allSuperTypes.mapNotNull { clazz -> clazz.qualifiedName?.let { FqName(it) } }
+
+@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+@kotlin.internal.LowPriorityInOverloadResolution
+val PsiElement.allSuperNames: Sequence<FqName>
+    get() {
+        return when (this) {
+            is KtClassOrObject -> allSuperNames
+            is PsiClass -> allSuperNames
+            else -> emptySequence()
+        }
+    }
 
 fun getElementForLineMark(callElement: PsiElement): PsiElement =
     when (callElement) {

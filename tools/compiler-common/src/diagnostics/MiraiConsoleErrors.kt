@@ -10,6 +10,7 @@ package net.mamoe.mirai.console.compiler.common.diagnostics
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory0.create
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1.create
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2.create
 import org.jetbrains.kotlin.diagnostics.Errors
@@ -17,6 +18,7 @@ import org.jetbrains.kotlin.diagnostics.Severity.ERROR
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtNamedDeclaration
 import org.jetbrains.kotlin.psi.KtTypeProjection
+import org.jetbrains.kotlin.psi.KtTypeReference
 
 /**
  * 如何增加一个错误:
@@ -53,6 +55,12 @@ object MiraiConsoleErrors {
 
     @JvmField
     val ILLEGAL_VERSION_REQUIREMENT = create<PsiElement, String, String>(ERROR)
+
+//    @JvmField
+//    val INAPPLICABLE_COMMAND_ANNOTATION = create<PsiElement, String>(ERROR)
+
+    @JvmField
+    val ILLEGAL_COMMAND_DECLARATION_RECEIVER = create<KtTypeReference>(ERROR)
 
     @Suppress("ObjectPropertyName", "unused")
     @JvmField

@@ -17,7 +17,7 @@ object MySimpleCommand000 : SimpleCommand(
 }
 
 object DataTest : AutoSavePluginConfig("data") {
-    val pp by value<NoDefaultValue>(NoDefaultValue(1))
+    val pp by value(NoDefaultValue(1))
 }
 
 @Serializable

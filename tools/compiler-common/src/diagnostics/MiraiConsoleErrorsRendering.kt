@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.compiler.common.diagnostics
 
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_DECLARATION_RECEIVER
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_NAME
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_REGISTER_USE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_ID
@@ -95,6 +96,17 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
             Renderers.STRING,
             Renderers.STRING
         )
+
+        put(
+            ILLEGAL_COMMAND_DECLARATION_RECEIVER,
+            "指令函数的接收者参数必须为 CommandSender 及其子类或无接收者.",
+        )
+
+//        put(
+//            INAPPLICABLE_COMMAND_ANNOTATION,
+//            "''{0}'' 无法在顶层函数使用.",
+//            Renderers.STRING,
+//        )
     }
 
     override fun getMap() = MAP
