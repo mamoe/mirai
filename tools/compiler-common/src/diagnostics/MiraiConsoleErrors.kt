@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1.create
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2.create
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.diagnostics.Severity.ERROR
+import org.jetbrains.kotlin.diagnostics.Severity.WARNING
 import org.jetbrains.kotlin.psi.*
 
 /**
@@ -57,7 +58,7 @@ object MiraiConsoleErrors {
 //    val INAPPLICABLE_COMMAND_ANNOTATION = create<PsiElement, String>(ERROR)
 
     @JvmField
-    val RESTRICTED_CONSOLE_COMMAND_OWNER = create<KtElement>(ERROR)
+    val RESTRICTED_CONSOLE_COMMAND_OWNER = create<KtElement>(WARNING)
 
     @JvmField
     val ILLEGAL_COMMAND_DECLARATION_RECEIVER = create<KtTypeReference>(ERROR)
