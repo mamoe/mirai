@@ -121,7 +121,7 @@ val KtAnnotationEntry.annotationClass: KtClass?
 fun KtAnnotated.hasAnnotation(fqName: FqName): Boolean =
     this.annotationEntries.any { it.annotationClass?.getKotlinFqName() == fqName }
 
-fun KtDeclaration.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
+fun KtElement.resolveAllCalls(bindingContext: BindingContext): Sequence<ResolvedCall<*>> {
     return allChildrenWithSelf
         .filterIsInstance<KtElement>()
         .mapNotNull { it.getResolvedCall(bindingContext) }

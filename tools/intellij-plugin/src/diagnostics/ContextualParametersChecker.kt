@@ -19,6 +19,7 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RE
 import net.mamoe.mirai.console.compiler.common.resolve.CONSOLE_COMMAND_OWNER_FQ_NAME
 import net.mamoe.mirai.console.compiler.common.resolve.ResolveContextKind
 import net.mamoe.mirai.console.compiler.common.resolve.resolveContextKinds
+import net.mamoe.mirai.console.intellij.resolve.findChild
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCalls
 import net.mamoe.mirai.console.intellij.resolve.resolveStringConstantValues
 import net.mamoe.mirai.console.intellij.resolve.valueParametersWithArguments
@@ -28,6 +29,7 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import java.util.*
@@ -186,19 +188,20 @@ class ContextualParametersChecker : DeclarationChecker {
         descriptor: DeclarationDescriptor,
         context: DeclarationCheckerContext,
     ) {
-        when (declaration) {
+        val calls: Sequence<ResolvedCall<*>> = when (declaration) {
             is KtClassOrObject -> {
-
+                declaration.findChild<KtSuperTypeList>()?.resolveAllCalls(context.bindingContext)
+                // ignore class body, which will be [check]ed
             }
 
-            is KtNamedFunction -> {
+//            is KtNamedFunction -> {
+//
+//            }
+            else -> declaration.resolveAllCalls(context.bindingContext)
 
-            }
+        } ?: return
 
-        }
-
-        declaration.resolveAllCalls(context.bindingContext)
-            .asSequence()
+        calls
             .flatMap { call ->
                 call.valueParametersWithArguments().asSequence()
             }
