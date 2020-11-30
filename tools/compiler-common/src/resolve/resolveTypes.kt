@@ -49,6 +49,7 @@ val SIMPLE_JVM_PLUGIN_DESCRIPTION_FQ_NAME = FqName("net.mamoe.mirai.console.plug
 ///////////////////////////////////////////////////////////////////////////
 
 val PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME = FqName("net.mamoe.mirai.console.data.value")
+val READ_ONLY_PLUGIN_DATA_FQ_NAME = FqName("net.mamoe.mirai.console.data.ReadOnlyPluginData")
 
 ///////////////////////////////////////////////////////////////////////////
 // Resolve

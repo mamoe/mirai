@@ -19,6 +19,7 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.IL
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_VERSION_REQUIREMENT
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.UNSERIALIZABLE_TYPE
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
@@ -106,6 +107,11 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
         put(
             RESTRICTED_CONSOLE_COMMAND_OWNER,
             "插件不允许使用 ConsoleCommandOwner 构造指令, 请使用插件主类作为 CommandOwner",
+        )
+
+        put(
+            READ_ONLY_VALUE_CANNOT_BE_VAR,
+            "在 ReadOnlyPluginData 中不可定义 'var' by value",
         )
 
 //        put(

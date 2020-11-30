@@ -63,6 +63,9 @@ object MiraiConsoleErrors {
     @JvmField
     val ILLEGAL_COMMAND_DECLARATION_RECEIVER = create<KtTypeReference>(ERROR)
 
+    @JvmField
+    val READ_ONLY_VALUE_CANNOT_BE_VAR = create<PsiElement>(ERROR)
+
     @Suppress("ObjectPropertyName", "unused")
     @JvmField
     @Deprecated("", level = DeprecationLevel.ERROR)

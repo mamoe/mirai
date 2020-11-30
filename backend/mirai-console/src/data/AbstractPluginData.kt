@@ -48,7 +48,7 @@ public abstract class AbstractPluginData : PluginData, PluginDataImpl() {
      * 供手动实现时值跟踪使用 (如 Java 用户). 一般 Kotlin 用户需使用 [provideDelegate]
      */
     @ConsoleExperimentalApi
-    public fun <T : SerializerAwareValue<*>> track(
+    public open fun <T : SerializerAwareValue<*>> track(
         value: T,
         /**
          * 值名称.

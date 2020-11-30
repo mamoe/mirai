@@ -7,9 +7,15 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.console.gradle
+@file:Suppress("unused")
 
-internal object VersionConstants {
-    const val CONSOLE_VERSION = "1.1.0-dev-33" // value is written here automatically during build
-    const val CORE_VERSION = "1.3.3" // value is written here automatically during build
-}
+package net.mamoe.mirai.console.data
+
+/**
+ * 只读的 [PluginConfig]. 插件只能读取其值, 但值可能在后台被前端 (用户) 修改.
+ *
+ * @see PluginConfig
+ * @see AutoSavePluginData
+ * @since 1.1.0
+ */
+public open class ReadOnlyPluginConfig public constructor(saveName: String) : ReadOnlyPluginData(saveName), PluginConfig

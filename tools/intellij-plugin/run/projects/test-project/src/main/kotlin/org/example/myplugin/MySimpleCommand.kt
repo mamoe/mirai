@@ -5,6 +5,7 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.ConsoleCommandOwner
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.data.AutoSavePluginConfig
+import net.mamoe.mirai.console.data.ReadOnlyPluginConfig
 import net.mamoe.mirai.console.data.value
 
 object MySimpleCommand0001 : SimpleCommand(
@@ -24,6 +25,10 @@ object MySimpleCommand000 : SimpleCommand(
 
 object DataTest : AutoSavePluginConfig("data") {
     val pp by value(NoDefaultValue(1))
+}
+
+object DataTest1 : ReadOnlyPluginConfig("data") {
+    var pp by value<String>()
 }
 
 @Serializable

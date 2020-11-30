@@ -16,12 +16,18 @@ import net.mamoe.mirai.console.compiler.common.resolve.*
 import net.mamoe.mirai.console.intellij.resolve.resolveAllCallsWithElement
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.idea.debugger.sequence.psi.receiverType
 import org.jetbrains.kotlin.idea.inspections.collections.isCalling
 import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.js.descriptorUtils.getJetTypeFqName
+import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
+import org.jetbrains.kotlin.resolve.descriptorUtil.getAllSuperClassifiers
+import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.SimpleType
 import org.jetbrains.kotlinx.serialization.compiler.resolve.*
 
@@ -41,28 +47,50 @@ class PluginDataValuesChecker : DeclarationChecker {
                     && t is SimpleType
             }.forEach { (e, callExpr) ->
                 val (_, type) = e
-                val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>() ?: return@forEach
-
-                if (canBeSerializedInternally(classDescriptor)) return@forEach
-
-                val inspectionTarget = kotlin.run {
-                    val fqName = type.fqName ?: return@run null
-                    callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true }
-                } ?: return@forEach
-
-                if (!classDescriptor.hasNoArgConstructor())
-                    return@forEach context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
-                        inspectionTarget,
-                        callExpr,
-                        type.fqName?.asString().toString())
-                    )
-
-                if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME))
-                    return@forEach context.report(MiraiConsoleErrors.UNSERIALIZABLE_TYPE.on(
-                        inspectionTarget,
-                        classDescriptor
-                    ))
+                checkCallExpression(type, callExpr, context)
             }
+
+        declaration.resolveAllCallsWithElement(bindingContext)
+            .filter { (call) -> call.isCalling(PLUGIN_DATA_VALUE_FUNCTIONS_FQ_FQ_NAME) }
+            .forEach { (_, callExpr) ->
+                checkReadOnly(callExpr, context)
+            }
+    }
+
+    companion object {
+        private fun checkReadOnly(callExpr: KtCallExpression, context: DeclarationCheckerContext) {
+            // first parent is KtPropertyDelegate, next is KtProperty
+            val property = callExpr.parent.parent.castOrNull<KtProperty>() ?: return
+            if (property.isVar &&
+                callExpr.receiverType()?.toClassDescriptor?.getAllSuperClassifiers()?.any { it.fqNameOrNull() == READ_ONLY_PLUGIN_DATA_FQ_NAME } == true
+            ) {
+                context.report(MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR.on(property.valOrVarKeyword))
+            }
+        }
+
+        private fun checkCallExpression(type: KotlinType, callExpr: KtCallExpression, context: DeclarationCheckerContext) {
+            val classDescriptor = type.constructor.declarationDescriptor?.castOrNull<ClassDescriptor>() ?: return
+
+            if (canBeSerializedInternally(classDescriptor)) return
+
+            val inspectionTarget = kotlin.run {
+                val fqName = type.fqName ?: return@run null
+                callExpr.typeArguments.find { it.typeReference?.isReferencing(fqName) == true }
+            } ?: return
+
+            if (!classDescriptor.hasNoArgConstructor())
+                return context.report(MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.on(
+                    inspectionTarget,
+                    callExpr,
+                    type.fqName?.asString().toString())
+                )
+
+            if (!classDescriptor.hasAnnotation(SERIALIZABLE_FQ_NAME))
+                return context.report(MiraiConsoleErrors.UNSERIALIZABLE_TYPE.on(
+                    inspectionTarget,
+                    classDescriptor
+                ))
+        }
     }
 }
 
