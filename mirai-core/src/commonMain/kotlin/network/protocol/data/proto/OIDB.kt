@@ -2445,3 +2445,53 @@ internal class Cmd0xed3 : ProtoBuf {
         @ProtoNumber(5) @JvmField val aioUin: Long = 0L
     ) : ProtoBuf
 }
+
+@Serializable
+internal class Cmd0xb77 : ProtoBuf {
+    @Serializable
+    internal class RspBody : ProtoBuf
+
+    @Serializable
+    internal class ReqBody(
+            @ProtoNumber(1) @JvmField val appId: Long = 0L,
+            @ProtoNumber(2) @JvmField val appType: Int = 0,
+            @ProtoNumber(3) @JvmField val msgStyle: Int = 0,
+            @ProtoNumber(4) @JvmField val senderUin: Long = 0L,
+            @ProtoNumber(5) @JvmField val clientInfo: ClientInfo? = null,
+            @ProtoNumber(6) @JvmField val textMsg: String = "",
+            @ProtoNumber(7) @JvmField val extInfo: ExtInfo? = null,
+            @ProtoNumber(10) @JvmField val sendType: Int = 0,
+            @ProtoNumber(11) @JvmField val recvUin: Long = 0L,
+            @ProtoNumber(12) @JvmField val richMsgBody: RichMsgBody? = null
+    ) : ProtoBuf
+
+    @Serializable
+    internal class ClientInfo(
+            @ProtoNumber(1) @JvmField val platform: Int = 0,
+            @ProtoNumber(2) @JvmField val sdkVersion: String = "",
+            @ProtoNumber(3) @JvmField val androidPackageName: String = "",
+            @ProtoNumber(4) @JvmField val androidSignature: String = "",
+            @ProtoNumber(5) @JvmField val iosBundleId: String = "",
+            @ProtoNumber(5) @JvmField val pcSign: String = "",
+    ) : ProtoBuf
+
+    @Serializable
+    internal class ExtInfo(
+            @ProtoNumber(1) @JvmField val customFeatureId: List<Int> = emptyList(),
+            @ProtoNumber(2) @JvmField val apnsWording: String = "",
+            @ProtoNumber(3) @JvmField val groupSaveDbFlag: Int = 0,
+            @ProtoNumber(4) @JvmField val receiverAppId: Int = 0,
+            @ProtoNumber(5) @JvmField val msgSeq: Long = 0L,
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RichMsgBody(
+            @ProtoNumber(10) @JvmField val title: String = "",
+            @ProtoNumber(11) @JvmField val summary: String = "",
+            @ProtoNumber(12) @JvmField val brief: String = "",
+            @ProtoNumber(13) @JvmField val url: String = "",
+            @ProtoNumber(14) @JvmField val pictureUrl: String = "",
+            @ProtoNumber(15) @JvmField val action: String = "",
+            @ProtoNumber(16) @JvmField val musicUrl: String = ""
+    ) : ProtoBuf
+}

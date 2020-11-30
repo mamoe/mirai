@@ -29,6 +29,8 @@ import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
+import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicSharePacket
+import net.mamoe.mirai.internal.network.protocol.packet.chat.MusicType
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
@@ -488,7 +490,28 @@ internal class GroupImpl(
             )
             Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), "")
         }
+    }
 
+    suspend fun shareMusic(
+        musicType: MusicType,
+        msgStyle: Int,
+        title: String,
+        summary: String,
+        url: String,
+        pictureUrl: String,
+        musicUrl: String
+    ): MessageReceipt<Group> {
+        MusicSharePacket.troopInvoke(
+            bot.client,
+            musicType = musicType,
+            msgStyle = msgStyle,
+            groupId = id,
+            title = title,
+            summary = summary,
+            url = url,
+            pictureUrl = pictureUrl,
+            musicUrl = musicUrl
+        ).sendAndExpect<MusicSharePacket.Response>()
     }
 
 
