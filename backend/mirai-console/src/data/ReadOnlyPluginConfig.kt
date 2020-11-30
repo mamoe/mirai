@@ -16,6 +16,6 @@ package net.mamoe.mirai.console.data
  *
  * @see PluginConfig
  * @see AutoSavePluginData
- * @since 1.1.0
+ * @since 1.1
  */
 public open class ReadOnlyPluginConfig public constructor(saveName: String) : ReadOnlyPluginData(saveName), PluginConfig

@@ -129,7 +129,7 @@ public open class MiraiConsoleExtension {
      * Bintray 插件成品 JAR 发布 配置.
      *
      * @see PluginPublishing
-     * @since 1.1.0
+     * @since 1.1
      */
     public val publishing: PluginPublishing = PluginPublishing()
 
@@ -141,7 +141,7 @@ public open class MiraiConsoleExtension {
      * - [应用][PluginContainer.apply] [BintrayPlugin], 配置 Bintray 相关参数
      * - 创建 task "publishPlugin"
      *
-     * @since 1.1.0
+     * @since 1.1
      */
     public var publishingEnabled: Boolean = false
 
@@ -150,7 +150,7 @@ public open class MiraiConsoleExtension {
      *
      * @see [PluginPublishing]
      * @see publishingEnabled
-     * @since 1.1.0
+     * @since 1.1
      */
     public inline fun publishing(crossinline configure: PluginPublishing.() -> Unit) {
         publishingEnabled = true
@@ -162,7 +162,7 @@ public open class MiraiConsoleExtension {
      *
      * @see [PluginPublishing]
      * @see publishingEnabled
-     * @since 1.1.0
+     * @since 1.1
      */
     public fun publishing() {
         publishingEnabled = true
@@ -182,7 +182,7 @@ public open class MiraiConsoleExtension {
      *
      * @see publishing
      * @see publishingEnabled
-     * @since 1.1.0
+     * @since 1.1
      */
     public class PluginPublishing internal constructor() {
         ///////////////////////////////////////////////////////////////////////////

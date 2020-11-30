@@ -19,7 +19,7 @@ import net.mamoe.mirai.utils.error
  *
  * @see PluginData
  * @see AutoSavePluginData
- * @since 1.1.0
+ * @since 1.1
  */
 public open class ReadOnlyPluginData private constructor(
     // KEEP THIS PRIMARY CONSTRUCTOR FOR FUTURE USE: WE'LL SUPPORT SERIALIZERS_MODULE FOR POLYMORPHISM
