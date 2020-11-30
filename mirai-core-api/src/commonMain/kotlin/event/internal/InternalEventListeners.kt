@@ -17,9 +17,9 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.PlannedRemoval
+import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmField
 import kotlin.reflect.KClass
 
 
@@ -112,16 +112,21 @@ internal class ListenerRegistry(
     val type: KClass<out Event>
 )
 
-internal expect object GlobalEventListeners {
-    operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerRegistry>
-}
 
-@PublishedApi
-internal expect class MiraiAtomicBoolean(initial: Boolean) {
+internal object GlobalEventListeners {
+    private val ALL_LEVEL_REGISTRIES: Map<Listener.EventPriority, LockFreeLinkedList<ListenerRegistry>>
 
-    fun compareAndSet(expect: Boolean, update: Boolean): Boolean
+    init {
+        val map =
+            EnumMap<Listener.EventPriority, LockFreeLinkedList<ListenerRegistry>>(Listener.EventPriority::class.java)
+        Listener.EventPriority.values().forEach {
+            map[it] = LockFreeLinkedList()
+        }
+        this.ALL_LEVEL_REGISTRIES = map
+    }
 
-    var value: Boolean
+    operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerRegistry> =
+        ALL_LEVEL_REGISTRIES[priority]!!
 }
 
 

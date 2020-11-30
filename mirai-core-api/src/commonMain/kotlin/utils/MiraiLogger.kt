@@ -14,9 +14,6 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
 
 
 /**
@@ -229,7 +226,13 @@ public inline fun MiraiLogger.error(lazyMessage: () -> String?, e: Throwable?) {
  *
  * @see DefaultLogger
  */
-public expect open class PlatformLogger @JvmOverloads constructor(identity: String? = "Mirai") : MiraiLoggerPlatformBase
+public expect open class PlatformLogger constructor(
+    identity: String? = "Mirai",
+    output: (String) -> Unit, // TODO: 2020/11/30 review logs, currently it's just for compile
+) : MiraiLoggerPlatformBase {
+    @JvmOverloads
+    public constructor(identity: String? = "Mirai")
+}
 
 
 /**

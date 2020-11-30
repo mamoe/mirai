@@ -20,13 +20,12 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.AbstractEvent
-import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
-import kotlin.jvm.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 /**
@@ -90,7 +89,7 @@ public data class NewFriendRequestEvent internal constructor(
     public val fromNick: String
 ) : BotEvent, Packet, AbstractEvent() {
     @JvmField
-    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    internal val responded: AtomicBoolean = AtomicBoolean(false)
 
     /**
      * @return 申请人来自的群. 当申请人来自其他途径申请时为 `null`

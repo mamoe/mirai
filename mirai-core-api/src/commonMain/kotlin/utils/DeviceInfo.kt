@@ -11,13 +11,26 @@ package net.mamoe.mirai.utils
 
 import kotlinx.io.core.toByteArray
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.utils.internal.getRandomByteArray
 import net.mamoe.mirai.utils.internal.getRandomIntString
 import net.mamoe.mirai.utils.internal.getRandomString
 import net.mamoe.mirai.utils.internal.md5
-import kotlin.jvm.JvmStatic
+import java.io.File
+
+/**
+ * 加载一个设备信息. 若文件不存在或为空则随机并创建一个设备信息保存.
+ */
+public fun File.loadAsDeviceInfo(json: Json): DeviceInfo {
+    if (!this.exists() || this.length() == 0L) {
+        return DeviceInfo.random().also {
+            this.writeText(json.encodeToString(DeviceInfo.serializer(), it))
+        }
+    }
+    return json.decodeFromString(DeviceInfo.serializer(), this.readText())
+}
 
 @Serializable
 public class DeviceInfo(

@@ -44,7 +44,7 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.currentTimeSeconds
-import kotlin.jvm.JvmSynthetic
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -63,7 +63,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     @OptIn(LowLevelApi::class)
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
@@ -83,7 +83,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override suspend fun rejectNewFriendRequest(event: NewFriendRequestEvent, blackList: Boolean) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $event has already been responded"
         }
 
@@ -105,7 +105,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         @Suppress("DuplicatedCode")
         checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
@@ -128,7 +128,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean, message: String) {
         checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
@@ -164,7 +164,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
         checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
@@ -188,7 +188,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     private suspend fun solveInvitedJoinGroupRequest(event: BotInvitedJoinGroupRequestEvent, accept: Boolean) {
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-        check(event.responded.compareAndSet(expect = false, update = true)) {
+        check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
@@ -260,7 +260,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         source.ensureSequenceIdAvailable()
 
         @Suppress("BooleanLiteralArgument", "INVISIBLE_REFERENCE", "INVISIBLE_MEMBER") // false positive
-        check(!source.isRecalledOrPlanned.value && source.isRecalledOrPlanned.compareAndSet(false, true)) {
+        check(!source.isRecalledOrPlanned.get() && source.isRecalledOrPlanned.compareAndSet(false, true)) {
             "$source had already been recalled."
         }
 
@@ -830,8 +830,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             override val internalId: Int = internalId
 
             @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-            override var isRecalledOrPlanned: net.mamoe.mirai.event.internal.MiraiAtomicBoolean =
-                net.mamoe.mirai.event.internal.MiraiAtomicBoolean(false)
+            override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
 
             override fun toJceData(): ImMsgBody.SourceMsg {
                 return ImMsgBody.SourceMsg(

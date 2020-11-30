@@ -14,7 +14,6 @@ package net.mamoe.mirai.internal.message
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -27,6 +26,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal interface MessageSourceInternal {
     val sequenceId: Int
@@ -35,7 +35,7 @@ internal interface MessageSourceInternal {
     @Deprecated("don't use this internally. Use sequenceId or random instead.", level = DeprecationLevel.ERROR)
     val id: Int
 
-    val isRecalledOrPlanned: MiraiAtomicBoolean
+    val isRecalledOrPlanned: AtomicBoolean
 
     fun toJceData(): ImMsgBody.SourceMsg
 }
@@ -67,7 +67,7 @@ internal class MessageSourceFromFriendImpl(
     val msg: MsgComm.Msg
 ) : OnlineMessageSource.Incoming.FromFriend(), MessageSourceInternal {
     override val sequenceId: Int get() = msg.msgHead.msgSeq
-    override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     override val id: Int get() = sequenceId// msg.msgBody.richText.attr!!.random
     override val internalId: Int get() = msg.msgBody.richText.attr!!.random
     override val time: Int get() = msg.msgHead.msgTime
@@ -121,7 +121,7 @@ internal class MessageSourceFromTempImpl(
 ) : OnlineMessageSource.Incoming.FromTemp(), MessageSourceInternal {
     override val sequenceId: Int get() = msg.msgHead.msgSeq
     override val internalId: Int get() = msg.msgBody.richText.attr!!.random
-    override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     override val id: Int get() = sequenceId//
     override val time: Int get() = msg.msgHead.msgTime
     override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, 0, false) }
@@ -135,7 +135,7 @@ internal data class MessageSourceFromGroupImpl(
     override val bot: Bot,
     private val msg: MsgComm.Msg
 ) : OnlineMessageSource.Incoming.FromGroup(), MessageSourceInternal {
-    override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     override val sequenceId: Int get() = msg.msgHead.msgSeq
     override val internalId: Int get() = msg.msgBody.richText.attr!!.random
     override val id: Int get() = sequenceId

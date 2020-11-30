@@ -22,12 +22,12 @@ import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
-import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.jvm.*
 
@@ -339,7 +339,7 @@ public data class BotInvitedJoinGroupRequestEvent internal constructor(
     public val invitor: Friend get() = this.bot.getFriend(invitorId)
 
     @JvmField
-    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    internal val responded: AtomicBoolean = AtomicBoolean(false)
 
     @JvmSynthetic
     public suspend fun accept(): Unit = Mirai.acceptInvitedJoinGroupRequest(this)
@@ -387,7 +387,7 @@ public data class MemberJoinRequestEvent internal constructor(
 
     @JvmField
     @PublishedApi
-    internal val responded: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    internal val responded: AtomicBoolean = AtomicBoolean(false)
 
     @JvmSynthetic
     public suspend fun accept(): Unit = Mirai.acceptMemberJoinRequest(this)

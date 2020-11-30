@@ -14,8 +14,6 @@ import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
 import net.mamoe.mirai.utils.currentTimeMillis
-import kotlin.jvm.JvmField
-import kotlin.jvm.Volatile
 
 
 /**
@@ -43,7 +41,7 @@ internal class AtomicResizeCacheList<E>(private val retention: Long) {
      * No concurrency guaranteed on same [element].
      */
     private fun add(element: E) {
-        val currentTime = currentTimeMillis
+        val currentTime = currentTimeMillis()
         findAvailable@ while (true) {
             for (cache in list) {
                 val instant = cache.time.value

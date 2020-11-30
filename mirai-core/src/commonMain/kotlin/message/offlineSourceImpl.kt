@@ -12,7 +12,6 @@
 package net.mamoe.mirai.internal.message
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
@@ -20,6 +19,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.OfflineMessageSource
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 internal class OfflineMessageSourceImplByMsg(
@@ -47,7 +47,7 @@ internal class OfflineMessageSourceImplByMsg(
     override val sequenceId: Int
         get() = delegate.msgHead.msgSeq
 
-    override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
 
     override fun toJceData(): ImMsgBody.SourceMsg {
         return ImMsgBody.SourceMsg(
@@ -72,7 +72,7 @@ internal class OfflineMessageSourceImplBySourceMsg(
 ) : OfflineMessageSource(), MessageSourceInternal {
     override val kind: Kind get() = if (delegate.srcMsg == null) Kind.GROUP else Kind.FRIEND
 
-    override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     override val sequenceId: Int
         get() = delegate.origSeqs.firstOrNull() ?: error("cannot find sequenceId")
     override val internalId: Int

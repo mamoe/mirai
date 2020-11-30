@@ -12,10 +12,7 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-
 /**
  * 图片文件过大
  */ // 不要删除多平台结构, 这是 kotlin 的 bug
-public expect class OverFileSizeMaxException() : IllegalStateException
+public class OverFileSizeMaxException : IllegalStateException()

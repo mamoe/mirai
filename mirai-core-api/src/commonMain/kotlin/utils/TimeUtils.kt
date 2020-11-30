@@ -12,9 +12,6 @@
 
 package net.mamoe.mirai.utils
 
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 import kotlin.math.floor
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -23,11 +20,11 @@ import kotlin.time.ExperimentalTime
 /**
  * 时间戳
  */
-public expect val currentTimeMillis: Long
+public fun currentTimeMillis(): Long = System.currentTimeMillis()
 
 @get:JvmSynthetic
 public inline val currentTimeSeconds: Long
-    get() = currentTimeMillis / 1000
+    get() = currentTimeMillis() / 1000
 
 
 // 临时使用, 待 Kotlin Duration 稳定后使用 Duration.

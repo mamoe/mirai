@@ -75,8 +75,8 @@ kotlin {
                 api1(`kotlinx-serialization-core`)
                 api1(`kotlinx-serialization-json`)
                 implementation1(`kotlinx-serialization-protobuf`)
-                api1(`kotlinx-io`)
-                api1(`kotlinx-coroutines-io`)
+                api1(`kotlinx-io-jvm`)
+                api1(`kotlinx-coroutines-io-jvm`)
                 api(`kotlinx-coroutines-core`)
 
                 implementation1(`kotlinx-atomicfu`)
@@ -84,32 +84,21 @@ kotlin {
                 api1(`ktor-client-cio`)
                 api1(`ktor-client-core`)
                 api1(`ktor-network`)
+
+                compileOnly(`log4j-api`)
+                compileOnly(slf4j)
             }
         }
 
         if (isAndroidSDKAvailable) {
             androidMain {
                 dependencies {
-                    api(kotlin("reflect"))
-
-                    api1(`kotlinx-io-jvm`)
-                    api1(`kotlinx-coroutines-io-jvm`)
-
                     api1(`ktor-client-android`)
                 }
             }
         }
 
-        val jvmMain by getting {
-            dependencies {
-                api(kotlin("reflect"))
-                compileOnly(`log4j-api`)
-                compileOnly(slf4j)
-
-                api1(`kotlinx-io-jvm`)
-                api1(`kotlinx-coroutines-io-jvm`)
-            }
-        }
+        val jvmMain by getting
 
         val jvmTest by getting {
             dependencies {

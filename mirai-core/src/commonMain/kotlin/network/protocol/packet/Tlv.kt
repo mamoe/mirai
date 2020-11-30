@@ -35,7 +35,7 @@ internal fun BytePacketBuilder.t1(uin: Long, ip: ByteArray) {
         writeShort(1) // _ip_ver
         writeInt(Random.nextInt())
         writeInt(uin.toInt())
-        writeInt(currentTimeMillis.toInt())
+        writeInt(currentTimeMillis().toInt())
         writeFully(ip)
         writeShort(0)
     } shouldEqualsTo 20
@@ -113,7 +113,7 @@ internal fun BytePacketBuilder.t106(
                 writeLong(uin)
             }
 
-            writeInt(currentTimeMillis.toInt())
+            writeInt(currentTimeMillis().toInt())
             writeFully(ByteArray(4)) // ip // no need to write actual ip
             writeByte(isSavePassword.toByte())
             writeFully(passwordMd5)
@@ -555,7 +555,7 @@ internal fun BytePacketBuilder.t400(
             writeFully(dpwd)
             writeInt(appId.toInt())
             writeInt(subAppId.toInt())
-            writeLong(currentTimeMillis)
+            writeLong(currentTimeMillis())
             writeFully(randomSeed)
         }
     }

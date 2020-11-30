@@ -25,7 +25,7 @@ public class SingleFileLogger @JvmOverloads constructor(
     identity: String,
     file: File = File("$identity-$currentDate.log")
 ) :
-    PlatformLogger(identity, { file.appendText(it + "\n") }, false) {
+    PlatformLogger(identity, { file.appendText(it + "\n") }) {
 
     init {
         file.createNewFile()
@@ -55,7 +55,7 @@ public class DirectoryLogger @JvmOverloads constructor(
     }
 
     private fun checkOutdated() {
-        val current = currentTimeMillis
+        val current = currentTimeMillis()
         directory.walk().filter(File::isFile).filter { current - it.lastModified() > retain }.forEach {
             it.delete()
         }

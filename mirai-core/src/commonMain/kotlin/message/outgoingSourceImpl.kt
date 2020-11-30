@@ -19,7 +19,6 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.asyncFromEventOrNull
-import net.mamoe.mirai.event.internal.MiraiAtomicBoolean
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
@@ -28,6 +27,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
@@ -81,7 +81,7 @@ internal class MessageSourceToFriendImpl(
         get() = sender
     override val id: Int
         get() = sequenceId
-    override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     private val jceData by lazy { toJceDataImpl() }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
@@ -98,7 +98,7 @@ internal class MessageSourceToTempImpl(
         get() = sender
     override val id: Int
         get() = sequenceId
-    override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     private val jceData by lazy { toJceDataImpl() }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
@@ -115,7 +115,7 @@ internal class MessageSourceToGroupImpl(
         get() = sequenceId
     override val bot: Bot
         get() = sender
-    override var isRecalledOrPlanned: MiraiAtomicBoolean = MiraiAtomicBoolean(false)
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
 
     private val sequenceIdDeferred: Deferred<Int?> =
         coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, Int>(

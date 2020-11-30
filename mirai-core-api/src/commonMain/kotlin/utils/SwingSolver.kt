@@ -7,9 +7,13 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils
+package utils
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.HyperLinkLabel
+import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.openWindow
 import java.awt.Desktop
 import java.net.URI
 import javax.imageio.ImageIO

@@ -20,9 +20,11 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
 
+internal fun asReusableInput0(input: ByteArray): ReusableInput = input.asReusableInput()
+
 internal const val DEFAULT_REUSABLE_INPUT_BUFFER_SIZE = 8192
 
-internal actual fun ByteArray.asReusableInput(): ReusableInput {
+internal fun ByteArray.asReusableInput(): ReusableInput {
     return object : ReusableInput {
         override val md5: ByteArray = md5()
         override val size: Long get() = this@asReusableInput.size.toLongUnsigned()
