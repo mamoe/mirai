@@ -10,14 +10,19 @@ package net.mamoe.mirai.console.compiler.common.diagnostics
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory0.create
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1.create
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2.create
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.diagnostics.Severity.ERROR
-import org.jetbrains.kotlin.psi.KtCallExpression
-import org.jetbrains.kotlin.psi.KtNamedDeclaration
-import org.jetbrains.kotlin.psi.KtTypeProjection
+import org.jetbrains.kotlin.diagnostics.Severity.WARNING
+import org.jetbrains.kotlin.psi.*
 
+/**
+ * 如何增加一个错误:
+ * 1. 在 [MiraiConsoleErrors] 添加
+ * 2. 在 [MiraiConsoleErrorsRendering] 添加对应的 render
+ */
 object MiraiConsoleErrors {
     @JvmField
     val ILLEGAL_PLUGIN_DESCRIPTION = create<PsiElement, String>(ERROR)
@@ -45,6 +50,18 @@ object MiraiConsoleErrors {
 
     @JvmField
     val ILLEGAL_PERMISSION_REGISTER_USE = create<PsiElement, KtNamedDeclaration, String>(ERROR)
+
+    @JvmField
+    val ILLEGAL_VERSION_REQUIREMENT = create<PsiElement, String, String>(ERROR)
+
+//    @JvmField
+//    val INAPPLICABLE_COMMAND_ANNOTATION = create<PsiElement, String>(ERROR)
+
+    @JvmField
+    val RESTRICTED_CONSOLE_COMMAND_OWNER = create<KtElement>(WARNING)
+
+    @JvmField
+    val ILLEGAL_COMMAND_DECLARATION_RECEIVER = create<KtTypeReference>(ERROR)
 
     @Suppress("ObjectPropertyName", "unused")
     @JvmField

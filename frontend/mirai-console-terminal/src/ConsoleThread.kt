@@ -55,8 +55,8 @@ internal fun startupConsoleThread() {
     }
     MiraiConsole.launch(CoroutineName("Console Command")) {
         while (true) {
-            try {
-                val next = MiraiConsole.requestInput("").let {
+            val next = try {
+                MiraiConsole.requestInput("").let {
                     when {
                         it.isBlank() -> it
                         it.startsWith(CommandManager.commandPrefix) -> it
@@ -64,9 +64,25 @@ internal fun startupConsoleThread() {
                         else -> CommandManager.commandPrefix + it
                     }
                 }
-                if (next.isBlank()) {
-                    continue
-                }
+            } catch (e: InterruptedException) {
+                return@launch
+            } catch (e: CancellationException) {
+                return@launch
+            } catch (e: UserInterruptException) {
+                BuiltInCommands.StopCommand.run { ConsoleCommandSender.handle() }
+                return@launch
+            } catch (eof: EndOfFileException) {
+                consoleLogger.warning("Closing input service...")
+                return@launch
+            } catch (e: Throwable) {
+                consoleLogger.error("Error in reading next command", e)
+                consoleLogger.warning("Closing input service...")
+                return@launch
+            }
+            if (next.isBlank()) {
+                continue
+            }
+            try {
                 // consoleLogger.debug("INPUT> $next")
                 when (val result = ConsoleCommandSender.executeCommand(next)) {
                     is Success -> {
@@ -96,12 +112,6 @@ internal fun startupConsoleThread() {
             } catch (e: InterruptedException) {
                 return@launch
             } catch (e: CancellationException) {
-                return@launch
-            } catch (e: UserInterruptException) {
-                BuiltInCommands.StopCommand.run { ConsoleCommandSender.handle() }
-                return@launch
-            } catch (eof: EndOfFileException) {
-                consoleLogger.warning("Closing input service...")
                 return@launch
             } catch (e: Throwable) {
                 consoleLogger.error("Unhandled exception", e)

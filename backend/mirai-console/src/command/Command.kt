@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.command.descriptor.CommandSignature
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
@@ -89,6 +90,7 @@ public interface Command {
      * 指令拥有者.
      * @see CommandOwner
      */
+    @ResolveContext(RESTRICTED_CONSOLE_COMMAND_OWNER)
     public val owner: CommandOwner
 
     public companion object {

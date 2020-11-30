@@ -50,6 +50,8 @@ internal data class DataExtensionRegistry<out E : Extension>(
 ) : ExtensionRegistry<E>
 
 internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
+    private val instances: MutableMap<ExtensionPoint<*>, MutableSet<ExtensionRegistry<*>>> = ConcurrentHashMap()
+
     @Suppress("UNCHECKED_CAST")
     internal fun <T : Extension> ExtensionPoint<out T>.getExtensions(): Set<ExtensionRegistry<T>> {
         val userDefined = instances.getOrPut(this, ::CopyOnWriteArraySet) as Set<ExtensionRegistry<T>>
@@ -59,6 +61,13 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
         } else null
 
         return builtins?.plus(userDefined) ?: userDefined
+    }
+
+    // unused for now
+    internal fun removeExtensionsRegisteredByPlugin(plugin: Plugin) {
+        instances.forEach { (_, u) ->
+            u.removeAll { it.plugin == plugin }
+        }
     }
 
     internal fun mergeWith(another: AbstractConcurrentComponentStorage) {
@@ -154,7 +163,6 @@ internal abstract class AbstractConcurrentComponentStorage : ComponentStorage {
     internal inline fun <T : Extension> ExtensionPoint<T>.useExtensions(block: (extension: T, plugin: Plugin?) -> Unit): Unit =
         withExtensions(block)
 
-    private val instances: MutableMap<ExtensionPoint<*>, MutableSet<ExtensionRegistry<*>>> = ConcurrentHashMap()
     override fun <T : Extension> contribute(
         extensionPoint: ExtensionPoint<T>,
         plugin: Plugin,

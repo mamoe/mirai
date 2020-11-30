@@ -27,6 +27,7 @@ internal object LoggerConfig : AutoSavePluginConfig("Logger") {
         mapOf(
             "example.logger" to AbstractLoggerController.LogPriority.NONE,
             "console.debug" to AbstractLoggerController.LogPriority.NONE,
+            "Bot" to AbstractLoggerController.LogPriority.ALL,
         )
     )
 

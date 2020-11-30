@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.compiler.common.diagnostics
 
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_DECLARATION_RECEIVER
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_NAME
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_COMMAND_REGISTER_USE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_ID
@@ -16,12 +17,17 @@ import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.IL
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_NAMESPACE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PERMISSION_REGISTER_USE
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_PLUGIN_DESCRIPTION
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.ILLEGAL_VERSION_REQUIREMENT
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE
+import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors.UNSERIALIZABLE_TYPE
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
 import org.jetbrains.kotlin.diagnostics.rendering.DiagnosticFactoryToRendererMap
 import org.jetbrains.kotlin.diagnostics.rendering.Renderers
 
+/**
+ * @see MiraiConsoleErrors
+ */
 object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
     private val MAP = DiagnosticFactoryToRendererMap("MiraiConsole").apply {
         put(
@@ -84,6 +90,29 @@ object MiraiConsoleErrorsRendering : DefaultErrorMessages.Extension {
             Renderers.DECLARATION_NAME,
             Renderers.STRING
         )
+
+        put(
+            ILLEGAL_VERSION_REQUIREMENT,
+            "{1}",
+            Renderers.STRING,
+            Renderers.STRING
+        )
+
+        put(
+            ILLEGAL_COMMAND_DECLARATION_RECEIVER,
+            "指令函数的接收者参数必须为 CommandSender 及其子类或无接收者.",
+        )
+
+        put(
+            RESTRICTED_CONSOLE_COMMAND_OWNER,
+            "插件不允许使用 ConsoleCommandOwner 构造指令, 请使用插件主类作为 CommandOwner",
+        )
+
+//        put(
+//            INAPPLICABLE_COMMAND_ANNOTATION,
+//            "''{0}'' 无法在顶层函数使用.",
+//            Renderers.STRING,
+//        )
     }
 
     override fun getMap() = MAP

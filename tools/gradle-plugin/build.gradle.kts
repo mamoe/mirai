@@ -15,6 +15,7 @@ plugins {
 
 dependencies {
     compileOnly(gradleApi())
+    compileOnly(gradleKotlinDsl())
     compileOnly(kotlin("gradle-plugin-api").toString()) {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
     }
@@ -26,10 +27,15 @@ dependencies {
 
     api("com.github.jengelman.gradle.plugins:shadow:6.0.0")
     api(`jetbrains-annotations`)
+    api("com.jfrog.bintray.gradle:gradle-bintray-plugin:${Versions.bintray}")
 }
 
 version = Versions.console
 description = "Gradle plugin for Mirai Console"
+
+kotlin {
+    explicitApi()
+}
 
 pluginBundle {
     website = "https://github.com/mamoe/mirai-console"

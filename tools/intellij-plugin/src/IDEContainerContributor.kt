@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.console.intellij
 
+import net.mamoe.mirai.console.intellij.diagnostics.CommandDeclarationChecker
 import net.mamoe.mirai.console.intellij.diagnostics.ContextualParametersChecker
 import net.mamoe.mirai.console.intellij.diagnostics.PluginDataValuesChecker
 import org.jetbrains.kotlin.container.StorageComponentContainer
@@ -24,5 +25,6 @@ class IDEContainerContributor : StorageComponentContainerContributor {
     ) {
         container.useInstance(ContextualParametersChecker())
         container.useInstance(PluginDataValuesChecker())
+        container.useInstance(CommandDeclarationChecker())
     }
 }

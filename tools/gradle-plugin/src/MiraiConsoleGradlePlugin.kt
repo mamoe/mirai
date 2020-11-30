@@ -13,7 +13,7 @@
 package net.mamoe.mirai.console.gradle
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.jfrog.bintray.gradle.BintrayPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
@@ -25,17 +25,18 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinSingleTargetExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation.Companion.MAIN_COMPILATION_NAME
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 
-class MiraiConsoleGradlePlugin : Plugin<Project> {
-    companion object {
+public class MiraiConsoleGradlePlugin : Plugin<Project> {
+    public companion object {
         internal const val BINTRAY_REPOSITORY_URL = "https://dl.bintray.com/him188moe/mirai"
     }
 
-    private fun KotlinSourceSet.configureSourceSet(project: Project) {
+    private fun KotlinSourceSet.configureSourceSet(project: Project, target: KotlinTarget) {
         languageSettings.useExperimentalAnnotation("kotlin.RequiresOptIn")
-        dependencies { configureDependencies(project, this@configureSourceSet) }
+        dependencies { configureDependencies(project, this@configureSourceSet, target) }
     }
 
     private fun Project.configureTarget(target: KotlinTarget) {
@@ -48,24 +49,37 @@ class MiraiConsoleGradlePlugin : Plugin<Project> {
                 if (!miraiExtension.dontConfigureKotlinJvmDefault) freeCompilerArgs = freeCompilerArgs + "-Xjvm-default=all"
             }
         }
-        target.compilations.flatMap { it.allKotlinSourceSets }.forEach { sourceSet ->
-            sourceSet.configureSourceSet(project)
+        when (target.platformType) {
+            KotlinPlatformType.jvm,
+            KotlinPlatformType.androidJvm,
+            KotlinPlatformType.common
+            -> {
+                target.compilations.flatMap { it.allKotlinSourceSets }.forEach { sourceSet ->
+                    sourceSet.configureSourceSet(project, target)
+                }
+            }
+            else -> {
+            }
         }
     }
 
     @Suppress("SpellCheckingInspection")
-    private fun KotlinDependencyHandler.configureDependencies(project: Project, sourceSet: KotlinSourceSet) {
+    private fun KotlinDependencyHandler.configureDependencies(project: Project, sourceSet: KotlinSourceSet, target: KotlinTarget) {
         val miraiExtension = project.miraiExtension
 
+        val isJvm = target.platformType == KotlinPlatformType.jvm || target.platformType == KotlinPlatformType.androidJvm
+
         if (!miraiExtension.noCore) compileOnly("net.mamoe:mirai-core:${miraiExtension.coreVersion}")
-        if (!miraiExtension.noConsole) compileOnly("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
+        if (!miraiExtension.noConsole && isJvm) compileOnly("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
 
         if (sourceSet.name.endsWith("test", ignoreCase = true)) {
             if (!miraiExtension.noCore) api("net.mamoe:mirai-core:${miraiExtension.coreVersion}")
-            if (!miraiExtension.noConsole) api("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
+            if (!miraiExtension.noConsole && isJvm) api("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
             if (!miraiExtension.noTestCoreQQAndroid) api("net.mamoe:mirai-core-qqandroid:${miraiExtension.coreVersion}")
-            when (miraiExtension.useTestConsoleFrontEnd) {
-                MiraiConsoleFrontEndKind.TERMINAL -> api("net.mamoe:mirai-console-terminal:${miraiExtension.consoleVersion}")
+            if (isJvm) {
+                when (miraiExtension.useTestConsoleFrontEnd) {
+                    MiraiConsoleFrontEndKind.TERMINAL -> api("net.mamoe:mirai-console-terminal:${miraiExtension.consoleVersion}")
+                }
             }
         }
     }
@@ -87,18 +101,18 @@ class MiraiConsoleGradlePlugin : Plugin<Project> {
 
         tasks.findByName("shadowJar")?.enabled = false
 
-        fun registerBuildPluginTask(target: KotlinTarget, isSinglePlatform: Boolean) {
-            tasks.create(if (isSinglePlatform) "buildPlugin" else "buildPlugin${target.name.capitalize()}", ShadowJar::class.java).apply shadow@{
+        fun registerBuildPluginTask(target: KotlinTarget, isSingleTarget: Boolean) {
+            tasks.create("buildPlugin".wrapNameWithPlatform(target, isSingleTarget), BuildMiraiPluginTask::class.java).apply shadow@{
                 group = "mirai"
+                targetField = target
+
+                archiveExtension.set("mirai.jar")
 
                 val compilations = target.compilations.filter { it.name == MAIN_COMPILATION_NAME }
 
                 compilations.forEach {
                     dependsOn(it.compileKotlinTask)
-                    from(it.output)
-                    for (allKotlinSourceSet in it.allKotlinSourceSets) {
-                        from(allKotlinSourceSet.resources)
-                    }
+                    from(it.output.allOutputs)
                 }
 
                 from(project.configurations.getByName("runtimeClasspath").copyRecursive { dependency ->
@@ -128,17 +142,20 @@ class MiraiConsoleGradlePlugin : Plugin<Project> {
     }
 
     override fun apply(target: Project): Unit = with(target) {
-        target.extensions.create("mirai", MiraiConsoleExtension::class.java)
+        extensions.create("mirai", MiraiConsoleExtension::class.java)
 
-        target.plugins.apply(JavaPlugin::class.java)
-        target.plugins.apply(ShadowPlugin::class.java)
-
-        target.repositories.maven { it.setUrl(BINTRAY_REPOSITORY_URL) }
+        plugins.apply(JavaPlugin::class.java)
+        plugins.apply("org.gradle.maven-publish")
+        plugins.apply("org.gradle.maven")
+        plugins.apply(ShadowPlugin::class.java)
+        plugins.apply(BintrayPlugin::class.java)
+        repositories.maven { it.setUrl(BINTRAY_REPOSITORY_URL) }
 
         afterEvaluate {
             configureCompileTarget()
-            registerBuildPluginTasks()
             kotlinTargets.forEach { configureTarget(it) }
+            registerBuildPluginTasks()
+            configurePublishing()
         }
     }
 }
@@ -157,3 +174,6 @@ internal val Project.kotlinTargets: Collection<KotlinTarget>
             else -> error("[MiraiConsole] Internal error: kotlinExtension is neither KotlinMultiplatformExtension nor KotlinSingleTargetExtension")
         }
     }
+
+internal val Project.kotlinJvmOrAndroidTargets: Collection<KotlinTarget>
+    get() = kotlinTargets.filter { it.platformType == KotlinPlatformType.jvm || it.platformType == KotlinPlatformType.androidJvm }

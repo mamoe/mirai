@@ -53,6 +53,7 @@ val experimentalAnnotations = arrayOf(
     "kotlin.experimental.ExperimentalTypeInference",
     "kotlinx.coroutines.ExperimentalCoroutinesApi",
     "kotlinx.serialization.ExperimentalSerializationApi",
+    "kotlin.io.path.ExperimentalPathApi",
     "io.ktor.util.KtorExperimentalAPI",
 
     "net.mamoe.mirai.utils.MiraiInternalAPI",

@@ -71,7 +71,10 @@ internal object PluginManagerImpl : PluginManager, CoroutineScope by MiraiConsol
 
     init {
         MiraiConsole.coroutineContext[Job]!!.invokeOnCompletion {
-            plugins.forEach { disablePlugin(it) }
+            plugins.forEach { plugin ->
+                if (plugin.isEnabled)
+                    disablePlugin(plugin)
+            }
         }
     }
 

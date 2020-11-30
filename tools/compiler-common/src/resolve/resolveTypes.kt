@@ -32,6 +32,9 @@ val AUTO_SERVICE = FqName("com.google.auto.service.AutoService")
 
 val COMPOSITE_COMMAND_SUB_COMMAND_FQ_NAME = FqName("net.mamoe.mirai.console.command.CompositeCommand.SubCommand")
 val SIMPLE_COMMAND_HANDLER_COMMAND_FQ_NAME = FqName("net.mamoe.mirai.console.command.SimpleCommand.Handler")
+val COMMAND_SENDER_FQ_NAME = FqName("net.mamoe.mirai.console.command.CommandSender")
+val CONSOLE_COMMAND_SENDER_FQ_NAME = FqName("net.mamoe.mirai.console.command.ConsoleCommandSender")
+val CONSOLE_COMMAND_OWNER_FQ_NAME = FqName("net.mamoe.mirai.console.command.ConsoleCommandOwner")
 
 ///////////////////////////////////////////////////////////////////////////
 // Plugin
@@ -69,7 +72,8 @@ enum class ResolveContextKind {
     PERMISSION_NAME,
     PERMISSION_ID,
 
-    RESTRICTED_NO_ARG_CONSTRUCTOR
+    RESTRICTED_NO_ARG_CONSTRUCTOR,
+    RESTRICTED_CONSOLE_COMMAND_OWNER,
     ;
 
     companion object {

@@ -76,7 +76,7 @@ public interface PluginLoader<P : Plugin, D : PluginDescription> {
      * @throws PluginLoadException 在加载插件遇到意料之中的错误时抛出 (如找不到主类等).
      * @throws IllegalStateException 在插件已经被加载时抛出. 这属于意料之外的情况.
      */
-    @Throws(PluginLoadException::class)
+    @Throws(IllegalStateException::class, PluginLoadException::class)
     public fun load(plugin: P)
 
     /**

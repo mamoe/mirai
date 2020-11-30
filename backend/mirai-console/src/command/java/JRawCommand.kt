@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.command.CommandOwner
 import net.mamoe.mirai.console.command.descriptor.ExperimentalCommandDescriptors
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.internal.command.findOrCreateCommandPermission
 import net.mamoe.mirai.console.permission.Permission
 
@@ -51,9 +52,12 @@ public abstract class JRawCommand
      * 指令拥有者.
      * @see CommandOwner
      */
+    @ResolveContext(RESTRICTED_CONSOLE_COMMAND_OWNER)
     public override val owner: CommandOwner,
-    @ResolveContext(COMMAND_NAME) public override val primaryName: String,
-    @ResolveContext(COMMAND_NAME) public override vararg val secondaryNames: String,
+    @ResolveContext(COMMAND_NAME)
+    public override val primaryName: String,
+    @ResolveContext(COMMAND_NAME)
+    public override vararg val secondaryNames: String,
     parentPermission: Permission = owner.parentPermission,
 ) : Command {
     /** 用法说明, 用于发送给用户 */

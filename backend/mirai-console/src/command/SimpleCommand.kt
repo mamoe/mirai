@@ -21,6 +21,7 @@ import net.mamoe.mirai.console.command.descriptor.*
 import net.mamoe.mirai.console.command.java.JSimpleCommand
 import net.mamoe.mirai.console.compiler.common.ResolveContext
 import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.COMMAND_NAME
+import net.mamoe.mirai.console.compiler.common.ResolveContext.Kind.RESTRICTED_CONSOLE_COMMAND_OWNER
 import net.mamoe.mirai.console.internal.command.CommandReflector
 import net.mamoe.mirai.console.internal.command.IllegalCommandDeclarationException
 import net.mamoe.mirai.console.internal.command.SimpleCommandSubCommandAnnotationResolver
@@ -53,7 +54,7 @@ import kotlin.annotation.AnnotationTarget.VALUE_PARAMETER
  * @see [CommandManager.executeCommand]
  */
 public abstract class SimpleCommand(
-    owner: CommandOwner,
+    @ResolveContext(RESTRICTED_CONSOLE_COMMAND_OWNER) owner: CommandOwner,
     @ResolveContext(COMMAND_NAME) primaryName: String,
     @ResolveContext(COMMAND_NAME) vararg secondaryNames: String,
     description: String = "no description available",

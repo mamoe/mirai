@@ -16,6 +16,7 @@ import net.mamoe.mirai.console.MiraiConsole
 import net.mamoe.mirai.console.data.runCatchingLog
 import net.mamoe.mirai.console.extension.PluginComponentStorage
 import net.mamoe.mirai.console.internal.data.mkdir
+import net.mamoe.mirai.console.internal.extension.GlobalComponentStorage
 import net.mamoe.mirai.console.permission.Permission
 import net.mamoe.mirai.console.permission.PermissionService
 import net.mamoe.mirai.console.plugin.Plugin
@@ -43,9 +44,6 @@ internal abstract class JvmPluginInternal(
     parentCoroutineContext: CoroutineContext,
 ) : JvmPlugin, CoroutineScope {
 
-    @Suppress("LeakingThis")
-    internal val componentStorage: PluginComponentStorage = PluginComponentStorage(this)
-
     final override val parentPermission: Permission by lazy {
         PermissionService.INSTANCE.register(
             PermissionService.INSTANCE.allocatePermissionIdForPlugin(this, "*"),
@@ -54,6 +52,7 @@ internal abstract class JvmPluginInternal(
     }
 
     final override var isEnabled: Boolean = false
+        internal set
 
     private val resourceContainerDelegate by lazy { this::class.java.classLoader.asResourceContainer() }
     final override fun getResourceAsStream(path: String): InputStream? =
@@ -100,13 +99,16 @@ internal abstract class JvmPluginInternal(
     }
 
     @Throws(Throwable::class)
-    internal fun internalOnLoad(componentStorage: PluginComponentStorage) {
+    internal fun internalOnLoad() {
+        val componentStorage = PluginComponentStorage(this)
         onLoad(componentStorage)
+        GlobalComponentStorage.mergeWith(componentStorage)
     }
 
     internal fun internalOnEnable(): Boolean {
         parentPermission
         if (!firstRun) refreshCoroutineContext()
+
         kotlin.runCatching {
             onEnable()
         }.fold(

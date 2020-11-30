@@ -9,7 +9,6 @@
 
 package net.mamoe.mirai.console.internal.util.semver
 
-import net.mamoe.mirai.console.internal.util.semver.RangeTokenReader.dump
 import net.mamoe.mirai.console.util.SemVersion
 import kotlin.math.max
 import kotlin.math.min
@@ -166,21 +165,27 @@ internal object SemVersionInternal {
 
 
     @JvmStatic
-    fun parseRangeRequirement(requirement: String): RequirementInternal {
-        if (requirement.isBlank()) {
-            throw IllegalArgumentException("Invalid requirement: Empty requirement rule.")
-        }
-        val tokens = RangeTokenReader.parseToTokens(requirement)
-        val collected = RangeTokenReader.collect(requirement, tokens.iterator(), true)
-        RangeTokenReader.check(requirement, collected.iterator(), null)
-        return kotlin.runCatching {
-            RangeTokenReader.parse(requirement, RangeTokenReader.Token.Group(collected, 0))
-        }.onFailure { error ->
-            throw IllegalArgumentException("Exception in parsing $requirement\n\n" + buildString {
-                collected.forEach { dump("", it) }
-            }, error)
-        }.getOrThrow()
-    }
+    fun parseRangeRequirement(requirement: String): RequirementInternal =
+        object : RequirementParser.ProcessorBase<RequirementInternal>() {
+            override fun processLogic(isAnd: Boolean, chunks: Iterable<RequirementInternal>): RequirementInternal {
+                return if (isAnd) object : RequirementInternal {
+                    override fun test(version: SemVersion): Boolean {
+                        return chunks.all { it.test(version) }
+                    }
+                } else object : RequirementInternal {
+                    override fun test(version: SemVersion): Boolean {
+                        return chunks.any { it.test(version) }
+                    }
+                }
+            }
+
+            override fun processString(
+                reader: RequirementParser.TokenReader,
+                token: RequirementParser.Token.Content
+            ): RequirementInternal = kotlin.runCatching {
+                parseRule(token.content)
+            }.getOrElse { token.ia(reader, "Error in parsing rule `${token.content}`", it) }
+        }.processLine(RequirementParser.TokenReader(requirement))
 
     @JvmStatic
     fun compareInternal(source: SemVersion, other: SemVersion): Int {

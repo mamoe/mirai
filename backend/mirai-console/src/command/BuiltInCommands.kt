@@ -41,8 +41,10 @@ import net.mamoe.mirai.console.permission.PermissionService.Companion.permit
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.console.plugin.name
 import net.mamoe.mirai.console.plugin.version
+import net.mamoe.mirai.console.util.AnsiMessageBuilder
 import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
+import net.mamoe.mirai.console.util.sendAnsiMessage
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.message.nextMessageOrNull
 import net.mamoe.mirai.utils.secondsToMillis
@@ -355,48 +357,102 @@ public object BuiltInCommands {
     ), BuiltInCommandInternal {
         @Handler
         public suspend fun CommandSender.handle() {
-            sendMessage(buildString {
+            sendAnsiMessage {
                 val buildDateFormatted =
                     MiraiConsoleBuildConstants.buildDate.atZone(ZoneId.systemDefault())
                         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-
-                append("Running MiraiConsole v${MiraiConsoleBuildConstants.versionConst}, built on ").append(buildDateFormatted)
-                    .append(".\n")
+                append("Running MiraiConsole v")
+                gold().append(MiraiConsoleBuildConstants.versionConst)
+                reset().append(", built on ")
+                lightBlue().append(buildDateFormatted).reset().append(".\n")
                 append(MiraiConsoleImplementationBridge.frontEndDescription.render()).append("\n\n")
                 append("Permission Service: ").append(
                     if (PermissionService.INSTANCE is BuiltInPermissionService) {
+                        lightYellow()
                         "Built In Permission Service"
                     } else {
                         val plugin = PermissionServiceProvider.providerPlugin
                         if (plugin == null) {
                             PermissionService.INSTANCE.toString()
                         } else {
-                            "${plugin.name} v${plugin.version}"
+                            green().append(plugin.name).reset().append(" v").gold()
+                            plugin.version.toString()
                         }
                     }
                 )
-                append("\n\n")
+                reset().append("\n\n")
 
                 append("Plugins: ")
                 if (PluginManagerImpl.resolvedPlugins.isEmpty()) {
-                    append("<none>")
+                    gray().append("<none>")
                 } else {
                     PluginManagerImpl.resolvedPlugins.joinTo(this) { plugin ->
-                        "${plugin.name} v${plugin.version}"
+                        green().append(plugin.name).reset().append(" v").gold()
+                        plugin.version.toString()
                     }
                 }
-                append("\n\n")
+                reset().append("\n\n")
+
                 val memoryMXBean = ManagementFactory.getMemoryMXBean()
 
                 append("Object Pending Finalization Count: ")
+                    .emeraldGreen()
                     .append(memoryMXBean.objectPendingFinalizationCount)
+                    .reset()
                     .append("\n")
+                val l1 = arrayOf("committed", "init", "used", "max")
+                val l2 = renderMemoryUsage(memoryMXBean.heapMemoryUsage)
+                val l3 = renderMemoryUsage(memoryMXBean.nonHeapMemoryUsage)
+                val lmax = calculateMax(l1, l2.first, l3.first)
+
+                append("                 ")
+                l1.forEachIndexed { index, s ->
+                    if (index != 0) append(" | ")
+                    renderMUNum(lmax[index], s.length) { append(s); reset() }
+                }
+                reset()
+                append("\n")
+
+                fun rendMU(l: Pair<Array<String>, LongArray>) {
+                    val max = l.second[3]
+                    val e50 = max / 2
+                    val e90 = max * 90 / 100
+                    l.first.forEachIndexed { index, s ->
+                        if (index != 0) append(" | ")
+                        renderMUNum(lmax[index], s.length) {
+                            if (index == 3) {
+                                // MAX
+                                append(s)
+                            } else {
+                                if (max < 0L) {
+                                    append(s)
+                                } else {
+                                    val v = l.second[index]
+                                    when {
+                                        v < e50 -> {
+                                            green()
+                                        }
+                                        v < e90 -> {
+                                            lightRed()
+                                        }
+                                        else -> {
+                                            red()
+                                        }
+                                    }
+                                    append(s)
+                                    reset()
+                                }
+                            }
+                        }
+                    }
+                }
 
                 append("    Heap Memory: ")
-                renderMemoryUsage(memoryMXBean.heapMemoryUsage)
+                rendMU(l2)
                 append("\nNon-Heap Memory: ")
+                rendMU(l3)
                 renderMemoryUsage(memoryMXBean.nonHeapMemoryUsage)
-            })
+            }
         }
 
         private const val MEM_B = 1024L
@@ -408,7 +464,7 @@ public object BuiltInCommands {
         private inline fun StringBuilder.appendDouble(number: Double): StringBuilder =
             append(floor(number * 100) / 100)
 
-        private fun StringBuilder.renderMemoryUsageNumber(num: Long) {
+        private fun renderMemoryUsageNumber(num: Long) = buildString {
             when {
                 num == -1L -> {
                     append(num)
@@ -428,17 +484,39 @@ public object BuiltInCommands {
             }
         }
 
+        private fun AnsiMessageBuilder.renderMemoryUsage(usage: MemoryUsage) = arrayOf(
+            renderMemoryUsageNumber(usage.committed),
+            renderMemoryUsageNumber(usage.init),
+            renderMemoryUsageNumber(usage.used),
+            renderMemoryUsageNumber(usage.max),
+        ) to longArrayOf(
+            usage.committed,
+            usage.init,
+            usage.used,
+            usage.max,
+        )
 
-        private fun StringBuilder.renderMemoryUsage(usage: MemoryUsage) {
-            append("(committed / init / used / max) [")
-            renderMemoryUsageNumber(usage.committed)
-            append(", ")
-            renderMemoryUsageNumber(usage.init)
-            append(", ")
-            renderMemoryUsageNumber(usage.used)
-            append(", ")
-            renderMemoryUsageNumber(usage.max)
-            append("]")
+        private var emptyLine = "    ".repeat(10)
+        private fun Appendable.emptyLine(size: Int) {
+            if (emptyLine.length <= size) {
+                emptyLine = String(CharArray(size) { ' ' })
+            }
+            append(emptyLine, 0, size)
+        }
+
+        private inline fun AnsiMessageBuilder.renderMUNum(size: Int, contentLength: Int, code: () -> Unit) {
+            val s = size - contentLength
+            val left = s / 2
+            val right = s - left
+            emptyLine(left)
+            code()
+            emptyLine(right)
+        }
+
+        private fun calculateMax(
+            vararg lines: Array<String>
+        ): IntArray = IntArray(lines[0].size) { r ->
+            lines.maxOf { it[r].length }
         }
     }
 }
