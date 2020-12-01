@@ -201,7 +201,7 @@ private fun Project.registerMavenPublications(target: KotlinTarget, isSingleTarg
                 artifact(tasks.filterIsInstance<BuildMiraiPluginTask>().single { it.target == target })
                 artifact(mapOf(
                     "source" to tasks.getByName("generatePluginMetadata".wrapNameWithPlatform(target, isSingleTarget)).outputs.files.singleFile,
-                    "extension" to "metadata"
+                    "extension" to "mirai.metadata"
                 ))
 
                 mirai.publishing.mavenPublicationConfigs.forEach { it.invoke(this) }
