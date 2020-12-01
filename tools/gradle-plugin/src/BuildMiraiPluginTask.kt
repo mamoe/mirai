@@ -3,7 +3,6 @@ package net.mamoe.mirai.console.gradle
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputFile
 import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import java.io.File
 
@@ -19,7 +18,7 @@ public open class BuildMiraiPluginTask : ShadowJar() {
     /**
      * ShadowJar 打包结果
      */
-    @get:OutputFile
+    @get:Internal
     public val output: File
         get() = outputs.files.singleFile
 }

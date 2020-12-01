@@ -34,9 +34,11 @@ private fun Project.findPropertySmart(propName: String): String? {
         ?: System.getenv(propName)
 }
 
+private class PropertyNotFoundException(message: String) : RuntimeException(message)
+
 private fun Project.findPropertySmartOrFail(propName: String): String {
     return findPropertySmart(propName)
-        ?: error("[Mirai Console] Cannot find property for publication: '$propName'. Please check your 'mirai' configuration.")
+        ?: throw PropertyNotFoundException("[Mirai Console] Cannot find property for publication: '$propName'. Please check your 'mirai' configuration.")
 }
 
 internal fun Project.configurePublishing() {
@@ -48,7 +50,15 @@ internal fun Project.configurePublishing() {
         registerMavenPublications(it, isSingleTarget)
     }
 
-    registerBintrayPublish()
+    try {
+        registerBintrayPublish()
+    } catch (e: PropertyNotFoundException) {
+        logger.warn(e.message)
+        tasks.filter { it.group == "mirai" }
+            .filter { it.name.startsWith("publishPlugin") }
+            .forEach { it.enabled = false }
+        logger.warn("Publishing tasks disabled.")
+    }
 }
 
 private inline fun <reified T : Task> TaskContainer.getSingleTask(): T = filterIsInstance<T>().single()
