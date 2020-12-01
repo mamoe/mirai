@@ -21,6 +21,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
 import utils.SwingSolver
+import utils.WindowHelperJvm
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -62,8 +63,13 @@ public abstract class LoginSolver {
     public abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
 
     public companion object {
-        public val Default: LoginSolver =
-            DefaultLoginSolver({ readLine() ?: throw NoStandardInputForCaptchaException(null) })
+        public val Default: LoginSolver = kotlin.run {
+            if (WindowHelperJvm.isDesktopSupported) {
+                SwingSolver
+            } else {
+                DefaultLoginSolver({ readLine() ?: throw NoStandardInputForCaptchaException(null) })
+            }
+        }
     }
 }
 
@@ -74,17 +80,9 @@ public abstract class LoginSolver {
 @MiraiExperimentalApi
 public class DefaultLoginSolver(
     public val input: suspend () -> String,
-    public val overrideLogger: MiraiLogger? = null
+    overrideLogger: MiraiLogger? = null
 ) : LoginSolver() {
-    private val delegate: LoginSolver
-
-    init {
-        if (WindowHelperJvm.isDesktopSupported) {
-            delegate = SwingSolver
-        } else {
-            delegate = StandardCharImageLoginSolver(input, overrideLogger)
-        }
-    }
+    private val delegate: LoginSolver = StandardCharImageLoginSolver(input, overrideLogger)
 
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
         return delegate.onSolvePicCaptcha(bot, data)
