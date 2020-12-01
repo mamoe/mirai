@@ -363,7 +363,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     it as KnownPacketFactories.IncomingPacket<Packet>,
                     bot,
                     it.flag2,
-                    it.consumer
+                    it.consumer.cast() // IDE false positive warning
                 )
             }.getOrElse {
                 logger.error("Exception on processing pendingIncomingPackets", it)
