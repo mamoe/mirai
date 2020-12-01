@@ -14,7 +14,7 @@ package net.mamoe.mirai.network
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.SinceMirai
+
 
 /**
  * 在 [登录][Bot.login] 失败时抛出, 可正常地中断登录过程.
@@ -45,7 +45,6 @@ public class NoServerAvailableException @MiraiInternalApi constructor(
 /**
  * 服务器要求稍后重试
  */
-@SinceMirai("1.2.0")
 public class RetryLaterException @MiraiInternalApi constructor() :
     LoginFailedException(false, "server requests retrial later")
 

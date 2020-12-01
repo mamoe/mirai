@@ -21,8 +21,6 @@ import net.mamoe.mirai.internal.utils.hexToBytes
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.SinceMirai
-import kotlin.jvm.JvmSynthetic
 
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
@@ -128,7 +126,6 @@ internal interface SuspendDeferredOriginUrlAware : Image {
 /**
  * 由 [ExternalImage] 委托的 [Image] 类型.
  */
-@SinceMirai("1.1.0")
 @MiraiExperimentalApi("Will be renamed to OfflineImage on 1.2.0")
 @Suppress("DEPRECATION_ERROR")
 internal class ExperimentalDeferredImage internal constructor(

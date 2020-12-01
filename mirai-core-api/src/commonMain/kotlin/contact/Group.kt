@@ -24,9 +24,6 @@ import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.io.InputStream
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 群.
@@ -185,7 +182,6 @@ public abstract class Group : Contact(), CoroutineScope {
      */
     @JvmBlockingBridge
     @MiraiExperimentalApi
-    @SinceMirai("1.2.0")
     public abstract suspend fun uploadVoice(input: InputStream): Voice
 
 

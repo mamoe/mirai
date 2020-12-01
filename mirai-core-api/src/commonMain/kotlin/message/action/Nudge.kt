@@ -17,7 +17,6 @@ import net.mamoe.mirai.event.events.MemberNudgedEvent
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 一个 "戳一戳" 消息.
@@ -28,7 +27,6 @@ import net.mamoe.mirai.utils.SinceMirai
  * @see Bot.nudge 创建 [Nudge] 对象
  */
 @MiraiExperimentalApi
-@SinceMirai("1.3.0")
 public sealed class Nudge {
     /**
      * 戳的对象. 即 "A 戳了 B" 中的 "B".
@@ -80,7 +78,6 @@ public sealed class Nudge {
  * @see Nudge
  */
 @MiraiExperimentalApi
-@SinceMirai("1.3.0")
 public data class BotNudge(
     public override val target: Bot
 ) : Nudge()
@@ -90,7 +87,6 @@ public data class BotNudge(
  * @see Nudge
  */
 @MiraiExperimentalApi
-@SinceMirai("1.3.0")
 public sealed class UserNudge : Nudge() {
     public abstract override val target: User
 }
@@ -100,7 +96,6 @@ public sealed class UserNudge : Nudge() {
  * @see Nudge
  */
 @MiraiExperimentalApi
-@SinceMirai("1.3.0")
 public data class MemberNudge(
     public override val target: Member
 ) : UserNudge()
@@ -110,7 +105,6 @@ public data class MemberNudge(
  * @see Nudge
  */
 @MiraiExperimentalApi
-@SinceMirai("1.3.0")
 public data class FriendNudge(
     public override val target: Friend
 ) : UserNudge()

@@ -20,9 +20,6 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.SinceMirai
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
 
 // note: 若你使用 IntelliJ IDEA, 按 alt + 7 可打开结构
 
@@ -59,7 +56,6 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
     /**
      * 被服务器断开
      */
-    @SinceMirai("1.1.0")
     @MiraiInternalApi("This is very experimental and might be changed")
     public data class MsfOffline internal constructor(
         public override val bot: Bot,
@@ -78,7 +74,6 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      * 因 returnCode = -10008 等原因掉线
      */
     @MiraiInternalApi("This is very experimental and might be changed")
-    @SinceMirai("1.2.0")
     public data class PacketFactory10008 internal constructor(
         public override val bot: Bot,
         public override val cause: Throwable
@@ -119,7 +114,6 @@ public data class BotAvatarChangedEvent(
  * [Bot] 的昵称被改变事件, 在此事件触发时 bot 已经完成改名
  * @see FriendNickChangedEvent
  */
-@SinceMirai("1.2.0")
 public data class BotNickChangedEvent(
     public override val bot: Bot,
     public val from: String,
@@ -128,7 +122,6 @@ public data class BotNickChangedEvent(
 
 
 @MiraiExperimentalApi
-@SinceMirai("1.3.0")
 public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
     /**
      * 戳一戳的发起人，为 [Bot] 的某一好友, 或某一群员, 或 [Bot.asFriend]
@@ -142,7 +135,6 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
     public abstract val suffix: String
 
     @MiraiExperimentalApi
-    @SinceMirai("2.0.0")
     /** [Bot] 在群聊中被戳 */
     public sealed class InGroup : BotNudgedEvent(), GroupMemberEvent {
         abstract override val from: Member
@@ -178,7 +170,6 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
     }
 
     @MiraiExperimentalApi
-    @SinceMirai("2.0.0")
     /** [Bot] 在私聊中被戳 */
     public sealed class InPrivateSession : BotNudgedEvent(), FriendEvent {
         abstract override val from: Friend
@@ -217,7 +208,6 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
  * [Bot] 被 [戳][Nudge] 的事件.
  */
 @MiraiExperimentalAPI
-@SinceMirai("1.3.0")
 public data class BotNudgedEvent internal constructor(
     /**
      * 戳一戳的发起人，为 [Bot] 的某一好友, 或某一群员, 或 [Bot.selfQQ]
@@ -246,7 +236,6 @@ public data class BotNudgedEvent internal constructor(
  * @see MessageEvent.subject
  */
 @MiraiExperimentalApi
-@SinceMirai("2.0.0")
 public val BotNudgedEvent.subject: Contact
     get() = when (val inlineFrom = from) {
         is Member -> inlineFrom.group

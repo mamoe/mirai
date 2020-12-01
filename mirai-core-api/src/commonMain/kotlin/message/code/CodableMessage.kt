@@ -10,7 +10,7 @@
 package net.mamoe.mirai.message.code
 
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.SinceMirai
+
 
 /**
  * 可以使用 mirai 码表示的 [Message] 类型.
@@ -30,7 +30,6 @@ import net.mamoe.mirai.utils.SinceMirai
  * @see FlashImage
  * @see PokeMessage
  */
-@SinceMirai("1.1.0")
 public interface CodableMessage : Message {
     /**
      * 转换为 mirai 码.

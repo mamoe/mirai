@@ -27,11 +27,7 @@ import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.PlannedRemoval
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.internal.InlineOnly
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 
 // region MessagePreSendEvent
@@ -48,7 +44,6 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see Contact.sendMessage 发送消息. 为广播这个事件的唯一途径
  */
-@SinceMirai("1.1.0")
 public sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
     /** 发信目标. */
     public abstract val target: Contact
@@ -62,7 +57,6 @@ public sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEven
  * 在发送群消息前广播的事件.
  * @see MessagePreSendEvent
  */
-@SinceMirai("1.1.0")
 public data class GroupMessagePreSendEvent internal constructor(
     /** 发信目标. */
     public override val target: Group,
@@ -74,7 +68,6 @@ public data class GroupMessagePreSendEvent internal constructor(
  * 在发送好友或群临时会话消息前广播的事件.
  * @see MessagePreSendEvent
  */
-@SinceMirai("1.1.0")
 public sealed class UserMessagePreSendEvent : MessagePreSendEvent() {
     /** 发信目标. */
     public abstract override val target: User
@@ -84,7 +77,6 @@ public sealed class UserMessagePreSendEvent : MessagePreSendEvent() {
  * 在发送好友消息前广播的事件.
  * @see MessagePreSendEvent
  */
-@SinceMirai("1.1.0")
 public data class FriendMessagePreSendEvent internal constructor(
     /** 发信目标. */
     public override val target: Friend,
@@ -96,7 +88,6 @@ public data class FriendMessagePreSendEvent internal constructor(
  * 在发送群临时会话消息前广播的事件.
  * @see MessagePreSendEvent
  */
-@SinceMirai("1.1.0")
 public data class TempMessagePreSendEvent internal constructor(
     /** 发信目标. */
     public override val target: Member,
@@ -121,7 +112,6 @@ public data class TempMessagePreSendEvent internal constructor(
  * @see Contact.sendMessage 发送消息. 为广播这个事件的唯一途径
  * @see MessagePreSendEvent
  */
-@SinceMirai("1.1.0")
 public sealed class MessagePostSendEvent<C : Contact> : BotEvent, BotActiveEvent, AbstractEvent() {
     /** 发信目标. */
     public abstract val target: C
@@ -148,7 +138,6 @@ public sealed class MessagePostSendEvent<C : Contact> : BotEvent, BotActiveEvent
  * @see MessagePostSendEvent.sourceResult
  */
 @get:JvmSynthetic
-@SinceMirai("1.1.0")
 public inline val MessagePostSendEvent<*>.source: MessageSource?
     get() = receipt?.source
 
@@ -157,7 +146,6 @@ public inline val MessagePostSendEvent<*>.source: MessageSource?
  * @see MessagePostSendEvent.result
  */
 @get:JvmSynthetic
-@SinceMirai("1.1.0")
 public inline val MessagePostSendEvent<*>.sourceResult: Result<MessageSource>
     get() = result.map { it.source }
 
@@ -167,7 +155,6 @@ public inline val MessagePostSendEvent<*>.sourceResult: Result<MessageSource>
  * @see MessagePostSendEvent.result
  */
 @get:JvmSynthetic
-@SinceMirai("1.1.0")
 public inline val MessagePostSendEvent<*>.isSuccess: Boolean
     get() = exception == null
 
@@ -177,7 +164,6 @@ public inline val MessagePostSendEvent<*>.isSuccess: Boolean
  * @see MessagePostSendEvent.result
  */
 @get:JvmSynthetic
-@SinceMirai("1.1.0")
 public inline val MessagePostSendEvent<*>.isFailure: Boolean
     get() = exception != null
 
@@ -185,7 +171,6 @@ public inline val MessagePostSendEvent<*>.isFailure: Boolean
  * 将 [MessagePostSendEvent.exception] 与 [MessagePostSendEvent.receipt] 表示为 [Result]
  */
 @InlineOnly
-@SinceMirai("1.1.0")
 public inline val <C : Contact> MessagePostSendEvent<C>.result: Result<MessageReceipt<C>>
     get() = exception.let { exception -> if (exception != null) Result.failure(exception) else Result.success(receipt!!) }
 
@@ -193,7 +178,6 @@ public inline val <C : Contact> MessagePostSendEvent<C>.result: Result<MessageRe
  * 在群消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-@SinceMirai("1.1.0")
 public data class GroupMessagePostSendEvent internal constructor(
     /** 发信目标. */
     public override val target: Group,
@@ -215,14 +199,12 @@ public data class GroupMessagePostSendEvent internal constructor(
  * 在好友或群临时会话消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-@SinceMirai("1.1.0")
 public sealed class UserMessagePostSendEvent<C : User> : MessagePostSendEvent<C>()
 
 /**
  * 在好友消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-@SinceMirai("1.1.0")
 public data class FriendMessagePostSendEvent internal constructor(
     /** 发信目标. */
     public override val target: Friend,
@@ -244,7 +226,6 @@ public data class FriendMessagePostSendEvent internal constructor(
  * 在群临时会话消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-@SinceMirai("1.1.0")
 public data class TempMessagePostSendEvent internal constructor(
     /** 发信目标. */
     public override val target: Member,

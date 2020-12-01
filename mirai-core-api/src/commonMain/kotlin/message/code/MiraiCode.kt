@@ -15,12 +15,8 @@ package net.mamoe.mirai.message.code
 import net.mamoe.mirai.message.code.internal.parseMiraiCodeImpl
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.utils.SinceMirai
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
 
 /**
  * 解析形如 "[mirai:]" 的 mirai 码, 即 [Message.toString] 返回的内容.
  */
-@SinceMirai("1.1.0")
 public fun String.parseMiraiCode(): MessageChain = parseMiraiCodeImpl()

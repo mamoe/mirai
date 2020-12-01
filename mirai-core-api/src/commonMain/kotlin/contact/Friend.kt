@@ -24,8 +24,6 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.SinceMirai
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 代表一位好友.
@@ -83,7 +81,6 @@ public abstract class Friend : User(), CoroutineScope {
      * @see FriendNudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    @SinceMirai("1.3.0")
     public final override fun nudge(): FriendNudge = FriendNudge(this)
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")

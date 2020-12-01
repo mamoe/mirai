@@ -21,9 +21,6 @@ import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 登录, 返回 [this]
@@ -77,7 +74,6 @@ public abstract class Bot internal constructor(
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
-        @SinceMirai("1.1.0")
         @JvmStatic
         public val botInstancesSequence: Sequence<Bot>
             get() = _instances.asSequence().mapNotNull { it.get() }
@@ -129,7 +125,6 @@ public abstract class Bot internal constructor(
     /**
      * 判断 Bot 是否在线 (可正常收发消息)
      */
-    @SinceMirai("1.0.1")
     public abstract val isOnline: Boolean
 
     // region contacts
@@ -185,7 +180,6 @@ public abstract class Bot internal constructor(
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    @SinceMirai("1.3.0")
     public fun nudge(): BotNudge = BotNudge(this)
 
     /**

@@ -25,7 +25,7 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.SinceMirai
+
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -139,7 +139,6 @@ public sealed class BotJoinGroupEvent : GroupEvent, BotPassiveEvent, Packet, Abs
      * [Bot] 是原群主
      */
     @MiraiExperimentalApi
-    @SinceMirai("1.3.0")
     public data class Retrieve internal constructor(
         public override val group: Group
     ) : BotJoinGroupEvent() {
@@ -280,7 +279,6 @@ public sealed class MemberJoinEvent(
      * 原群主通过 https://huifu.qq.com/ 恢复原来群主身份并入群,
      * 此时 [member] 的 [Member.permission] 肯定是 [MemberPermission.OWNER]
      */
-    @SinceMirai("1.3.0")
     public data class Retrieve internal constructor(
         public override val member: Member
     ) : MemberJoinEvent(member) {
@@ -521,7 +519,6 @@ public data class MemberUnmuteEvent internal constructor(
  * [Member] 被 [戳][Nudge] 的事件.
  */
 @MiraiExperimentalApi
-@SinceMirai("1.3.0")
 public data class MemberNudgedEvent internal constructor(
     /**
      * 戳一戳的发起人, 不可能是 bot

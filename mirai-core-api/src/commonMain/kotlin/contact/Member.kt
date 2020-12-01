@@ -23,9 +23,7 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.jvm.JvmSynthetic
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -167,7 +165,6 @@ public abstract class Member : User() {
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    @SinceMirai("1.3.0")
     public final override fun nudge(): Nudge = MemberNudge(this)
 
     /**

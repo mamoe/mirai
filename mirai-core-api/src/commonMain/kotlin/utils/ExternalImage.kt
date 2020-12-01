@@ -23,7 +23,6 @@ import net.mamoe.mirai.message.data.toUHexString
 import net.mamoe.mirai.utils.internal.DeferredReusableInput
 import net.mamoe.mirai.utils.internal.ReusableInput
 import java.io.File
-import kotlin.jvm.JvmSynthetic
 
 /**
  * mirai 将在未来重构 [ExternalImage] 相关 API, 请尽量避免使用他们.
@@ -36,7 +35,6 @@ import kotlin.jvm.JvmSynthetic
 )
 @Retention(AnnotationRetention.BINARY)
 @UnstableExternalImage
-@SinceMirai("1.2.0")
 public annotation class UnstableExternalImage
 
 /**

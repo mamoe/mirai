@@ -19,7 +19,6 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.checkOffsetAndLength
-import kotlin.jvm.JvmOverloads
 
 
 /**
@@ -173,7 +172,6 @@ public sealed class CustomMessage : SingleMessage {
  * 序列化这个消息
  */
 @MiraiExperimentalApi
-@SinceMirai("1.1.0")
 public fun <T : CustomMessage> T.toByteArray(): ByteArray {
     @Suppress("UNCHECKED_CAST")
     return (this.getFactory() as CustomMessage.Factory<T>).dump(this)

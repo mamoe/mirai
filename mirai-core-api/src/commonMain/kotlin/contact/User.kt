@@ -25,8 +25,6 @@ import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.SinceMirai
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 代表一个 **用户**.
@@ -90,7 +88,6 @@ public abstract class User : Contact(), CoroutineScope {
      * @see FriendNudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    @SinceMirai("1.3.0")
     public abstract fun nudge(): Nudge
 
     /**

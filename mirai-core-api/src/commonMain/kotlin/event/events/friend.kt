@@ -23,7 +23,7 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.SinceMirai
+
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -126,7 +126,6 @@ public data class FriendAvatarChangedEvent internal constructor(
  * [Friend] 昵称改变事件, 在此事件广播时好友已经完成改名
  * @see BotNickChangedEvent
  */
-@SinceMirai("1.2.0")
 public data class FriendNickChangedEvent internal constructor(
     public override val friend: Friend,
     public val from: String,
@@ -136,7 +135,6 @@ public data class FriendNickChangedEvent internal constructor(
 /**
  * 好友输入状态改变的事件，当开始输入文字、退出聊天窗口或清空输入框时会触发此事件
  */
-@SinceMirai("1.2.0")
 public data class FriendInputStatusChangedEvent internal constructor(
     public override val friend: Friend,
     public val inputting: Boolean
@@ -148,7 +146,6 @@ public data class FriendInputStatusChangedEvent internal constructor(
  *
  * 注: 此事件仅可能在私聊中发生
  */
-@SinceMirai("2.0.0")
 @MiraiExperimentalApi
 public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
     /**

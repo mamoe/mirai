@@ -44,7 +44,6 @@ import net.mamoe.mirai.utils.*
 import java.io.InputStream
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmSynthetic
 import kotlin.time.ExperimentalTime
 
 internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
@@ -459,7 +458,6 @@ internal class GroupImpl(
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
     @MiraiExperimentalApi
-    @SinceMirai("1.2.0")
     override suspend fun uploadVoice(input: InputStream): Voice {
         val content = ByteArray(input.available())
         input.read(content)

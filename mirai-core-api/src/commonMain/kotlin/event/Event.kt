@@ -17,12 +17,7 @@ import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.internal.broadcastInternal
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.internal.runBlocking
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
-import kotlin.jvm.Volatile
 
 /**
  * 可被监听的类, 可以是任何 class 或 object.
@@ -63,7 +58,6 @@ public interface Event {
      *
      * @see Listener.EventPriority 查看优先级相关信息
      */
-    @SinceMirai("1.0.0")
     public fun intercept()
 }
 
@@ -89,7 +83,6 @@ public abstract class AbstractEvent : Event {
     /**
      * @see Event.isIntercepted
      */
-    @SinceMirai("1.0.0")
     public override val isIntercepted: Boolean
         get() = _intercepted
 

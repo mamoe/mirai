@@ -56,7 +56,6 @@ public actual open class PlatformLogger constructor(
     /**
      * 输出一条日志. [message] 末尾可能不带换行符.
      */
-    @SinceMirai("1.1.0")
     protected open fun printLog(message: String?, priority: SimpleLogger.LogPriority) {
         if (isColored) output("${priority.color}$currentTimeFormatted ${priority.simpleName}/$identity: $message${Color.RESET}")
         else output("$currentTimeFormatted ${priority.simpleName}/$identity: $message")
@@ -65,7 +64,6 @@ public actual open class PlatformLogger constructor(
     /**
      * 获取指定 [SimpleLogger.LogPriority] 的颜色
      */
-    @SinceMirai("1.1.0")
     protected open val SimpleLogger.LogPriority.color: Color
         get() = when (this) {
             SimpleLogger.LogPriority.VERBOSE -> Color.RESET
@@ -105,14 +103,11 @@ public actual open class PlatformLogger constructor(
         if (e != null) debug((message ?: e.toString()) + "\n${e.stackTraceString}")
         else debug(message.toString())
     }
-
-    @SinceMirai("1.1.0")
     protected open val timeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE)
 
     private val currentTimeFormatted get() = timeFormat.format(Date())
 
     @MiraiExperimentalApi("This is subject to change.")
-    @SinceMirai("1.1.0")
     protected enum class Color(private val format: String) {
         RESET("\u001b[0m"),
 

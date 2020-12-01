@@ -14,7 +14,6 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.SinceMirai
 import net.mamoe.mirai.utils.WeakRef
 
 /**
@@ -132,7 +131,6 @@ public interface LowLevelApiAccessor {
     /**
      * 获取群荣誉信息
      */
-    @SinceMirai("1.3.0")
     @LowLevelApi
     @MiraiExperimentalApi
     public suspend fun _lowLevelGetGroupHonorListData(
@@ -171,7 +169,6 @@ public interface LowLevelApiAccessor {
      * 处理账号请求加入群事件
      */
     @LowLevelApi
-    @SinceMirai("1.2.0")
     public suspend fun _lowLevelSolveMemberJoinRequestEvent(
         bot: Bot,
         eventId: Long,
@@ -187,7 +184,6 @@ public interface LowLevelApiAccessor {
      * 查询语音的下载连接
      */
     @LowLevelApi
-    @SinceMirai("1.2.0")
     public suspend fun _lowLevelQueryGroupVoiceDownloadUrl(
         bot: Bot,
         md5: ByteArray,
@@ -199,7 +195,6 @@ public interface LowLevelApiAccessor {
      * 查询语音的上传连接
      */
     @LowLevelApi
-    @SinceMirai("1.2.0")
     public suspend fun _lowLevelUploadVoice(
         bot: Bot,
         md5: ByteArray,

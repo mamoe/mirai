@@ -104,14 +104,12 @@ public open class BotConfiguration { // open for Java
     public var deviceInfo: ((Bot) -> DeviceInfo)? = deviceInfoStub
 
     /** 缓存策略  */
-    @SinceMirai("1.0.0")
     @MiraiExperimentalApi
     public var fileCacheStrategy: FileCacheStrategy = FileCacheStrategy.PlatformDefault
 
     /**
      * Json 序列化器, 使用 'kotlinx.serialization'
      */
-    @SinceMirai("1.1.0")
     @MiraiExperimentalApi
     public var json: Json = kotlin.runCatching {
         Json {
@@ -135,7 +133,6 @@ public open class BotConfiguration { // open for Java
      *
      * @see deviceInfo
      */
-    @SinceMirai("1.2.0")
     public fun loadDeviceInfoJson(json: String) {
         deviceInfo = {
             this.json.decodeFromString(DeviceInfo.serializer(), json)
@@ -149,7 +146,6 @@ public open class BotConfiguration { // open for Java
      */
     @JvmOverloads
     @ConfigurationDsl
-    @SinceMirai("1.1.0")
     public fun redirectNetworkLogToDirectory(
         dir: File = File("logs"),
         retain: Long = 1.weeksToMillis,
@@ -167,7 +163,6 @@ public open class BotConfiguration { // open for Java
      * @see redirectNetworkLogToDirectory
      */
     @JvmOverloads
-    @SinceMirai("1.1.0")
     @ConfigurationDsl
     public fun redirectNetworkLogToFile(
         file: File = File("mirai.log"),
@@ -185,7 +180,6 @@ public open class BotConfiguration { // open for Java
      */
     @JvmOverloads
     @ConfigurationDsl
-    @SinceMirai("1.1.0")
     public fun redirectBotLogToDirectory(
         dir: File = File("logs"),
         retain: Long = 1.weeksToMillis,
@@ -204,7 +198,6 @@ public open class BotConfiguration { // open for Java
      */
     @JvmOverloads
     @ConfigurationDsl
-    @SinceMirai("1.1.0")
     public fun redirectBotLogToFile(
         file: File = File("mirai.log"),
         identity: (bot: Bot) -> String = { "Net ${it.id}" }
@@ -232,7 +225,6 @@ public open class BotConfiguration { // open for Java
         /**
          * Android 手表.
          * */
-        @SinceMirai("1.1.0")
         ANDROID_WATCH(537061176)
     }
 

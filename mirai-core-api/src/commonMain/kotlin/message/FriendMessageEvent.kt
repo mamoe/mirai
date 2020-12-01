@@ -20,7 +20,6 @@ import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
 import net.mamoe.mirai.message.data.source
 import net.mamoe.mirai.utils.PlannedRemoval
-import net.mamoe.mirai.utils.SinceMirai
 
 /**
  * 机器人收到的好友消息的事件
@@ -31,14 +30,13 @@ public class FriendMessageEvent constructor(
     public override val sender: Friend,
     public override val message: MessageChain,
     public override val time: Int
-) : @PlannedRemoval("1.2.0") FriendMessage(), BroadcastControllable, @SinceMirai("1.2.0") FriendEvent {
+) : @PlannedRemoval("1.2.0") FriendMessage(), BroadcastControllable, FriendEvent {
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
     }
 
-    @SinceMirai("1.2.0")
     public override val friend: Friend
         get() = sender
     public override val bot: Bot get() = super.bot

@@ -12,8 +12,6 @@ package net.mamoe.mirai.utils
 import net.mamoe.mirai.utils.internal.logging.JdkLogger
 import net.mamoe.mirai.utils.internal.logging.Log4jLogger
 import net.mamoe.mirai.utils.internal.logging.Slf4jLogger
-
-@SinceMirai("1.2.0")
 public object LoggerAdapters {
     @JvmStatic
     public fun java.util.logging.Logger.asMiraiLogger(): MiraiLogger {

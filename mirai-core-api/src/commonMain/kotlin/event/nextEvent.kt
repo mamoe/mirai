@@ -15,9 +15,7 @@ import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.PlannedRemoval
-import net.mamoe.mirai.utils.SinceMirai
 import kotlin.coroutines.resume
-import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KClass
 
 
@@ -32,7 +30,6 @@ import kotlin.reflect.KClass
  *
  * @throws TimeoutCancellationException 在超时后抛出.
  */
-@SinceMirai("1.2.0")
 @JvmSynthetic
 public suspend inline fun <reified E : Event> nextEvent(
     timeoutMillis: Long = -1,
@@ -57,7 +54,6 @@ public suspend inline fun <reified E : Event> nextEvent(
  *
  * @return 事件实例, 在超时后返回 `null`
  */
-@SinceMirai("1.2.0")
 @JvmSynthetic
 public suspend inline fun <reified E : Event> nextEventOrNull(
     timeoutMillis: Long,
