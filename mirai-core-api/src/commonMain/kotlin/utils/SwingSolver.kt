@@ -9,37 +9,40 @@
 
 package utils
 
-import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.HyperLinkLabel
-import net.mamoe.mirai.utils.LoginSolver
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.openWindow
-import java.awt.Desktop
-import java.net.URI
-import javax.imageio.ImageIO
-import javax.swing.ImageIcon
-import javax.swing.JLabel
-
 /**
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>
  */
+
+import kotlinx.coroutines.CompletableDeferred
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.utils.*
+import java.awt.BorderLayout
+import java.awt.Desktop
+import java.awt.Dimension
+import java.awt.Toolkit
+import java.awt.event.*
+import java.awt.image.BufferedImage
+import java.net.URI
+import javax.imageio.ImageIO
+import javax.swing.*
+
 @MiraiExperimentalApi
 public object SwingSolver : LoginSolver() {
-    public override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
+    public override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String {
         return openWindow("Mirai PicCaptcha(${bot.id})") {
             val image = ImageIO.read(data.inputStream())
             JLabel(ImageIcon(image)).append()
         }
     }
 
-    public override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
+    public override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String {
         return openWindow("Mirai SliderCaptcha(${bot.id})") {
             JLabel("需要滑动验证码, 完成后请关闭该窗口").append()
             Desktop.getDesktop().browse(URI(url))
         }
     }
 
-    public override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
+    public override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String {
         return openWindow("Mirai UnsafeDeviceLoginVerify(${bot.id})") {
             JLabel(
                 """
@@ -52,5 +55,141 @@ public object SwingSolver : LoginSolver() {
             ).append()
             HyperLinkLabel(url, "设备锁验证").last()
         }
+    }
+}
+
+
+// 隔离类代码
+@Suppress("DEPRECATION")
+internal object WindowHelperJvm {
+    internal val isDesktopSupported: Boolean = kotlin.run {
+        if (System.getProperty("mirai.no-desktop") === null) {
+            kotlin.runCatching {
+                Class.forName("java.awt.Desktop")
+                Class.forName("java.awt.Toolkit")
+            }.onFailure { return@run false } // Android OS
+            kotlin.runCatching {
+                Toolkit.getDefaultToolkit()
+            }.onFailure { // AWT Error, #270
+                return@run false
+            }
+            kotlin.runCatching {
+                Desktop.isDesktopSupported().also { stat ->
+                    if (stat) {
+                        MiraiLogger.info(
+                            """
+                                Mirai 正在使用桌面环境,
+                                如果你正在使用SSH, 或无法访问桌面等,
+                                请将 `mirai.no-desktop` 添加到 JVM 系统属性中 (-Dmirai.no-desktop)
+                                然后重启 Mirai
+                            """.trimIndent()
+                        )
+                        MiraiLogger.info(
+                            """
+                                Mirai using DesktopCaptcha System.
+                                If you are running on SSH, cannot access desktop or more.
+                                Please add `mirai.no-desktop` to JVM properties (-Dmirai.no-desktop)
+                                Then restart mirai
+                            """.trimIndent()
+                        )
+                    }
+                }
+            }.getOrElse {
+                // Should not happen
+                MiraiLogger.warning("Exception in checking desktop support.", it)
+                false
+            }
+        } else {
+            false
+        }
+    }
+}
+
+internal class WindowInitializer(private val initializer: WindowInitializer.(JFrame) -> Unit) {
+    private lateinit var frame0: JFrame
+    val frame: JFrame get() = frame0
+    fun java.awt.Component.append() {
+        frame.add(this, BorderLayout.NORTH)
+    }
+
+    fun java.awt.Component.last() {
+        frame.add(this)
+    }
+
+    internal fun init(frame: JFrame) {
+        this.frame0 = frame
+        initializer(frame)
+    }
+}
+
+internal val windowIcon: BufferedImage? by lazy {
+    WindowHelperJvm::class.java.getResourceAsStream("project-mirai.png")?.use {
+        ImageIO.read(it)
+    }
+}
+
+internal suspend fun openWindow(title: String = "", initializer: WindowInitializer.(JFrame) -> Unit = {}): String {
+    return openWindow(title, WindowInitializer(initializer))
+}
+
+internal suspend fun openWindow(title: String = "", initializer: WindowInitializer = WindowInitializer {}): String {
+    val frame = JFrame()
+    frame.iconImage = windowIcon
+    frame.minimumSize = Dimension(228, 62) // From Windows 10
+    val value = JTextField()
+    val def = CompletableDeferred<String>()
+    value.addKeyListener(object : KeyListener {
+        override fun keyTyped(e: KeyEvent?) {
+        }
+
+        override fun keyPressed(e: KeyEvent?) {
+            when (e!!.keyCode) {
+                27, 10 -> {
+                    def.complete(value.text)
+                }
+            }
+        }
+
+        override fun keyReleased(e: KeyEvent?) {
+        }
+    })
+    frame.layout = BorderLayout(10, 5)
+    frame.add(value, BorderLayout.SOUTH)
+    initializer.init(frame)
+
+    frame.pack()
+    frame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+    frame.addWindowListener(object : WindowAdapter() {
+        override fun windowClosing(e: WindowEvent?) {
+            def.complete(value.text)
+        }
+    })
+    frame.setLocationRelativeTo(null)
+    frame.title = title
+    frame.isVisible = true
+
+    return def.await().trim().also {
+        SwingUtilities.invokeLater {
+            frame.dispose()
+        }
+    }
+}
+
+/**
+ * 构造方法中url指代用户需要点击的链接, text为显示的提示内容
+ */
+internal class HyperLinkLabel constructor(url: String, text: String) : JLabel() {
+    init {
+        super.setText("<html><a href='$url'>$text</a></html>")
+        addMouseListener(object : MouseAdapter() {
+
+            override fun mouseClicked(e: MouseEvent) {
+                try {
+                    Desktop.getDesktop().browse(URI(url))
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
+            }
+        })
     }
 }

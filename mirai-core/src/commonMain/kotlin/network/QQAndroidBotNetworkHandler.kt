@@ -18,7 +18,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
-import kotlinx.io.core.use
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -47,8 +46,6 @@ import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmField
-import kotlin.jvm.Volatile
 
 @Suppress("MemberVisibilityCanBePrivate")
 internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bot: QQAndroidBot) : BotNetworkHandler() {
