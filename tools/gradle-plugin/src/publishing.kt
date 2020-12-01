@@ -71,6 +71,7 @@ private fun Project.registerPublishPluginTasks() {
 
 // effectively public
 internal data class PluginMetadata(
+    val metadataVersion: Int,
     val groupId: String,
     val artifactId: String,
     val version: String,
@@ -109,6 +110,7 @@ private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTar
                 }.distinct()
 
                 val json = Gson().toJson(PluginMetadata(
+                    metadataVersion = 1,
                     groupId = mirai.publishing.groupId ?: project.group.toString(),
                     artifactId = mirai.publishing.artifactId ?: project.name,
                     version = mirai.publishing.version ?: project.version.toString(),
