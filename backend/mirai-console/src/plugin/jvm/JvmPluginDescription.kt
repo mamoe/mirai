@@ -52,7 +52,7 @@ public interface JvmPluginDescription : PluginDescription {
 
             val bytes = stream.use { it.readBytes() }
 
-            return Yaml.default.decodeFromString(SimpleJvmPluginDescription.serializer(), String(bytes))
+            return Yaml.default.decodeFromString(SimpleJvmPluginDescription.SerialData.serializer(), String(bytes)).toJvmPluginDescription()
         }
     }
 }
@@ -218,7 +218,7 @@ public class JvmPluginDescriptionBuilder(
  *
  * @see JvmPluginDescription
  */
-@Serializable // Keep this file in public API files. Might turn to `public` in the future.
+// @Serializable // Keep this file in public API files. Might turn to `public` in the future.
 internal data class SimpleJvmPluginDescription
 @JvmOverloads constructor(
     override val id: String,
@@ -242,5 +242,24 @@ internal data class SimpleJvmPluginDescription
 
     init {
         PluginDescription.checkPluginDescription(this)
+    }
+
+    @Serializable // Keep this file in public API files. Might turn to `public` in the future.
+    internal data class SerialData
+    @JvmOverloads constructor(
+        val id: String,
+        val name: String? = null, // workaround to ktx-serialization bug
+        val version: SemVersion,
+        val author: String = "",
+        val info: String = "",
+        val dependencies: Set<PluginDependency> = setOf(),
+    ) {
+        fun toJvmPluginDescription(): JvmPluginDescription {
+            return SimpleJvmPluginDescription(
+                id,
+                name ?: id,
+                version, author, info, dependencies
+            )
+        }
     }
 }
