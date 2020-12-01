@@ -18,6 +18,7 @@
 
 package net.mamoe.mirai.message
 
+import event.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.BotEvent
@@ -26,9 +27,9 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.sendTo
 import net.mamoe.mirai.utils.upload
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
+import java.awt.image.BufferedImage
+import java.io.File
+import java.io.InputStream
 
 /**
  * 一个 (收到的) 消息事件.
@@ -158,9 +159,60 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
 }
 
 /** 一个消息事件在各平台的相关扩展. 请使用 [MessageEventExtensions] */
-internal expect interface MessageEventPlatformExtensions<out TSender : User, out TSubject : Contact> {
+
+/**
+ * 消息事件在 JVM 平台的扩展
+ * @see MessageEventExtensions
+ */
+internal interface MessageEventPlatformExtensions<out TSender : User, out TSubject : Contact> {
     val subject: TSubject
     val sender: TSender
     val message: MessageChain
     val bot: Bot
+
+    // region 上传图片
+
+    @JvmSynthetic
+    suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+
+    @JvmSynthetic
+    suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+
+    @JvmSynthetic
+    suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
+    // endregion
+
+    // region 发送图片
+    @JvmSynthetic
+    suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @JvmSynthetic
+    suspend fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @JvmSynthetic
+    suspend fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
+    // endregion
+
+    // region 上传图片 (扩展)
+    @JvmSynthetic
+    suspend fun BufferedImage.upload(): Image = upload(subject)
+
+    @JvmSynthetic
+    suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+
+    @JvmSynthetic
+    suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    // endregion 上传图片 (扩展)
+
+    // region 发送图片 (扩展)
+    @JvmSynthetic
+    suspend fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
+
+    @JvmSynthetic
+    suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+
+    @JvmSynthetic
+    suspend fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    // endregion 发送图片 (扩展)
+
 }

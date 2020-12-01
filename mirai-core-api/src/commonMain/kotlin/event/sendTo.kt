@@ -15,11 +15,12 @@
 @file:JvmMultifileClass
 @file:JvmName("SendImageUtilsJvmKt")
 
-package net.mamoe.mirai.message
+package event
 
 import kotlinx.coroutines.Dispatchers
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.utils.*

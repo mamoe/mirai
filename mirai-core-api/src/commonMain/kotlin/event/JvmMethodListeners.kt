@@ -14,7 +14,6 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.event.internal.registerEvent
 import java.lang.reflect.Method
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext

@@ -22,18 +22,18 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.io.core.Input
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.sendImage
+import java.io.File
+import java.io.InputStream
+import java.net.URL
 import kotlin.js.JsName
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 自定义表情 (收藏的表情) 和普通图片.
@@ -43,18 +43,24 @@ import kotlin.jvm.JvmSynthetic
  * 在上传时服务器会根据其缓存情况回复已有的图片 ID 或要求客户端上传. 详见 [Contact.uploadImage]
  *
  *
- * ### [toString] 和 [contentToString]
- * - [toString] 固定返回 `[mirai:image:<ID>]` 格式字符串, 其中 `<ID>` 代表 [imageId].
- * - [contentToString] 固定返回 "\[图片]"
- *
  * ### 上传和发送图片
  * @see Contact.uploadImage 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
  * @see Contact.sendImage 上传 [图片文件][ExternalImage] 并发送返回的 [Image] 作为一条消息
- * @see Image.sendTo 上传图片并得到 [Image] 消息
+ * @see Image.sendTo 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
+ *
+ * @see File.uploadAsImage
+ * @see InputStream.uploadAsImage
+ * @see Input.uploadAsImage
+ * @see URL.uploadAsImage
+ *
+ * @see File.sendAsImageTo
+ * @see InputStream.sendAsImageTo
+ * @see Input.sendAsImageTo
+ * @see URL.sendAsImageTo
  *
  * ### 下载图片
  * @see Image.queryUrl 扩展函数. 查询图片下载链接
- * @see IMirai.queryImageUrl 查询图片下载链接 (Java 使用)
+ * @see Bot.queryImageUrl 查询图片下载链接 (Java 使用)
  *
  * 查看平台 `actual` 定义以获取上传方式扩展.
  *
@@ -64,10 +70,11 @@ import kotlin.jvm.JvmSynthetic
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
-public expect interface Image : Message, MessageContent, CodableMessage {
+public interface Image : Message, MessageContent, CodableMessage {
     public companion object Key : Message.Key<Image> {
-        public override val typeName: String
+        override val typeName: String get() = "Image"
     }
+
 
     /**
      * 图片的 id.
@@ -76,24 +83,16 @@ public expect interface Image : Message, MessageContent, CodableMessage {
      *
      * ### 格式
      * 群图片:
-     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext` (ext系扩展名)
+     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 ".mirai")
      *
      * 好友图片:
      * - [FRIEND_IMAGE_ID_REGEX_1], 示例: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
      * - [FRIEND_IMAGE_ID_REGEX_2], 示例: `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
      *
      * @see Image 使用 id 构造图片
-     * @see md5 得到图片文件 MD5
      */
     public val imageId: String
-
-    /* 实现:
-    final override fun toString(): String = _stringValue!!
-
-    final override fun contentToString(): String = "[图片]"
-    */
 }
-
 /**
  * 所有 [Image] 实现的基类.
  */

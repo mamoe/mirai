@@ -22,7 +22,6 @@ import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.jvm.JvmSynthetic
 
 
 /**
