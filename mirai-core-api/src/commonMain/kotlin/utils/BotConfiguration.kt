@@ -94,7 +94,7 @@ public open class BotConfiguration { // open for Java
     public var loginSolver: LoginSolver = LoginSolver.Default
 
     /** 使用协议类型 */
-    public var protocol: MiraiProtocol = MiraiProtocol.ANDROID_PAD
+    public var protocol: MiraiProtocol = MiraiProtocol.ANDROID_PHONE
 
     /**
      * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
