@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package utils
+package net.mamoe.mirai.utils
 
 /**
  * @author Karlatemp <karlatemp@vip.qq.com> <https://github.com/Karlatemp>

@@ -20,8 +20,6 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
-import utils.SwingSolver
-import utils.WindowHelperJvm
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
