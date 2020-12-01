@@ -28,7 +28,6 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmField
 import net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo as JceFriendInfo
 
 internal fun Bot.asQQAndroidBot(): QQAndroidBot {
@@ -41,23 +40,21 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")
 internal class QQAndroidBot constructor(
-    context: Context,
     account: BotAccount,
     configuration: BotConfiguration
-) : QQAndroidBotBase(context, account, configuration)
+) : QQAndroidBotBase(account, configuration)
 
 
 internal abstract class QQAndroidBotBase constructor(
-    context: Context,
     private val account: BotAccount,
     configuration: BotConfiguration
-) : BotImpl<QQAndroidBotNetworkHandler>(context, configuration) {
+) : BotImpl<QQAndroidBotNetworkHandler>(configuration) {
+    @Suppress("LeakingThis")
     val client: QQAndroidClient =
         QQAndroidClient(
-            context,
             account,
-            bot = @Suppress("LeakingThis") this as QQAndroidBot,
-            device = configuration.deviceInfo?.invoke(context) ?: DeviceInfo.random()
+            bot = this as QQAndroidBot,
+            device = configuration.deviceInfo?.invoke(this) ?: DeviceInfo.random()
         )
     internal var firstLoginSucceed: Boolean = false
 
@@ -127,7 +124,7 @@ internal abstract class QQAndroidBotBase constructor(
 
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
 
-private fun RichMessage.Templates.longMessage(brief: String, resId: String, timeSeconds: Long): RichMessage {
+internal fun RichMessage.Templates.longMessage(brief: String, resId: String, timeSeconds: Long): RichMessage {
     val limited: String = if (brief.length > 30) {
         brief.take(30) + "…"
     } else {
@@ -154,7 +151,7 @@ private fun RichMessage.Templates.longMessage(brief: String, resId: String, time
 }
 
 
-private fun RichMessage.Templates.forwardMessage(
+internal fun RichMessage.Templates.forwardMessage(
     resId: String,
     timeSeconds: Long,
     preview: String,

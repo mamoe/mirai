@@ -7,68 +7,45 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("FunctionName", "INAPPLICABLE_JVM_NAME", "DEPRECATION_ERROR", "DeprecatedCallableAddReplaceWith")
-
 package net.mamoe.mirai
 
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.Context
-import net.mamoe.mirai.utils.SinceMirai
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 构造 [Bot] 的工厂. 这是 [Bot] 唯一的构造方式.
  *
- * `mirai-core-qqandroid`: `QQAndroid`
- *
- * 在 JVM, 请查看 `BotFactoryJvm`
+ * @see IMirai.BotFactory
  */
-public expect interface BotFactory {
+public interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    @JvmName("newBot")
-    public fun Bot(
-        context: Context,
-        qq: Long,
-        password: String,
-        configuration: BotConfiguration = BotConfiguration.Default
-    ): Bot
+    public fun newBot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    @JvmName("newBot")
-    public fun Bot(
-        context: Context,
-        qq: Long,
-        passwordMd5: ByteArray,
-        configuration: BotConfiguration = BotConfiguration.Default
-    ): Bot
+    public fun newBot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot
 
-    @SinceMirai("1.3.0")
-    public companion object INSTANCE : BotFactory
+    public companion object INSTANCE : BotFactory {
+        override fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot {
+            return Mirai.BotFactory.newBot(qq, password, configuration)
+        }
+
+        override fun newBot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot {
+            return Mirai.BotFactory.newBot(qq, passwordMd5, configuration)
+        }
+    }
 }
 
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
-@JvmSynthetic
-public inline fun BotFactory.Bot(
-    context: Context,
-    qq: Long,
-    password: String,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = this.Bot(context, qq, password, BotConfiguration().apply(configuration))
+public inline fun BotFactory.newBot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
+    this.newBot(qq, password, BotConfiguration().apply(configuration))
 
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
-@JvmSynthetic
-public inline fun BotFactory.Bot(
-    context: Context,
-    qq: Long,
-    password: ByteArray,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = this.Bot(context, qq, password, BotConfiguration().apply(configuration))
+public inline fun BotFactory.newBot(qq: Long, password: ByteArray, configuration: (BotConfiguration.() -> Unit)): Bot =
+    this.newBot(qq, password, BotConfiguration().apply(configuration))

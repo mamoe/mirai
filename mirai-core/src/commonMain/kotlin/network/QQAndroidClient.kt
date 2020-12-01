@@ -72,7 +72,6 @@ internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
  */
 @PublishedApi
 internal open class QQAndroidClient(
-    context: Context,
     val account: BotAccount,
     val ecdh: ECDH = ECDH(),
     val device: DeviceInfo,
@@ -115,7 +114,6 @@ internal open class QQAndroidClient(
 
     var onlineStatus: OnlineStatus = OnlineStatus.ONLINE
 
-    val context: Context by context.unsafeWeakRef()
     val bot: QQAndroidBot by bot.unsafeWeakRef()
 
     var tgtgtKey: ByteArray = generateTgtgtKey(device.guid)

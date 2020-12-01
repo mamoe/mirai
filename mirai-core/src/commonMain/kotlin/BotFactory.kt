@@ -15,31 +15,27 @@ package net.mamoe.mirai.internal
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
-import net.mamoe.mirai.internal.BotFactoryImpl.Bot
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.Context
-import kotlin.jvm.JvmName
 
 /**
  * QQ for Android
  */
 @Suppress("INAPPLICABLE_JVM_NAME")
-expect object BotFactoryImpl : BotFactory {
+object BotFactoryImpl : BotFactory {
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    @JvmName("newBot")
-    override fun Bot(context: Context, qq: Long, password: String, configuration: BotConfiguration): Bot
+    override fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot {
+        return QQAndroidBot(BotAccount(qq, password), configuration)
+    }
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    @JvmName("newBot")
-    override fun Bot(
-        context: Context,
+    override fun newBot(
         qq: Long,
         passwordMd5: ByteArray,
         configuration: BotConfiguration
-    ): Bot
+    ): Bot = QQAndroidBot(BotAccount(qq, passwordMd5), configuration)
 }

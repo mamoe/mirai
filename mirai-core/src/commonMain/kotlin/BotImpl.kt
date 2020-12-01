@@ -37,11 +37,8 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 internal abstract class BotImpl<N : BotNetworkHandler> constructor(
-    context: Context,
     configuration: BotConfiguration
 ) : Bot(configuration), CoroutineScope {
-    override val context: Context by context.unsafeWeakRef()
-
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
 
     // region network

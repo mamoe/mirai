@@ -112,15 +112,6 @@ public abstract class Bot internal constructor(
     }
 
     /**
-     * [Bot] 运行的 [Context].
-     *
-     * 在 JVM 的默认实现为 `class ContextImpl : Context`
-     * 在 Android 实现为 `android.content.Context`
-     */
-    @MiraiExperimentalApi
-    public abstract val context: Context
-
-    /**
      * QQ 号码. 实际类型为 uint
      */
     public abstract override val id: Long

@@ -175,7 +175,7 @@ public class StandardCharImageLoginSolver(
 //////////////// internal
 ///////////////////////////////
 
-internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(filename: String): (Context) -> DeviceInfo {
+internal fun BotConfiguration.getFileBasedDeviceInfoSupplier(filename: String): (Bot) -> DeviceInfo {
     return {
         File(filename).loadAsDeviceInfo(json)
     }

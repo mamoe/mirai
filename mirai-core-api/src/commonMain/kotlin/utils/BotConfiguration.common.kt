@@ -15,7 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
+import java.io.File
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -33,65 +33,18 @@ import kotlin.coroutines.coroutineContext
  *    inheritCoroutineContext() // 使用 `coroutineScope` 的 Job 作为父 Job
  * }
  * ```
+ *
+ * Java 使用方法:
+ * ```java
+ * Bot bot = BotFactory.newBot(..., new BotConfiguration() {{
+ *     setBogLoggerSupplier((Bot bot) -> { ... })
+ *     fileBasedDeviceInfo()
+ *     ...
+ * }})
+ * ```
  */
-public expect open class BotConfiguration() : BotConfigurationBase {
-    /**
-     * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
-     * @see randomDeviceInfo 使用随机设备信息
-     */
-    public var deviceInfo: ((Context) -> DeviceInfo)?
-
-    /**
-     * 使用随机设备信息.
-     *
-     * @see deviceInfo
-     */
-    @ConfigurationDsl
-    public fun randomDeviceInfo()
-
-    /**
-     * 使用特定由 [DeviceInfo] 序列化产生的 JSON 的设备信息
-     *
-     * @see deviceInfo
-     */
-    @SinceMirai("1.2.0")
-    public fun loadDeviceInfoJson(json: String)
-
-    /**
-     * 协议类型, 服务器仅允许使用不同协议同时登录.
-     */
-    public enum class MiraiProtocol {
-        /**
-         * Android 手机.
-         */
-        ANDROID_PHONE,
-
-        /**
-         * Android 平板.
-         */
-        ANDROID_PAD,
-
-        /**
-         * Android 手表.
-         * */
-        @SinceMirai("1.1.0")
-        ANDROID_WATCH;
-
-
-        internal val id: Long
-    }
-
-    public companion object {
-        /** 默认的配置实例. 可以进行修改 */
-        @JvmStatic
-        public val Default: BotConfiguration
-    }
-
-    public fun copy(): BotConfiguration
-}
-
-@SinceMirai("1.1.0")
-public open class BotConfigurationBase internal constructor() {
+@Suppress("PropertyName")
+public open class BotConfiguration { // open for Java
     /**
      * 日志记录器
      *
@@ -143,6 +96,13 @@ public open class BotConfigurationBase internal constructor() {
     /** 使用协议类型 */
     public var protocol: MiraiProtocol = MiraiProtocol.ANDROID_PAD
 
+    /**
+     * 设备信息覆盖. 在没有手动指定时将会通过日志警告, 并使用随机设备信息.
+     * @see fileBasedDeviceInfo 使用指定文件存储设备信息
+     * @see randomDeviceInfo 使用随机设备信息
+     */
+    public var deviceInfo: ((Bot) -> DeviceInfo)? = deviceInfoStub
+
     /** 缓存策略  */
     @SinceMirai("1.0.0")
     @MiraiExperimentalApi
@@ -159,6 +119,159 @@ public open class BotConfigurationBase internal constructor() {
             ignoreUnknownKeys = true
         }
     }.getOrElse { Json {} }
+
+    /**
+     * 使用随机设备信息.
+     *
+     * @see deviceInfo
+     */
+    @ConfigurationDsl
+    public fun randomDeviceInfo() {
+        deviceInfo = null
+    }
+
+    /**
+     * 使用特定由 [DeviceInfo] 序列化产生的 JSON 的设备信息
+     *
+     * @see deviceInfo
+     */
+    @SinceMirai("1.2.0")
+    public fun loadDeviceInfoJson(json: String) {
+        deviceInfo = {
+            this.json.decodeFromString(DeviceInfo.serializer(), json)
+        }
+    }
+
+    /**
+     * 重定向 [网络日志][networkLoggerSupplier] 到指定目录. 若目录不存在将会自动创建 ([File.mkdirs])
+     * @see DirectoryLogger
+     * @see redirectNetworkLogToDirectory
+     */
+    @JvmOverloads
+    @ConfigurationDsl
+    @SinceMirai("1.1.0")
+    public fun redirectNetworkLogToDirectory(
+        dir: File = File("logs"),
+        retain: Long = 1.weeksToMillis,
+        identity: (bot: Bot) -> String = { "Net ${it.id}" }
+    ) {
+        require(!dir.isFile) { "dir must not be a file" }
+        dir.mkdirs()
+        networkLoggerSupplier = { DirectoryLogger(identity(it), dir, retain) }
+    }
+
+    /**
+     * 重定向 [网络日志][networkLoggerSupplier] 到指定文件.
+     * 日志将会逐行追加到此文件. 若文件不存在将会自动创建 ([File.createNewFile])
+     * @see SingleFileLogger
+     * @see redirectNetworkLogToDirectory
+     */
+    @JvmOverloads
+    @SinceMirai("1.1.0")
+    @ConfigurationDsl
+    public fun redirectNetworkLogToFile(
+        file: File = File("mirai.log"),
+        identity: (bot: Bot) -> String = { "Net ${it.id}" }
+    ) {
+        require(!file.isDirectory) { "file must not be a dir" }
+        file.createNewFile()
+        networkLoggerSupplier = { SingleFileLogger(identity(it), file) }
+    }
+
+    /**
+     * 重定向 [Bot 日志][botLoggerSupplier] 到指定目录. 若目录不存在将会自动创建 ([File.mkdirs])
+     * @see DirectoryLogger
+     * @see redirectBotLogToFile
+     */
+    @JvmOverloads
+    @ConfigurationDsl
+    @SinceMirai("1.1.0")
+    public fun redirectBotLogToDirectory(
+        dir: File = File("logs"),
+        retain: Long = 1.weeksToMillis,
+        identity: (bot: Bot) -> String = { "Net ${it.id}" }
+    ) {
+        require(!dir.isFile) { "dir must not be a file" }
+        dir.mkdirs()
+        botLoggerSupplier = { DirectoryLogger(identity(it), dir, retain) }
+    }
+
+    /**
+     * 重定向 [Bot 日志][botLoggerSupplier] 到指定文件.
+     * 日志将会逐行追加到此文件. 若文件不存在将会自动创建 ([File.createNewFile])
+     * @see SingleFileLogger
+     * @see redirectBotLogToDirectory
+     */
+    @JvmOverloads
+    @ConfigurationDsl
+    @SinceMirai("1.1.0")
+    public fun redirectBotLogToFile(
+        file: File = File("mirai.log"),
+        identity: (bot: Bot) -> String = { "Net ${it.id}" }
+    ) {
+        require(!file.isDirectory) { "file must not be a dir" }
+        file.createNewFile()
+        botLoggerSupplier = { SingleFileLogger(identity(it), file) }
+    }
+
+    @Suppress("ACTUAL_WITHOUT_EXPECT")
+    public enum class MiraiProtocol constructor(
+        /** 协议模块使用的 ID */
+        @JvmField internal val id: Long
+    ) {
+        /**
+         * Android 手机.
+         */
+        ANDROID_PHONE(537062845),
+
+        /**
+         * Android 平板.
+         */
+        ANDROID_PAD(537062409),
+
+        /**
+         * Android 手表.
+         * */
+        @SinceMirai("1.1.0")
+        ANDROID_WATCH(537061176)
+    }
+
+    public companion object {
+        /** 默认的配置实例. 可以进行修改 */
+        @JvmStatic
+        public val Default: BotConfiguration = BotConfiguration()
+    }
+
+    /**
+     * 使用文件存储设备信息.
+     *
+     * 此函数只在 JVM 和 Android 有效. 在其他平台将会抛出异常.
+     * @param filepath 文件路径. 可相对于程序运行路径 (`user.dir`), 也可以是绝对路径.
+     * @see deviceInfo
+     */
+    @JvmOverloads
+    @ConfigurationDsl
+    public fun fileBasedDeviceInfo(filepath: String = "device.json") {
+        deviceInfo = getFileBasedDeviceInfoSupplier(filepath)
+    }
+
+    public fun copy(): BotConfiguration {
+        return BotConfiguration().also { new ->
+            new.botLoggerSupplier = botLoggerSupplier
+            new.networkLoggerSupplier = networkLoggerSupplier
+            new.deviceInfo = deviceInfo
+            new.parentCoroutineContext = parentCoroutineContext
+            new.heartbeatPeriodMillis = heartbeatPeriodMillis
+            new.heartbeatTimeoutMillis = heartbeatTimeoutMillis
+            new.firstReconnectDelayMillis = firstReconnectDelayMillis
+            new.reconnectPeriodMillis = reconnectPeriodMillis
+            new.reconnectionRetryTimes = reconnectionRetryTimes
+            new.loginSolver = loginSolver
+            new.protocol = protocol
+            new.fileCacheStrategy = fileCacheStrategy
+        }
+    }
+
 
     /**
      * 不显示网络日志. 不推荐.
@@ -242,7 +355,7 @@ public open class BotConfigurationBase internal constructor() {
     public annotation class ConfigurationDsl
 }
 
-internal val deviceInfoStub: (Context) -> DeviceInfo = {
+internal val deviceInfoStub: (Bot) -> DeviceInfo = {
     @Suppress("DEPRECATION")
     MiraiLogger.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
     @Suppress("DEPRECATION")
