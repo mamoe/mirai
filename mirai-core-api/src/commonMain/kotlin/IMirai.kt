@@ -14,10 +14,7 @@
 package net.mamoe.mirai
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
@@ -26,8 +23,6 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * [IMirai] 实例
@@ -44,6 +39,40 @@ public interface IMirai : LowLevelApiAccessor {
     @Suppress("PropertyName")
     @MiraiExperimentalApi
     public val BotFactory: BotFactory
+
+    /**
+     * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
+     */
+    public fun calculateGroupUinByGroupCode(groupCode: Long): Long {
+        var left: Long = groupCode / 1000000L
+        when (left) {
+            in 0..10 -> left += 202
+            in 11..19 -> left += 480 - 11
+            in 20..66 -> left += 2100 - 20
+            in 67..156 -> left += 2010 - 67
+            in 157..209 -> left += 2147 - 157
+            in 210..309 -> left += 4100 - 210
+            in 310..499 -> left += 3800 - 310
+        }
+        return left * 1000000L + groupCode % 1000000L
+    }
+
+    /**
+     * 使用 groupUin 计算 groupCode. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.
+     */
+    public fun calculateGroupCodeByGroupUin(groupUin: Long): Long {
+        var left: Long = groupUin / 1000000L
+        when (left) {
+            in 0 + 202..10 + 202 -> left -= 202
+            in 11 + 480 - 11..19 + 480 - 11 -> left -= 480 - 11
+            in 20 + 2100 - 20..66 + 2100 - 20 -> left -= 2100 - 20
+            in 67 + 2010 - 67..156 + 2010 - 67 -> left -= 2010 - 67
+            in 157 + 2147 - 157..209 + 2147 - 157 -> left -= 2147 - 157
+            in 210 + 4100 - 210..309 + 4100 - 210 -> left -= 4100 - 210
+            in 310 + 3800 - 310..499 + 3800 - 310 -> left -= 3800 - 310
+        }
+        return left * 1000000L + groupUin % 1000000L
+    }
 
     /**
      * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.

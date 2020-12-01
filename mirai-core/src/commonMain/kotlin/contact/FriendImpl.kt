@@ -47,8 +47,6 @@ import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmSynthetic
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
@@ -83,7 +81,7 @@ internal class FriendImpl(
     coroutineContext: CoroutineContext,
     override val id: Long,
     internal val friendInfo: FriendInfo
-) : Friend() {
+) : Friend {
     override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
     @Suppress("unused") // bug
@@ -107,6 +105,8 @@ internal class FriendImpl(
             logMessageSent(message)
         }
     }
+
+    override fun toString(): String = "Friend($id)"
 
     @JvmSynthetic
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")

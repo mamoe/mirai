@@ -580,7 +580,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     buType = if (isLong) 1 else 2,
                     client = bot.client,
                     messageData = data,
-                    dstUin = Group.calculateGroupUinByGroupCode(groupCode)
+                    dstUin = Mirai.calculateGroupUinByGroupCode(groupCode)
                 ).sendAndExpect<MultiMsg.ApplyUp.Response>()
 
             val resId: String
@@ -599,7 +599,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         msgUpReq = listOf(
                             LongMsg.MsgUpReq(
                                 msgType = 3, // group
-                                dstUin = Group.calculateGroupUinByGroupCode(groupCode),
+                                dstUin = Mirai.calculateGroupUinByGroupCode(groupCode),
                                 msgId = 0,
                                 msgUkey = response.proto.msgUkey,
                                 needCache = 0,

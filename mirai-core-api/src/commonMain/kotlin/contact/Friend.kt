@@ -20,7 +20,6 @@ import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -34,22 +33,21 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  *
  * @see FriendMessageEvent
  */
-@Suppress("DEPRECATION_ERROR")
-public abstract class Friend : User(), CoroutineScope {
-
+public interface Friend : User, CoroutineScope {
     /**
      * QQ 号码
      */
-    public abstract override val id: Long
+    public override val id: Long
 
     /**
      * 昵称
      */
-    public abstract override val nick: String
+    public override val nick: String
+
     /**
      * 好友备注
      */
-    public abstract override val remark: String
+    public override val remark: String
 
     /**
      * 头像下载链接
@@ -73,7 +71,7 @@ public abstract class Friend : User(), CoroutineScope {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    abstract override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
+    override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
 
     /**
      * 创建一个 "戳一戳" 消息
@@ -81,14 +79,5 @@ public abstract class Friend : User(), CoroutineScope {
      * @see FriendNudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    public final override fun nudge(): FriendNudge = FriendNudge(this)
-
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
-    @kotlin.internal.InlineOnly
-    @JvmSynthetic
-    suspend inline fun sendMessage(message: String): MessageReceipt<Friend> {
-        return sendMessage(PlainText(message))
-    }
-
-    final override fun toString(): String = "Friend($id)"
+    public override fun nudge(): FriendNudge = FriendNudge(this)
 }

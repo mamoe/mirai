@@ -140,7 +140,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             return null
         }
 
-        return getNewGroup(Group.calculateGroupCodeByGroupUin(groupUin))?.apply {
+        return getNewGroup(Mirai.calculateGroupCodeByGroupUin(groupUin))?.apply {
             groups.delegate.addLast(this)
         }
     }

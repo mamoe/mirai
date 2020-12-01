@@ -22,18 +22,17 @@ import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.WeakRefProperty
-
+import net.mamoe.mirai.utils.cast
 
 /**
  * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
  */
-@Suppress("EXPOSED_SUPER_CLASS")
-public abstract class Contact : ContactOrBot, CoroutineScope {
+public interface Contact : ContactOrBot, CoroutineScope {
     /**
      * 这个联系对象所属 [Bot].
      */
     @WeakRefProperty
-    public abstract val bot: Bot
+    public val bot: Bot
 
     /**
      * 可以是 QQ 号码或者群号码.
@@ -41,7 +40,7 @@ public abstract class Contact : ContactOrBot, CoroutineScope {
      * @see User.id
      * @see Group.id
      */
-    public abstract override val id: Long
+    public override val id: Long
 
     /**
      * 向这个对象发送消息.
@@ -59,14 +58,7 @@ public abstract class Contact : ContactOrBot, CoroutineScope {
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
     @JvmSynthetic
-    public abstract suspend fun sendMessage(message: Message): MessageReceipt<Contact>
-
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
-    @kotlin.internal.InlineOnly
-    @JvmSynthetic
-    public suspend inline fun sendMessage(message: String): MessageReceipt<Contact> {
-        return sendMessage(PlainText(message))
-    }
+    public suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 
     /**
      * 上传一个图片以备发送.
@@ -80,15 +72,17 @@ public abstract class Contact : ContactOrBot, CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     @JvmSynthetic
-    public abstract suspend fun uploadImage(image: ExternalImage): Image
-
-    public final override fun equals(other: Any?): Boolean = super.equals(other)
-    public final override fun hashCode(): Int = super.hashCode()
+    public suspend fun uploadImage(image: ExternalImage): Image
 
     /**
      * @return "Friend($id)" or "Group($id)" or "Member($id)"
      */
-    public abstract override fun toString(): String
+    public override fun toString(): String
+}
+
+@JvmSynthetic
+public suspend inline fun <T : Contact> T.sendMessage(message: String): MessageReceipt<T> {
+    return sendMessage(PlainText(message)).cast()
 }
 
 /**

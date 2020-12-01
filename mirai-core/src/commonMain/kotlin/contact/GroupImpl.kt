@@ -67,7 +67,7 @@ internal class GroupImpl(
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
-) : Group() {
+) : Group {
     companion object;
 
     override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])

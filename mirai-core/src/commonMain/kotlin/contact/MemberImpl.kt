@@ -36,7 +36,6 @@ import net.mamoe.mirai.utils.unsafeWeakRef
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
-import kotlin.jvm.JvmSynthetic
 
 @OptIn(LowLevelApi::class)
 @Suppress("MemberVisibilityCanBePrivate")
@@ -45,7 +44,7 @@ internal class MemberImpl constructor(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
-) : Member() {
+) : Member {
     override val group: GroupImpl by group.unsafeWeakRef()
     override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
@@ -58,6 +57,8 @@ internal class MemberImpl constructor(
         get() {
             return (this.asFriendOrNull() ?: return "").remark
         }
+
+    override fun toString(): String = "Member($id)"
 
     @Suppress("UNCHECKED_CAST")
     @JvmSynthetic

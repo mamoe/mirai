@@ -21,9 +21,6 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.currentTimeSeconds
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 将在线消息源转换为离线消息源.
@@ -222,11 +219,11 @@ internal class MessageSourceBuilderImpl : MessageSourceBuilder() {
     @JvmSynthetic
     override fun ContactOrBot.sendTo(target: ContactOrBot): MessageSourceBuilder {
         fromUin = if (this is Group) {
-            Group.calculateGroupUinByGroupCode(this.id)
+            Mirai.calculateGroupUinByGroupCode(this.id)
         } else this.id
 
         targetUin = if (target is Group) {
-            Group.calculateGroupUinByGroupCode(target.id)
+            Mirai.calculateGroupUinByGroupCode(target.id)
         } else target.id
 
         check(this != target) { "sender and target mustn't be the same" }

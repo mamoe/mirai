@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.ExternalImage
@@ -36,16 +35,16 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
  *
  * 对于同一个 [Bot] 任何一个人的 [User] 实例都是单一的.
  */
-public abstract class User : Contact(), CoroutineScope {
+public interface User : Contact, CoroutineScope {
     /**
      * QQ 号码
      */
-    public abstract override val id: Long
+    public override val id: Long
 
     /**
      * 昵称
      */
-    public abstract val nick: String
+    public val nick: String
 
     /**
      * 备注信息
@@ -56,12 +55,12 @@ public abstract class User : Contact(), CoroutineScope {
      *
      * @see [User.remarkOrNick]
      */
-    public abstract val remark: String
+    public val remark: String
 
     /**
      * 头像下载链接
      */
-    public open val avatarUrl: String
+    public val avatarUrl: String
         get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
 
     /**
@@ -80,7 +79,7 @@ public abstract class User : Contact(), CoroutineScope {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    public abstract override suspend fun sendMessage(message: Message): MessageReceipt<User>
+    public override suspend fun sendMessage(message: Message): MessageReceipt<User>
 
     /**
      * 创建一个 "戳一戳" 消息
@@ -88,17 +87,7 @@ public abstract class User : Contact(), CoroutineScope {
      * @see FriendNudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    public abstract fun nudge(): Nudge
-
-    /**
-     * @see sendMessage
-     */
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
-    @kotlin.internal.InlineOnly
-    @JvmSynthetic
-    public suspend inline fun sendMessage(message: String): MessageReceipt<User> {
-        return sendMessage(PlainText(message))
-    }
+    public fun nudge(): Nudge
 
     /**
      * 上传一个图片以备发送.
@@ -112,9 +101,7 @@ public abstract class User : Contact(), CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     @JvmSynthetic
-    public abstract override suspend fun uploadImage(image: ExternalImage): Image
-
-    public abstract override fun toString(): String
+    public override suspend fun uploadImage(image: ExternalImage): Image
 }
 
 /**

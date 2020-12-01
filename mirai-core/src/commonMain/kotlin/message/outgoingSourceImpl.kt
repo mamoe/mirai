@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -141,7 +142,7 @@ internal class MessageSourceToGroupImpl(
         ImMsgBody.SourceMsg(
             origSeqs = listOf(sequenceId),
             senderUin = fromId,
-            toUin = Group.calculateGroupUinByGroupCode(targetId),
+            toUin = Mirai.calculateGroupUinByGroupCode(targetId),
             flag = 1,
             elems = elements,
             type = 0,
@@ -152,7 +153,7 @@ internal class MessageSourceToGroupImpl(
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
                     fromUin = fromId, // qq
-                    toUin = Group.calculateGroupUinByGroupCode(targetId), // group
+                    toUin = Mirai.calculateGroupUinByGroupCode(targetId), // group
                     msgType = 82, // 82?
                     c2cCmd = 1,
                     msgSeq = sequenceId,

@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -38,19 +37,19 @@ import kotlin.time.ExperimentalTime
  */
 @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
 @OptIn(JavaFriendlyAPI::class)
-public abstract class Member : User() {
+public interface Member : User {
     /**
      * 所在的群.
      */
     @WeakRefProperty
-    public abstract val group: Group
+    public val group: Group
 
     /**
      * 成员的权限, 动态更新.
      *
      * @see MemberPermissionChangeEvent 权限变更事件. 由群主或机器人的操作触发.
      */
-    public abstract val permission: MemberPermission
+    public val permission: MemberPermission
 
     /**
      * 群名片. 可能为空.
@@ -64,7 +63,7 @@ public abstract class Member : User() {
      * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    public abstract var nameCard: String
+    public var nameCard: String
 
     /**
      * 群头衔.
@@ -76,7 +75,7 @@ public abstract class Member : User() {
      * @see MemberSpecialTitleChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    public abstract var specialTitle: String
+    public var specialTitle: String
 
     /**
      * 被禁言剩余时长. 单位为秒.
@@ -85,7 +84,7 @@ public abstract class Member : User() {
      * @see mute 设置禁言
      * @see unmute 取消禁言
      */
-    public abstract val muteTimeRemaining: Int
+    public val muteTimeRemaining: Int
 
     /**
      * 禁言.
@@ -110,7 +109,7 @@ public abstract class Member : User() {
      * @throws PermissionDeniedException 无权限修改时抛出
      */
     @JvmSynthetic
-    public abstract suspend fun mute(durationSeconds: Int)
+    public suspend fun mute(durationSeconds: Int)
 
     /**
      * 解除禁言.
@@ -124,7 +123,7 @@ public abstract class Member : User() {
      * @throws PermissionDeniedException 无权限修改时抛出
      */
     @JvmSynthetic
-    public abstract suspend fun unmute()
+    public suspend fun unmute()
 
     /**
      * 踢出该成员.
@@ -135,7 +134,7 @@ public abstract class Member : User() {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmSynthetic
-    public abstract suspend fun kick(message: String = "")
+    public suspend fun kick(message: String = "")
 
     /**
      * 向群成员发送消息.
@@ -157,7 +156,7 @@ public abstract class Member : User() {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmSynthetic
-    public abstract override suspend fun sendMessage(message: Message): MessageReceipt<Member>
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
     /**
      * 创建一个 "戳一戳" 消息
@@ -165,19 +164,7 @@ public abstract class Member : User() {
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    public final override fun nudge(): Nudge = MemberNudge(this)
-
-    /**
-     * @see sendMessage
-     */
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "VIRTUAL_MEMBER_HIDDEN", "OVERRIDE_BY_INLINE")
-    @kotlin.internal.InlineOnly
-    @JvmSynthetic
-    public suspend inline fun sendMessage(message: String): MessageReceipt<Member> {
-        return sendMessage(PlainText(message))
-    }
-
-    public final override fun toString(): String = "Member($id)"
+    public override fun nudge(): Nudge = MemberNudge(this)
 }
 
 /**
