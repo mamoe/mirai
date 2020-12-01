@@ -29,7 +29,7 @@ import java.io.Serializable
  */
 public open class AnsiMessageBuilder public constructor(
     public val delegate: StringBuilder,
-) : Appendable, Serializable, Comparable<AnsiMessageBuilder> {
+) : Appendable, Serializable {
     override fun toString(): String = delegate.toString()
 
     /**
@@ -113,7 +113,6 @@ public open class AnsiMessageBuilder public constructor(
         ): AnsiMessageBuilder = this.asAnsiMessageBuilder().apply(action)
     }
 
-    override fun compareTo(other: AnsiMessageBuilder): Int = this.delegate.compareTo(other.delegate)
     override fun hashCode(): Int = this.delegate.hashCode()
     override fun equals(other: Any?): Boolean {
         if (other == null) return false
