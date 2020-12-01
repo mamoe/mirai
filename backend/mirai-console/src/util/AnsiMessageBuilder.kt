@@ -114,6 +114,14 @@ public open class AnsiMessageBuilder public constructor(
     }
 
     override fun compareTo(other: AnsiMessageBuilder): Int = this.delegate.compareTo(other.delegate)
+    override fun hashCode(): Int = this.delegate.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (other == null) return false
+        if (other::class.java != this::class.java) return false
+        other as AnsiMessageBuilder
+        if (other.delegate != this.delegate) return false
+        return true
+    }
 
     /////////////////////////////////////////////////////////////////////////////////
     override fun append(c: Char): AnsiMessageBuilder = apply { delegate.append(c) }
