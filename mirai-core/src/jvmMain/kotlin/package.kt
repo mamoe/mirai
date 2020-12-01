@@ -6,9 +6,5 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
-package net.mamoe.mirai.internal.utils
 
-import java.util.LinkedList
-
-@Suppress("ACTUAL_WITHOUT_EXPECT")
-internal actual typealias LinkedList<E> = LinkedList<E>
+package net.mamoe.mirai.internal

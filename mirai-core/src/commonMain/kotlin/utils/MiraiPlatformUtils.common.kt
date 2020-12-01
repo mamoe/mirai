@@ -10,27 +10,100 @@
 package net.mamoe.mirai.internal.utils
 
 import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.util.*
+import kotlinx.io.pool.useInstance
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.Inet4Address
+import java.security.MessageDigest
+import java.util.zip.Deflater
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
+import java.util.zip.Inflater
 
-internal expect object MiraiPlatformUtils {
-    fun unzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+internal object MiraiPlatformUtils {
+    fun unzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray {
+        data.checkOffsetAndLength(offset, length)
+        if (length == 0) return ByteArray(0)
 
-    fun zip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+        val inflater = Inflater()
+        inflater.reset()
+        ByteArrayOutputStream().use { output ->
+            inflater.setInput(data, offset, length)
+            ByteArrayPool.useInstance {
+                while (!inflater.finished()) {
+                    output.write(it, 0, inflater.inflate(it))
+                }
+            }
 
-    fun gzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+            inflater.end()
+            return output.toByteArray()
+        }
+    }
 
-    fun ungzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+    fun zip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray {
+        data.checkOffsetAndLength(offset, length)
+        if (length == 0) return ByteArray(0)
 
+        val deflater = Deflater()
+        deflater.setInput(data, offset, length)
+        deflater.finish()
 
-    fun md5(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray
+        ByteArrayPool.useInstance {
+            return it.take(deflater.deflate(it)).toByteArray().also { deflater.end() }
+        }
+    }
 
-    inline fun md5(str: String): ByteArray
+    fun gzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray {
+        ByteArrayOutputStream().use { buf ->
+            GZIPOutputStream(buf).use { gzip ->
+                data.inputStream(offset, length).use { t -> t.copyTo(gzip) }
+            }
+            buf.flush()
+            return buf.toByteArray()
+        }
+    }
 
-    fun localIpAddress(): String
+    fun ungzip(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray {
+        return GZIPInputStream(data.inputStream(offset, length)).use { it.readBytes() }
+    }
+
+    fun md5(data: ByteArray, offset: Int = 0, length: Int = data.size - offset): ByteArray {
+        data.checkOffsetAndLength(offset, length)
+        return MessageDigest.getInstance("MD5").apply { update(data, offset, length) }.digest()
+    }
+
+    fun md5(str: String): ByteArray = md5(str.toByteArray())
 
     /**
      * Ktor HttpClient. 不同平台使用不同引擎.
      */
-    val Http: HttpClient
+    @OptIn(KtorExperimentalAPI::class)
+    val Http: HttpClient = HttpClient(CIO)
+
+    /**
+     * Localhost 解析
+     */
+    fun localIpAddress(): String = kotlin.runCatching {
+        Inet4Address.getLocalHost().hostAddress
+    }.getOrElse { "192.168.1.123" }
+
+    fun md5(stream: InputStream): ByteArray {
+        val digest = MessageDigest.getInstance("md5")
+        digest.reset()
+        stream.use { input ->
+            object : OutputStream() {
+                override fun write(b: Int) {
+                    digest.update(b.toByte())
+                }
+            }.use { output ->
+                input.copyTo(output)
+            }
+        }
+        return digest.digest()
+    }
 }
 
 @Suppress("DuplicatedCode") // false positive. `this` is not the same for `List<Byte>` and `ByteArray`

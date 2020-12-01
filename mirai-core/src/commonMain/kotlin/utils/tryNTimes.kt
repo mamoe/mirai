@@ -14,13 +14,15 @@
 
 package net.mamoe.mirai.internal.utils
 
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
 import kotlin.reflect.KClass
 
-
 @PublishedApi
-internal expect fun Throwable.addSuppressedMirai(e: Throwable)
+internal fun Throwable.addSuppressedMirai(e: Throwable) {
+    if (e === this) return
+    kotlin.runCatching {
+        this.addSuppressed(e)
+    }
+}
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "RESULT_CLASS_IN_RETURN_TYPE")
 @kotlin.internal.InlineOnly
