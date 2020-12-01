@@ -12,6 +12,7 @@ package net.mamoe.mirai.console.intellij
 import com.intellij.codeInsight.intention.IntentionAction
 import net.mamoe.mirai.console.compiler.common.diagnostics.MiraiConsoleErrors
 import net.mamoe.mirai.console.intellij.diagnostics.fix.AddSerializerFix
+import net.mamoe.mirai.console.intellij.diagnostics.fix.ConvertToValFix
 import net.mamoe.mirai.console.intellij.diagnostics.fix.ProvideDefaultValueFix
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import org.jetbrains.kotlin.idea.quickfix.KotlinIntentionActionsFactory
@@ -31,5 +32,6 @@ class QuickFixRegistrar : QuickFixContributor {
 
         MiraiConsoleErrors.UNSERIALIZABLE_TYPE.registerFactory(AddSerializerFix)
         MiraiConsoleErrors.NOT_CONSTRUCTABLE_TYPE.registerFactory(ProvideDefaultValueFix)
+        MiraiConsoleErrors.READ_ONLY_VALUE_CANNOT_BE_VAR.registerFactory(ConvertToValFix)
     }
 }

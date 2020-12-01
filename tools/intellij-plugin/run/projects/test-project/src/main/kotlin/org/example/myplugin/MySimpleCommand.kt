@@ -28,7 +28,7 @@ object DataTest : AutoSavePluginConfig("data") {
 }
 
 object DataTest1 : ReadOnlyPluginConfig("data") {
-    var pp by value<String>()
+    val pp by value<String>()
 }
 
 @Serializable
