@@ -76,7 +76,8 @@ internal data class PluginMetadata(
     val artifactId: String,
     val version: String,
     val description: String?,
-    val dependencies: List<String>
+    val dependencies: List<String>,
+    val pluginJarSuffix: String
 )
 
 internal fun String.wrapNameWithPlatform(target: KotlinTarget, isSingleTarget: Boolean): String {
@@ -115,7 +116,8 @@ private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTar
                     artifactId = mirai.publishing.artifactId ?: project.name,
                     version = mirai.publishing.version ?: project.version.toString(),
                     description = mirai.publishing.description ?: project.description,
-                    dependencies = dependencies
+                    dependencies = dependencies,
+                    pluginJarSuffix = ".mirai"
                 ))
 
                 logger.info("Generated mirai plugin metadata json: $json")
