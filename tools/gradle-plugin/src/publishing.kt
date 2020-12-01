@@ -13,6 +13,7 @@ import com.google.gson.Gson
 import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.bundling.Jar
@@ -98,9 +99,14 @@ private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTar
                 val output = outputs.files.singleFile
                 output.parentFile.mkdir()
 
-                val dependencies = configurations[target.compilations["main"].apiConfigurationName].allDependencies.map {
-                    "${it.group}:${it.name}:${it.version}"
+                fun getConfigurationsToInclude(): List<Configuration> {
+                    val compilation = target.compilations["main"]
+                    return compilation.relatedConfigurationNames.map { configurations[it] }
                 }
+
+                val dependencies = getConfigurationsToInclude().flatMap { it.allDependencies }.map {
+                    "${it.group}:${it.name}:${it.version}"
+                }.distinct()
 
                 val json = Gson().toJson(PluginMetadata(
                     groupId = mirai.publishing.groupId ?: project.group.toString(),
@@ -114,6 +120,8 @@ private fun Project.registerPublishPluginTasks(target: KotlinTarget, isSingleTar
 
                 output.writeText(json)
             }
+
+            Unit
         }
 
     val bintrayUpload = tasks.getByName(BintrayUploadTask.getTASK_NAME()).dependsOn(
