@@ -26,7 +26,10 @@ internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
 ) : @Suppress("DEPRECATION")
 OnlineGroupImage() {
-    override val imageId: String = ExternalImage.generateImageId(delegate.md5)
+    override val imageId: String = delegate.filePath.takeIf {
+        GROUP_IMAGE_ID_REGEX.matches(it)
+    } ?: ExternalImage.generateImageId(delegate.md5)
+
     override val originUrl: String
         get() = if (delegate.origUrl.isBlank()) {
             "http://gchat.qpic.cn/gchatpic_new/0/0-0-${

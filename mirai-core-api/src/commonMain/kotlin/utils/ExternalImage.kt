@@ -87,7 +87,7 @@ public class ExternalImage internal constructor(
         return "ExternalImage(${generateUUID(md5)})"
     }
 
-    internal fun calculateImageResourceId(): String = generateImageId(md5)
+    internal fun calculateImageResourceId(): String = """{${generateUUID(md5)}}.$formatName"""
 
     private fun String.detectFormatName(): String = when {
         startsWith("FFD8") -> "jpg"
