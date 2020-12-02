@@ -53,7 +53,6 @@ import kotlin.random.Random
 internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     companion object INSTANCE : MiraiImpl() {
         @Suppress("ObjectPropertyName", "unused")
-        @Deprecated("", level = DeprecationLevel.HIDDEN)
         private val _init = Mirai.let { }
     }
 

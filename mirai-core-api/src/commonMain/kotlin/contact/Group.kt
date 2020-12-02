@@ -23,7 +23,10 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.recall
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.get
 import java.io.InputStream
 
 /**
@@ -204,18 +207,6 @@ public interface GroupSettings {
      * @throws PermissionDeniedException 无权限修改时将会抛出异常
      */
     public var isMuteAll: Boolean
-
-    /**
-     * 坦白说状态. `true` 为允许.
-     *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see GroupAllowConfessTalkEvent
-     * @throws PermissionDeniedException 无权限修改时将会抛出异常
-     */
-    @PlannedRemoval("1.3.0")
-    @Deprecated("mirai 将不再支持此用例较少的设置", level = DeprecationLevel.WARNING)
-    public var isConfessTalkEnabled: Boolean
 
     /**
      * 允许群员邀请好友入群的状态. `true` 为允许

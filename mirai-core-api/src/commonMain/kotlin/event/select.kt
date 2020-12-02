@@ -203,16 +203,6 @@ public abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi in
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override fun ListeningFilter.reply(message: Message): Nothing = error("prohibited")
 
-    @JvmName("reply3")
-    @Suppress("INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
-    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.`->`(toReply: String): Nothing = error("prohibited")
-
-    @JvmName("reply3")
-    @Suppress("INAPPLICABLE_JVM_NAME", "INVALID_CHARACTERS", "NAME_CONTAINS_ILLEGAL_CHARS", "FunctionName")
-    @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
-    override fun ListeningFilter.`->`(message: Message): Nothing = error("prohibited")
-
     @Deprecated("Using `reply` DSL in message selection is prohibited", level = DeprecationLevel.HIDDEN)
     override fun ListeningFilter.reply(replier: suspend M.(String) -> Any?): Nothing =
         error("prohibited")

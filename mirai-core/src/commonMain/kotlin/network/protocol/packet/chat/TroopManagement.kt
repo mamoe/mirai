@@ -221,32 +221,32 @@ internal class TroopManagement {
                 )
             }
         }
-
-        fun confessTalk(
-            client: QQAndroidClient,
-            groupCode: Long,
-            switch: Boolean
-        ): OutgoingPacket {
-            return buildOutgoingUniPacket(client) {
-                writeProtoBuf(
-                    OidbSso.OIDBSSOPkg.serializer(),
-                    OidbSso.OIDBSSOPkg(
-                        command = 2202,
-                        bodybuffer = Oidb0x89a.ReqBody(
-                            groupCode = groupCode,
-                            stGroupInfo = Oidb0x89a.Groupinfo(
-                                groupFlagext3Mask = 8192,
-                                groupFlagext3 = if (switch) {
-                                    0
-                                } else {
-                                    8192
-                                }
-                            )
-                        ).toByteArray(Oidb0x89a.ReqBody.serializer())
-                    )
-                )
-            }
-        }
+//
+//        fun confessTalk(
+//            client: QQAndroidClient,
+//            groupCode: Long,
+//            switch: Boolean
+//        ): OutgoingPacket {
+//            return buildOutgoingUniPacket(client) {
+//                writeProtoBuf(
+//                    OidbSso.OIDBSSOPkg.serializer(),
+//                    OidbSso.OIDBSSOPkg(
+//                        command = 2202,
+//                        bodybuffer = Oidb0x89a.ReqBody(
+//                            groupCode = groupCode,
+//                            stGroupInfo = Oidb0x89a.Groupinfo(
+//                                groupFlagext3Mask = 8192,
+//                                groupFlagext3 = if (switch) {
+//                                    0
+//                                } else {
+//                                    8192
+//                                }
+//                            )
+//                        ).toByteArray(Oidb0x89a.ReqBody.serializer())
+//                    )
+//                )
+//            }
+//        }
 
         fun autoApprove(
             client: QQAndroidClient,

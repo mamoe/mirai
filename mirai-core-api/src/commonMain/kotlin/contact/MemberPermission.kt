@@ -108,15 +108,3 @@ public inline fun Group.checkBotPermission(
         throw PermissionDeniedException(lazyMessage())
     }
 }
-
-/**
- * 要求 [Bot] 在这个群里的权限为 [管理员或群主][MemberPermission.isOperator], 否则抛出异常 [PermissionDeniedException]
- *
- * @throws PermissionDeniedException
- */
-@Deprecated("use checkBotPermission", ReplaceWith("checkBotPermission(MemberPermission.ADMINISTRATOR)"))
-public inline fun Group.checkBotPermissionOperator(
-    crossinline lazyMessage: () -> String = {
-        "Permission denied: required ${MemberPermission.ADMINISTRATOR} or ${MemberPermission.OWNER}, got actual $botPermission for $bot in group $id"
-    }
-): Unit = checkBotPermission(MemberPermission.ADMINISTRATOR, lazyMessage)

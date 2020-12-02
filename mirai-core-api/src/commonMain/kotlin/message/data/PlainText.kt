@@ -13,11 +13,6 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
-
 /**
  * 纯文本. 可含 emoji 表情如 😊.
  *
@@ -26,16 +21,6 @@ import kotlin.jvm.JvmSynthetic
 public data class PlainText(
     public val content: String
 ) : MessageContent {
-
-    @PlannedRemoval("1.2.0")
-    @Deprecated(
-        "use content instead for clearer semantics",
-        level = DeprecationLevel.ERROR,
-        replaceWith = ReplaceWith("content")
-    )
-    public val stringValue: String
-        get() = content
-
     @Suppress("unused")
     public constructor(charSequence: CharSequence) : this(charSequence.toString())
 
@@ -50,11 +35,6 @@ public data class PlainText(
 /**
  * 构造 [PlainText]
  */
-@Deprecated(
-    "为和 mirai code 区分, 请使用 PlainText(this)",
-    ReplaceWith("PlainText(this)", "PlainText"),
-    level = DeprecationLevel.WARNING
-)
 @JvmSynthetic
 @Suppress("NOTHING_TO_INLINE")
-public inline fun String.toMessage(): PlainText = PlainText(this)
+public inline fun String.toPlainText(): PlainText = PlainText(this)
