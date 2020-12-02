@@ -13,11 +13,10 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.utils.PlannedRemoval
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import kotlin.js.JsName
-import kotlin.jvm.*
 import kotlin.reflect.KProperty
 
 /**
@@ -33,8 +32,8 @@ import kotlin.reflect.KProperty
  *
  * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
  * @see getOrFail 获取消息链中一个类型的元素, 不存在时抛出异常 [NoSuchElementException]
- * @see quote 引用这条消息
- * @see recall 撤回这条消息 (仅限来自 [MessageEvent] 的消息)
+ * @see MessageSource.quote 引用这条消息
+ * @see MessageSource.recall 撤回这条消息 (仅限来自 [MessageEvent] 的消息)
  *
  * @see buildMessageChain 构造一个 [MessageChain]
  * @see asMessageChain 将单个 [Message] 转换为 [MessageChain]
@@ -78,23 +77,6 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
      */
     @JvmName("first")
     public operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
-
-    /**
-     * 遍历每一个有内容的消息, 即 [At], [AtAll], [PlainText], [Image], [Face] 等
-     * 仅供 `Java` 使用
-     */
-    @JvmName("forEachContent")
-    @JavaFriendlyAPI
-    public fun __forEachContentForJava__(block: (Message) -> Unit): Unit = this.forEachContent(block)
-
-    @PlannedRemoval("1.2.0")
-    @JvmName("firstOrNull")
-    @Deprecated(
-        "use get instead. This is going to be removed in mirai 1.2.0",
-        ReplaceWith("get(key)"),
-        level = DeprecationLevel.ERROR
-    )
-    public fun <M : Message> getOrNull(key: Message.Key<M>): M? = get(key)
 }
 
 // region accessors
