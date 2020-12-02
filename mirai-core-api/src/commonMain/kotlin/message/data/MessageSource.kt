@@ -150,8 +150,9 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
          */
         @JvmStatic
         @JvmBlockingBridge
-        public suspend inline fun MessageSource.recall() {
-            Mirai.recallMessage(bot, this@recall)
+        public suspend fun MessageSource.recall() {
+            // don't inline, compilation error
+            Mirai.recallMessage(bot, this)
         }
 
         /**
