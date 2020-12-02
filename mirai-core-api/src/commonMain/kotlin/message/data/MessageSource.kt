@@ -13,12 +13,14 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.quote
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.LazyProperty
@@ -59,10 +61,6 @@ import net.mamoe.mirai.utils.LazyProperty
  * @see buildMessageSource 构造一个 [OfflineMessageSource]
  */
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
-    public companion object Key : Message.Key<MessageSource> {
-        override val typeName: String get() = "MessageSource"
-    }
-
     public final override val key: Message.Key<MessageSource> get() = Key
 
     /**
@@ -131,6 +129,94 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
      * 返回 `"[mirai:source:$ids,$internalIds]"`
      */
     public final override fun toString(): String = "[mirai:source:$ids,$internalIds]"
+
+    public companion object Key : Message.Key<MessageSource> {
+        override val typeName: String get() = "MessageSource"
+
+        /**
+         * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
+         *
+         * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
+         *
+         * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
+         *
+         * [Bot] 撤回自己的消息不需要权限.
+         * [Bot] 撤回群员的消息需要管理员权限.
+         *
+         * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+         * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
+         *
+         * @see IMirai.recall
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend inline fun MessageSource.recall(): Unit = Mirai.recall(bot, this)
+
+        /**
+         * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
+         *
+         * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
+         *
+         * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
+         *
+         * [Bot] 撤回自己的消息不需要权限.
+         * [Bot] 撤回群员的消息需要管理员权限.
+         *
+         * @throws PermissionDeniedException 当 [Bot] 无权限操作时
+         * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
+         *
+         * @see IMirai.recall
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend inline fun MessageChain.recall(): Unit = this.source.recall()
+
+        /**
+         * 判断是否是发送给群, 或从群接收的消息的消息源
+         */
+        @JvmStatic
+        public fun MessageSource.isAboutGroup(): Boolean {
+            return when (this) {
+                is OnlineMessageSource -> subject is Group
+                is OfflineMessageSource -> kind == OfflineMessageSource.Kind.GROUP
+            }
+        }
+
+        /**
+         * 判断是否是发送给临时会话, 或从临时会话接收的消息的消息源
+         */
+        @JvmStatic
+        public fun MessageSource.isAboutTemp(): Boolean {
+            return when (this) {
+                is OnlineMessageSource -> subject is Member
+                is OfflineMessageSource -> kind == OfflineMessageSource.Kind.TEMP
+            }
+        }
+
+        /**
+         * 判断是否是发送给好友, 或从好友接收的消息的消息源
+         */
+        @JvmStatic
+        public inline fun MessageSource.isAboutFriend(): Boolean {
+            return when (this) {
+                is OnlineMessageSource -> subject !is Group && subject !is Member
+                is OfflineMessageSource -> kind == OfflineMessageSource.Kind.FRIEND
+            }
+        }
+
+        /**
+         * 引用这条消息
+         * @see QuoteReply
+         */
+        @JvmStatic
+        public fun MessageSource.quote(): QuoteReply = QuoteReply(this)
+
+        /**
+         * 引用这条消息. 仅从服务器接收的消息 (即来自 [MessageEvent]) 才可以通过这个方式被引用.
+         * @see QuoteReply
+         */
+        public fun MessageChain.quote(): QuoteReply = QuoteReply(this.source)
+    }
 }
 
 
@@ -297,71 +383,7 @@ public abstract class OfflineMessageSource : MessageSource() {
     public abstract val kind: Kind
 }
 
-/**
- * 判断是否是发送给群, 或从群接收的消息的消息源
- */
-// inline for future removal
-public inline fun MessageSource.isAboutGroup(): Boolean {
-    return when (this) {
-        is OnlineMessageSource -> subject is Group
-        is OfflineMessageSource -> kind == OfflineMessageSource.Kind.GROUP
-    }
-}
-
-/**
- * 判断是否是发送给临时会话, 或从临时会话接收的消息的消息源
- */
-public inline fun MessageSource.isAboutTemp(): Boolean {
-    return when (this) {
-        is OnlineMessageSource -> subject is Member
-        is OfflineMessageSource -> kind == OfflineMessageSource.Kind.TEMP
-    }
-}
-
-/**
- * 判断是否是发送给好友, 或从好友接收的消息的消息源
- */
-// inline for future removal
-public inline fun MessageSource.isAboutFriend(): Boolean {
-    return when (this) {
-        is OnlineMessageSource -> subject !is Group && subject !is Member
-        is OfflineMessageSource -> kind == OfflineMessageSource.Kind.FRIEND
-    }
-}
-
-/**
- * 引用这条消息
- * @see QuoteReply
- */
-@JvmSynthetic
-public inline fun MessageSource.quote(): QuoteReply = QuoteReply(this)
-
-/**
- * 引用这条消息. 仅从服务器接收的消息 (即来自 [MessageEvent]) 才可以通过这个方式被引用.
- * @see QuoteReply
- */
-@JvmSynthetic
-public inline fun MessageChain.quote(): QuoteReply = QuoteReply(this.source)
-
-/**
- * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
- *
- * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
- *
- * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
- *
- * [Bot] 撤回自己的消息不需要权限.
- * [Bot] 撤回群员的消息需要管理员权限.
- *
- * @throws PermissionDeniedException 当 [Bot] 无权限操作时
- * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
- *
- * @see IMirai.recall
- */
-@JvmSynthetic
-public suspend inline fun MessageSource.recall(): Unit = Mirai.recall(bot, this)
-
-// For MessageChain
+// For MessageChain, no need to expose to Java.
 
 /**
  * 消息 ids.
@@ -371,7 +393,7 @@ public suspend inline fun MessageSource.recall(): Unit = Mirai.recall(bot, this)
  * @see MessageSource.ids
  */
 @get:JvmSynthetic
-public val MessageChain.ids: IntArray
+public inline val MessageChain.ids: IntArray
     get() = this.source.ids
 
 /**
@@ -382,7 +404,7 @@ public val MessageChain.ids: IntArray
  * @see MessageSource.ids
  */
 @get:JvmSynthetic
-public val MessageChain.internalId: IntArray
+public inline val MessageChain.internalId: IntArray
     get() = this.source.internalIds
 
 /**
@@ -393,7 +415,7 @@ public val MessageChain.internalId: IntArray
  * @see MessageSource.ids
  */
 @get:JvmSynthetic
-public val MessageChain.time: Int
+public inline val MessageChain.time: Int
     get() = this.source.time
 
 /**
@@ -404,7 +426,7 @@ public val MessageChain.time: Int
  * @see MessageSource.ids
  */
 @get:JvmSynthetic
-public val MessageChain.bot: Bot
+public inline val MessageChain.bot: Bot
     get() = this.source.bot
 
 /**
@@ -415,7 +437,7 @@ public val MessageChain.bot: Bot
  * @see sourceOrNull
  */
 @get:JvmSynthetic
-public val MessageChain.source: MessageSource
+public inline val MessageChain.source: MessageSource
     get() = this.getOrFail(MessageSource)
 
 /**
@@ -426,23 +448,5 @@ public val MessageChain.source: MessageSource
  * @see source
  */
 @get:JvmSynthetic
-public val MessageChain.sourceOrNull: MessageSource?
+public inline val MessageChain.sourceOrNull: MessageSource?
     get() = this[MessageSource]
-
-/**
- * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
- *
- * **注意:** 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以撤回.
- *
- * *提示: 若要撤回一条机器人自己发出的消息, 使用 [Contact.sendMessage] 返回的 [MessageReceipt] 中的 [MessageReceipt.recall]*
- *
- * [Bot] 撤回自己的消息不需要权限.
- * [Bot] 撤回群员的消息需要管理员权限.
- *
- * @throws PermissionDeniedException 当 [Bot] 无权限操作时
- * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
- *
- * @see IMirai.recall
- */
-@JvmSynthetic
-public suspend inline fun MessageChain.recall(): Unit = this.source.recall()
