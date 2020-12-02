@@ -111,7 +111,8 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
     ) :
         AbstractEvent(),
         MultiPacket<Packet>,
-        Iterable<Packet> by (delegate) {
+        Iterable<Packet> by (delegate),
+        Packet.NoLog {
 
         override fun toString(): String =
             "MessageSvcPbGetMsg.Response(syncFlagFromServer=$syncFlagFromServer, messages=<Iterable>))"

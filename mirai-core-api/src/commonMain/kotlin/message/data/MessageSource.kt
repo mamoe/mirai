@@ -31,24 +31,24 @@ import net.mamoe.mirai.utils.LazyProperty
  * 对于来自 [MessageEvent.message] 的 [MessageChain]
  *
  *
- * ### 组成
+ * ## 组成
  * [MessageSource] 由 metadata (元数据), form & target, content 组成
  *
- * #### metadata
+ * ### metadata
  * - [ids] 消息 ids (序列号)
  * - [internalIds] 消息内部 ids
  * - [time] 时间
  *
  * 官方客户端通过 metadata 这三个数据定位消息, 撤回和引用回复都是如此.
  *
- * #### form & target
+ * ### form & target
  * - [fromId] 消息发送人
  * - [targetId] 消息发送目标
  *
- * #### content
+ * ### content
  * - [originalMessage] 消息内容
  *
- * ### 使用
+ * ## 使用
  *
  * 消息源可用于 [引用回复][QuoteReply] 或 [撤回][IMirai.recallMessage].
  *
@@ -71,10 +71,10 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
     /**
      * 消息 ids (序列号). 在获取失败时 (概率很低) 为 `-1`.
      **
-     * #### 值域
+     * ### 值域
      * 值的范围约为 [UShort] 的范围.
      *
-     * #### 顺序
+     * ### 顺序
      * 群消息的 ids 由服务器维护. 好友消息的 ids 由 mirai 维护.
      * 此 ids 不一定从 0 开始.
      *
