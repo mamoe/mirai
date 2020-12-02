@@ -107,8 +107,8 @@ public interface IMirai : LowLevelApiAccessor {
     /**
      * 构造一个 [OfflineMessageSource]
      *
-     * @param id 即 [MessageSource.id]
-     * @param internalId 即 [MessageSource.internalId]
+     * @param ids 即 [MessageSource.ids]
+     * @param internalIds 即 [MessageSource.internalIds]
      *
      * @param fromUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
      * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
@@ -118,7 +118,7 @@ public interface IMirai : LowLevelApiAccessor {
         bot: Bot,
         kind: OfflineMessageSource.Kind,
         fromUin: Long, targetUin: Long,
-        id: Int, time: Int, internalId: Int,
+        ids: IntArray, time: Int, internalIds: IntArray,
         originalMessage: MessageChain
     ): OfflineMessageSource
 

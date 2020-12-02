@@ -259,16 +259,16 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     public abstract val authorId: Long
 
     /**
-     * 消息 id.
-     * @see MessageSource.id
+     * 消息 ids.
+     * @see MessageSource.ids
      */
-    public abstract val messageId: Int
+    public abstract val messageIds: IntArray
 
     /**
-     * 消息内部 id.
-     * @see MessageSource.id
+     * 消息内部 ids.
+     * @see MessageSource.ids
      */
-    public abstract val messageInternalId: Int
+    public abstract val messageInternalIds: IntArray
 
     /**
      * 原发送时间
@@ -280,8 +280,8 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
      */
     public data class FriendRecall internal constructor(
         public override val bot: Bot,
-        public override val messageId: Int,
-        public override val messageInternalId: Int,
+        public override val messageIds: IntArray,
+        public override val messageInternalIds: IntArray,
         public override val messageTime: Int,
         /**
          * 撤回操作人, 好友的 [User.id]
@@ -290,6 +290,30 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     ) : MessageRecallEvent(), Packet {
         public override val authorId: Long
             get() = bot.id
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as FriendRecall
+
+            if (bot != other.bot) return false
+            if (!messageIds.contentEquals(other.messageIds)) return false
+            if (!messageInternalIds.contentEquals(other.messageInternalIds)) return false
+            if (messageTime != other.messageTime) return false
+            if (operator != other.operator) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = bot.hashCode()
+            result = 31 * result + messageIds.contentHashCode()
+            result = 31 * result + messageInternalIds.contentHashCode()
+            result = 31 * result + messageTime
+            result = 31 * result + operator.hashCode()
+            return result
+        }
     }
 
     /**
@@ -298,15 +322,43 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     public data class GroupRecall @PublishedApi internal constructor(
         public override val bot: Bot,
         public override val authorId: Long,
-        public override val messageId: Int,
-        public override val messageInternalId: Int,
+        public override val messageIds: IntArray,
+        public override val messageInternalIds: IntArray,
         public override val messageTime: Int,
         /**
          * 操作人. 为 null 时则为 [Bot] 操作.
          */
         public override val operator: Member?,
         public override val group: Group
-    ) : MessageRecallEvent(), GroupOperableEvent, Packet
+    ) : MessageRecallEvent(), GroupOperableEvent, Packet {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as GroupRecall
+
+            if (bot != other.bot) return false
+            if (authorId != other.authorId) return false
+            if (!messageIds.contentEquals(other.messageIds)) return false
+            if (!messageInternalIds.contentEquals(other.messageInternalIds)) return false
+            if (messageTime != other.messageTime) return false
+            if (operator != other.operator) return false
+            if (group != other.group) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = bot.hashCode()
+            result = 31 * result + authorId.hashCode()
+            result = 31 * result + messageIds.contentHashCode()
+            result = 31 * result + messageInternalIds.contentHashCode()
+            result = 31 * result + messageTime
+            result = 31 * result + (operator?.hashCode() ?: 0)
+            result = 31 * result + group.hashCode()
+            return result
+        }
+    }
 }
 
 public val MessageRecallEvent.GroupRecall.author: Member

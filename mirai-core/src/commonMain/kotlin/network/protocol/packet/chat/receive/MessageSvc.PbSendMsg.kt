@@ -78,8 +78,8 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         elems = message.toRichTextElems(forGroup = false, withGeneralFlags = true)
                     )
                 ),
-                msgSeq = source.sequenceId,
-                msgRand = source.internalId,
+                msgSeq = source.sequenceIds.single(),
+                msgRand = source.internalIds.single(),
                 syncCookie = client.syncingController.syncCookie ?: byteArrayOf()
                 // msgVia = 1
             )
@@ -108,8 +108,8 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                         elems = message.toRichTextElems(forGroup = false, withGeneralFlags = true)
                     )
                 ),
-                msgSeq = source.sequenceId,
-                msgRand = source.internalId,
+                msgSeq = source.sequenceIds.single(),
+                msgRand = source.internalIds.single(),
                 syncCookie = client.syncingController.syncCookie ?: byteArrayOf()
             )
         )
@@ -152,7 +152,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                     )
                 ),
                 msgSeq = client.atomicNextMessageSequenceId(),
-                msgRand = source.internalId,
+                msgRand = source.internalIds.single(),
                 syncCookie = EMPTY_BYTE_ARRAY,
                 msgVia = 1,
                 msgCtrl = if (isForward) MsgCtrl.MsgCtrl(
@@ -186,11 +186,11 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
     }
     val source = MessageSourceToTempImpl(
-        internalId = Random.nextInt().absoluteValue,
+        internalIds = intArrayOf(Random.nextInt().absoluteValue),
         sender = client.bot,
         target = member,
         time = currentTimeSeconds.toInt(),
-        sequenceId = client.atomicNextMessageSequenceId(),
+        sequenceIds = intArrayOf(client.atomicNextMessageSequenceId()),
         originalMessage = message
     )
     sourceCallback(source)
@@ -214,11 +214,11 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
     }
     val rand = Random.nextInt().absoluteValue
     val source = MessageSourceToFriendImpl(
-        internalId = rand,
+        internalIds = intArrayOf(rand),
         sender = client.bot,
         target = qq,
         time = currentTimeSeconds.toInt(),
-        sequenceId = client.nextFriendSeq(),
+        sequenceIds = intArrayOf(client.nextFriendSeq()),
         originalMessage = message
     )
     sourceCallback(source)
@@ -242,7 +242,7 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
     }
     val source = MessageSourceToGroupImpl(
         group,
-        internalId = Random.nextInt().absoluteValue,
+        internalIds = intArrayOf(Random.nextInt().absoluteValue),
         sender = client.bot,
         target = group,
         time = currentTimeSeconds.toInt(),

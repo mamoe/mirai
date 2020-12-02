@@ -22,9 +22,6 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.quote
 import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.LazyProperty
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 消息源. 消息源存在于 [MessageChain] 中, 用于表示这个消息的来源, 也可以用来分辨 [MessageChain].
@@ -36,8 +33,8 @@ import kotlin.jvm.JvmSynthetic
  * [MessageSource] 由 metadata (元数据), form & target, content 组成
  *
  * #### metadata
- * - [id] 消息 id (序列号)
- * - [internalId] 消息内部 id
+ * - [ids] 消息 ids (序列号)
+ * - [internalIds] 消息内部 ids
  * - [time] 时间
  *
  * 官方客户端通过 metadata 这三个数据定位消息, 撤回和引用回复都是如此.
@@ -51,9 +48,9 @@ import kotlin.jvm.JvmSynthetic
  *
  * ### 使用
  *
- * 消息源可用于 [引用回复][QuoteReply] 或 [撤回][Bot.recall].
+ * 消息源可用于 [引用回复][QuoteReply] 或 [撤回][IMirai.recall].
  *
- * @see Bot.recall 撤回一条消息
+ * @see IMirai.recall 撤回一条消息
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
  *
  * @see OnlineMessageSource 在线消息的 [MessageSource]
@@ -74,28 +71,28 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
     public abstract val bot: Bot
 
     /**
-     * 消息 id (序列号). 在获取失败时 (概率很低) 为 `-1`.
+     * 消息 ids (序列号). 在获取失败时 (概率很低) 为 `-1`.
      **
      * #### 值域
      * 值的范围约为 [UShort] 的范围.
      *
      * #### 顺序
-     * 群消息的 id 由服务器维护. 好友消息的 id 由 mirai 维护.
-     * 此 id 不一定从 0 开始.
+     * 群消息的 ids 由服务器维护. 好友消息的 ids 由 mirai 维护.
+     * 此 ids 不一定从 0 开始.
      *
      * - 在同一个群的消息中此值随每条消息递增 1, 但此行为由服务器决定, mirai 不保证自增顺序.
      * - 在好友消息中无法保证每次都递增 1. 也可能会产生大幅跳过的情况.
      */
-    public abstract val id: Int
+    public abstract val ids: IntArray
 
     /**
-     * 内部 id. **仅用于协议模块使用**
+     * 内部 ids. **仅用于协议模块使用**
      *
      * 值没有顺序, 也可能为 0, 取决于服务器是否提供.
      *
-     * 在事件中和在引用中无法保证同一条消息的 [internalId] 相同.
+     * 在事件中和在引用中无法保证同一条消息的 [internalIds] 相同.
      */
-    public abstract val internalId: Int
+    public abstract val internalIds: IntArray
 
     /**
      * 发送时间时间戳, 单位为秒.
@@ -131,9 +128,9 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
     public abstract val originalMessage: MessageChain
 
     /**
-     * 返回 `"[mirai:source:$id,$internalId]"`
+     * 返回 `"[mirai:source:$ids,$internalIds]"`
      */
-    public final override fun toString(): String = "[mirai:source:$id,$internalId]"
+    public final override fun toString(): String = "[mirai:source:$ids,$internalIds]"
 }
 
 
@@ -206,7 +203,7 @@ public sealed class OnlineMessageSource : MessageSource() {
 
             public abstract override val target: Friend
             public final override val subject: Friend get() = target
-            //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.id})"
+            //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.ids})"
         }
 
         public abstract class ToTemp : Outgoing() {
@@ -250,7 +247,7 @@ public sealed class OnlineMessageSource : MessageSource() {
             public abstract override val sender: Friend
             public final override val subject: Friend get() = sender
             public final override val target: Bot get() = sender.bot
-            // final override fun toString(): String = "OnlineMessageSource.FromFriend(from=${sender.id})"
+            // final override fun toString(): String = "OnlineMessageSource.FromFriend(from=${sender.ids})"
         }
 
         public abstract class FromTemp : Incoming() {
@@ -367,44 +364,44 @@ public suspend inline fun MessageSource.recall(): Unit = Mirai.recall(bot, this)
 // For MessageChain
 
 /**
- * 消息 id.
+ * 消息 ids.
  *
  * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源.
  *
- * @see MessageSource.id
+ * @see MessageSource.ids
  */
 @get:JvmSynthetic
-public val MessageChain.id: Int
-    get() = this.source.id
+public val MessageChain.ids: IntArray
+    get() = this.source.ids
 
 /**
- * 消息内部 id.
+ * 消息内部 ids.
  *
  * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源.
  *
- * @see MessageSource.id
+ * @see MessageSource.ids
  */
 @get:JvmSynthetic
-public val MessageChain.internalId: Int
-    get() = this.source.internalId
+public val MessageChain.internalId: IntArray
+    get() = this.source.internalIds
 
 /**
  * 消息时间.
  *
  * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源.
  *
- * @see MessageSource.id
+ * @see MessageSource.ids
  */
 @get:JvmSynthetic
 public val MessageChain.time: Int
     get() = this.source.time
 
 /**
- * 消息内部 id.
+ * 消息内部 ids.
  *
  * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取. 否则将抛出异常 [NoSuchElementException]
  *
- * @see MessageSource.id
+ * @see MessageSource.ids
  */
 @get:JvmSynthetic
 public val MessageChain.bot: Bot
@@ -414,10 +411,23 @@ public val MessageChain.bot: Bot
  * 获取这条消息的 [消息源][MessageSource].
  *
  * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源, 否则将抛出异常 [NoSuchElementException]
+ *
+ * @see sourceOrNull
  */
 @get:JvmSynthetic
 public val MessageChain.source: MessageSource
     get() = this.getOrFail(MessageSource)
+
+/**
+ * 获取这条消息的 [消息源][MessageSource].
+ *
+ * 仅从服务器接收的消息 (即来自 [MessageEvent.message]), 或手动添加了 [MessageSource] 元素的 [MessageChain] 才可以获取消息源, 否则返回 `null`
+ *
+ * @see source
+ */
+@get:JvmSynthetic
+public val MessageChain.sourceOrNull: MessageSource?
+    get() = this[MessageSource]
 
 /**
  * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.

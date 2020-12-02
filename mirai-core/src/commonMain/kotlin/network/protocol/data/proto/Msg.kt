@@ -16,7 +16,6 @@ import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import kotlin.jvm.JvmField
 
 @Serializable
 internal class ImCommon : ProtoBuf {
@@ -879,7 +878,7 @@ internal class ImMsgBody : ProtoBuf {
 
     @Serializable
     internal class SourceMsg(
-        @ProtoNumber(1) @JvmField val origSeqs: List<Int> = emptyList(),
+        @ProtoNumber(1) @JvmField val origSeqs: IntArray = intArrayOf(),
         @ProtoNumber(2) @JvmField val senderUin: Long = 0L,
         @ProtoNumber(3) @JvmField val time: Int = 0,
         @ProtoNumber(4) @JvmField val flag: Int = 0,

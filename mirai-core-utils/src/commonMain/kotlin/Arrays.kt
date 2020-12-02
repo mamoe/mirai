@@ -7,7 +7,31 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:JvmMultifileClass
 @file:JvmName("MiraiUtils")
 
 package net.mamoe.mirai.utils
 
+public inline fun <A, reified B> Array<A>.mapToArray(block: (element: A) -> B): Array<B> {
+    val result = arrayOfNulls<B>(size)
+    this.forEachIndexed { index, element ->
+        result[index] = block(element)
+    }
+    return result.cast()
+}
+
+public inline fun <A, reified B> Collection<A>.mapToArray(block: (element: A) -> B): Array<B> {
+    val result = arrayOfNulls<B>(size)
+    this.forEachIndexed { index, element ->
+        result[index] = block(element)
+    }
+    return result.cast()
+}
+
+public inline fun <A> Collection<A>.mapToIntArray(block: (element: A) -> Int): IntArray {
+    val result = IntArray(size)
+    this.forEachIndexed { index, element ->
+        result[index] = block(element)
+    }
+    return result.cast()
+}

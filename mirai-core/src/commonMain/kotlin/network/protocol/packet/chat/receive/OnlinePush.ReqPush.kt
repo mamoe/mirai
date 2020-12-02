@@ -367,8 +367,8 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     MessageRecallEvent.GroupRecall(
                         bot,
                         pkg.authorUin,
-                        pkg.seq,
-                        pkg.msgRandom,
+                        intArrayOf(pkg.seq),
+                        intArrayOf(pkg.msgRandom),
                         pkg.time,
                         operator,
                         group
@@ -440,8 +440,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             .filter { it.botUin == bot.id }.map {
                 MessageRecallEvent.FriendRecall(
                     bot = bot,
-                    messageId = it.srcId,
-                    messageInternalId = it.srcInternalId,
+                    messageIds = intArrayOf(it.srcId),
+                    messageInternalIds = intArrayOf(it.srcInternalId),
                     messageTime = it.time,
                     operator = it.fromUin
                 )

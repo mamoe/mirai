@@ -46,66 +46,74 @@ internal class PbMessageSvc {
         fun createForGroupMessage(
             client: QQAndroidClient,
             groupCode: Long,
-            messageSequenceId: Int, // 56639
-            messageRandom: Int, // 921878719
+            messageSequenceId: IntArray, // 56639
+            messageRandom: IntArray, // 921878719
             messageType: Int = 0
-        ): OutgoingPacket = buildOutgoingUniPacket(client) {
-            writeProtoBuf(
-                MsgSvc.PbMsgWithDrawReq.serializer(),
-                MsgSvc.PbMsgWithDrawReq(
-                    groupWithDraw = listOf(
-                        MsgSvc.PbGroupMsgWithDrawReq(
-                            subCmd = 1,
-                            groupType = 0, // 普通群
-                            groupCode = groupCode,
-                            msgList = listOf(
-                                MsgSvc.PbGroupMsgWithDrawReq.MessageInfo(
-                                    msgSeq = messageSequenceId,
-                                    msgRandom = messageRandom,
-                                    msgType = messageType
-                                )
-                            ),
-                            userdef = MsgRevokeUserDef.MsgInfoUserDef(
-                                longMessageFlag = 0
-                            ).toByteArray(MsgRevokeUserDef.MsgInfoUserDef.serializer())
+        ): OutgoingPacket {
+            require(messageSequenceId.size == messageRandom.size)
+
+            return buildOutgoingUniPacket(client) {
+                writeProtoBuf(
+                    MsgSvc.PbMsgWithDrawReq.serializer(),
+                    MsgSvc.PbMsgWithDrawReq(
+                        groupWithDraw = listOf(
+                            MsgSvc.PbGroupMsgWithDrawReq(
+                                subCmd = 1,
+                                groupType = 0, // 普通群
+                                groupCode = groupCode,
+                                msgList = messageSequenceId.zip(messageRandom).map { (seq, random) ->
+                                    MsgSvc.PbGroupMsgWithDrawReq.MessageInfo(
+                                        msgSeq = seq,
+                                        msgRandom = random,
+                                        msgType = messageType
+                                    )
+                                },
+                                userdef = MsgRevokeUserDef.MsgInfoUserDef(
+                                    longMessageFlag = 0
+                                ).toByteArray(MsgRevokeUserDef.MsgInfoUserDef.serializer())
+                            )
                         )
                     )
                 )
-            )
+            }
         }
 
         fun createForTempMessage(
             client: QQAndroidClient,
             groupUin: Long,
             toUin: Long,
-            messageSequenceId: Int, // 56639
-            messageRandom: Int, // 921878719
+            messageSequenceId: IntArray, // 56639
+            messageRandom: IntArray, // 921878719
             time: Int
-        ): OutgoingPacket = buildOutgoingUniPacket(client) {
-            writeProtoBuf(
-                MsgSvc.PbMsgWithDrawReq.serializer(),
-                MsgSvc.PbMsgWithDrawReq(
-                    c2cWithDraw = listOf(
-                        MsgSvc.PbC2CMsgWithDrawReq(
-                            subCmd = 1,
-                            msgInfo = listOf(
-                                MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
-                                    fromUin = client.bot.id,
-                                    toUin = toUin,
-                                    msgSeq = messageSequenceId,
-                                    msgRandom = messageRandom,
-                                    msgUid = 0x0100000000000000 or (messageRandom.toLong() and 0xFFFFFFFF),
-                                    msgTime = time.toLong(),
-                                    routingHead = MsgSvc.RoutingHead(
-                                        grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
+        ): OutgoingPacket {
+            require(messageSequenceId.size == messageRandom.size)
+
+            return buildOutgoingUniPacket(client) {
+                writeProtoBuf(
+                    MsgSvc.PbMsgWithDrawReq.serializer(),
+                    MsgSvc.PbMsgWithDrawReq(
+                        c2cWithDraw = listOf(
+                            MsgSvc.PbC2CMsgWithDrawReq(
+                                subCmd = 1,
+                                msgInfo = messageSequenceId.zip(messageRandom).map { (seq, random) ->
+                                    MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
+                                        fromUin = client.bot.id,
+                                        toUin = toUin,
+                                        msgSeq = seq,
+                                        msgRandom = random,
+                                        msgUid = 0x0100000000000000 or random.toLongUnsigned(),
+                                        msgTime = time.toLong(),
+                                        routingHead = MsgSvc.RoutingHead(
+                                            grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
+                                        )
                                     )
-                                )
-                            ),
-                            reserved = RESERVED_TEMP
+                                },
+                                reserved = RESERVED_TEMP
+                            )
                         )
                     )
                 )
-            )
+            }
         }
 
         private val RESERVED_TEMP = "08 01 10 E3 E9 D6 80 02".hexToBytes()
@@ -113,36 +121,40 @@ internal class PbMessageSvc {
         fun createForFriendMessage(
             client: QQAndroidClient,
             toUin: Long,
-            messageSequenceId: Int, // 56639
-            messageRandom: Int, // 921878719
+            messageSequenceId: IntArray, // 56639
+            messageRandom: IntArray, // 921878719
             time: Int
-        ): OutgoingPacket = buildOutgoingUniPacket(client) {
-            writeProtoBuf(
-                MsgSvc.PbMsgWithDrawReq.serializer(),
-                MsgSvc.PbMsgWithDrawReq(
-                    c2cWithDraw = listOf(
-                        MsgSvc.PbC2CMsgWithDrawReq(
-                            subCmd = 1,
-                            msgInfo = listOf(
-                                MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
-                                    fromUin = client.bot.id,
-                                    toUin = toUin,
-                                    msgSeq = messageSequenceId,
-                                    msgRandom = messageRandom,
-                                    msgUid = 0x0100000000000000 or (messageRandom.toLong() and 0xFFFFFFFF),
-                                    msgTime = time.toLong(),
-                                    routingHead = MsgSvc.RoutingHead(
-                                        c2c = MsgSvc.C2C(
-                                            toUin = toUin
+        ): OutgoingPacket {
+            require(messageSequenceId.size == messageRandom.size)
+
+            return buildOutgoingUniPacket(client) {
+                writeProtoBuf(
+                    MsgSvc.PbMsgWithDrawReq.serializer(),
+                    MsgSvc.PbMsgWithDrawReq(
+                        c2cWithDraw = listOf(
+                            MsgSvc.PbC2CMsgWithDrawReq(
+                                subCmd = 1,
+                                msgInfo = messageSequenceId.zip(messageRandom).map { (seq, random) ->
+                                    MsgSvc.PbC2CMsgWithDrawReq.MsgInfo(
+                                        fromUin = client.bot.id,
+                                        toUin = toUin,
+                                        msgSeq = seq,
+                                        msgRandom = random,
+                                        msgUid = 0x0100000000000000 or random.toLongUnsigned(),
+                                        msgTime = time.toLong(),
+                                        routingHead = MsgSvc.RoutingHead(
+                                            c2c = MsgSvc.C2C(
+                                                toUin = toUin
+                                            )
                                         )
                                     )
-                                )
-                            ),
-                            reserved = byteArrayOf(0x08, 0x00)
+                                },
+                                reserved = byteArrayOf(0x08, 0x00)
+                            )
                         )
                     )
                 )
-            )
+            }
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {

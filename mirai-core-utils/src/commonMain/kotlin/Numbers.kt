@@ -12,8 +12,4 @@
 
 package net.mamoe.mirai.utils
 
-public inline fun <reified T> Any?.cast(): T = this as T
-
-public inline fun <reified T> Any?.safeCast(): T? = this as? T
-
-public inline fun <reified T> Any?.castOrNull(): T? = this as? T
+public fun Int.toLongUnsigned(): Long = this.toLong().and(0xFFFF_FFFF)

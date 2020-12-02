@@ -16,7 +16,6 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 发送消息后得到的回执. 可用于撤回, 引用回复等.
@@ -32,7 +31,7 @@ import kotlin.jvm.JvmSynthetic
  * @see User.sendMessage 发送群消息, 返回回执（此对象）
  * @see Member.sendMessage 发送临时消息, 返回回执（此对象）
  *
- * @see MessageReceipt.sourceId 源 id
+ * @see MessageReceipt.sourceIds 源 ids
  * @see MessageReceipt.sourceTime 源时间
  */
 public open class MessageReceipt<out C : Contact> @MiraiExperimentalApi("The constructor is subject to change.") constructor(
@@ -95,23 +94,23 @@ public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: St
 
 
 /**
- * 获取源消息 [MessageSource.id]
+ * 获取源消息 [MessageSource.ids]
  *
- * @see MessageSource.id
+ * @see MessageSource.ids
  */
 @get:JvmSynthetic
-public inline val MessageReceipt<*>.sourceId: Int
-    get() = this.source.id
+public inline val MessageReceipt<*>.sourceIds: IntArray
+    get() = this.source.ids
 
 
 /**
- * 获取源消息 [MessageSource.internalId]
+ * 获取源消息 [MessageSource.internalIds]
  *
- * @see MessageSource.id
+ * @see MessageSource.ids
  */
 @get:JvmSynthetic
-public inline val MessageReceipt<*>.sourceInternalId: Int
-    get() = this.source.internalId
+public inline val MessageReceipt<*>.sourceInternalIds: IntArray
+    get() = this.source.internalIds
 
 /**
  * 获取源消息 [MessageSource.time]

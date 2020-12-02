@@ -280,8 +280,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 MessageRecallEvent.GroupRecall(
                     bot,
                     source.fromId,
-                    source.id,
-                    source.internalId,
+                    source.ids,
+                    source.internalIds,
                     source.time,
                     null,
                     group
@@ -291,8 +291,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
                         bot.asQQAndroidBot().client,
                         group.id,
-                        source.sequenceId,
-                        source.internalId
+                        source.sequenceIds,
+                        source.internalIds
                     ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                 }
             }
@@ -305,8 +305,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
                     bot.client,
                     source.targetId,
-                    source.sequenceId,
-                    source.internalId,
+                    source.sequenceIds,
+                    source.internalIds,
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
@@ -321,8 +321,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     bot.client,
                     (source.target.group as GroupImpl).uin,
                     source.targetId,
-                    source.sequenceId,
-                    source.internalId,
+                    source.sequenceIds,
+                    source.internalIds,
                     source.time
                 ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
             }
@@ -335,8 +335,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         PbMessageSvc.PbMsgWithDraw.createForFriendMessage(
                             bot.client,
                             source.targetId,
-                            source.sequenceId,
-                            source.internalId,
+                            source.sequenceIds,
+                            source.internalIds,
                             source.time
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
@@ -348,8 +348,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                             bot.client,
                             source.targetId, // groupUin
                             source.targetId, // memberUin
-                            source.sequenceId,
-                            source.internalId,
+                            source.sequenceIds,
+                            source.internalIds,
                             source.time
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
@@ -357,8 +357,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
                             bot.client,
                             source.targetId,
-                            source.sequenceId,
-                            source.internalId
+                            source.sequenceIds,
+                            source.internalIds
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
                 }
@@ -370,7 +370,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         // 1001: No message meets the requirements (实际上是没权限, 管理员在尝试撤回群主的消息)
         // 154: timeout
         // 3: <no message>
-        check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.id}: $response" }
+        check(response is PbMessageSvc.PbMsgWithDraw.Response.Success) { "Failed to recall message #${source.ids}: $response" }
     }
 
     @LowLevelApi
@@ -813,28 +813,28 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         kind: OfflineMessageSource.Kind,
         fromUin: Long,
         targetUin: Long,
-        id: Int,
+        ids: IntArray,
         time: Int,
-        internalId: Int,
+        internalIds: IntArray,
         originalMessage: MessageChain
     ): OfflineMessageSource {
         return object : OfflineMessageSource(), MessageSourceInternal {
             override val kind: Kind get() = kind
-            override val id: Int get() = id
+            override val ids: IntArray get() = ids
             override val bot: Bot get() = bot
             override val time: Int get() = time
             override val fromId: Long get() = fromUin
             override val targetId: Long get() = targetUin
             override val originalMessage: MessageChain get() = originalMessage
-            override val sequenceId: Int = id
-            override val internalId: Int = internalId
+            override val sequenceIds: IntArray = ids
+            override val internalIds: IntArray = internalIds
 
             @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
             override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
 
             override fun toJceData(): ImMsgBody.SourceMsg {
                 return ImMsgBody.SourceMsg(
-                    origSeqs = listOf(sequenceId),
+                    origSeqs = sequenceIds,
                     senderUin = fromUin,
                     toUin = 0,
                     flag = 1,

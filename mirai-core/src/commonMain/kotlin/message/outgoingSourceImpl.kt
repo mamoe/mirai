@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg.SendGroupMessageReceipt
+import net.mamoe.mirai.internal.network.protocol.packet.chat.toLongUnsigned
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -35,27 +36,30 @@ private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
         where T : MessageSourceInternal, T : MessageSource {
 
     val elements = originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
-    val messageUid: Long = sequenceId.toLong().shl(32) or internalId.toLong().and(0xffFFffFF)
+
+    val pdReserve = SourceMsg.ResvAttr(
+        origUids = sequenceIds.zip(internalIds)
+            .map { (seq, internal) -> seq.toLong().shl(32) or internal.toLongUnsigned() }
+    )
+
     return ImMsgBody.SourceMsg(
-        origSeqs = listOf(sequenceId),
+        origSeqs = sequenceIds,
         senderUin = fromId,
         toUin = targetId,
         flag = 1,
         elems = elements,
         type = 0,
         time = time,
-        pbReserve = SourceMsg.ResvAttr(
-            origUids = messageUid
-        ).toByteArray(SourceMsg.ResvAttr.serializer()),
+        pbReserve = pdReserve.toByteArray(SourceMsg.ResvAttr.serializer()),
         srcMsg = MsgComm.Msg(
             msgHead = MsgComm.MsgHead(
                 fromUin = fromId, // qq
                 toUin = targetId, // group
                 msgType = 9, // 82?
                 c2cCmd = 11,
-                msgSeq = sequenceId,
+                msgSeq = sequenceIds.single(), // TODO !!
                 msgTime = time,
-                msgUid = messageUid, // ok
+                msgUid = pdReserve.origUids!!.single(), // TODO !!
                 // groupInfo = MsgComm.GroupInfo(groupCode = delegate.msgHead.groupInfo.groupCode),
                 isSrcMsg = true
             ),
@@ -71,8 +75,8 @@ private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
 }
 
 internal class MessageSourceToFriendImpl(
-    override val sequenceId: Int,
-    override val internalId: Int,
+    override val sequenceIds: IntArray,
+    override val internalIds: IntArray,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
@@ -80,16 +84,16 @@ internal class MessageSourceToFriendImpl(
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal {
     override val bot: Bot
         get() = sender
-    override val id: Int
-        get() = sequenceId
+    override val ids: IntArray
+        get() = sequenceIds
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     private val jceData by lazy { toJceDataImpl() }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
 internal class MessageSourceToTempImpl(
-    override val sequenceId: Int,
-    override val internalId: Int,
+    override val sequenceIds: IntArray,
+    override val internalIds: IntArray,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
@@ -97,8 +101,8 @@ internal class MessageSourceToTempImpl(
 ) : OnlineMessageSource.Outgoing.ToTemp(), MessageSourceInternal {
     override val bot: Bot
         get() = sender
-    override val id: Int
-        get() = sequenceId
+    override val ids: IntArray
+        get() = sequenceIds
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     private val jceData by lazy { toJceDataImpl() }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
@@ -106,14 +110,14 @@ internal class MessageSourceToTempImpl(
 
 internal class MessageSourceToGroupImpl(
     coroutineScope: CoroutineScope,
-    override val internalId: Int,
+    override val internalIds: IntArray,
     override val time: Int,
     override val originalMessage: MessageChain,
     override val sender: Bot,
     override val target: Group
 ) : OnlineMessageSource.Outgoing.ToGroup(), MessageSourceInternal {
-    override val id: Int
-        get() = sequenceId
+    override val ids: IntArray
+        get() = sequenceIds
     override val bot: Bot
         get() = sender
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
@@ -122,25 +126,27 @@ internal class MessageSourceToGroupImpl(
         coroutineScope.asyncFromEventOrNull<SendGroupMessageReceipt, Int>(
             timeoutMillis = 3000
         ) {
-            if (it.messageRandom == this@MessageSourceToGroupImpl.internalId) {
+            if (it.messageRandom in this@MessageSourceToGroupImpl.internalIds) {
                 it.sequenceId
             } else null
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override val sequenceId: Int
-        get() = when {
-            sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: -1
-            !sequenceIdDeferred.isActive -> -1
-            else -> error("sequenceId not yet available")
-        }
+    override val sequenceIds: IntArray
+        get() = intArrayOf(
+            when {
+                sequenceIdDeferred.isCompleted -> sequenceIdDeferred.getCompleted() ?: -1
+                !sequenceIdDeferred.isActive -> -1
+                else -> error("sequenceIds not yet available")
+            }
+        )
 
     suspend fun ensureSequenceIdAvailable() = kotlin.run { sequenceIdDeferred.await() }
 
     private val jceData by lazy {
         val elements = originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
         ImMsgBody.SourceMsg(
-            origSeqs = listOf(sequenceId),
+            origSeqs = sequenceIds,
             senderUin = fromId,
             toUin = Mirai.calculateGroupUinByGroupCode(targetId),
             flag = 1,
@@ -148,7 +154,7 @@ internal class MessageSourceToGroupImpl(
             type = 0,
             time = time,
             pbReserve = SourceMsg.ResvAttr(
-                origUids = internalId.toLong() and 0xffFFffFF // id is actually messageRandom
+                origUids = internalIds.map { it.toLongUnsigned() } // ids is actually messageRandom
             ).toByteArray(SourceMsg.ResvAttr.serializer()),
             srcMsg = MsgComm.Msg(
                 msgHead = MsgComm.MsgHead(
@@ -156,9 +162,9 @@ internal class MessageSourceToGroupImpl(
                     toUin = Mirai.calculateGroupUinByGroupCode(targetId), // group
                     msgType = 82, // 82?
                     c2cCmd = 1,
-                    msgSeq = sequenceId,
+                    msgSeq = sequenceIds.single(), // TODO !!
                     msgTime = time,
-                    msgUid = internalId.toLong() and 0xffFFffFF, // ok
+                    msgUid = internalIds.single().toLongUnsigned(), //  TODO !!
                     groupInfo = MsgComm.GroupInfo(groupCode = targetId),
                     isSrcMsg = true
                 ),

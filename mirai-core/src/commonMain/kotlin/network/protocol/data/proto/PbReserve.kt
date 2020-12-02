@@ -13,7 +13,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
-import kotlin.jvm.JvmField
 
 internal class Generalflags : ProtoBuf {
     @Serializable
@@ -117,7 +116,7 @@ internal class SourceMsg : ProtoBuf {
 internal class ResvAttr(
         @ProtoNumber(1) @JvmField val richMsg2: ByteArray? = null,
         @ProtoNumber(2) @JvmField val oriMsgtype: Int? = null,
-        @ProtoNumber(3) @JvmField val origUids: Long? = null // 原来是 list
+        @ProtoNumber(3) @JvmField val origUids: List<Long>? = null
     ) : ProtoBuf
 }
 
