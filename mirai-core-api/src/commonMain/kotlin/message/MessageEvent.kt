@@ -24,6 +24,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.sendTo
 import net.mamoe.mirai.utils.upload

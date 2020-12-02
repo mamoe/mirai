@@ -250,7 +250,7 @@ public data class TempMessagePostSendEvent internal constructor(
 /**
  * 消息撤回事件. 可是任意消息被任意人撤回.
  *
- * @see Contact.recall 撤回消息. 为广播这个事件的唯一途径
+ * @see Contact.recallMessage 撤回消息. 为广播这个事件的唯一途径
  */
 public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**

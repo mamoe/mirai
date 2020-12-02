@@ -50,9 +50,9 @@ import net.mamoe.mirai.utils.LazyProperty
  *
  * ### 使用
  *
- * 消息源可用于 [引用回复][QuoteReply] 或 [撤回][IMirai.recall].
+ * 消息源可用于 [引用回复][QuoteReply] 或 [撤回][IMirai.recallMessage].
  *
- * @see IMirai.recall 撤回一条消息
+ * @see IMirai.recallMessage 撤回一条消息
  * @see MessageSource.quote 引用这条消息, 创建 [MessageChain]
  *
  * @see OnlineMessageSource 在线消息的 [MessageSource]
@@ -146,11 +146,13 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
          * @throws PermissionDeniedException 当 [Bot] 无权限操作时
          * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
          *
-         * @see IMirai.recall
+         * @see IMirai.recallMessage
          */
         @JvmStatic
         @JvmBlockingBridge
-        public suspend inline fun MessageSource.recall(): Unit = Mirai.recall(bot, this)
+        public suspend inline fun MessageSource.recall() {
+            Mirai.recallMessage(bot, this@recall)
+        }
 
         /**
          * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
@@ -165,7 +167,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
          * @throws PermissionDeniedException 当 [Bot] 无权限操作时
          * @throws IllegalStateException 当这条消息已经被撤回时 (仅同步主动操作)
          *
-         * @see IMirai.recall
+         * @see IMirai.recallMessage
          */
         @JvmStatic
         @JvmBlockingBridge
@@ -222,7 +224,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
 
 /**
  * 在线消息的 [MessageSource].
- * 拥有对象化的 [sender], [target], 也可以直接 [recall] 和 [quote]
+ * 拥有对象化的 [sender], [target], 也可以直接 [recallMessage] 和 [quote]
  *
  * ### 来源
  * - 当 bot 主动发送消息时, 产生 (由协议模块主动构造) [OnlineMessageSource.Outgoing]

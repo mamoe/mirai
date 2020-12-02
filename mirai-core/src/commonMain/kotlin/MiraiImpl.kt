@@ -254,7 +254,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
 
     @Suppress("RemoveExplicitTypeArguments") // false positive
-    override suspend fun recall(bot: Bot, source: MessageSource) = bot.asQQAndroidBot().run {
+    override suspend fun recallMessage(bot: Bot, source: MessageSource) = bot.asQQAndroidBot().run {
         check(source is MessageSourceInternal)
 
         source.ensureSequenceIdAvailable()

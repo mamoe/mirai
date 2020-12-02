@@ -86,13 +86,13 @@ public suspend inline fun <T : Contact> T.sendMessage(message: String): MessageR
 }
 
 /**
- * @see IMirai.recall
+ * @see IMirai.recallMessage
  */
 @JvmSynthetic
-public suspend inline fun Contact.recall(source: MessageChain): Unit = Mirai.recall(bot, source)
+public suspend inline fun Contact.recallMessage(source: MessageChain): Unit = Mirai.recallMessage(bot, source)
 
 /**
- * @see IMirai.recall
+ * @see IMirai.recallMessage
  */
 @JvmSynthetic
-public suspend inline fun Contact.recall(source: MessageSource): Unit = Mirai.recall(bot, source)
+public suspend inline fun Contact.recallMessage(source: MessageSource): Unit = Mirai.recallMessage(bot, source)

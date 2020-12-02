@@ -15,6 +15,7 @@ import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
@@ -25,7 +26,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  *
  * @see quote 引用这条消息. 即引用机器人自己发出去的消息
  * @see quoteReply 引用并回复这条消息.
- * @see recall 撤回这条消息
+ * @see recallMessage 撤回这条消息
  *
  * @see Group.sendMessage 发送群消息, 返回回执（此对象）
  * @see User.sendMessage 发送群消息, 返回回执（此对象）
@@ -57,13 +58,13 @@ public open class MessageReceipt<out C : Contact> @MiraiExperimentalApi("The con
 }
 
 /**
- * 撤回这条消息. [recall] 或 [recallIn] 只能被调用一次.
+ * 撤回这条消息. [recallMessage] 或 [recallIn] 只能被调用一次.
  *
- * @see IMirai.recall
+ * @see IMirai.recallMessage
  * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
  */
 public suspend inline fun MessageReceipt<*>.recall() {
-    return Mirai.recall(target.bot, source)
+    return Mirai.recallMessage(target.bot, source)
 }
 
 /**

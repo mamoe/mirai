@@ -21,6 +21,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 
@@ -85,11 +86,11 @@ public interface IMirai : LowLevelApiAccessor {
      * @throws PermissionDeniedException 当 [Bot] 无权限操作时抛出
      * @throws IllegalStateException 当这条消息已经被撤回时抛出 (仅同步主动操作)
      *
-     * @see IMirai.recall (扩展函数) 接受参数 [MessageChain]
+     * @see IMirai.recallMessage (扩展函数) 接受参数 [MessageChain]
      * @see MessageSource.recall 撤回消息扩展
      */
     @JvmBlockingBridge
-    public suspend fun recall(bot: Bot, source: MessageSource)
+    public suspend fun recallMessage(bot: Bot, source: MessageSource)
 
     @JvmBlockingBridge
     public suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean
@@ -194,11 +195,11 @@ public interface IMirai : LowLevelApiAccessor {
  * [Bot] 撤回群员的消息需要管理员权限, 可在任意时间撤回.
  *
  * @throws PermissionDeniedException 当 [Bot] 无权限操作时
- * @see IMirai.recall
+ * @see IMirai.recallMessage
  */
 @JvmSynthetic
-public suspend inline fun IMirai.recall(bot: Bot, message: MessageChain): Unit =
-    this.recall(bot, message.source)
+public suspend inline fun IMirai.recallMessage(bot: Bot, message: MessageChain): Unit =
+    this.recallMessage(bot, message.source)
 
 @JvmSynthetic
 internal expect fun findMiraiInstance(): IMirai

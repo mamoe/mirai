@@ -19,6 +19,11 @@ import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.message.data.MessageSource.Key.isAboutFriend
+import net.mamoe.mirai.message.data.MessageSource.Key.isAboutGroup
+import net.mamoe.mirai.message.data.MessageSource.Key.isAboutTemp
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.currentTimeSeconds
 
