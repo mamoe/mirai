@@ -13,13 +13,12 @@ plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
     kotlin("plugin.serialization")
-    id("signing")
     id("net.mamoe.kotlin-jvm-blocking-bridge")
     `maven-publish`
     id("com.jfrog.bintray")
 }
 
-description = "Mirai API module"
+description = "mirai-core ultilities"
 
 val isAndroidSDKAvailable: Boolean by project
 
@@ -69,7 +68,6 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":mirai-core-utils"))
                 api(kotlin("serialization"))
                 api(kotlin("reflect"))
 

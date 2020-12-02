@@ -76,6 +76,7 @@ kotlin {
 
         commonMain {
             dependencies {
+                implementation(project(":mirai-core-utils"))
                 api1(`kotlinx-serialization-core`)
                 api1(`kotlinx-serialization-json`)
                 implementation1(`kotlinx-serialization-protobuf`)
