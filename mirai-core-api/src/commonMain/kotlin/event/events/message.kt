@@ -26,7 +26,6 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.internal.InlineOnly
 
 
@@ -421,66 +420,3 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
         val message: String
     ) : ImageUploadEvent()
 }
-
-
-// region deprecated
-
-/**
- * 主动发送消息
- *
- * @see Contact.sendMessage 发送消息. 为广播这个事件的唯一途径
- */
-@Suppress("DEPRECATION")
-@PlannedRemoval("1.3.0") // arise deprecation level to ERROR in 1.2.0.
-@Deprecated(
-    message = """
-        以 MessagePreSendEvent 和 MessagePostSendEvent 替换.
-    """,
-    replaceWith = ReplaceWith("MessagePreSendEvent", "MessagePreSendEvent"),
-    level = DeprecationLevel.WARNING
-)
-public sealed class MessageSendEvent : BotEvent, BotActiveEvent, AbstractEvent() {
-    public abstract val target: Contact
-    public final override val bot: Bot
-        get() = target.bot
-
-    @Deprecated(
-        message = """
-        以 GroupMessagePreSendEvent 和 GroupMessagePostSendEvent 替换.
-    """,
-        replaceWith = ReplaceWith("GroupMessagePreSendEvent", "GroupMessagePreSendEvent"),
-        level = DeprecationLevel.WARNING
-    )
-    public data class GroupMessageSendEvent internal constructor(
-        override val target: Group,
-        var message: MessageChain
-    ) : MessageSendEvent(), CancellableEvent
-
-    @Deprecated(
-        message = """
-        以 FriendMessagePreSendEvent 和 FriendMessagePostSendEvent 替换.
-    """,
-        replaceWith = ReplaceWith(
-            "FriendMessagePreSendEvent",
-            "FriendMessagePreSendEvent"
-        ),
-        level = DeprecationLevel.WARNING
-    )
-    public data class FriendMessageSendEvent internal constructor(
-        override val target: Friend,
-        var message: MessageChain
-    ) : MessageSendEvent(), CancellableEvent
-
-    @Deprecated(
-        message = """
-        以 TempMessagePreSendEvent 和 TempMessagePostSendEvent 替换.
-    """,
-        replaceWith = ReplaceWith("TempMessagePreSendEvent", "TempMessagePreSendEvent"),
-        level = DeprecationLevel.WARNING
-    )
-    public data class TempMessageSendEvent internal constructor(
-        override val target: Member,
-        var message: MessageChain
-    ) : MessageSendEvent(), CancellableEvent
-}
-// endregion

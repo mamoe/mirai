@@ -24,11 +24,7 @@ import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message.Key
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.contracts.contract
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * 可发送的或从服务器接收的消息.
@@ -278,22 +274,7 @@ public inline operator fun Message.times(count: Int): MessageChain = this.repeat
 /**
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
  */
-public interface SingleMessage : Message {
-    @PlannedRemoval("1.2.0")
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    public fun length(): Int = this.toString().length
-
-    @PlannedRemoval("1.2.0")
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    public fun charAt(index: Int): Char = this.toString()[index]
-
-    @PlannedRemoval("1.2.0")
-    @JvmSynthetic
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    public fun subSequence(start: Int, end: Int): CharSequence = this.toString().subSequence(start, end)
-}
+public interface SingleMessage : Message
 
 /**
  * 消息元数据, 即不含内容的元素.

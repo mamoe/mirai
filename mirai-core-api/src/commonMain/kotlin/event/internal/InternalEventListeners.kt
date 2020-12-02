@@ -16,7 +16,6 @@ import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.PlannedRemoval
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -34,21 +33,6 @@ internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listen
     }
     return listener
 }
-
-
-@PlannedRemoval("1.2.0")
-@Suppress("FunctionName", "unused")
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-internal fun <E : Event> CoroutineScope.Handler(
-    coroutineContext: CoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind,
-    handler: suspend (E) -> ListeningStatus
-): Handler<E> {
-    @OptIn(ExperimentalCoroutinesApi::class) // don't remove
-    val context = this.newCoroutineContext(coroutineContext)
-    return Handler(context[Job], context, handler, concurrencyKind, EventPriority.NORMAL)
-}
-
 
 @Suppress("FunctionName")
 internal fun <E : Event> CoroutineScope.Handler(
@@ -114,12 +98,12 @@ internal class ListenerRegistry(
 
 
 internal object GlobalEventListeners {
-    private val ALL_LEVEL_REGISTRIES: Map<Listener.EventPriority, LockFreeLinkedList<ListenerRegistry>>
+    private val ALL_LEVEL_REGISTRIES: Map<EventPriority, LockFreeLinkedList<ListenerRegistry>>
 
     init {
         val map =
             EnumMap<Listener.EventPriority, LockFreeLinkedList<ListenerRegistry>>(Listener.EventPriority::class.java)
-        Listener.EventPriority.values().forEach {
+        EventPriority.values().forEach {
             map[it] = LockFreeLinkedList()
         }
         this.ALL_LEVEL_REGISTRIES = map

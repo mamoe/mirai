@@ -171,13 +171,6 @@ internal class GroupImpl(
                 //}
             }
 
-        override var isAutoApproveEnabled: Boolean
-            get() = _autoApprove
-            @Suppress("UNUSED_PARAMETER")
-            set(newValue) {
-                TODO()
-            }
-
         override var isAnonymousChatEnabled: Boolean
             get() = _anonymousChat
             @Suppress("UNUSED_PARAMETER")
@@ -185,26 +178,11 @@ internal class GroupImpl(
                 TODO()
             }
 
-        @Suppress("OverridingDeprecatedMember")
-        override var isConfessTalkEnabled: Boolean
-            get() = _confessTalk
+        override var isAutoApproveEnabled: Boolean
+            get() = _autoApprove
+            @Suppress("UNUSED_PARAMETER")
             set(newValue) {
-
-                checkBotPermission(MemberPermission.ADMINISTRATOR)
-                //if (_confessTalk != newValue) {
-                val oldValue = _confessTalk
-                _confessTalk = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.confessTalk(
-                            client = bot.client,
-                            groupCode = id,
-                            switch = newValue
-                        ).sendWithoutExpect()
-                    }
-                    GroupAllowConfessTalkEvent(oldValue, newValue, this@GroupImpl, true).broadcast()
-                }
-                // }
+                TODO()
             }
 
 

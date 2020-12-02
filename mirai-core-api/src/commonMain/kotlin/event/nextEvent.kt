@@ -14,7 +14,6 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.coroutines.resume
 import kotlin.reflect.KClass
 
@@ -65,30 +64,6 @@ public suspend inline fun <reified E : Event> nextEventOrNull(
     }
 }
 
-//
-//
-// 以下为已弃用的函数
-//
-//
-//
-
-
-@PlannedRemoval("1.3.0")
-@Suppress("DeprecatedCallableAddReplaceWith")
-@Deprecated(
-    "Deprecated for better Coroutine life cycle management. Please filter bot instance on your own.",
-    level = DeprecationLevel.HIDDEN
-)
-@JvmSynthetic
-public suspend inline fun <reified E : BotEvent> Bot.nextEvent(
-    timeoutMillis: Long = -1,
-    priority: Listener.EventPriority = EventPriority.MONITOR
-): E {
-    require(timeoutMillis == -1L || timeoutMillis > 0) { "timeoutMillis must be -1 or > 0" }
-    return withTimeoutOrCoroutineScope(timeoutMillis) {
-        nextBotEventImpl(this@nextEvent, E::class, this, priority)
-    }
-}
 
 @JvmSynthetic
 @PublishedApi

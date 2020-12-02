@@ -13,10 +13,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.message.code.CodableMessage
-import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 /**
  * QQ 自带表情
@@ -238,24 +234,6 @@ public data class Face(public val id: Int) : // used in delegation
         public const val shuaitou: Int = 243
         public const val rengou: Int = 244
     }
-
-
-    @PlannedRemoval("1.2.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @Suppress("unused", "UNUSED_PARAMETER")
-    private constructor(id: Int, stringValue: String) : this(id)
-
-    @JvmSynthetic
-    @PlannedRemoval("1.2.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @Suppress("unused", "UNUSED_PARAMETER")
-    public fun copy(id: Int = this.id, stringValue: String = ""): Face = this.copy(id = id)
-
-    @JvmSynthetic
-    @PlannedRemoval("1.2.0")
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    @Suppress("unused", "UNUSED_PARAMETER")
-    public operator fun component2(): String = toString()
 }
 
 

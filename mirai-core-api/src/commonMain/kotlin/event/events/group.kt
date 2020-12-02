@@ -25,10 +25,8 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-
 import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.jvm.*
 
 /**
@@ -170,12 +168,7 @@ public data class GroupNameChangeEvent internal constructor(
      * 操作人. 为 null 时则是机器人操作
      */
     public override val operator: Member?
-) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent() {
-    @LowPriorityInOverloadResolution
-    @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-    internal val isByBot: Boolean
-        get() = operator == null
-}
+) : GroupSettingChangeEvent<String>, Packet, GroupOperableEvent, AbstractEvent()
 
 /**
  * 入群公告改变. 此事件广播前修改就已经完成.

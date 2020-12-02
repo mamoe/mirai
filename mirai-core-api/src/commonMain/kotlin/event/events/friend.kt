@@ -35,14 +35,7 @@ public data class FriendRemarkChangeEvent internal constructor(
     public override val friend: Friend,
     public val oldRemark: String,
     public val newRemark: String
-) : FriendEvent, Packet, AbstractEvent() {
-    @Deprecated(
-        message = "Please use newRemark",
-        replaceWith = ReplaceWith("newRemark"),
-        level = DeprecationLevel.ERROR
-    )
-    val newName: String get() = newRemark
-}
+) : FriendEvent, Packet, AbstractEvent()
 
 /**
  * 成功添加了一个新好友的事件

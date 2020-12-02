@@ -22,10 +22,6 @@ import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -461,20 +457,6 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     /////////////////////////////////
     //// DEPRECATED AND INTERNAL ////
     /////////////////////////////////
-
-    /** 启动这个监听器, 在满足条件时回复原消息 */
-    @PlannedRemoval("1.2.0")
-    @Deprecated("use reply instead", ReplaceWith("this.reply(message)"), level = DeprecationLevel.ERROR)
-    @JvmName("reply3")
-    @MessageDsl
-    public open infix fun ListeningFilter.`->`(toReply: String): Ret = this.reply(toReply)
-
-    /** 启动这个监听器, 在满足条件时回复原消息 */
-    @PlannedRemoval("1.2.0")
-    @Deprecated("use reply instead", ReplaceWith("this.reply(message)"), level = DeprecationLevel.ERROR)
-    @JvmName("reply3")
-    @MessageDsl
-    public open infix fun ListeningFilter.`->`(message: Message): Ret = this.reply(message)
 
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
     internal suspend inline fun executeAndReply(m: M, replier: suspend M.(String) -> Any?): RR {
