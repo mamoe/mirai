@@ -15,10 +15,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.GroupEvent
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.PlannedRemoval
 
 /**
  * 机器人收到的群消息的事件
@@ -34,7 +34,7 @@ public class GroupMessageEvent(
     public override val sender: Member,
     public override val message: MessageChain,
     public override val time: Int
-) : @PlannedRemoval("1.2.0") GroupMessage(), Event, GroupEvent {
+) : AbstractEvent(), GroupAwareMessageEvent, MessageEvent, Event, GroupEvent {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
@@ -42,9 +42,7 @@ public class GroupMessageEvent(
 
     public override val group: Group get() = sender.group
     public override val bot: Bot get() = sender.bot
-
     public override val subject: Group get() = group
-
     public override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 
     public inline fun At.asMember(): Member = group[this.target]

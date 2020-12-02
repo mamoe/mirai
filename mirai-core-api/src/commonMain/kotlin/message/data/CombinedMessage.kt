@@ -12,11 +12,6 @@
 
 package net.mamoe.mirai.message.data
 
-import net.mamoe.mirai.utils.PlannedRemoval
-import kotlin.jvm.JvmField
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-
 /**
  * 快速链接的两个消息 (避免构造新的 list).
  *
@@ -32,16 +27,6 @@ internal constructor(
     @JvmField internal val left: Message, // 必须已经完成 constrain single
     @JvmField internal val tail: Message
 ) : Message, MessageChain, List<SingleMessage> by (left.flatten() + tail.flatten()).toList() {
-
-    @PlannedRemoval("1.2.0")
-    @Deprecated(
-        "use asSequence from stdlib",
-        ReplaceWith("(this as List<SingleMessage>).asSequence()"),
-        level = DeprecationLevel.HIDDEN
-    )
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    @kotlin.internal.LowPriorityInOverloadResolution // resolve to extension from stdlib
-    fun asSequence(): Sequence<SingleMessage> = (this as List<SingleMessage>).asSequence()
 
     override fun equals(other: Any?): Boolean {
         if (other == null) return false

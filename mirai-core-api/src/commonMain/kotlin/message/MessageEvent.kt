@@ -21,8 +21,10 @@ package net.mamoe.mirai.message
 import event.*
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribe
+import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.ExternalImage
@@ -45,13 +47,12 @@ import java.io.InputStream
  * @see isContextIdenticalWith 判断语境是否相同
  */
 @Suppress("DEPRECATION_ERROR")
-public abstract class MessageEvent : ContactMessage(),
-    BotEvent, MessageEventExtensions<User, Contact> {
+public interface MessageEvent : Event, Packet, BotEvent, MessageEventExtensions<User, Contact> {
 
     /**
      * 与这个消息事件相关的 [Bot]
      */
-    public abstract override val bot: Bot
+    public override val bot: Bot
 
     /**
      * 消息事件主体.
@@ -62,19 +63,19 @@ public abstract class MessageEvent : ContactMessage(),
      *
      * 在回复消息时, 可通过 [subject] 作为回复对象
      */
-    public abstract override val subject: Contact
+    public override val subject: Contact
 
     /**
      * 发送人.
      *
      * 在好友消息时为 [Friend] 的实例, 在群消息时为 [Member] 的实例
      */
-    public abstract override val sender: User
+    public override val sender: User
 
     /**
      * 发送人名称
      */
-    public abstract override val senderName: String
+    public val senderName: String
 
     /**
      * 消息内容.
@@ -82,19 +83,18 @@ public abstract class MessageEvent : ContactMessage(),
      * 第一个元素一定为 [MessageSource], 存储此消息的发送人, 发送时间, 收信人, 消息 ids 等数据.
      * 随后的元素为拥有顺序的真实消息内容.
      */
-    public abstract override val message: MessageChain
+    public override val message: MessageChain
 
     /** 消息发送时间 (由服务器提供, 可能与本地有时差) */
-    public abstract override val time: Int
+    public val time: Int
 
     /**
      * 消息源. 来自 [message] 的第一个元素,
      */
-    public override val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
+    public val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 }
 
 /** 消息事件的扩展函数 */
-@Suppress("EXPOSED_SUPER_INTERFACE") // Functions are visible
 public interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
     MessageEventPlatformExtensions<TSender, TSubject> {
 
@@ -165,55 +165,55 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
  * 消息事件在 JVM 平台的扩展
  * @see MessageEventExtensions
  */
-internal interface MessageEventPlatformExtensions<out TSender : User, out TSubject : Contact> {
-    val subject: TSubject
-    val sender: TSender
-    val message: MessageChain
-    val bot: Bot
+public interface MessageEventPlatformExtensions<out TSender : User, out TSubject : Contact> {
+    public val subject: TSubject
+    public val sender: TSender
+    public val message: MessageChain
+    public val bot: Bot
 
     // region 上传图片
 
     @JvmSynthetic
-    suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+    public suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
 
     @JvmSynthetic
-    suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+    public suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
 
     @JvmSynthetic
-    suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
+    public suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
     // endregion
 
     // region 发送图片
     @JvmSynthetic
-    suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
+    public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
 
     @JvmSynthetic
-    suspend fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
+    public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
 
     @JvmSynthetic
-    suspend fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
+    public suspend fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
     // endregion
 
     // region 上传图片 (扩展)
     @JvmSynthetic
-    suspend fun BufferedImage.upload(): Image = upload(subject)
+    public suspend fun BufferedImage.upload(): Image = upload(subject)
 
     @JvmSynthetic
-    suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+    public suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
 
     @JvmSynthetic
-    suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    public suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
     @JvmSynthetic
-    suspend fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
+    public suspend fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
 
     @JvmSynthetic
-    suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
 
     @JvmSynthetic
-    suspend fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    public suspend fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
     // endregion 发送图片 (扩展)
 
 }

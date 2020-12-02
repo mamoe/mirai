@@ -58,12 +58,6 @@ public abstract class Bot internal constructor(
         @Suppress("ObjectPropertyName")
         internal val _instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
 
-        @PlannedRemoval("2.0.0")
-        @Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-        @JvmStatic
-        public val instances: List<WeakRef<Bot>>
-            get() = _instances.toList()
-
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */

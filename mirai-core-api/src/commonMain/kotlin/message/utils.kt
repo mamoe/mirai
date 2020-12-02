@@ -20,12 +20,8 @@ import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.syncFromEvent
 import net.mamoe.mirai.event.syncFromEventOrNull
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -111,13 +107,4 @@ public inline fun <reified P : MessageEvent> P.nextMessageOrNullAsync(
     return this.bot.async(coroutineContext) {
         nextMessageOrNull(timeoutMillis, priority, filter)
     }
-}
-
-
-@PlannedRemoval("1.2.0")
-@Deprecated("for binary compatibility", level = DeprecationLevel.HIDDEN)
-@Suppress("DEPRECATION_ERROR")
-@JvmSynthetic
-public fun ContactMessage.isContextIdenticalWith(another: ContactMessage): Boolean {
-    return this.sender == another.sender && this.subject == another.subject && this.bot == another.bot
 }
