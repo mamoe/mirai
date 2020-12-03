@@ -154,12 +154,8 @@ internal fun RichMessage.Templates.longMessage(brief: String, resId: String, tim
 internal fun RichMessage.Templates.forwardMessage(
     resId: String,
     timeSeconds: Long,
-    preview: String,
-    title: String,
-    brief: String,
-    source: String,
-    summary: String
-): ForwardMessageInternal {
+    forwardMessage: ForwardMessage,
+): ForwardMessageInternal = with(forwardMessage) {
     val template = """
         <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
         <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="$brief"
@@ -167,7 +163,11 @@ internal fun RichMessage.Templates.forwardMessage(
              tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
             <item layout="1" advertiser_id="0" aid="0">
                 <title size="34" maxLines="2" lineSpace="12">$title</title>
-                $preview
+                ${
+        preview.joinToString("") {
+            """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
+        }
+    }
                 <hr hidden="false" style="0"/>
                 <summary size="26" color="#777777">$summary</summary>
             </item>

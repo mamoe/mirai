@@ -12,6 +12,9 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Serializable
+import kotlin.LazyThreadSafetyMode.NONE
+
 /**
  * 快速链接的两个消息 (避免构造新的 list).
  *
@@ -22,33 +25,17 @@ package net.mamoe.mirai.message.data
  *
  * Left-biased list
  */
-internal class CombinedMessage
+@Serializable
+internal data class CombinedMessage
 internal constructor(
     @JvmField internal val left: Message, // 必须已经完成 constrain single
     @JvmField internal val tail: Message
 ) : Message, MessageChain, List<SingleMessage> by (left.flatten() + tail.flatten()).toList() {
+    private val toStringCache: String by lazy(NONE) { left.contentToString() + tail.contentToString() }
+    override fun toString(): String = toStringCache
 
-    override fun equals(other: Any?): Boolean {
-        if (other == null) return false
-        if (other::class != CombinedMessage::class) return false
-        other as CombinedMessage
-        return other.left == this.left && other.tail == this.tail
-    }
-
-    private var toStringCache: String? = null
-
-
-    override fun toString(): String = toStringCache ?: (left.toString() + tail.toString()).also { toStringCache = it }
-
-    private var contentToStringCache: String? = null
-    override fun contentToString(): String =
-        contentToStringCache ?: (left.contentToString() + tail.contentToString()).also { contentToStringCache = it }
-
-    override fun hashCode(): Int {
-        var result = left.hashCode()
-        result = 31 * result + tail.hashCode()
-        return result
-    }
+    private val contentToStringCache: String by lazy(NONE) { left.contentToString() + tail.contentToString() }
+    override fun contentToString(): String = contentToStringCache
 }
 
 /*

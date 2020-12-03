@@ -11,13 +11,13 @@
 
 package net.mamoe.mirai.internal.message
 
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.OfflineMessageSource
 import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
@@ -26,9 +26,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 internal class OfflineMessageSourceImplByMsg(
     // from other sources' originalMessage
     val delegate: MsgComm.Msg,
-    override val bot: Bot
+    override val botId: Long,
 ) : OfflineMessageSource(), MessageSourceInternal {
-    override val kind: Kind = if (delegate.msgHead.groupInfo != null) Kind.GROUP else Kind.FRIEND
+    override val kind: MessageSourceKind =
+        if (delegate.msgHead.groupInfo != null) MessageSourceKind.GROUP else MessageSourceKind.FRIEND
     override val ids: IntArray get() = sequenceIds
     override val internalIds: IntArray = intArrayOf(delegate.msgHead.msgUid.toInt())
     override val time: Int
@@ -39,7 +40,8 @@ internal class OfflineMessageSourceImplByMsg(
         get() = delegate.msgHead.groupInfo?.groupCode ?: delegate.msgHead.toUin
     override val originalMessage: MessageChain by lazy {
         delegate.toMessageChain(
-            bot,
+            null,
+            botId,
             groupIdOrZero = delegate.msgHead.groupInfo?.groupCode ?: 0,
             onlineSource = false,
             isTemp = delegate.msgHead.c2cTmpMsgHead != null
@@ -67,17 +69,17 @@ internal class OfflineMessageSourceImplByMsg(
 internal class OfflineMessageSourceImplBySourceMsg(
     // from others' quotation
     val delegate: ImMsgBody.SourceMsg,
-    override val bot: Bot,
+    override val botId: Long,
     groupIdOrZero: Long
 ) : OfflineMessageSource(), MessageSourceInternal {
-    override val kind: Kind get() = if (delegate.srcMsg == null) Kind.GROUP else Kind.FRIEND
+    override val kind: MessageSourceKind get() = if (delegate.srcMsg == null) MessageSourceKind.GROUP else MessageSourceKind.FRIEND
 
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     override val sequenceIds: IntArray = delegate.origSeqs
     override val internalIds: IntArray = delegate.pbReserve.loadAs(SourceMsg.ResvAttr.serializer())
         .origUids?.mapToIntArray { it.toInt() } ?: intArrayOf()
     override val time: Int get() = delegate.time
-    override val originalMessage: MessageChain by lazy { delegate.toMessageChain(bot, groupIdOrZero) }
+    override val originalMessage: MessageChain by lazy { delegate.toMessageChain(botId, groupIdOrZero) }
     /*
     override val ids: Long
         get() = (delegate.origSeqs?.firstOrNull()

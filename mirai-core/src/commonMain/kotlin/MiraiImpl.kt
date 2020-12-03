@@ -327,7 +327,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             }
             is OfflineMessageSource -> network.run {
                 when (source.kind) {
-                    OfflineMessageSource.Kind.FRIEND -> {
+                    MessageSourceKind.FRIEND -> {
                         check(source.fromId == bot.id) {
                             "can only recall a message sent by bot"
                         }
@@ -339,7 +339,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                             source.time
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
-                    OfflineMessageSource.Kind.TEMP -> {
+                    MessageSourceKind.TEMP -> {
                         check(source.fromId == bot.id) {
                             "can only recall a message sent by bot"
                         }
@@ -352,7 +352,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                             source.time
                         ).sendAndExpect<PbMessageSvc.PbMsgWithDraw.Response>()
                     }
-                    OfflineMessageSource.Kind.GROUP -> {
+                    MessageSourceKind.GROUP -> {
                         PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
                             bot.client,
                             source.targetId,
@@ -639,14 +639,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         //          <title size="26" color="#777777" maxLines="2" lineSpace="12">${it.message.asMessageChain().joinToString(limit = 10)}</title>
                         //      """.trimIndent()
                         //  },
-                        preview = forwardMessage.displayStrategy.generatePreview(forwardMessage).take(4)
-                            .map {
-                                """<title size="26" color="#777777" maxLines="2" lineSpace="12">$it</title>"""
-                            }.joinToString(""),
-                        title = forwardMessage.displayStrategy.generateTitle(forwardMessage),
-                        brief = forwardMessage.displayStrategy.generateBrief(forwardMessage),
-                        source = forwardMessage.displayStrategy.generateSource(forwardMessage),
-                        summary = forwardMessage.displayStrategy.generateSummary(forwardMessage)
+                        forwardMessage = forwardMessage,
                     )
                 )
             }
@@ -808,8 +801,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     override fun constructMessageSource(
-        bot: Bot,
-        kind: OfflineMessageSource.Kind,
+        botId: Long,
+        kind: MessageSourceKind,
         fromUin: Long,
         targetUin: Long,
         ids: IntArray,
@@ -818,9 +811,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         originalMessage: MessageChain
     ): OfflineMessageSource {
         return object : OfflineMessageSource(), MessageSourceInternal {
-            override val kind: Kind get() = kind
+            override val kind: MessageSourceKind get() = kind
             override val ids: IntArray get() = ids
-            override val bot: Bot get() = bot
+            override val botId: Long get() = botId
             override val time: Int get() = time
             override val fromId: Long get() = fromUin
             override val targetId: Long get() = targetUin
@@ -837,7 +830,10 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     senderUin = fromUin,
                     toUin = 0,
                     flag = 1,
-                    elems = originalMessage.toRichTextElems(forGroup = kind == Kind.GROUP, withGeneralFlags = false),
+                    elems = originalMessage.toRichTextElems(
+                        forGroup = kind == MessageSourceKind.GROUP,
+                        withGeneralFlags = false
+                    ),
                     type = 0,
                     time = time,
                     pbReserve = EMPTY_BYTE_ARRAY,

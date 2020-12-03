@@ -54,7 +54,7 @@ public fun MessageSource.copyAmend(
  * 仅于 [copyAmend] 中修改 [MessageSource]
  */
 public interface MessageSourceAmender {
-    public var kind: OfflineMessageSource.Kind
+    public var kind: MessageSourceKind
     public var fromUin: Long
     public var targetUin: Long
     public var ids: IntArray
@@ -110,7 +110,7 @@ public interface MessageSourceAmender {
 public fun Bot.buildMessageSource(block: MessageSourceBuilder.() -> Unit): MessageSource {
     val builder = MessageSourceBuilderImpl().apply(block)
     return Mirai.constructMessageSource(
-        this,
+        this.id,
         builder.kind ?: error("You must call `Contact.sendTo(Contact)` when `buildMessageSource`"),
         builder.fromUin,
         builder.targetUin,
@@ -125,7 +125,7 @@ public fun Bot.buildMessageSource(block: MessageSourceBuilder.() -> Unit): Messa
  * @see buildMessageSource
  */
 public abstract class MessageSourceBuilder {
-    internal abstract var kind: OfflineMessageSource.Kind?
+    internal abstract var kind: MessageSourceKind?
     internal abstract var fromUin: Long
     internal abstract var targetUin: Long
 
@@ -213,7 +213,7 @@ public abstract class MessageSourceBuilder {
 
 
 internal class MessageSourceBuilderImpl : MessageSourceBuilder() {
-    override var kind: OfflineMessageSource.Kind? = null
+    override var kind: MessageSourceKind? = null
     override var fromUin: Long = 0
     override var targetUin: Long = 0
 
@@ -234,10 +234,10 @@ internal class MessageSourceBuilderImpl : MessageSourceBuilder() {
         check(this != target) { "sender and target mustn't be the same" }
 
         kind = when {
-            this is Group || target is Group -> OfflineMessageSource.Kind.GROUP
-            this is Member || target is Member -> OfflineMessageSource.Kind.TEMP
-            this is Bot && target is Friend -> OfflineMessageSource.Kind.FRIEND
-            this is Friend && target is Bot -> OfflineMessageSource.Kind.FRIEND
+            this is Group || target is Group -> MessageSourceKind.GROUP
+            this is Member || target is Member -> MessageSourceKind.TEMP
+            this is Bot && target is Friend -> MessageSourceKind.FRIEND
+            this is Friend && target is Bot -> MessageSourceKind.FRIEND
             else -> throw IllegalArgumentException("Cannot determine source kind for sender $this and target $target")
         }
         return this@MessageSourceBuilderImpl
@@ -252,7 +252,7 @@ internal fun MessageSource.toMutableOffline(): MutableOfflineMessageSourceByOnli
 internal class MutableOfflineMessageSourceByOnline(
     origin: MessageSource
 ) : OfflineMessageSource(), MessageSourceAmender {
-    override var kind: Kind = determineKind(origin)
+    override var kind: MessageSourceKind = determineKind(origin)
     override var fromUin: Long
         get() = fromId
         set(value) {
@@ -263,7 +263,7 @@ internal class MutableOfflineMessageSourceByOnline(
         set(value) {
             targetId = value
         }
-    override var bot: Bot = origin.bot
+    override val botId: Long = origin.botId
     override var ids: IntArray = origin.ids
     override var internalIds: IntArray = origin.internalIds
     override var time: Int = origin.time
@@ -272,11 +272,11 @@ internal class MutableOfflineMessageSourceByOnline(
     override var originalMessage: MessageChain = origin.originalMessage
 }
 
-private fun determineKind(source: MessageSource): OfflineMessageSource.Kind {
+private fun determineKind(source: MessageSource): MessageSourceKind {
     return when {
-        source.isAboutGroup() -> OfflineMessageSource.Kind.GROUP
-        source.isAboutFriend() -> OfflineMessageSource.Kind.FRIEND
-        source.isAboutTemp() -> OfflineMessageSource.Kind.TEMP
+        source.isAboutGroup() -> MessageSourceKind.GROUP
+        source.isAboutFriend() -> MessageSourceKind.FRIEND
+        source.isAboutTemp() -> MessageSourceKind.TEMP
         else -> error("stub")
     }
 }
@@ -284,14 +284,9 @@ private fun determineKind(source: MessageSource): OfflineMessageSource.Kind {
 internal class OfflineMessageSourceByOnline(
     private val onlineMessageSource: OnlineMessageSource
 ) : OfflineMessageSource() {
-    override val kind: Kind
-        get() = when {
-            onlineMessageSource.isAboutGroup() -> Kind.GROUP
-            onlineMessageSource.isAboutFriend() -> Kind.FRIEND
-            onlineMessageSource.isAboutTemp() -> Kind.TEMP
-            else -> error("stub")
-        }
-    override val bot: Bot get() = onlineMessageSource.bot
+    override val kind: MessageSourceKind
+        get() = onlineMessageSource.kind
+    override val botId: Long get() = onlineMessageSource.botId
     override val ids: IntArray get() = onlineMessageSource.ids
     override val internalIds: IntArray get() = onlineMessageSource.internalIds
     override val time: Int get() = onlineMessageSource.time

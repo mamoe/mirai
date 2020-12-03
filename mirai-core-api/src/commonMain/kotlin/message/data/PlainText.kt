@@ -13,11 +13,14 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Serializable
+
 /**
  * 纯文本. 可含 emoji 表情如 😊.
  *
  * 一般不需要主动构造 [PlainText], [Message] 可直接与 [String] 相加. Java 用户请使用 [Message.plus]
  */
+@Serializable
 public data class PlainText(
     public val content: String
 ) : MessageContent {

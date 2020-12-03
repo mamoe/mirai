@@ -13,11 +13,12 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.PokeMessage.Types
 import net.mamoe.mirai.message.data.VipFace.Companion
 import net.mamoe.mirai.message.data.VipFace.Kind
-import kotlin.jvm.*
 
 /**
  * 一些特殊的消息
@@ -25,6 +26,7 @@ import kotlin.jvm.*
  * @see PokeMessage 戳一戳
  * @see FlashImage 闪照
  */
+@Serializable
 public sealed class HummerMessage : MessageContent {
     public companion object Key : Message.Key<HummerMessage> {
         public override val typeName: String
@@ -45,6 +47,7 @@ public sealed class HummerMessage : MessageContent {
  *
  * @see Types 使用伴生对象中的常量
  */
+@Serializable
 public data class PokeMessage internal constructor(
     /**
      * 仅 mirai, 显示的名称
@@ -160,6 +163,7 @@ public data class PokeMessage internal constructor(
  *
  * @see Types 使用伴生对象中的常量
  */
+@Serializable
 public data class VipFace internal constructor(
     /**
      * 使用 [Companion] 中常量.
@@ -167,6 +171,7 @@ public data class VipFace internal constructor(
     public val kind: Kind,
     public val count: Int
 ) : HummerMessage(), CodableMessage {
+    @Serializable
     public data class Kind(
         val id: Int,
         val name: String
@@ -248,6 +253,7 @@ public data class VipFace internal constructor(
  *
  * @see Image 查看图片相关信息
  */
+@Serializable
 public sealed class FlashImage : MessageContent, HummerMessage(), CodableMessage {
     public companion object Key : Message.Key<FlashImage> {
         /**
@@ -307,19 +313,19 @@ public inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as Fr
 /**
  * @see FlashImage.invoke
  */
-public data class GroupFlashImage(public override val image: GroupImage) : FlashImage() {
+@Serializable
+public data class GroupFlashImage(@Contextual override val image: GroupImage) : FlashImage() {
     public companion object Key : Message.Key<GroupFlashImage> {
-        public override val typeName: String
-            get() = "GroupFlashImage"
+        public override val typeName: String get() = "GroupFlashImage"
     }
 }
 
 /**
  * @see FlashImage.invoke
  */
-public data class FriendFlashImage(public override val image: FriendImage) : FlashImage() {
+@Serializable
+public data class FriendFlashImage(@Contextual override val image: FriendImage) : FlashImage() {
     public companion object Key : Message.Key<FriendFlashImage> {
-        public override val typeName: String
-            get() = "FriendFlashImage"
+        public override val typeName: String get() = "FriendFlashImage"
     }
 }

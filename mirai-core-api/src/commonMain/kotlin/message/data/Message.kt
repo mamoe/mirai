@@ -19,9 +19,14 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageSerializer
+import net.mamoe.mirai.message.MessageSerializerImpl
 import net.mamoe.mirai.message.data.Message.Key
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.contracts.contract
@@ -71,6 +76,7 @@ import kotlin.contracts.contract
  *
  * @see Contact.sendMessage 发送消息
  */
+@Serializable(Message.Serializer::class)
 public interface Message { // must be interface. Don't consider any changes.
     /**
      * 类型 Key. 由伴生对象实现, 表示一个 [Message] 对象的类型.
@@ -198,6 +204,10 @@ public interface Message { // must be interface. Don't consider any changes.
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     public /* final */ operator fun plus(another: Sequence<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
+
+    public object Serializer :
+        MessageSerializer by MessageSerializerImpl,
+        KSerializer<Message> by PolymorphicSerializer(Message::class)
 }
 
 @MiraiExperimentalApi

@@ -14,13 +14,16 @@
 package net.mamoe.mirai
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.PermissionDeniedException
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image.Companion.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
@@ -111,13 +114,13 @@ public interface IMirai : LowLevelApiAccessor {
      * @param ids 即 [MessageSource.ids]
      * @param internalIds 即 [MessageSource.internalIds]
      *
-     * @param fromUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
-     * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [Group.calculateGroupUinByGroupCode] 计算
+     * @param fromUin 为用户时为 [Friend.id], 为群时需使用 [IMirai.calculateGroupUinByGroupCode] 计算
+     * @param targetUin 为用户时为 [Friend.id], 为群时需使用 [IMirai.calculateGroupUinByGroupCode] 计算
      */
     @MiraiExperimentalApi("This is very experimental and is subject to change.")
     public fun constructMessageSource(
-        bot: Bot,
-        kind: OfflineMessageSource.Kind,
+        botId: Long,
+        kind: MessageSourceKind,
         fromUin: Long, targetUin: Long,
         ids: IntArray, time: Int, internalIds: IntArray,
         originalMessage: MessageChain

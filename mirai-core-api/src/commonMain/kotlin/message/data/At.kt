@@ -14,14 +14,11 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.code.CodableMessage
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmStatic
-import kotlin.jvm.JvmSynthetic
 
 
 /**
@@ -32,6 +29,7 @@ import kotlin.jvm.JvmSynthetic
  *
  * @see AtAll 全体成员
  */
+@Serializable
 public data class At
 @Suppress("DataClassPrivateConstructor")
 private constructor(

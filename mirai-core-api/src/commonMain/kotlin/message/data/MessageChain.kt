@@ -13,6 +13,13 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
@@ -48,6 +55,7 @@ import kotlin.reflect.KProperty
  * @see getValue 属性委托扩展
  * @see flatten 扁平化
  */
+@Serializable(MessageChain.Serializer::class)
 @Suppress("FunctionName", "DeprecatedCallableAddReplaceWith", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
     /**
@@ -77,6 +85,13 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
      */
     @JvmName("first")
     public operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
+
+    public object Serializer : KSerializer<MessageChain> {
+        private val delegate = ListSerializer(PolymorphicSerializer(Message::class))
+        override val descriptor: SerialDescriptor = delegate.descriptor
+        override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).asMessageChain()
+        override fun serialize(encoder: Encoder, value: MessageChain): Unit = delegate.serialize(encoder, value)
+    }
 }
 
 // region accessors

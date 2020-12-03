@@ -71,7 +71,7 @@ internal class MessageSourceFromFriendImpl(
     override val ids: IntArray get() = sequenceIds// msg.msgBody.richText.attr!!.random
     override val internalIds: IntArray get() = intArrayOf(msg.msgBody.richText.attr!!.random)
     override val time: Int get() = msg.msgHead.msgTime
-    override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, 0, false) }
+    override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, bot.id, 0, false) }
     override val sender: Friend get() = bot.getFriend(msg.msgHead.fromUin)
 
     private val jceData by lazy { msg.toJceDataFriendOrTemp(internalIds) }

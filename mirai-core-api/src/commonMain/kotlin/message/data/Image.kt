@@ -23,17 +23,24 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.io.core.Input
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.data.Image.Companion.queryUrl
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.sendImage
 import java.io.File
 import java.io.InputStream
 import java.net.URL
-import kotlin.js.JsName
 
 /**
  * 自定义表情 (收藏的表情) 和普通图片.
@@ -70,11 +77,8 @@ import kotlin.js.JsName
  * @see FlashImage 闪照
  * @see Image.flash 转换普通图片为闪照
  */
+@Serializable(Image.Serializer::class)
 public interface Image : Message, MessageContent, CodableMessage {
-    public companion object Key : Message.Key<Image> {
-        override val typeName: String get() = "Image"
-    }
-
 
     /**
      * 图片的 id.
@@ -92,7 +96,67 @@ public interface Image : Message, MessageContent, CodableMessage {
      * @see Image 使用 id 构造图片
      */
     public val imageId: String
+
+    public object Serializer : KSerializer<Image> {
+        override val descriptor: SerialDescriptor = String.serializer().descriptor
+        override fun deserialize(decoder: Decoder): Image {
+            val id = String.serializer().deserialize(decoder)
+            return Image(id)
+        }
+
+        override fun serialize(encoder: Encoder, value: Image) {
+            String.serializer().serialize(encoder, value.imageId)
+        }
+    }
+
+    public companion object : Message.Key<Image> {
+        override val typeName: String get() = "Image"
+
+        /**
+         * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
+         * 这个图片必须是服务器已经存在的图片.
+         * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
+         *
+         * 请查看 `ExternalImageJvm` 获取更多创建 [Image] 的方法
+         *
+         * @see Image 获取更多说明
+         * @see Image.imageId 获取更多说明
+         */
+        @JvmStatic
+        public fun fromId(imageId: String): Image = Mirai.createImage(imageId)
+
+        /**
+         * 查询原图下载链接.
+         *
+         * - 当图片为从服务器接收的消息中的图片时, 可以直接获取下载链接, 本函数不会挂起协程.
+         * - 其他情况下协程可能会挂起并向服务器查询下载链接, 或不挂起并拼接一个链接.
+         *
+         * @return 原图 HTTP 下载链接 (非 HTTPS)
+         * @throws IllegalStateException 当无任何 [Bot] 在线时抛出 (因为无法获取相关协议)
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun Image.queryUrl(): String {
+            val bot = Bot._instances.peekFirst()?.get() ?: error("No Bot available to query image url")
+            return Mirai.queryImageUrl(bot, this)
+
+        }
+    }
 }
+
+/**
+ * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
+ * 这个图片必须是服务器已经存在的图片.
+ * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
+ *
+ * 请查看 `ExternalImageJvm` 获取更多创建 [Image] 的方法
+ *
+ * @see Image 获取更多说明
+ * @see Image.imageId 获取更多说明
+ */
+@JvmSynthetic
+public inline fun Image(imageId: String): Image = Image.fromId(imageId)
+
 /**
  * 所有 [Image] 实现的基类.
  */
@@ -171,35 +235,3 @@ public val FRIEND_IMAGE_ID_REGEX_2: Regex = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{
 // This is required on Android
 // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
 public val GROUP_IMAGE_ID_REGEX: Regex = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
-
-/**
- * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
- * 这个图片必须是服务器已经存在的图片.
- * 图片 id 不一定会长时间保存, 因此不建议使用 id 发送图片.
- *
- * 请查看 `ExternalImageJvm` 获取更多创建 [Image] 的方法
- *
- * @see Image 获取更多说明
- * @see Image.imageId 获取更多说明
- */
-@Suppress("FunctionName", "DEPRECATION")
-@JsName("newImage")
-@JvmName("newImage")
-public inline fun Image(imageId: String): Image = Mirai.createImage(imageId)
-
-/**
- * 查询原图下载链接.
- *
- * - 当图片为从服务器接收的消息中的图片时, 可以直接获取下载链接, 本函数不会挂起协程.
- * - 其他情况下协程可能会挂起并向服务器查询下载链接, 或不挂起并拼接一个链接.
- *
- * @return 原图 HTTP 下载链接 (非 HTTPS)
- * @throws IllegalStateException 当无任何 [Bot] 在线时抛出 (因为无法获取相关协议)
- */
-//@JvmBlockingBridge
-@JvmSynthetic
-public suspend fun Image.queryUrl(): String {
-    val bot = Bot._instances.peekFirst()?.get() ?: error("No Bot available to query image url")
-    return Mirai.queryImageUrl(bot, this)
-
-}

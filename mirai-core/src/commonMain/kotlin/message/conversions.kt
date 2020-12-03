@@ -228,8 +228,17 @@ private val PB_RESERVE_FOR_PTT =
 private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".hexToBytes()
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
+
 internal fun MsgComm.Msg.toMessageChain(
     bot: Bot,
+    groupIdOrZero: Long,
+    onlineSource: Boolean,
+    isTemp: Boolean = false
+): MessageChain = toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
+
+internal fun MsgComm.Msg.toMessageChain(
+    bot: Bot?,
+    botId: Long,
     groupIdOrZero: Long,
     onlineSource: Boolean,
     isTemp: Boolean = false
@@ -246,28 +255,33 @@ internal fun MsgComm.Msg.toMessageChain(
 
     return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {
         if (onlineSource) {
+            checkNotNull(bot) { "bot is null" }
             when {
                 isTemp -> +MessageSourceFromTempImpl(bot, this@toMessageChain)
                 groupIdOrZero != 0L -> +MessageSourceFromGroupImpl(bot, this@toMessageChain)
                 else -> +MessageSourceFromFriendImpl(bot, this@toMessageChain)
             }
         } else {
-            +OfflineMessageSourceImplByMsg(this@toMessageChain, bot)
+            +OfflineMessageSourceImplByMsg(this@toMessageChain, botId)
         }
-        elements.joinToMessageChain(groupIdOrZero, bot, this)
+        elements.joinToMessageChain(groupIdOrZero, botId, this)
         pptMsg?.let(::add)
     }.cleanupRubbishMessageElements()
 }
 
 // These two functions have difference method signature, don't combine.
 
-internal fun ImMsgBody.SourceMsg.toMessageChain(bot: Bot, groupIdOrZero: Long): MessageChain {
+internal fun ImMsgBody.SourceMsg.toMessageChain(botId: Long, groupIdOrZero: Long): MessageChain {
     val elements = this.elems
     if (elements.isEmpty())
         error("elements for SourceMsg is empty")
     return buildMessageChain(elements.size + 1) {
-        +OfflineMessageSourceImplBySourceMsg(delegate = this@toMessageChain, bot = bot, groupIdOrZero = groupIdOrZero)
-        elements.joinToMessageChain(groupIdOrZero, bot, this)
+        +OfflineMessageSourceImplBySourceMsg(
+            delegate = this@toMessageChain,
+            botId = botId,
+            groupIdOrZero = groupIdOrZero
+        )
+        elements.joinToMessageChain(groupIdOrZero, botId, this)
     }.cleanupRubbishMessageElements()
 }
 
@@ -331,12 +345,12 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
 internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
 @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: Bot, list: MessageChainBuilder) {
+internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId: Long, list: MessageChainBuilder) {
     // (this._miraiContentToString().soutv())
     this.forEach { element ->
         when {
             element.srcMsg != null -> {
-                list.add(QuoteReply(OfflineMessageSourceImplBySourceMsg(element.srcMsg, bot, groupIdOrZero)))
+                list.add(QuoteReply(OfflineMessageSourceImplBySourceMsg(element.srcMsg, botId, groupIdOrZero)))
             }
             element.notOnlineImage != null -> list.add(OnlineFriendImageImpl(element.notOnlineImage))
             element.customFace != null -> list.add(OnlineGroupImageImpl(element.customFace))
@@ -389,7 +403,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                      * json?
                      */
                     1 -> @Suppress("DEPRECATION_ERROR")
-                    list.add(ServiceMessage(1, content))
+                    list.add(SimpleServiceMessage(1, content))
                     /**
                      * [LongMessage], [ForwardMessage]
                      */
@@ -398,19 +412,16 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
 
                         if (resId != null) {
                             // TODO: 2020/4/29 解析长消息
-                            list.add(ServiceMessage(35, content)) // resId
+                            list.add(SimpleServiceMessage(35, content)) // resId
                         } else {
                             // TODO: 2020/4/29 解析合并转发
-                            list.add(ServiceMessage(35, content))
+                            list.add(SimpleServiceMessage(35, content))
                         }
                     }
 
                     // 104 新群员入群的消息
                     else -> {
-                        if (element.richMsg.serviceId == 60 || content.startsWith("<?")) {
-                            @Suppress("DEPRECATION_ERROR") // bin comp
-                            list.add(ServiceMessage(element.richMsg.serviceId, content))
-                        } else list.add(ServiceMessage(element.richMsg.serviceId, content))
+                        list.add(SimpleServiceMessage(element.richMsg.serviceId, content))
                     }
                 }
             }
@@ -426,14 +437,14 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, bot: B
                     }.fold(
                         onFailure = {
                             if (it is CustomMessage.Key.CustomMessageFullDataDeserializeInternalException) {
-                                bot.logger.error(
+                                throw IllegalStateException(
                                     "Internal error: " +
                                             "exception while deserializing CustomMessage head data," +
                                             " data=${element.customElem.data.toUHexString()}", it
                                 )
                             } else {
                                 it as CustomMessage.Key.CustomMessageFullDataDeserializeUserException
-                                bot.logger.error(
+                                throw IllegalStateException(
                                     "User error: " +
                                             "exception while deserializing CustomMessage body," +
                                             " body=${it.body.toUHexString()}", it

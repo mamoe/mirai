@@ -17,9 +17,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
+import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.internal.checkOffsetAndLength
-
 
 /**
  * 自定义消息
@@ -29,10 +29,15 @@ import net.mamoe.mirai.utils.internal.checkOffsetAndLength
  *
  * 目前在回复时无法通过 [originalMessage] 获取自定义类型消息
  *
+ * ## 序列化
+ * 若要支持序列化, 需 [MessageSerializer.registerSerializer]
+ *
  * @sample samples.CustomMessageIdentifier 实现示例
  *
  * @see CustomMessageMetadata 自定义消息元数据
+ * @see MessageSerializer
  */
+@Serializable
 @MiraiExperimentalApi
 public sealed class CustomMessage : SingleMessage {
     /**
@@ -188,6 +193,7 @@ public fun <T : CustomMessage> T.toByteArray(): ByteArray {
  * @see CustomMessage 查看更多信息
  * @see ConstrainSingle 可实现此接口以保证消息链中只存在一个元素
  */
+@Serializable
 @MiraiExperimentalApi
 public abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
     public companion object Key : Message.Key<CustomMessageMetadata> {

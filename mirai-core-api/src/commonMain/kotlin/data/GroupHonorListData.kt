@@ -12,7 +12,6 @@ package net.mamoe.mirai.data
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -230,7 +229,6 @@ public data class GroupHonorListData(
         val tagColor: String? = null
     )
 
-    @Serializer(forClass = GroupHonorType::class)
     public object GroupHonorTypeSerializer : KSerializer<GroupHonorType> {
         override val descriptor: SerialDescriptor =
             PrimitiveSerialDescriptor("GroupHonorTypeSerializer", PrimitiveKind.INT)

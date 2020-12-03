@@ -11,6 +11,9 @@
 
 package net.mamoe.mirai.message.data
 
+import io.ktor.http.*
+import io.ktor.util.*
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
@@ -20,10 +23,22 @@ import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.currentTimeSeconds
-import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmSynthetic
-import kotlin.jvm.Transient
 
+
+@MiraiExperimentalApi
+@Serializable
+public data class RawForwardMessage(
+    val nodeList: List<ForwardMessage.Node>
+) {
+    public fun render(displayStrategy: DisplayStrategy): ForwardMessage = ForwardMessage(
+        preview = displayStrategy.generatePreview(this),
+        title = displayStrategy.generateTitle(this),
+        brief = displayStrategy.generateBrief(this),
+        source = displayStrategy.generateSource(this),
+        summary = displayStrategy.generateSummary(this),
+        nodeList = nodeList,
+    )
+}
 
 /**
  * 合并转发消息
@@ -78,74 +93,57 @@ import kotlin.jvm.Transient
  * - 使用 [DSL][buildForwardMessage]
  * - 通过 [MessageEvent] 集合转换: [toForwardMessage]
  *
- *
- * @param [displayStrategy] 卡片显示方案
- *
  * @see buildForwardMessage
  */
-public class ForwardMessage @JvmOverloads constructor(
-    /**
-     * 消息列表
-     */
-    public val nodeList: Collection<INode>,
-    @Transient public val displayStrategy: DisplayStrategy = DisplayStrategy.Default
+@Serializable
+public data class ForwardMessage(
+    val preview: List<String>,
+    val title: String,
+    val brief: String,
+    val source: String,
+    val summary: String,
+    val nodeList: List<Node>,
 ) : MessageContent {
-    init {
-        require(nodeList.isNotEmpty()) {
-            "Forward nodeList mustn't be empty"
-        }
+    override fun contentToString(): String {
+        return "[mirai:forward:NOT_IMPLEMENTED]" // TODO: 2020/12/3 ForwardMessage.contentToString()
     }
 
     /**
      * @see ForwardMessage
      */
-    public abstract class DisplayStrategy {
+    public interface DisplayStrategy {
         /**
          * 修改后卡片标题会变为 "转发的聊天记录", 而此函数的返回值会显示在 preview 前
          */
-        public open fun generateTitle(forward: ForwardMessage): String = "群聊的聊天记录"
+        public fun generateTitle(forward: RawForwardMessage): String = "群聊的聊天记录"
 
         /**
          * 显示在消息列表中的预览.
          */
-        public open fun generateBrief(forward: ForwardMessage): String = "[聊天记录]"
+        public fun generateBrief(forward: RawForwardMessage): String = "[聊天记录]"
 
         /**
          * 目前未发现在哪能显示
          */
-        public open fun generateSource(forward: ForwardMessage): String = "聊天记录"
+        public fun generateSource(forward: RawForwardMessage): String = "聊天记录"
 
         /**
          * 显示在卡片 body 中, 只会显示 sequence 前四个元素.
          * Java 用户: 使用 [sequenceOf] (`SequenceKt.sequenceOf`) 或 [asSequence] (`SequenceKt.asSequence`)
          */
-        public open fun generatePreview(forward: ForwardMessage): Sequence<String> =
-            forward.nodeList.asSequence().map { it.senderName + ": " + it.message.contentToString() }
+        public fun generatePreview(forward: RawForwardMessage): List<String> =
+            forward.nodeList.map { it.senderName + ": " + it.message.contentToString() }
 
         /**
          * 显示在卡片底部
          */
-        public open fun generateSummary(forward: ForwardMessage): String = "查看 ${forward.nodeList.size} 条转发消息"
+        public fun generateSummary(forward: RawForwardMessage): String = "查看 ${forward.nodeList.size} 条转发消息"
 
-        public companion object Default : DisplayStrategy() {
-            @JvmSynthetic
-            public inline operator fun invoke(
-                crossinline generateTitle: (forward: ForwardMessage) -> String = Default::generateTitle,
-                crossinline generateBrief: (forward: ForwardMessage) -> String = Default::generateBrief,
-                crossinline generateSource: (forward: ForwardMessage) -> String = Default::generateSource,
-                crossinline generatePreview: (forward: ForwardMessage) -> Sequence<String> = Default::generatePreview,
-                crossinline generateSummary: (forward: ForwardMessage) -> String = Default::generateSummary
-            ): DisplayStrategy = object : DisplayStrategy() {
-                override fun generateTitle(forward: ForwardMessage): String = generateTitle(forward)
-                override fun generateBrief(forward: ForwardMessage): String = generateBrief(forward)
-                override fun generateSource(forward: ForwardMessage): String = generateSource(forward)
-                override fun generatePreview(forward: ForwardMessage): Sequence<String> = generatePreview(forward)
-                override fun generateSummary(forward: ForwardMessage): String = generateSummary(forward)
-            }
-        }
+        public companion object Default : DisplayStrategy
     }
 
 
+    @Serializable
     public data class Node(
         override val senderId: Long,
         override val time: Int,
@@ -153,6 +151,7 @@ public class ForwardMessage @JvmOverloads constructor(
         override val message: Message
     ) : INode
 
+    @MiraiExperimentalApi
     public interface INode {
         /**
          * 发送人 [User.id]
@@ -178,12 +177,6 @@ public class ForwardMessage @JvmOverloads constructor(
     public companion object Key : Message.Key<ForwardMessage> {
         public override val typeName: String get() = "ForwardMessage"
     }
-
-    public override fun toString(): String = "[mirai:forward:$nodeList]"
-    private val contentToString: String by lazy { nodeList.joinToString("\n") }
-
-    @MiraiExperimentalApi
-    public override fun contentToString(): String = contentToString
 }
 
 
@@ -193,10 +186,10 @@ public class ForwardMessage @JvmOverloads constructor(
 @JvmOverloads
 public fun Iterable<MessageEvent>.toForwardMessage(displayStrategy: DisplayStrategy = DisplayStrategy): ForwardMessage {
     val iterator = this.iterator()
-    if (!iterator.hasNext()) return ForwardMessage(emptyList(), displayStrategy)
-    return ForwardMessage(
-        this.map { ForwardMessage.Node(it.sender.id, it.time, it.senderName, it.message) }, displayStrategy
-    )
+    if (!iterator.hasNext()) return RawForwardMessage(emptyList()).render(displayStrategy)
+    return RawForwardMessage(
+        this.map { ForwardMessage.Node(it.sender.id, it.time, it.senderName, it.message) }
+    ).render(displayStrategy)
 }
 
 /**
@@ -218,7 +211,8 @@ public fun Message.toForwardMessage(
     senderName: String,
     time: Int = currentTimeSeconds.toInt(),
     displayStrategy: DisplayStrategy = DisplayStrategy
-): ForwardMessage = ForwardMessage(listOf(ForwardMessage.Node(senderId, time, senderName, this)), displayStrategy)
+): ForwardMessage =
+    RawForwardMessage(listOf(ForwardMessage.Node(senderId, time, senderName, this))).render(displayStrategy)
 
 /**
  * 构造一条 [ForwardMessage]
@@ -323,7 +317,7 @@ public class ForwardMessageBuilder private constructor(
     private val container: MutableList<ForwardMessage.INode>
 ) : MutableList<ForwardMessage.INode> by container {
     /**
-     * @see ForwardMessage.displayStrategy
+     * @see RawForwardMessage.render
      */
     public var displayStrategy: DisplayStrategy = DisplayStrategy
 
@@ -549,7 +543,15 @@ public class ForwardMessageBuilder private constructor(
     // endregion
 
     /** 构造 [ForwardMessage] */
-    public fun build(): ForwardMessage = ForwardMessage(container.toList(), this.displayStrategy)
+    public fun build(): ForwardMessage = RawForwardMessage(container.map {
+        ForwardMessage.Node(
+            it.senderId,
+            it.time,
+            it.senderName,
+            it.message
+        )
+    }).render(this.displayStrategy)
+
     internal fun Bot.smartName(): String = when (val c = this@ForwardMessageBuilder.context) {
         is Group -> c.botAsMember.nameCardOrNick
         else -> nick

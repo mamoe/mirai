@@ -13,16 +13,17 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Serializable
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.*
+import net.mamoe.mirai.message.data.MessageSource.Key.isAboutFriend
+import net.mamoe.mirai.message.data.MessageSource.Key.isAboutGroup
+import net.mamoe.mirai.message.data.MessageSource.Key.isAboutTemp
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
-import net.mamoe.mirai.message.quote
-import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.LazyProperty
 
 /**
@@ -60,13 +61,14 @@ import net.mamoe.mirai.utils.LazyProperty
  *
  * @see buildMessageSource 构造一个 [OfflineMessageSource]
  */
+@Serializable(MessageSourceSerializer::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
     public final override val key: Message.Key<MessageSource> get() = Key
 
     /**
-     * 所属 [Bot]
+     * 所属 [Bot.id]
      */
-    public abstract val bot: Bot
+    public abstract val botId: Long
 
     /**
      * 消息 ids (序列号). 在获取失败时 (概率很低) 为 `-1`.
@@ -181,7 +183,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
         public fun MessageSource.isAboutGroup(): Boolean {
             return when (this) {
                 is OnlineMessageSource -> subject is Group
-                is OfflineMessageSource -> kind == OfflineMessageSource.Kind.GROUP
+                is OfflineMessageSource -> kind == MessageSourceKind.GROUP
             }
         }
 
@@ -192,7 +194,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
         public fun MessageSource.isAboutTemp(): Boolean {
             return when (this) {
                 is OnlineMessageSource -> subject is Member
-                is OfflineMessageSource -> kind == OfflineMessageSource.Kind.TEMP
+                is OfflineMessageSource -> kind == MessageSourceKind.TEMP
             }
         }
 
@@ -203,7 +205,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
         public inline fun MessageSource.isAboutFriend(): Boolean {
             return when (this) {
                 is OnlineMessageSource -> subject !is Group && subject !is Member
-                is OfflineMessageSource -> kind == OfflineMessageSource.Kind.FRIEND
+                is OfflineMessageSource -> kind == MessageSourceKind.FRIEND
             }
         }
 
@@ -222,6 +224,17 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
     }
 }
 
+public inline val MessageSource.bot: Bot
+    get() = when (this) {
+        is OnlineMessageSource -> bot
+        is OfflineMessageSource -> Bot.getInstance(botId)
+    }
+
+public inline val MessageSource.botOrNull: Bot?
+    get() = when (this) {
+        is OnlineMessageSource -> bot
+        is OfflineMessageSource -> Bot.getInstanceOrNull(botId)
+    }
 
 /**
  * 在线消息的 [MessageSource].
@@ -248,6 +261,12 @@ public sealed class OnlineMessageSource : MessageSource() {
     public companion object Key : Message.Key<OnlineMessageSource> {
         public override val typeName: String get() = "OnlineMessageSource"
     }
+
+    /**
+     * @see botId
+     */
+    public abstract val bot: Bot
+    final override val botId: Long get() = bot.id
 
     /**
      * 消息发送人. 可能为 [机器人][Bot] 或 [好友][Friend] 或 [群员][Member].
@@ -374,17 +393,32 @@ public abstract class OfflineMessageSource : MessageSource() {
         public override val typeName: String get() = "OfflineMessageSource"
     }
 
-    public enum class Kind {
-        GROUP,
-        FRIEND,
-        TEMP
-    }
-
     /**
      * 消息种类
      */
-    public abstract val kind: Kind
+    public abstract val kind: MessageSourceKind
 }
+
+@Serializable
+public enum class MessageSourceKind {
+    GROUP,
+    FRIEND,
+    TEMP
+}
+
+public val MessageSource.kind: MessageSourceKind
+    get() = when (this) {
+        is OnlineMessageSource -> kind
+        is OfflineMessageSource -> kind
+    }
+
+public val OnlineMessageSource.kind: MessageSourceKind
+    get() = when {
+        isAboutGroup() -> MessageSourceKind.GROUP
+        isAboutFriend() -> MessageSourceKind.FRIEND
+        isAboutTemp() -> MessageSourceKind.TEMP
+        else -> error("Internal error: OnlineMessageSource.kind reached an unexpected clause")
+    }
 
 // For MessageChain, no need to expose to Java.
 

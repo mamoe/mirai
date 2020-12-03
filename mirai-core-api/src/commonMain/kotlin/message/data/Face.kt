@@ -12,6 +12,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 
 /**
@@ -20,6 +21,7 @@ import net.mamoe.mirai.message.code.CodableMessage
  * ## mirai 码支持
  * 格式: &#91;mirai:face:*[id]*&#93;
  */
+@Serializable
 public data class Face(public val id: Int) : // used in delegation
     MessageContent, CodableMessage {
 

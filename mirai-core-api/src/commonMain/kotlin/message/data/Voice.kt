@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 
@@ -16,6 +17,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 /**
  * 需要通过上传到服务器的消息，如语音、文件
  */
+@Serializable
 @MiraiExperimentalApi
 public abstract class PttMessage : MessageContent {
 
@@ -33,6 +35,7 @@ public abstract class PttMessage : MessageContent {
 /**
  * 语音消息, 目前只支持接收和转发
  */
+@Serializable // experimental
 public class Voice @MiraiInternalApi constructor(
     public override val fileName: String,
     public override val md5: ByteArray,
