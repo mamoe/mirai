@@ -14,6 +14,8 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.mirai.Bot
+import kotlin.contracts.InvocationKind.AT_MOST_ONCE
+import kotlin.contracts.contract
 
 
 /**
@@ -163,44 +165,54 @@ public interface MiraiLogger {
 }
 
 
-public inline fun MiraiLogger.verbose(lazyMessage: () -> String) {
-    if (isEnabled) verbose(lazyMessage())
+public inline fun MiraiLogger.verbose(message: () -> String) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) verbose(message())
 }
 
-public inline fun MiraiLogger.verbose(lazyMessage: () -> String, e: Throwable?) {
-    if (isEnabled) verbose(lazyMessage(), e)
+public inline fun MiraiLogger.verbose(message: () -> String, e: Throwable?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) verbose(message(), e)
 }
 
-public inline fun MiraiLogger.debug(lazyMessage: () -> String?) {
-    if (isEnabled) debug(lazyMessage())
+public inline fun MiraiLogger.debug(message: () -> String?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) debug(message())
 }
 
-public inline fun MiraiLogger.debug(lazyMessage: () -> String?, e: Throwable?) {
-    if (isEnabled) debug(lazyMessage(), e)
+public inline fun MiraiLogger.debug(message: () -> String?, e: Throwable?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) debug(message(), e)
 }
 
-public inline fun MiraiLogger.info(lazyMessage: () -> String?) {
-    if (isEnabled) info(lazyMessage())
+public inline fun MiraiLogger.info(message: () -> String?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) info(message())
 }
 
-public inline fun MiraiLogger.info(lazyMessage: () -> String?, e: Throwable?) {
-    if (isEnabled) info(lazyMessage(), e)
+public inline fun MiraiLogger.info(message: () -> String?, e: Throwable?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) info(message(), e)
 }
 
-public inline fun MiraiLogger.warning(lazyMessage: () -> String?) {
-    if (isEnabled) warning(lazyMessage())
+public inline fun MiraiLogger.warning(message: () -> String?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) warning(message())
 }
 
-public inline fun MiraiLogger.warning(lazyMessage: () -> String?, e: Throwable?) {
-    if (isEnabled) warning(lazyMessage(), e)
+public inline fun MiraiLogger.warning(message: () -> String?, e: Throwable?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) warning(message(), e)
 }
 
-public inline fun MiraiLogger.error(lazyMessage: () -> String?) {
-    if (isEnabled) error(lazyMessage())
+public inline fun MiraiLogger.error(message: () -> String?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) error(message())
 }
 
-public inline fun MiraiLogger.error(lazyMessage: () -> String?, e: Throwable?) {
-    if (isEnabled) error(lazyMessage(), e)
+public inline fun MiraiLogger.error(message: () -> String?, e: Throwable?) {
+    contract { callsInPlace(message, AT_MOST_ONCE) }
+    if (isEnabled) error(message(), e)
 }
 
 /**
