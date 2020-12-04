@@ -12,7 +12,6 @@
 package net.mamoe.mirai.utils
 
 import kotlinx.io.core.readBytes
-import kotlinx.io.core.use
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
@@ -54,6 +53,7 @@ public class ExternalImage internal constructor(
         val hex = input.asInput().use {
             it.readBytes(8).toUHexString("")
         }
+
         return@lazy hex.detectFormatName()
     }
 
