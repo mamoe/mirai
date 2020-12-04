@@ -48,26 +48,26 @@ public open class BotConfiguration { // open for Java
     /**
      * 日志记录器
      *
-     * - 默认打印到标准输出, 通过 [DefaultLogger]
+     * - 默认打印到标准输出, 通过 [MiraiLogger.create]
      * - 忽略所有日志: [noBotLog]
      * - 重定向到一个目录: `networkLoggerSupplier = { DirectoryLogger("Net ${it.id}") }`
      * - 重定向到一个文件: `networkLoggerSupplier = { SingleFileLogger("Net ${it.id}") }`
      *
      * @see MiraiLogger
      */
-    public var botLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Bot ${it.id}") }
+    public var botLoggerSupplier: ((Bot) -> MiraiLogger) = { MiraiLogger.create("Bot ${it.id}") }
 
     /**
      * 网络层日志构造器
      *
-     * - 默认打印到标准输出, 通过 [DefaultLogger]
+     * - 默认打印到标准输出, 通过 [MiraiLogger.create]
      * - 忽略所有日志: [noNetworkLog]
      * - 重定向到一个目录: `networkLoggerSupplier = { DirectoryLogger("Net ${it.id}") }`
      * - 重定向到一个文件: `networkLoggerSupplier = { SingleFileLogger("Net ${it.id}") }`
      *
      * @see MiraiLogger
      */
-    public var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { DefaultLogger("Net ${it.id}") }
+    public var networkLoggerSupplier: ((Bot) -> MiraiLogger) = { MiraiLogger.create("Net ${it.id}") }
 
     /** 父 [CoroutineContext]. [Bot] 创建后会使用 [SupervisorJob] 覆盖其 [Job], 但会将这个 [Job] 作为父 [Job] */
     public var parentCoroutineContext: CoroutineContext = EmptyCoroutineContext
@@ -349,8 +349,8 @@ public open class BotConfiguration { // open for Java
 
 internal val deviceInfoStub: (Bot) -> DeviceInfo = {
     @Suppress("DEPRECATION")
-    MiraiLogger.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
+    MiraiLogger.TopLevel.warning("未指定设备信息, 已使用随机设备信息. 请查看 BotConfiguration.deviceInfo 以获取更多信息.")
     @Suppress("DEPRECATION")
-    MiraiLogger.warning("Device info isn't specified. Please refer to BotConfiguration.deviceInfo for more information")
+    MiraiLogger.TopLevel.warning("Device info isn't specified. Please refer to BotConfiguration.deviceInfo for more information")
     DeviceInfo.random()
 }

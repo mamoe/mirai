@@ -31,7 +31,15 @@ import kotlin.contracts.contract
  *
  * Java 调用: `Utils.getDefaultLogger().invoke(identity)`
  */
-public var DefaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger(it) }
+@Deprecated(
+    "Use MiraiLogger.create",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("MiraiLogger.create(identity)", "net.mamoe.mirai.utils.MiraiLogger")
+)
+@PlannedRemoval("2.0-M2")
+public var DefaultLogger: (identity: String?) -> MiraiLogger
+    get() = { MiraiLogger.create(it) }
+    set(value) = MiraiLogger.setDefaultLoggerCreator(value)
 
 /**
  * 给这个 logger 添加一个开关, 用于控制是否记录 log
@@ -56,14 +64,28 @@ public fun MiraiLogger.withSwitch(default: Boolean = true): MiraiLoggerWithSwitc
  * @see MiraiLoggerPlatformBase 平台通用基础实现. 若 Mirai 自带的日志系统无法满足需求, 请继承这个类并实现其抽象函数.
  */
 public interface MiraiLogger {
-    /**
-     * 顶层日志记录器.
-     *
-     * 顶层日志会导致混乱并难以定位问题. 请自行构造 logger 实例并使用.
-     * 请参考使用 [DefaultLogger]
-     */
-    @Deprecated(message = "顶层日志会导致混乱并难以定位问题. 请自行构造 logger 实例并使用.", level = DeprecationLevel.WARNING)
-    public companion object : MiraiLogger by DefaultLogger("Mirai")
+
+    public companion object {
+        /**
+         * 顶层日志, 仅供 Mirai 内部使用.
+         */
+        @MiraiInternalApi
+        @MiraiExperimentalApi
+        public val TopLevel: MiraiLogger by lazy { create("Mirai") }
+
+        @Volatile
+        private var defaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger(it) }
+
+        @JvmStatic
+        public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
+            defaultLogger = creator
+        }
+
+        @JvmStatic
+        public fun create(identity: String?): MiraiLogger {
+            return defaultLogger.invoke(identity)
+        }
+    }
 
     /**
      * 日志的标记. 在 Mirai 中, identity 可为
@@ -154,14 +176,6 @@ public interface MiraiLogger {
      * @return [follower]
      */
     public operator fun <T : MiraiLogger> plus(follower: T): T
-
-    /**
-     * 添加一个 [follower]
-     * 若 [MiraiLogger.follower] 已经有值, 则会对这个值调用 [plusAssign]. 即会在日志记录器链的末尾添加这个参数 [follower]
-     *
-     * @see follower
-     */
-    public operator fun plusAssign(follower: MiraiLogger)
 }
 
 
@@ -236,8 +250,9 @@ public inline fun MiraiLogger.error(message: () -> String?, e: Throwable?) {
  *
  * 严重程度为 V, I, W, E. 分别对应 verbose, info, warning, error
  *
- * @see DefaultLogger
+ * @see MiraiLogger.create
  */
+@MiraiInternalApi
 public expect open class PlatformLogger constructor(
     identity: String? = "Mirai",
     output: (String) -> Unit, // TODO: 2020/11/30 review logs, currently it's just for compile
@@ -443,8 +458,4 @@ public abstract class MiraiLoggerPlatformBase : MiraiLogger {
         this.follower = follower
         return follower
     }
-
-    public override fun plusAssign(follower: MiraiLogger): Unit =
-        if (this.follower == null) this.follower = follower
-        else this.follower!! += follower
 }

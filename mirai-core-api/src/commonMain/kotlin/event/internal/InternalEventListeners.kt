@@ -76,7 +76,7 @@ internal class Handler<in E : Event> internal constructor(
                 ?: coroutineContext[CoroutineExceptionHandler]?.handleException(subscriberContext, e)
                 ?: kotlin.run {
                     @Suppress("DEPRECATION")
-                    (if (event is BotEvent) event.bot.logger else MiraiLogger)
+                    (if (event is BotEvent) event.bot.logger else MiraiLogger.TopLevel)
                         .warning(
                             """Event processing: An exception occurred but no CoroutineExceptionHandler found, 
                         either in coroutineContext from Handler job, or in subscriberContext""".trimIndent(), e

@@ -33,8 +33,6 @@ import net.mamoe.mirai.internal.utils.io.readString
 import net.mamoe.mirai.internal.utils.io.useBytes
 import net.mamoe.mirai.internal.utils.io.withUse
 import net.mamoe.mirai.utils.*
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
 
 internal sealed class PacketFactory<TPacket : Packet?> {
     /**
@@ -122,7 +120,7 @@ internal typealias PacketConsumer<T> = suspend (packetFactory: PacketFactory<T>,
  */
 @PublishedApi
 internal val PacketLogger: MiraiLoggerWithSwitch by lazy {
-    DefaultLogger("Packet").withSwitch(false)
+    MiraiLogger.create("Packet").withSwitch(false)
 }
 
 internal object KnownPacketFactories {

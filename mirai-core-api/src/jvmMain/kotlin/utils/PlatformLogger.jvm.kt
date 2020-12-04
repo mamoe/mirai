@@ -38,10 +38,11 @@ import java.util.*
  *
  * @param isColored 是否添加 ANSI 颜色
  *
- * @see DefaultLogger
+ * @see MiraiLogger.create
  * @see SingleFileLogger 使用单一文件记录日志
  * @see DirectoryLogger 在一个目录中按日期存放文件记录日志, 自动清理过期日志
  */
+@MiraiInternalApi
 public actual open class PlatformLogger constructor(
     public override val identity: String? = "Mirai",
     /**

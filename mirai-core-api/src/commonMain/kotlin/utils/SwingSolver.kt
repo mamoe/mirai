@@ -84,7 +84,7 @@ internal object WindowHelperJvm {
             kotlin.runCatching {
                 Desktop.isDesktopSupported().also { stat ->
                     if (stat) {
-                        MiraiLogger.info(
+                        MiraiLogger.TopLevel.info(
                             """
                                 Mirai 正在使用桌面环境,
                                 如果你正在使用SSH, 或无法访问桌面等,
@@ -92,7 +92,7 @@ internal object WindowHelperJvm {
                                 然后重启 Mirai
                             """.trimIndent()
                         )
-                        MiraiLogger.info(
+                        MiraiLogger.TopLevel.info(
                             """
                                 Mirai using DesktopCaptcha System.
                                 If you are running on SSH, cannot access desktop or more.
@@ -104,7 +104,7 @@ internal object WindowHelperJvm {
                 }
             }.getOrElse {
                 // Should not happen
-                MiraiLogger.warning("Exception in checking desktop support.", it)
+                MiraiLogger.TopLevel.warning("Exception in checking desktop support.", it)
                 false
             }
         } else {
