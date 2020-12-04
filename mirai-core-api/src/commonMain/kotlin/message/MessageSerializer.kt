@@ -130,7 +130,6 @@ internal object MessageSerializerImpl : MessageSerializer {
 
     @Synchronized
     override fun clearRegisteredSerializers() {
-        TODO("Not yet implemented")
+        serializersModule = builtInSerializersModule
     }
-
 }
