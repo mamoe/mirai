@@ -54,6 +54,7 @@ public class ExternalImage internal constructor(
         val hex = input.asInput().use {
             it.readBytes(8).toUHexString("")
         }
+
         return@lazy hex.detectFormatName()
     }
 
