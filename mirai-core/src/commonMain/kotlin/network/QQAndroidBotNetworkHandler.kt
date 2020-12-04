@@ -18,6 +18,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -38,7 +39,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.readPacketExact
-import net.mamoe.mirai.internal.utils.io.useBytes
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.network.ForceOfflineException
 import net.mamoe.mirai.network.RetryLaterException
@@ -624,7 +624,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
      */
     suspend fun <E : Packet> OutgoingPacket.sendAndExpect(timeoutMillis: Long = 5000, retry: Int = 2): E {
         require(timeoutMillis > 100) { "timeoutMillis must > 100" }
-        require(retry >= 0) { "retry must >= 0" }
+        require(retry in 1..10) { "retry must in 1..10" }
 
         check(bot.isActive) { "bot is dead therefore can't send ${this.commandName}" }
         check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't send any packet" }
@@ -652,12 +652,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             } finally {
                 packetListeners.remove(handler)
             }
-        } else this.delegate.useBytes { data, length ->
+        } else {
+            val data = this.delegate.readBytes()
             return retryCatching(retry + 1) {
                 val handler = PacketListener(commandName = commandName, sequenceId = sequenceId)
                 packetListeners.addLast(handler)
                 try {
-                    doSendAndReceive(handler, data, length)
+                    doSendAndReceive(handler, data, data.size)
                 } finally {
                     packetListeners.remove(handler)
                 }
