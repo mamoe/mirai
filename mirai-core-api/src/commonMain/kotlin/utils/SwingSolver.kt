@@ -38,12 +38,18 @@ public object SwingSolver : LoginSolver() {
     public override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String {
         return openWindow("Mirai SliderCaptcha(${bot.id})") {
             JLabel("需要滑动验证码, 完成后请关闭该窗口").append()
-            Desktop.getDesktop().browse(URI(url))
+            // Try to open browser safely. #694
+            kotlin.runCatching {
+                Desktop.getDesktop().browse(URI(url))
+            }.onFailure {
+                JTextField(url).last()
+            }
         }
     }
 
     public override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String {
-        return openWindow("Mirai UnsafeDeviceLoginVerify(${bot.id})") {
+        val title = "Mirai UnsafeDeviceLoginVerify(${bot.id})"
+        return openWindow(title) {
             JLabel(
                 """
                 <html>
@@ -53,13 +59,15 @@ public object SwingSolver : LoginSolver() {
                 成功后请关闭该窗口
             """.trimIndent()
             ).append()
-            HyperLinkLabel(url, "设备锁验证").last()
+            HyperLinkLabel(url, "设备锁验证", title).last()
         }
     }
 }
 
 
 // 隔离类代码
+// 在 jvm 中, 使用 WindowHelperJvm 不会加载 SwingSolverKt
+// 不会触发各种 NoDefClassError
 @Suppress("DEPRECATION")
 internal object WindowHelperJvm {
     internal val isDesktopSupported: Boolean = kotlin.run {
@@ -122,10 +130,14 @@ internal class WindowInitializer(private val initializer: WindowInitializer.(JFr
     }
 }
 
-internal val windowIcon: BufferedImage? by lazy {
+internal val windowImage: BufferedImage? by lazy {
     WindowHelperJvm::class.java.getResourceAsStream("project-mirai.png")?.use {
         ImageIO.read(it)
     }
+}
+
+internal val windowIcon: Icon? by lazy {
+    windowImage?.let(::ImageIcon)
 }
 
 internal suspend fun openWindow(title: String = "", initializer: WindowInitializer.(JFrame) -> Unit = {}): String {
@@ -134,7 +146,7 @@ internal suspend fun openWindow(title: String = "", initializer: WindowInitializ
 
 internal suspend fun openWindow(title: String = "", initializer: WindowInitializer = WindowInitializer {}): String {
     val frame = JFrame()
-    frame.iconImage = windowIcon
+    frame.iconImage = windowImage
     frame.minimumSize = Dimension(228, 62) // From Windows 10
     val value = JTextField()
     val def = CompletableDeferred<String>()
@@ -176,18 +188,33 @@ internal suspend fun openWindow(title: String = "", initializer: WindowInitializ
 }
 
 /**
- * 构造方法中url指代用户需要点击的链接, text为显示的提示内容
+ * @param url 打开的链接
+ * @param text 显示的提示内容
+ * @param fallbackTitle 无法打开链接时的提醒窗口标题
  */
-internal class HyperLinkLabel constructor(url: String, text: String) : JLabel() {
+internal class HyperLinkLabel constructor(
+    url: String,
+    text: String,
+    fallbackTitle: String
+) : JLabel() {
     init {
         super.setText("<html><a href='$url'>$text</a></html>")
         addMouseListener(object : MouseAdapter() {
 
             override fun mouseClicked(e: MouseEvent) {
+                // Try to open browser safely. #694
                 try {
                     Desktop.getDesktop().browse(URI(url))
                 } catch (ex: Exception) {
-                    ex.printStackTrace()
+                    JOptionPane.showInputDialog(
+                        this@HyperLinkLabel,
+                        "Mirai 无法直接打开浏览器, 请手动复制以下 URL 打开",
+                        fallbackTitle,
+                        JOptionPane.WARNING_MESSAGE,
+                        windowIcon,
+                        null,
+                        url
+                    )
                 }
             }
         })
