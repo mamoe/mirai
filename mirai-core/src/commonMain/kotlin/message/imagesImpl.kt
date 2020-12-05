@@ -146,7 +146,7 @@ internal val firstOnlineBotInstance: Bot get() = Bot.botInstancesSequence.firstO
 
 @Suppress("EXPOSED_SUPER_INTERFACE")
 internal interface OnlineImage : Image, ConstOriginUrlAware {
-    companion object Key : Message.Key<OnlineImage> {
+    companion object Key : ConstrainSingle.Key<OnlineImage> {
         override val typeName: String get() = "OnlineImage"
     }
 
@@ -160,7 +160,7 @@ internal interface OnlineImage : Image, ConstOriginUrlAware {
  * 一般由 [Contact.uploadImage] 得到
  */
 internal interface OfflineImage : Image {
-    companion object Key : Message.Key<OfflineImage> {
+    companion object Key : ConstrainSingle.Key<OfflineImage> {
         override val typeName: String get() = "OfflineImage"
     }
 }

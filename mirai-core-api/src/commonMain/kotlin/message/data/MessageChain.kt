@@ -83,7 +83,7 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
     @JvmName("first")
-    public operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
+    public operator fun <M : Message> get(key: ConstrainSingle.Key<M>): M? = firstOrNull(key)
 
     public object Serializer : KSerializer<MessageChain> {
         private val delegate = ListSerializer(Message.Serializer)
@@ -102,8 +102,8 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
  */
 @JvmOverloads
 public inline fun <M : Message> MessageChain.getOrFail(
-    key: Message.Key<M>,
-    crossinline lazyMessage: (key: Message.Key<M>) -> String = { key.typeName }
+    key: ConstrainSingle.Key<M>,
+    crossinline lazyMessage: (key: ConstrainSingle.Key<M>) -> String = { key.typeName }
 ): M = firstOrNull(key) ?: throw NoSuchElementException(lazyMessage(key))
 
 
@@ -174,7 +174,7 @@ public inline fun <reified M : Message> MessageChain.anyIsInstance(): Boolean = 
  */
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-public fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = firstOrNullImpl(key)
+public fun <M : Message> MessageChain.firstOrNull(key: ConstrainSingle.Key<M>): M? = firstOrNullImpl(key)
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
@@ -182,7 +182,7 @@ public fun <M : Message> MessageChain.firstOrNull(key: Message.Key<M>): M? = fir
  */
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-public inline fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
+public inline fun <M : Message> MessageChain.first(key: ConstrainSingle.Key<M>): M =
     firstOrNull(key) ?: throw NoSuchElementException("Message type ${key.typeName} not found in chain $this")
 
 /**
@@ -190,7 +190,7 @@ public inline fun <M : Message> MessageChain.first(key: Message.Key<M>): M =
  */
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-public inline fun <M : Message> MessageChain.any(key: Message.Key<M>): Boolean = firstOrNull(key) != null
+public inline fun <M : Message> MessageChain.any(key: ConstrainSingle.Key<M>): Boolean = firstOrNull(key) != null
 
 // endregion accessors
 

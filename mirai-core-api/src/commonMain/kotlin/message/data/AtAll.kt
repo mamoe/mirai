@@ -30,11 +30,8 @@ private const val displayA = "@全体成员"
  */
 @Serializable
 public object AtAll :
-    Message.Key<AtAll>,
     MessageContent, CodableMessage {
     public const val display: String = displayA
-    public override val typeName: String
-        get() = "AtAll"
 
     @Suppress("SpellCheckingInspection")
     public override fun toString(): String = "[mirai:atall]"

@@ -40,12 +40,12 @@ import net.mamoe.mirai.message.data.MessageSource.Key.recall
  */
 @Serializable
 public data class QuoteReply(public val source: MessageSource) : Message, MessageMetadata, ConstrainSingle<QuoteReply> {
-    public companion object Key : Message.Key<QuoteReply> {
+    public companion object Key : ConstrainSingle.Key<QuoteReply> {
         public override val typeName: String
             get() = "QuoteReply"
     }
 
-    public override val key: Message.Key<QuoteReply> get() = Key
+    public override val key: ConstrainSingle.Key<QuoteReply> get() = Key
 
     // TODO: 2020/12/2 QuoteReply.toString
     public override fun toString(): String = "[mirai:quote:${source.ids},${source.internalIds}]"

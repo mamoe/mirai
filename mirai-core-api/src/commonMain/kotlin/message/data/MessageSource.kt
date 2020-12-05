@@ -63,7 +63,7 @@ import net.mamoe.mirai.utils.LazyProperty
  */
 @Serializable(MessageSourceSerializer::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
-    public final override val key: Message.Key<MessageSource> get() = Key
+    public final override val key: ConstrainSingle.Key<MessageSource> get() = Key
 
     /**
      * 所属 [Bot.id]
@@ -132,7 +132,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
      */
     public final override fun toString(): String = "[mirai:source:$ids,$internalIds]"
 
-    public companion object Key : Message.Key<MessageSource> {
+    public companion object Key : ConstrainSingle.Key<MessageSource> {
         override val typeName: String get() = "MessageSource"
 
         /**
@@ -258,7 +258,7 @@ public inline val MessageSource.botOrNull: Bot?
  * @see OnlineMessageSource.toOffline 转为 [OfflineMessageSource]
  */
 public sealed class OnlineMessageSource : MessageSource() {
-    public companion object Key : Message.Key<OnlineMessageSource> {
+    public companion object Key : ConstrainSingle.Key<OnlineMessageSource> {
         public override val typeName: String get() = "OnlineMessageSource"
     }
 
@@ -294,7 +294,7 @@ public sealed class OnlineMessageSource : MessageSource() {
      * 由 [机器人主动发送消息][Contact.sendMessage] 产生的 [MessageSource], 可通过 [MessageReceipt] 获得.
      */
     public sealed class Outgoing : OnlineMessageSource() {
-        public companion object Key : Message.Key<Outgoing> {
+        public companion object Key : ConstrainSingle.Key<Outgoing> {
             public override val typeName: String get() = "OnlineMessageSource.Outgoing"
         }
 
@@ -305,7 +305,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         public final override val targetId: Long get() = target.id
 
         public abstract class ToFriend : Outgoing() {
-            public companion object Key : Message.Key<ToFriend> {
+            public companion object Key : ConstrainSingle.Key<ToFriend> {
                 public override val typeName: String get() = "OnlineMessageSource.Outgoing.ToFriend"
             }
 
@@ -315,7 +315,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class ToTemp : Outgoing() {
-            public companion object Key : Message.Key<ToTemp> {
+            public companion object Key : ConstrainSingle.Key<ToTemp> {
                 public override val typeName: String get() = "OnlineMessageSource.Outgoing.ToTemp"
             }
 
@@ -325,7 +325,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class ToGroup : Outgoing() {
-            public companion object Key : Message.Key<ToGroup> {
+            public companion object Key : ConstrainSingle.Key<ToGroup> {
                 public override val typeName: String get() = "OnlineMessageSource.Outgoing.ToGroup"
             }
 
@@ -338,7 +338,7 @@ public sealed class OnlineMessageSource : MessageSource() {
      * 接收到的一条消息的 [MessageSource]
      */
     public sealed class Incoming : OnlineMessageSource() {
-        public companion object Key : Message.Key<Incoming> {
+        public companion object Key : ConstrainSingle.Key<Incoming> {
             public override val typeName: String get() = "OnlineMessageSource.Incoming"
         }
 
@@ -348,7 +348,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         public final override val targetId: Long get() = target.id
 
         public abstract class FromFriend : Incoming() {
-            public companion object Key : Message.Key<FromFriend> {
+            public companion object Key : ConstrainSingle.Key<FromFriend> {
                 public override val typeName: String get() = "OnlineMessageSource.Incoming.FromFriend"
             }
 
@@ -359,7 +359,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class FromTemp : Incoming() {
-            public companion object Key : Message.Key<FromTemp> {
+            public companion object Key : ConstrainSingle.Key<FromTemp> {
                 public override val typeName: String get() = "OnlineMessageSource.Incoming.FromTemp"
             }
 
@@ -370,7 +370,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class FromGroup : Incoming() {
-            public companion object Key : Message.Key<FromGroup> {
+            public companion object Key : ConstrainSingle.Key<FromGroup> {
                 public override val typeName: String get() = "OnlineMessageSource.Incoming.FromGroup"
             }
 
@@ -389,7 +389,7 @@ public sealed class OnlineMessageSource : MessageSource() {
  * @see buildMessageSource 构建一个 [OfflineMessageSource]
  */
 public abstract class OfflineMessageSource : MessageSource() {
-    public companion object Key : Message.Key<OfflineMessageSource> {
+    public companion object Key : ConstrainSingle.Key<OfflineMessageSource> {
         public override val typeName: String get() = "OfflineMessageSource"
     }
 

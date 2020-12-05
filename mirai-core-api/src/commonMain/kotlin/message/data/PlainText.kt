@@ -30,9 +30,7 @@ public data class PlainText(
     public override fun toString(): String = content
     public override fun contentToString(): String = content
 
-    public companion object Key : Message.Key<PlainText> {
-        public override val typeName: String get() = "PlainText"
-    }
+    public companion object
 }
 
 /**

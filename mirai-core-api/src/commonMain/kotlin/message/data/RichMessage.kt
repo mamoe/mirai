@@ -45,7 +45,7 @@ public interface RichMessage : MessageContent {
      * @suppress 此 API 不稳定, 可能在任意时刻被删除
      */
     @MiraiExperimentalApi
-    public companion object Templates : Message.Key<RichMessage> {
+    public companion object Templates : ConstrainSingle.Key<RichMessage> {
 
         /**
          * @suppress 此 API 不稳定, 可能在任意时刻被删除
@@ -93,7 +93,7 @@ public interface RichMessage : MessageContent {
  */
 @Serializable
 public data class LightApp(override val content: String) : RichMessage {
-    public companion object Key : Message.Key<LightApp> {
+    public companion object Key : ConstrainSingle.Key<LightApp> {
         public override val typeName: String get() = "LightApp"
     }
 
@@ -116,7 +116,7 @@ public class SimpleServiceMessage(
     public override val serviceId: Int,
     public override val content: String
 ) : ServiceMessage {
-    public companion object Key : Message.Key<ServiceMessage> {
+    public companion object Key : ConstrainSingle.Key<ServiceMessage> {
         public override val typeName: String get() = "ServiceMessage"
     }
 
@@ -146,7 +146,7 @@ public class SimpleServiceMessage(
  * @see SimpleServiceMessage
  */
 public interface ServiceMessage : RichMessage {
-    public companion object Key : Message.Key<ServiceMessage> {
+    public companion object Key : ConstrainSingle.Key<ServiceMessage> {
         public override val typeName: String get() = "ServiceMessage"
     }
 
@@ -258,7 +258,7 @@ internal class LongMessage internal constructor(override val content: String, va
     AbstractServiceMessage() {
     override val serviceId: Int get() = 35
 
-    companion object Key : Message.Key<LongMessage> {
+    companion object Key : ConstrainSingle.Key<LongMessage> {
         override val typeName: String get() = "LongMessage"
     }
 }

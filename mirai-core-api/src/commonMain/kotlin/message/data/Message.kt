@@ -27,9 +27,10 @@ import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.message.MessageSerializerImpl
-import net.mamoe.mirai.message.data.Message.Key
+import net.mamoe.mirai.message.data.ConstrainSingle.Key
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.contracts.contract
+import kotlin.reflect.KClass
 
 /**
  * 可发送的或从服务器接收的消息.
@@ -78,23 +79,6 @@ import kotlin.contracts.contract
  */
 @Serializable(Message.Serializer::class)
 public interface Message { // must be interface. Don't consider any changes.
-    /**
-     * 类型 Key. 由伴生对象实现, 表示一个 [Message] 对象的类型.
-     *
-     * 除 [MessageChain] 外, 每个 [Message] 类型都拥有一个`伴生对象`(companion object) 来持有一个 Key
-     * 在 [MessageChain.get] 时将会使用到这个 Key 进行判断类型.
-     *
-     * #### 用例
-     * [MessageChain.get]: 允许使用数组访问操作符获取指定类型的消息元素 ```val image: Image = chain[Image]```
-     *
-     * @param M 指代持有这个 Key 的消息类型
-     */
-    public interface Key<out M : Message> {
-        /**
-         * 此 [Key] 指代的 [Message] 类型名. 一般为 `class.simpleName`, 如 "QuoteReply", "PlainText"
-         */
-        public val typeName: String
-    }
 
     /**
      * 将 `this` 和 [tail] 连接.
@@ -311,12 +295,36 @@ public interface MessageMetadata : SingleMessage {
  *
  * 实现此接口的元素将会在连接时自动处理替换.
  */
-public interface ConstrainSingle<out M : Message> : MessageMetadata {
+public interface ConstrainSingle<out M : Message> : SingleMessage {
     /**
      * 用于判断是否为同一种元素的 [Key]
      * @see Key 查看更多信息
      */
     public val key: Key<M>
+
+    /**
+     * 类型 Key. 由伴生对象实现, 表示一个 [Message] 对象的类型.
+     *
+     * 除 [MessageChain] 外, 每个 [Message] 类型都拥有一个伴生对象 (companion object) 来持有一个 Key
+     *
+     * 在 [MessageChain.get] 时将会使用到这个 Key 进行判断类型.
+     *
+     * #### 用例
+     * [MessageChain.get][MessageChain.get]: 允许使用数组访问操作符获取指定类型的消息元素
+     * ```
+     * val image: Image = chain[Image]
+     * ```
+     *
+     * @param M 指代持有这个 Key 的消息类型
+     */
+    public interface Key<out M : Message> {
+        /**
+         * 此 [Key] 指代的 [Message] 类型名. 一般为 [KClass.simpleName], 如 "QuoteReply", "PlainText"
+         *
+         * 仅用于提示作用.
+         */
+        public val typeName: String
+    }
 }
 
 /**

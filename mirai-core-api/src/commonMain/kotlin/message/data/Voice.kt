@@ -21,7 +21,7 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 @MiraiExperimentalApi
 public abstract class PttMessage : MessageContent {
 
-    public companion object Key : Message.Key<PttMessage> {
+    public companion object Key : ConstrainSingle.Key<PttMessage> {
         public override val typeName: String
             get() = "PttMessage"
     }
@@ -43,7 +43,7 @@ public class Voice @MiraiInternalApi constructor(
     private val _url: String
 ) : PttMessage() {
 
-    public companion object Key : Message.Key<Voice> {
+    public companion object Key : ConstrainSingle.Key<Voice> {
         override val typeName: String
             get() = "Voice"
     }

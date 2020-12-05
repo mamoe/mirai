@@ -27,8 +27,7 @@ public data class Face(public val id: Int) : // used in delegation
 
     public override fun toString(): String = "[mirai:face:$id]"
     public override fun contentToString(): String =
-        if (id >= 0 && id <= 255)
-            FaceName.names[id]
+        if (id in 0..255) FaceName.names[id]
         else "[表情]"
 
     public override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
@@ -38,10 +37,7 @@ public data class Face(public val id: Int) : // used in delegation
      * @author LamGC
      */
     @Suppress("SpellCheckingInspection", "unused")
-    public companion object IdList : Message.Key<Face> {
-        public override val typeName: String
-            get() = "Face"
-
+    public companion object {
         public const val unknown: Int = 0xff
         public const val jingya: Int = 0
         public const val piezui: Int = 1

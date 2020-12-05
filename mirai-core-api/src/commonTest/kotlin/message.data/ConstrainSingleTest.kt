@@ -15,14 +15,15 @@ import kotlin.test.assertTrue
 
 
 internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleMessage>, Any() {
-    companion object Key : Message.Key<TestConstrainSingleMessage> {
+    companion object Key : ConstrainSingle.Key<TestConstrainSingleMessage> {
         override val typeName: String
             get() = "TestMessage"
     }
 
     override fun toString(): String = "<TestConstrainSingleMessage#${super.hashCode()}>"
+    override fun contentToString(): String = ""
 
-    override val key: Message.Key<TestConstrainSingleMessage>
+    override val key: ConstrainSingle.Key<TestConstrainSingleMessage>
         get() = Key
 }
 

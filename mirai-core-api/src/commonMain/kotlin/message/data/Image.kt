@@ -109,9 +109,7 @@ public interface Image : Message, MessageContent, CodableMessage {
         }
     }
 
-    public companion object : Message.Key<Image> {
-        override val typeName: String get() = "Image"
-
+    public companion object {
         /**
          * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
          * 这个图片必须是服务器已经存在的图片.
@@ -189,9 +187,7 @@ public val Image.md5: ByteArray
 // NotOnlineImage
 public abstract class FriendImage @MiraiInternalApi public constructor() :
     AbstractImage() { // change to sealed in the future.
-    public companion object Key : Message.Key<FriendImage> {
-        public override val typeName: String get() = "FriendImage"
-    }
+    public companion object
 }
 
 /**
@@ -203,9 +199,7 @@ public abstract class FriendImage @MiraiInternalApi public constructor() :
 // CustomFace
 public abstract class GroupImage @MiraiInternalApi public constructor() :
     AbstractImage() { // change to sealed in the future.
-    public companion object Key : Message.Key<GroupImage> {
-        public override val typeName: String get() = "GroupImage"
-    }
+    public companion object
 }
 
 /**

@@ -14,9 +14,6 @@
 package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 import kotlin.native.concurrent.SharedImmutable
 
 // region image
@@ -25,7 +22,7 @@ import kotlin.native.concurrent.SharedImmutable
 //// IMPLEMENTATIONS ////
 /////////////////////////
 
-private fun Message.hasDuplicationOfConstrain(key: Message.Key<*>): Boolean {
+private fun Message.hasDuplicationOfConstrain(key: ConstrainSingle.Key<*>): Boolean {
     return when (this) {
         is SingleMessage -> (this as? ConstrainSingle<*>)?.key == key
         is CombinedMessage -> return this.left.hasDuplicationOfConstrain(key) || this.tail.hasDuplicationOfConstrain(key)
@@ -191,16 +188,9 @@ internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Bool
 
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR", "DEPRECATION")
-internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M? = when (key) {
-    At -> firstIsInstanceOrNull<At>()
-    AtAll -> firstIsInstanceOrNull<AtAll>()
-    PlainText -> firstIsInstanceOrNull<PlainText>()
-    Image -> firstIsInstanceOrNull<Image>()
+internal fun <M : Message> MessageChain.firstOrNullImpl(key: ConstrainSingle.Key<M>): M? = when (key) {
     //  OnlineImage -> firstIsInstanceOrNull<OnlineImage>()
     //  OfflineImage -> firstIsInstanceOrNull<OfflineImage>()
-    GroupImage -> firstIsInstanceOrNull<GroupImage>()
-    FriendImage -> firstIsInstanceOrNull<FriendImage>()
-    Face -> firstIsInstanceOrNull<Face>()
     QuoteReply -> firstIsInstanceOrNull<QuoteReply>()
     MessageSource -> firstIsInstanceOrNull<MessageSource>()
     OnlineMessageSource -> firstIsInstanceOrNull<OnlineMessageSource>()
@@ -215,14 +205,9 @@ internal fun <M : Message> MessageChain.firstOrNullImpl(key: Message.Key<M>): M?
     LongMessage -> firstIsInstanceOrNull()
     RichMessage -> firstIsInstanceOrNull<RichMessage>()
     LightApp -> firstIsInstanceOrNull<LightApp>()
-    PokeMessage -> firstIsInstanceOrNull<PokeMessage>()
-    HummerMessage -> firstIsInstanceOrNull<HummerMessage>()
     FlashImage -> firstIsInstanceOrNull<FlashImage>()
     GroupFlashImage -> firstIsInstanceOrNull<GroupFlashImage>()
     FriendFlashImage -> firstIsInstanceOrNull<FriendFlashImage>()
-    CustomMessage -> firstIsInstanceOrNull()
-    CustomMessageMetadata -> firstIsInstanceOrNull()
-    ForwardMessage -> firstIsInstanceOrNull()
     PttMessage -> firstIsInstanceOrNull<PttMessage>()
     Voice -> firstIsInstanceOrNull<Voice>()
     else -> {

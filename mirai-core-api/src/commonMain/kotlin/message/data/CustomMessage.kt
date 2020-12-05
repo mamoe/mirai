@@ -60,7 +60,7 @@ public sealed class CustomMessage : SingleMessage {
          * 应确保唯一且不变.
          */
         public final override val typeName: String
-    ) : Message.Key<M> {
+    ) : ConstrainSingle.Key<M> {
 
         init {
             @Suppress("LeakingThis")
@@ -114,8 +114,7 @@ public sealed class CustomMessage : SingleMessage {
         public override fun load(input: ByteArray): M = json.decodeFromString(serializer(), String(input))
     }
 
-    public companion object Key : Message.Key<CustomMessage> {
-        override val typeName: String get() = "CustomMessage"
+    public companion object {
         private val factories: LockFreeLinkedList<Factory<*>> = LockFreeLinkedList()
 
         internal fun register(factory: Factory<out CustomMessage>) {
@@ -196,14 +195,12 @@ public fun <T : CustomMessage> T.toByteArray(): ByteArray {
 @Serializable
 @MiraiExperimentalApi
 public abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
-    public companion object Key : Message.Key<CustomMessageMetadata> {
-        override val typeName: String get() = "CustomMessageMetadata"
-    }
-
     public open fun customToString(): ByteArray = customToStringImpl(this.getFactory())
 
     final override fun toString(): String =
         "[mirai:custom:${getFactory().typeName}:${String(customToString())}]"
+
+    public companion object
 }
 
 

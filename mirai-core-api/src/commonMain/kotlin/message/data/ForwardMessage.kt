@@ -174,9 +174,7 @@ public data class ForwardMessage(
         public val message: Message
     }
 
-    public companion object Key : Message.Key<ForwardMessage> {
-        public override val typeName: String get() = "ForwardMessage"
-    }
+    public companion object
 }
 
 

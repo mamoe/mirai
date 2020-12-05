@@ -52,10 +52,7 @@ private constructor(
     public override fun toString(): String = "[mirai:at:$target,$display]"
     public override fun contentToString(): String = this.display
 
-    public companion object Key : Message.Key<At> {
-        public override val typeName: String
-            get() = "At"
-
+    public companion object {
         /**
          * 构造一个 [At], 仅供内部使用, 否则可能造成消息无法发出的问题.
          */

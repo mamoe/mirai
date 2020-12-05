@@ -436,14 +436,14 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                         CustomMessage.load(this)
                     }.fold(
                         onFailure = {
-                            if (it is CustomMessage.Key.CustomMessageFullDataDeserializeInternalException) {
+                            if (it is CustomMessage.Companion.CustomMessageFullDataDeserializeInternalException) {
                                 throw IllegalStateException(
                                     "Internal error: " +
                                             "exception while deserializing CustomMessage head data," +
                                             " data=${element.customElem.data.toUHexString()}", it
                                 )
                             } else {
-                                it as CustomMessage.Key.CustomMessageFullDataDeserializeUserException
+                                it as CustomMessage.Companion.CustomMessageFullDataDeserializeUserException
                                 throw IllegalStateException(
                                     "User error: " +
                                             "exception while deserializing CustomMessage body," +
