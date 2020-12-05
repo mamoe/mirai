@@ -114,7 +114,7 @@ public inline fun <M : Message> MessageChain.getOrFail(
 public inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
     for (element in this) {
         if (element !is MessageMetadata) {
-            check(element is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
+            check(element is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
             block(element)
         }
     }
@@ -127,7 +127,7 @@ public inline fun MessageChain.forEachContent(block: (MessageContent) -> Unit) {
 public inline fun MessageChain.allContent(block: (MessageContent) -> Boolean): Boolean {
     this.forEach {
         if (it !is MessageMetadata) {
-            check(it is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
+            check(it is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
             if (!block(it)) return false
         }
     }
@@ -141,7 +141,7 @@ public inline fun MessageChain.allContent(block: (MessageContent) -> Boolean): B
 public inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): Boolean {
     this.forEach {
         if (it !is MessageMetadata) {
-            check(it is MessageContent) { "internal error: Message must be either MessageMetaData or MessageContent" }
+            check(it is MessageContent) { "internal error: Message must be either MessageMetadata or MessageContent" }
             if (block(it)) return false
         }
     }
