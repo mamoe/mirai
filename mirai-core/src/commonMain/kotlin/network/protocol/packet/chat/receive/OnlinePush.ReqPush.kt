@@ -207,7 +207,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                 }
                 else -> {
                     group.botAsMember.checkIsMemberImpl()._muteTimestamp =
-                        currentTimeSeconds.toInt() + timeSeconds
+                        currentTimeSeconds().toInt() + timeSeconds
                     sequenceOf(BotMuteEvent(timeSeconds, operator))
                 }
             }
@@ -220,7 +220,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
             return@lambda732 emptySequence()
         }
 
-        member._muteTimestamp = currentTimeSeconds.toInt() + timeSeconds
+        member._muteTimestamp = currentTimeSeconds().toInt() + timeSeconds
         return@lambda732 if (timeSeconds == 0) sequenceOf(MemberUnmuteEvent(member, operator))
         else sequenceOf(MemberMuteEvent(member, timeSeconds, operator))
     },

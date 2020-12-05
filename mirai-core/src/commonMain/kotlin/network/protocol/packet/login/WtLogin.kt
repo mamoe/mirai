@@ -516,7 +516,7 @@ internal class WtLogin {
 
                     // TODO sigMap??? =0x21410e0 // from qq
 
-                    val creationTime = currentTimeSeconds
+                    val creationTime = currentTimeSeconds()
                     val expireTime = creationTime + 2160000L
 
                     val outPSKeyMap: PSKeyMap = mutableMapOf()
@@ -689,7 +689,7 @@ internal class WtLogin {
          */
         private fun QQAndroidClient.analysisTlv130(t130: ByteArray) = t130.read {
             discardExact(2)
-            timeDifference = readUInt().toLong() - currentTimeSeconds
+            timeDifference = readUInt().toLong() - currentTimeSeconds()
             ipFromT149 = readBytes(4)
         }
 

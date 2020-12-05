@@ -189,7 +189,7 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
         internalIds = intArrayOf(Random.nextInt().absoluteValue),
         sender = client.bot,
         target = member,
-        time = currentTimeSeconds.toInt(),
+        time = currentTimeSeconds().toInt(),
         sequenceIds = intArrayOf(client.atomicNextMessageSequenceId()),
         originalMessage = message
     )
@@ -217,7 +217,7 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
         internalIds = intArrayOf(rand),
         sender = client.bot,
         target = qq,
-        time = currentTimeSeconds.toInt(),
+        time = currentTimeSeconds().toInt(),
         sequenceIds = intArrayOf(client.nextFriendSeq()),
         originalMessage = message
     )
@@ -245,7 +245,7 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
         internalIds = intArrayOf(Random.nextInt().absoluteValue),
         sender = client.bot,
         target = group,
-        time = currentTimeSeconds.toInt(),
+        time = currentTimeSeconds().toInt(),
         originalMessage = message//,
         //   sourceMessage = message
     )

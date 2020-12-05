@@ -19,12 +19,15 @@ import kotlin.time.ExperimentalTime
 
 /**
  * 时间戳
+ *
+ * @see System.currentTimeMillis
  */
 public fun currentTimeMillis(): Long = System.currentTimeMillis()
 
-@get:JvmSynthetic
-public inline val currentTimeSeconds: Long
-    get() = currentTimeMillis() / 1000
+/**
+ * 时间戳到秒
+ */
+public fun currentTimeSeconds(): Long = currentTimeMillis() / 1000
 
 
 // 临时使用, 待 Kotlin Duration 稳定后使用 Duration.

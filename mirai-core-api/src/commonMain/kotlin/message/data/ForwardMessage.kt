@@ -196,7 +196,7 @@ public fun Iterable<MessageEvent>.toForwardMessage(displayStrategy: DisplayStrat
 @JvmOverloads
 public fun Message.toForwardMessage(
     sender: User,
-    time: Int = currentTimeSeconds.toInt(),
+    time: Int = currentTimeSeconds().toInt(),
     displayStrategy: DisplayStrategy = DisplayStrategy
 ): ForwardMessage = this.toForwardMessage(sender.id, sender.nameCardOrNick, time, displayStrategy)
 
@@ -207,7 +207,7 @@ public fun Message.toForwardMessage(
 public fun Message.toForwardMessage(
     senderId: Long,
     senderName: String,
-    time: Int = currentTimeSeconds.toInt(),
+    time: Int = currentTimeSeconds().toInt(),
     displayStrategy: DisplayStrategy = DisplayStrategy
 ): ForwardMessage =
     RawForwardMessage(listOf(ForwardMessage.Node(senderId, time, senderName, this))).render(displayStrategy)
@@ -331,7 +331,7 @@ public class ForwardMessageBuilder private constructor(
      * 当前时间.
      * 在使用 [says] 时若不指定时间, 则会使用 [currentTime] 自增 1 的时间.
      */
-    public var currentTime: Int = currentTimeSeconds.toInt()
+    public var currentTime: Int = currentTimeSeconds().toInt()
 
     public inner class BuilderNode : ForwardMessage.INode {
 

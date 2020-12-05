@@ -564,7 +564,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
         val group = getGroup(groupCode)
 
-        val time = currentTimeSeconds
+        val time = currentTimeSeconds()
         val sequenceId = client.atomicNextMessageSequenceId()
 
         network.run {

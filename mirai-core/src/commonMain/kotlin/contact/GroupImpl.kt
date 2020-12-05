@@ -323,7 +323,7 @@ internal class GroupImpl(
                     listOf(
                         ForwardMessage.Node(
                             senderId = bot.id,
-                            time = currentTimeSeconds.toInt(),
+                            time = currentTimeSeconds().toInt(),
                             message = chain,
                             senderName = bot.nick
                         )

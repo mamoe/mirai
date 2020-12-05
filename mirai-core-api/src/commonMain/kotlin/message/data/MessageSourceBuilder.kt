@@ -137,7 +137,7 @@ public abstract class MessageSourceBuilder {
     internal val originalMessages: MessageChainBuilder = MessageChainBuilder()
 
     public fun time(from: MessageSource): MessageSourceBuilder = apply { this.time = from.time }
-    public val now: Int get() = currentTimeSeconds.toInt()
+    public val now: Int get() = currentTimeSeconds().toInt()
     public fun time(value: Int): MessageSourceBuilder = apply { this.time = value }
 
     public fun internalId(from: MessageSource): MessageSourceBuilder = apply { this.internalIds = from.internalIds }
@@ -218,7 +218,7 @@ internal class MessageSourceBuilderImpl : MessageSourceBuilder() {
     override var targetUin: Long = 0
 
     override var ids: IntArray = intArrayOf()
-    override var time: Int = currentTimeSeconds.toInt()
+    override var time: Int = currentTimeSeconds().toInt()
     override var internalIds: IntArray = intArrayOf()
 
     @JvmSynthetic

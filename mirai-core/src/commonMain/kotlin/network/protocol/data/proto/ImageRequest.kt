@@ -13,7 +13,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.utils.currentTimeSeconds
-import kotlin.jvm.JvmField
 
 internal interface ImgReq : ProtoBuf
 
@@ -37,6 +36,6 @@ internal class GetImgUrlReq(
     @ProtoNumber(11) @JvmField val addressBook: Int = 0,//[ChatType.internalID]== 1006为1[为CONTACT时] 我觉得发0没问题
     @ProtoNumber(12) @JvmField val buType: Int = 1,//确定
     @ProtoNumber(13) @JvmField val buildVer: String = "8.2.7.4410",//版本号
-    @ProtoNumber(14) @JvmField val timestamp: Int = currentTimeSeconds.toInt(),//(pic_up_timestamp)
+    @ProtoNumber(14) @JvmField val timestamp: Int = currentTimeSeconds().toInt(),//(pic_up_timestamp)
     @ProtoNumber(15) @JvmField val requestTransferType: Int = 1
 ) : ImgReq
