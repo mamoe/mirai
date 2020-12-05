@@ -14,7 +14,6 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -87,7 +86,7 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
     public operator fun <M : Message> get(key: Message.Key<M>): M? = firstOrNull(key)
 
     public object Serializer : KSerializer<MessageChain> {
-        private val delegate = ListSerializer(PolymorphicSerializer(Message::class))
+        private val delegate = ListSerializer(Message.Serializer)
         override val descriptor: SerialDescriptor = delegate.descriptor
         override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).asMessageChain()
         override fun serialize(encoder: Encoder, value: MessageChain): Unit = delegate.serialize(encoder, value)
