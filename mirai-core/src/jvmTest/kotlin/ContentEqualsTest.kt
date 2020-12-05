@@ -12,7 +12,9 @@ package net.mamoe.mirai.internal
 import net.mamoe.mirai.message.data.ConstrainSingle
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.message.data.content
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -55,13 +57,11 @@ internal class ContentEqualsTest {
             })
         }
 
-        assertTrue {
-            buildMessageChain {
-                +mySource
-                +"test"
-                +mySource
-            }.contentEquals("test")
-        }
+        assertEquals("test", buildMessageChain {
+            +mySource
+            +"test"
+            +mySource
+        }.content)
 
         assertTrue {
             buildMessageChain {
@@ -85,13 +85,12 @@ internal class ContentEqualsTest {
             })
         }
 
-        assertTrue {
-            buildMessageChain {
-                +mySource
-                +"test"
-                +mySource
-            }.contentEquals("test")
-        }
+
+        assertEquals("test", buildMessageChain {
+            +mySource
+            +"test"
+            +mySource
+        }.content)
 
         assertTrue {
             buildMessageChain {

@@ -141,7 +141,7 @@ public interface Message { // must be interface. Don't consider any changes.
      * - `this` 与 [another] 的 [contentToString] 相等
      * - `this` 为 [another] 的所有 [MessageContent] 都 [相等][Message.equals] 且有同样的排列顺序.
      */
-    public /* final */ fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
+    public fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
         contentEqualsImpl(another, ignoreCase)
 
     /**
@@ -149,44 +149,38 @@ public interface Message { // must be interface. Don't consider any changes.
      *
      * 若本函数返回 `true`, 则表明:
      * - [contentToString] 与 [another] 相等
-     * - 若 `this` 为 [MessageChain], 则只包含 [MessageMetadata] 和 [PlainText]
      */
-    public /* final */ fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
-        if (!this.contentToString().equals(another, ignoreCase = ignoreCase)) return false
-        return when (this) {
-            is SingleMessage -> true
-            is MessageChain -> this.all { it is MessageMetadata || it is PlainText }
-            else -> error("shouldn't be reached")
-        }
+    public fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
+        return this.contentToString().equals(another, ignoreCase = ignoreCase)
     }
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
-    public /* final */ operator fun plus(another: MessageChain): MessageChain = this + another as Message
+    public operator fun plus(another: MessageChain): MessageChain = this + another as Message
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
-    public /* final */ operator fun plus(another: Message): MessageChain = this.followedBy(another)
+    public operator fun plus(another: Message): MessageChain = this.followedBy(another)
 
     /** 将 [another] 连接到这个消息的尾部. */
-    public /* final */ operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
+    public operator fun plus(another: SingleMessage): MessageChain = this.followedBy(another)
 
     /** 将 [another] 作为 [PlainText] 连接到这个消息的尾部. */
-    public /* final */ operator fun plus(another: String): MessageChain = this.followedBy(PlainText(another))
+    public operator fun plus(another: String): MessageChain = this.followedBy(PlainText(another))
 
     /** 将 [another] 作为 [PlainText] 连接到这个消息的尾部. */
-    public  /* final */ operator fun plus(another: CharSequence): MessageChain =
+    public operator fun plus(another: CharSequence): MessageChain =
         this.followedBy(PlainText(another.toString()))
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
-    public /* final */ operator fun plus(another: Iterable<Message>): MessageChain =
+    public operator fun plus(another: Iterable<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
     @JvmName("plusIterableString")
-    public  /* final */ operator fun plus(another: Iterable<String>): MessageChain =
+    public operator fun plus(another: Iterable<String>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
     /** 将 [another] 按顺序连接到这个消息的尾部. */
-    public /* final */ operator fun plus(another: Sequence<Message>): MessageChain =
+    public operator fun plus(another: Sequence<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
     public object Serializer :
@@ -287,7 +281,7 @@ public interface MessageMetadata : SingleMessage {
     /**
      * 返回空字符串
      */
-    /* final */  override fun contentToString(): String = ""
+    override fun contentToString(): String = ""
 }
 
 /**
