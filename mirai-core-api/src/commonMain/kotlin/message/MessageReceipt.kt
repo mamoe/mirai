@@ -11,9 +11,12 @@
 
 package net.mamoe.mirai.message
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.message.MessageReceipt.Companion.quote
+import net.mamoe.mirai.message.MessageReceipt.Companion.quoteReply
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.MiraiExperimentalApi
@@ -55,61 +58,59 @@ public open class MessageReceipt<out C : Contact> @MiraiExperimentalApi("The con
      * 是否为发送给群的消息的回执
      */
     public val isToGroup: Boolean get() = target is Group
+
+    public companion object {
+        /**
+         * 撤回这条消息. [recallMessage] 或 [recallIn] 只能被调用一次.
+         *
+         * @see IMirai.recallMessage
+         * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
+         */
+        @JvmBlockingBridge
+        public suspend inline fun MessageReceipt<*>.recall() {
+            return Mirai.recallMessage(target.bot, source)
+        }
+
+        /**
+         * 引用这条消息.
+         * @see MessageChain.quote 引用一条消息
+         */
+        public inline fun MessageReceipt<*>.quote(): QuoteReply = this.source.quote()
+
+        /**
+         * 引用这条消息并回复.
+         * @see MessageChain.quote 引用一条消息
+         */
+        @JvmBlockingBridge
+        public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: Message): MessageReceipt<C> {
+            @Suppress("UNCHECKED_CAST")
+            return target.sendMessage(this.quote() + message) as MessageReceipt<C>
+        }
+
+        /**
+         * 引用这条消息并回复.
+         * @see MessageChain.quote 引用一条消息
+         */
+        @JvmBlockingBridge
+        public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: String): MessageReceipt<C> {
+            return this.quoteReply(PlainText(message))
+        }
+    }
 }
-
-/**
- * 撤回这条消息. [recallMessage] 或 [recallIn] 只能被调用一次.
- *
- * @see IMirai.recallMessage
- * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
- */
-public suspend inline fun MessageReceipt<*>.recall() {
-    return Mirai.recallMessage(target.bot, source)
-}
-
-/**
- * 引用这条消息.
- * @see MessageChain.quote 引用一条消息
- */
-@JvmSynthetic
-public inline fun MessageReceipt<*>.quote(): QuoteReply = this.source.quote()
-
-/**
- * 引用这条消息并回复.
- * @see MessageChain.quote 引用一条消息
- */
-@JvmSynthetic
-public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: Message): MessageReceipt<C> {
-    @Suppress("UNCHECKED_CAST")
-    return target.sendMessage(this.quote() + message) as MessageReceipt<C>
-}
-
-/**
- * 引用这条消息并回复.
- * @see MessageChain.quote 引用一条消息
- */
-@JvmSynthetic
-public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: String): MessageReceipt<C> {
-    return this.quoteReply(PlainText(message))
-}
-
 
 /**
  * 获取源消息 [MessageSource.ids]
  *
  * @see MessageSource.ids
  */
-@get:JvmSynthetic
 public inline val MessageReceipt<*>.sourceIds: IntArray
     get() = this.source.ids
-
 
 /**
  * 获取源消息 [MessageSource.internalIds]
  *
  * @see MessageSource.ids
  */
-@get:JvmSynthetic
 public inline val MessageReceipt<*>.sourceInternalIds: IntArray
     get() = this.source.internalIds
 
@@ -118,7 +119,5 @@ public inline val MessageReceipt<*>.sourceInternalIds: IntArray
  *
  * @see MessageSource.time
  */
-@get:JvmSynthetic
 public inline val MessageReceipt<*>.sourceTime: Int
     get() = this.source.time
-

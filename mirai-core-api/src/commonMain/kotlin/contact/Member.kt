@@ -11,16 +11,17 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.time.Duration
@@ -108,7 +109,7 @@ public interface Member : User {
      *
      * @throws PermissionDeniedException 无权限修改时抛出
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun mute(durationSeconds: Int)
 
     /**
@@ -122,7 +123,7 @@ public interface Member : User {
      *
      * @throws PermissionDeniedException 无权限修改时抛出
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun unmute()
 
     /**
@@ -133,7 +134,7 @@ public interface Member : User {
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun kick(message: String = "")
 
     /**
@@ -155,7 +156,7 @@ public interface Member : User {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
     /**

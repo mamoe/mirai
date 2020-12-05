@@ -13,12 +13,13 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageReceipt.Companion.quote
+import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.quote
-import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.WeakRefProperty
@@ -57,7 +58,7 @@ public interface Contact : ContactOrBot, CoroutineScope {
      *
      * @return 消息回执. 可 [引用回复][MessageReceipt.quote]（仅群聊）或 [撤回][MessageReceipt.recall] 这条消息.
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 
     /**
@@ -71,7 +72,7 @@ public interface Contact : ContactOrBot, CoroutineScope {
      * @throws EventCancelledException 当发送消息事件被取消时抛出
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun uploadImage(image: ExternalImage): Image
 
     /**

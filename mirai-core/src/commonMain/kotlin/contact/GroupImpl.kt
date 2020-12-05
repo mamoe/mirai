@@ -268,7 +268,6 @@ internal class GroupImpl(
         return members.firstOrNull { it.id == id }
     }
 
-    @JvmSynthetic
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
         require(message.isContentNotEmpty()) { "message is empty" }
         check(!isBotMuted) { throw BotIsBeingMutedException(this) }
@@ -381,7 +380,6 @@ internal class GroupImpl(
 
     @Suppress("DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @OptIn(ExperimentalTime::class)
-    @JvmSynthetic
     override suspend fun uploadImage(image: ExternalImage): Image = try {
         if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
             image.input.init(bot.configuration.fileCacheStrategy)

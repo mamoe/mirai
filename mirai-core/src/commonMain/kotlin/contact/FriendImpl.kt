@@ -93,7 +93,6 @@ internal class FriendImpl(
     override val remark: String
         get() = friendInfo.remark
 
-    @JvmSynthetic
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
         require(message.isContentNotEmpty()) { "message is empty" }
@@ -108,8 +107,7 @@ internal class FriendImpl(
 
     override fun toString(): String = "Friend($id)"
 
-    @JvmSynthetic
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+   @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     override suspend fun uploadImage(image: ExternalImage): Image = try {
         if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
             image.input.init(bot.configuration.fileCacheStrategy)

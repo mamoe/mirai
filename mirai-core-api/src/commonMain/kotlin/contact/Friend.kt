@@ -12,16 +12,17 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
@@ -70,8 +71,8 @@ public interface Friend : User, CoroutineScope {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmSynthetic
-    override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
 
     /**
      * 创建一个 "戳一戳" 消息

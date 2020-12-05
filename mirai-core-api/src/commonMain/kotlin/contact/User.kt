@@ -12,15 +12,16 @@
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.recall
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
@@ -78,7 +79,7 @@ public interface User : Contact, CoroutineScope {
      *
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<User>
 
     /**
@@ -100,7 +101,7 @@ public interface User : Contact, CoroutineScope {
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public override suspend fun uploadImage(image: ExternalImage): Image
 }
 

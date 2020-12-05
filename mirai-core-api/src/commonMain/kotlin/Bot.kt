@@ -15,6 +15,7 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.*
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
@@ -165,7 +166,7 @@ public abstract class Bot internal constructor(
      * @throws LoginFailedException 正常登录失败时抛出
      * @see alsoLogin `.apply { login() }` 捷径
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public abstract suspend fun login()
 
     /**
