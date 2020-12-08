@@ -13,9 +13,8 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
+import kotlin.contracts.InvocationKind.EXACTLY_ONCE
+import kotlin.contracts.contract
 
 /**
  * 构建一个 [MessageChain]
@@ -24,6 +23,7 @@ import kotlin.jvm.JvmSynthetic
  */
 @JvmSynthetic
 public inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): MessageChain {
+    contract { callsInPlace(block, EXACTLY_ONCE) }
     return MessageChainBuilder().apply(block).asMessageChain()
 }
 
@@ -34,6 +34,7 @@ public inline fun buildMessageChain(block: MessageChainBuilder.() -> Unit): Mess
  */
 @JvmSynthetic
 public inline fun buildMessageChain(initialSize: Int, block: MessageChainBuilder.() -> Unit): MessageChain {
+    contract { callsInPlace(block, EXACTLY_ONCE) }
     return MessageChainBuilder(initialSize).apply(block).asMessageChain()
 }
 
@@ -64,7 +65,7 @@ public open class MessageChainBuilder private constructor(
         flushCache()
         @Suppress("UNCHECKED_CAST")
         return when (element) {
-            is ConstrainSingle<*> -> addAndCheckConstrainSingle(element)
+            is ConstrainSingle -> addAndCheckConstrainSingle(element)
             is SingleMessage -> container.add(element) // no need to constrain
             is Iterable<*> -> this.addAll(element.flatten())
             else -> error("stub")
@@ -214,14 +215,14 @@ public open class MessageChainBuilder private constructor(
     private var firstConstrainSingleIndex = -1
 
     private fun addAndCheckConstrainSingle(element: SingleMessage): Boolean {
-        if (element is ConstrainSingle<*>) {
+        if (element is ConstrainSingle) {
             if (firstConstrainSingleIndex == -1) {
                 firstConstrainSingleIndex = container.size
                 return container.add(element)
             }
             val key = element.key
 
-            val index = container.indexOfFirst(firstConstrainSingleIndex) { it is ConstrainSingle<*> && it.key == key }
+            val index = container.indexOfFirst(firstConstrainSingleIndex) { it is ConstrainSingle && it.key == key }
             if (index != -1) {
                 container[index] = element
             } else {
