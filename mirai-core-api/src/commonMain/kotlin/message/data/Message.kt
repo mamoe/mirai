@@ -300,28 +300,64 @@ public interface MessageMetadata : SingleMessage {
  * 约束一个 [MessageChain] 中只存在这一种类型的元素. 新元素将会替换旧元素, 保持原顺序.
  *
  * 实现此接口的元素将会在连接时自动处理替换.
+ *
+ * @see AbstractMessageKey
+ * @see AbstractPolymorphicMessageKey
+ *
+ * @see MessageSource
  */
 @ExperimentalMessageKey
 public interface ConstrainSingle : SingleMessage {
     /**
-     * 用于判断是否为同一种元素的 [MessageKey]
+     * 用于判断是否为同一种元素的 [MessageKey]. 使用多态类型 [MessageKey] 最上层的 [MessageKey].
      * @see MessageKey 查看更多信息
      */
     @ExperimentalMessageKey
     public val key: MessageKey<*>
 }
 
+/**
+ * 独立的 [MessageKey] 的实现. '独立' 即 `final`, 不支持多态类型. 适用于作为最顶层的 [MessageKey], 如 [MessageSource].
+ *
+ * @see AbstractPolymorphicMessageKey
+ */
 @ExperimentalMessageKey
 public abstract class AbstractMessageKey<out M : SingleMessage>(
     override val safeCast: (SingleMessage) -> M?,
-) : MessageKey<M> {
-    internal fun tryCast(element: SingleMessage): M? = safeCast(element)
-    internal open fun isSubKey(key: MessageKey<*>): Boolean = key === this
-}
+) : MessageKey<M>
 
+/**
+ * 多态 [MessageKey].
+ *
+ * 示例: [HummerMessage]
+ * ```
+ *               MessageContent
+ *                     ↑
+ *               HummerMessage
+ *                     ↑
+ *        +------------+-------------+
+ *        |            |             |
+ *  PokeMessage     VipFace      FlashImage
+ *
+ * ```
+ *
+ * 当 [连接][Message.plus] 一个 [VipFace] 到一个 [MessageChain] 时,
+ * 由于 [VipFace] 最上层为 [MessageContent], 消息链中第一个 [MessageContent] 会被 (保留顺序地) 替换为 [VipFace], 其他所有 [MessageContent] 都会被删除.
+ *
+ * 如:
+ * ```
+ * val source: MessageSource = ...
+ *
+ * val result = messageChainOf(PlainText("a"), PlainText("b"), source, AtAll) + VipFace.LiuLian
+ * // result 为 [VipFace.LiuLian, source]
+ *
+ * val result = source1 + source2
+ * // result 为 [source2], 总是右侧替换左侧
+ * ```
+ */
 @ExperimentalMessageKey
 public abstract class AbstractPolymorphicMessageKey<out B : SingleMessage, out M : B>(
-    public val baseKey: MessageKey<B>,
+    baseKey: MessageKey<B>,
     safeCast: (SingleMessage) -> M?,
 ) : MessageKey<M>, AbstractMessageKey<M>(safeCast) {
     internal val topmostKey: MessageKey<*> =
@@ -329,7 +365,7 @@ public abstract class AbstractPolymorphicMessageKey<out B : SingleMessage, out M
 }
 
 /**
- * 消息内容
+ * 带内容的消息.
  *
  * @see PlainText 纯文本
  * @see At At 一个群成员.
