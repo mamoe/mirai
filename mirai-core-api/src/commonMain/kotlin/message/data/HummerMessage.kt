@@ -16,8 +16,9 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
-import net.mamoe.mirai.message.data.VipFace.Companion
 import net.mamoe.mirai.message.data.VipFace.Kind
+import net.mamoe.mirai.utils.castOrNull
+import net.mamoe.mirai.utils.safeCast
 
 /**
  * 一些特殊的消息
@@ -26,8 +27,9 @@ import net.mamoe.mirai.message.data.VipFace.Kind
  * @see FlashImage 闪照
  */
 @Serializable
-public sealed class HummerMessage : MessageContent {
-    public companion object
+public sealed class HummerMessage : MessageContent, ConstrainSingle {
+    public companion object Key :
+        AbstractPolymorphicMessageKey<MessageContent, HummerMessage>(MessageContent, { it.castOrNull() })
     // has service type etc.
 }
 
@@ -53,8 +55,12 @@ public data class PokeMessage internal constructor(
     public val type: Int,
     public val id: Int
 ) : HummerMessage(), CodableMessage {
+    override val key: MessageKey<HummerMessage> get() = Key
+
     @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    public companion object {
+    public companion object Key :
+        AbstractPolymorphicMessageKey<HummerMessage, PokeMessage>(HummerMessage, { it.castOrNull() }) {
+
         /** 戳一戳 */
         @JvmField
         public val Poke: PokeMessage = PokeMessage("戳一戳", 1, -1)
@@ -174,8 +180,12 @@ public data class VipFace internal constructor(
         }
     }
 
+    override val key: MessageKey<VipFace> get() = Key
+
     @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    public companion object {
+    public companion object Key :
+        AbstractPolymorphicMessageKey<HummerMessage, VipFace>(HummerMessage, { it.safeCast() }) {
+
         @JvmStatic
         public val LiuLian: Kind = 9 to "榴莲"
 
@@ -245,12 +255,11 @@ public data class VipFace internal constructor(
  * @see Image 查看图片相关信息
  */
 @Serializable
-public sealed class FlashImage : MessageContent, HummerMessage(), CodableMessage, ConstrainSingle<FlashImage> {
-    override val key: ConstrainSingle.Key<FlashImage> get() = Key
+public sealed class FlashImage : MessageContent, HummerMessage(), CodableMessage, ConstrainSingle {
+    override val key: MessageKey<FlashImage> get() = Key
 
-    public companion object Key : ConstrainSingle.Key<FlashImage> {
-        override val typeName: String get() = "FlashImage"
-
+    public companion object Key :
+        AbstractPolymorphicMessageKey<HummerMessage, FlashImage>(HummerMessage, { it.safeCast() }) {
         /**
          * 将普通图片转换为闪照.
          */
@@ -307,9 +316,8 @@ public inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as Fr
  */
 @Serializable
 public data class GroupFlashImage(@Contextual override val image: GroupImage) : FlashImage() {
-    public companion object Key : ConstrainSingle.Key<GroupFlashImage> {
-        public override val typeName: String get() = "GroupFlashImage"
-    }
+    public companion object Key :
+        AbstractPolymorphicMessageKey<FlashImage, GroupFlashImage>(FlashImage, { it.safeCast() })
 }
 
 /**
@@ -317,7 +325,6 @@ public data class GroupFlashImage(@Contextual override val image: GroupImage) : 
  */
 @Serializable
 public data class FriendFlashImage(@Contextual override val image: FriendImage) : FlashImage() {
-    public companion object Key : ConstrainSingle.Key<FriendFlashImage> {
-        public override val typeName: String get() = "FriendFlashImage"
-    }
+    public companion object Key :
+        AbstractPolymorphicMessageKey<FlashImage, FriendFlashImage>(FlashImage, { it.safeCast() })
 }

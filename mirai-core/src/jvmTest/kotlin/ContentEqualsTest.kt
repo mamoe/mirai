@@ -9,25 +9,21 @@
 
 package net.mamoe.mirai.internal
 
-import net.mamoe.mirai.message.data.ConstrainSingle
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.buildMessageChain
-import net.mamoe.mirai.message.data.content
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.safeCast
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-internal class TestConstrainSingleMessage : ConstrainSingle<TestConstrainSingleMessage>, Any() {
-    companion object Key : ConstrainSingle.Key<TestConstrainSingleMessage> {
-        override val typeName: String
-            get() = "TestMessage"
-    }
+internal class TestConstrainSingleMessage : ConstrainSingle, Any() {
+    companion object Key : AbstractMessageKey<TestConstrainSingleMessage>({ it.safeCast() })
 
     override fun toString(): String = "<TestConstrainSingleMessage#${super.hashCode()}>"
     override fun contentToString(): String = ""
 
-    override val key: ConstrainSingle.Key<TestConstrainSingleMessage>
+    @ExperimentalMessageKey
+    override val key: MessageKey<TestConstrainSingleMessage>
         get() = Key
 }
 

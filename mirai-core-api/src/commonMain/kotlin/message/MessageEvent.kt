@@ -26,7 +26,7 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.Image.Companion.queryUrl
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.sendTo

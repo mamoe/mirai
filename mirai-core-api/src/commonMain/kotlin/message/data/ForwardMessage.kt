@@ -23,6 +23,7 @@ import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.safeCast
 
 
 @MiraiExperimentalApi
@@ -174,7 +175,8 @@ public data class ForwardMessage(
         public val message: Message
     }
 
-    public companion object
+    public companion object Key :
+        AbstractPolymorphicMessageKey<MessageContent, ForwardMessage>(MessageContent, { it.safeCast() })
 }
 
 

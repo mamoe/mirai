@@ -13,9 +13,9 @@ package net.mamoe.mirai.internal.message
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.hexToBytes
 import net.mamoe.mirai.message.data.*
@@ -142,38 +142,21 @@ internal class ExperimentalDeferredImage internal constructor(
     override val imageId: String = externalImage.calculateImageResourceId()
 }
 
-internal val firstOnlineBotInstance: Bot get() = Bot.botInstancesSequence.firstOrNull() ?: error("No Bot available")
-
 @Suppress("EXPOSED_SUPER_INTERFACE")
 internal interface OnlineImage : Image, ConstOriginUrlAware {
-    companion object Key : ConstrainSingle.Key<OnlineImage> {
-        override val typeName: String get() = "OnlineImage"
-    }
-
     override val originUrl: String
 }
 
 /**
  * 离线的图片, 即为客户端主动上传到服务器而获得的 [Image] 实例.
- * 不能直接获取它在服务器上的链接. 需要通过 [Bot.queryImageUrl] 查询
+ * 不能直接获取它在服务器上的链接. 需要通过 [IMirai.queryImageUrl] 查询
  *
  * 一般由 [Contact.uploadImage] 得到
  */
-internal interface OfflineImage : Image {
-    companion object Key : ConstrainSingle.Key<OfflineImage> {
-        override val typeName: String get() = "OfflineImage"
-    }
-}
-
-@JvmSynthetic
-internal suspend fun OfflineImage.queryUrl(): String {
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    val bot = Bot._instances.peekFirst()?.get() ?: error("No Bot available to query image url")
-    return MiraiImpl.queryImageUrl(bot, this)
-}
+internal interface OfflineImage : Image
 
 /**
- * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [Bot.queryImageUrl]
+ * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [IMirai.queryImageUrl]
  *
  * @param imageId 参考 [Image.imageId]
  */
@@ -204,7 +187,7 @@ internal data class OfflineGroupImage(
 internal abstract class OnlineGroupImage : GroupImage(), OnlineImage
 
 /**
- * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [Bot.queryImageUrl]
+ * 通过 [Group.uploadImage] 上传得到的 [GroupImage]. 它的链接需要查询 [IMirai.queryImageUrl]
  *
  * @param imageId 参考 [Image.imageId]
  */

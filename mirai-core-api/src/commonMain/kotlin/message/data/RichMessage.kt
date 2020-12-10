@@ -15,6 +15,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.safeCast
 import kotlin.annotation.AnnotationTarget.*
 
 /**
@@ -45,12 +46,14 @@ public interface RichMessage : MessageContent {
      * @suppress 此 API 不稳定, 可能在任意时刻被删除
      */
     @MiraiExperimentalApi
-    public companion object Templates : ConstrainSingle.Key<RichMessage> {
+    public companion object Key :
+        AbstractPolymorphicMessageKey<MessageContent, RichMessage>(MessageContent, { it.safeCast() }) {
 
         /**
          * @suppress 此 API 不稳定, 可能在任意时刻被删除
          */
         @MiraiExperimentalApi
+        @JvmStatic
         public fun share(
             url: String,
             title: String? = null,
@@ -76,9 +79,6 @@ public interface RichMessage : MessageContent {
                     }
                 }
             }
-
-        override val typeName: String
-            get() = "RichMessage"
     }
 }
 
@@ -93,9 +93,7 @@ public interface RichMessage : MessageContent {
  */
 @Serializable
 public data class LightApp(override val content: String) : RichMessage {
-    public companion object Key : ConstrainSingle.Key<LightApp> {
-        public override val typeName: String get() = "LightApp"
-    }
+    public companion object Key : AbstractMessageKey<LightApp>({ it.safeCast() })
 
     public override fun toString(): String = "[mirai:app:$content]"
 }
@@ -116,10 +114,6 @@ public class SimpleServiceMessage(
     public override val serviceId: Int,
     public override val content: String
 ) : ServiceMessage {
-    public companion object Key : ConstrainSingle.Key<ServiceMessage> {
-        public override val typeName: String get() = "ServiceMessage"
-    }
-
     public override fun toString(): String = "[mirai:service:$serviceId,$content]"
 
     public override fun equals(other: Any?): Boolean {
@@ -146,9 +140,8 @@ public class SimpleServiceMessage(
  * @see SimpleServiceMessage
  */
 public interface ServiceMessage : RichMessage {
-    public companion object Key : ConstrainSingle.Key<ServiceMessage> {
-        public override val typeName: String get() = "ServiceMessage"
-    }
+    public companion object Key :
+        AbstractPolymorphicMessageKey<RichMessage, ServiceMessage>(RichMessage, { it.safeCast() })
 
     /**
      * 目前未知, XML 一般为 60, JSON 一般为 1
@@ -258,9 +251,7 @@ internal class LongMessage internal constructor(override val content: String, va
     AbstractServiceMessage() {
     override val serviceId: Int get() = 35
 
-    companion object Key : ConstrainSingle.Key<LongMessage> {
-        override val typeName: String get() = "LongMessage"
-    }
+    companion object Key : AbstractPolymorphicMessageKey<ServiceMessage, LongMessage>(ServiceMessage, { it.safeCast() })
 }
 
 @Serializable

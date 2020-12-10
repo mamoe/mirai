@@ -78,12 +78,17 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
      * chain.first(At.Key)
      * ```
      *
-     * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
+     * @param key 由各个类型消息的伴生对象持有. 如 [MessageSource.Key]
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    @JvmName("first")
-    public operator fun <M : Message> get(key: ConstrainSingle.Key<M>): M? = firstOrNull(key)
+    @ExperimentalMessageKey
+    public operator fun <M : SingleMessage> get(key: MessageKey<M>): M? =
+        asSequence().mapNotNull { key.safeCast.invoke(it) }.firstOrNull()
+
+    @ExperimentalMessageKey
+    public operator fun <M : SingleMessage> contains(key: MessageKey<M>): Boolean =
+        asSequence().any { key.safeCast.invoke(it) != null }
 
     public object Serializer : KSerializer<MessageChain> {
         private val delegate = ListSerializer(Message.Serializer)
@@ -98,13 +103,14 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
 /**
  * 获取第一个类型为 [key] 的 [Message] 实例, 在找不到此类型的元素时抛出 [NoSuchElementException]
  *
- * @param key 由各个类型消息的伴生对象持有. 如 [PlainText.Key]
+ * @param key 由各个类型消息的伴生对象持有. 如 [MessageSource.Key]
  */
+@ExperimentalMessageKey
 @JvmOverloads
-public inline fun <M : Message> MessageChain.getOrFail(
-    key: ConstrainSingle.Key<M>,
-    crossinline lazyMessage: (key: ConstrainSingle.Key<M>) -> String = { key.typeName }
-): M = firstOrNull(key) ?: throw NoSuchElementException(lazyMessage(key))
+public inline fun <M : SingleMessage> MessageChain.getOrFail(
+    key: MessageKey<M>,
+    crossinline lazyMessage: (key: MessageKey<M>) -> String = { key.toString() }
+): M = get(key) ?: throw NoSuchElementException(lazyMessage(key))
 
 
 /**
@@ -153,44 +159,49 @@ public inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): 
  * 获取第一个 [M] 类型的 [Message] 实例
  */
 @JvmSynthetic
-public inline fun <reified M : Message?> MessageChain.firstIsInstanceOrNull(): M? = this.firstOrNull { it is M } as M?
+public inline fun <reified M : SingleMessage?> MessageChain.firstIsInstanceOrNull(): M? =
+    this.firstOrNull { it is M } as M?
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  * @throws [NoSuchElementException] 如果找不到该类型的实例
  */
 @JvmSynthetic
-public inline fun <reified M : Message> MessageChain.firstIsInstance(): M = this.first { it is M } as M
+public inline fun <reified M : SingleMessage> MessageChain.firstIsInstance(): M = this.first { it is M } as M
 
 /**
  * 判断 [this] 中是否存在 [Message] 的实例
  */
 @JvmSynthetic
-public inline fun <reified M : Message> MessageChain.anyIsInstance(): Boolean = this.any { it is M }
-
+public inline fun <reified M : SingleMessage> MessageChain.anyIsInstance(): Boolean = this.any { it is M }
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
+@OptIn(ExperimentalMessageKey::class)
+@Deprecated("Use get", ReplaceWith("get(key)"))
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-public fun <M : Message> MessageChain.firstOrNull(key: ConstrainSingle.Key<M>): M? = firstOrNullImpl(key)
+public fun <M : SingleMessage> MessageChain.firstOrNull(key: MessageKey<M>): M? = get(key)
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  * @throws [NoSuchElementException] 如果找不到该类型的实例
  */
+@OptIn(ExperimentalMessageKey::class)
+@Deprecated("Use getOrFail", ReplaceWith("getOrFail(key)", "net.mamoe.mirai.message.data.getOrFail"))
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-public inline fun <M : Message> MessageChain.first(key: ConstrainSingle.Key<M>): M =
-    firstOrNull(key) ?: throw NoSuchElementException("Message type ${key.typeName} not found in chain $this")
+public inline fun <M : SingleMessage> MessageChain.first(key: MessageKey<M>): M =
+    get(key) ?: throw NoSuchElementException("Message type $key not found in chain $this")
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例
  */
+@ExperimentalMessageKey
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST")
-public inline fun <M : Message> MessageChain.any(key: ConstrainSingle.Key<M>): Boolean = firstOrNull(key) != null
+public inline fun <M : SingleMessage> MessageChain.any(key: MessageKey<M>): Boolean = get(key) != null
 
 // endregion accessors
 
@@ -234,7 +245,7 @@ public inline class OrNullDelegate<out R> @PublishedApi internal constructor(@Jv
  * @see orElse 提供一个不存在则使用默认值的委托
  */
 @JvmSynthetic
-public inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?> =
+public inline fun <reified T : SingleMessage> MessageChain.orNull(): OrNullDelegate<T?> =
     OrNullDelegate(this.firstIsInstanceOrNull<T>())
 
 /**
@@ -251,7 +262,7 @@ public inline fun <reified T : Message> MessageChain.orNull(): OrNullDelegate<T?
  */
 @Suppress("RemoveExplicitTypeArguments")
 @JvmSynthetic
-public inline fun <reified T : R, R : Message?> MessageChain.orElse(
+public inline fun <reified T : R, R : SingleMessage?> MessageChain.orElse(
     lazyDefault: () -> R
 ): OrNullDelegate<R> = OrNullDelegate<R>(this.firstIsInstanceOrNull<T>() ?: lazyDefault())
 

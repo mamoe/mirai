@@ -12,6 +12,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.safeCast
 
 
 /**
@@ -21,10 +22,8 @@ import net.mamoe.mirai.utils.MiraiInternalApi
 @MiraiExperimentalApi
 public abstract class PttMessage : MessageContent {
 
-    public companion object Key : ConstrainSingle.Key<PttMessage> {
-        public override val typeName: String
-            get() = "PttMessage"
-    }
+    public companion object Key :
+        AbstractPolymorphicMessageKey<MessageContent, PttMessage>(MessageContent, { it.safeCast() })
 
     public abstract val fileName: String
     public abstract val md5: ByteArray
@@ -43,10 +42,7 @@ public class Voice @MiraiInternalApi constructor(
     private val _url: String
 ) : PttMessage() {
 
-    public companion object Key : ConstrainSingle.Key<Voice> {
-        override val typeName: String
-            get() = "Voice"
-    }
+    public companion object Key : AbstractPolymorphicMessageKey<PttMessage, Voice>(PttMessage, { it.safeCast() })
 
     public val url: String?
         get() = when {

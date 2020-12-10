@@ -16,6 +16,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
+import net.mamoe.mirai.utils.safeCast
 
 
 /**
@@ -39,13 +40,10 @@ import net.mamoe.mirai.message.data.MessageSource.Key.recall
  * @see MessageSource 获取有关消息源的更多信息
  */
 @Serializable
-public data class QuoteReply(public val source: MessageSource) : Message, MessageMetadata, ConstrainSingle<QuoteReply> {
-    public companion object Key : ConstrainSingle.Key<QuoteReply> {
-        public override val typeName: String
-            get() = "QuoteReply"
-    }
+public data class QuoteReply(public val source: MessageSource) : Message, MessageMetadata, ConstrainSingle {
+    public companion object Key : AbstractMessageKey<QuoteReply>({ it.safeCast() })
 
-    public override val key: ConstrainSingle.Key<QuoteReply> get() = Key
+    public override val key: MessageKey<QuoteReply> get() = Key
 
     // TODO: 2020/12/2 QuoteReply.toString
     public override fun toString(): String = "[mirai:quote:${source.ids},${source.internalIds}]"

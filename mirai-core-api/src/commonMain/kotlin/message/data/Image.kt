@@ -34,9 +34,10 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.CodableMessage
-import net.mamoe.mirai.message.data.Image.Companion.queryUrl
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.safeCast
 import net.mamoe.mirai.utils.sendImage
 import java.io.File
 import java.io.InputStream
@@ -109,7 +110,7 @@ public interface Image : Message, MessageContent, CodableMessage {
         }
     }
 
-    public companion object {
+    public companion object Key : AbstractMessageKey<Image>({ it.safeCast() }) {
         /**
          * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
          * 这个图片必须是服务器已经存在的图片.
@@ -137,7 +138,6 @@ public interface Image : Message, MessageContent, CodableMessage {
         public suspend fun Image.queryUrl(): String {
             val bot = Bot._instances.peekFirst()?.get() ?: error("No Bot available to query image url")
             return Mirai.queryImageUrl(bot, this)
-
         }
     }
 }
@@ -158,7 +158,8 @@ public inline fun Image(imageId: String): Image = Image.fromId(imageId)
 /**
  * 所有 [Image] 实现的基类.
  */
-public abstract class AbstractImage : Image { // make sealed in 1.3.0 ?
+@MiraiInternalApi
+public sealed class AbstractImage : Image { // make sealed in 1.3.0 ?
     private var _stringValue: String? = null
         get() = field ?: kotlin.run {
             field = "[mirai:image:$imageId]"
@@ -185,6 +186,7 @@ public val Image.md5: ByteArray
  * [imageId] 形如 `/f8f1ab55-bf8e-4236-b55e-955848d7069f` (37 长度)  或 `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206` (54 长度)
  */
 // NotOnlineImage
+@MiraiInternalApi
 public abstract class FriendImage @MiraiInternalApi public constructor() :
     AbstractImage() { // change to sealed in the future.
     public companion object
@@ -197,6 +199,7 @@ public abstract class FriendImage @MiraiInternalApi public constructor() :
  * @see Image 查看更多说明
  */
 // CustomFace
+@MiraiInternalApi
 public abstract class GroupImage @MiraiInternalApi public constructor() :
     AbstractImage() { // change to sealed in the future.
     public companion object

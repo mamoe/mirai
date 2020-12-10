@@ -59,8 +59,8 @@ public sealed class CustomMessage : SingleMessage {
          * 在发往服务器时使用此名称.
          * 应确保唯一且不变.
          */
-        public final override val typeName: String
-    ) : ConstrainSingle.Key<M> {
+        public val typeName: String
+    ) {
 
         init {
             @Suppress("LeakingThis")

@@ -57,7 +57,7 @@ public open class MessageChainBuilder private constructor(
     public final override fun add(element: SingleMessage): Boolean {
         checkBuilt()
         flushCache()
-        return addAndCheckConstrainSingle(element)
+        return container.add(element)
     }
 
     public fun add(element: Message): Boolean {
@@ -65,7 +65,7 @@ public open class MessageChainBuilder private constructor(
         flushCache()
         @Suppress("UNCHECKED_CAST")
         return when (element) {
-            is ConstrainSingle -> addAndCheckConstrainSingle(element)
+            // is ConstrainSingle -> container.add(element)
             is SingleMessage -> container.add(element) // no need to constrain
             is Iterable<*> -> this.addAll(element.flatten())
             else -> error("stub")
@@ -148,7 +148,7 @@ public open class MessageChainBuilder private constructor(
     public fun asMessageChain(): MessageChain {
         built = true
         this.flushCache()
-        return MessageChainImplByCollection(this) // fast-path, no need to constrain
+        return MessageChainImplByCollection(this.constrainSingleMessages())
     }
 
     /** 同 [asMessageChain] */
@@ -215,6 +215,8 @@ public open class MessageChainBuilder private constructor(
     private var firstConstrainSingleIndex = -1
 
     private fun addAndCheckConstrainSingle(element: SingleMessage): Boolean {
+        return container.add(element)
+        /*
         if (element is ConstrainSingle) {
             if (firstConstrainSingleIndex == -1) {
                 firstConstrainSingleIndex = container.size
@@ -222,7 +224,7 @@ public open class MessageChainBuilder private constructor(
             }
             val key = element.key
 
-            val index = container.indexOfFirst(firstConstrainSingleIndex) { it is ConstrainSingle && it.key == key }
+            val index = container.indexOfFirst(firstConstrainSingleIndex) { it is ConstrainSingle && it.key.isSubKeyOf(key) }
             if (index != -1) {
                 container[index] = element
             } else {
@@ -232,6 +234,6 @@ public open class MessageChainBuilder private constructor(
             return true
         } else {
             return container.add(element)
-        }
+        }*/
     }
 }

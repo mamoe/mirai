@@ -19,12 +19,16 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.message.*
+import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageReceipt.Companion.recall
+import net.mamoe.mirai.message.MessageSourceSerializer
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutFriend
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutGroup
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutTemp
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.LazyProperty
+import net.mamoe.mirai.utils.safeCast
 
 /**
  * 消息源. 消息源存在于 [MessageChain] 中, 用于表示这个消息的来源, 也可以用来分辨 [MessageChain].
@@ -62,8 +66,8 @@ import net.mamoe.mirai.utils.LazyProperty
  * @see buildMessageSource 构造一个 [OfflineMessageSource]
  */
 @Serializable(MessageSourceSerializer::class)
-public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<MessageSource> {
-    public final override val key: ConstrainSingle.Key<MessageSource> get() = Key
+public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
+    public final override val key: MessageKey<MessageSource> get() = Key
 
     /**
      * 所属 [Bot.id]
@@ -132,9 +136,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle<Me
      */
     public final override fun toString(): String = "[mirai:source:$ids,$internalIds]"
 
-    public companion object Key : ConstrainSingle.Key<MessageSource> {
-        override val typeName: String get() = "MessageSource"
-
+    public companion object Key : AbstractMessageKey<MessageSource>({ it.safeCast() }) {
         /**
          * 撤回这条消息. 可撤回自己 2 分钟内发出的消息, 和任意时间的群成员的消息.
          *
@@ -258,9 +260,7 @@ public inline val MessageSource.botOrNull: Bot?
  * @see OnlineMessageSource.toOffline 转为 [OfflineMessageSource]
  */
 public sealed class OnlineMessageSource : MessageSource() {
-    public companion object Key : ConstrainSingle.Key<OnlineMessageSource> {
-        public override val typeName: String get() = "OnlineMessageSource"
-    }
+    public companion object Key : AbstractMessageKey<OnlineMessageSource>({ it.safeCast() })
 
     /**
      * @see botId
@@ -294,9 +294,8 @@ public sealed class OnlineMessageSource : MessageSource() {
      * 由 [机器人主动发送消息][Contact.sendMessage] 产生的 [MessageSource], 可通过 [MessageReceipt] 获得.
      */
     public sealed class Outgoing : OnlineMessageSource() {
-        public companion object Key : ConstrainSingle.Key<Outgoing> {
-            public override val typeName: String get() = "OnlineMessageSource.Outgoing"
-        }
+        public companion object Key :
+            AbstractPolymorphicMessageKey<MessageSource, Outgoing>(MessageSource, { it.safeCast() })
 
         public abstract override val sender: Bot
         public abstract override val target: Contact
@@ -305,9 +304,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         public final override val targetId: Long get() = target.id
 
         public abstract class ToFriend : Outgoing() {
-            public companion object Key : ConstrainSingle.Key<ToFriend> {
-                public override val typeName: String get() = "OnlineMessageSource.Outgoing.ToFriend"
-            }
+            public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToFriend>(Outgoing, { it.safeCast() })
 
             public abstract override val target: Friend
             public final override val subject: Friend get() = target
@@ -315,9 +312,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class ToTemp : Outgoing() {
-            public companion object Key : ConstrainSingle.Key<ToTemp> {
-                public override val typeName: String get() = "OnlineMessageSource.Outgoing.ToTemp"
-            }
+            public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToTemp>(Outgoing, { it.safeCast() })
 
             public abstract override val target: Member
             public val group: Group get() = target.group
@@ -325,9 +320,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class ToGroup : Outgoing() {
-            public companion object Key : ConstrainSingle.Key<ToGroup> {
-                public override val typeName: String get() = "OnlineMessageSource.Outgoing.ToGroup"
-            }
+            public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToGroup>(Outgoing, { it.safeCast() })
 
             public abstract override val target: Group
             public final override val subject: Group get() = target
@@ -338,19 +331,14 @@ public sealed class OnlineMessageSource : MessageSource() {
      * 接收到的一条消息的 [MessageSource]
      */
     public sealed class Incoming : OnlineMessageSource() {
-        public companion object Key : ConstrainSingle.Key<Incoming> {
-            public override val typeName: String get() = "OnlineMessageSource.Incoming"
-        }
-
         public abstract override val sender: User
 
         public final override val fromId: Long get() = sender.id
         public final override val targetId: Long get() = target.id
 
         public abstract class FromFriend : Incoming() {
-            public companion object Key : ConstrainSingle.Key<FromFriend> {
-                public override val typeName: String get() = "OnlineMessageSource.Incoming.FromFriend"
-            }
+            public companion object Key :
+                AbstractPolymorphicMessageKey<Incoming, FromFriend>(Incoming, { it.safeCast() })
 
             public abstract override val sender: Friend
             public final override val subject: Friend get() = sender
@@ -359,9 +347,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class FromTemp : Incoming() {
-            public companion object Key : ConstrainSingle.Key<FromTemp> {
-                public override val typeName: String get() = "OnlineMessageSource.Incoming.FromTemp"
-            }
+            public companion object Key : AbstractPolymorphicMessageKey<Incoming, FromTemp>(Incoming, { it.safeCast() })
 
             public abstract override val sender: Member
             public inline val group: Group get() = sender.group
@@ -370,15 +356,17 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class FromGroup : Incoming() {
-            public companion object Key : ConstrainSingle.Key<FromGroup> {
-                public override val typeName: String get() = "OnlineMessageSource.Incoming.FromGroup"
-            }
+            public companion object Key :
+                AbstractPolymorphicMessageKey<Incoming, FromGroup>(Incoming, { it.safeCast() })
 
             public abstract override val sender: Member
             public final override val subject: Group get() = sender.group
             public final override val target: Group get() = group
             public inline val group: Group get() = sender.group
         }
+
+        public companion object Key :
+            AbstractPolymorphicMessageKey<MessageSource, FromTemp>(MessageSource, { it.safeCast() })
     }
 }
 
@@ -389,9 +377,8 @@ public sealed class OnlineMessageSource : MessageSource() {
  * @see buildMessageSource 构建一个 [OfflineMessageSource]
  */
 public abstract class OfflineMessageSource : MessageSource() {
-    public companion object Key : ConstrainSingle.Key<OfflineMessageSource> {
-        public override val typeName: String get() = "OfflineMessageSource"
-    }
+    public companion object Key :
+        AbstractPolymorphicMessageKey<MessageSource, OfflineMessageSource>(MessageSource, { it.safeCast() })
 
     /**
      * 消息种类

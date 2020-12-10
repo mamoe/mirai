@@ -23,7 +23,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.Image.Companion.queryUrl
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
