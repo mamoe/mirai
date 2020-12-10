@@ -68,7 +68,8 @@ import net.mamoe.mirai.utils.safeCast
 @Serializable(MessageSourceSerializer::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     @ExperimentalMessageKey
-    public final override val key: MessageKey<MessageSource> get() = Key
+    public final override val key: MessageKey<MessageSource>
+        get() = Key
 
     /**
      * 所属 [Bot.id]
@@ -76,17 +77,22 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public abstract val botId: Long
 
     /**
-     * 消息 ids (序列号). 在获取失败时 (概率很低) 为 `-1`.
-     **
+     * 消息 ids (序列号). 在获取失败时 (概率很低) 为空数组.
+     *
      * ### 值域
      * 值的范围约为 [UShort] 的范围.
      *
      * ### 顺序
-     * 群消息的 ids 由服务器维护. 好友消息的 ids 由 mirai 维护.
-     * 此 ids 不一定从 0 开始.
+     * 群消息的 id 由服务器维护. 好友消息的 id 由 mirai 维护.
+     * 此 id 不一定从 0 开始.
      *
      * - 在同一个群的消息中此值随每条消息递增 1, 但此行为由服务器决定, mirai 不保证自增顺序.
      * - 在好友消息中无法保证每次都递增 1. 也可能会产生大幅跳过的情况.
+     *
+     * ### 多 ID 情况
+     * 对于单条消息, [ids] 为单元素数组. 对于分片 (一种长消息处理机制) 消息, [ids] 将包含多元素.
+     *
+     * [internalIds] 与 [ids] 以数组下标对应.
      */
     public abstract val ids: IntArray
 
@@ -96,6 +102,10 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
      * 值没有顺序, 也可能为 0, 取决于服务器是否提供.
      *
      * 在事件中和在引用中无法保证同一条消息的 [internalIds] 相同.
+     *
+     * [internalIds] 与 [ids] 以数组下标对应.
+     *
+     * @see ids
      */
     public abstract val internalIds: IntArray
 

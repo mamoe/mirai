@@ -31,10 +31,10 @@ import kotlin.reflect.KProperty
  * 要获取更多消息相关的信息, 查看 [Message]
  *
  * ### 构造消息链
- * - [buildMessageChain]: 使用构建器
- * - [Message.plus]: 将两个消息相连成为一个消息链
- * - [asMessageChain] 将 [Iterable], [Array] 等类型消息转换为 [MessageChain]
- * - [messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
+ * - [buildMessageChain][buildMessageChain]: 使用构建器
+ * - [Message.plus][Message.plus]: 将两个消息相连成为一个消息链
+ * - [asMessageChain][asMessageChain] 将 [Iterable], [Array] 等类型消息转换为 [MessageChain]
+ * - [messageChainOf][messageChainOf] 类似 [listOf], 将多个 [Message] 构造为 [MessageChain]
  *
  * @see get 获取消息链中一个类型的元素, 不存在时返回 `null`
  * @see getOrFail 获取消息链中一个类型的元素, 不存在时抛出异常 [NoSuchElementException]
@@ -63,19 +63,21 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
     public override val size: Int
 
     /**
-     * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`
+     * 获取第一个类型为 [key] 的 [Message] 实例. 若不存在此实例, 返回 `null`.
+     *
+     * 此方法仅适用于 [ConstrainSingle] 的消息类型, 如 [MessageSource]
      *
      * ### Kotlin 使用方法
      * ```
      * val chain: MessageChain = ...
      *
-     * val at = Message[At] // At 为伴生对象
+     * val source = Message[MessageSource] // MessageSource 为伴生对象
      * ```
      *
      * ### Java 使用方法
      * ```java
      * MessageChain chain = ...
-     * chain.first(At.Key)
+     * chain.get(MessageSource.Key)
      * ```
      *
      * @param key 由各个类型消息的伴生对象持有. 如 [MessageSource.Key]
