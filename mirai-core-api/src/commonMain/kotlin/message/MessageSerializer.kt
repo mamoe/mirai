@@ -111,8 +111,6 @@ private val builtInSerializersModule = SerializersModule {
     contextual(PokeMessage::class, PokeMessage.serializer())
     contextual(VipFace::class, VipFace.serializer())
     contextual(FlashImage::class, FlashImage.serializer())
-    contextual(GroupFlashImage::class, GroupFlashImage.serializer())
-    contextual(FriendFlashImage::class, FriendFlashImage.serializer())
     contextual(VipFace.Kind::class, VipFace.Kind.serializer())
 
 

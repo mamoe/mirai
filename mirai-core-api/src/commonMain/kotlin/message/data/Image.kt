@@ -22,7 +22,8 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.io.core.Input
+import event.sendAsImageTo
+import event.uploadAsImage
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
@@ -31,17 +32,18 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
+import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
+import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.safeCast
-import net.mamoe.mirai.utils.sendImage
+import net.mamoe.mirai.utils.*
 import java.io.File
 import java.io.InputStream
-import java.net.URL
+import kotlin.LazyThreadSafetyMode.NONE
 
 /**
  * 自定义表情 (收藏的表情) 和普通图片.
@@ -50,27 +52,23 @@ import java.net.URL
  * 最推荐的存储方式是存储图片原文件, 每次发送图片时都使用文件上传.
  * 在上传时服务器会根据其缓存情况回复已有的图片 ID 或要求客户端上传. 详见 [Contact.uploadImage]
  *
+ * ### 根据 ID 构造图片
+ * - [Image.fromId]. 在 Kotlin, 更推荐使用顶层函数 `val image = Image("id")`
  *
  * ### 上传和发送图片
- * @see Contact.uploadImage 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
- * @see Contact.sendImage 上传 [图片文件][ExternalImage] 并发送返回的 [Image] 作为一条消息
- * @see Image.sendTo 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
+ * - [Contact.uploadImage] 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
+ * - [Contact.sendImage] 上传 [图片文件][ExternalImage] 并发送返回的 [Image] 作为一条消息
+ * - [Image.sendTo] 上传 [图片文件][ExternalImage] 并得到 [Image] 消息
  *
- * @see File.uploadAsImage
- * @see InputStream.uploadAsImage
- * @see Input.uploadAsImage
- * @see URL.uploadAsImage
+ * - [File.uploadAsImage]
+ * - [InputStream.uploadAsImage]
  *
- * @see File.sendAsImageTo
- * @see InputStream.sendAsImageTo
- * @see Input.sendAsImageTo
- * @see URL.sendAsImageTo
+ * - [File.sendAsImageTo]
+ * - [InputStream.sendAsImageTo]
  *
  * ### 下载图片
- * @see Image.queryUrl 扩展函数. 查询图片下载链接
- * @see Bot.queryImageUrl 查询图片下载链接 (Java 使用)
- *
- * 查看平台 `actual` 定义以获取上传方式扩展.
+ * - [Image.queryUrl] 扩展函数. 查询图片下载链接
+ * - [IMirai.queryImageUrl] 查询图片下载链接 (Java 使用)
  *
  * ## mirai 码支持
  * 格式: &#91;mirai:image:*[Image.imageId]*&#93;
@@ -88,7 +86,7 @@ public interface Image : Message, MessageContent, CodableMessage {
      *
      * ### 格式
      * 群图片:
-     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai` (后缀一定为 ".mirai")
+     * - [GROUP_IMAGE_ID_REGEX], 示例: `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext` (ext 为文件后缀, 如 png)
      *
      * 好友图片:
      * - [FRIEND_IMAGE_ID_REGEX_1], 示例: `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
@@ -139,8 +137,54 @@ public interface Image : Message, MessageContent, CodableMessage {
             val bot = Bot._instances.peekFirst()?.get() ?: error("No Bot available to query image url")
             return Mirai.queryImageUrl(bot, this)
         }
+
+
+        /**
+         * 好友图片 ID 正则表达式
+         *
+         * `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
+         * @see FRIEND_IMAGE_ID_REGEX_2
+         */
+        // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
+        @JvmStatic
+        @MiraiExperimentalApi
+        @get:JvmName("getFriendImageIdRegex1")
+        public val FRIEND_IMAGE_ID_REGEX_1: Regex = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
+
+        /**
+         * 好友图片 ID 正则表达式 2
+         *
+         * `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
+         * @see FRIEND_IMAGE_ID_REGEX_1
+         */
+        // Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_2
+        @JvmStatic
+        @MiraiExperimentalApi
+        @get:JvmName("getFriendImageIdRegex2")
+        public val FRIEND_IMAGE_ID_REGEX_2: Regex = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
+
+        /**
+         * 群图片 ID 正则表达式
+         *
+         * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext`
+         */
+        @Suppress("RegExpRedundantEscape") // This is required on Android
+        // Java: MessageUtils.GROUP_IMAGE_ID_REGEX
+        @JvmStatic
+        @MiraiExperimentalApi
+        @get:JvmName("getGroupImageIdRegex")
+        public val GROUP_IMAGE_ID_REGEX: Regex =
+            Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")
     }
 }
+
+@MiraiExperimentalApi
+public val Image.isGroupImage: Boolean
+    get() = GROUP_IMAGE_ID_REGEX matches imageId
+
+@MiraiExperimentalApi
+public val Image.isFriendImage: Boolean
+    get() = FRIEND_IMAGE_ID_REGEX_1 matches imageId || FRIEND_IMAGE_ID_REGEX_2 matches imageId
 
 /**
  * 通过 [Image.imageId] 构造一个 [Image] 以便发送.
@@ -151,33 +195,33 @@ public interface Image : Message, MessageContent, CodableMessage {
  *
  * @see Image 获取更多说明
  * @see Image.imageId 获取更多说明
+ *
+ * @see IMirai.createImage
  */
 @JvmSynthetic
 public inline fun Image(imageId: String): Image = Image.fromId(imageId)
-
-/**
- * 所有 [Image] 实现的基类.
- */
-@MiraiInternalApi
-public sealed class AbstractImage : Image { // make sealed in 1.3.0 ?
-    private var _stringValue: String? = null
-        get() = field ?: kotlin.run {
-            field = "[mirai:image:$imageId]"
-            field
-        }
-
-    final override fun toString(): String = _stringValue!!
-    final override fun contentToString(): String = "[图片]"
-}
 
 /**
  * 计算图片的 md5 校验值.
  *
  * 在 Java 使用: `MessageUtils.calculateImageMd5(image)`
  */
+@MiraiInternalApi
 @get:JvmName("calculateImageMd5")
 public val Image.md5: ByteArray
     get() = calculateImageMd5ByImageId(imageId)
+
+
+/**
+ * 所有 [Image] 实现的基类.
+ */
+@MiraiInternalApi
+public sealed class AbstractImage : Image {
+    private val _stringValue: String? by lazy(NONE) { "[mirai:image:$imageId]" }
+
+    final override fun toString(): String = _stringValue!!
+    final override fun contentToString(): String = "[图片]"
+}
 
 
 /**
@@ -204,31 +248,3 @@ public abstract class GroupImage @MiraiInternalApi public constructor() :
     AbstractImage() { // change to sealed in the future.
     public companion object
 }
-
-/**
- * 好友图片 ID 正则表达式
- *
- * `/f8f1ab55-bf8e-4236-b55e-955848d7069f`
- * @see FRIEND_IMAGE_ID_REGEX_2
- */
-// Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_1
-public val FRIEND_IMAGE_ID_REGEX_1: Regex = Regex("""/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}""")
-
-/**
- * 好友图片 ID 正则表达式 2
- *
- * `/000000000-3814297509-BFB7027B9354B8F899A062061D74E206`
- * @see FRIEND_IMAGE_ID_REGEX_1
- */
-// Java: MessageUtils.FRIEND_IMAGE_ID_REGEX_2
-public val FRIEND_IMAGE_ID_REGEX_2: Regex = Regex("""/[0-9]*-[0-9]*-[0-9a-fA-F]{32}""")
-
-/**
- * 群图片 ID 正则表达式
- *
- * `{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.ext`
- */
-@Suppress("RegExpRedundantEscape")
-// This is required on Android
-// Java: MessageUtils.GROUP_IMAGE_ID_REGEX
-public val GROUP_IMAGE_ID_REGEX: Regex = Regex("""\{[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}\..{3,5}""")

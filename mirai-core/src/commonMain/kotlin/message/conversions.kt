@@ -134,18 +134,11 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                 )
                 transformOneMessage(UNSUPPORTED_POKE_MESSAGE_PLAIN)
             }
-            is @Suppress("DEPRECATION")
-            OfflineGroupImage
-            -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
+            is OfflineGroupImage -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
             is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
             is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
-            is @Suppress("DEPRECATION")
-            OfflineFriendImage
-            -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
-            is GroupFlashImage -> elements.add(it.toJceData())
-                .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
-            is FriendFlashImage -> elements.add(it.toJceData())
-                .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
+            is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
+            is FlashImage -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
             is QuoteReply -> {
@@ -160,9 +153,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                     }
                 }
             }
-            is VipFace -> {
-                transformOneMessage(PlainText(it.contentToString()))
-            }
+            is VipFace -> transformOneMessage(PlainText(it.contentToString()))
             is PttMessage -> {
                 elements.add(
                     ImMsgBody.Elem(
@@ -480,10 +471,10 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                     3 -> {
                         val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype3.serializer())
                         if (proto.flashTroopPic != null) {
-                            list.add(GroupFlashImage(OnlineGroupImageImpl(proto.flashTroopPic)))
+                            list.add(FlashImage(OnlineGroupImageImpl(proto.flashTroopPic)))
                         }
                         if (proto.flashC2cPic != null) {
-                            list.add(FriendFlashImage(OnlineFriendImageImpl(proto.flashC2cPic)))
+                            list.add(FlashImage(OnlineFriendImageImpl(proto.flashC2cPic)))
                         }
                     }
                 }

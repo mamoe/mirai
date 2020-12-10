@@ -252,7 +252,9 @@ val experimentalAnnotations = arrayOf(
     "net.mamoe.mirai.utils.MiraiInternalApi",
     "net.mamoe.mirai.utils.MiraiExperimentalApi",
     "net.mamoe.mirai.LowLevelApi",
-    "net.mamoe.mirai.utils.UnstableExternalImage"
+    "net.mamoe.mirai.utils.UnstableExternalImage",
+
+    "net.mamoe.mirai.message.data.ExperimentalMessageKey"
 )
 
 fun Project.configureKotlinExperimentalUsages() {

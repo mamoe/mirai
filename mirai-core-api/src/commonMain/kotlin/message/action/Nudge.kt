@@ -39,13 +39,12 @@ public sealed class Nudge {
      * 需要 [使用协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE].
      *
      * @param receiver 这条 "戳一戳" 消息的接收对象. (不是 "戳" 动作的对象, 而是接收 "A 戳了 B" 这条消息的对象)
+     * @return 成功发送时为 `true`. 若对方禁用 "戳一戳" 功能, 返回 `false`.
+     * @throws UnsupportedOperationException 当未使用 [安卓协议][MiraiProtocol.ANDROID_PHONE] 时抛出
      *
      * @see MemberNudgedEvent 成员被戳事件
      * @see BotNudgedEvent [Bot] 被戳事件
-     *
-     * @throws UnsupportedOperationException 当未使用 [安卓协议][MiraiProtocol.ANDROID_PHONE] 时抛出
-     *
-     * @return 成功发送时为 `true`. 若对方禁用 "戳一戳" 功能, 返回 `false`.
+     * @see Contact.sendNudge
      */
     @JvmBlockingBridge
     @MiraiExperimentalApi
@@ -69,6 +68,7 @@ public sealed class Nudge {
          */
         @MiraiExperimentalApi
         @JvmBlockingBridge
+        @JvmStatic
         public suspend fun Contact.sendNudge(nudge: Nudge): Boolean = nudge.sendTo(this)
     }
 }

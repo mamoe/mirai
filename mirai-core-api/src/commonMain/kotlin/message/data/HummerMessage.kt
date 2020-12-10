@@ -55,31 +55,56 @@ public data class PokeMessage internal constructor(
     public val type: Int,
     public val id: Int
 ) : HummerMessage(), CodableMessage {
+    @ExperimentalMessageKey
     override val key: MessageKey<HummerMessage> get() = Key
 
-    @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, PokeMessage>(HummerMessage, { it.castOrNull() }) {
 
         /** 戳一戳 */
         @JvmField
-        public val Poke: PokeMessage = PokeMessage("戳一戳", 1, -1)
+        public val ChuoYiChuo: PokeMessage = PokeMessage("戳一戳", 1, -1)
+
+        /** 戳一戳 */
+        @JvmField
+        @Deprecated("Use ChuoYiChuo", replaceWith = ReplaceWith("ChuoYiChuo"))
+        public val Poke: PokeMessage = ChuoYiChuo
 
         /** 比心 */
         @JvmField
-        public val ShowLove: PokeMessage = PokeMessage("比心", 2, -1)
+        public val BiXin: PokeMessage = PokeMessage("比心", 2, -1)
+
+        /** 比心 */
+        @JvmField
+        @Deprecated("Use BiXin", replaceWith = ReplaceWith("BiXin"))
+        public val ShowLove: PokeMessage = BiXin
 
         /** 点赞  */
         @JvmField
-        public val Like: PokeMessage = PokeMessage("点赞", 3, -1)
+        public val DianZan: PokeMessage = PokeMessage("点赞", 3, -1)
+
+        /** 点赞 */
+        @JvmField
+        @Deprecated("Use DianZan", replaceWith = ReplaceWith("DianZan"))
+        public val Like: PokeMessage = DianZan
 
         /** 心碎 */
         @JvmField
-        public val Heartbroken: PokeMessage = PokeMessage("心碎", 4, -1)
+        public val XinSui: PokeMessage = PokeMessage("心碎", 4, -1)
+
+        /** 心碎 */
+        @JvmField
+        @Deprecated("Use XinSui", replaceWith = ReplaceWith("XinSui"))
+        public val Heartbroken: PokeMessage = XinSui
 
         /** 666 */
         @JvmField
-        public val SixSixSix: PokeMessage = PokeMessage("666", 5, -1)
+        public val LiuLiuLiu: PokeMessage = PokeMessage("666", 5, -1)
+
+        /** 666 */
+        @JvmField
+        @Deprecated("Use LiuLiuLiu", replaceWith = ReplaceWith("LiuLiuLiu"))
+        public val SixSixSix: PokeMessage = LiuLiuLiu
 
         /** 放大招 */
         @JvmField
@@ -129,9 +154,9 @@ public data class PokeMessage internal constructor(
         /**
          * 所有类型数组
          */
-        @JvmStatic
+        @JvmField
         public val values: Array<PokeMessage> = arrayOf(
-            Poke, ShowLove, Like, Heartbroken, SixSixSix,
+            ChuoYiChuo, BiXin, DianZan, XinSui, LiuLiuLiu,
             FangDaZhao, BaoBeiQiu, Rose, ZhaoHuanShu, RangNiPi,
             JieYin, ShouLei, GouYin, ZhuaYiXia, SuiPing
         )
@@ -160,7 +185,7 @@ public data class PokeMessage internal constructor(
  * ## mirai 码支持
  * 格式: &#91;mirai:vipface:*[Kind.id]*,*[Kind.name]*,*[count]*&#93;
  *
- * @see Types 使用伴生对象中的常量
+ * @see VipFace.Key 使用伴生对象中的常量
  */
 @Serializable
 public data class VipFace internal constructor(
@@ -180,49 +205,50 @@ public data class VipFace internal constructor(
         }
     }
 
+    @ExperimentalMessageKey
     override val key: MessageKey<VipFace> get() = Key
 
     @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, VipFace>(HummerMessage, { it.safeCast() }) {
 
-        @JvmStatic
+        @JvmField
         public val LiuLian: Kind = 9 to "榴莲"
 
-        @JvmStatic
+        @JvmField
         public val PingDiGuo: Kind = 1 to "平底锅"
 
-        @JvmStatic
+        @JvmField
         public val ChaoPiao: Kind = 12 to "钞票"
 
-        @JvmStatic
+        @JvmField
         public val LueLueLue: Kind = 10 to "略略略"
 
-        @JvmStatic
+        @JvmField
         public val ZhuTou: Kind = 4 to "猪头"
 
-        @JvmStatic
+        @JvmField
         public val BianBian: Kind = 6 to "便便"
 
-        @JvmStatic
+        @JvmField
         public val ZhaDan: Kind = 5 to "炸弹"
 
-        @JvmStatic
+        @JvmField
         public val AiXin: Kind = 2 to "爱心"
 
-        @JvmStatic
+        @JvmField
         public val HaHa: Kind = 3 to "哈哈"
 
-        @JvmStatic
+        @JvmField
         public val DianZan: Kind = 1 to "点赞"
 
-        @JvmStatic
+        @JvmField
         public val QinQin: Kind = 7 to "亲亲"
 
-        @JvmStatic
+        @JvmField
         public val YaoWan: Kind = 8 to "药丸"
 
-        @JvmStatic
+        @JvmField
         public val values: Array<Kind> = arrayOf(
             LiuLian, PingDiGuo, ChaoPiao, LueLueLue, ZhuTou,
             BianBian, ZhaDan, AiXin, HaHa, DianZan, QinQin, YaoWan
@@ -255,24 +281,19 @@ public data class VipFace internal constructor(
  * @see Image 查看图片相关信息
  */
 @Serializable
-public sealed class FlashImage : MessageContent, HummerMessage(), CodableMessage, ConstrainSingle {
-    override val key: MessageKey<FlashImage> get() = Key
+public data class FlashImage(
+    /**
+     * 闪照的内容图片, 即一个普通图片.
+     */
+    @Contextual
+    public val image: Image
+) : MessageContent, HummerMessage(), CodableMessage, ConstrainSingle {
+    @ExperimentalMessageKey
+    override val key: MessageKey<FlashImage>
+        get() = Key
 
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, FlashImage>(HummerMessage, { it.safeCast() }) {
-        /**
-         * 将普通图片转换为闪照.
-         */
-        @JvmStatic
-        @JvmName("from")
-        public operator fun invoke(image: Image): FlashImage {
-
-            return when (image) {
-                is GroupImage -> GroupFlashImage(image)
-                is FriendImage -> FriendFlashImage(image)
-                else -> throw IllegalArgumentException("不支持的图片类型(Please use GroupImage or FriendImage)")
-            }
-        }
 
         /**
          * 将普通图片转换为闪照.
@@ -280,51 +301,35 @@ public sealed class FlashImage : MessageContent, HummerMessage(), CodableMessage
          * @param imageId 图片 id, 详见 [Image.imageId]
          */
         @JvmStatic
-        @JvmName("from")
-        public operator fun invoke(imageId: String): FlashImage {
-            return invoke(Image(imageId))
-        }
+        public fun from(imageId: String): FlashImage = FlashImage(Image(imageId))
     }
 
-    /**
-     * 闪照的内容图片, 即一个普通图片.
-     */
-    public abstract val image: Image
+    private val stringValue: String by lazy(LazyThreadSafetyMode.NONE) { "[mirai:flash:${image.imageId}]" }
 
-    private var stringValue: String? = null
-        get() {
-            return field ?: kotlin.run {
-                field = "[mirai:flash:${image.imageId}]"
-                field
-            }
-        }
-
-    public final override fun toString(): String = stringValue!!
+    public override fun toString(): String = stringValue
     public override fun contentToString(): String = "[闪照]"
 }
 
+/**
+ * 将普通图片转换为闪照.
+ */
+@JvmSynthetic
+public inline fun FlashImage(imageId: String): FlashImage = FlashImage.from(imageId)
+
+/**
+ * 将普通图片转换为闪照.
+ */
+@JvmSynthetic
 public inline fun Image.flash(): FlashImage = FlashImage(this)
 
+/**
+ * 将普通图片转换为闪照.
+ */
 @JvmSynthetic
-public inline fun GroupImage.flash(): GroupFlashImage = FlashImage(this) as GroupFlashImage
-
-@JvmSynthetic
-public inline fun FriendImage.flash(): FriendFlashImage = FlashImage(this) as FriendFlashImage
+public inline fun GroupImage.flash(): FlashImage = FlashImage(this)
 
 /**
- * @see FlashImage.invoke
+ * 将普通图片转换为闪照.
  */
-@Serializable
-public data class GroupFlashImage(@Contextual override val image: GroupImage) : FlashImage() {
-    public companion object Key :
-        AbstractPolymorphicMessageKey<FlashImage, GroupFlashImage>(FlashImage, { it.safeCast() })
-}
-
-/**
- * @see FlashImage.invoke
- */
-@Serializable
-public data class FriendFlashImage(@Contextual override val image: FriendImage) : FlashImage() {
-    public companion object Key :
-        AbstractPolymorphicMessageKey<FlashImage, FriendFlashImage>(FlashImage, { it.safeCast() })
-}
+@JvmSynthetic
+public inline fun FriendImage.flash(): FlashImage = FlashImage(this)

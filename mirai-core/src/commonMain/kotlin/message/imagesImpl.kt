@@ -18,7 +18,13 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.hexToBytes
-import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.FriendImage
+import net.mamoe.mirai.message.data.GroupImage
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
+import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
+import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.md5
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 

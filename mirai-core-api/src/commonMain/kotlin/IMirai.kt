@@ -95,9 +95,18 @@ public interface IMirai : LowLevelApiAccessor {
     @JvmBlockingBridge
     public suspend fun recallMessage(bot: Bot, source: MessageSource)
 
+    /**
+     * 发送戳一戳消息
+     */
     @JvmBlockingBridge
     public suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean
 
+    /**
+     * 构造 [Image]
+     *
+     * @see Image
+     * @see Image.fromId
+     */
     public fun createImage(imageId: String): Image
 
     /**

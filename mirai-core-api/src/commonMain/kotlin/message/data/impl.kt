@@ -13,6 +13,9 @@
 
 package net.mamoe.mirai.message.data
 
+import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
+import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
+import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.native.concurrent.SharedImmutable
 

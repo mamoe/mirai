@@ -67,6 +67,7 @@ import net.mamoe.mirai.utils.safeCast
  */
 @Serializable(MessageSourceSerializer::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
+    @ExperimentalMessageKey
     public final override val key: MessageKey<MessageSource> get() = Key
 
     /**
@@ -222,6 +223,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
          * 引用这条消息. 仅从服务器接收的消息 (即来自 [MessageEvent]) 才可以通过这个方式被引用.
          * @see QuoteReply
          */
+        @JvmStatic
         public fun MessageChain.quote(): QuoteReply = QuoteReply(this.source)
     }
 }
@@ -347,7 +349,8 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class FromTemp : Incoming() {
-            public companion object Key : AbstractPolymorphicMessageKey<Incoming, FromTemp>(Incoming, { it.safeCast() })
+            public companion object Key :
+                AbstractPolymorphicMessageKey<Incoming, FromTemp>(Incoming, { it.safeCast() })
 
             public abstract override val sender: Member
             public inline val group: Group get() = sender.group

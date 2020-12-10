@@ -28,6 +28,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.message.MessageSerializerImpl
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
 import kotlin.contracts.contract
 
@@ -187,6 +188,12 @@ public interface Message { // must be interface. Don't consider any changes.
         KSerializer<Message> by PolymorphicSerializer(Message::class)
 }
 
+/**
+ * 标注一个实验性的 [MessageKey] API.
+ *
+ * 在 `1.0-M2` 时将会推进 [MessageKey] 到稳定状态并删除此注解.
+ */
+@PlannedRemoval("1.0-M2")
 @MiraiExperimentalApi
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 public annotation class ExperimentalMessageKey
@@ -297,8 +304,8 @@ public interface MessageMetadata : SingleMessage {
 @ExperimentalMessageKey
 public interface ConstrainSingle : SingleMessage {
     /**
-     * 用于判断是否为同一种元素的 [Key]
-     * @see Key 查看更多信息
+     * 用于判断是否为同一种元素的 [MessageKey]
+     * @see MessageKey 查看更多信息
      */
     @ExperimentalMessageKey
     public val key: MessageKey<*>
