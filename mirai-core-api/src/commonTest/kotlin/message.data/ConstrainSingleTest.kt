@@ -47,7 +47,7 @@ internal class ConstrainSingleTest {
             add("st")
         }
         val result = TestConstrainSingleMessage() + chain
-        assertSame(chain, result)
+        assertEquals(chain, result)
         assertEquals(2, result.size)
         assertEquals(result.contentToString(), "st")
         assertTrue { result.first() is TestConstrainSingleMessage }
