@@ -71,7 +71,7 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
      * ```
      * val chain: MessageChain = ...
      *
-     * val source = Message[MessageSource] // MessageSource 为伴生对象
+     * val source = chain[MessageSource] // MessageSource 为伴生对象
      * ```
      *
      * ### Java 使用方法
