@@ -221,7 +221,7 @@ public inline fun <M : SingleMessage> MessageChain.any(key: MessageKey<M>): Bool
  * val image: Image by message
  */
 @JvmSynthetic
-public inline operator fun <reified T : Message> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T =
+public inline operator fun <reified T : SingleMessage> MessageChain.getValue(thisRef: Any?, property: KProperty<*>): T =
     this.firstIsInstance()
 
 /**
