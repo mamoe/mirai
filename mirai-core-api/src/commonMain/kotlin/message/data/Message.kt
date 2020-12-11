@@ -274,7 +274,10 @@ public inline operator fun Message.times(count: Int): MessageChain = this.repeat
 /**
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
  */
-public interface SingleMessage : Message
+@Serializable(SingleMessage.Serializer::class)
+public interface SingleMessage : Message {
+    public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
+}
 
 /**
  * 消息元数据, 即不含内容的元素.
@@ -289,11 +292,14 @@ public interface SingleMessage : Message
  *
  * @see ConstrainSingle 约束一个 [MessageChain] 中只存在这一种类型的元素
  */
+@Serializable(MessageMetadata.Serializer::class)
 public interface MessageMetadata : SingleMessage {
     /**
      * 返回空字符串
      */
     override fun contentToString(): String = ""
+
+    public object Serializer : KSerializer<MessageMetadata> by PolymorphicSerializer(MessageMetadata::class)
 }
 
 /**
@@ -378,9 +384,12 @@ public abstract class AbstractPolymorphicMessageKey<out B : SingleMessage, out M
  * @see ForwardMessage 合并转发
  * @see Voice 语音
  */
+@Serializable(MessageContent.Serializer::class)
 public interface MessageContent : SingleMessage {
     @ExperimentalMessageKey
     public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
+
+    public object Serializer : KSerializer<MessageContent> by PolymorphicSerializer(MessageContent::class)
 }
 
 /**

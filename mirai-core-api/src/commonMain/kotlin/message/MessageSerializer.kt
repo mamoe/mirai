@@ -14,12 +14,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.modules.PolymorphicModuleBuilder
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
-import kotlinx.serialization.modules.serializersModuleOf
+import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.CombinedMessage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.reflect.KClass
 
@@ -28,6 +28,8 @@ public interface MessageSerializer {
     public val serializersModule: SerializersModule
 
     public fun <M : Message> registerSerializer(clazz: KClass<M>, serializer: KSerializer<M>)
+
+    public fun registerSerializers(serializersModule: SerializersModule)
 
     public fun clearRegisteredSerializers()
 }
@@ -80,54 +82,135 @@ internal object MessageSourceSerializer : KSerializer<MessageSource> {
 }
 
 
-private val builtInSerializersModule = SerializersModule {
-    // In case Proguard or something else obfuscated the Kotlin metadata, providing the serializesrs explicity will help.
-    contextual(At::class, At.serializer())
-    contextual(AtAll::class, AtAll.serializer())
-    contextual(CombinedMessage::class, CombinedMessage.serializer())
-    contextual(CustomMessage::class, CustomMessage.serializer())
-    contextual(CustomMessageMetadata::class, CustomMessageMetadata.serializer())
-    contextual(Face::class, Face.serializer())
-    contextual(MessageSource::class, MessageSource.serializer())
-    contextual(Image::class, Image.Serializer)
-    contextual(PlainText::class, PlainText.serializer())
-    contextual(QuoteReply::class, QuoteReply.serializer())
-
-    contextual(ForwardMessage::class, ForwardMessage.serializer())
-    contextual(RawForwardMessage::class, RawForwardMessage.serializer())
-    contextual(ForwardMessage.Node::class, ForwardMessage.Node.serializer())
+private val builtInSerializersModule by lazy {
+    SerializersModule {
+        // non-Message classes
+        contextual(RawForwardMessage::class, RawForwardMessage.serializer())
+        contextual(ForwardMessage.Node::class, ForwardMessage.Node.serializer())
+        contextual(VipFace.Kind::class, VipFace.Kind.serializer())
 
 
-    contextual(LightApp::class, LightApp.serializer())
-    contextual(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
-    contextual(AbstractServiceMessage::class, AbstractServiceMessage.serializer())
-    contextual(LongMessage::class, LongMessage.serializer())
-    contextual(ForwardMessageInternal::class, ForwardMessageInternal.serializer())
+        // In case Proguard or something else obfuscated the Kotlin metadata, providing the serializers explicitly will help.
+        contextual(At::class, At.serializer())
+        contextual(AtAll::class, AtAll.serializer())
+        contextual(CustomMessage::class, CustomMessage.serializer())
+        contextual(CustomMessageMetadata::class, CustomMessageMetadata.serializer())
+        contextual(Face::class, Face.serializer())
+        contextual(MessageSource::class, MessageSource.serializer())
+        contextual(Image::class, Image.Serializer)
+        contextual(PlainText::class, PlainText.serializer())
+        contextual(QuoteReply::class, QuoteReply.serializer())
 
-    contextual(PttMessage::class, PttMessage.serializer())
-    contextual(Voice::class, Voice.serializer())
-
-    contextual(HummerMessage::class, HummerMessage.serializer())
-    contextual(PokeMessage::class, PokeMessage.serializer())
-    contextual(VipFace::class, VipFace.serializer())
-    contextual(FlashImage::class, FlashImage.serializer())
-    contextual(VipFace.Kind::class, VipFace.Kind.serializer())
+        contextual(ForwardMessage::class, ForwardMessage.serializer())
 
 
-    contextual(Message::class, Message.Serializer)
-    contextual(MessageChain::class, MessageChain.Serializer)
+        contextual(LightApp::class, LightApp.serializer())
+        contextual(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
+        contextual(AbstractServiceMessage::class, AbstractServiceMessage.serializer())
+        contextual(LongMessage::class, LongMessage.serializer())
+        contextual(ForwardMessageInternal::class, ForwardMessageInternal.serializer())
+
+        contextual(PttMessage::class, PttMessage.serializer())
+        contextual(Voice::class, Voice.serializer())
+
+        contextual(HummerMessage::class, HummerMessage.serializer())
+        contextual(PokeMessage::class, PokeMessage.serializer())
+        contextual(VipFace::class, VipFace.serializer())
+        contextual(FlashImage::class, FlashImage.serializer())
+
+        fun PolymorphicModuleBuilder<SingleMessage>.singleMessageSubclasses() {
+        }
+
+        fun PolymorphicModuleBuilder<MessageMetadata>.messageMetadataSubclasses() {
+            subclass(MessageSource::class, MessageSource.serializer())
+            subclass(QuoteReply::class, QuoteReply.serializer())
+        }
+
+        fun PolymorphicModuleBuilder<MessageContent>.messageContentSubclasses() {
+            subclass(At::class, At.serializer())
+            subclass(AtAll::class, AtAll.serializer())
+            subclass(Face::class, Face.serializer())
+            subclass(Image::class, Image.Serializer)
+            subclass(PlainText::class, PlainText.serializer())
+
+            subclass(ForwardMessage::class, ForwardMessage.serializer())
+
+
+            subclass(LightApp::class, LightApp.serializer())
+            subclass(SimpleServiceMessage::class, SimpleServiceMessage.serializer())
+            subclass(LongMessage::class, LongMessage.serializer())
+            subclass(ForwardMessageInternal::class, ForwardMessageInternal.serializer())
+
+            //  subclass(PttMessage::class, PttMessage.serializer())
+            subclass(Voice::class, Voice.serializer())
+
+            // subclass(HummerMessage::class, HummerMessage.serializer())
+            subclass(PokeMessage::class, PokeMessage.serializer())
+            subclass(VipFace::class, VipFace.serializer())
+            subclass(FlashImage::class, FlashImage.serializer())
+        }
+
+        contextual(MessageChain::class, MessageChain.Serializer)
+        polymorphicDefault(MessageChain::class) { MessageChainImpl.serializer() }
+
+        polymorphic(AbstractServiceMessage::class) {
+            subclass(LongMessage::class, LongMessage.serializer())
+            subclass(ForwardMessageInternal::class, ForwardMessageInternal.serializer())
+        }
+
+        polymorphicDefault(Image::class) { Image.Serializer }
+
+        contextual(Message::class, Message.Serializer)
+        // polymorphic(Message::class) {
+        //     subclass(PlainText::class, PlainText.serializer())
+        // }
+        polymorphic(Message::class) {
+            messageContentSubclasses()
+            messageMetadataSubclasses()
+            singleMessageSubclasses()
+        }
+
+        //contextual(SingleMessage::class, SingleMessage.Serializer)
+        // polymorphic(SingleMessage::class, SingleMessage.Serializer) {
+        //     messageContentSubclasses()
+        //     messageMetadataSubclasses()
+        //     singleMessageSubclasses()
+        // }
+
+        // contextual(MessageContent::class, MessageContent.Serializer)
+        // polymorphic(MessageContent::class, MessageContent.Serializer) {
+        //     messageContentSubclasses()
+        // }
+
+        // contextual(MessageMetadata::class, MessageMetadata.Serializer)
+        // polymorphic(MessageMetadata::class, MessageMetadata.Serializer) {
+        //     messageMetadataSubclasses()
+        // }
+    }
 }
 
 internal object MessageSerializerImpl : MessageSerializer {
-    override var serializersModule: SerializersModule = builtInSerializersModule
+    @Volatile
+    private var serializersModuleField: SerializersModule? = null
+    override val serializersModule: SerializersModule get() = serializersModuleField ?: builtInSerializersModule
 
     @Synchronized
     override fun <M : Message> registerSerializer(clazz: KClass<M>, serializer: KSerializer<M>) {
-        serializersModule = serializersModule.plus(serializersModuleOf(clazz, serializer))
+        serializersModuleField = serializersModule.plus(SerializersModule {
+            contextual(clazz, serializer)
+            polymorphic(Message::class) {
+                subclass(clazz, serializer)
+            }
+        })
+    }
+
+    @Synchronized
+    override fun registerSerializers(serializersModule: SerializersModule) {
+        serializersModuleField = serializersModule
     }
 
     @Synchronized
     override fun clearRegisteredSerializers() {
-        serializersModule = builtInSerializersModule
+        serializersModuleField = builtInSerializersModule
     }
 }

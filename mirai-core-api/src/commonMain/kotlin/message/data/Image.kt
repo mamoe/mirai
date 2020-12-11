@@ -28,8 +28,11 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.decodeStructure
+import kotlinx.serialization.encoding.encodeStructure
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
@@ -97,14 +100,21 @@ public interface Image : Message, MessageContent, CodableMessage {
     public val imageId: String
 
     public object Serializer : KSerializer<Image> {
-        override val descriptor: SerialDescriptor = String.serializer().descriptor
-        override fun deserialize(decoder: Decoder): Image {
-            val id = String.serializer().deserialize(decoder)
-            return Image(id)
+        override val descriptor: SerialDescriptor = buildClassSerialDescriptor("net.mamoe.mirai.message.data.Image") {
+            element("imageId", String.serializer().descriptor)
         }
 
-        override fun serialize(encoder: Encoder, value: Image) {
-            String.serializer().serialize(encoder, value.imageId)
+        override fun deserialize(decoder: Decoder): Image = decoder.decodeStructure(descriptor) {
+            val imageId = if (decodeSequentially()) {
+                decodeStringElement(descriptor, 0)
+            } else {
+                decodeStringElement(descriptor, decodeElementIndex(descriptor))
+            }
+            Image(imageId)
+        }
+
+        override fun serialize(encoder: Encoder, value: Image): Unit = encoder.encodeStructure(descriptor) {
+            encodeStringElement(descriptor, 0, value.imageId)
         }
     }
 

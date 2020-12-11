@@ -56,7 +56,10 @@ import kotlin.random.Random
 internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     companion object INSTANCE : MiraiImpl() {
         @Suppress("ObjectPropertyName", "unused")
-        private val _init = Mirai.let { }
+        private val _init = Mirai.let {
+            Message.Serializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
+            Message.Serializer.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
+        }
     }
 
     override val BotFactory: BotFactory
