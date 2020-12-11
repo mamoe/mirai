@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
@@ -25,15 +26,16 @@ import kotlin.native.concurrent.SharedImmutable
 //// IMPLEMENTATIONS ////
 /////////////////////////
 
+@Suppress("unused", "UNUSED_PARAMETER")
 private fun Message.hasDuplicationOfConstrain(key: MessageKey<*>): Boolean {
-    return when (this) {
-        is SingleMessage -> (this as? ConstrainSingle)?.key == key
-        is CombinedMessage -> return this.left.hasDuplicationOfConstrain(key) || this.tail.hasDuplicationOfConstrain(key)
-        is SingleMessageChainImpl -> (this.delegate as? ConstrainSingle)?.key == key
-        is MessageChainImplByCollection -> this.delegate.any { (it as? ConstrainSingle)?.key == key }
-        is MessageChainImplBySequence -> this.any { (it as? ConstrainSingle)?.key == key }
-        else -> error("stub")
-    }
+    return true
+    /*
+     return when (this) {
+         is SingleMessage -> (this as? ConstrainSingle)?.key == key
+         is CombinedMessage -> return this.left.hasDuplicationOfConstrain(key) || this.tail.hasDuplicationOfConstrain(key)
+         is MessageChainImplByCollection -> this.delegate.any { (it as? ConstrainSingle)?.key == key }
+         else -> error("stub")
+     }*/
 }
 
 //@JvmSynthetic
@@ -64,6 +66,8 @@ private fun Message.hasDuplicationOfConstrain(key: MessageKey<*>): Boolean {
 
 @JvmSynthetic
 internal fun Message.followedByImpl(tail: Message): MessageChain {
+    return MessageChainImplBySequence(this.flatten() + tail.flatten())
+    /*
     when {
         this is SingleMessage && tail is SingleMessage -> {
             if (this is ConstrainSingle && tail is ConstrainSingle) {
@@ -103,7 +107,7 @@ internal fun Message.followedByImpl(tail: Message): MessageChain {
                 constrainSingleMessagesImpl(this.asSequence() + tail)
             )
         }
-    }
+    }*/
 }
 
 
@@ -162,49 +166,36 @@ internal fun <M : SingleMessage> MessageChain.getImpl(key: MessageKey<M>): M? {
 /**
  * 使用 [Collection] 作为委托的 [MessageChain]
  */
-internal class MessageChainImplByCollection constructor(
+@Serializable
+internal data class MessageChainImpl constructor(
+    @JvmField
     internal val delegate: List<SingleMessage> // 必须 constrainSingleMessages, 且为 immutable
 ) : Message, MessageChain, List<SingleMessage> by delegate {
     override val size: Int get() = delegate.size
     override fun iterator(): Iterator<SingleMessage> = delegate.iterator()
 
-    private var toStringTemp: String? = null
-        get() = field ?: this.delegate.joinToString("") { it.toString() }.also { field = it }
+    private val toStringTemp: String by lazy { this.delegate.joinToString("") { it.toString() } }
+    override fun toString(): String = toStringTemp
 
-    override fun toString(): String = toStringTemp!!
-
-    private var contentToStringTemp: String? = null
-        get() = field ?: this.delegate.joinToString("") { it.contentToString() }.also { field = it }
-
-    override fun contentToString(): String = contentToStringTemp!!
+    private val contentToStringTemp: String by lazy { this.delegate.joinToString("") { it.contentToString() } }
+    override fun contentToString(): String = contentToStringTemp
 }
 
-/**
- * 使用 [Iterable] 作为委托的 [MessageChain]
- */
-internal class MessageChainImplBySequence constructor(
+@Suppress("FunctionName")
+internal fun CombinedMessage(
+    left: Message,
+    tail: Message
+): MessageChain = MessageChainImplBySequence(left.flatten() + tail.flatten())
+
+@Suppress("FunctionName") // source compatibility with 1.x
+internal fun MessageChainImplBySequence(
     delegate: Sequence<SingleMessage> // 可以有重复 ConstrainSingle
-) : Message, Iterable<SingleMessage>, MessageChain, List<SingleMessage> by delegate.constrainSingleMessages() {
-    private var toStringTemp: String? = null
-        get() = field ?: this.joinToString("") { it.toString() }.also { field = it }
+): MessageChain = MessageChainImpl(delegate.constrainSingleMessages())
 
-    override fun toString(): String = toStringTemp!!
-
-    private var contentToStringTemp: String? = null
-        get() = field ?: this.joinToString("") { it.contentToString() }.also { field = it }
-
-    override fun contentToString(): String = contentToStringTemp!!
-}
-
-/**
- * 单个 [SingleMessage] 作为 [MessageChain]
- */
-internal class SingleMessageChainImpl constructor(
-    internal val delegate: SingleMessage
-) : Message, MessageChain, List<SingleMessage> by listOf(delegate) {
-    override fun toString(): String = this.delegate.toString()
-    override fun contentToString(): String = this.delegate.contentToString()
-}
+@Suppress("FunctionName")
+internal fun SingleMessageChainImpl(
+    delegate: SingleMessage
+): MessageChain = MessageChainImpl(listOf(delegate))
 
 
 //////////////////////

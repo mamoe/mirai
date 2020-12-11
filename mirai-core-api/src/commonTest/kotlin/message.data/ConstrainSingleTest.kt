@@ -31,16 +31,6 @@ internal class ConstrainSingleTest {
 
 
     @Test
-    fun testCombine() {
-        val result = PlainText("te") + PlainText("st")
-        assertTrue(result is CombinedMessage)
-        assertEquals("te", result.left.contentToString())
-        assertEquals("st", result.tail.contentToString())
-        assertEquals(2, result.size)
-        assertEquals("test", result.contentToString())
-    }
-
-    @Test
     fun testSinglePlusChain() {
         val result = PlainText("te") + buildMessageChain {
             add(TestConstrainSingleMessage())
@@ -64,15 +54,6 @@ internal class ConstrainSingleTest {
     }
 
     @Test
-    fun testSinglePlusSingle() {
-        val new = TestConstrainSingleMessage()
-        val combined = (TestConstrainSingleMessage() + new)
-
-        assertTrue(combined is SingleMessageChainImpl)
-        assertSame(new, combined.delegate)
-    }
-
-    @Test
     fun testChainPlusSingle() {
         val new = TestConstrainSingleMessage()
 
@@ -92,7 +73,7 @@ internal class ConstrainSingleTest {
 
         assertEquals(7, result.size)
         assertEquals(" [OK]ss p test", result.contentToString())
-        result as MessageChainImplByCollection
+        result as MessageChainImpl
         assertSame(new, result.delegate.toTypedArray()[2])
     }
 

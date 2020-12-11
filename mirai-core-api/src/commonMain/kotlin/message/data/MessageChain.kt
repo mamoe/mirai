@@ -291,7 +291,6 @@ public inline fun messageChainOf(vararg messages: Message): MessageChain = messa
 @Suppress("UNCHECKED_CAST")
 public fun Message.asMessageChain(): MessageChain = when (this) {
     is MessageChain -> this
-    is CombinedMessage -> (this as Iterable<Message>).asMessageChain()
     else -> SingleMessageChainImpl(this as SingleMessage)
 }
 
@@ -306,7 +305,7 @@ public fun SingleMessage.asMessageChain(): MessageChain = SingleMessageChainImpl
  */
 @JvmSynthetic
 public fun Collection<SingleMessage>.asMessageChain(): MessageChain =
-    MessageChainImplByCollection(this.constrainSingleMessages())
+    MessageChainImpl(this.constrainSingleMessages())
 
 /**
  * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
@@ -332,7 +331,7 @@ public fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImpl
  */
 @JvmSynthetic
 public fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
-    MessageChainImplByCollection(this.constrainSingleMessages())
+    MessageChainImpl(this.constrainSingleMessages())
 
 @JvmSynthetic
 public inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
@@ -421,7 +420,6 @@ public inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = 
 public fun Message.flatten(): Sequence<SingleMessage> {
     return when (this) {
         is MessageChain -> this.asSequence()
-        is CombinedMessage -> this.asSequence() // already constrained single.
         else -> sequenceOf(this as SingleMessage)
     }
 }

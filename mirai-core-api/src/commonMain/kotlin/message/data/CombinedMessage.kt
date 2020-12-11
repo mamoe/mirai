@@ -12,31 +12,29 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.serialization.Serializable
-import kotlin.LazyThreadSafetyMode.NONE
-
-/**
- * 快速链接的两个消息 (避免构造新的 list).
- *
- * 不要直接构造 [CombinedMessage], 使用 [Message.plus]
- * 要连接多个 [Message], 使用 [buildMessageChain]
- *
- * @see Message.plus
- *
- * Left-biased list
- */
-@Serializable
-internal data class CombinedMessage
-internal constructor(
-    @JvmField internal val left: Message, // 必须已经完成 constrain single
-    @JvmField internal val tail: Message
-) : Message, MessageChain, List<SingleMessage> by (left.flatten() + tail.flatten()).toList() {
-    private val toStringCache: String by lazy(NONE) { left.contentToString() + tail.contentToString() }
-    override fun toString(): String = toStringCache
-
-    private val contentToStringCache: String by lazy(NONE) { left.contentToString() + tail.contentToString() }
-    override fun contentToString(): String = contentToStringCache
-}
+//
+///**
+// * 快速链接的两个消息 (避免构造新的 list).
+// *
+// * 不要直接构造 [CombinedMessage], 使用 [Message.plus]
+// * 要连接多个 [Message], 使用 [buildMessageChain]
+// *
+// * @see Message.plus
+// *
+// * Left-biased list
+// */
+//@Serializable
+//internal data class CombinedMessage
+//internal constructor(
+//    @JvmField internal val left: Message, // 必须已经完成 constrain single
+//    @JvmField internal val tail: Message
+//) : Message, MessageChain, List<SingleMessage> by (left.flatten() + tail.flatten()).toList() {
+//    private val toStringCache: String by lazy(NONE) { left.contentToString() + tail.contentToString() }
+//    override fun toString(): String = toStringCache
+//
+//    private val contentToStringCache: String by lazy(NONE) { left.contentToString() + tail.contentToString() }
+//    override fun contentToString(): String = contentToStringCache
+//}
 
 /*
 @JvmSynthetic

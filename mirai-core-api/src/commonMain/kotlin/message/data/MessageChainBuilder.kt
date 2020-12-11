@@ -148,7 +148,7 @@ public open class MessageChainBuilder private constructor(
     public fun asMessageChain(): MessageChain {
         built = true
         this.flushCache()
-        return MessageChainImplByCollection(this.constrainSingleMessages())
+        return MessageChainImpl(this.constrainSingleMessages())
     }
 
     /** 同 [asMessageChain] */

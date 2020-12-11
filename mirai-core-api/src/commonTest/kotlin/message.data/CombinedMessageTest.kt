@@ -22,7 +22,7 @@ internal class CombinedMessageTest {
 
         assertEquals(
             "Hello World",
-            (message as CombinedMessage).asSequence().joinToString(separator = "")
+            message.flatten().joinToString(separator = "")
         )
     }
 
@@ -37,7 +37,7 @@ internal class CombinedMessageTest {
 
         assertEquals(
             "Hello World",
-            (message as CombinedMessage).asSequence().joinToString(separator = "")
+            message.flatten().joinToString(separator = "")
         )
     }
 }
