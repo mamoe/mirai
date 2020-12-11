@@ -15,9 +15,7 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.event.broadcast
-import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
-import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.MessageSourceToFriendImpl
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable

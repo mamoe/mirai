@@ -12,7 +12,7 @@ package net.mamoe.mirai.event.internal
 import net.mamoe.mirai.event.MessageDsl
 import net.mamoe.mirai.event.MessageListener
 import net.mamoe.mirai.event.MessageSubscribersBuilder
-import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.event.events.MessageEvent
 
 
 /*

@@ -17,6 +17,7 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.internal.QQAndroidBot
@@ -32,7 +33,6 @@ import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.utils.warning
 
 /**

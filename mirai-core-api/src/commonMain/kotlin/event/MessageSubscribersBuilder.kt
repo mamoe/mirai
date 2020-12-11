@@ -16,11 +16,8 @@ package net.mamoe.mirai.event
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.internal.*
-import net.mamoe.mirai.message.FriendMessageEvent
-import net.mamoe.mirai.message.GroupMessageEvent
-import net.mamoe.mirai.message.MessageEvent
-import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.message.data.*
 
 

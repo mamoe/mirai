@@ -23,7 +23,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.message.MessageEvent
+import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.message.MessageSerializerImpl

@@ -26,7 +26,9 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
+import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
+import net.mamoe.mirai.event.events.TempMessageEvent
 import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
@@ -50,8 +52,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.internal.utils.read
 import net.mamoe.mirai.internal.utils.toInt
 import net.mamoe.mirai.internal.utils.toUHexString
-import net.mamoe.mirai.message.FriendMessageEvent
-import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
 import kotlin.random.Random

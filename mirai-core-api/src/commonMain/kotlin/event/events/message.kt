@@ -15,17 +15,19 @@ package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.event.AbstractEvent
-import net.mamoe.mirai.event.CancellableEvent
+import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageSource
-import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import net.mamoe.mirai.message.isContextIdenticalWith
+import net.mamoe.mirai.utils.*
+import java.awt.image.BufferedImage
+import java.io.File
+import java.io.InputStream
 import kotlin.internal.InlineOnly
 
 
@@ -246,6 +248,8 @@ public data class TempMessagePostSendEvent internal constructor(
 
 // endregion
 
+// region MessageRecallEvent
+
 /**
  * 消息撤回事件. 可是任意消息被任意人撤回.
  *
@@ -373,6 +377,9 @@ public val MessageRecallEvent.isByBot: Boolean
         is MessageRecallEvent.GroupRecall -> (this as GroupOperableEvent).isByBot
     }
 
+// endregion
+
+// region ImageUploadEvent
 
 /**
  * 图片上传前. 可以阻止上传.
@@ -419,4 +426,291 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
         val errno: Int,
         val message: String
     ) : ImageUploadEvent()
+}
+
+// endregion
+
+/**
+ * 机器人收到的好友消息的事件
+ *
+ * @see MessageEvent
+ */
+public class FriendMessageEvent constructor(
+    public override val sender: Friend,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable, FriendEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
+    }
+
+    public override val friend: Friend get() = sender
+    public override val bot: Bot get() = super.bot
+    public override val subject: Friend get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
+
+    public override fun toString(): String = "FriendMessageEvent(sender=${sender.id}, message=$message)"
+}
+
+/**
+ * 来自一个可以知道其 [Group] 的用户消息
+ *
+ * @see FriendMessageEvent
+ * @see TempMessageEvent
+ */
+public interface GroupAwareMessageEvent : MessageEvent {
+    public val group: Group
+}
+
+/**
+ * 机器人收到的群消息的事件
+ *
+ * @see MessageEvent
+ */
+public class GroupMessageEvent(
+    public override val senderName: String,
+    /**
+     * 发送方权限.
+     */
+    public val permission: MemberPermission,
+    public override val sender: Member,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractEvent(), GroupAwareMessageEvent, MessageEvent, Event, GroupEvent {
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
+    }
+
+    public override val group: Group get() = sender.group
+    public override val bot: Bot get() = sender.bot
+    public override val subject: Group get() = group
+    public override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
+
+    public inline fun At.asMember(): Member = group[this.target]
+
+    public override fun toString(): String =
+        "GroupMessageEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
+}
+
+/**
+ * 机器人收到的群临时会话消息的事件
+ *
+ * @see MessageEvent
+ */
+public class TempMessageEvent(
+    public override val sender: Member,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractEvent(), GroupAwareMessageEvent, MessageEvent, BroadcastControllable {
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
+    }
+
+    public override val bot: Bot get() = sender.bot
+    public override val subject: Member get() = sender
+    public override val group: Group get() = sender.group
+    public override val senderName: String get() = sender.nameCardOrNick
+    public override val source: OnlineMessageSource.Incoming.FromTemp get() = message.source as OnlineMessageSource.Incoming.FromTemp
+
+    public override fun toString(): String =
+        "TempMessageEvent(sender=${sender.id} from group(${sender.group.id}), message=$message)"
+}
+
+/**
+ * 来自 [User] 的消息
+ *
+ * @see FriendMessageEvent
+ * @see TempMessageEvent
+ */
+public interface UserMessageEvent : MessageEvent {
+    public override val subject: User
+}
+
+/**
+ * 一个 (收到的) 消息事件.
+ *
+ * 它是一个 [BotEvent], 因此可以被 [监听][Bot.subscribe]
+ *
+ * 支持的消息类型:
+ * - [群消息事件][GroupMessageEvent]
+ * - [好友消息事件][FriendMessageEvent]
+ * - [临时会话消息事件][TempMessageEvent]
+ *
+ * @see isContextIdenticalWith 判断语境是否相同
+ */
+@Suppress("DEPRECATION_ERROR")
+public interface MessageEvent : Event, Packet, BotEvent, MessageEventExtensions<User, Contact> {
+
+    /**
+     * 与这个消息事件相关的 [Bot]
+     */
+    public override val bot: Bot
+
+    /**
+     * 消息事件主体.
+     *
+     * - 对于好友消息, 这个属性为 [Friend] 的实例, 与 [sender] 引用相同;
+     * - 对于临时会话消息, 这个属性为 [Member] 的实例, 与 [sender] 引用相同;
+     * - 对于群消息, 这个属性为 [Group] 的实例, 与 [GroupMessageEvent.group] 引用相同
+     *
+     * 在回复消息时, 可通过 [subject] 作为回复对象
+     */
+    public override val subject: Contact
+
+    /**
+     * 发送人.
+     *
+     * 在好友消息时为 [Friend] 的实例, 在群消息时为 [Member] 的实例
+     */
+    public override val sender: User
+
+    /**
+     * 发送人名称
+     */
+    public val senderName: String
+
+    /**
+     * 消息内容.
+     *
+     * 第一个元素一定为 [MessageSource], 存储此消息的发送人, 发送时间, 收信人, 消息 ids 等数据.
+     * 随后的元素为拥有顺序的真实消息内容.
+     */
+    public override val message: MessageChain
+
+    /** 消息发送时间 (由服务器提供, 可能与本地有时差) */
+    public val time: Int
+
+    /**
+     * 消息源. 来自 [message] 的第一个元素,
+     */
+    public val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
+}
+
+/** 消息事件的扩展函数 */
+public interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
+    MessageEventPlatformExtensions<TSender, TSubject> {
+
+    // region 发送 Message
+
+    /**
+     * 给这个消息事件的主体发送消息
+     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
+     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
+     */
+    @JvmSynthetic
+    public suspend fun reply(message: Message): MessageReceipt<TSubject> =
+        subject.sendMessage(message.asMessageChain()) as MessageReceipt<TSubject>
+
+    @JvmSynthetic
+    public suspend fun reply(plain: String): MessageReceipt<TSubject> =
+        subject.sendMessage(PlainText(plain).asMessageChain()) as MessageReceipt<TSubject>
+
+    // endregion
+
+    @JvmSynthetic
+    public suspend fun ExternalImage.upload(): Image = this.upload(subject)
+
+    @JvmSynthetic
+    public suspend fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+
+    @JvmSynthetic
+    public suspend fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+
+    @JvmSynthetic
+    public suspend fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+
+    @JvmSynthetic
+    public suspend fun String.send(): MessageReceipt<TSubject> = PlainText(this).sendTo(subject)
+
+    // region 引用回复
+    /**
+     * 给这个消息事件的主体发送引用回复消息
+     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
+     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
+     */
+    @JvmSynthetic
+    public suspend fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
+        reply(this.message.quote() + message)
+
+    @JvmSynthetic
+    public suspend fun quoteReply(message: Message): MessageReceipt<TSubject> =
+        reply(this.message.quote() + message)
+
+    @JvmSynthetic
+    public suspend fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
+
+    @JvmSynthetic
+    public fun At.isBot(): Boolean = target == bot.id
+
+
+    /**
+     * 获取图片下载链接
+     * @return "http://gchat.qpic.cn/gchatpic_new/..."
+     */
+    @JvmSynthetic
+    public suspend fun Image.url(): String = this@url.queryUrl()
+}
+
+/** 一个消息事件在各平台的相关扩展. 请使用 [MessageEventExtensions] */
+
+/**
+ * 消息事件在 JVM 平台的扩展
+ * @see MessageEventExtensions
+ */
+public interface MessageEventPlatformExtensions<out TSender : User, out TSubject : Contact> {
+    public val subject: TSubject
+    public val sender: TSender
+    public val message: MessageChain
+    public val bot: Bot
+
+    // region 上传图片
+
+    @JvmSynthetic
+    public suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+
+    @JvmSynthetic
+    public suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+
+    @JvmSynthetic
+    public suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
+    // endregion
+
+    // region 发送图片
+    @JvmSynthetic
+    public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @JvmSynthetic
+    public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
+
+    @JvmSynthetic
+    public suspend fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
+    // endregion
+
+    // region 上传图片 (扩展)
+    @JvmSynthetic
+    public suspend fun BufferedImage.upload(): Image = upload(subject)
+
+    @JvmSynthetic
+    public suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+
+    @JvmSynthetic
+    public suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    // endregion 上传图片 (扩展)
+
+    // region 发送图片 (扩展)
+    @JvmSynthetic
+    public suspend fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
+
+    @JvmSynthetic
+    public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+
+    @JvmSynthetic
+    public suspend fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    // endregion 发送图片 (扩展)
+
 }

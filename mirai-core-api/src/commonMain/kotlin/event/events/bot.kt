@@ -17,7 +17,6 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
-import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 

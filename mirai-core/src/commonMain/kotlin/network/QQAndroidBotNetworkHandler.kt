@@ -24,6 +24,7 @@ import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
+import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
@@ -39,7 +40,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.readPacketExact
-import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.network.ForceOfflineException
 import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
