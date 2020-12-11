@@ -36,31 +36,31 @@ private fun Message.hasDuplicationOfConstrain(key: MessageKey<*>): Boolean {
     }
 }
 
-@JvmSynthetic
-internal fun Message.contentEqualsImpl(another: Message, ignoreCase: Boolean): Boolean {
-    if (!this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)) return false
-    return when {
-        this is SingleMessage && another is SingleMessage -> true
-        this is SingleMessage && another is MessageChain -> another.all { it is MessageMetadata || it is PlainText }
-        this is MessageChain && another is SingleMessage -> this.all { it is MessageMetadata || it is PlainText }
-        this is MessageChain && another is MessageChain -> {
-            val anotherIterator = another.iterator()
-
-            /**
-             * 逐个判断非 [PlainText] 的 [Message] 是否 [equals]
-             */
-            this.forEachContent { thisElement ->
-                if (thisElement.isPlain()) return@forEachContent
-                for (it in anotherIterator) {
-                    if (it.isPlain() || it !is MessageContent) continue
-                    if (thisElement != it) return false
-                }
-            }
-            return true
-        }
-        else -> error("shouldn't be reached")
-    }
-}
+//@JvmSynthetic
+//internal fun Message.contentEqualsImpl(another: Message, ignoreCase: Boolean): Boolean {
+//    if (!this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)) return false
+//    return when {
+//        this is SingleMessage && another is SingleMessage -> true
+//        this is SingleMessage && another is MessageChain -> another.all { it is MessageMetadata || it is PlainText }
+//        this is MessageChain && another is SingleMessage -> this.all { it is MessageMetadata || it is PlainText }
+//        this is MessageChain && another is MessageChain -> {
+//            val anotherIterator = another.iterator()
+//
+//            /**
+//             * 逐个判断非 [PlainText] 的 [Message] 是否 [equals]
+//             */
+//            this.forEachContent { thisElement ->
+//                if (thisElement.isPlain()) return@forEachContent
+//                for (it in anotherIterator) {
+//                    if (it.isPlain() || it !is MessageContent) continue
+//                    if (thisElement != it) return false
+//                }
+//            }
+//            return true
+//        }
+//        else -> error("shouldn't be reached")
+//    }
+//}
 
 @JvmSynthetic
 internal fun Message.followedByImpl(tail: Message): MessageChain {

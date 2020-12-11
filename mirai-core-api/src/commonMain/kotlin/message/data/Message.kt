@@ -139,16 +139,16 @@ public interface Message { // must be interface. Don't consider any changes.
      *
      * 若本函数返回 `true`, 则表明:
      * - `this` 与 [another] 的 [contentToString] 相等
-     * - `this` 为 [another] 的所有 [MessageContent] 都 [相等][Message.equals] 且有同样的排列顺序.
      */
     public fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
-        contentEqualsImpl(another, ignoreCase)
+        this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)
+    // contentEqualsImpl(another, ignoreCase)
 
     /**
      * 判断内容是否与 [another] 相等.
      *
      * 若本函数返回 `true`, 则表明:
-     * - [contentToString] 与 [another] 相等
+     * - `this` 与 [another] 的 [contentToString] 相等
      */
     public fun contentEquals(another: String, ignoreCase: Boolean = false): Boolean {
         return this.contentToString().equals(another, ignoreCase = ignoreCase)
