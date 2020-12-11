@@ -41,7 +41,7 @@ public sealed class HummerMessage : MessageContent, ConstrainSingle {
  * 戳一戳. 可以发送给好友或群.
  *
  * ## mirai 码支持
- * 格式: &#91;mirai:poke:*[name]*,*[type]*,*[id]*&#93;
+ * 格式: &#91;mirai:poke:*[name]*,*[pokeType]*,*[id]*&#93;
  *
  * @see PokeMessage.Companion 使用伴生对象中的常量
  */
@@ -52,7 +52,7 @@ public data class PokeMessage internal constructor(
      */
     public val name: String,
 
-    public val type: Int,
+    public val pokeType: Int, // 'type' is used by serialization
     public val id: Int
 ) : HummerMessage(), CodableMessage {
     @ExperimentalMessageKey
@@ -163,7 +163,7 @@ public data class PokeMessage internal constructor(
     }
 
 
-    private val stringValue = "[mirai:poke:$name,$type,$id]"
+    private val stringValue = "[mirai:poke:$name,$pokeType,$id]"
 
     override fun toString(): String = stringValue
     override fun contentToString(): String = "[戳一戳]"
