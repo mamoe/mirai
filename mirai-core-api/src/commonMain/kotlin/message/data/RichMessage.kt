@@ -248,7 +248,7 @@ public class XmlMessageBuilder(
 
 @Serializable
 @MiraiExperimentalApi
-internal class LongMessage internal constructor(override val content: String, val resId: String) :
+internal data class LongMessage internal constructor(override val content: String, val resId: String) :
     AbstractServiceMessage() {
     override val serviceId: Int get() = 35
 
@@ -256,6 +256,6 @@ internal class LongMessage internal constructor(override val content: String, va
 }
 
 @Serializable
-internal class ForwardMessageInternal(override val content: String) : AbstractServiceMessage() {
+internal data class ForwardMessageInternal(override val content: String) : AbstractServiceMessage() {
     override val serviceId: Int get() = 35
 }
