@@ -32,7 +32,10 @@ internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
 ) : @Suppress("DEPRECATION")
 OnlineGroupImage() {
-    override val imageId: String = delegate.filePath.takeIf {
+    override val imageId: String = ExternalImage.generateImageId(
+        delegate.md5,
+        delegate.filePath.substringAfterLast('.')
+    ).takeIf {
         GROUP_IMAGE_ID_REGEX.matches(it)
     } ?: ExternalImage.generateImageId(delegate.md5)
 
