@@ -145,7 +145,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     /**
      * 返回 `"[mirai:source:$ids,$internalIds]"`
      */
-    public final override fun toString(): String = "[mirai:source:$ids,$internalIds]"
+    public final override fun toString(): String = "[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"
 
     public companion object Key : AbstractMessageKey<MessageSource>({ it.safeCast() }) {
         /**

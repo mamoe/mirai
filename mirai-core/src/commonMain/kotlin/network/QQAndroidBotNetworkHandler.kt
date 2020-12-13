@@ -493,9 +493,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
                 packet is MessageEvent -> packet.logMessageReceived()
                 packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
-                    "Event: ${packet.toString().singleLine()}"
+                    "Event: $packet".replaceMagicCodes()
                 }
-                else -> logger.verbose { "Recv: ${packet.toString().singleLine()}" }
+                else -> logger.verbose { "Recv: $packet".replaceMagicCodes() }
             }
         }
 

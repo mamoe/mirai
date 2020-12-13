@@ -82,26 +82,36 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
 internal fun Contact.logMessageSent(message: Message) {
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     if (message !is net.mamoe.mirai.message.data.LongMessage) {
-        bot.logger.verbose("$this <- ${message.toString().singleLine()}")
+        bot.logger.verbose("$this <- $message".replaceMagicCodes())
     }
 }
 
 internal fun MessageEvent.logMessageReceived() {
     when (this) {
         is GroupMessageEvent -> bot.logger.verbose {
-            "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(${sender.id}) -> ${message.toString()
-                .singleLine()}"
+            "[${group.name}(${group.id})] ${senderName}(${sender.id}) -> $message".replaceMagicCodes()
         }
         is TempMessageEvent -> bot.logger.verbose {
-            "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(Temp ${sender.id}) -> ${message.toString()
-                .singleLine()}"
+            "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
         }
         is FriendMessageEvent -> bot.logger.verbose {
-            "${sender.nick.singleLine()}(${sender.id}) -> ${message.toString().singleLine()}"
+            "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()
         }
     }
 }
 
-internal fun String.singleLine(): String {
-    return this.replace("\n", """\n""").replace("\r", "")
+internal val charMappings = mapOf(
+    '\n' to """\n""",
+    '\r' to "",
+    '\u202E' to "<RTL>",
+    '\u202D' to "<LTR>",
+)
+
+internal fun String.applyCharMapping() = buildString(capacity = this.length) {
+    this@applyCharMapping.forEach { char ->
+        append(charMappings[char] ?: char)
+    }
 }
+
+internal fun String.replaceMagicCodes(): String = this
+    .applyCharMapping()
