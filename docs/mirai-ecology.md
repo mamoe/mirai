@@ -27,8 +27,8 @@ Mirai，正如你所见，这个名字不带任何的前缀或后缀，它是**�
 
 通常来说，Mirai 就是一个 <u>QQ 机器人框架</u>，但是它的内部并不是一个单一的结构：
 
-- [mirai-core](https://github.com/mamoe/mirai/tree/dev/mirai-core)：QQ 的<u>协议实现</u>模块，它的工作是**解密从QQ服务器接收到的数据包**和**向QQ服务器发送数据包**，是底层的工作，它默认使用的是 **QQAndroidPad 协议**。
-- [mirai-core-api](https://github.com/mamoe/mirai/tree/dev/mirai-core-api)：QQ 的核心功能接口，它依赖于 mirai-core 并提供开放的接口，如**接收消息**，**发送消息**，**禁言群员**，**修改群昵称**等。
+- [mirai-core](https://github.com/mamoe/mirai/tree/dev/mirai-core)：是 Mirai 对 QQ 的具体协议实现，它承担具体且核心的工作。
+[mirai-core-api](https://github.com/mamoe/mirai/tree/dev/mirai-core-api)：提供了使用 Mirai 的接口。它抽象了核心协议的接口，如**收发消息**，**群操作**等，但不承担具体工作。
 
 它们的关系如下：
 
@@ -36,7 +36,9 @@ Mirai，正如你所见，这个名字不带任何的前缀或后缀，它是**�
 
 可以看到，协议内容只在 Mirai 内部使用，只有 mirai-core-api 对外提供了功能。
 
-你需要使用 Kotlin 语言或 Java 语言来编写你的QQ机器人程序，可以参考官方示例：**[project-mirai/mirai-demos](https://github.com/project-mirai/mirai-demos)**
+你需要使用 Kotlin 语言或 Java 语言来编写你的QQ机器人程序。在开发时需要依赖 mirai-core-api，而开发完成后要运行时需要有 mirai-core 来承担核心工作。
+
+可以参考官方示例：**[project-mirai/mirai-demos](https://github.com/project-mirai/mirai-demos)**。
 
 ## [mirai-console](https://github.com/mamoe/mirai-console): Mirai 官方的可拓展式QQ机器人管理控制台
 
@@ -115,7 +117,7 @@ mirai-console-loader 应运而生，它的工作就是简化 console 启动流�
 
 即可快速启动 mirai-console 的 terminal 前端。同时 mirai-console-loader 还有一些拓展功能，可以自定义你的启动流程。
 
-在 mirai-console-loader 诞生之前，还有一个非官方的 mirai-console-terminal 一键启动器 MiraiOK，但是我们已**<u>不推荐</u>**使用 MiraiOK。([为什么？](https://github.com/project-mirai/mirai-api-http/issues/212#issuecomment-743216244))
+在 mirai-console-loader 诞生之前，还有一个非官方的 mirai-console-terminal 一键启动器 MiraiOK，但是我们已**不推荐**使用 MiraiOK。([为什么？](https://github.com/project-mirai/mirai-api-http/issues/212#issuecomment-743216244))
 
 将 mirai-console-loader 放入上述关系图：
 
