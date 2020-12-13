@@ -30,6 +30,10 @@ public data class Face(public val id: Int) : // used in delegation
         if (id in 0..255) FaceName.names[id]
         else "[表情]"
 
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append("[mirai:face:").append(id).append(']')
+    }
+
     public override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
     public override fun hashCode(): Int = id
 

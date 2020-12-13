@@ -14,6 +14,8 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
 
 /**
  * 纯文本. 可含 emoji 表情如 😊.
@@ -23,12 +25,16 @@ import kotlinx.serialization.Serializable
 @Serializable
 public data class PlainText(
     public val content: String
-) : MessageContent {
+) : MessageContent, CodableMessage {
     @Suppress("unused")
     public constructor(charSequence: CharSequence) : this(charSequence.toString())
 
     public override fun toString(): String = content
     public override fun contentToString(): String = content
+
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.appendAsMiraiCode(content)
+    }
 
     public companion object
 }

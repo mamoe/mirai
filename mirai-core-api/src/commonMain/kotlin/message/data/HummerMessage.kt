@@ -16,6 +16,7 @@ package net.mamoe.mirai.message.data
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
 import net.mamoe.mirai.message.data.VipFace.Kind
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.safeCast
@@ -165,6 +166,12 @@ public data class PokeMessage internal constructor(
 
     private val stringValue = "[mirai:poke:$name,$pokeType,$id]"
 
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append("[mirai:poke:").appendAsMiraiCode(name)
+            .append(',').append(pokeType).append(',').append(id)
+            .append(']')
+    }
+
     override fun toString(): String = stringValue
     override fun contentToString(): String = "[戳一戳]"
     //businessType=0x00000001(1)
@@ -257,6 +264,9 @@ public data class VipFace internal constructor(
         private infix fun Int.to(name: String): Kind = Kind(this, name)
     }
 
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append(stringValue) // TODO:
+    }
 
     private val stringValue = "[mirai:vipface:$kind,$count]"
 
@@ -306,6 +316,11 @@ public data class FlashImage(
 
     private val stringValue: String by lazy(LazyThreadSafetyMode.NONE) { "[mirai:flash:${image.imageId}]" }
 
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append(stringValue)
+    }
+
+    override fun toMiraiCode(): String = stringValue
     public override fun toString(): String = stringValue
     public override fun contentToString(): String = "[闪照]"
 }

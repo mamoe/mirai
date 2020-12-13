@@ -229,6 +229,9 @@ public sealed class AbstractImage : Image {
 
     final override fun toString(): String = _stringValue!!
     final override fun contentToString(): String = "[图片]"
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append("[mirai:image:").append(imageId).append("]")
+    }
 }
 
 

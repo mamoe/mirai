@@ -10,6 +10,7 @@
 package net.mamoe.mirai.message.code
 
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 
 /**
@@ -36,5 +37,9 @@ public interface CodableMessage : Message {
      *
      * @suppress 警告: 此 API 可能在任何时刻被改变
      */
-    public fun toMiraiCode(): String = this.toString()
+    public fun toMiraiCode(): String = buildString { appendMiraiCode(this) }
+
+    // Using StringBuilder faster than direct plus objects
+    @MiraiExperimentalApi
+    public fun appendMiraiCode(builder: StringBuilder)
 }

@@ -12,11 +12,21 @@
 
 package net.mamoe.mirai.message.code
 
+import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.code.internal.parseMiraiCodeImpl
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.utils.safeCast
 
 /**
  * 解析形如 "[mirai:]" 的 mirai 码, 即 [Message.toString] 返回的内容.
  */
-public fun String.parseMiraiCode(): MessageChain = parseMiraiCodeImpl()
+@JvmOverloads
+public fun String.parseMiraiCode(contact: Contact? = null): MessageChain = parseMiraiCodeImpl(contact)
+
+public fun <T : Message> Iterable<T>.toMiraiCode(): String = iterator().toMiraiCode()
+public fun <T : Message> Iterator<T>.toMiraiCode(): String = buildString {
+    this@toMiraiCode.forEach {
+        it.safeCast<CodableMessage>()?.appendMiraiCode(this)
+    }
+}

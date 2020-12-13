@@ -11,33 +11,97 @@
 
 package net.mamoe.mirai.message.code.internal
 
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 
 
-@Suppress("RegExpRedundantEscape") // required on android
-internal val codeRegex = Regex("""(?:\[mirai:([^\]]*)?:(.*?)?\])|(?:\[mirai:([^:]+)\])""")
-
-internal fun String.parseMiraiCodeImpl(): MessageChain = buildMessageChain {
+internal fun String.parseMiraiCodeImpl(contact: Contact?): MessageChain = buildMessageChain {
     forEachMiraiCode { origin, name, args ->
         if (name == null) {
-            add(PlainText(origin))
+            add(PlainText(origin.decodeMiraiCode()))
             return@forEachMiraiCode
         }
         val parser = MiraiCodeParsers[name] ?: kotlin.run {
-            add(PlainText(origin))
+            add(PlainText(origin.decodeMiraiCode()))
             return@forEachMiraiCode
         }
         parser.argsRegex.matchEntire(args)
             ?.destructured
             ?.let {
                 parser.runCatching {
-                    mapper(it)
+                    contact.mapper(it)
                 }.getOrNull()
             }
             ?.let(::add)
-            ?: add(PlainText(origin))
+            ?: add(PlainText(origin.decodeMiraiCode()))
     }
 }
+
+internal fun String.forEachMiraiCode(block: (origin: String, name: String?, args: String) -> Unit) {
+    var pos = 0
+    var lastPos = 0
+    val len = length - 7 // [mirai:
+    fun findEnding(start: Int): Int {
+        var pos0 = start
+        while (pos0 < length) {
+            when (get(pos0)) {
+                '\\' -> pos0 += 2
+                ']' -> return pos0
+                else -> pos0++
+            }
+        }
+        return -1
+    }
+    while (pos < len) {
+        when (get(pos)) {
+            '\\' -> {
+                pos += 2
+            }
+            '[' -> {
+                if (get(pos + 1) == 'm' && get(pos + 2) == 'i' &&
+                    get(pos + 3) == 'r' && get(pos + 4) == 'a' &&
+                    get(pos + 5) == 'i' && get(pos + 6) == ':'
+                ) {
+                    val begin = pos
+                    pos += 7
+                    val ending = findEnding(pos)
+                    if (ending == -1) {
+                        block(substring(lastPos), null, "")
+                        return
+                    } else {
+                        if (lastPos < begin) {
+                            block(substring(lastPos, begin), null, "")
+                        }
+                        val v = substring(begin, ending + 1)
+                        val splitter = v.indexOf(':', 7)
+                        block(
+                            v, if (splitter == -1)
+                                v.substring(7, v.length - 1)
+                            else v.substring(7, splitter),
+                            if (splitter == -1) {
+                                ""
+                            } else v.substring(splitter + 1, v.length - 1)
+                        )
+                        lastPos = ending + 1
+                        pos = lastPos
+                    }
+                } else pos++
+            }
+            else -> {
+                pos++
+            }
+        }
+    }
+    if (lastPos < length) {
+        block(substring(lastPos), null, "")
+    }
+}
+
+/*
+
+@Suppress("RegExpRedundantEscape") // required on android
+internal val codeRegex = Regex("""\[mirai:(.+?)(|:.*?(\\\].*?)*?)\]""")
 
 internal inline fun String.forEachMiraiCode(crossinline block: (origin: String, name: String?, args: String) -> Unit) {
     var lastIndex = 0
@@ -48,27 +112,29 @@ internal inline fun String.forEachMiraiCode(crossinline block: (origin: String, 
         }
 
         lastIndex = result.range.last + 1
-        if (result.groups[3] != null) {
-            // no param
-            block(result.value, result.groups[3]!!.value, "")
-        } else block(result.value, result.groups[1]!!.value, result.groups[2]?.value ?: "")
+        val id = result.groups[1]!!
+        val param = result.groups[2]?.value?.substring(1) ?: ""
+        block(result.value, id.value, param)
     }
     if (lastIndex != this.length) {
         block(substring(lastIndex, this.length), null, "")
     }
 }
+*/
 
 internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
-    "at" to MiraiCodeParser(Regex("""(\d*),(.*)""")) { (target, display) ->
-        At._lowLevelConstructAtInstance(target.toLong(), display)
+    "at" to MiraiCodeParser(Regex("""(\d*)""")) { (target) ->
+        (this as? Group)?.getOrNull(target.toLong())?.at()
     },
     "atall" to MiraiCodeParser(Regex("")) {
         AtAll
     },
     "poke" to MiraiCodeParser(Regex("(.*)?,(\\d*),(-?\\d*)")) { (name, type, id) ->
+        // TODO
         PokeMessage(name, type.toInt(), id.toInt())
     },
     "vipface" to MiraiCodeParser(Regex("""(\d*),(.*),(\d*)""")) { (id, name, count) ->
+        // TODO
         VipFace(VipFace.Kind(id.toInt(), name), count.toInt())
     },
     "face" to MiraiCodeParser(Regex("""(\d*)""")) { (id) ->
@@ -79,6 +145,12 @@ internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     },
     "flash" to MiraiCodeParser(Regex("""(.*)""")) { (id) ->
         Image(id).flash()
+    },
+    "service" to MiraiCodeParser(Regex("""(\d*),(.*)""")) { (id, content) ->
+        SimpleServiceMessage(id.toInt(), content.decodeMiraiCode())
+    },
+    "app" to MiraiCodeParser(Regex("""(.*)""")) { (content) ->
+        LightApp(content.decodeMiraiCode())
     }
 )
 
@@ -114,5 +186,32 @@ internal object MiraiCodeParsers2 : Map<String, (args: String) -> Message?> by m
 
 internal class MiraiCodeParser(
     val argsRegex: Regex,
-    val mapper: MiraiCodeParser.(MatchResult.Destructured) -> Message?
+    val mapper: Contact?.(MatchResult.Destructured) -> Message?
 )
+
+internal fun StringBuilder.appendAsMiraiCode(value: String) = apply {
+    value.forEach { char ->
+        when (char) {
+            '[', ']',
+            ':', ',',
+            '\\',
+            -> append("\\").append(char)
+            '\n' -> append("\\n")
+            '\r' -> append("\\r")
+            else -> append(char)
+        }
+    }
+}
+
+@Suppress("RegExpRedundantEscape")
+internal val DECODE_MIRAI_CODE_REGEX = """\\.""".toRegex()
+internal val DECODE_MIRAI_CODE_TRANSLATOR: (MatchResult) -> String = {
+    when (it.value[1]) {
+        'n' -> "\n"
+        'r' -> "\r"
+        '\n' -> ""
+        else -> it.value.substring(1)
+    }
+}
+
+internal fun String.decodeMiraiCode() = replace(DECODE_MIRAI_CODE_REGEX, DECODE_MIRAI_CODE_TRANSLATOR)

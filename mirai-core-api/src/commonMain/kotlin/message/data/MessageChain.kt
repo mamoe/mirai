@@ -20,8 +20,10 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
+import net.mamoe.mirai.utils.safeCast
 import kotlin.js.JsName
 import kotlin.reflect.KProperty
 
@@ -56,7 +58,7 @@ import kotlin.reflect.KProperty
  */
 @Serializable(MessageChain.Serializer::class)
 @Suppress("FunctionName", "DeprecatedCallableAddReplaceWith", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
+public interface MessageChain : Message, List<SingleMessage>, RandomAccess, CodableMessage {
     /**
      * 元素数量. [EmptyMessageChain] 不参加计数.
      */
@@ -97,6 +99,10 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess {
         override val descriptor: SerialDescriptor = delegate.descriptor
         override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).asMessageChain()
         override fun serialize(encoder: Encoder, value: MessageChain): Unit = delegate.serialize(encoder, value)
+    }
+
+    override fun appendMiraiCode(builder: StringBuilder) {
+        forEach { it.safeCast<CodableMessage>()?.appendMiraiCode(builder) }
     }
 }
 
@@ -443,4 +449,6 @@ public object EmptyMessageChain : MessageChain, Iterator<SingleMessage>, List<Si
     public override fun iterator(): Iterator<SingleMessage> = this
     public override fun hasNext(): Boolean = false
     public override fun next(): SingleMessage = throw NoSuchElementException("EmptyMessageChain is empty.")
+    override fun toMiraiCode(): String = ""
+    override fun appendMiraiCode(builder: StringBuilder) {}
 }

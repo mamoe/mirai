@@ -50,6 +50,11 @@ private constructor(
     }
 
     public override fun toString(): String = "[mirai:at:$target,$display]"
+
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append("[mirai:at:").append(target).append(']')
+    }
+
     public override fun contentToString(): String = this.display
 
     public companion object {
