@@ -91,15 +91,16 @@ internal fun Contact.logMessageSent(message: Message) {
     }
 }
 
-internal fun MessageEvent.logMessageReceived() {
+@Suppress("RemoveRedundantQualifierName") // compiler bug
+internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
     when (this) {
-        is GroupMessageEvent -> bot.logger.verbose {
+        is net.mamoe.mirai.event.events.GroupMessageEvent -> bot.logger.verbose {
             "[${group.name}(${group.id})] ${senderName}(${sender.id}) -> $message".replaceMagicCodes()
         }
-        is TempMessageEvent -> bot.logger.verbose {
+        is net.mamoe.mirai.event.events.TempMessageEvent -> bot.logger.verbose {
             "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
         }
-        is FriendMessageEvent -> bot.logger.verbose {
+        is net.mamoe.mirai.event.events.FriendMessageEvent -> bot.logger.verbose {
             "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()
         }
     }
