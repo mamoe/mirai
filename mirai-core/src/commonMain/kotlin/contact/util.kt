@@ -11,9 +11,8 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.asQQAndroidBot
@@ -26,9 +25,14 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.message.data.firstIsInstanceOrNull
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+
+internal inline val Group.uin: Long get() = this.cast<GroupImpl>().uin
+internal inline val User.uin: Long get() = this.id
+internal inline val Bot.uin: Long get() = this.id
 
 internal suspend fun <T : User> Friend.sendMessageImpl(
     message: Message,
