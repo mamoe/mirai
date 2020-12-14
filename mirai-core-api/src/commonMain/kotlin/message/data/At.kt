@@ -10,14 +10,14 @@
 @file:JvmMultifileClass
 @file:JvmName("MessageUtils")
 
-@file:Suppress("EXPERIMENTAL_API_USAGE")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.contact.UserOrBot
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.PlannedRemoval
 
@@ -26,30 +26,16 @@ import net.mamoe.mirai.utils.PlannedRemoval
  * At 一个群成员. 只能发送给一个群.
  *
  * ## mirai 码支持
- * 格式: &#91;mirai:at:*[target]*,*[display]*&#93;
+ * 格式: &#91;mirai:at:*[target]*&#93;
  *
  * @see AtAll 全体成员
  */
 @Serializable
-public data class At @LowLevelApi constructor(
+public data class At(
     public val target: Long,
-    /**
-     * "@群员名片"
-     */
-    public val display: String
 ) : MessageContent, CodableMessage {
-
-    /**
-     * 构造一个 [At] 实例. 这是唯一的公开的构造方式.
-     */
-    public constructor(member: Member) : this(member.id, "@${member.nameCardOrNick}")
-
-    public override fun equals(other: Any?): Boolean {
-        return other is At && other.target == this.target && other.display == this.display
-    }
-
-    public override fun toString(): String = "[mirai:at:$target,$display]"
-    public override fun contentToString(): String = this.display
+    public override fun toString(): String = "[mirai:at:$target]"
+    public override fun contentToString(): String = "@$target"
 
     public companion object {
         /**
@@ -58,9 +44,9 @@ public data class At @LowLevelApi constructor(
         @Suppress("FunctionName")
         @JvmStatic
         @LowLevelApi
-        @Deprecated("Use constructor instead", ReplaceWith("At(target, display)", "net.mamoe.mirai.message.data.At"))
+        @Deprecated("Use constructor instead", ReplaceWith("At(target)", "net.mamoe.mirai.message.data.At"))
         @PlannedRemoval("2.0-M2")
-        public fun _lowLevelConstructAtInstance(target: Long, display: String): At = At(target, display)
+        public fun _lowLevelConstructAtInstance(target: Long, display: String): At = At(target)
     }
 
     // 自动为消息补充 " "
@@ -70,18 +56,19 @@ public data class At @LowLevelApi constructor(
         }
         return super<MessageContent>.followedBy(PlainText(" ")) + tail
     }
-
-    public override fun hashCode(): Int {
-        var result = target.hashCode()
-        result = 31 * result + display.hashCode()
-        return result
-    }
-
 }
+
+/**
+ * 构造 [At]
+ *
+ * @see At
+ * @see Member.at
+ */
+@JvmSynthetic
+public inline fun At(user: UserOrBot): At = At(user.id)
 
 /**
  * At 这个成员
  */
 @JvmSynthetic
-@Suppress("NOTHING_TO_INLINE")
 public inline fun Member.at(): At = At(this)

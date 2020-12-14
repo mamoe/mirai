@@ -365,7 +365,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                     if (id == 0L) {
                         list.add(AtAll)
                     } else {
-                        list.add(At._lowLevelConstructAtInstance(id, element.text.str))
+                        list.add(At(id)) // element.text.str
                     }
                 }
             }
