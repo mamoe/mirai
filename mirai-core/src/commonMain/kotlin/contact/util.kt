@@ -31,6 +31,7 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 internal inline val Group.uin: Long get() = this.cast<GroupImpl>().uin
+internal inline val Group.groupCode: Long get() = this.id
 internal inline val User.uin: Long get() = this.id
 internal inline val Bot.uin: Long get() = this.id
 

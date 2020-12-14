@@ -16,6 +16,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -32,10 +33,10 @@ import net.mamoe.mirai.message.data.OnlineMessageSource
 import java.util.concurrent.atomic.AtomicBoolean
 
 
-private fun <T> T.toJceDataImpl(): ImMsgBody.SourceMsg
+private fun <T> T.toJceDataImpl(subject: ContactOrBot?): ImMsgBody.SourceMsg
         where T : MessageSourceInternal, T : MessageSource {
 
-    val elements = originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
+    val elements = originalMessage.toRichTextElems(subject, withGeneralFlags = true)
 
     val pdReserve = SourceMsg.ResvAttr(
         origUids = sequenceIds.zip(internalIds)
@@ -87,7 +88,7 @@ internal class MessageSourceToFriendImpl(
     override val ids: IntArray
         get() = sequenceIds
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-    private val jceData by lazy { toJceDataImpl() }
+    private val jceData by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
@@ -104,7 +105,7 @@ internal class MessageSourceToTempImpl(
     override val ids: IntArray
         get() = sequenceIds
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-    private val jceData by lazy { toJceDataImpl() }
+    private val jceData by lazy { toJceDataImpl(subject) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
@@ -144,7 +145,7 @@ internal class MessageSourceToGroupImpl(
     suspend fun ensureSequenceIdAvailable() = kotlin.run { sequenceIdDeferred.await() }
 
     private val jceData by lazy {
-        val elements = originalMessage.toRichTextElems(forGroup = false, withGeneralFlags = true)
+        val elements = originalMessage.toRichTextElems(subject, withGeneralFlags = true)
         ImMsgBody.SourceMsg(
             origSeqs = sequenceIds,
             senderUin = fromId,

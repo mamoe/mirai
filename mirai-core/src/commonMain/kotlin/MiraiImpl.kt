@@ -577,7 +577,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             val data = message.calculateValidationDataForGroup(
                 sequenceId = sequenceId,
                 random = Random.nextInt().absoluteValue,
-                groupCode = groupCode
+                group
             )
 
             val response =
@@ -837,7 +837,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     toUin = 0,
                     flag = 1,
                     elems = originalMessage.toRichTextElems(
-                        forGroup = kind == MessageSourceKind.GROUP,
+                        null, //forGroup = kind == MessageSourceKind.GROUP,
                         withGeneralFlags = false
                     ),
                     type = 0,
