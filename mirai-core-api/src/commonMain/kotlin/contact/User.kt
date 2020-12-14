@@ -36,7 +36,7 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
  *
  * 对于同一个 [Bot] 任何一个人的 [User] 实例都是单一的.
  */
-public interface User : Contact, CoroutineScope {
+public interface User : Contact, UserOrBot, CoroutineScope {
     /**
      * QQ 号码
      */

@@ -9,21 +9,12 @@
 
 package net.mamoe.mirai.contact
 
-import kotlinx.coroutines.CoroutineScope
 import net.mamoe.mirai.Bot
 
 /**
- * 拥有 [id] 的对象.
- * 此为 [Contact] 与 [Bot] 的唯一公共接口.
- *
- * @see UserOrBot
- *
- * @see Contact
+ * @see User
  * @see Bot
+ *
+ * @see ContactOrBot
  */
-public interface ContactOrBot : CoroutineScope {
-    /**
-     * QQ 号或群号.
-     */
-    public val id: Long
-}
+public interface UserOrBot : ContactOrBot

@@ -42,7 +42,7 @@ public suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  */
 public abstract class Bot internal constructor(
     public val configuration: BotConfiguration
-) : CoroutineScope, ContactOrBot {
+) : CoroutineScope, ContactOrBot, UserOrBot {
     public final override val coroutineContext: CoroutineContext = // for id
         configuration.parentCoroutineContext
             .plus(SupervisorJob(configuration.parentCoroutineContext[Job]))
