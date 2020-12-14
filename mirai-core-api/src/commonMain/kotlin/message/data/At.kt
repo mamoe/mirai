@@ -19,6 +19,7 @@ import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.utils.PlannedRemoval
 
 
 /**
@@ -30,9 +31,7 @@ import net.mamoe.mirai.message.code.CodableMessage
  * @see AtAll 全体成员
  */
 @Serializable
-public data class At
-@Suppress("DataClassPrivateConstructor")
-private constructor(
+public data class At @LowLevelApi constructor(
     public val target: Long,
     /**
      * "@群员名片"
@@ -59,6 +58,8 @@ private constructor(
         @Suppress("FunctionName")
         @JvmStatic
         @LowLevelApi
+        @Deprecated("Use constructor instead", ReplaceWith("At(target, display)", "net.mamoe.mirai.message.data.At"))
+        @PlannedRemoval("2.0-M2")
         public fun _lowLevelConstructAtInstance(target: Long, display: String): At = At(target, display)
     }
 

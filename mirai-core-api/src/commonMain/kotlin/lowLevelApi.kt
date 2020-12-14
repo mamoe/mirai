@@ -15,6 +15,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.WeakRef
+import kotlin.annotation.AnnotationTarget.*
 
 /**
  * 标示这个 API 是低级的 API.
@@ -26,7 +27,7 @@ import net.mamoe.mirai.utils.WeakRef
 @MiraiExperimentalApi
 @RequiresOptIn
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
+@Target(CLASS, TYPE, FUNCTION, PROPERTY, CONSTRUCTOR)
 public annotation class LowLevelApi
 
 /**
