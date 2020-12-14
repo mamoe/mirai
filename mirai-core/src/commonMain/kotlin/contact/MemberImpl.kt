@@ -230,7 +230,7 @@ internal class MemberImpl constructor(
     @JvmSynthetic
     override suspend fun kick(message: String) {
         checkBotPermissionHigherThanThis("kick")
-        check(group.members.getOrNull(this.id) != null) {
+        check(group.members[this.id] != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
         }
         bot.network.run {
