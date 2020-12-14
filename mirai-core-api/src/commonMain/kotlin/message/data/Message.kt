@@ -191,9 +191,9 @@ public interface Message { // must be interface. Don't consider any changes.
 /**
  * 标注一个实验性的 [MessageKey] API.
  *
- * 在 `1.0-M2` 时将会推进 [MessageKey] 到稳定状态并删除此注解.
+ * 在 `2.0-M2` 时将会推进 [MessageKey] 到稳定状态并删除此注解.
  */
-@PlannedRemoval("1.0-M2")
+@PlannedRemoval("2.0-M2")
 @MiraiExperimentalApi
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 public annotation class ExperimentalMessageKey
