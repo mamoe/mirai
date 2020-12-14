@@ -252,7 +252,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             totalFriendCount = data.totalFriendCount
             data.friendList.forEach {
                 // atomic
-                bot.friends.delegate.addLast(
+                bot.friends.delegate.add(
                     FriendImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
                 ).also { currentFriendCount++ }
             }
@@ -268,7 +268,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     suspend fun StTroopNum.reloadGroup() {
         retryCatching(3) {
-            bot.groups.delegate.addLast(
+            bot.groups.delegate.add(
                 GroupImpl(
                     bot = bot,
                     coroutineContext = bot.coroutineContext,
@@ -314,10 +314,10 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         CancellationException("re-init").let { reInitCancellationException ->
             if (!initFriendOk) {
-                bot.friends.delegate.clear { it.cancel(reInitCancellationException) }
+                bot.friends.delegate.removeAll { it.cancel(reInitCancellationException); true }
             }
             if (!initGroupOk) {
-                bot.groups.delegate.clear { it.cancel(reInitCancellationException) }
+                bot.groups.delegate.removeAll { it.cancel(reInitCancellationException); true }
             }
         }
 

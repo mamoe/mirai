@@ -672,7 +672,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 blackList = blackList
             ).sendWithoutExpect()
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            bot.friends.delegate.addLast(_lowLevelNewFriend(bot, object : FriendInfo {
+            bot.friends.delegate.add(_lowLevelNewFriend(bot, object : FriendInfo {
                 override val uin: Long get() = fromId
                 override val nick: String get() = fromNick
                 override val remark: String get() = ""
@@ -727,9 +727,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
 
         if (accept ?: return@run)
-            groups[groupId].apply {
-                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                members.delegate.addLast(newMember(object : MemberInfo {
+            groups[groupId]?.apply {
+                members.delegate.add(newMember(object : MemberInfo {
                     override val nameCard: String get() = ""
                     override val permission: MemberPermission get() = MemberPermission.MEMBER
                     override val specialTitle: String get() = ""

@@ -63,7 +63,7 @@ internal abstract class QQAndroidBotBase constructor(
 
     inline val json get() = configuration.json
 
-    override val friends: ContactList<Friend> = ContactList(LockFreeLinkedList())
+    override val friends: ContactList<Friend> = ContactList()
 
     override lateinit var nick: String
 
@@ -99,7 +99,7 @@ internal abstract class QQAndroidBotBase constructor(
         return QQAndroidBotNetworkHandler(coroutineContext, this as QQAndroidBot)
     }
 
-    override val groups: ContactList<Group> = ContactList(LockFreeLinkedList())
+    override val groups: ContactList<Group> = ContactList()
 
     @JvmField
     val groupListModifyLock = Mutex()

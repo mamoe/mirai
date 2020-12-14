@@ -141,9 +141,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             return null
         }
 
-        return getNewGroup(Mirai.calculateGroupCodeByGroupUin(groupUin))?.apply {
-            groups.delegate.addLast(this)
-        }
+        return getNewGroup(Mirai.calculateGroupCodeByGroupUin(groupUin))?.apply { groups.delegate.add(this) }
     }
 
     @OptIn(FlowPreview::class)
@@ -237,11 +235,11 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                                     readByte().toInt().and(0xff)
                                 } == 0x83) {
                                 return@mapNotNull MemberJoinEvent.Invite(group.newMember(msg.getNewMemberInfo())
-                                    .also { group.members.delegate.addLast(it) })
+                                    .also { group.members.delegate.add(it) })
                             }
 
                             return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
-                                .also { group.members.delegate.addLast(it) })
+                                .also { group.members.delegate.add(it) })
                         }
                     }
 

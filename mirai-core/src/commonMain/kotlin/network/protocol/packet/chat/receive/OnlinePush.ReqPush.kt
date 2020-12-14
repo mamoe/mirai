@@ -462,7 +462,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             override val nick: String get() = body.msgAddFrdNotify.fuinNick
             override val remark: String get() = ""
         })
-        bot.friends.delegate.addLast(new)
+        bot.friends.delegate.add(new)
         return@lambda528 sequenceOf(FriendAddEvent(new))
     },
     0xE2L to lambda528 { _ ->

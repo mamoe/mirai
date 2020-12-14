@@ -42,6 +42,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import java.io.InputStream
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
@@ -97,7 +98,7 @@ internal class GroupImpl(
                 owner = member
             }
         }
-    }.toLockFreeLinkedList())
+    }.mapTo(ConcurrentLinkedQueue()) { it })
 
     internal var _name: String = groupInfo.name
     private var _announcement: String = groupInfo.memo
@@ -220,7 +221,7 @@ internal class GroupImpl(
             ).sendAndExpect()
             check(response.errorCode == 0) {
                 "Group.quit failed: $response".also {
-                    bot.groups.delegate.addLast(this@GroupImpl)
+                    bot.groups.delegate.add(this@GroupImpl)
                 }
             }
         }
