@@ -356,17 +356,6 @@ public fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChain
 // @JsName("newChain")
 public fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
-
-/**
- * 构造一个 [MessageChain]
- * 为提供更好的 Java API.
- */
-@Suppress("FunctionName")
-@JvmName("newChain")
-public fun _____newChain______(messages: String): MessageChain {
-    return PlainText(messages).asMessageChain()
-}
-
 /**
  * 扁平化消息序列.
  *
