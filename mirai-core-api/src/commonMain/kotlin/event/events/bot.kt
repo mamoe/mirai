@@ -125,7 +125,7 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
     /**
      * 戳一戳的发起人，为 [Bot] 的某一好友, 或某一群员, 或 [Bot.asFriend]
      */
-    public abstract val from: User
+    public abstract val from: UserOrBot
 
     /** 戳一戳的动作名称 */
     public abstract val action: String
@@ -235,7 +235,7 @@ public data class BotNudgedEvent internal constructor(
  * @see MessageEvent.subject
  */
 @MiraiExperimentalApi
-public val BotNudgedEvent.subject: Contact
+public val BotNudgedEvent.subject: ContactOrBot
     get() = when (val inlineFrom = from) {
         is Member -> inlineFrom.group
         else -> inlineFrom
