@@ -103,7 +103,7 @@ internal fun BytePacketBuilder.t106(
         encryptAndWrite(MiraiPlatformUtils.md5(passwordMd5 + ByteArray(4) + (salt.takeIf { it != 0L } ?: uin).toInt().toByteArray())) {
             writeShort(4)//TGTGTVer
             writeInt(Random.nextInt())
-            writeInt(5)//ssoVer
+            writeInt(13)//ssoVer
             writeInt(appId.toInt())
             writeInt(appClientVersion)
 

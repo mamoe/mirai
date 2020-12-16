@@ -29,7 +29,6 @@ import net.mamoe.mirai.internal.utils.cryptor.TEA
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.utils.*
-import kotlin.jvm.Volatile
 import kotlin.random.Random
 
 internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
@@ -158,8 +157,8 @@ internal open class QQAndroidClient(
 
     var openAppId: Long = 715019303L
 
-    val apkVersionName: ByteArray get() = "8.4.8".toByteArray()
-    val buildVer: String get() = "8.4.8.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
+    val apkVersionName: ByteArray get() = "8.4.18".toByteArray()
+    val buildVer: String get() = "8.4.18.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
 
     private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)

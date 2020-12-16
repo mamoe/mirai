@@ -28,8 +28,7 @@ internal actual class ECDHKeyPairImpl(
     override val privateKey: ECDHPrivateKey get() = delegate.private
     override val publicKey: ECDHPublicKey get() = delegate.public
 
-    override val initialShareKey: ByteArray =
-        ECDH.calculateShareKey(privateKey, initialPublicKey)
+    override val initialShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
 }
 
 @Suppress("FunctionName")
@@ -38,6 +37,8 @@ internal actual fun ECDH() =
 
 internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {
+        private const val curveName = "secp192k1" // p-256
+
         actual val isECDHAvailable: Boolean
 
         init {
@@ -45,7 +46,7 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
                 fun testECDH() {
                     ECDHKeyPairImpl(
                         KeyPairGenerator.getInstance("ECDH")
-                            .also { it.initialize(ECGenParameterSpec("secp192k1")) }
+                            .also { it.initialize(ECGenParameterSpec(curveName)) }
                             .genKeyPair()).let {
                         calculateShareKey(it.privateKey, it.publicKey)
                     }
@@ -60,6 +61,8 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
                 }
                 Security.addProvider(BouncyCastleProvider())
                 testECDH()
+            }.onFailure {
+                it.printStackTrace()
             }.isSuccess
         }
 
@@ -67,9 +70,10 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             if (!isECDHAvailable) {
                 return ECDHKeyPair.DefaultStub
             }
-            return ECDHKeyPairImpl(KeyPairGenerator.getInstance("ECDH")
-                .also { it.initialize(ECGenParameterSpec("secp192k1")) }
-                .genKeyPair())
+            return ECDHKeyPairImpl(
+                KeyPairGenerator.getInstance("ECDH")
+                    .also { it.initialize(ECGenParameterSpec(curveName)) }
+                    .genKeyPair())
         }
 
         actual fun calculateShareKey(

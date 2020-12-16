@@ -215,7 +215,7 @@ public open class BotConfiguration { // open for Java
         /**
          * Android 手机.
          */
-        ANDROID_PHONE(537062845),
+        ANDROID_PHONE(537066439),
 
         /**
          * Android 平板.

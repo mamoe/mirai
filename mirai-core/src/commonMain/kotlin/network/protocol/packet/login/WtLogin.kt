@@ -160,7 +160,7 @@ internal class WtLogin {
                         */
                         t116(client.miscBitMap, client.subSigMap)
                         t100(appId, client.subAppId, client.appClientVersion)
-                        t107(0)
+                        t107(6)
 
                         // t108(byteArrayOf())
                         // ignored: t104()
@@ -312,6 +312,7 @@ internal class WtLogin {
             discardExact(2)
             val tlvMap: TlvMap = this._readTLVMap()
             // tlvMap.printTLVMap()
+            tlvMap[0x161]?.let { bot.client.analysisTlv161(it) }
             return when (type.toInt()) {
                 0 -> onLoginSuccess(tlvMap, bot)
                 2 -> onSolveLoginCaptcha(tlvMap, bot)
