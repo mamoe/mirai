@@ -41,7 +41,7 @@ public data class At(
         /**
          * 构造一个 [At], 仅供内部使用, 否则可能造成消息无法发出的问题.
          */
-        @Suppress("FunctionName")
+        @Suppress("FunctionName", "UnusedParameter")
         @JvmStatic
         @LowLevelApi
         @Deprecated("Use constructor instead", ReplaceWith("At(target)", "net.mamoe.mirai.message.data.At"))
