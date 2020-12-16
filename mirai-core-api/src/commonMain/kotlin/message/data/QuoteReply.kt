@@ -46,8 +46,9 @@ public data class QuoteReply(public val source: MessageSource) : Message, Messag
     @ExperimentalMessageKey
     public override val key: MessageKey<QuoteReply> get() = Key
 
-    // TODO: 2020/12/2 QuoteReply.toString
-    public override fun toString(): String = "[mirai:quote:${source.ids},${source.internalIds}]"
+    public override fun toString(): String =
+        "[mirai:quote:${source.ids.contentToString()},${source.internalIds.contentToString()}]"
+
     public override fun equals(other: Any?): Boolean = other is QuoteReply && other.source == this.source
     public override fun hashCode(): Int = source.hashCode()
 }

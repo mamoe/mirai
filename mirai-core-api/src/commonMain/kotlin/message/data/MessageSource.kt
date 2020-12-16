@@ -143,7 +143,7 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public abstract val originalMessage: MessageChain
 
     /**
-     * 返回 `"[mirai:source:$ids,$internalIds]"`
+     * 返回 `"[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"`
      */
     public final override fun toString(): String = "[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"
 
