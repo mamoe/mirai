@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.event.events
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.*
@@ -592,6 +593,7 @@ public interface MessageEvent : Event, Packet, BotEvent, MessageEventExtensions<
 }
 
 /** 消息事件的扩展函数 */
+@Suppress("UNCHECKED_CAST")
 public interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
     MessageEventPlatformExtensions<TSender, TSubject> {
 
@@ -602,11 +604,11 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun reply(message: Message): MessageReceipt<TSubject> =
         subject.sendMessage(message.asMessageChain()) as MessageReceipt<TSubject>
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun reply(plain: String): MessageReceipt<TSubject> =
         subject.sendMessage(PlainText(plain).asMessageChain()) as MessageReceipt<TSubject>
 
@@ -633,15 +635,15 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
         reply(this.message.quote() + message)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun quoteReply(message: Message): MessageReceipt<TSubject> =
         reply(this.message.quote() + message)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
 
     @JvmSynthetic
@@ -670,24 +672,24 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
 
     // region 上传图片
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
     // endregion
 
     // region 发送图片
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
     // endregion
 

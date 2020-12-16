@@ -13,8 +13,8 @@
 
 package net.mamoe.mirai.event.events
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
@@ -25,9 +25,7 @@ import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.jvm.*
 
 /**
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
@@ -332,21 +330,11 @@ public data class BotInvitedJoinGroupRequestEvent internal constructor(
     @JvmField
     internal val responded: AtomicBoolean = AtomicBoolean(false)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun accept(): Unit = Mirai.acceptInvitedJoinGroupRequest(this)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun ignore(): Unit = Mirai.ignoreInvitedJoinGroupRequest(this)
-
-    @JavaFriendlyAPI
-    @JvmName("accept")
-    public fun __acceptBlockingForJava__(): Unit =
-        runBlocking { Mirai.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
-
-    @JavaFriendlyAPI
-    @JvmName("ignore")
-    public fun __ignoreBlockingForJava__(): Unit =
-        runBlocking { Mirai.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
 }
 
 /**
@@ -380,34 +368,16 @@ public data class MemberJoinRequestEvent internal constructor(
     @PublishedApi
     internal val responded: AtomicBoolean = AtomicBoolean(false)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun accept(): Unit = Mirai.acceptMemberJoinRequest(this)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     @JvmOverloads
     public suspend fun reject(blackList: Boolean = false, message: String = ""): Unit =
         Mirai.rejectMemberJoinRequest(this, blackList, message)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun ignore(blackList: Boolean = false): Unit = Mirai.ignoreMemberJoinRequest(this, blackList)
-
-
-    @JavaFriendlyAPI
-    @JvmName("accept")
-    public fun __acceptBlockingForJava__(): Unit =
-        runBlocking { Mirai.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
-
-    @JavaFriendlyAPI
-    @JvmOverloads
-    @JvmName("reject")
-    public fun __rejectBlockingForJava__(blackList: Boolean = false, message: String = ""): Unit =
-        runBlocking { Mirai.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList, message) }
-
-    @JavaFriendlyAPI
-    @JvmOverloads
-    @JvmName("ignore")
-    public fun __ignoreBlockingForJava__(blackList: Boolean = false): Unit =
-        runBlocking { Mirai.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
 // endregion

@@ -13,8 +13,8 @@
 
 package net.mamoe.mirai.event.events
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
@@ -23,8 +23,6 @@ import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-
-import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -89,22 +87,11 @@ public data class NewFriendRequestEvent internal constructor(
      */
     public val fromGroup: Group? = if (fromGroupId == 0L) null else bot.getGroup(fromGroupId)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun accept(): Unit = Mirai.acceptNewFriendRequest(this)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun reject(blackList: Boolean = false): Unit = Mirai.rejectNewFriendRequest(this, blackList)
-
-
-    @JavaFriendlyAPI
-    @JvmName("accept")
-    public fun __acceptBlockingForJava__(): Unit = runBlocking { accept() }
-
-    @JavaFriendlyAPI
-    @JvmOverloads
-    @JvmName("reject")
-    public fun __rejectBlockingForJava__(blackList: Boolean = false): Unit =
-        runBlocking { reject(blackList) }
 }
 
 
