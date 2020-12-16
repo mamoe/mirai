@@ -69,8 +69,8 @@ internal class MemberImpl constructor(
 
         return (asFriend?.sendMessageImpl(
             message,
-            friendReceiptConstructor = { MessageReceipt(it, asFriend, null) },
-            tReceiptConstructor = { MessageReceipt(it, this, null) }
+            friendReceiptConstructor = { MessageReceipt(it, asFriend) },
+            tReceiptConstructor = { MessageReceipt(it, this) }
         ) ?: sendMessageImpl(message)).also { logMessageSent(message) }
     }
 
@@ -100,7 +100,7 @@ internal class MemberImpl constructor(
                     "Send temp message failed: $it"
                 }
             }
-            MessageReceipt(source, this@MemberImpl, null)
+            MessageReceipt(source, this@MemberImpl)
         }
 
         result.fold(

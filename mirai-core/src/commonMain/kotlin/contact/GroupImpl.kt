@@ -356,7 +356,7 @@ internal class GroupImpl(
                 bot.network.logger.warning(e)
             }
 
-            MessageReceipt(source, this@GroupImpl, botAsMember)
+            MessageReceipt(source, this@GroupImpl)
         }
 
         result.fold(
