@@ -31,7 +31,7 @@ public sealed class Nudge {
     /**
      * 戳的对象. 即 "A 戳了 B" 中的 "B".
      */
-    public abstract val target: ContactOrBot // User or Bot
+    public abstract val target: UserOrBot // User or Bot
 
     /**
      * 发送戳一戳该成员的消息.
@@ -79,7 +79,7 @@ public sealed class Nudge {
  */
 @MiraiExperimentalApi
 public data class BotNudge(
-    public override val target: Bot
+    public override val target: UserOrBot
 ) : Nudge()
 
 /**
@@ -88,7 +88,7 @@ public data class BotNudge(
  */
 @MiraiExperimentalApi
 public sealed class UserNudge : Nudge() {
-    public abstract override val target: User
+    public abstract override val target: UserOrBot
 }
 
 /**
@@ -97,7 +97,7 @@ public sealed class UserNudge : Nudge() {
  */
 @MiraiExperimentalApi
 public data class MemberNudge(
-    public override val target: Member
+    public override val target: UserOrBot
 ) : UserNudge()
 
 /**
@@ -106,5 +106,5 @@ public data class MemberNudge(
  */
 @MiraiExperimentalApi
 public data class FriendNudge(
-    public override val target: Friend
+    public override val target: UserOrBot
 ) : UserNudge()

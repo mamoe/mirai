@@ -188,7 +188,7 @@ public abstract class Bot internal constructor(
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    public fun nudge(): BotNudge = BotNudge(this)
+    public override fun nudge(): BotNudge = BotNudge(this)
 
     /**
      * 关闭这个 [Bot], 立即取消 [Bot] 的 [SupervisorJob].

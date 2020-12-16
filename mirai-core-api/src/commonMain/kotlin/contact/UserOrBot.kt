@@ -10,6 +10,8 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.message.action.Nudge
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * @see User
@@ -17,4 +19,12 @@ import net.mamoe.mirai.Bot
  *
  * @see ContactOrBot
  */
-public interface UserOrBot : ContactOrBot
+public interface UserOrBot : ContactOrBot {
+    /**
+     * 创建一个 "戳一戳" 消息
+     *
+     * @see Nudge.sendTo 发送这个戳一戳消息
+     */
+    @MiraiExperimentalApi
+    public fun nudge(): Nudge
+}

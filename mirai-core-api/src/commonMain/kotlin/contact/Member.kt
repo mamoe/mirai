@@ -170,10 +170,10 @@ public interface Member : User {
     /**
      * 创建一个 "戳一戳" 消息
      *
-     * @see MemberNudge.sendTo 发送这个戳一戳消息
+     * @see Nudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    public override fun nudge(): Nudge = MemberNudge(this)
+    public override fun nudge(): MemberNudge = MemberNudge(this)
 }
 
 /**
