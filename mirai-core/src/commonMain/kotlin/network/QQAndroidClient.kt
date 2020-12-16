@@ -190,6 +190,7 @@ internal open class QQAndroidClient(
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
     val appClientVersion: Int = 0
+    val ssoVersion: Int = 13
 
     var networkType: NetworkType = NetworkType.WIFI
 

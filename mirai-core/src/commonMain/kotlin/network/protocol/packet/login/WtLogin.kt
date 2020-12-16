@@ -145,7 +145,8 @@ internal class WtLogin {
                             client.tgtgtKey,
                             true,
                             client.device.guid,
-                            LoginType.PASSWORD
+                            LoginType.PASSWORD,
+                            client.ssoVersion
                         )
 
                         /* // from GetStWithPasswd
@@ -159,7 +160,7 @@ internal class WtLogin {
                         if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
                         */
                         t116(client.miscBitMap, client.subSigMap)
-                        t100(appId, client.subAppId, client.appClientVersion)
+                        t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion)
                         t107(6)
 
                         // t108(byteArrayOf())
