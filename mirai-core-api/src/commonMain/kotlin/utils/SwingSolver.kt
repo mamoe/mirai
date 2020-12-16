@@ -86,18 +86,12 @@ internal object WindowHelperJvm {
                     if (stat) {
                         MiraiLogger.TopLevel.info(
                             """
-                                Mirai 正在使用桌面环境,
-                                如果你正在使用SSH, 或无法访问桌面等,
-                                请将 `mirai.no-desktop` 添加到 JVM 系统属性中 (-Dmirai.no-desktop)
-                                然后重启 Mirai
+                                Mirai 正在使用桌面环境. 如遇到验证码将会弹出对话框. 可添加 JVM 属性 `mirai.no-desktop` 以关闭.
                             """.trimIndent()
                         )
                         MiraiLogger.TopLevel.info(
                             """
-                                Mirai using DesktopCaptcha System.
-                                If you are running on SSH, cannot access desktop or more.
-                                Please add `mirai.no-desktop` to JVM properties (-Dmirai.no-desktop)
-                                Then restart mirai
+                                Mirai is using desktop. Captcha will be thrown by window popup. You can add `mirai.no-desktop` to JVM properties (-Dmirai.no-desktop) to disable it.
                             """.trimIndent()
                         )
                     }
