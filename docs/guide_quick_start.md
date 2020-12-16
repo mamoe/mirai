@@ -81,7 +81,7 @@ implementation("net.mamoe:mirai-core-qqandroid-android:VERSION")
 #### 直接导入jar包 (不推荐)
 下载已经编译好的 Jar 包, 并添加 Jar 依赖:
 - [mirai-core](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core)
-- [mirai-qqandriod](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core-qqandroid)
+- [mirai-qqandroid](https://github.com/mamoe/mirai-repo/tree/master/shadow/mirai-core-qqandroid)
 
 
 ### 开始使用
