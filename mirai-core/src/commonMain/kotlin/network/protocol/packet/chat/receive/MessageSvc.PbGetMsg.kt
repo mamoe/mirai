@@ -29,7 +29,6 @@ import net.mamoe.mirai.event.events.BotJoinGroupEvent
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.MemberJoinEvent
 import net.mamoe.mirai.event.events.TempMessageEvent
-import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.checkIsFriendImpl
@@ -206,11 +205,12 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 
                         if (msg.msgHead.authUin == bot.id) {
                             // 邀请入群
-                            return@mapNotNull bot.createGroupForBot(msg.msgHead.fromUin)?.let {
+                            return@mapNotNull bot.createGroupForBot(msg.msgHead.fromUin)?.let { group ->
                                 // package: 27 0B 60 E7 01 CA CC 69 8B 83 44 71 47 90 06 B9 DC C0 ED D4 B1 00 30 33 44 30 42 38 46 30 39 37 32 38 35 43 34 31 38 30 33 36 41 34 36 31 36 31 35 32 37 38 46 46 43 30 41 38 30 36 30 36 45 38 31 43 39 41 34 38 37
                                 // package: groupUin + 01 CA CC 69 8B 83 + invitorUin + length(06) + string + magicKey
                                 val invitorUin = msg.msgBody.msgContent.sliceArray(10..13).toInt().toLongUnsigned()
-                                BotJoinGroupEvent.Invite(it[invitorUin])
+                                val invitor = group[invitorUin] ?: return@let null
+                                BotJoinGroupEvent.Invite(invitor)
                             }
                         } else {
 
@@ -322,7 +322,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                             }
                             return@mapNotNull null
                         }
-                        val friend = bot.getFriendOrNull(msg.msgHead.fromUin) ?: return@mapNotNull null
+                        val friend = bot.getFriend(msg.msgHead.fromUin) ?: return@mapNotNull null
                         friend.checkIsFriendImpl()
 
                         if (!bot.firstLoginSucceed) {
@@ -352,7 +352,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     }
                     141 -> {
                         val tmpHead = msg.msgHead.c2cTmpMsgHead ?: return@mapNotNull null
-                        val member = bot.getGroupByUinOrNull(tmpHead.groupUin)?.getOrNull(msg.msgHead.fromUin)
+                        val member = bot.getGroupByUinOrNull(tmpHead.groupUin)?.get(msg.msgHead.fromUin)
                             ?: return@mapNotNull null
 
                         member.checkIsMemberImpl()

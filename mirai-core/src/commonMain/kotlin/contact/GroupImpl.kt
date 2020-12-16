@@ -250,23 +250,15 @@ internal class GroupImpl(
         }
     )
 
-    override operator fun get(id: Long): Member {
+    override operator fun get(id: Long): Member? {
         if (id == bot.id) {
             return botAsMember
         }
         return members.firstOrNull { it.id == id }
-            ?: throw NoSuchElementException("member $id not found in group $uin")
     }
 
     override fun contains(id: Long): Boolean {
         return bot.id == id || members.firstOrNull { it.id == id } != null
-    }
-
-    override fun getOrNull(id: Long): Member? {
-        if (id == bot.id) {
-            return botAsMember
-        }
-        return members.firstOrNull { it.id == id }
     }
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {

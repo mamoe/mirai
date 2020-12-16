@@ -20,10 +20,7 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.get
+import net.mamoe.mirai.utils.*
 import java.io.InputStream
 
 /**
@@ -89,22 +86,34 @@ public interface Group : Contact, CoroutineScope {
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
-     * 在 [Group] 实例创建的时候查询一次. 并与事件同步事件更新
+     *
+     * 在 [Group] 实例创建的时候查询一次. 并与事件同步事件更新.
      */
     public val members: ContactList<Member>
 
     /**
-     * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException]
-     * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
+     * 获取群成员实例. 不存在时返回 `null`.
+     *
+     * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
      */
-    @Throws(NoSuchElementException::class)
-    public operator fun get(id: Long): Member
+    public operator fun get(id: Long): Member?
 
+    @Deprecated("Use get", ReplaceWith("get(id)"))
+    @PlannedRemoval("2.0-M2")
     /**
      * 获取群成员实例, 不存在则 null
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
-    public fun getOrNull(id: Long): Member?
+    public fun getOrNull(id: Long): Member? = get(id)
+
+    /**
+     * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException].
+     *
+     * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
+     */
+    public fun getOrFail(id: Long): Member =
+        get(id) ?: throw NoSuchElementException("member $id not found in group ${this.id}")
+
 
     /**
      * 检查此 id 的群成员是否存在

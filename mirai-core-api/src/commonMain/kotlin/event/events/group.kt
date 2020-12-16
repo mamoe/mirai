@@ -325,7 +325,10 @@ public data class BotInvitedJoinGroupRequestEvent internal constructor(
      */
     public val invitorNick: String
 ) : BotEvent, Packet, AbstractEvent() {
-    public val invitor: Friend get() = this.bot.getFriend(invitorId)
+    /**
+     * 邀请人. 若在事件发生后邀请人已经被删除好友, [invitor] 为 `null`.
+     */
+    public val invitor: Friend? get() = this.bot.getFriend(invitorId)
 
     @JvmField
     internal val responded: AtomicBoolean = AtomicBoolean(false)
@@ -362,20 +365,32 @@ public data class MemberJoinRequestEvent internal constructor(
      */
     val fromNick: String
 ) : BotEvent, Packet, AbstractEvent() {
-    public val group: Group get() = this.bot.getGroup(groupId)
+    /**
+     * 相关群. 若在事件发生后机器人退出这个群, [group] 为 `null`.
+     */
+    public val group: Group? get() = this.bot.getGroup(groupId)
 
     @JvmField
     @PublishedApi
     internal val responded: AtomicBoolean = AtomicBoolean(false)
 
+    /**
+     * 同意这个请求
+     */
     @JvmBlockingBridge
     public suspend fun accept(): Unit = Mirai.acceptMemberJoinRequest(this)
 
+    /**
+     * 拒绝这个请求
+     */
     @JvmBlockingBridge
     @JvmOverloads
     public suspend fun reject(blackList: Boolean = false, message: String = ""): Unit =
         Mirai.rejectMemberJoinRequest(this, blackList, message)
 
+    /**
+     * 忽略这个请求.
+     */
     @JvmBlockingBridge
     public suspend fun ignore(blackList: Boolean = false): Unit = Mirai.ignoreMemberJoinRequest(this, blackList)
 }

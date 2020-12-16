@@ -15,7 +15,6 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.getFriendOrNull
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.MemberNudge
@@ -182,12 +181,12 @@ public interface Member : User {
  *
  * @throws IllegalStateException 当此成员不是好友时抛出
  */
-public fun Member.asFriend(): Friend = this.bot.getFriendOrNull(this.id) ?: error("$this is not a friend")
+public fun Member.asFriend(): Friend = this.bot.getFriend(this.id) ?: error("$this is not a friend")
 
 /**
  * 得到此成员作为好友的对象, 当此成员不是好友时返回 `null`
  */
-public fun Member.asFriendOrNull(): Friend? = this.bot.getFriendOrNull(this.id)
+public fun Member.asFriendOrNull(): Friend? = this.bot.getFriend(this.id)
 
 /**
  * 判断此成员是否为好友

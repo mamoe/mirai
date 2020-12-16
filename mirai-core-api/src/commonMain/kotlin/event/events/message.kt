@@ -366,7 +366,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
 }
 
 public val MessageRecallEvent.GroupRecall.author: Member
-    get() = if (authorId == bot.id) group.botAsMember else group[authorId]
+    get() = if (authorId == bot.id) group.botAsMember else group.getOrFail(authorId)
 
 public val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
 // val MessageRecallEvent.GroupRecall.isByBot: Boolean get() = (this as GroupOperableEvent).isByBot
@@ -491,7 +491,13 @@ public class GroupMessageEvent(
     public override val subject: Group get() = group
     public override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 
-    public inline fun At.asMember(): Member = group[this.target]
+    @Deprecated("Use targetMember", ReplaceWith("this.targetMember"))
+    @Suppress("NOTHING_TO_INLINE")
+    public inline fun At.asMember(): Member = group.getOrFail(target)
+
+    @get:JvmSynthetic // TODO: 2020/12/16 move to extensions by 2.0-M2
+    public inline val At.targetMember: Member?
+        get(): Member? = group[this.target]
 
     public override fun toString(): String =
         "GroupMessageEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"

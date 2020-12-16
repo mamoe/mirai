@@ -17,7 +17,6 @@ import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.BotLeaveEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
@@ -192,14 +191,14 @@ internal class NewContact {
                             null
                         }
                         5 -> {
-                            val group = bot.getGroupOrNull(groupCode) ?: return null
+                            val group = bot.getGroup(groupCode) ?: return null
                             when (groupMsgType) {
                                 13 -> { // 成员主动退出, 机器人是管理员, 接到通知
                                     // 但无法获取是哪个成员.
                                     null
                                 }
                                 7 -> { // 机器人被踢
-                                    val operator = group[actionUin]
+                                    val operator = group[actionUin] ?: return null
                                     BotLeaveEvent.Kick(operator)
                                 }
                                 else -> {

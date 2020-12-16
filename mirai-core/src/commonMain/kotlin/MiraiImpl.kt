@@ -108,15 +108,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override suspend fun acceptMemberJoinRequest(event: MemberJoinRequestEvent) {
         @Suppress("DuplicatedCode")
-        checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
+        checkGroupPermission(event.bot, event.groupId) { event::class.simpleName ?: "<anonymous class>" }
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
-        check(!event.group.members.contains(event.fromId)) {
-            "the request $this is outdated: Another operator has already responded it."
-        }
+        if (event.group?.contains(event.fromId) == true) return
 
         _lowLevelSolveMemberJoinRequestEvent(
             bot = event.bot,
@@ -131,15 +129,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     @Suppress("DuplicatedCode")
     override suspend fun rejectMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean, message: String) {
-        checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
+        checkGroupPermission(event.bot, event.groupId) { event::class.simpleName ?: "<anonymous class>" }
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
         }
 
-        check(!event.group.members.contains(event.fromId)) {
-            "the request $this is outdated: Another operator has already responded it."
-        }
+        if (event.group?.contains(event.fromId) == true) return
 
         _lowLevelSolveMemberJoinRequestEvent(
             bot = event.bot,
@@ -153,11 +149,11 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         )
     }
 
-    private inline fun checkGroupPermission(eventBot: Bot, eventGroup: Group, eventName: () -> String) {
-        val group = eventBot.getGroupOrNull(eventGroup.id)
+    private inline fun checkGroupPermission(eventBot: Bot, groupId: Long, eventName: () -> String) {
+        val group = eventBot.getGroup(groupId)
             ?: kotlin.run {
                 error(
-                    "A ${eventName()} is outdated. Group ${eventGroup.id} not found for bot ${eventBot.id}. " +
+                    "A ${eventName()} is outdated. Group $groupId not found for bot ${eventBot.id}. " +
                             "This is because bot isn't in the group anymore"
                 )
 
@@ -167,7 +163,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     }
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
-        checkGroupPermission(event.bot, event.group) { event::class.simpleName ?: "<anonymous class>" }
+        checkGroupPermission(event.bot, event.groupId) { event::class.simpleName ?: "<anonymous class>" }
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
         check(event.responded.compareAndSet(false, true)) {
             "the request $this has already been responded"
@@ -568,7 +564,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             it.message.ensureSequenceIdAvailable()
         }
 
-        val group = getGroup(groupCode)
+        val group = getGroupOrFail(groupCode)
 
         val time = currentTimeSeconds()
         val sequenceId = client.atomicNextMessageSequenceId()

@@ -19,7 +19,6 @@ import net.mamoe.mirai.event.Event
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
-import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
 import net.mamoe.mirai.internal.contact.MemberImpl
@@ -73,7 +72,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         }
 
         val group =
-            bot.getGroupOrNull(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl? ?: return null // 机器人还正在进群
+            bot.getGroup(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl? ?: return null // 机器人还正在进群
         val sender = if (anonymous != null) {
             group.newAnonymous(anonymous.anonNick.encodeToString())
         } else {

@@ -130,30 +130,43 @@ public abstract class Bot internal constructor(
     @MiraiExperimentalApi
     public abstract val asFriend: Friend
 
+    @Deprecated("Use asFriend instead", ReplaceWith("asFriend"))
+    @PlannedRemoval("2.0-M2")
+    public inline val selfQQ: Friend
+        get() = asFriend
+
 
     /**
-     * 机器人的好友列表. 与服务器同步更新
+     * 好友列表. 与服务器同步更新.
      */
     public abstract val friends: ContactList<Friend>
 
     /**
-     * 获取一个好友对象.
-     * @throws [NoSuchElementException] 当不存在这个好友时抛出
+     * 以 [对方 QQ 号码][id] 获取一个好友对象, 在获取失败时返回 `null`.
      */
-    public fun getFriend(id: Long): Friend =
-        friends.firstOrNull { it.id == id } ?: throw NoSuchElementException("friend $id")
+    public fun getFriend(id: Long): Friend? =
+        friends.firstOrNull { it.id == id }
 
     /**
-     * 机器人加入的群列表. 与服务器同步更新
+     * 以 [对方 QQ 号码][id] 获取一个好友对象, 在获取失败时抛出 [NoSuchElementException].
+     */
+    public fun getFriendOrFail(id: Long): Friend = getFriend(id) ?: throw NoSuchElementException("friend $id")
+
+    /**
+     * 加入的群列表. 与服务器同步更新.
      */
     public abstract val groups: ContactList<Group>
 
     /**
-     * 获取一个机器人加入的群.
-     * @throws NoSuchElementException 当不存在这个群时抛出
+     * 以 [群号码][id] 获取一个群对象, 在获取失败时返回 `null`.
      */
-    public fun getGroup(id: Long): Group =
-        groups.firstOrNull { it.id == id } ?: throw NoSuchElementException("group $id")
+    public fun getGroup(id: Long): Group? =
+        groups.firstOrNull { it.id == id }
+
+    /**
+     * 以 [群号码][id] 获取一个群对象, 在获取失败时抛出 [NoSuchElementException].
+     */
+    public fun getGroupOrFail(id: Long): Group = getGroup(id) ?: throw NoSuchElementException("group $id")
 
     // endregion
 
@@ -225,8 +238,12 @@ public inline fun Bot.containsFriend(id: Long): Boolean = this.friends.contains(
 @JvmSynthetic
 public inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
 
+@Deprecated("Use getFriend", ReplaceWith("this.getFriend(id)"))
+@PlannedRemoval("2.0-M2")
 @JvmSynthetic
-public inline fun Bot.getFriendOrNull(id: Long): Friend? = this.friends.getOrNull(id)
+public inline fun Bot.getFriendOrNull(id: Long): Friend? = this.getFriend(id)
 
+@Deprecated("Use getGroup", ReplaceWith("this.getGroup(id)"))
+@PlannedRemoval("2.0-M2")
 @JvmSynthetic
-public inline fun Bot.getGroupOrNull(id: Long): Group? = this.groups.getOrNull(id)
+public inline fun Bot.getGroupOrNull(id: Long): Group? = this.getGroup(id)
