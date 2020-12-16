@@ -23,6 +23,7 @@ import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
@@ -73,6 +74,14 @@ public interface Friend : User, CoroutineScope {
      */
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
+
+    /**
+     * 发送纯文本消息
+     * @see sendMessage
+     */
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): MessageReceipt<Friend> =
+        this.sendMessage(message.toPlainText())
 
     /**
      * 创建一个 "戳一戳" 消息

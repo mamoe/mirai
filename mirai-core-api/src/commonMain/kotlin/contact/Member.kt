@@ -22,6 +22,7 @@ import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.time.Duration
@@ -158,6 +159,14 @@ public interface Member : User {
      */
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member>
+
+    /**
+     * 发送纯文本消息
+     * @see sendMessage
+     */
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): MessageReceipt<Member> =
+        this.sendMessage(message.toPlainText())
 
     /**
      * 创建一个 "戳一戳" 消息

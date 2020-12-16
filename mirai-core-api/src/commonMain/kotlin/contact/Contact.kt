@@ -23,7 +23,6 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.WeakRefProperty
-import net.mamoe.mirai.utils.cast
 
 /**
  * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
@@ -62,6 +61,13 @@ public interface Contact : ContactOrBot, CoroutineScope {
     public suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 
     /**
+     * 发送纯文本消息
+     * @see sendMessage
+     */
+    @JvmBlockingBridge
+    public suspend fun sendMessage(message: String): MessageReceipt<Contact> = this.sendMessage(message.toPlainText())
+
+    /**
      * 上传一个图片以备发送.
      *
      * @see Image 查看有关图片的更多信息, 如上传图片
@@ -79,11 +85,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
      * @return "Friend($id)" or "Group($id)" or "Member($id)"
      */
     public override fun toString(): String
-}
-
-@JvmSynthetic
-public suspend inline fun <T : Contact> T.sendMessage(message: String): MessageReceipt<T> {
-    return sendMessage(PlainText(message)).cast()
 }
 
 /**

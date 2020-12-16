@@ -22,6 +22,7 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
@@ -81,6 +82,14 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      */
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<User>
+
+    /**
+     * 发送纯文本消息
+     * @see sendMessage
+     */
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): MessageReceipt<User> =
+        this.sendMessage(message.toPlainText())
 
     /**
      * 创建一个 "戳一戳" 消息

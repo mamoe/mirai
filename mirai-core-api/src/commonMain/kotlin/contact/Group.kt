@@ -19,10 +19,7 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.Voice
-import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
@@ -149,6 +146,14 @@ public interface Group : Contact, CoroutineScope {
      */
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Group>
+
+    /**
+     * 发送纯文本消息
+     * @see sendMessage
+     */
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): MessageReceipt<Group> =
+        this.sendMessage(message.toPlainText())
 
 
     /**
