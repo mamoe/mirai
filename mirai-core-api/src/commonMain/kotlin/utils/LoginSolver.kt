@@ -112,8 +112,9 @@ public class StandardCharImageLoginSolver(
 
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
         val logger = overrideLogger ?: bot.logger
-        val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
+        @Suppress("BlockingMethodInNonBlockingContext")
         withContext(Dispatchers.IO) {
+            val tempFile: File = File.createTempFile("tmp", ".png").apply { deleteOnExit() }
             tempFile.createNewFile()
             logger.info("需要图片验证码登录, 验证码为 4 字母")
             try {
@@ -153,7 +154,7 @@ public class StandardCharImageLoginSolver(
         }
     }
 
-    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? = loginSolverLock.withLock {
+    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String = loginSolverLock.withLock {
         val logger = overrideLogger ?: bot.logger
         logger.info("需要进行账户安全认证")
         logger.info("该账户有[设备锁]/[不常用登录地点]/[不常用设备登录]的问题")

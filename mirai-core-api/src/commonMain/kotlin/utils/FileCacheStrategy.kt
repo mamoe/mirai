@@ -127,7 +127,7 @@ public interface FileCacheStrategy {
         @MiraiExperimentalApi
         @Throws(java.io.IOException::class)
         override fun newImageCache(input: Input): ExternalImage {
-            return ExternalImage(createTempFile(directory = directory).apply {
+            return ExternalImage(File.createTempFile("tmp", null, directory).apply {
                 deleteOnExit()
                 input.withOut(this.outputStream()) { copyTo(it) }
             }.asReusableInput(true))
@@ -136,7 +136,7 @@ public interface FileCacheStrategy {
         @MiraiExperimentalApi
         @Throws(java.io.IOException::class)
         override fun newImageCache(input: InputStream): ExternalImage {
-            return ExternalImage(createTempFile(directory = directory).apply {
+            return ExternalImage(File.createTempFile("tmp", null, directory).apply {
                 deleteOnExit()
                 input.withOut(this.outputStream()) { copyTo(it) }
             }.asReusableInput(true))
@@ -150,7 +150,7 @@ public interface FileCacheStrategy {
 
         @MiraiExperimentalApi
         override fun newImageCache(input: BufferedImage, format: String): ExternalImage {
-            val file = createTempFile(directory = directory).apply { deleteOnExit() }
+            val file = File.createTempFile("tmp", null, directory).apply { deleteOnExit() }
 
             val digest = MessageDigest.getInstance("md5")
             digest.reset()
@@ -180,7 +180,7 @@ public interface FileCacheStrategy {
 
         @MiraiExperimentalApi
         override fun newImageCache(input: URL): ExternalImage {
-            return ExternalImage(createTempFile(directory = directory).apply {
+            return ExternalImage(File.createTempFile("tmp", null, directory).apply {
                 deleteOnExit()
                 input.openConnection().getInputStream().withOut(this.outputStream()) { copyTo(it) }
             }.asReusableInput(true))
