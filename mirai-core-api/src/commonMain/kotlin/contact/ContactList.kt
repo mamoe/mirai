@@ -53,9 +53,7 @@ internal fun <C : Any?> ConcurrentLinkedQueue<C>.addLast(c: C): Boolean = this.a
  * ```
  */
 public val ContactList<*>.idContentString: String
-    get() = "[" + buildString { delegate.forEach { append(it.id).append(", ") } }.dropLast(
-        2
-    ) + "]"
+    get() = "[" + delegate.joinToString { it.id.toString() } + "]"
 
 
 internal operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {
