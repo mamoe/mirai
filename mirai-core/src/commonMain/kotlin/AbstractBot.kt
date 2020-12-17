@@ -36,10 +36,31 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-internal abstract class BotImpl<N : BotNetworkHandler> constructor(
-    configuration: BotConfiguration
-) : Bot(configuration), CoroutineScope {
+internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
+    final override val configuration: BotConfiguration,
+    final override val id: Long,
+) : Bot, CoroutineScope {
+    // FASTEST INIT
+    init {
+        Bot._instances[this.id] = this
+        supervisorJob.invokeOnCompletion {
+            Bot._instances.remove(id)
+        }
+    }
+
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
+
+
+    final override val coroutineContext: CoroutineContext = // for id
+        configuration.parentCoroutineContext
+            .plus(SupervisorJob(configuration.parentCoroutineContext[Job]))
+            .plus(configuration.parentCoroutineContext[CoroutineExceptionHandler]
+                ?: CoroutineExceptionHandler { _, e ->
+                    logger.error("An exception was thrown under a coroutine of Bot", e)
+                }
+            )
+            .plus(CoroutineName("Mirai Bot"))
+
 
     // region network
 
@@ -60,8 +81,8 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
     @OptIn(ExperimentalTime::class)
     @Suppress("unused")
     private val offlineListener: Listener<BotOfflineEvent> =
-        this@BotImpl.subscribeAlways(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
-            if (event.bot != this@BotImpl) {
+        this@AbstractBot.subscribeAlways(concurrency = Listener.ConcurrencyKind.LOCKED) { event ->
+            if (event.bot != this@AbstractBot) {
                 return@subscribeAlways
             }
             if (!event.bot.isActive) {
@@ -107,7 +128,7 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
                                 }
                                 network.withConnectionLock {
                                     /**
-                                     * [BotImpl.relogin] only, no [BotNetworkHandler.init]
+                                     * [AbstractBot.relogin] only, no [BotNetworkHandler.init]
                                      */
                                     @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
                                     relogin((event as? BotOfflineEvent.Dropped)?.cause)
@@ -161,7 +182,7 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
 
     /**
      * **Exposed public API**
-     * [BotImpl.relogin] && [BotNetworkHandler.init]
+     * [AbstractBot.relogin] && [BotNetworkHandler.init]
      */
     final override suspend fun login() {
         @ThisApiMustBeUsedInWithConnectionLockBlock
@@ -266,7 +287,7 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
             return
         }
         GlobalScope.launch {
-            runCatching { BotOfflineEvent.Active(this@BotImpl, cause).broadcast() }.exceptionOrNull()
+            runCatching { BotOfflineEvent.Active(this@AbstractBot, cause).broadcast() }.exceptionOrNull()
                 ?.let { logger.error(it) }
         }
 
@@ -278,6 +299,8 @@ internal abstract class BotImpl<N : BotNetworkHandler> constructor(
             }
         }
     }
+
+    final override fun toString(): String = "Bot($id)"
 }
 
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)

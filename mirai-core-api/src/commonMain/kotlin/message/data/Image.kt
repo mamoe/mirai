@@ -142,7 +142,7 @@ public interface Image : Message, MessageContent, CodableMessage {
         @JvmStatic
         @JvmBlockingBridge
         public suspend fun Image.queryUrl(): String {
-            val bot = Bot._instances.peekFirst()?.get() ?: error("No Bot available to query image url")
+            val bot = Bot.instancesSequence.firstOrNull() ?: error("No Bot available to query image url")
             return Mirai.queryImageUrl(bot, this)
         }
 

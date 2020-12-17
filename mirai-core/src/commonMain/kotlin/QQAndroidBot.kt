@@ -42,24 +42,15 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
 internal class QQAndroidBot constructor(
     account: BotAccount,
     configuration: BotConfiguration
-) : QQAndroidBotBase(account, configuration)
-
-
-internal abstract class QQAndroidBotBase constructor(
-    private val account: BotAccount,
-    configuration: BotConfiguration
-) : BotImpl<QQAndroidBotNetworkHandler>(configuration) {
+) : AbstractBot<QQAndroidBotNetworkHandler>(configuration, account.id) {
     @Suppress("LeakingThis")
     val client: QQAndroidClient =
         QQAndroidClient(
             account,
-            bot = this as QQAndroidBot,
+            bot = this,
             device = configuration.deviceInfo?.invoke(this) ?: DeviceInfo.random()
         )
     internal var firstLoginSucceed: Boolean = false
-
-    override val id: Long
-        get() = account.id
 
     inline val json get() = configuration.json
 
@@ -78,11 +69,13 @@ internal abstract class QQAndroidBotBase constructor(
     override val asFriend: Friend by lazy {
         @OptIn(LowLevelApi::class)
         Mirai._lowLevelNewFriend(this, object : FriendInfo {
-            override val uin: Long get() = this@QQAndroidBotBase.id
-            override val nick: String get() = this@QQAndroidBotBase.nick
+            override val uin: Long get() = this@QQAndroidBot.id
+            override val nick: String get() = this@QQAndroidBot.nick
             override val remark: String get() = ""
         })
     }
+
+    override val groups: ContactList<Group> = ContactList()
 
     /**
      * Final process for 'login'
@@ -96,10 +89,8 @@ internal abstract class QQAndroidBotBase constructor(
     }
 
     override fun createNetworkHandler(coroutineContext: CoroutineContext): QQAndroidBotNetworkHandler {
-        return QQAndroidBotNetworkHandler(coroutineContext, this as QQAndroidBot)
+        return QQAndroidBotNetworkHandler(coroutineContext, this)
     }
-
-    override val groups: ContactList<Group> = ContactList()
 
     @JvmField
     val groupListModifyLock = Mutex()

@@ -20,8 +20,12 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
-import net.mamoe.mirai.utils.*
-import kotlin.coroutines.CoroutineContext
+import net.mamoe.mirai.utils.BotConfiguration
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiLogger
+import net.mamoe.mirai.utils.PlannedRemoval
+import java.util.*
+import kotlin.NoSuchElementException
 
 /**
  * 登录, 返回 [this]
@@ -40,87 +44,31 @@ public suspend inline fun <B : Bot> B.alsoLogin(): B = also { login() }
  *
  * @see BotFactory 构造 [Bot] 的工厂, [Bot] 唯一的构造方式.
  */
-public abstract class Bot internal constructor(
+public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
+    /**
+     * Bot 配置
+     */
     public val configuration: BotConfiguration
-) : CoroutineScope, ContactOrBot, UserOrBot {
-    public final override val coroutineContext: CoroutineContext = // for id
-        configuration.parentCoroutineContext
-            .plus(SupervisorJob(configuration.parentCoroutineContext[Job]))
-            .plus(configuration.parentCoroutineContext[CoroutineExceptionHandler]
-                ?: CoroutineExceptionHandler { _, e ->
-                    logger.error("An exception was thrown under a coroutine of Bot", e)
-                }
-            )
-            .plus(CoroutineName("Mirai Bot"))
-
-
-    public companion object {
-        @JvmField
-        @Suppress("ObjectPropertyName")
-        internal val _instances: LockFreeLinkedList<WeakRef<Bot>> = LockFreeLinkedList()
-
-        /**
-         * 复制一份此时的 [Bot] 实例列表.
-         */
-        @JvmStatic
-        public val botInstances: List<Bot>
-            get() = _instances.asSequence().mapNotNull { it.get() }.toList()
-
-        /**
-         * 复制一份此时的 [Bot] 实例列表.
-         */
-        @JvmStatic
-        public val botInstancesSequence: Sequence<Bot>
-            get() = _instances.asSequence().mapNotNull { it.get() }
-
-        /**
-         * 遍历每一个 [Bot] 实例
-         */
-        @JvmSynthetic
-        public fun forEachInstance(block: (Bot) -> Unit): Unit = _instances.forEach { it.get()?.let(block) }
-
-        /**
-         * 获取一个 [Bot] 实例, 无对应实例时抛出 [NoSuchElementException]
-         */
-        @JvmStatic
-        @Throws(NoSuchElementException::class)
-        public fun getInstance(qq: Long): Bot =
-            getInstanceOrNull(qq) ?: throw NoSuchElementException(qq.toString())
-
-        /**
-         * 获取一个 [Bot] 实例, 无对应实例时返回 `null`
-         */
-        @JvmStatic
-        public fun getInstanceOrNull(qq: Long): Bot? =
-            _instances.asSequence().mapNotNull { it.get() }.firstOrNull { it.id == qq }
-    }
-
-    init {
-        _instances.addLast(this.weakRef())
-        supervisorJob.invokeOnCompletion {
-            _instances.removeIf { it.get()?.id == this.id }
-        }
-    }
 
     /**
      * QQ 号码. 实际类型为 uint
      */
-    public abstract override val id: Long
+    public override val id: Long
 
     /**
      * 昵称
      */
-    public abstract val nick: String
+    public val nick: String
 
     /**
      * 日志记录器
      */
-    public abstract val logger: MiraiLogger
+    public val logger: MiraiLogger
 
     /**
-     * 判断 Bot 是否在线 (可正常收发消息)
+     * 当 Bot 在线 (可正常收发消息) 时返回 `true`.
      */
-    public abstract val isOnline: Boolean
+    public val isOnline: Boolean
 
     // region contacts
 
@@ -128,18 +76,18 @@ public abstract class Bot internal constructor(
      * [User.id] 与 [Bot.id] 相同的 [Friend] 实例
      */
     @MiraiExperimentalApi
-    public abstract val asFriend: Friend
+    public val asFriend: Friend
 
     @Deprecated("Use asFriend instead", ReplaceWith("asFriend"))
     @PlannedRemoval("2.0-M2")
-    public inline val selfQQ: Friend
+    public val selfQQ: Friend
         get() = asFriend
 
 
     /**
      * 好友列表. 与服务器同步更新.
      */
-    public abstract val friends: ContactList<Friend>
+    public val friends: ContactList<Friend>
 
     /**
      * 以 [对方 QQ 号码][id] 获取一个好友对象, 在获取失败时返回 `null`.
@@ -155,7 +103,7 @@ public abstract class Bot internal constructor(
     /**
      * 加入的群列表. 与服务器同步更新.
      */
-    public abstract val groups: ContactList<Group>
+    public val groups: ContactList<Group>
 
     /**
      * 以 [群号码][id] 获取一个群对象, 在获取失败时返回 `null`.
@@ -180,7 +128,7 @@ public abstract class Bot internal constructor(
      * @see alsoLogin `.apply { login() }` 捷径
      */
     @JvmBlockingBridge
-    public abstract suspend fun login()
+    public suspend fun login()
 
     /**
      * 创建一个 "戳一戳" 消息
@@ -200,43 +148,148 @@ public abstract class Bot internal constructor(
      *
      * @see closeAndJoin 取消并 [Bot.join], 以确保 [Bot] 相关的活动被完全关闭
      */
-    public abstract fun close(cause: Throwable? = null)
+    public fun close(cause: Throwable? = null)
 
-    public final override fun toString(): String = "Bot($id)"
+
+    public companion object {
+        @Suppress("ObjectPropertyName")
+        internal val _instances: WeakHashMap<Long, Bot> = WeakHashMap()
+
+        /**
+         * 复制一份此时的 [Bot] 实例列表.
+         */
+        @JvmStatic
+        public val instances: List<Bot>
+            get() = _instances.values.filterNotNull()
+
+        /**
+         * 复制一份此时的 [Bot] 实例列表.
+         */
+        @JvmStatic
+        public val instancesSequence: Sequence<Bot>
+            get() = _instances.values.asSequence().filterNotNull()
+
+        /**
+         * 获取一个 [Bot] 实例, 无对应实例时抛出 [NoSuchElementException]
+         */
+        @JvmStatic
+        @Throws(NoSuchElementException::class)
+        public fun getInstance(qq: Long): Bot =
+            findInstance(qq) ?: throw NoSuchElementException(qq.toString())
+
+        /**
+         * 获取一个 [Bot] 实例, 无对应实例时返回 `null`
+         */
+        @JvmStatic
+        public inline fun getInstanceOrNull(qq: Long): Bot? = findInstance(qq)
+
+        /**
+         * 获取一个 [Bot] 实例, 无对应实例时返回 `null`
+         */
+        @JvmStatic
+        public fun findInstance(qq: Long): Bot? = _instances[qq]
+
+
+        // deprecated
+
+        /**
+         * 遍历每一个 [Bot] 实例
+         */
+        @Deprecated(
+            """
+            In Kotlin, use Sequence.forEach on instancesSequence.
+            In Java, use List.forEach on instances 
+            """,
+            ReplaceWith("instancesSequence.forEach(block)", "net.mamoe.mirai.Bot.Companion.instancesSequence"),
+            DeprecationLevel.ERROR
+        )
+        @PlannedRemoval("2.0-M2")
+        public fun forEachInstance(block: (Bot) -> Unit): Unit = instancesSequence.forEach(block)
+
+        /**
+         * 复制一份此时的 [Bot] 实例列表.
+         */
+        @JvmStatic
+        @Deprecated(
+            "Use instances for shorter name.",
+            ReplaceWith("instances", "net.mamoe.mirai.Bot.Companion.instances"),
+            DeprecationLevel.ERROR
+        )
+        @PlannedRemoval("2.0-M2")
+        public val botInstances: List<Bot>
+            get() = instances
+
+        /**
+         * 复制一份此时的 [Bot] 实例列表.
+         */
+        @JvmStatic
+        @Deprecated(
+            "Use instancesSequence for shorter name.",
+            ReplaceWith("instancesSequence", "net.mamoe.mirai.Bot.Companion.instancesSequence"),
+            DeprecationLevel.ERROR
+        )
+        @PlannedRemoval("2.0-M2")
+        public val botInstancesSequence: Sequence<Bot>
+            get() = instancesSequence
+
+    }
+
+    /**
+     * 挂起协程直到 [Bot] 协程被关闭 ([Bot.close]).
+     * 即使 [Bot] 离线, 也会等待直到协程关闭.
+     */
+    @JvmBlockingBridge
+    public suspend fun join(): Unit = supervisorJob.join()
+
+
+    /**
+     * 关闭这个 [Bot], 停止一切相关活动. 所有引用都会被释放.
+     *
+     * 注: 不可重新登录. 必须重新实例化一个 [Bot].
+     *
+     * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
+     */
+    @JvmBlockingBridge
+    public suspend fun closeAndJoin(cause: Throwable? = null) {
+        close(cause)
+        join()
+    }
 }
 
 /**
  * 获取 [Job] 的协程 [Job]. 此 [Job] 为一个 [SupervisorJob]
  */
 @get:JvmSynthetic
-public val Bot.supervisorJob: CompletableJob
+public inline val Bot.supervisorJob: CompletableJob
     get() = this.coroutineContext[Job] as CompletableJob
 
 /**
- * 挂起协程直到 [Bot] 协程被关闭 ([Bot.close]).
- * 即使 [Bot] 离线, 也会等待直到协程关闭.
+ * 当 [Bot] 拥有 [Friend.id] 为 [id] 的好友时返回 `true`.
  */
 @JvmSynthetic
-public suspend inline fun Bot.join(): Unit = this.coroutineContext[Job]!!.join()
+public inline fun Bot.containsFriend(id: Long): Boolean = this.friends.contains(id)
 
 /**
- * 关闭这个 [Bot], 停止一切相关活动. 所有引用都会被释放.
- *
- * 注: 不可重新登录. 必须重新实例化一个 [Bot].
- *
- * @param cause 原因. 为 null 时视为正常关闭, 非 null 时视为异常关闭
+ * 当 [Bot] 拥有 [Group.id] 为 [id] 的群时返回 `true`.
  */
+@JvmSynthetic
+public inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
+
+
+// deprecated
+
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER") // source compatibility
+@PlannedRemoval("2.0-M2")
+@JvmSynthetic
+public suspend inline fun Bot.join(): Unit = join()
+
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER") // source compatibility
+@PlannedRemoval("2.0-M2")
 @JvmSynthetic
 public suspend inline fun Bot.closeAndJoin(cause: Throwable? = null) {
     close(cause)
     coroutineContext[Job]?.join()
 }
-
-@JvmSynthetic
-public inline fun Bot.containsFriend(id: Long): Boolean = this.friends.contains(id)
-
-@JvmSynthetic
-public inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
 
 @Deprecated("Use getFriend", ReplaceWith("this.getFriend(id)"))
 @PlannedRemoval("2.0-M2")
