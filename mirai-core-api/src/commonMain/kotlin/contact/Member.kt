@@ -246,4 +246,6 @@ public suspend inline fun Member.mute(duration: Duration) {
 /**
  * @see Member.mute
  */
+@Deprecated("Convert duration to int manually.", ReplaceWith("this.mute(durationSeconds.toInt())"))
+@PlannedRemoval("2.0-M2")
 public suspend inline fun Member.mute(durationSeconds: Long): Unit = this.mute(durationSeconds.toInt())
