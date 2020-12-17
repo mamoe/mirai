@@ -31,7 +31,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.withUse
 import net.mamoe.mirai.utils.internal.ReusableInput
 import net.mamoe.mirai.utils.verbose
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.roundToInt
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -143,7 +142,7 @@ internal object HighwayHelper {
         val socket = PlatformSocket()
         while (client.bot.network.areYouOk() && client.bot.isActive) {
             try {
-                socket.connect(EmptyCoroutineContext, serverIp, serverPort)
+                socket.connect(serverIp, serverPort)
                 break
             } catch (e: SocketException) {
                 delay(3000)

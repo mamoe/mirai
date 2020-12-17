@@ -14,8 +14,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.utils.cryptor.ECDH
-import net.mamoe.mirai.internal.utils.cryptor.ECDHKeyPair
+import net.mamoe.mirai.internal.utils.crypto.ECDH
+import net.mamoe.mirai.internal.utils.crypto.ECDHKeyPair
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 

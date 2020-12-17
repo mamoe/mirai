@@ -130,7 +130,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         while (isActive) {
             try {
-                channel.connect(coroutineContext + CoroutineName("Socket"), host, port)
+                channel.connect(host, port)
                 break
             } catch (e: SocketException) {
                 if (e is NoRouteToHostException || e.message?.contains("Network is unreachable") == true) {

@@ -24,8 +24,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.internal.utils.cryptor.ECDH
-import net.mamoe.mirai.internal.utils.cryptor.TEA
+import net.mamoe.mirai.internal.utils.crypto.ECDH
+import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.utils.*

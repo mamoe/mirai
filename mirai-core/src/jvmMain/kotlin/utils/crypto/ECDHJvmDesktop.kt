@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.utils.cryptor
+package net.mamoe.mirai.internal.utils.crypto
 
 import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -31,9 +31,7 @@ internal actual class ECDHKeyPairImpl(
     override val initialShareKey: ByteArray by lazy { ECDH.calculateShareKey(privateKey, initialPublicKey) }
 }
 
-@Suppress("FunctionName")
-internal actual fun ECDH() =
-    ECDH(ECDH.generateKeyPair())
+internal actual fun ECDH() = ECDH(ECDH.generateKeyPair())
 
 internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
     actual companion object {

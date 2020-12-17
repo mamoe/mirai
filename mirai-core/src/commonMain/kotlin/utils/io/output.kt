@@ -15,9 +15,7 @@ package net.mamoe.mirai.internal.utils.io
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.utils.coerceAtMostOrFail
-import net.mamoe.mirai.internal.utils.cryptor.TEA
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
+import net.mamoe.mirai.internal.utils.crypto.TEA
 
 internal fun BytePacketBuilder.writeShortLVByteArrayLimitedLength(array: ByteArray, maxLength: Int) {
     if (array.size <= maxLength) {

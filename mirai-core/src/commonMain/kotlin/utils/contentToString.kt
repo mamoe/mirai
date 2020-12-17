@@ -135,7 +135,9 @@ internal fun Any?._miraiContentToString(prefix: String = ""): String = when (thi
     }
 }
 
-internal expect fun KProperty1<*, *>.getValueAgainstPermission(receiver: Any): Any?
+internal fun KProperty1<*, *>.getValueAgainstPermission(receiver: Any): Any? {
+    return this.javaField?.apply { isAccessible = true }?.get(receiver)
+}
 
 private fun Any.canBeIgnored(): Boolean {
     return when (this) {

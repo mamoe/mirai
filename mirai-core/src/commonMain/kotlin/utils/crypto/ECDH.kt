@@ -7,13 +7,11 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.utils.cryptor
+package net.mamoe.mirai.internal.utils.crypto
 
 import net.mamoe.mirai.internal.utils.chunkedHexToBytes
 
-internal expect interface ECDHPrivateKey {
-    fun getEncoded(): ByteArray
-}
+internal expect interface ECDHPrivateKey
 
 internal expect interface ECDHPublicKey {
     fun getEncoded(): ByteArray
