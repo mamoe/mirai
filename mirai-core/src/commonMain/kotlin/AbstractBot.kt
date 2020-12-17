@@ -159,7 +159,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     }
 
                     if (!failed) {
-                        logger.info { "Reconnected successfully in ${time.asHumanReadable}" }
+                        logger.info { "Reconnected successfully in ${time.toHumanReadableString()}" }
                     }
                 }
                 is BotOfflineEvent.Active -> {

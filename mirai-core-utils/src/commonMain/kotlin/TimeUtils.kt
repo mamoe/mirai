@@ -84,16 +84,15 @@ public inline val Int.monthsToSeconds: Long
 
 // @MiraiExperimentalApi
 @ExperimentalTime
-public val Duration.asHumanReadable: String
-    get() {
-        val days = toInt(DurationUnit.DAYS)
-        val hours = toInt(DurationUnit.HOURS) % 24
-        val minutes = toInt(DurationUnit.MINUTES) % 60
-        val s = floor(toDouble(DurationUnit.SECONDS) % 60 * 1000) / 1000
-        return buildString {
-            if (days != 0) append("${days}d ")
-            if (hours != 0) append("${hours}h ")
-            if (minutes != 0) append("${minutes}min ")
-            append("${s}s")
-        }
+public fun Duration.toHumanReadableString(): String {
+    val days = toInt(DurationUnit.DAYS)
+    val hours = toInt(DurationUnit.HOURS) % 24
+    val minutes = toInt(DurationUnit.MINUTES) % 60
+    val s = floor(toDouble(DurationUnit.SECONDS) % 60 * 1000) / 1000
+    return buildString {
+        if (days != 0) append("${days}d ")
+        if (hours != 0) append("${hours}h ")
+        if (minutes != 0) append("${minutes}min ")
+        append("${s}s")
     }
+}

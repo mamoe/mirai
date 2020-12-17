@@ -22,10 +22,10 @@ internal class TimeTest {
                 20.toDuration(DurationUnit.HOURS) +
                 15.toDuration(DurationUnit.MINUTES) +
                 2057.toDuration(DurationUnit.MILLISECONDS)
-        println(time0.asHumanReadable)
-        assertTrue { time0.asHumanReadable == "1d 20h 15min 2.057s" }
+        println(time0.toHumanReadableString())
+        assertTrue { time0.toHumanReadableString() == "1d 20h 15min 2.057s" }
         val time1 = 1.toDuration(DurationUnit.DAYS) + 59.toDuration(DurationUnit.MINUTES)
-        println(time1.asHumanReadable)
-        assertTrue { time1.asHumanReadable == "1d 59min 0.0s" }
+        println(time1.toHumanReadableString())
+        assertTrue { time1.toHumanReadableString() == "1d 59min 0.0s" }
     }
 }
