@@ -33,9 +33,6 @@ public data class Face(public val id: Int) : // used in delegation
     public override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
     public override fun hashCode(): Int = id
 
-    /**
-     * @author LamGC
-     */
     private companion object {
         val names: Array<String> = Array(290) { "[表情]" }
 
