@@ -31,13 +31,13 @@ suspend fun main() {
 
 在本例中，`miraiBot`是一个Bot对象，让其登录，然后对`Message Event`进行了监听。
 
-对于`Message Event`，`Mirai`提供了较其他Event更强大的[MessageSubscribersBuilder](https://github.com/mamoe/mirai/wiki/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/MessageSubscribers.kt#L140)，本例也采用了[MessageSubscribersBuilder](https://github.com/mamoe/mirai/wiki/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/MessageSubscribers.kt#L140)。其他具体使用方法可以参考[Wiki:Message Event](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin#Message-Event)部分。
+对于`Message Event`，`Mirai`提供了较其他Event更强大的[MessageSubscribersBuilder](https://github.com/mamoe/mirai/wiki/mirai-core-api/src/commonMain/kotlin/event/MessageSubscribers.kt#L140)，本例也采用了[MessageSubscribersBuilder](https://github.com/mamoe/mirai/wiki/mirai-core-api/src/commonMain/kotlin/event/MessageSubscribers.kt#L140)。其他具体使用方法可以参考[Wiki:Message Event](https://github.com/mamoe/mirai/wiki/Development-Guide---Kotlin#Message-Event)部分。
 
 ## 事件-Event
 
 上一节中提到的`Message Event`仅仅是众多`Event`的这一种，其他`Event`有：群员加入群，离开群，私聊等等...
 
-具体事件文档暂不提供，可翻阅源码[**BotEvents.kt**](https://github.com/mamoe/mirai/blob/master/mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/events/BotEvents.kt)，查看注释。当前事件仍在扩充中，可能有一定不足。
+具体事件文档暂不提供，可翻阅源码[**BotEvents.kt**](https://github.com/mamoe/mirai/blob/master/mirai-core-api/src/commonMain/kotlin/event/events/BotEvents.kt)，查看注释。当前事件仍在扩充中，可能有一定不足。
 
 下面我们开始示例对一些事件进行监听。
 

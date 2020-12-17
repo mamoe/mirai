@@ -64,53 +64,53 @@ Mirai 通过某种方式同时生成了桥梁方法 `public void sendMessage(Mes
 
 ### 开始
 
-1. [实验性 API 注解 MiraiExperimentalAPI](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/Annotations.kt#L41)
+1. [实验性 API 注解 MiraiExperimentalAPI](../mirai-core-api/src/commonMain/kotlin/utils/Annotations.kt#L41)
 
 2. '机器人' 和 '联系人'
-   1. [ContactOrBot](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/contact/ContactOrBot.kt)
-   2. [机器人对象 Bot](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/Bot.kt)
-   3. [Contact](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/contact/Contact.kt)
-   4. [用户对象 User](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/contact/User.kt)
-   5. [好友对象 Friend](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/contact/Friend.kt)
-   6. [群对象 Group](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/contact/Group.kt)
-   7. [群成员对象  Member](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/contact/Member.kt)
+   1. [ContactOrBot](../mirai-core-api/src/commonMain/kotlin/contact/ContactOrBot.kt)
+   2. [机器人对象 Bot](../mirai-core-api/src/commonMain/kotlin/Bot.kt)
+   3. [Contact](../mirai-core-api/src/commonMain/kotlin/contact/Contact.kt)
+   4. [用户对象 User](../mirai-core-api/src/commonMain/kotlin/contact/User.kt)
+   5. [好友对象 Friend](../mirai-core-api/src/commonMain/kotlin/contact/Friend.kt)
+   6. [群对象 Group](../mirai-core-api/src/commonMain/kotlin/contact/Group.kt)
+   7. [群成员对象  Member](../mirai-core-api/src/commonMain/kotlin/contact/Member.kt)
 
    总结: [机器人和联系人架构](../.github/机器人和联系人架构.png). 其中 `CoroutineScope` 为 Kotlin 协程作用域, Java 使用者可忽略.
 
 
 3. '消息'
-   1. [消息对象 Message](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/Message.kt)  
+   1. [消息对象 Message](../mirai-core-api/src/commonMain/kotlin/message/data/Message.kt)  
       特别注意, `Message` 分为 单个消息(`SingleMessage`) 和 多个消息, 即消息链(`MessageChain` ).  
-   2. [消息链 MessageChain](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/MessageChain.kt)  
+   2. [消息链 MessageChain](../mirai-core-api/src/commonMain/kotlin/message/data/MessageChain.kt)  
       // TODO 此处还有更详细的扩展 API 解释, 待更新
-   3. 接下来可按需阅读各类型消息 [各类型消息](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/data/). 一个文件包含一种消息.
+   3. 接下来可按需阅读各类型消息 [各类型消息](../mirai-core-api/src/commonMain/kotlin/message/data/). 一个文件包含一种消息.
 
 
 4. '事件'  
    mirai 支持异步的事件系统.  
-   1. [事件接口 Event](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/Event.kt)
-   2. [广播事件 Event.broadcast](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/Event.kt)
-   3. - Kotlin: [函数式监听事件 subscribe](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/subscriber.kt)
-      - Kotlin & Java: [方法反射监听事件 JvmMethodListeners](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/event/JvmMethodListeners.kt)
-   4. 内建事件列表 [README](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/events/README.md).  
-      **注意**: mirai 将接收到的消息事件独立放置在 `net.mamoe.mirai.message` 下, 并命名为 `MessageEvent`. 并为他们实现了一些扩展. 详见 [MessageEvent.kt](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/MessageEvent.kt)
+   1. [事件接口 Event](../mirai-core-api/src/commonMain/kotlin/event/Event.kt)
+   2. [广播事件 Event.broadcast](../mirai-core-api/src/commonMain/kotlin/event/Event.kt)
+   3. - Kotlin: [函数式监听事件 subscribe](../mirai-core-api/src/commonMain/kotlin/event/subscriber.kt)
+      - Kotlin & Java: [方法反射监听事件 JvmMethodListeners](../mirai-core-api/src/commonMain/kotlin/event/JvmMethodListeners.kt)
+   4. 内建事件列表 [README](../mirai-core-api/src/commonMain/kotlin/event/events/README.md).  
+      **注意**: mirai 将接收到的消息事件独立放置在 `net.mamoe.mirai.message` 下, 并命名为 `MessageEvent`. 并为他们实现了一些扩展. 详见 [MessageEvent.kt](../mirai-core-api/src/commonMain/kotlin/message/MessageEvent.kt)
    5. 事件工具类和工具函数 (仅 Kotlin) (可以跳过本节):  
       标注 (*) 代表需要比较好的 Kotlin 技能才能理解.
-      - 挂起当前协程, 直到返回下一个事件实例: [nextEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/nextEvent.kt)
-      - 挂起当前协程, 并从一个事件中同步一个值: [syncFromEvent](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/linear.kt)
-      - (*) 消息事件监听 DSL: [subscribeMessages](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/subscribeMessages.kt)
-      - (*) 协程 `select` 语法的监听方式: [selectMessages](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/event/select.kt)
-      - (*) 挂起协程并等待下一个与 `this` 语境相同的事件 [MessageEvent.nextMessage](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/message/utils.kt#L50)
+      - 挂起当前协程, 直到返回下一个事件实例: [nextEvent](../mirai-core-api/src/commonMain/kotlin/event/nextEvent.kt)
+      - 挂起当前协程, 并从一个事件中同步一个值: [syncFromEvent](../mirai-core-api/src/commonMain/kotlin/event/linear.kt)
+      - (*) 消息事件监听 DSL: [subscribeMessages](../mirai-core-api/src/commonMain/kotlin/event/subscribeMessages.kt)
+      - (*) 协程 `select` 语法的监听方式: [selectMessages](../mirai-core-api/src/commonMain/kotlin/event/select.kt)
+      - (*) 挂起协程并等待下一个与 `this` 语境相同的事件 [MessageEvent.nextMessage](../mirai-core-api/src/commonMain/kotlin/message/utils.kt#L50)
 
 <br><br>
 <br><br>
 一切准备就绪. 现在开始构造 `Bot` 实例:
 
-1. `Bot` 的配置: [BotConfiguration](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/BotConfiguration.common.kt)
+1. `Bot` 的配置: [BotConfiguration](../mirai-core-api/src/commonMain/kotlin/utils/BotConfiguration.kt)
    可大致了解或跳过. 一般使用默认属性即可.
-2. 构造 `Bot` 实例: [BotFactory](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/BotFactory.kt#L23), [newBot](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/BotFactory.kt#L53)
+2. 构造 `Bot` 实例: [BotFactory](../mirai-core/src/jvmMain/kotlin/BotFactory.kt#L23), [newBot](../mirai-core/src/jvmMain/kotlin/net/mamoe/mirai/BotFactory.kt#L53)
 
-另外地, 你还可以了解 mirai 提供的多平台日志系统 (为了同时支持控制台和独立依赖): [MiraiLogger](../mirai-core/src/commonMain/kotlin/net.mamoe.mirai/utils/MiraiLogger.kt), 也可以跳过这个内容
+另外地, 你还可以了解 mirai 提供的多平台日志系统 (为了同时支持控制台和独立依赖): [MiraiLogger](../mirai-core-api/src/commonMain/kotlin/utils/MiraiLogger.kt), 也可以跳过这个内容
 
 ### 使用
 
