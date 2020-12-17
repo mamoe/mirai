@@ -122,7 +122,7 @@ afterEvaluate {
                         // With Kotlin 1.4.0, the root module ID has no suffix, but for compatibility with
                         // the consumers who can't read Gradle module metadata, we publish the JVM artifacts in it
                         it.artifactId = variantName
-                        publishPlatformArtifactsInRootModule(publications["jvm"])
+                        // publishPlatformArtifactsInRootModule(publications["jvm"])
                     }
                     break
 

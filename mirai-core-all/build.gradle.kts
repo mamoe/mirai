@@ -32,6 +32,9 @@ tasks.withType(JavaCompile::class.java) {
 
 kotlin {
     explicitApi()
+    target {
+        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "jvm")
+    }
 }
 
 dependencies {
