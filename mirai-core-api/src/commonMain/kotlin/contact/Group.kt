@@ -116,10 +116,16 @@ public interface Group : Contact, CoroutineScope {
 
 
     /**
-     * 检查此 id 的群成员是否存在
+     * 当本群存在 [Member.id] 为 [id] 的群员时返回 `true`.
+     *
      * 当 [id] 为 [Bot.id] 时返回 `true`
      */
     public operator fun contains(id: Long): Boolean
+
+    /**
+     * 当 [member] 是本群成员时返回 `true`. 将同时成员 [所属群][Member.group]. 同一个用户在不同群内的 [Member] 对象不相等.
+     */
+    public operator fun contains(member: Member): Boolean = member in members
 
 
     /**
