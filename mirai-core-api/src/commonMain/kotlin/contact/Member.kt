@@ -23,6 +23,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.WeakRefProperty
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -197,6 +198,11 @@ public inline val Member.isFriend: Boolean
 /**
  * 如果此成员是好友, 则执行 [block] 并返回其返回值. 否则返回 `null`
  */
+@Deprecated(
+    "Ambiguous function name and its behaviour. Use asFriendOrNull and let manually.",
+    ReplaceWith("this.asFriendOrNull()?.let(block)")
+)
+@PlannedRemoval("2.0-M2")
 public inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
     return this.asFriendOrNull()?.let(block)
 }
