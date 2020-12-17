@@ -41,15 +41,9 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     final override val id: Long,
 ) : Bot, CoroutineScope {
     // FASTEST INIT
-    init {
-        Bot._instances[this.id] = this
-        supervisorJob.invokeOnCompletion {
-            Bot._instances.remove(id)
-        }
-    }
+
 
     final override val logger: MiraiLogger by lazy { configuration.botLoggerSupplier(this) }
-
 
     final override val coroutineContext: CoroutineContext = // for id
         configuration.parentCoroutineContext
@@ -61,6 +55,13 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             )
             .plus(CoroutineName("Mirai Bot"))
 
+    init {
+        @Suppress("LeakingThis")
+        Bot._instances[this.id] = this
+        supervisorJob.invokeOnCompletion {
+            Bot._instances.remove(id)
+        }
+    }
 
     // region network
 
