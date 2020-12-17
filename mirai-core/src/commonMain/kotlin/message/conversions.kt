@@ -148,7 +148,7 @@ internal fun MessageChain.toRichTextElems(
             is FlashImage -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(
-                if (it.id > 255) {
+                if (it.id >= 260) {
                     ImMsgBody.Elem(commonElem = it.toCommData())
                 } else {
                     ImMsgBody.Elem(face = it.toJceData())
