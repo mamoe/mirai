@@ -8,7 +8,7 @@
  */
 
 @file:JvmMultifileClass
-@file:JvmName("Utils")
+@file:JvmName("MiraiUtils")
 
 package net.mamoe.mirai.utils
 
@@ -82,7 +82,7 @@ public inline val Int.weeksToSeconds: Long
 public inline val Int.monthsToSeconds: Long
     get() = this * 30.daysToSeconds
 
-@MiraiExperimentalApi
+// @MiraiExperimentalApi
 @ExperimentalTime
 public val Duration.asHumanReadable: String
     get() {
