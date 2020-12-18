@@ -26,7 +26,7 @@ public data class Face(public val id: Int) : // used in delegation
     MessageContent, CodableMessage {
 
     public override fun toString(): String = "[mirai:face:$id]";
-    public val name: String = contentToString().let { it.substring(1, it.length - 1) }
+    public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
     public override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
 
     public override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
