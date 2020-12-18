@@ -65,6 +65,7 @@ internal open class MultiFilePluginDataStorageImpl(
         ignoreUnknownKeys = true
         isLenient = true
         allowStructuredMapKeys = true
+        encodeDefaults = true
     }
 
     private val yaml = Yaml.default

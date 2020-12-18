@@ -39,9 +39,12 @@ public open class AutoSavePluginData private constructor(
     public final override val saveName: String
         get() = _saveName
 
-    private var _saveName: String = saveName
+    @Suppress("JoinDeclarationAndAssignment") // bug
+    private lateinit var _saveName: String
 
-    public constructor(saveName: String) : this(null)
+    public constructor(saveName: String) : this(null) {
+        _saveName = saveName
+    }
 
     @ConsoleExperimentalApi
     override fun onInit(owner: PluginDataHolder, storage: PluginDataStorage) {

@@ -24,8 +24,11 @@ internal class PluginDataTest {
     }
 
     @Suppress("unused")
-    private val jsonPrettyPrint = Json { prettyPrint = true }
-    private val json = Json {}
+    private val jsonPrettyPrint = Json {
+        prettyPrint = true
+        encodeDefaults = true
+    }
+    private val json = Json { encodeDefaults = true }
 
     @Test
     fun testStringify() {
