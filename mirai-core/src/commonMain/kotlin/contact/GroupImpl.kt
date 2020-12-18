@@ -298,7 +298,7 @@ internal class GroupImpl(
                 throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
             }.message.asMessageChain()
 
-            val length = chain.estimateLength(703) // 阈值为700左右，限制到3的倍数
+            val length = chain.estimateLength(this, 703) // 阈值为700左右，限制到3的倍数
             var imageCnt = 0 // 通过下方逻辑短路延迟计算
 
             if (length > 5000 || chain.count { it is Image }.apply { imageCnt = this } > 50) {

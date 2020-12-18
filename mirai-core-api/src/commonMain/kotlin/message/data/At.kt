@@ -16,8 +16,10 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.LowLevelApi
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.UserOrBot
+import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.utils.PlannedRemoval
 
@@ -38,12 +40,20 @@ public data class At(
     public override fun contentToString(): String = "@$target"
 
     @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated(
-        "At.display is no longer supported. Please get Member.nameCard by your self.", level = DeprecationLevel.ERROR
-    )
+    @Deprecated("Use getDisplay", ReplaceWith("this.getDisplay()"), DeprecationLevel.ERROR)
     @PlannedRemoval("2.0-M2")
     val display: Nothing
         get() = error("At.display is no longer supported")
+
+    /**
+     * 获取 [At] 发送于指定 [Group] 时会显示的内容.
+     *
+     * 若 [group] 非 `null` 且包含成员 [target], 返回 `"@成员名片或昵称"`. 否则返回 `"@123456"` 其中 123456 表示 [target]
+     */
+    public fun getDisplay(group: Group?): String {
+        val member = group?.get(this.target) ?: return "@$target"
+        return "@${member.nameCardOrNick}"
+    }
 
     public companion object {
         /**
