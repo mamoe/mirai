@@ -111,6 +111,7 @@ internal class QQAndroidBot constructor(
     val bkn: Int
         get() = client.wLoginSigInfo.sKey.data
             .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
+            .and(Int.MAX_VALUE)
 }
 
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)
