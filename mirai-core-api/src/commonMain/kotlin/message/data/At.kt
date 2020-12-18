@@ -37,6 +37,14 @@ public data class At(
     public override fun toString(): String = "[mirai:at:$target]"
     public override fun contentToString(): String = "@$target"
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated(
+        "At.display is no longer supported. Please get Member.nameCard by your self.", level = DeprecationLevel.ERROR
+    )
+    @PlannedRemoval("2.0-M2")
+    val display: Nothing
+        get() = error("At.display is no longer supported")
+
     public companion object {
         /**
          * 构造一个 [At], 仅供内部使用, 否则可能造成消息无法发出的问题.
