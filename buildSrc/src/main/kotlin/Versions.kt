@@ -9,22 +9,24 @@
 
 @file:Suppress("MemberVisibilityCanBePrivate", "ObjectPropertyName", "unused")
 
+import org.gradle.api.attributes.Attribute
+
 object Versions {
-    const val core = "1.3.3"
+    const val core = "2.0-M1-dev-3"
     const val console = "1.1.0"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
-    const val kotlinCompiler = "1.4.20"
-    const val kotlinStdlib = "1.4.20"
+    const val kotlinCompiler = "1.4.21"
+    const val kotlinStdlib = "1.4.21"
 
-    const val kotlinIntellijPlugin = "1.4.20-release-IJ2020.2-1" // keep to newest as kotlinCompiler
-    const val intellij = "2020.2.1" // don't update easily unless you want your disk space -= 500MB
+    const val kotlinIntellijPlugin = "203-1.4.21-release-IJ5981.133" // keep to newest as kotlinCompiler
+    const val intellij = "2020.3" // don't update easily unless you want your disk space -= 500MB
 
 
     const val coroutines = "1.4.0"
     const val serialization = "1.0.1"
-    const val ktor = "1.4.1"
+    const val ktor = "1.4.3"
     const val atomicFU = "0.14.4"
 
     const val androidGradle = "3.6.2"
@@ -56,9 +58,9 @@ const val `kotlinx-serialization-protobuf` = "org.jetbrains.kotlinx:kotlinx-seri
 
 const val `kotlinx-atomicfu` = "org.jetbrains.kotlinx:atomicfu:${Versions.atomicFU}"
 
-const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
-const val `mirai-core-qqandroid` = "net.mamoe:mirai-core-qqandroid:${Versions.core}"
 const val `mirai-core-api` = "net.mamoe:mirai-core-api:${Versions.core}"
+const val `mirai-core` = "net.mamoe:mirai-core:${Versions.core}"
+const val `mirai-core-utils` = "net.mamoe:mirai-core-utils:${Versions.core}"
 
 const val yamlkt = "net.mamoe.yamlkt:yamlkt:${Versions.yamlkt}"
 
@@ -66,3 +68,6 @@ const val `jetbrains-annotations` = "org.jetbrains:annotations:19.0.0"
 
 
 const val `caller-finder` = "io.github.karlatemp:caller:1.0.1"
+
+
+val ATTRIBUTE_MIRAI_TARGET_PLATFORM: Attribute<String> = Attribute.of("mirai.target.platform", String::class.java)

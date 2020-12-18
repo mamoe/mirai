@@ -15,6 +15,7 @@ package net.mamoe.mirai.console
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.console.MiraiConsole.INSTANCE
 import net.mamoe.mirai.console.MiraiConsoleImplementation.Companion.start
 import net.mamoe.mirai.console.extensions.BotConfigurationAlterer
@@ -30,7 +31,6 @@ import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.console.util.SemVersion
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.DefaultLogger
 import net.mamoe.mirai.utils.MiraiLogger
 import java.io.File
 import java.nio.file.Path
@@ -142,7 +142,7 @@ public interface MiraiConsole : CoroutineScope {
                 fileBasedDeviceInfo()
                 redirectNetworkLogToDirectory()
                 this.botLoggerSupplier = {
-                    DefaultLogger("Bot.${it.id}")
+                    MiraiLogger.create("Bot.${it.id}")
                 }
                 parentCoroutineContext = MiraiConsole.childScopeContext("Bot $id")
 
@@ -157,8 +157,8 @@ public interface MiraiConsole : CoroutineScope {
             }
 
             return when (password) {
-                is ByteArray -> Bot(id, password, config)
-                is String -> Bot(id, password, config)
+                is ByteArray -> BotFactory.newBot(id, password, config)
+                is String -> BotFactory.newBot(id, password, config)
                 else -> throw IllegalArgumentException("Bad password type: `${password.javaClass.name}`. Require ByteArray or String")
             }
         }

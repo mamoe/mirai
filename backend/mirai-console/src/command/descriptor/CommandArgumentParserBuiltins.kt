@@ -19,8 +19,6 @@ import net.mamoe.mirai.console.permission.AbstractPermitteeId
 import net.mamoe.mirai.console.permission.PermissionId
 import net.mamoe.mirai.console.permission.PermitteeId
 import net.mamoe.mirai.contact.*
-import net.mamoe.mirai.getFriendOrNull
-import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.message.data.*
 
 
@@ -167,7 +165,7 @@ public object ExistingFriendValueArgumentParser : InternalCommandValueArgumentPa
     public override fun parse(raw: MessageContent, sender: CommandSender): Friend {
         if (raw is At) {
             checkArgument(sender is MemberCommandSender)
-            return sender.inferBotOrFail().getFriendOrNull(raw.target)
+            return sender.inferBotOrFail().getFriend(raw.target)
                 ?: illegalArgument("At 的对象 ${raw.target} 非 Bot 好友")
         } else {
             illegalArgument("无法解析 $raw 为好友")
@@ -329,7 +327,7 @@ public object ExistingMemberValueArgumentParser : InternalCommandValueArgumentPa
             if (raw.target == bot.id) {
                 return group.botAsMember
             }
-            group[raw.target]
+            group[raw.target] ?: illegalArgument("无法找到群员 ${raw.target}")
         } else {
             parse(raw.content, sender)
         }
@@ -374,20 +372,20 @@ internal abstract class InternalCommandValueArgumentParserExtensions<T : Any> : 
     protected fun String.findBotOrFail(): Bot =
         Bot.getInstanceOrNull(this.parseToLongOrFail()) ?: illegalArgument("无法找到 Bot: $this")
 
-    protected fun Bot.findGroupOrFail(id: Long): Group = getGroupOrNull(id) ?: illegalArgument("无法找到群: $this")
+    protected fun Bot.findGroupOrFail(id: Long): Group = getGroup(id) ?: illegalArgument("无法找到群: $this")
 
     protected fun Bot.findGroupOrFail(id: String): Group =
-        getGroupOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到群: $this")
+        getGroup(id.parseToLongOrFail()) ?: illegalArgument("无法找到群: $this")
 
     protected fun Bot.findFriendOrFail(id: String): Friend =
-        getFriendOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到好友: $this")
+        getFriend(id.parseToLongOrFail()) ?: illegalArgument("无法找到好友: $this")
 
     protected fun Bot.findMemberOrFail(id: String): Friend =
-        getFriendOrNull(id.parseToLongOrFail()) ?: illegalArgument("无法找到群员: $this")
+        getFriend(id.parseToLongOrFail()) ?: illegalArgument("无法找到群员: $this")
 
     protected fun Group.findMemberOrFail(idOrCard: String): Member {
         if (idOrCard == "\$") return members.randomOrNull() ?: illegalArgument("当前语境下无法推断随机群员")
-        idOrCard.toLongOrNull()?.let { getOrNull(it) }?.let { return it }
+        idOrCard.toLongOrNull()?.let { get(it) }?.let { return it }
         this.members.singleOrNull { it.nameCardOrNick.contains(idOrCard) }?.let { return it }
         this.members.singleOrNull { it.nameCardOrNick.contains(idOrCard, ignoreCase = true) }?.let { return it }
 
@@ -410,7 +408,7 @@ internal abstract class InternalCommandValueArgumentParserExtensions<T : Any> : 
 
     protected fun CommandSender.inferBotOrFail(): Bot =
         (this as? UserCommandSender)?.bot
-            ?: Bot.botInstancesSequence.singleOrNull()
+            ?: Bot.instancesSequence.singleOrNull()
             ?: illegalArgument("当前语境下无法推断目标 Bot, 因为目前有多个 Bot 在线.")
 
     protected fun CommandSender.inferGroupOrFail(): Group =

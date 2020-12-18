@@ -20,8 +20,8 @@ kotlin {
 }
 
 dependencies {
-    compileAndTestRuntime(`mirai-core`)
-    compileAndTestRuntime(`kotlin-stdlib`)
+    compileAndTestRuntime(`mirai-core-api`)
+    compileAndTestRuntime(`mirai-core-utils`)
     compileAndTestRuntime(`kotlin-stdlib-jdk8`)
 
     compileAndTestRuntime(`kotlinx-atomicfu`)
@@ -35,7 +35,7 @@ dependencies {
     smartImplementation(`caller-finder`)
     smartApi(`kotlinx-coroutines-jdk8`)
 
-    testApi(`mirai-core-qqandroid`)
+    testApi(`mirai-core`)
     testApi(`kotlin-stdlib-jdk8`)
 }
 

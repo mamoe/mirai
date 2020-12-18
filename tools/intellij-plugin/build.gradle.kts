@@ -23,7 +23,7 @@ intellij {
     updateSinceUntilBuild = false
 
     setPlugins(
-        "org.jetbrains.kotlin:${Versions.kotlinIntellijPlugin}@eap",
+        "org.jetbrains.kotlin:${Versions.kotlinIntellijPlugin}", // @eap
         "java"
     )
 }

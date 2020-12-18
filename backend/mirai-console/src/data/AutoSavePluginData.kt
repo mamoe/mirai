@@ -39,11 +39,9 @@ public open class AutoSavePluginData private constructor(
     public final override val saveName: String
         get() = _saveName
 
-    private lateinit var _saveName: String
+    private var _saveName: String = saveName
 
-    public constructor(saveName: String) : this(null) {
-        _saveName = saveName
-    }
+    public constructor(saveName: String) : this(null)
 
     @ConsoleExperimentalApi
     override fun onInit(owner: PluginDataHolder, storage: PluginDataStorage) {
@@ -103,7 +101,7 @@ public open class AutoSavePluginData private constructor(
 
     private val updaterBlock: suspend CoroutineScope.() -> Unit = l@{
         if (::storage_.isInitialized) {
-            currentFirstStartTime_.updateWhen({ it == MAGIC_NUMBER_CFST_INIT }, { currentTimeMillis })
+            currentFirstStartTime_.updateWhen({ it == MAGIC_NUMBER_CFST_INIT }, { currentTimeMillis() })
             try {
                 delay(autoSaveIntervalMillis_.first.coerceAtLeast(1000)) // for safety
             } catch (e: CancellationException) {
@@ -117,7 +115,7 @@ public open class AutoSavePluginData private constructor(
                 }
             } else {
                 if (currentFirstStartTime_.updateWhen(
-                        { it != MAGIC_NUMBER_CFST_INIT && currentTimeMillis - it >= autoSaveIntervalMillis_.last },
+                        { it != MAGIC_NUMBER_CFST_INIT && currentTimeMillis() - it >= autoSaveIntervalMillis_.last },
                         { MAGIC_NUMBER_CFST_INIT })
                 ) {
                     withContext(owner_.coroutineContext) {
@@ -146,7 +144,7 @@ public open class AutoSavePluginData private constructor(
 }
 
 internal val debuggingLogger1 by lazy {
-    DefaultLogger("console.debug").withSwitch(false)
+    MiraiLogger.create("console.debug").withSwitch(false)
 }
 
 @Suppress("RESULT_CLASS_IN_RETURN_TYPE")

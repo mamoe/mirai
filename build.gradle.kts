@@ -56,13 +56,12 @@ val experimentalAnnotations = arrayOf(
     "kotlin.io.path.ExperimentalPathApi",
     "io.ktor.util.KtorExperimentalAPI",
 
-    "net.mamoe.mirai.utils.MiraiInternalAPI",
-    "net.mamoe.mirai.utils.MiraiExperimentalAPI",
+    "net.mamoe.mirai.utils.MiraiInternalApi",
+    "net.mamoe.mirai.utils.MiraiExperimentalApi",
     "net.mamoe.mirai.console.ConsoleFrontEndImplementation",
     "net.mamoe.mirai.console.util.ConsoleExperimentalApi",
     "net.mamoe.mirai.console.util.ConsoleInternalApi"
 )
-
 
 fun Project.configureJvmTarget() {
     tasks.withType(KotlinJvmCompile::class.java) {

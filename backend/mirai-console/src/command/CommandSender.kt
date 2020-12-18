@@ -33,6 +33,7 @@ import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScopeContext
 import net.mamoe.mirai.console.util.MessageScope
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText

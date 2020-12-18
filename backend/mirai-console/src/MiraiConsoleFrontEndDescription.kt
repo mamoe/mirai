@@ -12,7 +12,7 @@
 package net.mamoe.mirai.console
 
 import net.mamoe.mirai.console.util.SemVersion
-import net.mamoe.mirai.utils.MiraiExperimentalAPI
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 
 /**
@@ -41,7 +41,7 @@ public interface MiraiConsoleFrontEndDescription {
      *
      * 返回 `null` 表示禁止 [MiraiConsole] 后端检查版本兼容性.
      */
-    @MiraiExperimentalAPI
+    @MiraiExperimentalApi
     public val compatibleBackendVersion: SemVersion? get() = null
 
     /**

@@ -31,12 +31,12 @@ import net.mamoe.mirai.console.util.ConsoleExperimentalApi
 import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.CoroutineScopeUtils.childScope
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.DefaultLogger
-import net.mamoe.mirai.utils.minutesToMillis
+import net.mamoe.mirai.utils.MiraiLogger
 import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.io.PrintStream
 import kotlin.system.exitProcess
+import kotlin.time.minutes
 
 /**
  * mirai-console-terminal CLI 入口点
@@ -159,7 +159,7 @@ object MiraiConsoleTerminalLoader {
 internal object ConsoleDataHolder : AutoSavePluginDataHolder,
     CoroutineScope by MiraiConsole.childScope("ConsoleDataHolder") {
     @ConsoleExperimentalApi
-    override val autoSaveIntervalMillis: LongRange = 1.minutesToMillis..10.minutesToMillis
+    override val autoSaveIntervalMillis: LongRange = 1.minutes.toLongMilliseconds()..10.minutes.toLongMilliseconds()
 
     @ConsoleExperimentalApi
     override val dataHolderName: String
@@ -170,7 +170,7 @@ internal fun overrideSTD() {
     System.setOut(
         PrintStream(
             BufferedOutputStream(
-                logger = DefaultLogger("stdout").run { ({ line: String? -> info(line) }) }
+                logger = MiraiLogger.create("stdout").run { ({ line: String? -> info(line) }) }
             ),
             false,
             "UTF-8"
@@ -179,7 +179,7 @@ internal fun overrideSTD() {
     System.setErr(
         PrintStream(
             BufferedOutputStream(
-                logger = DefaultLogger("stderr").run { ({ line: String? -> warning(line) }) }
+                logger = MiraiLogger.create("stderr").run { ({ line: String? -> warning(line) }) }
             ),
             false,
             "UTF-8"

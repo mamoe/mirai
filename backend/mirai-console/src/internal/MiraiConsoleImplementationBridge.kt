@@ -96,7 +96,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
     override val loggerController: LoggerController by instance::loggerController
 
     init {
-        DefaultLogger = this::createLogger
+        MiraiLogger.setDefaultLoggerCreator(this::createLogger)
     }
 
 
@@ -134,7 +134,7 @@ internal object MiraiConsoleImplementationBridge : CoroutineScope, MiraiConsoleI
             }
 
             MiraiConsole.job.invokeOnCompletion {
-                Bot.botInstances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
+                Bot.instances.forEach { kotlin.runCatching { it.close() }.exceptionOrNull()?.let(mainLogger::error) }
             }
         }
 

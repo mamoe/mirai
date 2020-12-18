@@ -26,14 +26,14 @@ import net.mamoe.mirai.console.util.ConsoleInternalApi
 import net.mamoe.mirai.console.util.cast
 import net.mamoe.mirai.console.util.requestInput
 import net.mamoe.mirai.console.util.safeCast
-import net.mamoe.mirai.utils.DefaultLogger
+import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.warning
 import org.jline.reader.EndOfFileException
 import org.jline.reader.UserInterruptException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
-val consoleLogger by lazy { DefaultLogger("console") }
+val consoleLogger by lazy { MiraiLogger.create("console") }
 
 @OptIn(ConsoleInternalApi::class, ConsoleTerminalExperimentalApi::class, ExperimentalCommandDescriptors::class)
 internal fun startupConsoleThread() {
