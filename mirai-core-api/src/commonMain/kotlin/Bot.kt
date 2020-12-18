@@ -200,7 +200,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
             In Kotlin, use Sequence.forEach on instancesSequence.
             In Java, use List.forEach on instances 
             """,
-            ReplaceWith("instancesSequence.forEach(block)", "net.mamoe.mirai.Bot.Companion.instancesSequence"),
+            ReplaceWith("Bot.instancesSequence.forEach(block)", "net.mamoe.mirai.Bot.Companion"),
             DeprecationLevel.ERROR
         )
         @PlannedRemoval("2.0-M2")
@@ -212,7 +212,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
         @JvmStatic
         @Deprecated(
             "Use instances for shorter name.",
-            ReplaceWith("instances", "net.mamoe.mirai.Bot.Companion.instances"),
+            ReplaceWith("Bot.instances", "net.mamoe.mirai.Bot.Companion"),
             DeprecationLevel.ERROR
         )
         @PlannedRemoval("2.0-M2")
@@ -225,7 +225,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
         @JvmStatic
         @Deprecated(
             "Use instancesSequence for shorter name.",
-            ReplaceWith("instancesSequence", "net.mamoe.mirai.Bot.Companion.instancesSequence"),
+            ReplaceWith("Bot.instancesSequence", "net.mamoe.mirai.Bot.Companion"),
             DeprecationLevel.ERROR
         )
         @PlannedRemoval("2.0-M2")
