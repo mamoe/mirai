@@ -17,7 +17,7 @@ import kotlin.annotation.AnnotationTarget.*
  * 这些 API 可能会在任意时刻更改, 且不会发布任何预警.
  * 非常不建议在发行版本中使用这些 API.
  */
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(
     CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
@@ -34,7 +34,7 @@ public annotation class MiraiInternalApi(
  * 这些 API 不具有稳定性, 且可能会在任意时刻更改.
  * 不建议在发行版本中使用这些 API.
  */
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
@@ -54,7 +54,7 @@ internal annotation class PlannedRemoval(val version: String)
  * 标记已过时的 Member API
  */
 @Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @MustBeDocumented
 @PlannedRemoval("2.0-M2")
