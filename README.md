@@ -44,3 +44,12 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 
 ### 实现前端
 - [FrontEnd](docs/FrontEnd.md)
+
+## 实用链接
+
+- [社区 SDK](https://github.com/mamoe/mirai#%E4%BD%BF%E7%94%A8-mirai-console-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E4%B8%BA-mirai-console-%E5%BC%80%E5%8F%91%E6%8F%92%E4%BB%B6)
+- 社区插件 - [awesome-mirai](https://github.com/project-mirai/awesome-mirai)
+- [Mirai 项目组](https://github.com/project-mirai)
+- Mirai 官方维护的插件:
+  - [chat-command](https://github.com/project-mirai/chat-command)
+  - [mirai-api-http](https://github.com/project-mirai/mirai-api-http)
