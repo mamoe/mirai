@@ -88,11 +88,25 @@ public interface MiraiLogger {
         @Volatile
         private var defaultLogger: (identity: String?) -> MiraiLogger = { PlatformLogger(it) }
 
+        /**
+         * 可直接修改这个变量的值来重定向日志输出.
+         */
         @JvmStatic
         public fun setDefaultLoggerCreator(creator: (identity: String?) -> MiraiLogger) {
             defaultLogger = creator
         }
 
+        /**
+         * 用于创建默认的日志记录器. 在一些需要使用日志的 Mirai 的组件, 如 [Bot], 都会通过这个函数构造日志记录器.
+         *
+         * **注意:** 请务必将所有的输出定向到日志记录系统, 否则在某些情况下 (如 web 控制台中) 将无法接收到输出
+         *
+         * **注意:** 请为日志做好分类, 即不同的模块使用不同的 [MiraiLogger].
+         * 如, [Bot] 中使用 `identity` 为 "Bot(qqId)" 的 [MiraiLogger]
+         * 而 [Bot] 的网络处理中使用 `identity` 为 "BotNetworkHandler".
+         *
+         * @see setDefaultLoggerCreator
+         */
         @JvmStatic
         public fun create(identity: String?): MiraiLogger {
             return defaultLogger.invoke(identity)
