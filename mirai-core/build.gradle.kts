@@ -9,6 +9,7 @@
 
 @file:Suppress("UNUSED_VARIABLE")
 
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 
 plugins {
@@ -55,12 +56,10 @@ kotlin {
     }
 
     jvm("common") {
-        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "common")
+        attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common)
     }
 
-    jvm("jvm") {
-        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "jvm")
-    }
+    jvm("jvm")
 
     /*
     jvm("android") {

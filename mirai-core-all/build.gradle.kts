@@ -21,10 +21,6 @@ plugins {
 version = Versions.project
 description = "Mirai core shadowed"
 
-kotlin {
-    target.attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "jvm")
-}
-
 dependencies {
     api(project(":mirai-core"))
     api(project(":mirai-core-api"))
