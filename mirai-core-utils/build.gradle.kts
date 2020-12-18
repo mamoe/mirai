@@ -54,11 +54,11 @@ kotlin {
     }
 
     jvm("common") {
-        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "common")
+        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "common")
     }
 
     jvm("jvm") {
-        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "jvm")
+        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "jvm")
     }
 
 //    jvm("android") {
