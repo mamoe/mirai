@@ -12,7 +12,7 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.JavaFriendlyAPI
+import net.mamoe.mirai.event.events.BotMuteEvent
 import net.mamoe.mirai.event.events.MemberMuteEvent
 import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
 import net.mamoe.mirai.message.MessageReceipt
@@ -26,17 +26,15 @@ import net.mamoe.mirai.utils.WeakRefProperty
 /**
  * 代表一位群成员.
  *
- * 群成员可能是匿名群成员 [AnonymousMember]
- * 群成员可能也是好友, 但他们在对象类型上不同.
- * 群成员可以通过 [asFriend] 得到相关好友对象.
+ * 群成员分为 [普通成员][NormalMember] 和 [匿名成员][AnonymousMember]
+ *
+ * 一个群成员可能也是机器人的好友, 但他们在对象类型上不同 ([Member] != [Friend]). 可以通过 [Member.asFriend] 得到相关好友对象.
  *
  * ## 相关的操作
  * [Member.isFriend] 判断此成员是否为好友
  * [Member.isAnonymous] 判断此成员是否为匿名群成员
  * [Member.isNormal] 判断此成员是否为正常群成员
  */
-@Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
-@OptIn(JavaFriendlyAPI::class)
 public interface Member : User {
     /**
      * 所在的群.
@@ -68,50 +66,45 @@ public interface Member : User {
      */
     public val specialTitle: String
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 muteTimeRemaining")
+    @MemberDeprecatedApi("仅 NormalMember 支持 muteTimeRemaining. 请先检查类型为 NormalMember.")
     @PlannedRemoval("2.0-M2")
     public val muteTimeRemaining: Int
 
     /**
-     * 禁言.
+     * 禁言这个群成员 [durationSeconds] 秒, 在机器人无权限操作时抛出 [PermissionDeniedException].
      *
-     * QQ 中最小操作和显示的时间都是一分钟.
-     * 机器人可以实现精确到秒, 会被客户端显示为 1 分钟但不影响实际禁言时间.
+     * QQ 中最小操作和显示的时间都是一分钟. 机器人可以实现精确到秒, 会被客户端显示为 1 分钟但不影响实际禁言时间.
      *
      * 管理员可禁言成员, 群主可禁言管理员和群员.
      *
-     * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
-     * @return 机器人无权限时返回 `false`
+     * @param durationSeconds 持续时间. 精确到秒. 最短 0 秒, 最长 30 天. 超过范围则会抛出异常 [IllegalStateException].
      *
      * @see NormalMember.isMuted 判断此成员是否正处于禁言状态中
      * @see NormalMember.unmute 取消禁言此成员
      *
-     * @see Int.minutesToSeconds
-     * @see Int.hoursToSeconds
-     * @see Int.daysToSeconds
-     *
      * @see MemberMuteEvent 成员被禁言事件
+     * @see BotMuteEvent Bot 被禁言事件
      *
-     * @throws PermissionDeniedException 无权限修改时抛出
+     * @see Member.mute 支持 Kotlin [kotlin.time.Duration] 的扩展
      */
     @JvmBlockingBridge
     public suspend fun mute(durationSeconds: Int)
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 unmute")
+    @MemberDeprecatedApi("仅 NormalMember 支持 unmute. 请先检查类型为 NormalMember.")
     @PlannedRemoval("2.0-M2")
     public suspend fun unmute()
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 kick")
+    @MemberDeprecatedApi("仅 NormalMember 支持 kick. 请先检查类型为 NormalMember.")
     @PlannedRemoval("2.0-M2")
     public suspend fun kick(message: String = "")
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage")
+    @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage. 请先检查类型为 NormalMember.")
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage")
+    @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage. 请先检查类型为 NormalMember.")
     public override suspend fun sendMessage(message: String): MessageReceipt<Member>
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 nudge")
+    @MemberDeprecatedApi("仅 NormalMember 支持 nudge. 请先检查类型为 NormalMember.")
     @PlannedRemoval("2.0-M2")
     @MiraiExperimentalApi
     public override fun nudge(): MemberNudge
@@ -140,7 +133,8 @@ public inline val Member.isFriend: Boolean
  */
 @Deprecated(
     "Ambiguous function name and its behaviour. Use asFriendOrNull and let manually.",
-    ReplaceWith("this.asFriendOrNull()?.let(block)")
+    ReplaceWith("this.asFriendOrNull()?.let(block)"),
+    level = DeprecationLevel.ERROR
 )
 @PlannedRemoval("2.0-M2")
 public inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
