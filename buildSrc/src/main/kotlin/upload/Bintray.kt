@@ -104,13 +104,13 @@ object Bintray {
             }
         }
 
-        project.file("bintray.user.txt").let { local ->
+        project.file("bintray.key.txt").let { local ->
             if (local.exists()) {
                 return local.readText().trim()
             }
         }
 
-        project.rootProject.file("bintray.user.txt").let { local ->
+        project.rootProject.file("bintray.key.txt").let { local ->
             if (local.exists()) {
                 return local.readText().trim()
             }
