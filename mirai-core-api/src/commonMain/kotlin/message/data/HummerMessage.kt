@@ -17,6 +17,7 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.VipFace.Kind
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.safeCast
 
@@ -56,7 +57,14 @@ public data class PokeMessage internal constructor(
     public val id: Int
 ) : HummerMessage(), CodableMessage {
     @ExperimentalMessageKey
-    override val key: MessageKey<HummerMessage> get() = Key
+    override val key: MessageKey<HummerMessage>
+        get() = Key
+
+
+    @PlannedRemoval("2.0-M2")
+    @Deprecated("Use pokeType", ReplaceWith("pokeType"), DeprecationLevel.ERROR)
+    val type: Int
+        get() = pokeType
 
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, PokeMessage>(HummerMessage, { it.castOrNull() }) {
@@ -206,7 +214,8 @@ public data class VipFace internal constructor(
     }
 
     @ExperimentalMessageKey
-    override val key: MessageKey<VipFace> get() = Key
+    override val key: MessageKey<VipFace>
+        get() = Key
 
     @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     public companion object Key :
