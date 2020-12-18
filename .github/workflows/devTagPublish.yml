@@ -1,13 +1,14 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Bintray Publish
+name: Dev Tag Publish
 
 # Controls when the action will run. Triggers the workflow on push or pull request 
 # events but only for the master branch
 on:
-  release:
-    types:
-      - created
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - '*-dev*'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -50,7 +51,7 @@ jobs:
         -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Gradle :mirai-core-all:bintrayUpload
-        run: ./gradlew :mirai-core-all:bintrayUpload --info
+        run: ./gradlew :mirai-core-all:bintrayUpload
         -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
         -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
