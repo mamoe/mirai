@@ -119,7 +119,7 @@ mirai 是一个在全平台下运行，提供 QQ Android 协议支持的高效�
 - 快速上手：[quickstart](docs/guide_quick_start.md)
 - 开发文档：[docs/mirai.md](docs/mirai.md)
 - 常见问题: [docs/FAQ.md](docs/FAQ.md)
-- 更新日志: [CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md) 或 [release](https://github.com/mamoe/mirai/releases)
+- 更新日志: [release](https://github.com/mamoe/mirai/releases)
 - 开发计划: [milestones](https://github.com/mamoe/mirai/milestones)
 - 贡献: [CONTRIBUTING](CONTRIBUTING.md)
 
