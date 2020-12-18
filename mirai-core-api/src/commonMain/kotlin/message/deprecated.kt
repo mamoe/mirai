@@ -9,14 +9,6 @@
 
 package net.mamoe.mirai.message
 
-import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.events.GroupAwareMessageEvent
-import net.mamoe.mirai.event.events.GroupMessageEvent
-import net.mamoe.mirai.event.events.MessageEvent
-import net.mamoe.mirai.event.events.MessageEventExtensions
-import net.mamoe.mirai.event.events.MessageEventPlatformExtensions
-import net.mamoe.mirai.event.events.TempMessageEvent
-import net.mamoe.mirai.event.events.UserMessageEvent
 import net.mamoe.mirai.utils.PlannedRemoval
 
 // internal 定义可以通过全名引用, 用户就能看到 ReplaceWith. 新用户则看不到这些旧类型的 import.
@@ -27,7 +19,7 @@ import net.mamoe.mirai.utils.PlannedRemoval
     ReplaceWith("FriendMessageEvent", "net.mamoe.mirai.event.events.FriendMessageEvent"),
     level = DeprecationLevel.ERROR
 )
-internal typealias FriendMessageEvent = FriendMessageEvent
+private typealias FriendMessageEvent = net.mamoe.mirai.event.events.FriendMessageEvent
 
 @PlannedRemoval("2.0-M2")
 @Deprecated(
@@ -35,7 +27,7 @@ internal typealias FriendMessageEvent = FriendMessageEvent
     ReplaceWith("GroupAwareMessageEvent", "net.mamoe.mirai.event.events.GroupAwareMessageEvent"),
     level = DeprecationLevel.ERROR
 )
-internal typealias GroupAwareMessageEvent = GroupAwareMessageEvent
+private typealias GroupAwareMessageEvent = net.mamoe.mirai.event.events.GroupAwareMessageEvent
 
 @PlannedRemoval("2.0-M2")
 @Deprecated(
@@ -43,7 +35,7 @@ internal typealias GroupAwareMessageEvent = GroupAwareMessageEvent
     ReplaceWith("GroupMessageEvent", "net.mamoe.mirai.event.events.GroupMessageEvent"),
     level = DeprecationLevel.ERROR
 )
-internal typealias GroupMessageEvent = GroupMessageEvent
+private typealias GroupMessageEvent = net.mamoe.mirai.event.events.GroupMessageEvent
 
 @PlannedRemoval("2.0-M2")
 @Deprecated(
@@ -51,7 +43,7 @@ internal typealias GroupMessageEvent = GroupMessageEvent
     ReplaceWith("MessageEvent", "net.mamoe.mirai.event.events.MessageEvent"),
     level = DeprecationLevel.ERROR
 )
-internal typealias MessageEvent = MessageEvent
+private typealias MessageEvent = net.mamoe.mirai.event.events.MessageEvent
 
 @PlannedRemoval("2.0-M2")
 @Deprecated(
@@ -59,7 +51,7 @@ internal typealias MessageEvent = MessageEvent
     ReplaceWith("TempMessageEvent", "net.mamoe.mirai.event.events.TempMessageEvent"),
     level = DeprecationLevel.ERROR
 )
-internal typealias TempMessageEvent = TempMessageEvent
+private typealias TempMessageEvent = net.mamoe.mirai.event.events.TempMessageEvent
 
 @PlannedRemoval("2.0-M2")
 @Deprecated(
@@ -67,7 +59,7 @@ internal typealias TempMessageEvent = TempMessageEvent
     ReplaceWith("UserMessageEvent", "net.mamoe.mirai.event.events.UserMessageEvent"),
     level = DeprecationLevel.ERROR
 )
-internal typealias UserMessageEvent = UserMessageEvent
+private typealias UserMessageEvent = net.mamoe.mirai.event.events.UserMessageEvent
 
 @PlannedRemoval("2.0-M2")
 @Deprecated(
@@ -75,7 +67,7 @@ internal typealias UserMessageEvent = UserMessageEvent
     ReplaceWith("MessageEventExtensions", "net.mamoe.mirai.event.events.MessageEventExtensions"),
     level = DeprecationLevel.ERROR
 )
-internal typealias MessageEventExtensions<TSender, TSubject> = MessageEventExtensions<TSender, TSubject>
+private typealias MessageEventExtensions<TSender, TSubject> = net.mamoe.mirai.event.events.MessageEventExtensions<TSender, TSubject>
 
 @PlannedRemoval("2.0-M2")
 @Deprecated(
@@ -83,4 +75,4 @@ internal typealias MessageEventExtensions<TSender, TSubject> = MessageEventExten
     ReplaceWith("MessageEventPlatformExtensions", "net.mamoe.mirai.event.events.MessageEventPlatformExtensions"),
     level = DeprecationLevel.ERROR
 )
-internal typealias MessageEventPlatformExtensions<TSender, TSubject> = MessageEventPlatformExtensions<TSender, TSubject>
+private typealias MessageEventPlatformExtensions<TSender, TSubject> = net.mamoe.mirai.event.events.MessageEventPlatformExtensions<TSender, TSubject>
