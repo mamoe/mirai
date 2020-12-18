@@ -13,6 +13,6 @@ import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
 object Icons {
-    val CommandDeclaration: Icon = IconLoader.getIcon("/icons/commandDeclaration.svg")
-    val PluginMainDeclaration: Icon = IconLoader.getIcon("/icons/pluginMainDeclaration.png")
+    val CommandDeclaration: Icon = IconLoader.getIcon("/icons/commandDeclaration.svg", Icons::class.java)
+    val PluginMainDeclaration: Icon = IconLoader.getIcon("/icons/pluginMainDeclaration.png", Icons::class.java)
 }
