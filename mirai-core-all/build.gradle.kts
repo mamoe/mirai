@@ -24,6 +24,7 @@ description = "Mirai core shadowed"
 dependencies {
     api(project(":mirai-core"))
     api(project(":mirai-core-api"))
+    api(project(":mirai-core-utils"))
 }
 
 configurePublishing("mirai-core-all")
