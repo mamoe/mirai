@@ -29,18 +29,18 @@ import org.gradle.api.publish.maven.MavenPublication
 // must be open
 public open class MiraiConsoleExtension {
     /**
-     * 为 `true` 时不自动添加 mirai-core 的依赖
+     * 为 `true` 时不自动添加 mirai-core-api 的依赖
      *
      * 默认: `false`
      */
-    public var noCore: Boolean = false
+    public var noCoreApi: Boolean = false
 
     /**
-     * 为 `true` 时不自动为 test 模块添加 mirai-core-qqandroid 的依赖.
+     * 为 `true` 时不自动为 test 模块添加 mirai-core 的依赖.
      *
      * 默认: `false`
      */
-    public var noTestCoreQQAndroid: Boolean = false
+    public var noTestCore: Boolean = false
 
     /**
      * 为 `true` 时不自动添加 mirai-console 的依赖.
@@ -50,7 +50,7 @@ public open class MiraiConsoleExtension {
     public var noConsole: Boolean = false
 
     /**
-     * 自动添加的 mirai-core 和 mirai-core-qqandroid 的版本.
+     * 自动添加的 mirai-core 和 mirai-core-api 的版本.
      *
      * 默认: 与本 Gradle 插件编译时的 mirai-core 版本相同. [VersionConstants.CORE_VERSION]
      */

@@ -69,13 +69,13 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
 
         val isJvm = target.platformType == KotlinPlatformType.jvm || target.platformType == KotlinPlatformType.androidJvm
 
-        if (!miraiExtension.noCore) compileOnly("net.mamoe:mirai-core:${miraiExtension.coreVersion}")
+        if (!miraiExtension.noCoreApi) compileOnly("net.mamoe:mirai-core-api:${miraiExtension.coreVersion}")
         if (!miraiExtension.noConsole && isJvm) compileOnly("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
 
         if (sourceSet.name.endsWith("test", ignoreCase = true)) {
-            if (!miraiExtension.noCore) api("net.mamoe:mirai-core:${miraiExtension.coreVersion}")
+            if (!miraiExtension.noCoreApi) api("net.mamoe:mirai-core-api:${miraiExtension.coreVersion}")
             if (!miraiExtension.noConsole && isJvm) api("net.mamoe:mirai-console:${miraiExtension.consoleVersion}")
-            if (!miraiExtension.noTestCoreQQAndroid) api("net.mamoe:mirai-core-qqandroid:${miraiExtension.coreVersion}")
+            if (!miraiExtension.noTestCore) api("net.mamoe:mirai-core:${miraiExtension.coreVersion}")
             if (isJvm) {
                 when (miraiExtension.useTestConsoleFrontEnd) {
                     MiraiConsoleFrontEndKind.TERMINAL -> api("net.mamoe:mirai-console-terminal:${miraiExtension.consoleVersion}")

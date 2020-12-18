@@ -217,7 +217,7 @@ public interface CommandSender : CoroutineScope, Permittee {
          */
         @JvmStatic
         @JvmName("of")
-        public fun Member.asTempCommandSender(): TempCommandSender = TempCommandSender(this)
+        public fun NormalMember.asTempCommandSender(): TempCommandSender = TempCommandSender(this)
 
         /**
          * 得到 [MemberCommandSender]
@@ -234,7 +234,7 @@ public interface CommandSender : CoroutineScope, Permittee {
         @JvmStatic
         @JvmName("of")
         public fun Member.asCommandSender(isTemp: Boolean): UserCommandSender {
-            return if (isTemp) asTempCommandSender() else asMemberCommandSender()
+            return if (isTemp && this is NormalMember) asTempCommandSender() else asMemberCommandSender()
         }
 
         /**
@@ -253,7 +253,7 @@ public interface CommandSender : CoroutineScope, Permittee {
         @JvmName("of")
         public fun User.asCommandSender(isTemp: Boolean): UserCommandSender = when (this) {
             is Friend -> this.asCommandSender()
-            is Member -> if (isTemp) TempCommandSender(this) else MemberCommandSender(this)
+            is Member -> if (isTemp && this is NormalMember) TempCommandSender(this) else MemberCommandSender(this)
             else -> error("stub")
         }
     }
@@ -545,7 +545,7 @@ public open class MemberCommandSender internal constructor(
  * @see TempCommandSenderOnMessage 代表一个 [群员][Member] 主动在临时会话发送消息执行指令
  */
 public open class TempCommandSender internal constructor(
-    public final override val user: Member,
+    public final override val user: NormalMember,
 ) : AbstractUserCommandSender(),
     GroupAwareCommandSender,
     CoroutineScope by user.childScope("TempCommandSender") {
@@ -560,7 +560,11 @@ public open class TempCommandSender internal constructor(
     public override suspend fun sendMessage(message: String): MessageReceipt<Member> = sendMessage(PlainText(message))
 
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: Message): MessageReceipt<Member> = user.sendMessage(message)
+    public override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        @OptIn(net.mamoe.mirai.utils.MemberDeprecatedApi::class)
+        return user.sendMessage(message) // just throw this error
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -616,7 +620,7 @@ public class MemberCommandSenderOnMessage internal constructor(
  */
 public class TempCommandSenderOnMessage internal constructor(
     public override val fromEvent: TempMessageEvent,
-) : TempCommandSender(fromEvent.sender),
+) : TempCommandSender(fromEvent.sender as NormalMember),
     CommandSenderOnMessage<TempMessageEvent>,
     MessageEventExtensions<User, Contact> by fromEvent {
     public override val subject: Member get() = fromEvent.subject
