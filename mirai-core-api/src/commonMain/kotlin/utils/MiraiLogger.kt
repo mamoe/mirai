@@ -194,10 +194,11 @@ public interface MiraiLogger {
      * 添加一个 [follower], 返回 [follower]
      * 它只会把 `this` 的属性 [MiraiLogger.follower] 修改为这个函数的参数 [follower], 然后返回这个参数.
      * 若 [MiraiLogger.follower] 已经有值, 则会替换掉这个值.
-     *
+     * ```
      *   +------+      +----------+      +----------+      +----------+
      *   | base | <--  | follower | <--  | follower | <--  | follower |
      *   +------+      +----------+      +----------+      +----------+
+     * ```
      *
      * @return [follower]
      */
