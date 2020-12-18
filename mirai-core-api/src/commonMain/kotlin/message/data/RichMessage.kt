@@ -15,6 +15,7 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
 import kotlin.annotation.AnnotationTarget.*
 
@@ -149,6 +150,15 @@ public interface ServiceMessage : RichMessage {
      */
     public val serviceId: Int
 }
+
+@Suppress("FunctionName")
+@Deprecated(
+    "Use SimpleServiceMessage.",
+    ReplaceWith("SimpleServiceMessage(serviceId, content)", "net.mamoe.mirai.message.data.SimpleServiceMessage")
+)
+@PlannedRemoval("2.0-M2")
+public fun ServiceMessage(serviceId: Int, content: String): SimpleServiceMessage =
+    SimpleServiceMessage(serviceId, content)
 
 @MiraiExperimentalApi
 @Serializable
