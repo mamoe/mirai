@@ -22,6 +22,7 @@ import kotlinx.io.core.discardExact
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
@@ -51,6 +52,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.internal.utils.read
 import net.mamoe.mirai.internal.utils.toInt
 import net.mamoe.mirai.internal.utils.toUHexString
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
 import kotlin.random.Random
@@ -235,10 +237,12 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                                     readByte().toInt().and(0xff)
                                 } == 0x83) {
                                 return@mapNotNull MemberJoinEvent.Invite(group.newMember(msg.getNewMemberInfo())
+                                    .cast<NormalMember>()
                                     .also { group.members.delegate.add(it) })
                             }
 
                             return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
+                                .cast<NormalMember>()
                                 .also { group.members.delegate.add(it) })
                         }
                     }

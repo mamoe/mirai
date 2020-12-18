@@ -12,30 +12,28 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.JavaFriendlyAPI
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.MemberMuteEvent
+import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.MemberNudge
-import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.message.data.toPlainText
+import net.mamoe.mirai.utils.MemberDeprecatedApi
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.WeakRefProperty
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * 代表一位群成员.
  *
+ * 群成员可能是匿名群成员 [AnonymousMember]
  * 群成员可能也是好友, 但他们在对象类型上不同.
  * 群成员可以通过 [asFriend] 得到相关好友对象.
  *
- * ## 与好友相关的操作
+ * ## 相关的操作
  * [Member.isFriend] 判断此成员是否为好友
+ * [Member.isAnonymous] 判断此成员是否为匿名群成员
+ * [Member.isNormal] 判断此成员是否为正常群成员
  */
 @Suppress("INAPPLICABLE_JVM_NAME", "EXPOSED_SUPER_CLASS")
 @OptIn(JavaFriendlyAPI::class)
@@ -56,36 +54,22 @@ public interface Member : User {
     /**
      * 群名片. 可能为空.
      *
-     * 管理员和群主都可修改任何人（包括群主）的群名片.
-     *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see [nameCardOrNick] 获取非空群名片或昵称
-     *
-     * @see MemberCardChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
-     * @throws PermissionDeniedException 无权限修改时
+     * @see [NormalMember.nameCard]
+     * @see [AnonymousMember.nameCard]
      */
-    public var nameCard: String
+    public val nameCard: String
 
     /**
      * 群头衔.
      *
-     * 仅群主可以修改群头衔.
+     * 为 [AnonymousMember] 时一定是 `"匿名"`
      *
-     * 在修改时将会异步上传至服务器.
-     *
-     * @see MemberSpecialTitleChangeEvent 群名片被管理员, 自己或 [Bot] 改动事件. 修改时也会触发此事件.
-     * @throws PermissionDeniedException 无权限修改时
+     * @see [NormalMember.specialTitle]
      */
-    public var specialTitle: String
+    public val specialTitle: String
 
-    /**
-     * 被禁言剩余时长. 单位为秒.
-     *
-     * @see isMuted 判断改成员是否处于禁言状态
-     * @see mute 设置禁言
-     * @see unmute 取消禁言
-     */
+    @MemberDeprecatedApi("仅 NormalMember 支持 muteTimeRemaining")
+    @PlannedRemoval("2.0-M2")
     public val muteTimeRemaining: Int
 
     /**
@@ -99,8 +83,8 @@ public interface Member : User {
      * @param durationSeconds 持续时间. 精确到秒. 范围区间表示为 `(0s, 30days]`. 超过范围则会抛出异常.
      * @return 机器人无权限时返回 `false`
      *
-     * @see Member.isMuted 判断此成员是否正处于禁言状态中
-     * @see unmute 取消禁言此成员
+     * @see NormalMember.isMuted 判断此成员是否正处于禁言状态中
+     * @see NormalMember.unmute 取消禁言此成员
      *
      * @see Int.minutesToSeconds
      * @see Int.hoursToSeconds
@@ -113,68 +97,24 @@ public interface Member : User {
     @JvmBlockingBridge
     public suspend fun mute(durationSeconds: Int)
 
-    /**
-     * 解除禁言.
-     *
-     * 管理员可解除成员的禁言, 群主可解除管理员和群员的禁言.
-     *
-     * @see Member.isMuted 判断此成员是否正处于禁言状态中
-     *
-     * @see MemberUnmuteEvent 成员被取消禁言事件
-     *
-     * @throws PermissionDeniedException 无权限修改时抛出
-     */
-    @JvmBlockingBridge
+    @MemberDeprecatedApi("仅 NormalMember 支持 unmute")
+    @PlannedRemoval("2.0-M2")
     public suspend fun unmute()
 
-    /**
-     * 踢出该成员.
-     *
-     * 管理员可踢出成员, 群主可踢出管理员和群员.
-     *
-     * @see MemberLeaveEvent.Kick 成员被踢出事件.
-     * @throws PermissionDeniedException 无权限修改时
-     */
-    @JvmBlockingBridge
+    @MemberDeprecatedApi("仅 NormalMember 支持 kick")
+    @PlannedRemoval("2.0-M2")
     public suspend fun kick(message: String = "")
 
-    /**
-     * 向群成员发送消息.
-     * 若群成员同时是好友, 则会发送好友消息. 否则发送临时会话消息.
-     *
-     * 单条消息最大可发送 4500 字符或 50 张图片.
-     *
-     * @see FriendMessagePreSendEvent 当此成员是好友时发送消息前事件
-     * @see FriendMessagePostSendEvent 当此成员是好友时发送消息后事件
-     *
-     * @see TempMessagePreSendEvent 当此成员不是好友时发送消息前事件
-     * @see TempMessagePostSendEvent 当此成员不是好友时发送消息后事件
-     *
-     * @throws EventCancelledException 当发送消息事件被取消时抛出
-     * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
-     * @throws MessageTooLargeException 当消息过长时抛出
-     * @throws IllegalArgumentException 当消息内容为空时抛出 (详见 [Message.isContentEmpty])
-     *
-     * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
-     */
-    @JvmBlockingBridge
+    @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage")
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
-    /**
-     * 发送纯文本消息
-     * @see sendMessage
-     */
-    @JvmBlockingBridge
-    public override suspend fun sendMessage(message: String): MessageReceipt<Member> =
-        this.sendMessage(message.toPlainText())
+    @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage")
+    public override suspend fun sendMessage(message: String): MessageReceipt<Member>
 
-    /**
-     * 创建一个 "戳一戳" 消息
-     *
-     * @see Nudge.sendTo 发送这个戳一戳消息
-     */
+    @MemberDeprecatedApi("仅 NormalMember 支持 nudge")
+    @PlannedRemoval("2.0-M2")
     @MiraiExperimentalApi
-    public override fun nudge(): MemberNudge = MemberNudge(this)
+    public override fun nudge(): MemberNudge
 }
 
 /**
@@ -213,39 +153,5 @@ public inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
  * 若 [群名片][Member.nameCard] 不为空则返回群名片, 为空则返回 [User.nick]
  */
 public val Member.nameCardOrNick: String get() = this.nameCard.takeIf { it.isNotEmpty() } ?: this.nick
-
-/**
- * 获取非空群名片或昵称.
- *
- * @return 当 [User] 为 [Member] 时返回 [Member.nameCardOrNick]
- *
- * 否则返回 [Member.nick]
- */
-public val User.nameCardOrNick: String
-    get() = when (this) {
-        is Member -> this.nameCardOrNick
-        else -> this.nick
-    }
-
-/**
- * 判断群成员是否处于禁言状态.
- */
-public val Member.isMuted: Boolean
-    get() = muteTimeRemaining != 0 && muteTimeRemaining != 0xFFFFFFFF.toInt()
-
-/**
- * @see Member.mute
- */
-@ExperimentalTime
-public suspend inline fun Member.mute(duration: Duration) {
-    require(duration.inDays <= 30) { "duration must be at most 1 month" }
-    require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
-    this.mute(duration.inSeconds.toInt())
-}
-
-/**
- * @see Member.mute
- */
-@Deprecated("Convert duration to int manually.", ReplaceWith("this.mute(durationSeconds.toInt())"))
-@PlannedRemoval("2.0-M2")
-public suspend inline fun Member.mute(durationSeconds: Long): Unit = this.mute(durationSeconds.toInt())
+public val Member.isNormal: Boolean get() = this is NormalMember
+public val Member.isAnonymous: Boolean get() = this is AnonymousMember

@@ -16,10 +16,7 @@ package net.mamoe.mirai.event.events
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.network.Packet
@@ -245,14 +242,14 @@ public data class GroupAllowMemberInviteEvent internal constructor(
  * 成员已经加入群的事件
  */
 public sealed class MemberJoinEvent(
-    public override val member: Member
+    public override val member: NormalMember
 ) : GroupMemberEvent, BotPassiveEvent, Packet,
     AbstractEvent() {
     /**
      * 被邀请加入群
      */
     public data class Invite internal constructor(
-        public override val member: Member
+        public override val member: NormalMember
     ) : MemberJoinEvent(member) {
         public override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id})"
     }
@@ -261,7 +258,7 @@ public sealed class MemberJoinEvent(
      * 成员主动加入群
      */
     public data class Active internal constructor(
-        public override val member: Member
+        public override val member: NormalMember
     ) : MemberJoinEvent(member) {
         public override fun toString(): String = "MemberJoinEvent.Active(member=${member.id})"
     }
@@ -271,7 +268,7 @@ public sealed class MemberJoinEvent(
      * 此时 [member] 的 [Member.permission] 肯定是 [MemberPermission.OWNER]
      */
     public data class Retrieve internal constructor(
-        public override val member: Member
+        public override val member: NormalMember
     ) : MemberJoinEvent(member) {
         override fun toString(): String = "MemberJoinEvent.Retrieve(member=${member.id})"
     }
@@ -285,11 +282,11 @@ public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
      * 成员被踢出群. 成员不可能是机器人自己.
      */
     public data class Kick(
-        public override val member: Member,
+        public override val member: NormalMember,
         /**
          * 操作人. 为 null 则是机器人操作.
          */
-        public override val operator: Member?
+        public override val operator: NormalMember?
     ) : MemberLeaveEvent(), Packet, GroupOperableEvent {
         public override fun toString(): String = "MemberLeaveEvent.Kick(member=${member.id}, operator=${operator?.id})"
     }
@@ -298,7 +295,7 @@ public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
      * 成员主动离开
      */
     public data class Quit(
-        public override val member: Member
+        public override val member: NormalMember
     ) : MemberLeaveEvent(), Packet {
         public override fun toString(): String = "MemberLeaveEvent.Quit(member=${member.id})"
     }
@@ -439,7 +436,7 @@ public data class MemberSpecialTitleChangeEvent internal constructor(
      * 不为 null 时一定为群主. 可能与 [member] 引用相同, 此时为群员自己修改.
      * 为 null 时则是机器人操作.
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupMemberEvent, GroupOperableEvent, AbstractEvent()
 
 // endregion

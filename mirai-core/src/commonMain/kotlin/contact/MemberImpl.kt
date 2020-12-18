@@ -44,7 +44,7 @@ internal class MemberImpl constructor(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
-) : Member {
+) : NormalMember {
     override val group: GroupImpl by group.unsafeWeakRef()
     override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 

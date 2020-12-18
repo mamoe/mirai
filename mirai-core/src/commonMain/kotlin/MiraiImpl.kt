@@ -46,6 +46,7 @@ import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.currentTimeSeconds
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.absoluteValue
@@ -733,7 +734,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     override val nick: String get() = fromNick
                     override val remark: String
                         get() = ""
-                }))
+                }).cast())
             }
     }
 
