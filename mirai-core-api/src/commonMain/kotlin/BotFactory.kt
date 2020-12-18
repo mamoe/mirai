@@ -20,12 +20,22 @@ public interface BotFactory {
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
-    public fun newBot(qq: Long, password: String, configuration: BotConfiguration = BotConfiguration.Default): Bot
+    public fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot
+
+    /**
+     * 使用 [默认配置][BotConfiguration.Default] 构造 [Bot] 实例
+     */
+    public fun newBot(qq: Long, password: String): Bot = newBot(qq, password, BotConfiguration.Default)
 
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     public fun newBot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot
+
+    /**
+     * 使用 [默认配置][BotConfiguration.Default] 构造 [Bot] 实例
+     */
+    public fun newBot(qq: Long, passwordMd5: ByteArray): Bot = newBot(qq, passwordMd5, BotConfiguration.Default)
 
     public companion object INSTANCE : BotFactory {
         override fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot {
