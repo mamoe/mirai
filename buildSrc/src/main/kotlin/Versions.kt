@@ -36,7 +36,7 @@ object Versions {
     const val coroutinesIo = "0.1.16"
     const val dokka = "0.10.1"
 
-    const val blockingBridge = "1.4.1"
+    const val blockingBridge = "1.5.0"
 
     const val androidGradlePlugin = "3.5.3"
 
