@@ -21,20 +21,8 @@ plugins {
 version = Versions.project
 description = "Mirai core shadowed"
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-tasks.withType(JavaCompile::class.java) {
-    options.encoding = "UTF8"
-}
-
 kotlin {
-    explicitApi()
-    target {
-        attributes.attribute(ATTRIBUTE_MIRAI_TARGET_PLATFORM, "jvm")
-    }
+    target.attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "jvm")
 }
 
 dependencies {
