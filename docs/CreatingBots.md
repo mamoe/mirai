@@ -7,9 +7,9 @@
 ```kotlin
 interface BotFactory {
     fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot
-    fun newBot(qq: Long, password: String): Bot = newBot(qq, password, BotConfiguration.Default)
+    fun newBot(qq: Long, password: String): Bot
     fun newBot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot
-    fun newBot(qq: Long, passwordMd5: ByteArray): Bot = newBot(qq, passwordMd5, BotConfiguration.Default)
+    fun newBot(qq: Long, passwordMd5: ByteArray): Bot
     
     companion object : BotFactory by BotFactoryImpl
 }
