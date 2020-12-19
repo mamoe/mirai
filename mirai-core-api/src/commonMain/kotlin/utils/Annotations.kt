@@ -60,4 +60,12 @@ internal annotation class PlannedRemoval(val version: String)
 @PlannedRemoval("2.0-M2")
 internal annotation class MemberDeprecatedApi(val message: String)
 
+/**
+ * 该注解仅用于测试 EventHandler
+ *
+ * 标注了此注解的意为像处理 java 方法那样处理 kotlin 方法
+ */
+@Retention(AnnotationRetention.RUNTIME)
+internal annotation class EventListenerLikeJava
+
 
