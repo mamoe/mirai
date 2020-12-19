@@ -117,8 +117,8 @@ public class MiraiConsoleGradlePlugin : Plugin<Project> {
 
                 from(project.configurations.getByName("runtimeClasspath").copyRecursive { dependency ->
                     for (excludedDependency in IGNORED_DEPENDENCIES_IN_SHADOW + miraiExtension.excludedDependencies) {
-                        if (excludedDependency.group == dependency.group
-                            && excludedDependency.name == dependency.name
+                        if (excludedDependency.group.equals(dependency.group, ignoreCase = true)
+                            && excludedDependency.name.equals(dependency.name, ignoreCase = true)
                         ) return@copyRecursive false
                     }
                     true
