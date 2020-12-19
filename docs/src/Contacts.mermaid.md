@@ -57,18 +57,18 @@ class Member {
     +group: Group
 }
 
-ContactOrBot<--Contact
-ContactOrBot<--UserOrBot
+ContactOrBot<|--Contact
+ContactOrBot<|--UserOrBot
 
-UserOrBot<--Bot
-UserOrBot<--User
+UserOrBot<|--Bot
+UserOrBot<|--User
 
-Contact<--User
-Contact<--Group
+Contact<|--User
+Contact<|--Group
 
-User<--Member
-User<--Friend
+User<|--Member
+User<|--Friend
 
-Member<--NormalMember
-Member<--AnonymousMember
+Member<|--NormalMember
+Member<|--AnonymousMember
 ```
