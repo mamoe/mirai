@@ -26,7 +26,11 @@ mirai 已经可以用于各项工作，但我们并不保证完全的稳定。�
 阅读 [项目整体架构](mirai.md#%E9%A1%B9%E7%9B%AE%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84).
 
 **警告：** mirai 开发者自愿花费其休息时间，无偿维护 mirai 系列项目，**但没有义务提供任何方面的帮助**。  
-使用者应秉持对开发者无私贡献的尊重，而不应该期望得到帮助。
+使用者应秉持对开发者无私贡献的尊重，而不应该期望得到帮助。  
+   
+### 启动Mirai时遇到java.security.NoSuchProviderException
+请更换 OpenJDK。该问题是由于BouncyCastle在重打包后丢失Jar签名引起的。  
+~~多发于Oracle JDK~~
 
 ## 开发相关
 
