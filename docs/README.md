@@ -10,12 +10,6 @@
 
 mirai 官方提供 Kotlin/Java 等 JVM 平台语言开发支持。如果你不熟悉该语言，请使用以下社区提供的 SDK：
 
-### 基于 `mirai-core` 的 SDK
-
-使用基于 `mirai-core` 的 SDK 的很容易：
-
-- `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) 基于 mirai-core 的 Lua SDK，并提供了 Java 扩展支持，可在 Lua 中调用 Java 代码开发机器人
-
 ### 基于 [`mirai-console`]
 
 [`mirai-console`]: https://github.com/mamoe/mirai-console
@@ -55,6 +49,10 @@ mirai 官方提供 Kotlin/Java 等 JVM 平台语言开发支持。如果你不�
 | `.Net/C#`       | [Hyperai][theGravityLab/ProjHyperai]        | 从 mirai-api-http 对接到机器人开发框架再到开箱即用的插件式机器人程序一应俱全       |
 | *酷 Q 插件*      | [iTXTech/mirai-native]                      | 支持酷 Q 插件在 mirai 上运行                                               |
 | *酷 Q HTTP*     | [yyuueexxiinngg/cqhttp-mirai]               | 在 mirai-console 开启酷 Q HTTP 服务。                                     |
+
+### 基于 `mirai-core` 的 SDK
+
+- `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) 基于 mirai-core 的 Lua SDK，并提供了 Java 扩展支持，可在 Lua 中调用 Java 代码开发机器人
 
 ## 配置 JVM 项目使用 mirai
 
