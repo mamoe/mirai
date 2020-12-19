@@ -4,7 +4,7 @@
 
 mirai 使用纯 Kotlin 开发，最低要求 `JDK 1.8`，`Kotlin 1.4`。
 
-如果你熟悉构建工具，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core:VERSION` 即可而不需要继续阅读。下文将详细解释这些步骤。
+如果你熟悉 Gradle，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
 
 本文提供如下三种配置方法，但更推荐使用 Gradle 构建。
 
@@ -86,7 +86,7 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>net.mamoe</groupId>
-        <artifactId>mirai-core</artifactId>
+        <artifactId>mirai-core-jvm</artifactId>
         <version>1.3.3</version> <!-- 替换版本为你需要的版本 -->
     </dependency>
 </dependencies>
