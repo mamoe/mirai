@@ -108,7 +108,15 @@ internal val IGNORED_DEPENDENCIES_IN_SHADOW = arrayOf(
     "net.mamoe:mirai-core-jvmCommon",
     "net.mamoe:mirai-core-commonJvm",
 
-    "net.mamoe:mirai-core-api", // for future
+    "net.mamoe:mirai-core-utils",
+    "net.mamoe:mirai-core-utils-metadata",
+    "net.mamoe:mirai-core-utils-common",
+    "net.mamoe:mirai-core-utils-jvm",
+    "net.mamoe:mirai-core-utils-android",
+    "net.mamoe:mirai-core-utils-jvmCommon",
+    "net.mamoe:mirai-core-utils-commonJvm",
+
+    "net.mamoe:mirai-core-api",
     "net.mamoe:mirai-core-api-metadata",
     "net.mamoe:mirai-core-api-common",
     "net.mamoe:mirai-core-api-jvm",
