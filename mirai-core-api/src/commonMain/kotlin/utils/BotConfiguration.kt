@@ -208,24 +208,22 @@ public open class BotConfiguration { // open for Java
     }
 
     @Suppress("ACTUAL_WITHOUT_EXPECT")
-    public enum class MiraiProtocol constructor(
-        /** 协议模块使用的 ID */
-        @JvmField internal val id: Long
-    ) {
+    public enum class MiraiProtocol {
         /**
          * Android 手机.
          */
-        ANDROID_PHONE(537066439),
+        ANDROID_PHONE,
 
         /**
          * Android 平板.
          */
-        ANDROID_PAD(537062409),
+        ANDROID_PAD,
 
         /**
          * Android 手表.
          * */
-        ANDROID_WATCH(537061176)
+        ANDROID_WATCH,
+
     }
 
     public companion object {

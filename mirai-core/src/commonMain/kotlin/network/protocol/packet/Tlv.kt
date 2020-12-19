@@ -120,7 +120,7 @@ internal fun BytePacketBuilder.t106(
             writeByte(isSavePassword.toByte())
             writeFully(passwordMd5)
             writeFully(tgtgtKey)
-            writeInt(0)
+            writeInt(0) // wtf
             writeByte(isGuidAvailable.toByte())
             if (isGuidAvailable) {
                 require(guid != null) { "Guid must not be null when isGuidAvailable==true" }
@@ -193,7 +193,7 @@ internal fun BytePacketBuilder.t107(
 internal fun BytePacketBuilder.t108(
     ksid: ByteArray
 ) {
-    require(ksid.size == 16) { "ksid should length 16" }
+    // require(ksid.size == 16) { "ksid should length 16" }
     writeShort(0x108)
     writeShortLVPacket {
         writeFully(ksid)
