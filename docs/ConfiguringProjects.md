@@ -24,6 +24,7 @@ mirai 使用纯 Kotlin 开发，最低要求 `JDK 1.8`，`Kotlin 1.4`。但注�
 |  预览   |             2.0-M1-1             |
 |  开发   | [![Version]][Bintray Download] |
 
+即使 2.0 还没有稳定，也建议使用 2.0 预览版本，因 1.x 版本将不会收到任何更新。
 
 ## A. 使用 Gradle
 
