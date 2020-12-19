@@ -181,7 +181,7 @@ suspend fun onEvent(event: GroupMessageEvent)
 [subscribeMessages](../mirai-core-api/src/commonMain/kotlin/event/subscribeMessages.kt#L37-L64)
 
 示例：
-```
+```kotlin
 MyApplication.subscribeMessages {
     "test" {
         // 当消息内容为 "test" 时执行
