@@ -4,12 +4,10 @@
 
 ## mirai 码
 mirai 的部分 [消息](../mirai-core-api/src/commonMain/kotlin/message/data/Message.kt) 可以表示为形如 `[mirai:atall]` 的字符串.  
-模块 `mirai-core` 包含消息到 mirai 码的单向转换; 模块 `mirai-serialization` 提供 mirai 码的解析.
-
-运行时: [mirai-serialization](../mirai-serialization/)
 
 ## 变更记录
 - `1.1.0`: 引入 mirai 码于 `mirai-serialization` 模块
+- `1.2.0`: mirai 码集成到 mirai-core。不再需要 `mirai-serialization` 模块。
 
 ## 格式
 
