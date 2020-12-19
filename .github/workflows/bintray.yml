@@ -6,8 +6,7 @@ name: Bintray Publish
 # events but only for the master branch
 on:
   release:
-    types:
-      - created
+    types: [created, prereleased]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -28,31 +27,36 @@ jobs:
         run: ./gradlew build # if test's failed, don't publish
 
       - name: Check keys
-        run: ./gradlew :mirai-core-utils:ensureBintrayAvailable
-        :mirai-core-api:ensureBintrayAvailable
-        :mirai-core:ensureBintrayAvailable
-        -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
-        -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+        run: >
+            ./gradlew :mirai-core-utils:ensureBintrayAvailable
+            :mirai-core-api:ensureBintrayAvailable
+            :mirai-core:ensureBintrayAvailable
+            -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+            -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Gradle :mirai-core-utils:publish
-        run: ./gradlew :mirai-core-utils:publish --info
-        -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
-        -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+        run: >
+            ./gradlew :mirai-core-utils:publish --info
+            -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+            -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Gradle :mirai-core-api:publish
-        run: ./gradlew :mirai-core-api:publish --info
-        -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
-        -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+        run: >
+            ./gradlew :mirai-core-api:publish --info
+            -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+            -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Gradle :mirai-core:publish
-        run: ./gradlew :mirai-core:publish --info
-        -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
-        -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+        run: >
+            ./gradlew :mirai-core:publish --info
+            -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+            -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
       - name: Gradle :mirai-core-all:bintrayUpload
-        run: ./gradlew :mirai-core-all:bintrayUpload --info
-        -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
-        -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
+        run: >
+            ./gradlew :mirai-core-all:bintrayUpload --info
+            -Dbintray_user=${{ secrets.BINTRAY_USER }} -Pbintray_user=${{ secrets.BINTRAY_USER }}
+            -Dbintray_key=${{ secrets.BINTRAY_KEY }} -Pbintray_key=${{ secrets.BINTRAY_KEY }}
 
 #      - name: Upload artifact
 #        uses: actions/upload-artifact@v1.0.0

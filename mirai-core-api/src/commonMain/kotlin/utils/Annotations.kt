@@ -17,7 +17,7 @@ import kotlin.annotation.AnnotationTarget.*
  * 这些 API 可能会在任意时刻更改, 且不会发布任何预警.
  * 非常不建议在发行版本中使用这些 API.
  */
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 @Target(
     CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR,
@@ -34,7 +34,7 @@ public annotation class MiraiInternalApi(
  * 这些 API 不具有稳定性, 且可能会在任意时刻更改.
  * 不建议在发行版本中使用这些 API.
  */
-@Retention(AnnotationRetention.SOURCE)
+@Retention(AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 @Target(CLASS, TYPEALIAS, FUNCTION, PROPERTY, FIELD, CONSTRUCTOR)
 @MustBeDocumented
@@ -49,3 +49,23 @@ public annotation class MiraiExperimentalApi(
 @Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
 internal annotation class PlannedRemoval(val version: String)
+
+/**
+ * 标记已过时的 Member API
+ */
+@Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
+@Retention(AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
+@MustBeDocumented
+@PlannedRemoval("2.0-M2")
+internal annotation class MemberDeprecatedApi(val message: String)
+
+/**
+ * 该注解仅用于测试 EventHandler
+ *
+ * 标注了此注解的意为像处理 java 方法那样处理 kotlin 方法
+ */
+@Retention(AnnotationRetention.RUNTIME)
+internal annotation class EventListenerLikeJava
+
+

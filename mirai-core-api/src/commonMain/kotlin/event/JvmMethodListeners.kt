@@ -14,6 +14,7 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
+import net.mamoe.mirai.utils.EventListenerLikeJava
 import java.lang.reflect.Method
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -238,6 +239,23 @@ public fun CoroutineScope.registerEvents(
     }
 }
 
+private fun Method.isKotlinFunction(): Boolean {
+
+    if (getDeclaredAnnotation(EventListenerLikeJava::class.java) != null) return false
+    if (declaringClass.getDeclaredAnnotation(EventListenerLikeJava::class.java) != null) return false
+
+    @Suppress("RemoveRedundantQualifierName") // for strict
+    return declaringClass.getDeclaredAnnotation(kotlin.Metadata::class.java) != null
+}
+
+private fun Method.invokeWithErrorReport(self: Any?, vararg args: Any?): Any? = try {
+    invoke(self, *args)
+} catch (exception: IllegalArgumentException) {
+    throw IllegalArgumentException(
+        "Internal Error: $exception, method=${this}, this=$self, arguments=$args, please report to https://github.com/mamoe/mirai",
+        exception
+    )
+}
 
 @Suppress("UNCHECKED_CAST")
 private fun Method.registerEvent(
@@ -248,7 +266,7 @@ private fun Method.registerEvent(
 ): Listener<Event> {
     this.isAccessible = true
     val kotlinFunction = kotlin.runCatching { this.kotlinFunction }.getOrNull()
-    return if (kotlinFunction != null) {
+    return if (kotlinFunction != null && isKotlinFunction()) {
         // kotlin functions
 
         val param = kotlinFunction.parameters
@@ -337,7 +355,7 @@ private fun Method.registerEvent(
 
         val paramType = this.parameters[0].type
         check(this.parameterCount == 1 && Event::class.java.isAssignableFrom(paramType)) {
-            "Illegal method parameter. Required one exact Event subclass. found $paramType"
+            "Illegal method parameter. Required one exact Event subclass. found ${this.parameters.contentToString()}"
         }
         when (this.returnType) {
             Void::class.java, Void.TYPE, Nothing::class.java -> {
@@ -350,11 +368,11 @@ private fun Method.registerEvent(
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
                             withContext(Dispatchers.IO) {
-                                this@registerEvent.invoke(owner, this)
+                                this@registerEvent.invokeWithErrorReport(owner, this@subscribeAlways)
                             }
                         }
                     } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invoke(owner, this)
+                        this@registerEvent.invokeWithErrorReport(owner, this@subscribeAlways)
                     }
                 }
             }
@@ -368,11 +386,11 @@ private fun Method.registerEvent(
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
                             withContext(Dispatchers.IO) {
-                                this@registerEvent.invoke(owner, this) as ListeningStatus
+                                this@registerEvent.invokeWithErrorReport(owner, this@subscribe) as ListeningStatus
                             }
                         } else ListeningStatus.LISTENING
                     } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invoke(owner, this) as ListeningStatus
+                        this@registerEvent.invokeWithErrorReport(owner, this@subscribe) as ListeningStatus
                     }
 
                 }

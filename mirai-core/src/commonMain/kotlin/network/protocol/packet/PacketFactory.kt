@@ -184,60 +184,59 @@ internal object KnownPacketFactories {
         bot: QQAndroidBot,
         rawInput: ByteReadPacket,
         consumer: PacketConsumer<T>
-    ) =
-        with(rawInput) {
-            // login
-            val flag1 = readInt()
+    ): Unit = with(rawInput) {
+        // login
+        val flag1 = readInt()
 
-            PacketLogger.verbose { "开始处理一个包" }
+        PacketLogger.verbose { "开始处理一个包" }
 
-            val flag2 = readByte().toInt()
-            val flag3 = readByte().toInt()
-            check(flag3 == 0) {
-                "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. " +
-                        "Remaining=${this.readBytes().toUHexString()}"
-            }
+        val flag2 = readByte().toInt()
+        val flag3 = readByte().toInt()
+        check(flag3 == 0) {
+            "Illegal flag3. Expected 0, whereas got $flag3. flag1=$flag1, flag2=$flag2. " +
+                    "Remaining=${this.readBytes().toUHexString()}"
+        }
 
-            readString(readInt() - 4)// uinAccount
+        readString(readInt() - 4)// uinAccount
 
-            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            ByteArrayPool.useInstance(this.remaining.toInt()) { data ->
-                val size = this.readAvailable(data)
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+        ByteArrayPool.useInstance(this.remaining.toInt()) { data ->
+            val size = this.readAvailable(data)
 
-                kotlin.runCatching {
-                    when (flag2) {
-                        2 -> TEA.decrypt(data, DECRYPTER_16_ZERO, size)
-                        1 -> TEA.decrypt(data, bot.client.wLoginSigInfo.d2Key, size)
-                        0 -> data
-                        else -> error("")
-                    }
-                }.getOrElse {
-                    bot.client.tryDecryptOrNull(data, size) { it }
-                }?.toReadPacket()?.let { decryptedData ->
-                    when (flag1) {
-                        0x0A -> parseSsoFrame(bot, decryptedData)
-                        0x0B -> parseSsoFrame(bot, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
-                        else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
-                    }
-                }?.let {
-                    it as IncomingPacket<T>
-
-                    if (it.packetFactory is IncomingPacketFactory<T> && it.packetFactory.canBeCached && bot.network.pendingEnabled) {
-                        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                        bot.network.pendingIncomingPackets?.addLast(it.also {
-                            it.consumer = consumer
-                            it.flag2 = flag2
-                            PacketLogger.info { "Cached ${it.commandName} #${it.sequenceId}" }
-                        }) ?: handleIncomingPacket(it, bot, flag2, consumer)
-                    } else {
-                        handleIncomingPacket(it, bot, flag2, consumer)
-                    }
-                } ?: kotlin.run {
-                    PacketLogger.error { "任何key都无法解密: ${data.take(size).toUHexString()}" }
-                    return
+            kotlin.runCatching {
+                when (flag2) {
+                    2 -> TEA.decrypt(data, DECRYPTER_16_ZERO, size)
+                    1 -> TEA.decrypt(data, bot.client.wLoginSigInfo.d2Key, size)
+                    0 -> data
+                    else -> error("")
                 }
+            }.getOrElse {
+                bot.client.tryDecryptOrNull(data, size) { it }
+            }?.toReadPacket()?.let { decryptedData ->
+                when (flag1) {
+                    0x0A -> parseSsoFrame(bot, decryptedData)
+                    0x0B -> parseSsoFrame(bot, decryptedData) // 这里可能是 uni?? 但测试时候发现结构跟 sso 一样.
+                    else -> error("unknown flag1: ${flag1.toByte().toUHexString()}")
+                }
+            }?.let {
+                it as IncomingPacket<T>
+
+                if (it.packetFactory is IncomingPacketFactory<T> && it.packetFactory.canBeCached && bot.network.pendingEnabled) {
+                    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+                    bot.network.pendingIncomingPackets?.add(it.also {
+                        it.consumer = consumer
+                        it.flag2 = flag2
+                        PacketLogger.info { "Cached ${it.commandName} #${it.sequenceId}" }
+                    }) ?: handleIncomingPacket(it, bot, flag2, consumer)
+                } else {
+                    handleIncomingPacket(it, bot, flag2, consumer)
+                }
+            } ?: kotlin.run {
+                PacketLogger.error { "任何key都无法解密: ${data.take(size).toUHexString()}" }
+                return
             }
         }
+    }
 
     internal suspend fun <T : Packet?> handleIncomingPacket(
         it: IncomingPacket<T>,

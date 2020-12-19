@@ -53,13 +53,13 @@ public interface Group : Contact, CoroutineScope {
      *
      * @return 若机器人是群主, 返回 [botAsMember]. 否则返回相应的成员
      */
-    public val owner: Member
+    public val owner: NormalMember
 
     /**
      * [Bot] 在群内的 [Member] 实例
      */
     @MiraiExperimentalApi
-    public val botAsMember: Member
+    public val botAsMember: NormalMember
 
     /**
      * 机器人被禁言还剩余多少秒
@@ -89,14 +89,14 @@ public interface Group : Contact, CoroutineScope {
      *
      * 在 [Group] 实例创建的时候查询一次. 并与事件同步事件更新.
      */
-    public val members: ContactList<Member>
+    public val members: ContactList<NormalMember>
 
     /**
      * 获取群成员实例. 不存在时返回 `null`.
      *
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
      */
-    public operator fun get(id: Long): Member?
+    public operator fun get(id: Long): NormalMember?
 
     @Deprecated("Use get", ReplaceWith("get(id)"))
     @PlannedRemoval("2.0-M2")
@@ -104,14 +104,14 @@ public interface Group : Contact, CoroutineScope {
      * 获取群成员实例, 不存在则 null
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
-    public fun getOrNull(id: Long): Member? = get(id)
+    public fun getOrNull(id: Long): NormalMember? = get(id)
 
     /**
      * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException].
      *
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
      */
-    public fun getOrFail(id: Long): Member =
+    public fun getOrFail(id: Long): NormalMember =
         get(id) ?: throw NoSuchElementException("member $id not found in group ${this.id}")
 
 
@@ -125,7 +125,7 @@ public interface Group : Contact, CoroutineScope {
     /**
      * 当 [member] 是本群成员时返回 `true`. 将同时成员 [所属群][Member.group]. 同一个用户在不同群内的 [Member] 对象不相等.
      */
-    public operator fun contains(member: Member): Boolean = member in members
+    public operator fun contains(member: NormalMember): Boolean = member in members
 
 
     /**

@@ -77,23 +77,23 @@ internal class GroupImpl(
 
     val uin: Long = groupInfo.uin
 
-    override lateinit var owner: Member
+    override lateinit var owner: NormalMember
 
-    override lateinit var botAsMember: Member
+    override lateinit var botAsMember: NormalMember
 
     override val botPermission: MemberPermission get() = botAsMember.permission
 
     // e.g. 600
     override val botMuteRemaining: Int get() = botAsMember.muteTimeRemaining
 
-    override val members: ContactList<Member> = ContactList(members.mapNotNull {
+    override val members: ContactList<NormalMember> = ContactList(members.mapNotNull {
         if (it.uin == bot.id) {
-            botAsMember = newMember(it)
+            botAsMember = newMember(it).cast()
             if (it.permission == MemberPermission.OWNER) {
                 owner = botAsMember
             }
             null
-        } else newMember(it).also { member ->
+        } else newMember(it).cast<NormalMember>().also { member ->
             if (member.permission == MemberPermission.OWNER) {
                 owner = member
             }
@@ -250,7 +250,7 @@ internal class GroupImpl(
         }
     )
 
-    override operator fun get(id: Long): Member? {
+    override operator fun get(id: Long): NormalMember? {
         if (id == bot.id) {
             return botAsMember
         }
@@ -298,7 +298,7 @@ internal class GroupImpl(
                 throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
             }.message.asMessageChain()
 
-            val length = chain.estimateLength(703) // 阈值为700左右，限制到3的倍数
+            val length = chain.estimateLength(this, 703) // 阈值为700左右，限制到3的倍数
             var imageCnt = 0 // 通过下方逻辑短路延迟计算
 
             if (length > 5000 || chain.count { it is Image }.apply { imageCnt = this } > 50) {

@@ -26,7 +26,7 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
 
   `mirai-core` 设计为一个 **`支持库`**, 意味着它可以被独立依赖, 在任意项目中使用. 详见下文.
 
-- `mirai-serialization` 依赖 `mirai-core`, 是 mirai-core 的序列化支持模块. 提供 `Message` 类型的序列化支持与相关 [mirai 码](mirai-code-specification.md) 支持.  
+- `mirai-serialization` 依赖 `mirai-core`, 是 mirai-core 的序列化支持模块. 提供 `Message` 类型的序列化支持与相关 [mirai 码](MiraiCodeSepecification.md) 支持.  
   此模块自 mirai `1.1.0` 起可用, 引用方法同 `mirai-core`.
 
 - [`mirai-console`](https://github.com/mamoe/mirai-console) 是基于 `mirai-core` 的, 支持插件加载, 指令系统, 和配置等的**控制台框架**.  

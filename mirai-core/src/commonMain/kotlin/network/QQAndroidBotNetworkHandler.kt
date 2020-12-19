@@ -45,6 +45,7 @@ import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -220,8 +221,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     @JvmField
     @Volatile
-    internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
-        LockFreeLinkedList()
+    internal var pendingIncomingPackets: ConcurrentLinkedQueue<KnownPacketFactories.IncomingPacket<*>>? =
+        ConcurrentLinkedQueue()
 
     private var initFriendOk = false
     private var initGroupOk = false
@@ -322,7 +323,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
 
         if (!pendingEnabled) {
-            pendingIncomingPackets = LockFreeLinkedList()
+            pendingIncomingPackets = ConcurrentLinkedQueue()
             _pendingEnabled.value = true
         }
 

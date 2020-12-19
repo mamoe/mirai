@@ -12,10 +12,10 @@
 
 package net.mamoe.mirai.internal.utils
 
+import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.AtAll.display
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
+import net.mamoe.mirai.utils.safeCast
 
 
 internal fun Int.toIpV4AddressString(): String {
@@ -43,17 +43,17 @@ internal fun String.chineseLength(upTo: Int): Int {
     }
 }
 
-internal fun MessageChain.estimateLength(upTo: Int): Int =
+internal fun MessageChain.estimateLength(target: ContactOrBot, upTo: Int): Int =
     sumUpTo(upTo) { it, up ->
-        it.estimateLength(up)
+        it.estimateLength(target, up)
     }
 
-internal fun SingleMessage.estimateLength(upTo: Int): Int {
+internal fun SingleMessage.estimateLength(target: ContactOrBot, upTo: Int): Int {
     return when (this) {
-        is QuoteReply -> 444 + this.source.originalMessage.estimateLength(upTo) // Magic number
+        is QuoteReply -> 444 + this.source.originalMessage.estimateLength(target, upTo) // Magic number
         is Image -> 260 // Magic number
         is PlainText -> content.chineseLength(upTo)
-        is At -> display.chineseLength(upTo)
+        is At -> this.getDisplay(target.safeCast()).chineseLength(upTo)
         is AtAll -> display.chineseLength(upTo)
         else -> this.toString().chineseLength(upTo)
     }

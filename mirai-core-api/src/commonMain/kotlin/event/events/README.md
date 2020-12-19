@@ -25,9 +25,10 @@
 - (`1.3.0+`) Bot 被戳: BotNudgedEvent
 
 ### [消息](message.kt)
-- (`1.1.0-`) 主动发送消息: MessageSendEvent
-  - 群消息: GroupMessageSendEvent
-  - 好友消息: FriendMessageSendEvent
+- 被动收到消息：MessageEvent
+  - 群消息：GroupMessageEvent
+  - 好友消息：FriendMessageEvent
+  - 群临时会话消息：TempMessageEvent
 - (`1.1.0+`) 主动发送消息前: MessagePreSendEvent
   - 群消息: GroupMessagePreSendEvent
   - 好友消息: FriendMessagePreSendEvent
@@ -44,6 +45,9 @@
 - 图片上传完成: ImageUploadEvent
   - 图片上传成功: Succeed
   - 图片上传失败: Failed
+- (`1.1.0-`) ~~主动发送消息: MessageSendEvent~~
+  - ~~群消息: GroupMessageSendEvent~~
+  - ~~好友消息: FriendMessageSendEvent~~
 
 ### [群](group.kt)
 - 机器人被踢出群或在其他客户端主动退出一个群: BotLeaveEvent
@@ -60,7 +64,7 @@
   - 入群公告改变: GroupEntranceAnnouncementChangeEvent
   - 全员禁言状态改变: GroupMuteAllEvent
   - 匿名聊天状态改变: GroupAllowAnonymousChatEvent
-  - 坦白说状态改变: GroupAllowConfessTalkEvent
+  - (`1.3.0-`) ~~坦白说状态改变: GroupAllowConfessTalkEvent~~
   - 允许群员邀请好友加群状态改变: GroupAllowMemberInviteEvent
 
 #### 群成员

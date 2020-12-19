@@ -128,7 +128,7 @@ internal class WtLogin {
                 writeSsoPacket(client, client.subAppId, commandName, sequenceId = sequenceId) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(9) // subCommand
-                        writeShort(17) // count of TLVs, probably ignored by server?
+                        writeShort(0x18) // count of TLVs, probably ignored by server?
                         //writeShort(LoginType.PASSWORD.value.toShort())
 
                         t18(appId, client.appClientVersion, client.uin)
@@ -161,7 +161,8 @@ internal class WtLogin {
                         */
                         t116(client.miscBitMap, client.subSigMap)
                         t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion)
-                        t107(6)
+                        t107(0)
+                        t108(client.device.imei.toByteArray())
 
                         // t108(byteArrayOf())
                         // ignored: t104()
@@ -192,9 +193,11 @@ internal class WtLogin {
                         t145(client.device.guid)
                         t147(appId, client.apkVersionName, client.apkSignatureMd5)
 
+                        /*
                         if (client.miscBitMap and 0x80 != 0) {
                             t166(1)
                         }
+                        */
 
                         // ignored t16a because array5 is null
 
@@ -210,14 +213,14 @@ internal class WtLogin {
                                 "connect.qq.com",
                                 "qzone.qq.com",
                                 "vip.qq.com",
+                                "gamecenter.qq.com",
                                 "qun.qq.com",
                                 "game.qq.com",
                                 "qqweb.qq.com",
                                 "office.qq.com",
                                 "ti.qq.com",
                                 "mail.qq.com",
-                                "qzone.com",
-                                "mma.qq.com"
+                                "mma.qq.com",
                             )
                         )
 
@@ -243,7 +246,10 @@ internal class WtLogin {
                             t202(bssid, ssid)
                         }
 
-                        t177()
+                        t177(
+                            buildTime = client.buildTime,
+                            buildVersion = client.sdkVersion,
+                        )
                         t516()
                         t521()
 

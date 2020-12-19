@@ -440,7 +440,7 @@ public class FriendMessageEvent constructor(
     public override val sender: Friend,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable, FriendEvent {
+) : AbstractMessageEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable, FriendEvent {
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
@@ -480,7 +480,7 @@ public class GroupMessageEvent(
     public override val sender: Member,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractEvent(), GroupAwareMessageEvent, MessageEvent, Event, GroupEvent {
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent, Event, GroupEvent {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
@@ -512,7 +512,7 @@ public class TempMessageEvent(
     public override val sender: Member,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractEvent(), GroupAwareMessageEvent, MessageEvent, BroadcastControllable {
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent, BroadcastControllable {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
@@ -536,6 +536,75 @@ public class TempMessageEvent(
  */
 public interface UserMessageEvent : MessageEvent {
     public override val subject: User
+}
+
+@MiraiInternalApi
+public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
+    public override suspend fun reply(message: Message): MessageReceipt<Contact> =
+        subject.sendMessage(message.asMessageChain())
+
+    public override suspend fun reply(plain: String): MessageReceipt<Contact> =
+        subject.sendMessage(PlainText(plain).asMessageChain())
+
+    public override suspend fun ExternalImage.upload(): Image = this.upload(subject)
+
+    public override suspend fun ExternalImage.send(): MessageReceipt<Contact> = this.sendTo(subject)
+
+    public override suspend fun Image.send(): MessageReceipt<Contact> = this.sendTo(subject)
+
+    public override suspend fun Message.send(): MessageReceipt<Contact> = this.sendTo(subject)
+
+    public override suspend fun String.send(): MessageReceipt<Contact> = PlainText(this).sendTo(subject)
+
+    // region 引用回复
+    /**
+     * 给这个消息事件的主体发送引用回复消息
+     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
+     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
+     */
+    public override suspend fun quoteReply(message: MessageChain): MessageReceipt<Contact> =
+        reply(this.message.quote() + message)
+
+    public override suspend fun quoteReply(message: Message): MessageReceipt<Contact> =
+        reply(this.message.quote() + message)
+
+    public override suspend fun quoteReply(plain: String): MessageReceipt<Contact> = reply(this.message.quote() + plain)
+
+    public override fun At.isBot(): Boolean = target == bot.id
+
+
+    /**
+     * 获取图片下载链接
+     * @return "http://gchat.qpic.cn/gchatpic_new/..."
+     */
+    public override suspend fun Image.url(): String = this@url.queryUrl()
+
+
+    // region 上传图片
+
+    public override suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+    public override suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+    public override suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
+    // endregion
+
+    // region 发送图片
+    public override suspend fun sendImage(image: BufferedImage): MessageReceipt<Contact> = subject.sendImage(image)
+    public override suspend fun sendImage(image: InputStream): MessageReceipt<Contact> = subject.sendImage(image)
+    public override suspend fun sendImage(image: File): MessageReceipt<Contact> = subject.sendImage(image)
+    // endregion
+
+    // region 上传图片 (扩展)
+    public override suspend fun BufferedImage.upload(): Image = upload(subject)
+    public override suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+    public override suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    // endregion 上传图片 (扩展)
+
+    // region 发送图片 (扩展)
+    public override suspend fun BufferedImage.send(): MessageReceipt<Contact> = sendTo(subject)
+    public override suspend fun InputStream.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
+    public override suspend fun File.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
+    // endregion 发送图片 (扩展)
+
 }
 
 /**
@@ -611,29 +680,27 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
     @JvmBlockingBridge
-    public suspend fun reply(message: Message): MessageReceipt<TSubject> =
-        subject.sendMessage(message.asMessageChain()) as MessageReceipt<TSubject>
+    public suspend fun reply(message: Message): MessageReceipt<TSubject>
 
     @JvmBlockingBridge
-    public suspend fun reply(plain: String): MessageReceipt<TSubject> =
-        subject.sendMessage(PlainText(plain).asMessageChain()) as MessageReceipt<TSubject>
+    public suspend fun reply(plain: String): MessageReceipt<TSubject>
 
     // endregion
 
     @JvmSynthetic
-    public suspend fun ExternalImage.upload(): Image = this.upload(subject)
+    public suspend fun ExternalImage.upload(): Image
 
     @JvmSynthetic
-    public suspend fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun ExternalImage.send(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun Image.send(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun Message.send(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun String.send(): MessageReceipt<TSubject> = PlainText(this).sendTo(subject)
+    public suspend fun String.send(): MessageReceipt<TSubject>
 
     // region 引用回复
     /**
@@ -642,18 +709,16 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
     @JvmBlockingBridge
-    public suspend fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
-        reply(this.message.quote() + message)
+    public suspend fun quoteReply(message: MessageChain): MessageReceipt<TSubject>
 
     @JvmBlockingBridge
-    public suspend fun quoteReply(message: Message): MessageReceipt<TSubject> =
-        reply(this.message.quote() + message)
+    public suspend fun quoteReply(message: Message): MessageReceipt<TSubject>
 
     @JvmBlockingBridge
-    public suspend fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
+    public suspend fun quoteReply(plain: String): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public fun At.isBot(): Boolean = target == bot.id
+    public fun At.isBot(): Boolean
 
 
     /**
@@ -661,7 +726,7 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
     @JvmSynthetic
-    public suspend fun Image.url(): String = this@url.queryUrl()
+    public suspend fun Image.url(): String
 }
 
 /** 一个消息事件在各平台的相关扩展. 请使用 [MessageEventExtensions] */
@@ -679,46 +744,46 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
     // region 上传图片
 
     @JvmBlockingBridge
-    public suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+    public suspend fun uploadImage(image: BufferedImage): Image
 
     @JvmBlockingBridge
-    public suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+    public suspend fun uploadImage(image: InputStream): Image
 
     @JvmBlockingBridge
-    public suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
+    public suspend fun uploadImage(image: File): Image
     // endregion
 
     // region 发送图片
     @JvmBlockingBridge
-    public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
+    public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject>
 
     @JvmBlockingBridge
-    public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
+    public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject>
 
     @JvmBlockingBridge
-    public suspend fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
+    public suspend fun sendImage(image: File): MessageReceipt<TSubject>
     // endregion
 
     // region 上传图片 (扩展)
     @JvmSynthetic
-    public suspend fun BufferedImage.upload(): Image = upload(subject)
+    public suspend fun BufferedImage.upload(): Image
 
     @JvmSynthetic
-    public suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+    public suspend fun InputStream.uploadAsImage(): Image
 
     @JvmSynthetic
-    public suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    public suspend fun File.uploadAsImage(): Image
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
     @JvmSynthetic
-    public suspend fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
+    public suspend fun BufferedImage.send(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    public suspend fun File.sendAsImage(): MessageReceipt<TSubject>
     // endregion 发送图片 (扩展)
 
 }

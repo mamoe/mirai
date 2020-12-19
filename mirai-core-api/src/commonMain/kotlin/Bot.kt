@@ -24,8 +24,7 @@ import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.PlannedRemoval
-import java.util.*
-import kotlin.NoSuchElementException
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 登录, 返回 [this]
@@ -153,14 +152,14 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
 
     public companion object {
         @Suppress("ObjectPropertyName")
-        internal val _instances: WeakHashMap<Long, Bot> = WeakHashMap()
+        internal val _instances: ConcurrentHashMap<Long, Bot> = ConcurrentHashMap()
 
         /**
          * 复制一份此时的 [Bot] 实例列表.
          */
         @JvmStatic
         public val instances: List<Bot>
-            get() = _instances.values.filterNotNull()
+            get() = _instances.values.toList()
 
         /**
          * 复制一份此时的 [Bot] 实例列表.
