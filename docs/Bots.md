@@ -37,4 +37,5 @@ Bot bot = BotFactory.INSTANCE.newBot(    );
 
 
 > 下一步，[Contacts](Contacts.md)
+>
 > [回到 Mirai 文档索引](README.md)

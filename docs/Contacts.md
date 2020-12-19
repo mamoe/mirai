@@ -7,4 +7,5 @@
 可通过 `Bot.getFriend` 或 `Bot.getGroup` 获取相关对象。
 
 > 下一步，[Events](Events.md)
+>
 > [回到 Mirai 文档索引](README.md)

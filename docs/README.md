@@ -66,5 +66,6 @@ mirai 官方提供 Kotlin/Java 等 JVM 平台语言开发支持。如果你不�
 
 ***本文档正在更新中***
 
-- [创建 Bot](CreatingBots.md)
+- [Bots](Bots.md)
 - [Contacts](Contacts.md)
+- [Events](Events.md)
