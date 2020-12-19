@@ -2,7 +2,7 @@
 
 本文介绍如何在一个项目中使用 mirai。
 
-mirai 使用纯 Kotlin 开发，最低要求 `JDK 1.8`，`Kotlin 1.4`。
+mirai 使用纯 Kotlin 开发，最低要求 `JDK 1.8`，`Kotlin 1.4`。但注意不要使用 Oracle JDK，推荐使用 OpenJDK。
 
 如果你熟悉 Gradle，只需要添加 `jcenter` 仓库和依赖 `net.mamoe:mirai-core:VERSION` 即可而不需要继续阅读。下文将详细解释其他方法。
 
