@@ -162,13 +162,17 @@ MyApplication.subscribeAlways<GroupMessageEvent> {
 
 Mirai 也支持传递函数引用：
 ```kotlin
-MyApplication.subscribeAlways<GroupMessageEvent> {
-    // this: GroupMessageEvent
-    // it: GroupMessageEvent
-    // lambda 的 this 和参数都是 GroupMessageEvent
-
+suspend fun GroupMessageEvent.onEvent() {
     group.sendMessage(sender.at() + "Hello! ${sender.nick}") 
 }
+
+MyApplication.subscribeAlways<GroupMessageEvent>(GroupMessageEvent::onEvent)
+```
+既可以使用接收者参数，又可以使用普通参数，还可以同时拥有。如下三个定义都是被接受的：
+```kotlin
+suspend fun GroupMessageEvent.onEvent() 
+suspend fun GroupMessageEvent.onEvent(event: GroupMessageEvent) 
+suspend fun onEvent(event: GroupMessageEvent) 
 ```
 
 ### 在 Kotlin 使用 DSL 监听事件
