@@ -71,13 +71,11 @@ public abstract class LoginSolver {
          *
          * 检测策略:
          * 1. 检测 `android.util.Log`, 如果存在, 返回 `null`.
-         * 2. 检测 JVM 属性 `mirai.no-desktop`. 若存在, 返回 []
-         * 2. 检测 JVM 桌面环境,
+         * 2. 检测 JVM 属性 `mirai.no-desktop`. 若存在, 返回 [StandardCharImageLoginSolver]
+         * 3. 检测 JVM 桌面环境, 若支持, 返回 [SwingSolver]
+         * 4. 返回 [StandardCharImageLoginSolver]
          *
-         * 在桌面 JVM, Mirai 会检测 Java Swing, 在可用时首选 [SwingSolver]. 可以通过 `System.setProperty("mirai.no-desktop", "true")` 关闭
-         * 在 Android, mirai 检测 `android.util.Log`. 然后
-         *
-         * @return [SwingSolver] 或
+         * @return [SwingSolver] 或 [StandardCharImageLoginSolver] 或 `null`
          */
         @JvmField
         public val Default: LoginSolver? = when (WindowHelperJvm.platformKind) {
