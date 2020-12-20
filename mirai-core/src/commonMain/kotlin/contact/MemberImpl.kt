@@ -202,15 +202,6 @@ internal class MemberImpl constructor(
         net.mamoe.mirai.event.events.MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
     }
 
-    private fun checkBotPermissionHigherThanThis(operationName: String) {
-        check(group.botPermission > this.permission) {
-            throw PermissionDeniedException(
-                "`$operationName` operation requires a higher permission, while " +
-                        "${group.botPermission} < ${this.permission}"
-            )
-        }
-    }
-
     @JvmSynthetic
     override suspend fun unmute() {
         checkBotPermissionHigherThanThis("unmute")
@@ -247,6 +238,15 @@ internal class MemberImpl constructor(
             this@MemberImpl.cancel(CancellationException("Kicked by bot"))
             MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
         }
+    }
+}
+
+internal fun Member.checkBotPermissionHigherThanThis(operationName: String) {
+    check(group.botPermission > this.permission) {
+        throw PermissionDeniedException(
+            "`$operationName` operation requires a higher permission, while " +
+                    "${group.botPermission} < ${this.permission}"
+        )
     }
 }
 
