@@ -222,7 +222,11 @@ public data class Face(public val id: Int) : // used in delegation
         public const val AI_NI: Int = 122
         public const val 爱你: Int = AI_NI
         public const val NO: Int = 123
+        public const val 不: Int = NO
+        public const val BU: Int = NO
         public const val OK: Int = 124
+        public const val 好: Int = OK
+        public const val HAO: Int = OK
         public const val ZHUAN_QUAN: Int = 125
         public const val 转圈: Int = ZHUAN_QUAN
         public const val KE_TOU: Int = 126
