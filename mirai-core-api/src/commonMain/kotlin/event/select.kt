@@ -56,11 +56,12 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * @see nextMessage 挂起协程并等待下一条消息
  */
 @Suppress("unused")
+@BuilderInference
 public suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     priority: Listener.EventPriority = EventPriority.MONITOR,
-    crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
+    @BuilderInference crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, Boolean>.() -> Unit
 ): Unit = whileSelectMessagesImpl(timeoutMillis, filterContext, priority, selectBuilder)
 
 /**
@@ -68,11 +69,12 @@ public suspend inline fun <reified T : MessageEvent> T.whileSelectMessages(
  */
 @MiraiExperimentalApi
 @JvmName("selectMessages1")
+@BuilderInference
 public suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     priority: Listener.EventPriority = EventPriority.MONITOR,
-    crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, Unit>.() -> Unit
+    @BuilderInference crossinline selectBuilder: @MessageDsl MessageSelectBuilderUnit<T, Unit>.() -> Unit
 ): Unit = selectMessagesImpl(timeoutMillis, true, filterContext, priority, selectBuilder)
 
 
@@ -97,12 +99,12 @@ public suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
  * @see nextMessage 挂起协程并等待下一条消息
  */
 @Suppress("unused") // false positive
-// @BuilderInference // https://youtrack.jetbrains.com/issue/KT-37716
+@BuilderInference
 public suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
     timeoutMillis: Long = -1,
     filterContext: Boolean = true,
     priority: Listener.EventPriority = EventPriority.MONITOR,
-    // @BuilderInference
+    @BuilderInference
     crossinline selectBuilder: @MessageDsl MessageSelectBuilder<T, R>.() -> Unit
 ): R =
     selectMessagesImpl(
