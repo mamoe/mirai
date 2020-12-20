@@ -30,7 +30,7 @@ import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.*
-import net.mamoe.mirai.internal.network.protocol.packet.KnownPacketFactories.PacketFactoryIllegalState10008Exception
+import net.mamoe.mirai.internal.network.protocol.packet.KnownPacketFactories.PacketFactoryIllegalStateException
 import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
@@ -443,9 +443,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             input.use {
                 try {
                     parsePacket(it)
-                } catch (e: PacketFactoryIllegalState10008Exception) {
+                } catch (e: PacketFactoryIllegalStateException) {
                     logger.warning { "Network force offline: ${e.message}" }
-                    bot.launch { BotOfflineEvent.PacketFactory10008(bot, e).broadcast() }
+                    bot.launch { BotOfflineEvent.PacketFactoryErrorCode(e.code, bot, e).broadcast() }
                 }
             }
         }

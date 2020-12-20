@@ -103,7 +103,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 is BotOfflineEvent.MsfOffline,
                 is BotOfflineEvent.Dropped,
                 is BotOfflineEvent.RequireReconnect,
-                is BotOfflineEvent.PacketFactory10008
+                is BotOfflineEvent.PacketFactoryErrorCode
                 -> {
                     if (!_network.isActive) {
                         // normally closed

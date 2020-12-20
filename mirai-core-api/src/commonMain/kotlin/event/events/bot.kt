@@ -73,7 +73,8 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      * 因 returnCode = -10008 等原因掉线
      */
     @MiraiInternalApi("This is very experimental and might be changed")
-    public data class PacketFactory10008 internal constructor(
+    public data class PacketFactoryErrorCode internal constructor(
+        val returnCode: Int,
         public override val bot: Bot,
         public override val cause: Throwable
     ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
