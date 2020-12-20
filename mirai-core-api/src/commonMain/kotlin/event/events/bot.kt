@@ -73,7 +73,8 @@ public sealed class BotOfflineEvent : BotEvent, AbstractEvent() {
      * 因 returnCode = -10008 等原因掉线
      */
     @MiraiInternalApi("This is very experimental and might be changed")
-    public data class PacketFactory10008 internal constructor(
+    public data class PacketFactoryErrorCode internal constructor(
+        val returnCode: Int,
         public override val bot: Bot,
         public override val cause: Throwable
     ) : BotOfflineEvent(), Packet, BotPassiveEvent, CauseAware
@@ -125,7 +126,7 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
     /**
      * 戳一戳的发起人，为 [Bot] 的某一好友, 或某一群员, 或 [Bot.asFriend]
      */
-    public abstract val from: User
+    public abstract val from: UserOrBot
 
     /** 戳一戳的动作名称 */
     public abstract val action: String
@@ -235,7 +236,7 @@ public data class BotNudgedEvent internal constructor(
  * @see MessageEvent.subject
  */
 @MiraiExperimentalApi
-public val BotNudgedEvent.subject: Contact
+public val BotNudgedEvent.subject: ContactOrBot
     get() = when (val inlineFrom = from) {
         is Member -> inlineFrom.group
         else -> inlineFrom

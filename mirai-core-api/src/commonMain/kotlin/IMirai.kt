@@ -40,6 +40,11 @@ public val Mirai: IMirai by lazy { findMiraiInstance() }
  * @see Mirai
  */
 public interface IMirai : LowLevelApiAccessor {
+    /**
+     * 此 API 不稳定. 请优先使用 [BotFactory.INSTANCE]
+     *
+     * @see BotFactory.INSTANCE
+     */
     @Suppress("PropertyName")
     @MiraiExperimentalApi
     public val BotFactory: BotFactory

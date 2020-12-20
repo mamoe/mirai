@@ -30,7 +30,7 @@ import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.*
-import net.mamoe.mirai.internal.network.protocol.packet.KnownPacketFactories.PacketFactoryIllegalState10008Exception
+import net.mamoe.mirai.internal.network.protocol.packet.KnownPacketFactories.PacketFactoryIllegalStateException
 import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
@@ -45,6 +45,7 @@ import net.mamoe.mirai.network.RetryLaterException
 import net.mamoe.mirai.network.UnsupportedSMSLoginException
 import net.mamoe.mirai.network.WrongPasswordException
 import net.mamoe.mirai.utils.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -130,7 +131,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         while (isActive) {
             try {
-                channel.connect(coroutineContext + CoroutineName("Socket"), host, port)
+                channel.connect(host, port)
                 break
             } catch (e: SocketException) {
                 if (e is NoRouteToHostException || e.message?.contains("Network is unreachable") == true) {
@@ -151,17 +152,28 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         logger.info { "Connected to server $host:$port" }
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
 
+        fun LoginSolver?.notnull(): LoginSolver {
+            checkNotNull(this) {
+                "No LoginSolver found. Please provide by BotConfiguration.loginSolver. " +
+                        "For example use `BotFactory.newBot(...) { loginSolver = yourLoginSolver}` in Kotlin, " +
+                        "use `BotFactory.newBot(..., new BotConfiguration() {{ setLoginSolver(yourLoginSolver) }})` in Java."
+            }
+            return this
+        }
+
+        fun loginSolverNotNull() = bot.configuration.loginSolver.notnull()
+
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
         mainloop@ while (true) {
             when (response) {
                 is WtLogin.Login.LoginPacketResponse.UnsafeLogin -> {
-                    bot.configuration.loginSolver.onSolveUnsafeDeviceLoginVerify(bot, response.url)
+                    loginSolverNotNull().onSolveUnsafeDeviceLoginVerify(bot, response.url)
                     response = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
                 }
 
                 is WtLogin.Login.LoginPacketResponse.Captcha -> when (response) {
                     is WtLogin.Login.LoginPacketResponse.Captcha.Picture -> {
-                        var result = bot.configuration.loginSolver.onSolvePicCaptcha(bot, response.data)
+                        var result = loginSolverNotNull().onSolvePicCaptcha(bot, response.data)
                         if (result == null || result.length != 4) {
                             //refresh captcha
                             result = "ABCD"
@@ -171,7 +183,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                         continue@mainloop
                     }
                     is WtLogin.Login.LoginPacketResponse.Captcha.Slider -> {
-                        val ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url).orEmpty()
+                        val ticket = loginSolverNotNull().onSolveSliderCaptcha(bot, response.url).orEmpty()
                         response = WtLogin.Login.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
                         continue@mainloop
                     }
@@ -220,8 +232,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     @JvmField
     @Volatile
-    internal var pendingIncomingPackets: LockFreeLinkedList<KnownPacketFactories.IncomingPacket<*>>? =
-        LockFreeLinkedList()
+    internal var pendingIncomingPackets: ConcurrentLinkedQueue<KnownPacketFactories.IncomingPacket<*>>? =
+        ConcurrentLinkedQueue()
 
     private var initFriendOk = false
     private var initGroupOk = false
@@ -252,7 +264,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             totalFriendCount = data.totalFriendCount
             data.friendList.forEach {
                 // atomic
-                bot.friends.delegate.addLast(
+                bot.friends.delegate.add(
                     FriendImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
                 ).also { currentFriendCount++ }
             }
@@ -268,7 +280,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     suspend fun StTroopNum.reloadGroup() {
         retryCatching(3) {
-            bot.groups.delegate.addLast(
+            bot.groups.delegate.add(
                 GroupImpl(
                     bot = bot,
                     coroutineContext = bot.coroutineContext,
@@ -314,15 +326,15 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         CancellationException("re-init").let { reInitCancellationException ->
             if (!initFriendOk) {
-                bot.friends.delegate.clear { it.cancel(reInitCancellationException) }
+                bot.friends.delegate.removeAll { it.cancel(reInitCancellationException); true }
             }
             if (!initGroupOk) {
-                bot.groups.delegate.clear { it.cancel(reInitCancellationException) }
+                bot.groups.delegate.removeAll { it.cancel(reInitCancellationException); true }
             }
         }
 
         if (!pendingEnabled) {
-            pendingIncomingPackets = LockFreeLinkedList()
+            pendingIncomingPackets = ConcurrentLinkedQueue()
             _pendingEnabled.value = true
         }
 
@@ -442,9 +454,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             input.use {
                 try {
                     parsePacket(it)
-                } catch (e: PacketFactoryIllegalState10008Exception) {
+                } catch (e: PacketFactoryIllegalStateException) {
                     logger.warning { "Network force offline: ${e.message}" }
-                    bot.launch { BotOfflineEvent.PacketFactory10008(bot, e).broadcast() }
+                    bot.launch { BotOfflineEvent.PacketFactoryErrorCode(e.code, bot, e).broadcast() }
                 }
             }
         }
@@ -493,9 +505,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
                 packet is MessageEvent -> packet.logMessageReceived()
                 packet is Event && packet !is Packet.NoEventLog -> bot.logger.verbose {
-                    "Event: ${packet.toString().singleLine()}"
+                    "Event: $packet".replaceMagicCodes()
                 }
-                else -> logger.verbose { "Recv: ${packet.toString().singleLine()}" }
+                else -> logger.verbose { "Recv: $packet".replaceMagicCodes() }
             }
         }
 

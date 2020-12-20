@@ -12,8 +12,9 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.utils.LockFreeLinkedList
-import net.mamoe.mirai.utils.asSequence
-import kotlin.jvm.JvmField
+import net.mamoe.mirai.utils.MiraiInternalApi
+import net.mamoe.mirai.utils.PlannedRemoval
+import java.util.concurrent.ConcurrentLinkedQueue
 
 
 /**
@@ -23,26 +24,26 @@ import kotlin.jvm.JvmField
  */
 @Suppress("unused")
 public class ContactList<C : Contact>
-internal constructor(@JvmField internal val delegate: LockFreeLinkedList<C>) : Collection<C> {
+internal constructor(@JvmField @MiraiInternalApi public val delegate: ConcurrentLinkedQueue<C>) :
+    Collection<C> by delegate {
+    internal constructor(collection: Collection<C>) : this(ConcurrentLinkedQueue(collection))
+    internal constructor() : this(ConcurrentLinkedQueue())
 
-    public operator fun get(id: Long): C =
-        delegate.asSequence().firstOrNull { it.id == id } ?: throw NoSuchElementException("Contact id $id")
+    @PlannedRemoval("2.0-M2")
+    @Deprecated("Use get", ReplaceWith("get(id)"))
+    public fun getOrNull(id: Long): C? = get(id)
 
-    public fun getOrNull(id: Long): C? = delegate.getOrNull(id)
+    public operator fun get(id: Long): C? = delegate.firstOrNull { it.id == id }
+    public fun remove(id: Long): Boolean = delegate.removeAll { it.id == id }
+    public operator fun contains(id: Long): Boolean = get(id) != null
 
-    public override val size: Int get() = delegate.size
-    public override operator fun contains(element: C): Boolean = delegate.contains(element)
-    public operator fun contains(id: Long): Boolean = delegate.getOrNull(id) != null
-    public override fun containsAll(elements: Collection<C>): Boolean = elements.all { contains(it) }
-    public override fun isEmpty(): Boolean = delegate.isEmpty()
-
-    public override fun toString(): String =
-        delegate.asSequence().joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
-
-    public override fun iterator(): Iterator<C> {
-        return this.delegate.asSequence().iterator()
-    }
+    override fun toString(): String = delegate.joinToString(separator = ", ", prefix = "ContactList(", postfix = ")")
+    override fun equals(other: Any?): Boolean = other is ContactList<*> && delegate == other.delegate
+    override fun hashCode(): Int = delegate.hashCode()
 }
+
+@Deprecated("x", ReplaceWith("this.add(c)"))
+internal fun <C : Any?> ConcurrentLinkedQueue<C>.addLast(c: C): Boolean = this.add(c)
 
 /**
  * ID 列表的字符串表示.
@@ -52,9 +53,7 @@ internal constructor(@JvmField internal val delegate: LockFreeLinkedList<C>) : C
  * ```
  */
 public val ContactList<*>.idContentString: String
-    get() = "[" + buildString { delegate.forEach { append(it.id).append(", ") } }.dropLast(
-        2
-    ) + "]"
+    get() = "[" + delegate.joinToString { it.id.toString() } + "]"
 
 
 internal operator fun <C : Contact> LockFreeLinkedList<C>.get(id: Long): C {

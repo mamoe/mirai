@@ -42,6 +42,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
 import java.io.InputStream
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
@@ -76,28 +77,28 @@ internal class GroupImpl(
 
     val uin: Long = groupInfo.uin
 
-    override lateinit var owner: Member
+    override lateinit var owner: NormalMember
 
-    override lateinit var botAsMember: Member
+    override lateinit var botAsMember: NormalMember
 
     override val botPermission: MemberPermission get() = botAsMember.permission
 
     // e.g. 600
     override val botMuteRemaining: Int get() = botAsMember.muteTimeRemaining
 
-    override val members: ContactList<Member> = ContactList(members.mapNotNull {
+    override val members: ContactList<NormalMember> = ContactList(members.mapNotNull {
         if (it.uin == bot.id) {
-            botAsMember = newMember(it)
+            botAsMember = newMember(it).cast()
             if (it.permission == MemberPermission.OWNER) {
                 owner = botAsMember
             }
             null
-        } else newMember(it).also { member ->
+        } else newMember(it).cast<NormalMember>().also { member ->
             if (member.permission == MemberPermission.OWNER) {
                 owner = member
             }
         }
-    }.toLockFreeLinkedList())
+    }.mapTo(ConcurrentLinkedQueue()) { it })
 
     internal var _name: String = groupInfo.name
     private var _announcement: String = groupInfo.memo
@@ -220,7 +221,7 @@ internal class GroupImpl(
             ).sendAndExpect()
             check(response.errorCode == 0) {
                 "Group.quit failed: $response".also {
-                    bot.groups.delegate.addLast(this@GroupImpl)
+                    bot.groups.delegate.add(this@GroupImpl)
                 }
             }
         }
@@ -249,23 +250,15 @@ internal class GroupImpl(
         }
     )
 
-    override operator fun get(id: Long): Member {
+    override operator fun get(id: Long): NormalMember? {
         if (id == bot.id) {
             return botAsMember
         }
         return members.firstOrNull { it.id == id }
-            ?: throw NoSuchElementException("member $id not found in group $uin")
     }
 
     override fun contains(id: Long): Boolean {
         return bot.id == id || members.firstOrNull { it.id == id } != null
-    }
-
-    override fun getOrNull(id: Long): Member? {
-        if (id == bot.id) {
-            return botAsMember
-        }
-        return members.firstOrNull { it.id == id }
     }
 
     override suspend fun sendMessage(message: Message): MessageReceipt<Group> {
@@ -305,7 +298,7 @@ internal class GroupImpl(
                 throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
             }.message.asMessageChain()
 
-            val length = chain.estimateLength(703) // 阈值为700左右，限制到3的倍数
+            val length = chain.estimateLength(this, 703) // 阈值为700左右，限制到3的倍数
             var imageCnt = 0 // 通过下方逻辑短路延迟计算
 
             if (length > 5000 || chain.count { it is Image }.apply { imageCnt = this } > 50) {
@@ -363,7 +356,7 @@ internal class GroupImpl(
                 bot.network.logger.warning(e)
             }
 
-            MessageReceipt(source, this@GroupImpl, botAsMember)
+            MessageReceipt(source, this@GroupImpl)
         }
 
         result.fold(
@@ -460,7 +453,7 @@ internal class GroupImpl(
                 response.fileKey,
                 codec
             )
-            Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), "")
+            Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), codec, "")
         }
 
     }

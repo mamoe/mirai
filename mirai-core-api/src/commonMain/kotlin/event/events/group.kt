@@ -13,21 +13,16 @@
 
 package net.mamoe.mirai.event.events
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.MemberPermission
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.internal.runBlocking
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.jvm.*
 
 /**
  * 机器人被踢出群或在其他客户端主动退出一个群. 在事件广播前 [Bot.groups] 就已删除这个群.
@@ -247,14 +242,14 @@ public data class GroupAllowMemberInviteEvent internal constructor(
  * 成员已经加入群的事件
  */
 public sealed class MemberJoinEvent(
-    public override val member: Member
+    public override val member: NormalMember
 ) : GroupMemberEvent, BotPassiveEvent, Packet,
     AbstractEvent() {
     /**
      * 被邀请加入群
      */
     public data class Invite internal constructor(
-        public override val member: Member
+        public override val member: NormalMember
     ) : MemberJoinEvent(member) {
         public override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id})"
     }
@@ -263,7 +258,7 @@ public sealed class MemberJoinEvent(
      * 成员主动加入群
      */
     public data class Active internal constructor(
-        public override val member: Member
+        public override val member: NormalMember
     ) : MemberJoinEvent(member) {
         public override fun toString(): String = "MemberJoinEvent.Active(member=${member.id})"
     }
@@ -273,7 +268,7 @@ public sealed class MemberJoinEvent(
      * 此时 [member] 的 [Member.permission] 肯定是 [MemberPermission.OWNER]
      */
     public data class Retrieve internal constructor(
-        public override val member: Member
+        public override val member: NormalMember
     ) : MemberJoinEvent(member) {
         override fun toString(): String = "MemberJoinEvent.Retrieve(member=${member.id})"
     }
@@ -287,11 +282,11 @@ public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
      * 成员被踢出群. 成员不可能是机器人自己.
      */
     public data class Kick(
-        public override val member: Member,
+        public override val member: NormalMember,
         /**
          * 操作人. 为 null 则是机器人操作.
          */
-        public override val operator: Member?
+        public override val operator: NormalMember?
     ) : MemberLeaveEvent(), Packet, GroupOperableEvent {
         public override fun toString(): String = "MemberLeaveEvent.Kick(member=${member.id}, operator=${operator?.id})"
     }
@@ -300,7 +295,7 @@ public sealed class MemberLeaveEvent : GroupMemberEvent, AbstractEvent() {
      * 成员主动离开
      */
     public data class Quit(
-        public override val member: Member
+        public override val member: NormalMember
     ) : MemberLeaveEvent(), Packet {
         public override fun toString(): String = "MemberLeaveEvent.Quit(member=${member.id})"
     }
@@ -327,26 +322,19 @@ public data class BotInvitedJoinGroupRequestEvent internal constructor(
      */
     public val invitorNick: String
 ) : BotEvent, Packet, AbstractEvent() {
-    public val invitor: Friend get() = this.bot.getFriend(invitorId)
+    /**
+     * 邀请人. 若在事件发生后邀请人已经被删除好友, [invitor] 为 `null`.
+     */
+    public val invitor: Friend? get() = this.bot.getFriend(invitorId)
 
     @JvmField
     internal val responded: AtomicBoolean = AtomicBoolean(false)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun accept(): Unit = Mirai.acceptInvitedJoinGroupRequest(this)
 
-    @JvmSynthetic
+    @JvmBlockingBridge
     public suspend fun ignore(): Unit = Mirai.ignoreInvitedJoinGroupRequest(this)
-
-    @JavaFriendlyAPI
-    @JvmName("accept")
-    public fun __acceptBlockingForJava__(): Unit =
-        runBlocking { Mirai.acceptInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
-
-    @JavaFriendlyAPI
-    @JvmName("ignore")
-    public fun __ignoreBlockingForJava__(): Unit =
-        runBlocking { Mirai.ignoreInvitedJoinGroupRequest(this@BotInvitedJoinGroupRequestEvent) }
 }
 
 /**
@@ -374,40 +362,34 @@ public data class MemberJoinRequestEvent internal constructor(
      */
     val fromNick: String
 ) : BotEvent, Packet, AbstractEvent() {
-    public val group: Group get() = this.bot.getGroup(groupId)
+    /**
+     * 相关群. 若在事件发生后机器人退出这个群, [group] 为 `null`.
+     */
+    public val group: Group? get() = this.bot.getGroup(groupId)
 
     @JvmField
     @PublishedApi
     internal val responded: AtomicBoolean = AtomicBoolean(false)
 
-    @JvmSynthetic
+    /**
+     * 同意这个请求
+     */
+    @JvmBlockingBridge
     public suspend fun accept(): Unit = Mirai.acceptMemberJoinRequest(this)
 
-    @JvmSynthetic
+    /**
+     * 拒绝这个请求
+     */
+    @JvmBlockingBridge
     @JvmOverloads
     public suspend fun reject(blackList: Boolean = false, message: String = ""): Unit =
         Mirai.rejectMemberJoinRequest(this, blackList, message)
 
-    @JvmSynthetic
+    /**
+     * 忽略这个请求.
+     */
+    @JvmBlockingBridge
     public suspend fun ignore(blackList: Boolean = false): Unit = Mirai.ignoreMemberJoinRequest(this, blackList)
-
-
-    @JavaFriendlyAPI
-    @JvmName("accept")
-    public fun __acceptBlockingForJava__(): Unit =
-        runBlocking { Mirai.acceptMemberJoinRequest(this@MemberJoinRequestEvent) }
-
-    @JavaFriendlyAPI
-    @JvmOverloads
-    @JvmName("reject")
-    public fun __rejectBlockingForJava__(blackList: Boolean = false, message: String = ""): Unit =
-        runBlocking { Mirai.rejectMemberJoinRequest(this@MemberJoinRequestEvent, blackList, message) }
-
-    @JavaFriendlyAPI
-    @JvmOverloads
-    @JvmName("ignore")
-    public fun __ignoreBlockingForJava__(blackList: Boolean = false): Unit =
-        runBlocking { Mirai.ignoreMemberJoinRequest(this@MemberJoinRequestEvent, blackList) }
 }
 
 // endregion
@@ -454,7 +436,7 @@ public data class MemberSpecialTitleChangeEvent internal constructor(
      * 不为 null 时一定为群主. 可能与 [member] 引用相同, 此时为群员自己修改.
      * 为 null 时则是机器人操作.
      */
-    public override val operator: Member?
+    public override val operator: NormalMember?
 ) : GroupMemberEvent, GroupOperableEvent, AbstractEvent()
 
 // endregion

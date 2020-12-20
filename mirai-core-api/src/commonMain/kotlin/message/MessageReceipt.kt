@@ -12,6 +12,7 @@
 package net.mamoe.mirai.message
 
 import net.mamoe.kjbb.JvmBlockingBridge
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
@@ -19,7 +20,7 @@ import net.mamoe.mirai.message.MessageReceipt.Companion.quote
 import net.mamoe.mirai.message.MessageReceipt.Companion.quoteReply
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
-import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
  * 发送消息后得到的回执. 可用于撤回, 引用回复等.
@@ -38,7 +39,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * @see MessageReceipt.sourceIds 源 ids
  * @see MessageReceipt.sourceTime 源时间
  */
-public open class MessageReceipt<out C : Contact> @MiraiExperimentalApi("The constructor is subject to change.") constructor(
+public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
     /**
      * 指代发送出去的消息.
      */
@@ -47,12 +48,6 @@ public open class MessageReceipt<out C : Contact> @MiraiExperimentalApi("The con
      * 发送目标, 为 [Group] 或 [Friend] 或 [Member]
      */
     public val target: C,
-
-    /**
-     * @see Group.botAsMember
-     */
-    @MiraiExperimentalApi("This is subject to change.")
-    public val botAsMember: Member?
 ) {
     /**
      * 是否为发送给群的消息的回执
@@ -99,25 +94,31 @@ public open class MessageReceipt<out C : Contact> @MiraiExperimentalApi("The con
 }
 
 /**
+ * 获取相关 [Bot]
+ */
+public inline val MessageReceipt<*>.bot: Bot
+    get() = target.bot
+
+/**
  * 获取源消息 [MessageSource.ids]
- *
- * @see MessageSource.ids
  */
 public inline val MessageReceipt<*>.sourceIds: IntArray
     get() = this.source.ids
 
 /**
  * 获取源消息 [MessageSource.internalIds]
- *
- * @see MessageSource.ids
  */
 public inline val MessageReceipt<*>.sourceInternalIds: IntArray
     get() = this.source.internalIds
 
 /**
  * 获取源消息 [MessageSource.time]
- *
- * @see MessageSource.time
  */
 public inline val MessageReceipt<*>.sourceTime: Int
     get() = this.source.time
+
+/**
+ * 获取源消息 [MessageSource.originalMessage]
+ */
+public inline val MessageReceipt<*>.sourceMessage: MessageChain
+    get() = this.source.originalMessage

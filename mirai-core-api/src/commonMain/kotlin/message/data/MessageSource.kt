@@ -28,6 +28,7 @@ import net.mamoe.mirai.message.data.MessageSource.Key.isAboutGroup
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutTemp
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.LazyProperty
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -143,9 +144,10 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
     public abstract val originalMessage: MessageChain
 
     /**
-     * 返回 `"[mirai:source:$ids,$internalIds]"`
+     * 返回 `"[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"`
      */
-    public final override fun toString(): String = "[mirai:source:$ids,$internalIds]"
+    public final override fun toString(): String =
+        "[mirai:source:${ids.contentToString()},${internalIds.contentToString()}]"
 
     public companion object Key : AbstractMessageKey<MessageSource>({ it.safeCast() }) {
         /**
@@ -397,6 +399,13 @@ public abstract class OfflineMessageSource : MessageSource() {
      * 消息种类
      */
     public abstract val kind: MessageSourceKind
+
+    @PlannedRemoval("2.0-M2")
+    @Deprecated(
+        "Use MessageSourceKind",
+        ReplaceWith("MessageSourceKind", "net.mamoe.mirai.message.data.MessageSourceKind")
+    )
+    private enum class Kind
 }
 
 @Serializable

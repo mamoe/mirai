@@ -70,45 +70,40 @@ public object SwingSolver : LoginSolver() {
 // 不会触发各种 NoDefClassError
 @Suppress("DEPRECATION")
 internal object WindowHelperJvm {
-    internal val isDesktopSupported: Boolean = kotlin.run {
-        if (System.getProperty("mirai.no-desktop") === null) {
-            kotlin.runCatching {
-                Class.forName("java.awt.Desktop")
-                Class.forName("java.awt.Toolkit")
-            }.onFailure { return@run false } // Android OS
-            kotlin.runCatching {
-                Toolkit.getDefaultToolkit()
-            }.onFailure { // AWT Error, #270
-                return@run false
+    enum class PlatformKind {
+        ANDROID,
+        SWING,
+        CLI
+    }
+
+    internal val platformKind: PlatformKind = kotlin.run {
+        if (kotlin.runCatching { Class.forName("android.util.Log") }.isSuccess) {
+            // Android platform
+            return@run PlatformKind.ANDROID
+        }
+        if (System.getProperty("mirai.no-desktop") != null) return@run PlatformKind.CLI
+        kotlin.runCatching {
+            Class.forName("java.awt.Desktop")
+            Class.forName("java.awt.Toolkit")
+            Toolkit.getDefaultToolkit()
+
+            if (Desktop.isDesktopSupported()) {
+                MiraiLogger.TopLevel.info(
+                    """
+                                    Mirai 正在使用桌面环境. 如遇到验证码将会弹出对话框. 可添加 JVM 属性 `mirai.no-desktop` 以关闭.
+                                """.trimIndent()
+                )
+                MiraiLogger.TopLevel.info(
+                    """
+                                    Mirai is using desktop. Captcha will be thrown by window popup. You can add `mirai.no-desktop` to JVM properties (-Dmirai.no-desktop) to disable it.
+                                """.trimIndent()
+                )
+                return@run PlatformKind.SWING
+            } else {
+                return@run PlatformKind.CLI
             }
-            kotlin.runCatching {
-                Desktop.isDesktopSupported().also { stat ->
-                    if (stat) {
-                        MiraiLogger.TopLevel.info(
-                            """
-                                Mirai 正在使用桌面环境,
-                                如果你正在使用SSH, 或无法访问桌面等,
-                                请将 `mirai.no-desktop` 添加到 JVM 系统属性中 (-Dmirai.no-desktop)
-                                然后重启 Mirai
-                            """.trimIndent()
-                        )
-                        MiraiLogger.TopLevel.info(
-                            """
-                                Mirai using DesktopCaptcha System.
-                                If you are running on SSH, cannot access desktop or more.
-                                Please add `mirai.no-desktop` to JVM properties (-Dmirai.no-desktop)
-                                Then restart mirai
-                            """.trimIndent()
-                        )
-                    }
-                }
-            }.getOrElse {
-                // Should not happen
-                MiraiLogger.TopLevel.warning("Exception in checking desktop support.", it)
-                false
-            }
-        } else {
-            false
+        }.getOrElse {
+            return@run PlatformKind.CLI
         }
     }
 }

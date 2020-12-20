@@ -19,14 +19,8 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.Voice
-import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.get
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.*
 import java.io.InputStream
 
 /**
@@ -59,13 +53,13 @@ public interface Group : Contact, CoroutineScope {
      *
      * @return 若机器人是群主, 返回 [botAsMember]. 否则返回相应的成员
      */
-    public val owner: Member
+    public val owner: NormalMember
 
     /**
      * [Bot] 在群内的 [Member] 实例
      */
     @MiraiExperimentalApi
-    public val botAsMember: Member
+    public val botAsMember: NormalMember
 
     /**
      * 机器人被禁言还剩余多少秒
@@ -92,28 +86,46 @@ public interface Group : Contact, CoroutineScope {
 
     /**
      * 群成员列表, 不含机器人自己, 含群主.
-     * 在 [Group] 实例创建的时候查询一次. 并与事件同步事件更新
+     *
+     * 在 [Group] 实例创建的时候查询一次. 并与事件同步事件更新.
      */
-    public val members: ContactList<Member>
+    public val members: ContactList<NormalMember>
 
     /**
-     * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException]
-     * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
+     * 获取群成员实例. 不存在时返回 `null`.
+     *
+     * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
      */
-    @Throws(NoSuchElementException::class)
-    public operator fun get(id: Long): Member
+    public operator fun get(id: Long): NormalMember?
 
+    @Deprecated("Use get", ReplaceWith("get(id)"))
+    @PlannedRemoval("2.0-M2")
     /**
      * 获取群成员实例, 不存在则 null
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
      */
-    public fun getOrNull(id: Long): Member?
+    public fun getOrNull(id: Long): NormalMember? = get(id)
 
     /**
-     * 检查此 id 的群成员是否存在
+     * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException].
+     *
+     * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
+     */
+    public fun getOrFail(id: Long): NormalMember =
+        get(id) ?: throw NoSuchElementException("member $id not found in group ${this.id}")
+
+
+    /**
+     * 当本群存在 [Member.id] 为 [id] 的群员时返回 `true`.
+     *
      * 当 [id] 为 [Bot.id] 时返回 `true`
      */
     public operator fun contains(id: Long): Boolean
+
+    /**
+     * 当 [member] 是本群成员时返回 `true`. 将同时成员 [所属群][Member.group]. 同一个用户在不同群内的 [Member] 对象不相等.
+     */
+    public operator fun contains(member: NormalMember): Boolean = member in members
 
 
     /**
@@ -149,6 +161,14 @@ public interface Group : Contact, CoroutineScope {
      */
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Group>
+
+    /**
+     * 发送纯文本消息
+     * @see sendMessage
+     */
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): MessageReceipt<Group> =
+        this.sendMessage(message.toPlainText())
 
 
     /**

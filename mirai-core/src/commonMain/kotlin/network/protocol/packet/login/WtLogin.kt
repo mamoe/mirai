@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.network.*
 import net.mamoe.mirai.internal.network.protocol.LoginType
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.internal.utils.cryptor.TEA
+import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
 import net.mamoe.mirai.utils.currentTimeSeconds
@@ -128,7 +128,7 @@ internal class WtLogin {
                 writeSsoPacket(client, client.subAppId, commandName, sequenceId = sequenceId) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(9) // subCommand
-                        writeShort(17) // count of TLVs, probably ignored by server?
+                        writeShort(0x18) // count of TLVs, probably ignored by server?
                         //writeShort(LoginType.PASSWORD.value.toShort())
 
                         t18(appId, client.appClientVersion, client.uin)
@@ -145,7 +145,8 @@ internal class WtLogin {
                             client.tgtgtKey,
                             true,
                             client.device.guid,
-                            LoginType.PASSWORD
+                            LoginType.PASSWORD,
+                            client.ssoVersion
                         )
 
                         /* // from GetStWithPasswd
@@ -159,8 +160,9 @@ internal class WtLogin {
                         if (ConfigManager.get_loginWithPicSt()) appIdList = longArrayOf(1600000226L)
                         */
                         t116(client.miscBitMap, client.subSigMap)
-                        t100(appId, client.subAppId, client.appClientVersion)
+                        t100(appId, client.subAppId, client.appClientVersion, client.ssoVersion)
                         t107(0)
+                        t108(client.device.imei.toByteArray())
 
                         // t108(byteArrayOf())
                         // ignored: t104()
@@ -191,9 +193,11 @@ internal class WtLogin {
                         t145(client.device.guid)
                         t147(appId, client.apkVersionName, client.apkSignatureMd5)
 
+                        /*
                         if (client.miscBitMap and 0x80 != 0) {
                             t166(1)
                         }
+                        */
 
                         // ignored t16a because array5 is null
 
@@ -209,14 +213,14 @@ internal class WtLogin {
                                 "connect.qq.com",
                                 "qzone.qq.com",
                                 "vip.qq.com",
+                                "gamecenter.qq.com",
                                 "qun.qq.com",
                                 "game.qq.com",
                                 "qqweb.qq.com",
                                 "office.qq.com",
                                 "ti.qq.com",
                                 "mail.qq.com",
-                                "qzone.com",
-                                "mma.qq.com"
+                                "mma.qq.com",
                             )
                         )
 
@@ -242,7 +246,10 @@ internal class WtLogin {
                             t202(bssid, ssid)
                         }
 
-                        t177()
+                        t177(
+                            buildTime = client.buildTime,
+                            buildVersion = client.sdkVersion,
+                        )
                         t516()
                         t521()
 
@@ -312,6 +319,7 @@ internal class WtLogin {
             discardExact(2)
             val tlvMap: TlvMap = this._readTLVMap()
             // tlvMap.printTLVMap()
+            tlvMap[0x161]?.let { bot.client.analysisTlv161(it) }
             return when (type.toInt()) {
                 0 -> onLoginSuccess(tlvMap, bot)
                 2 -> onSolveLoginCaptcha(tlvMap, bot)

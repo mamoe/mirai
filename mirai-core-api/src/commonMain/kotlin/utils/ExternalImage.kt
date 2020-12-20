@@ -73,8 +73,9 @@ public class ExternalImage internal constructor(
         }
 
         @MiraiExperimentalApi
-        public fun generateImageId(md5: ByteArray): String {
-            return """{${generateUUID(md5)}}.$defaultFormatName"""
+        @JvmOverloads
+        public fun generateImageId(md5: ByteArray, format: String = defaultFormatName): String {
+            return """{${generateUUID(md5)}}.$format"""
         }
     }
 
@@ -87,7 +88,7 @@ public class ExternalImage internal constructor(
         return "ExternalImage(${generateUUID(md5)})"
     }
 
-    internal fun calculateImageResourceId(): String = """{${generateUUID(md5)}}.$formatName"""
+    internal fun calculateImageResourceId(): String = generateImageId(md5, formatName)
 
     private fun String.detectFormatName(): String = when {
         startsWith("FFD8") -> "jpg"

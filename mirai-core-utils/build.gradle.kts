@@ -9,6 +9,8 @@
 
 @file:Suppress("UNUSED_VARIABLE")
 
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+
 plugins {
     kotlin("multiplatform")
     id("kotlinx-atomicfu")
@@ -54,12 +56,10 @@ kotlin {
     }
 
     jvm("common") {
-        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "common")
+        attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.common)
     }
 
-    jvm("jvm") {
-        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "jvm")
-    }
+    jvm("jvm")
 
 //    jvm("android") {
 //        attributes.attribute(Attribute.of("mirai.target.platform", String::class.java), "android")

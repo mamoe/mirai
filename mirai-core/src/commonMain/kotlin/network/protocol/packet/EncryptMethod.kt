@@ -14,8 +14,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.utils.cryptor.ECDH
-import net.mamoe.mirai.internal.utils.cryptor.ECDHKeyPair
+import net.mamoe.mirai.internal.utils.crypto.ECDH
+import net.mamoe.mirai.internal.utils.crypto.ECDHKeyPair
 import net.mamoe.mirai.internal.utils.io.encryptAndWrite
 import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 
@@ -59,7 +59,7 @@ internal class EncryptMethodECDH135(override val ecdh: ECDH) :
 
 internal class EncryptMethodECDH7(override val ecdh: ECDH) :
     EncryptMethodECDH {
-    override val id: Int get() = 7
+    override val id: Int get() = 7 // 135
 }
 
 internal interface EncryptMethodECDH : EncryptMethod {
@@ -73,22 +73,30 @@ internal interface EncryptMethodECDH : EncryptMethod {
 
     val ecdh: ECDH
 
-    override fun makeBody(client: QQAndroidClient, body: BytePacketBuilder.() -> Unit): ByteReadPacket =
-        buildPacket {
-            writeByte(1) // const
-            writeByte(1) // const
-            writeFully(client.randomKey)
-            writeShort(258) // const
+    override fun makeBody(client: QQAndroidClient, body: BytePacketBuilder.() -> Unit): ByteReadPacket = buildPacket {
+        /* //new curve p-256
+        writeByte(2) // const
+        writeByte(1) // const
+        writeFully(client.randomKey)
+        writeShort(0x0131) // const
+        writeShort(0x0001)
+         */
 
-            if (ecdh.keyPair === ECDHKeyPair.DefaultStub) {
-                writeShortLVByteArray(ECDHKeyPair.DefaultStub.defaultPublicKey)
-                encryptAndWrite(ECDHKeyPair.DefaultStub.defaultShareKey, body)
-            } else {
-                writeShortLVByteArray(ecdh.keyPair.publicKey.getEncoded().drop(23).take(49).toByteArray().also {
-                    check(it[0].toInt() == 0x04) { "Bad publicKey generated. Expected first element=0x04, got${it[0]}" }
-                })
+        writeByte(1) // version
+        writeByte(1) // const
+        writeFully(client.randomKey)
+        writeShort(0x0102)
 
-                encryptAndWrite(ecdh.keyPair.initialShareKey, body)
-            }
+        if (ecdh.keyPair === ECDHKeyPair.DefaultStub) {
+            writeShortLVByteArray(ECDHKeyPair.DefaultStub.defaultPublicKey)
+            encryptAndWrite(ECDHKeyPair.DefaultStub.defaultShareKey, body)
+        } else {
+            // for p-256, drop(26). // but not really sure.
+            writeShortLVByteArray(ecdh.keyPair.publicKey.getEncoded().drop(23).toByteArray().also {
+                check(it[0].toInt() == 0x04) { "Bad publicKey generated. Expected first element=0x04, got${it[0]}" }
+            })
+
+            encryptAndWrite(ecdh.keyPair.initialShareKey, body)
         }
+    }
 }

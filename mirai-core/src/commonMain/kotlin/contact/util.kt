@@ -11,9 +11,8 @@
 
 package net.mamoe.mirai.internal.contact
 
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.asQQAndroidBot
@@ -26,9 +25,15 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.QuoteReply
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.message.data.firstIsInstanceOrNull
+import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+
+internal inline val Group.uin: Long get() = this.cast<GroupImpl>().uin
+internal inline val Group.groupCode: Long get() = this.id
+internal inline val User.uin: Long get() = this.id
+internal inline val Bot.uin: Long get() = this.id
 
 internal suspend fun <T : User> Friend.sendMessageImpl(
     message: Message,
@@ -82,26 +87,37 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
 internal fun Contact.logMessageSent(message: Message) {
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     if (message !is net.mamoe.mirai.message.data.LongMessage) {
-        bot.logger.verbose("$this <- ${message.toString().singleLine()}")
+        bot.logger.verbose("$this <- $message".replaceMagicCodes())
     }
 }
 
-internal fun MessageEvent.logMessageReceived() {
+@Suppress("RemoveRedundantQualifierName") // compiler bug
+internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
     when (this) {
-        is GroupMessageEvent -> bot.logger.verbose {
-            "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(${sender.id}) -> ${message.toString()
-                .singleLine()}"
+        is net.mamoe.mirai.event.events.GroupMessageEvent -> bot.logger.verbose {
+            "[${group.name}(${group.id})] ${senderName}(${sender.id}) -> $message".replaceMagicCodes()
         }
-        is TempMessageEvent -> bot.logger.verbose {
-            "[${group.name.singleLine()}(${group.id})] ${senderName.singleLine()}(Temp ${sender.id}) -> ${message.toString()
-                .singleLine()}"
+        is net.mamoe.mirai.event.events.TempMessageEvent -> bot.logger.verbose {
+            "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
         }
-        is FriendMessageEvent -> bot.logger.verbose {
-            "${sender.nick.singleLine()}(${sender.id}) -> ${message.toString().singleLine()}"
+        is net.mamoe.mirai.event.events.FriendMessageEvent -> bot.logger.verbose {
+            "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()
         }
     }
 }
 
-internal fun String.singleLine(): String {
-    return this.replace("\n", """\n""").replace("\r", "")
+internal val charMappings = mapOf(
+    '\n' to """\n""",
+    '\r' to "",
+    '\u202E' to "<RTL>",
+    '\u202D' to "<LTR>",
+)
+
+internal fun String.applyCharMapping() = buildString(capacity = this.length) {
+    this@applyCharMapping.forEach { char ->
+        append(charMappings[char] ?: char)
+    }
 }
+
+internal fun String.replaceMagicCodes(): String = this
+    .applyCharMapping()

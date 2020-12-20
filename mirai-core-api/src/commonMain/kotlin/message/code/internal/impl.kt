@@ -124,7 +124,7 @@ internal inline fun String.forEachMiraiCode(crossinline block: (origin: String, 
 
 internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     "at" to MiraiCodeParser(Regex("""(\d*)""")) { (target) ->
-        (this as? Group)?.getOrNull(target.toLong())?.at()
+        At(target.toLong())
     },
     "atall" to MiraiCodeParser(Regex("")) {
         AtAll

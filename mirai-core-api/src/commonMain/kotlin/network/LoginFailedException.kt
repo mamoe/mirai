@@ -52,7 +52,7 @@ public class RetryLaterException @MiraiInternalApi constructor() :
  * 无标准输入或 Kotlin 不支持此输入.
  */
 public class NoStandardInputForCaptchaException @MiraiInternalApi constructor(
-    public override val cause: Throwable?
+    public override val cause: Throwable? = null
 ) : LoginFailedException(true, "no standard input for captcha")
 
 /**

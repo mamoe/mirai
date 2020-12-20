@@ -24,12 +24,11 @@ import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.internal.network.protocol.packet.Tlv
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.internal.utils.cryptor.ECDH
-import net.mamoe.mirai.internal.utils.cryptor.TEA
+import net.mamoe.mirai.internal.utils.crypto.ECDH
+import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoServerAvailableException
 import net.mamoe.mirai.utils.*
-import kotlin.jvm.Volatile
 import kotlin.random.Random
 
 internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddress)
@@ -77,9 +76,10 @@ internal open class QQAndroidClient(
     val device: DeviceInfo,
     bot: QQAndroidBot
 ) {
-    @Suppress("INVISIBLE_MEMBER")
+    val protocol = MiraiProtocolInternal[bot.configuration.protocol]
+
     val subAppId: Long
-        get() = bot.configuration.protocol.id
+        get() = protocol.id
 
     internal val serverList: MutableList<Pair<String, Int>> = DefaultServerList.toMutableList()
 
@@ -119,9 +119,10 @@ internal open class QQAndroidClient(
     var tgtgtKey: ByteArray = generateTgtgtKey(device.guid)
     val randomKey: ByteArray = getRandomByteArray(16)
 
-    var miscBitMap: Int = 184024956 // 也可能是 150470524 ?
-    private var mainSigMap: Int = 16724722
-    var subSigMap: Int = 0x10400 //=66,560
+
+    val miscBitMap: Int get() = protocol.miscBitMap // 184024956 // 也可能是 150470524 ?
+    private val mainSigMap: Int = protocol.mainSigMap
+    var subSigMap: Int = protocol.subSigMap // 0x10400 //=66,560
 
     private val _ssoSequenceId: AtomicInt = atomic(85600)
 
@@ -158,8 +159,11 @@ internal open class QQAndroidClient(
 
     var openAppId: Long = 715019303L
 
-    val apkVersionName: ByteArray get() = "8.4.8".toByteArray()
-    val buildVer: String get() = "8.4.8.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
+    val apkVersionName: ByteArray get() = protocol.ver.toByteArray() //"8.4.18".toByteArray()
+    val buildVer: String get() = "8.4.18.4810" // 8.2.0.1296 // 8.4.8.4810 // 8.2.7.4410
+
+    val buildTime: Long get() = protocol.buildTime
+    val sdkVersion: String get() = protocol.sdkVer
 
     private val messageSequenceId: AtomicInt = atomic(22911)
     internal fun atomicNextMessageSequenceId(): Int = messageSequenceId.getAndAdd(2)
@@ -191,10 +195,11 @@ internal open class QQAndroidClient(
     internal fun nextHighwayDataTransSequenceIdForApplyUp(): Int = highwayDataTransSequenceIdForApplyUp.getAndAdd(2)
 
     val appClientVersion: Int = 0
+    val ssoVersion: Int = 13
 
     var networkType: NetworkType = NetworkType.WIFI
 
-    val apkSignatureMd5: ByteArray = "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D".hexToBytes()
+    val apkSignatureMd5: ByteArray get() = protocol.sign.hexToBytes() // "A6 B7 45 BF 24 A2 C2 77 52 77 16 F6 F3 6E B6 8D".hexToBytes()
 
     /**
      * 协议版本?, 8.2.7 的为 8001

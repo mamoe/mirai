@@ -92,7 +92,8 @@ internal fun BytePacketBuilder.t106(
     tgtgtKey: ByteArray,
     isGuidAvailable: Boolean = true,
     guid: ByteArray?,
-    loginType: LoginType
+    loginType: LoginType,
+    ssoVersion: Int,
 ) {
     writeShort(0x106)
     passwordMd5.requireSize(16)
@@ -100,10 +101,11 @@ internal fun BytePacketBuilder.t106(
     guid?.requireSize(16)
 
     writeShortLVPacket {
-        encryptAndWrite(MiraiPlatformUtils.md5(passwordMd5 + ByteArray(4) + (salt.takeIf { it != 0L } ?: uin).toInt().toByteArray())) {
+        encryptAndWrite(MiraiPlatformUtils.md5(passwordMd5 + ByteArray(4) + (salt.takeIf { it != 0L } ?: uin).toInt()
+            .toByteArray())) {
             writeShort(4)//TGTGTVer
             writeInt(Random.nextInt())
-            writeInt(5)//ssoVer
+            writeInt(ssoVersion)//ssoVer
             writeInt(appId.toInt())
             writeInt(appClientVersion)
 
@@ -118,7 +120,7 @@ internal fun BytePacketBuilder.t106(
             writeByte(isSavePassword.toByte())
             writeFully(passwordMd5)
             writeFully(tgtgtKey)
-            writeInt(0)
+            writeInt(0) // wtf
             writeByte(isGuidAvailable.toByte())
             if (isGuidAvailable) {
                 require(guid != null) { "Guid must not be null when isGuidAvailable==true" }
@@ -159,12 +161,13 @@ internal fun BytePacketBuilder.t116(
 internal fun BytePacketBuilder.t100(
     appId: Long = 16,
     subAppId: Long,
-    appClientVersion: Int
+    appClientVersion: Int,
+    ssoVersion: Int,
 ) {
     writeShort(0x100)
     writeShortLVPacket {
         writeShort(1)//db_buf_ver
-        writeInt(5)//sso_ver
+        writeInt(ssoVersion)//sso_ver
         writeInt(appId.toInt())
         writeInt(subAppId.toInt())
         writeInt(appClientVersion)
@@ -190,7 +193,7 @@ internal fun BytePacketBuilder.t107(
 internal fun BytePacketBuilder.t108(
     ksid: ByteArray
 ) {
-    require(ksid.size == 16) { "ksid should length 16" }
+    // require(ksid.size == 16) { "ksid should length 16" }
     writeShort(0x108)
     writeShortLVPacket {
         writeFully(ksid)
@@ -702,4 +705,5 @@ private inline fun Boolean.toInt(): Int = if (this) 1 else 0
 // noinline: wrong exception stacktrace reported
 
 private infix fun Int.shouldEqualsTo(int: Int) = check(this == int) { "Required $int, but found $this" }
-private infix fun ByteArray.requireSize(exactSize: Int) = check(this.size == exactSize) { "Required size $exactSize, but found ${this.size}" }
+private infix fun ByteArray.requireSize(exactSize: Int) =
+    check(this.size == exactSize) { "Required size $exactSize, but found ${this.size}" }

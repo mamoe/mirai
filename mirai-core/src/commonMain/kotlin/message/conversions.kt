@@ -18,6 +18,8 @@ import kotlinx.io.core.readUInt
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
+import net.mamoe.mirai.contact.ContactOrBot
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -25,6 +27,7 @@ import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.safeCast
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -37,7 +40,11 @@ private val UNSUPPORTED_VOICE_MESSAGE_PLAIN = PlainText("收到语音消息，�
 
 @OptIn(ExperimentalStdlibApi::class)
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: Boolean): MutableList<ImMsgBody.Elem> {
+internal fun MessageChain.toRichTextElems(
+    messageTarget: ContactOrBot?,
+    withGeneralFlags: Boolean
+): MutableList<ImMsgBody.Elem> {
+    val forGroup = messageTarget is Group
     val elements = ArrayList<ImMsgBody.Elem>(this.size)
 
     if (this.anyIsInstance<QuoteReply>()) {
@@ -112,7 +119,7 @@ internal fun MessageChain.toRichTextElems(forGroup: Boolean, withGeneralFlags: B
                 )
             }
             is At -> {
-                elements.add(ImMsgBody.Elem(text = it.toJceData()))
+                elements.add(ImMsgBody.Elem(text = it.toJceData(messageTarget.safeCast())))
                 // elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
                 // removed by https://github.com/mamoe/mirai/issues/524
                 // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
@@ -241,7 +248,7 @@ internal fun MsgComm.Msg.toMessageChain(
 //            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
 //            else -> null
 //        }
-        Voice(String(fileName), fileMd5, fileSize.toLong(), String(downPara))
+        Voice(String(fileName), fileMd5, fileSize.toLong(), format, String(downPara))
     }
 
     return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {
@@ -358,7 +365,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                     if (id == 0L) {
                         list.add(AtAll)
                     } else {
-                        list.add(At._lowLevelConstructAtInstance(id, element.text.str))
+                        list.add(At(id)) // element.text.str
                     }
                 }
             }

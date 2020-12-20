@@ -72,7 +72,7 @@ internal class MessageSourceFromFriendImpl(
     override val internalIds: IntArray get() = intArrayOf(msg.msgBody.richText.attr!!.random)
     override val time: Int get() = msg.msgHead.msgTime
     override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, bot.id, 0, false) }
-    override val sender: Friend get() = bot.getFriend(msg.msgHead.fromUin)
+    override val sender: Friend get() = bot.getFriendOrFail(msg.msgHead.fromUin)
 
     private val jceData by lazy { msg.toJceDataFriendOrTemp(internalIds) }
 
@@ -125,7 +125,10 @@ internal class MessageSourceFromTempImpl(
     override val ids: IntArray get() = sequenceIds//
     override val time: Int get() = msg.msgHead.msgTime
     override val originalMessage: MessageChain by lazy { msg.toMessageChain(bot, 0, false) }
-    override val sender: Member get() = with(msg.msgHead) { bot.getGroup(c2cTmpMsgHead!!.groupUin)[fromUin] }
+    override val sender: Member
+        get() = with(msg.msgHead) {
+            bot.getGroupOrFail(c2cTmpMsgHead!!.groupUin).getOrFail(fromUin)
+        }
 
     private val jceData by lazy { msg.toJceDataFriendOrTemp(internalIds) }
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
@@ -149,7 +152,7 @@ internal data class MessageSourceFromGroupImpl(
             msg.msgHead.groupInfo?.groupCode
                 ?: error("cannot find groupCode for MessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
         ) as GroupImpl).run {
-            getOrNull(msg.msgHead.fromUin)
+            get(msg.msgHead.fromUin)
                 ?: msg.msgBody.richText.elems.firstOrNull { it.anonGroupMsg != null }?.run {
                     newAnonymous(anonGroupMsg!!.anonNick.encodeToString())
                 }

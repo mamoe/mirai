@@ -125,7 +125,7 @@ internal object OnlinePushPbPushTransMsg :
                                     )
                                 }
                             } else {
-                                val newOwner = group.getOrNull(to) ?: group.newMember(object : MemberInfo {
+                                val newOwner = group.get(to) ?: group.newMember(object : MemberInfo {
                                     override val nameCard: String
                                         get() = ""
                                     override val permission: MemberPermission
@@ -142,7 +142,7 @@ internal object OnlinePushPbPushTransMsg :
                                         get() = ""
                                 }).also { owner ->
                                     owner.checkIsMemberImpl().permission = MemberPermission.OWNER
-                                    group.members.delegate.addLast(owner)
+                                    group.members.delegate.add(owner)
                                     results.add(MemberJoinEvent.Retrieve(owner))
                                 }
                                 if (newOwner.permission != MemberPermission.OWNER) {
@@ -230,7 +230,7 @@ internal object OnlinePushPbPushTransMsg :
                                     bot.groups.delegate.remove(group)
                                 }
                             } else {
-                                val member = group.getOrNull(target) as? MemberImpl ?: return null
+                                val member = group.get(target) as? MemberImpl ?: return null
                                 return MemberLeaveEvent.Quit(member.also {
                                     member.cancel(CancellationException("Leaved actively"))
                                     group.members.delegate.remove(member)
@@ -239,12 +239,13 @@ internal object OnlinePushPbPushTransMsg :
                         }
                         3, 0x83 -> bot.getGroupByUin(groupUin).let { group ->
                             if (target == bot.id) {
-                                return BotLeaveEvent.Kick(group.members[operator]).also {
+                                val member = group.members[operator] ?: return@let null
+                                return BotLeaveEvent.Kick(member).also {
                                     group.cancel(CancellationException("Being kicked"))
                                     bot.groups.delegate.remove(group)
                                 }
                             } else {
-                                val member = group.getOrNull(target) as? MemberImpl ?: return null
+                                val member = group.get(target) as? MemberImpl ?: return null
                                 return MemberLeaveEvent.Kick(member.also {
                                     member.cancel(CancellationException("Being kicked"))
                                     group.members.delegate.remove(member)

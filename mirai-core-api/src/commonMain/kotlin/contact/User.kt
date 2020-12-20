@@ -17,11 +17,12 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
-import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.Nudge
+import net.mamoe.mirai.message.action.UserNudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
+import net.mamoe.mirai.message.data.toPlainText
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
@@ -36,7 +37,7 @@ import net.mamoe.mirai.utils.OverFileSizeMaxException
  *
  * 对于同一个 [Bot] 任何一个人的 [User] 实例都是单一的.
  */
-public interface User : Contact, CoroutineScope {
+public interface User : Contact, UserOrBot, CoroutineScope {
     /**
      * QQ 号码
      */
@@ -83,12 +84,20 @@ public interface User : Contact, CoroutineScope {
     public override suspend fun sendMessage(message: Message): MessageReceipt<User>
 
     /**
+     * 发送纯文本消息
+     * @see sendMessage
+     */
+    @JvmBlockingBridge
+    public override suspend fun sendMessage(message: String): MessageReceipt<User> =
+        this.sendMessage(message.toPlainText())
+
+    /**
      * 创建一个 "戳一戳" 消息
      *
-     * @see FriendNudge.sendTo 发送这个戳一戳消息
+     * @see Nudge.sendTo 发送这个戳一戳消息
      */
     @MiraiExperimentalApi
-    public fun nudge(): Nudge
+    public override fun nudge(): UserNudge
 
     /**
      * 上传一个图片以备发送.

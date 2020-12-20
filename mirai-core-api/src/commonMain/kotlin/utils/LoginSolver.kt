@@ -20,6 +20,8 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
+import net.mamoe.mirai.utils.LoginSolver.Companion.Default
+import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocking
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -29,6 +31,9 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * 验证码, 设备锁解决器
+ *
+ * @see Default
+ * @see BotConfiguration.loginSolver
  */
 public abstract class LoginSolver {
     /**
@@ -61,108 +66,134 @@ public abstract class LoginSolver {
     public abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
 
     public companion object {
-        public val Default: LoginSolver = kotlin.run {
-            if (WindowHelperJvm.isDesktopSupported) {
-                SwingSolver
-            } else {
-                DefaultLoginSolver({ readLine() ?: throw NoStandardInputForCaptchaException(null) })
-            }
+        /**
+         * 当前平台默认的 [LoginSolver]。
+         *
+         * 检测策略:
+         * 1. 检测 `android.util.Log`, 如果存在, 返回 `null`.
+         * 2. 检测 JVM 属性 `mirai.no-desktop`. 若存在, 返回 [StandardCharImageLoginSolver]
+         * 3. 检测 JVM 桌面环境, 若支持, 返回 [SwingSolver]
+         * 4. 返回 [StandardCharImageLoginSolver]
+         *
+         * @return [SwingSolver] 或 [StandardCharImageLoginSolver] 或 `null`
+         */
+        @JvmField
+        public val Default: LoginSolver? = when (WindowHelperJvm.platformKind) {
+            WindowHelperJvm.PlatformKind.ANDROID -> null
+            WindowHelperJvm.PlatformKind.SWING -> SwingSolver
+            WindowHelperJvm.PlatformKind.CLI -> StandardCharImageLoginSolver()
         }
-    }
-}
 
-
-/**
- * 自动选择 [SwingSolver] 或 [StandardCharImageLoginSolver]
- */
-@MiraiExperimentalApi
-public class DefaultLoginSolver(
-    public val input: suspend () -> String,
-    overrideLogger: MiraiLogger? = null
-) : LoginSolver() {
-    private val delegate: LoginSolver = StandardCharImageLoginSolver(input, overrideLogger)
-
-    override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
-        return delegate.onSolvePicCaptcha(bot, data)
-    }
-
-    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
-        return delegate.onSolveSliderCaptcha(bot, url)
-    }
-
-    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
-        return delegate.onSolveUnsafeDeviceLoginVerify(bot, url)
+        @Suppress("unused")
+        @Deprecated("Binary compatibility", level = DeprecationLevel.HIDDEN)
+        public fun getDefault(): LoginSolver = Default
+            ?: error("LoginSolver is not provided by default on your platform. Please specify by BotConfiguration.loginSolver")
     }
 }
 
 /**
- * 使用字符图片展示验证码, 使用 [input] 获取输入, 使用 [overrideLogger] 输出
+ * CLI 环境 [LoginSolver]. 将验证码图片转为字符画并通过 `output` 输出, [input] 获取用户输入.
+ *
+ * 使用字符图片展示验证码, 使用 [input] 获取输入, 使用 [loggerSupplier] 输出
+ *
+ * @see createBlocking
  */
-@MiraiExperimentalApi
-public class StandardCharImageLoginSolver(
-    input: suspend () -> String,
+public class StandardCharImageLoginSolver @JvmOverloads constructor(
+    input: suspend () -> String = { readLine() ?: throw NoStandardInputForCaptchaException() },
     /**
      * 为 `null` 时使用 [Bot.logger]
      */
-    private val overrideLogger: MiraiLogger? = null
+    private val loggerSupplier: (bot: Bot) -> MiraiLogger = { it.logger }
 ) : LoginSolver() {
+    public constructor(
+        input: suspend () -> String = { readLine() ?: throw NoStandardInputForCaptchaException() },
+        overrideLogger: MiraiLogger?
+    ) : this(input, { overrideLogger ?: it.logger })
+
     private val input: suspend () -> String = suspend {
         withContext(Dispatchers.IO) { input() }
     }
 
     override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? = loginSolverLock.withLock {
-        val logger = overrideLogger ?: bot.logger
-        val tempFile: File = createTempFile(suffix = ".png").apply { deleteOnExit() }
+        val logger = loggerSupplier(bot)
+        @Suppress("BlockingMethodInNonBlockingContext")
         withContext(Dispatchers.IO) {
+            val tempFile: File = File.createTempFile("tmp", ".png").apply { deleteOnExit() }
             tempFile.createNewFile()
-            logger.info("需要图片验证码登录, 验证码为 4 字母")
+            logger.info { "[PicCaptcha] 需要图片验证码登录, 验证码为 4 字母" }
+            logger.info { "[PicCaptcha] Picture captcha required. Captcha consists of 4 letters." }
             try {
                 tempFile.writeChannel().apply { writeFully(data); close() }
-                logger.info("将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}")
+                logger.info { "[PicCaptcha] 将会显示字符图片. 若看不清字符图片, 请查看文件 ${tempFile.absolutePath}" }
+                logger.info { "[PicCaptcha] Displaying char-image. If not clear, view file ${tempFile.absolutePath}" }
             } catch (e: Exception) {
-                logger.info("无法写出验证码文件(${e.message}), 请尝试查看以上字符图片")
+                logger.warning("[PicCaptcha] 无法写出验证码文件, 请尝试查看以上字符图片", e)
+                logger.warning("[PicCaptcha] Failed to export captcha image. Please see the char-image.", e)
             }
 
-            tempFile.inputStream().use {
+            tempFile.inputStream().use { stream ->
                 try {
-                    val img = ImageIO.read(it)
+                    val img = ImageIO.read(stream)
                     if (img == null) {
-                        logger.info("无法创建字符图片. 请查看文件")
+                        logger.warning { "[PicCaptcha] 无法创建字符图片. 请查看文件" }
+                        logger.warning { "[PicCaptcha] Failed to create char-image. Please see the file." }
                     } else {
-                        logger.info("\n" + img.createCharImg())
+                        logger.info { "[PicCaptcha] \n" + img.createCharImg() }
                     }
                 } catch (throwable: Throwable) {
-                    logger.info("创建字符图片时出错($throwable)。请查看文件")
+                    logger.warning("[PicCaptcha] 创建字符图片时出错. 请查看文件.", throwable)
+                    logger.warning("[PicCaptcha] Failed to create char-image. Please see the file.", throwable)
                 }
             }
         }
-        logger.info("请输入 4 位字母验证码. 若要更换验证码, 请直接回车")
+        logger.info { "[PicCaptcha] 请输入 4 位字母验证码. 若要更换验证码, 请直接回车" }
+        logger.info { "[PicCaptcha] Please type 4-letter captcha. Press Enter directly to refresh." }
         return input().takeUnless { it.isEmpty() || it.length != 4 }.also {
-            logger.info("正在提交[$it]中...")
+            logger.info { "[PicCaptcha] 正在提交 $it..." }
+            logger.info { "[PicCaptcha] Submitting $it..." }
         }
     }
 
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String = loginSolverLock.withLock {
-        val logger = overrideLogger ?: bot.logger
-        logger.info("需要滑动验证码")
-        logger.info("请在任意浏览器中打开以下链接并完成验证码. ")
-        logger.info("完成后请输入任意字符 ")
+        val logger = loggerSupplier(bot)
+        logger.info { "[SliderCaptcha] 需要滑动验证码, 请在任意浏览器中打开以下链接并完成验证码, 完成后请输入任意字符." }
+        logger.info { "[SliderCaptcha] Slider captcha required, please open the following link in any browser and solve the captcha. Type anything here after completion." }
         logger.info(url)
         return input().also {
-            logger.info("正在提交中...")
+            logger.info { "[SliderCaptcha] 正在提交中..." }
+            logger.info { "[SliderCaptcha] Submitting..." }
         }
     }
 
-    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? = loginSolverLock.withLock {
-        val logger = overrideLogger ?: bot.logger
-        logger.info("需要进行账户安全认证")
-        logger.info("该账户有[设备锁]/[不常用登录地点]/[不常用设备登录]的问题")
-        logger.info("完成以下账号认证即可成功登录|理论本认证在mirai每个账户中最多出现1次")
-        logger.info("请将该链接在QQ浏览器中打开并完成认证, 成功后输入任意字符")
-        logger.info("这步操作将在后续的版本中优化")
-        logger.info(url)
+    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String = loginSolverLock.withLock {
+        val logger = loggerSupplier(bot)
+        logger.info { "[UnsafeLogin] 当前登录环境不安全，服务器要求账户认证。请在 QQ 浏览器打开 $url 并完成验证后输入任意字符。" }
+        logger.info { "[UnsafeLogin] Account verification required by the server. Please open $url in QQ browser and complete challenge, then type anything here to submit." }
         return input().also {
-            logger.info("正在提交中...")
+            logger.info { "[UnsafeLogin] 正在提交中..." }
+            logger.info { "[UnsafeLogin] Submitting..." }
+        }
+    }
+
+    public companion object {
+        /**
+         * 创建 Java 阻塞版 [input] 的 [StandardCharImageLoginSolver]
+         *
+         * @param input 将在协程 IO 池执行, 可以有阻塞调用
+         */
+        @JvmStatic
+        public fun createBlocking(input: () -> String, output: MiraiLogger?): StandardCharImageLoginSolver {
+            return StandardCharImageLoginSolver({ withContext(Dispatchers.IO) { input() } }, output)
+        }
+
+        /**
+         * 创建 Java 阻塞版 [input] 的 [StandardCharImageLoginSolver]
+         *
+         * @param input 将在协程 IO 池执行, 可以有阻塞调用
+         */
+        @JvmStatic
+        public fun createBlocking(input: () -> String): StandardCharImageLoginSolver {
+            return StandardCharImageLoginSolver({ withContext(Dispatchers.IO) { input() } })
         }
     }
 }

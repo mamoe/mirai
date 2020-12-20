@@ -10,8 +10,6 @@ Mirai is designed to handle all sorts of messaging works that can be automatical
 ## Start
 **Development document**： [docs/mirai.md](docs/mirai.md)
 
-[CHANGELOG](https://github.com/mamoe/mirai/blob/master/CHANGELOG.md)
-
 ### Use as a framework
 
 Mirai is able to run as a plugin-supported framework.  

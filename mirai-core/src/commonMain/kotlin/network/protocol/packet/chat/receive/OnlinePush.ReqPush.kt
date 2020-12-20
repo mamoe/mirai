@@ -26,8 +26,6 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.getFriendOrNull
-import net.mamoe.mirai.getGroupOrNull
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.network.MultiPacketBySequence
@@ -86,7 +84,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
         val packets: Sequence<Packet> = reqPushMsg.vMsgInfos.deco(bot.client) { msgInfo ->
             when (msgInfo.shMsgType.toInt()) {
                 732 -> {
-                    val group = bot.getGroupOrNull(readUInt().toLong())
+                    val group = bot.getGroup(readUInt().toLong())
                         ?: return@deco emptySequence() // group has not been initialized
 
                     GroupImpl.checkIsInstance(group)
@@ -183,7 +181,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         if (operatorUin == bot.id) {
             return@lambda732 emptySequence()
         }
-        val operator = group.getOrNull(operatorUin) ?: return@lambda732 emptySequence()
+        val operator = group[operatorUin] ?: return@lambda732 emptySequence()
         readUInt().toLong() // time
         this.discardExact(2)
         val target = readUInt().toLong()
@@ -213,7 +211,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
             }
         }
 
-        val member = group.getOrNull(target) ?: return@lambda732 emptySequence()
+        val member = group[target] ?: return@lambda732 emptySequence()
         member.checkIsMemberImpl()
 
         if (member.muteTimeRemaining == timeSeconds) {
@@ -228,7 +226,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
     // anonymous
     0x0e to lambda732 { group: GroupImpl, _: QQAndroidBot ->
         // 匿名
-        val operator = group.getOrNull(readUInt().toLong()) ?: return@lambda732 emptySequence()
+        val operator = group[readUInt().toLong()] ?: return@lambda732 emptySequence()
         val new = readInt() == 0
         if (group.settings.isAnonymousChatEnabled == new) {
             return@lambda732 emptySequence()
@@ -245,7 +243,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         val grayTip = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer()).optGeneralGrayTip
         when (grayTip?.templId) {
             //戳一戳
-            10043L, 1134L, 1135L, 1136L -> {
+            10043L, 1133L, 1132L, 1134L, 1135L, 1136L -> {
                 //预置数据，服务器将不会提供己方已知消息
                 var action = ""
                 var from: Member = group.botAsMember
@@ -257,8 +255,8 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     run {
                         when (key) {
                             "action_str" -> action = value
-                            "uin_str1" -> from = group[value.toLong()]
-                            "uin_str2" -> target = group[value.toLong()]
+                            "uin_str1" -> from = group[value.toLong()] ?: return@lambda732 emptySequence()
+                            "uin_str2" -> target = group[value.toLong()] ?: return@lambda732 emptySequence()
                             "suffix_str" -> suffix = value
                         }
                     }
@@ -358,7 +356,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
 
         val operator =
             if (recallReminder.uin == bot.id) group.botAsMember
-            else group.getOrNull(recallReminder.uin) ?: return@lambda732 emptySequence()
+            else group[recallReminder.uin] ?: return@lambda732 emptySequence()
 
         return@lambda732 recallReminder.recalledMsgList.asSequence().mapNotNull { pkg ->
             when {
@@ -424,6 +422,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             @ProtoNumber(7) val pkgNum: Int, // 1
             @ProtoNumber(8) val pkgIndex: Int, // 0
             @ProtoNumber(9) val devSeq: Int, // 0
+            @ProtoNumber(10) val unknown1: Int = 0, // ? 补 id
+            @ProtoNumber(11) val unknown2: Int = 0, // ?
             @ProtoNumber(12) val flag: Int // 1
         ) : ProtoBuf
 
@@ -443,7 +443,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                     messageIds = intArrayOf(it.srcId),
                     messageInternalIds = intArrayOf(it.srcInternalId),
                     messageTime = it.time,
-                    operator = it.fromUin
+                    operatorId = it.fromUin
                 )
             }
     },
@@ -462,7 +462,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             override val nick: String get() = body.msgAddFrdNotify.fuinNick
             override val remark: String get() = ""
         })
-        bot.friends.delegate.addLast(new)
+        bot.friends.delegate.add(new)
         return@lambda528 sequenceOf(FriendAddEvent(new))
     },
     0xE2L to lambda528 { _ ->
@@ -511,7 +511,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
         when (body.templId) {
             //戳一戳
-            1134L, 1135L, 1136L, 10043L -> {
+            1132L, 1133L, 1134L, 1135L, 1136L, 10043L -> {
                 //预置数据，服务器将不会提供己方已知消息
                 var from: Friend = bot.asFriend
                 var action = ""
@@ -522,8 +522,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 }.forEach { (key, value) ->
                     when (key) {
                         "action_str" -> action = value
-                        "uin_str1" -> from = bot.getFriend(value.toLong())
-                        "uin_str2" -> target = bot.getFriend(value.toLong())
+                        "uin_str1" -> from = bot.getFriend(value.toLong()) ?: return@lambda528 emptySequence()
+                        "uin_str2" -> target = bot.getFriend(value.toLong()) ?: return@lambda528 emptySequence()
                         "suffix_str" -> suffix = value
                     }
                 }
@@ -553,7 +553,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     //好友输入状态
     0x115L to lambda528 { bot ->
         val body = vProtobuf.loadAs(Submsgtype0x115.SubMsgType0x115.MsgBody.serializer())
-        val friend = bot.getFriendOrNull(body.fromUin)
+        val friend = bot.getFriend(body.fromUin)
         val item = body.msgNotifyItem
         return@lambda528 if (friend != null && item != null) {
             sequenceOf(FriendInputStatusChangedEvent(friend, item.eventType == 1))
@@ -565,7 +565,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
     0x27L to lambda528 { bot ->
         fun ModFriendRemark.transform(bot: QQAndroidBot): Sequence<Packet> {
             return this.msgFrdRmk.asSequence().mapNotNull {
-                val friend = bot.getFriendOrNull(it.fuin) ?: return@mapNotNull null
+                val friend = bot.getFriend(it.fuin) ?: return@mapNotNull null
                 val old: String
                 friend.checkIsFriendImpl().friendInfo.checkIsInfoImpl()
                     .also { info -> old = info.remark }
@@ -577,7 +577,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
         fun DelFriend.transform(bot: QQAndroidBot): Sequence<Packet> {
             return this.uint64Uins.asSequence().mapNotNull {
-                val friend = bot.getFriendOrNull(it) ?: return@mapNotNull null
+                val friend = bot.getFriend(it) ?: return@mapNotNull null
                 if (bot.friends.delegate.remove(friend)) {
                     FriendDeleteEvent(friend)
                 } else null
@@ -591,14 +591,14 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         // 群名
                         val new = info.value.encodeToString()
 
-                        val group = bot.getGroupOrNull(this.groupCode) ?: return@mapNotNull null
+                        val group = bot.getGroup(this.groupCode) ?: return@mapNotNull null
                         group.checkIsGroupImpl()
                         val old = group.name
 
                         if (new == old) return@mapNotNull null
 
                         val operator = if (this.cmdUin == bot.id) null
-                        else group.getOrNull(this.cmdUin) ?: return@mapNotNull null
+                        else group[this.cmdUin] ?: return@mapNotNull null
 
                         group._name = new
 
@@ -644,9 +644,9 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 when (info.field) {
                     1 -> { // name card
                         val new = info.value
-                        val group = bot.getGroupOrNull(this.groupCode) ?: return@mapNotNull null
+                        val group = bot.getGroup(this.groupCode) ?: return@mapNotNull null
                         group.checkIsGroupImpl()
-                        val member = group.getOrNull(this.uin) ?: return@mapNotNull null
+                        val member = group[this.uin] ?: return@mapNotNull null
                         member.checkIsMemberImpl()
 
                         val old = member.nameCard
@@ -678,7 +678,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             if (uin == bot.id) {
                 return sequenceOf(BotAvatarChangedEvent(bot))
             }
-            val friend = bot.getFriendOrNull(uin) ?: return emptySequence()
+            val friend = bot.getFriend(uin) ?: return emptySequence()
             return sequenceOf(FriendAvatarChangedEvent(friend))
         }
 
@@ -697,7 +697,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                                     add(BotNickChangedEvent(bot, from, to))
                                 }
                             } else {
-                                val friend = (bot.getFriendOrNull(uin) ?: return@forEach) as FriendImpl
+                                val friend = (bot.getFriend(uin) ?: return@forEach) as FriendImpl
                                 val info = friend.friendInfo
                                 val from = info.nick
                                 when (info) {

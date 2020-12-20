@@ -11,13 +11,15 @@ package net.mamoe.mirai.internal.message
 
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.AtAll
 
 
-internal fun At.toJceData(): ImMsgBody.Text {
-    val text = this.display
+internal fun At.toJceData(group: Group?): ImMsgBody.Text {
+    val text = group?.members?.get(this.target)?.nameCardOrNick ?: "@$target"
     return ImMsgBody.Text(
         str = text,
         attr6Buf = buildPacket {

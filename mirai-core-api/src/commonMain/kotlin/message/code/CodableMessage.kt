@@ -19,7 +19,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * 使用 `mirai-serialization` 中 `String.parseMiraiCode()` 转回 [Message].
  *
  * ## 规范
- * 可在 [mirai-code-specification.md](https://github.com/mamoe/mirai/blob/dev/docs/mirai-code-specification.md) 查看 mirai 码规范.
+ * 可在 [MiraiCodeSepecification.md](https://github.com/mamoe/mirai/blob/dev/docs/MiraiCodeSepecification.md) 查看 mirai 码规范.
  *
  * @suppress 警告: 此 API 可能在任何时刻被改变
  *

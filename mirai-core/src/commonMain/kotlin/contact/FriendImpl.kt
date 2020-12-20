@@ -98,8 +98,8 @@ internal class FriendImpl(
         require(message.isContentNotEmpty()) { "message is empty" }
         return sendMessageImpl(
             message,
-            friendReceiptConstructor = { MessageReceipt(it, this, null) },
-            tReceiptConstructor = { MessageReceipt(it, this, null) }
+            friendReceiptConstructor = { MessageReceipt(it, this) },
+            tReceiptConstructor = { MessageReceipt(it, this) }
         ).also {
             logMessageSent(message)
         }

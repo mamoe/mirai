@@ -15,7 +15,8 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.contact.groupCode
+import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.MessageSourceToFriendImpl
 import net.mamoe.mirai.internal.message.MessageSourceToGroupImpl
 import net.mamoe.mirai.internal.message.MessageSourceToTempImpl
@@ -34,7 +35,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PttMessage
-import net.mamoe.mirai.message.data.firstOrNull
+import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -62,7 +63,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     @Suppress("FunctionName")
     internal fun createToFriendImpl(
         client: QQAndroidClient,
-        toUin: Long,
+        targetFriend: Friend,
         message: MessageChain,
         source: MessageSourceToFriendImpl
     ): OutgoingPacket = buildOutgoingUniPacket(client) {
@@ -71,11 +72,11 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         ///return@buildOutgoingUniPacket
         writeProtoBuf(
             MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
-                routingHead = MsgSvc.RoutingHead(c2c = MsgSvc.C2C(toUin = toUin)),
+                routingHead = MsgSvc.RoutingHead(c2c = MsgSvc.C2C(toUin = targetFriend.uin)),
                 contentHead = MsgComm.ContentHead(pkgNum = 1),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = message.toRichTextElems(forGroup = false, withGeneralFlags = true)
+                        elems = message.toRichTextElems(messageTarget = targetFriend, withGeneralFlags = true)
                     )
                 ),
                 msgSeq = source.sequenceIds.single(),
@@ -92,20 +93,19 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
      */
     internal fun createToTempImpl(
         client: QQAndroidClient,
-        groupUin: Long,
-        toUin: Long,
+        targetMember: Member,
         message: MessageChain,
         source: MessageSourceToTempImpl
     ): OutgoingPacket = buildOutgoingUniPacket(client) {
         writeProtoBuf(
             MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
                 routingHead = MsgSvc.RoutingHead(
-                    grpTmp = MsgSvc.GrpTmp(groupUin, toUin)
+                    grpTmp = MsgSvc.GrpTmp(targetMember.group.uin, targetMember.id)
                 ),
                 contentHead = MsgComm.ContentHead(pkgNum = 1),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = message.toRichTextElems(forGroup = false, withGeneralFlags = true)
+                        elems = message.toRichTextElems(messageTarget = targetMember, withGeneralFlags = true)
                     )
                 ),
                 msgSeq = source.sequenceIds.single(),
@@ -122,7 +122,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
     @Suppress("FunctionName")
     internal fun createToGroupImpl(
         client: QQAndroidClient,
-        groupCode: Long,
+        targetGroup: Group,
         message: MessageChain,
         isForward: Boolean,
         source: MessageSourceToGroupImpl
@@ -134,19 +134,26 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         ///return@buildOutgoingUniPacket
         writeProtoBuf(
             MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
-                routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = groupCode)),
+                routingHead = MsgSvc.RoutingHead(grp = MsgSvc.Grp(groupCode = targetGroup.groupCode)),
                 contentHead = MsgComm.ContentHead(pkgNum = 1),
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = message.toRichTextElems(forGroup = true, withGeneralFlags = true),
-                        ptt = message.firstOrNull(PttMessage)?.run {
+                        elems = message.toRichTextElems(messageTarget = targetGroup, withGeneralFlags = true),
+                        ptt = message.get(PttMessage)?.run {
                             ImMsgBody.Ptt(
                                 fileName = fileName.toByteArray(),
                                 fileMd5 = md5,
                                 boolValid = true,
                                 fileSize = fileSize.toInt(),
                                 fileType = 4,
-                                pbReserve = byteArrayOf(0)
+                                pbReserve = byteArrayOf(0),
+                                format = let {
+                                    if (it is Voice) {
+                                        it.codec
+                                    } else {
+                                        0
+                                    }
+                                }
                             )
                         }
                     )
@@ -196,8 +203,7 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
     sourceCallback(source)
     return createToTempImpl(
         client,
-        (member.group as GroupImpl).uin,
-        member.id,
+        member,
         message,
         source
     )
@@ -224,7 +230,7 @@ internal inline fun MessageSvcPbSendMsg.createToFriend(
     sourceCallback(source)
     return createToFriendImpl(
         client,
-        qq.id,
+        qq,
         message,
         source
     )
@@ -252,7 +258,7 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
     sourceCallback(source)
     return createToGroupImpl(
         client,
-        group.id,
+        group,
         message,
         isForward,
         source

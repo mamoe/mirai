@@ -9,38 +9,95 @@
 
 package net.mamoe.mirai.internal.utils
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
-import kotlinx.io.errors.IOException
-import kotlin.coroutines.CoroutineContext
+import kotlinx.io.streams.readPacketAtMost
+import kotlinx.io.streams.writePacket
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.io.IOException
+import java.net.NoRouteToHostException
+import java.net.Socket
+import java.net.UnknownHostException
+import java.util.concurrent.Executors
 
 /**
- * 多平台适配的 TCP Socket.
+ * TCP Socket.
  */
-internal expect class PlatformSocket() : Closeable {
-    @kotlin.Throws(SocketException::class)
-    suspend fun connect(coroutineContext: CoroutineContext, serverHost: String, serverPort: Int)
+internal class PlatformSocket : Closeable {
+    private lateinit var socket: Socket
+
+    val isOpen: Boolean
+        get() =
+            if (::socket.isInitialized)
+                socket.isConnected
+            else false
+
+    override fun close() {
+        if (::socket.isInitialized) {
+            socket.close()
+        }
+        thread.shutdownNow()
+    }
+
+    @PublishedApi
+    internal lateinit var writeChannel: BufferedOutputStream
+
+    @PublishedApi
+    internal lateinit var readChannel: BufferedInputStream
+
+    suspend fun send(packet: ByteArray, offset: Int, length: Int) {
+        @Suppress("BlockingMethodInNonBlockingContext")
+        withContext(Dispatchers.IO) {
+            writeChannel.write(packet, offset, length)
+            writeChannel.flush()
+        }
+    }
 
     /**
      * @throws SendPacketInternalException
      */
-    suspend fun send(packet: ByteArray, offset: Int = 0, length: Int = packet.size - offset)
+    suspend fun send(packet: ByteReadPacket) {
+        @Suppress("BlockingMethodInNonBlockingContext")
+        withContext(Dispatchers.IO) {
+            try {
+                writeChannel.writePacket(packet)
+                writeChannel.flush()
+            } catch (e: IOException) {
+                throw SendPacketInternalException(e)
+            }
+        }
+    }
 
-    /**
-     * @throws SendPacketInternalException
-     */
-    suspend fun send(packet: ByteReadPacket)
+    private val thread = Executors.newSingleThreadExecutor()
 
     /**
      * @throws ReadPacketInternalException
      */
-    suspend fun read(): ByteReadPacket
+    suspend fun read(): ByteReadPacket = suspendCancellableCoroutine { cont ->
+        thread.submit {
+            kotlin.runCatching {
+                readChannel.readPacketAtMost(Long.MAX_VALUE)
+            }.let {
+                cont.resumeWith(it)
+            }
+        }
+    }
 
-    val isOpen: Boolean
-
-    override fun close()
+    suspend fun connect(serverHost: String, serverPort: Int) {
+        @Suppress("BlockingMethodInNonBlockingContext")
+        withContext(Dispatchers.IO) {
+            socket = Socket(serverHost, serverPort)
+            readChannel = socket.getInputStream().buffered()
+            writeChannel = socket.getOutputStream().buffered()
+        }
+    }
 }
 
-internal expect open class SocketException : IOException
-internal expect class NoRouteToHostException : SocketException
-internal expect class UnknownHostException : IOException
+
+internal typealias SocketException = java.net.SocketException
+internal typealias NoRouteToHostException = NoRouteToHostException
+internal typealias UnknownHostException = UnknownHostException

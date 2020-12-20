@@ -43,7 +43,7 @@ internal class MessageSerializationTest {
 
     private val testMessageContentInstances: Array<out MessageContent> = arrayOf(
         PlainText("test"),
-        At._lowLevelConstructAtInstance(123456, ""),
+        At(123456),
         AtAll,
         Image("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai"),
     )

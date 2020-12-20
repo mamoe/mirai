@@ -13,6 +13,7 @@
 
 package net.mamoe.mirai.event.events
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.*
@@ -262,6 +263,11 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     public abstract val authorId: Long
 
     /**
+     * 消息原发送人, 为 `null` 表示原消息发送人已经不是 bot 的好友或已经被移出群。
+     */
+    public abstract val author: UserOrBot?
+
+    /**
      * 消息 ids.
      * @see MessageSource.ids
      */
@@ -281,7 +287,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 好友消息撤回事件
      */
-    public data class FriendRecall internal constructor(
+    public data class FriendRecall @MiraiInternalApi public constructor(
         public override val bot: Bot,
         public override val messageIds: IntArray,
         public override val messageInternalIds: IntArray,
@@ -289,11 +295,25 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         /**
          * 撤回操作人, 好友的 [User.id]
          */
-        public val operator: Long
+        public val operatorId: Long
     ) : MessageRecallEvent(), Packet {
-        public override val authorId: Long
-            get() = bot.id
+        @Deprecated("Binary compatibility.", level = DeprecationLevel.HIDDEN)
+        public fun getOperator(): Long = operatorId
 
+        /**
+         * 撤回操作人. 为 `null` 表示该用户已经不是 bot 的好友
+         */
+        public val operator: Friend? get() = bot.getFriend(operatorId)
+
+        /**
+         * 消息原发送人, 等于 [operator]
+         */
+        override val author: Friend? get() = operator
+
+        public override val authorId: Long
+            get() = operatorId
+
+        @Suppress("DuplicatedCode")
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -304,7 +324,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             if (!messageIds.contentEquals(other.messageIds)) return false
             if (!messageInternalIds.contentEquals(other.messageInternalIds)) return false
             if (messageTime != other.messageTime) return false
-            if (operator != other.operator) return false
+            if (operatorId != other.operatorId) return false
 
             return true
         }
@@ -314,7 +334,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             result = 31 * result + messageIds.contentHashCode()
             result = 31 * result + messageInternalIds.contentHashCode()
             result = 31 * result + messageTime
-            result = 31 * result + operator.hashCode()
+            result = 31 * result + operatorId.hashCode()
             return result
         }
     }
@@ -334,6 +354,8 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         public override val operator: Member?,
         public override val group: Group
     ) : MessageRecallEvent(), GroupOperableEvent, Packet {
+        override val author: NormalMember? get() = group[authorId]
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -364,10 +386,12 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     }
 }
 
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+@Deprecated("Binary compatibility", level = DeprecationLevel.HIDDEN)
 public val MessageRecallEvent.GroupRecall.author: Member
-    get() = if (authorId == bot.id) group.botAsMember else group[authorId]
+    get() = if (authorId == bot.id) group.botAsMember else group.getOrFail(authorId)
 
-public val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
+public val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operatorId == bot.id
 // val MessageRecallEvent.GroupRecall.isByBot: Boolean get() = (this as GroupOperableEvent).isByBot
 // no need
 
@@ -439,7 +463,7 @@ public class FriendMessageEvent constructor(
     public override val sender: Friend,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable, FriendEvent {
+) : AbstractMessageEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable, FriendEvent {
     init {
         val source =
             message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
@@ -479,7 +503,7 @@ public class GroupMessageEvent(
     public override val sender: Member,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractEvent(), GroupAwareMessageEvent, MessageEvent, Event, GroupEvent {
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent, Event, GroupEvent {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
@@ -490,7 +514,13 @@ public class GroupMessageEvent(
     public override val subject: Group get() = group
     public override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 
-    public inline fun At.asMember(): Member = group[this.target]
+    @Deprecated("Use targetMember", ReplaceWith("this.targetMember"))
+    @Suppress("NOTHING_TO_INLINE")
+    public inline fun At.asMember(): Member = group.getOrFail(target)
+
+    @get:JvmSynthetic // TODO: 2020/12/16 move to extensions by 2.0-M2
+    public inline val At.targetMember: Member?
+        get(): Member? = group[this.target]
 
     public override fun toString(): String =
         "GroupMessageEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
@@ -505,7 +535,7 @@ public class TempMessageEvent(
     public override val sender: Member,
     public override val message: MessageChain,
     public override val time: Int
-) : AbstractEvent(), GroupAwareMessageEvent, MessageEvent, BroadcastControllable {
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageEvent, BroadcastControllable {
     init {
         val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
         check(source is OnlineMessageSource.Incoming.FromTemp) { "source provided to a TempMessage must be an instance of OnlineMessageSource.Incoming.FromTemp" }
@@ -529,6 +559,75 @@ public class TempMessageEvent(
  */
 public interface UserMessageEvent : MessageEvent {
     public override val subject: User
+}
+
+@MiraiInternalApi
+public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
+    public override suspend fun reply(message: Message): MessageReceipt<Contact> =
+        subject.sendMessage(message.asMessageChain())
+
+    public override suspend fun reply(plain: String): MessageReceipt<Contact> =
+        subject.sendMessage(PlainText(plain).asMessageChain())
+
+    public override suspend fun ExternalImage.upload(): Image = this.upload(subject)
+
+    public override suspend fun ExternalImage.send(): MessageReceipt<Contact> = this.sendTo(subject)
+
+    public override suspend fun Image.send(): MessageReceipt<Contact> = this.sendTo(subject)
+
+    public override suspend fun Message.send(): MessageReceipt<Contact> = this.sendTo(subject)
+
+    public override suspend fun String.send(): MessageReceipt<Contact> = PlainText(this).sendTo(subject)
+
+    // region 引用回复
+    /**
+     * 给这个消息事件的主体发送引用回复消息
+     * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
+     * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
+     */
+    public override suspend fun quoteReply(message: MessageChain): MessageReceipt<Contact> =
+        reply(this.message.quote() + message)
+
+    public override suspend fun quoteReply(message: Message): MessageReceipt<Contact> =
+        reply(this.message.quote() + message)
+
+    public override suspend fun quoteReply(plain: String): MessageReceipt<Contact> = reply(this.message.quote() + plain)
+
+    public override fun At.isBot(): Boolean = target == bot.id
+
+
+    /**
+     * 获取图片下载链接
+     * @return "http://gchat.qpic.cn/gchatpic_new/..."
+     */
+    public override suspend fun Image.url(): String = this@url.queryUrl()
+
+
+    // region 上传图片
+
+    public override suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+    public override suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+    public override suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
+    // endregion
+
+    // region 发送图片
+    public override suspend fun sendImage(image: BufferedImage): MessageReceipt<Contact> = subject.sendImage(image)
+    public override suspend fun sendImage(image: InputStream): MessageReceipt<Contact> = subject.sendImage(image)
+    public override suspend fun sendImage(image: File): MessageReceipt<Contact> = subject.sendImage(image)
+    // endregion
+
+    // region 上传图片 (扩展)
+    public override suspend fun BufferedImage.upload(): Image = upload(subject)
+    public override suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+    public override suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    // endregion 上传图片 (扩展)
+
+    // region 发送图片 (扩展)
+    public override suspend fun BufferedImage.send(): MessageReceipt<Contact> = sendTo(subject)
+    public override suspend fun InputStream.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
+    public override suspend fun File.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
+    // endregion 发送图片 (扩展)
+
 }
 
 /**
@@ -592,6 +691,7 @@ public interface MessageEvent : Event, Packet, BotEvent, MessageEventExtensions<
 }
 
 /** 消息事件的扩展函数 */
+@Suppress("UNCHECKED_CAST")
 public interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
     MessageEventPlatformExtensions<TSender, TSubject> {
 
@@ -602,30 +702,28 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    @JvmSynthetic
-    public suspend fun reply(message: Message): MessageReceipt<TSubject> =
-        subject.sendMessage(message.asMessageChain()) as MessageReceipt<TSubject>
+    @JvmBlockingBridge
+    public suspend fun reply(message: Message): MessageReceipt<TSubject>
 
-    @JvmSynthetic
-    public suspend fun reply(plain: String): MessageReceipt<TSubject> =
-        subject.sendMessage(PlainText(plain).asMessageChain()) as MessageReceipt<TSubject>
+    @JvmBlockingBridge
+    public suspend fun reply(plain: String): MessageReceipt<TSubject>
 
     // endregion
 
     @JvmSynthetic
-    public suspend fun ExternalImage.upload(): Image = this.upload(subject)
+    public suspend fun ExternalImage.upload(): Image
 
     @JvmSynthetic
-    public suspend fun ExternalImage.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun ExternalImage.send(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun Image.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun Image.send(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun Message.send(): MessageReceipt<TSubject> = this.sendTo(subject)
+    public suspend fun Message.send(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun String.send(): MessageReceipt<TSubject> = PlainText(this).sendTo(subject)
+    public suspend fun String.send(): MessageReceipt<TSubject>
 
     // region 引用回复
     /**
@@ -633,19 +731,17 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    @JvmSynthetic
-    public suspend fun quoteReply(message: MessageChain): MessageReceipt<TSubject> =
-        reply(this.message.quote() + message)
+    @JvmBlockingBridge
+    public suspend fun quoteReply(message: MessageChain): MessageReceipt<TSubject>
+
+    @JvmBlockingBridge
+    public suspend fun quoteReply(message: Message): MessageReceipt<TSubject>
+
+    @JvmBlockingBridge
+    public suspend fun quoteReply(plain: String): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun quoteReply(message: Message): MessageReceipt<TSubject> =
-        reply(this.message.quote() + message)
-
-    @JvmSynthetic
-    public suspend fun quoteReply(plain: String): MessageReceipt<TSubject> = reply(this.message.quote() + plain)
-
-    @JvmSynthetic
-    public fun At.isBot(): Boolean = target == bot.id
+    public fun At.isBot(): Boolean
 
 
     /**
@@ -653,7 +749,7 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
     @JvmSynthetic
-    public suspend fun Image.url(): String = this@url.queryUrl()
+    public suspend fun Image.url(): String
 }
 
 /** 一个消息事件在各平台的相关扩展. 请使用 [MessageEventExtensions] */
@@ -670,47 +766,47 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
 
     // region 上传图片
 
-    @JvmSynthetic
-    public suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
+    @JvmBlockingBridge
+    public suspend fun uploadImage(image: BufferedImage): Image
 
-    @JvmSynthetic
-    public suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+    @JvmBlockingBridge
+    public suspend fun uploadImage(image: InputStream): Image
 
-    @JvmSynthetic
-    public suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
+    @JvmBlockingBridge
+    public suspend fun uploadImage(image: File): Image
     // endregion
 
     // region 发送图片
-    @JvmSynthetic
-    public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject> = subject.sendImage(image)
+    @JvmBlockingBridge
+    public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject>
 
-    @JvmSynthetic
-    public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject> = subject.sendImage(image)
+    @JvmBlockingBridge
+    public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject>
 
-    @JvmSynthetic
-    public suspend fun sendImage(image: File): MessageReceipt<TSubject> = subject.sendImage(image)
+    @JvmBlockingBridge
+    public suspend fun sendImage(image: File): MessageReceipt<TSubject>
     // endregion
 
     // region 上传图片 (扩展)
     @JvmSynthetic
-    public suspend fun BufferedImage.upload(): Image = upload(subject)
+    public suspend fun BufferedImage.upload(): Image
 
     @JvmSynthetic
-    public suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+    public suspend fun InputStream.uploadAsImage(): Image
 
     @JvmSynthetic
-    public suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
+    public suspend fun File.uploadAsImage(): Image
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
     @JvmSynthetic
-    public suspend fun BufferedImage.send(): MessageReceipt<TSubject> = sendTo(subject)
+    public suspend fun BufferedImage.send(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject>
 
     @JvmSynthetic
-    public suspend fun File.sendAsImage(): MessageReceipt<TSubject> = sendAsImageTo(subject)
+    public suspend fun File.sendAsImage(): MessageReceipt<TSubject>
     // endregion 发送图片 (扩展)
 
 }

@@ -21,22 +21,10 @@ plugins {
 version = Versions.project
 description = "Mirai core shadowed"
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
-
-tasks.withType(JavaCompile::class.java) {
-    options.encoding = "UTF8"
-}
-
-kotlin {
-    explicitApi()
-}
-
 dependencies {
     api(project(":mirai-core"))
     api(project(":mirai-core-api"))
+    api(project(":mirai-core-utils"))
 }
 
 configurePublishing("mirai-core-all")

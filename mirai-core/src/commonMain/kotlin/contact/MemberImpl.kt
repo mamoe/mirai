@@ -44,7 +44,7 @@ internal class MemberImpl constructor(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
-) : Member {
+) : NormalMember {
     override val group: GroupImpl by group.unsafeWeakRef()
     override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
@@ -69,8 +69,8 @@ internal class MemberImpl constructor(
 
         return (asFriend?.sendMessageImpl(
             message,
-            friendReceiptConstructor = { MessageReceipt(it, asFriend, null) },
-            tReceiptConstructor = { MessageReceipt(it, this, null) }
+            friendReceiptConstructor = { MessageReceipt(it, asFriend) },
+            tReceiptConstructor = { MessageReceipt(it, this) }
         ) ?: sendMessageImpl(message)).also { logMessageSent(message) }
     }
 
@@ -100,7 +100,7 @@ internal class MemberImpl constructor(
                     "Send temp message failed: $it"
                 }
             }
-            MessageReceipt(source, this@MemberImpl, null)
+            MessageReceipt(source, this@MemberImpl)
         }
 
         result.fold(
@@ -230,7 +230,7 @@ internal class MemberImpl constructor(
     @JvmSynthetic
     override suspend fun kick(message: String) {
         checkBotPermissionHigherThanThis("kick")
-        check(group.members.getOrNull(this.id) != null) {
+        check(group.members[this.id] != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
         }
         bot.network.run {
