@@ -35,6 +35,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PttMessage
+import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.utils.currentTimeSeconds
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -145,7 +146,14 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                                 boolValid = true,
                                 fileSize = fileSize.toInt(),
                                 fileType = 4,
-                                pbReserve = byteArrayOf(0)
+                                pbReserve = byteArrayOf(0),
+                                format = let {
+                                    if (it is Voice) {
+                                        it.codec
+                                    } else {
+                                        0
+                                    }
+                                }
                             )
                         }
                     )
