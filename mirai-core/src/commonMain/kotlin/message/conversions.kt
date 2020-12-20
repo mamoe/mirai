@@ -18,6 +18,7 @@ import kotlinx.io.core.readUInt
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
+import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
@@ -153,7 +154,9 @@ internal fun MessageChain.toRichTextElems(
                 if (forGroup) {
                     when (val source = it.source) {
                         is OnlineMessageSource.Incoming.FromGroup -> {
-                            transformOneMessage(At(source.sender))
+                            val sender0 = source.sender
+                            if (sender0 !is AnonymousMember)
+                                transformOneMessage(At(sender0))
                             // transformOneMessage(PlainText(" "))
                             // removed by https://github.com/mamoe/mirai/issues/524
                             // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
