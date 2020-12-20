@@ -12,7 +12,6 @@
 package net.mamoe.mirai.message.code.internal
 
 import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.*
 
 
@@ -98,30 +97,6 @@ internal fun String.forEachMiraiCode(block: (origin: String, name: String?, args
     }
 }
 
-/*
-
-@Suppress("RegExpRedundantEscape") // required on android
-internal val codeRegex = Regex("""\[mirai:(.+?)(|:.*?(\\\].*?)*?)\]""")
-
-internal inline fun String.forEachMiraiCode(crossinline block: (origin: String, name: String?, args: String) -> Unit) {
-    var lastIndex = 0
-    for (result in codeRegex.findAll(this)) {
-        if (result.range.first != lastIndex) {
-            // skipped string
-            block(substring(lastIndex, result.range.first), null, "")
-        }
-
-        lastIndex = result.range.last + 1
-        val id = result.groups[1]!!
-        val param = result.groups[2]?.value?.substring(1) ?: ""
-        block(result.value, id.value, param)
-    }
-    if (lastIndex != this.length) {
-        block(substring(lastIndex, this.length), null, "")
-    }
-}
-*/
-
 internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
     "at" to MiraiCodeParser(Regex("""(\d*)""")) { (target) ->
         At(target.toLong())
@@ -130,11 +105,9 @@ internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
         AtAll
     },
     "poke" to MiraiCodeParser(Regex("(.*)?,(\\d*),(-?\\d*)")) { (name, type, id) ->
-        // TODO
         PokeMessage(name, type.toInt(), id.toInt())
     },
     "vipface" to MiraiCodeParser(Regex("""(\d*),(.*),(\d*)""")) { (id, name, count) ->
-        // TODO
         VipFace(VipFace.Kind(id.toInt(), name), count.toInt())
     },
     "face" to MiraiCodeParser(Regex("""(\d*)""")) { (id) ->
@@ -153,36 +126,6 @@ internal object MiraiCodeParsers : Map<String, MiraiCodeParser> by mapOf(
         LightApp(content.decodeMiraiCode())
     }
 )
-
-/*
-internal object MiraiCodeParsers2 : Map<String, (args: String) -> Message?> by mapOf(
-    "at" to l@{ args ->
-        val group = args.split(',')
-        if (group.size != 2) return@l null
-        val target = group[0].toLongOrNull() ?: return@l null
-        @Suppress("INVISIBLE_MEMBER")
-        At(target, group[1])
-    },
-    "atall" to l@{
-        AtAll
-    },
-    "poke" to l@{ args ->
-        val group = args.split(',')
-        if (group.size != 2) return@l null
-        val type = group[1].toIntOrNull() ?: return@l null
-        val id = group[2].toIntOrNull() ?: return@l null
-        @Suppress("INVISIBLE_MEMBER")
-        PokeMessage(group[0], type, id)
-    },
-    "vipface" to l@{ args ->
-        val group = args.split(',')
-        if (group.size != 2) return@l null
-        val type = group[1].toIntOrNull() ?: return@l null
-        val id = group[2].toIntOrNull() ?: return@l null
-        @Suppress("INVISIBLE_MEMBER")
-        PokeMessage(group[0], type, id)
-    }
-)*/
 
 internal class MiraiCodeParser(
     val argsRegex: Regex,
