@@ -263,6 +263,11 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     public abstract val authorId: Long
 
     /**
+     * 消息原发送人, 为 `null` 表示原消息发送人已经不是 bot 的好友或已经被移出群。
+     */
+    public abstract val author: UserOrBot?
+
+    /**
      * 消息 ids.
      * @see MessageSource.ids
      */
@@ -282,7 +287,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 好友消息撤回事件
      */
-    public data class FriendRecall internal constructor(
+    public data class FriendRecall @MiraiInternalApi public constructor(
         public override val bot: Bot,
         public override val messageIds: IntArray,
         public override val messageInternalIds: IntArray,
@@ -290,11 +295,25 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         /**
          * 撤回操作人, 好友的 [User.id]
          */
-        public val operator: Long
+        public val operatorId: Long
     ) : MessageRecallEvent(), Packet {
-        public override val authorId: Long
-            get() = bot.id
+        @Deprecated("Binary compatibility.", level = DeprecationLevel.HIDDEN)
+        public fun getOperator(): Long = operatorId
 
+        /**
+         * 撤回操作人. 为 `null` 表示该用户已经不是 bot 的好友
+         */
+        public val operator: Friend? get() = bot.getFriend(operatorId)
+
+        /**
+         * 消息原发送人, 等于 [operator]
+         */
+        override val author: Friend? get() = operator
+
+        public override val authorId: Long
+            get() = operatorId
+
+        @Suppress("DuplicatedCode")
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -305,7 +324,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             if (!messageIds.contentEquals(other.messageIds)) return false
             if (!messageInternalIds.contentEquals(other.messageInternalIds)) return false
             if (messageTime != other.messageTime) return false
-            if (operator != other.operator) return false
+            if (operatorId != other.operatorId) return false
 
             return true
         }
@@ -315,7 +334,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
             result = 31 * result + messageIds.contentHashCode()
             result = 31 * result + messageInternalIds.contentHashCode()
             result = 31 * result + messageTime
-            result = 31 * result + operator.hashCode()
+            result = 31 * result + operatorId.hashCode()
             return result
         }
     }
@@ -335,6 +354,8 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
         public override val operator: Member?,
         public override val group: Group
     ) : MessageRecallEvent(), GroupOperableEvent, Packet {
+        override val author: NormalMember? get() = group[authorId]
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -365,10 +386,12 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     }
 }
 
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+@Deprecated("Binary compatibility", level = DeprecationLevel.HIDDEN)
 public val MessageRecallEvent.GroupRecall.author: Member
     get() = if (authorId == bot.id) group.botAsMember else group.getOrFail(authorId)
 
-public val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operator == bot.id
+public val MessageRecallEvent.FriendRecall.isByBot: Boolean get() = this.operatorId == bot.id
 // val MessageRecallEvent.GroupRecall.isByBot: Boolean get() = (this as GroupOperableEvent).isByBot
 // no need
 

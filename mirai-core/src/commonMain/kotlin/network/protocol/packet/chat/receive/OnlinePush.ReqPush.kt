@@ -422,6 +422,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             @ProtoNumber(7) val pkgNum: Int, // 1
             @ProtoNumber(8) val pkgIndex: Int, // 0
             @ProtoNumber(9) val devSeq: Int, // 0
+            @ProtoNumber(10) val unknown1: Int = 0, // ? 补 id
+            @ProtoNumber(11) val unknown2: Int = 0, // ?
             @ProtoNumber(12) val flag: Int // 1
         ) : ProtoBuf
 
@@ -441,7 +443,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                     messageIds = intArrayOf(it.srcId),
                     messageInternalIds = intArrayOf(it.srcInternalId),
                     messageTime = it.time,
-                    operator = it.fromUin
+                    operatorId = it.fromUin
                 )
             }
     },
