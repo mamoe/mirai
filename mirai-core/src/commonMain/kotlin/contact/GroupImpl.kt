@@ -35,6 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcP
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
+import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
 import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.internal.utils.toUHexString
@@ -460,11 +461,13 @@ internal class GroupImpl(
                 response.fileKey,
                 codec
             )
-            Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), "")
+            Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), codec, "")
         }
 
     }
 
 
     override fun toString(): String = "Group($id)"
+
+    val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 }

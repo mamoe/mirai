@@ -61,19 +61,23 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
                 pbPushMsg.msg.msgHead.msgSeq
             )
         }
+        val group =
+            bot.getGroup(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl? ?: return null // 机器人还正在进群
+        val msgs = group.groupPkgMsgParsingCache.put(pbPushMsg)
+        if (msgs.isEmpty()) return null
 
         var extraInfo: ImMsgBody.ExtraInfo? = null
         var anonymous: ImMsgBody.AnonymousGroupMsg? = null
 
-        for (elem in pbPushMsg.msg.msgBody.richText.elems) {
-            when {
-                elem.extraInfo != null -> extraInfo = elem.extraInfo
-                elem.anonGroupMsg != null -> anonymous = elem.anonGroupMsg
+        for (msg in msgs) {
+            for (elem in msg.msg.msgBody.richText.elems) {
+                when {
+                    elem.extraInfo != null -> extraInfo = elem.extraInfo
+                    elem.anonGroupMsg != null -> anonymous = elem.anonGroupMsg
+                }
             }
         }
 
-        val group =
-            bot.getGroup(pbPushMsg.msg.msgHead.groupInfo!!.groupCode) as GroupImpl? ?: return null // 机器人还正在进群
         val sender = if (anonymous != null) {
             group.newAnonymous(anonymous.anonNick.encodeToString(), anonymous.anonId.encodeToBase64())
         } else {
@@ -107,7 +111,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
                 }
             },
             sender = sender,
-            message = pbPushMsg.msg.toMessageChain(bot, groupIdOrZero = group.id, onlineSource = true),
+            message = msgs.toMessageChain(bot, groupIdOrZero = group.id, onlineSource = true),
             permission = when {
                 flags and 16 != 0 -> MemberPermission.ADMINISTRATOR
                 flags and 8 != 0 -> MemberPermission.OWNER

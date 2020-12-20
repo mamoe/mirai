@@ -14,9 +14,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
@@ -26,7 +26,7 @@ internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listen
     with(GlobalEventListeners[listener.priority]) {
         @Suppress("UNCHECKED_CAST")
         val node = ListenerRegistry(listener as Listener<Event>, this@subscribeInternal)
-        addLast(node)
+        add(node)
         listener.invokeOnCompletion {
             this.remove(node)
         }
@@ -98,18 +98,18 @@ internal class ListenerRegistry(
 
 
 internal object GlobalEventListeners {
-    private val ALL_LEVEL_REGISTRIES: Map<EventPriority, LockFreeLinkedList<ListenerRegistry>>
+    private val ALL_LEVEL_REGISTRIES: Map<EventPriority, ConcurrentLinkedQueue<ListenerRegistry>>
 
     init {
         val map =
-            EnumMap<Listener.EventPriority, LockFreeLinkedList<ListenerRegistry>>(Listener.EventPriority::class.java)
+            EnumMap<Listener.EventPriority, ConcurrentLinkedQueue<ListenerRegistry>>(Listener.EventPriority::class.java)
         EventPriority.values().forEach {
-            map[it] = LockFreeLinkedList()
+            map[it] = ConcurrentLinkedQueue()
         }
         this.ALL_LEVEL_REGISTRIES = map
     }
 
-    operator fun get(priority: Listener.EventPriority): LockFreeLinkedList<ListenerRegistry> =
+    operator fun get(priority: Listener.EventPriority): ConcurrentLinkedQueue<ListenerRegistry> =
         ALL_LEVEL_REGISTRIES[priority]!!
 }
 
@@ -121,54 +121,56 @@ internal suspend inline fun AbstractEvent.broadcastInternal() {
     callAndRemoveIfRequired(this@broadcastInternal)
 }
 
+internal inline fun <E, T : Iterable<E>> T.forEach0(block: T.(E) -> Unit) {
+    forEach { block(it) }
+}
+
 @Suppress("DuplicatedCode")
 internal suspend inline fun <E : AbstractEvent> callAndRemoveIfRequired(
     event: E
 ) {
     for (p in Listener.EventPriority.prioritiesExcludedMonitor) {
-        GlobalEventListeners[p].forEachNode { registeredRegistryNode ->
+        GlobalEventListeners[p].forEach0 { registeredRegistry ->
             if (event.isIntercepted) {
                 return
             }
-            val listenerRegistry = registeredRegistryNode.nodeValue
-            if (!listenerRegistry.type.isInstance(event)) return@forEachNode
-            val listener = listenerRegistry.listener
+            if (!registeredRegistry.type.isInstance(event)) return@forEach0
+            val listener = registeredRegistry.listener
             when (listener.concurrencyKind) {
                 Listener.ConcurrencyKind.LOCKED -> {
                     (listener as Handler).lock!!.withLock {
                         if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                            removeNode(registeredRegistryNode)
+                            remove(registeredRegistry)
                         }
                     }
                 }
                 Listener.ConcurrencyKind.CONCURRENT -> {
                     if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                        removeNode(registeredRegistryNode)
+                        remove(registeredRegistry)
                     }
                 }
             }
         }
     }
     coroutineScope {
-        GlobalEventListeners[EventPriority.MONITOR].forEachNode { registeredRegistryNode ->
+        GlobalEventListeners[EventPriority.MONITOR].forEach0 { registeredRegistry ->
             if (event.isIntercepted) {
                 return@coroutineScope
             }
-            val listenerRegistry = registeredRegistryNode.nodeValue
-            if (!listenerRegistry.type.isInstance(event)) return@forEachNode
-            val listener = listenerRegistry.listener
+            if (!registeredRegistry.type.isInstance(event)) return@forEach0
+            val listener = registeredRegistry.listener
             launch {
                 when (listener.concurrencyKind) {
                     Listener.ConcurrencyKind.LOCKED -> {
                         (listener as Handler).lock!!.withLock {
                             if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                                removeNode(registeredRegistryNode)
+                                remove(registeredRegistry)
                             }
                         }
                     }
                     Listener.ConcurrencyKind.CONCURRENT -> {
                         if (listener.onEvent(event) == ListeningStatus.STOPPED) {
-                            removeNode(registeredRegistryNode)
+                            remove(registeredRegistry)
                         }
                     }
                 }

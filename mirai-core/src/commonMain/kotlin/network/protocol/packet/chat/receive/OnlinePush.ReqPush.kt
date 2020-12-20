@@ -44,6 +44,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
+import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
@@ -53,6 +54,7 @@ import net.mamoe.mirai.internal.utils.read
 import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.mapToIntArray
 
 
 //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C
@@ -243,7 +245,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         val grayTip = readProtoBuf(TroopTips0x857.NotifyMsgBody.serializer()).optGeneralGrayTip
         when (grayTip?.templId) {
             //戳一戳
-            10043L, 1134L, 1135L, 1136L -> {
+            10043L, 1133L, 1132L, 1134L, 1135L, 1136L -> {
                 //预置数据，服务器将不会提供己方已知消息
                 var action = ""
                 var from: Member = group.botAsMember
@@ -357,22 +359,21 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         val operator =
             if (recallReminder.uin == bot.id) group.botAsMember
             else group[recallReminder.uin] ?: return@lambda732 emptySequence()
+        val firstPkg = recallReminder.recalledMsgList.firstOrNull() ?: return@lambda732 emptySequence()
 
-        return@lambda732 recallReminder.recalledMsgList.asSequence().mapNotNull { pkg ->
-            when {
-                pkg.authorUin == bot.id && operator.id == bot.id -> null
-                else -> {
-                    MessageRecallEvent.GroupRecall(
-                        bot,
-                        pkg.authorUin,
-                        intArrayOf(pkg.seq),
-                        intArrayOf(pkg.msgRandom),
-                        pkg.time,
-                        operator,
-                        group
-                    )
-                }
-            }
+        return@lambda732 when {
+            firstPkg.authorUin == bot.id && operator.id == bot.id -> emptySequence()
+            else -> sequenceOf(
+                MessageRecallEvent.GroupRecall(
+                    bot,
+                    firstPkg.authorUin,
+                    recallReminder.recalledMsgList.mapToIntArray { it.seq },
+                    recallReminder.recalledMsgList.mapToIntArray { it.msgRandom },
+                    firstPkg.time,
+                    operator,
+                    group
+                )
+            )
         }
     }
 )
@@ -422,6 +423,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             @ProtoNumber(7) val pkgNum: Int, // 1
             @ProtoNumber(8) val pkgIndex: Int, // 0
             @ProtoNumber(9) val devSeq: Int, // 0
+            @ProtoNumber(10) val unknown1: Int = 0, // ? 补 id
+            @ProtoNumber(11) val unknown2: Int = 0, // ?
             @ProtoNumber(12) val flag: Int // 1
         ) : ProtoBuf
 
@@ -441,7 +444,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                     messageIds = intArrayOf(it.srcId),
                     messageInternalIds = intArrayOf(it.srcInternalId),
                     messageTime = it.time,
-                    operator = it.fromUin
+                    operatorId = it.fromUin
                 )
             }
     },
@@ -509,7 +512,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
         when (body.templId) {
             //戳一戳
-            1134L, 1135L, 1136L, 10043L -> {
+            1132L, 1133L, 1134L, 1135L, 1136L, 10043L -> {
                 //预置数据，服务器将不会提供己方已知消息
                 var from: Friend = bot.asFriend
                 var action = ""

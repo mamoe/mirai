@@ -173,7 +173,8 @@ internal object KnownPacketFactories {
             ?: IncomingFactories.firstOrNull { it.receivingCommandName == commandName }
     }
 
-    class PacketFactoryIllegalState10008Exception @JvmOverloads constructor(
+    class PacketFactoryIllegalStateException @JvmOverloads constructor(
+        val code: Int,
         override val message: String? = null,
         override val cause: Throwable? = null
     ) : RuntimeException()
@@ -310,8 +311,9 @@ internal object KnownPacketFactories {
 
             val returnCode = readInt()
             check(returnCode == 0) {
-                if (returnCode == -10008) { // https://github.com/mamoe/mirai/issues/470
-                    throw PacketFactoryIllegalState10008Exception("returnCode = $returnCode")
+                if (returnCode <= -10000) {
+                    // https://github.com/mamoe/mirai/issues/470
+                    throw PacketFactoryIllegalStateException(returnCode, "returnCode = $returnCode")
                 } else "returnCode = $returnCode"
             }
 

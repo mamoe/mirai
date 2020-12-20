@@ -25,41 +25,41 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal class OfflineMessageSourceImplByMsg(
     // from other sources' originalMessage
-    val delegate: MsgComm.Msg,
+    val delegate: List<MsgComm.Msg>,
     override val botId: Long,
 ) : OfflineMessageSource(), MessageSourceInternal {
     override val kind: MessageSourceKind =
-        if (delegate.msgHead.groupInfo != null) MessageSourceKind.GROUP else MessageSourceKind.FRIEND
+        if (delegate.first().msgHead.groupInfo != null) MessageSourceKind.GROUP else MessageSourceKind.FRIEND
     override val ids: IntArray get() = sequenceIds
-    override val internalIds: IntArray = intArrayOf(delegate.msgHead.msgUid.toInt())
+    override val internalIds: IntArray = delegate.mapToIntArray { it.msgHead.msgUid.toInt() }
     override val time: Int
-        get() = delegate.msgHead.msgTime
+        get() = delegate.first().msgHead.msgTime
     override val fromId: Long
-        get() = delegate.msgHead.fromUin
+        get() = delegate.first().msgHead.fromUin
     override val targetId: Long
-        get() = delegate.msgHead.groupInfo?.groupCode ?: delegate.msgHead.toUin
+        get() = delegate.first().msgHead.groupInfo?.groupCode ?: delegate.first().msgHead.toUin
     override val originalMessage: MessageChain by lazy {
         delegate.toMessageChain(
             null,
             botId,
-            groupIdOrZero = delegate.msgHead.groupInfo?.groupCode ?: 0,
+            groupIdOrZero = delegate.first().msgHead.groupInfo?.groupCode ?: 0,
             onlineSource = false,
-            isTemp = delegate.msgHead.c2cTmpMsgHead != null
+            isTemp = delegate.first().msgHead.c2cTmpMsgHead != null
         )
     }
-    override val sequenceIds: IntArray = intArrayOf(delegate.msgHead.msgSeq)
+    override val sequenceIds: IntArray = delegate.mapToIntArray { it.msgHead.msgSeq }
 
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
 
     override fun toJceData(): ImMsgBody.SourceMsg {
         return ImMsgBody.SourceMsg(
-            origSeqs = intArrayOf(delegate.msgHead.msgSeq),
-            senderUin = delegate.msgHead.fromUin,
+            origSeqs = delegate.mapToIntArray { it.msgHead.msgSeq },
+            senderUin = delegate.first().msgHead.fromUin,
             toUin = 0,
             flag = 1,
-            elems = delegate.msgBody.richText.elems,
+            elems = delegate.flatMap { it.msgBody.richText.elems },
             type = 0,
-            time = delegate.msgHead.msgTime,
+            time = delegate.first().msgHead.msgTime,
             pbReserve = EMPTY_BYTE_ARRAY,
             srcMsg = EMPTY_BYTE_ARRAY
         )

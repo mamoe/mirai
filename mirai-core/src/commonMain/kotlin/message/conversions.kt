@@ -23,6 +23,7 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
+import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -234,24 +235,52 @@ internal fun MsgComm.Msg.toMessageChain(
     isTemp: Boolean = false
 ): MessageChain = toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
 
+internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
+    bot: Bot,
+    groupIdOrZero: Long,
+    onlineSource: Boolean,
+    isTemp: Boolean = false
+): MessageChain = toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
+
+@JvmName("toMessageChain1")
+internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
+    bot: Bot?,
+    botId: Long,
+    groupIdOrZero: Long,
+    onlineSource: Boolean,
+    isTemp: Boolean = false
+): MessageChain = map{it.msg}.toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
+
 internal fun MsgComm.Msg.toMessageChain(
     bot: Bot?,
     botId: Long,
     groupIdOrZero: Long,
     onlineSource: Boolean,
     isTemp: Boolean = false
-): MessageChain {
-    val elements = this.msgBody.richText.elems
+): MessageChain = listOf(this).toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
 
-    val pptMsg = msgBody.richText.ptt?.run {
+internal fun List<MsgComm.Msg>.toMessageChain(
+    bot: Bot?,
+    botId: Long,
+    groupIdOrZero: Long,
+    onlineSource: Boolean,
+    isTemp: Boolean = false
+): MessageChain {
+    val elements = this.flatMap { it.msgBody.richText.elems }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    val ppts = buildList<Message> {
+        this@toMessageChain.forEach { msg ->
+            msg.msgBody.richText.ptt?.run {
 //        when (fileType) {
 //            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
 //            else -> null
 //        }
-        Voice(String(fileName), fileMd5, fileSize.toLong(), String(downPara))
+                add(Voice(String(fileName), fileMd5, fileSize.toLong(), format, String(downPara)))
+            }
+        }
     }
-
-    return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {
+    return buildMessageChain(elements.size + 1 + ppts.size) {
         if (onlineSource) {
             checkNotNull(bot) { "bot is null" }
             when {
@@ -263,7 +292,6 @@ internal fun MsgComm.Msg.toMessageChain(
             +OfflineMessageSourceImplByMsg(this@toMessageChain, botId)
         }
         elements.joinToMessageChain(groupIdOrZero, botId, this)
-        pptMsg?.let(::add)
     }.cleanupRubbishMessageElements()
 }
 

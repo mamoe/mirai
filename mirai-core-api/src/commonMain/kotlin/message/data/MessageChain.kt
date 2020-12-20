@@ -161,8 +161,15 @@ public inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): 
  * 获取第一个 [M] 类型的 [Message] 实例
  */
 @JvmSynthetic
+public inline fun <reified M : SingleMessage?> MessageChain.findIsInstance(): M? =
+    this.find { it is M } as M?
+
+/**
+ * 获取第一个 [M] 类型的 [Message] 实例
+ */
+@JvmSynthetic
 public inline fun <reified M : SingleMessage?> MessageChain.firstIsInstanceOrNull(): M? =
-    this.firstOrNull { it is M } as M?
+    this.find { it is M } as M?
 
 /**
  * 获取第一个 [M] 类型的 [Message] 实例

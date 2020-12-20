@@ -119,6 +119,9 @@ inline fun Project.configurePublishing(
             setPublications("mavenJava")
             setConfigurations("archives")
 
+            publish = true
+            override = true
+
             pkg.apply {
                 repo = bintrayRepo
                 name = bintrayPkgName
