@@ -28,7 +28,7 @@ mirai 已经可以用于各项工作，但我们并不保证完全的稳定。�
 **警告：** mirai 开发者自愿花费其休息时间，无偿维护 mirai 系列项目，**但没有义务提供任何方面的帮助**。  
 使用者应秉持对开发者无私贡献的尊重，而不应该期望得到帮助。  
    
-### 启动Mirai时遇到java.security.NoSuchProviderException: JCE cannot authenticate the provider BC
+### 启动 Mirai 时遇到 java.security.NoSuchProviderException: JCE cannot authenticate the provider BC
 请更换 OpenJDK。该问题是由于BouncyCastle在重打包后丢失Jar签名引起的。  
 ~~多发于Oracle JDK~~
 
