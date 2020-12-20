@@ -20,6 +20,8 @@ import kotlinx.coroutines.withContext
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.network.NoStandardInputForCaptchaException
+import net.mamoe.mirai.utils.LoginSolver.Companion.Default
+import net.mamoe.mirai.utils.StandardCharImageLoginSolver.Companion.createBlocking
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.File
@@ -29,6 +31,9 @@ import kotlin.coroutines.CoroutineContext
 
 /**
  * 验证码, 设备锁解决器
+ *
+ * @see Default
+ * @see BotConfiguration.loginSolver
  */
 public abstract class LoginSolver {
     /**
@@ -61,46 +66,43 @@ public abstract class LoginSolver {
     public abstract suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String?
 
     public companion object {
-        public val Default: LoginSolver = kotlin.run {
-            if (WindowHelperJvm.isDesktopSupported) {
-                SwingSolver
-            } else {
-                DefaultLoginSolver({ readLine() ?: throw NoStandardInputForCaptchaException(null) })
-            }
+        /**
+         * 当前平台默认的 [LoginSolver]。
+         *
+         * 检测策略:
+         * 1. 检测 `android.util.Log`, 如果存在, 返回 `null`.
+         * 2. 检测 JVM 属性 `mirai.no-desktop`. 若存在, 返回 []
+         * 2. 检测 JVM 桌面环境,
+         *
+         * 在桌面 JVM, Mirai 会检测 Java Swing, 在可用时首选 [SwingSolver]. 可以通过 `System.setProperty("mirai.no-desktop", "true")` 关闭
+         * 在 Android, mirai 检测 `android.util.Log`. 然后
+         *
+         * @return [SwingSolver] 或
+         */
+        @JvmField
+        public val Default: LoginSolver? = when (WindowHelperJvm.platformKind) {
+            WindowHelperJvm.PlatformKind.ANDROID -> null
+            WindowHelperJvm.PlatformKind.SWING -> SwingSolver
+            WindowHelperJvm.PlatformKind.CLI -> StandardCharImageLoginSolver()
         }
-    }
-}
 
-
-/**
- * 自动选择 [SwingSolver] 或 [StandardCharImageLoginSolver]
- */
-@MiraiExperimentalApi
-public class DefaultLoginSolver(
-    public val input: suspend () -> String,
-    overrideLogger: MiraiLogger? = null
-) : LoginSolver() {
-    private val delegate: LoginSolver = StandardCharImageLoginSolver(input, overrideLogger)
-
-    override suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String? {
-        return delegate.onSolvePicCaptcha(bot, data)
-    }
-
-    override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String? {
-        return delegate.onSolveSliderCaptcha(bot, url)
-    }
-
-    override suspend fun onSolveUnsafeDeviceLoginVerify(bot: Bot, url: String): String? {
-        return delegate.onSolveUnsafeDeviceLoginVerify(bot, url)
+        @Suppress("unused")
+        @Deprecated("Binary compatibility", level = DeprecationLevel.HIDDEN)
+        public fun getDefault(): LoginSolver = Default
+            ?: error("LoginSolver is not provided by default on your platform. Please specify by BotConfiguration.loginSolver")
     }
 }
 
 /**
+ * CLI 环境 [LoginSolver]. 将验证码图片转为字符画并通过 `output` 输出, [input] 获取用户输入.
+ *
  * 使用字符图片展示验证码, 使用 [input] 获取输入, 使用 [overrideLogger] 输出
+ *
+ * @see createBlocking
  */
 @MiraiExperimentalApi
 public class StandardCharImageLoginSolver(
-    input: suspend () -> String,
+    input: suspend () -> String = { readLine() ?: throw NoStandardInputForCaptchaException() },
     /**
      * 为 `null` 时使用 [Bot.logger]
      */
@@ -164,6 +166,28 @@ public class StandardCharImageLoginSolver(
         logger.info(url)
         return input().also {
             logger.info("正在提交中...")
+        }
+    }
+
+    public companion object {
+        /**
+         * 创建 Java 阻塞版 [input] 的 [StandardCharImageLoginSolver]
+         *
+         * @param input 将在协程 IO 池执行, 可以有阻塞调用
+         */
+        @JvmStatic
+        public fun createBlocking(input: () -> String, output: MiraiLogger?): StandardCharImageLoginSolver {
+            return StandardCharImageLoginSolver({ withContext(Dispatchers.IO) { input() } }, output)
+        }
+
+        /**
+         * 创建 Java 阻塞版 [input] 的 [StandardCharImageLoginSolver]
+         *
+         * @param input 将在协程 IO 池执行, 可以有阻塞调用
+         */
+        @JvmStatic
+        public fun createBlocking(input: () -> String): StandardCharImageLoginSolver {
+            return StandardCharImageLoginSolver({ withContext(Dispatchers.IO) { input() } })
         }
     }
 }

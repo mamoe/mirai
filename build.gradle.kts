@@ -141,7 +141,10 @@ fun Project.configureJvmTarget() {
     }
 
     kotlinTargets.orEmpty().filterIsInstance<KotlinJvmTarget>().forEach { target ->
-        target.compilations.all { kotlinOptions.jvmTarget = "1.8" }
+        target.compilations.all {
+            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.languageVersion = "1.4"
+        }
         target.testRuns["test"].executionTask.configure { useJUnitPlatform() }
     }
 

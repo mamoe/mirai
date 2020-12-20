@@ -90,8 +90,17 @@ public open class BotConfiguration { // open for Java
     /** 最多尝试多少次重连 */
     public var reconnectionRetryTimes: Int = Int.MAX_VALUE
 
-    /** 验证码处理器 */
-    public var loginSolver: LoginSolver = LoginSolver.Default
+    /**
+     * 验证码处理器
+     *
+     * - 在 Android 需要手动提供 [LoginSolver]
+     * - 在 JVM, Mirai 会根据环境支持情况选择 Swing/CLI 实现
+     *
+     * 详见 [LoginSolver.Default]
+     *
+     * @see LoginSolver
+     */
+    public var loginSolver: LoginSolver? = LoginSolver.Default
 
     /** 使用协议类型 */
     public var protocol: MiraiProtocol = MiraiProtocol.ANDROID_PHONE
@@ -115,6 +124,7 @@ public open class BotConfiguration { // open for Java
         Json {
             isLenient = true
             ignoreUnknownKeys = true
+            prettyPrint = true
         }
     }.getOrElse { Json {} }
 
@@ -133,6 +143,7 @@ public open class BotConfiguration { // open for Java
      *
      * @see deviceInfo
      */
+    @ConfigurationDsl
     public fun loadDeviceInfoJson(json: String) {
         deviceInfo = {
             this.json.decodeFromString(DeviceInfo.serializer(), json)

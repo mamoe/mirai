@@ -152,17 +152,28 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         logger.info { "Connected to server $host:$port" }
         startPacketReceiverJobOrKill(CancellationException("relogin", cause))
 
+        fun LoginSolver?.notnull(): LoginSolver {
+            checkNotNull(this) {
+                "No LoginSolver found. Please provide by BotConfiguration.loginSolver. " +
+                        "For example use `BotFactory.newBot(...) { loginSolver = yourLoginSolver}` in Kotlin, " +
+                        "use `BotFactory.newBot(..., new BotConfiguration() {{ setLoginSolver(yourLoginSolver) }})` in Java."
+            }
+            return this
+        }
+
+        fun loginSolverNotNull() = bot.configuration.loginSolver.notnull()
+
         var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
         mainloop@ while (true) {
             when (response) {
                 is WtLogin.Login.LoginPacketResponse.UnsafeLogin -> {
-                    bot.configuration.loginSolver.onSolveUnsafeDeviceLoginVerify(bot, response.url)
+                    loginSolverNotNull().onSolveUnsafeDeviceLoginVerify(bot, response.url)
                     response = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
                 }
 
                 is WtLogin.Login.LoginPacketResponse.Captcha -> when (response) {
                     is WtLogin.Login.LoginPacketResponse.Captcha.Picture -> {
-                        var result = bot.configuration.loginSolver.onSolvePicCaptcha(bot, response.data)
+                        var result = loginSolverNotNull().onSolvePicCaptcha(bot, response.data)
                         if (result == null || result.length != 4) {
                             //refresh captcha
                             result = "ABCD"
@@ -172,7 +183,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                         continue@mainloop
                     }
                     is WtLogin.Login.LoginPacketResponse.Captcha.Slider -> {
-                        val ticket = bot.configuration.loginSolver.onSolveSliderCaptcha(bot, response.url).orEmpty()
+                        val ticket = loginSolverNotNull().onSolveSliderCaptcha(bot, response.url).orEmpty()
                         response = WtLogin.Login.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
                         continue@mainloop
                     }
