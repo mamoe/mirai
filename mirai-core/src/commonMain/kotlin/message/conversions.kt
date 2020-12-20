@@ -148,7 +148,13 @@ internal fun MessageChain.toRichTextElems(
             is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is FlashImage -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
-            is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
+            is Face -> elements.add(
+                if (it.id >= 260) {
+                    ImMsgBody.Elem(commonElem = it.toCommData())
+                } else {
+                    ImMsgBody.Elem(face = it.toJceData())
+                }
+            )
             is QuoteReply -> {
                 if (forGroup) {
                     when (val source = it.source) {
@@ -511,6 +517,11 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                         if (proto.flashC2cPic != null) {
                             list.add(FlashImage(OnlineFriendImageImpl(proto.flashC2cPic)))
                         }
+                    }
+                    33 -> {
+                        val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype33.serializer())
+                        list.add(Face(proto.index))
+
                     }
                 }
             }
