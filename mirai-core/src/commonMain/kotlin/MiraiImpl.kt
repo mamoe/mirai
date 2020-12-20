@@ -278,16 +278,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 if (bot.id != source.fromId) {
                     group.checkBotPermission(MemberPermission.ADMINISTRATOR)
                 }
-                @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-                MessageRecallEvent.GroupRecall(
-                    bot,
-                    source.fromId,
-                    source.ids,
-                    source.internalIds,
-                    source.time,
-                    null,
-                    group
-                ).broadcast()
 
                 network.run {
                     PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
