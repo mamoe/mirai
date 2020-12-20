@@ -453,7 +453,7 @@ internal class GroupImpl(
                 response.fileKey,
                 codec
             )
-            Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), "")
+            Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), codec, "")
         }
 
     }
