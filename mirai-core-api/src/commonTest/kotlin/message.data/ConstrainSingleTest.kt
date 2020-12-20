@@ -59,7 +59,7 @@ internal class ConstrainSingleTest {
 
         val result = buildMessageChain {
             add(" ")
-            add(Face(Face.OK))
+            add(Face(Face.HAO))
             add(TestConstrainSingleMessage())
             add(
                 PlainText("ss")
