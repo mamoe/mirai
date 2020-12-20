@@ -221,10 +221,8 @@ public data class Face(public val id: Int) : // used in delegation
         public const val 差劲: Int = CHA_JIN
         public const val AI_NI: Int = 122
         public const val 爱你: Int = AI_NI
-        public const val BU: Int = 123
-        public const val 不: Int = BU
-        public const val HAO: Int = 124
-        public const val 好: Int = HAO
+        public const val NO: Int = 123
+        public const val OK: Int = 124
         public const val ZHUAN_QUAN: Int = 125
         public const val 转圈: Int = ZHUAN_QUAN
         public const val KE_TOU: Int = 126
@@ -563,8 +561,8 @@ public data class Face(public val id: Int) : // used in delegation
             names[QUAN_TOU] = "[拳头]"
             names[CHA_JIN] = "[差劲]"
             names[AI_NI] = "[爱你]"
-            names[BU] = "[不]"
-            names[HAO] = "[好]"
+            names[NO] = "[NO]"
+            names[OK] = "[OK]"
             names[ZHUAN_QUAN] = "[转圈]"
             names[KE_TOU] = "[磕头]"
             names[HUI_TOU] = "[回头]"
