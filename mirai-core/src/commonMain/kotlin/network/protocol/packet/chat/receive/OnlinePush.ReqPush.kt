@@ -412,19 +412,24 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
     0x8AL to lambda528 { bot ->
         @Serializable
+        class Wording(
+            @ProtoNumber(1) val itemID: Int = 0,
+            @ProtoNumber(2) val itemName: String = ""
+        ) : ProtoBuf
+
+        @Serializable
         class Sub8AMsgInfo(
             @ProtoNumber(1) val fromUin: Long,
             @ProtoNumber(2) val botUin: Long,
             @ProtoNumber(3) val srcId: Int,
-            @ProtoNumber(4) val srcInternalId: Int,
-            @ProtoNumber(5) val time: Int,
-            @ProtoNumber(6) val random: Int, // 同srcInternalId
+            @ProtoNumber(4) val srcInternalId: Long,
+            @ProtoNumber(5) val time: Long,
+            @ProtoNumber(6) val random: Int,
             @ProtoNumber(7) val pkgNum: Int, // 1
             @ProtoNumber(8) val pkgIndex: Int, // 0
             @ProtoNumber(9) val devSeq: Int, // 0
-            @ProtoNumber(10) val unknown1: Int = 0, // ? 补 id
-            @ProtoNumber(11) val unknown2: Int = 0, // ?
-            @ProtoNumber(12) val flag: Int // 1
+            @ProtoNumber(10) val flag: Int, // 1
+            @ProtoNumber(11) val wording: Wording
         ) : ProtoBuf
 
         @Serializable
@@ -441,8 +446,8 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 MessageRecallEvent.FriendRecall(
                     bot = bot,
                     messageIds = intArrayOf(it.srcId),
-                    messageInternalIds = intArrayOf(it.srcInternalId),
-                    messageTime = it.time,
+                    messageInternalIds = intArrayOf(it.srcInternalId.toInt()),
+                    messageTime = it.time.toInt(),
                     operatorId = it.fromUin
                 )
             }
