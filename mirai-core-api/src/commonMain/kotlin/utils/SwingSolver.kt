@@ -81,6 +81,7 @@ internal object WindowHelperJvm {
             // Android platform
             return@run PlatformKind.ANDROID
         }
+        if (System.getProperty("mirai.no-desktop") != null) return@run PlatformKind.CLI
         kotlin.runCatching {
             Class.forName("java.awt.Desktop")
             Class.forName("java.awt.Toolkit")
