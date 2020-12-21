@@ -255,7 +255,7 @@ internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
     groupIdOrZero: Long,
     onlineSource: Boolean,
     isTemp: Boolean = false
-): MessageChain = map{it.msg}.toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
+): MessageChain = map { it.msg }.toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
 
 internal fun MsgComm.Msg.toMessageChain(
     bot: Bot?,
@@ -298,6 +298,7 @@ internal fun List<MsgComm.Msg>.toMessageChain(
             +OfflineMessageSourceImplByMsg(this@toMessageChain, botId)
         }
         elements.joinToMessageChain(groupIdOrZero, botId, this)
+        addAll(ppts)
     }.cleanupRubbishMessageElements()
 }
 
