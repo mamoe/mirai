@@ -323,7 +323,7 @@ internal class WtLogin {
             return when (type.toInt()) {
                 0 -> onLoginSuccess(tlvMap, bot)
                 2 -> onSolveLoginCaptcha(tlvMap, bot)
-                160 /*-96*/ -> onUnsafeDeviceLogin(tlvMap)
+                160, 239 /*-96*/ -> onUnsafeDeviceLogin(tlvMap)
                 204 /*-52*/ -> onSMSVerifyNeeded(tlvMap, bot)
                 // 1, 15 -> onErrorMessage(tlvMap) ?: error("Cannot find error message")
                 else -> {
