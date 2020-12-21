@@ -97,7 +97,10 @@ internal fun Contact.logMessageSent(message: Message) {
 internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
     when (this) {
         is net.mamoe.mirai.event.events.GroupMessageEvent -> bot.logger.verbose {
-            "[${group.name}(${group.id})] ${senderName}(${sender.id}) -> $message".replaceMagicCodes()
+            "[${group.name}(${group.id})] ${senderName}(${
+                if (sender is AnonymousMember) "匿名"
+                else sender.id
+            }) -> $message".replaceMagicCodes()
         }
         is net.mamoe.mirai.event.events.TempMessageEvent -> bot.logger.verbose {
             "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()

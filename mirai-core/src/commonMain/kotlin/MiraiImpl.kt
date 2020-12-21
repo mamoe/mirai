@@ -13,9 +13,7 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
@@ -746,6 +744,36 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     @LowLevelApi
     override suspend fun _lowLevelUploadVoice(bot: Bot, md5: ByteArray, groupId: Long) {
 
+    }
+
+    override suspend fun _lowLevelMuteAnonymous(
+        bot: Bot,
+        anonymousId: String,
+        anonymousNick: String,
+        groupId: Long,
+        seconds: Int
+    ) {
+        bot as QQAndroidBot
+        val response = MiraiPlatformUtils.Http.post<String> {
+            url("https://qqweb.qq.com/c/anonymoustalk/blacklist")
+            body = MultiPartFormDataContent(formData {
+                append("anony_id", anonymousId)
+                append("group_code", groupId)
+                append("seconds", seconds)
+                append("anony_nick", anonymousNick)
+                append("bkn", bot.bkn)
+            })
+            headers {
+                append(
+                    "cookie",
+                    "uin=o${bot.id}; skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()};"
+                )
+            }
+        }
+        val jsonObj = Json.decodeFromString(JsonObject.serializer(), response)
+        if ((jsonObj["retcode"] ?: jsonObj["cgicode"] ?: error("missing response code")).jsonPrimitive.long != 0L) {
+            throw IllegalStateException(response)
+        }
     }
 
     override fun createImage(imageId: String): Image {

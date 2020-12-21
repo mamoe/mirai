@@ -231,6 +231,12 @@ internal class GroupImpl(
     }
 
     override fun newMember(memberInfo: MemberInfo): Member {
+        memberInfo.anonymousId?.let { anId ->
+            return AnonymousMemberImpl(
+                this, this.coroutineContext,
+                memberInfo, anId
+            )
+        }
         return MemberImpl(
             Mirai._lowLevelNewFriend(bot, memberInfo) as FriendImpl,
             this,
@@ -239,7 +245,7 @@ internal class GroupImpl(
         )
     }
 
-    internal fun newAnonymous(name: String): Member = newMember(
+    internal fun newAnonymous(name: String, id: String): Member = newMember(
         object : MemberInfo {
             override val nameCard = name
             override val permission = MemberPermission.MEMBER
@@ -248,6 +254,7 @@ internal class GroupImpl(
             override val uin = 80000000L
             override val nick = name
             override val remark: String = "匿名"
+            override val anonymousId: String get() = id
         }
     )
 

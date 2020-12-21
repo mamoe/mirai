@@ -21,4 +21,6 @@ public interface MemberInfo : FriendInfo {
     public val specialTitle: String
 
     public val muteTimestamp: Int
+
+    public val anonymousId: String? get() = null
 }

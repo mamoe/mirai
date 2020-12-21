@@ -10,6 +10,7 @@
 package net.mamoe.mirai
 
 import kotlinx.coroutines.Job
+import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.data.*
@@ -200,5 +201,19 @@ public interface LowLevelApiAccessor {
         bot: Bot,
         md5: ByteArray,
         groupId: Long,
+    )
+
+    /**
+     * 禁言一个匿名用户
+     *
+     * @param anonymousId [AnonymousMember.anonymousId]
+     */
+    @LowLevelApi
+    public suspend fun _lowLevelMuteAnonymous(
+        bot: Bot,
+        anonymousId: String,
+        anonymousNick: String,
+        groupId: Long,
+        seconds: Int,
     )
 }

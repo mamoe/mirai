@@ -29,6 +29,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x8fc
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.encodeToBase64
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
@@ -78,10 +79,10 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         }
 
         val sender = if (anonymous != null) {
-            group.newAnonymous(anonymous.anonNick.encodeToString())
+            group.newAnonymous(anonymous.anonNick.encodeToString(), anonymous.anonId.encodeToBase64())
         } else {
-            group[pbPushMsg.msg.msgHead.fromUin]
-        } as MemberImpl
+            group[pbPushMsg.msg.msgHead.fromUin] as MemberImpl
+        }
 
         val name = if (anonymous != null) {
             sender.nameCard
@@ -103,7 +104,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
         val flags = extraInfo?.flags ?: 0
         return GroupMessageEvent(
             senderName = name.also {
-                if (it != sender.nameCard) {
+                if (sender is MemberImpl && it != sender.nameCard) {
                     val origin = sender._nameCard
                     sender._nameCard = name
                     MemberCardChangeEvent(origin, name, sender).broadcast()

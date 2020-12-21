@@ -18,6 +18,7 @@ import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
 import kotlinx.io.core.use
+import java.util.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.jvm.JvmMultifileClass
@@ -93,6 +94,10 @@ internal fun UByteArray.toUHexString(separator: String = " ", offset: Int = 0, l
 @Suppress("NOTHING_TO_INLINE")
 internal inline fun ByteArray.encodeToString(offset: Int = 0, charset: Charset = Charsets.UTF_8): String =
     String(this, charset = charset, offset = offset, length = this.size - offset)
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun ByteArray.encodeToBase64(): String =
+    Base64.getEncoder().encodeToString(this)
 
 @PublishedApi
 internal inline fun ByteArray.toReadPacket(offset: Int = 0, length: Int = this.size - offset) =
