@@ -49,8 +49,8 @@ public class DeviceInfo(
     public val simInfo: ByteArray,
     public val osType: ByteArray,
     public val macAddress: ByteArray,
-    public val wifiBSSID: ByteArray?,
-    public val wifiSSID: ByteArray?,
+    public val wifiBSSID: ByteArray,
+    public val wifiSSID: ByteArray,
     public val imsiMd5: ByteArray,
     public val imei: String,
     public val apn: ByteArray
