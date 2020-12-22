@@ -30,6 +30,8 @@ import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.safeCast
+import net.mamoe.mirai.utils.unzip
+import net.mamoe.mirai.utils.zip
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -60,7 +62,7 @@ internal fun MessageChain.toRichTextElems(
 
     fun transformOneMessage(it: Message) {
         if (it is RichMessage) {
-            val content = MiraiPlatformUtils.zip(it.content.toByteArray())
+            val content = it.content.toByteArray().zip()
             when (it) {
                 is ForwardMessageInternal -> {
                     elements.add(
@@ -412,7 +414,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                     { "resId=" + element.lightApp.msgResid + "data=" + element.lightApp.data.toUHexString() }) {
                     when (element.lightApp.data[0].toInt()) {
                         0 -> element.lightApp.data.encodeToString(offset = 1)
-                        1 -> MiraiPlatformUtils.unzip(element.lightApp.data, 1).encodeToString()
+                        1 -> element.lightApp.data.unzip(1).encodeToString()
                         else -> error("unknown compression flag=${element.lightApp.data[0]}")
                     }
                 }
@@ -422,7 +424,7 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                 val content = runWithBugReport("解析 richMsg", { element.richMsg.template1.toUHexString() }) {
                     when (element.richMsg.template1[0].toInt()) {
                         0 -> element.richMsg.template1.encodeToString(offset = 1)
-                        1 -> MiraiPlatformUtils.unzip(element.richMsg.template1, 1).encodeToString()
+                        1 -> element.richMsg.template1.unzip(1).encodeToString()
                         else -> error("unknown compression flag=${element.richMsg.template1[0]}")
                     }
                 }

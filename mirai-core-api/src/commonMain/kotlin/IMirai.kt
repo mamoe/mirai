@@ -25,6 +25,7 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.recall
+import net.mamoe.mirai.utils.FileCacheStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 
@@ -48,6 +49,13 @@ public interface IMirai : LowLevelApiAccessor {
     @Suppress("PropertyName")
     @MiraiExperimentalApi
     public val BotFactory: BotFactory
+
+    /**
+     * 默认的 [FileCacheStrategy]
+     */
+    @Suppress("PropertyName")
+    @MiraiExperimentalApi
+    public var FileCacheStrategy: FileCacheStrategy
 
     /**
      * 使用 groupCode 计算 groupUin. 这两个值仅在 mirai 内部协议区分, 一般人使用时无需在意.

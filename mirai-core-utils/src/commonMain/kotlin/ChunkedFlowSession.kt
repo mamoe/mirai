@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils.internal
+package net.mamoe.mirai.utils
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -19,18 +19,14 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Closeable
 import kotlinx.io.core.Input
 import kotlinx.serialization.InternalSerializationApi
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import java.io.InputStream
-import kotlin.jvm.JvmField
 
-
-@MiraiExperimentalApi
 public interface ChunkedFlowSession<T> : Closeable {
     public val flow: Flow<T>
     override fun close()
 }
 
-internal inline fun <T, R> ChunkedFlowSession<T>.map(crossinline mapper: suspend ChunkedFlowSession<T>.(T) -> R): ChunkedFlowSession<R> {
+public inline fun <T, R> ChunkedFlowSession<T>.map(crossinline mapper: suspend ChunkedFlowSession<T>.(T) -> R): ChunkedFlowSession<R> {
     return object : ChunkedFlowSession<R> {
         override val flow: Flow<R> = this@map.flow.map { this@map.mapper(it) }
         override fun close() = this@map.close()
@@ -41,7 +37,6 @@ internal inline fun <T, R> ChunkedFlowSession<T>.map(crossinline mapper: suspend
 /**
  * 由 [chunkedFlow] 分割得到的区块
  */
-@MiraiExperimentalApi
 public class ChunkedInput(
     /**
      * 区块的数据.
@@ -67,7 +62,7 @@ public class ChunkedInput(
  *
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
-internal fun ByteReadPacket.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
+public fun ByteReadPacket.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.remaining <= sizePerPacket.toLong()) {
         return flowOf(
@@ -92,7 +87,7 @@ internal fun ByteReadPacket.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): 
  * 对于一个 1000 长度的 [ByteReadChannel] 和参数 [sizePerPacket] = 300, 将会产生含四个元素的 [Sequence],
  * 其长度分别为: 300, 300, 300, 100.
  */
-internal fun ByteReadChannel.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
+public fun ByteReadChannel.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     if (this.isClosedForRead) {
         return flowOf()
@@ -114,7 +109,7 @@ internal fun ByteReadChannel.chunkedFlow(sizePerPacket: Int, buffer: ByteArray):
  * 其长度分别为: 300, 300, 300, 100.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-internal fun Input.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
+public fun Input.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
 
     if (this.endOfInput) {
@@ -139,7 +134,7 @@ internal fun Input.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<Chun
  * 若 [ByteReadPacket.remaining] 小于 [sizePerPacket], 将会返回唯一元素 [this] 的 [Sequence]
  */
 @OptIn(ExperimentalCoroutinesApi::class, InternalSerializationApi::class)
-internal fun InputStream.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
+public fun InputStream.chunkedFlow(sizePerPacket: Int, buffer: ByteArray): Flow<ChunkedInput> {
     require(sizePerPacket <= buffer.size) { "sizePerPacket is too large. Maximum buffer size=buffer.size=${buffer.size}" }
 
     return flow {

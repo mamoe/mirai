@@ -23,7 +23,7 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
-import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 
@@ -111,7 +111,7 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     @JvmBlockingBridge
-    public override suspend fun uploadImage(image: ExternalImage): Image
+    public override suspend fun uploadImage(image: ExternalResource): Image
 }
 
 /**

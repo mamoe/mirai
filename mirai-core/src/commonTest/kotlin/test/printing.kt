@@ -14,10 +14,10 @@ package test
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import kotlinx.io.core.readAvailable
-import kotlinx.io.pool.useInstance
-import net.mamoe.mirai.internal.utils.ByteArrayPool
+import kotlinx.io.core.use
 import net.mamoe.mirai.internal.utils.toReadPacket
 import net.mamoe.mirai.internal.utils.toUHexString
+import net.mamoe.mirai.utils.ByteArrayPool
 import net.mamoe.mirai.utils.MiraiLogger
 import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
 import net.mamoe.mirai.utils.withSwitch

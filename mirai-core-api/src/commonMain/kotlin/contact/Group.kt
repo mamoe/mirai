@@ -183,7 +183,7 @@ public interface Group : Contact, CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
      */
     @JvmBlockingBridge
-    public override suspend fun uploadImage(image: ExternalImage): Image
+    public override suspend fun uploadImage(image: ExternalResource): Image
 
     /**
      * 上传一个语音消息以备发送.

@@ -415,7 +415,7 @@ public val MessageRecallEvent.isByBot: Boolean
  */
 public data class BeforeImageUploadEvent internal constructor(
     public val target: Contact,
-    public val source: ExternalImage
+    public val source: ExternalResource
 ) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
     public override val bot: Bot
         get() = target.bot
@@ -434,19 +434,19 @@ public data class BeforeImageUploadEvent internal constructor(
  */
 public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
     public abstract val target: Contact
-    public abstract val source: ExternalImage
+    public abstract val source: ExternalResource
     public override val bot: Bot
         get() = target.bot
 
     public data class Succeed internal constructor(
         override val target: Contact,
-        override val source: ExternalImage,
+        override val source: ExternalResource,
         val image: Image
     ) : ImageUploadEvent()
 
     public data class Failed internal constructor(
         override val target: Contact,
-        override val source: ExternalImage,
+        override val source: ExternalResource,
         val errno: Int,
         val message: String
     ) : ImageUploadEvent()
@@ -569,9 +569,9 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
     public override suspend fun reply(plain: String): MessageReceipt<Contact> =
         subject.sendMessage(PlainText(plain).asMessageChain())
 
-    public override suspend fun ExternalImage.upload(): Image = this.upload(subject)
+    public override suspend fun ExternalResource.uploadAsImage(): Image = this.uploadAsImage(subject)
 
-    public override suspend fun ExternalImage.send(): MessageReceipt<Contact> = this.sendTo(subject)
+    public override suspend fun ExternalResource.sendAsImage(): MessageReceipt<Contact> = this.sendAsImageTo(subject)
 
     public override suspend fun Image.send(): MessageReceipt<Contact> = this.sendTo(subject)
 
@@ -617,7 +617,7 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
     // endregion
 
     // region 上传图片 (扩展)
-    public override suspend fun BufferedImage.upload(): Image = upload(subject)
+    public override suspend fun BufferedImage.upload(): Image = this@upload.uploadAsImage(subject)
     public override suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
     public override suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
     // endregion 上传图片 (扩展)
@@ -711,10 +711,10 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
     // endregion
 
     @JvmSynthetic
-    public suspend fun ExternalImage.upload(): Image
+    public suspend fun ExternalResource.uploadAsImage(): Image
 
     @JvmSynthetic
-    public suspend fun ExternalImage.send(): MessageReceipt<TSubject>
+    public suspend fun ExternalResource.sendAsImage(): MessageReceipt<TSubject>
 
     @JvmSynthetic
     public suspend fun Image.send(): MessageReceipt<TSubject>

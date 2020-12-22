@@ -36,9 +36,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGro
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.estimateLength
-import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -381,10 +379,7 @@ internal class GroupImpl(
 
     @Suppress("DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @OptIn(ExperimentalTime::class)
-    override suspend fun uploadImage(image: ExternalImage): Image = try {
-        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
-            image.input.init(bot.configuration.fileCacheStrategy)
-        }
+    override suspend fun uploadImage(image: ExternalResource): Image = image.use { _ ->
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -394,7 +389,7 @@ internal class GroupImpl(
                 uin = bot.id,
                 groupCode = id,
                 md5 = image.md5,
-                size = image.input.size.toInt()
+                size = image.size
             ).sendAndExpect()
 
             @Suppress("UNCHECKED_CAST") // bug
@@ -405,7 +400,7 @@ internal class GroupImpl(
                     error("upload group image failed with reason ${response.message}")
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
-                    val resourceId = image.calculateImageResourceId()
+                    val resourceId = image.calculateResourceId()
                     return OfflineGroupImage(imageId = resourceId)
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
@@ -414,18 +409,16 @@ internal class GroupImpl(
                         bot,
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
-                        image.input,
+                        image,
                         kind = "group image",
                         commandId = 2
                     )
-                    val resourceId = image.calculateImageResourceId()
+                    val resourceId = image.calculateResourceId()
                     return OfflineGroupImage(imageId = resourceId)
                         .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
                 }
             }
         }
-    } finally {
-        image.input.release()
     }
 
     /**
@@ -441,7 +434,7 @@ internal class GroupImpl(
         if (content.size > 1048576) {
             throw  OverFileSizeMaxException()
         }
-        val md5 = MiraiPlatformUtils.md5(content)
+        val md5 = content.md5()
         val codec = with(content.copyOfRange(0, 10).toUHexString("")) {
             when {
                 startsWith("2321414D52") -> 0             // amr

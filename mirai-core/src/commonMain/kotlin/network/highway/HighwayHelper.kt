@@ -16,6 +16,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
+import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
@@ -29,8 +30,10 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.withUse
-import net.mamoe.mirai.utils.internal.ReusableInput
+import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.verbose
+import kotlin.io.copyTo
 import kotlin.math.roundToInt
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -41,7 +44,7 @@ internal suspend fun HttpClient.postImage(
     htcmd: String,
     uin: Long,
     groupcode: Long?,
-    imageInput: ReusableInput,
+    imageInput: ExternalResource,
     uKeyHex: String
 ): Boolean = post<HttpStatusCode> {
     url {
@@ -65,12 +68,10 @@ internal suspend fun HttpClient.postImage(
 
     body = object : OutgoingContent.WriteChannelContent() {
         override val contentType: ContentType = ContentType.Image.Any
-        override val contentLength: Long = imageInput.size
-
+        override val contentLength: Long = imageInput.size.toLong()
 
         override suspend fun writeTo(channel: ByteWriteChannel) {
-            imageInput.writeTo(channel)
-
+            imageInput.inputStream().copyTo(channel)
         }
     }
 } == HttpStatusCode.OK
@@ -82,7 +83,7 @@ internal object HighwayHelper {
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
-        image: ReusableInput,
+        image: ExternalResource,
         kind: String,
         commandId: Int
     ) = uploadImageToServers(bot, servers, uKey, image.md5, image, kind, commandId)
@@ -94,11 +95,11 @@ internal object HighwayHelper {
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
         md5: ByteArray,
-        input: ReusableInput,
+        input: ExternalResource,
         kind: String,
         commandId: Int
     ) = servers.retryWithServers(
-        (input.size * 1000 / 1024 / 10).coerceAtLeast(5000),
+        (input.size * 1000 / 1024 / 10).coerceAtLeast(5000).toLong(),
         onFail = {
             throw IllegalStateException("cannot upload $kind, failed on all servers.", it)
         }
@@ -131,7 +132,7 @@ internal object HighwayHelper {
         serverIp: String,
         serverPort: Int,
         ticket: ByteArray,
-        imageInput: ReusableInput,
+        imageInput: ExternalResource,
         fileMd5: ByteArray,
         commandId: Int  // group=2, friend=1
     ) {
@@ -249,6 +250,7 @@ internal suspend inline fun List<Pair<Int, Int>>.retryWithServers(
     onFail(exception)
 }
 
+internal fun Int.sizeToString() = this.toLong().sizeToString()
 internal fun Long.sizeToString(): String {
     return if (this < 1024) {
         "$this B"

@@ -29,10 +29,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcP
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToTemp
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -116,7 +113,7 @@ internal class MemberImpl constructor(
     }
 
     @JvmSynthetic
-    override suspend fun uploadImage(image: ExternalImage): Image = qq.uploadImage(image)
+    override suspend fun uploadImage(image: ExternalResource): Image = qq.uploadImage(image)
 
     override var permission: MemberPermission = memberInfo.permission
 

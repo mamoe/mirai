@@ -25,13 +25,15 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.readUShortLVByteArray
-import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
 import net.mamoe.mirai.internal.utils.io.readPacketExact
 import net.mamoe.mirai.internal.utils.io.readString
 import net.mamoe.mirai.internal.utils.io.useBytes
 import net.mamoe.mirai.internal.utils.io.withUse
+import net.mamoe.mirai.internal.utils.toInt
+import net.mamoe.mirai.internal.utils.toReadPacket
+import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.utils.*
 
 internal sealed class PacketFactory<TPacket : Packet?> {
@@ -345,7 +347,7 @@ internal object KnownPacketFactories {
             1 -> {
                 input.discardExact(4)
                 input.useBytes { data, length ->
-                    MiraiPlatformUtils.unzip(data, 0, length).let {
+                    data.unzip(0, length).let {
                         val size = it.toInt()
                         if (size == it.size || size == it.size + 4) {
                             it.toReadPacket(offset = 4)

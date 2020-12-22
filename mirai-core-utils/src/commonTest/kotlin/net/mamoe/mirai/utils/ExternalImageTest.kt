@@ -7,14 +7,17 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils.internal
+package net.mamoe.mirai.utils
 
-import net.mamoe.mirai.utils.FileCacheStrategy
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
-internal expect class DeferredReusableInput(input: Any, extraArg: Any?) : ReusableInput {
-    val initialized: Boolean
+internal class ExternalImageTest {
 
-
-    suspend fun init(strategy: FileCacheStrategy)
-
+    @Test
+    fun testByteArrayGet() {
+        assertEquals("0F", byteArrayOf(0x0f)[0, 0])
+        assertEquals("10", byteArrayOf(0x10)[0, 0])
+        assertEquals("0FFE", byteArrayOf(0x0F, 0xFE.toByte())[0, 1])
+    }
 }

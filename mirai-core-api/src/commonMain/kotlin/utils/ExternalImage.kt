@@ -11,93 +11,131 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.readBytes
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
-import net.mamoe.mirai.message.data.toUHexString
-import net.mamoe.mirai.utils.internal.DeferredReusableInput
-import net.mamoe.mirai.utils.internal.ReusableInput
+import java.awt.image.BufferedImage
+import java.io.Closeable
 import java.io.File
+import java.io.InputStream
+import java.io.RandomAccessFile
+
 
 /**
- * mirai 将在未来重构 [ExternalImage] 相关 API, 请尽量避免使用他们.
  *
- * 可以直接通过 [File.uploadAsImageTo] 等 API 替代.
  */
-@RequiresOptIn(
-    "mirai 将在 2.0.0 时重构 ExternalImage 相关 API, 请尽量避免使用他们. 可以直接通过 File.uploadAsImageTo() 等 API 替代.",
-    level = RequiresOptIn.Level.WARNING
-)
-@Retention(AnnotationRetention.BINARY)
-@UnstableExternalImage
-public annotation class UnstableExternalImage
-
-/**
- * 外部图片. 图片数据还没有读取到内存.
- *
- * 在 JVM, 请查看 'ExternalImageJvm.kt'
- *
- * @see ExternalImage.sendTo 上传图片并以纯图片消息发送给联系人
- * @See ExternalImage.upload 上传图片并得到 [Image] 消息
- */
-@UnstableExternalImage
-public class ExternalImage internal constructor(
-    internal val input: ReusableInput
-) {
-    internal val md5: ByteArray get() = input.md5
-    public val formatName: String by lazy {
-        val hex = input.asInput().use {
-            it.readBytes(8).toUHexString("")
-        }
-
-        return@lazy hex.detectFormatName()
-    }
-
-    init {
-        if (input !is DeferredReusableInput) {
-            require(input.size < 30L * 1024 * 1024) { "Image file is too big. Maximum is 30 MiB, but recommended to be 20 MiB" }
-        }
-    }
+public interface ExternalResource : Closeable {
+    public val md5: ByteArray
+    public val formatName: String
+    public val size: Int
+    public fun inputStream(): InputStream
 
     public companion object {
-        public const val defaultFormatName: String = "mirai"
+        @JvmStatic
+        @JvmName("create")
+        public fun File.toExternalResource(formatName: String?): ExternalResource =
+            RandomAccessFile(this, "r").toExternalResource(
+                formatName ?: inputStream().detectFileTypeAndClose()
+            )
+
+        @JvmStatic
+        @JvmName("create")
+        public fun RandomAccessFile.toExternalResource(formatName: String?): ExternalResource =
+            ExternalResourceImplByFile(this, formatName)
+
+        @JvmStatic
+        @JvmName("create")
+        public fun ByteArray.toExternalResource(formatName: String?): ExternalResource =
+            ExternalResourceImplByByteArray(this, formatName)
 
 
-        @MiraiExperimentalApi
-        public fun generateUUID(md5: ByteArray): String {
-            return "${md5[0, 3]}-${md5[4, 5]}-${md5[6, 7]}-${md5[8, 9]}-${md5[10, 15]}"
-        }
-
-        @MiraiExperimentalApi
+        /**
+         * 将 [BufferedImage] 保存为临时文件, 然后构造 [ExternalImage]
+         */
         @JvmOverloads
-        public fun generateImageId(md5: ByteArray, format: String = defaultFormatName): String {
-            return """{${generateUUID(md5)}}.$format"""
+        public fun BufferedImage.toExternalResource(formatName: String = "png"): ExternalResource {
+            return Mirai.FileCacheStrategy.newCache(this, formatName)
+
         }
-    }
 
-    public override fun toString(): String {
-        if (input is DeferredReusableInput) {
-            if (!input.initialized) {
-                return "ExternalImage(uninitialized)"
-            }
-        }
-        return "ExternalImage(${generateUUID(md5)})"
-    }
-
-    internal fun calculateImageResourceId(): String = generateImageId(md5, formatName)
-
-    private fun String.detectFormatName(): String = when {
-        startsWith("FFD8") -> "jpg"
-        startsWith("89504E47") -> "png"
-        startsWith("47494638") -> "gif"
-        startsWith("424D") -> "bmp"
-        else -> defaultFormatName
+        /**
+         * 将 [InputStream] 委托为 [ExternalImage].
+         * 只会在上传图片时才读取 [InputStream] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
+         */
+        public fun InputStream.toExternalResource(formatName: String?): ExternalResource =
+            Mirai.FileCacheStrategy.newCache(this, formatName)
     }
 }
+
+public fun ExternalResource.calculateResourceId(): String {
+    return generateImageId(md5, formatName.ifEmpty { "mirai" })
+}
+
+
+private fun InputStream.detectFileTypeAndClose(): String? {
+    val buffer = ByteArray(8)
+    return use {
+        kotlin.runCatching { it.read(buffer) }.onFailure { return null }
+        getFileType(buffer)
+    }
+}
+
+internal class ExternalResourceImplByFileWithMd5(
+    private val file: RandomAccessFile,
+    override val md5: ByteArray,
+    formatName: String?
+) : ExternalResource {
+    override val size: Int = file.length().toInt()
+    override val formatName: String by lazy {
+        formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
+    }
+
+    override fun inputStream(): InputStream = file.inputStream()
+    override fun close() {}
+}
+
+internal class ExternalResourceImplByFile(
+    private val file: RandomAccessFile,
+    formatName: String?
+) : ExternalResource {
+    override val size: Int = file.length().toInt()
+    override val md5: ByteArray by lazy { inputStream().md5() }
+    override val formatName: String by lazy {
+        formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
+    }
+
+    override fun inputStream(): InputStream = file.inputStream()
+    override fun close() {}
+}
+
+internal class ExternalResourceImplByByteArray(
+    private val data: ByteArray,
+    formatName: String?
+) : ExternalResource {
+    override val size: Int = data.size
+    override val md5: ByteArray by lazy { data.md5() }
+    override val formatName: String by lazy {
+        formatName ?: getFileType(data.copyOf(8)).orEmpty()
+    }
+
+    override fun inputStream(): InputStream = data.inputStream()
+    override fun close() {}
+}
+
+private fun RandomAccessFile.inputStream(): InputStream {
+    val file = this
+    return object : InputStream() {
+        override fun read(): Int = file.read()
+        override fun read(b: ByteArray, off: Int, len: Int): Int = file.read(b, off, len)
+        // don't close file on stream.close. stream may be obtained at multiple times.
+    }
+}
+
 
 /*
  * ImgType:
@@ -117,7 +155,7 @@ public class ExternalImage internal constructor(
  * @see Contact.sendMessage 最终调用, 发送消息.
  */
 @JvmSynthetic
-public suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceipt<C> = when (contact) {
+public suspend fun <C : Contact> ExternalResource.sendAsImageTo(contact: C): MessageReceipt<C> = when (contact) {
     is Group -> contact.uploadImage(this).sendTo(contact)
     is User -> contact.uploadImage(this).sendTo(contact)
     else -> error("unreachable")
@@ -132,7 +170,7 @@ public suspend fun <C : Contact> ExternalImage.sendTo(contact: C): MessageReceip
  * @see Contact.uploadImage 最终调用, 上传图片.
  */
 @JvmSynthetic
-public suspend fun ExternalImage.upload(contact: Contact): Image = when (contact) {
+public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = when (contact) {
     is Group -> contact.uploadImage(this)
     is User -> contact.uploadImage(this)
     else -> error("unreachable")
@@ -144,19 +182,5 @@ public suspend fun ExternalImage.upload(contact: Contact): Image = when (contact
  * @see Contact.sendMessage 最终调用, 发送消息.
  */
 @JvmSynthetic
-public suspend inline fun <C : Contact> C.sendImage(image: ExternalImage): MessageReceipt<C> = image.sendTo(this)
-
-
-@JvmSynthetic
-internal operator fun ByteArray.get(rangeStart: Int, rangeEnd: Int): String = buildString {
-    for (it in rangeStart..rangeEnd) {
-        append(this@get[it].fixToString())
-    }
-}
-
-private fun Byte.fixToString(): String {
-    return when (val b = this.toInt() and 0xff) {
-        in 0..15 -> "0${this.toString(16).toUpperCase()}"
-        else -> b.toString(16).toUpperCase()
-    }
-}
+public suspend inline fun <C : Contact> C.sendImage(image: ExternalResource): MessageReceipt<C> =
+    image.sendAsImageTo(this)

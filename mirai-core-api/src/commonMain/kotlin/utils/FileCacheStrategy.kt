@@ -9,19 +9,15 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.*
+import kotlinx.io.core.Input
+import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.utils.internal.asReusableInput
+import net.mamoe.mirai.IMirai
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.URL
+import java.io.*
 import java.security.MessageDigest
 import javax.imageio.ImageIO
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 /**
  * 缓存策略.
@@ -29,47 +25,29 @@ import kotlin.contracts.contract
  * 图片上传时默认使用文件缓存.
  *
  * @see BotConfiguration.fileCacheStrategy 为 [Bot] 指定缓存策略
+ * @see IMirai.FileCacheStrategy
  */
 @MiraiExperimentalApi
 public interface FileCacheStrategy {
     /**
-     * 将 [input] 缓存为 [ExternalImage].
+     * 将 [input] 缓存为 [ExternalResource].
      * 此函数应 close 这个 [Input]
      */
     @MiraiExperimentalApi
     @Throws(java.io.IOException::class)
-    public fun newImageCache(input: Input): ExternalImage
+    public fun newCache(input: Input, formatName: String?): ExternalResource
 
     /**
-     * 将 [input] 缓存为 [ExternalImage].
+     * 将 [input] 缓存为 [ExternalResource].
      * 此函数应 close 这个 [InputStream]
      */
     @MiraiExperimentalApi
     @Throws(java.io.IOException::class)
-    public fun newImageCache(input: InputStream): ExternalImage
+    public fun newCache(input: InputStream, formatName: String?): ExternalResource
 
-    /**
-     * 将 [input] 缓存为 [ExternalImage].
-     * 此 [input] 的内容应是不变的.
-     */
     @MiraiExperimentalApi
     @Throws(java.io.IOException::class)
-    public fun newImageCache(input: ByteArray): ExternalImage
-
-    /**
-     * 将 [input] 缓存为 [ExternalImage].
-     * 此 [input] 的内容应是不变的.
-     */
-    @MiraiExperimentalApi
-    @Throws(java.io.IOException::class)
-    public fun newImageCache(input: BufferedImage, format: String = "png"): ExternalImage
-
-    /**
-     * 将 [input] 缓存为 [ExternalImage].
-     */
-    @MiraiExperimentalApi
-    @Throws(java.io.IOException::class)
-    public fun newImageCache(input: URL): ExternalImage
+    public fun newCache(input: BufferedImage, formatName: String): ExternalResource
 
     /**
      * 默认的缓存方案, 使用系统临时文件夹存储.
@@ -83,34 +61,22 @@ public interface FileCacheStrategy {
     public object MemoryCache : FileCacheStrategy {
         @MiraiExperimentalApi
         @Throws(java.io.IOException::class)
-        override fun newImageCache(input: Input): ExternalImage {
-            return newImageCache(input.readBytes())
+        override fun newCache(input: Input, formatName: String?): ExternalResource {
+            return input.withUse { readBytes() }.toExternalResource(formatName)
         }
 
         @MiraiExperimentalApi
         @Throws(java.io.IOException::class)
-        override fun newImageCache(input: InputStream): ExternalImage {
-            return newImageCache(input.readBytes())
+        override fun newCache(input: InputStream, formatName: String?): ExternalResource {
+            return input.withUse { readBytes() }.toExternalResource(formatName)
         }
 
         @MiraiExperimentalApi
-        @Throws(java.io.IOException::class)
-        override fun newImageCache(input: ByteArray): ExternalImage {
-            return ExternalImage(input.asReusableInput())
-        }
-
-        @MiraiExperimentalApi
-        override fun newImageCache(input: BufferedImage, format: String): ExternalImage {
+        override fun newCache(input: BufferedImage, formatName: String): ExternalResource {
             val out = ByteArrayOutputStream()
-            ImageIO.write(input, format, out)
-            return newImageCache(out.toByteArray())
-        }
-
-        @MiraiExperimentalApi
-        override fun newImageCache(input: URL): ExternalImage {
-            val out = ByteArrayOutputStream()
-            input.openConnection().getInputStream().use { it.copyTo(out) }
-            return newImageCache(out.toByteArray())
+            ImageIO.write(input, formatName, out)
+            val array = out.toByteArray()
+            return array.toExternalResource(formatName)
         }
     }
 
@@ -124,39 +90,37 @@ public interface FileCacheStrategy {
          */
         public val directory: File? = null
     ) : FileCacheStrategy {
+        private fun createTempFile(): File {
+            return File.createTempFile("tmp", null, directory)
+        }
+
         @MiraiExperimentalApi
         @Throws(java.io.IOException::class)
-        override fun newImageCache(input: Input): ExternalImage {
-            return ExternalImage(File.createTempFile("tmp", null, directory).apply {
+        override fun newCache(input: Input, formatName: String?): ExternalResource {
+            return createTempFile().apply {
                 deleteOnExit()
                 input.withOut(this.outputStream()) { copyTo(it) }
-            }.asReusableInput(true))
+            }.toExternalResource(formatName)
         }
 
         @MiraiExperimentalApi
         @Throws(java.io.IOException::class)
-        override fun newImageCache(input: InputStream): ExternalImage {
-            return ExternalImage(File.createTempFile("tmp", null, directory).apply {
+        override fun newCache(input: InputStream, formatName: String?): ExternalResource {
+            return createTempFile().apply {
                 deleteOnExit()
                 input.withOut(this.outputStream()) { copyTo(it) }
-            }.asReusableInput(true))
+            }.toExternalResource(formatName)
         }
 
         @MiraiExperimentalApi
-        @Throws(java.io.IOException::class)
-        override fun newImageCache(input: ByteArray): ExternalImage {
-            return ExternalImage(input.asReusableInput())
-        }
-
-        @MiraiExperimentalApi
-        override fun newImageCache(input: BufferedImage, format: String): ExternalImage {
+        public override fun newCache(input: BufferedImage, formatName: String): ExternalResource {
             val file = File.createTempFile("tmp", null, directory).apply { deleteOnExit() }
 
             val digest = MessageDigest.getInstance("md5")
             digest.reset()
 
             file.outputStream().use { out ->
-                ImageIO.write(input, format, object : OutputStream() {
+                ImageIO.write(input, formatName, object : OutputStream() {
                     override fun write(b: Int) {
                         out.write(b)
                         digest.update(b.toByte())
@@ -174,37 +138,7 @@ public interface FileCacheStrategy {
                 })
             }
 
-            @Suppress("DEPRECATION_ERROR")
-            return ExternalImage(file.asReusableInput(true, digest.digest()))
-        }
-
-        @MiraiExperimentalApi
-        override fun newImageCache(input: URL): ExternalImage {
-            return ExternalImage(File.createTempFile("tmp", null, directory).apply {
-                deleteOnExit()
-                input.openConnection().getInputStream().withOut(this.outputStream()) { copyTo(it) }
-            }.asReusableInput(true))
+            return ExternalResourceImplByFileWithMd5(RandomAccessFile(file, "r"), digest.digest(), null)
         }
     }
-}
-
-
-@Throws(java.io.IOException::class)
-internal fun Input.copyTo(out: OutputStream, bufferSize: Int = DEFAULT_BUFFER_SIZE): Long {
-    var bytesCopied: Long = 0
-    val buffer = ByteArray(bufferSize)
-    var bytes = readAvailable(buffer)
-    while (bytes >= 0) {
-        out.write(buffer, 0, bytes)
-        bytesCopied += bytes
-        bytes = readAvailable(buffer)
-    }
-    return bytesCopied
-}
-
-internal inline fun <I : Closeable, O : Closeable, R> I.withOut(output: O, block: I.(output: O) -> R): R {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
-    return use { output.use { block(this, output) } }
 }

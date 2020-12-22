@@ -17,10 +17,8 @@ import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
@@ -33,7 +31,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
@@ -42,10 +39,8 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
-import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.currentTimeSeconds
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -63,6 +58,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override val BotFactory: BotFactory
         get() = BotFactoryImpl
+
+    override var FileCacheStrategy: FileCacheStrategy = net.mamoe.mirai.utils.FileCacheStrategy.PlatformDefault
 
     @OptIn(LowLevelApi::class)
     override suspend fun acceptNewFriendRequest(event: NewFriendRequestEvent) {
@@ -603,8 +600,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                         bot,
                         response.proto.uint32UpIp.zip(response.proto.uint32UpPort),
                         response.proto.msgSig,
-                        MiraiPlatformUtils.md5(body),
-                        net.mamoe.mirai.utils.internal.asReusableInput0(body), // don't use toLongUnsigned: Overload resolution ambiguity
+                        body.md5(),
+                        body.toExternalResource(null), // don't use toLongUnsigned: Overload resolution ambiguity
                         "group long message",
                         27
                     )

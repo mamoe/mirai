@@ -20,7 +20,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.quote
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.WeakRefProperty
 
@@ -79,7 +79,7 @@ public interface Contact : ContactOrBot, CoroutineScope {
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     @JvmBlockingBridge
-    public suspend fun uploadImage(image: ExternalImage): Image
+    public suspend fun uploadImage(image: ExternalResource): Image
 
     /**
      * @return "Friend($id)" or "Group($id)" or "Member($id)"

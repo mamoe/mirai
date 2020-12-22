@@ -11,19 +11,15 @@
 
 package net.mamoe.mirai.internal.network.highway
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.internal.utils.ByteArrayPool
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.utils.internal.ChunkedFlowSession
-import net.mamoe.mirai.utils.internal.ChunkedInput
-import net.mamoe.mirai.utils.internal.ReusableInput
-import net.mamoe.mirai.utils.internal.map
+import net.mamoe.mirai.utils.*
 
 
 internal fun createImageDataPacketSequence(
@@ -35,14 +31,20 @@ internal fun createImageDataPacketSequence(
     commandId: Int,
     localId: Int = 2052,
     ticket: ByteArray,
-    data: ReusableInput,
+    data: ExternalResource,
     fileMd5: ByteArray,
     sizePerPacket: Int = ByteArrayPool.BUFFER_SIZE
 ): ChunkedFlowSession<ByteReadPacket> {
     ByteArrayPool.checkBufferSize(sizePerPacket)
     //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
 
-    val session: ChunkedFlowSession<ChunkedInput> = data.chunkedFlow(sizePerPacket)
+    val session: ChunkedFlowSession<ChunkedInput> = object : ChunkedFlowSession<ChunkedInput> {
+        override val flow: Flow<ChunkedInput> = data.inputStream().chunkedFlow(
+            sizePerPacket, ByteArray(sizePerPacket)
+        )
+
+        override fun close() = data.close()
+    }
 
     var offset = 0L
     return session.map { chunkedInput ->
@@ -68,9 +70,9 @@ internal fun createImageDataPacketSequence(
                     //   cacheAddr = 812157193,
                     datalength = chunkedInput.bufferSize,
                     dataoffset = offset,
-                    filesize = data.size,
+                    filesize = data.size.toLong(),
                     serviceticket = ticket,
-                    md5 = MiraiPlatformUtils.md5(chunkedInput.buffer, 0, chunkedInput.bufferSize),
+                    md5 = chunkedInput.buffer.md5(0, chunkedInput.bufferSize),
                     fileMd5 = fileMd5,
                     flag = 0,
                     rtcode = 0

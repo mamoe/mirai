@@ -19,7 +19,6 @@ import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.internal.checkOffsetAndLength
 
 /**
  * 自定义消息
@@ -208,29 +207,4 @@ public abstract class CustomMessageMetadata : CustomMessage(), MessageMetadata {
 internal inline fun <T : CustomMessageMetadata> T.customToStringImpl(factory: CustomMessage.Factory<*>): ByteArray {
     @Suppress("UNCHECKED_CAST")
     return (factory as CustomMessage.Factory<T>).dump(this)
-}
-
-@OptIn(ExperimentalUnsignedTypes::class)
-@JvmOverloads
-@Suppress("DuplicatedCode") // false positive. foreach is not common to UByteArray and ByteArray
-internal fun ByteArray.toUHexString(
-    separator: String = " ",
-    offset: Int = 0,
-    length: Int = this.size - offset
-): String {
-    this.checkOffsetAndLength(offset, length)
-    if (length == 0) {
-        return ""
-    }
-    val lastIndex = offset + length
-    return buildString(length * 2) {
-        this@toUHexString.forEachIndexed { index, it ->
-            if (index in offset until lastIndex) {
-                var ret = it.toUByte().toString(16).toUpperCase()
-                if (ret.length == 1) ret = "0$ret"
-                append(ret)
-                if (index < lastIndex - 1) append(separator)
-            }
-        }
-    }
 }
