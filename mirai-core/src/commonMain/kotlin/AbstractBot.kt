@@ -70,7 +70,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     internal lateinit var _network: N
 
     override val isOnline: Boolean get() = _network.areYouOk()
-    override val eventChannel: EventChannel<out BotEvent> =
+    override val eventChannel: EventChannel<BotEvent> =
         GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
     /**

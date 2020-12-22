@@ -18,16 +18,26 @@ import org.junit.jupiter.api.Test
 internal class EventChannelTest {
     @Test
     fun testVariance() {
-        val global = GlobalEventChannel
-        val a: EventChannel<out Event> = global.filterIsInstance<MessageEvent>()
+        var global: EventChannel<Event> = GlobalEventChannel
+        var a: EventChannel<MessageEvent> = global.filterIsInstance<MessageEvent>()
         a.filter {
             // it: Event
             it.isIntercepted
         }
-        val group = a.filterIsInstance<GroupEvent>()
+        val messageEventChannel = a.filterIsInstance<MessageEvent>()
         // group.asChannel<GroupMessageEvent>()
 
-        group.subscribeAlways<GroupMessageEvent> {
+        val listener: Listener<GroupMessageEvent> = messageEventChannel.subscribeAlways<GroupEvent>() {
+
+        }
+
+        global = a
+
+        global.subscribeMessages {
+
+        }
+
+        messageEventChannel.subscribeMessages {
 
         }
 

@@ -34,7 +34,7 @@ public typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<Mes
  * @see subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
-public fun <R> EventChannel<in MessageEvent>.subscribeMessages(
+public fun <R> EventChannel<*>.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
@@ -49,7 +49,7 @@ public fun <R> EventChannel<in MessageEvent>.subscribeMessages(
     { filter, messageListener: MessageListener<MessageEvent, Unit> ->
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
         // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
-        subscribeAlways(coroutineContext, concurrencyKind, priority) {
+        subscribeAlways<MessageEvent>(coroutineContext, concurrencyKind, priority) {
             // this.message.contentToString() 即为 messageListener 中 it 接收到的值
             val toString = this.message.contentToString()
             if (filter.invoke(this, toString))
@@ -66,7 +66,7 @@ public typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<Grou
  * @see subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
-public fun <R> EventChannel<in GroupMessageEvent>.subscribeGroupMessages(
+public fun <R> EventChannel<*>.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
@@ -92,7 +92,7 @@ public typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<Fri
  * @see subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
-public fun <R> EventChannel<in FriendMessageEvent>.subscribeFriendMessages(
+public fun <R> EventChannel<*>.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
@@ -118,7 +118,7 @@ public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempM
  * @see subscribe 事件监听基础
  * @see EventChannel 事件通道
  */
-public fun <R> EventChannel<in TempMessageEvent>.subscribeTempMessages(
+public fun <R> EventChannel<*>.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
@@ -152,7 +152,7 @@ public fun <R> EventChannel<in TempMessageEvent>.subscribeTempMessages(
  * @see subscribeGroupMessages
  */
 @Deprecated("Use asChannel", ReplaceWith("asChannel(capacity, coroutineContext, concurrencyKind, priority)"))
-public inline fun <reified E : Event> EventChannel<in Event>.incoming(
+public fun <E : Event> EventChannel<E>.incoming(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,

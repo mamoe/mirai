@@ -17,14 +17,11 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
-import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.internal.GlobalEventListeners
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.ListenerRegistry
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.cast
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -66,7 +63,7 @@ public fun CoroutineScope.globalEventChannel(coroutineContext: CoroutineContext 
  *
  * @see EventChannel
  */
-public object GlobalEventChannel : EventChannel<Event>(EmptyCoroutineContext)
+public object GlobalEventChannel : EventChannel<Event>(Event::class, EmptyCoroutineContext)
 
 /**
  * 事件通道. 事件通道是监听事件的入口. **在不同的事件通道中可以监听到不同类型的事件**.
@@ -89,7 +86,8 @@ public object GlobalEventChannel : EventChannel<Event>(EmptyCoroutineContext)
  *
  * @see EventChannel.subscribe
  */
-public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
+public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
+    public val baseEventClass: KClass<out BaseEvent>,
     /**
      * 此事件通道的默认 [CoroutineScope.coroutineContext]. 将会被添加给所有注册的事件监听器.
      */
@@ -108,14 +106,14 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      */
     @MiraiExperimentalApi
     @ExperimentalCoroutinesApi
-    public inline fun <reified E : @UnsafeVariance BaseEvent> asChannel(
+    public fun asChannel(
         capacity: Int = Channel.RENDEZVOUS,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
-    ): Channel<E> {
-        val channel = Channel<E>(capacity)
-        val listener = subscribeAlways<E>(coroutineContext, concurrency, priority) { channel.send(it) }
+    ): Channel<out BaseEvent> {
+        val channel = Channel<BaseEvent>(capacity)
+        val listener = subscribeAlways(baseEventClass, coroutineContext, concurrency, priority) { channel.send(it) }
         channel.invokeOnClose {
             if (it != null) listener.completeExceptionally(it)
             else listener.complete()
@@ -158,15 +156,17 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      *
      * @see filterIsInstance 过滤指定类型的事件
      */
-    public fun filter(filter: suspend (event: BaseEvent) -> Boolean): EventChannel<BaseEvent> {
-        return object : EventChannel<BaseEvent>(defaultCoroutineContext) {
+    public fun filter(filter: suspend (event: @UnsafeVariance BaseEvent) -> Boolean): EventChannel<BaseEvent> {
+        return object : EventChannel<BaseEvent>(baseEventClass, defaultCoroutineContext) {
             private inline val innerThis get() = this
 
-            override fun <E : @UnsafeVariance BaseEvent> (suspend (E) -> ListeningStatus).intercepted(): suspend (E) -> ListeningStatus {
+            override fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): suspend (E) -> ListeningStatus {
                 return { ev ->
                     val filterResult = try {
-                        filter(ev)
+                        @Suppress("UNCHECKED_CAST")
+                        baseEventClass.isInstance(ev) && filter(ev as BaseEvent)
                     } catch (e: Throwable) {
+                        if (e is ExceptionInEventChannelFilterException) throw e // wrapped by another filter
                         throw ExceptionInEventChannelFilterException(ev, innerThis, cause = e)
                     }
                     if (filterResult) this.invoke(ev)
@@ -180,22 +180,32 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
-    public inline fun <reified E : Event> filterIsInstance(): EventChannel<out E> =
-        filter { it is E }.cast()
+    public inline fun <reified E : Event> filterIsInstance(): EventChannel<E> =
+        filterIsInstance(E::class)
 
     /**
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
-    public fun <E : Event> filterIsInstance(kClass: KClass<out E>): EventChannel<out E> =
-        filter { kClass.isInstance(it) }.cast()
+    public fun <E : Event> filterIsInstance(kClass: KClass<out E>): EventChannel<E> {
+        return object : EventChannel<E>(kClass, defaultCoroutineContext) {
+            private inline val innerThis get() = this
+
+            override fun <E1 : Event> (suspend (E1) -> ListeningStatus).intercepted(): suspend (E1) -> ListeningStatus {
+                return { ev ->
+                    if (kClass.isInstance(ev)) this.invoke(ev)
+                    else ListeningStatus.LISTENING
+                }
+            }
+        }
+    }
 
     /**
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
-    public fun <E : Event> filterIsInstance(clazz: Class<E>): EventChannel<out E> =
-        filter { clazz.isInstance(it) }.cast()
+    public fun <E : Event> filterIsInstance(clazz: Class<out E>): EventChannel<E> =
+        filterIsInstance(clazz.kotlin)
 
 
     /**
@@ -205,7 +215,10 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      * 此操作不会修改 [`this.coroutineContext`][defaultCoroutineContext], 只会创建一个新的 [EventChannel].
      */
     public fun context(vararg coroutineContexts: CoroutineContext): EventChannel<BaseEvent> =
-        EventChannel(coroutineContexts.fold(this.defaultCoroutineContext) { acc, element -> acc + element })
+        EventChannel(
+            baseEventClass,
+            coroutineContexts.fold(this.defaultCoroutineContext) { acc, element -> acc + element }
+        )
 
     /**
      * 创建一个新的 [EventChannel], 该 [EventChannel] 包含 [this.coroutineContext][defaultCoroutineContext] 和添加的 [coroutineExceptionHandler]
@@ -337,7 +350,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      * @see subscribeFriendMessages 监听好友消息 DSL
      * @see subscribeTempMessages   监听临时会话消息 DSL
      */
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribe(
+    public inline fun <reified E : Event> subscribe(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = LOCKED,
         priority: EventPriority = EventPriority.NORMAL,
@@ -350,7 +363,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      * @return 监听器实例. 此监听器已经注册到指定事件上, 在事件广播时将会调用 [handler]
      * @see subscribe
      */
-    public fun <E : @UnsafeVariance BaseEvent> subscribe(
+    public fun <E : Event> subscribe(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = LOCKED,
@@ -376,7 +389,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      *
      * @see subscribe 获取更多说明
      */
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribeAlways(
+    public inline fun <reified E : Event> subscribeAlways(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
         priority: EventPriority = EventPriority.NORMAL,
@@ -388,7 +401,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      * @see subscribe
      * @see subscribeAlways
      */
-    public fun <E : @UnsafeVariance BaseEvent> subscribeAlways(
+    public fun <E : Event> subscribeAlways(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -412,7 +425,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
      * @see subscribe 获取更多说明
      */
     @JvmSynthetic
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribeOnce(
+    public inline fun <reified E : Event> subscribeOnce(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         priority: EventPriority = EventPriority.NORMAL,
         noinline handler: suspend E.(E) -> Unit
@@ -421,7 +434,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     /**
      * @see subscribeOnce
      */
-    public fun <E : @UnsafeVariance BaseEvent> subscribeOnce(
+    public fun <E : Event> subscribeOnce(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         priority: EventPriority = EventPriority.NORMAL,
@@ -451,7 +464,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     @JvmName("subscribe1")
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribe(
+    public inline fun <reified E : Event> subscribe(
         crossinline handler: (E) -> ListeningStatus,
         priority: EventPriority = EventPriority.NORMAL,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -473,7 +486,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     @JvmName("subscribe2")
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribe(
+    public inline fun <reified E : Event> subscribe(
         crossinline handler: E.(E) -> ListeningStatus,
         priority: EventPriority = EventPriority.NORMAL,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -495,7 +508,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     @JvmName("subscribe1")
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribe(
+    public inline fun <reified E : Event> subscribe(
         crossinline handler: suspend (E) -> ListeningStatus,
         priority: EventPriority = EventPriority.NORMAL,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -517,7 +530,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     @JvmName("subscribe3")
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribe(
+    public inline fun <reified E : Event> subscribe(
         crossinline handler: suspend E.(E) -> ListeningStatus,
         priority: EventPriority = EventPriority.NORMAL,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -543,7 +556,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     @JvmName("subscribeAlways1")
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribeAlways(
+    public inline fun <reified E : Event> subscribeAlways(
         crossinline handler: (E) -> Unit,
         priority: EventPriority = EventPriority.NORMAL,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -563,7 +576,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     @JvmName("subscribeAlways1")
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribeAlways(
+    public inline fun <reified E : Event> subscribeAlways(
         crossinline handler: E.(E) -> Unit,
         priority: EventPriority = EventPriority.NORMAL,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -583,7 +596,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     @JvmName("subscribe4")
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribeAlways(
+    public inline fun <reified E : Event> subscribeAlways(
         crossinline handler: suspend (E) -> Unit,
         priority: EventPriority = EventPriority.NORMAL,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -603,7 +616,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     @JvmSynthetic
     @LowPriorityInOverloadResolution
     @JvmName("subscribe1")
-    public inline fun <reified E : @UnsafeVariance BaseEvent> subscribeAlways(
+    public inline fun <reified E : Event> subscribeAlways(
         crossinline handler: suspend E.(E) -> Unit,
         priority: EventPriority = EventPriority.NORMAL,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -617,11 +630,11 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     /**
      * 由子类实现，可以为 handler 包装一个过滤器等. 每个 handler 都会经过此函数处理.
      */
-    protected open fun <E : @UnsafeVariance BaseEvent> (suspend (E) -> ListeningStatus).intercepted(): (suspend (E) -> ListeningStatus) {
+    protected open fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): (suspend (E) -> ListeningStatus) {
         return this
     }
 
-    private fun <L : Listener<E>, E : BaseEvent> subscribeInternal(eventClass: KClass<out E>, listener: L): L {
+    internal fun <L : Listener<E>, E : Event> subscribeInternal(eventClass: KClass<out E>, listener: L): L {
         with(GlobalEventListeners[listener.priority]) {
             @Suppress("UNCHECKED_CAST")
             val node = ListenerRegistry(listener as Listener<Event>, eventClass)
@@ -635,7 +648,7 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
 
 
     @Suppress("FunctionName")
-    private fun <E : BaseEvent> createListener(
+    private fun <E : Event> createListener(
         coroutineContext: CoroutineContext,
         concurrencyKind: Listener.ConcurrencyKind,
         priority: Listener.EventPriority = EventPriority.NORMAL,
@@ -652,26 +665,4 @@ public open class EventChannel<BaseEvent : Event> @JvmOverloads constructor(
     }
 
     // endregion
-}
-
-
-private fun main() {
-    GlobalEventChannel
-        .context(CoroutineName("test"))
-        .exceptionHandler {
-            it.printStackTrace()
-        }
-        .run {
-            subscribeAlways<GroupMessageEvent> {
-                reply("OK")
-            }
-            suspend fun FriendMessageEvent.onEvent() {
-                quoteReply("OK")
-            }
-            subscribeAlways(FriendMessageEvent::onEvent)
-
-            subscribe {
-                ListeningStatus.STOPPED
-            }
-        }
 }
