@@ -19,11 +19,10 @@ package net.mamoe.mirai.internal
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.Listener
-import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.event.*
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.internal.network.BotNetworkHandler
 import net.mamoe.mirai.internal.network.DefaultServerList
 import net.mamoe.mirai.internal.network.closeAndJoin
@@ -71,6 +70,8 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     internal lateinit var _network: N
 
     override val isOnline: Boolean get() = _network.areYouOk()
+    override val eventChannel: EventChannel<out BotEvent> =
+        GlobalEventChannel.filterIsInstance<BotEvent>().filter { it.bot === this@AbstractBot }
 
     /**
      * Close server connection, resend login packet, BUT DOESN'T [BotNetworkHandler.init]

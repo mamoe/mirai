@@ -13,12 +13,14 @@
 
 package net.mamoe.mirai.event
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
+import net.mamoe.mirai.event.events.FriendMessageEvent
+import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.event.events.TempMessageEvent
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -30,13 +32,11 @@ public typealias MessagePacketSubscribersBuilder = MessageSubscribersBuilder<Mes
  * 订阅来自所有 [Bot] 的所有联系人的消息事件. 联系人可以是任意群或任意好友或临时会话.
  *
  * @see subscribe 事件监听基础
- *
- * @see CoroutineScope.incoming 打开一个指定事件的接收通道
+ * @see EventChannel 事件通道
  */
-
-public fun <R> CoroutineScope.subscribeMessages(
+public fun <R> EventChannel<in MessageEvent>.subscribeMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     listeners: MessagePacketSubscribersBuilder.() -> R
 ): R {
@@ -45,7 +45,7 @@ public fun <R> CoroutineScope.subscribeMessages(
         callsInPlace(listeners, InvocationKind.EXACTLY_ONCE)
     }
 
-    return MessagePacketSubscribersBuilder(Unit)
+    return MessageSubscribersBuilder(Unit)
     { filter, messageListener: MessageListener<MessageEvent, Unit> ->
         // subscribeAlways 即注册一个监听器. 这个监听器收到消息后就传递给 [messageListener]
         // messageListener 即为 DSL 里 `contains(...) { }`, `startsWith(...) { }` 的代码块.
@@ -64,12 +64,11 @@ public typealias GroupMessageSubscribersBuilder = MessageSubscribersBuilder<Grou
  * 订阅来自所有 [Bot] 的所有群消息事件
  *
  * @see subscribe 事件监听基础
- *
- * @see CoroutineScope.incoming 打开一个指定事件的接收通道
+ * @see EventChannel 事件通道
  */
-public fun <R> CoroutineScope.subscribeGroupMessages(
+public fun <R> EventChannel<in GroupMessageEvent>.subscribeGroupMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     listeners: GroupMessageSubscribersBuilder.() -> R
 ): R {
@@ -91,12 +90,11 @@ public typealias FriendMessageSubscribersBuilder = MessageSubscribersBuilder<Fri
  * 订阅来自所有 [Bot] 的所有好友消息事件
  *
  * @see subscribe 事件监听基础
- *
- * @see CoroutineScope.incoming 打开一个指定事件的接收通道
+ * @see EventChannel 事件通道
  */
-public fun <R> CoroutineScope.subscribeFriendMessages(
+public fun <R> EventChannel<in FriendMessageEvent>.subscribeFriendMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     listeners: FriendMessageSubscribersBuilder.() -> R
 ): R {
@@ -118,12 +116,11 @@ public typealias TempMessageSubscribersBuilder = MessageSubscribersBuilder<TempM
  * 订阅来自所有 [Bot] 的所有临时会话消息事件
  *
  * @see subscribe 事件监听基础
- *
- * @see CoroutineScope.incoming 打开一个指定事件的接收通道
+ * @see EventChannel 事件通道
  */
-public fun <R> CoroutineScope.subscribeTempMessages(
+public fun <R> EventChannel<in TempMessageEvent>.subscribeTempMessages(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     listeners: TempMessageSubscribersBuilder.() -> R
 ): R {
@@ -154,19 +151,13 @@ public fun <R> CoroutineScope.subscribeTempMessages(
  * @see subscribeMessages
  * @see subscribeGroupMessages
  */
-public inline fun <reified E : Event> CoroutineScope.incoming(
+@Deprecated("Use asChannel", ReplaceWith("asChannel(capacity, coroutineContext, concurrencyKind, priority)"))
+public inline fun <reified E : Event> EventChannel<in Event>.incoming(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind = Listener.ConcurrencyKind.CONCURRENT,
+    concurrencyKind: Listener.ConcurrencyKind = CONCURRENT,
     priority: Listener.EventPriority = EventPriority.MONITOR,
     capacity: Int = Channel.UNLIMITED
 ): ReceiveChannel<E> {
-    return Channel<E>(capacity).apply {
-        val listener = this@incoming.subscribeAlways<E>(coroutineContext, concurrencyKind, priority) {
-            send(this)
-        }
-        this.invokeOnClose {
-            listener.cancel(CancellationException("ReceiveChannel closed", it))
-        }
-    }
+    return asChannel(capacity, coroutineContext, concurrencyKind, priority)
 }
 

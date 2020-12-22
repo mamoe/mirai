@@ -17,6 +17,8 @@ package net.mamoe.mirai
 import kotlinx.coroutines.*
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.EventChannel
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
@@ -68,6 +70,12 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * 当 Bot 在线 (可正常收发消息) 时返回 `true`.
      */
     public val isOnline: Boolean
+
+    /**
+     * 来自这个 [Bot] 的 [BotEvent] 的事件通道.
+     * @see EventChannel
+     */
+    public val eventChannel: EventChannel<out @UnsafeVariance BotEvent>
 
     // region contacts
 

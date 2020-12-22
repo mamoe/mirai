@@ -518,7 +518,7 @@ internal suspend inline fun <reified T : MessageEvent, R> T.selectMessagesImpl(
 
     // we don't have any way to reduce duplication yet,
     // until local functions are supported in inline functions
-    @Suppress("DuplicatedCode") val subscribeAlways = subscribeAlways<T>(
+    @Suppress("DuplicatedCode") val subscribeAlways = globalEventChannel().subscribeAlways<T>(
         concurrency = Listener.ConcurrencyKind.LOCKED,
         priority = priority
     ) { event ->
@@ -600,7 +600,7 @@ internal suspend inline fun <reified T : MessageEvent> T.whileSelectMessagesImpl
     }.apply(selectBuilder)
 
     // ensure atomic completing
-    val subscribeAlways = subscribeAlways<T>(
+    val subscribeAlways = globalEventChannel().subscribeAlways<T>(
         concurrency = Listener.ConcurrencyKind.LOCKED,
         priority = priority
     ) { event ->
