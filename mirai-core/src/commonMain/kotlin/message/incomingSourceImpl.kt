@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.encodeToBase64
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.Message
@@ -163,7 +164,7 @@ internal data class MessageSourceFromGroupImpl(
         ) as GroupImpl).run {
             get(msg.first().msgHead.fromUin)
                 ?: msg.first().msgBody.richText.elems.firstOrNull { it.anonGroupMsg != null }?.run {
-                    newAnonymous(anonGroupMsg!!.anonNick.encodeToString())
+                    newAnonymous(anonGroupMsg!!.anonNick.encodeToString(), anonGroupMsg.anonId.encodeToBase64())
                 }
                 ?: error("cannot find member for MessageSourceFromGroupImpl. msg=${msg._miraiContentToString()}")
         }

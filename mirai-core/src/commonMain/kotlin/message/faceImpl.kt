@@ -9,8 +9,11 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.io.core.toByteArray
+import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.hexToBytes
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.toByteArray
 import net.mamoe.mirai.message.data.Face
 
@@ -22,4 +25,17 @@ internal fun Face.toJceData(): ImMsgBody.Face {
         old = (0x1445 - 4 + this.id).toShort().toByteArray(),
         buf = FACE_BUF
     )
+}
+
+internal fun Face.toCommData(): ImMsgBody.CommonElem {
+    return ImMsgBody.CommonElem(
+        serviceType = 33,
+        pbElem = HummerCommelem.MsgElemInfoServtype33(
+            index = this.id,
+            name = "/${this.name}".toByteArray(),
+            compat = "/${this.name}".toByteArray()
+        ).toByteArray(HummerCommelem.MsgElemInfoServtype33.serializer()),
+        businessType = 1
+    )
+
 }

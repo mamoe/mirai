@@ -18,6 +18,7 @@ import kotlinx.io.core.readUInt
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
+import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
@@ -148,12 +149,20 @@ internal fun MessageChain.toRichTextElems(
             is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is FlashImage -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
-            is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
+            is Face -> elements.add(
+                if (it.id >= 260) {
+                    ImMsgBody.Elem(commonElem = it.toCommData())
+                } else {
+                    ImMsgBody.Elem(face = it.toJceData())
+                }
+            )
             is QuoteReply -> {
                 if (forGroup) {
                     when (val source = it.source) {
                         is OnlineMessageSource.Incoming.FromGroup -> {
-                            transformOneMessage(At(source.sender))
+                            val sender0 = source.sender
+                            if (sender0 !is AnonymousMember)
+                                transformOneMessage(At(sender0))
                             // transformOneMessage(PlainText(" "))
                             // removed by https://github.com/mamoe/mirai/issues/524
                             // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
@@ -249,7 +258,7 @@ internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
     groupIdOrZero: Long,
     onlineSource: Boolean,
     isTemp: Boolean = false
-): MessageChain = map{it.msg}.toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
+): MessageChain = map { it.msg }.toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
 
 internal fun MsgComm.Msg.toMessageChain(
     bot: Bot?,
@@ -292,6 +301,7 @@ internal fun List<MsgComm.Msg>.toMessageChain(
             +OfflineMessageSourceImplByMsg(this@toMessageChain, botId)
         }
         elements.joinToMessageChain(groupIdOrZero, botId, this)
+        addAll(ppts)
     }.cleanupRubbishMessageElements()
 }
 
@@ -511,6 +521,11 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                         if (proto.flashC2cPic != null) {
                             list.add(FlashImage(OnlineFriendImageImpl(proto.flashC2cPic)))
                         }
+                    }
+                    33 -> {
+                        val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype33.serializer())
+                        list.add(Face(proto.index))
+
                     }
                 }
             }

@@ -13,7 +13,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
-import kotlin.jvm.JvmField
 
 internal class HummerCommelem : ProtoBuf {
     @Serializable
@@ -232,6 +231,14 @@ internal class HummerCommelem : ProtoBuf {
     internal class MsgElemInfoServtype31(
         @ProtoNumber(1) @JvmField val text: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val ext: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class MsgElemInfoServtype33(
+        @ProtoNumber(1) @JvmField val index: Int = 0,
+        @ProtoNumber(2) @JvmField val name: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(3) @JvmField val compat: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(4) @JvmField val buf: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
