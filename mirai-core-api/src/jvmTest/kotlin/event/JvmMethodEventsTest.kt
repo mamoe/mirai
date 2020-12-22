@@ -12,10 +12,10 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.event.*
 import org.jetbrains.annotations.NotNull
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 
@@ -101,6 +101,33 @@ internal class JvmMethodEventsTest {
     }
 
     @Test
+    fun testExceptionHandle() {
+        class MyException : RuntimeException()
+
+        class TestClass : SimpleListenerHost() {
+            override fun handleException(context: CoroutineContext, exception: Throwable) {
+                assert(exception is ExceptionInEventHandlerException)
+                assert(exception.event is TestEvent)
+                assert(exception.rootCause is MyException)
+            }
+
+            @Suppress("unused")
+            @EventHandler
+            private suspend fun TestEvent.test() {
+                throw MyException()
+            }
+        }
+
+        TestClass().run {
+            this.registerEvents()
+
+            runBlocking {
+                TestEvent().broadcast()
+            }
+        }
+    }
+
+    @Test
     fun testIntercept() {
         class TestClass : ListenerHost, CoroutineScope by CoroutineScope(EmptyCoroutineContext) {
             private var called = AtomicInteger(0)
@@ -122,14 +149,14 @@ internal class JvmMethodEventsTest {
             }
         }
 
-//        TestClass().run {
-//            this.registerEvents()
-//
-//            runBlocking {
-//                TestEvent().broadcast()
-//            }
-//
-//            assertEquals(1, this.getCalled())
-//        }
+        TestClass().run {
+            this.registerEvents()
+
+            runBlocking {
+                TestEvent().broadcast()
+            }
+
+            assertEquals(1, this.getCalled())
+        }
     }
 }

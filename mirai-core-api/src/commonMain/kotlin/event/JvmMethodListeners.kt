@@ -15,6 +15,7 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.utils.EventListenerLikeJava
+import net.mamoe.mirai.utils.castOrNull
 import java.lang.reflect.Method
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -189,6 +190,8 @@ public abstract class SimpleListenerHost
 
     /**
      * 处理事件处理中未捕获的异常. 在构造器中的 [coroutineContext] 未提供 [CoroutineExceptionHandler] 情况下必须继承此函数.
+     *
+     * [exception] 通常是 [ExceptionInEventHandlerException]. 可以获取事件: [ExceptionInEventHandlerException.event]
      */
     public open fun handleException(context: CoroutineContext, exception: Throwable) {
         throw IllegalStateException(
@@ -207,7 +210,38 @@ public abstract class SimpleListenerHost
     public fun cancelAll() {
         this.cancel()
     }
+
+    protected companion object {
+        /**
+         * 获取 [ExceptionInEventHandlerException.event]
+         */
+        @JvmStatic
+        protected val Throwable.event: Event?
+            get() = this.castOrNull<ExceptionInEventHandlerException>()?.event
+
+        /**
+         * 递归获取 [Throwable.cause], 无 `cause` 时返回 `this`
+         */
+        @JvmStatic
+        protected val Throwable.rootCause: Throwable
+            get() = generateSequence(this) { it.cause }.last()
+    }
 }
+
+/**
+ * [EventHandler] 标记的函数在处理事件时产生异常时包装异常并重新抛出
+ */
+public class ExceptionInEventHandlerException(
+    /**
+     * 当时正在处理的事件
+     */
+    public val event: Event,
+    override val message: String = "Exception in EventHandler",
+    /**
+     * 原异常
+     */
+    override val cause: Throwable
+) : IllegalStateException()
 
 /**
  * 反射得到所有标注了 [EventHandler] 的函数 (Java 为方法), 并注册为事件监听器
@@ -248,21 +282,12 @@ private fun Method.isKotlinFunction(): Boolean {
     return declaringClass.getDeclaredAnnotation(kotlin.Metadata::class.java) != null
 }
 
-private fun Method.invokeWithErrorReport(self: Any?, vararg args: Any?): Any? = try {
-    invoke(self, *args)
-} catch (exception: IllegalArgumentException) {
-    throw IllegalArgumentException(
-        "Internal Error: $exception, method=${this}, this=$self, arguments=$args, please report to https://github.com/mamoe/mirai",
-        exception
-    )
-}
-
 @Suppress("UNCHECKED_CAST")
 private fun Method.registerEvent(
     owner: Any,
     scope: CoroutineScope,
     annotation: EventHandler,
-    coroutineContext: CoroutineContext
+    coroutineContext: CoroutineContext,
 ): Listener<Event> {
     this.isAccessible = true
     val kotlinFunction = kotlin.runCatching { this.kotlinFunction }.getOrNull()
@@ -311,6 +336,8 @@ private fun Method.registerEvent(
             } catch (e: IllegalCallableAccessException) {
                 listener.completeExceptionally(e)
                 return ListeningStatus.STOPPED
+            } catch (e: Throwable) {
+                throw ExceptionInEventHandlerException(event, cause = e)
             }
         }
         require(!kotlinFunction.returnType.isMarkedNullable) {
@@ -357,6 +384,30 @@ private fun Method.registerEvent(
         check(this.parameterCount == 1 && Event::class.java.isAssignableFrom(paramType)) {
             "Illegal method parameter. Required one exact Event subclass. found ${this.parameters.contentToString()}"
         }
+        suspend fun callMethod(event: Event): Any? {
+            fun Method.invokeWithErrorReport(self: Any?, vararg args: Any?): Any? = try {
+                invoke(self, *args)
+            } catch (exception: IllegalArgumentException) {
+                throw IllegalArgumentException(
+                    "Internal Error: $exception, method=${this}, this=$self, arguments=$args, please report to https://github.com/mamoe/mirai",
+                    exception
+                )
+            } catch (e: Throwable) {
+                throw ExceptionInEventHandlerException(event, cause = e)
+            }
+
+
+            return if (annotation.ignoreCancelled) {
+                if (event.castOrNull<CancellableEvent>()?.isCancelled != true) {
+                    withContext(Dispatchers.IO) {
+                        this@registerEvent.invokeWithErrorReport(owner, event)
+                    }
+                } else ListeningStatus.LISTENING
+            } else withContext(Dispatchers.IO) {
+                this@registerEvent.invokeWithErrorReport(owner, event)
+            }
+        }
+
         when (this.returnType) {
             Void::class.java, Void.TYPE, Nothing::class.java -> {
                 scope.subscribeAlways(
@@ -365,15 +416,7 @@ private fun Method.registerEvent(
                     concurrency = annotation.concurrency,
                     coroutineContext = coroutineContext
                 ) {
-                    if (annotation.ignoreCancelled) {
-                        if ((this as? CancellableEvent)?.isCancelled != true) {
-                            withContext(Dispatchers.IO) {
-                                this@registerEvent.invokeWithErrorReport(owner, this@subscribeAlways)
-                            }
-                        }
-                    } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invokeWithErrorReport(owner, this@subscribeAlways)
-                    }
+                    callMethod(this)
                 }
             }
             ListeningStatus::class.java -> {
@@ -383,16 +426,8 @@ private fun Method.registerEvent(
                     concurrency = annotation.concurrency,
                     coroutineContext = coroutineContext
                 ) {
-                    if (annotation.ignoreCancelled) {
-                        if ((this as? CancellableEvent)?.isCancelled != true) {
-                            withContext(Dispatchers.IO) {
-                                this@registerEvent.invokeWithErrorReport(owner, this@subscribe) as ListeningStatus
-                            }
-                        } else ListeningStatus.LISTENING
-                    } else withContext(Dispatchers.IO) {
-                        this@registerEvent.invokeWithErrorReport(owner, this@subscribe) as ListeningStatus
-                    }
-
+                    callMethod(this) as ListeningStatus?
+                        ?: error("Java method EventHandler cannot return `null`: $this")
                 }
             }
             else -> error("Illegal method return type. Required Void or ListeningStatus, but found ${this.returnType.canonicalName}")
