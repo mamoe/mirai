@@ -17,6 +17,7 @@ import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
+import net.mamoe.mirai.internal.utils.io.withUse
 import net.mamoe.mirai.utils.checkOffsetAndLength
 import java.util.*
 import kotlin.contracts.InvocationKind
