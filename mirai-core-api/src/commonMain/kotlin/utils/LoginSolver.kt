@@ -47,7 +47,7 @@ public abstract class LoginSolver {
 
     // TODO: 2020-12-24 滑动验证码支持
     @MiraiInternalApi
-    public open val isSliderCaptchaSupport: Boolean get() = false
+    public open val isSliderCaptchaSupported: Boolean get() = false
 
     /**
      * 处理滑动验证码.

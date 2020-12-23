@@ -162,7 +162,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             return this
         }
 
-        val isSliderCaptchaSupport = bot.configuration.loginSolver?.isSliderCaptchaSupport ?: false
+        val isSliderCaptchaSupport = bot.configuration.loginSolver?.isSliderCaptchaSupported ?: false
         val allowSlider = isSliderCaptchaSupport
                 || bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE
                 || step == 0
