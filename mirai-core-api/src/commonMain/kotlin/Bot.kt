@@ -55,6 +55,11 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public override val id: Long
 
     /**
+     * 返回 `this`
+     */
+    public override val bot: Bot get() = this
+
+    /**
      * 昵称
      */
     public val nick: String

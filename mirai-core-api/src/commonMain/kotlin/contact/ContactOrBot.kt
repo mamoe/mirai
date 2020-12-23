@@ -28,6 +28,11 @@ public interface ContactOrBot : CoroutineScope {
     public val id: Long
 
     /**
+     * 相关 [Bot]
+     */
+    public val bot: Bot
+
+    /**
      * 头像下载链接
      */
     public val avatarUrl: String
