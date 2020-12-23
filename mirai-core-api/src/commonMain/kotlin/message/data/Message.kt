@@ -54,9 +54,6 @@ import kotlin.contracts.contract
  *  ```
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
  *
- * #### 实现规范
- * 除 [MessageChain] 外, 所有 [Message] 的实现类都有伴生对象实现 [Key] 接口.
- *
  * #### 发送消息
  * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
  * - 通过 [Message] 的扩展函数: [Message.sendTo]
@@ -130,6 +127,7 @@ public interface Message { // must be interface. Don't consider any changes.
      * - ...
      *
      * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
+     * @see Message.content Kotlin 扩展
      */
     public fun contentToString(): String
 

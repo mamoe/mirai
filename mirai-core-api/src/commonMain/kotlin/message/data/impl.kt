@@ -118,7 +118,6 @@ internal fun Sequence<SingleMessage>.constrainSingleMessages(): List<SingleMessa
 /**
  * - [Sequence.toMutableList]
  * - Replace in-place with marker null
- * - [Iterable.filterNotNull]
  */
 @MiraiExperimentalApi
 @JvmSynthetic
@@ -147,15 +146,6 @@ internal fun constrainSingleMessagesImpl(sequence: Sequence<SingleMessage>): Lis
 internal fun Iterable<SingleMessage>.constrainSingleMessages(): List<SingleMessage> =
     constrainSingleMessagesImpl(this.asSequence())
 
-@JvmSynthetic
-internal inline fun <T> List<T>.indexOfFirst(offset: Int, predicate: (T) -> Boolean): Int {
-    for (index in offset..this.lastIndex) {
-        if (predicate(this[index]))
-            return index
-    }
-    return -1
-}
-
 
 @JvmSynthetic
 @Suppress("UNCHECKED_CAST", "DEPRECATION_ERROR", "DEPRECATION")
@@ -183,12 +173,6 @@ internal data class MessageChainImpl constructor(
     override fun hashCode(): Int = delegate.hashCode()
     override fun equals(other: Any?): Boolean = other is MessageChainImpl && other.delegate == this.delegate
 }
-
-@Suppress("FunctionName")
-internal fun CombinedMessage(
-    left: Message,
-    tail: Message
-): MessageChain = MessageChainImplBySequence(left.flatten() + tail.flatten())
 
 @Suppress("FunctionName") // source compatibility with 1.x
 internal fun MessageChainImplBySequence(
@@ -266,7 +250,6 @@ internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
     }
 }
 
-@PublishedApi
 internal val ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE: String =
     "ImageId must match Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
             "`${FRIEND_IMAGE_ID_REGEX_2.pattern}` or " +
