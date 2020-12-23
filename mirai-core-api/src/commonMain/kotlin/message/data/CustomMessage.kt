@@ -27,7 +27,7 @@ import net.mamoe.mirai.utils.internal.checkOffsetAndLength
  * 它不会显示在消息文本中, 也不会被其他客户端识别.
  * 只有 mirai 才能识别这些消息.
  *
- * 目前在回复时无法通过 [originalMessage] 获取自定义类型消息
+ * 目前在回复时无法通过 [MessageSource.originalMessage] 获取自定义类型消息
  *
  * ## 序列化
  * 若要支持序列化, 需 [MessageSerializer.registerSerializer]
