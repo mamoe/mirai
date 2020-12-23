@@ -96,7 +96,7 @@ public interface Contact : ContactOrBot, CoroutineScope {
         @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
-        public suspend inline fun <C : Contact> C.sendImage(bufferedImage: BufferedImage): MessageReceipt<C> =
+        public suspend fun <C : Contact> C.sendImage(bufferedImage: BufferedImage): MessageReceipt<C> =
             bufferedImage.sendAsImageTo(this)
 
         /**
@@ -107,7 +107,7 @@ public interface Contact : ContactOrBot, CoroutineScope {
         @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
-        public suspend inline fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> =
+        public suspend fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> =
             imageStream.sendAsImageTo(this)
 
         /**
@@ -118,7 +118,7 @@ public interface Contact : ContactOrBot, CoroutineScope {
         @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
-        public suspend inline fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
+        public suspend fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
     }
 }
 

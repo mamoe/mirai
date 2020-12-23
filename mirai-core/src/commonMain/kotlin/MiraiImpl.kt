@@ -792,7 +792,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         else -> error("Internal error: unsupported image class: ${image::class.simpleName}")
     }
 
-    @Suppress("CANNOT_OVERRIDE_INVISIBLE_MEMBER")
     override suspend fun sendNudge(bot: Bot, nudge: Nudge, receiver: Contact): Boolean {
         if (bot.configuration.protocol != BotConfiguration.MiraiProtocol.ANDROID_PHONE) {
             throw UnsupportedOperationException("nudge is supported only with protocol ANDROID_PHONE")
