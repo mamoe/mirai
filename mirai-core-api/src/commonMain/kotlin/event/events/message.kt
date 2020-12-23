@@ -59,7 +59,7 @@ public sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEven
  * 在发送群消息前广播的事件.
  * @see MessagePreSendEvent
  */
-public data class GroupMessagePreSendEvent internal constructor(
+public data class GroupMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Group,
     /** 待发送的消息. 修改后将会同时应用于发送. */
@@ -79,7 +79,7 @@ public sealed class UserMessagePreSendEvent : MessagePreSendEvent() {
  * 在发送好友消息前广播的事件.
  * @see MessagePreSendEvent
  */
-public data class FriendMessagePreSendEvent internal constructor(
+public data class FriendMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Friend,
     /** 待发送的消息. 修改后将会同时应用于发送. */
@@ -90,7 +90,7 @@ public data class FriendMessagePreSendEvent internal constructor(
  * 在发送群临时会话消息前广播的事件.
  * @see MessagePreSendEvent
  */
-public data class TempMessagePreSendEvent internal constructor(
+public data class TempMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,
     /** 待发送的消息. 修改后将会同时应用于发送. */
@@ -180,7 +180,7 @@ public inline val <C : Contact> MessagePostSendEvent<C>.result: Result<MessageRe
  * 在群消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-public data class GroupMessagePostSendEvent internal constructor(
+public data class GroupMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Group,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
@@ -207,7 +207,7 @@ public sealed class UserMessagePostSendEvent<C : User> : MessagePostSendEvent<C>
  * 在好友消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-public data class FriendMessagePostSendEvent internal constructor(
+public data class FriendMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Friend,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
@@ -228,7 +228,7 @@ public data class FriendMessagePostSendEvent internal constructor(
  * 在群临时会话消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-public data class TempMessagePostSendEvent internal constructor(
+public data class TempMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
@@ -342,7 +342,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 群消息撤回事件.
      */
-    public data class GroupRecall @PublishedApi internal constructor(
+    public data class GroupRecall @MiraiInternalApi constructor(
         public override val bot: Bot,
         public override val authorId: Long,
         public override val messageIds: IntArray,
@@ -413,7 +413,7 @@ public val MessageRecallEvent.isByBot: Boolean
  *
  * @see Contact.uploadImage 上传图片. 为广播这个事件的唯一途径
  */
-public data class BeforeImageUploadEvent internal constructor(
+public data class BeforeImageUploadEvent @MiraiInternalApi constructor(
     public val target: Contact,
     public val source: ExternalImage
 ) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
@@ -438,13 +438,13 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
     public override val bot: Bot
         get() = target.bot
 
-    public data class Succeed internal constructor(
+    public data class Succeed @MiraiInternalApi constructor(
         override val target: Contact,
         override val source: ExternalImage,
         val image: Image
     ) : ImageUploadEvent()
 
-    public data class Failed internal constructor(
+    public data class Failed @MiraiInternalApi constructor(
         override val target: Contact,
         override val source: ExternalImage,
         val errno: Int,
