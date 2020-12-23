@@ -30,6 +30,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
 import kotlin.contracts.contract
+import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
  * 可发送的或从服务器接收的消息.
@@ -132,14 +133,31 @@ public interface Message { // must be interface. Don't consider any changes.
 
 
     /**
-     * 判断内容是否与 [another] 相等.
+     * 判断内容是否与 [another] 相等即 `this` 与 [another] 的 [contentToString] 相等.
+     * [strict] 为 `true` 时, 还会额外判断每个消息元素的类型, 顺序和属性. 如 [Image] 会判断 [Image.imageId]
      *
-     * 若本函数返回 `true`, 则表明:
-     * - `this` 与 [another] 的 [contentToString] 相等
+     * **有关 [strict]:** 每个 [Image] 的 [contentToString] 都是 `"[图片]"`,
+     * 在 [strict] 为 `false` 时 [contentEquals] 会得到 `true`,
+     * 而为 `true` 时由于 [Image.imageId] 会被比较, 两张不同的图片的 [contentEquals] 会是 `false`.
+     *
+     * @param ignoreCase 为 `true` 时忽略大小写
      */
+    public fun contentEquals(another: Message, ignoreCase: Boolean = false, strict: Boolean = false): Boolean {
+        return if (strict) this.contentEqualsStrictImpl(another, ignoreCase)
+        else this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)
+    }
+
+    /**
+     * 判断内容是否与 [another] 相等即 `this` 与 [another] 的 [contentToString] 相等.
+     *
+     * 单个消息的顺序和内容不会被检查, 即只要比较两个 [Image], 总是会得到 `true`, 因为 [Image] 的 [contentToString] 都是 `"[图片]"`.
+     *
+     * @param ignoreCase 为 `true` 时忽略大小写
+     */
+    @LowPriorityInOverloadResolution
     public fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
-        this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)
-    // contentEqualsImpl(another, ignoreCase)
+        contentEquals(another, ignoreCase, false)
+
 
     /**
      * 判断内容是否与 [another] 相等.
