@@ -55,18 +55,20 @@ public interface ExternalResource : Closeable {
 
 
         /**
-         * 将 [BufferedImage] 保存为临时文件, 然后构造 [ExternalImage]
+         * 将 [BufferedImage] 保存为临时文件, 然后构造 [ExternalResource]
          */
+        @JvmStatic
         @JvmOverloads
-        public fun BufferedImage.toExternalResource(formatName: String = "png"): ExternalResource {
-            return Mirai.FileCacheStrategy.newCache(this, formatName)
-
-        }
+        @JvmName("create")
+        public fun BufferedImage.toExternalResource(formatName: String = "png"): ExternalResource =
+            Mirai.FileCacheStrategy.newCache(this, formatName)
 
         /**
-         * 将 [InputStream] 委托为 [ExternalImage].
+         * 将 [InputStream] 委托为 [ExternalResource].
          * 只会在上传图片时才读取 [InputStream] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
          */
+        @JvmStatic
+        @JvmName("create")
         public fun InputStream.toExternalResource(formatName: String?): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
     }
