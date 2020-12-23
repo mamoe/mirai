@@ -17,10 +17,8 @@ import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.contact.FriendImpl
 import net.mamoe.mirai.internal.contact.GroupImpl
@@ -210,7 +208,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return FriendImpl(
             bot.asQQAndroidBot(),
             bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            friendInfo.uin,
             friendInfo
         )
     }

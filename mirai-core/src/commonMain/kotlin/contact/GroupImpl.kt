@@ -12,8 +12,6 @@
 
 package net.mamoe.mirai.internal.contact
 
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
@@ -69,12 +67,8 @@ internal class GroupImpl(
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
-) : Group {
-    companion object;
-
-    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
-
-    override val bot: QQAndroidBot by bot.unsafeWeakRef()
+) : Group, AbstractContact(bot, coroutineContext) {
+    companion object
 
     val uin: Long = groupInfo.uin
 

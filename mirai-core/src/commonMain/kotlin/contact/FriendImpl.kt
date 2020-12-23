@@ -20,8 +20,6 @@ package net.mamoe.mirai.internal.contact
 
 import kotlinx.atomicfu.AtomicInt
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
@@ -41,8 +39,6 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentNotEmpty
 import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.getValue
-import net.mamoe.mirai.utils.unsafeWeakRef
 import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -79,19 +75,10 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
 internal class FriendImpl(
     bot: QQAndroidBot,
     coroutineContext: CoroutineContext,
-    override val id: Long,
     internal val friendInfo: FriendInfo
-) : Friend {
-    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
-
+) : Friend, AbstractUser(bot, coroutineContext, friendInfo) {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
-
-    override val bot: QQAndroidBot by bot.unsafeWeakRef()
-    override val nick: String
-        get() = friendInfo.nick
-    override val remark: String
-        get() = friendInfo.remark
 
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {
