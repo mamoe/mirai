@@ -81,7 +81,7 @@ public interface Group : Contact, CoroutineScope {
     /**
      * 群头像下载链接.
      */
-    public val avatarUrl: String
+    public override val avatarUrl: String
         get() = "https://p.qlogo.cn/gh/$id/${id}/640"
 
     /**

@@ -72,7 +72,7 @@ allprojects {
     version = Versions.project
 
     repositories {
-        mavenLocal()
+        // mavenLocal() // cheching issue cause compiler exception
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
         jcenter()
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
