@@ -179,6 +179,9 @@ internal data class MessageChainImpl constructor(
 
     private val contentToStringTemp: String by lazy { this.delegate.joinToString("") { it.contentToString() } }
     override fun contentToString(): String = contentToStringTemp
+
+    override fun hashCode(): Int = delegate.hashCode()
+    override fun equals(other: Any?): Boolean = other is MessageChainImpl && other.delegate == this.delegate
 }
 
 @Suppress("FunctionName")
