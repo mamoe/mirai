@@ -26,4 +26,11 @@ public interface ContactOrBot : CoroutineScope {
      * QQ 号或群号.
      */
     public val id: Long
+
+    /**
+     * 头像下载链接
+     */
+    public val avatarUrl: String
+        get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
+
 }
