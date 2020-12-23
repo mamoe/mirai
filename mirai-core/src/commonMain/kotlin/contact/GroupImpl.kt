@@ -14,7 +14,6 @@ package net.mamoe.mirai.internal.contact
 
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelApi
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
@@ -232,7 +231,6 @@ internal class GroupImpl(
             )
         }
         return MemberImpl(
-            Mirai._lowLevelNewFriend(bot, memberInfo) as FriendImpl,
             this,
             this.coroutineContext,
             memberInfo

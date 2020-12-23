@@ -19,7 +19,6 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
-import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.message.MessageSourceToTempImpl
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
@@ -29,7 +28,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcP
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToTemp
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.getValue
 import net.mamoe.mirai.utils.unsafeWeakRef
@@ -40,23 +38,14 @@ import kotlin.coroutines.CoroutineContext
 @OptIn(LowLevelApi::class)
 @Suppress("MemberVisibilityCanBePrivate")
 internal class MemberImpl constructor(
-    val qq: FriendImpl, // 不要 WeakRef
     group: GroupImpl,
     coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
-) : NormalMember {
+) : NormalMember, AbstractUser(group.bot, coroutineContext, memberInfo) {
     override val group: GroupImpl by group.unsafeWeakRef()
-    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
 
     @Suppress("unused") // false positive
     val lastMessageSequence: AtomicInt = atomic(-1)
-
-    override val id: Long = qq.id
-    override val nick: String = qq.nick
-    override val remark: String
-        get() {
-            return (this.asFriendOrNull() ?: return "").remark
-        }
 
     override fun toString(): String = "Member($id)"
 
@@ -114,9 +103,6 @@ internal class MemberImpl constructor(
 
         return result.getOrThrow()
     }
-
-    @JvmSynthetic
-    override suspend fun uploadImage(image: ExternalImage): Image = qq.uploadImage(image)
 
     override var permission: MemberPermission = memberInfo.permission
 
@@ -180,8 +166,6 @@ internal class MemberImpl constructor(
                 }
             }
         }
-
-    override val bot: QQAndroidBot get() = qq.bot
 
     @JvmSynthetic
     override suspend fun mute(durationSeconds: Int) {
