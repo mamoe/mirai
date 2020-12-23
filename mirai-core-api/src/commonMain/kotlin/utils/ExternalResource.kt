@@ -33,6 +33,10 @@ public interface ExternalResource : Closeable {
     public val md5: ByteArray
     public val formatName: String
     public val size: Int
+
+    /**
+     * 关闭此流可能不会关闭 [ExternalResource].
+     */
     public fun inputStream(): InputStream
 
     public companion object {
@@ -97,8 +101,14 @@ internal class ExternalResourceImplByFileWithMd5(
         formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
     }
 
-    override fun inputStream(): InputStream = file.inputStream()
-    override fun close() {}
+    override fun inputStream(): InputStream {
+        file.seek(0)
+        return file.inputStream()
+    }
+
+    override fun close() {
+        file.close()
+    }
 }
 
 internal class ExternalResourceImplByFile(
@@ -111,8 +121,14 @@ internal class ExternalResourceImplByFile(
         formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
     }
 
-    override fun inputStream(): InputStream = file.inputStream()
-    override fun close() {}
+    override fun inputStream(): InputStream {
+        check(file.filePointer == 0L) { "RandomAccessFile.inputStream cannot be opened simultaneously." }
+        return file.inputStream()
+    }
+
+    override fun close() {
+        file.close()
+    }
 }
 
 internal class ExternalResourceImplByByteArray(
@@ -134,6 +150,9 @@ private fun RandomAccessFile.inputStream(): InputStream {
     return object : InputStream() {
         override fun read(): Int = file.read()
         override fun read(b: ByteArray, off: Int, len: Int): Int = file.read(b, off, len)
+        override fun close() {
+            file.seek(0)
+        }
         // don't close file on stream.close. stream may be obtained at multiple times.
     }
 }
