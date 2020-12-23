@@ -194,7 +194,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                             if (step == 0) {
                                 return closeEverythingAndRelogin(host, port, cause, 1)
                             }
-                            throw NotSupportedSliderCaptchaException(
+                            throw UnsupportedSliderCaptchaException(
                                 buildString {
                                     append("Mirai 无法完成滑块验证.")
                                     if (allowSlider) {
