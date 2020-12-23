@@ -72,6 +72,8 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     @Suppress("PropertyName")
     internal lateinit var _network: N
 
+    internal var _isConnecting: Boolean = false
+
     override val isOnline: Boolean get() = _network.areYouOk()
 
     val otherClientsLock = Mutex() // lock sync
@@ -97,6 +99,10 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             }
             if (!::_network.isInitialized) {
                 // bot 还未登录就被 close
+                return@subscribeAlways
+            }
+            if (_isConnecting) {
+                // bot 还在登入
                 return@subscribeAlways
             }
             /*
@@ -197,6 +203,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 while (true) {
                     _network = createNetworkHandler(this.coroutineContext)
                     try {
+                        _isConnecting = true
                         @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
                         relogin(null)
                         return
@@ -212,6 +219,8 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     } catch (e: Exception) {
                         network.logger.error(e)
                         _network.closeAndJoin(e)
+                    } finally {
+                        _isConnecting = false
                     }
                     logger.warning { "Login failed. Retrying in 3s..." }
                     delay(3000)
