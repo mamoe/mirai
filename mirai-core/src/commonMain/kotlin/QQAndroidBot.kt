@@ -93,7 +93,7 @@ internal class QQAndroidBot constructor(
     @Throws(LoginFailedException::class) // only
     override suspend fun relogin(cause: Throwable?) {
         client.useNextServers { host, port ->
-            network.closeEverythingAndRelogin(host, port, cause)
+            network.closeEverythingAndRelogin(host, port, cause, 0)
         }
     }
 

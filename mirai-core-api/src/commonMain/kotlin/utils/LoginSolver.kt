@@ -45,6 +45,10 @@ public abstract class LoginSolver {
      */
     public abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
 
+    // TODO: 2020-12-24 滑动验证码支持
+    @MiraiInternalApi
+    public open val isSliderCaptchaSupport: Boolean get() = false
+
     /**
      * 处理滑动验证码.
      * 返回 null 以表示无法处理验证码, 将会刷新验证码或重试登录.
@@ -89,6 +93,7 @@ public abstract class LoginSolver {
         public fun getDefault(): LoginSolver = Default
             ?: error("LoginSolver is not provided by default on your platform. Please specify by BotConfiguration.loginSolver")
     }
+
 }
 
 /**

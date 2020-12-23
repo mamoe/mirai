@@ -62,6 +62,11 @@ public class NoStandardInputForCaptchaException @MiraiInternalApi constructor(
 public class UnsupportedSMSLoginException(message: String?) : LoginFailedException(true, message)
 
 /**
+ * 无法完成滑块验证
+ */
+public class NotSupportedSliderCaptchaException(message: String?) : LoginFailedException(true, message)
+
+/**
  * 非 mirai 实现的异常
  */
 public abstract class CustomLoginFailedException : LoginFailedException {

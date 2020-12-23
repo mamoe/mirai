@@ -123,12 +123,13 @@ internal class WtLogin {
             private const val appId = 16L
 
             operator fun invoke(
-                client: QQAndroidClient
+                client: QQAndroidClient,
+                allowSlider: Boolean
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(client, client.subAppId, commandName, sequenceId = sequenceId) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(9) // subCommand
-                        writeShort(0x18) // count of TLVs, probably ignored by server?
+                        writeShort(if (allowSlider) 0x18 else 0x17) // count of TLVs, probably ignored by server?
                         //writeShort(LoginType.PASSWORD.value.toShort())
 
                         t18(appId, client.appClientVersion, client.uin)
@@ -231,7 +232,9 @@ internal class WtLogin {
                         t187(client.device.macAddress)
                         t188(client.device.androidId)
                         t194(client.device.imsiMd5)
-                        t191()
+                        if (allowSlider) {
+                            t191()
+                        }
 
                         /*
                         t201(N = byteArrayOf())*/
