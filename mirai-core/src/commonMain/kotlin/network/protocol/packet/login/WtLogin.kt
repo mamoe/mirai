@@ -44,7 +44,7 @@ internal class WtLogin {
                         t193(ticket)
                         t8(2052)
                         t104(client.t104)
-                        t116(150470524, 66560)
+                        t116(client.miscBitMap, client.subSigMap)
                     }
                 }
             }
@@ -61,7 +61,7 @@ internal class WtLogin {
                         t2(captchaAnswer, captchaSign, 0)
                         t8(2052)
                         t104(client.t104)
-                        t116(150470524, 66560)
+                        t116(client.miscBitMap, client.subSigMap)
                     }
                 }
             }
@@ -79,7 +79,7 @@ internal class WtLogin {
                         writeShort(4) // count of TLVs, probably ignored by server?
                         t8(2052)
                         t104(client.t104)
-                        t116(150470524, 66560)
+                        t116(client.miscBitMap, client.subSigMap)
                         t401(MiraiPlatformUtils.md5(client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402))
                     }
                 }
@@ -105,7 +105,7 @@ internal class WtLogin {
                         writeShort(6) // count of TLVs, probably ignored by server?TODO
                         t8(2052)
                         t104(client.t104)
-                        t116(150470524, 66560)
+                        t116(client.miscBitMap, client.subSigMap)
                         t174(EMPTY_BYTE_ARRAY)
                         t17a(9)
                         t197(byteArrayOf(0.toByte()))
