@@ -244,9 +244,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *
      * 实际作用为创建一个新的 [EventChannel],
      * 该 [EventChannel] 包含 [`this.coroutineContext`][defaultCoroutineContext] 和添加的 [CoroutineScope.coroutineContext],
-     * 并以 [CoroutineScope] 中 [Job] [作为父 Job][parentJob]
-     *
-     * @throws IllegalStateException 当 [coroutineScope] [CoroutineScope.coroutineContext] 中不存在 [Job] 元素时抛出
+     * 并以 [CoroutineScope] 中 [Job] (如果有) [作为父 Job][parentJob]
      *
      * @see parentJob
      * @see context
@@ -254,8 +252,10 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * @see CoroutineScope.globalEventChannel `GlobalEventChannel.parentScope()` 的扩展
      */
     public fun parentScope(coroutineScope: CoroutineScope): EventChannel<BaseEvent> {
-        val job = coroutineScope.coroutineContext[Job] ?: error("Job not found in scope $coroutineScope")
-        return context(coroutineScope.coroutineContext).parentJob(job)
+        return context(coroutineScope.coroutineContext).apply {
+            val job = coroutineScope.coroutineContext[Job]
+            if (job != null) parentJob(job)
+        }
     }
 
     /**
