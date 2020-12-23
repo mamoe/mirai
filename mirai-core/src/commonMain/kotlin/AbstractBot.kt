@@ -18,7 +18,9 @@
 package net.mamoe.mirai.internal
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.OtherClientList
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -71,6 +73,9 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     internal lateinit var _network: N
 
     override val isOnline: Boolean get() = _network.areYouOk()
+
+    val otherClientsLock = Mutex() // lock sync
+    override val otherClients: OtherClientList = OtherClientList()
 
     /**
      * Close server connection, resend login packet, BUT DOESN'T [BotNetworkHandler.init]

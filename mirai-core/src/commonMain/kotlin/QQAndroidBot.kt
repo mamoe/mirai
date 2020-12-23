@@ -18,6 +18,7 @@ import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
+import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
@@ -36,6 +37,12 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
     }
 
     return this as QQAndroidBot
+}
+
+internal fun QQAndroidBot.createOtherClient(
+    kind: ClientKind
+): OtherClientImpl {
+    return OtherClientImpl(this, coroutineContext, kind)
 }
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")

@@ -7,6 +7,8 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused")
+
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
@@ -18,6 +20,11 @@ import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PHONE
  */
 public interface OtherClient : Contact {
     /**
+     * 设备类型
+     */
+    public val kind: ClientKind
+
+    /**
      * 此设备属于的 [Bot]
      */
     public override val bot: Bot
@@ -28,14 +35,40 @@ public interface OtherClient : Contact {
     public override val id: Long get() = bot.id
 }
 
-/*
-public enum class ClientKind {
-    ANDROID_PHONE,
-    ANDROID_PAD,
-    ANDROID_WATCH,
-    IOS_PHONE,
-    IOS_PAD,
-    MAC_OS,
-    WINDOWS_QQ,
-    WINDOWS_TIM
-}*/
+/**
+ * 设备类型
+ */
+public enum class ClientKind(
+    public val id: Int,
+) {
+    ANDROID_PAD(68104),
+    AOL_CHAOJIHUIYUAN(73730),
+    AOL_HUIYUAN(73474),
+    AOL_SQQ(69378),
+    CAR(65806),
+    HRTX_IPHONE(66566),
+    HRTX_PC(66561),
+    MC_3G(65795),
+    MISRO_MSG(69634),
+    MOBILE_ANDROID(65799),
+    MOBILE_ANDROID_NEW(72450),
+    MOBILE_HD(65805),
+    MOBILE_HD_NEW(71426),
+    MOBILE_IPAD(68361),
+    MOBILE_IPAD_NEW(72194),
+    MOBILE_IPHONE(67586),
+    MOBILE_OTHER(65794),
+    MOBILE_PC(65793),
+    MOBILE_WINPHONE_NEW(72706),
+    QQ_FORELDER(70922),
+    QQ_SERVICE(71170),
+    TV_QQ(69130),
+    WIN8(69899),
+    WINPHONE(65804),
+
+    UNKNOWN(-1);
+
+    public companion object {
+        public operator fun get(id: Int): ClientKind? = values().find { it.id == id }
+    }
+}

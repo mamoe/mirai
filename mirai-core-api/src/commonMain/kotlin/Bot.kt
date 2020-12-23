@@ -77,6 +77,12 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     // region contacts
 
     /**
+     * 其他设备列表
+     */
+    public val otherClients: OtherClientList
+
+
+    /**
      * [User.id] 与 [Bot.id] 相同的 [Friend] 实例
      */
     @MiraiExperimentalApi

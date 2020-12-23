@@ -9,10 +9,17 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.protobuf.ProtoBuf
+import net.mamoe.mirai.contact.ClientKind
 import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.event.events.OtherClientOfflineEvent
+import net.mamoe.mirai.event.events.OtherClientOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.createOtherClient
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.guid
@@ -23,11 +30,9 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.SvcReqRegister
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.internal.network.protocol.packet.*
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
-import net.mamoe.mirai.internal.utils.NetworkType
-import net.mamoe.mirai.internal.utils.encodeToString
+import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.*
-import net.mamoe.mirai.internal.utils.toReadPacket
+import java.util.concurrent.CancellationException
 
 @Suppress("EnumEntryName", "unused")
 internal enum class RegPushReason {
@@ -219,5 +224,38 @@ internal class StatSvc {
                 )
             }
         }
+    }
+
+    internal object SvcReqMSFLoginNotify :
+        IncomingPacketFactory<Packet?>("StatSvc.SvcReqMSFLoginNotify", "StatSvc.SvcReqMSFLoginNotify") {
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? =
+            bot.otherClientsLock.withLock {
+                val notify = readUniPacket(network.protocol.data.jce.SvcReqMSFLoginNotifyData.serializer())
+
+                val kind = notify.iClientType?.toInt()?.let(ClientKind::get) ?: return null
+
+                when (notify.status.toInt()) {
+                    1 -> {
+                        if (bot.otherClients.any { it.kind == kind }) return null
+                        val client = bot.createOtherClient(kind)
+                        bot.otherClients.delegate.add(client)
+                        OtherClientOnlineEvent(client)
+                    }
+
+                    2 -> {
+                        val client = bot.otherClients.find { it.kind == kind } ?: return null
+                        client.cancel(CancellationException("Offline"))
+                        bot.otherClients.delegate.remove(client)
+                        OtherClientOfflineEvent(client)
+                    }
+
+                    else -> throw contextualBugReportException(
+                        "decode SvcReqMSFLoginNotify (OtherClient status change)",
+                        notify._miraiContentToString(),
+                        additional = "unknown notify.status=${notify.status}"
+                    )
+                }
+            }
     }
 }
