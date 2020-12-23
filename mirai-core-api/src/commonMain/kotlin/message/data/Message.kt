@@ -19,9 +19,8 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.PolymorphicSerializer
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
@@ -184,6 +183,37 @@ public interface Message { // must be interface. Don't consider any changes.
     public object Serializer :
         MessageSerializer by MessageSerializerImpl,
         KSerializer<Message> by PolymorphicSerializer(Message::class)
+
+    public companion object {
+        /**
+         * 从 JSON 字符串解析 [Message]
+         * @see serializeToJsonString
+         */
+        @JvmOverloads
+        @JvmStatic
+        public fun deserializeFromJsonString(string: String, json: Json = Json.Default): Message =
+            json.decodeFromString(Serializer, string)
+
+        /**
+         * 将 [Message] 序列化为 JSON 字符串.
+         * @see deserializeFromJsonString
+         */
+        @JvmOverloads
+        @JvmStatic
+        public fun Message.serializeToJsonString(json: Json = Json.Default): String =
+            json.encodeToString(Serializer, this)
+
+        /**
+         * 将 [Message] 序列化为指定格式的字符串.
+         *
+         * @see serializeToJsonString
+         * @see StringFormat.encodeToString
+         */
+        @ExperimentalSerializationApi
+        @JvmStatic
+        public fun Message.serializeToString(format: StringFormat): String =
+            format.encodeToString(Serializer, this)
+    }
 }
 
 /**
