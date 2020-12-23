@@ -267,7 +267,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * @see context
      */
     public fun parentJob(job: Job): EventChannel<BaseEvent> {
-        return context(SupervisorJob(job))
+        return context(job)
     }
 
     // endregion
