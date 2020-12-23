@@ -27,6 +27,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
+import network.protocol.data.jce.InstanceInfo
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo as JceFriendInfo
@@ -40,9 +41,10 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
 }
 
 internal fun QQAndroidBot.createOtherClient(
-    kind: ClientKind
+    kind: ClientKind,
+    instanceInfo: InstanceInfo,
 ): OtherClientImpl {
-    return OtherClientImpl(this, coroutineContext, kind)
+    return OtherClientImpl(this, coroutineContext, kind, instanceInfo)
 }
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")

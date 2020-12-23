@@ -108,6 +108,9 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
         is net.mamoe.mirai.event.events.FriendMessageEvent -> bot.logger.verbose {
             "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()
         }
+        is net.mamoe.mirai.event.events.OtherClientMessageEvent -> bot.logger.verbose {
+            "${client.kind}(${sender.id}) -> $message".replaceMagicCodes()
+        }
     }
 }
 

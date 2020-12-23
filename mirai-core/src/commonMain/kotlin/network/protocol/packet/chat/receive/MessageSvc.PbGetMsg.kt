@@ -26,20 +26,17 @@ import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.events.BotJoinGroupEvent
-import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.events.MemberJoinEvent
-import net.mamoe.mirai.event.events.TempMessageEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.checkIsFriendImpl
-import net.mamoe.mirai.internal.contact.checkIsMemberImpl
+import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.message.MessageSourceFromFriendImpl
 import net.mamoe.mirai.internal.message.toMessageChain
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
+import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
@@ -47,11 +44,12 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toLongUnsigned
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.internal.utils.read
-import net.mamoe.mirai.internal.utils.toInt
-import net.mamoe.mirai.internal.utils.toUHexString
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
@@ -175,6 +173,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             }
         }
 
+
 //        bot.logger.debug(resp.msgRspType._miraiContentToString())
 //        bot.logger.debug(resp.syncCookie._miraiContentToString())
 
@@ -201,6 +200,8 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         )
                     )
                 ) return@mapNotNull null
+
+                // if (msg.msgHead.msgType != 732) msg._miraiContentToString().soutv("MSG")
 
                 when (msg.msgHead.msgType) {
                     33 -> bot.groupListModifyLock.withLock {
@@ -351,8 +352,45 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                         return@mapNotNull null
                     }
                     529 -> {
-                        // 好友文件
-                        return@mapNotNull null
+
+                        // top_package/awbk.java:3765
+
+                        return@mapNotNull when (msg.msgHead.c2cCmd) {
+                            // other client sync
+                            7 -> {
+                                val data = msg.msgBody.msgContent.loadAs(SubMsgType0x7.MsgBody.serializer())
+
+                                val textMsg =
+                                    data.msgSubcmd0x4Generic?.buf?.loadAs(SubMsgType0x7.MsgBody.QQDataTextMsg.serializer())
+                                        ?: return@mapNotNull null
+
+                                with(data.msgHeader ?: return@mapNotNull null) {
+                                    if (srcUin != dstUin || dstUin != bot.id) return@mapNotNull null
+                                    val client = bot.otherClients.find { it.instanceInfo.iAppId == srcInstId }
+                                        ?: return@mapNotNull null// don't compare with dstAppId. diff.
+
+                                    val chain = buildMessageChain {
+                                        +MessageSourceFromFriendImpl(bot, listOf(msg))
+                                        for (msgItem in textMsg.msgItems) {
+                                            when (msgItem.type) {
+                                                1 -> {
+                                                    +PlainText(msgItem.text)
+                                                }
+                                                else -> {
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    return@mapNotNull OtherClientMessageEvent(client, chain, msg.msgHead.msgTime)
+                                }
+                            }
+
+                            else -> null
+                        }
+
+                        // 各种垃圾
+                        // 08 04 12 1E 08 E9 07 10 B7 F7 8B 80 02 18 E9 07 20 00 28 DD F1 92 B7 07 30 DD F1 92 B7 07 48 02 50 03 32 1E 08 88 80 F8 92 CD 84 80 80 10 10 01 18 00 20 01 2A 0C 0A 0A 08 01 12 06 E5 95 8A E5 95 8A
                     }
                     141 -> {
                         val tmpHead = msg.msgHead.c2cTmpMsgHead ?: return@mapNotNull null
@@ -397,6 +435,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
 
                     732 -> {
                         // unknown
+                        // 前 4 byte 是群号
                         return@mapNotNull null
                     }
                     // 732:  27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58

@@ -480,6 +480,32 @@ public class FriendMessageEvent constructor(
 }
 
 /**
+ * 机器人收到的好友消息的事件
+ *
+ * @see MessageEvent
+ */
+public class OtherClientMessageEvent constructor(
+    public override val client: OtherClient,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable,
+    OtherClientEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
+    }
+
+    public override val sender: User = client.bot.asFriend // TODO 临时使用
+    public override val bot: Bot get() = super.bot
+    public override val subject: User get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
+
+    public override fun toString(): String = "OtherClientMessageEvent(client=${client.kind}, message=$message)"
+}
+
+/**
  * 来自一个可以知道其 [Group] 的用户消息
  *
  * @see FriendMessageEvent

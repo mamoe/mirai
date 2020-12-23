@@ -238,7 +238,14 @@ internal class StatSvc {
                 when (notify.status.toInt()) {
                     1 -> {
                         if (bot.otherClients.any { it.kind == kind }) return null
-                        val client = bot.createOtherClient(kind)
+                        val client = bot.createOtherClient(
+                            kind,
+                            notify.vecInstanceList?.find { it.iClientType == notify.iClientType }
+                                ?: throw  contextualBugReportException(
+                                    "decode SvcReqMSFLoginNotify (OtherClient online)",
+                                    notify._miraiContentToString(),
+                                    additional = "Failed to find corresponding instanceInfo."
+                                ))
                         bot.otherClients.delegate.add(client)
                         OtherClientOnlineEvent(client)
                     }
