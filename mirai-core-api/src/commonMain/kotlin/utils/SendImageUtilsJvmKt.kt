@@ -70,7 +70,7 @@ public suspend inline fun <C : Contact> File.sendAsImageTo(contact: C): MessageR
  */
 @JvmSynthetic
 @Throws(OverFileSizeMaxException::class)
-public suspend fun BufferedImage.uploadAsImage(contact: Contact): Image =
+public suspend inline fun BufferedImage.uploadAsImage(contact: Contact): Image =
     toExternalResource("png").uploadAsImage(contact)
 
 /**
@@ -79,7 +79,7 @@ public suspend fun BufferedImage.uploadAsImage(contact: Contact): Image =
  */
 @Throws(OverFileSizeMaxException::class)
 @JvmSynthetic
-public suspend fun InputStream.uploadAsImage(contact: Contact): Image =
+public suspend inline fun InputStream.uploadAsImage(contact: Contact): Image =
     toExternalResource("png").uploadAsImage(contact)
 
 /**
@@ -88,7 +88,7 @@ public suspend fun InputStream.uploadAsImage(contact: Contact): Image =
  */
 @Throws(OverFileSizeMaxException::class)
 @JvmSynthetic
-public suspend fun File.uploadAsImage(contact: Contact): Image {
+public suspend inline fun File.uploadAsImage(contact: Contact): Image {
     require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
     return toExternalResource("png").uploadAsImage(contact)
 }
@@ -104,7 +104,7 @@ public suspend fun File.uploadAsImage(contact: Contact): Image {
  */
 @Throws(OverFileSizeMaxException::class)
 @MiraiExperimentalApi("语音支持处于实验性阶段")
-public suspend fun InputStream.uploadAsGroupVoice(group: Group): Voice {
+public suspend inline fun InputStream.uploadAsGroupVoice(group: Group): Voice {
     return group.uploadVoice(this)
 }
 
