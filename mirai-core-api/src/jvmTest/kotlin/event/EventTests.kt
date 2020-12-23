@@ -33,7 +33,7 @@ class EventTests {
             }
 
             assertTrue(TestEvent().broadcast().triggered)
-            subscriber.complete()
+            assertTrue { subscriber.complete() }
         }
     }
 
