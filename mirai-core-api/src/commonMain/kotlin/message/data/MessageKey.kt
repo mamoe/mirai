@@ -30,6 +30,57 @@ public interface MessageKey<out M : SingleMessage> {
     public val safeCast: (SingleMessage) -> M?
 }
 
+
+/**
+ * 独立的 [MessageKey] 的实现. '独立' 即 `final`, 不支持多态类型. 适用于作为最顶层的 [MessageKey], 如 [MessageSource].
+ *
+ * @see AbstractPolymorphicMessageKey
+ */
+@ExperimentalMessageKey
+public abstract class AbstractMessageKey<out M : SingleMessage>(
+    override val safeCast: (SingleMessage) -> M?,
+) : MessageKey<M>
+
+
+/**
+ * 多态 [MessageKey].
+ *
+ * 示例: [HummerMessage]
+ * ```
+ *               MessageContent
+ *                     ↑
+ *               HummerMessage
+ *                     ↑
+ *        +------------+-------------+
+ *        |            |             |
+ *  PokeMessage     VipFace      FlashImage
+ *
+ * ```
+ *
+ * 当 [连接][Message.plus] 一个 [VipFace] 到一个 [MessageChain] 时,
+ * 由于 [VipFace] 最上层为 [MessageContent], 消息链中第一个 [MessageContent] 会被 (保留顺序地) 替换为 [VipFace], 其他所有 [MessageContent] 都会被删除.
+ *
+ * 如:
+ * ```
+ * val source: MessageSource = ...
+ *
+ * val result = messageChainOf(PlainText("a"), PlainText("b"), source, AtAll) + VipFace.LiuLian
+ * // result 为 [VipFace.LiuLian, source]
+ *
+ * val result = source1 + source2
+ * // result 为 [source2], 总是右侧替换左侧
+ * ```
+ */
+@ExperimentalMessageKey
+public abstract class AbstractPolymorphicMessageKey<out B : SingleMessage, out M : B>(
+    baseKey: MessageKey<B>,
+    safeCast: (SingleMessage) -> M?,
+) : MessageKey<M>, AbstractMessageKey<M>(safeCast) {
+    internal val topmostKey: MessageKey<*> =
+        if (baseKey is AbstractPolymorphicMessageKey<*, *>) baseKey.topmostKey else baseKey
+}
+
+
 @ExperimentalMessageKey
 public fun MessageKey<*>.isInstance(message: SingleMessage): Boolean = this.safeCast(message) != null
 
