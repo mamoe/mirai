@@ -161,7 +161,8 @@ internal object KnownPacketFactories {
         OnlinePushPbPushTransMsg,
         MessageSvcPushNotify,
         ConfigPushSvc.PushReq,
-        StatSvc.ReqMSFOffline
+        StatSvc.ReqMSFOffline,
+        StatSvc.QueryHB
     )
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvcPushReaded 电脑阅读了别人的消息, 告知手机

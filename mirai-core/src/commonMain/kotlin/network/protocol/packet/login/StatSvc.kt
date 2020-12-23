@@ -82,6 +82,17 @@ internal class StatSvc {
         }
     }
 
+    internal object QueryHB : IncomingPacketFactory<Packet?>("StatSvc.QueryHB", "StatSvc.register") {
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? {
+            return null
+        }
+
+        override suspend fun QQAndroidBot.handle(packet: Packet?, sequenceId: Int): OutgoingPacket {
+            return Register.invoke(client, regPushReason = RegPushReason.serverPush)
+        }
+
+    }
+
     internal object Register : OutgoingPacketFactory<Register.Response>("StatSvc.register") {
 
         internal object Response : Packet {
