@@ -149,7 +149,7 @@ internal class ExternalResourceImplByFileWithMd5(
     }
 
     override fun inputStream(): InputStream {
-        file.seek(0)
+        check(file.filePointer == 0L) { "RandomAccessFile.inputStream cannot be opened simultaneously." }
         return file.inputStream()
     }
 
