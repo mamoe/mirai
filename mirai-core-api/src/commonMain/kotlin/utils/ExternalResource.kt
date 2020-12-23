@@ -42,20 +42,23 @@ public interface ExternalResource : Closeable {
 
     public companion object {
         @JvmStatic
+        @JvmOverloads
         @JvmName("create")
-        public fun File.toExternalResource(formatName: String?): ExternalResource =
+        public fun File.toExternalResource(formatName: String? = null): ExternalResource =
             RandomAccessFile(this, "r").toExternalResource(
                 formatName ?: inputStream().detectFileTypeAndClose()
             )
 
         @JvmStatic
+        @JvmOverloads
         @JvmName("create")
-        public fun RandomAccessFile.toExternalResource(formatName: String?): ExternalResource =
+        public fun RandomAccessFile.toExternalResource(formatName: String? = null): ExternalResource =
             ExternalResourceImplByFile(this, formatName)
 
         @JvmStatic
+        @JvmOverloads
         @JvmName("create")
-        public fun ByteArray.toExternalResource(formatName: String?): ExternalResource =
+        public fun ByteArray.toExternalResource(formatName: String? = null): ExternalResource =
             ExternalResourceImplByByteArray(this, formatName)
 
 
@@ -73,8 +76,9 @@ public interface ExternalResource : Closeable {
          * 只会在上传图片时才读取 [InputStream] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
          */
         @JvmStatic
+        @JvmOverloads
         @JvmName("create")
-        public fun InputStream.toExternalResource(formatName: String?): ExternalResource =
+        public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
 
 
