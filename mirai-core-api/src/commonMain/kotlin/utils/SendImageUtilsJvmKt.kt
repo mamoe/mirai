@@ -8,7 +8,7 @@
  */
 
 /**
- * 发送图片的一些扩展函数.
+ * 为 Kotlin 使用者实现的发送图片的一些扩展函数.
  */
 
 @file:Suppress("unused")
@@ -17,13 +17,14 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.coroutines.Dispatchers
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Voice
+import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
@@ -31,27 +32,30 @@ import java.io.InputStream
 // region IMAGE.sendAsImageTo(Contact)
 
 /**
- * 在 [Dispatchers.IO] 中将图片发送到指定联系人. 不会创建临时文件
+ * 将图片发送到指定联系人.
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-public suspend fun <C : Contact> BufferedImage.sendTo(contact: C): MessageReceipt<C> =
+@JvmSynthetic
+public suspend inline fun <C : Contact> BufferedImage.sendAsImageTo(contact: C): MessageReceipt<C> =
     toExternalResource("png").sendAsImageTo(contact)
 
 /**
- * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
+ * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-public suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
+@JvmSynthetic
+public suspend inline fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
     toExternalResource("png").sendAsImageTo(contact)
 
 /**
- * 在 [Dispatchers.IO] 中将文件作为图片发送到指定联系人
+ * 将文件作为图片发送到指定联系人
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
-public suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
+@JvmSynthetic
+public suspend inline fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
     require(this.exists() && this.canRead())
     return toExternalResource("png").sendAsImageTo(contact)
 }
@@ -61,7 +65,7 @@ public suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<
 // region IMAGE.Upload(Contact): Image
 
 /**
- * 在 [Dispatchers.IO] 中将图片上传后构造 [Image]. 不会创建临时文件
+ * 将图片上传后构造 [Image].
  * @throws OverFileSizeMaxException
  */
 @JvmSynthetic
@@ -70,25 +74,27 @@ public suspend fun BufferedImage.uploadAsImage(contact: Contact): Image =
     toExternalResource("png").uploadAsImage(contact)
 
 /**
- * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
+ * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
+@JvmSynthetic
 public suspend fun InputStream.uploadAsImage(contact: Contact): Image =
     toExternalResource("png").uploadAsImage(contact)
 
 /**
- * 在 [Dispatchers.IO] 中将文件作为图片上传后构造 [Image]
+ * 将文件作为图片上传后构造 [Image]
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
+@JvmSynthetic
 public suspend fun File.uploadAsImage(contact: Contact): Image {
     require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
     return toExternalResource("png").uploadAsImage(contact)
 }
 
 /**
- * 在 [Dispatchers.IO] 中将文件作为语音上传后构造 [Voice]
+ * 将文件作为语音上传后构造 [Voice]
  *
  * - 请手动关闭输入流
  * - 请使用 amr 或 silk 格式
@@ -104,54 +110,30 @@ public suspend fun InputStream.uploadAsGroupVoice(group: Group): Voice {
 
 // endregion
 
-// region Contact.sendImage(IMAGE)
-
-/**
- * 在 [Dispatchers.IO] 中将图片发送到指定联系人. 不会保存临时文件
- * @throws OverFileSizeMaxException
- */
-@Throws(OverFileSizeMaxException::class)
-public suspend inline fun <C : Contact> C.sendImage(bufferedImage: BufferedImage): MessageReceipt<C> =
-    bufferedImage.sendTo(this)
-
-/**
- * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
- * @throws OverFileSizeMaxException
- */
-@Throws(OverFileSizeMaxException::class)
-public suspend inline fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> =
-    imageStream.sendAsImageTo(this)
-
-/**
- * 在 [Dispatchers.IO] 中将文件作为图片发送到指定联系人
- * @throws OverFileSizeMaxException
- */
-@Throws(OverFileSizeMaxException::class)
-public suspend inline fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
-
-// endregion
-
 // region Contact.uploadImage(IMAGE)
 
 /**
- * 在 [Dispatchers.IO] 中将图片上传, 但不发送. 不会保存临时文件
+ * 将图片上传, 但不发送. 不会保存临时文件
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
+@JvmSynthetic
 public suspend inline fun Contact.uploadImage(bufferedImage: BufferedImage): Image = bufferedImage.uploadAsImage(this)
 
 /**
- * 在 [Dispatchers.IO] 中读取 [InputStream] 到临时文件并将其作为图片上传, 但不发送
+ * 读取 [InputStream] 到临时文件并将其作为图片上传, 但不发送
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
+@JvmSynthetic
 public suspend inline fun Contact.uploadImage(imageStream: InputStream): Image = imageStream.uploadAsImage(this)
 
 /**
- * 在 [Dispatchers.IO] 中将文件作为图片上传, 但不发送
+ * 将文件作为图片上传, 但不发送
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
+@JvmSynthetic
 public suspend inline fun Contact.uploadImage(file: File): Image = file.uploadAsImage(this)
 
 // endregion

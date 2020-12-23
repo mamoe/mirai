@@ -16,6 +16,7 @@ package net.mamoe.mirai.event.events
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
@@ -26,6 +27,8 @@ import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
@@ -623,7 +626,7 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
-    public override suspend fun BufferedImage.send(): MessageReceipt<Contact> = sendTo(subject)
+    public override suspend fun BufferedImage.send(): MessageReceipt<Contact> = sendAsImageTo(subject)
     public override suspend fun InputStream.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
     public override suspend fun File.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
     // endregion 发送图片 (扩展)

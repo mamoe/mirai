@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.utils
 
+import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
@@ -75,6 +76,48 @@ public interface ExternalResource : Closeable {
         @JvmName("create")
         public fun InputStream.toExternalResource(formatName: String?): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
+
+
+        /**
+         * 将图片作为单独的消息发送给指定联系人.
+         *
+         * @see Contact.uploadImage 上传图片
+         * @see Contact.sendMessage 最终调用, 发送消息.
+         */
+        @JvmBlockingBridge
+        @JvmStatic
+        @JvmName("sendAsImage")
+        public suspend fun <C : Contact> ExternalResource.sendAsImageTo(contact: C): MessageReceipt<C> =
+            when (contact) {
+                is Group -> contact.uploadImage(this).sendTo(contact)
+                is User -> contact.uploadImage(this).sendTo(contact)
+                else -> error("unreachable")
+            }
+
+        /**
+         * 上传图片并构造 [Image].
+         * 这个函数可能需消耗一段时间.
+         *
+         * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
+         *
+         * @see Contact.uploadImage 最终调用, 上传图片.
+         */
+        @JvmBlockingBridge
+        @JvmStatic
+        public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = when (contact) {
+            is Group -> contact.uploadImage(this)
+            is User -> contact.uploadImage(this)
+            else -> error("unreachable")
+        }
+
+        /**
+         * 将图片作为单独的消息发送给 [this]
+         *
+         * @see Contact.sendMessage 最终调用, 发送消息.
+         */
+        @JvmSynthetic
+        public suspend inline fun <C : Contact> C.sendImage(image: ExternalResource): MessageReceipt<C> =
+            image.sendAsImageTo(this)
     }
 }
 
@@ -168,40 +211,3 @@ private fun RandomAccessFile.inputStream(): InputStream {
  *  APNG:   2001
  *  SHARPP: 1004
  */
-
-/**
- * 将图片作为单独的消息发送给指定联系人.
- *
- * @see Contact.uploadImage 上传图片
- * @see Contact.sendMessage 最终调用, 发送消息.
- */
-@JvmSynthetic
-public suspend fun <C : Contact> ExternalResource.sendAsImageTo(contact: C): MessageReceipt<C> = when (contact) {
-    is Group -> contact.uploadImage(this).sendTo(contact)
-    is User -> contact.uploadImage(this).sendTo(contact)
-    else -> error("unreachable")
-}
-
-/**
- * 上传图片并构造 [Image].
- * 这个函数可能需消耗一段时间.
- *
- * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
- *
- * @see Contact.uploadImage 最终调用, 上传图片.
- */
-@JvmSynthetic
-public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = when (contact) {
-    is Group -> contact.uploadImage(this)
-    is User -> contact.uploadImage(this)
-    else -> error("unreachable")
-}
-
-/**
- * 将图片作为单独的消息发送给 [this]
- *
- * @see Contact.sendMessage 最终调用, 发送消息.
- */
-@JvmSynthetic
-public suspend inline fun <C : Contact> C.sendImage(image: ExternalResource): MessageReceipt<C> =
-    image.sendAsImageTo(this)

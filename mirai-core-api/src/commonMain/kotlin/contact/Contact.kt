@@ -20,9 +20,10 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.quote
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.WeakRefProperty
+import net.mamoe.mirai.utils.*
+import java.awt.image.BufferedImage
+import java.io.File
+import java.io.InputStream
 
 /**
  * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
@@ -85,6 +86,40 @@ public interface Contact : ContactOrBot, CoroutineScope {
      * @return "Friend($id)" or "Group($id)" or "Member($id)"
      */
     public override fun toString(): String
+
+    public companion object {
+        /**
+         * 将图片发送到指定联系人.
+         * @throws OverFileSizeMaxException
+         * @see FileCacheStrategy
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend inline fun <C : Contact> C.sendImage(bufferedImage: BufferedImage): MessageReceipt<C> =
+            bufferedImage.sendAsImageTo(this)
+
+        /**
+         * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
+         * @throws OverFileSizeMaxException
+         * @see FileCacheStrategy
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend inline fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> =
+            imageStream.sendAsImageTo(this)
+
+        /**
+         * 将文件作为图片发送到指定联系人
+         * @throws OverFileSizeMaxException
+         * @see FileCacheStrategy
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend inline fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
+    }
 }
 
 /**
