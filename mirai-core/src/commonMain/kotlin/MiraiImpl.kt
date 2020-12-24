@@ -23,6 +23,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
+import net.mamoe.mirai.internal.network.protocol.data.jce.toOtherClientInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
