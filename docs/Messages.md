@@ -9,3 +9,7 @@
 `SingleMessage` 表示单个消息元素，`MessageChain`（消息链） 是 `List<SingleMessage>`。主动发送的消息和从服务器接收消息都是 `MessageChain`。
 
 mirai 提供大量消息链的扩展：[MessageChain.kt](../mirai-core-api/src/commonMain/kotlin/message/data/MessageChain.kt#L59)。
+
+## 消息元素
+
+###
