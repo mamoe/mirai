@@ -12,11 +12,7 @@
 
 package net.mamoe.mirai.internal.contact
 
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import net.mamoe.mirai.LowLevelApi
-import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.GroupInfo
 import net.mamoe.mirai.data.MemberInfo
@@ -29,7 +25,6 @@ import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
-import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
@@ -49,16 +44,12 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.time.ExperimentalTime
 
 internal fun GroupImpl.Companion.checkIsInstance(instance: Group) {
-    contract {
-        returns() implies (instance is GroupImpl)
-    }
+    contract { returns() implies (instance is GroupImpl) }
     check(instance is GroupImpl) { "group is not an instanceof GroupImpl!! DO NOT interlace two or more protocol implementations!!" }
 }
 
 internal fun Group.checkIsGroupImpl() {
-    contract {
-        returns() implies (this@checkIsGroupImpl is GroupImpl)
-    }
+    contract { returns() implies (this@checkIsGroupImpl is GroupImpl) }
     GroupImpl.checkIsInstance(this)
 }
 
@@ -69,25 +60,17 @@ internal class GroupImpl(
     override val id: Long,
     groupInfo: GroupInfo,
     members: Sequence<MemberInfo>
-) : Group {
-    companion object;
-
-    override val coroutineContext: CoroutineContext = coroutineContext + SupervisorJob(coroutineContext[Job])
-
-    override val bot: QQAndroidBot by bot.unsafeWeakRef()
+) : Group, AbstractContact(bot, coroutineContext) {
+    companion object
 
     val uin: Long = groupInfo.uin
+    override val settings: GroupSettingsImpl = GroupSettingsImpl(this, groupInfo)
+    override var name: String by settings::name
 
     override lateinit var owner: NormalMember
-
     override lateinit var botAsMember: NormalMember
 
-    override val botPermission: MemberPermission get() = botAsMember.permission
-
-    // e.g. 600
-    override val botMuteRemaining: Int get() = botAsMember.muteTimeRemaining
-
-    override val members: ContactList<NormalMember> = ContactList(members.mapNotNull {
+    override val members: ContactList<NormalMember> = ContactList(members.mapNotNullTo(ConcurrentLinkedQueue()) {
         if (it.uin == bot.id) {
             botAsMember = newMember(it).cast()
             if (it.permission == MemberPermission.OWNER) {
@@ -99,115 +82,9 @@ internal class GroupImpl(
                 owner = member
             }
         }
-    }.mapTo(ConcurrentLinkedQueue()) { it })
+    })
 
-    internal var _name: String = groupInfo.name
-    private var _announcement: String = groupInfo.memo
-    private var _allowMemberInvite: Boolean = groupInfo.allowMemberInvite
-    internal var _confessTalk: Boolean = groupInfo.confessTalk
-    internal var _muteAll: Boolean = groupInfo.muteAll
-    private var _autoApprove: Boolean = groupInfo.autoApprove
-    internal var _anonymousChat: Boolean = groupInfo.allowAnonymousChat
-
-    override var name: String
-        get() = _name
-        set(newValue) {
-
-            checkBotPermission(MemberPermission.ADMINISTRATOR)
-            if (_name != newValue) {
-                val oldValue = _name
-                _name = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.name(
-                            client = bot.client,
-                            groupCode = id,
-                            newName = newValue
-                        ).sendWithoutExpect()
-                    }
-                    GroupNameChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
-                }
-            }
-        }
-
-    override val settings: GroupSettings = object : GroupSettings {
-
-        override var entranceAnnouncement: String
-            get() = _announcement
-            set(newValue) {
-                checkBotPermission(MemberPermission.ADMINISTRATOR)
-                //if (_announcement != newValue) {
-                val oldValue = _announcement
-                _announcement = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.memo(
-                            client = bot.client,
-                            groupCode = id,
-                            newMemo = newValue
-                        ).sendWithoutExpect()
-                    }
-                    GroupEntranceAnnouncementChangeEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
-                }
-                //}
-            }
-
-
-        override var isAllowMemberInvite: Boolean
-            get() = _allowMemberInvite
-            set(newValue) {
-                checkBotPermission(MemberPermission.ADMINISTRATOR)
-                //if (_allowMemberInvite != newValue) {
-                val oldValue = _allowMemberInvite
-                _allowMemberInvite = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.allowMemberInvite(
-                            client = bot.client,
-                            groupCode = id,
-                            switch = newValue
-                        ).sendWithoutExpect()
-                    }
-                    GroupAllowMemberInviteEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
-                }
-                //}
-            }
-
-        override var isAnonymousChatEnabled: Boolean
-            get() = _anonymousChat
-            @Suppress("UNUSED_PARAMETER")
-            set(newValue) {
-                TODO()
-            }
-
-        override var isAutoApproveEnabled: Boolean
-            get() = _autoApprove
-            @Suppress("UNUSED_PARAMETER")
-            set(newValue) {
-                TODO()
-            }
-
-
-        override var isMuteAll: Boolean
-            get() = _muteAll
-            set(newValue) {
-                checkBotPermission(MemberPermission.ADMINISTRATOR)
-                //if (_muteAll != newValue) {
-                val oldValue = _muteAll
-                _muteAll = newValue
-                launch {
-                    bot.network.run {
-                        TroopManagement.GroupOperation.muteAll(
-                            client = bot.client,
-                            groupCode = id,
-                            switch = newValue
-                        ).sendWithoutExpect()
-                    }
-                    GroupMuteAllEvent(oldValue, newValue, this@GroupImpl, null).broadcast()
-                }
-                //}
-            }
-    }
+    val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 
     override suspend fun quit(): Boolean {
         check(botPermission != MemberPermission.OWNER) { "An owner cannot quit from a owning group" }
@@ -229,34 +106,6 @@ internal class GroupImpl(
         BotLeaveEvent.Active(this).broadcast()
         return true
     }
-
-    override fun newMember(memberInfo: MemberInfo): Member {
-        memberInfo.anonymousId?.let { anId ->
-            return AnonymousMemberImpl(
-                this, this.coroutineContext,
-                memberInfo, anId
-            )
-        }
-        return MemberImpl(
-            Mirai._lowLevelNewFriend(bot, memberInfo) as FriendImpl,
-            this,
-            this.coroutineContext,
-            memberInfo
-        )
-    }
-
-    internal fun newAnonymous(name: String, id: String): Member = newMember(
-        object : MemberInfo {
-            override val nameCard = name
-            override val permission = MemberPermission.MEMBER
-            override val specialTitle = "匿名"
-            override val muteTimestamp = 0
-            override val uin = 80000000L
-            override val nick = name
-            override val remark: String = "匿名"
-            override val anonymousId: String get() = id
-        }
-    )
 
     override operator fun get(id: Long): NormalMember? {
         if (id == bot.id) {
@@ -466,8 +315,33 @@ internal class GroupImpl(
 
     }
 
-
     override fun toString(): String = "Group($id)"
-
-    val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 }
+
+internal fun Group.newMember(memberInfo: MemberInfo): Member {
+    this.checkIsGroupImpl()
+    memberInfo.anonymousId?.let { anId ->
+        return AnonymousMemberImpl(
+            this, this.coroutineContext,
+            memberInfo, anId
+        )
+    }
+    return NormalMemberImpl(
+        this,
+        this.coroutineContext,
+        memberInfo
+    )
+}
+
+internal fun GroupImpl.newAnonymous(name: String, id: String): Member = newMember(
+    MemberInfoImpl(
+        uin = 80000000L,
+        nick = name,
+        permission = MemberPermission.MEMBER,
+        remark = "匿名",
+        nameCard = name,
+        specialTitle = "匿名",
+        muteTimestamp = 0,
+        anonymousId = id,
+    )
+)

@@ -26,32 +26,32 @@ import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
-import net.mamoe.mirai.event.events.BotJoinGroupEvent
-import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.events.MemberJoinEvent
-import net.mamoe.mirai.event.events.TempMessageEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.checkIsFriendImpl
-import net.mamoe.mirai.internal.contact.checkIsMemberImpl
+import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.message.MessageSourceFromFriendImpl
 import net.mamoe.mirai.internal.message.toMessageChain
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
+import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg.createGroupForBot
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbGetMsg.getNewMemberInfo
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toLongUnsigned
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
-import net.mamoe.mirai.internal.utils.read
-import net.mamoe.mirai.internal.utils.toInt
-import net.mamoe.mirai.internal.utils.toUHexString
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.warning
@@ -175,6 +175,7 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
             }
         }
 
+
 //        bot.logger.debug(resp.msgRspType._miraiContentToString())
 //        bot.logger.debug(resp.syncCookie._miraiContentToString())
 
@@ -202,211 +203,9 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                     )
                 ) return@mapNotNull null
 
-                when (msg.msgHead.msgType) {
-                    33 -> bot.groupListModifyLock.withLock {
+                // if (msg.msgHead.msgType != 732) msg._miraiContentToString().soutv("MSG")
 
-                        if (msg.msgHead.authUin == bot.id) {
-                            // 邀请入群
-                            return@mapNotNull bot.createGroupForBot(msg.msgHead.fromUin)?.let { group ->
-                                // package: 27 0B 60 E7 01 CA CC 69 8B 83 44 71 47 90 06 B9 DC C0 ED D4 B1 00 30 33 44 30 42 38 46 30 39 37 32 38 35 43 34 31 38 30 33 36 41 34 36 31 36 31 35 32 37 38 46 46 43 30 41 38 30 36 30 36 45 38 31 43 39 41 34 38 37
-                                // package: groupUin + 01 CA CC 69 8B 83 + invitorUin + length(06) + string + magicKey
-                                val invitorUin = msg.msgBody.msgContent.sliceArray(10..13).toInt().toLongUnsigned()
-                                val invitor = group[invitorUin] ?: return@let null
-                                BotJoinGroupEvent.Invite(invitor)
-                            }
-                        } else {
-
-                            // 成员申请入群
-                            val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
-                                ?: return@mapNotNull null
-
-                            // 主动入群, 直接加入: msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 42 39 41 30 33 45 38 34 30 39 34 42 46 30 45 32 45 38 42 31 43 43 41 34 32 42 38 42 44 42 35 34 44 42 31 44 32 32 30 46 30 38 39 46 46 35 41 38
-                            // 主动直接加入                  27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 33 30 45 38 42 31 33 46 41 41 31 33 46 38 31 35 34 41 38 33 32 37 31 43 34 34 38 35 33 35 46 45 31 38 32 43 39 42 43 46 46 32 44 39 39 46 41 37
-
-                            // 有人被邀请(经过同意后)加入      27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 34 30 34 38 32 33 38 35 37 41 37 38 46 33 45 37 35 38 42 39 38 46 43 45 44 43 32 41 30 31 36 36 30 34 31 36 39 35 39 30 38 39 30 39 45 31 34 34
-                            // 搜索到群, 直接加入             27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
-
-                            // msg.msgBody.msgContent.soutv("33类型的content")
-
-                            if (group.members.contains(msg.msgHead.authUin)) {
-                                return@mapNotNull null
-                            }
-
-                            if (msg.msgBody.msgContent.read {
-                                    discardExact(9)
-                                    readByte().toInt().and(0xff)
-                                } == 0x83) {
-                                return@mapNotNull MemberJoinEvent.Invite(group.newMember(msg.getNewMemberInfo())
-                                    .cast<NormalMember>()
-                                    .also { group.members.delegate.add(it) })
-                            }
-
-                            return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
-                                .cast<NormalMember>()
-                                .also { group.members.delegate.add(it) })
-                        }
-                    }
-
-                    34 -> { // 与 33 重复
-                        return@mapNotNull null
-                    }
-
-                    38 -> bot.groupListModifyLock.withLock { // 建群
-                        return@mapNotNull bot.createGroupForBot(msg.msgHead.fromUin)
-                            ?.let { BotJoinGroupEvent.Active(it) }
-                    }
-
-                    85 -> bot.groupListModifyLock.withLock { // 其他客户端入群
-
-                        // msg.msgHead.authUin: 处理人
-
-                        return@mapNotNull if (msg.msgHead.toUin == bot.id) {
-                            bot.createGroupForBot(msg.msgHead.fromUin)
-                                ?.let { BotJoinGroupEvent.Active(it) }
-                        } else {
-                            null
-                        }
-                    }
-
-                    /*
-                    34 -> { // 主动入群
-
-                        // 回答了问题, 还需要管理员审核
-                        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 00 30 45 41 31 30 35 35 42 44 39 39 42 35 37 46 44 31 41 31 46 36 42 43 42 43 33 43 42 39 34 34 38 31 33 34 42 36 31 46 38 45 43 39 38 38 43 39 37 33
-                        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 02 00 30 44 44 41 43 44 33 35 43 31 39 34 30 46 42 39 39 34 46 43 32 34 43 39 32 33 39 31 45 42 35 32 33 46 36 30 37 35 42 41 38 42 30 30 37 42 36 42 41
-                        // 回答正确问题, 直接加入
-
-                        //            27 0B 60 E7 01 76 E4 B8 DD 82 00 30 43 37 37 39 41 38 32 44 38 33 30 35 37 38 31 33 37 45 42 39 35 43 42 45 36 45 43 38 36 34 38 44 34 35 44 42 33 44 45 37 34 41 36 30 33 37 46 45
-                        // 提交验证消息加入, 需要审核
-
-                        // 被踢了??
-                        // msgContent=27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 46 46 32 33 36 39 35 33 31 37 42 44 46 37 43 36 39 34 37 41 45 38 39 43 45 43 42 46 33 41 37 35 39 34 39 45 36 37 33 37 31 41 39 44 33 33 45 33
-
-                        /*
-                        // 搜索后直接加入群
-
-                        soutv 17:43:32 : 33类型的content = 27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
-                        soutv 17:43:32 : 主动入群content = 2A 3D F5 69 01 35 D7 10 EA 83 4C EF 4F DD 06 B9 DC C0 ED D4 B1 00 30 37 41 39 31 39 34 31 41 30 37 46 38 32 31 39 39 43 34 35 46 39 30 36 31 43 37 39 37 33 39 35 43 34 44 36 31 33 43 31 35 42 37 32 45 46 43 43 36
-                         */
-
-                        val group = bot.getGroupByUinOrNull(msg.msgHead.fromUin)
-                        group ?: return@mapNotNull null
-
-                        msg.msgBody.msgContent.soutv("主动入群content")
-
-                        if (msg.msgBody.msgContent.read {
-                                discardExact(4) // group code
-                                discardExact(1) // 1
-                                discardExact(4) // requester uin
-                                readByte().toInt().and(0xff)
-                                // 0x02: 回答正确问题直接加入
-                                // 0x82: 回答了问题, 或者有验证消息, 需要管理员审核
-                                // 0x83: 回答正确问题直接加入
-                            } != 0x82) {
-
-                            if (group.members.contains(msg.msgHead.authUin)) {
-                                return@mapNotNull null
-                            }
-                            @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-                            return@mapNotNull MemberJoinEvent.Active(group.newMember(msg.getNewMemberInfo())
-                                .also { group.members.delegate.addLast(it) })
-                        } else return@mapNotNull null
-                    }
-                    */
-
-                    166 -> {
-                        if (msg.msgHead.fromUin == bot.id) {
-                            loop@ while (true) {
-                                val instance = bot.client.getFriendSeq()
-                                if (instance < msg.msgHead.msgSeq) {
-                                    if (bot.client.setFriendSeq(instance, msg.msgHead.msgSeq)) {
-                                        break@loop
-                                    }
-                                } else break@loop
-                            }
-                            return@mapNotNull null
-                        }
-                        val friend = bot.getFriend(msg.msgHead.fromUin) ?: return@mapNotNull null
-                        friend.checkIsFriendImpl()
-
-                        if (!bot.firstLoginSucceed) {
-                            return@mapNotNull null
-                        }
-                        friend.lastMessageSequence.loop {
-                            if (friend.lastMessageSequence.compareAndSet(
-                                    it,
-                                    msg.msgHead.msgSeq
-                                ) && msg.contentHead?.autoReply != 1
-                            ) {
-                                return@mapNotNull FriendMessageEvent(
-                                    friend,
-                                    msg.toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
-                                    msg.msgHead.msgTime
-                                )
-                            } else return@mapNotNull null
-                        }
-                    }
-                    208 -> {
-                        // friend ptt
-                        return@mapNotNull null
-                    }
-                    529 -> {
-                        // 好友文件
-                        return@mapNotNull null
-                    }
-                    141 -> {
-                        val tmpHead = msg.msgHead.c2cTmpMsgHead ?: return@mapNotNull null
-                        val member = bot.getGroupByUinOrNull(tmpHead.groupUin)?.get(msg.msgHead.fromUin)
-                            ?: return@mapNotNull null
-
-                        member.checkIsMemberImpl()
-
-                        if (msg.msgHead.fromUin == bot.id || !bot.firstLoginSucceed) {
-                            return@mapNotNull null
-                        }
-
-                        member.lastMessageSequence.loop { instant ->
-                            if (msg.msgHead.msgSeq > instant) {
-                                if (member.lastMessageSequence.compareAndSet(instant, msg.msgHead.msgSeq)) {
-                                    return@mapNotNull TempMessageEvent(
-                                        member,
-                                        msg.toMessageChain(
-                                            bot,
-                                            groupIdOrZero = 0,
-                                            onlineSource = true,
-                                            isTemp = true
-                                        ),
-                                        msg.msgHead.msgTime
-                                    )
-                                }
-                            } else return@mapNotNull null
-                        }
-                    }
-                    84, 87 -> { // 请求入群验证 和 被要求入群
-                        bot.network.run {
-                            NewContact.SystemMsgNewGroup(bot.client).sendWithoutExpect()
-                        }
-                        return@mapNotNull null
-                    }
-                    187 -> { // 请求加好友验证
-                        bot.network.run {
-                            NewContact.SystemMsgNewFriend(bot.client).sendWithoutExpect()
-                        }
-                        return@mapNotNull null
-                    }
-
-                    732 -> {
-                        // unknown
-                        return@mapNotNull null
-                    }
-                    // 732:  27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58
-                    // 732:  27 0B 60 E7 11 00 40 08 07 20 E7 C1 AD B8 02 5A 36 08 B4 E7 E0 F0 09 1A 1A 08 9C D4 16 10 F7 D2 D8 F5 05 18 D0 E2 85 F4 06 20 00 28 00 30 B4 E7 E0 F0 09 2A 0E 08 00 12 0A 08 9C D4 16 10 00 18 01 20 00 30 00 38 00
-                    // 732:  27 0B 60 E7 11 00 33 08 07 20 E7 C1 AD B8 02 5A 29 08 EE 97 85 E9 01 1A 19 08 EE D6 16 10 FF F2 D8 F5 05 18 E9 E7 A3 05 20 00 28 00 30 EE 97 85 E9 01 2A 02 08 00 30 00 38 00
-                    else -> {
-                        bot.network.logger.debug { "unknown PbGetMsg type ${msg.msgHead.msgType}, data=${msg.msgBody.msgContent.toUHexString()}" }
-                        return@mapNotNull null
-                    }
-                }
+                msg.transform(bot)
             }
         val list: List<Packet> = messages.toList()
         if (resp.syncFlag == MsgSvc.SyncFlag.STOP) {
@@ -442,6 +241,250 @@ internal object MessageSvcPbGetMsg : OutgoingPacketFactory<MessageSvcPbGetMsg.Re
                 }
                 return
             }
+        }
+    }
+}
+
+private suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
+    when (msgHead.msgType) {
+        33 -> bot.groupListModifyLock.withLock {
+
+            if (msgHead.authUin == bot.id) {
+                // 邀请入群
+                return bot.createGroupForBot(msgHead.fromUin)?.let { group ->
+                    // package: 27 0B 60 E7 01 CA CC 69 8B 83 44 71 47 90 06 B9 DC C0 ED D4 B1 00 30 33 44 30 42 38 46 30 39 37 32 38 35 43 34 31 38 30 33 36 41 34 36 31 36 31 35 32 37 38 46 46 43 30 41 38 30 36 30 36 45 38 31 43 39 41 34 38 37
+                    // package: groupUin + 01 CA CC 69 8B 83 + invitorUin + length(06) + string + magicKey
+                    val invitorUin = msgBody.msgContent.sliceArray(10..13).toInt().toLongUnsigned()
+                    val invitor = group[invitorUin] ?: return@let null
+                    BotJoinGroupEvent.Invite(invitor)
+                }
+            } else {
+
+                // 成员申请入群
+                val group = bot.getGroupByUinOrNull(msgHead.fromUin)
+                    ?: return null
+
+                // 主动入群, 直接加入: msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 42 39 41 30 33 45 38 34 30 39 34 42 46 30 45 32 45 38 42 31 43 43 41 34 32 42 38 42 44 42 35 34 44 42 31 44 32 32 30 46 30 38 39 46 46 35 41 38
+                // 主动直接加入                  27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 33 30 45 38 42 31 33 46 41 41 31 33 46 38 31 35 34 41 38 33 32 37 31 43 34 34 38 35 33 35 46 45 31 38 32 43 39 42 43 46 46 32 44 39 39 46 41 37
+
+                // 有人被邀请(经过同意后)加入      27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 34 30 34 38 32 33 38 35 37 41 37 38 46 33 45 37 35 38 42 39 38 46 43 45 44 43 32 41 30 31 36 36 30 34 31 36 39 35 39 30 38 39 30 39 45 31 34 34
+                // 搜索到群, 直接加入             27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
+
+                // msgBody.msgContent.soutv("33类型的content")
+
+                if (group.members.contains(msgHead.authUin)) {
+                    return null
+                }
+
+                if (msgBody.msgContent.read {
+                        discardExact(9)
+                        readByte().toInt().and(0xff)
+                    } == 0x83) {
+                    return MemberJoinEvent.Invite(group.newMember(getNewMemberInfo())
+                        .cast<NormalMember>()
+                        .also { group.members.delegate.add(it) })
+                }
+
+                return MemberJoinEvent.Active(group.newMember(getNewMemberInfo())
+                    .cast<NormalMember>()
+                    .also { group.members.delegate.add(it) })
+            }
+        }
+
+        34 -> { // 与 33 重复
+            return null
+        }
+
+        38 -> bot.groupListModifyLock.withLock { // 建群
+            return bot.createGroupForBot(msgHead.fromUin)
+                ?.let { BotJoinGroupEvent.Active(it) }
+        }
+
+        85 -> bot.groupListModifyLock.withLock { // 其他客户端入群
+
+            // msgHead.authUin: 处理人
+
+            return if (msgHead.toUin == bot.id) {
+                bot.createGroupForBot(msgHead.fromUin)
+                    ?.let { BotJoinGroupEvent.Active(it) }
+            } else {
+                null
+            }
+        }
+
+        /*
+        34 -> { // 主动入群
+
+            // 回答了问题, 还需要管理员审核
+            // msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 00 30 45 41 31 30 35 35 42 44 39 39 42 35 37 46 44 31 41 31 46 36 42 43 42 43 33 43 42 39 34 34 38 31 33 34 42 36 31 46 38 45 43 39 38 38 43 39 37 33
+            // msgContent=27 0B 60 E7 01 76 E4 B8 DD 02 00 30 44 44 41 43 44 33 35 43 31 39 34 30 46 42 39 39 34 46 43 32 34 43 39 32 33 39 31 45 42 35 32 33 46 36 30 37 35 42 41 38 42 30 30 37 42 36 42 41
+            // 回答正确问题, 直接加入
+
+            //            27 0B 60 E7 01 76 E4 B8 DD 82 00 30 43 37 37 39 41 38 32 44 38 33 30 35 37 38 31 33 37 45 42 39 35 43 42 45 36 45 43 38 36 34 38 44 34 35 44 42 33 44 45 37 34 41 36 30 33 37 46 45
+            // 提交验证消息加入, 需要审核
+
+            // 被踢了??
+            // msgContent=27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 46 46 32 33 36 39 35 33 31 37 42 44 46 37 43 36 39 34 37 41 45 38 39 43 45 43 42 46 33 41 37 35 39 34 39 45 36 37 33 37 31 41 39 44 33 33 45 33
+
+            /*
+            // 搜索后直接加入群
+
+            soutv 17:43:32 : 33类型的content = 27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
+            soutv 17:43:32 : 主动入群content = 2A 3D F5 69 01 35 D7 10 EA 83 4C EF 4F DD 06 B9 DC C0 ED D4 B1 00 30 37 41 39 31 39 34 31 41 30 37 46 38 32 31 39 39 43 34 35 46 39 30 36 31 43 37 39 37 33 39 35 43 34 44 36 31 33 43 31 35 42 37 32 45 46 43 43 36
+             */
+
+            val group = bot.getGroupByUinOrNull(msgHead.fromUin)
+            group ?: return null
+
+            msgBody.msgContent.soutv("主动入群content")
+
+            if (msgBody.msgContent.read {
+                    discardExact(4) // group code
+                    discardExact(1) // 1
+                    discardExact(4) // requester uin
+                    readByte().toInt().and(0xff)
+                    // 0x02: 回答正确问题直接加入
+                    // 0x82: 回答了问题, 或者有验证消息, 需要管理员审核
+                    // 0x83: 回答正确问题直接加入
+                } != 0x82) {
+
+                if (group.members.contains(msgHead.authUin)) {
+                    return null
+                }
+                @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+                return MemberJoinEvent.Active(group.newMember(getNewMemberInfo())
+                    .also { group.members.delegate.addLast(it) })
+            } else return null
+        }
+        */
+
+        166 -> {
+            if (msgHead.fromUin == bot.id) {
+                loop@ while (true) {
+                    val instance = bot.client.getFriendSeq()
+                    if (instance < msgHead.msgSeq) {
+                        if (bot.client.setFriendSeq(instance, msgHead.msgSeq)) {
+                            break@loop
+                        }
+                    } else break@loop
+                }
+                return null
+            }
+            val friend = bot.getFriend(msgHead.fromUin) ?: return null
+            friend.checkIsFriendImpl()
+
+            if (!bot.firstLoginSucceed) {
+                return null
+            }
+            friend.lastMessageSequence.loop {
+                if (friend.lastMessageSequence.compareAndSet(
+                        it,
+                        msgHead.msgSeq
+                    ) && contentHead?.autoReply != 1
+                ) {
+                    return FriendMessageEvent(
+                        friend,
+                        toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
+                        msgHead.msgTime
+                    )
+                } else return null
+            }
+        }
+        208 -> {
+            // friend ptt
+            return null
+        }
+        529 -> {
+
+            // top_package/awbk.java:3765
+
+            return when (msgHead.c2cCmd) {
+                // other client sync
+                7 -> {
+                    val data = msgBody.msgContent.loadAs(SubMsgType0x7.MsgBody.serializer())
+
+                    val textMsg =
+                        data.msgSubcmd0x4Generic?.buf?.loadAs(SubMsgType0x7.MsgBody.QQDataTextMsg.serializer())
+                            ?: return null
+
+                    with(data.msgHeader ?: return null) {
+                        if (srcUin != dstUin || dstUin != bot.id) return null
+                        val client = bot.otherClients.find { it.instanceInfo.iAppId == srcInstId }
+                            ?: return null// don't compare with dstAppId. diff.
+
+                        val chain = buildMessageChain {
+                            +MessageSourceFromFriendImpl(bot, listOf(this@transform))
+                            for (msgItem in textMsg.msgItems) {
+                                when (msgItem.type) {
+                                    1 -> +PlainText(msgItem.text)
+                                    else -> {
+                                    }
+                                }
+                            }
+                        }
+
+                        return OtherClientMessageEvent(client, chain, msgHead.msgTime)
+                    }
+                }
+
+                else -> null
+            }
+
+            // 各种垃圾
+            // 08 04 12 1E 08 E9 07 10 B7 F7 8B 80 02 18 E9 07 20 00 28 DD F1 92 B7 07 30 DD F1 92 B7 07 48 02 50 03 32 1E 08 88 80 F8 92 CD 84 80 80 10 10 01 18 00 20 01 2A 0C 0A 0A 08 01 12 06 E5 95 8A E5 95 8A
+        }
+        141 -> {
+            val tmpHead = msgHead.c2cTmpMsgHead ?: return null
+            val member = bot.getGroupByUinOrNull(tmpHead.groupUin)?.get(msgHead.fromUin)
+                ?: return null
+
+            member.checkIsMemberImpl()
+
+            if (msgHead.fromUin == bot.id || !bot.firstLoginSucceed) {
+                return null
+            }
+
+            member.lastMessageSequence.loop { instant ->
+                if (msgHead.msgSeq > instant) {
+                    if (member.lastMessageSequence.compareAndSet(instant, msgHead.msgSeq)) {
+                        return TempMessageEvent(
+                            member,
+                            toMessageChain(
+                                bot,
+                                groupIdOrZero = 0,
+                                onlineSource = true,
+                                isTemp = true
+                            ),
+                            msgHead.msgTime
+                        )
+                    }
+                } else return null
+            }
+        }
+        84, 87 -> { // 请求入群验证 和 被要求入群
+            bot.network.run {
+                NewContact.SystemMsgNewGroup(bot.client).sendWithoutExpect()
+            }
+            return null
+        }
+        187 -> { // 请求加好友验证
+            bot.network.run {
+                NewContact.SystemMsgNewFriend(bot.client).sendWithoutExpect()
+            }
+            return null
+        }
+
+        732 -> {
+            // unknown
+            // 前 4 byte 是群号
+            return null
+        }
+        // 732:  27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58
+        // 732:  27 0B 60 E7 11 00 40 08 07 20 E7 C1 AD B8 02 5A 36 08 B4 E7 E0 F0 09 1A 1A 08 9C D4 16 10 F7 D2 D8 F5 05 18 D0 E2 85 F4 06 20 00 28 00 30 B4 E7 E0 F0 09 2A 0E 08 00 12 0A 08 9C D4 16 10 00 18 01 20 00 30 00 38 00
+        // 732:  27 0B 60 E7 11 00 33 08 07 20 E7 C1 AD B8 02 5A 29 08 EE 97 85 E9 01 1A 19 08 EE D6 16 10 FF F2 D8 F5 05 18 E9 E7 A3 05 20 00 28 00 30 EE 97 85 E9 01 2A 02 08 00 30 00 38 00
+        else -> {
+            bot.network.logger.debug { "unknown PbGetMsg type ${msgHead.msgType}, data=${msgBody.msgContent.toUHexString()}" }
+            return null
         }
     }
 }

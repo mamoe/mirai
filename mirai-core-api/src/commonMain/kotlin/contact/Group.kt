@@ -7,20 +7,21 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.contact
 
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.LowLevelApi
-import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.OverFileSizeMaxException
+import net.mamoe.mirai.utils.PlannedRemoval
 import java.io.InputStream
 
 /**
@@ -58,7 +59,6 @@ public interface Group : Contact, CoroutineScope {
     /**
      * [Bot] 在群内的 [Member] 实例
      */
-    @MiraiExperimentalApi
     public val botAsMember: NormalMember
 
     /**
@@ -67,7 +67,7 @@ public interface Group : Contact, CoroutineScope {
      * @see BotMuteEvent 机器人被禁言事件
      * @see isBotMuted 判断机器人是否正在被禁言
      */
-    public val botMuteRemaining: Int
+    public val botMuteRemaining: Int get() = botAsMember.muteTimeRemaining
 
     /**
      * 机器人在这个群里的权限
@@ -76,12 +76,12 @@ public interface Group : Contact, CoroutineScope {
      *
      * @see BotGroupPermissionChangeEvent 机器人群员修改
      */
-    public val botPermission: MemberPermission
+    public val botPermission: MemberPermission get() = botAsMember.permission
 
     /**
      * 群头像下载链接.
      */
-    public val avatarUrl: String
+    public override val avatarUrl: String
         get() = "https://p.qlogo.cn/gh/$id/${id}/640"
 
     /**
@@ -135,14 +135,6 @@ public interface Group : Contact, CoroutineScope {
      */
     @JvmBlockingBridge
     public suspend fun quit(): Boolean
-
-    /**
-     * 构造一个 [Member].
-     * 非特殊情况请不要使用这个函数. 优先使用 [get].
-     */
-    @LowLevelApi
-    @MiraiExperimentalApi("dangerous")
-    public fun newMember(memberInfo: MemberInfo): Member
 
     /**
      * 向这个对象发送消息.
@@ -249,6 +241,18 @@ public interface GroupSettings {
      */
     public val isAnonymousChatEnabled: Boolean
 }
+
+/**
+ * 同 [get]. 在一些不适合使用 [get] 的情境下使用 [getMember].
+ */
+@JvmSynthetic
+public inline fun Group.getMember(id: Long): NormalMember? = get(id)
+
+/**
+ * 同 [getMemberOrFail]. 在一些不适合使用 [getOrFail] 的情境下使用 [getMemberOrFail].
+ */
+@JvmSynthetic
+public inline fun Group.getMemberOrFail(id: Long): NormalMember = getOrFail(id)
 
 
 /**

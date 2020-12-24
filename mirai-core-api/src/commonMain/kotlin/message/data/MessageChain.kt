@@ -288,10 +288,6 @@ public inline fun messageChainOf(vararg messages: Message): MessageChain = messa
 
 /**
  * 得到包含 [this] 的 [MessageChain].
- *
- * 若 [this] 为 [MessageChain] 将直接返回 this,
- * 若 [this] 为 [CombinedMessage] 将 [扁平化][flatten] 后委托为 [MessageChain],
- * 否则将调用 [asMessageChain]
  */
 @JvmName("newChain")
 @JsName("newChain")
@@ -302,20 +298,20 @@ public fun Message.asMessageChain(): MessageChain = when (this) {
 }
 
 /**
- * 直接将 [this] 委托为一个 [MessageChain]
+ * 直接将 [this] 构建为一个 [MessageChain]
  */
 @JvmSynthetic
 public fun SingleMessage.asMessageChain(): MessageChain = SingleMessageChainImpl(this)
 
 /**
- * 直接将 [this] 委托为一个 [MessageChain]
+ * 直接将 [this] 构建为一个 [MessageChain]
  */
 @JvmSynthetic
 public fun Collection<SingleMessage>.asMessageChain(): MessageChain =
     MessageChainImpl(this.constrainSingleMessages())
 
 /**
- * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
+ * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
  */
 @JvmSynthetic
 @JvmName("newChain1")
@@ -327,14 +323,14 @@ public fun Array<out Message>.asMessageChain(): MessageChain = MessageChainImplB
 public fun Array<out SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.asSequence())
 
 /**
- * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
+ * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
  */
 @JvmName("newChain")
 // @JsName("newChain")
 public fun Collection<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
- * 直接将 [this] 委托为一个 [MessageChain]
+ * 直接将 [this] 构建为一个 [MessageChain]
  */
 @JvmSynthetic
 public fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
@@ -344,20 +340,20 @@ public fun Iterable<SingleMessage>.asMessageChain(): MessageChain =
 public inline fun MessageChain.asMessageChain(): MessageChain = this // 避免套娃
 
 /**
- * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
+ * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
  */
 @JvmName("newChain")
 // @JsName("newChain")
 public fun Iterable<Message>.asMessageChain(): MessageChain = MessageChainImplBySequence(this.flatten())
 
 /**
- * 直接将 [this] 委托为一个 [MessageChain]
+ * 直接将 [this] 构建为一个 [MessageChain]
  */
 @JvmSynthetic
 public fun Sequence<SingleMessage>.asMessageChain(): MessageChain = MessageChainImplBySequence(this)
 
 /**
- * 将 [this] [扁平化后][flatten] 委托为一个 [MessageChain]
+ * 将 [this] [扁平化后][flatten] 构建为一个 [MessageChain]
  */
 @JvmName("newChain")
 // @JsName("newChain")
@@ -368,7 +364,7 @@ public fun Sequence<Message>.asMessageChain(): MessageChain = MessageChainImplBy
  *
  * 原 [this]:
  * ```
- * A <- CombinedMessage(B, C) <- D <- MessageChain(E, F, G)
+ * A <- MessageChain(B, C) <- D <- MessageChain(E, F, G)
  * ```
  * 结果 [Sequence]:
  * ```
@@ -387,7 +383,7 @@ public inline fun Iterable<SingleMessage>.flatten(): Sequence<SingleMessage> = t
  *
  * 原 [this]:
  * ```
- * A <- CombinedMessage(B, C) <- D <- MessageChain(E, F, G)
+ * A <- MessageChain(B, C) <- D <- MessageChain(E, F, G)
  * ```
  * 结果 [Sequence]:
  * ```
@@ -406,12 +402,7 @@ public inline fun Array<out Message>.flatten(): Sequence<SingleMessage> = this.a
 public inline fun Array<out SingleMessage>.flatten(): Sequence<SingleMessage> = this.asSequence() // fast path
 
 /**
- * 扁平化 [Message]
- *
- * 对于不同类型的接收者（receiver）:
- * - [CombinedMessage]`(A, B)` 返回 `A <- B`
- * - `[MessageChain](E, F, G)` 返回 `E <- F <- G`
- * - 其他: 返回 `sequenceOf(this)`
+ * 返回 [MessageChain.asSequence] 或 `sequenceOf(this as SingleMessage)`
  */
 public fun Message.flatten(): Sequence<SingleMessage> {
     return when (this) {

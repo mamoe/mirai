@@ -160,8 +160,10 @@ internal object KnownPacketFactories {
         OnlinePushReqPush,
         OnlinePushPbPushTransMsg,
         MessageSvcPushNotify,
+        MessageSvcPushReaded,
         ConfigPushSvc.PushReq,
         StatSvc.ReqMSFOffline,
+        StatSvc.SvcReqMSFLoginNotify,
         StatSvc.QueryHB
     )
     // SvcReqMSFLoginNotify 自己的其他设备上限

@@ -53,12 +53,6 @@ public interface Friend : User, CoroutineScope {
     public override val remark: String
 
     /**
-     * 头像下载链接
-     */
-    public override val avatarUrl: String
-        get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
-
-    /**
      * 向这个对象发送消息.
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.

@@ -29,7 +29,7 @@ internal object MessageSvcPushNotify : IncomingPacketFactory<RequestPushNotify>(
         return readUniPacket(RequestPushNotify.serializer())
     }
 
-    override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket? {
+    override suspend fun QQAndroidBot.handle(packet: RequestPushNotify, sequenceId: Int): OutgoingPacket {
 
         client.syncingController.firstNotify.loop { firstNotify ->
             network.run {
