@@ -17,8 +17,8 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.hexToBytes
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.toByteArray
-import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.safeCast
+import net.mamoe.mirai.message.data.Face
+import net.mamoe.mirai.message.data.MarketFace
 
 internal val FACE_BUF = "00 01 00 04 52 CC F5 D0".hexToBytes()
 
@@ -47,11 +47,6 @@ internal fun Face.toCommData(): ImMsgBody.CommonElem {
 internal data class MarketFaceImpl internal constructor(
     internal val delegate: ImMsgBody.MarketFace,
 ) : MarketFace {
-    override val key: MessageKey<MarketFace> = Key
-
-    companion object Key :
-        AbstractPolymorphicMessageKey<MessageContent, MarketFaceImpl>(MessageContent, { it.safeCast() })
-
     @Transient
     override val name: String = delegate.faceName.decodeToString()
     @Transient

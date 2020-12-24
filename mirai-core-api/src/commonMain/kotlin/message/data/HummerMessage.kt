@@ -193,8 +193,14 @@ public data class PokeMessage @MiraiInternalApi constructor(
 public interface MarketFace : CodableMessage, HummerMessage {
     public val name: String
     public val id: Int
+
     @ExperimentalMessageKey
     override val key: MessageKey<MarketFace>
+        get() = Key
+
+    public companion object Key :
+        AbstractPolymorphicMessageKey<MessageContent, MarketFace>(MessageContent, { it.safeCast() })
+
     override fun contentToString(): String = name
 }
 
