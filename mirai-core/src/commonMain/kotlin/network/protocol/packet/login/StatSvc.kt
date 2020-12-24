@@ -23,10 +23,7 @@ import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.guid
-import net.mamoe.mirai.internal.network.protocol.data.jce.RequestMSFForceOffline
-import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.internal.network.protocol.data.jce.RspMSFForceOffline
-import net.mamoe.mirai.internal.network.protocol.data.jce.SvcReqRegister
+import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.internal.network.protocol.packet.*
@@ -201,7 +198,7 @@ internal class StatSvc {
             return BotOfflineEvent.MsfOffline(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
         }
 
-        override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.MsfOffline, sequenceId: Int): OutgoingPacket? {
+        override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.MsfOffline, sequenceId: Int): OutgoingPacket {
             val cause = packet.cause
             check(cause is MsfOfflineToken) { "internal error: handling $packet in StatSvc.ReqMSFOffline" }
             return buildResponseUniPacket(client) {
@@ -231,7 +228,7 @@ internal class StatSvc {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? =
             bot.otherClientsLock.withLock {
-                val notify = readUniPacket(network.protocol.data.jce.SvcReqMSFLoginNotifyData.serializer())
+                val notify = readUniPacket(SvcReqMSFLoginNotifyData.serializer())
 
                 val kind = notify.iClientType?.toInt()?.let(ClientKind::get) ?: return null
 

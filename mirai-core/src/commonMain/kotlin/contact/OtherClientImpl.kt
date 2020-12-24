@@ -12,12 +12,12 @@ package net.mamoe.mirai.internal.contact
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.ClientKind
 import net.mamoe.mirai.contact.OtherClient
+import net.mamoe.mirai.internal.network.protocol.data.jce.InstanceInfo
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.cast
-import network.protocol.data.jce.InstanceInfo
 import kotlin.coroutines.CoroutineContext
 
 internal val OtherClient.instanceInfo: InstanceInfo get() = this.cast<OtherClientImpl>().instanceInfo

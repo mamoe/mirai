@@ -23,11 +23,11 @@ import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.protocol.data.jce.InstanceInfo
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.*
-import network.protocol.data.jce.InstanceInfo
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 import net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo as JceFriendInfo
