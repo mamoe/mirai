@@ -17,6 +17,7 @@ import kotlin.test.assertEquals
 
 @EventListenerLikeJava
 @JavaFriendlyAPI
+@Suppress("UNUSED_PARAMETER")
 internal class JvmMethodEventsTestJava : SimpleListenerHost() {
     private val called = AtomicInteger(0)
 

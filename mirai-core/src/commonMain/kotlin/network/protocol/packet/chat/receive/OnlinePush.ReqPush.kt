@@ -45,13 +45,9 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.internal.utils._miraiContentToString
-import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.readString
 import net.mamoe.mirai.internal.utils.io.serialization.*
-import net.mamoe.mirai.internal.utils.read
-import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.mapToIntArray
@@ -89,7 +85,7 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
                     val group = bot.getGroup(readUInt().toLong())
                         ?: return@deco emptySequence() // group has not been initialized
 
-                    GroupImpl.checkIsInstance(group)
+                    group.checkIsGroupImpl()
 
                     val internalType = readByte().toInt()
                     discardExact(1)
@@ -191,10 +187,10 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
 
         if (target == 0L) {
             val new = timeSeconds != 0
-            if (group.settings.isMuteAll == new) {
+            if (group.settings.isMuteAllField == new) {
                 return@lambda732 emptySequence()
             }
-            group._muteAll = new
+            group.settings.isMuteAllField = new
             return@lambda732 sequenceOf(GroupMuteAllEvent(!new, new, group, operator))
         }
 
@@ -230,11 +226,11 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
         // 匿名
         val operator = group[readUInt().toLong()] ?: return@lambda732 emptySequence()
         val new = readInt() == 0
-        if (group.settings.isAnonymousChatEnabled == new) {
+        if (group.settings.isAnonymousChatEnabledField == new) {
             return@lambda732 emptySequence()
         }
 
-        group._anonymousChat = new
+        group.settings.isAnonymousChatEnabledField = new
         return@lambda732 sequenceOf(GroupAllowAnonymousChatEvent(!new, new, group, operator))
     },
 
@@ -409,6 +405,7 @@ internal inline fun lambda528(crossinline block: MsgType0x210.(QQAndroidBot, Msg
 /**
  * @see MsgType0x210
  */
+@OptIn(ExperimentalStdlibApi::class)
 internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
     0x8AL to lambda528 { bot ->
@@ -606,7 +603,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                         val operator = if (this.cmdUin == bot.id) null
                         else group[this.cmdUin] ?: return@mapNotNull null
 
-                        group._name = new
+                        group.settings.nameField = new
 
                         return@mapNotNull GroupNameChangeEvent(old, new, group, operator)
                     }
@@ -688,57 +685,46 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             return sequenceOf(FriendAvatarChangedEvent(friend))
         }
 
-        fun ModProfile.transform(bot: QQAndroidBot): Sequence<Packet> {
-            return ArrayList<Packet>().apply {
-                var containsUnknown = false
-                msgProfileInfos.forEach { modified ->
-                    when (modified.field) {
-                        20002 -> { // 昵称修改
-                            val value = modified.value
-                            val to = value.encodeToString()
-                            if (uin == bot.id) {
-                                val from = bot.nick
-                                if (from != to) {
-                                    bot.nick = to
-                                    add(BotNickChangedEvent(bot, from, to))
-                                }
-                            } else {
-                                val friend = (bot.getFriend(uin) ?: return@forEach) as FriendImpl
-                                val info = friend.friendInfo
-                                val from = info.nick
-                                when (info) {
-                                    is FriendInfoImpl -> {
-                                        info.nick = to
-                                    }
-                                    is MemberInfoImpl -> {
-                                        info._nick = to
-                                    }
-                                    else -> {
-                                        bot.network.logger.debug {
-                                            "Unknown how to update nick for $info"
-                                        }
-                                    }
-                                }
-                                add(
-                                    FriendNickChangedEvent(
-                                        friend, from, to
-                                    )
-                                )
+        fun ModProfile.transform(bot: QQAndroidBot): Sequence<Packet> = buildList<Packet> {
+            var containsUnknown = false
+            msgProfileInfos.forEach { modified ->
+                when (modified.field) {
+                    20002 -> { // 昵称修改
+                        val value = modified.value
+                        val to = value.encodeToString()
+                        if (uin == bot.id) {
+                            val from = bot.nick
+                            if (from != to) {
+                                bot.nick = to
+                                add(BotNickChangedEvent(bot, from, to))
                             }
-                        }
-                        else -> {
-                            containsUnknown = true
+                        } else {
+                            val friend = (bot.getFriend(uin) ?: return@forEach) as FriendImpl
+                            val info = friend.friendInfo
+                            val from = info.nick
+                            when (info) {
+                                is FriendInfoImpl -> info.nick = to
+                                is MemberInfoImpl -> info.nick = to
+                                else -> {
+                                    bot.network.logger.debug {
+                                        "Unknown how to update nick for $info"
+                                    }
+                                }
+                            }
+                            add(FriendNickChangedEvent(friend, from, to))
                         }
                     }
-                }
-                if (msgProfileInfos.isEmpty() || containsUnknown) {
-                    bot.network.logger.debug {
-                        "Transformers528 0x27L: new data: ${_miraiContentToString()}"
+                    else -> {
+                        containsUnknown = true
                     }
                 }
-            }.asSequence()
-
-        }
+            }
+            if (msgProfileInfos.isEmpty() || containsUnknown) {
+                bot.network.logger.debug {
+                    "Transformers528 0x27L: new data: ${_miraiContentToString()}"
+                }
+            }
+        }.asSequence()
 
         return@lambda528 vProtobuf.loadAs(SubMsgType0x27MsgBody.serializer()).msgModInfos.asSequence()
             .flatMap {

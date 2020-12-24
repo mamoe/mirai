@@ -18,7 +18,9 @@
 package net.mamoe.mirai.internal
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.OtherClientList
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotOfflineEvent
@@ -70,7 +72,12 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
     @Suppress("PropertyName")
     internal lateinit var _network: N
 
+    internal var _isConnecting: Boolean = false
+
     override val isOnline: Boolean get() = _network.areYouOk()
+
+    val otherClientsLock = Mutex() // lock sync
+    override val otherClients: OtherClientList = OtherClientList()
 
     /**
      * Close server connection, resend login packet, BUT DOESN'T [BotNetworkHandler.init]
@@ -92,6 +99,10 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
             }
             if (!::_network.isInitialized) {
                 // bot 还未登录就被 close
+                return@subscribeAlways
+            }
+            if (_isConnecting) {
+                // bot 还在登入
                 return@subscribeAlways
             }
             /*
@@ -192,6 +203,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                 while (true) {
                     _network = createNetworkHandler(this.coroutineContext)
                     try {
+                        _isConnecting = true
                         @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
                         relogin(null)
                         return
@@ -207,6 +219,8 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                     } catch (e: Exception) {
                         network.logger.error(e)
                         _network.closeAndJoin(e)
+                    } finally {
+                        _isConnecting = false
                     }
                     logger.warning { "Login failed. Retrying in 3s..." }
                     delay(3000)

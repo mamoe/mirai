@@ -9,25 +9,29 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.protobuf.ProtoBuf
+import net.mamoe.mirai.contact.ClientKind
 import net.mamoe.mirai.event.events.BotOfflineEvent
+import net.mamoe.mirai.event.events.OtherClientOfflineEvent
+import net.mamoe.mirai.event.events.OtherClientOnlineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.createOtherClient
+import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.guid
-import net.mamoe.mirai.internal.network.protocol.data.jce.RequestMSFForceOffline
-import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.internal.network.protocol.data.jce.RspMSFForceOffline
-import net.mamoe.mirai.internal.network.protocol.data.jce.SvcReqRegister
+import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.internal.network.protocol.packet.*
+import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.internal.utils.toReadPacket
-import net.mamoe.mirai.utils.localIpAddress
 
 @Suppress("EnumEntryName", "unused")
 internal enum class RegPushReason {
@@ -196,7 +200,7 @@ internal class StatSvc {
             return BotOfflineEvent.MsfOffline(bot, MsfOfflineToken(decodeUniPacket.uin, decodeUniPacket.iSeqno, 0))
         }
 
-        override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.MsfOffline, sequenceId: Int): OutgoingPacket? {
+        override suspend fun QQAndroidBot.handle(packet: BotOfflineEvent.MsfOffline, sequenceId: Int): OutgoingPacket {
             val cause = packet.cause
             check(cause is MsfOfflineToken) { "internal error: handling $packet in StatSvc.ReqMSFOffline" }
             return buildResponseUniPacket(client) {
@@ -219,5 +223,45 @@ internal class StatSvc {
                 )
             }
         }
+    }
+
+    internal object SvcReqMSFLoginNotify :
+        IncomingPacketFactory<Packet?>("StatSvc.SvcReqMSFLoginNotify", "StatSvc.SvcReqMSFLoginNotify") {
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot, sequenceId: Int): Packet? =
+            bot.otherClientsLock.withLock {
+                val notify = readUniPacket(SvcReqMSFLoginNotifyData.serializer())
+
+                val kind = notify.iClientType?.toInt()?.let(ClientKind::get) ?: return null
+
+                when (notify.status.toInt()) {
+                    1 -> {
+                        if (bot.otherClients.any { it.kind == kind }) return null
+                        val client = bot.createOtherClient(
+                            kind,
+                            notify.vecInstanceList?.find { it.iClientType == notify.iClientType }
+                                ?: throw  contextualBugReportException(
+                                    "decode SvcReqMSFLoginNotify (OtherClient online)",
+                                    notify._miraiContentToString(),
+                                    additional = "Failed to find corresponding instanceInfo."
+                                ))
+                        bot.otherClients.delegate.add(client)
+                        OtherClientOnlineEvent(client)
+                    }
+
+                    2 -> {
+                        val client = bot.otherClients.find { it.kind == kind } ?: return null
+                        client.cancel(CancellationException("Offline"))
+                        bot.otherClients.delegate.remove(client)
+                        OtherClientOfflineEvent(client)
+                    }
+
+                    else -> throw contextualBugReportException(
+                        "decode SvcReqMSFLoginNotify (OtherClient status change)",
+                        notify._miraiContentToString(),
+                        additional = "unknown notify.status=${notify.status}"
+                    )
+                }
+            }
     }
 }

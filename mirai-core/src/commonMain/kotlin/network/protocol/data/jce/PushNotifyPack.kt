@@ -14,7 +14,6 @@ import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
-import kotlin.jvm.JvmField
 
 @Suppress("ArrayInDataClass")
 @Serializable
@@ -33,7 +32,11 @@ internal class RequestPushNotify(
     @TarsId(11) @JvmField val serverBuf: ByteArray?,
     @TarsId(12) @JvmField val pingFlag: Long?,
     @TarsId(13) @JvmField val svrip: Int?
-) : JceStruct, Packet
+) : JceStruct, Packet {
+    override fun toString(): String {
+        return "RequestPushNotify(uin=$uin, ctype=$ctype, strService=$strService, strCmd=$strCmd, usMsgType=$usMsgType, stMsgInfo=$stMsgInfo)"
+    }
+}
 
 @Serializable
 internal class MsgInfo(

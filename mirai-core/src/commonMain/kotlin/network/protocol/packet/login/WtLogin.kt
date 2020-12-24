@@ -45,7 +45,7 @@ internal class WtLogin {
                         t193(ticket)
                         t8(2052)
                         t104(client.t104)
-                        t116(150470524, 66560)
+                        t116(client.miscBitMap, client.subSigMap)
                     }
                 }
             }
@@ -62,7 +62,7 @@ internal class WtLogin {
                         t2(captchaAnswer, captchaSign, 0)
                         t8(2052)
                         t104(client.t104)
-                        t116(150470524, 66560)
+                        t116(client.miscBitMap, client.subSigMap)
                     }
                 }
             }
@@ -80,7 +80,7 @@ internal class WtLogin {
                         writeShort(4) // count of TLVs, probably ignored by server?
                         t8(2052)
                         t104(client.t104)
-                        t116(150470524, 66560)
+                        t116(client.miscBitMap, client.subSigMap)
                         t401((client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402).md5())
                     }
                 }
@@ -106,7 +106,7 @@ internal class WtLogin {
                         writeShort(6) // count of TLVs, probably ignored by server?TODO
                         t8(2052)
                         t104(client.t104)
-                        t116(150470524, 66560)
+                        t116(client.miscBitMap, client.subSigMap)
                         t174(EMPTY_BYTE_ARRAY)
                         t17a(9)
                         t197(byteArrayOf(0.toByte()))
@@ -124,12 +124,13 @@ internal class WtLogin {
             private const val appId = 16L
 
             operator fun invoke(
-                client: QQAndroidClient
+                client: QQAndroidClient,
+                allowSlider: Boolean
             ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
                 writeSsoPacket(client, client.subAppId, commandName, sequenceId = sequenceId) {
                     writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
                         writeShort(9) // subCommand
-                        writeShort(0x18) // count of TLVs, probably ignored by server?
+                        writeShort(if (allowSlider) 0x18 else 0x17) // count of TLVs, probably ignored by server?
                         //writeShort(LoginType.PASSWORD.value.toShort())
 
                         t18(appId, client.appClientVersion, client.uin)
@@ -232,7 +233,9 @@ internal class WtLogin {
                         t187(client.device.macAddress)
                         t188(client.device.androidId)
                         t194(client.device.imsiMd5)
-                        t191()
+                        if (allowSlider) {
+                            t191()
+                        }
 
                         /*
                         t201(N = byteArrayOf())*/

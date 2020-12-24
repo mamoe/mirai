@@ -382,7 +382,6 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
 
 internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId: Long, list: MessageChainBuilder) {
     // (this._miraiContentToString().soutv())
     this.forEach { element ->

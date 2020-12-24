@@ -19,9 +19,8 @@ package net.mamoe.mirai.message.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.fold
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.PolymorphicSerializer
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
@@ -31,6 +30,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
 import kotlin.contracts.contract
+import kotlin.internal.LowPriorityInOverloadResolution
 
 /**
  * 可发送的或从服务器接收的消息.
@@ -53,9 +53,6 @@ import kotlin.contracts.contract
  * friend.sendMessage(text) // "Hello world!"
  *  ```
  * 但注意: 不能 `String + Message`. 只能 `Message + String`
- *
- * #### 实现规范
- * 除 [MessageChain] 外, 所有 [Message] 的实现类都有伴生对象实现 [Key] 接口.
  *
  * #### 发送消息
  * - 通过 [Contact] 中的成员函数: [Contact.sendMessage]
@@ -130,19 +127,37 @@ public interface Message { // must be interface. Don't consider any changes.
      * - ...
      *
      * @see toString 得到包含 mirai 消息元素代码的, 易读的字符串
+     * @see Message.content Kotlin 扩展
      */
     public fun contentToString(): String
 
 
     /**
-     * 判断内容是否与 [another] 相等.
+     * 判断内容是否与 [another] 相等即 `this` 与 [another] 的 [contentToString] 相等.
+     * [strict] 为 `true` 时, 还会额外判断每个消息元素的类型, 顺序和属性. 如 [Image] 会判断 [Image.imageId]
      *
-     * 若本函数返回 `true`, 则表明:
-     * - `this` 与 [another] 的 [contentToString] 相等
+     * **有关 [strict]:** 每个 [Image] 的 [contentToString] 都是 `"[图片]"`,
+     * 在 [strict] 为 `false` 时 [contentEquals] 会得到 `true`,
+     * 而为 `true` 时由于 [Image.imageId] 会被比较, 两张不同的图片的 [contentEquals] 会是 `false`.
+     *
+     * @param ignoreCase 为 `true` 时忽略大小写
      */
+    public fun contentEquals(another: Message, ignoreCase: Boolean = false, strict: Boolean = false): Boolean {
+        return if (strict) this.contentEqualsStrictImpl(another, ignoreCase)
+        else this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)
+    }
+
+    /**
+     * 判断内容是否与 [another] 相等即 `this` 与 [another] 的 [contentToString] 相等.
+     *
+     * 单个消息的顺序和内容不会被检查, 即只要比较两个 [Image], 总是会得到 `true`, 因为 [Image] 的 [contentToString] 都是 `"[图片]"`.
+     *
+     * @param ignoreCase 为 `true` 时忽略大小写
+     */
+    @LowPriorityInOverloadResolution
     public fun contentEquals(another: Message, ignoreCase: Boolean = false): Boolean =
-        this.contentToString().equals(another.contentToString(), ignoreCase = ignoreCase)
-    // contentEqualsImpl(another, ignoreCase)
+        contentEquals(another, ignoreCase, false)
+
 
     /**
      * 判断内容是否与 [another] 相等.
@@ -186,6 +201,37 @@ public interface Message { // must be interface. Don't consider any changes.
     public object Serializer :
         MessageSerializer by MessageSerializerImpl,
         KSerializer<Message> by PolymorphicSerializer(Message::class)
+
+    public companion object {
+        /**
+         * 从 JSON 字符串解析 [Message]
+         * @see serializeToJsonString
+         */
+        @JvmOverloads
+        @JvmStatic
+        public fun deserializeFromJsonString(string: String, json: Json = Json.Default): Message =
+            json.decodeFromString(Serializer, string)
+
+        /**
+         * 将 [Message] 序列化为 JSON 字符串.
+         * @see deserializeFromJsonString
+         */
+        @JvmOverloads
+        @JvmStatic
+        public fun Message.serializeToJsonString(json: Json = Json.Default): String =
+            json.encodeToString(Serializer, this)
+
+        /**
+         * 将 [Message] 序列化为指定格式的字符串.
+         *
+         * @see serializeToJsonString
+         * @see StringFormat.encodeToString
+         */
+        @ExperimentalSerializationApi
+        @JvmStatic
+        public fun Message.serializeToString(format: StringFormat): String =
+            format.encodeToString(Serializer, this)
+    }
 }
 
 /**
@@ -320,54 +366,6 @@ public interface ConstrainSingle : SingleMessage {
      */
     @ExperimentalMessageKey
     public val key: MessageKey<*>
-}
-
-/**
- * 独立的 [MessageKey] 的实现. '独立' 即 `final`, 不支持多态类型. 适用于作为最顶层的 [MessageKey], 如 [MessageSource].
- *
- * @see AbstractPolymorphicMessageKey
- */
-@ExperimentalMessageKey
-public abstract class AbstractMessageKey<out M : SingleMessage>(
-    override val safeCast: (SingleMessage) -> M?,
-) : MessageKey<M>
-
-/**
- * 多态 [MessageKey].
- *
- * 示例: [HummerMessage]
- * ```
- *               MessageContent
- *                     ↑
- *               HummerMessage
- *                     ↑
- *        +------------+-------------+
- *        |            |             |
- *  PokeMessage     VipFace      FlashImage
- *
- * ```
- *
- * 当 [连接][Message.plus] 一个 [VipFace] 到一个 [MessageChain] 时,
- * 由于 [VipFace] 最上层为 [MessageContent], 消息链中第一个 [MessageContent] 会被 (保留顺序地) 替换为 [VipFace], 其他所有 [MessageContent] 都会被删除.
- *
- * 如:
- * ```
- * val source: MessageSource = ...
- *
- * val result = messageChainOf(PlainText("a"), PlainText("b"), source, AtAll) + VipFace.LiuLian
- * // result 为 [VipFace.LiuLian, source]
- *
- * val result = source1 + source2
- * // result 为 [source2], 总是右侧替换左侧
- * ```
- */
-@ExperimentalMessageKey
-public abstract class AbstractPolymorphicMessageKey<out B : SingleMessage, out M : B>(
-    baseKey: MessageKey<B>,
-    safeCast: (SingleMessage) -> M?,
-) : MessageKey<M>, AbstractMessageKey<M>(safeCast) {
-    internal val topmostKey: MessageKey<*> =
-        if (baseKey is AbstractPolymorphicMessageKey<*, *>) baseKey.topmostKey else baseKey
 }
 
 /**

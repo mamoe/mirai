@@ -14,6 +14,9 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.utils.currentTimeMillis
 import java.util.concurrent.locks.ReentrantLock
 
+/**
+ * fragmented message
+ */
 internal class GroupPkgMsgParsingCache {
     class PkgMsg(
         val size: Int,
@@ -31,7 +34,7 @@ internal class GroupPkgMsgParsingCache {
         }
     }
 
-    fun put(msg: MsgOnlinePush.PbPushMsg): List<MsgOnlinePush.PbPushMsg> {
+    fun tryMerge(msg: MsgOnlinePush.PbPushMsg): List<MsgOnlinePush.PbPushMsg> {
         val head = msg.msg.contentHead ?: return listOf(msg)
         val size = head.pkgNum
         if (size < 2) return listOf(msg)

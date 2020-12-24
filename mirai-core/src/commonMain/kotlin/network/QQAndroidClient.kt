@@ -246,6 +246,12 @@ internal open class QQAndroidClient(
         )
 
         val onlinePushReqPushCacheList = SyncingCacheList<OnlinePushReqPushSyncId>(50)
+
+        internal data class PendingGroupMessageReceiptSyncId(
+            val messageRandom: Int,
+        )
+
+        val pendingGroupMessageReceiptCacheList = SyncingCacheList<PendingGroupMessageReceiptSyncId>(50)
     }
 
     val syncingController = MessageSvcSyncData()

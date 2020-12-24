@@ -55,6 +55,11 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public override val id: Long
 
     /**
+     * 返回 `this`
+     */
+    public override val bot: Bot get() = this
+
+    /**
      * 昵称
      */
     public val nick: String
@@ -72,9 +77,14 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     // region contacts
 
     /**
+     * 其他设备列表
+     */
+    public val otherClients: OtherClientList
+
+
+    /**
      * [User.id] 与 [Bot.id] 相同的 [Friend] 实例
      */
-    @MiraiExperimentalApi
     public val asFriend: Friend
 
     @Deprecated("Use asFriend instead", ReplaceWith("asFriend"))

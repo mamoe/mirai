@@ -26,7 +26,7 @@ import net.mamoe.mirai.utils.*
  * 它不会显示在消息文本中, 也不会被其他客户端识别.
  * 只有 mirai 才能识别这些消息.
  *
- * 目前在回复时无法通过 [originalMessage] 获取自定义类型消息
+ * 目前在回复时无法通过 [MessageSource.originalMessage] 获取自定义类型消息
  *
  * ## 序列化
  * 若要支持序列化, 需 [MessageSerializer.registerSerializer]
@@ -136,7 +136,8 @@ public sealed class CustomMessage : SingleMessage {
         public class CustomMessageFullDataDeserializeUserException(public val body: ByteArray, cause: Throwable?) :
             RuntimeException(cause)
 
-        internal fun load(fullData: ByteReadPacket): CustomMessage? {
+        @MiraiInternalApi
+        public fun load(fullData: ByteReadPacket): CustomMessage? {
             val msg = kotlin.runCatching {
                 val length = fullData.readInt()
                 if (fullData.remaining != length.toLong()) {
@@ -156,7 +157,8 @@ public sealed class CustomMessage : SingleMessage {
             }
         }
 
-        internal fun <M : CustomMessage> dump(factory: Factory<M>, message: M): ByteArray = buildPacket {
+        @MiraiInternalApi
+        public fun <M : CustomMessage> dump(factory: Factory<M>, message: M): ByteArray = buildPacket {
             ProtoBuf.encodeToByteArray(
                 CustomMessageFullData.serializer(), CustomMessageFullData(
                     miraiVersionFlag = 1,

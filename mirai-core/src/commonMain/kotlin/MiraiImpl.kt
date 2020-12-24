@@ -20,10 +20,7 @@ import net.mamoe.mirai.data.*
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.internal.contact.FriendImpl
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.MemberInfoImpl
-import net.mamoe.mirai.internal.contact.checkIsGroupImpl
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -207,7 +204,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return FriendImpl(
             bot.asQQAndroidBot(),
             bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            friendInfo.uin,
             friendInfo
         )
     }
@@ -709,17 +705,17 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
 
         if (accept ?: return@run)
-            groups[groupId]?.apply {
-                members.delegate.add(newMember(object : MemberInfo {
-                    override val nameCard: String get() = ""
-                    override val permission: MemberPermission get() = MemberPermission.MEMBER
-                    override val specialTitle: String get() = ""
-                    override val muteTimestamp: Int get() = 0
-                    override val uin: Long get() = fromId
-                    override val nick: String get() = fromNick
-                    override val remark: String
-                        get() = ""
-                }).cast())
+            groups[groupId]?.run {
+                members.delegate.add(
+                    newMember(
+                        MemberInfoImpl(
+                            uin = fromId,
+                            nick = fromNick,
+                            permission = MemberPermission.MEMBER,
+                            "", "", "", 0, null
+                        )
+                    ).cast()
+                )
             }
     }
 
