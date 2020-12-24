@@ -23,7 +23,8 @@ import net.mamoe.mirai.event.events.GroupMessageSyncEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.MemberImpl
+import net.mamoe.mirai.internal.contact.NormalMemberImpl
+import net.mamoe.mirai.internal.contact.newAnonymous
 import net.mamoe.mirai.internal.message.toMessageChain
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
@@ -101,7 +102,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
             sender = group.newAnonymous(anonymous.anonNick.encodeToString(), anonymous.anonId.encodeToBase64())
             name = sender.nameCard
         } else { // normal member chat
-            sender = group[msgHead.fromUin] as MemberImpl
+            sender = group[msgHead.fromUin] as NormalMemberImpl
             name = findSenderName(extraInfo, msgHead.groupInfo) ?: sender.nameCardOrNick
         }
 
@@ -129,7 +130,7 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
 
     private suspend inline fun broadcastNameCardChangedEventIfNecessary(sender: Member, name: String) {
         val currentNameCard = sender.nameCard
-        if (sender is MemberImpl && name != currentNameCard) {
+        if (sender is NormalMemberImpl && name != currentNameCard) {
             sender._nameCard = name
             MemberCardChangeEvent(currentNameCard, name, sender).broadcast()
         }

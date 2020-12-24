@@ -22,7 +22,6 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.message.MessageSourceToTempImpl
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
-import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
 import net.mamoe.mirai.internal.network.protocol.packet.chat.TroopManagement
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToTemp
@@ -37,7 +36,7 @@ import kotlin.coroutines.CoroutineContext
 
 @OptIn(LowLevelApi::class)
 @Suppress("MemberVisibilityCanBePrivate")
-internal class MemberImpl constructor(
+internal class NormalMemberImpl constructor(
     group: GroupImpl,
     coroutineContext: CoroutineContext,
     memberInfo: MemberInfo
@@ -80,7 +79,7 @@ internal class MemberImpl constructor(
             val source: MessageSourceToTempImpl
             MessageSvcPbSendMsg.createToTemp(
                 bot.client,
-                this@MemberImpl,
+                this@NormalMemberImpl,
                 chain
             ) {
                 source = it
@@ -89,7 +88,7 @@ internal class MemberImpl constructor(
                     "Send temp message failed: $it"
                 }
             }
-            MessageReceipt(source, this@MemberImpl)
+            MessageReceipt(source, this@NormalMemberImpl)
         }
 
         result.fold(
@@ -138,11 +137,11 @@ internal class MemberImpl constructor(
                     bot.network.run {
                         TroopManagement.EditGroupNametag(
                             bot.client,
-                            this@MemberImpl,
+                            this@NormalMemberImpl,
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberCardChangeEvent(oldValue, newValue, this@MemberImpl).broadcast()
+                    MemberCardChangeEvent(oldValue, newValue, this@NormalMemberImpl).broadcast()
                 }
             }
         }
@@ -158,16 +157,15 @@ internal class MemberImpl constructor(
                     bot.network.run {
                         TroopManagement.EditSpecialTitle(
                             bot.client,
-                            this@MemberImpl,
+                            this@NormalMemberImpl,
                             newValue
                         ).sendWithoutExpect()
                     }
-                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@MemberImpl, null).broadcast()
+                    MemberSpecialTitleChangeEvent(oldValue, newValue, this@NormalMemberImpl, null).broadcast()
                 }
             }
         }
 
-    @JvmSynthetic
     override suspend fun mute(durationSeconds: Int) {
         check(this.id != bot.id) {
             "A bot can't mute itself."
@@ -177,32 +175,30 @@ internal class MemberImpl constructor(
             TroopManagement.Mute(
                 client = bot.client,
                 groupCode = group.id,
-                memberUin = this@MemberImpl.id,
+                memberUin = this@NormalMemberImpl.id,
                 timeInSecond = durationSeconds
             ).sendAndExpect<TroopManagement.Mute.Response>()
         }
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
-        net.mamoe.mirai.event.events.MemberMuteEvent(this@MemberImpl, durationSeconds, null).broadcast()
+        net.mamoe.mirai.event.events.MemberMuteEvent(this@NormalMemberImpl, durationSeconds, null).broadcast()
     }
 
-    @JvmSynthetic
     override suspend fun unmute() {
         checkBotPermissionHigherThanThis("unmute")
         bot.network.run {
             TroopManagement.Mute(
                 client = bot.client,
                 groupCode = group.id,
-                memberUin = this@MemberImpl.id,
+                memberUin = this@NormalMemberImpl.id,
                 timeInSecond = 0
             ).sendAndExpect<TroopManagement.Mute.Response>()
         }
 
         @Suppress("RemoveRedundantQualifierName") // or unresolved reference
-        net.mamoe.mirai.event.events.MemberUnmuteEvent(this@MemberImpl, null).broadcast()
+        net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcast()
     }
 
-    @JvmSynthetic
     override suspend fun kick(message: String) {
         checkBotPermissionHigherThanThis("kick")
         check(group.members[this.id] != null) {
@@ -211,16 +207,16 @@ internal class MemberImpl constructor(
         bot.network.run {
             val response: TroopManagement.Kick.Response = TroopManagement.Kick(
                 client = bot.client,
-                member = this@MemberImpl,
+                member = this@NormalMemberImpl,
                 message = message
             ).sendAndExpect()
 
             check(response.success) { "kick failed: ${response.ret}" }
 
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            group.members.delegate.removeIf { it.id == this@MemberImpl.id }
-            this@MemberImpl.cancel(CancellationException("Kicked by bot"))
-            MemberLeaveEvent.Kick(this@MemberImpl, null).broadcast()
+            group.members.delegate.removeIf { it.id == this@NormalMemberImpl.id }
+            this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
+            MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcast()
         }
     }
 }
@@ -235,29 +231,11 @@ internal fun Member.checkBotPermissionHigherThanThis(operationName: String) {
 }
 
 @OptIn(ExperimentalContracts::class)
-internal fun Member.checkIsMemberImpl(): MemberImpl {
+internal fun Member.checkIsMemberImpl(): NormalMemberImpl {
     contract {
-        returns() implies (this@checkIsMemberImpl is MemberImpl)
+        returns() implies (this@checkIsMemberImpl is NormalMemberImpl)
     }
-    check(this is MemberImpl) { "A Member instance is not instance of MemberImpl. Don't interlace two protocol implementations together!" }
+    check(this is NormalMemberImpl) { "A Member instance is not instance of MemberImpl. Don't interlace two protocol implementations together!" }
     return this
 }
 
-@OptIn(LowLevelApi::class)
-internal class MemberInfoImpl(
-    jceInfo: StTroopMemberInfo,
-    groupOwnerId: Long
-) : MemberInfo {
-    override val uin: Long = jceInfo.memberUin
-    override val nameCard: String = jceInfo.sName ?: ""
-    internal var _nick: String = jceInfo.nick
-    override val nick: String get() = _nick
-    override val permission: MemberPermission = when {
-        jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER
-        jceInfo.dwFlag == 1L -> MemberPermission.ADMINISTRATOR
-        else -> MemberPermission.MEMBER
-    }
-    override val specialTitle: String = jceInfo.sSpecialTitle ?: ""
-    override val muteTimestamp: Int = jceInfo.dwShutupTimestap?.toInt() ?: 0
-    override val remark: String = jceInfo.autoRemark ?: ""
-}

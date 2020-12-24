@@ -15,6 +15,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.internal.contact.GroupImpl
+import net.mamoe.mirai.internal.contact.newAnonymous
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
