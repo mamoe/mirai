@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport")
+@file:Suppress("EXPERIMENTAL_API_USAGE", "unused", "UnusedImport", "NOTHING_TO_INLINE")
 
 package net.mamoe.mirai.contact
 
@@ -241,6 +241,18 @@ public interface GroupSettings {
      */
     public val isAnonymousChatEnabled: Boolean
 }
+
+/**
+ * 同 [get]. 在一些不适合使用 [get] 的情境下使用 [getMember].
+ */
+@JvmSynthetic
+public inline fun Group.getMember(id: Long): NormalMember? = get(id)
+
+/**
+ * 同 [getMemberOrFail]. 在一些不适合使用 [getOrFail] 的情境下使用 [getMemberOrFail].
+ */
+@JvmSynthetic
+public inline fun Group.getMemberOrFail(id: Long): NormalMember = getOrFail(id)
 
 
 /**
