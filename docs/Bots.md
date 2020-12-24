@@ -71,6 +71,8 @@ deviceInfo = { bot ->  /* create device info */   }
 setDeviceInfo(bot -> /* create device info */)
 ```
 
+在线生成自定义设备信息的 `device.json`: https://ryoii.github.io/mirai-devicejs-generator/
+
 #### 切换登录协议
 Mirai 支持多种登录协议：`ANDROID_PHONE`，`ANDROID_PAD`，`ANDROID_WATCH`，默认使用 `ANDROID_PHONE`。
 
