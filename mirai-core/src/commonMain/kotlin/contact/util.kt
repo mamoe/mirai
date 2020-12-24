@@ -107,7 +107,7 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
             "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()
         }
         is net.mamoe.mirai.event.events.OtherClientMessageEvent -> bot.logger.verbose {
-            "${client.kind} -> $message".replaceMagicCodes()
+            "${client.platform} -> $message".replaceMagicCodes()
         }
         is GroupMessageSyncEvent -> bot.logger.verbose {
             renderGroupMessage(group, senderName, sender, message)

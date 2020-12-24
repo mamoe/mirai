@@ -12,21 +12,21 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.events.OtherClientOnlineEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PAD
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PHONE
 import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
  * 其他设备. 如当 [Bot] 以 [ANDROID_PHONE] 登录时, 还可以有其他设备以 [ANDROID_PAD], iOS, PC 或其他设备登录.
  */
 public interface OtherClient : Contact {
-    /**
-     * 设备类型
-     */
-    public val kind: ClientKind
+    public val info: OtherClientInfo
 
     /**
      * 此设备属于的 [Bot]
@@ -47,11 +47,72 @@ public interface OtherClient : Contact {
     }
 }
 
+@MiraiInternalApi
+public inline val OtherClient.appId: Int
+    get() = info.appId
+public inline val OtherClient.platform: Platform get() = info.platform
+public inline val OtherClient.deviceName: String get() = info.deviceName
+public inline val OtherClient.deviceKind: String get() = info.deviceKind
+
+@MiraiExperimentalApi
+public data class OtherClientInfo @MiraiInternalApi constructor(
+
+    /**
+     * 仅运行时识别. 随着客户端更新此 ID 可能有变化.
+     *
+     * 不可能有 [appId] 相同的两个客户端t在线.
+     */
+    public val appId: Int,
+
+    /**
+     * 登录平台
+     */
+    public val platform: Platform,
+
+    /**
+     * 示例：
+     * - Mi 10 Pro
+     * - 电脑
+     * - xxx 的 iPad
+     * - mirai
+     */
+    public val deviceName: String,
+
+    /**
+     * 示例：
+     * - Mi 10 Pro
+     * - DESKTOP-ABCDEFG
+     * - iPad
+     * - mirai
+     */
+    public val deviceKind: String,
+)
+
 /**
- * 设备类型
+ * @see OtherClientInfo.platform
+ */
+public enum class Platform(
+    @MiraiInternalApi public val terminalId: Int,
+    @MiraiInternalApi public val platformId: Int,
+) {
+    IOS(3, 1),
+    MOBILE(2, 2), // android
+    WINDOWS(1, 3),
+
+    UNKNOWN(0, 0)
+    ;
+
+    public companion object {
+        @MiraiInternalApi
+        public fun getByTerminalId(terminalId: Int): Platform? = values().find { it.terminalId == terminalId }
+    }
+}
+
+/**
+ * 详细设备类型. 在登录时查询到的设备列表中无此信息. 只在 [OtherClientOnlineEvent] 才有.
  */
 public enum class ClientKind(
-    public val id: Int,
+    @MiraiInternalApi public val id: Int,
 ) {
     ANDROID_PAD(68104),
     AOL_CHAOJIHUIYUAN(73730),
@@ -76,9 +137,7 @@ public enum class ClientKind(
     QQ_SERVICE(71170),
     TV_QQ(69130),
     WIN8(69899),
-    WINPHONE(65804),
-
-    UNKNOWN(-1);
+    WINPHONE(65804);
 
     public companion object {
         public operator fun get(id: Int): ClientKind? = values().find { it.id == id }

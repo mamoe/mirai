@@ -28,6 +28,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -154,6 +155,15 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             }
 
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
+    }
+
+    override suspend fun getOnlineOtherClientsList(bot: Bot): List<OtherClientInfo> {
+        bot.asQQAndroidBot()
+        val response = bot.network.run {
+            StatSvc.GetDevLoginInfo(bot.client).sendAndExpect<StatSvc.GetDevLoginInfo.Response>()
+        }
+
+        return response.deviceList.map { it.toOtherClientInfo() }
     }
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {

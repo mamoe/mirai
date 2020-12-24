@@ -84,7 +84,7 @@ internal class RequestPushGroupMsg(
     @JvmField @TarsId(13) val uAppShareID: Long? = null,
     @JvmField @TarsId(14) val vGPicInfo: List<GPicInfo>? = null,
     @JvmField @TarsId(15) val vAppShareCookie: ByteArray? = null,
-    @JvmField @TarsId(16) val stShareData: shareData? = null,
+    @JvmField @TarsId(16) val stShareData: ShareData? = null,
     @JvmField @TarsId(17) val fromInstId: Long? = null,
     @JvmField @TarsId(18) val stGroupMsgHead: GroupMsgHead? = null,
     @JvmField @TarsId(19) val wUserActive: Int? = null,

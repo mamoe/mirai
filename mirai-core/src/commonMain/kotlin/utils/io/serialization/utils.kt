@@ -96,18 +96,18 @@ internal fun <T : ProtoBuf> ByteReadPacket.readUniPacket(
     }
 }
 
-private fun <K, V> Map<K, V>.firstValue(): V = this.entries.first().value
+private fun <K, V> Map<K, V>.singleValue(): V = this.entries.single().value
 
-private fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
+internal fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
     val request = this.readJceStruct(RequestPacket.serializer())
 
     return block(if (name == null) when (request.version?.toInt() ?: 3) {
-        2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.firstValue().firstValue()
-        3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.firstValue()
+        2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.singleValue().singleValue()
+        3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.singleValue()
         else -> error("unsupported version ${request.version}")
     } else when (request.version?.toInt() ?: 3) {
         2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.getOrElse(name) { error("cannot find $name") }
-            .firstValue()
+            .singleValue()
         3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.getOrElse(name) { error("cannot find $name") }
         else -> error("unsupported version ${request.version}")
     })

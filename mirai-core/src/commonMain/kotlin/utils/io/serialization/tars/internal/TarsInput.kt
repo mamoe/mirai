@@ -191,7 +191,7 @@ internal class TarsInput(
             Tars.BYTE -> input.readByte().toInt()
             Tars.SHORT -> input.readShort().toInt()
             Tars.INT -> input.readInt()
-            else -> error("type mismatch: $head")
+            else -> error("type mismatch: $head, expecting int.")
         }
     }
 
@@ -200,7 +200,7 @@ internal class TarsInput(
             Tars.ZERO_TYPE -> 0
             Tars.BYTE -> input.readByte().toShort()
             Tars.SHORT -> input.readShort()
-            else -> error("type mismatch: $head")
+            else -> error("type mismatch: $head, expecting short.")
         }
     }
 
@@ -211,7 +211,7 @@ internal class TarsInput(
             Tars.SHORT -> input.readShort().toLong()
             Tars.INT -> input.readInt().toLong()
             Tars.LONG -> input.readLong()
-            else -> error("type mismatch ${head.type}")
+            else -> error("type mismatch ${head}, expecting long.")
         }
     }
 
@@ -220,7 +220,7 @@ internal class TarsInput(
         return when (head.type) {
             Tars.ZERO_TYPE -> 0
             Tars.BYTE -> input.readByte()
-            else -> error("type mismatch: $head")
+            else -> error("type mismatch: $head, expecting byte.")
         }
     }
 
@@ -228,7 +228,7 @@ internal class TarsInput(
         return when (head.type) {
             Tars.ZERO_TYPE -> 0f
             Tars.FLOAT -> input.readFloat()
-            else -> error("type mismatch: $head")
+            else -> error("type mismatch: $head, expecting float.")
         }
     }
 

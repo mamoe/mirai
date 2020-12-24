@@ -23,7 +23,6 @@ import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.network.protocol.data.jce.InstanceInfo
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.network.LoginFailedException
@@ -41,10 +40,9 @@ internal fun Bot.asQQAndroidBot(): QQAndroidBot {
 }
 
 internal fun QQAndroidBot.createOtherClient(
-    kind: ClientKind,
-    instanceInfo: InstanceInfo,
+    info: OtherClientInfo,
 ): OtherClientImpl {
-    return OtherClientImpl(this, coroutineContext, kind, instanceInfo)
+    return OtherClientImpl(this, coroutineContext, info)
 }
 
 @Suppress("INVISIBLE_MEMBER", "BooleanLiteralArgument", "OverridingDeprecatedMember")

@@ -502,7 +502,7 @@ public class OtherClientMessageEvent constructor(
     public override val senderName: String get() = sender.nick
     public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
 
-    public override fun toString(): String = "OtherClientMessageEvent(client=${client.kind}, message=$message)"
+    public override fun toString(): String = "OtherClientMessageEvent(client=${client.platform}, message=$message)"
 }
 
 /**

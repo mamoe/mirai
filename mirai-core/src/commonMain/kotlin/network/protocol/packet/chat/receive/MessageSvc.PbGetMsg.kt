@@ -23,6 +23,7 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.contact.NormalMember
+import net.mamoe.mirai.contact.appId
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
@@ -409,7 +410,7 @@ private suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
 
                     with(data.msgHeader ?: return null) {
                         if (srcUin != dstUin || dstUin != bot.id) return null
-                        val client = bot.otherClients.find { it.instanceInfo.iAppId == srcInstId }
+                        val client = bot.otherClients.find { it.appId == srcInstId }
                             ?: return null// don't compare with dstAppId. diff.
 
                         val chain = buildMessageChain {

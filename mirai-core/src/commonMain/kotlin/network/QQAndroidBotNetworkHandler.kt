@@ -20,6 +20,8 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.contact.deviceName
+import net.mamoe.mirai.contact.platform
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotOnlineEvent
@@ -27,6 +29,7 @@ import net.mamoe.mirai.event.events.BotReloginEvent
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
+import net.mamoe.mirai.internal.createOtherClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopNum
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.*
@@ -247,11 +250,24 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
         // println("d2key=${bot.client.wLoginSigInfo.d2Key.toUHexString()}")
         registerClientOnline()
+
         startHeartbeatJobOrKill()
+
+        bot.otherClientsLock.withLock {
+            updateOtherClientsList()
+        }
     }
 
-    private suspend fun registerClientOnline(timeoutMillis: Long = 3000) {
-        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>(timeoutMillis)
+    private suspend fun registerClientOnline() {
+        StatSvc.Register(bot.client).sendAndExpect<StatSvc.Register.Response>()
+    }
+
+    private suspend fun updateOtherClientsList() {
+        val list = Mirai.getOnlineOtherClientsList(bot)
+        bot.otherClients.delegate.clear()
+        bot.otherClients.delegate.addAll(list.map { bot.createOtherClient(it) })
+
+        bot.logger.info { "Online OtherClients: " + bot.otherClients.joinToString { "${it.deviceName}(${it.platform.name})" } }
     }
 
     // caches

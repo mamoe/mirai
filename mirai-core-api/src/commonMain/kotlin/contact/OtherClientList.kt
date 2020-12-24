@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -16,8 +17,9 @@ public class OtherClientList internal constructor(
     @MiraiInternalApi @JvmField
     public val delegate: MutableCollection<OtherClient> = ConcurrentLinkedQueue()
 ) : Collection<OtherClient> by delegate {
-    public operator fun get(kind: ClientKind): OtherClient? = this.find { it.kind == kind }
+    @MiraiExperimentalApi
+    public operator fun get(appId: Int): OtherClient? = this.find { it.appId == appId }
 
-    public fun getOrFail(kind: ClientKind): OtherClient =
-        get(kind) ?: throw NoSuchElementException("OtherClient with kind=$kind not found.")
+    public fun getOrFail(appId: Int): OtherClient =
+        get(appId) ?: throw NoSuchElementException("OtherClient with appId=$appId not found.")
 }

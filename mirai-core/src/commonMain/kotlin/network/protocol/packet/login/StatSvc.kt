@@ -13,7 +13,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.serialization.protobuf.ProtoBuf
+import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.ClientKind
+import net.mamoe.mirai.contact.appId
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOfflineEvent
 import net.mamoe.mirai.event.events.OtherClientOnlineEvent
@@ -22,6 +24,7 @@ import net.mamoe.mirai.internal.createOtherClient
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.getRandomByteArray
 import net.mamoe.mirai.internal.network.guid
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
@@ -29,6 +32,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.*
+import net.mamoe.mirai.utils.currentTimeMillis
 import java.util.concurrent.CancellationException
 
 @Suppress("EnumEntryName", "unused")
@@ -107,9 +111,9 @@ internal class StatSvc {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
-                        sServantName = "PushService",
-                        sFuncName = "SvcReqRegister",
-                        iRequestId = 0,
+                        servantName = "PushService",
+                        funcName = "SvcReqRegister",
+                        requestId = 0,
                         sBuffer = jceRequestSBuffer(
                             "SvcReqRegister",
                             SvcReqRegister.serializer(),
@@ -205,9 +209,9 @@ internal class StatSvc {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
-                        sServantName = "StatSvc",
-                        sFuncName = "RspMSFForceOffline",
-                        iRequestId = 0,
+                        servantName = "StatSvc",
+                        funcName = "RspMSFForceOffline",
+                        requestId = 0,
                         sBuffer = jceRequestSBuffer(
                             "RspMSFForceOffline",
                             RspMSFForceOffline.serializer(),
@@ -230,25 +234,29 @@ internal class StatSvc {
             bot.otherClientsLock.withLock {
                 val notify = readUniPacket(SvcReqMSFLoginNotifyData.serializer())
 
-                val kind = notify.iClientType?.toInt()?.let(ClientKind::get) ?: return null
+                val appId = notify.iAppId.toInt()
 
                 when (notify.status.toInt()) {
-                    1 -> {
-                        if (bot.otherClients.any { it.kind == kind }) return null
-                        val client = bot.createOtherClient(
-                            kind,
-                            notify.vecInstanceList?.find { it.iClientType == notify.iClientType }
-                                ?: throw  contextualBugReportException(
-                                    "decode SvcReqMSFLoginNotify (OtherClient online)",
-                                    notify._miraiContentToString(),
-                                    additional = "Failed to find corresponding instanceInfo."
-                                ))
+                    1 -> { // online
+                        if (bot.otherClients.any { it.appId == appId }) return null
+
+                        val info = Mirai.getOnlineOtherClientsList(bot).find { it.appId == appId }
+                            ?: throw  contextualBugReportException(
+                                "SvcReqMSFLoginNotify (OtherClient online)",
+                                notify._miraiContentToString(),
+                                additional = "Failed to find corresponding instanceInfo."
+                            )
+
+                        val client = bot.createOtherClient(info)
                         bot.otherClients.delegate.add(client)
-                        OtherClientOnlineEvent(client)
+                        OtherClientOnlineEvent(
+                            client,
+                            ClientKind[notify.iClientType?.toInt() ?: 0]
+                        )
                     }
 
-                    2 -> {
-                        val client = bot.otherClients.find { it.kind == kind } ?: return null
+                    2 -> { // off
+                        val client = bot.otherClients.find { it.appId == appId } ?: return null
                         client.cancel(CancellationException("Offline"))
                         bot.otherClients.delegate.remove(client)
                         OtherClientOfflineEvent(client)
@@ -261,5 +269,47 @@ internal class StatSvc {
                     )
                 }
             }
+    }
+
+    internal object GetDevLoginInfo : OutgoingPacketFactory<GetDevLoginInfo.Response>("StatSvc.GetDevLoginInfo") {
+
+        @Suppress("unused") // false positive
+        data class Response(
+            val deviceList: List<SvcDevLoginInfo>,
+        ) : Packet {
+            override fun toString(): String {
+                return "StatSvc.GetDevLoginInfo.Response(deviceList.size=${deviceList.size})"
+            }
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+        ) = buildOutgoingUniPacket(client) {
+            writeJceRequestPacket(
+                servantName = "StatSvc",
+                funcName = "SvcReqGetDevLoginInfo",
+                serializer = SvcReqGetDevLoginInfo.serializer(),
+                body = SvcReqGetDevLoginInfo(
+                    iLoginType = 2,
+                    iRequireMax = 20,
+                    iTimeStamp = currentTimeMillis(),
+                    iGetDevListType = 1,
+                    vecGuid = getRandomByteArray(16), // 服务器防止频繁查询
+                    iNextItemIndex = 0,
+                    appName = client.protocol.apkId //"com.tencent.mobileqq"
+                )
+            )
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val resp = readUniPacket(SvcRspGetDevLoginInfo.serializer())
+
+            // result 62 maybe too frequent
+            return Response(
+                resp.vecCurrentLoginDevInfo?.takeIf { it.isNotEmpty() }
+                    ?: resp.vecAuthLoginDevInfo?.takeIf { it.isNotEmpty() }
+                    ?: resp.vecHistoryLoginDevInfo.orEmpty()
+            )
+        }
     }
 }
