@@ -24,8 +24,6 @@ import net.mamoe.mirai.internal.utils.io.ProtoBuf
 import net.mamoe.mirai.internal.utils.io.readPacketExact
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.internal.utils.read
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
 
 internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
     deserializer: DeserializationStrategy<T>,
@@ -49,6 +47,24 @@ internal fun <T : JceStruct> ByteReadPacket.readJceStruct(
 ): T {
     return Tars.UTF_8.load(serializer, this.readPacketExact(length))
 }
+
+internal fun <T : JceStruct> BytePacketBuilder.writeJceRequestPacket(
+    version: Int = 3,
+    servantName: String,
+    funcName: String,
+    name: String = funcName,
+    serializer: SerializationStrategy<T>,
+    body: T
+) = writeJceStruct(
+    RequestPacket.serializer(),
+    RequestPacket(
+        requestId = 0,
+        version = version.toShort(),
+        servantName = servantName,
+        funcName = funcName,
+        sBuffer = jceRequestSBuffer(name, serializer, body)
+    )
+)
 
 /**
  * 先解析为 [RequestPacket], 即 `UniRequest`, 再按版本解析 map, 再找出指定数据并反序列化
@@ -85,15 +101,15 @@ private fun <K, V> Map<K, V>.firstValue(): V = this.entries.first().value
 private fun <R> ByteReadPacket.decodeUniRequestPacketAndDeserialize(name: String? = null, block: (ByteArray) -> R): R {
     val request = this.readJceStruct(RequestPacket.serializer())
 
-    return block(if (name == null) when (request.iVersion?.toInt() ?: 3) {
+    return block(if (name == null) when (request.version?.toInt() ?: 3) {
         2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.firstValue().firstValue()
         3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.firstValue()
-        else -> error("unsupported version ${request.iVersion}")
-    } else when (request.iVersion?.toInt() ?: 3) {
+        else -> error("unsupported version ${request.version}")
+    } else when (request.version?.toInt() ?: 3) {
         2 -> request.sBuffer.loadAs(RequestDataVersion2.serializer()).map.getOrElse(name) { error("cannot find $name") }
             .firstValue()
         3 -> request.sBuffer.loadAs(RequestDataVersion3.serializer()).map.getOrElse(name) { error("cannot find $name") }
-        else -> error("unsupported version ${request.iVersion}")
+        else -> error("unsupported version ${request.version}")
     })
 }
 

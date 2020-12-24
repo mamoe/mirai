@@ -40,9 +40,9 @@ internal class ProfileService {
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(
-                    sServantName = "KQQ.ProfileService.ProfileServantObj",
-                    sFuncName = "GroupMngReq",
-                    iRequestId = client.nextRequestPacketRequestId(),
+                    servantName = "KQQ.ProfileService.ProfileServantObj",
+                    funcName = "GroupMngReq",
+                    requestId = client.nextRequestPacketRequestId(),
                     sBuffer = jceRequestSBuffer(
                         "GroupMngReq",
                         GroupMngReqJce.serializer(),

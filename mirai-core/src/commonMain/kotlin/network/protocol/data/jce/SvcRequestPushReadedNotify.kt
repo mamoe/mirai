@@ -9,7 +9,7 @@
 
 @file:Suppress("SpellCheckingInspection")
 
-package  net.mamoe.mirai.internal.network.protocol.data.jce
+package net.mamoe.mirai.internal.network.protocol.data.jce
 
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.utils.io.JceStruct
