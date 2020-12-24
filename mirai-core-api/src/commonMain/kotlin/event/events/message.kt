@@ -584,7 +584,7 @@ public class GroupMessageSyncEvent(
     override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
 
     public override fun toString(): String =
-        "OtherClientGroupMessageSyncEvent(group=${group.id}, message=$message)"
+        "GroupMessageSyncEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, message=$message)"
 }
 
 
