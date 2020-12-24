@@ -58,7 +58,6 @@ public interface Group : Contact, CoroutineScope {
     /**
      * [Bot] 在群内的 [Member] 实例
      */
-    @MiraiExperimentalApi
     public val botAsMember: NormalMember
 
     /**
