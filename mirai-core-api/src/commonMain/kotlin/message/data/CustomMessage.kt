@@ -137,7 +137,8 @@ public sealed class CustomMessage : SingleMessage {
         public class CustomMessageFullDataDeserializeUserException(public val body: ByteArray, cause: Throwable?) :
             RuntimeException(cause)
 
-        internal fun load(fullData: ByteReadPacket): CustomMessage? {
+        @MiraiInternalApi
+        public fun load(fullData: ByteReadPacket): CustomMessage? {
             val msg = kotlin.runCatching {
                 val length = fullData.readInt()
                 if (fullData.remaining != length.toLong()) {
@@ -157,7 +158,8 @@ public sealed class CustomMessage : SingleMessage {
             }
         }
 
-        internal fun <M : CustomMessage> dump(factory: Factory<M>, message: M): ByteArray = buildPacket {
+        @MiraiInternalApi
+        public fun <M : CustomMessage> dump(factory: Factory<M>, message: M): ByteArray = buildPacket {
             ProtoBuf.encodeToByteArray(
                 CustomMessageFullData.serializer(), CustomMessageFullData(
                     miraiVersionFlag = 1,
