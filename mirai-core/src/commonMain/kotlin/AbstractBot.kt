@@ -20,11 +20,11 @@ package net.mamoe.mirai.internal
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.Listener
-import net.mamoe.mirai.event.broadcast
+import net.mamoe.mirai.contact.OtherClientList
+import net.mamoe.mirai.event.*
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.event.events.BotReloginEvent
-import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.internal.network.BotNetworkHandler
 import net.mamoe.mirai.internal.network.DefaultServerList
 import net.mamoe.mirai.internal.network.closeAndJoin
