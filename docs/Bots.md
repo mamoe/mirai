@@ -1,4 +1,4 @@
-# Mirai - Creating Bots
+# Mirai - Bots
 
 **目录**
 
