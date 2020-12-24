@@ -190,7 +190,7 @@ public data class PokeMessage @MiraiInternalApi constructor(
  * ## mirai 码支持
  * 格式: &#91;mirai:marketface:*[id]*,*[name]*&#93;
  */
-public interface MarketFace : CodableMessage, MessageContent, ConstrainSingle {
+public interface MarketFace : CodableMessage, HummerMessage {
     public val name: String
     public val id: Int
     @ExperimentalMessageKey
