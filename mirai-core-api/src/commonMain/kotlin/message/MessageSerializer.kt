@@ -112,8 +112,6 @@ private val builtInSerializersModule by lazy {
 
         contextual(PttMessage::class, PttMessage.serializer())
         contextual(Voice::class, Voice.serializer())
-
-        contextual(HummerMessage::class, HummerMessage.serializer())
         contextual(PokeMessage::class, PokeMessage.serializer())
         contextual(VipFace::class, VipFace.serializer())
         contextual(FlashImage::class, FlashImage.serializer())

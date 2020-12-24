@@ -28,8 +28,7 @@ import net.mamoe.mirai.utils.safeCast
  * @see PokeMessage 戳一戳
  * @see FlashImage 闪照
  */
-@Serializable
-public sealed class HummerMessage : MessageContent, ConstrainSingle {
+public interface HummerMessage : MessageContent, ConstrainSingle {
     public companion object Key :
         AbstractPolymorphicMessageKey<MessageContent, HummerMessage>(MessageContent, { it.castOrNull() })
     // has service type etc.
@@ -56,7 +55,7 @@ public data class PokeMessage @MiraiInternalApi constructor(
 
     public val pokeType: Int, // 'type' is used by serialization
     public val id: Int
-) : HummerMessage(), CodableMessage {
+) : HummerMessage, CodableMessage {
     @ExperimentalMessageKey
     override val key: MessageKey<HummerMessage>
         get() = Key
@@ -221,7 +220,7 @@ public data class VipFace @MiraiInternalApi constructor(
      */
     public val kind: Kind,
     public val count: Int
-) : HummerMessage(), CodableMessage {
+) : HummerMessage, CodableMessage {
     @Serializable
     public data class Kind(
         val id: Int,
@@ -315,7 +314,7 @@ public data class FlashImage(
      */
     @Contextual
     public val image: Image
-) : MessageContent, HummerMessage(), CodableMessage, ConstrainSingle {
+) : MessageContent, HummerMessage, CodableMessage, ConstrainSingle {
     @ExperimentalMessageKey
     override val key: MessageKey<FlashImage>
         get() = Key
