@@ -11,7 +11,6 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.ClientKind
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
@@ -29,12 +28,12 @@ internal class OtherClientImpl(
     override val kind: ClientKind,
     val instanceInfo: InstanceInfo
 ) : OtherClient, AbstractContact(bot, coroutineContext) {
-    override suspend fun sendMessage(message: Message): MessageReceipt<Contact> {
-        TODO("Not yet implemented")
+    override suspend fun sendMessage(message: Message): MessageReceipt<OtherClient> {
+        throw UnsupportedOperationException("OtherClientImpl.sendMessage is not yet supported.")
     }
 
     override suspend fun uploadImage(image: ExternalImage): Image {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("OtherClientImpl.uploadImage is not yet supported.")
     }
 
     override fun toString(): String {

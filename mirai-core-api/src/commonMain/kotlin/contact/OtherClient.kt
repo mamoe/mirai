@@ -12,8 +12,12 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PAD
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PHONE
+import net.mamoe.mirai.utils.ExternalImage
 
 /**
  * 其他设备. 如当 [Bot] 以 [ANDROID_PHONE] 登录时, 还可以有其他设备以 [ANDROID_PAD], iOS, PC 或其他设备登录.
@@ -33,6 +37,14 @@ public interface OtherClient : Contact {
      * 与 [Bot.id] 相同
      */
     public override val id: Long get() = bot.id
+
+    override suspend fun sendMessage(message: Message): MessageReceipt<OtherClient> {
+        throw UnsupportedOperationException("OtherClientImpl.sendMessage is not yet supported.")
+    }
+
+    override suspend fun uploadImage(image: ExternalImage): Image {
+        throw UnsupportedOperationException("OtherClientImpl.uploadImage is not yet supported.")
+    }
 }
 
 /**
