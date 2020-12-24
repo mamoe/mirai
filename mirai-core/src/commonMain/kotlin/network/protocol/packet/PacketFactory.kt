@@ -160,6 +160,7 @@ internal object KnownPacketFactories {
         OnlinePushReqPush,
         OnlinePushPbPushTransMsg,
         MessageSvcPushNotify,
+        MessageSvcPushReaded,
         ConfigPushSvc.PushReq,
         StatSvc.ReqMSFOffline,
         StatSvc.SvcReqMSFLoginNotify

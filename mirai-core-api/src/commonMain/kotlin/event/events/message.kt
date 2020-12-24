@@ -553,6 +553,42 @@ public class GroupMessageEvent(
 }
 
 /**
+ * 机器人在其他客户端发送消息同步到这个客户端的事件.
+ *
+ * 本事件发生于**机器人账号**在另一个客户端向一个群或一个好友主动发送消息, 这条消息同步到机器人这个客户端上.
+ *
+ * @see MessageEvent
+ */
+public interface MessageSyncEvent : MessageEvent
+
+
+/**
+ * 机器人在其他客户端发送群消息同步到这个客户端的事件
+ *
+ * @see MessageSyncEvent
+ */
+public class GroupMessageSyncEvent(
+    override val group: Group,
+    override val message: MessageChain,
+    override val sender: Member,
+    override val senderName: String,
+    override val time: Int
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
+    }
+
+    override val bot: Bot get() = group.bot
+    override val subject: Group get() = group
+    override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
+
+    public override fun toString(): String =
+        "OtherClientGroupMessageSyncEvent(group=${group.id}, message=$message)"
+}
+
+
+/**
  * 机器人收到的群临时会话消息的事件
  *
  * @see MessageEvent

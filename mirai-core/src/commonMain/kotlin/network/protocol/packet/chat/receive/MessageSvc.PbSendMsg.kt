@@ -23,6 +23,7 @@ import net.mamoe.mirai.internal.message.MessageSourceToTempImpl
 import net.mamoe.mirai.internal.message.toRichTextElems
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.QQAndroidClient.MessageSvcSyncData.PendingGroupMessageReceiptSyncId
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgCtrl
@@ -374,16 +375,24 @@ internal inline fun MessageSvcPbSendMsg.createToGroup(
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
     }
+    val messageRandom = Random.nextInt().absoluteValue
     val source = MessageSourceToGroupImpl(
         group,
-        internalIds = intArrayOf(Random.nextInt().absoluteValue),
+        internalIds = intArrayOf(messageRandom),
         sender = client.bot,
         target = group,
         time = currentTimeSeconds().toInt(),
         originalMessage = message//,
         //   sourceMessage = message
     )
+
     sourceCallback(source)
+
+    client.syncingController.pendingGroupMessageReceiptCacheList.addCache(
+        PendingGroupMessageReceiptSyncId(
+            messageRandom = messageRandom,
+        )
+    )
     return createToGroupImpl(
         client,
         group,

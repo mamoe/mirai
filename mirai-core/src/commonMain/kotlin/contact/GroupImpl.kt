@@ -69,6 +69,8 @@ internal class GroupImpl(
 ) : Group, AbstractContact(bot, coroutineContext) {
     companion object
 
+    val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
+
     val uin: Long = groupInfo.uin
 
     override lateinit var owner: NormalMember
@@ -460,6 +462,4 @@ internal class GroupImpl(
 
 
     override fun toString(): String = "Group($id)"
-
-    val groupPkgMsgParsingCache = GroupPkgMsgParsingCache()
 }
