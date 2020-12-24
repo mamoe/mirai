@@ -19,10 +19,10 @@ import net.mamoe.mirai.internal.network.highway.postImage
 import net.mamoe.mirai.internal.network.highway.sizeToString
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.MiraiPlatformUtils
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
@@ -38,10 +38,7 @@ internal abstract class AbstractUser(
     final override val remark: String = friendInfo.remark
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    override suspend fun uploadImage(image: ExternalImage): Image = try {
-        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
-            image.input.init(bot.configuration.fileCacheStrategy)
-        }
+    override suspend fun uploadImage(image: ExternalResource): Image = image.use { _ ->
         if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
@@ -52,7 +49,7 @@ internal abstract class AbstractUser(
                     dstUin = id.toInt(),
                     fileId = 0,
                     fileMd5 = image.md5,
-                    fileSize = image.input.size.toInt(),
+                    fileSize = image.size,
                     fileName = image.md5.toUHexString("") + "." + image.formatName,
                     imgOriginal = 1
                 )
@@ -66,7 +63,7 @@ internal abstract class AbstractUser(
                 }
             is LongConn.OffPicUp.Response.RequireUpload -> {
                 bot.network.logger.verbose {
-                    "[Http] Uploading friend image, size=${image.input.size.sizeToString()}"
+                    "[Http] Uploading friend image, size=${image.size.sizeToString()}"
                 }
 
                 val time = measureTime {
@@ -74,13 +71,13 @@ internal abstract class AbstractUser(
                         "0x6ff0070",
                         bot.id,
                         null,
-                        imageInput = image.input,
+                        imageInput = image,
                         uKeyHex = response.uKey.toUHexString("")
                     )
                 }
 
                 bot.network.logger.verbose {
-                    "[Http] Uploading friend image: succeed at ${(image.input.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+                    "[Http] Uploading friend image: succeed at ${(image.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
                 }
 
                 /*
@@ -103,7 +100,5 @@ internal abstract class AbstractUser(
                 error(response.message)
             }
         }
-    } finally {
-        image.input.release()
     }
 }

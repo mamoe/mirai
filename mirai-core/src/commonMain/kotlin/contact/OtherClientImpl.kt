@@ -16,7 +16,7 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.InstanceInfo
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.cast
 import kotlin.coroutines.CoroutineContext
 
@@ -32,7 +32,7 @@ internal class OtherClientImpl(
         throw UnsupportedOperationException("OtherClientImpl.sendMessage is not yet supported.")
     }
 
-    override suspend fun uploadImage(image: ExternalImage): Image {
+    override suspend fun uploadImage(image: ExternalResource): Image {
         throw UnsupportedOperationException("OtherClientImpl.uploadImage is not yet supported.")
     }
 
