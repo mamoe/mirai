@@ -21,7 +21,6 @@ import net.mamoe.mirai.message.MessageReceipt.Companion.quote
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
-import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
 
@@ -88,17 +87,6 @@ public interface Contact : ContactOrBot, CoroutineScope {
     public override fun toString(): String
 
     public companion object {
-        /**
-         * 将图片发送到指定联系人.
-         * @throws OverFileSizeMaxException
-         * @see FileCacheStrategy
-         */
-        @Throws(OverFileSizeMaxException::class)
-        @JvmStatic
-        @JvmBlockingBridge
-        public suspend fun <C : Contact> C.sendImage(bufferedImage: BufferedImage): MessageReceipt<C> =
-            bufferedImage.sendAsImageTo(this)
-
         /**
          * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
          * @throws OverFileSizeMaxException

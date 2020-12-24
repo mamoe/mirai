@@ -20,7 +20,6 @@ import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
-import java.awt.image.BufferedImage
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream
@@ -61,15 +60,6 @@ public interface ExternalResource : Closeable {
         public fun ByteArray.toExternalResource(formatName: String? = null): ExternalResource =
             ExternalResourceImplByByteArray(this, formatName)
 
-
-        /**
-         * 将 [BufferedImage] 保存为临时文件, 然后构造 [ExternalResource]
-         */
-        @JvmStatic
-        @JvmOverloads
-        @JvmName("create")
-        public fun BufferedImage.toExternalResource(formatName: String = "png"): ExternalResource =
-            Mirai.FileCacheStrategy.newCache(this, formatName)
 
         /**
          * 将 [InputStream] 委托为 [ExternalResource].

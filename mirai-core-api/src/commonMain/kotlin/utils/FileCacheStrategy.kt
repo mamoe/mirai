@@ -14,10 +14,7 @@ import kotlinx.io.core.readBytes
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import java.awt.image.BufferedImage
 import java.io.*
-import java.security.MessageDigest
-import javax.imageio.ImageIO
 
 /**
  * 缓存策略.
@@ -45,10 +42,6 @@ public interface FileCacheStrategy {
     @Throws(java.io.IOException::class)
     public fun newCache(input: InputStream, formatName: String?): ExternalResource
 
-    @MiraiExperimentalApi
-    @Throws(java.io.IOException::class)
-    public fun newCache(input: BufferedImage, formatName: String): ExternalResource
-
     /**
      * 默认的缓存方案, 使用系统临时文件夹存储.
      */
@@ -69,14 +62,6 @@ public interface FileCacheStrategy {
         @Throws(java.io.IOException::class)
         override fun newCache(input: InputStream, formatName: String?): ExternalResource {
             return input.withUse { readBytes() }.toExternalResource(formatName)
-        }
-
-        @MiraiExperimentalApi
-        override fun newCache(input: BufferedImage, formatName: String): ExternalResource {
-            val out = ByteArrayOutputStream()
-            ImageIO.write(input, formatName, out)
-            val array = out.toByteArray()
-            return array.toExternalResource(formatName)
         }
     }
 
@@ -110,35 +95,6 @@ public interface FileCacheStrategy {
                 deleteOnExit()
                 input.withOut(this.outputStream()) { copyTo(it) }
             }.toExternalResource(formatName)
-        }
-
-        @MiraiExperimentalApi
-        public override fun newCache(input: BufferedImage, formatName: String): ExternalResource {
-            val file = File.createTempFile("tmp", null, directory).apply { deleteOnExit() }
-
-            val digest = MessageDigest.getInstance("md5")
-            digest.reset()
-
-            file.outputStream().use { out ->
-                ImageIO.write(input, formatName, object : OutputStream() {
-                    override fun write(b: Int) {
-                        out.write(b)
-                        digest.update(b.toByte())
-                    }
-
-                    override fun write(b: ByteArray) {
-                        out.write(b)
-                        digest.update(b)
-                    }
-
-                    override fun write(b: ByteArray, off: Int, len: Int) {
-                        out.write(b, off, len)
-                        digest.update(b, off, len)
-                    }
-                })
-            }
-
-            return ExternalResourceImplByFileWithMd5(RandomAccessFile(file, "r"), digest.digest(), null)
         }
     }
 }

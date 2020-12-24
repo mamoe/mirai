@@ -25,20 +25,10 @@ import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
 
 // region IMAGE.sendAsImageTo(Contact)
-
-/**
- * 将图片发送到指定联系人.
- * @throws OverFileSizeMaxException
- */
-@Throws(OverFileSizeMaxException::class)
-@JvmSynthetic
-public suspend inline fun <C : Contact> BufferedImage.sendAsImageTo(contact: C): MessageReceipt<C> =
-    toExternalResource("png").sendAsImageTo(contact)
 
 /**
  * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
@@ -63,15 +53,6 @@ public suspend inline fun <C : Contact> File.sendAsImageTo(contact: C): MessageR
 // endregion
 
 // region IMAGE.Upload(Contact): Image
-
-/**
- * 将图片上传后构造 [Image].
- * @throws OverFileSizeMaxException
- */
-@JvmSynthetic
-@Throws(OverFileSizeMaxException::class)
-public suspend inline fun BufferedImage.uploadAsImage(contact: Contact): Image =
-    toExternalResource("png").uploadAsImage(contact)
 
 /**
  * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
@@ -111,14 +92,6 @@ public suspend inline fun InputStream.uploadAsGroupVoice(group: Group): Voice {
 // endregion
 
 // region Contact.uploadImage(IMAGE)
-
-/**
- * 将图片上传, 但不发送. 不会保存临时文件
- * @throws OverFileSizeMaxException
- */
-@Throws(OverFileSizeMaxException::class)
-@JvmSynthetic
-public suspend inline fun Contact.uploadImage(bufferedImage: BufferedImage): Image = bufferedImage.uploadAsImage(this)
 
 /**
  * 读取 [InputStream] 到临时文件并将其作为图片上传, 但不发送

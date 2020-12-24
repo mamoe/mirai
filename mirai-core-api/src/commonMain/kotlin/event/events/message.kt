@@ -29,7 +29,6 @@ import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import java.awt.image.BufferedImage
 import java.io.File
 import java.io.InputStream
 import kotlin.internal.InlineOnly
@@ -670,25 +669,21 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
 
     // region 上传图片
 
-    public override suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
     public override suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
     public override suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
     // endregion
 
     // region 发送图片
-    public override suspend fun sendImage(image: BufferedImage): MessageReceipt<Contact> = subject.sendImage(image)
     public override suspend fun sendImage(image: InputStream): MessageReceipt<Contact> = subject.sendImage(image)
     public override suspend fun sendImage(image: File): MessageReceipt<Contact> = subject.sendImage(image)
     // endregion
 
     // region 上传图片 (扩展)
-    public override suspend fun BufferedImage.upload(): Image = this@upload.uploadAsImage(subject)
     public override suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
     public override suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
-    public override suspend fun BufferedImage.send(): MessageReceipt<Contact> = sendAsImageTo(subject)
     public override suspend fun InputStream.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
     public override suspend fun File.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
     // endregion 发送图片 (扩展)
@@ -832,9 +827,6 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
     // region 上传图片
 
     @JvmBlockingBridge
-    public suspend fun uploadImage(image: BufferedImage): Image
-
-    @JvmBlockingBridge
     public suspend fun uploadImage(image: InputStream): Image
 
     @JvmBlockingBridge
@@ -842,9 +834,6 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
     // endregion
 
     // region 发送图片
-    @JvmBlockingBridge
-    public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject>
-
     @JvmBlockingBridge
     public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject>
 
@@ -854,9 +843,6 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
 
     // region 上传图片 (扩展)
     @JvmSynthetic
-    public suspend fun BufferedImage.upload(): Image
-
-    @JvmSynthetic
     public suspend fun InputStream.uploadAsImage(): Image
 
     @JvmSynthetic
@@ -864,9 +850,6 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
-    @JvmSynthetic
-    public suspend fun BufferedImage.send(): MessageReceipt<TSubject>
-
     @JvmSynthetic
     public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject>
 
