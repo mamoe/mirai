@@ -575,7 +575,7 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(9) @JvmField val mediaType: Int = 0,
         @ProtoNumber(10) @JvmField val imageWidth: Int = 0,
         @ProtoNumber(11) @JvmField val imageHeight: Int = 0,
-        @ProtoNumber(12) @JvmField val mobileparam: ByteArray = EMPTY_BYTE_ARRAY,
+        @ProtoNumber(12) @JvmField val mobileParam: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(13) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 

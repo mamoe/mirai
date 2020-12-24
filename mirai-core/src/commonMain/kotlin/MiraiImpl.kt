@@ -53,6 +53,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         private val _init = Mirai.let {
             Message.Serializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
             Message.Serializer.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
+            Message.Serializer.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
         }
     }
 

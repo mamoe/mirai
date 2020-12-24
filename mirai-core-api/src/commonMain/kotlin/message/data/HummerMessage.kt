@@ -180,6 +180,24 @@ public data class PokeMessage @MiraiInternalApi constructor(
     //pbElem=08 01 18 00 20 FF FF FF FF 0F 2A 00 32 00 38 00 50 00
     //serviceType=0x00000002(2)
 }
+////////////////////////////////////
+////////// MARKET FACE /////////////
+////////////////////////////////////
+/**
+ * 商城表情
+ *
+ * 目前不支持直接发送，可支持转发，但其取决于表情是否可使用.
+ *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:marketface:*[id]*,*[name]*&#93;
+ */
+public interface MarketFace : CodableMessage, MessageContent, ConstrainSingle {
+    public val name: String
+    public val id: Int
+    @ExperimentalMessageKey
+    override val key: MessageKey<MarketFace>
+    override fun contentToString(): String = name
+}
 
 
 ////////////////////////////////////
