@@ -40,10 +40,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.readPacketExact
-import net.mamoe.mirai.network.ForceOfflineException
-import net.mamoe.mirai.network.RetryLaterException
-import net.mamoe.mirai.network.UnsupportedSMSLoginException
-import net.mamoe.mirai.network.WrongPasswordException
+import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
@@ -114,10 +111,14 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }.also { heartbeatJob = it }
     }
 
-
-    override suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable?) {
+    // @param step
+    //  0 -> 初始状态, 其他函数调用应永远传入 0
+    //  1 -> 代表滑块验证已禁用
+    override suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable?, step: Int) {
         heartbeatJob?.cancel(CancellationException("relogin", cause))
         heartbeatJob?.join()
+        _packetReceiverJob?.cancel(CancellationException("relogin", cause))
+        _packetReceiverJob?.join()
         if (::channel.isInitialized) {
             // if (channel.isOpen) {
             //     kotlin.runCatching {
@@ -161,14 +162,20 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             return this
         }
 
+        val isSliderCaptchaSupport = bot.configuration.loginSolver?.isSliderCaptchaSupported ?: false
+        val allowSlider = isSliderCaptchaSupport
+                || bot.configuration.protocol == BotConfiguration.MiraiProtocol.ANDROID_PHONE
+                || step == 0
+
         fun loginSolverNotNull() = bot.configuration.loginSolver.notnull()
 
-        var response: WtLogin.Login.LoginPacketResponse = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
+        var response: WtLogin.Login.LoginPacketResponse =
+            WtLogin.Login.SubCommand9(bot.client, allowSlider).sendAndExpect()
         mainloop@ while (true) {
             when (response) {
                 is WtLogin.Login.LoginPacketResponse.UnsafeLogin -> {
                     loginSolverNotNull().onSolveUnsafeDeviceLoginVerify(bot, response.url)
-                    response = WtLogin.Login.SubCommand9(bot.client).sendAndExpect()
+                    response = WtLogin.Login.SubCommand9(bot.client, allowSlider).sendAndExpect()
                 }
 
                 is WtLogin.Login.LoginPacketResponse.Captcha -> when (response) {
@@ -183,6 +190,21 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                         continue@mainloop
                     }
                     is WtLogin.Login.LoginPacketResponse.Captcha.Slider -> {
+                        if (!isSliderCaptchaSupport) {
+                            if (step == 0) {
+                                return closeEverythingAndRelogin(host, port, cause, 1)
+                            }
+                            throw UnsupportedSliderCaptchaException(
+                                buildString {
+                                    append("Mirai 无法完成滑块验证.")
+                                    if (allowSlider) {
+                                        append(" 使用协议 ")
+                                        append(bot.configuration.protocol)
+                                        append(" 强制要求滑块验证, 请更换协议后重试")
+                                    }
+                                }
+                            )
+                        }
                         val ticket = loginSolverNotNull().onSolveSliderCaptcha(bot, response.url).orEmpty()
                         response = WtLogin.Login.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
                         continue@mainloop
@@ -193,7 +215,13 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     if (response.message.contains("0x9a")) { //Error(title=登录失败, message=请你稍后重试。(0x9a), errorInfo=)
                         throw RetryLaterException()
                     }
-                    throw WrongPasswordException(response.toString())
+                    val msg = response.toString()
+                    throw WrongPasswordException(buildString(capacity = msg.length) {
+                        append(msg)
+                        if (msg.contains("当前上网环境异常")) { // Error(title=禁止登录, message=当前上网环境异常，请更换网络环境或在常用设备上登录或稍后再试。, errorInfo=)
+                            append(", tips=若频繁出现, 请尝试开启设备锁")
+                        }
+                    })
                 }
 
                 is WtLogin.Login.LoginPacketResponse.DeviceLockLogin -> {
@@ -265,7 +293,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             data.friendList.forEach {
                 // atomic
                 bot.friends.delegate.add(
-                    FriendImpl(bot, bot.coroutineContext, it.friendUin, FriendInfoImpl(it))
+                    FriendImpl(bot, bot.coroutineContext, FriendInfoImpl(it))
                 ).also { currentFriendCount++ }
             }
             logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }

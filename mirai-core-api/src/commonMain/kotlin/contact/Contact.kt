@@ -32,7 +32,7 @@ public interface Contact : ContactOrBot, CoroutineScope {
      * 这个联系对象所属 [Bot].
      */
     @WeakRefProperty
-    public val bot: Bot
+    public override val bot: Bot
 
     /**
      * 可以是 QQ 号码或者群号码.

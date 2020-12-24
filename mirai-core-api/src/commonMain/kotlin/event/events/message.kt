@@ -59,7 +59,7 @@ public sealed class MessagePreSendEvent : BotEvent, BotActiveEvent, AbstractEven
  * 在发送群消息前广播的事件.
  * @see MessagePreSendEvent
  */
-public data class GroupMessagePreSendEvent internal constructor(
+public data class GroupMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Group,
     /** 待发送的消息. 修改后将会同时应用于发送. */
@@ -79,7 +79,7 @@ public sealed class UserMessagePreSendEvent : MessagePreSendEvent() {
  * 在发送好友消息前广播的事件.
  * @see MessagePreSendEvent
  */
-public data class FriendMessagePreSendEvent internal constructor(
+public data class FriendMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Friend,
     /** 待发送的消息. 修改后将会同时应用于发送. */
@@ -90,7 +90,7 @@ public data class FriendMessagePreSendEvent internal constructor(
  * 在发送群临时会话消息前广播的事件.
  * @see MessagePreSendEvent
  */
-public data class TempMessagePreSendEvent internal constructor(
+public data class TempMessagePreSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,
     /** 待发送的消息. 修改后将会同时应用于发送. */
@@ -180,7 +180,7 @@ public inline val <C : Contact> MessagePostSendEvent<C>.result: Result<MessageRe
  * 在群消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-public data class GroupMessagePostSendEvent internal constructor(
+public data class GroupMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Group,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
@@ -207,7 +207,7 @@ public sealed class UserMessagePostSendEvent<C : User> : MessagePostSendEvent<C>
  * 在好友消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-public data class FriendMessagePostSendEvent internal constructor(
+public data class FriendMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Friend,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
@@ -228,7 +228,7 @@ public data class FriendMessagePostSendEvent internal constructor(
  * 在群临时会话消息发送后广播的事件.
  * @see MessagePostSendEvent
  */
-public data class TempMessagePostSendEvent internal constructor(
+public data class TempMessagePostSendEvent @MiraiInternalApi constructor(
     /** 发信目标. */
     public override val target: Member,
     /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
@@ -342,7 +342,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     /**
      * 群消息撤回事件.
      */
-    public data class GroupRecall @PublishedApi internal constructor(
+    public data class GroupRecall @MiraiInternalApi constructor(
         public override val bot: Bot,
         public override val authorId: Long,
         public override val messageIds: IntArray,
@@ -413,7 +413,7 @@ public val MessageRecallEvent.isByBot: Boolean
  *
  * @see Contact.uploadImage 上传图片. 为广播这个事件的唯一途径
  */
-public data class BeforeImageUploadEvent internal constructor(
+public data class BeforeImageUploadEvent @MiraiInternalApi constructor(
     public val target: Contact,
     public val source: ExternalImage
 ) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
@@ -438,13 +438,13 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
     public override val bot: Bot
         get() = target.bot
 
-    public data class Succeed internal constructor(
+    public data class Succeed @MiraiInternalApi constructor(
         override val target: Contact,
         override val source: ExternalImage,
         val image: Image
     ) : ImageUploadEvent()
 
-    public data class Failed internal constructor(
+    public data class Failed @MiraiInternalApi constructor(
         override val target: Contact,
         override val source: ExternalImage,
         val errno: Int,
@@ -477,6 +477,32 @@ public class FriendMessageEvent constructor(
     public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
 
     public override fun toString(): String = "FriendMessageEvent(sender=${sender.id}, message=$message)"
+}
+
+/**
+ * 机器人收到的好友消息的事件
+ *
+ * @see MessageEvent
+ */
+public class OtherClientMessageEvent constructor(
+    public override val client: OtherClient,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable,
+    OtherClientEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromFriend) { "source provided to a FriendMessage must be an instance of OnlineMessageSource.Incoming.FromFriend" }
+    }
+
+    public override val sender: User = client.bot.asFriend // TODO 临时使用
+    public override val bot: Bot get() = super.bot
+    public override val subject: User get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromFriend get() = message.source as OnlineMessageSource.Incoming.FromFriend
+
+    public override fun toString(): String = "OtherClientMessageEvent(client=${client.kind}, message=$message)"
 }
 
 /**
@@ -525,6 +551,42 @@ public class GroupMessageEvent(
     public override fun toString(): String =
         "GroupMessageEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, permission=${permission.name}, message=$message)"
 }
+
+/**
+ * 机器人在其他客户端发送消息同步到这个客户端的事件.
+ *
+ * 本事件发生于**机器人账号**在另一个客户端向一个群或一个好友主动发送消息, 这条消息同步到机器人这个客户端上.
+ *
+ * @see MessageEvent
+ */
+public interface MessageSyncEvent : MessageEvent
+
+
+/**
+ * 机器人在其他客户端发送群消息同步到这个客户端的事件
+ *
+ * @see MessageSyncEvent
+ */
+public class GroupMessageSyncEvent(
+    override val group: Group,
+    override val message: MessageChain,
+    override val sender: Member,
+    override val senderName: String,
+    override val time: Int
+) : AbstractMessageEvent(), GroupAwareMessageEvent, MessageSyncEvent {
+    init {
+        val source = message[MessageSource] ?: error("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromGroup) { "source provided to a GroupMessage must be an instance of OnlineMessageSource.Incoming.FromGroup" }
+    }
+
+    override val bot: Bot get() = group.bot
+    override val subject: Group get() = group
+    override val source: OnlineMessageSource.Incoming.FromGroup get() = message.source as OnlineMessageSource.Incoming.FromGroup
+
+    public override fun toString(): String =
+        "GroupMessageSyncEvent(group=${group.id}, senderName=$senderName, sender=${sender.id}, message=$message)"
+}
+
 
 /**
  * 机器人收到的群临时会话消息的事件

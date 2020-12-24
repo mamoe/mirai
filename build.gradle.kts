@@ -72,11 +72,11 @@ allprojects {
     version = Versions.project
 
     repositories {
-        mavenLocal()
+        // mavenLocal() // cheching issue cause compiler exception
         // maven(url = "https://mirrors.huaweicloud.com/repository/maven")
+        jcenter()
         maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
         maven(url = "https://kotlin.bintray.com/kotlinx")
-        jcenter()
         google()
         mavenCentral()
     }
@@ -88,12 +88,19 @@ allprojects {
         configureKotlinTestSettings()
         configureKotlinCompilerSettings()
         configureKotlinExperimentalUsages()
+        //  useIr()
 
         if (isKotlinJvmProject) {
             configureFlattenSourceSets()
         }
 
         configureDokka()
+    }
+}
+
+fun Project.useIr() {
+    kotlinCompilations?.forEach { kotlinCompilation ->
+        kotlinCompilation.kotlinOptions.freeCompilerArgs += "-Xuse-ir"
     }
 }
 

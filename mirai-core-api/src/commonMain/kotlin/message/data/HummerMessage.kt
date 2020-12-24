@@ -17,6 +17,7 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.VipFace.Kind
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.safeCast
@@ -47,7 +48,7 @@ public sealed class HummerMessage : MessageContent, ConstrainSingle {
  * @see PokeMessage.Companion 使用伴生对象中的常量
  */
 @Serializable
-public data class PokeMessage internal constructor(
+public data class PokeMessage @MiraiInternalApi constructor(
     /**
      * 仅 mirai, 显示的名称
      */
@@ -196,7 +197,7 @@ public data class PokeMessage internal constructor(
  * @see VipFace.Key 使用伴生对象中的常量
  */
 @Serializable
-public data class VipFace internal constructor(
+public data class VipFace @MiraiInternalApi constructor(
     /**
      * 使用 [Companion] 中常量.
      */
