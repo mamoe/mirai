@@ -85,7 +85,6 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     /**
      * [User.id] 与 [Bot.id] 相同的 [Friend] 实例
      */
-    @MiraiExperimentalApi
     public val asFriend: Friend
 
     @Deprecated("Use asFriend instead", ReplaceWith("asFriend"))
