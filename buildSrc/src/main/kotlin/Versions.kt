@@ -52,6 +52,7 @@ object Versions {
     const val kotlinIntellijPlugin = "203-1.4.30-release-IJ7148.5" // keep to newest as kotlinCompiler
     const val intellij = "2020.3.2" // don't update easily unless you want your disk space -= 500MB
 
+    const val proguard = "7.0.1"
 }
 
 @Suppress("unused")
