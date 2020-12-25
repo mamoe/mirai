@@ -10,9 +10,11 @@
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.ClientKind
 import net.mamoe.mirai.contact.OtherClient
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 public interface OtherClientEvent : BotEvent, Packet {
     public val client: OtherClient
@@ -23,13 +25,17 @@ public interface OtherClientEvent : BotEvent, Packet {
 /**
  * 其他设备上线
  */
-public data class OtherClientOnlineEvent(
-    override val client: OtherClient
+public data class OtherClientOnlineEvent @MiraiInternalApi constructor(
+    override val client: OtherClient,
+    /**
+     * 详细设备类型，通常非 `null`.
+     */
+    val kind: ClientKind?
 ) : OtherClientEvent, AbstractEvent()
 
 /**
  * 其他设备离线
  */
 public data class OtherClientOfflineEvent(
-    override val client: OtherClient
+    override val client: OtherClient,
 ) : OtherClientEvent, AbstractEvent()

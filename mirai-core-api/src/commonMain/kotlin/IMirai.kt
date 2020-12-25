@@ -14,9 +14,7 @@
 package net.mamoe.mirai
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.contact.Contact
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
@@ -186,6 +184,14 @@ public interface IMirai : LowLevelApiAccessor {
         blackList: Boolean = false,
         message: String = ""
     )
+
+    /**
+     * 获取在线的 [OtherClient] 列表
+     */
+    @JvmBlockingBridge
+    public suspend fun getOnlineOtherClientsList(
+        bot: Bot,
+    ): List<OtherClientInfo>
 
     /**
      * 忽略加群验证（需管理员权限）

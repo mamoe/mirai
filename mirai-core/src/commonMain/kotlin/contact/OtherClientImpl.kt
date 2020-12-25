@@ -10,9 +10,8 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.ClientKind
 import net.mamoe.mirai.contact.OtherClient
-import net.mamoe.mirai.internal.network.protocol.data.jce.InstanceInfo
+import net.mamoe.mirai.contact.OtherClientInfo
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
@@ -20,13 +19,10 @@ import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.cast
 import kotlin.coroutines.CoroutineContext
 
-internal val OtherClient.instanceInfo: InstanceInfo get() = this.cast<OtherClientImpl>().instanceInfo
-
 internal class OtherClientImpl(
     bot: Bot,
     coroutineContext: CoroutineContext,
-    override val kind: ClientKind,
-    val instanceInfo: InstanceInfo
+    override val info: OtherClientInfo,
 ) : OtherClient, AbstractContact(bot, coroutineContext) {
     override suspend fun sendMessage(message: Message): MessageReceipt<OtherClient> {
         throw UnsupportedOperationException("OtherClientImpl.sendMessage is not yet supported.")
@@ -37,7 +33,7 @@ internal class OtherClientImpl(
     }
 
     override fun toString(): String {
-        return "OtherClient(bot=${bot.id},kind=$kind)"
+        return "OtherClient(bot=${bot.id},deviceName=${info.deviceName},platform=${info.platform})"
     }
 }
 

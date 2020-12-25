@@ -28,12 +28,12 @@ class EventTests {
     fun testSubscribeInplace() {
         resetEventListeners()
         runBlocking {
-            val subscriber = subscribeAlways<TestEvent> {
+            val subscriber = globalEventChannel().subscribeAlways<TestEvent> {
                 triggered = true
             }
 
             assertTrue(TestEvent().broadcast().triggered)
-            subscriber.complete()
+            assertTrue { subscriber.complete() }
         }
     }
 
@@ -41,7 +41,7 @@ class EventTests {
     fun testSubscribeGlobalScope() {
         resetEventListeners()
         runBlocking {
-            GlobalScope.subscribeAlways<TestEvent> {
+            GlobalScope.globalEventChannel().subscribeAlways<TestEvent> {
                 triggered = true
             }
 
@@ -57,7 +57,7 @@ class EventTests {
         for (p in Listener.EventPriority.values()) {
             repeat(2333) {
                 listeners++
-                GlobalScope.subscribeAlways<ParentEvent> {
+                GlobalScope.globalEventChannel().subscribeAlways<ParentEvent> {
                     counter.getAndIncrement()
                 }
             }
@@ -84,7 +84,7 @@ class EventTests {
                     launch {
                         repeat(5000) {
                             registered.getAndIncrement()
-                            GlobalScope.subscribeAlways<ParentEvent>(
+                            GlobalScope.globalEventChannel().subscribeAlways<ParentEvent>(
                                 priority = priority
                             ) {
                                 called.getAndIncrement()
@@ -118,7 +118,7 @@ class EventTests {
                     repeat(444) {
                         registered.getAndIncrement()
 
-                        supervisor.subscribeAlways<ParentEvent> {
+                        supervisor.globalEventChannel().subscribeAlways<ParentEvent> {
                             called.getAndIncrement()
                         }
                     }
@@ -157,7 +157,7 @@ class EventTests {
         resetEventListeners()
         runBlocking {
             val job: CompletableJob
-            job = subscribeAlways<ParentEvent> {
+            job = globalEventChannel().subscribeAlways<ParentEvent> {
                 triggered = true
             }
 
@@ -171,7 +171,7 @@ class EventTests {
         resetEventListeners()
         runBlocking {
             val job: CompletableJob
-            job = subscribeAlways<ParentEvent> {
+            job = globalEventChannel().subscribeAlways<ParentEvent> {
                 triggered = true
             }
             assertTrue(ChildChildEvent().broadcast().triggered)
@@ -181,11 +181,11 @@ class EventTests {
 
     open class PriorityTestEvent : AbstractEvent() {}
 
-    fun singleThreaded(step: StepUtil, invoke: suspend CoroutineScope.() -> Unit) {
+    fun singleThreaded(step: StepUtil, invoke: suspend EventChannel<Event>.() -> Unit) {
         // runBlocking 会完全堵死, 没法退出
         val scope = CoroutineScope(Executor { it.run() }.asCoroutineDispatcher())
         val job = scope.launch {
-            invoke(scope)
+            invoke(scope.globalEventChannel())
         }
         kotlinx.coroutines.runBlocking {
             job.join()

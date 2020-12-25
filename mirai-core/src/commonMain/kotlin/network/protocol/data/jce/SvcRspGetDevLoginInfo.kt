@@ -13,11 +13,14 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 
-@Suppress("ClassName", "SpellCheckingInspection")
 @Serializable
-internal class shareData(
-    @JvmField @TarsId(0) val pkgname: String = "",
-    @JvmField @TarsId(1) val msgtail: String = "",
-    @JvmField @TarsId(2) val picurl: String = "",
-    @JvmField @TarsId(3) val url: String = ""
+internal class SvcRspGetDevLoginInfo(
+    @JvmField @TarsId(0) val iResult: Int,
+    @JvmField @TarsId(1) val result: String? = "",
+    @JvmField @TarsId(2) val iNextItemIndex: Long,
+    @JvmField @TarsId(3) val iTotalItemCount: Long,
+    @JvmField @TarsId(4) val vecCurrentLoginDevInfo: List<SvcDevLoginInfo>? = null,
+    @JvmField @TarsId(5) val vecHistoryLoginDevInfo: List<SvcDevLoginInfo>? = null,
+    @JvmField @TarsId(6) val vecAuthLoginDevInfo: List<SvcDevLoginInfo>? = null
 ) : JceStruct
+

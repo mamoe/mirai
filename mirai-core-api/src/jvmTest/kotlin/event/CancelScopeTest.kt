@@ -21,7 +21,7 @@ internal class CancelScopeTest {
         val scope = CoroutineScope(SupervisorJob())
 
         var got = false
-        scope.subscribeAlways<TestEvent> {
+        scope.globalEventChannel().subscribeAlways<TestEvent> {
             got = true
         }
 

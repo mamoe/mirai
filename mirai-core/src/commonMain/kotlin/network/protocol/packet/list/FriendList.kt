@@ -47,10 +47,10 @@ internal class FriendList {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
-                        sFuncName = "GetTroopMemberListReq",
-                        sServantName = "mqq.IMService.FriendListServiceServantObj",
-                        iVersion = 3,
-                        iRequestId = client.nextRequestPacketRequestId(),
+                        funcName = "GetTroopMemberListReq",
+                        servantName = "mqq.IMService.FriendListServiceServantObj",
+                        version = 3,
+                        requestId = client.nextRequestPacketRequestId(),
                         sBuffer = jceRequestSBuffer(
                             "GTML",
                             GetTroopMemberListReq.serializer(),
@@ -97,11 +97,11 @@ internal class FriendList {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
-                        sFuncName = "GetTroopListReqV2Simplify",
-                        sServantName = "mqq.IMService.FriendListServiceServantObj",
-                        iVersion = 3,
+                        funcName = "GetTroopListReqV2Simplify",
+                        servantName = "mqq.IMService.FriendListServiceServantObj",
+                        version = 3,
                         cPacketType = 0x00,
-                        iRequestId = client.nextRequestPacketRequestId(),
+                        requestId = client.nextRequestPacketRequestId(),
                         sBuffer = jceRequestSBuffer(
                             "GetTroopListReqV2Simplify",
                             GetTroopListReqV2Simplify.serializer(),
@@ -153,11 +153,11 @@ internal class FriendList {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
-                        sFuncName = "GetFriendListReq",
-                        sServantName = "mqq.IMService.FriendListServiceServantObj",
-                        iVersion = 3,
+                        funcName = "GetFriendListReq",
+                        servantName = "mqq.IMService.FriendListServiceServantObj",
+                        version = 3,
                         cPacketType = 0x003,
-                        iRequestId = 1921334514,
+                        requestId = 1921334514,
                         sBuffer = jceRequestSBuffer(
                             "FL",
                             GetFriendListReq.serializer(),

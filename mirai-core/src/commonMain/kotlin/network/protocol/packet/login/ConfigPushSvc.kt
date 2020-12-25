@@ -244,10 +244,10 @@ msfwifi.3g.qq.com ?
                         writeJceStruct(
                             RequestPacket.serializer(),
                             RequestPacket(
-                                iRequestId = 0,
-                                iVersion = 3,
-                                sServantName = "QQService.ConfigPushSvc.MainServant",
-                                sFuncName = "PushResp",
+                                requestId = 0,
+                                version = 3,
+                                servantName = "QQService.ConfigPushSvc.MainServant",
+                                funcName = "PushResp",
                                 sBuffer = jceRequestSBuffer(
                                     "PushResp",
                                     PushResp.serializer(),

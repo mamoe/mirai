@@ -7,90 +7,134 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+@file:Suppress("unused", "SpellCheckingInspection")
+
 package net.mamoe.mirai.internal.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
+import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
-import kotlin.jvm.JvmField
 
-internal class Oidb0x769 {
+@Serializable
+internal class Oidb0x769 : ProtoBuf {
     @Serializable
-    internal class RequestBody(
-        @ProtoNumber(1) @JvmField val rpt_config_list: List<ConfigSeq>
-        // @SerialId(2) @JvmField val msg_device_info: DeviceInfo,
-        // @SerialId(3) @JvmField val str_info: String = "",
-        // @SerialId(4) @JvmField val province: String,
-        // @SerialId(5) @JvmField val city: String,
-        // @SerialId(6) @JvmField val req_debug_msg: Int = 0,
-        // @SerialId(101) @JvmField val query_uin_package_usage_req: QueryUinPackageUsageReq
+    internal class Camera(
+        @JvmField @ProtoNumber(1) val primary: Long = 0L,
+        @JvmField @ProtoNumber(2) val secondary: Long = 0L,
+        @JvmField @ProtoNumber(3) val flash: Boolean = false
     ) : ProtoBuf
 
     @Serializable
-    internal class QueryUinPackageUsageReq(
-        @ProtoNumber(1) @JvmField val type: Int,
-        @ProtoNumber(2) @JvmField val uinFileSize: Long = 0
+    internal class Config(
+        @JvmField @ProtoNumber(1) val type: Int = 0,
+        @JvmField @ProtoNumber(2) val version: Int = 0,
+        @JvmField @ProtoNumber(3) val contentList: List<String> = emptyList(),
+        @JvmField @ProtoNumber(4) val debugMsg: String = "",
+        @JvmField @ProtoNumber(5) val msgContentList: List<Content> = emptyList()
     ) : ProtoBuf
 
     @Serializable
     internal class ConfigSeq(
-        @ProtoNumber(1) @JvmField val type: Int, // uint
-        @ProtoNumber(2) @JvmField val version: Int // uint
+        @JvmField @ProtoNumber(1) val type: Int = 0,
+        @JvmField @ProtoNumber(2) val version: Int = 0
     ) : ProtoBuf
 
     @Serializable
-    internal class DeviceInfo(
-        @ProtoNumber(1) @JvmField val brand: String,
-        @ProtoNumber(2) @JvmField val model: String
-        //@SerialId(3) @JvmField val os: OS,
-        //@SerialId(4) @JvmField val cpu: CPU,
-        //@SerialId(5) @JvmField val memory: Memory,
-        //@SerialId(6) @JvmField val storage: Storage,
-        //@SerialId(7) @JvmField val screen: Screen,
-        //@SerialId(8) @JvmField val camera: Camera
-    ) : ProtoBuf
-
-    @Serializable
-    internal class OS(
-        @ProtoNumber(1) @JvmField val type: Int = 1,
-        @ProtoNumber(2) @JvmField val version: String,
-        @ProtoNumber(3) @JvmField val sdk: String,
-        @ProtoNumber(4) @JvmField val kernel: String,
-        @ProtoNumber(5) @JvmField val rom: String
-    ) : ProtoBuf
-
-    @Serializable
-    internal class Camera(
-        @ProtoNumber(1) @JvmField val primary: Long,
-        @ProtoNumber(2) @JvmField val secondary: Long,
-        @ProtoNumber(3) @JvmField val flag: Boolean
+    internal class Content(
+        @JvmField @ProtoNumber(1) val taskId: Int = 0,
+        @JvmField @ProtoNumber(2) val compress: Int = 0,
+        @JvmField @ProtoNumber(10) val content: ByteArray = EMPTY_BYTE_ARRAY
     ) : ProtoBuf
 
     @Serializable
     internal class CPU(
-        @ProtoNumber(1) @JvmField val model: String,
-        @ProtoNumber(2) @JvmField val frequency: Int,
-        @ProtoNumber(3) @JvmField val cores: Int
+        @JvmField @ProtoNumber(1) val model: String = "",
+        @JvmField @ProtoNumber(2) val cores: Int = 0,
+        @JvmField @ProtoNumber(3) val frequency: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class DeviceInfo(
+        @JvmField @ProtoNumber(1) val brand: String = "",
+        @JvmField @ProtoNumber(2) val model: String = "",
+        @JvmField @ProtoNumber(3) val os: OS? = null,
+        @JvmField @ProtoNumber(4) val cpu: CPU? = null,
+        @JvmField @ProtoNumber(5) val memory: Memory? = null,
+        @JvmField @ProtoNumber(6) val storage: Storage? = null,
+        @JvmField @ProtoNumber(7) val screen: Screen? = null,
+        @JvmField @ProtoNumber(8) val camera: Camera? = null
     ) : ProtoBuf
 
     @Serializable
     internal class Memory(
-        @ProtoNumber(1) @JvmField val total: Int,
-        @ProtoNumber(2) @JvmField val process: Int
+        @JvmField @ProtoNumber(1) val total: Long = 0L,
+        @JvmField @ProtoNumber(2) val process: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    internal class OS(
+        //1 IOS | 2 ANDROID | 3 OTHER
+        @JvmField @ProtoNumber(1) val type: Int /* enum */ = 1,
+        @JvmField @ProtoNumber(2) val version: String = "",
+        @JvmField @ProtoNumber(3) val sdk: String = "",
+        @JvmField @ProtoNumber(4) val kernel: String = "",
+        @JvmField @ProtoNumber(5) val rom: String = ""
+    ) : ProtoBuf
+
+    @Serializable
+    internal class QueryUinPackageUsageReq(
+        @JvmField @ProtoNumber(1) val type: Int = 0,
+        @JvmField @ProtoNumber(2) val uinFileSize: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    internal class QueryUinPackageUsageRsp(
+        @JvmField @ProtoNumber(1) val status: Int = 0,
+        @JvmField @ProtoNumber(2) val leftUinNum: Long = 0L,
+        @JvmField @ProtoNumber(3) val maxUinNum: Long = 0L,
+        @JvmField @ProtoNumber(4) val proportion: Int = 0,
+        @JvmField @ProtoNumber(10) val uinPackageUsedList: List<UinPackageUsedInfo> = emptyList()
+    ) : ProtoBuf
+
+    @Serializable
+    internal class ReqBody(
+        @JvmField @ProtoNumber(1) val configList: List<ConfigSeq> = emptyList(),
+        @JvmField @ProtoNumber(2) val msgDeviceInfo: DeviceInfo? = null,
+        @JvmField @ProtoNumber(3) val info: String = "",
+        @JvmField @ProtoNumber(4) val province: String = "",
+        @JvmField @ProtoNumber(5) val city: String = "",
+        @JvmField @ProtoNumber(6) val reqDebugMsg: Int = 0,
+        @JvmField @ProtoNumber(101) val queryUinPackageUsageReq: QueryUinPackageUsageReq? = null
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RspBody(
+        @JvmField @ProtoNumber(1) val result: Int = 0,
+        @JvmField @ProtoNumber(2) val configList: List<Config> = emptyList(),
+        @JvmField @ProtoNumber(101) val queryUinPackageUsageRsp: QueryUinPackageUsageRsp? = null
     ) : ProtoBuf
 
     @Serializable
     internal class Screen(
-        @ProtoNumber(1) @JvmField val model: String,
-        @ProtoNumber(2) @JvmField val width: Int,
-        @ProtoNumber(3) @JvmField val height: Int,
-        @ProtoNumber(4) @JvmField val dpi: Int,
-        @ProtoNumber(5) @JvmField val multiTouch: Boolean
+        @JvmField @ProtoNumber(1) val model: String = "",
+        @JvmField @ProtoNumber(2) val width: Int = 0,
+        @JvmField @ProtoNumber(3) val height: Int = 0,
+        @JvmField @ProtoNumber(4) val dpi: Int = 0,
+        @JvmField @ProtoNumber(5) val multiTouch: Boolean = false
     ) : ProtoBuf
 
     @Serializable
     internal class Storage(
-        @ProtoNumber(1) @JvmField val builtin: Int,
-        @ProtoNumber(2) @JvmField val external: Int
+        @JvmField @ProtoNumber(1) val builtin: Long = 0L,
+        @JvmField @ProtoNumber(2) val external: Long = 0L
+    ) : ProtoBuf
+
+    @Serializable
+    internal class UinPackageUsedInfo(
+        @JvmField @ProtoNumber(1) val ruleId: Int = 0,
+        @JvmField @ProtoNumber(2) val author: String = "",
+        @JvmField @ProtoNumber(3) val url: String = "",
+        @JvmField @ProtoNumber(4) val uinNum: Long = 0L
     ) : ProtoBuf
 }

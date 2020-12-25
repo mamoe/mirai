@@ -6,16 +6,13 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+package  net.mamoe.mirai.internal.network.protocol.data.jce
 
-publishing {
-    repositories {
-        maven {
-            url = "https://api.bintray.com/maven/him188moe/mirai/mirai-core/;publish=1;override=1"
+import kotlinx.serialization.Serializable
+import net.mamoe.mirai.internal.utils.io.JceStruct
+import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 
-            credentials {
-                username = upload.Bintray.getUser(project)
-                password = upload.Bintray.getKey(project)
-            }
-        }
-    }
-}
+@Serializable
+internal class DeviceItemDes(
+    @JvmField @TarsId(0) val vecItemDes: ByteArray
+) : JceStruct

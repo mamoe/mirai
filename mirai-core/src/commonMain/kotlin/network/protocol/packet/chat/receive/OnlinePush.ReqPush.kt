@@ -135,9 +135,9 @@ internal object OnlinePushReqPush : IncomingPacketFactory<OnlinePushReqPush.ReqP
             writeJceStruct(
                 RequestPacket.serializer(),
                 RequestPacket(
-                    sServantName = "OnlinePush",
-                    sFuncName = "SvcRespPushMsg",
-                    iRequestId = sequenceId,
+                    servantName = "OnlinePush",
+                    funcName = "SvcRespPushMsg",
+                    requestId = sequenceId,
                     sBuffer = jceRequestSBuffer(
                         "resp",
                         OnlinePushPack.SvcRespPushMsg.serializer(),

@@ -348,11 +348,11 @@ private fun Method.registerEvent(
         }
         when (kotlinFunction.returnType.classifier) {
             Unit::class, Nothing::class -> {
-                scope.subscribeAlways(
+                scope.globalEventChannel().subscribeAlways(
                     param[1].type.classifier as KClass<out Event>,
-                    priority = annotation.priority,
-                    concurrency = annotation.concurrency,
-                    coroutineContext = coroutineContext
+                    coroutineContext,
+                    annotation.concurrency,
+                    annotation.priority
                 ) {
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
@@ -362,11 +362,11 @@ private fun Method.registerEvent(
                 }.also { listener = it }
             }
             ListeningStatus::class -> {
-                scope.subscribe(
+                scope.globalEventChannel().subscribe(
                     param[1].type.classifier as KClass<out Event>,
-                    priority = annotation.priority,
-                    concurrency = annotation.concurrency,
-                    coroutineContext = coroutineContext
+                    coroutineContext,
+                    annotation.concurrency,
+                    annotation.priority
                 ) {
                     if (annotation.ignoreCancelled) {
                         if ((this as? CancellableEvent)?.isCancelled != true) {
@@ -410,21 +410,21 @@ private fun Method.registerEvent(
 
         when (this.returnType) {
             Void::class.java, Void.TYPE, Nothing::class.java -> {
-                scope.subscribeAlways(
+                scope.globalEventChannel().subscribeAlways(
                     paramType.kotlin as KClass<out Event>,
-                    priority = annotation.priority,
-                    concurrency = annotation.concurrency,
-                    coroutineContext = coroutineContext
+                    coroutineContext,
+                    annotation.concurrency,
+                    annotation.priority
                 ) {
                     callMethod(this)
                 }
             }
             ListeningStatus::class.java -> {
-                scope.subscribe(
+                scope.globalEventChannel().subscribe(
                     paramType.kotlin as KClass<out Event>,
-                    priority = annotation.priority,
-                    concurrency = annotation.concurrency,
-                    coroutineContext = coroutineContext
+                    coroutineContext,
+                    annotation.concurrency,
+                    annotation.priority
                 ) {
                     callMethod(this) as ListeningStatus?
                         ?: error("Java method EventHandler cannot return `null`: $this")

@@ -11,6 +11,7 @@
 
 package net.mamoe.mirai.message
 
+import kotlinx.coroutines.Deferred
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
@@ -20,6 +21,7 @@ import net.mamoe.mirai.message.MessageReceipt.Companion.quote
 import net.mamoe.mirai.message.MessageReceipt.Companion.quoteReply
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
+import net.mamoe.mirai.message.data.MessageSource.Key.recallIn
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 /**
@@ -56,26 +58,37 @@ public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
 
     public companion object {
         /**
-         * 撤回这条消息. [recallMessage] 或 [recallIn] 只能被调用一次.
+         * 撤回这条消息.
          *
          * @see IMirai.recallMessage
-         * @throws IllegalStateException 当此消息已经被撤回或正计划撤回时
          */
         @JvmBlockingBridge
+        @JvmStatic
         public suspend inline fun MessageReceipt<*>.recall() {
             return Mirai.recallMessage(target.bot, source)
         }
 
         /**
-         * 引用这条消息.
-         * @see MessageChain.quote 引用一条消息
+         * 在一段时间后撤回这条消息.
+         *
+         * @see IMirai.recallMessage
          */
+        @JvmStatic
+        @Suppress("DeferredIsResult")
+        public fun MessageReceipt<*>.recallIn(millis: Long): Deferred<Unit> = this.source.recallIn(millis)
+
+        /**
+         * 引用这条消息.
+         * @see MessageSource.quote 引用一条消息
+         */
+        @JvmStatic
         public inline fun MessageReceipt<*>.quote(): QuoteReply = this.source.quote()
 
         /**
          * 引用这条消息并回复.
-         * @see MessageChain.quote 引用一条消息
+         * @see MessageSource.quote 引用一条消息
          */
+        @JvmStatic
         @JvmBlockingBridge
         public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: Message): MessageReceipt<C> {
             @Suppress("UNCHECKED_CAST")
@@ -84,9 +97,10 @@ public open class MessageReceipt<out C : Contact> @MiraiInternalApi constructor(
 
         /**
          * 引用这条消息并回复.
-         * @see MessageChain.quote 引用一条消息
+         * @see MessageSource.quote 引用一条消息
          */
         @JvmBlockingBridge
+        @JvmStatic
         public suspend inline fun <C : Contact> MessageReceipt<C>.quoteReply(message: String): MessageReceipt<C> {
             return this.quoteReply(PlainText(message))
         }

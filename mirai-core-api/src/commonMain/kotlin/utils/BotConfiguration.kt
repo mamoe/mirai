@@ -214,21 +214,22 @@ public open class BotConfiguration { // open for Java
         botLoggerSupplier = { SingleFileLogger(identity(it), file) }
     }
 
-    @Suppress("ACTUAL_WITHOUT_EXPECT")
     public enum class MiraiProtocol {
         /**
-         * Android 手机.
+         * Android 手机. 所有功能都支持.
          */
         ANDROID_PHONE,
 
         /**
          * Android 平板.
+         *
+         * 注意: 不支持戳一戳事件解析
          */
         ANDROID_PAD,
 
         /**
          * Android 手表.
-         * */
+         */
         ANDROID_WATCH,
 
     }

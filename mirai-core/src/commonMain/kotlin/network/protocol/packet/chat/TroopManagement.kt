@@ -406,11 +406,11 @@ internal class TroopManagement {
                 writeJceStruct(
                     RequestPacket.serializer(),
                     RequestPacket(
-                        sFuncName = "ModifyGroupCardReq",
-                        sServantName = "mqq.IMService.FriendListServiceServantObj",
-                        iVersion = 3,
+                        funcName = "ModifyGroupCardReq",
+                        servantName = "mqq.IMService.FriendListServiceServantObj",
+                        version = 3,
                         cPacketType = 0x00,
-                        iRequestId = client.nextRequestPacketRequestId(),
+                        requestId = client.nextRequestPacketRequestId(),
                         sBuffer = jceRequestSBuffer(
                             "MGCREQ",
                             ModifyGroupCardReq.serializer(),
