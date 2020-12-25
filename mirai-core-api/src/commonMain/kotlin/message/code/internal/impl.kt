@@ -13,6 +13,7 @@ package net.mamoe.mirai.message.code.internal
 
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.MiraiInternalApi
 
 
 internal fun String.parseMiraiCodeImpl(contact: Contact?): MessageChain = buildMessageChain {
@@ -132,7 +133,8 @@ internal class MiraiCodeParser(
     val mapper: Contact?.(MatchResult.Destructured) -> Message?
 )
 
-internal fun StringBuilder.appendAsMiraiCode(value: String) = apply {
+@MiraiInternalApi
+public fun StringBuilder.appendAsMiraiCode(value: String): StringBuilder = apply {
     value.forEach { char ->
         when (char) {
             '[', ']',
