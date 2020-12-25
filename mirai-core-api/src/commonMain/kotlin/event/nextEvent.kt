@@ -73,7 +73,7 @@ internal suspend inline fun <E : Event> nextEventImpl(
     priority: Listener.EventPriority,
     crossinline filter: (E) -> Boolean
 ): E = suspendCancellableCoroutine { cont ->
-    coroutineScope.subscribe(eventClass, priority = priority) {
+    coroutineScope.globalEventChannel().subscribe(eventClass, priority = priority) {
         if (!filter(this)) return@subscribe ListeningStatus.LISTENING
 
         try {
@@ -92,7 +92,7 @@ internal suspend inline fun <E : BotEvent> nextBotEventImpl(
     coroutineScope: CoroutineScope,
     priority: Listener.EventPriority
 ): E = suspendCancellableCoroutine { cont ->
-    coroutineScope.subscribe(eventClass, priority = priority) {
+    coroutineScope.globalEventChannel().subscribe(eventClass, priority = priority) {
         try {
             if (this.bot == bot) cont.resume(this)
         } catch (e: Exception) {

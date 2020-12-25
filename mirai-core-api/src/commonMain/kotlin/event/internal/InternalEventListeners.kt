@@ -22,30 +22,6 @@ import kotlin.coroutines.coroutineContext
 import kotlin.reflect.KClass
 
 
-internal fun <L : Listener<E>, E : Event> KClass<out E>.subscribeInternal(listener: L): L {
-    with(GlobalEventListeners[listener.priority]) {
-        @Suppress("UNCHECKED_CAST")
-        val node = ListenerRegistry(listener as Listener<Event>, this@subscribeInternal)
-        add(node)
-        listener.invokeOnCompletion {
-            this.remove(node)
-        }
-    }
-    return listener
-}
-
-@Suppress("FunctionName")
-internal fun <E : Event> CoroutineScope.Handler(
-    coroutineContext: CoroutineContext,
-    concurrencyKind: Listener.ConcurrencyKind,
-    priority: Listener.EventPriority = EventPriority.NORMAL,
-    handler: suspend (E) -> ListeningStatus
-): Handler<E> {
-    @OptIn(ExperimentalCoroutinesApi::class) // don't remove
-    val context = this.newCoroutineContext(coroutineContext)
-    return Handler(context[Job], context, handler, concurrencyKind, priority)
-}
-
 /**
  * 事件处理器.
  */
