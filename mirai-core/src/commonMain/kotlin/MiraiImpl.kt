@@ -30,7 +30,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
