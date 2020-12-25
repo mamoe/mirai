@@ -199,7 +199,7 @@ public interface MarketFace : CodableMessage, HummerMessage {
         get() = Key
 
     public companion object Key :
-        AbstractPolymorphicMessageKey<MessageContent, MarketFace>(MessageContent, { it.safeCast() })
+        AbstractPolymorphicMessageKey<HummerMessage, MarketFace>(HummerMessage, { it.safeCast() })
 
     override fun contentToString(): String = name
 }
