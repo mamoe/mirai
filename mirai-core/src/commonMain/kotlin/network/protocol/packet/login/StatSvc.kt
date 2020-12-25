@@ -94,6 +94,20 @@ internal class StatSvc {
             override fun toString(): String = "Response(StatSvc.register)"
         }
 
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val packet = readUniPacket(SvcRespRegister.serializer())
+            if (packet.updateFlag.toInt() == 1) {
+                //TODO 加载好友列表
+            }
+            if (packet.largeSeqUpdate.toInt() == 1) {
+                //TODO 刷新好友列表
+            }
+            packet.iHelloInterval.let {
+                bot.configuration.heartbeatPeriodMillis = it.times(1000).toLong()
+            }
+
+            return Response
+        }
 
         operator fun invoke(
             client: QQAndroidClient,
@@ -155,8 +169,8 @@ internal class StatSvc {
                                 var44.strVendorOSName = ROMUtil.getRomVersion(20);
                                 */
                                 bytes_0x769_reqbody = ProtoBuf.encodeToByteArray(
-                                    Oidb0x769.RequestBody.serializer(), Oidb0x769.RequestBody(
-                                        rpt_config_list = listOf(
+                                    Oidb0x769.ReqBody.serializer(), Oidb0x769.ReqBody(
+                                        configList = listOf(
                                             Oidb0x769.ConfigSeq(
                                                 type = 46,
                                                 version = 0
@@ -180,10 +194,6 @@ internal class StatSvc {
             return split('.').foldIndexed(0L) { index: Int, acc: Long, s: String ->
                 acc or (((s.toLongOrNull() ?: 0) shl (index * 16)))
             }
-        }
-
-        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
-            return Response
         }
     }
 
