@@ -37,7 +37,11 @@ public object SwingSolver : LoginSolver() {
 
     public override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String {
         return openWindow("Mirai SliderCaptcha(${bot.id})") {
-            JLabel("需要滑动验证码, 完成后请关闭该窗口").append()
+            JLabel("""
+                <html>
+                需要滑动验证码, 完成后请输入ticket<br/>
+                Chrome浏览器扩展下载: https://github.com/project-mirai/mirai-login-solver-selenium
+                """.trimIndent()).append()
             // Try to open browser safely. #694
             kotlin.runCatching {
                 Desktop.getDesktop().browse(URI(url))

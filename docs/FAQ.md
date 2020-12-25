@@ -32,6 +32,9 @@ mirai 已经可以用于各项工作，但我们并不保证完全的稳定。�
 请更换 OpenJDK。该问题是由于BouncyCastle在重打包后丢失Jar签名引起的。  
 ~~多发于Oracle JDK~~
 
+### 如何完成滑动验证码
+`@see` [mirai-login-solver-selenium](https://github.com/project-mirai/mirai-login-solver-selenium#mirai-login-solver-selenium)
+
 ## 开发相关
 
 > 欢迎帮助维护这个问题列表: 提交 PR 或者 issue.

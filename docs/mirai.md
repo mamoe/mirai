@@ -29,6 +29,10 @@ mirai 项目整体由 核心 (`mirai-core`) 与 控制台(`mirai-console`) 组�
 - `mirai-serialization` 依赖 `mirai-core`, 是 mirai-core 的序列化支持模块. 提供 `Message` 类型的序列化支持与相关 [mirai 码](MiraiCodeSepecification.md) 支持.  
   此模块自 mirai `1.1.0` 起可用, 引用方法同 `mirai-core`.
 
+- [`mirai-login-solver-selenium`](https://github.com/project-mirai/mirai-login-solver-selenium).
+
+  `@see` [`mirai-login-solver-selenium/README.md`](https://github.com/project-mirai/mirai-login-solver-selenium#mirai-login-solver-selenium)
+
 - [`mirai-console`](https://github.com/mamoe/mirai-console) 是基于 `mirai-core` 的, 支持插件加载, 指令系统, 和配置等的**控制台框架**.  
   **注意: 此模块正在重写, 短时间内不可用**  
   console 由 '后端' 和 '前端' 组成.  
