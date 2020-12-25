@@ -69,7 +69,7 @@ fun initTestEnvironment() {
         }
 
         override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver =
-            LoginSolver.Default
+            LoginSolver.Default!!
 
         override fun createLogger(identity: String?): MiraiLogger {
             return PlatformLogger(identity)

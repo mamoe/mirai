@@ -78,7 +78,7 @@ class MiraiConsoleImplementationTerminal
     override val isAnsiSupported: Boolean get() = true
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
-        return DefaultLoginSolver(input = { requestInput("LOGIN> ") })
+        return StandardCharImageLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
     override fun createLogger(identity: String?): MiraiLogger = LoggerCreator(identity)

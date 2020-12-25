@@ -52,7 +52,7 @@ tasks.withType<org.jetbrains.intellij.tasks.PatchPluginXmlTask> {
         </ul>
     """.trimIndent())
     changeNotes("""
-        See https://github.com/mamoe/mirai-console/releases
+        See <a href="https://github.com/mamoe/mirai-console/releases">https://github.com/mamoe/mirai-console/releases</a>
     """.trimIndent())
 }
 
