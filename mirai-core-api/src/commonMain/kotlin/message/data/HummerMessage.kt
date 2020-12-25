@@ -18,6 +18,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
 import net.mamoe.mirai.message.data.VipFace.Kind
+import net.mamoe.mirai.utils.MiraiInternalApi
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.safeCast
@@ -28,8 +29,7 @@ import net.mamoe.mirai.utils.safeCast
  * @see PokeMessage 戳一戳
  * @see FlashImage 闪照
  */
-@Serializable
-public sealed class HummerMessage : MessageContent, ConstrainSingle {
+public interface HummerMessage : MessageContent, ConstrainSingle {
     public companion object Key :
         AbstractPolymorphicMessageKey<MessageContent, HummerMessage>(MessageContent, { it.castOrNull() })
     // has service type etc.
@@ -48,7 +48,7 @@ public sealed class HummerMessage : MessageContent, ConstrainSingle {
  * @see PokeMessage.Companion 使用伴生对象中的常量
  */
 @Serializable
-public data class PokeMessage internal constructor(
+public data class PokeMessage @MiraiInternalApi constructor(
     /**
      * 仅 mirai, 显示的名称
      */
@@ -56,7 +56,7 @@ public data class PokeMessage internal constructor(
 
     public val pokeType: Int, // 'type' is used by serialization
     public val id: Int
-) : HummerMessage(), CodableMessage {
+) : HummerMessage, CodableMessage {
     @ExperimentalMessageKey
     override val key: MessageKey<HummerMessage>
         get() = Key
@@ -186,6 +186,30 @@ public data class PokeMessage internal constructor(
     //pbElem=08 01 18 00 20 FF FF FF FF 0F 2A 00 32 00 38 00 50 00
     //serviceType=0x00000002(2)
 }
+////////////////////////////////////
+////////// MARKET FACE /////////////
+////////////////////////////////////
+/**
+ * 商城表情
+ *
+ * 目前不支持直接发送，可支持转发，但其取决于表情是否可使用.
+ *
+ * ## mirai 码支持
+ * 格式: &#91;mirai:marketface:*[id]*,*[name]*&#93;
+ */
+public interface MarketFace : CodableMessage, HummerMessage {
+    public val name: String
+    public val id: Int
+
+    @ExperimentalMessageKey
+    override val key: MessageKey<MarketFace>
+        get() = Key
+
+    public companion object Key :
+        AbstractPolymorphicMessageKey<HummerMessage, MarketFace>(HummerMessage, { it.safeCast() })
+
+    override fun contentToString(): String = name
+}
 
 
 ////////////////////////////////////
@@ -203,13 +227,13 @@ public data class PokeMessage internal constructor(
  * @see VipFace.Key 使用伴生对象中的常量
  */
 @Serializable
-public data class VipFace internal constructor(
+public data class VipFace @MiraiInternalApi constructor(
     /**
      * 使用 [Companion] 中常量.
      */
     public val kind: Kind,
     public val count: Int
-) : HummerMessage(), CodableMessage {
+) : HummerMessage, CodableMessage {
     @Serializable
     public data class Kind(
         val id: Int,
@@ -306,7 +330,7 @@ public data class FlashImage(
      */
     @Contextual
     public val image: Image
-) : MessageContent, HummerMessage(), CodableMessage, ConstrainSingle {
+) : MessageContent, HummerMessage, CodableMessage, ConstrainSingle {
     @ExperimentalMessageKey
     override val key: MessageKey<FlashImage>
         get() = Key

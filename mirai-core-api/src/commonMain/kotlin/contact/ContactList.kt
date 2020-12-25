@@ -34,6 +34,7 @@ internal constructor(@JvmField @MiraiInternalApi public val delegate: Concurrent
     public fun getOrNull(id: Long): C? = get(id)
 
     public operator fun get(id: Long): C? = delegate.firstOrNull { it.id == id }
+    public fun getOrFail(id: Long): C = get(id) ?: throw NoSuchElementException("Contact $id not found.")
     public fun remove(id: Long): Boolean = delegate.removeAll { it.id == id }
     public operator fun contains(id: Long): Boolean = get(id) != null
 

@@ -21,10 +21,7 @@ import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToFriend
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.QuoteReply
-import net.mamoe.mirai.message.data.asMessageChain
-import net.mamoe.mirai.message.data.firstIsInstanceOrNull
+import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.verbose
 import kotlin.contracts.InvocationKind
@@ -63,9 +60,11 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
             chain
         ) {
             source = it
-        }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
-            check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
-                "Send friend message failed: $it"
+        }.forEach { packet ->
+            packet.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
+                check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
+                    "Send friend message failed: $it"
+                }
             }
         }
         friendReceiptConstructor(source)
@@ -85,17 +84,21 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
 }
 
 internal fun Contact.logMessageSent(message: Message) {
-    @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    if (message !is net.mamoe.mirai.message.data.LongMessage) {
+    if (message !is LongMessage) {
         bot.logger.verbose("$this <- $message".replaceMagicCodes())
     }
 }
 
 @Suppress("RemoveRedundantQualifierName") // compiler bug
 internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
+    fun renderGroupMessage(group: Group, senderName: String, sender: Member, message: MessageChain): String {
+        val displayId = if (sender is AnonymousMember) "匿名" else sender.id.toString()
+        return "[${group.name}(${group.id})] ${senderName}($displayId) -> $message".replaceMagicCodes()
+    }
+
     when (this) {
         is net.mamoe.mirai.event.events.GroupMessageEvent -> bot.logger.verbose {
-            "[${group.name}(${group.id})] ${senderName}(${sender.id}) -> $message".replaceMagicCodes()
+            renderGroupMessage(group, senderName, sender, message)
         }
         is net.mamoe.mirai.event.events.TempMessageEvent -> bot.logger.verbose {
             "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
@@ -103,6 +106,13 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
         is net.mamoe.mirai.event.events.FriendMessageEvent -> bot.logger.verbose {
             "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()
         }
+        is net.mamoe.mirai.event.events.OtherClientMessageEvent -> bot.logger.verbose {
+            "${client.platform} -> $message".replaceMagicCodes()
+        }
+        is GroupMessageSyncEvent -> bot.logger.verbose {
+            renderGroupMessage(group, senderName, sender, message)
+        }
+        else -> bot.logger.verbose(toString())
     }
 }
 

@@ -128,6 +128,7 @@ internal object KnownPacketFactories {
         WtLogin.Login,
         StatSvc.Register,
         StatSvc.GetOnlineStatus,
+        StatSvc.GetDevLoginInfo,
         MessageSvcPbGetMsg,
         MessageSvcPushForceOffline,
         MessageSvcPbSendMsg,
@@ -160,8 +161,10 @@ internal object KnownPacketFactories {
         OnlinePushReqPush,
         OnlinePushPbPushTransMsg,
         MessageSvcPushNotify,
+        MessageSvcPushReaded,
         ConfigPushSvc.PushReq,
-        StatSvc.ReqMSFOffline
+        StatSvc.ReqMSFOffline,
+        StatSvc.SvcReqMSFLoginNotify
     )
     // SvcReqMSFLoginNotify 自己的其他设备上限
     // MessageSvcPushReaded 电脑阅读了别人的消息, 告知手机

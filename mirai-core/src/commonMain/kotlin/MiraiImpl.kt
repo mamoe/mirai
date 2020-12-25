@@ -13,28 +13,23 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.*
 import net.mamoe.mirai.*
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
-import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent
-import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.internal.contact.FriendImpl
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.MemberInfoImpl
-import net.mamoe.mirai.internal.contact.checkIsGroupImpl
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
+import net.mamoe.mirai.internal.network.protocol.data.jce.toOtherClientInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
+import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -60,6 +55,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         private val _init = Mirai.let {
             Message.Serializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
             Message.Serializer.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
+            Message.Serializer.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
         }
     }
 
@@ -163,6 +159,15 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
     }
 
+    override suspend fun getOnlineOtherClientsList(bot: Bot): List<OtherClientInfo> {
+        bot.asQQAndroidBot()
+        val response = bot.network.run {
+            StatSvc.GetDevLoginInfo(bot.client).sendAndExpect<StatSvc.GetDevLoginInfo.Response>()
+        }
+
+        return response.deviceList.map { it.toOtherClientInfo() }
+    }
+
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {
         checkGroupPermission(event.bot, event.groupId) { event::class.simpleName ?: "<anonymous class>" }
         @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
@@ -212,7 +217,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         return FriendImpl(
             bot.asQQAndroidBot(),
             bot.coroutineContext + SupervisorJob(bot.supervisorJob),
-            friendInfo.uin,
             friendInfo
         )
     }
@@ -278,16 +282,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 if (bot.id != source.fromId) {
                     group.checkBotPermission(MemberPermission.ADMINISTRATOR)
                 }
-                @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-                MessageRecallEvent.GroupRecall(
-                    bot,
-                    source.fromId,
-                    source.ids,
-                    source.internalIds,
-                    source.time,
-                    null,
-                    group
-                ).broadcast()
 
                 network.run {
                     PbMessageSvc.PbMsgWithDraw.createForGroupMessage(
@@ -724,17 +718,17 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         }
 
         if (accept ?: return@run)
-            groups[groupId]?.apply {
-                members.delegate.add(newMember(object : MemberInfo {
-                    override val nameCard: String get() = ""
-                    override val permission: MemberPermission get() = MemberPermission.MEMBER
-                    override val specialTitle: String get() = ""
-                    override val muteTimestamp: Int get() = 0
-                    override val uin: Long get() = fromId
-                    override val nick: String get() = fromNick
-                    override val remark: String
-                        get() = ""
-                }).cast())
+            groups[groupId]?.run {
+                members.delegate.add(
+                    newMember(
+                        MemberInfoImpl(
+                            uin = fromId,
+                            nick = fromNick,
+                            permission = MemberPermission.MEMBER,
+                            "", "", "", 0, null
+                        )
+                    ).cast()
+                )
             }
     }
 
@@ -756,6 +750,36 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     @LowLevelApi
     override suspend fun _lowLevelUploadVoice(bot: Bot, md5: ByteArray, groupId: Long) {
 
+    }
+
+    override suspend fun _lowLevelMuteAnonymous(
+        bot: Bot,
+        anonymousId: String,
+        anonymousNick: String,
+        groupId: Long,
+        seconds: Int
+    ) {
+        bot as QQAndroidBot
+        val response = MiraiPlatformUtils.Http.post<String> {
+            url("https://qqweb.qq.com/c/anonymoustalk/blacklist")
+            body = MultiPartFormDataContent(formData {
+                append("anony_id", anonymousId)
+                append("group_code", groupId)
+                append("seconds", seconds)
+                append("anony_nick", anonymousNick)
+                append("bkn", bot.bkn)
+            })
+            headers {
+                append(
+                    "cookie",
+                    "uin=o${bot.id}; skey=${bot.client.wLoginSigInfo.sKey.data.encodeToString()};"
+                )
+            }
+        }
+        val jsonObj = Json.decodeFromString(JsonObject.serializer(), response)
+        if ((jsonObj["retcode"] ?: jsonObj["cgicode"] ?: error("missing response code")).jsonPrimitive.long != 0L) {
+            throw IllegalStateException(response)
+        }
     }
 
     override fun createImage(imageId: String): Image {

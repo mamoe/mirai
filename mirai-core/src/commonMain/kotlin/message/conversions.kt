@@ -18,11 +18,11 @@ import kotlinx.io.core.readUInt
 import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.LowLevelApi
+import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -147,12 +147,20 @@ internal fun MessageChain.toRichTextElems(
             is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
             is FlashImage -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
-            is Face -> elements.add(ImMsgBody.Elem(face = it.toJceData()))
+            is Face -> elements.add(
+                if (it.id >= 260) {
+                    ImMsgBody.Elem(commonElem = it.toCommData())
+                } else {
+                    ImMsgBody.Elem(face = it.toJceData())
+                }
+            )
             is QuoteReply -> {
                 if (forGroup) {
                     when (val source = it.source) {
                         is OnlineMessageSource.Incoming.FromGroup -> {
-                            transformOneMessage(At(source.sender))
+                            val sender0 = source.sender
+                            if (sender0 !is AnonymousMember)
+                                transformOneMessage(At(sender0))
                             // transformOneMessage(PlainText(" "))
                             // removed by https://github.com/mamoe/mirai/issues/524
                             // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
@@ -160,6 +168,10 @@ internal fun MessageChain.toRichTextElems(
                     }
                 }
             }
+            //MarketFaceImpl继承于MarketFace 会自动添加兼容信息
+            //如果有用户不慎/强行使用也会转换为文本信息
+            is MarketFaceImpl -> elements.add(ImMsgBody.Elem(marketFace = it.delegate))
+            is MarketFace -> transformOneMessage(PlainText(it.contentToString()))
             is VipFace -> transformOneMessage(PlainText(it.contentToString()))
             is PttMessage -> {
                 elements.add(
@@ -234,24 +246,52 @@ internal fun MsgComm.Msg.toMessageChain(
     isTemp: Boolean = false
 ): MessageChain = toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
 
+internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
+    bot: Bot,
+    groupIdOrZero: Long,
+    onlineSource: Boolean,
+    isTemp: Boolean = false
+): MessageChain = toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
+
+@JvmName("toMessageChain1")
+internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
+    bot: Bot?,
+    botId: Long,
+    groupIdOrZero: Long,
+    onlineSource: Boolean,
+    isTemp: Boolean = false
+): MessageChain = map { it.msg }.toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
+
 internal fun MsgComm.Msg.toMessageChain(
     bot: Bot?,
     botId: Long,
     groupIdOrZero: Long,
     onlineSource: Boolean,
     isTemp: Boolean = false
-): MessageChain {
-    val elements = this.msgBody.richText.elems
+): MessageChain = listOf(this).toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
 
-    val pptMsg = msgBody.richText.ptt?.run {
+internal fun List<MsgComm.Msg>.toMessageChain(
+    bot: Bot?,
+    botId: Long,
+    groupIdOrZero: Long,
+    onlineSource: Boolean,
+    isTemp: Boolean = false
+): MessageChain {
+    val elements = this.flatMap { it.msgBody.richText.elems }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    val ppts = buildList<Message> {
+        this@toMessageChain.forEach { msg ->
+            msg.msgBody.richText.ptt?.run {
 //        when (fileType) {
 //            4 -> Voice(String(fileName), fileMd5, fileSize.toLong(),String(downPara))
 //            else -> null
 //        }
-        Voice(String(fileName), fileMd5, fileSize.toLong(), format, String(downPara))
+                add(Voice(String(fileName), fileMd5, fileSize.toLong(), format, String(downPara)))
+            }
+        }
     }
-
-    return buildMessageChain(elements.size + 1 + if (pptMsg == null) 0 else 1) {
+    return buildMessageChain(elements.size + 1 + ppts.size) {
         if (onlineSource) {
             checkNotNull(bot) { "bot is null" }
             when {
@@ -263,7 +303,7 @@ internal fun MsgComm.Msg.toMessageChain(
             +OfflineMessageSourceImplByMsg(this@toMessageChain, botId)
         }
         elements.joinToMessageChain(groupIdOrZero, botId, this)
-        pptMsg?.let(::add)
+        addAll(ppts)
     }.cleanupRubbishMessageElements()
 }
 
@@ -290,6 +330,12 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
             if (last is LongMessage && element is PlainText) {
                 if (element == UNSUPPORTED_MERGED_MESSAGE_PLAIN) {
+                    last = element
+                    return@forEach
+                }
+            }
+            if (last is MarketFaceImpl && element is PlainText) {
+                if (element.content == (last as MarketFaceImpl).name) {
                     last = element
                     return@forEach
                 }
@@ -342,7 +388,6 @@ internal inline fun <reified R> Iterable<*>.firstIsInstanceOrNull(): R? {
 
 internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId: Long, list: MessageChainBuilder) {
     // (this._miraiContentToString().soutv())
     this.forEach { element ->
@@ -368,6 +413,9 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                         list.add(At(id)) // element.text.str
                     }
                 }
+            }
+            element.marketFace != null -> {
+                list.add(MarketFaceImpl(element.marketFace))
             }
             element.lightApp != null -> {
                 val content = runWithBugReport("解析 lightApp",
@@ -483,6 +531,11 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                         if (proto.flashC2cPic != null) {
                             list.add(FlashImage(OnlineFriendImageImpl(proto.flashC2cPic)))
                         }
+                    }
+                    33 -> {
+                        val proto = element.commonElem.pbElem.loadAs(HummerCommelem.MsgElemInfoServtype33.serializer())
+                        list.add(Face(proto.index))
+
                     }
                 }
             }

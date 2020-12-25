@@ -17,22 +17,23 @@ import kotlin.test.assertEquals
 
 @EventListenerLikeJava
 @JavaFriendlyAPI
+@Suppress("UNUSED_PARAMETER")
 internal class JvmMethodEventsTestJava : SimpleListenerHost() {
     private val called = AtomicInteger(0)
 
     @EventHandler
-    fun ev(event: TestEvent?) {
+    public fun ev(event: TestEvent?) {
         called.incrementAndGet()
     }
 
     @EventHandler
-    fun ev2(event: TestEvent?): Void? {
+    public fun ev2(event: TestEvent?): Void? {
         called.incrementAndGet()
         return null
     }
 
     @EventHandler
-    fun ev3(event: TestEvent?): ListeningStatus? {
+    public fun ev3(event: TestEvent?): ListeningStatus? {
         called.incrementAndGet()
         return ListeningStatus.LISTENING
     }

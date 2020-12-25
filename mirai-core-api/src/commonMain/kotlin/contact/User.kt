@@ -60,12 +60,6 @@ public interface User : Contact, UserOrBot, CoroutineScope {
     public val remark: String
 
     /**
-     * 头像下载链接
-     */
-    public val avatarUrl: String
-        get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=640"
-
-    /**
      * 向这个对象发送消息.
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.

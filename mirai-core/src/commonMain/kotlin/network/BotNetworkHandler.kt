@@ -73,7 +73,7 @@ internal abstract class BotNetworkHandler : CoroutineScope {
      */
     @Suppress("SpellCheckingInspection")
     @MiraiInternalApi
-    abstract suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable? = null)
+    abstract suspend fun closeEverythingAndRelogin(host: String, port: Int, cause: Throwable? = null, step: Int)
 
     /**
      * 初始化获取好友列表等值.

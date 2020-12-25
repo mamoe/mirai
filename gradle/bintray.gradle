@@ -10,7 +10,7 @@
 publishing {
     repositories {
         maven {
-            url = "https://api.bintray.com/maven/him188moe/mirai/mirai-core/;publish=1"
+            url = "https://api.bintray.com/maven/him188moe/mirai/mirai-core/;publish=1;override=1"
 
             credentials {
                 username = upload.Bintray.getUser(project)

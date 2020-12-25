@@ -13,6 +13,9 @@
 
 package net.mamoe.mirai.message.data
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
@@ -190,6 +193,29 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
         @JvmStatic
         @JvmBlockingBridge
         public suspend inline fun MessageChain.recall(): Unit = this.source.recall()
+
+        /**
+         * 在一段时间后撤回这条消息.
+         *
+         * @see IMirai.recallMessage
+         */
+        @JvmStatic
+        @Suppress("DeferredIsResult")
+        public fun MessageChain.recallIn(millis: Long): Deferred<Unit> = this.source.recallIn(millis)
+
+        /**
+         * 在一段时间后撤回这条消息.
+         *
+         * @see IMirai.recallMessage
+         */
+        @JvmStatic
+        @Suppress("DeferredIsResult")
+        public fun MessageSource.recallIn(millis: Long): Deferred<Unit> {
+            return bot.async {
+                delay(millis)
+                Mirai.recallMessage(bot, this@recallIn)
+            }
+        }
 
         /**
          * 判断是否是发送给群, 或从群接收的消息的消息源

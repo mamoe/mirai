@@ -14,6 +14,7 @@ class Bot {
 
 class ContactOrBot {
     +id: Int
+    +avatarUrl: String
 }
 
 class UserOrBot {
@@ -30,7 +31,6 @@ class Contact {
 class User {
     +nick: String
     +remark: String
-    +avatarUrl: String
 }
 
 class Group {

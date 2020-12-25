@@ -13,18 +13,17 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
-import kotlin.jvm.JvmField
 
 private val EMPTY_MAP = mapOf<String, String>()
 
 @Serializable
 internal class RequestPacket(
-    @TarsId(1) @JvmField val iVersion: Short? = 3,
+    @TarsId(1) @JvmField val version: Short? = 3,
     @TarsId(2) @JvmField val cPacketType: Byte = 0,
     @TarsId(3) @JvmField val iMessageType: Int = 0,
-    @TarsId(4) @JvmField val iRequestId: Int = 0,
-    @TarsId(5) @JvmField val sServantName: String = "",
-    @TarsId(6) @JvmField val sFuncName: String = "",
+    @TarsId(4) @JvmField val requestId: Int = 0,
+    @TarsId(5) @JvmField val servantName: String = "",
+    @TarsId(6) @JvmField val funcName: String = "",
     @TarsId(7) @JvmField val sBuffer: ByteArray = EMPTY_BYTE_ARRAY,
     @TarsId(8) @JvmField val iTimeout: Int? = 0,
     @TarsId(9) @JvmField val context: Map<String, String>? = EMPTY_MAP,

@@ -17,6 +17,8 @@ package net.mamoe.mirai
 import kotlinx.coroutines.*
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.EventChannel
+import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
@@ -55,6 +57,11 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public override val id: Long
 
     /**
+     * 返回 `this`
+     */
+    public override val bot: Bot get() = this
+
+    /**
      * 昵称
      */
     public val nick: String
@@ -69,12 +76,23 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      */
     public val isOnline: Boolean
 
+    /**
+     * 来自这个 [Bot] 的 [BotEvent] 的事件通道.
+     * @see EventChannel
+     */
+    public val eventChannel: EventChannel<@UnsafeVariance BotEvent>
+
     // region contacts
+
+    /**
+     * 其他设备列表
+     */
+    public val otherClients: OtherClientList
+
 
     /**
      * [User.id] 与 [Bot.id] 相同的 [Friend] 实例
      */
-    @MiraiExperimentalApi
     public val asFriend: Friend
 
     @Deprecated("Use asFriend instead", ReplaceWith("asFriend"))

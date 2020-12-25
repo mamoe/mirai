@@ -14,7 +14,6 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.jvm.JvmSynthetic
 import kotlin.reflect.KClass
 
 /**
@@ -148,7 +147,7 @@ internal suspend inline fun <E : Event, R> syncFromEventImpl(
     priority: Listener.EventPriority,
     crossinline mapper: suspend E.(E) -> R?
 ): R = suspendCancellableCoroutine { cont ->
-    coroutineScope.subscribe(eventClass, priority = priority) {
+    coroutineScope.globalEventChannel().subscribe(eventClass, priority = priority) {
         try {
             cont.resumeWith(kotlin.runCatching {
                 mapper.invoke(this, it) ?: return@subscribe ListeningStatus.LISTENING

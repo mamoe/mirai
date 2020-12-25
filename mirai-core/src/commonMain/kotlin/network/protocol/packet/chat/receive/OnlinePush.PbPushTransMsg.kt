@@ -24,8 +24,9 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.MemberImpl
+import net.mamoe.mirai.internal.contact.NormalMemberImpl
 import net.mamoe.mirai.internal.contact.checkIsMemberImpl
+import net.mamoe.mirai.internal.contact.newMember
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.MultiPacketByIterable
 import net.mamoe.mirai.internal.network.Packet
@@ -100,7 +101,7 @@ internal object OnlinePushPbPushTransMsg :
                                         )
                                     )
                             } else {
-                                val member = group[from] as MemberImpl
+                                val member = group[from] as NormalMemberImpl
                                 if (member.permission != MemberPermission.MEMBER) {
                                     results.add(
                                         MemberPermissionChangeEvent(
@@ -186,7 +187,7 @@ internal object OnlinePushPbPushTransMsg :
                                         newPermission
                                     )
                                 } else {
-                                    val member = group[target] as MemberImpl
+                                    val member = group[target] as NormalMemberImpl
                                     if (member.permission == newPermission) {
                                         return null
                                     }
@@ -230,7 +231,7 @@ internal object OnlinePushPbPushTransMsg :
                                     bot.groups.delegate.remove(group)
                                 }
                             } else {
-                                val member = group.get(target) as? MemberImpl ?: return null
+                                val member = group.get(target) as? NormalMemberImpl ?: return null
                                 return MemberLeaveEvent.Quit(member.also {
                                     member.cancel(CancellationException("Leaved actively"))
                                     group.members.delegate.remove(member)
@@ -245,7 +246,7 @@ internal object OnlinePushPbPushTransMsg :
                                     bot.groups.delegate.remove(group)
                                 }
                             } else {
-                                val member = group.get(target) as? MemberImpl ?: return null
+                                val member = group.get(target) as? NormalMemberImpl ?: return null
                                 return MemberLeaveEvent.Kick(member.also {
                                     member.cancel(CancellationException("Being kicked"))
                                     group.members.delegate.remove(member)
