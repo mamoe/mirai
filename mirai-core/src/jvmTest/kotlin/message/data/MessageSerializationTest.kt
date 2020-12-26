@@ -13,17 +13,20 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import net.mamoe.mirai.Mirai
+import net.mamoe.mirai.internal.message.MarketFaceImpl
+import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 internal class MessageSerializationTest {
-    private val module = Message.Serializer.serializersModule
-    private val format = Json {
-        serializersModule = module
-        useArrayPolymorphism = false
-    }
+    private val module get() = Message.Serializer.serializersModule
+    private val format
+        get() = Json {
+            serializersModule = module
+            useArrayPolymorphism = false // ?
+        }
 
     private inline fun <reified T : Any> T.serialize(serializer: KSerializer<T> = module.serializer()): String {
         return format.encodeToString(serializer, this)
@@ -34,23 +37,57 @@ internal class MessageSerializationTest {
     }
 
     private inline fun <reified T : Any> testSerialization(t: T, serializer: KSerializer<T> = module.serializer()) {
+        val deserialized = t.serialize(serializer).deserialize(serializer)
         assertEquals(
             t,
-            t.serialize(serializer).deserialize(serializer),
-            message = "serialized string: ${t.serialize(serializer)}"
+            deserialized,
+            message = "serialized string:   ${t.serialize(serializer)}\ndeserialized string: ${
+                deserialized.serialize(
+                    serializer
+                )
+            }\n"
         )
     }
 
+
+    private val image = Image("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai")
     private val testMessageContentInstances: Array<out MessageContent> = arrayOf(
         PlainText("test"),
         At(123456),
         AtAll,
-        Image("{01E9451B-70ED-EAE3-B37C-101F1EEBF5B5}.mirai"),
+        image,
+        image.toForwardMessage(1L, "test"),
+        VipFace(VipFace.AiXin, 1),
+        PokeMessage.BaoBeiQiu,
+        Face(Face.AI_NI),
+        MarketFaceImpl(ImMsgBody.MarketFace()),
+        image.flash(),
+    )
+
+    private val emptySource = Mirai.constructMessageSource(
+        1L,
+        MessageSourceKind.FRIEND,
+        1,
+        2,
+        intArrayOf(1),
+        1,
+        intArrayOf(1),
+        messageChainOf()
     )
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     private val testConstrainSingleMessageInstances: Array<out ConstrainSingle> = arrayOf(
-        LongMessage("content", "resId")
+        LongMessage("content", "resId"),
+        Mirai.constructMessageSource(
+            1L,
+            MessageSourceKind.FRIEND,
+            1,
+            2,
+            intArrayOf(1),
+            1,
+            intArrayOf(1),
+            messageChainOf(emptySource, image)
+        ),
     )
 
     companion object {

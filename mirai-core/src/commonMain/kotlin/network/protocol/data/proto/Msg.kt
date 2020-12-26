@@ -563,7 +563,7 @@ internal class ImMsgBody : ProtoBuf {
     ) : ProtoBuf
 
     @Serializable
-    internal class MarketFace(
+    internal data class MarketFace(
         @ProtoNumber(1) @JvmField val faceName: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(2) @JvmField val itemType: Int = 0,
         @ProtoNumber(3) @JvmField val faceInfo: Int = 0,
@@ -577,7 +577,48 @@ internal class ImMsgBody : ProtoBuf {
         @ProtoNumber(11) @JvmField val imageHeight: Int = 0,
         @ProtoNumber(12) @JvmField val mobileParam: ByteArray = EMPTY_BYTE_ARRAY,
         @ProtoNumber(13) @JvmField val pbReserve: ByteArray = EMPTY_BYTE_ARRAY
-    ) : ProtoBuf
+    ) : ProtoBuf {
+        @Suppress("DuplicatedCode")
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as MarketFace
+
+            if (!faceName.contentEquals(other.faceName)) return false
+            if (itemType != other.itemType) return false
+            if (faceInfo != other.faceInfo) return false
+            if (!faceId.contentEquals(other.faceId)) return false
+            if (tabId != other.tabId) return false
+            if (subType != other.subType) return false
+            if (!key.contentEquals(other.key)) return false
+            if (!param.contentEquals(other.param)) return false
+            if (mediaType != other.mediaType) return false
+            if (imageWidth != other.imageWidth) return false
+            if (imageHeight != other.imageHeight) return false
+            if (!mobileParam.contentEquals(other.mobileParam)) return false
+            if (!pbReserve.contentEquals(other.pbReserve)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = faceName.contentHashCode()
+            result = 31 * result + itemType
+            result = 31 * result + faceInfo
+            result = 31 * result + faceId.contentHashCode()
+            result = 31 * result + tabId
+            result = 31 * result + subType
+            result = 31 * result + key.contentHashCode()
+            result = 31 * result + param.contentHashCode()
+            result = 31 * result + mediaType
+            result = 31 * result + imageWidth
+            result = 31 * result + imageHeight
+            result = 31 * result + mobileParam.contentHashCode()
+            result = 31 * result + pbReserve.contentHashCode()
+            return result
+        }
+    }
 
     @Serializable
     internal class MarketTrans(

@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
@@ -22,6 +24,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
@@ -32,12 +35,17 @@ import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal interface MessageSourceInternal {
+    @Transient
     val sequenceIds: IntArray
+
+    @Transient
     val internalIds: IntArray // randomId
 
     @Deprecated("don't use this internally. Use sequenceId or random instead.", level = DeprecationLevel.ERROR)
+    @Transient
     val ids: IntArray
 
+    @Transient
     val isRecalledOrPlanned: AtomicBoolean
 
     fun toJceData(): ImMsgBody.SourceMsg
@@ -148,10 +156,14 @@ internal class MessageSourceFromTempImpl(
     override fun toJceData(): ImMsgBody.SourceMsg = jceData
 }
 
+@Serializable(MessageSourceFromGroupImpl.Serializer::class)
 internal data class MessageSourceFromGroupImpl(
     override val bot: Bot,
     private val msg: List<MsgComm.Msg>
 ) : OnlineMessageSource.Incoming.FromGroup(), MessageSourceInternal {
+    object Serializer : MessageSourceSerializerImpl("net.mamoe.mirai.internal.message.MessageSourceFromGroupImpl")
+
+    @Transient
     override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
     override val sequenceIds: IntArray get() = msg.mapToIntArray { it.msgHead.msgSeq }
     override val internalIds: IntArray get() = msg.mapToIntArray { it.msgBody.richText.attr!!.random }

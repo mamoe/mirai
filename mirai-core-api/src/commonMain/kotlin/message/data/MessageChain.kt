@@ -13,12 +13,12 @@
 
 package net.mamoe.mirai.message.data
 
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
@@ -103,6 +103,42 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
 
     override fun appendMiraiCode(builder: StringBuilder) {
         forEach { it.safeCast<CodableMessage>()?.appendMiraiCode(builder) }
+    }
+
+    public companion object {
+        /**
+         * 从 JSON 字符串解析 [MessageChain]
+         * @see serializeToJsonString
+         */
+        @JvmOverloads
+        @JvmStatic
+        public fun deserializeFromJsonString(
+            string: String,
+            json: Json = Json { serializersModule = Message.Serializer.serializersModule }
+        ): MessageChain {
+            return json.decodeFromString(Serializer, string)
+        }
+
+        /**
+         * 将 [MessageChain] 序列化为 JSON 字符串.
+         * @see deserializeFromJsonString
+         */
+        @JvmOverloads
+        @JvmStatic
+        public fun MessageChain.serializeToJsonString(
+            json: Json = Json { serializersModule = Message.Serializer.serializersModule }
+        ): String = json.encodeToString(Message.Serializer, this)
+
+        /**
+         * 将 [MessageChain] 序列化为指定格式的字符串.
+         *
+         * @see serializeToJsonString
+         * @see StringFormat.encodeToString
+         */
+        @ExperimentalSerializationApi
+        @JvmStatic
+        public fun MessageChain.serializeToString(format: StringFormat): String =
+            format.encodeToString(Serializer, this)
     }
 }
 

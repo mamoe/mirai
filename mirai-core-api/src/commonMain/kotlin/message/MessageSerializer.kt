@@ -12,6 +12,7 @@ package net.mamoe.mirai.message
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.modules.PolymorphicModuleBuilder
@@ -21,6 +22,7 @@ import kotlinx.serialization.modules.polymorphic
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.MiraiInternalApi
 import kotlin.reflect.KClass
 
 @MiraiExperimentalApi
@@ -34,9 +36,12 @@ public interface MessageSerializer {
     public fun clearRegisteredSerializers()
 }
 
-internal object MessageSourceSerializer : KSerializer<MessageSource> {
+@MiraiInternalApi
+public open class MessageSourceSerializerImpl(serialName: String) : KSerializer<MessageSource> {
+    public companion object : MessageSourceSerializerImpl("net.mamoe.mirai.message.data.MessageSource")
+
     @Serializable
-    class SerialData(
+    internal class SerialData(
         val kind: MessageSourceKind,
         val bot: Long,
         val ids: IntArray,
@@ -47,7 +52,17 @@ internal object MessageSourceSerializer : KSerializer<MessageSource> {
         val originalMessage: MessageChain,
     )
 
-    override val descriptor: SerialDescriptor = SerialData.serializer().descriptor
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor(serialName) {
+        val desc = SerialData.serializer().descriptor
+        repeat(SerialData.serializer().descriptor.elementsCount) { index ->
+            element(
+                desc.getElementName(index),
+                desc.getElementDescriptor(index),
+                desc.getElementAnnotations(index),
+                desc.isElementOptional(index)
+            )
+        }
+    }
 //        buildClassSerialDescriptor("MessageSource") {
 //            element("bot", Long.serializer().descriptor)
 //            element("ids", ArraySerializer(Int.serializer()).descriptor)
@@ -96,7 +111,6 @@ private val builtInSerializersModule by lazy {
         contextual(CustomMessage::class, CustomMessage.serializer())
         contextual(CustomMessageMetadata::class, CustomMessageMetadata.serializer())
         contextual(Face::class, Face.serializer())
-        contextual(MessageSource::class, MessageSource.serializer())
         contextual(Image::class, Image.Serializer)
         contextual(PlainText::class, PlainText.serializer())
         contextual(QuoteReply::class, QuoteReply.serializer())
@@ -117,7 +131,11 @@ private val builtInSerializersModule by lazy {
         contextual(FlashImage::class, FlashImage.serializer())
 
         fun PolymorphicModuleBuilder<SingleMessage>.singleMessageSubclasses() {
+            // subclass(MessageSource::class, MessageSource.serializer())
         }
+
+        //   contextual(MessageSource::class, MessageSource.serializer())
+        polymorphicDefault(MessageSource::class) { MessageSource.serializer() }
 
         fun PolymorphicModuleBuilder<MessageMetadata>.messageMetadataSubclasses() {
             subclass(MessageSource::class, MessageSource.serializer())
@@ -148,7 +166,14 @@ private val builtInSerializersModule by lazy {
             subclass(FlashImage::class, FlashImage.serializer())
         }
 
+        contextual(Message::class, Message.Serializer)
+        // contextual(SingleMessage::class, SingleMessage.Serializer)
         contextual(MessageChain::class, MessageChain.Serializer)
+        contextual(MessageChainImpl::class, MessageChainImpl.serializer())
+
+        polymorphic(MessageChain::class) {
+            subclass(MessageChainImpl::class, MessageChainImpl.serializer())
+        }
         polymorphicDefault(MessageChain::class) { MessageChainImpl.serializer() }
 
         polymorphic(AbstractServiceMessage::class) {
@@ -156,9 +181,15 @@ private val builtInSerializersModule by lazy {
             subclass(ForwardMessageInternal::class, ForwardMessageInternal.serializer())
         }
 
+        //  polymorphic(SingleMessage::class) {
+        //      subclass(MessageSource::class, MessageSource.serializer())
+        //      default {
+        //          Message.Serializer.serializersModule.getPolymorphic(Message::class, it)
+        //      }
+        //  }
+
         polymorphicDefault(Image::class) { Image.Serializer }
 
-        contextual(Message::class, Message.Serializer)
         // polymorphic(Message::class) {
         //     subclass(PlainText::class, PlainText.serializer())
         // }
@@ -166,6 +197,7 @@ private val builtInSerializersModule by lazy {
             messageContentSubclasses()
             messageMetadataSubclasses()
             singleMessageSubclasses()
+            subclass(MessageChainImpl::class, MessageChainImpl.serializer())
         }
 
         //contextual(SingleMessage::class, SingleMessage.Serializer)

@@ -209,8 +209,12 @@ public interface Message { // must be interface. Don't consider any changes.
          */
         @JvmOverloads
         @JvmStatic
-        public fun deserializeFromJsonString(string: String, json: Json = Json.Default): Message =
-            json.decodeFromString(Serializer, string)
+        public fun deserializeFromJsonString(
+            string: String,
+            json: Json = Json { serializersModule = Serializer.serializersModule }
+        ): Message {
+            return json.decodeFromString(Serializer, string)
+        }
 
         /**
          * 将 [Message] 序列化为 JSON 字符串.
@@ -218,8 +222,9 @@ public interface Message { // must be interface. Don't consider any changes.
          */
         @JvmOverloads
         @JvmStatic
-        public fun Message.serializeToJsonString(json: Json = Json.Default): String =
-            json.encodeToString(Serializer, this)
+        public fun Message.serializeToJsonString(
+            json: Json = Json { serializersModule = Serializer.serializersModule }
+        ): String = json.encodeToString(Serializer, this)
 
         /**
          * 将 [Message] 序列化为指定格式的字符串.
@@ -320,9 +325,10 @@ public inline operator fun Message.times(count: Int): MessageChain = this.repeat
 /**
  * 单个消息元素. 与之相对的是 [MessageChain], 是多个 [SingleMessage] 的集合.
  */
-@Serializable(SingleMessage.Serializer::class)
+// @Serializable(SingleMessage.Serializer::class)
 public interface SingleMessage : Message {
-    public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
+    // @kotlinx.serialization.Serializer(forClass = SingleMessage::class)
+    //  public object Serializer : KSerializer<SingleMessage> by PolymorphicSerializer(SingleMessage::class)
 }
 
 /**

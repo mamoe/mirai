@@ -11,6 +11,8 @@
 
 package net.mamoe.mirai.internal.message
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
@@ -22,6 +24,70 @@ import net.mamoe.mirai.message.data.OfflineMessageSource
 import net.mamoe.mirai.utils.mapToIntArray
 import java.util.concurrent.atomic.AtomicBoolean
 
+@Serializable
+internal data class OfflineMessageSourceImplData(
+    override val kind: MessageSourceKind,
+    override val ids: IntArray,
+    override val botId: Long,
+    override val time: Int,
+    override val fromId: Long,
+    override val targetId: Long,
+    override val originalMessage: MessageChain,
+    override val internalIds: IntArray,
+) : OfflineMessageSource(), MessageSourceInternal {
+    override val sequenceIds: IntArray get() = ids
+
+    @Transient
+    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+
+    override fun toJceData(): ImMsgBody.SourceMsg {
+        return ImMsgBody.SourceMsg(
+            origSeqs = sequenceIds,
+            senderUin = fromId,
+            toUin = 0,
+            flag = 1,
+            elems = originalMessage.toRichTextElems(
+                null, //forGroup = kind == MessageSourceKind.GROUP,
+                withGeneralFlags = false
+            ),
+            type = 0,
+            time = time,
+            pbReserve = net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY,
+            srcMsg = net.mamoe.mirai.internal.EMPTY_BYTE_ARRAY
+        )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as OfflineMessageSourceImplData
+
+        if (kind != other.kind) return false
+        if (!ids.contentEquals(other.ids)) return false
+        if (botId != other.botId) return false
+        if (time != other.time) return false
+        if (fromId != other.fromId) return false
+        if (targetId != other.targetId) return false
+        if (originalMessage != other.originalMessage) return false
+        if (!internalIds.contentEquals(other.internalIds)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = kind.hashCode()
+        result = 31 * result + ids.contentHashCode()
+        result = 31 * result + botId.hashCode()
+        result = 31 * result + time
+        result = 31 * result + fromId.hashCode()
+        result = 31 * result + targetId.hashCode()
+        result = 31 * result + originalMessage.hashCode()
+        result = 31 * result + internalIds.contentHashCode()
+        return result
+    }
+}
 
 internal class OfflineMessageSourceImplByMsg(
     // from other sources' originalMessage

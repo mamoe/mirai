@@ -25,7 +25,6 @@ import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
 import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
-import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
@@ -40,7 +39,6 @@ import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -54,6 +52,15 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             Message.Serializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
             Message.Serializer.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
             Message.Serializer.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())
+            Message.Serializer.registerSerializer(
+                OfflineMessageSourceImplData::class,
+                OfflineMessageSourceImplData.serializer()
+            )
+
+            Message.Serializer.registerSerializer(
+                MessageSourceFromGroupImpl::class,
+                MessageSourceFromGroupImpl.serializer()
+            )
         }
     }
 
@@ -843,38 +850,8 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         time: Int,
         internalIds: IntArray,
         originalMessage: MessageChain
-    ): OfflineMessageSource {
-        return object : OfflineMessageSource(), MessageSourceInternal {
-            override val kind: MessageSourceKind get() = kind
-            override val ids: IntArray get() = ids
-            override val botId: Long get() = botId
-            override val time: Int get() = time
-            override val fromId: Long get() = fromUin
-            override val targetId: Long get() = targetUin
-            override val originalMessage: MessageChain get() = originalMessage
-            override val sequenceIds: IntArray = ids
-            override val internalIds: IntArray = internalIds
-
-            @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-            override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
-
-            override fun toJceData(): ImMsgBody.SourceMsg {
-                return ImMsgBody.SourceMsg(
-                    origSeqs = sequenceIds,
-                    senderUin = fromUin,
-                    toUin = 0,
-                    flag = 1,
-                    elems = originalMessage.toRichTextElems(
-                        null, //forGroup = kind == MessageSourceKind.GROUP,
-                        withGeneralFlags = false
-                    ),
-                    type = 0,
-                    time = time,
-                    pbReserve = EMPTY_BYTE_ARRAY,
-                    srcMsg = EMPTY_BYTE_ARRAY
-                )
-            }
-        }
-    }
+    ): OfflineMessageSource = OfflineMessageSourceImplData(
+        kind, ids, botId, time, fromUin, targetUin, originalMessage, internalIds
+    )
 
 }
