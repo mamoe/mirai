@@ -38,7 +38,7 @@ internal val DeviceInfo.guid: ByteArray get() = generateGuid(androidId, macAddre
  */
 @Suppress("RemoveRedundantQualifierName") // bug
 private fun generateGuid(androidId: ByteArray, macAddress: ByteArray): ByteArray =
-    net.mamoe.mirai.internal.utils.MiraiPlatformUtils.md5(androidId + macAddress)
+    (androidId + macAddress).md5()
 
 /**
  * 生成长度为 [length], 元素为随机 `0..255` 的 [ByteArray]
@@ -317,7 +317,7 @@ internal open class QQAndroidClient(
 
 @Suppress("RemoveRedundantQualifierName") // bug
 internal fun generateTgtgtKey(guid: ByteArray): ByteArray =
-    net.mamoe.mirai.internal.utils.MiraiPlatformUtils.md5(getRandomByteArray(16) + guid)
+    (getRandomByteArray(16) + guid).md5()
 
 
 internal class ReserveUinInfo(

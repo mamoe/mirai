@@ -16,14 +16,11 @@ package net.mamoe.mirai.internal.utils.io
 import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.*
-import net.mamoe.mirai.internal.utils.ByteArrayPool
 import net.mamoe.mirai.internal.utils.toReadPacket
 import net.mamoe.mirai.internal.utils.toUHexString
+import net.mamoe.mirai.utils.ByteArrayPool
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmSynthetic
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 internal inline fun <R> ByteReadPacket.useBytes(

@@ -26,17 +26,18 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.asMessageChain
+import net.mamoe.mirai.utils.gzip
+import net.mamoe.mirai.utils.md5
 
 internal class MessageValidationData(
     val data: ByteArray,
-    val md5: ByteArray = MiraiPlatformUtils.md5(data)
+    val md5: ByteArray = data.md5()
 ) {
     override fun toString(): String {
         return "MessageValidationData(data=<size=${data.size}>, md5=${md5.contentToString()})"
@@ -88,7 +89,7 @@ internal fun Collection<ForwardMessage.INode>.calculateValidationDataForGroup(
 
     val bytes = msgTransmit.toByteArray(MsgTransmit.PbMultiMsgTransmit.serializer())
 
-    return MessageValidationData(MiraiPlatformUtils.gzip(bytes))
+    return MessageValidationData(bytes.gzip())
 }
 
 internal class MultiMsg {

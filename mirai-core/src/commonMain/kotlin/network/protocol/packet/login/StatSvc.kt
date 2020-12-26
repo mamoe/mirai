@@ -9,6 +9,7 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.login
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
@@ -30,10 +31,13 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x769
 import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.internal.network.protocol.packet.*
-import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.utils.NetworkType
+import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.encodeToString
 import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.currentTimeMillis
-import java.util.concurrent.CancellationException
+import net.mamoe.mirai.internal.utils.toReadPacket
+import net.mamoe.mirai.utils.localIpAddress
 
 @Suppress("EnumEntryName", "unused")
 internal enum class RegPushReason {
@@ -157,7 +161,7 @@ internal class StatSvc {
                                 strDevType = client.device.model.encodeToString(),
                                 strOSVer = client.device.version.release.encodeToString(),
                                 uOldSSOIp = 0,
-                                uNewSSOIp = MiraiPlatformUtils.localIpAddress().runCatching { ipToLong() }
+                                uNewSSOIp = localIpAddress().runCatching { ipToLong() }
                                     .getOrElse { "192.168.1.123".ipToLong() },
                                 strVendorName = "MIUI",
                                 strVendorOSName = "?ONEPLUS A5000_23_17",

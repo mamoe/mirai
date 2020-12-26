@@ -14,18 +14,17 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.EventCancelledException
+import net.mamoe.mirai.event.events.UserMessagePostSendEvent
+import net.mamoe.mirai.event.events.UserMessagePreSendEvent
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.action.UserNudge
-import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
-import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.OverFileSizeMaxException
 
 /**
  * 代表一个 **用户**.
@@ -92,20 +91,6 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      */
     @MiraiExperimentalApi
     public override fun nudge(): UserNudge
-
-    /**
-     * 上传一个图片以备发送.
-     *
-     * @see Image 查看有关图片的更多信息, 如上传图片
-     *
-     * @see BeforeImageUploadEvent 图片发送前事件, cancellable
-     * @see ImageUploadEvent 图片发送完成事件
-     *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
-     */
-    @JvmBlockingBridge
-    public override suspend fun uploadImage(image: ExternalImage): Image
 }
 
 /**

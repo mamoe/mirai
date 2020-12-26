@@ -17,7 +17,6 @@ import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.utils.internal.getRandomByteArray
 import net.mamoe.mirai.utils.internal.getRandomIntString
 import net.mamoe.mirai.utils.internal.getRandomString
-import net.mamoe.mirai.utils.internal.md5
 import java.io.File
 
 /**
@@ -78,7 +77,7 @@ public class DeviceInfo(
                 model = "mirai".toByteArray(),
                 bootloader = "unknown".toByteArray(),
                 fingerprint = "mamoe/mirai/mirai:10/MIRAI.200122.001/${getRandomIntString(7)}:user/release-keys".toByteArray(),
-                bootId = ExternalImage.generateUUID(getRandomByteArray(16).md5()).toByteArray(),
+                bootId = generateUUID(getRandomByteArray(16).md5()).toByteArray(),
                 procVersion = "Linux version 3.0.31-${getRandomString(8)} (android-build@xxx.xxx.xxx.xxx.com)".toByteArray(),
                 baseBand = byteArrayOf(),
                 version = Version(),

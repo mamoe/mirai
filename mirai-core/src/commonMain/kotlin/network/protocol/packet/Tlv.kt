@@ -16,11 +16,11 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.protocol.LoginType
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.io.*
 import net.mamoe.mirai.internal.utils.toByteArray
 import net.mamoe.mirai.utils.currentTimeMillis
+import net.mamoe.mirai.utils.md5
 import kotlin.random.Random
 
 /**
@@ -101,8 +101,10 @@ internal fun BytePacketBuilder.t106(
     guid?.requireSize(16)
 
     writeShortLVPacket {
-        encryptAndWrite(MiraiPlatformUtils.md5(passwordMd5 + ByteArray(4) + (salt.takeIf { it != 0L } ?: uin).toInt()
-            .toByteArray())) {
+        encryptAndWrite(
+            (passwordMd5 + ByteArray(4) + (salt.takeIf { it != 0L } ?: uin).toInt()
+                .toByteArray()).md5()
+        ) {
             writeShort(4)//TGTGTVer
             writeInt(Random.nextInt())
             writeInt(ssoVersion)//ssoVer
@@ -335,7 +337,7 @@ internal fun BytePacketBuilder.t109(
 ) {
     writeShort(0x109)
     writeShortLVPacket {
-        writeFully(MiraiPlatformUtils.md5(androidId))
+        writeFully(androidId.md5())
     } shouldEqualsTo 16
 }
 
@@ -571,7 +573,7 @@ internal fun BytePacketBuilder.t187(
 ) {
     writeShort(0x187)
     writeShortLVPacket {
-        writeFully(MiraiPlatformUtils.md5(macAddress)) // may be md5
+        writeFully(macAddress.md5()) // may be md5
     }
 }
 
@@ -581,7 +583,7 @@ internal fun BytePacketBuilder.t188(
 ) {
     writeShort(0x188)
     writeShortLVPacket {
-        writeFully(MiraiPlatformUtils.md5(androidId))
+        writeFully(androidId.md5())
     } shouldEqualsTo 16
 }
 

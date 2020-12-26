@@ -20,9 +20,9 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.quote
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.ExternalImage
-import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.WeakRefProperty
+import net.mamoe.mirai.utils.*
+import java.io.File
+import java.io.InputStream
 
 /**
  * 联系对象, 即可以与 [Bot] 互动的对象. 包含 [用户][User], 和 [群][Group].
@@ -70,21 +70,51 @@ public interface Contact : ContactOrBot, CoroutineScope {
     /**
      * 上传一个图片以备发送.
      *
+     * 无论上传是否成功都不会关闭 [resource].
+     *
      * @see Image 查看有关图片的更多信息, 如上传图片
      *
      * @see BeforeImageUploadEvent 图片发送前事件, 可拦截.
      * @see ImageUploadEvent 图片发送完成事件, 不可拦截.
      *
+     * @see ExternalResource
+     *
      * @throws EventCancelledException 当发送消息事件被取消时抛出
      * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时抛出. (最大大小约为 20 MB, 但 mirai 限制的大小为 30 MB)
      */
     @JvmBlockingBridge
-    public suspend fun uploadImage(image: ExternalImage): Image
+    public suspend fun uploadImage(resource: ExternalResource): Image
 
     /**
      * @return "Friend($id)" or "Group($id)" or "Member($id)"
      */
     public override fun toString(): String
+
+    public companion object {
+        /**
+         * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
+         *
+         * 注意：此函数不会关闭 [imageStream]
+         *
+         * @throws OverFileSizeMaxException
+         * @see FileCacheStrategy
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> =
+            imageStream.sendAsImageTo(this)
+
+        /**
+         * 将文件作为图片发送到指定联系人
+         * @throws OverFileSizeMaxException
+         * @see FileCacheStrategy
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
+    }
 }
 
 /**

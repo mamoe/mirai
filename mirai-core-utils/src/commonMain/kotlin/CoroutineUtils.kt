@@ -6,17 +6,16 @@
  *
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
+
+@file:JvmMultifileClass
+@file:JvmName("MiraiUtils")
+
 package net.mamoe.mirai.utils
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-internal class ExternalImageTest {
-
-    @Test
-    fun testByteArrayGet() {
-        assertEquals("0F", byteArrayOf(0x0f)[0, 0])
-        assertEquals("10", byteArrayOf(0x10)[0, 0])
-        assertEquals("0FFE", byteArrayOf(0x0F, 0xFE.toByte())[0, 1])
-    }
-}
+public suspend inline fun <R> runBIO(
+    noinline block: suspend CoroutineScope.() -> R
+): R = withContext(Dispatchers.IO, block)

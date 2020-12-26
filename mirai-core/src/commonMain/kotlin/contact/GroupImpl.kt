@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.message.MessageSourceToGroupImpl
 import net.mamoe.mirai.internal.message.OfflineGroupImage
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.message.firstIsInstanceOrNull
+import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
@@ -31,9 +32,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGro
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
 import net.mamoe.mirai.internal.utils.estimateLength
-import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -228,53 +227,47 @@ internal class GroupImpl(
         return result.getOrThrow()
     }
 
-    @Suppress("DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @OptIn(ExperimentalTime::class)
-    override suspend fun uploadImage(image: ExternalImage): Image = try {
-        if (image.input is net.mamoe.mirai.utils.internal.DeferredReusableInput) {
-            image.input.init(bot.configuration.fileCacheStrategy)
-        }
-        if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
+    override suspend fun uploadImage(resource: ExternalResource): Image {
+        if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
-        bot.network.run {
+        bot.network.run<QQAndroidBotNetworkHandler, Image> {
             val response: ImgStore.GroupPicUp.Response = ImgStore.GroupPicUp(
                 bot.client,
                 uin = bot.id,
                 groupCode = id,
-                md5 = image.md5,
-                size = image.input.size.toInt()
+                md5 = resource.md5,
+                size = resource.size.toInt()
             ).sendAndExpect()
 
             @Suppress("UNCHECKED_CAST") // bug
             when (response) {
                 is ImgStore.GroupPicUp.Response.Failed -> {
-                    ImageUploadEvent.Failed(this@GroupImpl, image, response.resultCode, response.message).broadcast()
+                    ImageUploadEvent.Failed(this@GroupImpl, resource, response.resultCode, response.message).broadcast()
                     if (response.message == "over file size max") throw OverFileSizeMaxException()
                     error("upload group image failed with reason ${response.message}")
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
-                    val resourceId = image.calculateImageResourceId()
+                    val resourceId = resource.calculateResourceId()
                     return OfflineGroupImage(imageId = resourceId)
-                        .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
+                        .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
                     HighwayHelper.uploadImageToServers(
                         bot,
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
-                        image.input,
+                        resource,
                         kind = "group image",
                         commandId = 2
                     )
-                    val resourceId = image.calculateImageResourceId()
+                    val resourceId = resource.calculateResourceId()
                     return OfflineGroupImage(imageId = resourceId)
-                        .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
+                        .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
             }
         }
-    } finally {
-        image.input.release()
     }
 
     /**
@@ -290,7 +283,7 @@ internal class GroupImpl(
         if (content.size > 1048576) {
             throw  OverFileSizeMaxException()
         }
-        val md5 = MiraiPlatformUtils.md5(content)
+        val md5 = content.md5()
         val codec = with(content.copyOfRange(0, 10).toUHexString("")) {
             when {
                 startsWith("2321414D52") -> 0             // amr

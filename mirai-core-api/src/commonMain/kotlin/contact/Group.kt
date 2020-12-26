@@ -18,7 +18,6 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.utils.ExternalImage
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
 import net.mamoe.mirai.utils.PlannedRemoval
@@ -161,21 +160,6 @@ public interface Group : Contact, CoroutineScope {
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: String): MessageReceipt<Group> =
         this.sendMessage(message.toPlainText())
-
-
-    /**
-     * 上传一个图片以备发送.
-     *
-     * @see Image 查看有关图片的更多信息, 如上传图片
-     *
-     * @see BeforeImageUploadEvent 图片上传前事件, cancellable
-     * @see ImageUploadEvent 图片上传完成事件
-     *
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当图片文件过大而被服务器拒绝上传时. (最大大小约为 20 MB)
-     */
-    @JvmBlockingBridge
-    public override suspend fun uploadImage(image: ExternalImage): Image
 
     /**
      * 上传一个语音消息以备发送.

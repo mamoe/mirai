@@ -25,19 +25,31 @@ import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.md5
-import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
+import net.mamoe.mirai.utils.generateImageId
+
+/*
+ * ImgType:
+ *  JPG:    1000
+ *  PNG:    1001
+ *  WEBP:   1002
+ *  BMP:    1005
+ *  GIG:    2000 // gig? gif?
+ *  APNG:   2001
+ *  SHARPP: 1004
+ */
 
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
 ) : @Suppress("DEPRECATION")
 OnlineGroupImage() {
-    override val imageId: String = ExternalImage.generateImageId(
+    override val imageId: String = generateImageId(
         delegate.md5,
         delegate.filePath.substringAfterLast('.')
     ).takeIf {
         GROUP_IMAGE_ID_REGEX.matches(it)
-    } ?: ExternalImage.generateImageId(delegate.md5)
+    } ?: generateImageId(delegate.md5)
 
     override val originUrl: String
         get() = if (delegate.origUrl.isBlank()) {
@@ -145,14 +157,12 @@ internal interface SuspendDeferredOriginUrlAware : Image {
 @MiraiExperimentalApi("Will be renamed to OfflineImage on 1.2.0")
 @Suppress("DEPRECATION_ERROR")
 internal class ExperimentalDeferredImage internal constructor(
-    @Suppress("CanBeParameter") private val externalImage: ExternalImage // for future use
+    @Suppress("CanBeParameter") private val externalImage: ExternalResource // for future use
 ) : AbstractImage(), SuspendDeferredOriginUrlAware {
     override suspend fun getUrl(bot: Bot): String {
         TODO()
     }
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    override val imageId: String = externalImage.calculateImageResourceId()
+    override val imageId: String = externalImage.calculateResourceId()
 }
 
 @Suppress("EXPOSED_SUPER_INTERFACE")

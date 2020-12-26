@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
-import net.mamoe.mirai.internal.utils.MiraiPlatformUtils
+import net.mamoe.mirai.utils.md5
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -81,7 +81,7 @@ internal actual class ECDH actual constructor(actual val keyPair: ECDHKeyPair) {
             val instance = KeyAgreement.getInstance("ECDH", "BC")
             instance.init(privateKey)
             instance.doPhase(publicKey, true)
-            return MiraiPlatformUtils.md5(instance.generateSecret())
+            return instance.generateSecret().md5()
         }
 
         actual fun constructPublicKey(key: ByteArray): ECDHPublicKey {

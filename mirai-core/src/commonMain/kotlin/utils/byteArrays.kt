@@ -17,14 +17,11 @@ import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.String
-import kotlinx.io.core.use
+import net.mamoe.mirai.internal.utils.io.withUse
+import net.mamoe.mirai.utils.checkOffsetAndLength
 import java.util.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.jvm.JvmMultifileClass
-import kotlin.jvm.JvmName
-import kotlin.jvm.JvmOverloads
-import kotlin.jvm.JvmSynthetic
 
 
 @JvmOverloads
@@ -107,5 +104,5 @@ internal inline fun <R> ByteArray.read(t: ByteReadPacket.() -> R): R {
     contract {
         callsInPlace(t, InvocationKind.EXACTLY_ONCE)
     }
-    return this.toReadPacket().use(t)
+    return this.toReadPacket().withUse(t)
 }

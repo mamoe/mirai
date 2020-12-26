@@ -16,6 +16,7 @@ package net.mamoe.mirai.event.events
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed
@@ -26,7 +27,8 @@ import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.utils.*
-import java.awt.image.BufferedImage
+import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.io.File
 import java.io.InputStream
 import kotlin.internal.InlineOnly
@@ -415,7 +417,7 @@ public val MessageRecallEvent.isByBot: Boolean
  */
 public data class BeforeImageUploadEvent @MiraiInternalApi constructor(
     public val target: Contact,
-    public val source: ExternalImage
+    public val source: ExternalResource
 ) : BotEvent, BotActiveEvent, AbstractEvent(), CancellableEvent {
     public override val bot: Bot
         get() = target.bot
@@ -434,19 +436,19 @@ public data class BeforeImageUploadEvent @MiraiInternalApi constructor(
  */
 public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent() {
     public abstract val target: Contact
-    public abstract val source: ExternalImage
+    public abstract val source: ExternalResource
     public override val bot: Bot
         get() = target.bot
 
     public data class Succeed @MiraiInternalApi constructor(
         override val target: Contact,
-        override val source: ExternalImage,
+        override val source: ExternalResource,
         val image: Image
     ) : ImageUploadEvent()
 
     public data class Failed @MiraiInternalApi constructor(
         override val target: Contact,
-        override val source: ExternalImage,
+        override val source: ExternalResource,
         val errno: Int,
         val message: String
     ) : ImageUploadEvent()
@@ -631,9 +633,9 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
     public override suspend fun reply(plain: String): MessageReceipt<Contact> =
         subject.sendMessage(PlainText(plain).asMessageChain())
 
-    public override suspend fun ExternalImage.upload(): Image = this.upload(subject)
+    public override suspend fun ExternalResource.uploadAsImage(): Image = this.uploadAsImage(subject)
 
-    public override suspend fun ExternalImage.send(): MessageReceipt<Contact> = this.sendTo(subject)
+    public override suspend fun ExternalResource.sendAsImage(): MessageReceipt<Contact> = this.sendAsImageTo(subject)
 
     public override suspend fun Image.send(): MessageReceipt<Contact> = this.sendTo(subject)
 
@@ -667,25 +669,21 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
 
     // region 上传图片
 
-    public override suspend fun uploadImage(image: BufferedImage): Image = subject.uploadImage(image)
     public override suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
     public override suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
     // endregion
 
     // region 发送图片
-    public override suspend fun sendImage(image: BufferedImage): MessageReceipt<Contact> = subject.sendImage(image)
     public override suspend fun sendImage(image: InputStream): MessageReceipt<Contact> = subject.sendImage(image)
     public override suspend fun sendImage(image: File): MessageReceipt<Contact> = subject.sendImage(image)
     // endregion
 
     // region 上传图片 (扩展)
-    public override suspend fun BufferedImage.upload(): Image = upload(subject)
     public override suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
     public override suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
-    public override suspend fun BufferedImage.send(): MessageReceipt<Contact> = sendTo(subject)
     public override suspend fun InputStream.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
     public override suspend fun File.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
     // endregion 发送图片 (扩展)
@@ -773,10 +771,10 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
     // endregion
 
     @JvmSynthetic
-    public suspend fun ExternalImage.upload(): Image
+    public suspend fun ExternalResource.uploadAsImage(): Image
 
     @JvmSynthetic
-    public suspend fun ExternalImage.send(): MessageReceipt<TSubject>
+    public suspend fun ExternalResource.sendAsImage(): MessageReceipt<TSubject>
 
     @JvmSynthetic
     public suspend fun Image.send(): MessageReceipt<TSubject>
@@ -829,9 +827,6 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
     // region 上传图片
 
     @JvmBlockingBridge
-    public suspend fun uploadImage(image: BufferedImage): Image
-
-    @JvmBlockingBridge
     public suspend fun uploadImage(image: InputStream): Image
 
     @JvmBlockingBridge
@@ -839,9 +834,6 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
     // endregion
 
     // region 发送图片
-    @JvmBlockingBridge
-    public suspend fun sendImage(image: BufferedImage): MessageReceipt<TSubject>
-
     @JvmBlockingBridge
     public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject>
 
@@ -851,9 +843,6 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
 
     // region 上传图片 (扩展)
     @JvmSynthetic
-    public suspend fun BufferedImage.upload(): Image
-
-    @JvmSynthetic
     public suspend fun InputStream.uploadAsImage(): Image
 
     @JvmSynthetic
@@ -861,9 +850,6 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
-    @JvmSynthetic
-    public suspend fun BufferedImage.send(): MessageReceipt<TSubject>
-
     @JvmSynthetic
     public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject>
 

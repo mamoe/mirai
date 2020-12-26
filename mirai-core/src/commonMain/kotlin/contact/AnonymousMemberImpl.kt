@@ -18,7 +18,7 @@ import net.mamoe.mirai.internal.MiraiImpl
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MemberDeprecatedApi
 import kotlin.coroutines.CoroutineContext
 
@@ -39,7 +39,7 @@ internal class AnonymousMemberImpl(
     override val remark: String get() = memberInfo.remark
 
     override fun nudge(): MemberNudge = notSupported("Nudge")
-    override suspend fun uploadImage(image: ExternalImage): Image = notSupported("Upload image to")
+    override suspend fun uploadImage(resource: ExternalResource): Image = notSupported("Upload image to")
     override suspend fun unmute() {
     }
 

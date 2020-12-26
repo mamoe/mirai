@@ -18,7 +18,7 @@ import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PAD
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol.ANDROID_PHONE
-import net.mamoe.mirai.utils.ExternalImage
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiInternalApi
 
@@ -42,7 +42,7 @@ public interface OtherClient : Contact {
         throw UnsupportedOperationException("OtherClientImpl.sendMessage is not yet supported.")
     }
 
-    override suspend fun uploadImage(image: ExternalImage): Image {
+    override suspend fun uploadImage(resource: ExternalResource): Image {
         throw UnsupportedOperationException("OtherClientImpl.uploadImage is not yet supported.")
     }
 }

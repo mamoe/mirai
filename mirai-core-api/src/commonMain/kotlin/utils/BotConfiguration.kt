@@ -112,10 +112,6 @@ public open class BotConfiguration { // open for Java
      */
     public var deviceInfo: ((Bot) -> DeviceInfo)? = deviceInfoStub
 
-    /** 缓存策略  */
-    @MiraiExperimentalApi
-    public var fileCacheStrategy: FileCacheStrategy = FileCacheStrategy.PlatformDefault
-
     /**
      * Json 序列化器, 使用 'kotlinx.serialization'
      */
@@ -270,7 +266,6 @@ public open class BotConfiguration { // open for Java
             new.reconnectionRetryTimes = reconnectionRetryTimes
             new.loginSolver = loginSolver
             new.protocol = protocol
-            new.fileCacheStrategy = fileCacheStrategy
         }
     }
 

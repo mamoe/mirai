@@ -22,6 +22,7 @@ import net.mamoe.mirai.internal.utils.io.*
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.error
 import net.mamoe.mirai.utils.generateDeviceInfoData
+import net.mamoe.mirai.utils.md5
 
 internal class WtLogin {
     /**
@@ -80,7 +81,7 @@ internal class WtLogin {
                         t8(2052)
                         t104(client.t104)
                         t116(client.miscBitMap, client.subSigMap)
-                        t401(MiraiPlatformUtils.md5(client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402))
+                        t401((client.device.guid + "stMNokHgxZUGhsYp".toByteArray() + t402).md5())
                     }
                 }
             }

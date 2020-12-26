@@ -7,8 +7,6 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-
 package net.mamoe.mirai.internal.network.highway
 
 import io.ktor.client.*
@@ -16,21 +14,25 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.utils.io.*
+import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.use
+import kotlinx.io.core.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
-import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.internal.utils.PlatformSocket
+import net.mamoe.mirai.internal.utils.SocketException
+import net.mamoe.mirai.internal.utils.addSuppressedMirai
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.io.withUse
-import net.mamoe.mirai.utils.internal.ReusableInput
-import net.mamoe.mirai.utils.verbose
+import net.mamoe.mirai.internal.utils.toIpV4AddressString
+import net.mamoe.mirai.utils.*
+import java.io.InputStream
 import kotlin.math.roundToInt
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -41,7 +43,7 @@ internal suspend fun HttpClient.postImage(
     htcmd: String,
     uin: Long,
     groupcode: Long?,
-    imageInput: ReusableInput,
+    imageInput: ExternalResource,
     uKeyHex: String
 ): Boolean = post<HttpStatusCode> {
     url {
@@ -65,12 +67,10 @@ internal suspend fun HttpClient.postImage(
 
     body = object : OutgoingContent.WriteChannelContent() {
         override val contentType: ContentType = ContentType.Image.Any
-        override val contentLength: Long = imageInput.size
-
+        override val contentLength: Long = imageInput.size.toLong()
 
         override suspend fun writeTo(channel: ByteWriteChannel) {
-            imageInput.writeTo(channel)
-
+            imageInput.inputStream().withUse { copyTo(channel) }
         }
     }
 } == HttpStatusCode.OK
@@ -82,7 +82,7 @@ internal object HighwayHelper {
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
-        image: ReusableInput,
+        image: ExternalResource,
         kind: String,
         commandId: Int
     ) = uploadImageToServers(bot, servers, uKey, image.md5, image, kind, commandId)
@@ -94,11 +94,11 @@ internal object HighwayHelper {
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
         md5: ByteArray,
-        input: ReusableInput,
+        input: ExternalResource,
         kind: String,
         commandId: Int
     ) = servers.retryWithServers(
-        (input.size * 1000 / 1024 / 10).coerceAtLeast(5000),
+        (input.size * 1000 / 1024 / 10).coerceAtLeast(5000).toLong(),
         onFail = {
             throw IllegalStateException("cannot upload $kind, failed on all servers.", it)
         }
@@ -131,7 +131,7 @@ internal object HighwayHelper {
         serverIp: String,
         serverPort: Int,
         ticket: ByteArray,
-        imageInput: ReusableInput,
+        imageInput: ExternalResource,
         fileMd5: ByteArray,
         commandId: Int  // group=2, friend=1
     ) {
@@ -157,18 +157,16 @@ internal object HighwayHelper {
                 ticket = ticket,
                 data = imageInput,
                 fileMd5 = fileMd5
-            ).withUse {
-                flow.collect {
-                    socket.send(it)
-                    //0A 3C 08 01 12 0A 31 39 39 34 37 30 31 30 32 31 1A 0C 50 69 63 55 70 2E 44 61 74 61 55 70 20 E9 A7 05 28 00 30 BD DB 8B 80 02 38 80 20 40 02 4A 0A 38 2E 32 2E 30 2E 31 32 39 36 50 84 10 12 3D 08 00 10 FD 08 18 00 20 FD 08 28 C6 01 38 00 42 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 4A 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 50 89 92 A2 FB 06 58 00 60 00 18 53 20 01 28 00 30 04 3A 00 40 E6 B7 F7 D9 80 2E 48 00 50 00
+            ).useAll {
+                socket.send(it)
+                //0A 3C 08 01 12 0A 31 39 39 34 37 30 31 30 32 31 1A 0C 50 69 63 55 70 2E 44 61 74 61 55 70 20 E9 A7 05 28 00 30 BD DB 8B 80 02 38 80 20 40 02 4A 0A 38 2E 32 2E 30 2E 31 32 39 36 50 84 10 12 3D 08 00 10 FD 08 18 00 20 FD 08 28 C6 01 38 00 42 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 4A 10 D4 1D 8C D9 8F 00 B2 04 E9 80 09 98 EC F8 42 7E 50 89 92 A2 FB 06 58 00 60 00 18 53 20 01 28 00 30 04 3A 00 40 E6 B7 F7 D9 80 2E 48 00 50 00
 
-                    socket.read().withUse {
-                        discardExact(1)
-                        val headLength = readInt()
-                        discardExact(4)
-                        val proto = readProtoBuf(CSDataHighwayHead.RspDataHighwayHead.serializer(), length = headLength)
-                        check(proto.errorCode == 0) { "highway transfer failed, error ${proto.errorCode}" }
-                    }
+                socket.read().withUse {
+                    discardExact(1)
+                    val headLength = readInt()
+                    discardExact(4)
+                    val proto = readProtoBuf(CSDataHighwayHead.RspDataHighwayHead.serializer(), length = headLength)
+                    check(proto.errorCode == 0) { "highway transfer failed, error ${proto.errorCode}" }
                 }
             }
         }
@@ -223,6 +221,87 @@ internal object HighwayHelper {
     }
 }
 
+internal class ChunkedFlowSession<T>(
+    private val input: InputStream,
+    private val buffer: ByteArray,
+    private val mapper: (buffer: ByteArray, size: Int, offset: Long) -> T
+) : Closeable {
+    override fun close() {
+        input.close()
+    }
+
+    private var offset = 0L
+
+    @Suppress("BlockingMethodInNonBlockingContext")
+    internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) = withUse {
+        runBIO {
+            val size = input.read(buffer)
+            block(mapper(buffer, size, offset))
+            offset += size
+        }
+    }
+}
+
+
+internal fun createImageDataPacketSequence(
+    // RequestDataTrans
+    client: QQAndroidClient,
+    command: String,
+    appId: Int,
+    dataFlag: Int = 4096,
+    commandId: Int,
+    localId: Int = 2052,
+    ticket: ByteArray,
+    data: ExternalResource,
+    fileMd5: ByteArray,
+    sizePerPacket: Int = ByteArrayPool.BUFFER_SIZE
+): ChunkedFlowSession<ByteReadPacket> {
+    ByteArrayPool.checkBufferSize(sizePerPacket)
+    //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
+
+    return ChunkedFlowSession(data.inputStream(), ByteArray(sizePerPacket)) { buffer, size, offset ->
+        val head = CSDataHighwayHead.ReqDataHighwayHead(
+            msgBasehead = CSDataHighwayHead.DataHighwayHead(
+                version = 1,
+                uin = client.uin.toString(),
+                command = command,
+                seq = when (commandId) {
+                    2 -> client.nextHighwayDataTransSequenceIdForGroup()
+                    1 -> client.nextHighwayDataTransSequenceIdForFriend()
+                    27 -> client.nextHighwayDataTransSequenceIdForApplyUp()
+                    else -> error("illegal commandId: $commandId")
+                },
+                retryTimes = 0,
+                appid = appId,
+                dataflag = dataFlag,
+                commandId = commandId,
+                localeId = localId
+            ),
+            msgSeghead = CSDataHighwayHead.SegHead(
+                //   cacheAddr = 812157193,
+                datalength = size,
+                dataoffset = offset,
+                filesize = data.size,
+                serviceticket = ticket,
+                md5 = buffer.md5(0, size),
+                fileMd5 = fileMd5,
+                flag = 0,
+                rtcode = 0
+            ),
+            reqExtendinfo = EMPTY_BYTE_ARRAY,
+            msgLoginSigHead = null
+        ).toByteArray(CSDataHighwayHead.ReqDataHighwayHead.serializer())
+
+        buildPacket {
+            writeByte(40)
+            writeInt(head.size)
+            writeInt(size)
+            writeFully(head)
+            writeFully(buffer, 0, size)
+            writeByte(41)
+        }
+    }
+}
 
 internal suspend inline fun List<Pair<Int, Int>>.retryWithServers(
     timeoutMillis: Long,
@@ -249,6 +328,7 @@ internal suspend inline fun List<Pair<Int, Int>>.retryWithServers(
     onFail(exception)
 }
 
+internal fun Int.sizeToString() = this.toLong().sizeToString()
 internal fun Long.sizeToString(): String {
     return if (this < 1024) {
         "$this B"
