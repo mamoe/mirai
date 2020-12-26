@@ -54,7 +54,7 @@ internal object DefaultServerList : Set<Pair<String, Int>> by setOf(
     "114.221.144.215" to 80,
     "42.81.172.22" to 80,
     "msfwifi.3g.qq.com" to 8080,
-)
+).shuffled().toSet()
 
 /*
  APP ID:

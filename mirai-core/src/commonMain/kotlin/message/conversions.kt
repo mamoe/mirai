@@ -21,10 +21,8 @@ import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
-import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -172,6 +170,10 @@ internal fun MessageChain.toRichTextElems(
                     }
                 }
             }
+            //MarketFaceImpl继承于MarketFace 会自动添加兼容信息
+            //如果有用户不慎/强行使用也会转换为文本信息
+            is MarketFaceImpl -> elements.add(ImMsgBody.Elem(marketFace = it.delegate))
+            is MarketFace -> transformOneMessage(PlainText(it.contentToString()))
             is VipFace -> transformOneMessage(PlainText(it.contentToString()))
             is PttMessage -> {
                 elements.add(
@@ -334,6 +336,12 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     return@forEach
                 }
             }
+            if (last is MarketFaceImpl && element is PlainText) {
+                if (element.content == (last as MarketFaceImpl).name) {
+                    last = element
+                    return@forEach
+                }
+            }
             if (last is PokeMessage && element is PlainText) {
                 if (element == UNSUPPORTED_POKE_MESSAGE_PLAIN) {
                     last = element
@@ -407,6 +415,9 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                         list.add(At(id)) // element.text.str
                     }
                 }
+            }
+            element.marketFace != null -> {
+                list.add(MarketFaceImpl(element.marketFace))
             }
             element.lightApp != null -> {
                 val content = runWithBugReport("解析 lightApp",
