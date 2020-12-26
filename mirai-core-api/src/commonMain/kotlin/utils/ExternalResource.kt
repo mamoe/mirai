@@ -70,7 +70,7 @@ public interface ExternalResource : Closeable {
     /**
      * 打开 [InputStream]. 在返回的 [InputStream] 被 [关闭][InputStream.close] 前无法再次打开流.
      *
-     * 关闭此流可能不会关闭 [ExternalResource].
+     * 关闭此流不会关闭 [ExternalResource].
      */
     public fun inputStream(): InputStream
 
