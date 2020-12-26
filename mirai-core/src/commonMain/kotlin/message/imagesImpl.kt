@@ -17,7 +17,6 @@ import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.utils.hexToBytes
 import net.mamoe.mirai.message.data.FriendImage
 import net.mamoe.mirai.message.data.GroupImage
 import net.mamoe.mirai.message.data.Image
@@ -28,6 +27,7 @@ import net.mamoe.mirai.message.data.md5
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.generateImageId
+import net.mamoe.mirai.utils.hexToBytes
 
 /*
  * ImgType:
@@ -162,6 +162,7 @@ internal class ExperimentalDeferredImage internal constructor(
     override suspend fun getUrl(bot: Bot): String {
         TODO()
     }
+
     override val imageId: String = externalImage.calculateResourceId()
 }
 

@@ -22,7 +22,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
 import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
-import net.mamoe.mirai.internal.utils.toByteArray
+import net.mamoe.mirai.utils.toByteArray
 
 internal class ProfileService {
     object GroupMngReq : OutgoingPacketFactory<GroupMngReq.GroupMngReqResponse>("ProfileService.GroupMngReq") {

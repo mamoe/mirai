@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal.utils.crypto
 
-import net.mamoe.mirai.internal.utils.chunkedHexToBytes
+import net.mamoe.mirai.utils.chunkedHexToBytes
 
 internal expect interface ECDHPrivateKey
 

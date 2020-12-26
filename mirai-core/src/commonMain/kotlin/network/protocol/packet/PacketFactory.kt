@@ -31,7 +31,6 @@ import net.mamoe.mirai.internal.utils.io.readPacketExact
 import net.mamoe.mirai.internal.utils.io.readString
 import net.mamoe.mirai.internal.utils.io.useBytes
 import net.mamoe.mirai.internal.utils.io.withUse
-import net.mamoe.mirai.internal.utils.toInt
 import net.mamoe.mirai.internal.utils.toReadPacket
 import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.utils.*

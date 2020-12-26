@@ -17,8 +17,8 @@ import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.utils.toReadPacket
-import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.utils.ByteArrayPool
+import net.mamoe.mirai.utils.toUHexString
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -47,7 +47,7 @@ private inline fun <R> inline(block: () -> R): R = block()
 internal typealias TlvMap = MutableMap<Int, ByteArray>
 
 internal inline fun TlvMap.getOrFail(tag: Int): ByteArray {
-    return this[tag] ?: error("cannot find tlv 0x${tag. toUHexString("")}($tag)")
+    return this[tag] ?: error("cannot find tlv 0x${tag.toUHexString("")}($tag)")
 }
 
 internal inline fun TlvMap.getOrFail(tag: Int, lazyMessage: (tag: Int) -> String): ByteArray {
@@ -59,7 +59,11 @@ internal inline fun Input._readTLVMap(tagSize: Int = 2, suppressDuplication: Boo
     _readTLVMap(true, tagSize, suppressDuplication)
 
 @Suppress("DuplicatedCode", "FunctionName")
-internal fun Input._readTLVMap(expectingEOF: Boolean = true, tagSize: Int, suppressDuplication: Boolean = true): TlvMap {
+internal fun Input._readTLVMap(
+    expectingEOF: Boolean = true,
+    tagSize: Int,
+    suppressDuplication: Boolean = true
+): TlvMap {
     val map = mutableMapOf<Int, ByteArray>()
     var key = 0
 

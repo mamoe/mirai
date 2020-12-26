@@ -8,6 +8,8 @@
  */
 package net.mamoe.mirai.internal.utils
 
+import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.toByteArray
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

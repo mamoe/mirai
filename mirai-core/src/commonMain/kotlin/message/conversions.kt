@@ -27,6 +27,7 @@ import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.safeCast
 import net.mamoe.mirai.utils.unzip
 import net.mamoe.mirai.utils.zip

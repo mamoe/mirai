@@ -51,6 +51,7 @@ import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.debug
 import net.mamoe.mirai.utils.mapToIntArray
+import net.mamoe.mirai.utils.toUHexString
 
 
 //0C 01 B1 89 BE 09 5E 3D 72 A6 00 01 73 68 FC 06 00 00 00 3C

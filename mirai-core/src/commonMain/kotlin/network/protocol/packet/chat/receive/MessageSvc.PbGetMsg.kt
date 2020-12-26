@@ -53,6 +53,7 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.cast
 import net.mamoe.mirai.utils.debug
+import net.mamoe.mirai.utils.toInt
 import net.mamoe.mirai.utils.warning
 import kotlin.random.Random
 

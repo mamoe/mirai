@@ -19,10 +19,7 @@ import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.guidFlag
 import net.mamoe.mirai.internal.utils.io.*
-import net.mamoe.mirai.utils.currentTimeSeconds
-import net.mamoe.mirai.utils.error
-import net.mamoe.mirai.utils.generateDeviceInfoData
-import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.*
 
 internal class WtLogin {
     /**

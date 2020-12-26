@@ -9,7 +9,7 @@
 
 @file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE", "unused")
 
-package net.mamoe.mirai.internal.utils
+package net.mamoe.mirai.utils
 
 /*
  * 类型转换 Utils.
@@ -19,7 +19,7 @@ package net.mamoe.mirai.internal.utils
 /**
  * 255 -> 00 FF
  */
-internal fun Short.toByteArray(): ByteArray = with(toInt()) {
+public fun Short.toByteArray(): ByteArray = with(toInt()) {
     byteArrayOf(
         (shr(8) and 0xFF).toByte(),
         (shr(0) and 0xFF).toByte()
@@ -29,7 +29,7 @@ internal fun Short.toByteArray(): ByteArray = with(toInt()) {
 /**
  * 255 -> 00 00 00 FF
  */
-internal fun Int.toByteArray(): ByteArray = byteArrayOf(
+public fun Int.toByteArray(): ByteArray = byteArrayOf(
     ushr(24).toByte(),
     ushr(16).toByte(),
     ushr(8).toByte(),
@@ -39,7 +39,7 @@ internal fun Int.toByteArray(): ByteArray = byteArrayOf(
 /**
  * 255 -> 00 00 00 FF
  */
-internal fun Long.toByteArray(): ByteArray = byteArrayOf(
+public fun Long.toByteArray(): ByteArray = byteArrayOf(
     (ushr(56) and 0xFF).toByte(),
     (ushr(48) and 0xFF).toByte(),
     (ushr(40) and 0xFF).toByte(),
@@ -50,40 +50,40 @@ internal fun Long.toByteArray(): ByteArray = byteArrayOf(
     (ushr(0) and 0xFF).toByte()
 )
 
-internal fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
+public fun Int.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 /**
  * 255 -> 00 FF
  */
-internal fun UShort.toByteArray(): ByteArray = with(toUInt()) {
+public fun UShort.toByteArray(): ByteArray = with(toUInt()) {
     byteArrayOf(
         (shr(8) and 255u).toByte(),
         (shr(0) and 255u).toByte()
     )
 }
 
-internal fun Short.toUHexString(separator: String = " "): String = this.toUShort().toUHexString(separator)
+public fun Short.toUHexString(separator: String = " "): String = this.toUShort().toUHexString(separator)
 
-internal fun UShort.toUHexString(separator: String = " "): String =
+public fun UShort.toUHexString(separator: String = " "): String =
     this.toInt().shr(8).toUShort().toUByte().toUHexString() + separator + this.toUByte().toUHexString()
 
-internal fun ULong.toUHexString(separator: String = " "): String =
+public fun ULong.toUHexString(separator: String = " "): String =
     this.toLong().toUHexString(separator)
 
-internal fun Long.toUHexString(separator: String = " "): String =
+public fun Long.toUHexString(separator: String = " "): String =
     this.ushr(32).toUInt().toUHexString(separator) + separator + this.toUInt().toUHexString(separator)
 
 /**
  * 255 -> 00 FF
  */
-internal fun UByte.toByteArray(): ByteArray = byteArrayOf((this and 255u).toByte())
+public fun UByte.toByteArray(): ByteArray = byteArrayOf((this and 255u).toByte())
 
-internal fun UByte.toUHexString(): String = this.toByte().toUHexString()
+public fun UByte.toUHexString(): String = this.toByte().toUHexString()
 
 /**
  * 255u -> 00 00 00 FF
  */
-internal fun UInt.toByteArray(): ByteArray = byteArrayOf(
+public fun UInt.toByteArray(): ByteArray = byteArrayOf(
     (shr(24) and 255u).toByte(),
     (shr(16) and 255u).toByte(),
     (shr(8) and 255u).toByte(),
@@ -93,31 +93,26 @@ internal fun UInt.toByteArray(): ByteArray = byteArrayOf(
 /**
  * 转 [ByteArray] 后再转 hex
  */
-internal fun UInt.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
+public fun UInt.toUHexString(separator: String = " "): String = this.toByteArray().toUHexString(separator)
 
 /**
  * 转无符号十六进制表示, 并补充首位 `0`.
  * 转换结果示例: `FF`, `0E`
  */
-internal fun Byte.toUHexString(): String = this.toUByte().fixToUHex()
+public fun Byte.toUHexString(): String = this.toUByte().fixToUHex()
 
 /**
  * 转无符号十六进制表示, 并补充首位 `0`.
  */
-internal fun Byte.fixToUHex(): String = this.toUByte().fixToUHex()
+public fun Byte.fixToUHex(): String = this.toUByte().fixToUHex()
 
 /**
  * 转无符号十六进制表示, 并补充首位 `0`.
  */
-internal fun UByte.fixToUHex(): String =
+public fun UByte.fixToUHex(): String =
     if (this.toInt() in 0..15) "0${this.toString(16).toUpperCase()}" else this.toString(16).toUpperCase()
 
-/**
- * 将无符号 Hex 转为 [ByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
- *
- * 这个方法很累, 不建议经常使用.
- */
-internal fun String.hexToBytes(): ByteArray =
+public fun String.hexToBytes(): ByteArray =
     this.split(" ")
         .asSequence()
         .filterNot { it.isEmpty() }
@@ -130,25 +125,21 @@ internal fun String.hexToBytes(): ByteArray =
  *
  * 这个方法很累, 不建议经常使用.
  */
-internal fun String.chunkedHexToBytes(): ByteArray =
+public fun String.chunkedHexToBytes(): ByteArray =
     this.asSequence().chunked(2).map { (it[0].toString() + it[1]).toUByte(16).toByte() }.toList().toByteArray()
 
 /**
  * 删掉全部空格和换行后每 2 char 为一组, 转换 Hex 为 [ByteArray].
- *
- * 这个方法很累, 不建议经常使用.
  */
-internal fun String.autoHexToBytes(): ByteArray =
+public fun String.autoHexToBytes(): ByteArray =
     this.replace("\n", "").replace(" ", "").asSequence().chunked(2).map {
         (it[0].toString() + it[1]).toUByte(16).toByte()
     }.toList().toByteArray()
 
 /**
  * 将无符号 Hex 转为 [UByteArray], 有根据 hex 的 [hashCode] 建立的缓存.
- *
- * 这个方法很累, 不建议经常使用.
  */
-internal fun String.hexToUBytes(): UByteArray =
+public fun String.hexToUBytes(): UByteArray =
     this.split(" ")
         .asSequence()
         .filterNot { it.isEmpty() }
@@ -164,15 +155,17 @@ internal fun String.hexToUBytes(): UByteArray =
  * 一个 [Int] 有 32 bits
  * 本函数将 4 个 [Byte] 的 bits 连接得到 [Int]
  */
-internal fun ByteArray.toUInt(): UInt =
-    (this[0].toUInt().and(255u) shl 24) + (this[1].toUInt().and(255u) shl 16) + (this[2].toUInt().and(255u) shl 8) + (this[3].toUInt().and(
+public fun ByteArray.toUInt(): UInt =
+    (this[0].toUInt().and(255u) shl 24) + (this[1].toUInt().and(255u) shl 16) + (this[2].toUInt()
+        .and(255u) shl 8) + (this[3].toUInt().and(
         255u
     ) shl 0)
 
-internal fun ByteArray.toUShort(): UShort =
+public fun ByteArray.toUShort(): UShort =
     ((this[0].toUInt().and(255u) shl 8) + (this[1].toUInt().and(255u) shl 0)).toUShort()
 
-internal fun ByteArray.toInt(): Int =
-    (this[0].toInt().and(255) shl 24) + (this[1].toInt().and(255) shl 16) + (this[2].toInt().and(255) shl 8) + (this[3].toInt().and(
+public fun ByteArray.toInt(): Int =
+    (this[0].toInt().and(255) shl 24) + (this[1].toInt().and(255) shl 16) + (this[2].toInt()
+        .and(255) shl 8) + (this[3].toInt().and(
         255
     ) shl 0)

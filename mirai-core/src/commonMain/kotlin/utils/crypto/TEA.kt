@@ -10,9 +10,9 @@
 package net.mamoe.mirai.internal.utils.crypto
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.internal.utils.toByteArray
-import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.utils.ByteArrayPool
+import net.mamoe.mirai.utils.toByteArray
+import net.mamoe.mirai.utils.toUHexString
 import kotlin.experimental.and
 import kotlin.experimental.xor
 import kotlin.random.Random

@@ -18,9 +18,9 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.protocol.LoginType
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils.io.*
-import net.mamoe.mirai.internal.utils.toByteArray
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toByteArray
 import kotlin.random.Random
 
 /**
