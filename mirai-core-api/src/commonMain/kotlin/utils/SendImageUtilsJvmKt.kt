@@ -40,7 +40,10 @@ import java.io.InputStream
 @Throws(OverFileSizeMaxException::class)
 @JvmSynthetic
 public suspend inline fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
-    toExternalResource("png").withUse { sendAsImageTo(contact) }
+    runBIO {
+        @Suppress("BlockingMethodInNonBlockingContext")
+        toExternalResource("png")
+    }.withUse { sendAsImageTo(contact) }
 
 /**
  * 将文件作为图片发送到指定联系人
