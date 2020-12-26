@@ -36,7 +36,7 @@ public val Mirai: IMirai by lazy { findMiraiInstance() }
 /**
  * Mirai API 接口.
  *
- * @see Mirai
+ * @see Mirai 获取实例
  */
 public interface IMirai : LowLevelApiAccessor {
     /**
@@ -49,7 +49,7 @@ public interface IMirai : LowLevelApiAccessor {
     public val BotFactory: BotFactory
 
     /**
-     * 默认的 [FileCacheStrategy]
+     * Mirai 全局使用的 [FileCacheStrategy].
      */
     @Suppress("PropertyName")
     @MiraiExperimentalApi

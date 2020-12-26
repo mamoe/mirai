@@ -32,12 +32,15 @@ import java.io.InputStream
 
 /**
  * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
+ *
+ * 注意：本函数不会关闭流
+ *
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
 @JvmSynthetic
 public suspend inline fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
-    toExternalResource("png").sendAsImageTo(contact)
+    toExternalResource("png").withUse { sendAsImageTo(contact) }
 
 /**
  * 将文件作为图片发送到指定联系人
@@ -47,7 +50,7 @@ public suspend inline fun <C : Contact> InputStream.sendAsImageTo(contact: C): M
 @JvmSynthetic
 public suspend inline fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
     require(this.exists() && this.canRead())
-    return toExternalResource("png").sendAsImageTo(contact)
+    return toExternalResource("png").withUse { sendAsImageTo(contact) }
 }
 
 // endregion
@@ -56,12 +59,16 @@ public suspend inline fun <C : Contact> File.sendAsImageTo(contact: C): MessageR
 
 /**
  * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
+ *
+ * 注意：本函数不会关闭流
+ *
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
 @JvmSynthetic
 public suspend inline fun InputStream.uploadAsImage(contact: Contact): Image =
-    toExternalResource("png").uploadAsImage(contact)
+    @Suppress("BlockingMethodInNonBlockingContext")
+    runBIO { toExternalResource("png") }.withUse { uploadAsImage(contact) }
 
 /**
  * 将文件作为图片上传后构造 [Image]
@@ -71,7 +78,7 @@ public suspend inline fun InputStream.uploadAsImage(contact: Contact): Image =
 @JvmSynthetic
 public suspend inline fun File.uploadAsImage(contact: Contact): Image {
     require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
-    return toExternalResource("png").uploadAsImage(contact)
+    return toExternalResource("png").withUse { uploadAsImage(contact) }
 }
 
 /**
@@ -95,11 +102,15 @@ public suspend inline fun InputStream.uploadAsGroupVoice(group: Group): Voice {
 
 /**
  * 读取 [InputStream] 到临时文件并将其作为图片上传, 但不发送
+ *
+ * 注意：本函数不会关闭流
+ *
  * @throws OverFileSizeMaxException
  */
 @Throws(OverFileSizeMaxException::class)
 @JvmSynthetic
-public suspend inline fun Contact.uploadImage(imageStream: InputStream): Image = imageStream.uploadAsImage(this)
+public suspend inline fun Contact.uploadImage(imageStream: InputStream): Image =
+    imageStream.uploadAsImage(this@uploadImage)
 
 /**
  * 将文件作为图片上传, 但不发送

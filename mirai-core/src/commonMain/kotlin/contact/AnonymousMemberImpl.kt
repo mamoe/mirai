@@ -39,7 +39,7 @@ internal class AnonymousMemberImpl(
     override val remark: String get() = memberInfo.remark
 
     override fun nudge(): MemberNudge = notSupported("Nudge")
-    override suspend fun uploadImage(image: ExternalResource): Image = notSupported("Upload image to")
+    override suspend fun uploadImage(resource: ExternalResource): Image = notSupported("Upload image to")
     override suspend fun unmute() {
     }
 

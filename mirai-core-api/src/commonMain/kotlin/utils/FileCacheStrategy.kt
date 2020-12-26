@@ -9,59 +9,57 @@
 
 package net.mamoe.mirai.utils
 
-import kotlinx.io.core.Input
-import kotlinx.io.core.readBytes
-import net.mamoe.mirai.Bot
+import kotlinx.coroutines.Dispatchers
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import java.io.*
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
 
 /**
- * 缓存策略.
+ * 资源缓存策略.
  *
- * 图片上传时默认使用文件缓存.
+ * 由于上传资源时服务器要求提前给出 MD5 和文件大小等数据, 一些资源如 [InputStream] 需要首先缓存才能使用.
  *
- * @see BotConfiguration.fileCacheStrategy 为 [Bot] 指定缓存策略
- * @see IMirai.FileCacheStrategy
+ * Mirai 全局都使用 [IMirai.FileCacheStrategy].
+ *
+ * ### 使用 [FileCacheStrategy] 的操作
+ * [ExternalResource.toExternalResource],
+ * [InputStream.uploadAsImage],
+ * [InputStream.sendAsImageTo]
+ *
+ * @see ExternalResource
  */
-@MiraiExperimentalApi
 public interface FileCacheStrategy {
     /**
-     * 将 [input] 缓存为 [ExternalResource].
-     * 此函数应 close 这个 [Input]
+     * 立即读取 [input] 所有内容并缓存为 [ExternalResource].
+     *
+     * 注意:
+     * - 此函数不会关闭输入
+     * - 此函数可能会阻塞线程读取 [input] 内容, 若在 Kotlin 协程使用请确保在允许阻塞的环境 ([Dispatchers.IO]).
+     *
+     * @param formatName 文件类型. 此参数通常只会影响官方客户端接收到的文件的文件后缀. 若为 `null` 则会自动根据文件头识别. 识别失败时将使用 "mirai"
      */
-    @MiraiExperimentalApi
-    @Throws(java.io.IOException::class)
-    public fun newCache(input: Input, formatName: String?): ExternalResource
+    @Throws(IOException::class)
+    public fun newCache(input: InputStream, formatName: String? = null): ExternalResource
 
     /**
-     * 将 [input] 缓存为 [ExternalResource].
-     * 此函数应 close 这个 [InputStream]
+     * 立即读取 [input] 所有内容并缓存为 [ExternalResource]. 自动根据文件头识别文件类型. 识别失败时将使用 "mirai".
+     *
+     * 注意:
+     * - 此函数不会关闭输入
+     * - 此函数可能会阻塞线程读取 [input] 内容, 若在 Kotlin 协程使用请确保在允许阻塞的环境 ([Dispatchers.IO]).
      */
-    @MiraiExperimentalApi
-    @Throws(java.io.IOException::class)
-    public fun newCache(input: InputStream, formatName: String?): ExternalResource
-
-    /**
-     * 默认的缓存方案, 使用系统临时文件夹存储.
-     */
-    @MiraiExperimentalApi
-    public object PlatformDefault : FileCacheStrategy by TempCache(null)
+    @Throws(IOException::class)
+    public fun newCache(input: InputStream): ExternalResource = newCache(input, null)
 
     /**
      * 使用内存直接存储所有图片文件.
      */
     public object MemoryCache : FileCacheStrategy {
-        @MiraiExperimentalApi
-        @Throws(java.io.IOException::class)
-        override fun newCache(input: Input, formatName: String?): ExternalResource {
-            return input.withUse { readBytes() }.toExternalResource(formatName)
-        }
-
-        @MiraiExperimentalApi
-        @Throws(java.io.IOException::class)
+        @Throws(IOException::class)
         override fun newCache(input: InputStream, formatName: String?): ExternalResource {
-            return input.withUse { readBytes() }.toExternalResource(formatName)
+            return input.readBytes().toExternalResource(formatName)
         }
     }
 
@@ -79,22 +77,23 @@ public interface FileCacheStrategy {
             return File.createTempFile("tmp", null, directory)
         }
 
-        @MiraiExperimentalApi
-        @Throws(java.io.IOException::class)
-        override fun newCache(input: Input, formatName: String?): ExternalResource {
-            return createTempFile().apply {
-                deleteOnExit()
-                input.withOut(this.outputStream()) { copyTo(it) }
-            }.toExternalResource(formatName)
-        }
-
-        @MiraiExperimentalApi
-        @Throws(java.io.IOException::class)
+        @Throws(IOException::class)
         override fun newCache(input: InputStream, formatName: String?): ExternalResource {
             return createTempFile().apply {
                 deleteOnExit()
-                input.withOut(this.outputStream()) { copyTo(it) }
+                outputStream().use { out -> input.copyTo(out) }
             }.toExternalResource(formatName)
         }
+    }
+
+    public companion object {
+        /**
+         * 当前平台下默认的缓存策略. 注意, 这可能不是 Mirai 全局默认使用的, Mirai 从 [IMirai.FileCacheStrategy] 获取.
+         *
+         * @see IMirai.FileCacheStrategy
+         */
+        @MiraiExperimentalApi
+        @JvmStatic
+        public val PlatformDefault: FileCacheStrategy = TempCache(null)
     }
 }

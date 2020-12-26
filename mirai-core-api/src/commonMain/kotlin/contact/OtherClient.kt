@@ -42,7 +42,7 @@ public interface OtherClient : Contact {
         throw UnsupportedOperationException("OtherClientImpl.sendMessage is not yet supported.")
     }
 
-    override suspend fun uploadImage(image: ExternalResource): Image {
+    override suspend fun uploadImage(resource: ExternalResource): Image {
         throw UnsupportedOperationException("OtherClientImpl.uploadImage is not yet supported.")
     }
 }

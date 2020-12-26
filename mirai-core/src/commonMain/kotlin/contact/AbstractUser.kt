@@ -15,6 +15,7 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
+import net.mamoe.mirai.internal.message.OfflineFriendImage
 import net.mamoe.mirai.internal.network.highway.postImage
 import net.mamoe.mirai.internal.network.highway.sizeToString
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
@@ -38,8 +39,8 @@ internal abstract class AbstractUser(
     final override val remark: String = friendInfo.remark
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-    override suspend fun uploadImage(image: ExternalResource): Image = image.use { _ ->
-        if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
+    override suspend fun uploadImage(resource: ExternalResource): Image {
+        if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
         val response = bot.network.run {
@@ -48,22 +49,22 @@ internal abstract class AbstractUser(
                     srcUin = bot.id.toInt(),
                     dstUin = id.toInt(),
                     fileId = 0,
-                    fileMd5 = image.md5,
-                    fileSize = image.size,
-                    fileName = image.md5.toUHexString("") + "." + image.formatName,
+                    fileMd5 = resource.md5,
+                    fileSize = resource.size,
+                    fileName = resource.md5.toUHexString("") + "." + resource.formatName,
                     imgOriginal = 1
                 )
             ).sendAndExpect<LongConn.OffPicUp.Response>()
         }
 
-        when (response) {
-            is LongConn.OffPicUp.Response.FileExists -> net.mamoe.mirai.internal.message.OfflineFriendImage(response.resourceId)
+        return when (response) {
+            is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId)
                 .also {
-                    ImageUploadEvent.Succeed(this, image, it).broadcast()
+                    ImageUploadEvent.Succeed(this, resource, it).broadcast()
                 }
             is LongConn.OffPicUp.Response.RequireUpload -> {
                 bot.network.logger.verbose {
-                    "[Http] Uploading friend image, size=${image.size.sizeToString()}"
+                    "[Http] Uploading friend image, size=${resource.size.sizeToString()}"
                 }
 
                 val time = measureTime {
@@ -71,13 +72,13 @@ internal abstract class AbstractUser(
                         "0x6ff0070",
                         bot.id,
                         null,
-                        imageInput = image,
+                        imageInput = resource,
                         uKeyHex = response.uKey.toUHexString("")
                     )
                 }
 
                 bot.network.logger.verbose {
-                    "[Http] Uploading friend image: succeed at ${(image.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+                    "[Http] Uploading friend image: succeed at ${(resource.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
                 }
 
                 /*
@@ -91,12 +92,12 @@ internal abstract class AbstractUser(
                 )*/
                 // 为什么不能 ??
 
-                net.mamoe.mirai.internal.message.OfflineFriendImage(response.resourceId).also {
-                    ImageUploadEvent.Succeed(this, image, it).broadcast()
+                OfflineFriendImage(response.resourceId).also {
+                    ImageUploadEvent.Succeed(this, resource, it).broadcast()
                 }
             }
             is LongConn.OffPicUp.Response.Failed -> {
-                ImageUploadEvent.Failed(this, image, -1, response.message).broadcast()
+                ImageUploadEvent.Failed(this, resource, -1, response.message).broadcast()
                 error(response.message)
             }
         }

@@ -12,34 +12,86 @@
 package net.mamoe.mirai.utils
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
-import java.io.Closeable
-import java.io.File
-import java.io.InputStream
-import java.io.RandomAccessFile
+import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
+import net.mamoe.mirai.utils.ExternalResource.Companion.sendImage
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import java.io.*
 
 
 /**
+ * 一个*不可变的*外部资源.
  *
+ * [ExternalResource] 在创建之后就应该保持其属性的不变, 即任何时候获取其属性都应该得到相同结果, 任何时候打开流都得到的一样的数据.
+ *
+ * ## 创建
+ * - [File.toExternalResource]
+ * - [RandomAccessFile.toExternalResource]
+ * - [ByteArray.toExternalResource]
+ * - [InputStream.toExternalResource]
+ *
+ * ## 释放
+ *
+ * 当 [ExternalResource] 创建时就可能会打开个文件 (如使用 [File.toExternalResource]).
+ * 类似于 [InputStream], [ExternalResource] 需要被 [关闭][close].
+ *
+ * @see ExternalResource.uploadAsImage 将资源作为图片上传, 得到 [Image]
+ * @see ExternalResource.sendAsImageTo 将资源作为图片发送
+ * @see Contact.uploadImage 上传一个资源作为图片, 得到 [Image]
+ * @see Contact.sendImage 发送一个资源作为图片
+ *
+ * @see FileCacheStrategy
  */
 public interface ExternalResource : Closeable {
+
+    /**
+     * 文件内容 MD5. 16 bytes
+     */
     public val md5: ByteArray
+
+    /**
+     * 文件格式，如 "png", "amr". 当无法自动识别格式时为 "mirai"
+     */
     public val formatName: String
+
+    /**
+     * 文件大小 bytes
+     */
     public val size: Int
 
     /**
+     * 打开 [InputStream]. 在返回的 [InputStream] 被 [关闭][InputStream.close] 前无法再次打开流.
+     *
      * 关闭此流可能不会关闭 [ExternalResource].
      */
     public fun inputStream(): InputStream
 
+    @MiraiInternalApi
+    public fun calculateResourceId(): String {
+        return generateImageId(md5, formatName.ifEmpty { "mirai" })
+    }
+
     public companion object {
+        /**
+         * 在无法识别文件格式时使用的默认格式名.
+         *
+         * @see ExternalResource.formatName
+         */
+        public const val DEFAULT_FORMAT_NAME: String = "mirai"
+
+        /**
+         * **打开文件**并创建 [ExternalResource].
+         *
+         * 将以只读模式打开这个文件 (因此文件会处于被占用状态), 直到 [ExternalResource.close].
+         */
         @JvmStatic
         @JvmOverloads
         @JvmName("create")
@@ -48,12 +100,23 @@ public interface ExternalResource : Closeable {
                 formatName ?: inputStream().detectFileTypeAndClose()
             )
 
+        /**
+         * 创建 [ExternalResource].
+         *
+         * @see closeOriginalFileOnClose 若为 `true`, 在 [ExternalResource.close] 时将会同步关闭 [RandomAccessFile]. 否则不会.
+         */
         @JvmStatic
         @JvmOverloads
         @JvmName("create")
-        public fun RandomAccessFile.toExternalResource(formatName: String? = null): ExternalResource =
-            ExternalResourceImplByFile(this, formatName)
+        public fun RandomAccessFile.toExternalResource(
+            formatName: String? = null,
+            closeOriginalFileOnClose: Boolean = true
+        ): ExternalResource =
+            ExternalResourceImplByFile(this, formatName, closeOriginalFileOnClose)
 
+        /**
+         * 创建 [ExternalResource]
+         */
         @JvmStatic
         @JvmOverloads
         @JvmName("create")
@@ -62,18 +125,23 @@ public interface ExternalResource : Closeable {
 
 
         /**
-         * 将 [InputStream] 委托为 [ExternalResource].
-         * 只会在上传图片时才读取 [InputStream] 的内容. 具体行为取决于相关 [Bot] 的 [FileCacheStrategy]
+         * 立即使用 [FileCacheStrategy] 缓存 [InputStream] 并创建 [ExternalResource].
+         *
+         * 注意：本函数不会关闭流
          */
         @JvmStatic
         @JvmOverloads
         @JvmName("create")
+        @Throws(IOException::class)
         public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
 
 
         /**
          * 将图片作为单独的消息发送给指定联系人.
+         *
+         * 注意：本函数不会关闭 [ExternalResource]
+         *
          *
          * @see Contact.uploadImage 上传图片
          * @see Contact.sendMessage 最终调用, 发送消息.
@@ -91,6 +159,8 @@ public interface ExternalResource : Closeable {
         /**
          * 上传图片并构造 [Image].
          * 这个函数可能需消耗一段时间.
+         *
+         * 注意：本函数不会关闭 [ExternalResource]
          *
          * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
          *
@@ -113,10 +183,6 @@ public interface ExternalResource : Closeable {
         public suspend inline fun <C : Contact> C.sendImage(image: ExternalResource): MessageReceipt<C> =
             image.sendAsImageTo(this)
     }
-}
-
-public fun ExternalResource.calculateResourceId(): String {
-    return generateImageId(md5, formatName.ifEmpty { "mirai" })
 }
 
 
@@ -150,7 +216,8 @@ internal class ExternalResourceImplByFileWithMd5(
 
 internal class ExternalResourceImplByFile(
     private val file: RandomAccessFile,
-    formatName: String?
+    formatName: String?,
+    private val closeOriginalFileOnClose: Boolean = true
 ) : ExternalResource {
     override val size: Int = file.length().toInt()
     override val md5: ByteArray by lazy { inputStream().md5() }
@@ -164,7 +231,7 @@ internal class ExternalResourceImplByFile(
     }
 
     override fun close() {
-        file.close()
+        if (closeOriginalFileOnClose) file.close()
     }
 }
 
@@ -191,7 +258,7 @@ private fun RandomAccessFile.inputStream(): InputStream {
             file.seek(0)
         }
         // don't close file on stream.close. stream may be obtained at multiple times.
-    }
+    }.buffered()
 }
 
 

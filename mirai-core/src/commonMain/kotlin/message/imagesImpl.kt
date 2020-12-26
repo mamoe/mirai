@@ -27,7 +27,6 @@ import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.md5
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.calculateResourceId
 import net.mamoe.mirai.utils.generateImageId
 
 /*

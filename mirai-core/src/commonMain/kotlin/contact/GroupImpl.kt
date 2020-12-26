@@ -227,10 +227,9 @@ internal class GroupImpl(
         return result.getOrThrow()
     }
 
-    @Suppress("DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     @OptIn(ExperimentalTime::class)
-    override suspend fun uploadImage(image: ExternalResource): Image = image.use { _ ->
-        if (BeforeImageUploadEvent(this, image).broadcast().isCancelled) {
+    override suspend fun uploadImage(resource: ExternalResource): Image {
+        if (BeforeImageUploadEvent(this, resource).broadcast().isCancelled) {
             throw EventCancelledException("cancelled by BeforeImageUploadEvent.ToGroup")
         }
         bot.network.run<QQAndroidBotNetworkHandler, Image> {
@@ -238,34 +237,34 @@ internal class GroupImpl(
                 bot.client,
                 uin = bot.id,
                 groupCode = id,
-                md5 = image.md5,
-                size = image.size
+                md5 = resource.md5,
+                size = resource.size
             ).sendAndExpect()
 
             @Suppress("UNCHECKED_CAST") // bug
             when (response) {
                 is ImgStore.GroupPicUp.Response.Failed -> {
-                    ImageUploadEvent.Failed(this@GroupImpl, image, response.resultCode, response.message).broadcast()
+                    ImageUploadEvent.Failed(this@GroupImpl, resource, response.resultCode, response.message).broadcast()
                     if (response.message == "over file size max") throw OverFileSizeMaxException()
                     error("upload group image failed with reason ${response.message}")
                 }
                 is ImgStore.GroupPicUp.Response.FileExists -> {
-                    val resourceId = image.calculateResourceId()
+                    val resourceId = resource.calculateResourceId()
                     return OfflineGroupImage(imageId = resourceId)
-                        .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
+                        .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
                 is ImgStore.GroupPicUp.Response.RequireUpload -> {
                     HighwayHelper.uploadImageToServers(
                         bot,
                         response.uploadIpList.zip(response.uploadPortList),
                         response.uKey,
-                        image,
+                        resource,
                         kind = "group image",
                         commandId = 2
                     )
-                    val resourceId = image.calculateResourceId()
+                    val resourceId = resource.calculateResourceId()
                     return OfflineGroupImage(imageId = resourceId)
-                        .also { ImageUploadEvent.Succeed(this@GroupImpl, image, it).broadcast() }
+                        .also { ImageUploadEvent.Succeed(this@GroupImpl, resource, it).broadcast() }
                 }
             }
         }
