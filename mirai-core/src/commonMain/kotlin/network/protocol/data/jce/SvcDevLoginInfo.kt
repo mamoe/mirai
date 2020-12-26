@@ -10,8 +10,6 @@
 package net.mamoe.mirai.internal.network.protocol.data.jce
 
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.contact.OtherClientInfo
-import net.mamoe.mirai.contact.Platform
 import net.mamoe.mirai.utils.JceStruct
 import net.mamoe.mirai.utils.serialization.tars.TarsId
 
@@ -29,14 +27,6 @@ internal data class SvcDevLoginInfo(
     @JvmField @TarsId(9) val iProductType: Long? = null, // always 0
     @JvmField @TarsId(10) val iCanBeKicked: Long? = null // isOnline
 ) : JceStruct
-
-internal fun SvcDevLoginInfo.toOtherClientInfo() = OtherClientInfo(
-    iAppId.toInt(),
-    Platform.getByTerminalId(iTerType?.toInt() ?: 0) ?: Platform.UNKNOWN,
-    deviceName.orEmpty(),
-    deviceTypeInfo.orEmpty()
-)
-
 
 /*
 vecCurrentLoginDevInfo=[SvcDevLoginInfo#1676411955 {

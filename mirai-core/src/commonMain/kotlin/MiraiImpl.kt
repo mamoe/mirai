@@ -24,6 +24,7 @@ import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.highway.HighwayHelper
+import net.mamoe.mirai.internal.network.protocol.data.jce.SvcDevLoginInfo
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.LongMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.*
@@ -163,6 +164,13 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         val response = bot.network.run {
             StatSvc.GetDevLoginInfo(bot.client).sendAndExpect<StatSvc.GetDevLoginInfo.Response>()
         }
+
+        fun SvcDevLoginInfo.toOtherClientInfo() = OtherClientInfo(
+            iAppId.toInt(),
+            Platform.getByTerminalId(iTerType?.toInt() ?: 0) ?: Platform.UNKNOWN,
+            deviceName.orEmpty(),
+            deviceTypeInfo.orEmpty()
+        )
 
         return response.deviceList.map { it.toOtherClientInfo() }
     }
