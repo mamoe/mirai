@@ -14,6 +14,8 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
+import net.mamoe.mirai.message.code.CodableMessage
+import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
@@ -94,10 +96,14 @@ public interface RichMessage : MessageContent, ConstrainSingle {
  * @see ServiceMessage 服务消息
  */
 @Serializable
-public data class LightApp(override val content: String) : RichMessage {
+public data class LightApp(override val content: String) : RichMessage, CodableMessage {
     public companion object Key : AbstractMessageKey<LightApp>({ it.safeCast() })
 
     public override fun toString(): String = "[mirai:app:$content]"
+
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append("[mirai:app:").appendAsMiraiCode(content).append(']')
+    }
 }
 
 /**
@@ -130,6 +136,7 @@ public class SimpleServiceMessage(
         result = 31 * result + content.hashCode()
         return result
     }
+
 }
 
 
@@ -141,7 +148,7 @@ public class SimpleServiceMessage(
  * @see LightApp 小程序类型消息
  * @see SimpleServiceMessage
  */
-public interface ServiceMessage : RichMessage {
+public interface ServiceMessage : RichMessage, CodableMessage {
     public companion object Key :
         AbstractPolymorphicMessageKey<RichMessage, ServiceMessage>(RichMessage, { it.safeCast() })
 
@@ -149,6 +156,10 @@ public interface ServiceMessage : RichMessage {
      * 目前未知, XML 一般为 60, JSON 一般为 1
      */
     public val serviceId: Int
+
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append("[mirai:service:").append(serviceId).append(',').appendAsMiraiCode(content).append(']')
+    }
 }
 
 @Suppress("FunctionName")

@@ -40,6 +40,14 @@ public object AtAll :
         return other === this
     }
 
+    override fun toMiraiCode(): String {
+        return toString()
+    }
+
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append(toString())
+    }
+
     public override fun hashCode(): Int {
         return display.hashCode()
     }
