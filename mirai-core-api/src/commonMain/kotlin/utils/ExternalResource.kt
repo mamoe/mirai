@@ -96,9 +96,7 @@ public interface ExternalResource : Closeable {
         @JvmOverloads
         @JvmName("create")
         public fun File.toExternalResource(formatName: String? = null): ExternalResource =
-            RandomAccessFile(this, "r").toExternalResource(
-                formatName ?: inputStream().detectFileTypeAndClose()
-            )
+            RandomAccessFile(this, "r").toExternalResource(formatName)
 
         /**
          * 创建 [ExternalResource].
