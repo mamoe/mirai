@@ -24,10 +24,10 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.*
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.serialization.loadAs
-import net.mamoe.mirai.utils.serialization.toByteArray
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract

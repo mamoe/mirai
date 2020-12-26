@@ -10,7 +10,7 @@
 @file:JvmName("SerializationUtils")
 @file:JvmMultifileClass
 
-package net.mamoe.mirai.utils.serialization
+package net.mamoe.mirai.internal.utils.io.serialization
 
 import kotlinx.io.core.*
 import kotlinx.serialization.DeserializationStrategy
@@ -19,11 +19,11 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion2
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestDataVersion3
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.utils.JceStruct
-import net.mamoe.mirai.utils.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.JceStruct
+import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 import net.mamoe.mirai.utils.read
 import net.mamoe.mirai.utils.readPacketExact
-import net.mamoe.mirai.utils.serialization.tars.Tars
 
 internal fun <T : JceStruct> ByteArray.loadWithUniPacket(
     deserializer: DeserializationStrategy<T>,

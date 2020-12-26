@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils.serialization.tars.internal
+package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
@@ -24,22 +24,22 @@ import kotlinx.serialization.internal.MapLikeSerializer
 import kotlinx.serialization.internal.TaggedEncoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.BYTE
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.DOUBLE
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.FLOAT
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.INT
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.LIST
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.LONG
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.MAP
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.SHORT
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.SIMPLE_LIST
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.STRING1
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.STRING4
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.STRUCT_BEGIN
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.STRUCT_END
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.Tars_MAX_STRING_LENGTH
-import net.mamoe.mirai.utils.serialization.tars.Tars.Companion.ZERO_TYPE
-import net.mamoe.mirai.utils.serialization.tars.TarsId
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.BYTE
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.DOUBLE
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.FLOAT
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.INT
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.LIST
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.LONG
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.MAP
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.SHORT
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.SIMPLE_LIST
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.STRING1
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.STRING4
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.STRUCT_BEGIN
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.STRUCT_END
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.Tars_MAX_STRING_LENGTH
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars.Companion.ZERO_TYPE
+import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 
 @OptIn(ExperimentalSerializationApi::class)
 internal inline fun <reified A : Annotation> SerialDescriptor.findAnnotation(elementIndex: Int): A? {

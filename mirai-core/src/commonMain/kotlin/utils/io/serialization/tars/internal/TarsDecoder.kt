@@ -9,7 +9,7 @@
 
 @file:Suppress("PrivatePropertyName")
 
-package net.mamoe.mirai.utils.serialization.tars.internal
+package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
@@ -18,8 +18,9 @@ import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.internal.TaggedDecoder
 import kotlinx.serialization.modules.SerializersModule
-import net.mamoe.mirai.utils.serialization.tars.Tars
-import net.mamoe.mirai.utils.serialization.tars.TarsId
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
+import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
+import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.*
 
 
 @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)

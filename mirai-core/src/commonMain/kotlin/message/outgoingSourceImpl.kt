@@ -26,10 +26,10 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.OnlinePushPbPushGroupMsg.SendGroupMessageReceipt
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toLongUnsigned
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageSource
 import net.mamoe.mirai.message.data.OnlineMessageSource
-import net.mamoe.mirai.utils.serialization.toByteArray
 import java.util.concurrent.atomic.AtomicBoolean
 
 

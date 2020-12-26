@@ -12,8 +12,8 @@ package net.mamoe.mirai.internal.network.protocol.data.jce
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.utils.JceStruct
-import net.mamoe.mirai.utils.serialization.tars.TarsId
+import net.mamoe.mirai.internal.utils.io.JceStruct
+import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 
 @Suppress("ArrayInDataClass")
 @Serializable

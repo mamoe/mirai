@@ -33,10 +33,10 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.StatSvcGetOnline
 import net.mamoe.mirai.internal.network.protocol.packet.*
 import net.mamoe.mirai.internal.utils.NetworkType
 import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.io.serialization.*
 import net.mamoe.mirai.utils.currentTimeMillis
 import net.mamoe.mirai.utils.encodeToString
 import net.mamoe.mirai.utils.localIpAddress
-import net.mamoe.mirai.utils.serialization.*
 import net.mamoe.mirai.utils.toReadPacket
 
 @Suppress("EnumEntryName", "unused")

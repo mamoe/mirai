@@ -27,10 +27,10 @@ import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.SocketException
 import net.mamoe.mirai.internal.utils.addSuppressedMirai
+import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.internal.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.serialization.readProtoBuf
-import net.mamoe.mirai.utils.serialization.toByteArray
 import java.io.InputStream
 import kotlin.math.roundToInt
 import kotlin.time.ExperimentalTime

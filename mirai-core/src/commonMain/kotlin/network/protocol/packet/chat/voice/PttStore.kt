@@ -18,9 +18,9 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x388
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
+import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.utils.encodeToString
-import net.mamoe.mirai.utils.serialization.readProtoBuf
-import net.mamoe.mirai.utils.serialization.writeProtoBuf
 
 internal class PttStore {
     object GroupPttUp : OutgoingPacketFactory<GroupPttUp.Response>("PttStore.GroupPttUp") {

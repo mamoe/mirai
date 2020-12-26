@@ -17,7 +17,7 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushNotify
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
-import net.mamoe.mirai.utils.serialization.readUniPacket
+import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
 
 
 /**

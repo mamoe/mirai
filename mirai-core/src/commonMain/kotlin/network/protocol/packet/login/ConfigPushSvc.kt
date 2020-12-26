@@ -22,8 +22,13 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
+import net.mamoe.mirai.internal.utils.io.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
+import net.mamoe.mirai.internal.utils.io.serialization.loadAs
+import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
+import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.serialization.*
 import net.mamoe.mirai.internal.network.protocol.data.jce.PushReq as PushReqJceStruct
 
 

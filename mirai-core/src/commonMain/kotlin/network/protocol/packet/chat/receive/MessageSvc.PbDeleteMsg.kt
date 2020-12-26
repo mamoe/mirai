@@ -19,7 +19,7 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.utils.serialization.writeProtoBuf
+import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 
 internal object MessageSvcPbDeleteMsg : OutgoingPacketFactory<Nothing?>("MessageSvc.PbDeleteMsg") {
 

@@ -14,7 +14,7 @@ import net.mamoe.mirai.event.events.BotOfflineEvent
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPushForceOffline
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
-import net.mamoe.mirai.utils.serialization.readUniPacket
+import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
 
 
 /**

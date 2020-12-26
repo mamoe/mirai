@@ -36,8 +36,8 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.buildResponseUniPacket
 import net.mamoe.mirai.internal.utils._miraiContentToString
+import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.utils.*
-import net.mamoe.mirai.utils.serialization.readProtoBuf
 
 
 internal object OnlinePushPbPushTransMsg :

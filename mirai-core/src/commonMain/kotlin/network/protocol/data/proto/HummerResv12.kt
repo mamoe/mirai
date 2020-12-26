@@ -13,7 +13,7 @@ package net.mamoe.mirai.internal.network.protocol.data.proto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
-import net.mamoe.mirai.utils.ProtoBuf
+import net.mamoe.mirai.internal.utils.io.ProtoBuf
 
 @Serializable
 internal class MarketFaceExtPb : ProtoBuf {

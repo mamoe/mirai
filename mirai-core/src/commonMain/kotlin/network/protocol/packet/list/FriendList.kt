@@ -19,10 +19,10 @@ import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.utils.serialization.jceRequestSBuffer
-import net.mamoe.mirai.utils.serialization.readUniPacket
-import net.mamoe.mirai.utils.serialization.toByteArray
-import net.mamoe.mirai.utils.serialization.writeJceStruct
+import net.mamoe.mirai.internal.utils.io.serialization.jceRequestSBuffer
+import net.mamoe.mirai.internal.utils.io.serialization.readUniPacket
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
+import net.mamoe.mirai.internal.utils.io.serialization.writeJceStruct
 
 
 internal class FriendList {

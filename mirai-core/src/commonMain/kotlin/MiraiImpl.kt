@@ -31,6 +31,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.*
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
+import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
@@ -39,7 +40,6 @@ import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import net.mamoe.mirai.utils.serialization.toByteArray
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.absoluteValue
 import kotlin.random.Random

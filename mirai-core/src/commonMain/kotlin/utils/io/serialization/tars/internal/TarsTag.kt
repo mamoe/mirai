@@ -7,12 +7,12 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.utils.serialization.tars.internal
+package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 
 import kotlinx.io.core.Output
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.SerialDescriptor
-import net.mamoe.mirai.utils.serialization.tars.Tars
+import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
 
 
 internal abstract class TarsTag {
