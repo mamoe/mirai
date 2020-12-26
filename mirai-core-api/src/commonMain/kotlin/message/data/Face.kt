@@ -29,6 +29,10 @@ public data class Face(public val id: Int) : // used in delegation
     public val name: String get() = contentToString().let { it.substring(1, it.length - 1) }
     public override fun contentToString(): String = names.getOrElse(id) { "[表情]" }
 
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append("[mirai:face:").append(id).append(']')
+    }
+
     public override fun equals(other: Any?): Boolean = other is Face && other.id == this.id
     public override fun hashCode(): Int = id
 

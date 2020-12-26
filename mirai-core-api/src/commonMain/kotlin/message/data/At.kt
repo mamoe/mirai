@@ -55,6 +55,10 @@ public data class At(
         return "@${member.nameCardOrNick}"
     }
 
+    override fun appendMiraiCode(builder: StringBuilder) {
+        builder.append("[mirai:at:").append(target).append(']')
+    }
+
     public companion object {
         /**
          * 构造一个 [At], 仅供内部使用, 否则可能造成消息无法发出的问题.
