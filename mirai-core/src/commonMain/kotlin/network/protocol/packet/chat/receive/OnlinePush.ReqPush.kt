@@ -24,7 +24,9 @@ import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.data.FriendInfo
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
@@ -265,6 +267,26 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     )
                 }
                 return@lambda732 sequenceOf(MemberNudgedEvent(from, target, action, suffix))
+            }
+            //龙王
+            10093L, 1053L, 1054L -> {
+                var now: NormalMember = group.botAsMember
+                var previous: NormalMember? = null
+                grayTip.msgTemplParam.asSequence().map {
+                    it.name.decodeToString() to it.value.decodeToString()
+                }.forEach { (key, value) ->
+                    when (key) {
+                        "uin" -> now = group.getOrFail(value.toLong())
+                        "uin_last" -> previous = group.getOrFail(value.toLong())
+                    }
+                }
+                return@lambda732 previous?.let {
+                    sequenceOf(
+                        GroupTalkativeChangeEvent(group, now, it),
+                        MemberHonorChangeEvent.Lose(it, GroupHonorType.TALKATIVE),
+                        MemberHonorChangeEvent.Achieve(now, GroupHonorType.TALKATIVE)
+                    )
+                } ?: sequenceOf(MemberHonorChangeEvent.Achieve(now, GroupHonorType.TALKATIVE))
             }
             else -> {
                 bot.network.logger.debug {
@@ -542,6 +564,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                     }
                 )
             }
+
             else -> {
                 bot.logger.debug {
                     "Unknown Transformers528 0x122L template\ntemplId=${body.templId}\nPermList=${body.msgTemplParam._miraiContentToString()}"
