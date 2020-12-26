@@ -15,9 +15,9 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.buildPacket
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.QQAndroidClient
-import net.mamoe.mirai.internal.utils.io.encryptAndWrite
-import net.mamoe.mirai.internal.utils.io.writeHex
-import net.mamoe.mirai.internal.utils.io.writeIntLVPacket
+import net.mamoe.mirai.utils.encryptAndWrite
+import net.mamoe.mirai.utils.writeHex
+import net.mamoe.mirai.utils.writeIntLVPacket
 
 internal class OutgoingPacket constructor(
     name: String?,

@@ -16,8 +16,7 @@ import kotlinx.serialization.protobuf.ProtoIntegerType
 import kotlinx.serialization.protobuf.ProtoNumber
 import kotlinx.serialization.protobuf.ProtoType
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
-import net.mamoe.mirai.internal.utils.io.ProtoBuf
-import kotlin.jvm.JvmField
+import net.mamoe.mirai.utils.ProtoBuf
 
 @Serializable
 internal class Oidb0x858 : ProtoBuf {

@@ -13,11 +13,11 @@ package net.mamoe.mirai.internal.message
 
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.data.FlashImage
 import net.mamoe.mirai.message.data.isFriendImage
 import net.mamoe.mirai.message.data.isGroupImage
 import net.mamoe.mirai.message.data.md5
+import net.mamoe.mirai.utils.serialization.toByteArray
 
 
 internal fun FlashImage.toJceData(): ImMsgBody.Elem {

@@ -19,9 +19,9 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.utils.serialization.loadAs
+import net.mamoe.mirai.utils.serialization.toByteArray
+import net.mamoe.mirai.utils.serialization.writeProtoBuf
 
 internal object NudgePacket : OutgoingPacketFactory<NudgePacket.Response>("OidbSvc.0xed3") {
     override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {

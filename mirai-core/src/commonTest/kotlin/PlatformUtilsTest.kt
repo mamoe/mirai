@@ -9,10 +9,7 @@
 package net.mamoe.mirai.internal.utils
 
 import kotlinx.io.core.toByteArray
-import net.mamoe.mirai.utils.gzip
-import net.mamoe.mirai.utils.ungzip
-import net.mamoe.mirai.utils.unzip
-import net.mamoe.mirai.utils.zip
+import net.mamoe.mirai.utils.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

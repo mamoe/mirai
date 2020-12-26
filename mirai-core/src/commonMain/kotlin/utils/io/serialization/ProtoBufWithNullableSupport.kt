@@ -9,7 +9,7 @@
 
 @file:Suppress("DEPRECATION_ERROR")
 
-package net.mamoe.mirai.internal.utils.io.serialization
+package net.mamoe.mirai.utils.serialization
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ByteArraySerializer
@@ -26,8 +26,8 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlinx.serialization.protobuf.ProtoIntegerType
 import kotlinx.serialization.protobuf.ProtoType
-import net.mamoe.mirai.internal.utils.io.serialization.ProtoBufWithNullableSupport.Varint.encodeVarint
-import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
+import net.mamoe.mirai.utils.serialization.ProtoBufWithNullableSupport.Varint.encodeVarint
+import net.mamoe.mirai.utils.serialization.tars.TarsId
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

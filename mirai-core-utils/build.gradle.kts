@@ -80,12 +80,8 @@ kotlin {
 
                 implementation1(`kotlinx-atomicfu`)
 
-                api1(`ktor-client-cio`)
                 api1(`ktor-client-core`)
                 api1(`ktor-network`)
-
-                compileOnly(`log4j-api`)
-                compileOnly(slf4j)
             }
         }
 
@@ -101,8 +97,6 @@ kotlin {
 
         val jvmTest by getting {
             dependencies {
-                api("org.pcap4j:pcap4j-distribution:1.8.2")
-
                 runtimeOnly(files("build/classes/kotlin/jvm/test")) // classpath is not properly set by IDE
             }
         }

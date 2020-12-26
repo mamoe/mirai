@@ -14,18 +14,12 @@ package test
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.Input
 import kotlinx.io.core.readAvailable
-import kotlinx.io.core.use
-import net.mamoe.mirai.internal.utils.toReadPacket
-import net.mamoe.mirai.internal.utils.toUHexString
-import net.mamoe.mirai.utils.ByteArrayPool
-import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.MiraiLoggerWithSwitch
-import net.mamoe.mirai.utils.withSwitch
+import net.mamoe.mirai.utils.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 
-val DebugLogger: MiraiLoggerWithSwitch = MiraiLogger.create("Packet Debug").withSwitch(true)
+val DebugLogger: MiraiLogger = MiraiLogger.create("Packet Debug")
 
 internal inline fun ByteArray.debugPrintThis(name: String): ByteArray {
     DebugLogger.debug(name + "=" + this.toUHexString())
@@ -45,7 +39,7 @@ internal inline fun <R> Input.debugIfFail(
     ByteArrayPool.useInstance {
         val count = this.readAvailable(it)
         try {
-            return it.toReadPacket(0, count).use(block)
+            return it.toReadPacket(0, count).withUse(block)
         } catch (e: Throwable) {
             onFail(it.take(count).toByteArray()).readAvailable(it)
             DebugLogger.debug("Error in ByteReadPacket $name=" + it.toUHexString(offset = 0, length = count))

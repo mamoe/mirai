@@ -7,7 +7,7 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package net.mamoe.mirai.internal.utils.io
+package net.mamoe.mirai.utils
 
 /**
  * 仅有标示作用

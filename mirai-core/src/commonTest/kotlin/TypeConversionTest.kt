@@ -10,6 +10,7 @@ package net.mamoe.mirai.internal.utils
 
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toByteArray
+import net.mamoe.mirai.utils.toUHexString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

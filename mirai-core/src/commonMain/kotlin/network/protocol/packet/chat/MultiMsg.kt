@@ -27,13 +27,13 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.PacketLogger
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils._miraiContentToString
-import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.ForwardMessage
 import net.mamoe.mirai.message.data.asMessageChain
 import net.mamoe.mirai.utils.gzip
 import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.serialization.readProtoBuf
+import net.mamoe.mirai.utils.serialization.toByteArray
+import net.mamoe.mirai.utils.serialization.writeProtoBuf
 
 internal class MessageValidationData(
     val data: ByteArray,

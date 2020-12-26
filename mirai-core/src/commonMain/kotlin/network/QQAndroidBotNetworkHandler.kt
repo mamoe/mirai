@@ -42,7 +42,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.Heartbeat
 import net.mamoe.mirai.internal.network.protocol.packet.login.StatSvc
 import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.internal.utils.io.readPacketExact
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue

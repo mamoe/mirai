@@ -27,12 +27,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.network.readUShortLVByteArray
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.crypto.adjustToPublicKey
-import net.mamoe.mirai.internal.utils.io.readPacketExact
-import net.mamoe.mirai.internal.utils.io.readString
-import net.mamoe.mirai.internal.utils.io.useBytes
-import net.mamoe.mirai.internal.utils.io.withUse
-import net.mamoe.mirai.internal.utils.toReadPacket
-import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.utils.*
 
 internal sealed class PacketFactory<TPacket : Packet?> {

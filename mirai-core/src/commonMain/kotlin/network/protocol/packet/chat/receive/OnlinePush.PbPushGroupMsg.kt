@@ -33,11 +33,9 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.MsgOnlinePush
 import net.mamoe.mirai.internal.network.protocol.data.proto.Oidb0x8fc
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.utils._miraiContentToString
-import net.mamoe.mirai.internal.utils.encodeToBase64
-import net.mamoe.mirai.internal.utils.encodeToString
-import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.utils.warning
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.serialization.loadAs
+import net.mamoe.mirai.utils.serialization.readProtoBuf
 
 /**
  * 接受群消息

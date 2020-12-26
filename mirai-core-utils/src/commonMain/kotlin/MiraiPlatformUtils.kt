@@ -13,7 +13,6 @@
 package net.mamoe.mirai.utils
 
 import io.ktor.client.*
-import io.ktor.client.engine.cio.*
 import kotlinx.io.core.Input
 import kotlinx.io.core.readAvailable
 import java.io.*
@@ -30,7 +29,7 @@ public object MiraiPlatformUtils {
     /**
      * Ktor HttpClient. 不同平台使用不同引擎.
      */
-    public val Http: HttpClient = HttpClient(CIO)
+    public val Http: HttpClient = HttpClient()
 }
 
 @JvmOverloads

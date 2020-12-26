@@ -20,10 +20,10 @@ import net.mamoe.mirai.internal.network.highway.postImage
 import net.mamoe.mirai.internal.network.highway.sizeToString
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
-import net.mamoe.mirai.internal.utils.toUHexString
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiPlatformUtils
+import net.mamoe.mirai.utils.toUHexString
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt

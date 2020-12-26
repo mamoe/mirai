@@ -9,7 +9,7 @@
 
 @file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
-package net.mamoe.mirai.internal.utils.io.serialization.tars
+package net.mamoe.mirai.utils.serialization.tars
 
 import kotlinx.io.charsets.Charset
 import kotlinx.io.charsets.Charsets
@@ -17,10 +17,9 @@ import kotlinx.io.core.*
 import kotlinx.serialization.*
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsDecoder
-import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsInput
-import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsOld
-import kotlin.jvm.JvmStatic
+import net.mamoe.mirai.utils.serialization.tars.internal.TarsDecoder
+import net.mamoe.mirai.utils.serialization.tars.internal.TarsInput
+import net.mamoe.mirai.utils.serialization.tars.internal.TarsOld
 
 /**
  * The main entry point to work with Tars serialization.

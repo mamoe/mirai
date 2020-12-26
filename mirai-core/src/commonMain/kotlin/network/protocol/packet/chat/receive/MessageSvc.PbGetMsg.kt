@@ -46,15 +46,12 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
 import net.mamoe.mirai.internal.network.protocol.packet.chat.toLongUnsigned
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.utils.*
-import net.mamoe.mirai.internal.utils.io.serialization.loadAs
-import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
-import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
-import net.mamoe.mirai.utils.cast
-import net.mamoe.mirai.utils.debug
-import net.mamoe.mirai.utils.toInt
-import net.mamoe.mirai.utils.warning
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.serialization.loadAs
+import net.mamoe.mirai.utils.serialization.readProtoBuf
+import net.mamoe.mirai.utils.serialization.writeProtoBuf
 import kotlin.random.Random
 
 

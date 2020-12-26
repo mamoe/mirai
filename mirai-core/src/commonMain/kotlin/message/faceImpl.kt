@@ -14,12 +14,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
-import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
 import net.mamoe.mirai.message.data.Face
 import net.mamoe.mirai.message.data.MarketFace
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.hexToBytes
+import net.mamoe.mirai.utils.serialization.toByteArray
 import net.mamoe.mirai.utils.toByteArray
 
 internal val FACE_BUF = "00 01 00 04 52 CC F5 D0".hexToBytes()
