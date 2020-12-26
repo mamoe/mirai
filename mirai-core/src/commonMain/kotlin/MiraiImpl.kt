@@ -159,7 +159,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
         group.checkBotPermission(MemberPermission.ADMINISTRATOR)
     }
 
-    override suspend fun getOnlineOtherClientsList(bot: Bot): List<OtherClientInfo> {
+    override suspend fun getOnlineOtherClientsList(bot: Bot, mayIncludeSelf: Boolean): List<OtherClientInfo> {
         bot.asQQAndroidBot()
         val response = bot.network.run {
             StatSvc.GetDevLoginInfo(bot.client).sendAndExpect<StatSvc.GetDevLoginInfo.Response>()
@@ -172,7 +172,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             deviceTypeInfo.orEmpty()
         )
 
-        return response.deviceList.map { it.toOtherClientInfo() }
+        return response.deviceList.map { it.toOtherClientInfo() }.let { result ->
+            if (mayIncludeSelf) result else result.filterNot { it.appId == bot.client.protocol.id.toInt() }
+        }
     }
 
     override suspend fun ignoreMemberJoinRequest(event: MemberJoinRequestEvent, blackList: Boolean) {

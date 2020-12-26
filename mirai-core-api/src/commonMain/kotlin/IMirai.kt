@@ -187,10 +187,12 @@ public interface IMirai : LowLevelApiAccessor {
 
     /**
      * 获取在线的 [OtherClient] 列表
+     * @param mayIncludeSelf 服务器返回的列表可能包含 [Bot] 自己. [mayIncludeSelf] 为 `false` 会排除自己
      */
     @JvmBlockingBridge
     public suspend fun getOnlineOtherClientsList(
         bot: Bot,
+        mayIncludeSelf: Boolean = false
     ): List<OtherClientInfo>
 
     /**
