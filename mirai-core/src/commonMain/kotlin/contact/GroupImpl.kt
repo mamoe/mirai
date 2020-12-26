@@ -238,7 +238,7 @@ internal class GroupImpl(
                 uin = bot.id,
                 groupCode = id,
                 md5 = resource.md5,
-                size = resource.size
+                size = resource.size.toInt()
             ).sendAndExpect()
 
             @Suppress("UNCHECKED_CAST") // bug

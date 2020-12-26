@@ -65,7 +65,7 @@ public interface ExternalResource : Closeable {
     /**
      * 文件大小 bytes
      */
-    public val size: Int
+    public val size: Long
 
     /**
      * 打开 [InputStream]. 在返回的 [InputStream] 被 [关闭][InputStream.close] 前无法再次打开流.
@@ -199,7 +199,7 @@ internal class ExternalResourceImplByFileWithMd5(
     override val md5: ByteArray,
     formatName: String?
 ) : ExternalResource {
-    override val size: Int = file.length().toInt()
+    override val size: Long = file.length()
     override val formatName: String by lazy {
         formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
     }
@@ -219,7 +219,7 @@ internal class ExternalResourceImplByFile(
     formatName: String?,
     private val closeOriginalFileOnClose: Boolean = true
 ) : ExternalResource {
-    override val size: Int = file.length().toInt()
+    override val size: Long = file.length()
     override val md5: ByteArray by lazy { inputStream().md5() }
     override val formatName: String by lazy {
         formatName ?: inputStream().detectFileTypeAndClose().orEmpty()
@@ -239,7 +239,7 @@ internal class ExternalResourceImplByByteArray(
     private val data: ByteArray,
     formatName: String?
 ) : ExternalResource {
-    override val size: Int = data.size
+    override val size: Long = data.size.toLong()
     override val md5: ByteArray by lazy { data.md5() }
     override val formatName: String by lazy {
         formatName ?: getFileType(data.copyOf(8)).orEmpty()

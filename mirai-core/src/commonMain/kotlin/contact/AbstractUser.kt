@@ -50,7 +50,7 @@ internal abstract class AbstractUser(
                     dstUin = id.toInt(),
                     fileId = 0,
                     fileMd5 = resource.md5,
-                    fileSize = resource.size,
+                    fileSize = resource.size.toInt(),
                     fileName = resource.md5.toUHexString("") + "." + resource.formatName,
                     imgOriginal = 1
                 )
