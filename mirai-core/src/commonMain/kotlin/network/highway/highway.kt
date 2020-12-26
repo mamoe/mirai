@@ -39,11 +39,12 @@ internal fun createImageDataPacketSequence(
     //   require(ticket.size == 128) { "bad uKey. Required size=128, got ${ticket.size}" }
 
     val session: ChunkedFlowSession<ChunkedInput> = object : ChunkedFlowSession<ChunkedInput> {
-        override val flow: Flow<ChunkedInput> = data.inputStream().chunkedFlow(
+        val input = data.inputStream()
+        override val flow: Flow<ChunkedInput> = input.chunkedFlow(
             sizePerPacket, ByteArray(sizePerPacket)
         )
 
-        override fun close() = data.close()
+        override fun close() = input.close()
     }
 
     var offset = 0L
