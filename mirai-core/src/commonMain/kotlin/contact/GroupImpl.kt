@@ -32,7 +32,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGro
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
-import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
@@ -154,17 +153,15 @@ internal class GroupImpl(
                 throw EventCancelledException("exception thrown when broadcasting GroupMessagePreSendEvent", it)
             }.message.asMessageChain()
 
-            val length = chain.estimateLength(this, 703) // 阈值为700左右，限制到3的倍数
-            var imageCnt = 0 // 通过下方逻辑短路延迟计算
+            var length: Int = 0
+            var imageCnt: Int = 0
+            chain.verityLength(message, this, lengthCallback = {
+                length = it
+            }, imageCntCallback = {
+                imageCnt = it
+            })
 
-            if (length > 5000 || chain.count { it is Image }.apply { imageCnt = this } > 50) {
-                throw MessageTooLargeException(
-                    this, message, chain,
-                    "message(${chain.joinToString("", limit = 10)}) is too large. Allow up to 50 images or 5000 chars"
-                )
-            }
-
-            if (length > 702 || imageCnt > 2) {
+            if (length > 702 || imageCnt > 2) {  // 阈值为700左右，限制到3的倍数
                 return MiraiImpl.lowLevelSendGroupLongOrForwardMessage(
                     bot,
                     this.id,
