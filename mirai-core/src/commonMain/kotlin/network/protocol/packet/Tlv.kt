@@ -17,7 +17,10 @@ import kotlinx.io.core.toByteArray
 import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.protocol.LoginType
 import net.mamoe.mirai.internal.utils.NetworkType
-import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.internal.utils.io.*
+import net.mamoe.mirai.utils.currentTimeMillis
+import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toByteArray
 import kotlin.random.Random
 
 /**
@@ -669,6 +672,16 @@ internal fun BytePacketBuilder.t521( // 1313
         writeInt(productType)
         writeShort(unknown)
     } shouldEqualsTo 6
+}
+
+internal fun BytePacketBuilder.t52c(
+    // ?
+) {
+    writeShort(0x52c)
+    writeShortLVPacket {
+        writeByte(1)
+        writeLong(-1)
+    }
 }
 
 internal fun BytePacketBuilder.t536( // 1334

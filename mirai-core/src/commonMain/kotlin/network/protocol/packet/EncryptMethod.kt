@@ -16,8 +16,8 @@ import kotlinx.io.core.writeFully
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.utils.crypto.ECDH
 import net.mamoe.mirai.internal.utils.crypto.ECDHKeyPair
-import net.mamoe.mirai.utils.encryptAndWrite
-import net.mamoe.mirai.utils.writeShortLVByteArray
+import net.mamoe.mirai.internal.utils.io.encryptAndWrite
+import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 
 internal interface EncryptMethod {
     val id: Int

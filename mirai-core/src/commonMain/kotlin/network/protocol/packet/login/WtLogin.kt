@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.utils.MacOrAndroidIdChangeFlag
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.crypto.TEA
 import net.mamoe.mirai.internal.utils.guidFlag
+import net.mamoe.mirai.internal.utils.io.writeShortLVByteArray
 import net.mamoe.mirai.utils.*
 
 internal class WtLogin {

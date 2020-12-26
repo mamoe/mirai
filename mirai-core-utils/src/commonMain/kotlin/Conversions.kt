@@ -9,6 +9,9 @@
 
 @file:Suppress("EXPERIMENTAL_UNSIGNED_LITERALS", "EXPERIMENTAL_API_USAGE", "unused")
 
+@file:JvmMultifileClass
+@file:JvmName("MiraiUtils")
+
 package net.mamoe.mirai.utils
 
 /*

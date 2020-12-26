@@ -7,8 +7,6 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-@file:JvmName("Utils")
-@file:JvmMultifileClass
 @file:Suppress("MemberVisibilityCanBePrivate")
 
 package net.mamoe.mirai.utils

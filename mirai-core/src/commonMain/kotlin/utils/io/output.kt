@@ -11,7 +11,7 @@
 @file:JvmMultifileClass
 @file:JvmName("Utils")
 
-package net.mamoe.mirai.utils
+package net.mamoe.mirai.internal.utils.io
 
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.utils.coerceAtMostOrFail
