@@ -117,6 +117,40 @@ internal class WtLogin {
         }
 
         /**
+         * Check SMS Login
+         */
+        object SubCommand17 {
+            operator fun invoke(
+                client: QQAndroidClient
+            ): OutgoingPacket = buildLoginOutgoingPacket(client, bodyType = 2) { sequenceId ->
+                writeSsoPacket(
+                    client,
+                    client.subAppId,
+                    commandName,
+                    sequenceId = sequenceId,
+                    unknownHex = "01 00 00 00 00 00 00 00 00 00 01 00"
+                ) {
+                    writeOicqRequestPacket(client, EncryptMethodECDH(client.ecdh), 0x0810) {
+                        writeShort(17) // subCommand
+                        writeShort(12)
+                        t100(16, client.subAppId, client.appClientVersion, client.ssoVersion, client.mainSigMap)
+                        t108(client.device.imei.toByteArray())
+                        t109(client.device.androidId)
+                        t8(2052)
+                        t142(client.apkId)
+                        t145(client.device.guid)
+                        t154(0)
+                        t112(client.account.phoneNumber.encodeToByteArray())
+                        t116(client.miscBitMap, client.subSigMap)
+                        t521()
+                        t52c()
+                        t52d(client.device.generateDeviceInfoData())
+                    }
+                }
+            }
+        }
+
+        /**
          * 密码登录
          */
         object SubCommand9 {

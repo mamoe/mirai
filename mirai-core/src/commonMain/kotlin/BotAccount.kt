@@ -18,9 +18,16 @@ internal data class BotAccount(
     internal val id: Long,
     @JvmSynthetic
     @MiraiExperimentalApi
-    val passwordMd5: ByteArray // md5
+    val passwordMd5: ByteArray, // md5
+
+    val phoneNumber: String = ""
 ) {
-    constructor(id: Long, passwordPlainText: String) : this(id, passwordPlainText.md5())
+    constructor(id: Long, passwordPlainText: String, phoneNumber: String = "") : this(
+        id,
+        passwordPlainText.md5(),
+        phoneNumber
+    )
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
