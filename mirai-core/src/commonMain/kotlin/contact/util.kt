@@ -20,6 +20,7 @@ import net.mamoe.mirai.internal.message.MessageSourceToFriendImpl
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToFriend
+import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.cast
@@ -49,6 +50,7 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
     }.getOrElse {
         throw EventCancelledException("exception thrown when broadcasting FriendMessagePreSendEvent", it)
     }.message.asMessageChain()
+    chain.verityLength(message, this, {}, {})
 
     chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
 
@@ -86,6 +88,29 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
 internal fun Contact.logMessageSent(message: Message) {
     if (message !is LongMessage) {
         bot.logger.verbose("$this <- $message".replaceMagicCodes())
+    }
+}
+
+internal inline fun MessageChain.verityLength(
+    message: Message, target: Contact,
+    lengthCallback: (Int) -> Unit,
+    imageCntCallback: (Int) -> Unit
+) {
+    contract {
+        callsInPlace(lengthCallback, InvocationKind.EXACTLY_ONCE)
+        callsInPlace(imageCntCallback, InvocationKind.EXACTLY_ONCE)
+    }
+
+    val chain = this
+    val length = estimateLength(target, 5001)
+    lengthCallback(length)
+    if (length > 5000 || count { it is Image }.apply { imageCntCallback(this) } > 50) {
+        throw MessageTooLargeException(
+            target, message, this,
+            "message(${
+                chain.joinToString("", limit = 10)
+            }) is too large. Allow up to 50 images or 5000 chars"
+        )
     }
 }
 
