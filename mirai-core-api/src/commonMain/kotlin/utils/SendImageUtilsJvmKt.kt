@@ -13,7 +13,7 @@
 
 @file:Suppress("unused")
 @file:JvmMultifileClass
-@file:JvmName("SendImageUtilsJvmKt")
+@file:JvmName("SendResourceUtilsJvmKt ")
 
 package net.mamoe.mirai.utils
 
