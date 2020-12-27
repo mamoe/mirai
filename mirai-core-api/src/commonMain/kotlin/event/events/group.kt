@@ -17,6 +17,7 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.BroadcastControllable
 import net.mamoe.mirai.internal.network.Packet
@@ -513,6 +514,55 @@ public data class MemberNudgedEvent @MiraiInternalApi constructor(
      */
     public val suffix: String,
 ) : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent()
+
+// endregion
+
+// region 群荣誉
+/**
+ * [Member] 荣誉改变时的事件, 目前只支持龙王
+ */
+@MiraiExperimentalApi
+public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, Packet, AbstractEvent() {
+    /**
+     * 改变荣誉的群成员
+     */
+    public abstract override val member: NormalMember
+
+    /**
+     * 改变的荣誉类型
+     */
+    public abstract val honorType: GroupHonorType
+
+    /**
+     * 获得荣誉时的事件
+     */
+    public class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
+        MemberHonorChangeEvent()
+
+    /**
+     * 失去荣誉时的事件
+     */
+    public class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
+        MemberHonorChangeEvent()
+}
+
+/**
+ * [Group] 龙王改变时的事件
+ */
+public class GroupTalkativeChangeEvent(
+    /**
+     * 改变的群
+     */
+    override val group: Group,
+    /**
+     * 当前龙王
+     */
+    public val now: NormalMember,
+    /**
+     * 先前龙王
+     */
+    public val previous: NormalMember
+) : Packet, GroupEvent, BotPassiveEvent, AbstractEvent()
 
 // endregion
 
