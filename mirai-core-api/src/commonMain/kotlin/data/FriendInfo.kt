@@ -19,3 +19,10 @@ public interface FriendInfo {
 
     public val remark: String
 }
+
+@LowLevelApi
+public open class FriendInfoImpl(
+    override val uin: Long,
+    override var nick: String,
+    override var remark: String,
+) : FriendInfo

@@ -20,13 +20,9 @@ import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUInt
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.GroupImpl
-import net.mamoe.mirai.internal.contact.NormalMemberImpl
-import net.mamoe.mirai.internal.contact.checkIsMemberImpl
-import net.mamoe.mirai.internal.contact.newMember
+import net.mamoe.mirai.internal.contact.*
 import net.mamoe.mirai.internal.message.contextualBugReportException
 import net.mamoe.mirai.internal.network.MultiPacketByIterable
 import net.mamoe.mirai.internal.network.Packet
@@ -126,22 +122,18 @@ internal object OnlinePushPbPushTransMsg :
                                     )
                                 }
                             } else {
-                                val newOwner = group.get(to) ?: group.newMember(object : MemberInfo {
-                                    override val nameCard: String
-                                        get() = ""
-                                    override val permission: MemberPermission
-                                        get() = MemberPermission.OWNER
-                                    override val specialTitle: String
-                                        get() = ""
-                                    override val muteTimestamp: Int
-                                        get() = 0
-                                    override val uin: Long
-                                        get() = to
-                                    override val nick: String
-                                        get() = ""
-                                    override val remark: String
-                                        get() = ""
-                                }).also { owner ->
+                                val newOwner = (group[to] ?: group.newMember(
+                                    MemberInfoImpl(
+                                        to,
+                                        "",
+                                        MemberPermission.OWNER,
+                                        "",
+                                        "",
+                                        "",
+                                        0,
+                                        null
+                                    )
+                                )).also { owner ->
                                     owner.checkIsMemberImpl().permission = MemberPermission.OWNER
                                     group.members.delegate.add(owner)
                                     results.add(MemberJoinEvent.Retrieve(owner))

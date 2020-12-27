@@ -23,6 +23,7 @@ import kotlinx.atomicfu.atomic
 import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
+import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
@@ -31,20 +32,19 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
 
-internal class FriendInfoImpl(
-    @JvmField private val jceFriendInfo: net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo
-) : FriendInfo {
-    override var nick: String = jceFriendInfo.nick
-    override val uin: Long get() = jceFriendInfo.friendUin
-    override var remark: String = jceFriendInfo.remark
-}
+internal fun net.mamoe.mirai.internal.network.protocol.data.jce.FriendInfo.toMiraiFriendInfo(): FriendInfoImpl =
+    FriendInfoImpl(
+        friendUin,
+        nick,
+        remark
+    )
 
 @OptIn(ExperimentalContracts::class)
 internal inline fun FriendInfo.checkIsInfoImpl(): FriendInfoImpl {
     contract {
         returns() implies (this@checkIsInfoImpl is FriendInfoImpl)
     }
-    check(this is FriendInfoImpl) { "A Friend instance is not instance of FriendImpl. Your instance: ${this::class.qualifiedName}" }
+    check(this is FriendInfoImpl) { "A FriendInfo instance is not instance of checkIsInfoImpl. Your instance: ${this::class.qualifiedName}" }
     return this
 }
 

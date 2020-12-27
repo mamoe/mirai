@@ -308,7 +308,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             data.friendList.forEach {
                 // atomic
                 bot.friends.delegate.add(
-                    FriendImpl(bot, bot.coroutineContext, FriendInfoImpl(it))
+                    FriendImpl(bot, bot.coroutineContext, it.toMiraiFriendInfo())
                 ).also { currentFriendCount++ }
             }
             logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }

@@ -35,7 +35,7 @@ internal abstract class AbstractUser(
     friendInfo: net.mamoe.mirai.data.FriendInfo,
 ) : User, AbstractContact(bot, coroutineContext) {
     final override val id: Long = friendInfo.uin
-    final override val nick: String = friendInfo.nick
+    final override var nick: String = friendInfo.nick
     final override val remark: String = friendInfo.remark
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
