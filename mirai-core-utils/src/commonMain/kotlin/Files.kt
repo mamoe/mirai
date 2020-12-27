@@ -22,6 +22,10 @@ public val FILE_TYPES: MutableMap<String, String> = mutableMapOf(
     "49492A00" to "tif",
     "424D" to "bmp",
     "57415645" to "wav",
+
+
+    "2321414D52" to "amr",
+    "02232153494C4B5F5633" to "silk",
 )
 
 /*

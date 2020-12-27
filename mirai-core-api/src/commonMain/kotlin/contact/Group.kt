@@ -18,9 +18,9 @@ import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
-import java.io.InputStream
 
 /**
  * 群.
@@ -154,8 +154,9 @@ public interface Group : Contact, CoroutineScope {
 
     /**
      * 上传一个语音消息以备发送.
-     * 请手动关闭输入流
-     * 请使用 amr 或 silk 格式
+     *
+     * - 请手动关闭输入流
+     * - 请使用 amr 或 silk 格式
      *
      * @suppress 这是一个实验性 API 且随时会被删除
      *
@@ -163,8 +164,7 @@ public interface Group : Contact, CoroutineScope {
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
     @JvmBlockingBridge
-    @MiraiExperimentalApi
-    public suspend fun uploadVoice(input: InputStream): Voice
+    public suspend fun uploadVoice(resource: ExternalResource): Voice
 
     public companion object
 }

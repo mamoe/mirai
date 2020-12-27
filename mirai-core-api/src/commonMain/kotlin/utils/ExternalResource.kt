@@ -239,11 +239,11 @@ public interface ExternalResource : Closeable {
          * @suppress 注意，这只是个实验性功能且随时可能会删除
          * @throws OverFileSizeMaxException
          */
-        @Throws(OverFileSizeMaxException::class)
-        @MiraiExperimentalApi("语音支持处于实验性阶段")
         @JvmBlockingBridge
         @JvmStatic
-        public suspend fun InputStream.uploadAsGroupVoice(group: Group): Voice {
+        @Throws(OverFileSizeMaxException::class)
+        @MiraiExperimentalApi
+        public suspend fun ExternalResource.uploadAsVoice(group: Group): Voice {
             return group.uploadVoice(this)
         }
     }
@@ -251,7 +251,7 @@ public interface ExternalResource : Closeable {
 
 
 private fun InputStream.detectFileTypeAndClose(): String? {
-    val buffer = ByteArray(8)
+    val buffer = ByteArray(10)
     return use {
         kotlin.runCatching { it.read(buffer) }.onFailure { return null }
         getFileType(buffer)
