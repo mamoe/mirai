@@ -92,9 +92,11 @@ public interface NormalMember : Member {
      *
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
+     *
+     * @return 成功时返回 `true`, 因网络等原因不成功时返回 `false`
      */
     @JvmBlockingBridge
-    public override suspend fun kick(message: String)
+    public override suspend fun kick(message: String): Boolean
 
     /**
      * 向群成员发送消息.

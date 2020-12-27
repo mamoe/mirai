@@ -96,7 +96,7 @@ public interface Member : User {
 
     @MemberDeprecatedApi("仅 NormalMember 支持 kick. 请先检查类型为 NormalMember.")
     @PlannedRemoval("2.0-M2")
-    public suspend fun kick(message: String = "")
+    public suspend fun kick(message: String = ""): Boolean
 
     @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage. 请先检查类型为 NormalMember.")
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member>

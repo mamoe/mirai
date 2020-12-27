@@ -47,6 +47,9 @@ internal class NormalMemberImpl constructor(
     val lastMessageSequence: AtomicInt = atomic(-1)
 
     override fun toString(): String = "Member($id)"
+    override suspend fun delete(): Boolean {
+        return kick("")
+    }
 
     @Suppress("UNCHECKED_CAST")
     @JvmSynthetic
@@ -199,12 +202,12 @@ internal class NormalMemberImpl constructor(
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcast()
     }
 
-    override suspend fun kick(message: String) {
+    override suspend fun kick(message: String): Boolean {
         checkBotPermissionHigherThanThis("kick")
         check(group.members[this.id] != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
         }
-        bot.network.run {
+        return bot.network.run {
             val response: TroopManagement.Kick.Response = TroopManagement.Kick(
                 client = bot.client,
                 member = this@NormalMemberImpl,
@@ -217,6 +220,7 @@ internal class NormalMemberImpl constructor(
             group.members.delegate.removeIf { it.id == this@NormalMemberImpl.id }
             this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
             MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcast()
+            response.success
         }
     }
 }
