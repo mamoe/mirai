@@ -9,6 +9,10 @@
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "MemberVisibilityCanBePrivate", "unused")
 
+@file:JvmMultifileClass
+@file:JvmName("EventChannelKt")
+
+
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
@@ -29,28 +33,6 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.coroutines.suspendCoroutine
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
-
-/**
- * 在此 [CoroutineScope] 下创建一个监听所有事件的 [EventChannel]. 相当于 `GlobalEventChannel.parentScope(this).context(coroutineContext)`.
- *
- * 在返回的 [EventChannel] 中的事件监听器都会以 [this] 作为父协程作用域. 即会 使用 [this]
- *
- * @param coroutineContext 额外的 [CoroutineContext]
- *
- * @throws IllegalStateException 当 [this] 和 [coroutineContext] 均不包含 [CoroutineContext]
- */
-@JvmSynthetic
-public fun CoroutineScope.globalEventChannel(coroutineContext: CoroutineContext = EmptyCoroutineContext): EventChannel<Event> {
-    return if (coroutineContext === EmptyCoroutineContext) GlobalEventChannel.parentScope(this)
-    else GlobalEventChannel.parentScope(this).context(coroutineContext)
-}
-
-/**
- * 全局事件通道. 此通道包含来自所有 [Bot] 的所有类型的事件. 可通过 [EventChannel.filter] 过滤得到范围更小的 [EventChannel].
- *
- * @see EventChannel
- */
-public object GlobalEventChannel : EventChannel<Event>(Event::class, EmptyCoroutineContext)
 
 /**
  * 事件通道. 事件通道是监听事件的入口. **在不同的事件通道中可以监听到不同类型的事件**.
