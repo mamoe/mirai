@@ -71,8 +71,6 @@ public interface Friend : User, CoroutineScope {
      * 删除并屏蔽该好友, 屏蔽后对方将无法发送临时会话消息
      *
      * @see FriendDeleteEvent 好友删除事件
-     *
-     * @return 成功删除时为 `true`, 可能会因为网络等原因删除失败时为 'false'
      */
     @JvmBlockingBridge
     public suspend fun delete()
