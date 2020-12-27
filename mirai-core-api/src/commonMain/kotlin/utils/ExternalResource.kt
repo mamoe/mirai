@@ -21,7 +21,6 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
-import net.mamoe.mirai.utils.ExternalResource.Companion.sendImage
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.io.*
@@ -171,15 +170,6 @@ public interface ExternalResource : Closeable {
             is User -> contact.uploadImage(this)
             else -> error("unreachable")
         }
-
-        /**
-         * 将图片作为单独的消息发送给 [this]
-         *
-         * @see Contact.sendMessage 最终调用, 发送消息.
-         */
-        @JvmSynthetic
-        public suspend inline fun <C : Contact> C.sendImage(image: ExternalResource): MessageReceipt<C> =
-            image.sendAsImageTo(this)
     }
 }
 

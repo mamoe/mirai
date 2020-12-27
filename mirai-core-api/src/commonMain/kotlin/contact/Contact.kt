@@ -21,6 +21,7 @@ import net.mamoe.mirai.message.MessageReceipt.Companion.quote
 import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import java.io.File
 import java.io.InputStream
 
@@ -114,6 +115,16 @@ public interface Contact : ContactOrBot, CoroutineScope {
         @JvmStatic
         @JvmBlockingBridge
         public suspend fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
+
+        /**
+         * 将资源作为单独的图片消息发送给 [this]
+         *
+         * @see Contact.sendMessage 最终调用, 发送消息.
+         */
+        @JvmBlockingBridge
+        @JvmStatic
+        public suspend inline fun <C : Contact> C.sendImage(resource: ExternalResource): MessageReceipt<C> =
+            resource.sendAsImageTo(this)
     }
 }
 
