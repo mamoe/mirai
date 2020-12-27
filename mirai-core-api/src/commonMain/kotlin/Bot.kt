@@ -80,7 +80,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * 来自这个 [Bot] 的 [BotEvent] 的事件通道.
      * @see EventChannel
      */
-    public val eventChannel: EventChannel<@UnsafeVariance BotEvent>
+    public val eventChannel: EventChannel<BotEvent>
 
     // region contacts
 
