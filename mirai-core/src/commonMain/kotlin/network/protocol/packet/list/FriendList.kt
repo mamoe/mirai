@@ -10,7 +10,9 @@
 package net.mamoe.mirai.internal.network.protocol.packet.list
 
 import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
