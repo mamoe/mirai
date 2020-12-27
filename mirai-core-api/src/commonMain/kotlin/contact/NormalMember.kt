@@ -90,6 +90,7 @@ public interface NormalMember : Member {
      *
      * @see kick
      */
+    @JvmBlockingBridge
     override suspend fun delete(): Boolean {
         return kick("")
     }

@@ -66,6 +66,7 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      *
      * @return 删除结果，有可能因网络原因删除失败
      */
+    @JvmBlockingBridge
     public suspend fun delete(): Boolean
 
     /**
