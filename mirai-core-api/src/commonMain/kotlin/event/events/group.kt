@@ -526,7 +526,7 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
     /**
      * 改变荣誉的群成员
      */
-    public abstract override val member: Member
+    public abstract override val member: NormalMember
 
     /**
      * 改变的荣誉类型
@@ -536,12 +536,14 @@ public sealed class MemberHonorChangeEvent : GroupMemberEvent, BotPassiveEvent, 
     /**
      * 获得荣誉时的事件
      */
-    public class Achieve(override val member: Member, override val honorType: GroupHonorType) : MemberHonorChangeEvent()
+    public class Achieve(override val member: NormalMember, override val honorType: GroupHonorType) :
+        MemberHonorChangeEvent()
 
     /**
      * 失去荣誉时的事件
      */
-    public class Lose(override val member: Member, override val honorType: GroupHonorType) : MemberHonorChangeEvent()
+    public class Lose(override val member: NormalMember, override val honorType: GroupHonorType) :
+        MemberHonorChangeEvent()
 }
 
 /**
@@ -555,11 +557,11 @@ public class GroupTalkativeChangeEvent(
     /**
      * 当前龙王
      */
-    public val now: Member,
+    public val now: NormalMember,
     /**
      * 先前龙王
      */
-    public val previous: Member
+    public val previous: NormalMember
 ) : Packet, GroupEvent, BotPassiveEvent, AbstractEvent()
 
 // endregion
