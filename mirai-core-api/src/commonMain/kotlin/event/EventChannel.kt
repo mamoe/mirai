@@ -31,22 +31,6 @@ import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 
 /**
- * 包装 [EventChannel.filter] 的 `filter` lambda 抛出的异常并重新抛出.
- */
-public class ExceptionInEventChannelFilterException(
-    /**
-     * 当时正在处理的事件
-     */
-    public val event: Event,
-    public val eventChannel: EventChannel<*>,
-    override val message: String = "Exception in EventHandler",
-    /**
-     * 原异常
-     */
-    override val cause: Throwable
-) : IllegalStateException()
-
-/**
  * 在此 [CoroutineScope] 下创建一个监听所有事件的 [EventChannel]. 相当于 `GlobalEventChannel.parentScope(this).context(coroutineContext)`.
  *
  * 在返回的 [EventChannel] 中的事件监听器都会以 [this] 作为父协程作用域. 即会 使用 [this]
