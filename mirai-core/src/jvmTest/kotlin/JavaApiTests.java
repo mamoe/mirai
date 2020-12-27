@@ -7,12 +7,17 @@
  *  https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
+import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
+import net.mamoe.mirai.event.EventHandler;
+import net.mamoe.mirai.event.Events;
 import net.mamoe.mirai.event.ListeningStatus;
+import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
 import net.mamoe.mirai.event.events.MessageEvent;
 import net.mamoe.mirai.utils.BotConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 仅用来测试调用，不会被单元测试运行
@@ -38,5 +43,20 @@ public class JavaApiTests {
             Bot b = event.getBot();
 
         });
+
+        SimpleListenerHost slh = new SimpleListenerHost() {
+
+            @Override
+            public void handleException(@NotNull CoroutineContext context, @NotNull Throwable exception) {
+                super.handleException(context, exception);
+            }
+
+            @EventHandler
+            public void onMsg(GroupMessageEvent e) {
+
+            }
+        };
+
+        Events.registerEvents(slh);
     }
 }
