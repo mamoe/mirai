@@ -158,8 +158,6 @@ public interface Group : Contact, CoroutineScope {
      * - 请手动关闭输入流
      * - 请使用 amr 或 silk 格式
      *
-     * @suppress 这是一个实验性 API 且随时会被删除
-     *
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */

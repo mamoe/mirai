@@ -17,7 +17,6 @@ import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Voice
@@ -144,16 +143,14 @@ public interface ExternalResource : Closeable {
          *
          * @see Contact.uploadImage 上传图片
          * @see Contact.sendMessage 最终调用, 发送消息.
+         *
+         * @throws OverFileSizeMaxException
          */
         @JvmBlockingBridge
         @JvmStatic
         @JvmName("sendAsImage")
         public suspend fun <C : Contact> ExternalResource.sendAsImageTo(contact: C): MessageReceipt<C> =
-            when (contact) {
-                is Group -> contact.uploadImage(this).sendTo(contact)
-                is User -> contact.uploadImage(this).sendTo(contact)
-                else -> error("unreachable")
-            }
+            contact.uploadImage(this).sendTo(contact)
 
         /**
          * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
@@ -162,7 +159,6 @@ public interface ExternalResource : Closeable {
          *
          * @throws OverFileSizeMaxException
          */
-        @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("sendAsImage")
@@ -176,7 +172,6 @@ public interface ExternalResource : Closeable {
          * 将文件作为图片发送到指定联系人
          * @throws OverFileSizeMaxException
          */
-        @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("sendAsImage")
@@ -195,13 +190,9 @@ public interface ExternalResource : Closeable {
          *
          * @see Contact.uploadImage 最终调用, 上传图片.
          */
-        @JvmBlockingBridge
         @JvmStatic
-        public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = when (contact) {
-            is Group -> contact.uploadImage(this)
-            is User -> contact.uploadImage(this)
-            else -> error("unreachable")
-        }
+        @JvmBlockingBridge
+        public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = contact.uploadImage(this)
 
         /**
          * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
@@ -210,7 +201,6 @@ public interface ExternalResource : Closeable {
          *
          * @throws OverFileSizeMaxException
          */
-        @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
         public suspend fun InputStream.uploadAsImage(contact: Contact): Image =
@@ -221,7 +211,6 @@ public interface ExternalResource : Closeable {
          * 将文件作为图片上传后构造 [Image]
          * @throws OverFileSizeMaxException
          */
-        @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
         public suspend fun File.uploadAsImage(contact: Contact): Image {
@@ -236,14 +225,13 @@ public interface ExternalResource : Closeable {
          * - 请手动关闭输入流
          * - 请使用 amr 或 silk 格式
          *
-         * @suppress 注意，这只是个实验性功能且随时可能会删除
+         * @suppress 将来支持好友语音之后将会把参数修改为 [Contact], 这会是一个不兼容变更. 因此请优先使用 [Group.uploadVoice]
          * @throws OverFileSizeMaxException
          */
         @JvmBlockingBridge
         @JvmStatic
-        @Throws(OverFileSizeMaxException::class)
         @MiraiExperimentalApi
-        public suspend fun ExternalResource.uploadAsVoice(group: Group): Voice {
+        public suspend inline fun ExternalResource.uploadAsVoice(group: Group): Voice {
             return group.uploadVoice(this)
         }
     }
