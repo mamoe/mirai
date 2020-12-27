@@ -75,7 +75,7 @@ public interface Friend : User, CoroutineScope {
      * @return 成功删除时为 `true`, 可能会因为网络等原因删除失败时为 'false'
      */
     @JvmBlockingBridge
-    override suspend fun delete(): Boolean
+    public suspend fun delete(): Boolean
 
     /**
      * 发送纯文本消息

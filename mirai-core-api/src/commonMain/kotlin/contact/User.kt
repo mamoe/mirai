@@ -59,17 +59,6 @@ public interface User : Contact, UserOrBot, CoroutineScope {
     public val remark: String
 
     /**
-     * 删除该用户，删除后会广播相应的事件
-     *
-     * @see Friend.delete
-     * @see Member.kick
-     *
-     * @return 删除结果，有可能因网络原因删除失败
-     */
-    @JvmBlockingBridge
-    public suspend fun delete(): Boolean
-
-    /**
      * 向这个对象发送消息.
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.

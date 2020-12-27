@@ -88,16 +88,6 @@ public interface NormalMember : Member {
     /**
      * 踢出该成员.
      *
-     * @see kick
-     */
-    @JvmBlockingBridge
-    override suspend fun delete(): Boolean {
-        return kick("")
-    }
-
-    /**
-     * 踢出该成员.
-     *
      * 管理员可踢出成员, 群主可踢出管理员和群员.
      *
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
