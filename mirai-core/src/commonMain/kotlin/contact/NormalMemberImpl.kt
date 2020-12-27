@@ -199,7 +199,7 @@ internal class NormalMemberImpl constructor(
         net.mamoe.mirai.event.events.MemberUnmuteEvent(this@NormalMemberImpl, null).broadcast()
     }
 
-    override suspend fun kick(message: String): Boolean {
+    override suspend fun kick(message: String) {
         checkBotPermissionHigherThanThis("kick")
         check(group.members[this.id] != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
@@ -217,7 +217,6 @@ internal class NormalMemberImpl constructor(
             group.members.delegate.removeIf { it.id == this@NormalMemberImpl.id }
             this@NormalMemberImpl.cancel(CancellationException("Kicked by bot"))
             MemberLeaveEvent.Kick(this@NormalMemberImpl, null).broadcast()
-            response.success
         }
     }
 }
