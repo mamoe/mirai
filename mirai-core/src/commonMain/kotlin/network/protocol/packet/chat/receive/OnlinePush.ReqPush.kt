@@ -276,8 +276,8 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                     it.name.decodeToString() to it.value.decodeToString()
                 }.forEach { (key, value) ->
                     when (key) {
-                        "uin" -> now = group.getOrFail(value.toLong())
-                        "uin_last" -> previous = group.getOrFail(value.toLong())
+                        "uin" -> now = group[value.toLong()] ?: return@lambda732 emptySequence()
+                        "uin_last" -> previous = group[value.toLong()] ?: return@lambda732 emptySequence()
                     }
                 }
                 return@lambda732 previous?.let {
