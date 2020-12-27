@@ -14,6 +14,7 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
@@ -22,8 +23,10 @@ import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.ListenerRegistry
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
+import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.suspendCoroutine
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
 
@@ -156,6 +159,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *
      * @see filterIsInstance 过滤指定类型的事件
      */
+    @JvmSynthetic
     public fun filter(filter: suspend (event: @UnsafeVariance BaseEvent) -> Boolean): EventChannel<BaseEvent> {
         return object : EventChannel<BaseEvent>(baseEventClass, defaultCoroutineContext) {
             private inline val innerThis get() = this
@@ -180,6 +184,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
+    @JvmSynthetic
     public inline fun <reified E : Event> filterIsInstance(): EventChannel<E> =
         filterIsInstance(E::class)
 
@@ -293,8 +298,8 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * ```
      * val scope = CoroutineScope(SupervisorJob())
      *
-     * scope.subscribeAlways<MemberJoinEvent> { /* ... */ }
-     * scope.subscribeAlways<MemberMuteEvent> { /* ... */ }
+     * eventChannel.subscribeAlways<MemberJoinEvent> { /* ... */ }
+     * eventChannel.subscribeAlways<MemberMuteEvent> { /* ... */ }
      *
      * scope.cancel() // 停止上文两个监听
      * ```
@@ -350,6 +355,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * @see subscribeFriendMessages 监听好友消息 DSL
      * @see subscribeTempMessages   监听临时会话消息 DSL
      */
+    @JvmSynthetic
     public inline fun <reified E : Event> subscribe(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = LOCKED,
@@ -363,6 +369,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * @return 监听器实例. 此监听器已经注册到指定事件上, 在事件广播时将会调用 [handler]
      * @see subscribe
      */
+    @JvmSynthetic
     public fun <E : Event> subscribe(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -389,6 +396,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *
      * @see subscribe 获取更多说明
      */
+    @JvmSynthetic
     public inline fun <reified E : Event> subscribeAlways(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -401,6 +409,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * @see subscribe
      * @see subscribeAlways
      */
+    @JvmSynthetic
     public fun <E : Event> subscribeAlways(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -457,7 +466,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *     return ListeningStatus.LISTENING
      * }
      *
-     * scope.subscribe(::onMessage)
+     * eventChannel.subscribe(::onMessage)
      * ```
      * @see subscribe
      */
@@ -479,7 +488,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *     return ListeningStatus.LISTENING
      * }
      *
-     * scope.subscribe(GroupMessageEvent::onMessage)
+     * eventChannel.subscribe(GroupMessageEvent::onMessage)
      * ```
      * @see subscribe
      */
@@ -501,7 +510,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *     return ListeningStatus.LISTENING
      * }
      *
-     * scope.subscribe(::onMessage)
+     * eventChannel.subscribe(::onMessage)
      * ```
      * @see subscribe
      */
@@ -523,7 +532,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *     return ListeningStatus.LISTENING
      * }
      *
-     * scope.subscribe(GroupMessageEvent::onMessage)
+     * eventChannel.subscribe(GroupMessageEvent::onMessage)
      * ```
      * @see subscribe
      */
@@ -549,7 +558,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * fun onMessage(event: GroupMessageEvent) {
      *
      * }
-     * scope.subscribeAlways(::onMessage)
+     * eventChannel.subscribeAlways(::onMessage)
      * ```
      * @see subscribeAlways
      */
@@ -569,7 +578,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * fun GroupMessageEvent.onMessage(event: GroupMessageEvent) {
      *
      * }
-     * scope.subscribeAlways(GroupMessageEvent::onMessage)
+     * eventChannel.subscribeAlways(GroupMessageEvent::onMessage)
      * ```
      * @see subscribeAlways
      */
@@ -589,7 +598,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * suspend fun onMessage(event: GroupMessageEvent) {
      *
      * }
-     * scope.subscribeAlways(::onMessage)
+     * eventChannel.subscribeAlways(::onMessage)
      * ```
      * @see subscribeAlways
      */
@@ -609,7 +618,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * suspend fun GroupMessageEvent.onMessage(event: GroupMessageEvent) {
      *
      * }
-     * scope.subscribeAlways(GroupMessageEvent::onMessage)
+     * eventChannel.subscribeAlways(GroupMessageEvent::onMessage)
      * ```
      * @see subscribeAlways
      */
@@ -625,11 +634,106 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
 
     // endregion
 
+    // region Java API
+
+    /**
+     * Java API. 查看 [subscribeAlways] 获取更多信息.
+     *
+     * ```java
+     * eventChannel.subscribeAlways(GroupMessageEvent.class, (event) -> { });
+     * ```
+     *
+     * @see subscribe
+     * @see subscribeAlways
+     */
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @LowPriorityInOverloadResolution
+    public fun <E : Event> subscribeAlways(
+        eventClass: Class<out E>,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        priority: EventPriority = EventPriority.NORMAL,
+        handler: Consumer<E>
+    ): Listener<E> = subscribeInternal(
+        eventClass.kotlin,
+        createListener(coroutineContext, concurrency, priority) { event ->
+            val context = currentCoroutineContext()
+            suspendCoroutine<Unit> { cont ->
+                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.accept(event) }) }
+            }
+            ListeningStatus.LISTENING
+        }
+    )
+
+    /**
+     * Java API. 查看 [subscribe] 获取更多信息.
+     *
+     * ```java
+     * eventChannel.subscribe(GroupMessageEvent.class, (event) -> {
+     *     return ListeningStatus.LISTENING;
+     * });
+     * ```
+     *
+     * @see subscribe
+     */
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @LowPriorityInOverloadResolution
+    public fun <E : Event> subscribe(
+        eventClass: Class<out E>,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        priority: EventPriority = EventPriority.NORMAL,
+        handler: java.util.function.Function<E, ListeningStatus>
+    ): Listener<E> = subscribeInternal(
+        eventClass.kotlin,
+        createListener(coroutineContext, concurrency, priority) { event ->
+            val context = currentCoroutineContext()
+            suspendCoroutine { cont ->
+                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.apply(event) }) }
+            }
+        }
+    )
+
+    /**
+     * Java API. 查看 [subscribeOnce] 获取更多信息.
+     *
+     * ```java
+     * eventChannel.subscribeOnce(GroupMessageEvent.class, (event) -> { });
+     * ```
+     *
+     * @see subscribe
+     * @see subscribeOnce
+     */
+    @JavaFriendlyAPI
+    @JvmOverloads
+    @LowPriorityInOverloadResolution
+    public fun <E : Event> subscribeOnce(
+        eventClass: Class<out E>,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+        concurrency: Listener.ConcurrencyKind = CONCURRENT,
+        priority: EventPriority = EventPriority.NORMAL,
+        handler: Consumer<E>
+    ): Listener<E> = subscribeInternal(
+        eventClass.kotlin,
+        createListener(coroutineContext, concurrency, priority) { event ->
+            val context = currentCoroutineContext()
+            suspendCoroutine<Unit> { cont ->
+                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.accept(event) }) }
+            }
+            ListeningStatus.STOPPED
+        }
+    )
+
+    // endregion
+
     // region impl
 
     /**
      * 由子类实现，可以为 handler 包装一个过滤器等. 每个 handler 都会经过此函数处理.
      */
+    @MiraiExperimentalApi
     protected open fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): (suspend (E) -> ListeningStatus) {
         return this
     }
