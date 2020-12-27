@@ -204,7 +204,7 @@ internal class NormalMemberImpl constructor(
         check(group.members[this.id] != null) {
             "Member ${this.id} had already been kicked from group ${group.id}"
         }
-        return bot.network.run {
+        bot.network.run {
             val response: TroopManagement.Kick.Response = TroopManagement.Kick(
                 client = bot.client,
                 member = this@NormalMemberImpl,
