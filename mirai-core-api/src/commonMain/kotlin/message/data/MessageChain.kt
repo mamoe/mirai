@@ -86,11 +86,9 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
      *
      * @see MessageChain.getOrFail 在找不到此类型的元素时抛出 [NoSuchElementException]
      */
-    @ExperimentalMessageKey
     public operator fun <M : SingleMessage> get(key: MessageKey<M>): M? =
         asSequence().mapNotNull { key.safeCast.invoke(it) }.firstOrNull()
 
-    @ExperimentalMessageKey
     public operator fun <M : SingleMessage> contains(key: MessageKey<M>): Boolean =
         asSequence().any { key.safeCast.invoke(it) != null }
 
@@ -149,7 +147,6 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
  *
  * @param key 由各个类型消息的伴生对象持有. 如 [MessageSource.Key]
  */
-@ExperimentalMessageKey
 @JvmOverloads
 public inline fun <M : SingleMessage> MessageChain.getOrFail(
     key: MessageKey<M>,
@@ -200,59 +197,32 @@ public inline fun MessageChain.noneContent(block: (MessageContent) -> Boolean): 
 
 
 /**
- * 获取第一个 [M] 类型的 [Message] 实例
+ * 获取第一个 [M] 实例. 在不存在时返回 `null`.
  */
 @JvmSynthetic
 public inline fun <reified M : SingleMessage?> MessageChain.findIsInstance(): M? =
     this.find { it is M } as M?
 
 /**
- * 获取第一个 [M] 类型的 [Message] 实例
+ * 获取第一个 [M] 实例. 在不存在时返回 `null`.
+ * @see findIsInstance
  */
 @JvmSynthetic
 public inline fun <reified M : SingleMessage?> MessageChain.firstIsInstanceOrNull(): M? =
     this.find { it is M } as M?
 
 /**
- * 获取第一个 [M] 类型的 [Message] 实例
- * @throws [NoSuchElementException] 如果找不到该类型的实例
+ * 获取第一个 [M] 实例. 在不存在时抛出 [NoSuchElementException].
+ * @see findIsInstance
  */
 @JvmSynthetic
 public inline fun <reified M : SingleMessage> MessageChain.firstIsInstance(): M = this.first { it is M } as M
 
 /**
- * 判断 [this] 中是否存在 [Message] 的实例
+ * 当 [this] 中存在 [M] 的实例时返回 `true`.
  */
 @JvmSynthetic
 public inline fun <reified M : SingleMessage> MessageChain.anyIsInstance(): Boolean = this.any { it is M }
-
-/**
- * 获取第一个 [M] 类型的 [Message] 实例
- */
-@OptIn(ExperimentalMessageKey::class)
-@Deprecated("Use get", ReplaceWith("get(key)"))
-@JvmSynthetic
-@Suppress("UNCHECKED_CAST")
-public fun <M : SingleMessage> MessageChain.firstOrNull(key: MessageKey<M>): M? = get(key)
-
-/**
- * 获取第一个 [M] 类型的 [Message] 实例
- * @throws [NoSuchElementException] 如果找不到该类型的实例
- */
-@OptIn(ExperimentalMessageKey::class)
-@Deprecated("Use getOrFail", ReplaceWith("getOrFail(key)", "net.mamoe.mirai.message.data.getOrFail"))
-@JvmSynthetic
-@Suppress("UNCHECKED_CAST")
-public inline fun <M : SingleMessage> MessageChain.first(key: MessageKey<M>): M =
-    get(key) ?: throw NoSuchElementException("Message type $key not found in chain $this")
-
-/**
- * 获取第一个 [M] 类型的 [Message] 实例
- */
-@ExperimentalMessageKey
-@JvmSynthetic
-@Suppress("UNCHECKED_CAST")
-public inline fun <M : SingleMessage> MessageChain.any(key: MessageKey<M>): Boolean = get(key) != null
 
 // endregion accessors
 
@@ -279,7 +249,7 @@ public inline operator fun <reified T : SingleMessage> MessageChain.getValue(thi
  */
 @Suppress("NON_PUBLIC_PRIMARY_CONSTRUCTOR_OF_INLINE_CLASS")
 public inline class OrNullDelegate<out R> @PublishedApi internal constructor(@JvmField @PublishedApi internal val value: Any?) {
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST") // don't inline, IC error
     public operator fun getValue(thisRef: Any?, property: KProperty<*>): R = value as R
 }
 

@@ -22,7 +22,6 @@ package net.mamoe.mirai.message.data
  *
  * @param M 指代持有这个 Key 的消息类型
  */
-@ExperimentalMessageKey
 public interface MessageKey<out M : SingleMessage> {
     /**
      * 将一个 [SingleMessage] 强转为 [M] 类型. 在类型不符合时返回 `null`
@@ -36,7 +35,6 @@ public interface MessageKey<out M : SingleMessage> {
  *
  * @see AbstractPolymorphicMessageKey
  */
-@ExperimentalMessageKey
 public abstract class AbstractMessageKey<out M : SingleMessage>(
     override val safeCast: (SingleMessage) -> M?,
 ) : MessageKey<M>
@@ -71,7 +69,6 @@ public abstract class AbstractMessageKey<out M : SingleMessage>(
  * // result 为 [source2], 总是右侧替换左侧
  * ```
  */
-@ExperimentalMessageKey
 public abstract class AbstractPolymorphicMessageKey<out B : SingleMessage, out M : B>(
     baseKey: MessageKey<B>,
     safeCast: (SingleMessage) -> M?,
@@ -80,8 +77,9 @@ public abstract class AbstractPolymorphicMessageKey<out B : SingleMessage, out M
         if (baseKey is AbstractPolymorphicMessageKey<*, *>) baseKey.topmostKey else baseKey
 }
 
-
-@ExperimentalMessageKey
+/**
+ * 尝试 [MessageKey.safeCast], 成功时返回 `true`
+ */
 public fun MessageKey<*>.isInstance(message: SingleMessage): Boolean = this.safeCast(message) != null
 
 /**
@@ -91,11 +89,8 @@ public fun MessageKey<*>.isInstance(message: SingleMessage): Boolean = this.safe
  *
  * 如 [FlashImage], 其 [MessageKey]
  */
-@ExperimentalMessageKey
 public val <A : SingleMessage> MessageKey<A>.topmostKey: MessageKey<*>
     get() = when (this) {
-        is AbstractPolymorphicMessageKey<*, *> -> {
-            this.topmostKey
-        }
+        is AbstractPolymorphicMessageKey<*, *> -> this.topmostKey
         else -> this
     }

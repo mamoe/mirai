@@ -70,7 +70,6 @@ import net.mamoe.mirai.utils.safeCast
  */
 @Serializable(MessageSourceSerializerImpl.Companion::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
-    @ExperimentalMessageKey
     public final override val key: MessageKey<MessageSource>
         get() = Key
 

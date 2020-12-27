@@ -56,7 +56,6 @@ public data class PokeMessage @MiraiInternalApi constructor(
     public val pokeType: Int, // 'type' is used by serialization
     public val id: Int
 ) : HummerMessage, CodableMessage {
-    @ExperimentalMessageKey
     override val key: MessageKey<HummerMessage>
         get() = Key
 
@@ -195,7 +194,6 @@ public interface MarketFace : CodableMessage, HummerMessage {
     public val name: String
     public val id: Int
 
-    @ExperimentalMessageKey
     override val key: MessageKey<MarketFace>
         get() = Key
 
@@ -238,11 +236,9 @@ public data class VipFace @MiraiInternalApi constructor(
         }
     }
 
-    @ExperimentalMessageKey
     override val key: MessageKey<VipFace>
         get() = Key
 
-    @Suppress("DEPRECATION_ERROR", "DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, VipFace>(HummerMessage, { it.safeCast() }) {
 
@@ -292,7 +288,7 @@ public data class VipFace @MiraiInternalApi constructor(
     }
 
     override fun appendMiraiCode(builder: StringBuilder) {
-        builder.append(stringValue) // TODO:
+        builder.append(stringValue)
     }
 
     private val stringValue = "[mirai:vipface:$kind,$count]"
@@ -325,7 +321,6 @@ public data class FlashImage(
     @Contextual
     public val image: Image
 ) : MessageContent, HummerMessage, CodableMessage, ConstrainSingle {
-    @ExperimentalMessageKey
     override val key: MessageKey<FlashImage>
         get() = Key
 

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 
-@OptIn(ExperimentalMessageKey::class)
 private open class TestStandaloneConstrainSingleMessage : ConstrainSingle, MessageContent {
     companion object Key : AbstractMessageKey<TestStandaloneConstrainSingleMessage>({ it.safeCast() })
 
@@ -24,7 +23,6 @@ private open class TestStandaloneConstrainSingleMessage : ConstrainSingle, Messa
     override val key: MessageKey<TestStandaloneConstrainSingleMessage> get() = Key
 }
 
-@OptIn(ExperimentalMessageKey::class)
 private class TestPolymorphicConstrainSingleMessage : ConstrainSingle, TestStandaloneConstrainSingleMessage(),
     MessageContent {
     companion object Key :
@@ -38,7 +36,6 @@ private class TestPolymorphicConstrainSingleMessage : ConstrainSingle, TestStand
     override val key: MessageKey<TestPolymorphicConstrainSingleMessage> get() = Key
 }
 
-@OptIn(ExperimentalMessageKey::class)
 private class TestPolymorphicConstrainSingleMessageOverridingMessageContent : ConstrainSingle, MessageContent,
     TestStandaloneConstrainSingleMessage() {
     companion object Key :
@@ -56,7 +53,6 @@ private class TestPolymorphicConstrainSingleMessageOverridingMessageContent : Co
 
 
 internal class MessageKeyTest {
-    @OptIn(ExperimentalMessageKey::class)
     @Test
     fun `test polymorphism get`() {
         val constrainSingle: TestStandaloneConstrainSingleMessage
@@ -72,7 +68,6 @@ internal class MessageKeyTest {
         assertEquals(constrainSingle, chain[TestStandaloneConstrainSingleMessage])
     }
 
-    @OptIn(ExperimentalMessageKey::class)
     @Test
     fun `test polymorphism override base`() {
         val constrainSingle: TestPolymorphicConstrainSingleMessage
@@ -88,7 +83,6 @@ internal class MessageKeyTest {
         assertEquals(constrainSingle, chain[TestPolymorphicConstrainSingleMessage])
     }
 
-    @OptIn(ExperimentalMessageKey::class)
     @Test
     fun `test polymorphism override message content`() {
         val constrainSingle: TestPolymorphicConstrainSingleMessageOverridingMessageContent

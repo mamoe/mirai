@@ -27,7 +27,6 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageSerializer
 import net.mamoe.mirai.message.MessageSerializerImpl
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
 import kotlin.contracts.contract
 import kotlin.internal.LowPriorityInOverloadResolution
@@ -239,16 +238,6 @@ public interface Message { // must be interface. Don't consider any changes.
     }
 }
 
-/**
- * 标注一个实验性的 [MessageKey] API.
- *
- * 在 `2.0-M2` 时将会推进 [MessageKey] 到稳定状态并删除此注解.
- */
-@PlannedRemoval("2.0-M2")
-@MiraiExperimentalApi
-@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
-public annotation class ExperimentalMessageKey
-
 
 @MiraiExperimentalApi
 @JvmSynthetic
@@ -364,13 +353,11 @@ public interface MessageMetadata : SingleMessage {
  *
  * @see MessageSource
  */
-@ExperimentalMessageKey
 public interface ConstrainSingle : SingleMessage {
     /**
      * 用于判断是否为同一种元素的 [MessageKey]. 使用多态类型 [MessageKey] 最上层的 [MessageKey].
      * @see MessageKey 查看更多信息
      */
-    @ExperimentalMessageKey
     public val key: MessageKey<*>
 }
 
@@ -390,7 +377,6 @@ public interface ConstrainSingle : SingleMessage {
  */
 @Serializable(MessageContent.Serializer::class)
 public interface MessageContent : SingleMessage {
-    @ExperimentalMessageKey
     public companion object Key : AbstractMessageKey<MessageContent>({ it.safeCast() })
 
     public object Serializer : KSerializer<MessageContent> by PolymorphicSerializer(MessageContent::class)
