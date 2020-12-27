@@ -37,7 +37,6 @@ internal class AnonymousMemberImpl(
     override val muteTimeRemaining: Int get() = -1
     override val nick: String get() = memberInfo.nick
     override val remark: String get() = memberInfo.remark
-    override suspend fun delete(): Nothing = notSupported("Delete")
 
     override fun nudge(): MemberNudge = notSupported("Nudge")
     override suspend fun uploadImage(resource: ExternalResource): Image = notSupported("Upload image to")
@@ -56,5 +55,5 @@ internal class AnonymousMemberImpl(
 
     override suspend fun sendMessage(message: Message): Nothing = notSupported("Send message to")
     override suspend fun sendMessage(message: String): Nothing = notSupported("Send message to")
-    override suspend fun kick(message: String): Boolean = notSupported("Kick")
+    override suspend fun kick(message: String): Unit = notSupported("Kick")
 }
