@@ -12,8 +12,8 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val core = "2.0-M2-dev-4"
-    const val console = "2.0-M2-dev-4"
+    const val core = "2.0-M2-dev-10"
+    const val console = "2.0-M2-dev-10"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
