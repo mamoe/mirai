@@ -11,7 +11,6 @@ import kotlin.coroutines.CoroutineContext;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
 import net.mamoe.mirai.event.EventHandler;
-import net.mamoe.mirai.event.Events;
 import net.mamoe.mirai.event.ListeningStatus;
 import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
@@ -57,6 +56,6 @@ public class JavaApiTests {
             }
         };
 
-        Events.registerEvents(slh);
+        bot.getEventChannel().registerListenerHost(slh);
     }
 }

@@ -38,6 +38,7 @@ import kotlin.reflect.KClass
  * 事件通道. 事件通道是监听事件的入口. **在不同的事件通道中可以监听到不同类型的事件**.
  *
  * [GlobalEventChannel] 是最大的通道: 所有的事件都可以在 [GlobalEventChannel] 监听到.
+ * 通过 [Bot.eventChannel] 得到的通道只能监听到来自这个 [Bot] 的事件.
  *
  * ### 对通道的操作
  * - "缩窄" 通道: 通过 [EventChannel.filter]. 例如 `filter { it is BotEvent }` 得到一个只能监听到 [BotEvent] 的事件通道.
@@ -254,26 +255,28 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * ### 创建监听
      * 调用本函数:
      * ```
-     * subscribe<Event> { /* 会收到来自全部 Bot 的事件和与 Bot 不相关的事件 */ }
+     * eventChannel.subscribe<E> { /* 会收到此通道中的所有是 E 的事件 */ }
      * ```
      *
      * ### 生命周期
      *
      * #### 通过协程作用域管理监听器
-     * 本函数将会创建一个 [Job], 成为 [coroutineContext] 中的子任务. 可创建一个 [CoroutineScope] 来管理所有的监听器:
+     * 本函数将会创建一个 [Job], 成为 [parentJob] 中的子任务. 可创建一个 [CoroutineScope] 来管理所有的监听器:
      * ```
      * val scope = CoroutineScope(SupervisorJob())
      *
-     * eventChannel.subscribeAlways<MemberJoinEvent> { /* ... */ }
-     * eventChannel.subscribeAlways<MemberMuteEvent> { /* ... */ }
+     * val scopedChannel = eventChannel.parentScope(scope) // 将协程作用域 scope 附加到这个 EventChannel
      *
-     * scope.cancel() // 停止上文两个监听
+     * scopedChannel.subscribeAlways<MemberJoinEvent> { /* ... */ } // 启动监听, 监听器协程会作为 scope 的子任务
+     * scopedChannel.subscribeAlways<MemberMuteEvent> { /* ... */ } // 启动监听, 监听器协程会作为 scope 的子任务
+     *
+     * scope.cancel() // 停止了协程作用域, 也就取消了两个监听器
      * ```
      *
      * **注意**, 这个函数返回 [Listener], 它是一个 [CompletableJob]. 它会成为 [CoroutineScope] 的一个 [子任务][Job]
      * ```
      * runBlocking { // this: CoroutineScope
-     *   subscribe<Event> { /* 一些处理 */ } // 返回 Listener, 即 CompletableJob
+     *   eventChannel.subscribe<Event> { /* 一些处理 */ } // 返回 Listener, 即 CompletableJob
      * }
      * // runBlocking 不会完结, 直到监听时创建的 `Listener` 被停止.
      * // 它可能通过 Listener.cancel() 停止, 也可能自行返回 ListeningStatus.Stopped 停止.
@@ -284,7 +287,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * 或 [Listener.complete] 后结束.
      *
      * ### 子类监听
-     * 监听父类事件, 也会同时监听其子类. 因此监听 [Event] 即可监听所有类型的事件.
+     * 监听父类事件, 也会同时监听其子类. 因此监听 [Event] 即可监听此通道中所有类型的事件.
      *
      * ### 异常处理
      * - 当参数 [handler] 处理抛出异常时, 将会按如下顺序寻找 [CoroutineExceptionHandler] 处理异常:
@@ -388,8 +391,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
     )
 
     /**
-     * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
-     * 仅在第一次 [事件广播][Event.broadcast] 时, [handler] 会被执行.
+     * 订阅所有 [E] 及其子类事件. 仅在第一次 [事件广播][Event.broadcast] 时, [handler] 会被执行.
      *
      * 可在任意时候通过 [Listener.complete] 来主动停止监听.
      * [CoroutineScope] 被关闭后事件监听会被 [取消][Listener.cancel].
@@ -420,6 +422,25 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
     )
 
     // endregion
+
+    /**
+     * 注册 [ListenerHost] 中的所有 [EventHandler] 标注的方法到这个 [EventChannel].
+     *
+     * @see subscribe
+     * @see EventHandler
+     * @see ListenerHost
+     */
+    @JvmOverloads
+    public fun registerListenerHost(
+        host: ListenerHost,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ) {
+        for (method in host.javaClass.declaredMethods) {
+            method.getAnnotation(EventHandler::class.java)?.let {
+                method.registerEventHandler(host, this, it, coroutineContext)
+            }
+        }
+    }
 
     // region Java API
 

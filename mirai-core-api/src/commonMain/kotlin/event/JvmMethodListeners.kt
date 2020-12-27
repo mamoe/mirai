@@ -15,6 +15,7 @@ package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
 import net.mamoe.mirai.utils.EventListenerLikeJava
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.castOrNull
 import java.lang.reflect.Method
 import kotlin.coroutines.CoroutineContext
@@ -103,7 +104,8 @@ import kotlin.reflect.jvm.kotlinFunction
  *     }
  * }
  *
- * MyEvents.registerEvents()
+ * MyEvents.registerTo(eventChannel)
+ * // 或 eventChannel.registerListenerHost(MyEvents)
  * ```
  *
  *
@@ -143,7 +145,7 @@ import kotlin.reflect.jvm.kotlinFunction
  *     }
  * }
  *
- * Events.registerEvents(new MyEventHandlers())
+ * eventChannel.registerListenerHost(new MyEventHandlers())
  * ```
  *
  * //@sample net.mamoe.mirai.event.JvmMethodEventsTest
@@ -179,6 +181,8 @@ public interface ListenerHost
 
 /**
  * 携带一个异常处理器的 [ListenerHost].
+ *
+ * @see registerTo
  * @see ListenerHost 查看更多信息
  * @see EventHandler 查看更多信息
  */
@@ -243,35 +247,46 @@ public class ExceptionInEventHandlerException(
     override val cause: Throwable
 ) : IllegalStateException()
 
-/**
- * 反射得到所有标注了 [EventHandler] 的函数 (Java 为方法), 并注册为事件监听器
- *
- * Java 使用: `Events.registerEvents(listenerHost)`
- *
- * @see EventHandler 获取更多信息
- */
-@JvmOverloads
-public fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext): Unit
-        where T : CoroutineScope, T : ListenerHost = this.registerEvents(this, coroutineContext)
 
 /**
  * 反射得到所有标注了 [EventHandler] 的函数 (Java 为方法), 并注册为事件监听器
  *
- * Java 使用: `Events.registerEvents(coroutineScope, host)`
- *
  * @see EventHandler 获取更多信息
  */
+@JvmSynthetic
+// T 通常可以是 SimpleListenerHost
+public inline fun <T> T.registerTo(eventChannel: EventChannel<*>): Unit
+        where T : CoroutineScope, T : ListenerHost = eventChannel.registerListenerHost(this)
+
+
+@Deprecated(
+    "Use EventChannel.registerListenerHost",
+    ReplaceWith(
+        "this.globalEventChannel(coroutineContext).registerListenerHost(this)",
+        "net.mamoe.mirai.event.*"
+    ),
+    DeprecationLevel.ERROR
+)
+@PlannedRemoval("2.0-RC")
+@JvmOverloads
+public fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext): Unit
+        where T : CoroutineScope, T : ListenerHost =
+    this.globalEventChannel(coroutineContext).registerListenerHost(this)
+
+@Deprecated(
+    "Use EventChannel.registerListenerHost",
+    ReplaceWith(
+        "this.globalEventChannel(coroutineContext).registerListenerHost(host)",
+        "net.mamoe.mirai.event.*"
+    ),
+    DeprecationLevel.ERROR
+)
+@PlannedRemoval("2.0-RC")
 @JvmOverloads
 public fun CoroutineScope.registerEvents(
     host: ListenerHost,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
-) {
-    for (method in host.javaClass.declaredMethods) {
-        method.getAnnotation(EventHandler::class.java)?.let {
-            method.registerEvent(host, this, it, coroutineContext)
-        }
-    }
-}
+): Unit = globalEventChannel(coroutineContext).registerListenerHost(host)
 
 private fun Method.isKotlinFunction(): Boolean {
 
@@ -283,9 +298,9 @@ private fun Method.isKotlinFunction(): Boolean {
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun Method.registerEvent(
+internal fun Method.registerEventHandler(
     owner: Any,
-    scope: CoroutineScope,
+    eventChannel: EventChannel<*>,
     annotation: EventHandler,
     coroutineContext: CoroutineContext,
 ): Listener<Event> {
@@ -348,7 +363,7 @@ private fun Method.registerEvent(
         }
         when (kotlinFunction.returnType.classifier) {
             Unit::class, Nothing::class -> {
-                scope.globalEventChannel().subscribeAlways(
+                eventChannel.subscribeAlways(
                     param[1].type.classifier as KClass<out Event>,
                     coroutineContext,
                     annotation.concurrency,
@@ -362,7 +377,7 @@ private fun Method.registerEvent(
                 }.also { listener = it }
             }
             ListeningStatus::class -> {
-                scope.globalEventChannel().subscribe(
+                eventChannel.subscribe(
                     param[1].type.classifier as KClass<out Event>,
                     coroutineContext,
                     annotation.concurrency,
@@ -400,17 +415,17 @@ private fun Method.registerEvent(
             return if (annotation.ignoreCancelled) {
                 if (event.castOrNull<CancellableEvent>()?.isCancelled != true) {
                     withContext(Dispatchers.IO) {
-                        this@registerEvent.invokeWithErrorReport(owner, event)
+                        this@registerEventHandler.invokeWithErrorReport(owner, event)
                     }
                 } else ListeningStatus.LISTENING
             } else withContext(Dispatchers.IO) {
-                this@registerEvent.invokeWithErrorReport(owner, event)
+                this@registerEventHandler.invokeWithErrorReport(owner, event)
             }
         }
 
         when (this.returnType) {
             Void::class.java, Void.TYPE, Nothing::class.java -> {
-                scope.globalEventChannel().subscribeAlways(
+                eventChannel.subscribeAlways(
                     paramType.kotlin as KClass<out Event>,
                     coroutineContext,
                     annotation.concurrency,
@@ -420,7 +435,7 @@ private fun Method.registerEvent(
                 }
             }
             ListeningStatus::class.java -> {
-                scope.globalEventChannel().subscribe(
+                eventChannel.subscribe(
                     paramType.kotlin as KClass<out Event>,
                     coroutineContext,
                     annotation.concurrency,
