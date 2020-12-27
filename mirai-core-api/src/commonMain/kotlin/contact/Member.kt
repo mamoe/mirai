@@ -12,15 +12,15 @@
 package net.mamoe.mirai.contact
 
 import net.mamoe.kjbb.JvmBlockingBridge
-import net.mamoe.mirai.event.events.BotMuteEvent
-import net.mamoe.mirai.event.events.MemberMuteEvent
-import net.mamoe.mirai.event.events.MemberPermissionChangeEvent
+import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.MemberNudge
+import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.MemberDeprecatedApi
+import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.WeakRefProperty
 
 /**
@@ -66,10 +66,6 @@ public interface Member : User {
      */
     public val specialTitle: String
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 muteTimeRemaining. 请先检查类型为 NormalMember.")
-    @PlannedRemoval("2.0-M2")
-    public val muteTimeRemaining: Int
-
     /**
      * 禁言这个群成员 [durationSeconds] 秒, 在机器人无权限操作时抛出 [PermissionDeniedException].
      *
@@ -90,22 +86,43 @@ public interface Member : User {
     @JvmBlockingBridge
     public suspend fun mute(durationSeconds: Int)
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 unmute. 请先检查类型为 NormalMember.")
-    @PlannedRemoval("2.0-M2")
-    public suspend fun unmute()
-
-    @MemberDeprecatedApi("仅 NormalMember 支持 kick. 请先检查类型为 NormalMember.")
-    @PlannedRemoval("2.0-M2")
-    public suspend fun kick(message: String = "")
-
-    @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage. 请先检查类型为 NormalMember.")
+    /**
+     * 向群成员发送消息.
+     * 若群成员同时是好友, 则会发送好友消息. 否则发送临时会话消息.
+     *
+     * 单条消息最大可发送 4500 字符或 50 张图片.
+     *
+     * 注意: 只可以向 [NormalMember] 发送消息. 向 [AnonymousMember] 发送时将会得到异常.
+     *
+     * @see FriendMessagePreSendEvent 当此成员是好友时发送消息前事件
+     * @see FriendMessagePostSendEvent 当此成员是好友时发送消息后事件
+     *
+     * @see TempMessagePreSendEvent 当此成员不是好友时发送消息前事件
+     * @see TempMessagePostSendEvent 当此成员不是好友时发送消息后事件
+     *
+     * @throws EventCancelledException 当发送消息事件被取消时抛出
+     * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
+     * @throws MessageTooLargeException 当消息过长时抛出
+     * @throws IllegalArgumentException 当消息内容为空时抛出 (详见 [Message.isContentEmpty])
+     *
+     * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
+     */
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 sendMessage. 请先检查类型为 NormalMember.")
+    /**
+     * 发送纯文本消息
+     *
+     * @see sendMessage
+     */
     public override suspend fun sendMessage(message: String): MessageReceipt<Member>
 
-    @MemberDeprecatedApi("仅 NormalMember 支持 nudge. 请先检查类型为 NormalMember.")
-    @PlannedRemoval("2.0-M2")
+    /**
+     * 创建一个 "戳一戳" 消息
+     *
+     * 注意: 只可以戳 [NormalMember]. 向 [AnonymousMember] 操作时将会得到异常.
+     *
+     * @see Nudge.sendTo 发送这个戳一戳消息
+     */
     @MiraiExperimentalApi
     public override fun nudge(): MemberNudge
 }
@@ -127,19 +144,6 @@ public fun Member.asFriendOrNull(): Friend? = this.bot.getFriend(this.id)
  */
 public inline val Member.isFriend: Boolean
     get() = this.bot.friends.contains(this.id)
-
-/**
- * 如果此成员是好友, 则执行 [block] 并返回其返回值. 否则返回 `null`
- */
-@Deprecated(
-    "Ambiguous function name and its behaviour. Use asFriendOrNull and let manually.",
-    ReplaceWith("this.asFriendOrNull()?.let(block)"),
-    level = DeprecationLevel.ERROR
-)
-@PlannedRemoval("2.0-M2")
-public inline fun <R> Member.takeIfIsFriend(block: (Friend) -> R): R? {
-    return this.asFriendOrNull()?.let(block)
-}
 
 /**
  * 获取非空群名片或昵称.

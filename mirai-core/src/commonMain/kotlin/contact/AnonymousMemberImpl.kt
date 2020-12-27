@@ -15,14 +15,8 @@ import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.MiraiImpl
-import net.mamoe.mirai.message.action.MemberNudge
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.MemberDeprecatedApi
 import kotlin.coroutines.CoroutineContext
 
-@OptIn(MemberDeprecatedApi::class)
 internal class AnonymousMemberImpl(
     override val group: GroupImpl,
     override val coroutineContext: CoroutineContext,
@@ -34,14 +28,8 @@ internal class AnonymousMemberImpl(
     override val permission: MemberPermission get() = memberInfo.permission
     override val bot: Bot get() = group.bot
     override val id: Long get() = memberInfo.uin
-    override val muteTimeRemaining: Int get() = -1
     override val nick: String get() = memberInfo.nick
     override val remark: String get() = memberInfo.remark
-
-    override fun nudge(): MemberNudge = notSupported("Nudge")
-    override suspend fun uploadImage(resource: ExternalResource): Image = notSupported("Upload image to")
-    override suspend fun unmute() {
-    }
 
     override suspend fun mute(durationSeconds: Int) {
         checkBotPermissionHigherThanThis("mute")
@@ -49,11 +37,4 @@ internal class AnonymousMemberImpl(
     }
 
     override fun toString(): String = "AnonymousMember($nameCard, $anonymousId)"
-
-    private fun notSupported(action: String): Nothing =
-        throw IllegalStateException("$action anonymous is not allowed")
-
-    override suspend fun sendMessage(message: Message): Nothing = notSupported("Send message to")
-    override suspend fun sendMessage(message: String): Nothing = notSupported("Send message to")
-    override suspend fun kick(message: String): Unit = notSupported("Kick")
 }

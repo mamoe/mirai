@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
 import net.mamoe.mirai.message.data.VipFace.Kind
 import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.castOrNull
 import net.mamoe.mirai.utils.safeCast
 
@@ -61,11 +60,6 @@ public data class PokeMessage @MiraiInternalApi constructor(
     override val key: MessageKey<HummerMessage>
         get() = Key
 
-
-    @PlannedRemoval("2.0-M2")
-    @Deprecated("Use pokeType", ReplaceWith("pokeType"), DeprecationLevel.ERROR)
-    val type: Int
-        get() = pokeType
 
     public companion object Key :
         AbstractPolymorphicMessageKey<HummerMessage, PokeMessage>(HummerMessage, { it.castOrNull() }) {

@@ -17,42 +17,6 @@ import net.mamoe.mirai.Bot
 import kotlin.contracts.InvocationKind.AT_MOST_ONCE
 import kotlin.contracts.contract
 
-@Suppress("DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@Deprecated(
-    "Use MiraiLogger.create",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith(
-        "{ identity: String? -> MiraiLogger.create(identity) }",
-        "net.mamoe.mirai.utils.MiraiLogger"
-    )
-)
-@PlannedRemoval("2.0-M2")
-public var DefaultLogger: (identity: String?) -> MiraiLogger
-    @Deprecated(
-        "Create lambda by yourself.",
-        ReplaceWith("{ identity: String? -> MiraiLogger.create(identity) }", "net.mamoe.mirai.utils.MiraiLogger"),
-        level = DeprecationLevel.ERROR,
-    )
-    get() = { MiraiLogger.create(it) }
-    @Deprecated(
-        "Use MiraiLogger.setDefaultLoggerCreator",
-        replaceWith = ReplaceWith("MiraiLogger.setDefaultLoggerCreator(value)", "net.mamoe.mirai.utils.MiraiLogger"),
-        level = DeprecationLevel.ERROR,
-    )
-    set(value) = MiraiLogger.setDefaultLoggerCreator(value)
-
-
-@PlannedRemoval("2.0-M2")
-@Suppress("DEPRECATION", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "NOTHING_TO_INLINE", "FunctionName")
-@Deprecated(
-    "Use MiraiLogger.create",
-    level = DeprecationLevel.ERROR,
-    replaceWith = ReplaceWith("MiraiLogger.create(identity)", "net.mamoe.mirai.utils.MiraiLogger")
-)
-@kotlin.internal.HidesMembers
-@JvmSynthetic
-public inline fun DefaultLogger(identity: String?): MiraiLogger = MiraiLogger.create(identity)
-
 /**
  * 给这个 logger 添加一个开关, 用于控制是否记录 log
  */

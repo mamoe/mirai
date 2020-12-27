@@ -20,7 +20,6 @@ import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.PlannedRemoval
 import java.io.InputStream
 
 /**
@@ -96,14 +95,6 @@ public interface Group : Contact, CoroutineScope {
      * 当 [id] 为 [Bot.id] 时返回 [botAsMember].
      */
     public operator fun get(id: Long): NormalMember?
-
-    @Deprecated("Use get", ReplaceWith("get(id)"))
-    @PlannedRemoval("2.0-M2")
-    /**
-     * 获取群成员实例, 不存在则 null
-     * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
-     */
-    public fun getOrNull(id: Long): NormalMember? = get(id)
 
     /**
      * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException].

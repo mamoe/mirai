@@ -19,9 +19,7 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
-import net.mamoe.mirai.utils.MemberDeprecatedApi
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -34,7 +32,6 @@ import kotlin.time.ExperimentalTime
  * ## 相关的操作
  * [Member.isFriend] 判断此成员是否为好友
  */
-@OptIn(MemberDeprecatedApi::class)
 public interface NormalMember : Member {
     /**
      * 群名片. 可能为空.
@@ -69,21 +66,21 @@ public interface NormalMember : Member {
      * @see mute 设置禁言
      * @see unmute 取消禁言
      */
-    public override val muteTimeRemaining: Int
+    public val muteTimeRemaining: Int
 
     /**
      * 解除禁言.
      *
      * 管理员可解除成员的禁言, 群主可解除管理员和群员的禁言.
      *
-     * @see Member.isMuted 判断此成员是否正处于禁言状态中
+     * @see NormalMember.isMuted 判断此成员是否正处于禁言状态中
      *
      * @see MemberUnmuteEvent 成员被取消禁言事件
      *
      * @throws PermissionDeniedException 无权限修改时抛出
      */
     @JvmBlockingBridge
-    public override suspend fun unmute()
+    public suspend fun unmute()
 
     /**
      * 踢出该成员.
@@ -94,7 +91,7 @@ public interface NormalMember : Member {
      * @throws PermissionDeniedException 无权限修改时
      */
     @JvmBlockingBridge
-    public override suspend fun kick(message: String)
+    public suspend fun kick(message: String)
 
     /**
      * 向群成员发送消息.
@@ -116,14 +113,14 @@ public interface NormalMember : Member {
      * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
      */
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: Message): MessageReceipt<Member>
+    public override suspend fun sendMessage(message: Message): MessageReceipt<NormalMember>
 
     /**
      * 发送纯文本消息
      * @see sendMessage
      */
     @JvmBlockingBridge
-    public override suspend fun sendMessage(message: String): MessageReceipt<Member> =
+    public override suspend fun sendMessage(message: String): MessageReceipt<NormalMember> =
         this.sendMessage(message.toPlainText())
 
     /**
@@ -164,10 +161,3 @@ public suspend inline fun NormalMember.mute(duration: Duration) {
     require(duration.inSeconds > 0) { "duration must be greater than 0 second" }
     this.mute(duration.inSeconds.toInt())
 }
-
-/**
- * @see Member.mute
- */
-@Deprecated("Convert duration to int manually.", ReplaceWith("this.mute(durationSeconds.toInt())"))
-@PlannedRemoval("2.0-M2")
-public suspend inline fun NormalMember.mute(durationSeconds: Long): Unit = this.mute(durationSeconds.toInt())

@@ -25,7 +25,6 @@ import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
-import net.mamoe.mirai.utils.PlannedRemoval
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -94,12 +93,6 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * [User.id] 与 [Bot.id] 相同的 [Friend] 实例
      */
     public val asFriend: Friend
-
-    @Deprecated("Use asFriend instead", ReplaceWith("asFriend"))
-    @PlannedRemoval("2.0-M2")
-    public val selfQQ: Friend
-        get() = asFriend
-
 
     /**
      * 好友列表. 与服务器同步更新.
@@ -205,50 +198,6 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
          */
         @JvmStatic
         public fun findInstance(qq: Long): Bot? = _instances[qq]
-
-
-        // deprecated
-
-        /**
-         * 遍历每一个 [Bot] 实例
-         */
-        @Deprecated(
-            """
-            In Kotlin, use Sequence.forEach on instancesSequence.
-            In Java, use List.forEach on instances 
-            """,
-            ReplaceWith("Bot.instancesSequence.forEach(block)", "net.mamoe.mirai.Bot.Companion"),
-            DeprecationLevel.ERROR
-        )
-        @PlannedRemoval("2.0-M2")
-        public fun forEachInstance(block: (Bot) -> Unit): Unit = instancesSequence.forEach(block)
-
-        /**
-         * 复制一份此时的 [Bot] 实例列表.
-         */
-        @JvmStatic
-        @Deprecated(
-            "Use instances for shorter name.",
-            ReplaceWith("Bot.instances", "net.mamoe.mirai.Bot.Companion"),
-            DeprecationLevel.ERROR
-        )
-        @PlannedRemoval("2.0-M2")
-        public val botInstances: List<Bot>
-            get() = instances
-
-        /**
-         * 复制一份此时的 [Bot] 实例列表.
-         */
-        @JvmStatic
-        @Deprecated(
-            "Use instancesSequence for shorter name.",
-            ReplaceWith("Bot.instancesSequence", "net.mamoe.mirai.Bot.Companion"),
-            DeprecationLevel.ERROR
-        )
-        @PlannedRemoval("2.0-M2")
-        public val botInstancesSequence: Sequence<Bot>
-            get() = instancesSequence
-
     }
 
     /**
@@ -291,29 +240,3 @@ public inline fun Bot.containsFriend(id: Long): Boolean = this.friends.contains(
  */
 @JvmSynthetic
 public inline fun Bot.containsGroup(id: Long): Boolean = this.groups.contains(id)
-
-
-// deprecated
-
-@Suppress("EXTENSION_SHADOWED_BY_MEMBER") // source compatibility
-@PlannedRemoval("2.0-M2")
-@JvmSynthetic
-public suspend inline fun Bot.join(): Unit = join()
-
-@Suppress("EXTENSION_SHADOWED_BY_MEMBER") // source compatibility
-@PlannedRemoval("2.0-M2")
-@JvmSynthetic
-public suspend inline fun Bot.closeAndJoin(cause: Throwable? = null) {
-    close(cause)
-    coroutineContext[Job]?.join()
-}
-
-@Deprecated("Use getFriend", ReplaceWith("this.getFriend(id)"))
-@PlannedRemoval("2.0-M2")
-@JvmSynthetic
-public inline fun Bot.getFriendOrNull(id: Long): Friend? = this.getFriend(id)
-
-@Deprecated("Use getGroup", ReplaceWith("this.getGroup(id)"))
-@PlannedRemoval("2.0-M2")
-@JvmSynthetic
-public inline fun Bot.getGroupOrNull(id: Long): Group? = this.getGroup(id)
