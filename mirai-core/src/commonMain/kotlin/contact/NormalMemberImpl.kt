@@ -47,9 +47,6 @@ internal class NormalMemberImpl constructor(
     val lastMessageSequence: AtomicInt = atomic(-1)
 
     override fun toString(): String = "Member($id)"
-    override suspend fun delete(): Boolean {
-        return kick("")
-    }
 
     @Suppress("UNCHECKED_CAST")
     @JvmSynthetic
