@@ -3,7 +3,7 @@
 本文介绍如何在一个项目中使用 mirai。
 
 mirai 使用纯 Kotlin 开发，兼容 JVM 平台语言如 Java，最低要求 `JDK 1.8`，`Kotlin 1.4`。
-**但注意不要使用 Oracle JDK**（会遇到打包后无法启动的问题），推荐使用 OpenJDK。
+**但注意不要使用 Oracle JDK**（[原因](https://github.com/mamoe/mirai/discussions/779)），推荐使用 OpenJDK。
 
 ### 选择版本
 
