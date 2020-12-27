@@ -10,9 +10,7 @@
 package net.mamoe.mirai.internal.network.protocol.packet.list
 
 import kotlinx.io.core.ByteReadPacket
-import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.internal.QQAndroidBot
-import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
@@ -197,6 +195,8 @@ internal class FriendList {
                         funcName = "GetFriendListReq",
                         servantName = "mqq.IMService.FriendListServiceServantObj",
                         version = 3,
+                        cPacketType = 0x003,
+                        requestId = 1921334514,
                         sBuffer = jceRequestSBuffer(
                             "FL",
                             GetFriendListReq.serializer(),
@@ -220,7 +220,7 @@ internal class FriendList {
                                 getgroupCount = groupListCount.toByte(),
                                 ifGetMSFGroup = 0,
                                 ifShowTermType = 1,
-                                version = 31L,
+                                version = 27L,
                                 uinList = null,
                                 eAppType = 0,
                                 ifGetBothFlag = 0,
