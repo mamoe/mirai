@@ -17,6 +17,7 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
+import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.event.events.ImageUploadEvent.Failed
 import net.mamoe.mirai.event.events.ImageUploadEvent.Succeed

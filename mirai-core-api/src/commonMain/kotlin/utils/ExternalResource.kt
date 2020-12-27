@@ -15,10 +15,12 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
+import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
@@ -154,6 +156,36 @@ public interface ExternalResource : Closeable {
             }
 
         /**
+         * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
+         *
+         * 注意：本函数不会关闭流
+         *
+         * @throws OverFileSizeMaxException
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        @JvmName("sendAsImage")
+        public suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
+            runBIO {
+                @Suppress("BlockingMethodInNonBlockingContext")
+                toExternalResource("png")
+            }.withUse { sendAsImageTo(contact) }
+
+        /**
+         * 将文件作为图片发送到指定联系人
+         * @throws OverFileSizeMaxException
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        @JvmName("sendAsImage")
+        public suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
+            require(this.exists() && this.canRead())
+            return toExternalResource("png").withUse { sendAsImageTo(contact) }
+        }
+
+        /**
          * 上传图片并构造 [Image].
          * 这个函数可能需消耗一段时间.
          *
@@ -169,6 +201,50 @@ public interface ExternalResource : Closeable {
             is Group -> contact.uploadImage(this)
             is User -> contact.uploadImage(this)
             else -> error("unreachable")
+        }
+
+        /**
+         * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
+         *
+         * 注意：本函数不会关闭流
+         *
+         * @throws OverFileSizeMaxException
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun InputStream.uploadAsImage(contact: Contact): Image =
+            @Suppress("BlockingMethodInNonBlockingContext")
+            runBIO { toExternalResource("png") }.withUse { uploadAsImage(contact) }
+
+        /**
+         * 将文件作为图片上传后构造 [Image]
+         * @throws OverFileSizeMaxException
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun File.uploadAsImage(contact: Contact): Image {
+            require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
+            return toExternalResource("png").withUse { uploadAsImage(contact) }
+        }
+
+
+        /**
+         * 将文件作为语音上传后构造 [Voice]
+         *
+         * - 请手动关闭输入流
+         * - 请使用 amr 或 silk 格式
+         *
+         * @suppress 注意，这只是个实验性功能且随时可能会删除
+         * @throws OverFileSizeMaxException
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @MiraiExperimentalApi("语音支持处于实验性阶段")
+        @JvmBlockingBridge
+        @JvmStatic
+        public suspend fun InputStream.uploadAsGroupVoice(group: Group): Voice {
+            return group.uploadVoice(this)
         }
     }
 }
