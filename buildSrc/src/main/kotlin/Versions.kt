@@ -21,7 +21,7 @@ import org.gradle.api.attributes.Attribute
 */
 
 object Versions {
-    const val project = "2.0-M2-dev-13"
+    const val project = "2.0-M2-dev-14"
 
     const val kotlinCompiler = "1.4.21"
     const val kotlinStdlib = "1.4.21"
