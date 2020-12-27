@@ -25,6 +25,7 @@ import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.GlobalEventListeners
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.ListenerRegistry
+import net.mamoe.mirai.event.internal.registerEventHandler
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.function.Consumer
@@ -425,6 +426,8 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
 
     /**
      * 注册 [ListenerHost] 中的所有 [EventHandler] 标注的方法到这个 [EventChannel].
+     *
+     * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext]
      *
      * @see subscribe
      * @see EventHandler
