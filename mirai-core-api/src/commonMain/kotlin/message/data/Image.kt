@@ -13,10 +13,7 @@
 @file:Suppress(
     "EXPERIMENTAL_API_USAGE",
     "unused",
-    "WRONG_MODIFIER_CONTAINING_DECLARATION",
-    "DEPRECATION",
     "UnusedImport",
-    "EXPOSED_SUPER_CLASS",
     "DEPRECATION_ERROR", "NOTHING_TO_INLINE"
 )
 
@@ -36,6 +33,8 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Contact.Companion.sendImage
+import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.message.code.CodableMessage
 import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2

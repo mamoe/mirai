@@ -24,6 +24,7 @@ import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.proto.CSDataHighwayHead
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
+import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.utils.PlatformSocket
 import net.mamoe.mirai.internal.utils.SocketException
 import net.mamoe.mirai.internal.utils.addSuppressedMirai
@@ -174,23 +175,21 @@ internal object HighwayHelper {
     suspend fun uploadPttToServers(
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
-        content: ByteArray,
-        md5: ByteArray,
+        resource: ExternalResource,
         uKey: ByteArray,
         fileKey: ByteArray,
-        codec: Int
     ) {
         servers.retryWithServers(10 * 1000, {
             throw IllegalStateException("cannot upload ptt, failed on all servers.", it)
         }, { s: String, i: Int ->
             bot.network.logger.verbose {
-                "[Highway] Uploading ptt to ${s}:$i, size=${content.size.toLong().sizeToString()}"
+                "[Highway] Uploading ptt to ${s}:$i, size=${resource.size.sizeToString()}"
             }
             val time = measureTime {
-                uploadPttToServer(s, i, content, md5, uKey, fileKey, codec)
+                uploadPttToServer(s, i, resource, uKey, fileKey)
             }
             bot.network.logger.verbose {
-                "[Highway] Uploading ptt: succeed at ${(content.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+                "[Highway] Uploading ptt: succeed at ${(resource.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
             }
 
         })
@@ -200,22 +199,20 @@ internal object HighwayHelper {
     private suspend fun uploadPttToServer(
         serverIp: String,
         serverPort: Int,
-        content: ByteArray,
-        md5: ByteArray,
+        resource: ExternalResource,
         uKey: ByteArray,
         fileKey: ByteArray,
-        codec: Int
     ) {
         MiraiPlatformUtils.Http.post<String> {
             url("http://$serverIp:$serverPort")
             parameter("ver", 4679)
             parameter("ukey", uKey.toUHexString(""))
             parameter("filekey", fileKey.toUHexString(""))
-            parameter("filesize", content.size)
-            parameter("bmd5", md5.toUHexString(""))
+            parameter("filesize", resource.size)
+            parameter("bmd5", resource.md5.toUHexString(""))
             parameter("mType", "pttDu")
-            parameter("voice_encodec", codec)
-            body = content
+            parameter("voice_encodec", resource.voiceCodec)
+            body = resource.inputStream()
         }
     }
 }

@@ -40,20 +40,25 @@ import kotlin.coroutines.CoroutineContext
 public abstract class LoginSolver {
     /**
      * 处理图片验证码.
-     * 返回 null 以表示无法处理验证码, 将会刷新验证码或重试登录.
+     *
+     * 返回 `null` 以表示无法处理验证码, 将会刷新验证码或重试登录.
      * 抛出一个 [LoginFailedException] 以正常地终止登录, 抛出任意其他 [Exception] 将视为异常终止
      *
      * @throws LoginFailedException
      */
     public abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
 
-    @MiraiExperimentalApi
+    /**
+     * 为 `true` 表示支持滑动验证码, 遇到滑动验证码时 mirai 会请求 [onSolveSliderCaptcha].
+     * 否则会跳过滑动验证码并告诉服务器此客户端不支持, 有可能导致登录失败
+     */
     public open val isSliderCaptchaSupported: Boolean
-        get() = isSliderCaptchaSupportKind ?: false
+        get() = isSliderCaptchaSupportKind ?: true
 
     /**
      * 处理滑动验证码.
-     * 返回 null 以表示无法处理验证码, 将会刷新验证码或重试登录.
+     *
+     * 返回 `null` 以表示无法处理验证码, 将会刷新验证码或重试登录.
      * 抛出一个 [LoginFailedException] 以正常地终止登录, 抛出任意其他 [Exception] 将视为异常终止
      *
      * @throws LoginFailedException
@@ -63,7 +68,8 @@ public abstract class LoginSolver {
 
     /**
      * 处理不安全设备验证.
-     * 在处理完成后返回任意内容 (包含 `null`) 均视为处理成功.
+     *
+     * 返回值保留给将来使用. 目前在处理完成后返回任意内容 (包含 `null`) 均视为处理成功.
      * 抛出一个 [LoginFailedException] 以正常地终止登录, 抛出任意其他 [Exception] 将视为异常终止.
      *
      * @return 任意内容. 返回值保留以供未来更新.

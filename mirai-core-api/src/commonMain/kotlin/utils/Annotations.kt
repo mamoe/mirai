@@ -50,15 +50,6 @@ public annotation class MiraiExperimentalApi(
 @MustBeDocumented
 internal annotation class PlannedRemoval(val version: String)
 
-/**
- * 标记已过时的 Member API
- */
-@Target(CLASS, PROPERTY, FIELD, CONSTRUCTOR, FUNCTION, PROPERTY_GETTER, PROPERTY_SETTER, TYPEALIAS)
-@Retention(AnnotationRetention.BINARY)
-@RequiresOptIn(level = RequiresOptIn.Level.ERROR)
-@MustBeDocumented
-@PlannedRemoval("2.0-M2")
-internal annotation class MemberDeprecatedApi(val message: String)
 
 /**
  * 该注解仅用于测试 EventHandler

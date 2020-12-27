@@ -33,7 +33,7 @@ class SimpleListenerHostTestJava {
             }
         }
         val scope = CoroutineScope(EmptyCoroutineContext)
-        scope.registerEvents(host)
+        scope.globalEventChannel().registerListenerHost(host)
         object : AbstractEvent() {}.__broadcastJava()
         if (!called.get()) {
             throw AssertionError("JavaTest: SimpleListenerHost Failed.")

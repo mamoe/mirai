@@ -9,24 +9,30 @@
 
 package net.mamoe.mirai.contact
 
+import net.mamoe.mirai.message.action.MemberNudge
+import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.utils.MemberDeprecatedApi
+import net.mamoe.mirai.utils.ExternalResource
 
 /**
  * 匿名
  *
  * 代表匿名群成员
  */
+@Suppress("DeprecatedCallableAddReplaceWith")
 public interface AnonymousMember : Member {
     /** 该匿名群成员 ID */
     public val anonymousId: String
 
-    @MemberDeprecatedApi(message = "无法发送信息至 AnonymousMember")
     @Deprecated(level = DeprecationLevel.ERROR, message = "无法发送信息至 AnonymousMember")
-    public override suspend fun sendMessage(message: Message): Nothing
+    public override suspend fun sendMessage(message: Message): Nothing =
+        throw UnsupportedOperationException("Cannot send message to AnonymousMember")
 
     @Deprecated(level = DeprecationLevel.ERROR, message = "无法发送信息至 AnonymousMember")
-    @MemberDeprecatedApi(message = "无法发送信息至 AnonymousMember")
-    public override suspend fun sendMessage(message: String): Nothing
+    public override suspend fun sendMessage(message: String): Nothing =
+        throw UnsupportedOperationException("Cannot send message to AnonymousMember")
 
+    override fun nudge(): MemberNudge = throw UnsupportedOperationException("Cannot nudge AnonymousMember")
+    override suspend fun uploadImage(resource: ExternalResource): Image =
+        throw UnsupportedOperationException("Cannot upload image to AnonymousMember")
 }

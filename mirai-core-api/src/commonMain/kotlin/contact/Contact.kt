@@ -17,10 +17,10 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageReceipt.Companion.quote
-import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.io.File
 import java.io.InputStream
 
@@ -114,6 +114,50 @@ public interface Contact : ContactOrBot, CoroutineScope {
         @JvmStatic
         @JvmBlockingBridge
         public suspend fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
+
+        /**
+         * 将资源作为单独的图片消息发送给 [this]
+         *
+         * @see Contact.sendMessage 最终调用, 发送消息.
+         */
+        @JvmBlockingBridge
+        @JvmStatic
+        public suspend fun <C : Contact> C.sendImage(resource: ExternalResource): MessageReceipt<C> =
+            resource.sendAsImageTo(this)
+
+
+        /**
+         * 读取 [InputStream] 到临时文件并将其作为图片上传, 但不发送
+         *
+         * 注意：本函数不会关闭流
+         *
+         * @throws OverFileSizeMaxException
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun Contact.uploadImage(imageStream: InputStream): Image =
+            imageStream.uploadAsImage(this@uploadImage)
+
+        /**
+         * 将文件作为图片上传, 但不发送
+         * @throws OverFileSizeMaxException
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun Contact.uploadImage(file: File): Image = file.uploadAsImage(this)
+
+        /**
+         * 将文件作为图片上传, 但不发送
+         * @throws OverFileSizeMaxException
+         */
+        @Throws(OverFileSizeMaxException::class)
+        @JvmStatic
+        @JvmBlockingBridge
+        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "EXTENSION_SHADOWED_BY_MEMBER")
+        @kotlin.internal.LowPriorityInOverloadResolution // for better Java API
+        public suspend fun Contact.uploadImage(resource: ExternalResource): Image = this.uploadImage(resource)
     }
 }
 

@@ -13,7 +13,6 @@ package net.mamoe.mirai.contact
 
 import net.mamoe.mirai.utils.LockFreeLinkedList
 import net.mamoe.mirai.utils.MiraiInternalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import java.util.concurrent.ConcurrentLinkedQueue
 
 
@@ -29,10 +28,6 @@ internal constructor(@JvmField @MiraiInternalApi public val delegate: Concurrent
     internal constructor(collection: Collection<C>) : this(ConcurrentLinkedQueue(collection))
     internal constructor() : this(ConcurrentLinkedQueue())
 
-    @PlannedRemoval("2.0-M2")
-    @Deprecated("Use get", ReplaceWith("get(id)"))
-    public fun getOrNull(id: Long): C? = get(id)
-
     public operator fun get(id: Long): C? = delegate.firstOrNull { it.id == id }
     public fun getOrFail(id: Long): C = get(id) ?: throw NoSuchElementException("Contact $id not found.")
     public fun remove(id: Long): Boolean = delegate.removeAll { it.id == id }
@@ -42,9 +37,6 @@ internal constructor(@JvmField @MiraiInternalApi public val delegate: Concurrent
     override fun equals(other: Any?): Boolean = other is ContactList<*> && delegate == other.delegate
     override fun hashCode(): Int = delegate.hashCode()
 }
-
-@Deprecated("x", ReplaceWith("this.add(c)"))
-internal fun <C : Any?> ConcurrentLinkedQueue<C>.addLast(c: C): Boolean = this.add(c)
 
 /**
  * ID 列表的字符串表示.

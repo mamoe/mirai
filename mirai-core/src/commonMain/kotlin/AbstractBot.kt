@@ -17,6 +17,7 @@
 
 package net.mamoe.mirai.internal
 
+import io.ktor.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import net.mamoe.mirai.Bot
@@ -208,23 +209,22 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                         @OptIn(ThisApiMustBeUsedInWithConnectionLockBlock::class)
                         relogin(null)
                         return
-                    } catch (e: LoginFailedException) {
-                        if (e.killBot) {
-                            throw e
-                        } else {
-                            logger.warning { "Login failed. Retrying in 3s..." }
-                            _network.closeAndJoin(e)
-                            delay(3000)
-                            continue
-                        }
                     } catch (e: Exception) {
-                        network.logger.error(e)
+                        if (e is LoginFailedException) {
+                            if (e.killBot) {
+                                throw e
+                            }
+                        } else {
+                            network.logger.error(e)
+                        }
+                        logger.warning { "Login failed. Retrying in 3s... (rootCause=${e.rootCause})" }
                         _network.closeAndJoin(e)
+                        delay(3000)
+                        continue
                     } finally {
                         _isConnecting = false
                     }
-                    logger.warning { "Login failed. Retrying in 3s..." }
-                    delay(3000)
+                    // unreachable here
                 }
             }
 
@@ -235,7 +235,7 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
                             logger.error("Cannot init due to fatal error")
                             throw lastException ?: error("<No lastException>")
                         }
-                        logger.warning { "Init failed. Retrying in 3s..." }
+                        logger.warning { "Init failed. Retrying in 3s... (rootCause=${lastException?.rootCause})" }
                         delay(3000)
                     }
 
@@ -318,6 +318,17 @@ internal abstract class AbstractBot<N : BotNetworkHandler> constructor(
 
     final override fun toString(): String = "Bot($id)"
 }
+
+private val Throwable.rootCause: Throwable
+    get() {
+        var depth = 0
+        var rootCause: Throwable? = this
+        while (rootCause?.cause != null) {
+            rootCause = rootCause.cause
+            if (depth++ == 20) break
+        }
+        return rootCause ?: this
+    }
 
 @RequiresOptIn(level = RequiresOptIn.Level.ERROR)
 internal annotation class ThisApiMustBeUsedInWithConnectionLockBlock

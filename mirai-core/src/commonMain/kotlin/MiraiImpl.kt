@@ -679,11 +679,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 blackList = blackList
             ).sendWithoutExpect()
             @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-            bot.friends.delegate.add(_lowLevelNewFriend(bot, object : FriendInfo {
-                override val uin: Long get() = fromId
-                override val nick: String get() = fromNick
-                override val remark: String get() = ""
-            }))
+            bot.friends.delegate.add(_lowLevelNewFriend(bot, FriendInfoImpl(fromId, fromNick, "")))
         }
     }
 

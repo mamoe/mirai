@@ -9,66 +9,37 @@
 
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "MemberVisibilityCanBePrivate", "unused")
 
+@file:JvmMultifileClass
+@file:JvmName("EventChannelKt")
+
+
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.CONCURRENT
 import net.mamoe.mirai.event.Listener.ConcurrencyKind.LOCKED
 import net.mamoe.mirai.event.events.BotEvent
 import net.mamoe.mirai.event.internal.GlobalEventListeners
 import net.mamoe.mirai.event.internal.Handler
 import net.mamoe.mirai.event.internal.ListenerRegistry
+import net.mamoe.mirai.event.internal.registerEventHandler
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
+import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.suspendCoroutine
 import kotlin.internal.LowPriorityInOverloadResolution
 import kotlin.reflect.KClass
-
-/**
- * 包装 [EventChannel.filter] 的 `filter` lambda 抛出的异常并重新抛出.
- */
-public class ExceptionInEventChannelFilterException(
-    /**
-     * 当时正在处理的事件
-     */
-    public val event: Event,
-    public val eventChannel: EventChannel<*>,
-    override val message: String = "Exception in EventHandler",
-    /**
-     * 原异常
-     */
-    override val cause: Throwable
-) : IllegalStateException()
-
-/**
- * 在此 [CoroutineScope] 下创建一个监听所有事件的 [EventChannel]. 相当于 `GlobalEventChannel.parentScope(this).context(coroutineContext)`.
- *
- * 在返回的 [EventChannel] 中的事件监听器都会以 [this] 作为父协程作用域. 即会 使用 [this]
- *
- * @param coroutineContext 额外的 [CoroutineContext]
- *
- * @throws IllegalStateException 当 [this] 和 [coroutineContext] 均不包含 [CoroutineContext]
- */
-@JvmSynthetic
-public fun CoroutineScope.globalEventChannel(coroutineContext: CoroutineContext = EmptyCoroutineContext): EventChannel<Event> {
-    return if (coroutineContext === EmptyCoroutineContext) GlobalEventChannel.parentScope(this)
-    else GlobalEventChannel.parentScope(this).context(coroutineContext)
-}
-
-/**
- * 全局事件通道. 此通道包含来自所有 [Bot] 的所有类型的事件. 可通过 [EventChannel.filter] 过滤得到范围更小的 [EventChannel].
- *
- * @see EventChannel
- */
-public object GlobalEventChannel : EventChannel<Event>(Event::class, EmptyCoroutineContext)
 
 /**
  * 事件通道. 事件通道是监听事件的入口. **在不同的事件通道中可以监听到不同类型的事件**.
  *
  * [GlobalEventChannel] 是最大的通道: 所有的事件都可以在 [GlobalEventChannel] 监听到.
+ * 通过 [Bot.eventChannel] 得到的通道只能监听到来自这个 [Bot] 的事件.
  *
  * ### 对通道的操作
  * - "缩窄" 通道: 通过 [EventChannel.filter]. 例如 `filter { it is BotEvent }` 得到一个只能监听到 [BotEvent] 的事件通道.
@@ -156,6 +127,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *
      * @see filterIsInstance 过滤指定类型的事件
      */
+    @JvmSynthetic
     public fun filter(filter: suspend (event: @UnsafeVariance BaseEvent) -> Boolean): EventChannel<BaseEvent> {
         return object : EventChannel<BaseEvent>(baseEventClass, defaultCoroutineContext) {
             private inline val innerThis get() = this
@@ -180,6 +152,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * 过滤事件的类型. 返回一个只包含 [E] 类型事件的 [EventChannel]
      * @see filter 获取更多信息
      */
+    @JvmSynthetic
     public inline fun <reified E : Event> filterIsInstance(): EventChannel<E> =
         filterIsInstance(E::class)
 
@@ -283,26 +256,28 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * ### 创建监听
      * 调用本函数:
      * ```
-     * subscribe<Event> { /* 会收到来自全部 Bot 的事件和与 Bot 不相关的事件 */ }
+     * eventChannel.subscribe<E> { /* 会收到此通道中的所有是 E 的事件 */ }
      * ```
      *
      * ### 生命周期
      *
      * #### 通过协程作用域管理监听器
-     * 本函数将会创建一个 [Job], 成为 [coroutineContext] 中的子任务. 可创建一个 [CoroutineScope] 来管理所有的监听器:
+     * 本函数将会创建一个 [Job], 成为 [parentJob] 中的子任务. 可创建一个 [CoroutineScope] 来管理所有的监听器:
      * ```
      * val scope = CoroutineScope(SupervisorJob())
      *
-     * scope.subscribeAlways<MemberJoinEvent> { /* ... */ }
-     * scope.subscribeAlways<MemberMuteEvent> { /* ... */ }
+     * val scopedChannel = eventChannel.parentScope(scope) // 将协程作用域 scope 附加到这个 EventChannel
      *
-     * scope.cancel() // 停止上文两个监听
+     * scopedChannel.subscribeAlways<MemberJoinEvent> { /* ... */ } // 启动监听, 监听器协程会作为 scope 的子任务
+     * scopedChannel.subscribeAlways<MemberMuteEvent> { /* ... */ } // 启动监听, 监听器协程会作为 scope 的子任务
+     *
+     * scope.cancel() // 停止了协程作用域, 也就取消了两个监听器
      * ```
      *
      * **注意**, 这个函数返回 [Listener], 它是一个 [CompletableJob]. 它会成为 [CoroutineScope] 的一个 [子任务][Job]
      * ```
      * runBlocking { // this: CoroutineScope
-     *   subscribe<Event> { /* 一些处理 */ } // 返回 Listener, 即 CompletableJob
+     *   eventChannel.subscribe<Event> { /* 一些处理 */ } // 返回 Listener, 即 CompletableJob
      * }
      * // runBlocking 不会完结, 直到监听时创建的 `Listener` 被停止.
      * // 它可能通过 Listener.cancel() 停止, 也可能自行返回 ListeningStatus.Stopped 停止.
@@ -313,7 +288,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * 或 [Listener.complete] 后结束.
      *
      * ### 子类监听
-     * 监听父类事件, 也会同时监听其子类. 因此监听 [Event] 即可监听所有类型的事件.
+     * 监听父类事件, 也会同时监听其子类. 因此监听 [Event] 即可监听此通道中所有类型的事件.
      *
      * ### 异常处理
      * - 当参数 [handler] 处理抛出异常时, 将会按如下顺序寻找 [CoroutineExceptionHandler] 处理异常:
@@ -350,6 +325,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * @see subscribeFriendMessages 监听好友消息 DSL
      * @see subscribeTempMessages   监听临时会话消息 DSL
      */
+    @JvmSynthetic
     public inline fun <reified E : Event> subscribe(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = LOCKED,
@@ -363,6 +339,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * @return 监听器实例. 此监听器已经注册到指定事件上, 在事件广播时将会调用 [handler]
      * @see subscribe
      */
+    @JvmSynthetic
     public fun <E : Event> subscribe(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -389,6 +366,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      *
      * @see subscribe 获取更多说明
      */
+    @JvmSynthetic
     public inline fun <reified E : Event> subscribeAlways(
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
@@ -401,6 +379,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
      * @see subscribe
      * @see subscribeAlways
      */
+    @JvmSynthetic
     public fun <E : Event> subscribeAlways(
         eventClass: KClass<out E>,
         coroutineContext: CoroutineContext = EmptyCoroutineContext,
@@ -413,8 +392,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
     )
 
     /**
-     * 在指定的 [CoroutineScope] 下订阅所有 [E] 及其子类事件.
-     * 仅在第一次 [事件广播][Event.broadcast] 时, [handler] 会被执行.
+     * 订阅所有 [E] 及其子类事件. 仅在第一次 [事件广播][Event.broadcast] 时, [handler] 会被执行.
      *
      * 可在任意时候通过 [Listener.complete] 来主动停止监听.
      * [CoroutineScope] 被关闭后事件监听会被 [取消][Listener.cancel].
@@ -446,182 +424,118 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
 
     // endregion
 
-    // region subscribe with Kotlin function reference
-
-
     /**
-     * 支持 Kotlin 带接收者的挂起函数的函数引用的监听方式.
+     * 注册 [ListenerHost] 中的所有 [EventHandler] 标注的方法到这个 [EventChannel].
      *
-     * ```
-     * fun onMessage(event: GroupMessageEvent): ListeningStatus {
-     *     return ListeningStatus.LISTENING
-     * }
+     * @param coroutineContext 在 [defaultCoroutineContext] 的基础上, 给事件监听协程的额外的 [CoroutineContext]
      *
-     * scope.subscribe(::onMessage)
-     * ```
      * @see subscribe
+     * @see EventHandler
+     * @see ListenerHost
      */
-    @JvmSynthetic
-    @LowPriorityInOverloadResolution
-    @JvmName("subscribe1")
-    public inline fun <reified E : Event> subscribe(
-        crossinline handler: (E) -> ListeningStatus,
-        priority: EventPriority = EventPriority.NORMAL,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
+    @JvmOverloads
+    public fun registerListenerHost(
+        host: ListenerHost,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    ) {
+        for (method in host.javaClass.declaredMethods) {
+            method.getAnnotation(EventHandler::class.java)?.let {
+                method.registerEventHandler(host, this, it, coroutineContext)
+            }
+        }
+    }
+
+    // region Java API
 
     /**
-     * 支持 Kotlin 带接收者的函数的函数引用的监听方式.
+     * Java API. 查看 [subscribeAlways] 获取更多信息.
      *
+     * ```java
+     * eventChannel.subscribeAlways(GroupMessageEvent.class, (event) -> { });
      * ```
-     * fun GroupMessageEvent.onMessage(event: GroupMessageEvent): ListeningStatus {
-     *     return ListeningStatus.LISTENING
-     * }
      *
-     * scope.subscribe(GroupMessageEvent::onMessage)
-     * ```
      * @see subscribe
-     */
-    @JvmSynthetic
-    @LowPriorityInOverloadResolution
-    @JvmName("subscribe2")
-    public inline fun <reified E : Event> subscribe(
-        crossinline handler: E.(E) -> ListeningStatus,
-        priority: EventPriority = EventPriority.NORMAL,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
-
-    /**
-     * 支持 Kotlin 挂起函数的函数引用的监听方式.
-     *
-     * ```
-     * suspend fun onMessage(event: GroupMessageEvent): ListeningStatus {
-     *     return ListeningStatus.LISTENING
-     * }
-     *
-     * scope.subscribe(::onMessage)
-     * ```
-     * @see subscribe
-     */
-    @JvmSynthetic
-    @LowPriorityInOverloadResolution
-    @JvmName("subscribe1")
-    public inline fun <reified E : Event> subscribe(
-        crossinline handler: suspend (E) -> ListeningStatus,
-        priority: EventPriority = EventPriority.NORMAL,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
-
-    /**
-     * 支持 Kotlin 带接收者的挂起函数的函数引用的监听方式.
-     *
-     * ```
-     * suspend fun GroupMessageEvent.onMessage(event: GroupMessageEvent): ListeningStatus {
-     *     return ListeningStatus.LISTENING
-     * }
-     *
-     * scope.subscribe(GroupMessageEvent::onMessage)
-     * ```
-     * @see subscribe
-     */
-    @JvmSynthetic
-    @LowPriorityInOverloadResolution
-    @JvmName("subscribe3")
-    public inline fun <reified E : Event> subscribe(
-        crossinline handler: suspend E.(E) -> ListeningStatus,
-        priority: EventPriority = EventPriority.NORMAL,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ): Listener<E> = subscribe(E::class, coroutineContext, concurrency, priority) { handler(this) }
-
-
-    // endregion
-
-    // region subscribeAlways with Kotlin function references
-
-
-    /**
-     * 支持 Kotlin 带接收者的挂起函数的函数引用的监听方式.
-     * ```
-     * fun onMessage(event: GroupMessageEvent) {
-     *
-     * }
-     * scope.subscribeAlways(::onMessage)
-     * ```
      * @see subscribeAlways
      */
-    @JvmSynthetic
+    @JavaFriendlyAPI
+    @JvmOverloads
     @LowPriorityInOverloadResolution
-    @JvmName("subscribeAlways1")
-    public inline fun <reified E : Event> subscribeAlways(
-        crossinline handler: (E) -> Unit,
-        priority: EventPriority = EventPriority.NORMAL,
+    public fun <E : Event> subscribeAlways(
+        eventClass: Class<out E>,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
+        priority: EventPriority = EventPriority.NORMAL,
+        handler: Consumer<E>
+    ): Listener<E> = subscribeInternal(
+        eventClass.kotlin,
+        createListener(coroutineContext, concurrency, priority) { event ->
+            val context = currentCoroutineContext()
+            suspendCoroutine<Unit> { cont ->
+                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.accept(event) }) }
+            }
+            ListeningStatus.LISTENING
+        }
+    )
 
     /**
-     * 支持 Kotlin 带接收者的函数的函数引用的监听方式.
-     * ```
-     * fun GroupMessageEvent.onMessage(event: GroupMessageEvent) {
+     * Java API. 查看 [subscribe] 获取更多信息.
      *
-     * }
-     * scope.subscribeAlways(GroupMessageEvent::onMessage)
+     * ```java
+     * eventChannel.subscribe(GroupMessageEvent.class, (event) -> {
+     *     return ListeningStatus.LISTENING;
+     * });
      * ```
-     * @see subscribeAlways
+     *
+     * @see subscribe
      */
-    @JvmSynthetic
+    @JavaFriendlyAPI
+    @JvmOverloads
     @LowPriorityInOverloadResolution
-    @JvmName("subscribeAlways1")
-    public inline fun <reified E : Event> subscribeAlways(
-        crossinline handler: E.(E) -> Unit,
-        priority: EventPriority = EventPriority.NORMAL,
+    public fun <E : Event> subscribe(
+        eventClass: Class<out E>,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
+        priority: EventPriority = EventPriority.NORMAL,
+        handler: java.util.function.Function<E, ListeningStatus>
+    ): Listener<E> = subscribeInternal(
+        eventClass.kotlin,
+        createListener(coroutineContext, concurrency, priority) { event ->
+            val context = currentCoroutineContext()
+            suspendCoroutine { cont ->
+                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.apply(event) }) }
+            }
+        }
+    )
 
     /**
-     * 支持 Kotlin 挂起函数的函数引用的监听方式.
-     * ```
-     * suspend fun onMessage(event: GroupMessageEvent) {
+     * Java API. 查看 [subscribeOnce] 获取更多信息.
      *
-     * }
-     * scope.subscribeAlways(::onMessage)
+     * ```java
+     * eventChannel.subscribeOnce(GroupMessageEvent.class, (event) -> { });
      * ```
-     * @see subscribeAlways
-     */
-    @JvmSynthetic
-    @LowPriorityInOverloadResolution
-    @JvmName("subscribe4")
-    public inline fun <reified E : Event> subscribeAlways(
-        crossinline handler: suspend (E) -> Unit,
-        priority: EventPriority = EventPriority.NORMAL,
-        concurrency: Listener.ConcurrencyKind = CONCURRENT,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
-
-    /**
-     * 支持 Kotlin 带接收者的挂起函数的函数引用的监听方式.
-     * ```
-     * suspend fun GroupMessageEvent.onMessage(event: GroupMessageEvent) {
      *
-     * }
-     * scope.subscribeAlways(GroupMessageEvent::onMessage)
-     * ```
-     * @see subscribeAlways
+     * @see subscribe
+     * @see subscribeOnce
      */
-    @JvmSynthetic
+    @JavaFriendlyAPI
+    @JvmOverloads
     @LowPriorityInOverloadResolution
-    @JvmName("subscribe1")
-    public inline fun <reified E : Event> subscribeAlways(
-        crossinline handler: suspend E.(E) -> Unit,
-        priority: EventPriority = EventPriority.NORMAL,
+    public fun <E : Event> subscribeOnce(
+        eventClass: Class<out E>,
+        coroutineContext: CoroutineContext = EmptyCoroutineContext,
         concurrency: Listener.ConcurrencyKind = CONCURRENT,
-        coroutineContext: CoroutineContext = EmptyCoroutineContext
-    ): Listener<E> = subscribeAlways(E::class, coroutineContext, concurrency, priority) { handler(this) }
+        priority: EventPriority = EventPriority.NORMAL,
+        handler: Consumer<E>
+    ): Listener<E> = subscribeInternal(
+        eventClass.kotlin,
+        createListener(coroutineContext, concurrency, priority) { event ->
+            val context = currentCoroutineContext()
+            suspendCoroutine<Unit> { cont ->
+                Dispatchers.IO.dispatch(context) { cont.resumeWith(kotlin.runCatching { handler.accept(event) }) }
+            }
+            ListeningStatus.STOPPED
+        }
+    )
 
     // endregion
 
@@ -630,6 +544,7 @@ public open class EventChannel<out BaseEvent : Event> @JvmOverloads constructor(
     /**
      * 由子类实现，可以为 handler 包装一个过滤器等. 每个 handler 都会经过此函数处理.
      */
+    @MiraiExperimentalApi
     protected open fun <E : Event> (suspend (E) -> ListeningStatus).intercepted(): (suspend (E) -> ListeningStatus) {
         return this
     }

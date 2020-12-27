@@ -16,6 +16,7 @@ import net.mamoe.mirai.event.events.MessageEvent
 import org.junit.jupiter.api.Test
 
 internal class EventChannelTest {
+    @Suppress("UNUSED_VARIABLE")
     @Test
     fun testVariance() {
         var global: EventChannel<Event> = GlobalEventChannel

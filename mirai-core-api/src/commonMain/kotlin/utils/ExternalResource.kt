@@ -15,13 +15,13 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Contact.Companion.sendImage
+import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Voice
 import net.mamoe.mirai.message.data.sendTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
-import net.mamoe.mirai.utils.ExternalResource.Companion.sendImage
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.io.*
@@ -143,16 +143,42 @@ public interface ExternalResource : Closeable {
          *
          * @see Contact.uploadImage 上传图片
          * @see Contact.sendMessage 最终调用, 发送消息.
+         *
+         * @throws OverFileSizeMaxException
          */
         @JvmBlockingBridge
         @JvmStatic
         @JvmName("sendAsImage")
         public suspend fun <C : Contact> ExternalResource.sendAsImageTo(contact: C): MessageReceipt<C> =
-            when (contact) {
-                is Group -> contact.uploadImage(this).sendTo(contact)
-                is User -> contact.uploadImage(this).sendTo(contact)
-                else -> error("unreachable")
-            }
+            contact.uploadImage(this).sendTo(contact)
+
+        /**
+         * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
+         *
+         * 注意：本函数不会关闭流
+         *
+         * @throws OverFileSizeMaxException
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        @JvmName("sendAsImage")
+        public suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
+            runBIO {
+                @Suppress("BlockingMethodInNonBlockingContext")
+                toExternalResource("png")
+            }.withUse { sendAsImageTo(contact) }
+
+        /**
+         * 将文件作为图片发送到指定联系人
+         * @throws OverFileSizeMaxException
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        @JvmName("sendAsImage")
+        public suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
+            require(this.exists() && this.canRead())
+            return toExternalResource("png").withUse { sendAsImageTo(contact) }
+        }
 
         /**
          * 上传图片并构造 [Image].
@@ -164,28 +190,56 @@ public interface ExternalResource : Closeable {
          *
          * @see Contact.uploadImage 最终调用, 上传图片.
          */
-        @JvmBlockingBridge
         @JvmStatic
-        public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = when (contact) {
-            is Group -> contact.uploadImage(this)
-            is User -> contact.uploadImage(this)
-            else -> error("unreachable")
-        }
+        @JvmBlockingBridge
+        public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = contact.uploadImage(this)
 
         /**
-         * 将图片作为单独的消息发送给 [this]
+         * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
          *
-         * @see Contact.sendMessage 最终调用, 发送消息.
+         * 注意：本函数不会关闭流
+         *
+         * @throws OverFileSizeMaxException
          */
-        @JvmSynthetic
-        public suspend inline fun <C : Contact> C.sendImage(image: ExternalResource): MessageReceipt<C> =
-            image.sendAsImageTo(this)
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun InputStream.uploadAsImage(contact: Contact): Image =
+            @Suppress("BlockingMethodInNonBlockingContext")
+            runBIO { toExternalResource("png") }.withUse { uploadAsImage(contact) }
+
+        /**
+         * 将文件作为图片上传后构造 [Image]
+         * @throws OverFileSizeMaxException
+         */
+        @JvmStatic
+        @JvmBlockingBridge
+        public suspend fun File.uploadAsImage(contact: Contact): Image {
+            require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
+            return toExternalResource("png").withUse { uploadAsImage(contact) }
+        }
+
+
+        /**
+         * 将文件作为语音上传后构造 [Voice]
+         *
+         * - 请手动关闭输入流
+         * - 请使用 amr 或 silk 格式
+         *
+         * @suppress 将来支持好友语音之后将会把参数修改为 [Contact], 这会是一个不兼容变更. 因此请优先使用 [Group.uploadVoice]
+         * @throws OverFileSizeMaxException
+         */
+        @JvmBlockingBridge
+        @JvmStatic
+        @MiraiExperimentalApi
+        public suspend inline fun ExternalResource.uploadAsVoice(group: Group): Voice {
+            return group.uploadVoice(this)
+        }
     }
 }
 
 
 private fun InputStream.detectFileTypeAndClose(): String? {
-    val buffer = ByteArray(8)
+    val buffer = ByteArray(10)
     return use {
         kotlin.runCatching { it.read(buffer) }.onFailure { return null }
         getFileType(buffer)

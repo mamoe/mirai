@@ -14,17 +14,10 @@
 package net.mamoe.mirai.event
 
 import kotlinx.coroutines.*
-import net.mamoe.mirai.utils.EventListenerLikeJava
+import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.castOrNull
-import java.lang.reflect.Method
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.reflect.KClass
-import kotlin.reflect.full.IllegalCallableAccessException
-import kotlin.reflect.full.callSuspend
-import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.jvm.isAccessible
-import kotlin.reflect.jvm.kotlinFunction
 
 /**
  * 标注一个函数为事件监听器.
@@ -103,7 +96,8 @@ import kotlin.reflect.jvm.kotlinFunction
  *     }
  * }
  *
- * MyEvents.registerEvents()
+ * MyEvents.registerTo(eventChannel)
+ * // 或 eventChannel.registerListenerHost(MyEvents)
  * ```
  *
  *
@@ -143,7 +137,7 @@ import kotlin.reflect.jvm.kotlinFunction
  *     }
  * }
  *
- * Events.registerEvents(new MyEventHandlers())
+ * eventChannel.registerListenerHost(new MyEventHandlers())
  * ```
  *
  * //@sample net.mamoe.mirai.event.JvmMethodEventsTest
@@ -179,6 +173,8 @@ public interface ListenerHost
 
 /**
  * 携带一个异常处理器的 [ListenerHost].
+ *
+ * @see registerTo
  * @see ListenerHost 查看更多信息
  * @see EventHandler 查看更多信息
  */
@@ -243,194 +239,43 @@ public class ExceptionInEventHandlerException(
     override val cause: Throwable
 ) : IllegalStateException()
 
-/**
- * 反射得到所有标注了 [EventHandler] 的函数 (Java 为方法), 并注册为事件监听器
- *
- * Java 使用: `Events.registerEvents(listenerHost)`
- *
- * @see EventHandler 获取更多信息
- */
-@JvmOverloads
-public fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext): Unit
-        where T : CoroutineScope, T : ListenerHost = this.registerEvents(this, coroutineContext)
 
 /**
  * 反射得到所有标注了 [EventHandler] 的函数 (Java 为方法), 并注册为事件监听器
  *
- * Java 使用: `Events.registerEvents(coroutineScope, host)`
- *
  * @see EventHandler 获取更多信息
  */
+@JvmSynthetic
+// T 通常可以是 SimpleListenerHost
+public inline fun <T> T.registerTo(eventChannel: EventChannel<*>): Unit
+        where T : CoroutineScope, T : ListenerHost = eventChannel.registerListenerHost(this)
+
+
+@Deprecated(
+    "Use EventChannel.registerListenerHost",
+    ReplaceWith(
+        "this.globalEventChannel(coroutineContext).registerListenerHost(this)",
+        "net.mamoe.mirai.event.*"
+    ),
+    DeprecationLevel.ERROR
+)
+@PlannedRemoval("2.0-RC")
+@JvmOverloads
+public fun <T> T.registerEvents(coroutineContext: CoroutineContext = EmptyCoroutineContext): Unit
+        where T : CoroutineScope, T : ListenerHost =
+    this.globalEventChannel(coroutineContext).registerListenerHost(this)
+
+@Deprecated(
+    "Use EventChannel.registerListenerHost",
+    ReplaceWith(
+        "this.globalEventChannel(coroutineContext).registerListenerHost(host)",
+        "net.mamoe.mirai.event.*"
+    ),
+    DeprecationLevel.ERROR
+)
+@PlannedRemoval("2.0-RC")
 @JvmOverloads
 public fun CoroutineScope.registerEvents(
     host: ListenerHost,
     coroutineContext: CoroutineContext = EmptyCoroutineContext
-) {
-    for (method in host.javaClass.declaredMethods) {
-        method.getAnnotation(EventHandler::class.java)?.let {
-            method.registerEvent(host, this, it, coroutineContext)
-        }
-    }
-}
-
-private fun Method.isKotlinFunction(): Boolean {
-
-    if (getDeclaredAnnotation(EventListenerLikeJava::class.java) != null) return false
-    if (declaringClass.getDeclaredAnnotation(EventListenerLikeJava::class.java) != null) return false
-
-    @Suppress("RemoveRedundantQualifierName") // for strict
-    return declaringClass.getDeclaredAnnotation(kotlin.Metadata::class.java) != null
-}
-
-@Suppress("UNCHECKED_CAST")
-private fun Method.registerEvent(
-    owner: Any,
-    scope: CoroutineScope,
-    annotation: EventHandler,
-    coroutineContext: CoroutineContext,
-): Listener<Event> {
-    this.isAccessible = true
-    val kotlinFunction = kotlin.runCatching { this.kotlinFunction }.getOrNull()
-    return if (kotlinFunction != null && isKotlinFunction()) {
-        // kotlin functions
-
-        val param = kotlinFunction.parameters
-        when (param.size) {
-            3 -> { // ownerClass, receiver, event
-                check(param[1].type == param[2].type) { "Illegal kotlin function ${kotlinFunction.name}. Receiver and param must have same type" }
-                check((param[1].type.classifier as? KClass<*>)?.isSubclassOf(Event::class) == true) {
-                    "Illegal kotlin function ${kotlinFunction.name}. First param or receiver must be subclass of Event, but found ${param[1].type.classifier}"
-                }
-            }
-            2 -> { // ownerClass, event
-                check((param[1].type.classifier as? KClass<*>)?.isSubclassOf(Event::class) == true) {
-                    "Illegal kotlin function ${kotlinFunction.name}. First param or receiver must be subclass of Event, but found ${param[1].type.classifier}"
-                }
-            }
-            else -> error("function ${kotlinFunction.name} must have one Event param")
-        }
-        lateinit var listener: Listener<*>
-        kotlin.runCatching {
-            kotlinFunction.isAccessible = true
-        }
-        suspend fun callFunction(event: Event): Any? {
-            try {
-                return when (param.size) {
-                    3 -> {
-                        if (kotlinFunction.isSuspend) {
-                            kotlinFunction.callSuspend(owner, event, event)
-                        } else withContext(Dispatchers.IO) { // for safety
-                            kotlinFunction.call(owner, event, event)
-                        }
-
-                    }
-                    2 -> {
-                        if (kotlinFunction.isSuspend) {
-                            kotlinFunction.callSuspend(owner, event)
-                        } else withContext(Dispatchers.IO) { // for safety
-                            kotlinFunction.call(owner, event)
-                        }
-                    }
-                    else -> error("stub")
-                }
-            } catch (e: IllegalCallableAccessException) {
-                listener.completeExceptionally(e)
-                return ListeningStatus.STOPPED
-            } catch (e: Throwable) {
-                throw ExceptionInEventHandlerException(event, cause = e)
-            }
-        }
-        require(!kotlinFunction.returnType.isMarkedNullable) {
-            "Kotlin event handlers cannot have nullable return type."
-        }
-        require(kotlinFunction.parameters.none { it.type.isMarkedNullable }) {
-            "Kotlin event handlers cannot have nullable parameter type."
-        }
-        when (kotlinFunction.returnType.classifier) {
-            Unit::class, Nothing::class -> {
-                scope.globalEventChannel().subscribeAlways(
-                    param[1].type.classifier as KClass<out Event>,
-                    coroutineContext,
-                    annotation.concurrency,
-                    annotation.priority
-                ) {
-                    if (annotation.ignoreCancelled) {
-                        if ((this as? CancellableEvent)?.isCancelled != true) {
-                            callFunction(this)
-                        }
-                    } else callFunction(this)
-                }.also { listener = it }
-            }
-            ListeningStatus::class -> {
-                scope.globalEventChannel().subscribe(
-                    param[1].type.classifier as KClass<out Event>,
-                    coroutineContext,
-                    annotation.concurrency,
-                    annotation.priority
-                ) {
-                    if (annotation.ignoreCancelled) {
-                        if ((this as? CancellableEvent)?.isCancelled != true) {
-                            callFunction(this) as ListeningStatus
-                        } else ListeningStatus.LISTENING
-                    } else callFunction(this) as ListeningStatus
-                }.also { listener = it }
-            }
-            else -> error("Illegal method return type. Required Void, Nothing or ListeningStatus, found ${kotlinFunction.returnType.classifier}")
-        }
-    } else {
-        // java methods
-
-        val paramType = this.parameters[0].type
-        check(this.parameterCount == 1 && Event::class.java.isAssignableFrom(paramType)) {
-            "Illegal method parameter. Required one exact Event subclass. found ${this.parameters.contentToString()}"
-        }
-        suspend fun callMethod(event: Event): Any? {
-            fun Method.invokeWithErrorReport(self: Any?, vararg args: Any?): Any? = try {
-                invoke(self, *args)
-            } catch (exception: IllegalArgumentException) {
-                throw IllegalArgumentException(
-                    "Internal Error: $exception, method=${this}, this=$self, arguments=$args, please report to https://github.com/mamoe/mirai",
-                    exception
-                )
-            } catch (e: Throwable) {
-                throw ExceptionInEventHandlerException(event, cause = e)
-            }
-
-
-            return if (annotation.ignoreCancelled) {
-                if (event.castOrNull<CancellableEvent>()?.isCancelled != true) {
-                    withContext(Dispatchers.IO) {
-                        this@registerEvent.invokeWithErrorReport(owner, event)
-                    }
-                } else ListeningStatus.LISTENING
-            } else withContext(Dispatchers.IO) {
-                this@registerEvent.invokeWithErrorReport(owner, event)
-            }
-        }
-
-        when (this.returnType) {
-            Void::class.java, Void.TYPE, Nothing::class.java -> {
-                scope.globalEventChannel().subscribeAlways(
-                    paramType.kotlin as KClass<out Event>,
-                    coroutineContext,
-                    annotation.concurrency,
-                    annotation.priority
-                ) {
-                    callMethod(this)
-                }
-            }
-            ListeningStatus::class.java -> {
-                scope.globalEventChannel().subscribe(
-                    paramType.kotlin as KClass<out Event>,
-                    coroutineContext,
-                    annotation.concurrency,
-                    annotation.priority
-                ) {
-                    callMethod(this) as ListeningStatus?
-                        ?: error("Java method EventHandler cannot return `null`: $this")
-                }
-            }
-            else -> error("Illegal method return type. Required Void or ListeningStatus, but found ${this.returnType.canonicalName}")
-        }
-    }
-}
+): Unit = globalEventChannel(coroutineContext).registerListenerHost(host)

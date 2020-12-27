@@ -24,14 +24,12 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutFriend
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutGroup
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutTemp
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.LazyProperty
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.safeCast
 
 /**
@@ -71,7 +69,6 @@ import net.mamoe.mirai.utils.safeCast
  */
 @Serializable(MessageSourceSerializerImpl.Companion::class)
 public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
-    @ExperimentalMessageKey
     public final override val key: MessageKey<MessageSource>
         get() = Key
 
@@ -425,13 +422,6 @@ public abstract class OfflineMessageSource : MessageSource() {
      * 消息种类
      */
     public abstract val kind: MessageSourceKind
-
-    @PlannedRemoval("2.0-M2")
-    @Deprecated(
-        "Use MessageSourceKind",
-        ReplaceWith("MessageSourceKind", "net.mamoe.mirai.message.data.MessageSourceKind")
-    )
-    private enum class Kind
 }
 
 @Serializable

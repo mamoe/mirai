@@ -14,6 +14,7 @@ package net.mamoe.mirai.event
 import kotlinx.coroutines.*
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.isContextIdenticalWith
 import net.mamoe.mirai.message.nextMessage
@@ -25,7 +26,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  *
  * 创建的所有事件监听器都会判断发送人信息 ([isContextIdenticalWith]), 监听之后的所有消息.
  *
- * [selectBuilder] DSL 类似于 [CoroutineScope.subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
+ * [selectBuilder] DSL 类似于 [EventChannel.subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
  *
  * ```kotlin
  * reply("开启复读模式")
@@ -83,7 +84,7 @@ public suspend inline fun <reified T : MessageEvent> T.selectMessagesUnit(
  *
  * 创建的所有事件监听器都会判断发送人信息 ([isContextIdenticalWith]), 监听之后的所有消息.
  *
- * [selectBuilder] DSL 类似于 [CoroutineScope.subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
+ * [selectBuilder] DSL 类似于 [EventChannel.subscribeMessages] 的 DSL, 屏蔽了一些 `reply` DSL 以确保类型安全
  *
  * ```kotlin
  * val value: String = selectMessages {
@@ -117,7 +118,7 @@ public suspend inline fun <reified T : MessageEvent, R> T.selectMessages(
 /**
  * [selectMessages] 时的 DSL 构建器.
  *
- * 它是特殊化的消息监听 ([CoroutineScope.subscribeMessages]) DSL, 屏蔽了一些 `reply` DSL 以确保作用域安全性
+ * 它是特殊化的消息监听 ([EventChannel.subscribeMessages]) DSL, 屏蔽了一些 `reply` DSL 以确保作用域安全性
  *
  * @see MessageSelectBuilderUnit 查看上层 API
  */
@@ -222,7 +223,7 @@ public abstract class MessageSelectBuilder<M : MessageEvent, R> @PublishedApi in
 /**
  * [selectMessagesUnit] 或 [selectMessages] 时的 DSL 构建器.
  *
- * 它是特殊化的消息监听 ([CoroutineScope.subscribeMessages]) DSL
+ * 它是特殊化的消息监听 ([EventChannel.subscribeMessages]) DSL
  *
  * @see MessageSubscribersBuilder 查看上层 API
  */
@@ -316,7 +317,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
     @Suppress("unused", "UNCHECKED_CAST")
     public open infix fun MessageSelectionTimeoutChecker.reply(message: Message) {
         return timeout(this.timeoutMillis) {
-            ownerMessagePacket.reply(message)
+            ownerMessagePacket.subject.sendMessage(message)
             Unit as R
         }
     }
@@ -324,7 +325,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
     @Suppress("unused", "UNCHECKED_CAST")
     public open infix fun MessageSelectionTimeoutChecker.reply(message: String) {
         return timeout(this.timeoutMillis) {
-            ownerMessagePacket.reply(message)
+            ownerMessagePacket.subject.sendMessage(message)
             Unit as R
         }
     }
@@ -366,7 +367,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
     @Suppress("unused", "UNCHECKED_CAST")
     public open infix fun MessageSelectionTimeoutChecker.quoteReply(message: Message) {
         return timeout(this.timeoutMillis) {
-            ownerMessagePacket.quoteReply(message)
+            ownerMessagePacket.subject.sendMessage(ownerMessagePacket.message.quote() + message)
             Unit as R
         }
     }
@@ -374,7 +375,7 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
     @Suppress("unused", "UNCHECKED_CAST")
     public open infix fun MessageSelectionTimeoutChecker.quoteReply(message: String) {
         return timeout(this.timeoutMillis) {
-            ownerMessagePacket.quoteReply(message)
+            ownerMessagePacket.subject.sendMessage(ownerMessagePacket.message.quote() + message)
             Unit as R
         }
     }
@@ -405,8 +406,8 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
             Unit -> {
 
             }
-            is Message -> ownerMessagePacket.reply(result)
-            else -> ownerMessagePacket.reply(result.toString())
+            is Message -> ownerMessagePacket.subject.sendMessage(result)
+            else -> ownerMessagePacket.subject.sendMessage(result.toString())
         }
     }
 
@@ -415,8 +416,8 @@ public abstract class MessageSelectBuilderUnit<M : MessageEvent, R> @PublishedAp
             Unit -> {
 
             }
-            is Message -> ownerMessagePacket.quoteReply(result)
-            else -> ownerMessagePacket.quoteReply(result.toString())
+            is Message -> ownerMessagePacket.subject.sendMessage(ownerMessagePacket.message.quote() + result)
+            else -> ownerMessagePacket.subject.sendMessage(ownerMessagePacket.message.quote() + result.toString())
         }
     }
 

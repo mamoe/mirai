@@ -30,12 +30,12 @@ import net.mamoe.mirai.internal.network.protocol.packet.chat.image.ImgStore
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToGroup
 import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.PttStore
+import net.mamoe.mirai.internal.network.protocol.packet.chat.voice.voiceCodec
 import net.mamoe.mirai.internal.network.protocol.packet.list.ProfileService
 import net.mamoe.mirai.internal.utils.GroupPkgMsgParsingCache
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.*
-import java.io.InputStream
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.contracts.contract
 import kotlin.coroutines.CoroutineContext
@@ -273,34 +273,28 @@ internal class GroupImpl(
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
-    @MiraiExperimentalApi
-    override suspend fun uploadVoice(input: InputStream): Voice {
-        val content = ByteArray(input.available())
-        input.read(content)
-        if (content.size > 1048576) {
+    override suspend fun uploadVoice(resource: ExternalResource): Voice {
+        if (resource.size > 1048576) {
             throw  OverFileSizeMaxException()
-        }
-        val md5 = content.md5()
-        val codec = with(content.copyOfRange(0, 10).toUHexString("")) {
-            when {
-                startsWith("2321414D52") -> 0             // amr
-                startsWith("02232153494C4B5F5633") -> 1  // silk V3
-                else -> 0                               // use amr by default
-            }
         }
         return bot.network.run {
             val response: PttStore.GroupPttUp.Response.RequireUpload =
-                PttStore.GroupPttUp(bot.client, bot.id, id, md5, content.size.toLong(), codec).sendAndExpect()
+                PttStore.GroupPttUp(bot.client, bot.id, id, resource).sendAndExpect()
+
             HighwayHelper.uploadPttToServers(
                 bot,
                 response.uploadIpList.zip(response.uploadPortList),
-                content,
-                md5,
+                resource,
                 response.uKey,
                 response.fileKey,
-                codec
             )
-            Voice("${md5.toUHexString("")}.amr", md5, content.size.toLong(), codec, "")
+            Voice(
+                "${resource.md5.toUHexString("")}.${resource.formatName}",
+                resource.md5,
+                resource.size,
+                resource.voiceCodec,
+                ""
+            )
         }
 
     }

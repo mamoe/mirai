@@ -228,18 +228,16 @@ private suspend fun QQAndroidBot.createGroupForBot(groupUin: Long): Group? {
 }
 
 private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
-    return object : MemberInfo {
-        override val nameCard: String
-            get() = msgHead.authNick.takeIf { it.isNotEmpty() }
-                ?: msgHead.fromNick
-        override val permission: MemberPermission get() = MemberPermission.MEMBER
-        override val specialTitle: String get() = ""
-        override val muteTimestamp: Int get() = 0
-        override val uin: Long get() = msgHead.authUin
-        override val nick: String = msgHead.authNick.takeIf { it.isNotEmpty() }
-            ?: msgHead.fromNick
-        override val remark: String get() = ""
-    }
+    return MemberInfoImpl(
+        nameCard = msgHead.authNick.ifEmpty { msgHead.fromNick },
+        permission = MemberPermission.MEMBER,
+        specialTitle = "",
+        muteTimestamp = 0,
+        uin = msgHead.authUin,
+        nick = msgHead.authNick.ifEmpty { msgHead.fromNick },
+        remark = "",
+        anonymousId = null
+    )
 }
 
 internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {

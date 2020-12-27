@@ -90,7 +90,7 @@ internal class JvmMethodEventsTest {
         }
 
         TestClass().run {
-            this.registerEvents()
+            this.globalEventChannel().registerListenerHost(this)
 
             runBlocking {
                 TestEvent().broadcast()
@@ -119,7 +119,7 @@ internal class JvmMethodEventsTest {
         }
 
         TestClass().run {
-            this.registerEvents()
+            this.globalEventChannel().registerListenerHost(this)
 
             runBlocking {
                 TestEvent().broadcast()
@@ -150,7 +150,7 @@ internal class JvmMethodEventsTest {
         }
 
         TestClass().run {
-            this.registerEvents()
+            this.globalEventChannel().registerListenerHost(this)
 
             runBlocking {
                 TestEvent().broadcast()

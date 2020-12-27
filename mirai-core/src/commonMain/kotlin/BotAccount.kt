@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal
 
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.md5
+import net.mamoe.mirai.utils.toUHexString
 
 internal data class BotAccount(
     @JvmSynthetic
@@ -22,6 +23,12 @@ internal data class BotAccount(
 
     val phoneNumber: String = ""
 ) {
+    init {
+        check(passwordMd5.size == 16) {
+            "Invalid passwordMd5: size must be 16 but got ${passwordMd5.size}. passwordMd5=${passwordMd5.toUHexString()}"
+        }
+    }
+
     constructor(id: Long, passwordPlainText: String, phoneNumber: String = "") : this(
         id,
         passwordPlainText.md5(),

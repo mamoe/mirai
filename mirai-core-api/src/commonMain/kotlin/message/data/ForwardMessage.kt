@@ -22,7 +22,6 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.data.ForwardMessage.DisplayStrategy
 import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.PlannedRemoval
 import net.mamoe.mirai.utils.currentTimeSeconds
 import net.mamoe.mirai.utils.safeCast
 
@@ -110,29 +109,6 @@ public data class ForwardMessage(
         return "[mirai:forward:NOT_IMPLEMENTED]" // TODO: 2020/12/3 ForwardMessage.contentToString()
     }
 
-    @PlannedRemoval("2.0-M2")
-    @Deprecated(
-        "Use RawForwardMessage and render manually or use buildForwardMessage",
-        ReplaceWith(
-            "RawForwardMessage(nodeList).render(displayStrategy)",
-            "net.mamoe.mirai.message.data.RawForwardMessage"
-        )
-    )
-    @JvmOverloads
-    public constructor(
-        /**
-         * 消息列表
-         */
-        nodeList: Collection<INode>,
-        displayStrategy: DisplayStrategy = DisplayStrategy.Default
-    ) : this(
-        preview = displayStrategy.generatePreview(RawForwardMessage(nodeList.map(INode::toNode))),
-        title = displayStrategy.generateTitle(RawForwardMessage(nodeList.map(INode::toNode))),
-        brief = displayStrategy.generateBrief(RawForwardMessage(nodeList.map(INode::toNode))),
-        source = displayStrategy.generateSource(RawForwardMessage(nodeList.map(INode::toNode))),
-        summary = displayStrategy.generateSummary(RawForwardMessage(nodeList.map(INode::toNode))),
-        nodeList = nodeList.map(INode::toNode),
-    )
 
     /**
      * @see ForwardMessage

@@ -21,53 +21,95 @@ import net.mamoe.mirai.utils.PlannedRemoval
  */
 public interface BotFactory {
     /**
+     * 相当于 Kotlin lambda `BotConfiguration.() -> Unit` 和 Java `Consumer<BotConfiguration>`
+     *
+     * @see newBot
+     */
+    public fun interface BotConfigurationLambda {
+        public operator fun BotConfiguration.invoke()
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Plain Password
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
      */
     public fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot
+
+    /**
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     *
+     * Kotlin:
+     * ```
+     * newBot(123, "") {
+     *     // this: BotConfiguration
+     *     fileBasedDeviceInfo()
+     * }
+     * ```
+     *
+     * Java:
+     * ```java
+     * newBot(123, "", configuration -> {
+     *     configuration.fileBasedDeviceInfo()
+     * })
+     * ```
+     */
+    public fun newBot(
+        qq: Long,
+        password: String,
+        configuration: BotConfigurationLambda /* = BotConfiguration.() -> Unit */
+    ): Bot = newBot(qq, password, configuration.run { BotConfiguration().apply { invoke() } })
 
     /**
      * 使用 [默认配置][BotConfiguration.Default] 构造 [Bot] 实例
      */
     public fun newBot(qq: Long, password: String): Bot = newBot(qq, password, BotConfiguration.Default)
 
+    ///////////////////////////////////////////////////////////////////////////
+    // MD5 Password
+    ///////////////////////////////////////////////////////////////////////////
+
     /**
      * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     *
+     * @param passwordMd5 16 bytes
      */
     public fun newBot(qq: Long, passwordMd5: ByteArray, configuration: BotConfiguration): Bot
 
     /**
-     * 使用 [默认配置][BotConfiguration.Default] 构造 [Bot] 实例
+     * 使用指定的 [配置][configuration] 构造 [Bot] 实例
+     *
+     * Kotlin:
+     * ```
+     * newBot(123, password) {
+     *     // this: BotConfiguration
+     *     fileBasedDeviceInfo()
+     * }
+     * ```
+     *
+     * Java:
+     * ```java
+     * newBot(123, password, configuration -> {
+     *     configuration.fileBasedDeviceInfo()
+     * })
+     * ```
+     *
+     * @param passwordMd5 16 bytes
      */
-    public fun newBot(qq: Long, passwordMd5: ByteArray): Bot = newBot(qq, passwordMd5, BotConfiguration.Default)
-
-
-    @Suppress("UNUSED_PARAMETER")
-    @PlannedRemoval("2.0-M2")
-    @Deprecated(
-        "For migration. Use newBot(qq, password, configuration)",
-        ReplaceWith("newBot(qq, password, configuration)"),
-        DeprecationLevel.ERROR
-    )
-    public fun Bot(
-        context: Any?,
-        qq: Long,
-        password: String,
-        configuration: BotConfiguration = BotConfiguration.Default
-    ): Bot = newBot(qq, password, configuration)
-
-    @Suppress("UNUSED_PARAMETER")
-    @PlannedRemoval("2.0-M2")
-    @Deprecated(
-        "For migration. Use newBot(qq, password, configuration)",
-        ReplaceWith("newBot(qq, password, configuration)"),
-        DeprecationLevel.ERROR
-    )
-    public fun Bot(
-        context: Any?,
+    public fun newBot(
         qq: Long,
         passwordMd5: ByteArray,
-        configuration: BotConfiguration = BotConfiguration.Default
-    ): Bot = newBot(qq, passwordMd5, configuration)
+        configuration: BotConfigurationLambda /* = BotConfiguration.() -> Unit */
+    ): Bot = newBot(qq, passwordMd5, configuration.run { BotConfiguration().apply { invoke() } })
+
+    /**
+     * 使用 [默认配置][BotConfiguration.Default] 构造 [Bot] 实例
+     *
+     * @param passwordMd5 16 bytes
+     */
+    public fun newBot(qq: Long, passwordMd5: ByteArray): Bot = newBot(qq, passwordMd5, BotConfiguration.Default)
 
     public companion object INSTANCE : BotFactory {
         override fun newBot(qq: Long, password: String, configuration: BotConfiguration): Bot {
@@ -83,332 +125,21 @@ public interface BotFactory {
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DeprecatedCallableAddReplaceWith")
+@kotlin.internal.LowPriorityInOverloadResolution // resolves to member function
+@Deprecated("Prefer member function")
 @JvmSynthetic
+@PlannedRemoval("2.0-RC")
 public inline fun BotFactory.newBot(qq: Long, password: String, configuration: (BotConfiguration.() -> Unit)): Bot =
     this.newBot(qq, password, BotConfiguration().apply(configuration))
 
 /**
  * 使用指定的 [配置][configuration] 构造 [Bot] 实例
  */
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DeprecatedCallableAddReplaceWith")
+@kotlin.internal.LowPriorityInOverloadResolution // resolves to member function
+@Deprecated("Prefer member function")
 @JvmSynthetic
+@PlannedRemoval("2.0-RC")
 public inline fun BotFactory.newBot(qq: Long, password: ByteArray, configuration: (BotConfiguration.() -> Unit)): Bot =
     this.newBot(qq, password, BotConfiguration().apply(configuration))
-
-
-// deprecated:
-
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password, configuration)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password, configuration)",
-        "net.mamoe.mirai.BotFactory",
-        "net.mamoe.mirai.newBot"
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun BotFactory.Bot(
-    context: Any?,
-    qq: Long,
-    password: String,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = this.newBot(qq, password, BotConfiguration().apply(configuration))
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5, configuration)",
-    ReplaceWith("BotFactory.newBot(qq, passwordMd5, configuration)", "net.mamoe.mirai.BotFactory"),
-    DeprecationLevel.ERROR
-)
-public inline fun BotFactory.Bot(
-    context: Any?,
-    qq: Long,
-    passwordMd5: ByteArray,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = this.newBot(qq, passwordMd5, BotConfiguration().apply(configuration))
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password, configuration)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password, configuration)",
-        "net.mamoe.mirai.BotFactory",
-        "net.mamoe.mirai.newBot"
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    context: Any?,
-    qq: Long,
-    password: String,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = BotFactory.newBot(qq, password, BotConfiguration().apply(configuration))
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password, configuration)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password, configuration)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    context: Any?,
-    qq: Long,
-    password: String,
-    configuration: BotConfiguration
-): Bot = BotFactory.newBot(qq, password, configuration)
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5, configuration)",
-    ReplaceWith("BotFactory.newBot(qq, passwordMd5, configuration)", "net.mamoe.mirai.BotFactory"),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    context: Any?,
-    qq: Long,
-    passwordMd5: ByteArray,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = BotFactory.newBot(qq, passwordMd5, BotConfiguration().apply(configuration))
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5, configuration)",
-    ReplaceWith("BotFactory.newBot(qq, passwordMd5, configuration)", "net.mamoe.mirai.BotFactory"),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    context: Any?,
-    qq: Long,
-    passwordMd5: ByteArray,
-    configuration: BotConfiguration
-): Bot = BotFactory.newBot(qq, passwordMd5, configuration)
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password, configuration)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password, configuration)",
-        "net.mamoe.mirai.BotFactory",
-        "net.mamoe.mirai.newBot"
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun BotFactory.Bot(
-    qq: Long,
-    password: String,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = this.newBot(qq, password, BotConfiguration().apply(configuration))
-
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5, configuration)",
-    ReplaceWith("BotFactory.newBot(qq, passwordMd5, configuration)", "net.mamoe.mirai.BotFactory"),
-    DeprecationLevel.ERROR
-)
-public inline fun BotFactory.Bot(
-    qq: Long,
-    passwordMd5: ByteArray,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = this.newBot(qq, passwordMd5, BotConfiguration().apply(configuration))
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password, configuration)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password, configuration)",
-        "net.mamoe.mirai.BotFactory",
-        "net.mamoe.mirai.newBot"
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    qq: Long,
-    password: String,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = BotFactory.newBot(qq, password, BotConfiguration().apply(configuration))
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password, configuration)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password, configuration)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    qq: Long,
-    password: String,
-    configuration: BotConfiguration
-): Bot = BotFactory.newBot(qq, password, configuration)
-
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5, configuration)",
-    ReplaceWith("BotFactory.newBot(qq, passwordMd5, configuration)", "net.mamoe.mirai.BotFactory"),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    qq: Long,
-    passwordMd5: ByteArray,
-    configuration: (BotConfiguration.() -> Unit)
-): Bot = BotFactory.newBot(qq, passwordMd5, BotConfiguration().apply(configuration))
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5, configuration)",
-    ReplaceWith("BotFactory.newBot(qq, passwordMd5, configuration)", "net.mamoe.mirai.BotFactory"),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    qq: Long,
-    passwordMd5: ByteArray,
-    configuration: BotConfiguration
-): Bot = BotFactory.newBot(qq, passwordMd5, configuration)
-
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun BotFactory.Bot(
-    context: Any?,
-    qq: Long,
-    password: String,
-): Bot = this.newBot(qq, password)
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, passwordMd5)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun BotFactory.Bot(
-    context: Any?,
-    qq: Long,
-    passwordMd5: ByteArray,
-): Bot = this.newBot(qq, passwordMd5)
-
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun BotFactory.Bot(
-    qq: Long,
-    password: String,
-): Bot = this.newBot(qq, password)
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, passwordMd5)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun BotFactory.Bot(
-    qq: Long,
-    passwordMd5: ByteArray,
-): Bot = this.newBot(qq, passwordMd5)
-
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    context: Any?,
-    qq: Long,
-    password: String,
-): Bot = BotFactory.newBot(qq, password)
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, passwordMd5)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    context: Any?,
-    qq: Long,
-    passwordMd5: ByteArray,
-): Bot = BotFactory.newBot(qq, passwordMd5)
-
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, password)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, password)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    qq: Long,
-    password: String,
-): Bot = BotFactory.newBot(qq, password)
-
-@Suppress("UNUSED_PARAMETER")
-@PlannedRemoval("2.0-M2")
-@Deprecated(
-    "For migration. Use BotFactory.newBot(qq, passwordMd5)",
-    ReplaceWith(
-        "BotFactory.newBot(qq, passwordMd5)",
-        "net.mamoe.mirai.BotFactory",
-    ),
-    DeprecationLevel.ERROR
-)
-public inline fun Bot(
-    qq: Long,
-    passwordMd5: ByteArray,
-): Bot = BotFactory.newBot(qq, passwordMd5)
-

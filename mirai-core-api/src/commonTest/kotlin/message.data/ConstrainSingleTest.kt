@@ -15,7 +15,6 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 
-@OptIn(ExperimentalMessageKey::class)
 internal class TestConstrainSingleMessage : ConstrainSingle, Any() {
     companion object Key : AbstractMessageKey<TestConstrainSingleMessage>({ it.safeCast() })
 

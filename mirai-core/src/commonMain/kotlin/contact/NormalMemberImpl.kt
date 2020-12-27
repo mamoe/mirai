@@ -50,7 +50,7 @@ internal class NormalMemberImpl constructor(
 
     @Suppress("UNCHECKED_CAST")
     @JvmSynthetic
-    override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
+    override suspend fun sendMessage(message: Message): MessageReceipt<NormalMember> {
         require(message.isContentNotEmpty()) { "message is empty" }
 
         val asFriend = this.asFriendOrNull()
@@ -62,7 +62,7 @@ internal class NormalMemberImpl constructor(
         ) ?: sendMessageImpl(message)).also { logMessageSent(message) }
     }
 
-    private suspend fun sendMessageImpl(message: Message): MessageReceipt<Member> {
+    private suspend fun sendMessageImpl(message: Message): MessageReceipt<NormalMember> {
         val chain = kotlin.runCatching {
             TempMessagePreSendEvent(this, message).broadcast()
         }.onSuccess {

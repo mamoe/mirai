@@ -16,12 +16,10 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.OverFileSizeMaxException
-import net.mamoe.mirai.utils.PlannedRemoval
-import java.io.InputStream
 
 /**
  * 群.
@@ -97,14 +95,6 @@ public interface Group : Contact, CoroutineScope {
      */
     public operator fun get(id: Long): NormalMember?
 
-    @Deprecated("Use get", ReplaceWith("get(id)"))
-    @PlannedRemoval("2.0-M2")
-    /**
-     * 获取群成员实例, 不存在则 null
-     * 当 [id] 为 [Bot.id] 时返回 [botAsMember]
-     */
-    public fun getOrNull(id: Long): NormalMember? = get(id)
-
     /**
      * 获取群成员实例. 不存在时抛出 [kotlin.NoSuchElementException].
      *
@@ -163,17 +153,15 @@ public interface Group : Contact, CoroutineScope {
 
     /**
      * 上传一个语音消息以备发送.
-     * 请手动关闭输入流
-     * 请使用 amr 或 silk 格式
      *
-     * @suppress 这是一个实验性 API 且随时会被删除
+     * - 请手动关闭输入流
+     * - 请使用 amr 或 silk 格式
      *
      * @throws EventCancelledException 当发送消息事件被取消
      * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
      */
     @JvmBlockingBridge
-    @MiraiExperimentalApi
-    public suspend fun uploadVoice(input: InputStream): Voice
+    public suspend fun uploadVoice(resource: ExternalResource): Voice
 
     public companion object
 }

@@ -289,7 +289,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             return
         }
 
-        logger.info { "开始加载好友信息" }
+        logger.info { "Start loading friend list..." }
         var currentFriendCount = 0
         var totalFriendCount: Short
         while (true) {
@@ -308,16 +308,16 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             data.friendList.forEach {
                 // atomic
                 bot.friends.delegate.add(
-                    FriendImpl(bot, bot.coroutineContext, FriendInfoImpl(it))
+                    FriendImpl(bot, bot.coroutineContext, it.toMiraiFriendInfo())
                 ).also { currentFriendCount++ }
             }
-            logger.verbose { "正在加载好友列表 ${currentFriendCount}/${totalFriendCount}" }
+            logger.verbose { "Loading friend list: ${currentFriendCount}/${totalFriendCount}" }
             if (currentFriendCount >= totalFriendCount) {
                 break
             }
             // delay(200)
         }
-        logger.info { "好友列表加载完成, 共 ${currentFriendCount}个" }
+        logger.info { "Successfully loaded friend list: $currentFriendCount in total" }
         initFriendOk = true
     }
 
@@ -345,7 +345,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             return
         }
 
-        logger.info { "开始加载群组列表与群成员列表" }
+        logger.info { "Start loading group list..." }
         val troopListData = FriendList.GetTroopListSimplify(bot.client)
             .sendAndExpect<FriendList.GetTroopListSimplify.Response>(retry = 5)
 
@@ -358,14 +358,14 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                 }
             }
         }
-        logger.info { "群组列表与群成员加载完成, 共 ${troopListData.groups.size}个" }
+        logger.info { "Successfully loaded group list: ${troopListData.groups.size} in total." }
         initGroupOk = true
     }
 
 
     override suspend fun init(): Unit = coroutineScope {
-        check(bot.isActive) { "bot is dead therefore network can't init" }
-        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init" }
+        check(bot.isActive) { "bot is dead therefore network can't init." }
+        check(this@QQAndroidBotNetworkHandler.isActive) { "network is dead therefore can't init." }
 
         CancellationException("re-init").let { reInitCancellationException ->
             if (!initFriendOk) {
@@ -387,16 +387,16 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }
 
         this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {
-            logger.info { "Awaiting ConfigPushSvc.PushReq" }
+            logger.info { "Awaiting ConfigPushSvc.PushReq." }
             when (val resp: ConfigPushSvc.PushReq.PushReqResponse? = nextEventOrNull(10_000)) {
                 null -> logger.info { "Missing ConfigPushSvc.PushReq." }
                 is ConfigPushSvc.PushReq.PushReqResponse.Success -> {
-                    logger.info { "ConfigPushSvc.PushReq: Success" }
+                    logger.info { "ConfigPushSvc.PushReq: Success." }
                 }
                 is ConfigPushSvc.PushReq.PushReqResponse.ChangeServer -> {
-                    logger.info { "Server requires reconnect." }
-                    logger.info { "ChangeServer.unknown = ${resp.unknown}" }
-                    logger.info { "Server list: ${resp.serverList.joinToString()}" }
+                    bot.logger.info { "Server requires reconnect." }
+                    logger.debug { "ChangeServer.unknown = ${resp.unknown}." }
+                    bot.logger.info { "Server list: ${resp.serverList.joinToString()}." }
 
                     resp.serverList.forEach {
                         bot.client.serverList.add(it.host to it.port)
@@ -421,7 +421,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                     it.consumer.cast() // IDE false positive warning
                 )
             }.getOrElse {
-                logger.error("Exception on processing pendingIncomingPackets", it)
+                logger.error("Exception on processing pendingIncomingPackets.", it)
             }
         }
         val list = pendingIncomingPackets
@@ -431,7 +431,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         runCatching {
             BotOnlineEvent(bot).broadcast()
         }.getOrElse {
-            logger.error("Exception on broadcasting BotOnlineEvent", it)
+            logger.error("Exception on broadcasting BotOnlineEvent.", it)
         }
 
         Unit // dont remove. can help type inference
@@ -451,8 +451,8 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             launch(CoroutineName("Syncing friend message history")) { syncFromEvent<MessageSvcPbGetMsg.GetMsgSuccess, Unit> { } }
             MessageSvcPbGetMsg(bot.client, MsgSvc.SyncFlag.START, null).sendAndExpect<Packet>()
 
-        } ?: error("timeout syncing friend message history")
-        logger.info { "Syncing friend message history: Success" }
+        } ?: error("timeout syncing friend message history.")
+        logger.info { "Syncing friend message history: Success." }
     }
 
     private suspend fun doHeartBeat(): Throwable? {

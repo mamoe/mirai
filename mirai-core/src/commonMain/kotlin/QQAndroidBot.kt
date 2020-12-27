@@ -20,6 +20,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.internal.contact.OtherClientImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
+import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.QQAndroidBotNetworkHandler
 import net.mamoe.mirai.internal.network.QQAndroidClient
@@ -75,11 +76,7 @@ internal class QQAndroidBot constructor(
 
     override val asFriend: Friend by lazy {
         @OptIn(LowLevelApi::class)
-        Mirai._lowLevelNewFriend(this, object : FriendInfo {
-            override val uin: Long get() = this@QQAndroidBot.id
-            override val nick: String get() = this@QQAndroidBot.nick
-            override val remark: String get() = ""
-        })
+        Mirai._lowLevelNewFriend(this, FriendInfoImpl(uin, nick, ""))
     }
 
     override val groups: ContactList<Group> = ContactList()

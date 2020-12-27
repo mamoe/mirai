@@ -43,7 +43,6 @@ import net.mamoe.mirai.utils.safeCast
 public data class QuoteReply(public val source: MessageSource) : Message, MessageMetadata, ConstrainSingle {
     public companion object Key : AbstractMessageKey<QuoteReply>({ it.safeCast() })
 
-    @ExperimentalMessageKey
     public override val key: MessageKey<QuoteReply> get() = Key
 
     public override fun toString(): String =

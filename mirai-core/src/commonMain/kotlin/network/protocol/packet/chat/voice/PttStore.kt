@@ -20,7 +20,17 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.encodeToString
+
+internal val ExternalResource.voiceCodec: Int
+    get() {
+        return when (formatName) {
+            "amr" -> 0  // amr
+            "silk" -> 1  // silk V3
+            else -> 0     // use amr by default
+        }
+    }
 
 internal class PttStore {
     object GroupPttUp : OutgoingPacketFactory<GroupPttUp.Response>("PttStore.GroupPttUp") {
@@ -45,9 +55,7 @@ internal class PttStore {
             client: QQAndroidClient,
             uin: Long,
             groupCode: Long,
-            md5: ByteArray,
-            size: Long,
-            codec: Int = 0
+            resource: ExternalResource
         ): OutgoingPacket {
             val pack = Cmd0x388.ReqBody(
                 netType = 3, // wifi
@@ -57,16 +65,16 @@ internal class PttStore {
                         srcUin = uin,
                         groupCode = groupCode,
                         fileId = 0,
-                        fileSize = size,
-                        fileMd5 = md5,
-                        fileName = md5,
+                        fileSize = resource.size,
+                        fileMd5 = resource.md5,
+                        fileName = resource.md5,
                         srcTerm = 5,
                         platformType = 9,
                         buType = 4,
                         innerIp = 0,
                         buildVer = "6.5.5.663".encodeToByteArray(),
                         voiceLength = 1,
-                        codec = codec,
+                        codec = resource.voiceCodec,
                         voiceType = 1,
                         boolNewUpChan = true
                     )

@@ -15,13 +15,11 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.UserOrBot
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.code.CodableMessage
-import net.mamoe.mirai.utils.PlannedRemoval
 
 
 /**
@@ -39,12 +37,6 @@ public data class At(
     public override fun toString(): String = "[mirai:at:$target]"
     public override fun contentToString(): String = "@$target"
 
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Use getDisplay", ReplaceWith("this.getDisplay()"), DeprecationLevel.ERROR)
-    @PlannedRemoval("2.0-M2")
-    val display: Nothing
-        get() = error("At.display is no longer supported")
-
     /**
      * 获取 [At] 发送于指定 [Group] 时会显示的内容.
      *
@@ -59,17 +51,7 @@ public data class At(
         builder.append("[mirai:at:").append(target).append(']')
     }
 
-    public companion object {
-        /**
-         * 构造一个 [At], 仅供内部使用, 否则可能造成消息无法发出的问题.
-         */
-        @Suppress("FunctionName", "UNUSED_PARAMETER")
-        @JvmStatic
-        @LowLevelApi
-        @Deprecated("Use constructor instead", ReplaceWith("At(target)", "net.mamoe.mirai.message.data.At"))
-        @PlannedRemoval("2.0-M2")
-        public fun _lowLevelConstructAtInstance(target: Long, display: String): At = At(target)
-    }
+    public companion object;
 
     // 自动为消息补充 " "
     public override fun followedBy(tail: Message): MessageChain {
