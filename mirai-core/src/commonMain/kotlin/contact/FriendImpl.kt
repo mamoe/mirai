@@ -67,6 +67,10 @@ internal class FriendImpl(
     val lastMessageSequence: AtomicInt = atomic(-1)
 
     override suspend fun delete(): Boolean {
+        check(bot.friends[this.id] != null) {
+            "Friend ${this.id} had already been deleted"
+        }
+
         return bot.network.run {
             FriendList.DelFriend.invoke(bot.client, this@FriendImpl)
                 .sendAndExpect<FriendList.DelFriend.Response>().isSuccess
