@@ -44,7 +44,7 @@ internal inline fun FriendInfo.checkIsInfoImpl(): FriendInfoImpl {
     contract {
         returns() implies (this@checkIsInfoImpl is FriendInfoImpl)
     }
-    check(this is FriendInfoImpl) { "A Friend instance is not instance of FriendImpl. Don't interlace two protocol implementations together!" }
+    check(this is FriendInfoImpl) { "A Friend instance is not instance of FriendImpl. Your instance: ${this::class.qualifiedName}" }
     return this
 }
 
@@ -53,7 +53,7 @@ internal inline fun Friend.checkIsFriendImpl(): FriendImpl {
     contract {
         returns() implies (this@checkIsFriendImpl is FriendImpl)
     }
-    check(this is FriendImpl) { "A Friend instance is not instance of FriendImpl. Don't interlace two protocol implementations together!" }
+    check(this is FriendImpl) { "A Friend instance is not instance of FriendImpl. Your instance: ${this::class.qualifiedName}" }
     return this
 }
 
