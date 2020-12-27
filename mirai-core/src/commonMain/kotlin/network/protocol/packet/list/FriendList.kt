@@ -10,7 +10,9 @@
 package net.mamoe.mirai.internal.network.protocol.packet.list
 
 import kotlinx.io.core.ByteReadPacket
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.*
@@ -114,6 +116,45 @@ internal class FriendList {
                                 versionNum = 1,
                                 vecGroupInfo = listOf(),
                                 getLongGroupName = 1
+                            )
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    internal object DelFriend :
+        OutgoingPacketFactory<DelFriend.Response>("friendlist.delFriend") {
+
+        class Response(val isSuccess: Boolean, val resultCode: Int) : Packet {
+            override fun toString(): String = "FriendList.DelFriend.Response(isSuccess=$isSuccess)"
+        }
+
+        override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
+            val res = this.readUniPacket(DelFriendResp.serializer())
+            return Response(res.result == 0, res.result)
+        }
+
+        operator fun invoke(
+            client: QQAndroidClient,
+            friend: Friend
+        ): OutgoingPacket {
+            return buildOutgoingUniPacket(client, bodyType = 1, key = client.wLoginSigInfo.d2Key) {
+                writeJceStruct(
+                    RequestPacket.serializer(),
+                    RequestPacket(
+                        funcName = "DelFriendReq",
+                        servantName = "mqq.IMService.FriendListServiceServantObj",
+                        version = 3,
+                        sBuffer = jceRequestSBuffer(
+                            "DF",
+                            DelFriendReq.serializer(),
+                            DelFriendReq(
+                                uin = client.uin,
+                                delType = 2,
+                                delUin = friend.uin,
+                                version = 1
                             )
                         )
                     )

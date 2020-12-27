@@ -25,6 +25,7 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.data.FriendInfo
 import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.internal.QQAndroidBot
+import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentNotEmpty
@@ -64,6 +65,18 @@ internal class FriendImpl(
 ) : Friend, AbstractUser(bot, coroutineContext, friendInfo) {
     @Suppress("unused") // bug
     val lastMessageSequence: AtomicInt = atomic(-1)
+
+    override suspend fun delete() {
+        check(bot.friends[this.id] != null) {
+            "Friend ${this.id} had already been deleted"
+        }
+        bot.network.run {
+            FriendList.DelFriend.invoke(bot.client, this@FriendImpl)
+                .sendAndExpect<FriendList.DelFriend.Response>().also {
+                    check(it.isSuccess) { "delete friend failed: ${it.resultCode}" }
+                }
+        }
+    }
 
     @Suppress("DuplicatedCode")
     override suspend fun sendMessage(message: Message): MessageReceipt<Friend> {

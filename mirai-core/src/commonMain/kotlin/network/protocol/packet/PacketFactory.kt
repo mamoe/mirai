@@ -129,6 +129,7 @@ internal object KnownPacketFactories {
         MessageSvcPbSendMsg,
         MessageSvcPbDeleteMsg,
         FriendList.GetFriendGroupList,
+        FriendList.DelFriend,
         FriendList.GetTroopListSimplify,
         FriendList.GetTroopMemberList,
         ImgStore.GroupPicUp,

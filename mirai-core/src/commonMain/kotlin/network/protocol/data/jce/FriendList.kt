@@ -13,6 +13,23 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.internal.utils.io.JceStruct
 import net.mamoe.mirai.internal.utils.io.serialization.tars.TarsId
 
+
+@Serializable
+internal class DelFriendReq(
+    @JvmField @TarsId(0) val uin: Long,
+    @JvmField @TarsId(1) val delUin: Long,
+    @JvmField @TarsId(2) val delType: Byte,
+    @JvmField @TarsId(3) val version: Int? = null
+) : JceStruct
+
+@Serializable
+internal class DelFriendResp(
+    @JvmField @TarsId(0) val uin: Long,
+    @JvmField @TarsId(1) val delUin: Long,
+    @JvmField @TarsId(2) val result: Int,
+    @JvmField @TarsId(3) val errorCode: Short? = null
+) : JceStruct
+
 @Serializable
 internal class ModifyGroupCardReq(
     @TarsId(0) @JvmField val dwZero: Long,

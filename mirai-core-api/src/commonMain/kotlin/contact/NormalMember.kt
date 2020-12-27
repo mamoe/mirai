@@ -88,6 +88,7 @@ public interface NormalMember : Member {
      *
      * @see MemberLeaveEvent.Kick 成员被踢出事件.
      * @throws PermissionDeniedException 无权限修改时
+     *
      */
     @JvmBlockingBridge
     public suspend fun kick(message: String)

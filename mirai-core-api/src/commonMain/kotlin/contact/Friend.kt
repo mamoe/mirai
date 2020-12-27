@@ -14,10 +14,7 @@ package net.mamoe.mirai.contact
 import kotlinx.coroutines.CoroutineScope
 import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.event.events.EventCancelledException
-import net.mamoe.mirai.event.events.FriendMessageEvent
-import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
-import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
+import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.Nudge
@@ -68,6 +65,14 @@ public interface Friend : User, CoroutineScope {
      */
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Friend>
+
+    /**
+     * 删除并屏蔽该好友, 屏蔽后对方将无法发送临时会话消息
+     *
+     * @see FriendDeleteEvent 好友删除事件
+     */
+    @JvmBlockingBridge
+    public suspend fun delete()
 
     /**
      * 发送纯文本消息
