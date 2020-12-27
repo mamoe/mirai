@@ -24,7 +24,6 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutFriend
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutGroup

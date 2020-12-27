@@ -19,7 +19,6 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.FriendMessagePostSendEvent
 import net.mamoe.mirai.event.events.FriendMessagePreSendEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.FriendNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message

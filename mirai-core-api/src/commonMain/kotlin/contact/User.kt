@@ -18,7 +18,6 @@ import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.UserMessagePostSendEvent
 import net.mamoe.mirai.event.events.UserMessagePreSendEvent
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.action.UserNudge
 import net.mamoe.mirai.message.data.Message

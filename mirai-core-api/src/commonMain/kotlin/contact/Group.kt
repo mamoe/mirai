@@ -16,7 +16,6 @@ import net.mamoe.kjbb.JvmBlockingBridge
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.message.MessageReceipt
-import net.mamoe.mirai.message.MessageReceipt.Companion.recall
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.MiraiExperimentalApi
