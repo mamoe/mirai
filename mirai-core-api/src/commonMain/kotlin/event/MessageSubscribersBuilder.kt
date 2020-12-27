@@ -19,6 +19,7 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.event.internal.*
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.MessageSource.Key.quote
 
 
 /**
@@ -92,13 +93,13 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     /** 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时回复原消息 */
     @MessageDsl
     public open infix fun ListeningFilter.reply(toReply: String): Ret =
-        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) reply(toReply);this@MessageSubscribersBuilder.stub }
+        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) subject.sendMessage(toReply);this@MessageSubscribersBuilder.stub }
 
 
     /** 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时回复原消息 */
     @MessageDsl
     public open infix fun ListeningFilter.reply(message: Message): Ret =
-        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) reply(message);this@MessageSubscribersBuilder.stub }
+        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) subject.sendMessage(message);this@MessageSubscribersBuilder.stub }
 
     /**
      * 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时执行 [replier] 并以其返回值回复.
@@ -117,12 +118,12 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     /** 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时引用回复原消息 */
     @MessageDsl
     public open infix fun ListeningFilter.quoteReply(toReply: String): Ret =
-        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) quoteReply(toReply); this@MessageSubscribersBuilder.stub }
+        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) subject.sendMessage(message.quote() + toReply); this@MessageSubscribersBuilder.stub }
 
     /** 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时引用回复原消息 */
     @MessageDsl
     public open infix fun ListeningFilter.quoteReply(toReply: Message): Ret =
-        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) quoteReply(toReply);this@MessageSubscribersBuilder.stub }
+        content(filter) { if ((this as? GroupMessageEvent)?.group?.isBotMuted != true) subject.sendMessage(message.quote() + toReply);this@MessageSubscribersBuilder.stub }
 
     /**
      * 启动监听器, 在 [Bot] 未被禁言且消息满足条件 [this] 时执行 [replier] 并以其返回值回复原消息
@@ -365,7 +366,7 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     /** [消息内容][Message.contentToString]包含 [this] 则回复 [reply] */
     @MessageDsl
     public open infix fun String.containsReply(reply: String): Ret =
-        content({ this@containsReply in it }, { reply(reply); this@MessageSubscribersBuilder.stub })
+        content({ this@containsReply in it }, { subject.sendMessage(reply); this@MessageSubscribersBuilder.stub })
 
     /**
      * [消息内容][Message.contentToString]包含 [this] 则执行 [replier] 并将其返回值回复给发信对象.
@@ -431,14 +432,14 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     @MessageDsl
     public open infix fun String.reply(reply: String): Ret {
         val toCheck = this.trim()
-        return content({ it.trim() == toCheck }, { reply(reply);this@MessageSubscribersBuilder.stub })
+        return content({ it.trim() == toCheck }, { subject.sendMessage(reply);this@MessageSubscribersBuilder.stub })
     }
 
     /** 当发送的消息内容为 [this] 就回复 [reply] */
     @MessageDsl
     public open infix fun String.reply(reply: Message): Ret {
         val toCheck = this.trim()
-        return content({ it.trim() == toCheck }, { reply(reply);this@MessageSubscribersBuilder.stub })
+        return content({ it.trim() == toCheck }, { subject.sendMessage(reply);this@MessageSubscribersBuilder.stub })
     }
 
     /** 当发送的消息内容为 [this] 就执行并回复 [replier] 的返回值 */
@@ -458,9 +459,9 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
     internal suspend inline fun executeAndReply(m: M, replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(m, m.message.contentToString())) {
-            is Message -> m.reply(message)
+            is Message -> m.subject.sendMessage(message)
             is Unit -> Unit
-            else -> m.reply(message.toString())
+            else -> m.subject.sendMessage(message.toString())
         }
         return stub
     }
@@ -468,9 +469,9 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     @Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE", "UNCHECKED_CAST") // false positive
     internal suspend inline fun executeAndQuoteReply(m: M, replier: suspend M.(String) -> Any?): RR {
         when (val message = replier(m, m.message.contentToString())) {
-            is Message -> m.quoteReply(message)
+            is Message -> m.subject.sendMessage(m.message.quote() + message)
             is Unit -> Unit
-            else -> m.quoteReply(message.toString())
+            else -> m.subject.sendMessage(m.message.quote() + message.toString())
         }
         return stub
     }

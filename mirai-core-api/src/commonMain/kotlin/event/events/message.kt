@@ -32,6 +32,7 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.io.File
 import java.io.InputStream
+import kotlin.DeprecationLevel.ERROR
 import kotlin.internal.InlineOnly
 
 
@@ -359,6 +360,7 @@ public sealed class MessageRecallEvent : BotEvent, AbstractEvent() {
     ) : MessageRecallEvent(), GroupOperableEvent, Packet {
         override val author: NormalMember? get() = group[authorId]
 
+        @Suppress("DuplicatedCode")
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -462,6 +464,7 @@ public sealed class ImageUploadEvent : BotEvent, BotActiveEvent, AbstractEvent()
  *
  * @see MessageEvent
  */
+@Suppress("DEPRECATION")
 public class FriendMessageEvent constructor(
     public override val sender: Friend,
     public override val message: MessageChain,
@@ -487,6 +490,7 @@ public class FriendMessageEvent constructor(
  *
  * @see MessageEvent
  */
+@Suppress("DEPRECATION")
 public class OtherClientMessageEvent constructor(
     public override val client: OtherClient,
     public override val message: MessageChain,
@@ -626,22 +630,30 @@ public interface UserMessageEvent : MessageEvent {
     public override val subject: User
 }
 
+@Suppress("OverridingDeprecatedMember")
 @MiraiInternalApi
 public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     public override suspend fun reply(message: Message): MessageReceipt<Contact> =
         subject.sendMessage(message.asMessageChain())
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(plain)"), ERROR)
     public override suspend fun reply(plain: String): MessageReceipt<Contact> =
         subject.sendMessage(PlainText(plain).asMessageChain())
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.uploadAsImage(subject)"), ERROR)
     public override suspend fun ExternalResource.uploadAsImage(): Image = this.uploadAsImage(subject)
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.sendAsImageTo(subject)"), ERROR)
     public override suspend fun ExternalResource.sendAsImage(): MessageReceipt<Contact> = this.sendAsImageTo(subject)
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     public override suspend fun Image.send(): MessageReceipt<Contact> = this.sendTo(subject)
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     public override suspend fun Message.send(): MessageReceipt<Contact> = this.sendTo(subject)
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     public override suspend fun String.send(): MessageReceipt<Contact> = PlainText(this).sendTo(subject)
 
     // region 引用回复
@@ -650,14 +662,40 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
-    public override suspend fun quoteReply(message: MessageChain): MessageReceipt<Contact> =
-        reply(this.message.quote() + message)
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith(
+            "subject.sendMessage(message.quote() + msg)",
+            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
+        ),
+        ERROR
+    )
+    public override suspend fun quoteReply(msg: MessageChain): MessageReceipt<Contact> =
+        subject.sendMessage(this.message.quote() + msg)
 
-    public override suspend fun quoteReply(message: Message): MessageReceipt<Contact> =
-        reply(this.message.quote() + message)
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith(
+            "subject.sendMessage(message.quote() + msg)",
+            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
+        ),
+        ERROR
+    )
+    public override suspend fun quoteReply(msg: Message): MessageReceipt<Contact> =
+        subject.sendMessage(this.message.quote() + msg)
 
-    public override suspend fun quoteReply(plain: String): MessageReceipt<Contact> = reply(this.message.quote() + plain)
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith(
+            "subject.sendMessage(message.quote() + plain)",
+            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
+        ),
+        ERROR
+    )
+    public override suspend fun quoteReply(plain: String): MessageReceipt<Contact> =
+        subject.sendMessage(this.message.quote() + plain)
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.target == bot.id"), ERROR)
     public override fun At.isBot(): Boolean = target == bot.id
 
 
@@ -665,27 +703,76 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
      * 获取图片下载链接
      * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("image.queryUrl()", "net.mamoe.mirai.message.data.Image.Key.queryUrl"),
+        ERROR
+    )
     public override suspend fun Image.url(): String = this@url.queryUrl()
 
 
     // region 上传图片
 
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
+        ERROR,
+    )
     public override suspend fun uploadImage(image: InputStream): Image = subject.uploadImage(image)
+
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
+        ERROR,
+    )
     public override suspend fun uploadImage(image: File): Image = subject.uploadImage(image)
     // endregion
 
     // region 发送图片
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.sendImage"),
+        ERROR,
+    )
     public override suspend fun sendImage(image: InputStream): MessageReceipt<Contact> = subject.sendImage(image)
+
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
+        ERROR,
+    )
     public override suspend fun sendImage(image: File): MessageReceipt<Contact> = subject.sendImage(image)
     // endregion
 
     // region 上传图片 (扩展)
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage"),
+        ERROR,
+    )
     public override suspend fun InputStream.uploadAsImage(): Image = uploadAsImage(subject)
+
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage"),
+        ERROR,
+    )
     public override suspend fun File.uploadAsImage(): Image = uploadAsImage(subject)
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo"),
+        ERROR,
+    )
     public override suspend fun InputStream.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
+
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo"),
+        ERROR,
+    )
     public override suspend fun File.sendAsImage(): MessageReceipt<Contact> = sendAsImageTo(subject)
     // endregion 发送图片 (扩展)
 
@@ -703,7 +790,7 @@ public abstract class AbstractMessageEvent : MessageEvent, AbstractEvent() {
  *
  * @see isContextIdenticalWith 判断语境是否相同
  */
-@Suppress("DEPRECATION_ERROR")
+@Suppress("DEPRECATION")
 public interface MessageEvent : Event, Packet, BotEvent, MessageEventExtensions<User, Contact> {
 
     /**
@@ -751,8 +838,17 @@ public interface MessageEvent : Event, Packet, BotEvent, MessageEventExtensions<
     public val source: OnlineMessageSource.Incoming get() = message.source as OnlineMessageSource.Incoming
 }
 
+internal const val DEPRECATED_MESSAGE_EXTENSIONS = """
+    MessageEvent 的扩展已被弃用. 
+    Kotlin 编译器在编译这些扩展的时候很容易出问题, 而且这些扩展有泛型冲突. 
+    在 Kotlin 支持多个接收者的函数前 mirai 不提供消息事件里的扩展.
+"""
+
 /** 消息事件的扩展函数 */
-@Suppress("UNCHECKED_CAST")
+
+@Deprecated(DEPRECATED_MESSAGE_EXTENSIONS)
+@Suppress("UNCHECKED_CAST", "DEPRECATION")
+@PlannedRemoval("2.0-RC")
 public interface MessageEventExtensions<out TSender : User, out TSubject : Contact> :
     MessageEventPlatformExtensions<TSender, TSubject> {
 
@@ -763,26 +859,33 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     @JvmBlockingBridge
     public suspend fun reply(message: Message): MessageReceipt<TSubject>
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(plain)"), ERROR)
     @JvmBlockingBridge
     public suspend fun reply(plain: String): MessageReceipt<TSubject>
 
     // endregion
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.uploadAsImage(subject)"), ERROR)
     @JvmSynthetic
     public suspend fun ExternalResource.uploadAsImage(): Image
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.sendAsImageTo(subject)"), ERROR)
     @JvmSynthetic
     public suspend fun ExternalResource.sendAsImage(): MessageReceipt<TSubject>
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     @JvmSynthetic
     public suspend fun Image.send(): MessageReceipt<TSubject>
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     @JvmSynthetic
     public suspend fun Message.send(): MessageReceipt<TSubject>
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("subject.sendMessage(message)"), ERROR)
     @JvmSynthetic
     public suspend fun String.send(): MessageReceipt<TSubject>
 
@@ -792,15 +895,40 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 对于好友消息事件, 这个方法将会给好友 ([subject]) 发送消息
      * 对于群消息事件, 这个方法将会给群 ([subject]) 发送消息
      */
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith(
+            "subject.sendMessage(message.quote() + msg)",
+            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
+        ),
+        ERROR
+    )
     @JvmBlockingBridge
-    public suspend fun quoteReply(message: MessageChain): MessageReceipt<TSubject>
+    public suspend fun quoteReply(msg: MessageChain): MessageReceipt<TSubject>
 
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith(
+            "subject.sendMessage(message.quote() + msg)",
+            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
+        ),
+        ERROR
+    )
     @JvmBlockingBridge
-    public suspend fun quoteReply(message: Message): MessageReceipt<TSubject>
+    public suspend fun quoteReply(msg: Message): MessageReceipt<TSubject>
 
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith(
+            "subject.sendMessage(message.quote() + plain)",
+            "net.mamoe.mirai.message.data.MessageSource.Key.quote"
+        ),
+        ERROR
+    )
     @JvmBlockingBridge
     public suspend fun quoteReply(plain: String): MessageReceipt<TSubject>
 
+    @Deprecated(DEPRECATED_MESSAGE_EXTENSIONS, ReplaceWith("this.target == bot.id"), ERROR)
     @JvmSynthetic
     public fun At.isBot(): Boolean
 
@@ -809,16 +937,21 @@ public interface MessageEventExtensions<out TSender : User, out TSubject : Conta
      * 获取图片下载链接
      * @return "http://gchat.qpic.cn/gchatpic_new/..."
      */
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("image.queryUrl()", "net.mamoe.mirai.message.data.Image.Key.queryUrl"),
+        ERROR
+    )
     @JvmSynthetic
     public suspend fun Image.url(): String
 }
-
-/** 一个消息事件在各平台的相关扩展. 请使用 [MessageEventExtensions] */
 
 /**
  * 消息事件在 JVM 平台的扩展
  * @see MessageEventExtensions
  */
+@Deprecated(DEPRECATED_MESSAGE_EXTENSIONS)
+@PlannedRemoval("2.0-RC")
 public interface MessageEventPlatformExtensions<out TSender : User, out TSubject : Contact> {
     public val subject: TSubject
     public val sender: TSender
@@ -827,33 +960,73 @@ public interface MessageEventPlatformExtensions<out TSender : User, out TSubject
 
     // region 上传图片
 
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
+        ERROR,
+    )
     @JvmBlockingBridge
     public suspend fun uploadImage(image: InputStream): Image
 
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
+        ERROR,
+    )
     @JvmBlockingBridge
     public suspend fun uploadImage(image: File): Image
     // endregion
 
     // region 发送图片
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
+        ERROR,
+    )
     @JvmBlockingBridge
     public suspend fun sendImage(image: InputStream): MessageReceipt<TSubject>
 
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("subject.uploadImage(image)", "net.mamoe.mirai.contact.Contact.Companion.uploadImage"),
+        ERROR,
+    )
     @JvmBlockingBridge
     public suspend fun sendImage(image: File): MessageReceipt<TSubject>
     // endregion
 
     // region 上传图片 (扩展)
     @JvmSynthetic
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage"),
+        ERROR,
+    )
     public suspend fun InputStream.uploadAsImage(): Image
 
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage"),
+        ERROR,
+    )
     @JvmSynthetic
     public suspend fun File.uploadAsImage(): Image
     // endregion 上传图片 (扩展)
 
     // region 发送图片 (扩展)
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo"),
+        ERROR,
+    )
     @JvmSynthetic
     public suspend fun InputStream.sendAsImage(): MessageReceipt<TSubject>
 
+    @Deprecated(
+        DEPRECATED_MESSAGE_EXTENSIONS,
+        ReplaceWith("this.sendAsImageTo(subject)", "net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo"),
+        ERROR,
+    )
     @JvmSynthetic
     public suspend fun File.sendAsImage(): MessageReceipt<TSubject>
     // endregion 发送图片 (扩展)
