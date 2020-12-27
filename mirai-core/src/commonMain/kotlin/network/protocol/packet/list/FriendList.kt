@@ -127,13 +127,13 @@ internal class FriendList {
     internal object DelFriend :
         OutgoingPacketFactory<DelFriend.Response>("friendlist.delFriend") {
 
-        class Response(val isSuccess: Boolean) : Packet {
+        class Response(val isSuccess: Boolean, val resultCode: Int) : Packet {
             override fun toString(): String = "FriendList.DelFriend.Response(isSuccess=$isSuccess)"
         }
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val res = this.readUniPacket(DelFriendResp.serializer())
-            return Response(res.result == 0)
+            return Response(res.result == 0, res.result)
         }
 
         operator fun invoke(
