@@ -49,7 +49,7 @@ public abstract class LoginSolver {
     public abstract suspend fun onSolvePicCaptcha(bot: Bot, data: ByteArray): String?
 
     /**
-     * 为 `true` 表示支持滑动验证码, 遇到滑动验证码时 mirai 会请求 [onSolvePicCaptcha].
+     * 为 `true` 表示支持滑动验证码, 遇到滑动验证码时 mirai 会请求 [onSolveSliderCaptcha].
      * 否则会跳过滑动验证码并告诉服务器此客户端不支持, 有可能导致登录失败
      */
     public open val isSliderCaptchaSupported: Boolean
