@@ -40,7 +40,7 @@ internal class JvmMethodEventsTestJava : SimpleListenerHost() {
 
     @Test
     fun test() {
-        this.registerEvents()
+        this.globalEventChannel().registerListenerHost(this)
         TestEvent().__broadcastJava()
         assertEquals(3, called.get(), null)
     }
