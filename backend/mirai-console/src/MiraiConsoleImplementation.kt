@@ -219,6 +219,7 @@ public interface MiraiConsoleImplementation : CoroutineScope {
                 }.onFailure {
                     it.printStackTrace()
                 }
+                Thread.sleep(3000L) // 保证信息打印完成
                 exitProcess(1)
             }
         }

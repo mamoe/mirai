@@ -78,6 +78,7 @@ class MiraiConsoleImplementationTerminal
     override val isAnsiSupported: Boolean get() = true
 
     override fun createLoginSolver(requesterBot: Long, configuration: BotConfiguration): LoginSolver {
+        LoginSolver.Default?.takeIf { it !is StandardCharImageLoginSolver }?.let { return it }
         return StandardCharImageLoginSolver(input = { requestInput("LOGIN> ") })
     }
 
