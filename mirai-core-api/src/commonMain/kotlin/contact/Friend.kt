@@ -21,7 +21,6 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 代表一位好友.
@@ -87,6 +86,5 @@ public interface Friend : User, CoroutineScope {
      *
      * @see Nudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalApi
     public override fun nudge(): FriendNudge = FriendNudge(this)
 }

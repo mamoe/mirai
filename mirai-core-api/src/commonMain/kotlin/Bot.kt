@@ -23,7 +23,6 @@ import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.ConcurrentHashMap
 
@@ -145,7 +144,6 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      *
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalApi
     public override fun nudge(): BotNudge = BotNudge(this)
 
     /**

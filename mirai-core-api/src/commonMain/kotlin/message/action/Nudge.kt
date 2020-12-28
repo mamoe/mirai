@@ -16,7 +16,6 @@ import net.mamoe.mirai.event.events.BotNudgedEvent
 import net.mamoe.mirai.event.events.MemberNudgedEvent
 import net.mamoe.mirai.utils.BotConfiguration
 import net.mamoe.mirai.utils.BotConfiguration.MiraiProtocol
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 一个 "戳一戳" 消息.
@@ -26,12 +25,11 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
  * @see User.nudge 创建 [Nudge] 对象
  * @see Bot.nudge 创建 [Nudge] 对象
  */
-@MiraiExperimentalApi
 public sealed class Nudge {
     /**
      * 戳的对象. 即 "A 戳了 B" 中的 "B".
      */
-    public abstract val target: UserOrBot // User or Bot
+    public abstract val target: UserOrBot
 
     /**
      * 发送戳一戳该成员的消息.
@@ -47,7 +45,6 @@ public sealed class Nudge {
      * @see Contact.sendNudge
      */
     @JvmBlockingBridge
-    @MiraiExperimentalApi
     public suspend fun sendTo(receiver: Contact): Boolean {
         @Suppress("DEPRECATION_ERROR")
         return Mirai.sendNudge(receiver.bot, this, receiver)
@@ -59,15 +56,14 @@ public sealed class Nudge {
          *
          * 需要 [使用协议][BotConfiguration.protocol] [MiraiProtocol.ANDROID_PHONE].
          *
-         * @see MemberNudgedEvent 成员被戳事件
-         * @see BotNudgedEvent [Bot] 被戳事件
+         * @return 成功发送时为 `true`. 若对方禁用 "戳一戳" 功能, 返回 `false`.
          *
          * @throws UnsupportedOperationException 当未使用 [安卓协议][MiraiProtocol.ANDROID_PHONE] 时抛出
          *
-         * @return 成功发送时为 `true`. 若对方禁用 "戳一戳" 功能, 返回 `false`.
+         * @see MemberNudgedEvent 成员被戳事件
+         * @see BotNudgedEvent [Bot] 被戳事件
          */
-        @MiraiExperimentalApi
-        @JvmBlockingBridge
+        @JvmSynthetic
         @JvmStatic
         public suspend fun Contact.sendNudge(nudge: Nudge): Boolean = nudge.sendTo(this)
     }
@@ -77,16 +73,14 @@ public sealed class Nudge {
  * @see Bot.nudge
  * @see Nudge
  */
-@MiraiExperimentalApi
 public data class BotNudge(
-    public override val target: UserOrBot
+    public override val target: Bot
 ) : Nudge()
 
 /**
  * @see User.nudge
  * @see Nudge
  */
-@MiraiExperimentalApi
 public sealed class UserNudge : Nudge() {
     public abstract override val target: UserOrBot
 }
@@ -95,16 +89,14 @@ public sealed class UserNudge : Nudge() {
  * @see Member.nudge
  * @see Nudge
  */
-@MiraiExperimentalApi
 public data class MemberNudge(
-    public override val target: UserOrBot
+    public override val target: NormalMember
 ) : UserNudge()
 
 /**
  * @see Friend.nudge
  * @see Nudge
  */
-@MiraiExperimentalApi
 public data class FriendNudge(
-    public override val target: UserOrBot
+    public override val target: Friend
 ) : UserNudge()

@@ -19,7 +19,6 @@ import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.WeakRefProperty
 
 /**
@@ -123,7 +122,6 @@ public interface Member : User {
      *
      * @see Nudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalApi
     public override fun nudge(): MemberNudge
 }
 

@@ -23,7 +23,6 @@ import net.mamoe.mirai.message.action.UserNudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 代表一个 **用户**.
@@ -87,7 +86,6 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      *
      * @see Nudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalApi
     public override fun nudge(): UserNudge
 }
 
