@@ -106,9 +106,7 @@ channel = channel.parentJob(job)
 
 在 Kotlin，可以使用如下扩展快速在 GlobalEventChannel 创建一个指定协程作用域下的事件通道。
 > ```kotlin
-> ```kotlin
-> >  fun CoroutineScope.globalEventChannel(coroutineContext: CoroutineContext = EmptyCoroutineContext): EventChannel<Event> = GlobalEventChannel.parentScope(this, coroutineContext)
-> > ```
+>  fun CoroutineScope.globalEventChannel(coroutineContext: CoroutineContext = EmptyCoroutineContext): EventChannel<Event> = GlobalEventChannel.parentScope(this, coroutineContext)
 > ```
 
 ```kotlin
