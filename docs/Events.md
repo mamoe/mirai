@@ -3,12 +3,22 @@
 ## 目录
 
 - [事件系统](#事件系统)
-- [监听事件](#监听事件)
-  - [使用 `ListenerHost` 监听事件](#使用-listenerhost-监听事件)
-  - [在 Kotlin 函数式监听](#在-kotlin-函数式监听)
+- [事件通道](#事件通道)
+- [通道操作](#通道操作)
+  - [缩窄（过滤）](#缩窄过滤)
+  - [添加 `CoroutineContext`](#添加-coroutinecontext)
+  - [限制作用域](#限制作用域)
+  - [链式调用](#链式调用)
+- [在 `EventChannel` 监听事件](#在-eventchannel-监听事件)
+- [监听事件的其他方法](#监听事件的其他方法)
+  - [使用 `ListenerHost` 监听事件](#使用-eventhandler-注解标注的方法监听事件)
+  - [在 Kotlin 使用 DSL 监听事件](#在-kotlin-使用-dsl-监听事件)
 - [实现事件](#实现事件)
 - [工具函数（Kotlin）](#工具函数kotlin)
-
+  - [线性同步（`syncFromEvent`）](#线性同步syncfromevent)
+  - [线性同步（`nextEvent`）](#线性同步nextevent)
+  - [条件选择（`selectMessages`）](#条件选择selectmessages)
+  - [循环条件选择（`whileSelectMessages`）](#循环条件选择whileselectmessages)
 
 ## 事件系统
 
