@@ -125,11 +125,18 @@ setLoginSolver(new YourLoginSolver())
 要获取更多有关验证码解决器的信息，查看 [LoginSolver.kt](../mirai-core-api/src/commonMain/kotlin/utils/LoginSolver.kt#L32)
 
 ### 获取当前所有 `Bot` 实例
+
 在登录后，`Bot` 实例会被自动记录。可在 `Bot.instances` 获取到当前在线的所有 `Bot` 列表。当 `Bot` 离线，其实例就会被删除。
 
 ## 2. 登录
 
 创建 `Bot` 后不会自动登录，需要手动调用其 `login()` 方法。在 Kotlin 还可以使用 `Bot.alsoLogin()` 扩展，相当于 `bot.apply { login() }`。
+
+### 处理滑动验证码
+
+由于服务器正在大力推广滑块验证码，登录时可能需要解决滑动验证码。部分账号可以跳过滑块验证码直接重新登录，服务器就会要求图片验证码。
+
+处理验证码需要浏览器支持，可在 [project-mirai/mirai-login-solver-selenium](https://github.com/project-mirai/mirai-login-solver-selenium) 查看详细处理方案。
 
 ### 常见登录失败原因
 
@@ -138,7 +145,7 @@ setLoginSolver(new YourLoginSolver())
 | 当前版本过低    | 密码错误   | 检查密码               |
 | 当前上网环境异常 | 设备锁    | 开启或关闭设备锁后重试登录 |
 
-若以上方案无法解决问题，请尝试[切换登录协议](#切换登录协议)。
+若以上方案无法解决问题，请尝试 [切换登录协议](#切换登录协议) 和 **[处理滑动验证码](#处理滑动验证码)**。
 
 ### 重新登录
 

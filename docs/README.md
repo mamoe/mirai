@@ -4,7 +4,7 @@
 
 ## 生态
 
-[Mirai 生态概览](mirai-ecology.md)
+**[Mirai 生态概览](mirai-ecology.md)**
 
 ## 确定 SDK
 
