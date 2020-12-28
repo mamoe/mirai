@@ -93,7 +93,8 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
         asSequence().any { key.safeCast.invoke(it) != null }
 
     public object Serializer : KSerializer<MessageChain> {
-        private val delegate = ListSerializer(Message.Serializer)
+        @Suppress("DEPRECATION_ERROR")
+        private val delegate = ListSerializer<Message>(Message.Serializer)
         override val descriptor: SerialDescriptor = delegate.descriptor
         override fun deserialize(decoder: Decoder): MessageChain = delegate.deserialize(decoder).asMessageChain()
         override fun serialize(encoder: Encoder, value: MessageChain): Unit = delegate.serialize(encoder, value)
@@ -103,11 +104,13 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
         forEach { it.safeCast<CodableMessage>()?.appendMiraiCode(builder) }
     }
 
+    @Suppress("DEPRECATION_ERROR")
     public companion object {
         /**
          * 从 JSON 字符串解析 [MessageChain]
          * @see serializeToJsonString
          */
+        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @JvmOverloads
         @JvmStatic
         public fun deserializeFromJsonString(
@@ -121,6 +124,7 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
          * 将 [MessageChain] 序列化为 JSON 字符串.
          * @see deserializeFromJsonString
          */
+        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @JvmOverloads
         @JvmStatic
         public fun MessageChain.serializeToJsonString(
@@ -133,6 +137,7 @@ public interface MessageChain : Message, List<SingleMessage>, RandomAccess, Coda
          * @see serializeToJsonString
          * @see StringFormat.encodeToString
          */
+        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @ExperimentalSerializationApi
         @JvmStatic
         public fun MessageChain.serializeToString(format: StringFormat): String =

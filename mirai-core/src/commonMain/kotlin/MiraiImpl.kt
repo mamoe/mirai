@@ -46,7 +46,7 @@ import kotlin.random.Random
 // not object for ServiceLoader.
 internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     companion object INSTANCE : MiraiImpl() {
-        @Suppress("ObjectPropertyName", "unused")
+        @Suppress("ObjectPropertyName", "unused", "DEPRECATION_ERROR")
         private val _init = Mirai.let {
             CIO // init
             Message.Serializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())

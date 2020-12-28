@@ -73,6 +73,7 @@ import kotlin.internal.LowPriorityInOverloadResolution
  *
  * @see Contact.sendMessage 发送消息
  */
+@Suppress("DEPRECATION_ERROR")
 @Serializable(Message.Serializer::class)
 public interface Message { // must be interface. Don't consider any changes.
 
@@ -197,15 +198,18 @@ public interface Message { // must be interface. Don't consider any changes.
     public operator fun plus(another: Sequence<Message>): MessageChain =
         another.fold(this, Message::plus).asMessageChain()
 
+    @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
     public object Serializer :
         MessageSerializer by MessageSerializerImpl,
         KSerializer<Message> by PolymorphicSerializer(Message::class)
 
+    @Suppress("DEPRECATION_ERROR")
     public companion object {
         /**
          * 从 JSON 字符串解析 [Message]
          * @see serializeToJsonString
          */
+        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @JvmOverloads
         @JvmStatic
         public fun deserializeFromJsonString(
@@ -219,6 +223,7 @@ public interface Message { // must be interface. Don't consider any changes.
          * 将 [Message] 序列化为 JSON 字符串.
          * @see deserializeFromJsonString
          */
+        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @JvmOverloads
         @JvmStatic
         public fun Message.serializeToJsonString(
@@ -231,6 +236,7 @@ public interface Message { // must be interface. Don't consider any changes.
          * @see serializeToJsonString
          * @see StringFormat.encodeToString
          */
+        @Deprecated("消息序列化仍未稳定，请在 2.0-RC 再使用", level = DeprecationLevel.HIDDEN)
         @ExperimentalSerializationApi
         @JvmStatic
         public fun Message.serializeToString(format: StringFormat): String =

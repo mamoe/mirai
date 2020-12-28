@@ -166,6 +166,7 @@ private val builtInSerializersModule by lazy {
             subclass(FlashImage::class, FlashImage.serializer())
         }
 
+        @Suppress("DEPRECATION_ERROR")
         contextual(Message::class, Message.Serializer)
         // contextual(SingleMessage::class, SingleMessage.Serializer)
         contextual(MessageChain::class, MessageChain.Serializer)

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 internal class MessageSerializationTest {
+    @Suppress("DEPRECATION_ERROR")
     private val module get() = Message.Serializer.serializersModule
     private val format
         get() = Json {
