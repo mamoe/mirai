@@ -74,7 +74,7 @@ public object ContactUtils {
     @JvmStatic
     @ConsoleExperimentalApi
     public fun Bot.getFriendOrGroupOrNull(id: Long): Contact? {
-        return this.friends.getOrNull(id) ?: this.groups.getOrNull(id)
+        return this.friends[id] ?: this.groups[id]
     }
 
     /**

@@ -561,8 +561,6 @@ public open class TempCommandSender internal constructor(
 
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member> {
-        @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-        @OptIn(net.mamoe.mirai.utils.MemberDeprecatedApi::class)
         return user.sendMessage(message) // just throw this error
     }
 }

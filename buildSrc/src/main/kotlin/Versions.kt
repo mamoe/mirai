@@ -12,8 +12,8 @@
 import org.gradle.api.attributes.Attribute
 
 object Versions {
-    const val core = "2.0-M2-dev-4"
-    const val console = "2.0-M2-dev-4"
+    const val core = "2.0-M2-dev-14"
+    const val console = "2.0-M2-dev-14"
     const val consoleGraphical = "0.0.7"
     const val consoleTerminal = console
 
@@ -26,7 +26,7 @@ object Versions {
 
     const val coroutines = "1.4.0"
     const val serialization = "1.0.1"
-    const val ktor = "1.4.3"
+    const val ktor = "1.5.0"
     const val atomicFU = "0.14.4"
 
     const val androidGradle = "3.6.2"
