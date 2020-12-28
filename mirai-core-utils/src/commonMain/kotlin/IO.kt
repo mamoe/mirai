@@ -14,9 +14,24 @@
 
 package net.mamoe.mirai.utils
 
+import io.ktor.http.content.*
+import io.ktor.utils.io.*
 import io.ktor.utils.io.charsets.*
+import io.ktor.utils.io.jvm.javaio.*
 import kotlinx.io.core.*
+import java.io.InputStream
 import kotlin.text.Charsets
+
+/**
+ * 在发送完成后将会 [InputStream.close]
+ */
+public fun InputStream.consumeAsWriteChannelContent(): OutgoingContent.WriteChannelContent {
+    return object : OutgoingContent.WriteChannelContent() {
+        override suspend fun writeTo(channel: ByteWriteChannel) {
+            runBIO { this@consumeAsWriteChannelContent.withUse { copyTo(channel) } }
+        }
+    }
+}
 
 
 @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")

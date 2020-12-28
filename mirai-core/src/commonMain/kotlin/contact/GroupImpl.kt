@@ -267,12 +267,6 @@ internal class GroupImpl(
         }
     }
 
-    /**
-     * 上传一个语音消息以备发送.
-     * 请注意，这是一个实验性api且随时会被删除
-     * @throws EventCancelledException 当发送消息事件被取消
-     * @throws OverFileSizeMaxException 当语音文件过大而被服务器拒绝上传时. (最大大小约为 1 MB)
-     */
     override suspend fun uploadVoice(resource: ExternalResource): Voice {
         if (resource.size > 1048576) {
             throw  OverFileSizeMaxException()

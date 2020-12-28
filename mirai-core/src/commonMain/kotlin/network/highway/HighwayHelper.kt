@@ -212,7 +212,7 @@ internal object HighwayHelper {
             parameter("bmd5", resource.md5.toUHexString(""))
             parameter("mType", "pttDu")
             parameter("voice_encodec", resource.voiceCodec)
-            body = resource.inputStream()
+            body = resource.inputStream().consumeAsWriteChannelContent()
         }
     }
 }

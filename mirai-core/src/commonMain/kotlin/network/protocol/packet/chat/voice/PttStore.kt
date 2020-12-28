@@ -20,8 +20,10 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.internal.utils.toIpV4AddressString
 import net.mamoe.mirai.utils.ExternalResource
 import net.mamoe.mirai.utils.encodeToString
+import net.mamoe.mirai.utils.toUHexString
 
 internal val ExternalResource.voiceCodec: Int
     get() {
@@ -45,7 +47,18 @@ internal class PttStore {
                 val fileKey: ByteArray
             ) : GroupPttUp.Response() {
                 override fun toString(): String {
-                    return "RequireUpload(fileId=$fileId, uKey=${uKey.contentToString()})"
+                    return "RequireUpload(" +
+                            "fileId=$fileId, " +
+                            "uploadServers=${
+                                uploadIpList.zip(uploadPortList)
+                                    .joinToString(
+                                        prefix = "[",
+                                        postfix = "]"
+                                    ) { "${it.first.toIpV4AddressString()}:${it.second}1" }
+                            }, " +
+                            "uKey=${uKey.toUHexString("")}, " +
+                            "fileKey=${fileKey.toUHexString("")}" +
+                            ")"
                 }
             }
         }
@@ -88,7 +101,8 @@ internal class PttStore {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
-            val resp = resp0.msgTryupPttRsp.firstOrNull() ?: error("cannot find `msgTryupPttRsp` from `Cmd0x388.RspBody`")
+            val resp =
+                resp0.msgTryupPttRsp.firstOrNull() ?: error("cannot find `msgTryupPttRsp` from `Cmd0x388.RspBody`")
             if (resp.failMsg != null) {
                 throw IllegalStateException(resp.failMsg.encodeToString())
             }
@@ -152,7 +166,8 @@ internal class PttStore {
 
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             val resp0 = readProtoBuf(Cmd0x388.RspBody.serializer())
-            val resp = resp0.msgGetpttUrlRsp.firstOrNull() ?: error("cannot find `msgGetpttUrlRsp` from `Cmd0x388.RspBody`")
+            val resp =
+                resp0.msgGetpttUrlRsp.firstOrNull() ?: error("cannot find `msgGetpttUrlRsp` from `Cmd0x388.RspBody`")
             if (!resp.failMsg.contentEquals(EMPTY_BYTE_ARRAY)) {
                 throw IllegalStateException(resp.failMsg.encodeToString())
             }

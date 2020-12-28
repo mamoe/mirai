@@ -231,7 +231,7 @@ public interface ExternalResource : Closeable {
         @JvmBlockingBridge
         @JvmStatic
         @MiraiExperimentalApi
-        public suspend inline fun ExternalResource.uploadAsVoice(group: Group): Voice {
+        public suspend fun ExternalResource.uploadAsVoice(group: Group): Voice {
             return group.uploadVoice(this)
         }
     }
