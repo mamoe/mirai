@@ -81,7 +81,7 @@ kotlin {
 
                 implementation1(`kotlinx-atomicfu`)
 
-                api1(`ktor-client-cio`)
+                api1(`ktor-client-okhttp`)
                 api1(`ktor-client-core`)
                 api1(`ktor-network`)
 

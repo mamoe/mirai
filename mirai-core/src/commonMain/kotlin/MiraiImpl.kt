@@ -9,7 +9,7 @@
 
 package net.mamoe.mirai.internal
 
-import io.ktor.client.engine.cio.*
+import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import kotlinx.coroutines.SupervisorJob
@@ -48,7 +48,6 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
     companion object INSTANCE : MiraiImpl() {
         @Suppress("ObjectPropertyName", "unused", "DEPRECATION_ERROR")
         private val _init = Mirai.let {
-            CIO // init
             Message.Serializer.registerSerializer(OfflineGroupImage::class, OfflineGroupImage.serializer())
             Message.Serializer.registerSerializer(OfflineFriendImage::class, OfflineFriendImage.serializer())
             Message.Serializer.registerSerializer(MarketFaceImpl::class, MarketFaceImpl.serializer())

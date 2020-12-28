@@ -28,7 +28,7 @@ object Versions {
     const val coroutines = "1.4.1"
     const val atomicFU = "0.14.4"
     const val serialization = "1.0.1"
-    const val ktor = "1.4.3"
+    const val ktor = "1.5.0"
 
     const val binaryValidator = "0.2.3"
 
@@ -67,9 +67,9 @@ val `ktor-serialization` = ktor("serialization", Versions.ktor)
 
 val `ktor-client-core` = ktor("client-core", Versions.ktor)
 val `ktor-client-cio` = ktor("client-cio", Versions.ktor)
+val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
 val `ktor-client-android` = ktor("client-android", Versions.ktor)
 val `ktor-network` = ktor("network", Versions.ktor)
-val `ktor-client-okhttp` = ktor("client-okhttp", Versions.ktor)
 val `ktor-client-serialization-jvm` = ktor("client-serialization-jvm", Versions.ktor)
 
 const val slf4j = "org.slf4j:slf4j-api:" + Versions.slf4j
