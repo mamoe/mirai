@@ -91,7 +91,7 @@ public interface Member : User {
      *
      * 单条消息最大可发送 4500 字符或 50 张图片.
      *
-     * 注意: 只可以向 [NormalMember] 发送消息. 向 [AnonymousMember] 发送时将会得到异常.
+     * 注意: 只可以向 [NormalMember] 发送消息. 向 [AnonymousMember] 发送时将会得到异常 [UnsupportedOperationException].
      *
      * @see FriendMessagePreSendEvent 当此成员是好友时发送消息前事件
      * @see FriendMessagePostSendEvent 当此成员是好友时发送消息后事件
@@ -103,8 +103,9 @@ public interface Member : User {
      * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
      * @throws MessageTooLargeException 当消息过长时抛出
      * @throws IllegalArgumentException 当消息内容为空时抛出 (详见 [Message.isContentEmpty])
+     * @throws UnsupportedOperationException 当向 [AnonymousMember] 发送消息时抛出
      *
-     * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
+     * @return 消息回执. 可 [引用][MessageReceipt.quote] 或 [撤回][MessageReceipt.recall] 这条消息.
      */
     public override suspend fun sendMessage(message: Message): MessageReceipt<Member>
 
