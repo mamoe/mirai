@@ -140,6 +140,7 @@ public enum class ClientKind(
     WINPHONE(65804);
 
     public companion object {
+        @MiraiInternalApi
         public operator fun get(id: Int): ClientKind? = values().find { it.id == id }
     }
 }
