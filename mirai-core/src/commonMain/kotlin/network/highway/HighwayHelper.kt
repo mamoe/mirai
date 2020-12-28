@@ -38,6 +38,20 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 
+/**
+ * 在发送完成后将会 [InputStream.close]
+ */
+internal fun ExternalResource.consumeAsWriteChannelContent(contentType: ContentType?): OutgoingContent.WriteChannelContent {
+    return object : OutgoingContent.WriteChannelContent() {
+        override val contentType: ContentType? = contentType
+        override val contentLength: Long = size
+
+        override suspend fun writeTo(channel: ByteWriteChannel) {
+            inputStream().withUse { copyTo(channel) }
+        }
+    }
+}
+
 @Suppress("SpellCheckingInspection")
 internal suspend fun HttpClient.postImage(
     htcmd: String,
@@ -65,14 +79,7 @@ internal suspend fun HttpClient.postImage(
         userAgent("QQClient")
     }
 
-    body = object : OutgoingContent.WriteChannelContent() {
-        override val contentType: ContentType = ContentType.Image.Any
-        override val contentLength: Long = imageInput.size.toLong()
-
-        override suspend fun writeTo(channel: ByteWriteChannel) {
-            imageInput.inputStream().withUse { copyTo(channel) }
-        }
-    }
+    body = imageInput.consumeAsWriteChannelContent(ContentType.Image.Any)
 } == HttpStatusCode.OK
 
 
@@ -98,7 +105,7 @@ internal object HighwayHelper {
         kind: String,
         commandId: Int
     ) = servers.retryWithServers(
-        (input.size * 1000 / 1024 / 10).coerceAtLeast(5000).toLong(),
+        (input.size * 1000 / 1024 / 10).coerceAtLeast(5000),
         onFail = {
             throw IllegalStateException("cannot upload $kind, failed on all servers.", it)
         }
@@ -212,7 +219,8 @@ internal object HighwayHelper {
             parameter("bmd5", resource.md5.toUHexString(""))
             parameter("mType", "pttDu")
             parameter("voice_encodec", resource.voiceCodec)
-            body = resource.inputStream().consumeAsWriteChannelContent()
+            body = resource.inputStream().withUse { readBytes() }
+            // body = resource.inputStream().consumeAsWriteChannelContent(null)
         }
     }
 }
