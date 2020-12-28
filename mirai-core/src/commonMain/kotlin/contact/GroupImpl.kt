@@ -283,7 +283,7 @@ internal class GroupImpl(
                 response.fileKey,
             )
             Voice(
-                "${resource.md5.toUHexString("")}.${resource.formatName}",
+                "${resource.md5.toUHexString("")}.amr",
                 resource.md5,
                 resource.size,
                 resource.voiceCodec,

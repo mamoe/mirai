@@ -87,7 +87,7 @@ internal class PttStore {
                         innerIp = 0,
                         buildVer = "6.5.5.663".encodeToByteArray(),
                         voiceLength = 1,
-                        codec = resource.voiceCodec,
+                        codec = 0, // don't use resource.codec
                         voiceType = 1,
                         boolNewUpChan = true
                     )

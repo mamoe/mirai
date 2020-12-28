@@ -277,7 +277,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
                 msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
                         elems = message.toRichTextElems(messageTarget = targetGroup, withGeneralFlags = true),
-                        ptt = message.get(PttMessage)?.run {
+                        ptt = message[PttMessage]?.run {
                             ImMsgBody.Ptt(
                                 fileName = fileName.toByteArray(),
                                 fileMd5 = md5,

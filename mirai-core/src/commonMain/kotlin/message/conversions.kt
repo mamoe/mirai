@@ -244,31 +244,14 @@ internal fun MsgComm.Msg.toMessageChain(
     groupIdOrZero: Long,
     onlineSource: Boolean,
     isTemp: Boolean = false
-): MessageChain = toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
+): MessageChain = listOf(this).toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
 
 internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
     bot: Bot,
     groupIdOrZero: Long,
     onlineSource: Boolean,
     isTemp: Boolean = false
-): MessageChain = toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
-
-@JvmName("toMessageChain1")
-internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
-    bot: Bot?,
-    botId: Long,
-    groupIdOrZero: Long,
-    onlineSource: Boolean,
-    isTemp: Boolean = false
-): MessageChain = map { it.msg }.toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
-
-internal fun MsgComm.Msg.toMessageChain(
-    bot: Bot?,
-    botId: Long,
-    groupIdOrZero: Long,
-    onlineSource: Boolean,
-    isTemp: Boolean = false
-): MessageChain = listOf(this).toMessageChain(bot, botId, groupIdOrZero, onlineSource, isTemp)
+): MessageChain = map { it.msg }.toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
 
 internal fun List<MsgComm.Msg>.toMessageChain(
     bot: Bot?,
@@ -280,7 +263,7 @@ internal fun List<MsgComm.Msg>.toMessageChain(
     val elements = this.flatMap { it.msgBody.richText.elems }
 
     @OptIn(ExperimentalStdlibApi::class)
-    val ppts = buildList<Message> {
+    val ptts = buildList<Message> {
         this@toMessageChain.forEach { msg ->
             msg.msgBody.richText.ptt?.run {
 //        when (fileType) {
@@ -291,7 +274,7 @@ internal fun List<MsgComm.Msg>.toMessageChain(
             }
         }
     }
-    return buildMessageChain(elements.size + 1 + ppts.size) {
+    return buildMessageChain(elements.size + 1 + ptts.size) {
         if (onlineSource) {
             checkNotNull(bot) { "bot is null" }
             when {
@@ -303,7 +286,7 @@ internal fun List<MsgComm.Msg>.toMessageChain(
             +OfflineMessageSourceImplByMsg(this@toMessageChain, botId)
         }
         elements.joinToMessageChain(groupIdOrZero, botId, this)
-        addAll(ppts)
+        addAll(ptts)
     }.cleanupRubbishMessageElements()
 }
 
