@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
+import org.jetbrains.kotlin.idea.refactoring.fqName.fqName
 import org.jetbrains.kotlin.idea.refactoring.fqName.getKotlinFqName
 import org.jetbrains.kotlin.idea.references.KtSimpleNameReference
 import org.jetbrains.kotlin.name.FqName
@@ -35,6 +36,8 @@ import org.jetbrains.kotlin.resolve.constants.ArrayValue
 import org.jetbrains.kotlin.resolve.constants.ConstantValue
 import org.jetbrains.kotlin.resolve.constants.StringValue
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
+import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.typeUtil.supertypes
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstance
 
 
@@ -83,6 +86,11 @@ fun KtConstructorCalleeExpression.getTypeAsUserType(): KtUserType? {
         }
     }
     return null
+}
+
+fun KotlinType.hasSuperType(fqName: String, includeSelf: Boolean = true): Boolean {
+    if (this.fqName?.asString() == fqName) return true
+    return this.supertypes().any { it.hasSuperType("net.mamoe.mirai.message.data.Message", false) }
 }
 
 fun KtClassOrObject.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqName)

@@ -38,6 +38,12 @@
                          groupKey="group.names.plugin.service.issues" enabledByDefault="true" level="WARNING"
                          implementationClass="net.mamoe.mirai.console.intellij.diagnostics.PluginMainServiceNotConfiguredInspection"/>
 
+        <localInspection groupPath="Mirai console" language="kotlin" shortName="UsingStringPlusMessage"
+                         bundle="messages.InspectionGadgetsBundle"
+                         key="using.string.plus.message.display.name" groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.message.issues" enabledByDefault="true" level="WARNING"
+                         implementationClass="net.mamoe.mirai.console.intellij.diagnostics.UsingStringPlusMessageInspection"/>
+
         <!--
         <intentionAction>
             <className>net.mamoe.mirai.console.intellij.diagnostics.fix.AbuseYellowIntention</className>
