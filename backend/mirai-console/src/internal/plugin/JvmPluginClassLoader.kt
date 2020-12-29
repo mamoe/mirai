@@ -97,28 +97,17 @@ internal class JvmPluginClassLoader(
                 } else throw LoadingDeniedException("$name was not exported by $otherClassloader")
             }
         }
-
-        // If no cache...
-        return kotlin.runCatching {
-            // Try load this class direct....
-            super.findClass(name).also { cache[name] = it }
-        }.getOrElse { exception ->
-            if (exception is ClassNotFoundException) {
-                // Cannot load the class from this, try others.
-                classLoaders.forEach { otherClassloader ->
-                    if (otherClassloader === this) return@forEach
-                    val other = kotlin.runCatching {
-                        otherClassloader.findClass(name, true)
-                    }.onFailure { err ->
-                        if (err is LoadingDeniedException || err !is ClassNotFoundException)
-                            throw err
-                    }.getOrNull()
-                    if (other != null) return other
-                }
-            }
-            // Great, nobody known what is the class.
-            throw exception
+        classLoaders.forEach { otherClassloader ->
+            val other = kotlin.runCatching {
+                if (otherClassloader === this) super.findClass(name).also { cache[name] = it }
+                else otherClassloader.findClass(name, true)
+            }.onFailure { err ->
+                if (err is LoadingDeniedException || err !is ClassNotFoundException)
+                    throw err
+            }.getOrNull()
+            if (other != null) return other
         }
+        throw ClassNotFoundException(name)
     }
 }
 
