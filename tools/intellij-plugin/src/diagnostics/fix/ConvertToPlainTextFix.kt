@@ -56,16 +56,18 @@ class ConvertToPlainTextFix(
 
         val psiFactory = KtPsiFactory(project)
 
-        if (element.parent is KtBinaryExpression) {
-            // 'str + msg'
-
+        val referenceExpr = element.referenceExpression()
+        if (referenceExpr == null || element.parent is KtBinaryExpression) {
+            // + operator, e.g. 'str + msg'
+            // or
+            // complex expressions, e.g. 'str.toString().plus(msg)', '"".also {  }.plus(msg)'
             val replaced = element.replace(psiFactory.createExpression("net.mamoe.mirai.message.data.PlainText(${element.text})"))
                 as? KtElement ?: return
             ShortenReferences.DEFAULT.process(replaced)
             return
         }
 
-        val resolved = element.referenceExpression()?.resolve() ?: return
+        val resolved = referenceExpr.resolve()
         if (resolved !is KtDeclaration) return
         // 'plus' function
         // perform fix on receiver
