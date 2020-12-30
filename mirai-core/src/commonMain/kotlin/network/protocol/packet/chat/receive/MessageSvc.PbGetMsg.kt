@@ -233,7 +233,7 @@ private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
         permission = MemberPermission.MEMBER,
         specialTitle = "",
         muteTimestamp = 0,
-        uin = msgHead.authUin,
+        id = msgHead.authUin,
         nick = msgHead.authNick.ifEmpty { msgHead.fromNick },
         remark = "",
         anonymousId = null

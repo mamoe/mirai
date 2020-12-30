@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.User
+import net.mamoe.mirai.data.UserInfo
 import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
@@ -29,14 +30,17 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
+internal open class UserInfoImpl(override val id: Long, override val nick: String, override val remark: String = "") :
+    UserInfo
+
 internal abstract class AbstractUser(
     bot: Bot,
     coroutineContext: CoroutineContext,
-    friendInfo: net.mamoe.mirai.data.FriendInfo,
+    userInfo: UserInfo,
 ) : User, AbstractContact(bot, coroutineContext) {
-    final override val id: Long = friendInfo.uin
-    final override var nick: String = friendInfo.nick
-    final override val remark: String = friendInfo.remark
+    final override val id: Long = userInfo.id
+    final override var nick: String = userInfo.nick
+    final override val remark: String = userInfo.remark
 
     @Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
     override suspend fun uploadImage(resource: ExternalResource): Image {

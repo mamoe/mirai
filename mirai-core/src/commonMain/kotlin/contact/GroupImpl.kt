@@ -69,7 +69,7 @@ internal class GroupImpl(
     override lateinit var botAsMember: NormalMember
 
     override val members: ContactList<NormalMember> = ContactList(members.mapNotNullTo(ConcurrentLinkedQueue()) {
-        if (it.uin == bot.id) {
+        if (it.id == bot.id) {
             botAsMember = newMember(it).cast()
             if (it.permission == MemberPermission.OWNER) {
                 owner = botAsMember
@@ -313,7 +313,7 @@ internal fun Group.newMember(memberInfo: MemberInfo): Member {
 
 internal fun GroupImpl.newAnonymous(name: String, id: String): Member = newMember(
     MemberInfoImpl(
-        uin = 80000000L,
+        id = 80000000L,
         nick = name,
         permission = MemberPermission.MEMBER,
         remark = "匿名",

@@ -25,9 +25,8 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.NormalMember
-import net.mamoe.mirai.data.FriendInfo
-import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.data.FriendInfoImpl
+import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
@@ -482,7 +481,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         val body = vProtobuf.loadAs(Submsgtype0xb3.SubMsgType0xb3.MsgBody.serializer())
         val new = Mirai._lowLevelNewFriend(
             bot, FriendInfoImpl(
-                uin = body.msgAddFrdNotify.fuin,
+                id = body.msgAddFrdNotify.fuin,
                 nick = body.msgAddFrdNotify.fuinNick,
                 remark = "",
             )
