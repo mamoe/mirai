@@ -14,13 +14,11 @@ import kotlinx.io.core.toByteArray
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.groupCode
 import net.mamoe.mirai.internal.contact.uin
-import net.mamoe.mirai.internal.message.MessageSourceToFriendImpl
-import net.mamoe.mirai.internal.message.MessageSourceToGroupImpl
-import net.mamoe.mirai.internal.message.MessageSourceToTempImpl
-import net.mamoe.mirai.internal.message.toRichTextElems
+import net.mamoe.mirai.internal.message.*
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.QQAndroidClient.MessageSvcSyncData.PendingGroupMessageReceiptSyncId
@@ -65,6 +63,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             txtAdd = false
             if (last.isNotEmpty()) {
                 results.add(ArrayList(last).asMessageChain())
+                last.clear()
             }
         }
         forEach { element ->
@@ -134,6 +133,63 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             })
         }
         return response
+    }
+
+    /**
+     * 发送陌生人消息
+     */
+    @Suppress("FunctionName")
+    internal inline fun createToStrangerImpl(
+        client: QQAndroidClient,
+        target: Stranger,
+        message: MessageChain,
+        crossinline sourceCallback: (MessageSourceToStrangerImpl) -> Unit
+    ): List<OutgoingPacket> {
+        contract {
+            callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
+        }
+
+        val sequenceIds = AtomicReference<IntArray>()
+        val randIds = AtomicReference<IntArray>()
+        return buildOutgoingMessageCommon(
+            client = client,
+            message = message,
+            fragmentTranslator = {
+                ImMsgBody.MsgBody(
+                    richText = ImMsgBody.RichText(
+                        elems = it.toRichTextElems(messageTarget = target, withGeneralFlags = true)
+                    )
+                )
+            },
+            pbSendMsgReq = { msgBody, msgSeq, msgRand, contentHead ->
+                MsgSvc.PbSendMsgReq(
+                    routingHead = MsgSvc.RoutingHead(c2c = MsgSvc.C2C(toUin = target.uin)),
+                    contentHead = contentHead,
+                    msgBody = msgBody,
+                    msgSeq = msgSeq,
+                    msgRand = msgRand,
+                    syncCookie = client.syncingController.syncCookie ?: byteArrayOf()
+                    // msgVia = 1
+                )
+            },
+            sequenceIds = sequenceIds,
+            randIds = randIds,
+            sequenceIdsInitializer = { size ->
+                IntArray(size) { client.nextFriendSeq() }
+            },
+            postInit = {
+                sourceCallback(
+                    MessageSourceToStrangerImpl(
+                        internalIds = randIds.get(),
+                        sender = client.bot,
+                        target = target,
+                        time = currentTimeSeconds().toInt(),
+                        sequenceIds = sequenceIds.get(),
+                        originalMessage = message
+                    )
+                )
+            }
+        )
     }
 
     /**
@@ -344,6 +400,23 @@ internal inline fun MessageSvcPbSendMsg.createToTemp(
         member,
         message,
         source
+    )
+}
+
+internal inline fun MessageSvcPbSendMsg.createToStranger(
+    client: QQAndroidClient,
+    stranger: Stranger,
+    message: MessageChain,
+    crossinline sourceCallback: (MessageSourceToStrangerImpl) -> Unit
+): List<OutgoingPacket> {
+    contract {
+        callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
+    }
+    return createToStrangerImpl(
+        client,
+        stranger,
+        message,
+        sourceCallback
     )
 }
 

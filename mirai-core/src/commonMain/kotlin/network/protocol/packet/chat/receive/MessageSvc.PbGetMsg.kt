@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import kotlinx.io.core.readUByte
+import kotlinx.io.core.readUShort
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
@@ -27,6 +29,7 @@ import net.mamoe.mirai.contact.appId
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
@@ -35,6 +38,7 @@ import net.mamoe.mirai.internal.message.toMessageChain
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
@@ -49,6 +53,7 @@ import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.*
@@ -353,7 +358,8 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
         }
         */
 
-        166 -> {
+        //167 单向好友
+        166, 167 -> {
             if (msgHead.fromUin == bot.id) {
                 loop@ while (true) {
                     val instance = bot.client.getFriendSeq()
@@ -365,25 +371,40 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
                 }
                 return null
             }
-            val friend = bot.getFriend(msgHead.fromUin) ?: return null
-            friend.checkIsFriendImpl()
-
             if (!bot.firstLoginSucceed) {
                 return null
             }
-            friend.lastMessageSequence.loop {
-                return if (friend.lastMessageSequence.compareAndSet(
-                        it,
-                        msgHead.msgSeq
-                    ) && contentHead?.autoReply != 1
-                ) {
-                    FriendMessageEvent(
-                        friend,
-                        toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
-                        msgHead.msgTime
-                    )
-                } else null
-            }
+            bot.getFriend(msgHead.fromUin)?.let { friend ->
+                friend.checkIsFriendImpl()
+                friend.lastMessageSequence.loop {
+                    return if (friend.lastMessageSequence.compareAndSet(
+                            it,
+                            msgHead.msgSeq
+                        ) && contentHead?.autoReply != 1
+                    ) {
+                        FriendMessageEvent(
+                            friend,
+                            toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.FRIEND),
+                            msgHead.msgTime
+                        )
+                    } else null
+                }
+            } ?: bot.getStranger(msgHead.fromUin)?.let { stranger ->
+                stranger.checkIsImpl()
+                stranger.lastMessageSequence.loop {
+                    return if (stranger.lastMessageSequence.compareAndSet(
+                            it,
+                            msgHead.msgSeq
+                        ) && contentHead?.autoReply != 1
+                    ) {
+                        StrangerMessageEvent(
+                            stranger,
+                            toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.STRANGER),
+                            msgHead.msgTime
+                        )
+                    } else null
+                }
+            } ?: return null
         }
         208 -> {
             // friend ptt
@@ -448,7 +469,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
                                 bot,
                                 groupIdOrZero = 0,
                                 onlineSource = true,
-                                isTemp = true
+                                MessageSourceKind.TEMP
                             ),
                             msgHead.msgTime
                         )

@@ -238,27 +238,26 @@ private val PB_RESERVE_FOR_PTT =
 private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".hexToBytes()
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
-
 internal fun MsgComm.Msg.toMessageChain(
     bot: Bot,
     groupIdOrZero: Long,
     onlineSource: Boolean,
-    isTemp: Boolean = false
-): MessageChain = listOf(this).toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
+    messageSourceKind: MessageSourceKind
+): MessageChain = listOf(this).toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, messageSourceKind)
 
 internal fun List<MsgOnlinePush.PbPushMsg>.toMessageChain(
     bot: Bot,
     groupIdOrZero: Long,
     onlineSource: Boolean,
-    isTemp: Boolean = false
-): MessageChain = map { it.msg }.toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, isTemp)
+    messageSourceKind: MessageSourceKind
+): MessageChain = map { it.msg }.toMessageChain(bot, bot.id, groupIdOrZero, onlineSource, messageSourceKind)
 
 internal fun List<MsgComm.Msg>.toMessageChain(
     bot: Bot?,
     botId: Long,
     groupIdOrZero: Long,
     onlineSource: Boolean,
-    isTemp: Boolean = false
+    messageSourceKind: MessageSourceKind
 ): MessageChain {
     val elements = this.flatMap { it.msgBody.richText.elems }
 
@@ -277,13 +276,15 @@ internal fun List<MsgComm.Msg>.toMessageChain(
     return buildMessageChain(elements.size + 1 + ptts.size) {
         if (onlineSource) {
             checkNotNull(bot) { "bot is null" }
-            when {
-                isTemp -> +MessageSourceFromTempImpl(bot, this@toMessageChain)
-                groupIdOrZero != 0L -> +MessageSourceFromGroupImpl(bot, this@toMessageChain)
-                else -> +MessageSourceFromFriendImpl(bot, this@toMessageChain)
+
+            when (messageSourceKind) {
+                MessageSourceKind.TEMP -> +MessageSourceFromTempImpl(bot, this@toMessageChain)
+                MessageSourceKind.GROUP -> +MessageSourceFromGroupImpl(bot, this@toMessageChain)
+                MessageSourceKind.FRIEND -> +MessageSourceFromFriendImpl(bot, this@toMessageChain)
+                MessageSourceKind.STRANGER -> +MessageSourceFromStrangerImpl(bot, this@toMessageChain)
             }
         } else {
-            +OfflineMessageSourceImplByMsg(this@toMessageChain, botId)
+            +OfflineMessageSourceImplByMsg(bot, this@toMessageChain, botId)
         }
         elements.joinToMessageChain(groupIdOrZero, botId, this)
         addAll(ptts)

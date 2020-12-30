@@ -22,9 +22,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.JavaFriendlyAPI
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.NormalMember
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.data.GroupHonorType
 import net.mamoe.mirai.event.events.*
@@ -37,11 +35,9 @@ import net.mamoe.mirai.internal.network.protocol.data.jce.MsgInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.MsgType0x210
 import net.mamoe.mirai.internal.network.protocol.data.jce.OnlinePushPack
 import net.mamoe.mirai.internal.network.protocol.data.jce.RequestPacket
-import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x115
-import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x122
+import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x27.SubMsgType0x27.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0x44.Submsgtype0x44
-import net.mamoe.mirai.internal.network.protocol.data.proto.Submsgtype0xb3
 import net.mamoe.mirai.internal.network.protocol.data.proto.TroopTips0x857
 import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
@@ -487,7 +483,10 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             )
         )
         bot.friends.delegate.add(new)
-        return@lambda528 sequenceOf(FriendAddEvent(new))
+        return@lambda528 bot.getStranger(new.id)?.let {
+            bot.strangers.remove(new.id)
+            sequenceOf(StrangerRelationChangeEvent.Friended(it, new), FriendAddEvent(new))
+        } ?: sequenceOf(FriendAddEvent(new))
     },
     0xE2L to lambda528 { _ ->
         // TODO: unknown. maybe messages.
@@ -531,38 +530,62 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         return@lambda528 emptySequence()
     },
     //戳一戳信息等
-    0x122L to lambda528 { bot, _ ->
+    0x122L to lambda528 { bot, msgInfo ->
         val body = vProtobuf.loadAs(Submsgtype0x122.Submsgtype0x122.MsgBody.serializer())
         when (body.templId) {
             //戳一戳
             1132L, 1133L, 1134L, 1135L, 1136L, 10043L -> {
                 //预置数据，服务器将不会提供己方已知消息
-                var from: Friend = bot.asFriend
+                var from: User? = null
                 var action = ""
-                var target: Friend = bot.asFriend
+                var target: User? = null
                 var suffix = ""
                 body.msgTemplParam.asSequence().map {
                     it.name.decodeToString() to it.value.decodeToString()
                 }.forEach { (key, value) ->
                     when (key) {
                         "action_str" -> action = value
-                        "uin_str1" -> from = bot.getFriend(value.toLong()) ?: return@lambda528 emptySequence()
-                        "uin_str2" -> target = bot.getFriend(value.toLong()) ?: return@lambda528 emptySequence()
+                        "uin_str1" -> from = bot.getFriend(value.toLong()) ?: bot.getStranger(value.toLong())
+                                ?: return@lambda528 emptySequence()
+                        "uin_str2" -> target = bot.getFriend(value.toLong()) ?: bot.getStranger(value.toLong())
+                                ?: return@lambda528 emptySequence()
                         "suffix_str" -> suffix = value
                     }
                 }
-
-                return@lambda528 sequenceOf(
-                    if (target.id == bot.id) {
-                        if (from.id == bot.id)
-                            BotNudgedEvent.InPrivateSession.ByBot(target, action, suffix)
-                        else
-                            BotNudgedEvent.InPrivateSession.ByFriend(target, action, suffix)
-                    } else {
-                        if (from.id == bot.id)
-                            FriendNudgedEvent.NudgedByBot(action, suffix, target)
-                        else
-                            FriendNudgedEvent.NudgedByHimself(action, suffix, target)
+                val subject: User = bot.getFriend(msgInfo.lFromUin) ?: bot.getStranger(msgInfo.lFromUin)
+                ?: return@lambda528 emptySequence()
+                //机器人自己戳自己
+                if (target == null && from == null) {
+                    sequenceOf(BotNudgedEvent.InPrivateSession.ByBot(subject, action, suffix))
+                } else sequenceOf(
+                    when (subject) {
+                        is Friend -> {
+                            //机器人自身
+                            if (target == null) {
+                                BotNudgedEvent.InPrivateSession.ByFriend(subject, action, suffix)
+                            } else {
+                                //机器人自身
+                                if (from == null) {
+                                    FriendNudgedEvent.NudgedByBot(subject, action, suffix)
+                                } else {
+                                    FriendNudgedEvent.NudgedByHimself(subject, action, suffix)
+                                }
+                            }
+                        }
+                        is Stranger -> {
+                            //机器人自身
+                            if (target == null) {
+                                BotNudgedEvent.InPrivateSession.ByStranger(subject, action, suffix)
+                            } else {
+                                //机器人自身
+                                if (from == null) {
+                                    StrangerNudgedEvent.NudgedByBot(subject, action, suffix)
+                                } else {
+                                    StrangerNudgedEvent.NudgedByHimself(subject, action, suffix)
+                                }
+                            }
+                        }
+                        else -> error("Internal Error: Unable to find nudge type")
                     }
                 )
             }
@@ -601,6 +624,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
 
         fun DelFriend.transform(bot: QQAndroidBot): Sequence<Packet> {
             return this.uint64Uins.asSequence().mapNotNull {
+
                 val friend = bot.getFriend(it) ?: return@mapNotNull null
                 if (bot.friends.delegate.remove(friend)) {
                     FriendDeleteEvent(friend)
@@ -726,7 +750,6 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                             val from = info.nick
                             when (info) {
                                 is FriendInfoImpl -> info.nick = to
-                                is MemberInfoImpl -> info.nick = to
                                 else -> {
                                     bot.network.logger.debug {
                                         "Unknown how to update nick for $info"

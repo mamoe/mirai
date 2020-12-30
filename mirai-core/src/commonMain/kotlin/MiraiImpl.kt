@@ -317,7 +317,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 }
             }
             is MessageSourceFromFriendImpl,
-            is MessageSourceToFriendImpl
+            is MessageSourceToFriendImpl,
+            is MessageSourceFromStrangerImpl,
+            is MessageSourceToStrangerImpl,
             -> network.run {
                 check(source.fromId == bot.id) {
                     "can only recall a message sent by bot"
@@ -348,7 +350,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
             }
             is OfflineMessageSource -> network.run {
                 when (source.kind) {
-                    MessageSourceKind.FRIEND -> {
+                    MessageSourceKind.FRIEND, MessageSourceKind.STRANGER -> {
                         check(source.fromId == bot.id) {
                             "can only recall a message sent by bot"
                         }

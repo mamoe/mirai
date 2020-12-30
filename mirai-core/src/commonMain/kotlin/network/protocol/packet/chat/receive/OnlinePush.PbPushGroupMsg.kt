@@ -35,6 +35,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.IncomingPacketFactory
 import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.utils.*
 
 /**
@@ -106,7 +107,12 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
 
         if (isFromSelfAccount) {
             return GroupMessageSyncEvent(
-                message = msgs.toMessageChain(bot, groupIdOrZero = group.id, onlineSource = true),
+                message = msgs.toMessageChain(
+                    bot,
+                    groupIdOrZero = group.id,
+                    onlineSource = true,
+                    MessageSourceKind.GROUP
+                ),
                 time = msgHead.msgTime,
                 group = group,
                 sender = sender,
@@ -119,7 +125,12 @@ internal object OnlinePushPbPushGroupMsg : IncomingPacketFactory<Packet?>("Onlin
             return GroupMessageEvent(
                 senderName = name,
                 sender = sender,
-                message = msgs.toMessageChain(bot, groupIdOrZero = group.id, onlineSource = true),
+                message = msgs.toMessageChain(
+                    bot,
+                    groupIdOrZero = group.id,
+                    onlineSource = true,
+                    MessageSourceKind.GROUP
+                ),
                 permission = findMemberPermission(extraInfo?.flags ?: 0, sender, bot),
                 time = msgHead.msgTime
             )

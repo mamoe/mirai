@@ -13,6 +13,7 @@ package net.mamoe.mirai.internal.message
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.SourceMsg
@@ -91,11 +92,25 @@ internal data class OfflineMessageSourceImplData(
 
 internal class OfflineMessageSourceImplByMsg(
     // from other sources' originalMessage
+    val bot: Bot?,
     val delegate: List<MsgComm.Msg>,
     override val botId: Long,
 ) : OfflineMessageSource(), MessageSourceInternal {
     override val kind: MessageSourceKind =
-        if (delegate.first().msgHead.groupInfo != null) MessageSourceKind.GROUP else MessageSourceKind.FRIEND
+        when {
+            delegate.first().msgHead.groupInfo != null -> {
+                MessageSourceKind.GROUP
+            }
+            delegate.first().msgHead.c2cTmpMsgHead != null -> {
+                MessageSourceKind.TEMP
+            }
+            bot?.getStranger(delegate.first().msgHead.fromUin) != null -> {
+                MessageSourceKind.STRANGER
+            }
+            else -> {
+                MessageSourceKind.FRIEND
+            }
+        }
     override val ids: IntArray get() = sequenceIds
     override val internalIds: IntArray = delegate.mapToIntArray { it.msgHead.msgUid.toInt() }
     override val time: Int
@@ -110,7 +125,7 @@ internal class OfflineMessageSourceImplByMsg(
             botId,
             groupIdOrZero = delegate.first().msgHead.groupInfo?.groupCode ?: 0,
             onlineSource = false,
-            isTemp = delegate.first().msgHead.c2cTmpMsgHead != null
+            messageSourceKind = kind
         )
     }
     override val sequenceIds: IntArray = delegate.mapToIntArray { it.msgHead.msgSeq }
