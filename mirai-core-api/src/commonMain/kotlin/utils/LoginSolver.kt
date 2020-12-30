@@ -174,9 +174,9 @@ public class StandardCharImageLoginSolver @JvmOverloads constructor(
 
     override suspend fun onSolveSliderCaptcha(bot: Bot, url: String): String = loginSolverLock.withLock {
         val logger = loggerSupplier(bot)
-        logger.info { "[SliderCaptcha] 需要滑动验证码, 请在 Chrome 浏览器中打开以下链接并完成验证码, 完成后请输入提示 ticket." }
-        logger.info { "[SliderCaptcha] Slider captcha required, please open the following link in Chrome browser and solve the captcha. Type ticket here after completion." }
-        logger.info { "[SliderCaptcha] Chrome Extension: https://github.com/project-mirai/mirai-login-solver-selenium#%E4%B8%8B%E8%BD%BD-chrome-%E6%89%A9%E5%B1%95%E6%8F%92%E4%BB%B6" }
+        logger.info { "[SliderCaptcha] 需要滑动验证码, 请在浏览器中打开以下链接并完成验证码, 完成后请输入提示 ticket." }
+        logger.info { "[SliderCaptcha] Slider captcha required, please open the following link in any browser and solve the captcha. Type ticket here after completion." }
+        logger.info { "[SliderCaptcha] @see https://github.com/project-mirai/mirai-login-solver-selenium#%E4%B8%8B%E8%BD%BD-chrome-%E6%89%A9%E5%B1%95%E6%8F%92%E4%BB%B6" }
         logger.info(url)
         return input().also {
             logger.info { "[SliderCaptcha] 正在提交中..." }
