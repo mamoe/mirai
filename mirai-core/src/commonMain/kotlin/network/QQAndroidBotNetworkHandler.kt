@@ -208,7 +208,19 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
                                 }
                             )
                         }
-                        val ticket = loginSolverNotNull().onSolveSliderCaptcha(bot, response.url).orEmpty()
+                        val ticket = try {
+                            loginSolverNotNull().onSolveSliderCaptcha(bot, response.url)
+                                ?.takeIf { it.isNotEmpty() }
+                                ?: return closeEverythingAndRelogin(host, port, cause, step)
+                        } catch (lfe: LoginFailedException) {
+                            throw lfe
+                        } catch (error: Throwable) {
+                            if (step == 0) {
+                                logger.warning(error)
+                                return closeEverythingAndRelogin(host, port, error, 1)
+                            }
+                            throw error
+                        }
                         response = WtLogin.Login.SubCommand2.SubmitSliderCaptcha(bot.client, ticket).sendAndExpect()
                         continue@mainloop
                     }

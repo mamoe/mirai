@@ -18,7 +18,6 @@ import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -128,7 +127,6 @@ public interface NormalMember : Member {
      *
      * @see Nudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalApi
     public override fun nudge(): MemberNudge = MemberNudge(this)
 }
 

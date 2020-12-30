@@ -344,7 +344,7 @@ public sealed class OnlineMessageSource : MessageSource() {
      */
     public sealed class Outgoing : OnlineMessageSource() {
         public companion object Key :
-            AbstractPolymorphicMessageKey<MessageSource, Outgoing>(MessageSource, { it.safeCast() })
+            AbstractPolymorphicMessageKey<OnlineMessageSource, Outgoing>(OnlineMessageSource, { it.safeCast() })
 
         public abstract override val sender: Bot
         public abstract override val target: Contact
@@ -433,7 +433,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public companion object Key :
-            AbstractPolymorphicMessageKey<MessageSource, FromTemp>(MessageSource, { it.safeCast() })
+            AbstractPolymorphicMessageKey<OnlineMessageSource, FromTemp>(OnlineMessageSource, { it.safeCast() })
     }
 }
 

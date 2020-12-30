@@ -23,7 +23,6 @@ import net.mamoe.mirai.message.action.UserNudge
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.isContentEmpty
 import net.mamoe.mirai.message.data.toPlainText
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 代表一个 **用户**.
@@ -66,11 +65,10 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      * @see UserMessagePostSendEvent 发送消息后事件
      *
      * @throws EventCancelledException 当发送消息事件被取消时抛出
-     * @throws BotIsBeingMutedException 发送群消息时若 [Bot] 被禁言抛出
      * @throws MessageTooLargeException 当消息过长时抛出
      * @throws IllegalArgumentException 当消息内容为空时抛出 (详见 [Message.isContentEmpty])
      *
-     * @return 消息回执. 可进行撤回 ([MessageReceipt.recall])
+     * @return 消息回执. 可 [引用][MessageReceipt.quote] 或 [撤回][MessageReceipt.recall] 这条消息.
      */
     @JvmBlockingBridge
     public override suspend fun sendMessage(message: Message): MessageReceipt<User>
@@ -88,7 +86,6 @@ public interface User : Contact, UserOrBot, CoroutineScope {
      *
      * @see Nudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalApi
     public override fun nudge(): UserNudge
 }
 

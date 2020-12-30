@@ -23,7 +23,6 @@ import net.mamoe.mirai.message.action.BotNudge
 import net.mamoe.mirai.message.action.MemberNudge
 import net.mamoe.mirai.network.LoginFailedException
 import net.mamoe.mirai.utils.BotConfiguration
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.MiraiLogger
 import java.util.concurrent.ConcurrentHashMap
 
@@ -124,9 +123,10 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
 
     /**
      * 以 [对方 QQ 号码][id] 获取一个好友对象, 在获取失败时返回 `null`.
+     * 在 [id] 与 [Bot.id] 相同时返回 [Bot.asFriend]
      */
     public fun getFriend(id: Long): Friend? =
-        friends.firstOrNull { it.id == id }
+        friends.firstOrNull { it.id == id } ?: if (id == this.id) asFriend else null
 
     /**
      * 以 [对方 QQ 号码][id] 获取一个好友对象, 在获取失败时抛出 [NoSuchElementException].
@@ -168,7 +168,6 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      *
      * @see MemberNudge.sendTo 发送这个戳一戳消息
      */
-    @MiraiExperimentalApi
     public override fun nudge(): BotNudge = BotNudge(this)
 
     /**
