@@ -46,7 +46,7 @@ public data class FriendAddEvent internal constructor(
 ) : FriendEvent, Packet, AbstractEvent()
 
 /**
- * 好友已被删除的事件.
+ * 好友已被删除或主动删除的事件.
  */
 public data class FriendDeleteEvent internal constructor(
     public override val friend: Friend
@@ -146,9 +146,9 @@ public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
     /** 在 [Bot] 与 [Friend] 的对话中 [Friend] 戳了自己事件 */
     @MiraiExperimentalApi
     public data class NudgedByHimself internal constructor(
+        override val friend: Friend,
         override val action: String,
-        override val suffix: String,
-        override val friend: Friend
+        override val suffix: String
     ) : FriendNudgedEvent() {
         override fun toString(): String {
             return "FriendNudgedEvent.NudgedByHimself(friend=$friend, action=$action, suffix=$suffix)"
@@ -161,9 +161,9 @@ public sealed class FriendNudgedEvent : AbstractEvent(), FriendEvent, Packet {
     /** [Bot] 戳了 [Friend] */
     @MiraiExperimentalApi
     public data class NudgedByBot internal constructor(
+        override val friend: Friend,
         override val action: String,
-        override val suffix: String,
-        override val friend: Friend
+        override val suffix: String
     ) : FriendNudgedEvent() {
         override fun toString(): String {
             return "FriendNudgedEvent.NudgedByBot(friend=$friend, action=$action, suffix=$suffix)"

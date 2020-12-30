@@ -17,6 +17,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.Event
 import kotlin.internal.HidesMembers
 
@@ -91,4 +92,12 @@ public inline val GroupOperableEvent.operatorOrBot: Member
 public interface FriendEvent : BotEvent {
     public val friend: Friend
     public override val bot: Bot get() = friend.bot
+}
+
+/**
+ * 有关陌生人的事件
+ */
+public interface StrangerEvent : BotEvent {
+    public val stranger: Stranger
+    public override val bot: Bot get() = stranger.bot
 }

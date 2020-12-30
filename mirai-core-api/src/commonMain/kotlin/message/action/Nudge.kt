@@ -108,3 +108,12 @@ public data class MemberNudge(
 public data class FriendNudge(
     public override val target: UserOrBot
 ) : UserNudge()
+
+/**
+ * @see Stranger.nudge
+ * @see Nudge
+ */
+@MiraiExperimentalApi
+public data class StrangerNudge(
+    public override val target: UserOrBot
+) : UserNudge()
