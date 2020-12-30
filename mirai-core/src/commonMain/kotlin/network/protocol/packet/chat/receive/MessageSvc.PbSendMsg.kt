@@ -65,6 +65,7 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
             txtAdd = false
             if (last.isNotEmpty()) {
                 results.add(ArrayList(last).asMessageChain())
+                last.clear()
             }
         }
         forEach { element ->
