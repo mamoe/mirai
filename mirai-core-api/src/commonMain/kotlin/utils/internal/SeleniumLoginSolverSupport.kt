@@ -10,13 +10,19 @@
 package net.mamoe.mirai.utils.internal
 
 import net.mamoe.mirai.utils.LoginSolver
+import net.mamoe.mirai.utils.MiraiLogger
 
 internal val SeleniumLoginSolver: LoginSolver? by lazy {
-    runCatching {
+    try {
         Class.forName("net.mamoe.mirai.selenium.SeleniumLoginSolver")
             .getMethod("getInstance")
             .invoke(null) as? LoginSolver
-    }.getOrNull()
+    } catch (ignore: ClassNotFoundException) {
+        null
+    } catch (error: Throwable) {
+        MiraiLogger.TopLevel.warning("Error in loading mirai-login-solver-selenium, skip", error)
+        null
+    }
 }
 
 // null -> 该情况为 user 确认能自己传入 ticket, 不需要 Selenium 的帮助
