@@ -103,7 +103,7 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
      * 在 [id] 与 [Bot.id] 相同时返回 [Bot.asFriend]
      */
     public fun getFriend(id: Long): Friend? =
-        friends.firstOrNull { it.id == id } ?: asFriend
+        friends.firstOrNull { it.id == id } ?: if (id == this.id) asFriend else null
 
     /**
      * 以 [对方 QQ 号码][id] 获取一个好友对象, 在获取失败时抛出 [NoSuchElementException].
