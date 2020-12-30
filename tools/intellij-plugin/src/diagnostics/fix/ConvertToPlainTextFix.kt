@@ -12,29 +12,16 @@ package net.mamoe.mirai.console.intellij.diagnostics.fix
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
 import org.jetbrains.kotlin.idea.core.ShortenReferences
-import org.jetbrains.kotlin.idea.imports.canBeAddedToImport
-import org.jetbrains.kotlin.idea.imports.importableFqName
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.quickfix.KotlinCrossLanguageQuickFixAction
-import org.jetbrains.kotlin.idea.references.mainReference
-import org.jetbrains.kotlin.idea.references.resolveMainReferenceToDescriptors
-import org.jetbrains.kotlin.idea.references.resolveToDescriptors
-import org.jetbrains.kotlin.idea.util.ImportDescriptorResult
-import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.idea.util.getFactoryForImplicitReceiverWithSubtypeOf
 import org.jetbrains.kotlin.idea.util.getResolutionScope
 import org.jetbrains.kotlin.nj2k.postProcessing.resolve
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
-import org.jetbrains.kotlin.psi.psiUtil.getQualifiedElementSelector
-import org.jetbrains.kotlin.psi.psiUtil.getReceiverExpression
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 
 class ConvertToPlainTextFix(
     /**
@@ -101,40 +88,5 @@ class ConvertToPlainTextFix(
             ShortenReferences.DEFAULT.process(replaced)
 
         }
-    }
-
-    fun applyImport(targetElement: KtElement) {
-        val targets = targetElement.resolveMainReferenceToDescriptors()
-        if (targets.isEmpty()) return
-
-        val fqName = targets.map { it.importableFqName!! }.single()
-
-        val file = targetElement.containingKtFile
-        val helper = ImportInsertHelper.getInstance(targetElement.project)
-        if (helper.importDescriptor(file, targets.first()) == ImportDescriptorResult.FAIL) return
-
-        val qualifiedExpressions = file.collectDescendantsOfType<KtDotQualifiedExpression> { qualifiedExpression ->
-            val selector = qualifiedExpression.getQualifiedElementSelector() as? KtNameReferenceExpression
-            selector?.getReferencedNameAsName() == fqName.shortName() && target(qualifiedExpression)?.importableFqName == fqName
-        }
-        val userTypes = file.collectDescendantsOfType<KtUserType> { userType ->
-            val selector = userType.getQualifiedElementSelector() as? KtNameReferenceExpression
-            selector?.getReferencedNameAsName() == fqName.shortName() && target(userType)?.importableFqName == fqName
-        }
-
-        //TODO: not deep
-        ShortenReferences.DEFAULT.process(qualifiedExpressions + userTypes)
-    }
-
-    private fun target(qualifiedElement: KtElement): DeclarationDescriptor? {
-        val nameExpression = qualifiedElement.getQualifiedElementSelector() as? KtNameReferenceExpression ?: return null
-        val receiver = nameExpression.getReceiverExpression() ?: return null
-        val bindingContext = qualifiedElement.analyze(BodyResolveMode.PARTIAL)
-        if (bindingContext[BindingContext.QUALIFIER, receiver] == null) return null
-
-        val targets = nameExpression.mainReference.resolveToDescriptors(bindingContext)
-        if (targets.isEmpty()) return null
-        if (!targets.all { it.canBeAddedToImport() }) return null
-        return targets.singleOrNull()
     }
 }
