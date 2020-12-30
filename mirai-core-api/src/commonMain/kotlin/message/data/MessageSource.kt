@@ -27,6 +27,7 @@ import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.MessageSourceSerializerImpl
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutFriend
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutGroup
+import net.mamoe.mirai.message.data.MessageSource.Key.isAboutStranger
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutTemp
 import net.mamoe.mirai.message.data.MessageSource.Key.quote
 import net.mamoe.mirai.utils.LazyProperty
@@ -226,6 +227,17 @@ public sealed class MessageSource : Message, MessageMetadata, ConstrainSingle {
         }
 
         /**
+         * 判断是否是发送给陌生人 或从陌生人接收的消息的消息源
+         */
+        @JvmStatic
+        public fun MessageSource.isAboutStranger(): Boolean {
+            return when (this) {
+                is OnlineMessageSource -> subject is Stranger
+                is OfflineMessageSource -> kind == MessageSourceKind.STRANGER
+            }
+        }
+
+        /**
          * 判断是否是发送给临时会话, 或从临时会话接收的消息的消息源
          */
         @JvmStatic
@@ -348,6 +360,14 @@ public sealed class OnlineMessageSource : MessageSource() {
             //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.ids})"
         }
 
+        public abstract class ToStranger : Outgoing() {
+            public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToFriend>(Outgoing, { it.safeCast() })
+
+            public abstract override val target: Stranger
+            public final override val subject: Stranger get() = target
+            //  final override fun toString(): String = "OnlineMessageSource.ToFriend(target=${target.ids})"
+        }
+
         public abstract class ToTemp : Outgoing() {
             public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToTemp>(Outgoing, { it.safeCast() })
 
@@ -393,6 +413,15 @@ public sealed class OnlineMessageSource : MessageSource() {
             public final override val target: Bot get() = sender.bot
         }
 
+        public abstract class FromStranger : Incoming() {
+            public companion object Key :
+                AbstractPolymorphicMessageKey<Incoming, FromStranger>(Incoming, { it.safeCast() })
+
+            public abstract override val sender: Stranger
+            public final override val subject: Stranger get() = sender
+            public final override val target: Bot get() = sender.bot
+        }
+
         public abstract class FromGroup : Incoming() {
             public companion object Key :
                 AbstractPolymorphicMessageKey<Incoming, FromGroup>(Incoming, { it.safeCast() })
@@ -428,7 +457,8 @@ public abstract class OfflineMessageSource : MessageSource() {
 public enum class MessageSourceKind {
     GROUP,
     FRIEND,
-    TEMP
+    TEMP,
+    STRANGER
 }
 
 public val MessageSource.kind: MessageSourceKind
@@ -442,6 +472,7 @@ public val OnlineMessageSource.kind: MessageSourceKind
         isAboutGroup() -> MessageSourceKind.GROUP
         isAboutFriend() -> MessageSourceKind.FRIEND
         isAboutTemp() -> MessageSourceKind.TEMP
+        isAboutStranger() -> MessageSourceKind.STRANGER
         else -> error("Internal error: OnlineMessageSource.kind reached an unexpected clause")
     }
 
