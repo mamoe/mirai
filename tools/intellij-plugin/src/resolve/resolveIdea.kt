@@ -89,8 +89,8 @@ fun KtConstructorCalleeExpression.getTypeAsUserType(): KtUserType? {
 }
 
 fun KotlinType.hasSuperType(fqName: String, includeSelf: Boolean = true): Boolean {
-    if (this.fqName?.asString() == fqName) return true
-    return this.supertypes().any { it.hasSuperType("net.mamoe.mirai.message.data.Message", false) }
+    if (includeSelf && this.fqName?.asString() == fqName) return true
+    return this.supertypes().any { it.hasSuperType("net.mamoe.mirai.message.data.Message", true) }
 }
 
 fun KtClassOrObject.hasSuperType(fqName: FqName): Boolean = allSuperNames.contains(fqName)

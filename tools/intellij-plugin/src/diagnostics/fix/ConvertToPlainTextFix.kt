@@ -11,9 +11,7 @@ package net.mamoe.mirai.console.intellij.diagnostics.fix
 
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import org.jetbrains.annotations.NonNls
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToCall
@@ -37,7 +35,6 @@ import org.jetbrains.kotlin.psi.psiUtil.getReceiverExpression
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
-import org.jetbrains.kotlin.utils.checkWithAttachment
 
 class ConvertToPlainTextFix(
     /**
@@ -51,19 +48,6 @@ class ConvertToPlainTextFix(
 
     override fun getFamilyName(): String = "Mirai Console"
     override fun getText(): String = "将 String 转换为 PlainText"
-
-    fun <TDeclaration : KtDeclaration> KtPsiFactory.createAnalyzableDeclaration(@NonNls text: String, context: PsiElement): TDeclaration {
-        val file = createAnalyzableFile("Dummy.kt", text, context)
-        val declarations = file.declarations
-        checkWithAttachment(declarations.size == 1, { "unexpected ${declarations.size} declarations" }) {
-            it.withAttachment("text.kt", text)
-            for (d in declarations.withIndex()) {
-                it.withAttachment("declaration${d.index}.kt", d.value.text)
-            }
-        }
-        @Suppress("UNCHECKED_CAST")
-        return declarations.first() as TDeclaration
-    }
 
     override fun invokeImpl(project: Project, editor: Editor?, file: PsiFile) {
         if (editor == null) return

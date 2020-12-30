@@ -42,9 +42,7 @@ class UsingStringPlusMessageInspection : AbstractKotlinInspection() {
             if (className != "kotlin.String") return@visitor
             if (callee.name != "plus") return@visitor
 
-            val parent = expression.parent
-
-            val inspectionTarget = when (parent) {
+            val inspectionTarget = when (val parent = expression.parent) {
                 is KtBinaryExpression -> {
                     val right = parent.right?.referenceExpression()?.resolve() as? KtDeclaration ?: return@visitor
                     val rightType = right.type() ?: return@visitor
@@ -64,8 +62,6 @@ class UsingStringPlusMessageInspection : AbstractKotlinInspection() {
                 }
                 else -> null
             } ?: return@visitor
-
-            println(expression::class.qualifiedName + "    " + callee::class.qualifiedName + "    " + callee.text)
 
             holder.registerProblem(
                 inspectionTarget,
