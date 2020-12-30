@@ -1,6 +1,7 @@
 package net.mamoe.mirai.event.events
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.internal.network.Packet
@@ -9,24 +10,55 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 /**
  * 新增陌生人的事件
+ *
  */
 public data class StrangerAddEvent internal constructor(
     /**
-     * 新好友. 已经添加到 [Bot.strangers]
+     * 新的陌生人. 已经添加到 [Bot.strangers]
      */
     public override val stranger: Stranger
 ) : StrangerEvent, Packet, AbstractEvent()
 
 
 /**
- * 删除陌生人的事件
+ * 陌生人关系改变事件
  *
- * 除主动删除外，此事件为惰性发生，无法实时广播
  */
-public data class StrangerDeleteEvent(
+public abstract class StrangerRelationChangeEvent(
     public override val stranger: Stranger
-) : StrangerEvent, Packet, AbstractEvent()
+) : StrangerEvent, Packet, AbstractEvent() {
+    /**
+     * 主动删除陌生人或陌生人被删除的事件
+     *
+     * 除主动删除外，此事件为惰性广播，无法确保实时性
+     * 目前被动删除仅会在陌生人二次添加时才会进行广播
+     */
+    public class Deleted(
+        /**
+         * 被删除的陌生人
+         */
+        stranger: Stranger
+    ) : StrangerRelationChangeEvent(stranger)
 
+    /**
+     * 与陌生人成为好友
+     */
+    public class Friended(
+        /**
+         * 成为好友的陌生人
+         *
+         * 成为好友后该陌生人会从陌生人列表中删除
+         */
+        public override val stranger: Stranger,
+        /**
+         * 成为好友后的实例
+         *
+         * 已经添加到Bot的好友列表中
+         */
+        public val friend: Friend
+    ) : StrangerRelationChangeEvent(stranger)
+
+}
 
 /**
  * 在 [Stranger] 与 [Bot] 的对话中, [Stranger] 被 [戳][Nudge] 事件

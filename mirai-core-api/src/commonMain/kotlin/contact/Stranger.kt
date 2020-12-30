@@ -73,7 +73,7 @@ public interface Stranger : User, CoroutineScope {
     /**
      * 删除并屏蔽该陌生人, 屏蔽后对方将无法发送临时会话消息
      *
-     * @see StrangerDeleteEvent 陌生人删除事件
+     * @see StrangerRelationChangeEvent.Deleted 陌生人删除事件
      */
     @JvmBlockingBridge
     public suspend fun delete()
