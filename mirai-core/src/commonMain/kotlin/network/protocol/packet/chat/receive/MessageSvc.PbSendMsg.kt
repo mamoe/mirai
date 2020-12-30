@@ -143,52 +143,25 @@ internal object MessageSvcPbSendMsg : OutgoingPacketFactory<MessageSvcPbSendMsg.
         client: QQAndroidClient,
         target: Stranger,
         message: MessageChain,
-        crossinline sourceCallback: (MessageSourceToStrangerImpl) -> Unit
-    ): List<OutgoingPacket> {
-        contract {
-            callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
-        }
+        source: MessageSourceToStrangerImpl
+    ): OutgoingPacket = buildOutgoingUniPacket(client) {
+        ///writeFully("0A 08 0A 06 08 89 FC A6 8C 0B 12 06 08 01 10 00 18 00 1A 1F 0A 1D 12 08 0A 06 0A 04 F0 9F 92 A9 12 11 AA 02 0E 88 01 00 9A 01 08 78 00 F8 01 00 C8 02 00 20 9B 7A 28 F4 CA 9B B8 03 32 34 08 92 C2 C4 F1 05 10 92 C2 C4 F1 05 18 E6 ED B9 C3 02 20 89 FE BE A4 06 28 89 84 F9 A2 06 48 DE 8C EA E5 0E 58 D9 BD BB A0 09 60 1D 68 92 C2 C4 F1 05 70 00 40 01".hexToBytes())
 
-        val sequenceIds = AtomicReference<IntArray>()
-        val randIds = AtomicReference<IntArray>()
-        return buildOutgoingMessageCommon(
-            client = client,
-            message = message,
-            fragmentTranslator = {
-                ImMsgBody.MsgBody(
+        ///return@buildOutgoingUniPacket
+        writeProtoBuf(
+            MsgSvc.PbSendMsgReq.serializer(), MsgSvc.PbSendMsgReq(
+                routingHead = MsgSvc.RoutingHead(c2c = MsgSvc.C2C(toUin = target.uin)),
+                contentHead = MsgComm.ContentHead(pkgNum = 1),
+                msgBody = ImMsgBody.MsgBody(
                     richText = ImMsgBody.RichText(
-                        elems = it.toRichTextElems(messageTarget = target, withGeneralFlags = true)
+                        elems = message.toRichTextElems(messageTarget = target, withGeneralFlags = true)
                     )
-                )
-            },
-            pbSendMsgReq = { msgBody, msgSeq, msgRand, contentHead ->
-                MsgSvc.PbSendMsgReq(
-                    routingHead = MsgSvc.RoutingHead(c2c = MsgSvc.C2C(toUin = target.uin)),
-                    contentHead = contentHead,
-                    msgBody = msgBody,
-                    msgSeq = msgSeq,
-                    msgRand = msgRand,
-                    syncCookie = client.syncingController.syncCookie ?: byteArrayOf()
-                    // msgVia = 1
-                )
-            },
-            sequenceIds = sequenceIds,
-            randIds = randIds,
-            sequenceIdsInitializer = { size ->
-                IntArray(size) { client.nextFriendSeq() }
-            },
-            postInit = {
-                sourceCallback(
-                    MessageSourceToStrangerImpl(
-                        internalIds = randIds.get(),
-                        sender = client.bot,
-                        target = target,
-                        time = currentTimeSeconds().toInt(),
-                        sequenceIds = sequenceIds.get(),
-                        originalMessage = message
-                    )
-                )
-            }
+                ),
+                msgSeq = source.sequenceIds.single(),
+                msgRand = source.internalIds.single(),
+                syncCookie = client.syncingController.syncCookie ?: byteArrayOf()
+                // msgVia = 1
+            )
         )
     }
 
@@ -408,15 +381,24 @@ internal inline fun MessageSvcPbSendMsg.createToStranger(
     stranger: Stranger,
     message: MessageChain,
     crossinline sourceCallback: (MessageSourceToStrangerImpl) -> Unit
-): List<OutgoingPacket> {
+): OutgoingPacket {
     contract {
         callsInPlace(sourceCallback, InvocationKind.EXACTLY_ONCE)
     }
+    val source = MessageSourceToStrangerImpl(
+        internalIds = intArrayOf(Random.nextInt().absoluteValue),
+        sender = client.bot,
+        target = stranger,
+        time = currentTimeSeconds().toInt(),
+        sequenceIds = intArrayOf(client.atomicNextMessageSequenceId()),
+        originalMessage = message
+    )
+    sourceCallback(source)
     return createToStrangerImpl(
         client,
         stranger,
         message,
-        sourceCallback
+        source
     )
 }
 

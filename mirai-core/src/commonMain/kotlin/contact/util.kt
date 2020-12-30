@@ -89,10 +89,10 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
 
 internal suspend fun <T : User> Stranger.sendMessageImpl(
     message: Message,
-    friendReceiptConstructor: (MessageSourceToStrangerImpl) -> MessageReceipt<Stranger>,
+    strangerReceiptConstructor: (MessageSourceToStrangerImpl) -> MessageReceipt<Stranger>,
     tReceiptConstructor: (MessageSourceToStrangerImpl) -> MessageReceipt<T>
 ): MessageReceipt<T> {
-    contract { callsInPlace(friendReceiptConstructor, InvocationKind.EXACTLY_ONCE) }
+    contract { callsInPlace(strangerReceiptConstructor, InvocationKind.EXACTLY_ONCE) }
     val bot = bot.asQQAndroidBot()
 
     val chain = kotlin.runCatching {
@@ -113,17 +113,15 @@ internal suspend fun <T : User> Stranger.sendMessageImpl(
         MessageSvcPbSendMsg.createToStranger(
             bot.client,
             this@sendMessageImpl,
-            chain
+            chain,
         ) {
             source = it
-        }.forEach { packet ->
-            packet.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
-                check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
-                    "Send stranger message failed: $it"
-                }
+        }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
+            check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
+                "Send stranger message failed: $it"
             }
         }
-        friendReceiptConstructor(source)
+        strangerReceiptConstructor(source)
     }
 
     result.fold(

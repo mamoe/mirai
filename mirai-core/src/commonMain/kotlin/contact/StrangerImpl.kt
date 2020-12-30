@@ -80,7 +80,7 @@ internal class StrangerImpl(
         require(message.isContentNotEmpty()) { "message is empty" }
         return sendMessageImpl(
             message,
-            friendReceiptConstructor = { MessageReceipt(it, this) },
+            strangerReceiptConstructor = { MessageReceipt(it, this) },
             tReceiptConstructor = { MessageReceipt(it, this) }
         ).also {
             logMessageSent(message)
