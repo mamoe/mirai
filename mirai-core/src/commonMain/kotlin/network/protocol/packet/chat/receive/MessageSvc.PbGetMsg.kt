@@ -468,11 +468,49 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
             }
             return null
         }
-
         732 -> {
             // unknown
             // 前 4 byte 是群号
             return null
+        }
+        //陌生人添加信息
+        191 -> {
+            var fromGroup = 0L
+            var pbNick = ""
+            msgBody.msgContent.read {
+                readUByte()// version
+                discardExact(readUByte().toInt())//skip
+                readUShort()//source id
+                readUShort()//SourceSubID
+                discardExact(readUShort().toLong())//skip size
+                if (readUShort().toInt() != 0) {//hasExtraInfo
+                    discardExact(readUShort().toInt())//mail address info, skip
+                }
+                discardExact(4 + readUShort().toInt())//skip
+                for (i in 1..readUByte().toInt()) {//pb size
+                    val type = readUShort().toInt()
+                    val pbArray = ByteArray(readUShort().toInt() and 0xFF)
+                    readAvailable(pbArray)
+                    when (type) {
+                        1000 -> pbArray.loadAs(FrdSysMsg.GroupInfo.serializer()).let { fromGroup = it.groupUin }
+                        1002 -> pbArray.loadAs(FrdSysMsg.FriendMiscInfo.serializer()).let { pbNick = it.fromuinNick }
+                        else -> {
+                        }//ignore
+                    }
+                }
+            }
+            val nick = sequenceOf(msgHead.fromNick, msgHead.authNick, pbNick).filter { it.isNotEmpty() }.firstOrNull()
+                ?: return null
+            val id = sequenceOf(msgHead.fromUin, msgHead.authUin).filter { it != 0L }.firstOrNull() ?: return null//对方QQ
+            Mirai._lowLevelNewStranger(bot, StrangerInfoImpl(id, nick, fromGroup)).let {
+                bot.getStranger(id)?.let { previous ->
+                    bot.strangers.remove(id)
+                    StrangerRelationChangeEvent.Deleted(previous).broadcast()
+                }
+                bot.strangers.delegate.add(it)
+
+                return StrangerAddEvent(it)
+            }
         }
         // 732:  27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58
         // 732:  27 0B 60 E7 11 00 40 08 07 20 E7 C1 AD B8 02 5A 36 08 B4 E7 E0 F0 09 1A 1A 08 9C D4 16 10 F7 D2 D8 F5 05 18 D0 E2 85 F4 06 20 00 28 00 30 B4 E7 E0 F0 09 2A 0E 08 00 12 0A 08 9C D4 16 10 00 18 01 20 00 30 00 38 00
