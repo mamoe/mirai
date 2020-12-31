@@ -90,7 +90,7 @@ public sealed class StrangerNudgedEvent : AbstractEvent(), StrangerEvent, Packet
         override val suffix: String
     ) : StrangerNudgedEvent() {
         override fun toString(): String {
-            return "FriendNudgedEvent.NudgedByHimself(stranger=$stranger, action=$action, suffix=$suffix)"
+            return "StrangerNudgedEvent.NudgedByHimself(stranger=$stranger, action=$action, suffix=$suffix)"
         }
 
         override val from: Stranger

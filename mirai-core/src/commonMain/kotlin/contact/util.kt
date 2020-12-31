@@ -102,7 +102,7 @@ internal suspend fun <T : User> Stranger.sendMessageImpl(
             throw EventCancelledException("cancelled by StrangerMessagePreSendEvent")
         }
     }.getOrElse {
-        throw EventCancelledException("exception thrown when broadcasting FriendMessagePreSendEvent", it)
+        throw EventCancelledException("exception thrown when broadcasting StrangerMessagePreSendEvent", it)
     }.message.asMessageChain()
     chain.verityLength(message, this, {}, {})
 
