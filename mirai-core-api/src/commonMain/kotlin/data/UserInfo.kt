@@ -1,5 +1,6 @@
 package net.mamoe.mirai.data
 
+@LowLevelApi
 public interface UserInfo {
     public val id: Long
 
