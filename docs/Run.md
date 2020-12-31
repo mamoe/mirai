@@ -26,7 +26,7 @@ Mirai Console 可以独立启动，也可以被嵌入到某个应用中。
 
 #### 从 JCenter 下载模块
 
-mirai 在版本发布时会将发布的构建存放与 [mirai-bintray-repo]。
+mirai 在版本发布时会将发布的构建存放于 [mirai-bintray-repo]。
 
 - mirai-core 会提供 [mirai-core-all]
 - mirai-console 与其各个模块都会提供 `-all` 的 Shadowed 构建
