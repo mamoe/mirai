@@ -141,7 +141,6 @@ MessageChain chain = MiraiCode.parseMiraiCode("[mirai:atall]");
 
 在 [Contacts 章节](Contacts.md) 提到，要发送消息使用 `Contact.sendMessage`。`Contact.sendMessage` 的定义是：
 ```kotlin
-```kotlin
  suspend fun sendMessage(message: Message): MessageReceipt<Contact>
 ```
 
