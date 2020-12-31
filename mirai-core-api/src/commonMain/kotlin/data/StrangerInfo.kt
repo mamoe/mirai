@@ -1,5 +1,6 @@
 package net.mamoe.mirai.data
 
+@LowLevelApi
 public interface StrangerInfo : UserInfo {
     /**
      * 陌生人的QQ号码
