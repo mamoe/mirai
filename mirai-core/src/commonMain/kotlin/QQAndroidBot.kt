@@ -117,7 +117,7 @@ internal class QQAndroidBot constructor(
         get() = client.wLoginSigInfo.sKey.data
             .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
             .and(Int.MAX_VALUE)
-    override val asStranger: Stranger get() = Mirai._lowLevelNewStranger(bot, StrangerInfoImpl(bot.id, bot.nick))
+    override val asStranger: Stranger by lazy { Mirai._lowLevelNewStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
     override val strangers: ContactList<Stranger> = ContactList()
 }
 
