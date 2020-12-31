@@ -16,12 +16,7 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 /**
  * 可以使用 mirai 码表示的 [Message] 类型.
  *
- * 使用 `mirai-serialization` 中 `String.parseMiraiCode()` 转回 [Message].
- *
- * ## 规范
- * 可在 [MiraiCodeSepecification.md](https://github.com/mamoe/mirai/blob/dev/docs/MiraiCodeSepecification.md) 查看 mirai 码规范.
- *
- * @suppress 警告: 此 API 可能在任何时刻被改变
+ * 从字符串解析 mirai 码：[parseMiraiCode]
  *
  * @see At
  * @see AtAll
@@ -34,8 +29,6 @@ import net.mamoe.mirai.utils.MiraiExperimentalApi
 public interface CodableMessage : Message {
     /**
      * 转换为 mirai 码.
-     *
-     * @suppress 警告: 此 API 可能在任何时刻被改变
      */
     public fun toMiraiCode(): String = buildString { appendMiraiCode(this) }
 

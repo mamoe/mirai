@@ -49,9 +49,9 @@ public abstract class AbstractMessageKey<out M : SingleMessage>(
  *                     ↑
  *               HummerMessage
  *                     ↑
- *        +------------+-------------+
- *        |            |             |
- *  PokeMessage     VipFace      FlashImage
+ *        +------------+-------------+------------+
+ *        |            |             |            |
+ *  PokeMessage     VipFace      FlashImage      ...
  *
  * ```
  *
