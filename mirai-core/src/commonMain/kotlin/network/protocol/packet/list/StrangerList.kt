@@ -22,8 +22,6 @@ import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
 internal class StrangerList {
     object GetStrangerList : OutgoingPacketFactory<GetStrangerList.Response>("OidbSvc.0x5d2_0") {
 
-        var seq = 0
-
         class Response(val result: Int, val strangerList: List<Oidb0x5d2.FriendEntry>) : Packet
 
         operator fun invoke(
@@ -38,7 +36,7 @@ internal class StrangerList {
                         bodybuffer = Oidb0x5d2.ReqBody(
                             subCmd = 1,
                             reqGetList = Oidb0x5d2.ReqGetList(
-                                seq = seq
+                                seq = client.strangerSeq
                             )
                         ).toByteArray(Oidb0x5d2.ReqBody.serializer())
                     )
@@ -52,7 +50,7 @@ internal class StrangerList {
                     pkg.bodybuffer.loadAs(Oidb0x5d2.RspBody.serializer()).also {
                         pkg._miraiContentToString()
                     }.rspGetList!!.let {
-                        seq = it.seq
+                        bot.client.strangerSeq = it.seq
                         return Response(pkg.result, it.list)
                     }
                 }
