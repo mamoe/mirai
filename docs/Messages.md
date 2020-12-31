@@ -130,7 +130,6 @@ at.toMiraiCode() // 结果为 `[mirai:at:123]`
 |     [`PokeMessage`]      | `[mirai:poke:$name,$pokeType,$id]`               |
 |       [`VipFace`]        | `[mirai:vipface:${kind.id},${kind.name},$count]` |
 |       [`LightApp`]       | `[mirai:app:$content]`                           |
-|        [`Voice`]         | `[mirai:app:$content]`                           |
 
 ### 由 mirai 码字符串取得 `MessageChain` 实例
 
