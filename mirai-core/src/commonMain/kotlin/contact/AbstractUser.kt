@@ -10,6 +10,9 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Friend
+import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.data.UserInfo
 import net.mamoe.mirai.event.broadcast
@@ -61,6 +64,12 @@ internal abstract class AbstractUser(
             ).sendAndExpect<LongConn.OffPicUp.Response>()
         }
 
+        val kind = when (this) {
+            is Stranger -> "stranger"
+            is Friend -> "friend"
+            is Member -> "temp"
+            else -> "unknown"
+        }
         return when (response) {
             is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId)
                 .also {
@@ -68,7 +77,7 @@ internal abstract class AbstractUser(
                 }
             is LongConn.OffPicUp.Response.RequireUpload -> {
                 bot.network.logger.verbose {
-                    "[Http] Uploading friend image, size=${resource.size.sizeToString()}"
+                    "[Http] Uploading $kind image, size=${resource.size.sizeToString()}"
                 }
 
                 val time = measureTime {
@@ -82,7 +91,7 @@ internal abstract class AbstractUser(
                 }
 
                 bot.network.logger.verbose {
-                    "[Http] Uploading friend image: succeed at ${(resource.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+                    "[Http] Uploading $kind image: succeed at ${(resource.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
                 }
 
                 /*
