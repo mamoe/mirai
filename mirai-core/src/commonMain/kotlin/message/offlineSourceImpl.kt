@@ -92,7 +92,7 @@ internal data class OfflineMessageSourceImplData(
 
 internal class OfflineMessageSourceImplByMsg(
     // from other sources' originalMessage
-    val bot: Bot?,
+    bot: Bot?,
     val delegate: List<MsgComm.Msg>,
     override val botId: Long,
 ) : OfflineMessageSource(), MessageSourceInternal {
