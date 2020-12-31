@@ -248,7 +248,7 @@ public class ExceptionInEventHandlerException(
 @JvmSynthetic
 // T 通常可以是 SimpleListenerHost
 public inline fun <T> T.registerTo(eventChannel: EventChannel<*>): Unit
-        where T : CoroutineScope, T : ListenerHost = eventChannel.registerListenerHost(this)
+        where T : CoroutineScope, T : ListenerHost = eventChannel.parentScope(this).registerListenerHost(this)
 
 
 @Deprecated(
