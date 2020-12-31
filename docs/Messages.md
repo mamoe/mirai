@@ -60,23 +60,23 @@ Mirai 支持富文本消息。各类型消息元素如下文表格所示。
 [`Voice`]: ../mirai-core-api/src/commonMain/kotlin/message/data/Voice.kt
 [`ForwardMessage`]: ../mirai-core-api/src/commonMain/kotlin/message/data/ForwardMessage.kt
 
-|          消息类型          | 属性                                        | 解释                 | `contentToString()`                 | `toMiraiCode()`                                  |
-|:------------------------:|:--------------------------------------------|:--------------------|:------------------------------------|:-------------------------------------------------|
-|      [`PlainText`]       | `content: String`                           | 纯文本               | `$content`                          | `$content`                                       |
-|        [`Image`]         | `imageId: String`                           | 自定义图片            | `[图片]`                             | `[mirai:image:$imageId]`                         |
-|          [`At`]          | `target: Int`                               | 提及某人              | `@$target`                          | `[mirai:at:$target]`                             |
-|        [`AtAll`]         |                                             | 提及全体成员           | `@全体成员`                          | `[mirai:atall]`                                  |
-|         [`Face`]         | `id: Int`                                   | 原生表情              | `[表情对应的中文名]`                   | `[mirai:face:id]`                                |
-|      [`FlashImage`]      | `image: Image`                              | 闪照                 | `[闪照]`                             | `[mirai:flash:${image.imageId}]`                 |
-|     [`PokeMessage`]      | `name: String`, `pokeType: Int` , `id: Int` | 戳一戳消息（消息非动作） | `[戳一戳]`                           | `[mirai:poke:$name,$pokeType,$id]`               |
-|       [`VipFace`]        | `kind: VipFace.Kind`, `count: Int`          | VIP 表情             | `[${kind.name}]x$count`             | `[mirai:vipface:${kind.id},${kind.name},$count]` |
-|       [`LightApp`]       | `content: String`                           | 小程序               | `$content`                          | `[mirai:app:$content]`                           |
-|        [`Voice`]         | `content: String`                           | 语音                 | `$content`                          | `[mirai:app:$content]`                           |
-|      [`MarketFace`]      | `id: Int, name: String`                     | 商城表情              | `[表情对应的中文名]`                   | *不支持*                                          |
-|    [`MessageSource`]     | ...                                         | 消息来源元数据         | *空字符串*                            | *不支持*                                          |
-|      [`QuoteReply`]      | `source: MessageSource`                     | 引用回复              | *空字符串*                           | *不支持*                                           |
-|    [`ForwardMessage`]    | ...                                         | 合并转发              | *`[mirai:forward:NOT_IMPLEMENTED]`* | *不支持*                                          |
-| [`SimpleServiceMessage`] | `serviceId: Int, content: String`           | （不稳定）服务消息      | `$content`                          | *不支持*                                          |
+|          消息类型          | 属性                                        | 解释                 | `contentToString()`                |
+|:------------------------:|:--------------------------------------------|:--------------------|:-----------------------------------|
+|      [`PlainText`]       | `content: String`                           | 纯文本               | `$content`                         |
+|        [`Image`]         | `imageId: String`                           | 自定义图片            | `[图片]`                            |
+|          [`At`]          | `target: Int`                               | 提及某人              | `@$target`                         |
+|        [`AtAll`]         |                                             | 提及全体成员           | `@全体成员`                         |
+|         [`Face`]         | `id: Int`                                   | 原生表情              | `[表情对应的中文名]`                  |
+|      [`FlashImage`]      | `image: Image`                              | 闪照                 | `[闪照]`                            |
+|     [`PokeMessage`]      | `name: String`, `pokeType: Int` , `id: Int` | 戳一戳消息（消息非动作） | `[戳一戳]`                          |
+|       [`VipFace`]        | `kind: VipFace.Kind`, `count: Int`          | VIP 表情             | `[${kind.name}]x$count`            |
+|       [`LightApp`]       | `content: String`                           | 小程序               | `$content`                         |
+|        [`Voice`]         | `content: String`                           | 语音                 | `$content`                         |
+|      [`MarketFace`]      | `id: Int, name: String`                     | 商城表情              | `[表情对应的中文名]`                  |
+|    [`MessageSource`]     | ...                                         | 消息来源元数据         | *空字符串*                           |
+|      [`QuoteReply`]      | `source: MessageSource`                     | 引用回复              | *空字符串*                          |
+|    [`ForwardMessage`]    | ...                                         | 合并转发              | *`[mirai:forward:NOT_IMPLEMENTED]` |
+| [`SimpleServiceMessage`] | `serviceId: Int, content: String`           | （不稳定）服务消息      | `$content`                         |
 
 ***注意：内容会首先被转义，详见 [转义规则](#转义规则)***
 
@@ -118,6 +118,19 @@ val at = At(123)// 是纯文本
 
 at.toMiraiCode() // 结果为 `[mirai:at:123]`
 ```
+
+|          消息类型          | `toMiraiCode()`                                  |
+|:------------------------:|:-------------------------------------------------|
+|      [`PlainText`]       | `$content`                                       |
+|        [`Image`]         | `[mirai:image:$imageId]`                         |
+|          [`At`]          | `[mirai:at:$target]`                             |
+|        [`AtAll`]         | `[mirai:atall]`                                  |
+|         [`Face`]         | `[mirai:face:id]`                                |
+|      [`FlashImage`]      | `[mirai:flash:${image.imageId}]`                 |
+|     [`PokeMessage`]      | `[mirai:poke:$name,$pokeType,$id]`               |
+|       [`VipFace`]        | `[mirai:vipface:${kind.id},${kind.name},$count]` |
+|       [`LightApp`]       | `[mirai:app:$content]`                           |
+|        [`Voice`]         | `[mirai:app:$content]`                           |
 
 ### 由 mirai 码字符串取得 `MessageChain` 实例
 
