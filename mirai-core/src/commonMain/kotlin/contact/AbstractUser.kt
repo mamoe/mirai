@@ -30,7 +30,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 import kotlin.time.measureTime
 
-internal open class UserInfoImpl(override val id: Long, override val nick: String, override val remark: String = "") :
+internal open class UserInfoImpl(override val uin: Long, override val nick: String, override val remark: String = "") :
     UserInfo
 
 internal abstract class AbstractUser(
@@ -38,7 +38,7 @@ internal abstract class AbstractUser(
     coroutineContext: CoroutineContext,
     userInfo: UserInfo,
 ) : User, AbstractContact(bot, coroutineContext) {
-    final override val id: Long = userInfo.id
+    final override val id: Long = userInfo.uin
     final override var nick: String = userInfo.nick
     final override val remark: String = userInfo.remark
 

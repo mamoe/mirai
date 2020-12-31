@@ -34,7 +34,7 @@ import kotlin.coroutines.CoroutineContext
 
 
 internal class StrangerInfoImpl(
-    override val id: Long, override val nick: String, override val fromGroup: Long = 0,
+    override val uin: Long, override val nick: String, override val fromGroup: Long = 0,
     override val remark: String = ""
 ) : StrangerInfo
 

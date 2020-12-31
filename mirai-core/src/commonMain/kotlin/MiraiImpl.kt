@@ -744,7 +744,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                 members.delegate.add(
                     newMember(
                         MemberInfoImpl(
-                            id = fromId,
+                            uin = fromId,
                             nick = fromNick,
                             permission = MemberPermission.MEMBER,
                             "", "", "", 0, null

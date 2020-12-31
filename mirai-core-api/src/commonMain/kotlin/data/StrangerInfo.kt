@@ -1,11 +1,13 @@
 package net.mamoe.mirai.data
 
+import net.mamoe.mirai.LowLevelApi
+
 @LowLevelApi
 public interface StrangerInfo : UserInfo {
     /**
      * 陌生人的QQ号码
      */
-    public override val id: Long
+    public override val uin: Long
 
     /**
      * 陌生人的昵称

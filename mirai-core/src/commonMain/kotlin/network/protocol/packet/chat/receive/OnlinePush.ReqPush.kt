@@ -477,7 +477,7 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
         val body = vProtobuf.loadAs(Submsgtype0xb3.SubMsgType0xb3.MsgBody.serializer())
         val new = Mirai._lowLevelNewFriend(
             bot, FriendInfoImpl(
-                id = body.msgAddFrdNotify.fuin,
+                uin = body.msgAddFrdNotify.fuin,
                 nick = body.msgAddFrdNotify.fuinNick,
                 remark = "",
             )

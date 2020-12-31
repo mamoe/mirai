@@ -13,7 +13,7 @@ import net.mamoe.mirai.LowLevelApi
 
 @LowLevelApi
 public interface FriendInfo : UserInfo {
-    public override val id: Long
+    public override val uin: Long
 
     public override val nick: String
 
@@ -22,7 +22,7 @@ public interface FriendInfo : UserInfo {
 
 @LowLevelApi
 public open class FriendInfoImpl(
-    override val id: Long,
+    override val uin: Long,
     override var nick: String,
     override var remark: String,
 ) : FriendInfo

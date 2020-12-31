@@ -14,7 +14,7 @@ import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
 
 internal class MemberInfoImpl(
-    override val id: Long,
+    override val uin: Long,
     override var nick: String,
     override val permission: MemberPermission,
     override var remark: String,
@@ -22,12 +22,12 @@ internal class MemberInfoImpl(
     override val specialTitle: String,
     override val muteTimestamp: Int,
     override val anonymousId: String?,
-) : MemberInfo, UserInfoImpl(id, nick, remark) {
+) : MemberInfo, UserInfoImpl(uin, nick, remark) {
     constructor(
         jceInfo: StTroopMemberInfo,
         groupOwnerId: Long
     ) : this(
-        id = jceInfo.memberUin,
+        uin = jceInfo.memberUin,
         nick = jceInfo.nick,
         permission = when {
             jceInfo.memberUin == groupOwnerId -> MemberPermission.OWNER

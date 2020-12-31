@@ -27,7 +27,7 @@ internal class AnonymousMemberImpl(
     override val specialTitle: String get() = memberInfo.specialTitle
     override val permission: MemberPermission get() = memberInfo.permission
     override val bot: Bot get() = group.bot
-    override val id: Long get() = memberInfo.id
+    override val id: Long get() = memberInfo.uin
     override val nick: String get() = memberInfo.nick
     override val remark: String get() = memberInfo.remark
 
