@@ -121,11 +121,10 @@ at.toMiraiCode() // 结果为 `[mirai:at:123]`
 
 ### 由 mirai 码字符串取得 `MessageChain` 实例
 
-```
-// Kotlin
+```kotlin
 val chain = "[mirai:atall]".parseMiraiCode()
-
-// Java
+```
+```java
 MessageChain chain = MiraiCode.parseMiraiCode("[mirai:atall]");
 ```
 
