@@ -555,22 +555,38 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
                 val subject: User = bot.getFriend(msgInfo.lFromUin) ?: bot.getStranger(msgInfo.lFromUin)
                 ?: return@lambda528 emptySequence()
                 //机器人自己戳自己
-                if (target == null && from == null) {
+                if ((target == null && from == null) || (target?.id == from?.id && from?.id == bot.id)) {
                     sequenceOf(BotNudgedEvent.InPrivateSession.ByBot(subject, action, suffix))
                 } else sequenceOf(
                     when (subject) {
                         is Friend -> when {
                             //机器人自身为目标
-                            target == null -> BotNudgedEvent.InPrivateSession.ByFriend(subject, action, suffix)
+                            target == null || target!!.id == bot.id -> BotNudgedEvent.InPrivateSession.ByFriend(
+                                subject,
+                                action,
+                                suffix
+                            )
                             //机器人自身为发起者
-                            from == null -> FriendNudgedEvent.NudgedByBot(subject, action, suffix)
+                            from == null || from!!.id == bot.id -> FriendNudgedEvent.NudgedByBot(
+                                subject,
+                                action,
+                                suffix
+                            )
                             else -> FriendNudgedEvent.NudgedByHimself(subject, action, suffix)
                         }
                         is Stranger -> when {
                             //机器人自身为目标
-                            target == null -> BotNudgedEvent.InPrivateSession.ByStranger(subject, action, suffix)
+                            target == null || target!!.id == bot.id -> BotNudgedEvent.InPrivateSession.ByStranger(
+                                subject,
+                                action,
+                                suffix
+                            )
                             //机器人自身为发起者
-                            from == null -> StrangerNudgedEvent.NudgedByBot(subject, action, suffix)
+                            from == null || from!!.id == bot.id -> StrangerNudgedEvent.NudgedByBot(
+                                subject,
+                                action,
+                                suffix
+                            )
                             else -> StrangerNudgedEvent.NudgedByHimself(subject, action, suffix)
                         }
                         else -> error("Internal Error: Unable to find nudge type")
