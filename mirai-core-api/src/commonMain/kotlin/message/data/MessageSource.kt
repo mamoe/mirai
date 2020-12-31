@@ -361,7 +361,7 @@ public sealed class OnlineMessageSource : MessageSource() {
         }
 
         public abstract class ToStranger : Outgoing() {
-            public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToFriend>(Outgoing, { it.safeCast() })
+            public companion object Key : AbstractPolymorphicMessageKey<Outgoing, ToStranger>(Outgoing, { it.safeCast() })
 
             public abstract override val target: Stranger
             public final override val subject: Stranger get() = target
