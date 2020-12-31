@@ -20,9 +20,20 @@ Mirai 是一个在全平台下运行，提供 QQ 协议支持的高效率机器�
 ![Gradle CI](https://github.com/mamoe/mirai-console/workflows/Gradle%20CI/badge.svg?branch=master)
 [![Gitter](https://badges.gitter.im/mamoe/mirai.svg)](https://gitter.im/mamoe/mirai?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+## 使用
+
+### 安装 JAR 插件
+
+将 `jar` 文件放入 `plugins` 并重启 Mirai Console 即可。
+
+### 执行指令
+
+在控制台输入 `?` 查看可用指令列表。
+
 ## 开发
 
-- **[准备工作 - 环境和前置知识](docs/Preparations.md)**
+**Mirai Console 基于 [Mirai](https://github.com/mamoe/mirai)，因此请先阅读 [Mirai 文档](https://github.com/mamoe/mirai/tree/dev/docs)。**
+
 - **[配置项目](docs/ConfiguringProjects.md)**
 - **[启动 Console](docs/Run.md)**
 
