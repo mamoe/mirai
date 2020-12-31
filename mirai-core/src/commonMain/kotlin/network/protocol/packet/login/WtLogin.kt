@@ -643,7 +643,7 @@ internal class WtLogin {
         }
 
         private inline fun analysisTlv0x531(t531: ByteArray, handler: (a1: ByteArray, noPicSig: ByteArray) -> Unit) {
-            val map = t531.toReadPacket()._readTLVMap()
+            val map = t531.toReadPacket().withUse { _readTLVMap() }
 
             val t106 = map[0x106]
             val t16a = map[0x16a]
@@ -659,7 +659,7 @@ internal class WtLogin {
          * @throws error
          */
         private fun QQAndroidClient.parseWFastLoginInfoDataOutA1(t169: ByteArray): ByteReadPacket {
-            val map = t169.toReadPacket()._readTLVMap()
+            val map = t169.toReadPacket().withUse { _readTLVMap() }
 
             val t106 = map[0x106]
             val t10c = map[0x10c]
@@ -737,7 +737,7 @@ internal class WtLogin {
         }
 
         private fun QQAndroidClient.analysisTlv161(t161: ByteArray) {
-            val tlv = t161.toReadPacket().apply { discardExact(2) }._readTLVMap()
+            val tlv = t161.toReadPacket().apply { discardExact(2) }.withUse { _readTLVMap() }
 
             tlv[0x173]?.let { analysisTlv173(it) }
             tlv[0x17f]?.let { analysisTlv17f(it) }
