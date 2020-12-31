@@ -54,7 +54,11 @@ mirai 官方提供 Kotlin/Java 等 JVM 平台语言开发支持。如果你不�
 
 - `Lua`: [lua-mirai](https://github.com/only52607/lua-mirai) 基于 mirai-core 的 Lua SDK，并提供了 Java 扩展支持，可在 Lua 中调用 Java 代码开发机器人
 
-## 配置 JVM 项目使用 mirai
+## 开发
+
+- [准备工作](Preparations.md#mirai---preparations)
+
+### 配置 JVM 项目使用 mirai
 
 > 可以首先体验让机器人发送消息：在 IDE 克隆 [mirai-hello-world](https://github.com/project-mirai/mirai-hello-world) 并运行其中入口点。
 
@@ -62,7 +66,7 @@ mirai 官方提供 Kotlin/Java 等 JVM 平台语言开发支持。如果你不�
 
 要使用 mirai-console 框架，请前往 [mirai-console](https://github.com/mamoe/mirai-console)。
 
-## 开发
+### API 文档
 
 ***本文档正在更新中***
 
