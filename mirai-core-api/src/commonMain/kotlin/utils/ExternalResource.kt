@@ -58,7 +58,7 @@ public interface ExternalResource : Closeable {
     public val md5: ByteArray
 
     /**
-     * 文件格式，如 "png", "amr". 当无法自动识别格式时为 "mirai".
+     * 文件格式，如 "png", "amr". 当无法自动识别格式时为 [DEFAULT_FORMAT_NAME].
      *
      * 默认会从文件头识别, 支持的文件类型:
      * png, jpg, gif, tif, bmp, wav, amr, silk
@@ -82,7 +82,7 @@ public interface ExternalResource : Closeable {
 
     @MiraiInternalApi
     public fun calculateResourceId(): String {
-        return generateImageId(md5, formatName.ifEmpty { "mirai" })
+        return generateImageId(md5, formatName.ifEmpty { DEFAULT_FORMAT_NAME })
     }
 
     public companion object {
