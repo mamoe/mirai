@@ -19,7 +19,7 @@ import net.mamoe.mirai.message.data.AtAll
 
 
 internal fun At.toJceData(group: Group?): ImMsgBody.Text {
-    val text = group?.members?.get(this.target)?.nameCardOrNick ?: "@$target"
+    val text = "@${group?.members?.get(this.target)?.nameCardOrNick}" ?: "@$target"
     return ImMsgBody.Text(
         str = text,
         attr6Buf = buildPacket {
