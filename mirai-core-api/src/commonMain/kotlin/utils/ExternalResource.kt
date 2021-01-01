@@ -240,10 +240,8 @@ public interface ExternalResource : Closeable {
         @JvmStatic
         @JvmBlockingBridge
         @JvmOverloads
-        public suspend fun File.uploadAsImage(contact: Contact, formatName: String? = null): Image {
-            require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
-            return toExternalResource(formatName).withUse { uploadAsImage(contact) }
-        }
+        public suspend fun File.uploadAsImage(contact: Contact, formatName: String? = null): Image =
+            toExternalResource(formatName).withUse { uploadAsImage(contact) }
 
 
         /**
