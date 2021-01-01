@@ -12,12 +12,12 @@ package net.mamoe.mirai.data
 import net.mamoe.mirai.LowLevelApi
 
 @LowLevelApi
-public interface FriendInfo {
-    public val uin: Long
+public interface FriendInfo : UserInfo {
+    public override val uin: Long
 
-    public val nick: String
+    public override val nick: String
 
-    public val remark: String
+    public override val remark: String
 }
 
 @LowLevelApi

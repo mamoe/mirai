@@ -19,6 +19,7 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.internal.contact.OtherClientImpl
+import net.mamoe.mirai.internal.contact.StrangerInfoImpl
 import net.mamoe.mirai.internal.contact.checkIsGroupImpl
 import net.mamoe.mirai.internal.contact.uin
 import net.mamoe.mirai.internal.message.*
@@ -116,6 +117,8 @@ internal class QQAndroidBot constructor(
         get() = client.wLoginSigInfo.sKey.data
             .fold(5381) { acc: Int, b: Byte -> acc + acc.shl(5) + b.toInt() }
             .and(Int.MAX_VALUE)
+    override val asStranger: Stranger by lazy { Mirai._lowLevelNewStranger(bot, StrangerInfoImpl(bot.id, bot.nick)) }
+    override val strangers: ContactList<Stranger> = ContactList()
 }
 
 internal val EMPTY_BYTE_ARRAY = ByteArray(0)

@@ -54,10 +54,15 @@ internal class NormalMemberImpl constructor(
         require(message.isContentNotEmpty()) { "message is empty" }
 
         val asFriend = this.asFriendOrNull()
+        val asStranger = this.asStrangerOrNull()
 
         return (asFriend?.sendMessageImpl(
             message,
             friendReceiptConstructor = { MessageReceipt(it, asFriend) },
+            tReceiptConstructor = { MessageReceipt(it, this) }
+        ) ?: asStranger?.sendMessageImpl(
+            message,
+            strangerReceiptConstructor = { MessageReceipt(it, asStranger) },
             tReceiptConstructor = { MessageReceipt(it, this) }
         ) ?: sendMessageImpl(message)).also { logMessageSent(message) }
     }

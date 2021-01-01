@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.Stranger
 import net.mamoe.mirai.data.*
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.WeakRef
@@ -50,6 +51,15 @@ public interface LowLevelApiAccessor {
      */
     @LowLevelApi
     public fun _lowLevelNewFriend(bot: Bot, friendInfo: FriendInfo): Friend
+
+    /**
+     * 构造一个 [Stranger] 对象. 它持有对 [Bot] 的弱引用([WeakRef]).
+     *
+     * [Bot] 无法管理这个对象, 但这个对象会以 [Bot] 的 [Job] 作为父 Job.
+     * 因此, 当 [Bot] 被关闭后, 这个对象也会被关闭.
+     */
+    @LowLevelApi
+    public fun _lowLevelNewStranger(bot: Bot, strangerInfo: StrangerInfo): Stranger
 
     /**
      * 向服务器查询群列表. 返回值高 32 bits 为 uin, 低 32 bits 为 groupCode

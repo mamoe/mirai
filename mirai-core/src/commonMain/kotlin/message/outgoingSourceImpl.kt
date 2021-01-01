@@ -16,10 +16,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.ContactOrBot
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.asyncFromEventOrNull
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
@@ -83,6 +80,23 @@ internal class MessageSourceToFriendImpl(
     override val sender: Bot,
     override val target: Friend
 ) : OnlineMessageSource.Outgoing.ToFriend(), MessageSourceInternal {
+    override val bot: Bot
+        get() = sender
+    override val ids: IntArray
+        get() = sequenceIds
+    override var isRecalledOrPlanned: AtomicBoolean = AtomicBoolean(false)
+    private val jceData by lazy { toJceDataImpl(subject) }
+    override fun toJceData(): ImMsgBody.SourceMsg = jceData
+}
+
+internal class MessageSourceToStrangerImpl(
+    override val sequenceIds: IntArray,
+    override val internalIds: IntArray,
+    override val time: Int,
+    override val originalMessage: MessageChain,
+    override val sender: Bot,
+    override val target: Stranger
+) : OnlineMessageSource.Outgoing.ToStranger(), MessageSourceInternal {
     override val bot: Bot
         get() = sender
     override val ids: IntArray

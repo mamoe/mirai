@@ -15,10 +15,7 @@ package net.mamoe.mirai.message.data
 
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.Mirai
-import net.mamoe.mirai.contact.ContactOrBot
-import net.mamoe.mirai.contact.Friend
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutFriend
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutGroup
 import net.mamoe.mirai.message.data.MessageSource.Key.isAboutTemp
@@ -238,6 +235,7 @@ internal class MessageSourceBuilderImpl : MessageSourceBuilder() {
             this is Member || target is Member -> MessageSourceKind.TEMP
             this is Bot && target is Friend -> MessageSourceKind.FRIEND
             this is Friend && target is Bot -> MessageSourceKind.FRIEND
+            this is Stranger || target is Stranger -> MessageSourceKind.STRANGER
             else -> throw IllegalArgumentException("Cannot determine source kind for sender $this and target $target")
         }
         return this@MessageSourceBuilderImpl

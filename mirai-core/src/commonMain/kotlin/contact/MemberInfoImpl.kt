@@ -10,7 +10,6 @@
 package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.contact.MemberPermission
-import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
 
@@ -23,7 +22,7 @@ internal class MemberInfoImpl(
     override val specialTitle: String,
     override val muteTimestamp: Int,
     override val anonymousId: String?,
-) : MemberInfo, FriendInfoImpl(uin, nick, remark) {
+) : MemberInfo, UserInfoImpl(uin, nick, remark) {
     constructor(
         jceInfo: StTroopMemberInfo,
         groupOwnerId: Long

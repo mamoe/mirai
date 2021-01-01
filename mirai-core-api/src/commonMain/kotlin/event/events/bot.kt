@@ -171,33 +171,55 @@ public sealed class BotNudgedEvent : AbstractEvent(), BotEvent, Packet {
 
     @MiraiExperimentalApi
     /** [Bot] 在私聊中被戳 */
-    public sealed class InPrivateSession : BotNudgedEvent(), FriendEvent {
-        abstract override val from: Friend
+    public sealed class InPrivateSession : BotNudgedEvent() {
+        abstract override val from: User
         override val bot: Bot get() = from.bot
-        override val friend: Friend get() = from
 
         /** 在私聊中 [Friend] 戳了 [Bot] */
         public data class ByFriend internal constructor(
             override val friend: Friend,
             override val action: String,
             override val suffix: String
-        ) : InPrivateSession() {
+        ) : InPrivateSession(), FriendEvent {
             override val from: Friend get() = friend
+            override val bot: Bot get() = from.bot
+
             override fun toString(): String {
                 return "BotNudgedEvent.InPrivateSession.ByFriend(friend=$friend, action=$action, suffix=$suffix)"
+            }
+        }
+
+        /** 在私聊中 [Stranger] 戳了 [Bot] */
+        public data class ByStranger internal constructor(
+            override val stranger: Stranger,
+            override val action: String,
+            override val suffix: String
+        ) : InPrivateSession(), StrangerEvent {
+            override val from: Stranger get() = stranger
+            override val bot: Bot get() = stranger.bot
+
+            override fun toString(): String {
+                return "BotNudgedEvent.InPrivateSession.ByFriend(friend=$stranger, action=$action, suffix=$suffix)"
             }
         }
 
         /** [Bot] 在私聊中自己戳了自己 */
         public data class ByBot internal constructor(
             /** [Bot] 的对话对象 */
-            override val friend: Friend,
+            /** 可能是 [Stranger] 或 [Friend] */
+            val user: User,
             override val action: String,
             override val suffix: String
-        ) : InPrivateSession() {
-            override val from: Friend get() = bot.asFriend
+        ) : InPrivateSession(), BotEvent {
+            override val from: User
+                get() = if (user is Stranger) {
+                    bot.asStranger
+                } else {
+                    bot.asFriend
+                }
+
             override fun toString(): String {
-                return "BotNudgedEvent.InPrivateSession.ByBot(friend=$friend, action=$action, suffix=$suffix)"
+                return "BotNudgedEvent.InPrivateSession.ByBot(friend=$user, action=$action, suffix=$suffix)"
             }
         }
     }

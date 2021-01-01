@@ -17,9 +17,11 @@ import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.asQQAndroidBot
 import net.mamoe.mirai.internal.message.MessageSourceToFriendImpl
+import net.mamoe.mirai.internal.message.MessageSourceToStrangerImpl
 import net.mamoe.mirai.internal.message.ensureSequenceIdAvailable
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.MessageSvcPbSendMsg
 import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToFriend
+import net.mamoe.mirai.internal.network.protocol.packet.chat.receive.createToStranger
 import net.mamoe.mirai.internal.utils.estimateLength
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
@@ -85,6 +87,56 @@ internal suspend fun <T : User> Friend.sendMessageImpl(
     return tReceiptConstructor(source)
 }
 
+internal suspend fun <T : User> Stranger.sendMessageImpl(
+    message: Message,
+    strangerReceiptConstructor: (MessageSourceToStrangerImpl) -> MessageReceipt<Stranger>,
+    tReceiptConstructor: (MessageSourceToStrangerImpl) -> MessageReceipt<T>
+): MessageReceipt<T> {
+    contract { callsInPlace(strangerReceiptConstructor, InvocationKind.EXACTLY_ONCE) }
+    val bot = bot.asQQAndroidBot()
+
+    val chain = kotlin.runCatching {
+        StrangerMessagePreSendEvent(this, message).broadcast()
+    }.onSuccess {
+        check(!it.isCancelled) {
+            throw EventCancelledException("cancelled by StrangerMessagePreSendEvent")
+        }
+    }.getOrElse {
+        throw EventCancelledException("exception thrown when broadcasting StrangerMessagePreSendEvent", it)
+    }.message.asMessageChain()
+    chain.verityLength(message, this, {}, {})
+
+    chain.firstIsInstanceOrNull<QuoteReply>()?.source?.ensureSequenceIdAvailable()
+
+    lateinit var source: MessageSourceToStrangerImpl
+    val result = bot.network.runCatching {
+        MessageSvcPbSendMsg.createToStranger(
+            bot.client,
+            this@sendMessageImpl,
+            chain,
+        ) {
+            source = it
+        }.sendAndExpect<MessageSvcPbSendMsg.Response>().let {
+            check(it is MessageSvcPbSendMsg.Response.SUCCESS) {
+                "Send stranger message failed: $it"
+            }
+        }
+        strangerReceiptConstructor(source)
+    }
+
+    result.fold(
+        onSuccess = {
+            StrangerMessagePostSendEvent(this, chain, null, it)
+        },
+        onFailure = {
+            StrangerMessagePostSendEvent(this, chain, it, null)
+        }
+    ).broadcast()
+
+    result.getOrThrow()
+    return tReceiptConstructor(source)
+}
+
 internal fun Contact.logMessageSent(message: Message) {
     if (message !is LongMessage) {
         bot.logger.verbose("$this <- $message".replaceMagicCodes())
@@ -127,6 +179,9 @@ internal fun net.mamoe.mirai.event.events.MessageEvent.logMessageReceived() {
         }
         is net.mamoe.mirai.event.events.TempMessageEvent -> bot.logger.verbose {
             "[${group.name}(${group.id})] $senderName(Temp ${sender.id}) -> $message".replaceMagicCodes()
+        }
+        is net.mamoe.mirai.event.events.StrangerMessageEvent -> bot.logger.verbose {
+            "[$senderName(Stranger ${sender.id}) -> $message".replaceMagicCodes()
         }
         is net.mamoe.mirai.event.events.FriendMessageEvent -> bot.logger.verbose {
             "${sender.nick}(${sender.id}) -> $message".replaceMagicCodes()

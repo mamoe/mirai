@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
 import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
+import kotlinx.io.core.readUByte
+import kotlinx.io.core.readUShort
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
@@ -27,6 +29,7 @@ import net.mamoe.mirai.contact.appId
 import net.mamoe.mirai.data.MemberInfo
 import net.mamoe.mirai.event.AbstractEvent
 import net.mamoe.mirai.event.Event
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
@@ -35,6 +38,7 @@ import net.mamoe.mirai.internal.message.toMessageChain
 import net.mamoe.mirai.internal.network.MultiPacket
 import net.mamoe.mirai.internal.network.Packet
 import net.mamoe.mirai.internal.network.QQAndroidClient
+import net.mamoe.mirai.internal.network.protocol.data.proto.FrdSysMsg
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgComm
 import net.mamoe.mirai.internal.network.protocol.data.proto.MsgSvc
 import net.mamoe.mirai.internal.network.protocol.data.proto.SubMsgType0x7
@@ -49,6 +53,7 @@ import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.writeProtoBuf
+import net.mamoe.mirai.message.data.MessageSourceKind
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.utils.*
@@ -353,7 +358,8 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
         }
         */
 
-        166 -> {
+        //167 单向好友
+        166, 167 -> {
             if (msgHead.fromUin == bot.id) {
                 loop@ while (true) {
                     val instance = bot.client.getFriendSeq()
@@ -365,25 +371,40 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
                 }
                 return null
             }
-            val friend = bot.getFriend(msgHead.fromUin) ?: return null
-            friend.checkIsFriendImpl()
-
             if (!bot.firstLoginSucceed) {
                 return null
             }
-            friend.lastMessageSequence.loop {
-                return if (friend.lastMessageSequence.compareAndSet(
-                        it,
-                        msgHead.msgSeq
-                    ) && contentHead?.autoReply != 1
-                ) {
-                    FriendMessageEvent(
-                        friend,
-                        toMessageChain(bot, groupIdOrZero = 0, onlineSource = true),
-                        msgHead.msgTime
-                    )
-                } else null
-            }
+            bot.getFriend(msgHead.fromUin)?.let { friend ->
+                friend.checkIsFriendImpl()
+                friend.lastMessageSequence.loop {
+                    return if (friend.lastMessageSequence.compareAndSet(
+                            it,
+                            msgHead.msgSeq
+                        ) && contentHead?.autoReply != 1
+                    ) {
+                        FriendMessageEvent(
+                            friend,
+                            toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.FRIEND),
+                            msgHead.msgTime
+                        )
+                    } else null
+                }
+            } ?: bot.getStranger(msgHead.fromUin)?.let { stranger ->
+                stranger.checkIsImpl()
+                stranger.lastMessageSequence.loop {
+                    return if (stranger.lastMessageSequence.compareAndSet(
+                            it,
+                            msgHead.msgSeq
+                        ) && contentHead?.autoReply != 1
+                    ) {
+                        StrangerMessageEvent(
+                            stranger,
+                            toMessageChain(bot, groupIdOrZero = 0, onlineSource = true, MessageSourceKind.STRANGER),
+                            msgHead.msgTime
+                        )
+                    } else null
+                }
+            } ?: return null
         }
         208 -> {
             // friend ptt
@@ -448,7 +469,7 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
                                 bot,
                                 groupIdOrZero = 0,
                                 onlineSource = true,
-                                isTemp = true
+                                MessageSourceKind.TEMP
                             ),
                             msgHead.msgTime
                         )
@@ -468,11 +489,49 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
             }
             return null
         }
-
         732 -> {
             // unknown
             // 前 4 byte 是群号
             return null
+        }
+        //陌生人添加信息
+        191 -> {
+            var fromGroup = 0L
+            var pbNick = ""
+            msgBody.msgContent.read {
+                readUByte()// version
+                discardExact(readUByte().toInt())//skip
+                readUShort()//source id
+                readUShort()//SourceSubID
+                discardExact(readUShort().toLong())//skip size
+                if (readUShort().toInt() != 0) {//hasExtraInfo
+                    discardExact(readUShort().toInt())//mail address info, skip
+                }
+                discardExact(4 + readUShort().toInt())//skip
+                for (i in 1..readUByte().toInt()) {//pb size
+                    val type = readUShort().toInt()
+                    val pbArray = ByteArray(readUShort().toInt() and 0xFF)
+                    readAvailable(pbArray)
+                    when (type) {
+                        1000 -> pbArray.loadAs(FrdSysMsg.GroupInfo.serializer()).let { fromGroup = it.groupUin }
+                        1002 -> pbArray.loadAs(FrdSysMsg.FriendMiscInfo.serializer()).let { pbNick = it.fromuinNick }
+                        else -> {
+                        }//ignore
+                    }
+                }
+            }
+            val nick = sequenceOf(msgHead.fromNick, msgHead.authNick, pbNick).filter { it.isNotEmpty() }.firstOrNull()
+                ?: return null
+            val id = sequenceOf(msgHead.fromUin, msgHead.authUin).filter { it != 0L }.firstOrNull() ?: return null//对方QQ
+            Mirai._lowLevelNewStranger(bot, StrangerInfoImpl(id, nick, fromGroup)).let {
+                bot.getStranger(id)?.let { previous ->
+                    bot.strangers.remove(id)
+                    StrangerRelationChangeEvent.Deleted(previous).broadcast()
+                }
+                bot.strangers.delegate.add(it)
+
+                return StrangerAddEvent(it)
+            }
         }
         // 732:  27 0B 60 E7 0C 01 3E 03 3F A2 5E 90 60 E2 00 01 44 71 47 90 00 00 02 58
         // 732:  27 0B 60 E7 11 00 40 08 07 20 E7 C1 AD B8 02 5A 36 08 B4 E7 E0 F0 09 1A 1A 08 9C D4 16 10 F7 D2 D8 F5 05 18 D0 E2 85 F4 06 20 00 28 00 30 B4 E7 E0 F0 09 2A 0E 08 00 12 0A 08 9C D4 16 10 00 18 01 20 00 30 00 38 00

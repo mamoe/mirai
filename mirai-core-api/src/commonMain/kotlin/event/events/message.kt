@@ -103,6 +103,16 @@ public data class TempMessagePreSendEvent @MiraiInternalApi constructor(
     public val group: Group get() = target.group
 }
 
+/**
+ * 在发送陌生人消息前广播的事件.
+ * @see MessagePreSendEvent
+ */
+public data class StrangerMessagePreSendEvent @MiraiInternalApi constructor(
+    /** 发信目标. */
+    public override val target: Stranger,
+    /** 待发送的消息. 修改后将会同时应用于发送. */
+    public override var message: Message
+) : UserMessagePreSendEvent()
 
 // endregion
 
@@ -250,6 +260,27 @@ public data class TempMessagePostSendEvent @MiraiInternalApi constructor(
 ) : UserMessagePostSendEvent<Member>() {
     public val group: Group get() = target.group
 }
+
+/**
+ * 在陌生人消息发送后广播的事件.
+ * @see MessagePostSendEvent
+ */
+public data class StrangerMessagePostSendEvent @MiraiInternalApi constructor(
+    /** 发信目标. */
+    public override val target: Stranger,
+    /** 待发送的消息. 此为 [MessagePreSendEvent.message] 的最终值. */
+    public override val message: MessageChain,
+    /**
+     * 发送消息时抛出的异常. `null` 表示消息成功发送.
+     * @see result
+     */
+    public override val exception: Throwable?,
+    /**
+     * 发送消息成功时的回执. `null` 表示消息发送失败.
+     * @see result
+     */
+    public override val receipt: MessageReceipt<Stranger>?
+) : UserMessagePostSendEvent<Stranger>()
 
 // endregion
 
@@ -618,6 +649,32 @@ public class TempMessageEvent(
 
     public override fun toString(): String =
         "TempMessageEvent(sender=${sender.id} from group(${sender.group.id}), message=$message)"
+}
+
+/**
+ * 机器人收到的陌生人消息的事件
+ *
+ * @see MessageEvent
+ */
+@Suppress("DEPRECATION")
+public class StrangerMessageEvent constructor(
+    public override val sender: Stranger,
+    public override val message: MessageChain,
+    public override val time: Int
+) : AbstractMessageEvent(), MessageEvent, MessageEventExtensions<User, Contact>, BroadcastControllable, StrangerEvent {
+    init {
+        val source =
+            message[MessageSource] ?: throw IllegalArgumentException("Cannot find MessageSource from message")
+        check(source is OnlineMessageSource.Incoming.FromStranger) { "source provided to a StrangerMessage must be an instance of OnlineMessageSource.Incoming.FromStranger" }
+    }
+
+    public override val stranger: Stranger get() = sender
+    public override val bot: Bot get() = super.bot
+    public override val subject: Stranger get() = sender
+    public override val senderName: String get() = sender.nick
+    public override val source: OnlineMessageSource.Incoming.FromStranger get() = message.source as OnlineMessageSource.Incoming.FromStranger
+
+    public override fun toString(): String = "StrangerMessageEvent(sender=${sender.id}, message=$message)"
 }
 
 /**

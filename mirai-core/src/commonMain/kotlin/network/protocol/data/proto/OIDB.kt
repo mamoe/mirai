@@ -14,6 +14,94 @@ import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.internal.network.protocol.packet.EMPTY_BYTE_ARRAY
 import net.mamoe.mirai.internal.utils.io.ProtoBuf
 
+internal class Oidb0x5d4 : ProtoBuf {
+    @Serializable
+    internal class DelResult(
+        @JvmField @ProtoNumber(1) val uin: Long = 0L,
+        @JvmField @ProtoNumber(2) val res: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class ReqBody(
+        @JvmField @ProtoNumber(1) val uinList: List<Long> = emptyList()
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RspBody(
+        @JvmField @ProtoNumber(1) val seq: Int = 0,
+        @JvmField @ProtoNumber(2) val result: List<DelResult> = emptyList()
+    ) : ProtoBuf
+}
+
+internal class Oidb0x5d2 : ProtoBuf {
+    @Serializable
+    internal class FriendInfo(
+        @JvmField @ProtoNumber(1) val uin: Long = 0L,
+        @JvmField @ProtoNumber(2) val gender: Int = 0,
+        @JvmField @ProtoNumber(3) val age: Int = 0,
+        @JvmField @ProtoNumber(4) val group: Int = 0,
+        @JvmField @ProtoNumber(5) val login: Int = 0,
+        @JvmField @ProtoNumber(6) val remark: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class FriendEntry(
+        @JvmField @ProtoNumber(1) val uin: Long = 0L,
+        @JvmField @ProtoNumber(2) val nick: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class GroupInfo(
+        @JvmField @ProtoNumber(1) val id: Int = 0,
+        @JvmField @ProtoNumber(2) val name: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class LoginInfo(
+        @JvmField @ProtoNumber(1) val id: Int = 0,
+        @JvmField @ProtoNumber(2) val name: ByteArray = EMPTY_BYTE_ARRAY
+    ) : ProtoBuf
+
+    @Serializable
+    internal class ReqBody(
+        @JvmField @ProtoNumber(1) val subCmd: Int = 0,
+        @JvmField @ProtoNumber(2) val reqGetList: ReqGetList? = null,
+        @JvmField @ProtoNumber(3) val reqGetInfo: ReqGetInfo? = null
+    ) : ProtoBuf
+
+    @Serializable
+    internal class ReqGetInfo(
+        @JvmField @ProtoNumber(1) val uinList: List<Long> = emptyList()
+    ) : ProtoBuf
+
+    @Serializable
+    internal class ReqGetList(
+        @JvmField @ProtoNumber(1) val seq: Int = 0
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RspBody(
+        @JvmField @ProtoNumber(1) val subCmd: Int = 0,
+        @JvmField @ProtoNumber(2) val rspGetList: RspGetList? = null,
+        @JvmField @ProtoNumber(3) val rspGetInfo: RspGetInfo? = null
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RspGetInfo(
+        @JvmField @ProtoNumber(1) val groupInfo: List<GroupInfo> = emptyList(),
+        @JvmField @ProtoNumber(2) val loginInfo: List<LoginInfo> = emptyList(),
+        @JvmField @ProtoNumber(3) val time: Int = 0,
+        @JvmField @ProtoNumber(4) val frdInfo: List<FriendInfo> = emptyList(),
+        @JvmField @ProtoNumber(5) val frdDelete: List<Long> = emptyList()
+    ) : ProtoBuf
+
+    @Serializable
+    internal class RspGetList(
+        @JvmField @ProtoNumber(1) val seq: Int = 0,
+        @JvmField @ProtoNumber(2) val list: List<FriendEntry> = emptyList()
+    ) : ProtoBuf
+}
+
 @Serializable
 internal class Oidb0x8a0 : ProtoBuf {
     @Serializable

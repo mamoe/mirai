@@ -44,6 +44,7 @@ import net.mamoe.mirai.internal.network.protocol.packet.login.WtLogin
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.network.*
 import net.mamoe.mirai.utils.*
+import network.protocol.packet.list.StrangerList
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.coroutines.CoroutineContext
 
@@ -292,6 +293,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
 
     private var initFriendOk = false
     private var initGroupOk = false
+    private var initStrangerOk = false
 
     /**
      * Don't use concurrently
@@ -352,6 +354,28 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         }.getOrThrow()
     }
 
+    suspend fun reloadStrangerList() {
+        if (initStrangerOk) {
+            return
+        }
+        var currentCount = 0
+        logger.info { "Start loading stranger list..." }
+        val response = StrangerList.GetStrangerList(bot.client)
+            .sendAndExpect<StrangerList.GetStrangerList.Response>(timeoutMillis = 5000, retry = 2)
+
+        if (response.result == 0) {
+            response.strangerList.forEach {
+                // atomic
+                bot.strangers.delegate.add(
+                    StrangerImpl(bot, bot.coroutineContext, StrangerInfoImpl(it.uin, it.nick.decodeToString()))
+                ).also { currentCount++ }
+            }
+        }
+        logger.info { "Successfully loaded stranger list: $currentCount in total" }
+        initStrangerOk = true
+
+    }
+
     suspend fun reloadGroupList() {
         if (initGroupOk) {
             return
@@ -386,6 +410,9 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
             if (!initGroupOk) {
                 bot.groups.delegate.removeAll { it.cancel(reInitCancellationException); true }
             }
+            if (!initStrangerOk) {
+                bot.strangers.delegate.removeAll { it.cancel(reInitCancellationException); true }
+            }
         }
 
         if (!pendingEnabled) {
@@ -396,6 +423,7 @@ internal class QQAndroidBotNetworkHandler(coroutineContext: CoroutineContext, bo
         coroutineScope {
             launch { reloadFriendList() }
             launch { reloadGroupList() }
+            launch { reloadStrangerList() }
         }
 
         this@QQAndroidBotNetworkHandler.launch(CoroutineName("Awaiting ConfigPushSvc.PushReq")) {

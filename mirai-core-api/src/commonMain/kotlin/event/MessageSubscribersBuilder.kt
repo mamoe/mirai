@@ -258,6 +258,15 @@ public open class MessageSubscribersBuilder<M : MessageEvent, out Ret, R : RR, R
     @MessageDsl
     public fun sentByFriend(): ListeningFilter = newListeningFilter { this is FriendMessageEvent }
 
+    /** 如果是陌生人发来的消息 */
+    @MessageDsl
+    public fun sentByStranger(onEvent: MessageListener<StrangerMessageEvent, R>): Ret =
+        content({ this is StrangerMessageEvent }) { onEvent(this as StrangerMessageEvent, it) }
+
+    /** 如果是陌生人发来的消息 */
+    @MessageDsl
+    public fun sentByStranger(): ListeningFilter = newListeningFilter { this is StrangerMessageEvent }
+
     /** 如果是群临时会话消息 */
     @MessageDsl
     public fun sentByTemp(): ListeningFilter = newListeningFilter { this is TempMessageEvent }

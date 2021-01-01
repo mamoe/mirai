@@ -138,6 +138,12 @@ public fun Member.asFriend(): Friend = this.bot.getFriend(this.id) ?: error("$th
 public fun Member.asFriendOrNull(): Friend? = this.bot.getFriend(this.id)
 
 /**
+ * 得到此成员作为陌生人的对象, 当此成员不是陌生人时返回 `null`
+ */
+public fun Member.asStrangerOrNull(): Stranger? = this.bot.getStranger(this.id)
+
+
+/**
  * 判断此成员是否为好友
  */
 public inline val Member.isFriend: Boolean

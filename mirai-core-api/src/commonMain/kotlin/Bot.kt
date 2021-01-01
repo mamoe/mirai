@@ -94,9 +94,32 @@ public interface Bot : CoroutineScope, ContactOrBot, UserOrBot {
     public val asFriend: Friend
 
     /**
+     * [User.id] 与 [Bot.id] 相同的 [Stranger] 实例
+     */
+    public val asStranger: Stranger
+
+
+    /**
+     * 陌生人列表. 与服务器同步更新.
+     */
+    public val strangers: ContactList<Stranger>
+
+    /**
+     * 以 [对方 QQ 号码][id] 获取一个陌生人对象, 在获取失败时返回 `null`.
+     */
+    public fun getStranger(id: Long): Stranger? =
+        strangers.firstOrNull { it.id == id }
+
+    /**
+     * 以 [对方 QQ 号码][id] 获取一个陌生人对象, 在获取失败时抛出 [NoSuchElementException].
+     */
+    public fun getStrangerOrFail(id: Long): Stranger = getStranger(id) ?: throw NoSuchElementException("stranger $id")
+
+    /**
      * 好友列表. 与服务器同步更新.
      */
     public val friends: ContactList<Friend>
+
 
     /**
      * 以 [对方 QQ 号码][id] 获取一个好友对象, 在获取失败时返回 `null`.
