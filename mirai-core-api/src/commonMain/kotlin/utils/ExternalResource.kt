@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -58,7 +58,12 @@ public interface ExternalResource : Closeable {
     public val md5: ByteArray
 
     /**
-     * 文件格式，如 "png", "amr". 当无法自动识别格式时为 "mirai"
+     * 文件格式，如 "png", "amr". 当无法自动识别格式时为 "mirai".
+     *
+     * 默认会从文件头识别, 支持的文件类型:
+     * png, jpg, gif, tif, bmp, wav, amr, silk
+     *
+     * @see net.mamoe.mirai.utils.getFileType
      */
     public val formatName: String
 
@@ -71,6 +76,7 @@ public interface ExternalResource : Closeable {
      * 打开 [InputStream]. 在返回的 [InputStream] 被 [关闭][InputStream.close] 前无法再次打开流.
      *
      * 关闭此流不会关闭 [ExternalResource].
+     * @throws IllegalStateException 当上一个流未关闭又尝试打开新的流时抛出
      */
     public fun inputStream(): InputStream
 
@@ -91,6 +97,8 @@ public interface ExternalResource : Closeable {
          * **打开文件**并创建 [ExternalResource].
          *
          * 将以只读模式打开这个文件 (因此文件会处于被占用状态), 直到 [ExternalResource.close].
+         *
+         * @see ExternalResource.formatName
          */
         @JvmStatic
         @JvmOverloads
@@ -102,6 +110,8 @@ public interface ExternalResource : Closeable {
          * 创建 [ExternalResource].
          *
          * @see closeOriginalFileOnClose 若为 `true`, 在 [ExternalResource.close] 时将会同步关闭 [RandomAccessFile]. 否则不会.
+         *
+         * @see ExternalResource.formatName
          */
         @JvmStatic
         @JvmOverloads
@@ -114,6 +124,8 @@ public interface ExternalResource : Closeable {
 
         /**
          * 创建 [ExternalResource]
+         *
+         * @see ExternalResource.formatName
          */
         @JvmStatic
         @JvmOverloads
@@ -125,7 +137,9 @@ public interface ExternalResource : Closeable {
         /**
          * 立即使用 [FileCacheStrategy] 缓存 [InputStream] 并创建 [ExternalResource].
          *
-         * 注意：本函数不会关闭流
+         * **注意**：本函数不会关闭流
+         *
+         * @see ExternalResource.formatName
          */
         @JvmStatic
         @JvmOverloads
@@ -138,8 +152,7 @@ public interface ExternalResource : Closeable {
         /**
          * 将图片作为单独的消息发送给指定联系人.
          *
-         * 注意：本函数不会关闭 [ExternalResource]
-         *
+         * **注意**：本函数不会关闭 [ExternalResource]
          *
          * @see Contact.uploadImage 上传图片
          * @see Contact.sendMessage 最终调用, 发送消息.
@@ -157,34 +170,40 @@ public interface ExternalResource : Closeable {
          *
          * 注意：本函数不会关闭流
          *
+         * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          */
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("sendAsImage")
-        public suspend fun <C : Contact> InputStream.sendAsImageTo(contact: C): MessageReceipt<C> =
+        @JvmOverloads
+        public suspend fun <C : Contact> InputStream.sendAsImageTo(
+            contact: C,
+            formatName: String? = null
+        ): MessageReceipt<C> =
             runBIO {
                 @Suppress("BlockingMethodInNonBlockingContext")
-                toExternalResource("png")
+                toExternalResource(formatName)
             }.withUse { sendAsImageTo(contact) }
 
         /**
          * 将文件作为图片发送到指定联系人
+         * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          */
         @JvmStatic
         @JvmBlockingBridge
         @JvmName("sendAsImage")
-        public suspend fun <C : Contact> File.sendAsImageTo(contact: C): MessageReceipt<C> {
+        @JvmOverloads
+        public suspend fun <C : Contact> File.sendAsImageTo(contact: C, formatName: String? = null): MessageReceipt<C> {
             require(this.exists() && this.canRead())
-            return toExternalResource("png").withUse { sendAsImageTo(contact) }
+            return toExternalResource(formatName).withUse { sendAsImageTo(contact) }
         }
 
         /**
-         * 上传图片并构造 [Image].
-         * 这个函数可能需消耗一段时间.
+         * 上传图片并构造 [Image]. 这个函数可能需消耗一段时间.
          *
-         * 注意：本函数不会关闭 [ExternalResource]
+         * **注意**：本函数不会关闭 [ExternalResource]
          *
          * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
          *
@@ -199,23 +218,28 @@ public interface ExternalResource : Closeable {
          *
          * 注意：本函数不会关闭流
          *
+         * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          */
         @JvmStatic
         @JvmBlockingBridge
-        public suspend fun InputStream.uploadAsImage(contact: Contact): Image =
+        @JvmOverloads
+        public suspend fun InputStream.uploadAsImage(contact: Contact, formatName: String? = null): Image =
             @Suppress("BlockingMethodInNonBlockingContext")
-            runBIO { toExternalResource("png") }.withUse { uploadAsImage(contact) }
+            runBIO { toExternalResource(formatName) }.withUse { uploadAsImage(contact) }
 
         /**
          * 将文件作为图片上传后构造 [Image]
+         *
+         * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          */
         @JvmStatic
         @JvmBlockingBridge
-        public suspend fun File.uploadAsImage(contact: Contact): Image {
+        @JvmOverloads
+        public suspend fun File.uploadAsImage(contact: Contact, formatName: String? = null): Image {
             require(this.isFile && this.exists() && this.canRead()) { "file ${this.path} is not readable" }
-            return toExternalResource("png").withUse { uploadAsImage(contact) }
+            return toExternalResource(formatName).withUse { uploadAsImage(contact) }
         }
 
 

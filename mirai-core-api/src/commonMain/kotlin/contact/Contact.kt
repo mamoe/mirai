@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -68,9 +68,11 @@ public interface Contact : ContactOrBot, CoroutineScope {
     public suspend fun sendMessage(message: String): MessageReceipt<Contact> = this.sendMessage(message.toPlainText())
 
     /**
-     * 上传一个图片以备发送.
+     * 上传一个 [资源][ExternalResource] 作为图片以备发送.
      *
-     * 无论上传是否成功都不会关闭 [resource].
+     * **无论上传是否成功都不会关闭 [resource]. 需要调用方手动关闭资源**
+     *
+     * 也可以使用其他扩展: [ExternalResource.uploadAsImage] 使用 [File], [InputStream] 等上传.
      *
      * @see Image 查看有关图片的更多信息, 如上传图片
      *
@@ -86,7 +88,8 @@ public interface Contact : ContactOrBot, CoroutineScope {
     public suspend fun uploadImage(resource: ExternalResource): Image
 
     /**
-     * @return "Friend($id)" or "Group($id)" or "Member($id)"
+     * @return "Friend($id)", "Group($id)", "Member($id)", "AnonymousMember($id)",
+     * "OtherClient(bot=${bot.id},deviceName=${info.deviceName},platform=${info.platform})"
      */
     public override fun toString(): String
 
@@ -96,24 +99,31 @@ public interface Contact : ContactOrBot, CoroutineScope {
          *
          * 注意：此函数不会关闭 [imageStream]
          *
+         * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          * @see FileCacheStrategy
          */
-        @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
-        public suspend fun <C : Contact> C.sendImage(imageStream: InputStream): MessageReceipt<C> =
-            imageStream.sendAsImageTo(this)
+        @JvmOverloads
+        public suspend fun <C : Contact> C.sendImage(
+            imageStream: InputStream,
+            formatName: String? = null
+        ): MessageReceipt<C> = imageStream.sendAsImageTo(this, formatName)
 
         /**
          * 将文件作为图片发送到指定联系人
+         * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          * @see FileCacheStrategy
          */
-        @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
-        public suspend fun <C : Contact> C.sendImage(file: File): MessageReceipt<C> = file.sendAsImageTo(this)
+        @JvmOverloads
+        public suspend fun <C : Contact> C.sendImage(
+            file: File,
+            formatName: String? = null
+        ): MessageReceipt<C> = file.sendAsImageTo(this, formatName)
 
         /**
          * 将资源作为单独的图片消息发送给 [this]
@@ -131,22 +141,29 @@ public interface Contact : ContactOrBot, CoroutineScope {
          *
          * 注意：本函数不会关闭流
          *
+         * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          */
-        @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
-        public suspend fun Contact.uploadImage(imageStream: InputStream): Image =
-            imageStream.uploadAsImage(this@uploadImage)
+        @JvmOverloads
+        public suspend fun Contact.uploadImage(
+            imageStream: InputStream,
+            formatName: String? = null
+        ): Image = imageStream.uploadAsImage(this@uploadImage, formatName)
 
         /**
          * 将文件作为图片上传, 但不发送
+         * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          */
-        @Throws(OverFileSizeMaxException::class)
         @JvmStatic
         @JvmBlockingBridge
-        public suspend fun Contact.uploadImage(file: File): Image = file.uploadAsImage(this)
+        @JvmOverloads
+        public suspend fun Contact.uploadImage(
+            file: File,
+            formatName: String? = null
+        ): Image = file.uploadAsImage(this, formatName)
 
         /**
          * 将文件作为图片上传, 但不发送
