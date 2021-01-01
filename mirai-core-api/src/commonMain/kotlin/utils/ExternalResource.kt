@@ -104,6 +104,7 @@ public interface ExternalResource : Closeable {
         @JvmOverloads
         @JvmName("create")
         public fun File.toExternalResource(formatName: String? = null): ExternalResource =
+            // although RandomAccessFile constructor throws IOException, actual performance influence is minor so not propagating IOException
             RandomAccessFile(this, "r").toExternalResource(formatName)
 
         /**
@@ -144,7 +145,7 @@ public interface ExternalResource : Closeable {
         @JvmStatic
         @JvmOverloads
         @JvmName("create")
-        @Throws(IOException::class)
+        @Throws(IOException::class) // not in BIO context so propagate IOException
         public fun InputStream.toExternalResource(formatName: String? = null): ExternalResource =
             Mirai.FileCacheStrategy.newCache(this, formatName)
 
@@ -182,6 +183,7 @@ public interface ExternalResource : Closeable {
             formatName: String? = null
         ): MessageReceipt<C> =
             runBIO {
+                // toExternalResource throws IOException however we're in BIO context so not propagating IOException to sendAsImageTo
                 @Suppress("BlockingMethodInNonBlockingContext")
                 toExternalResource(formatName)
             }.withUse { sendAsImageTo(contact) }
@@ -225,6 +227,7 @@ public interface ExternalResource : Closeable {
         @JvmBlockingBridge
         @JvmOverloads
         public suspend fun InputStream.uploadAsImage(contact: Contact, formatName: String? = null): Image =
+            // toExternalResource throws IOException however we're in BIO context so not propagating IOException to sendAsImageTo
             @Suppress("BlockingMethodInNonBlockingContext")
             runBIO { toExternalResource(formatName) }.withUse { uploadAsImage(contact) }
 
