@@ -6,7 +6,7 @@
 
 要主动发送一条消息，调用 `Contact.sendMessage()` 即可。
 
-可通过 `Bot.getFriend` 或 `Bot.getGroup` 获取相关对象。
+可通过 `Bot.getFriend` 或 `Bot.getGroup` 获取相关对象，也可以通过事件获取。
 
 > 下一步，[Events](Events.md)
 >

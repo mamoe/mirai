@@ -373,7 +373,7 @@ internal class WtLogin {
         }
 
         private fun onUnsafeDeviceLogin(tlvMap: TlvMap): LoginPacketResponse.UnsafeLogin {
-            return LoginPacketResponse.UnsafeLogin(tlvMap.getOrFail(0x204).toReadPacket().readBytes().encodeToString())
+            return LoginPacketResponse.UnsafeLogin(tlvMap.getOrFail(0x204).encodeToString())
         }
 
         private fun onErrorMessage(tlvMap: TlvMap): LoginPacketResponse.Error? {
@@ -416,15 +416,17 @@ internal class WtLogin {
                 // if (question[18].toInt() == 0x36) {
                 // 图片验证
                 // DebugLogger.debug("是一个图片验证码")
-                val imageData = tlvMap.getOrFail(0x105).toReadPacket()
-                val signInfoLength = imageData.readShort()
-                imageData.discardExact(2)//image Length
-                val sign = imageData.readBytes(signInfoLength.toInt())
+                return tlvMap.getOrFail(0x105).toReadPacket().withUse {
+                    val imageData = this
+                    val signInfoLength = imageData.readShort()
+                    imageData.discardExact(2)//image Length
+                    val sign = imageData.readBytes(signInfoLength.toInt())
 
-                return LoginPacketResponse.Captcha.Picture(
-                    data = imageData.readBytes(),
-                    sign = sign
-                )
+                    LoginPacketResponse.Captcha.Picture(
+                        data = imageData.readBytes(),
+                        sign = sign
+                    )
+                }
                 // } else error("UNKNOWN CAPTCHA QUESTION: ${question.toUHexString()}, tlvMap=" + tlvMap.contentToString())
             }
 
@@ -641,7 +643,7 @@ internal class WtLogin {
         }
 
         private inline fun analysisTlv0x531(t531: ByteArray, handler: (a1: ByteArray, noPicSig: ByteArray) -> Unit) {
-            val map = t531.toReadPacket()._readTLVMap()
+            val map = t531.toReadPacket().withUse { _readTLVMap() }
 
             val t106 = map[0x106]
             val t16a = map[0x16a]
@@ -657,7 +659,7 @@ internal class WtLogin {
          * @throws error
          */
         private fun QQAndroidClient.parseWFastLoginInfoDataOutA1(t169: ByteArray): ByteReadPacket {
-            val map = t169.toReadPacket()._readTLVMap()
+            val map = t169.toReadPacket().withUse { _readTLVMap() }
 
             val t106 = map[0x106]
             val t10c = map[0x10c]
@@ -735,7 +737,7 @@ internal class WtLogin {
         }
 
         private fun QQAndroidClient.analysisTlv161(t161: ByteArray) {
-            val tlv = t161.toReadPacket().apply { discardExact(2) }._readTLVMap()
+            val tlv = t161.toReadPacket().apply { discardExact(2) }.withUse { _readTLVMap() }
 
             tlv[0x173]?.let { analysisTlv173(it) }
             tlv[0x17f]?.let { analysisTlv17f(it) }

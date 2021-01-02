@@ -17,6 +17,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.discardExact
+import kotlinx.io.core.readUByte
+import kotlinx.io.core.readUShort
 import kotlinx.io.core.*
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group

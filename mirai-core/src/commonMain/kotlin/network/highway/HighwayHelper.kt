@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -85,33 +85,22 @@ internal suspend fun HttpClient.postImage(
 
 internal object HighwayHelper {
     @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
-    suspend fun uploadImageToServers(
-        bot: QQAndroidBot,
-        servers: List<Pair<Int, Int>>,
-        uKey: ByteArray,
-        image: ExternalResource,
-        kind: String,
-        commandId: Int
-    ) = uploadImageToServers(bot, servers, uKey, image.md5, image, kind, commandId)
-
-    @Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
     @OptIn(ExperimentalTime::class)
     suspend fun uploadImageToServers(
         bot: QQAndroidBot,
         servers: List<Pair<Int, Int>>,
         uKey: ByteArray,
-        md5: ByteArray,
-        input: ExternalResource,
+        resource: ExternalResource,
         kind: String,
         commandId: Int
     ) = servers.retryWithServers(
-        (input.size * 1000 / 1024 / 10).coerceAtLeast(5000),
+        (resource.size * 1000 / 1024 / 10).coerceAtLeast(5000),
         onFail = {
             throw IllegalStateException("cannot upload $kind, failed on all servers.", it)
         }
     ) { ip, port ->
         bot.network.logger.verbose {
-            "[Highway] Uploading $kind to ${ip}:$port, size=${input.size.sizeToString()}"
+            "[Highway] Uploading $kind to ${ip}:$port, size=${resource.size.sizeToString()}"
         }
 
         val time = measureTime {
@@ -119,15 +108,15 @@ internal object HighwayHelper {
                 client = bot.client,
                 serverIp = ip,
                 serverPort = port,
-                imageInput = input,
-                fileMd5 = md5,
+                resource = resource,
+                fileMd5 = resource.md5,
                 ticket = uKey,
                 commandId = commandId
             )
         }
 
         bot.network.logger.verbose {
-            "[Highway] Uploading $kind: succeed at ${(input.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
+            "[Highway] Uploading $kind: succeed at ${(resource.size.toDouble() / 1024 / time.inSeconds).roundToInt()} KiB/s"
         }
     }
 
@@ -138,7 +127,7 @@ internal object HighwayHelper {
         serverIp: String,
         serverPort: Int,
         ticket: ByteArray,
-        imageInput: ExternalResource,
+        resource: ExternalResource,
         fileMd5: ByteArray,
         commandId: Int  // group=2, friend=1
     ) {
@@ -162,7 +151,7 @@ internal object HighwayHelper {
                 command = "PicUp.DataUp",
                 commandId = commandId,
                 ticket = ticket,
-                data = imageInput,
+                data = resource,
                 fileMd5 = fileMd5
             ).useAll {
                 socket.send(it)
@@ -238,9 +227,12 @@ internal class ChunkedFlowSession<T>(
     @Suppress("BlockingMethodInNonBlockingContext")
     internal suspend inline fun useAll(crossinline block: suspend (T) -> Unit) = withUse {
         runBIO {
-            val size = input.read(buffer)
-            block(mapper(buffer, size, offset))
-            offset += size
+            while (true) {
+                val size = input.read(buffer)
+                if (size == -1) return@runBIO
+                block(mapper(buffer, size, offset))
+                offset += size
+            }
         }
     }
 }

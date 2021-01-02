@@ -25,8 +25,13 @@ public abstract class PttMessage : MessageContent {
     public companion object Key :
         AbstractPolymorphicMessageKey<MessageContent, PttMessage>(MessageContent, { it.safeCast() })
 
+    @MiraiExperimentalApi
     public abstract val fileName: String
+
+    @MiraiExperimentalApi
     public abstract val md5: ByteArray
+
+    @MiraiExperimentalApi
     public abstract val fileSize: Long
 }
 
@@ -36,9 +41,9 @@ public abstract class PttMessage : MessageContent {
  */
 @Serializable // experimental
 public class Voice @MiraiInternalApi constructor(
-    public override val fileName: String,
-    public override val md5: ByteArray,
-    public override val fileSize: Long,
+    @MiraiExperimentalApi public override val fileName: String,
+    @MiraiExperimentalApi public override val md5: ByteArray,
+    @MiraiExperimentalApi public override val fileSize: Long,
 
     @MiraiInternalApi public val codec: Int = 0,
     private val _url: String

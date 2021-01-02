@@ -142,7 +142,7 @@ public class JavaApiTests {
         Contact.sendImage(contact, (InputStream) magic());          // returns MessageReceipt
 
         // experimental
-        ExternalResource.uploadAsGroupVoice(magic(), (Group) contact);
+        ExternalResource.uploadAsVoice(magic(), (Group) contact);
     }
 
     public static void main(String[] args) {

@@ -186,11 +186,8 @@ public data class PokeMessage @MiraiInternalApi constructor(
  * 商城表情
  *
  * 目前不支持直接发送，可支持转发，但其取决于表情是否可使用.
- *
- * ## mirai 码支持
- * 格式: &#91;mirai:marketface:*[id]*,*[name]*&#93;
  */
-public interface MarketFace : CodableMessage, HummerMessage {
+public interface MarketFace : HummerMessage {
     public val name: String
     public val id: Int
 

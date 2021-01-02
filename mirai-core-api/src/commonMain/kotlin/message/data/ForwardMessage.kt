@@ -106,8 +106,10 @@ public data class ForwardMessage(
     val nodeList: List<Node>,
 ) : MessageContent {
     override fun contentToString(): String {
-        return "[mirai:forward:NOT_IMPLEMENTED]" // TODO: 2020/12/3 ForwardMessage.contentToString()
+        return "[转发消息]"
     }
+
+    // use data-class generated toString()
 
 
     /**

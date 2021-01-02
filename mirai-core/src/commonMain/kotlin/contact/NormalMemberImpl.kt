@@ -46,7 +46,7 @@ internal class NormalMemberImpl constructor(
     @Suppress("unused") // false positive
     val lastMessageSequence: AtomicInt = atomic(-1)
 
-    override fun toString(): String = "Member($id)"
+    override fun toString(): String = "NormalMember($id)"
 
     @Suppress("UNCHECKED_CAST")
     @JvmSynthetic

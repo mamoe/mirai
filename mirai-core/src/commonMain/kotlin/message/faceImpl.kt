@@ -15,10 +15,8 @@ import kotlinx.serialization.Transient
 import net.mamoe.mirai.internal.network.protocol.data.proto.HummerCommelem
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
-import net.mamoe.mirai.message.code.internal.appendAsMiraiCode
 import net.mamoe.mirai.message.data.Face
 import net.mamoe.mirai.message.data.MarketFace
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 import net.mamoe.mirai.utils.hexToBytes
 import net.mamoe.mirai.utils.toByteArray
 
@@ -53,11 +51,6 @@ internal data class MarketFaceImpl internal constructor(
     override val name: String = delegate.faceName.decodeToString()
     @Transient
     override val id: Int = delegate.tabId
-
-    @MiraiExperimentalApi
-    override fun appendMiraiCode(builder: StringBuilder) {
-        builder.append("[mirai:marketface:").append(id).append(",").appendAsMiraiCode(name).append(']')
-    }
 
     override fun toString() = "[mirai:marketface:$id,$name]"
 }

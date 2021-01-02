@@ -3,7 +3,6 @@
 本文介绍如何在一个项目中使用 mirai。
 
 mirai 使用纯 Kotlin 开发，兼容 JVM 平台语言如 Java，最低要求 `JDK 1.8`，`Kotlin 1.4`。
-**但注意不要使用 Oracle JDK**（[原因](https://github.com/mamoe/mirai/discussions/779)），推荐使用 OpenJDK。
 
 ### 选择版本
 
@@ -15,10 +14,10 @@ mirai 使用纯 Kotlin 开发，兼容 JVM 平台语言如 Java，最低要求 `
 | 版本类型 |             版本号              |
 |:------:|:------------------------------:|
 |  稳定   |             1.3.3              |
-|  预览   |            2.0-M2-1          |
+|  预览   |            2.0-M2-2            |
 |  开发   | [![Version]][Bintray Download] |
 
-即使 2.0 还没有稳定，也建议使用 2.0 预览版本，因 1.x 版本将不会收到任何更新。
+**即使 2.0 还没有稳定，也建议使用 2.0 预览版本，因 1.x 版本将不会收到任何更新。**
 
 ### 配置项目
 
@@ -28,8 +27,7 @@ mirai 使用纯 Kotlin 开发，兼容 JVM 平台语言如 Java，最低要求 `
 
 - [A. 使用 Gradle](#a-使用-gradle)
 - [B. 使用 Maven](#b-使用-maven)
-- [C. 使用 IntelliJ](#c-使用-intellij)
-- [D. 下载 JAR 包](#d-下载-jar-包)
+- [D. 下载 JAR 包](#c-下载-jar-包)
 
 
 ## A. 使用 Gradle
@@ -120,24 +118,7 @@ dependencies {
 
 > 可以在 [Kotlin 官方文档](https://www.kotlincn=.net/docs/reference/using-maven.html) 获取更多有关配置 Kotlin 的信息。
 
-## C. 使用 IntelliJ
-
-### 1. 创建项目
-
-使用现有项目，或创建一个新项目（`File->New->Project`）或新模块（`File->New->Module`）。
-
-### 2. 添加依赖
-
-1. 进入 `Project Structure`（`File->Project Structure`，`Ctrl+Alt+Shift+S`）
-2. 进入 `Libraries`
-3. 找到 `+` 按钮，点击 `From Maven`
-4. 输入 `net.mamoe:mirai-core:1.3.3`，勾选 `Sources`
-5. 确认并等待下载
-
-
-> [回到 Mirai 文档索引](README.md)
-
-## D. 下载 JAR 包
+## C. 下载 JAR 包
 
 非常不推荐这种方法，请尽可能使用构建工具。
 
