@@ -251,7 +251,11 @@ public sealed class MemberJoinEvent(
      * 被邀请加入群
      */
     public data class Invite @MiraiInternalApi constructor(
-        public override val member: NormalMember
+        public override val member: NormalMember,
+        /**
+         * 邀请者
+         */
+        public val invitor: Member
     ) : MemberJoinEvent(member) {
         public override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id})"
     }
