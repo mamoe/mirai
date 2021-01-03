@@ -12,6 +12,7 @@ package net.mamoe.mirai.internal.utils.io.serialization.tars.internal
 import kotlinx.io.charsets.Charset
 import kotlinx.io.core.*
 import net.mamoe.mirai.internal.utils.io.serialization.tars.Tars
+import net.mamoe.mirai.internal.utils.io.serialization.tars.internal.TarsDecoder.Companion.println
 
 
 /**
@@ -110,7 +111,7 @@ internal class TarsInput(
     @OptIn(ExperimentalUnsignedTypes::class)
     @PublishedApi
     internal fun skipField(type: Byte) {
-        TarsDecoder.println {
+        println {
             "skipping ${
                 TarsHead.findTarsTypeName(
                     type
@@ -128,32 +129,17 @@ internal class TarsInput(
             Tars.STRING4 -> this.input.discardExact(this.input.readInt())
             Tars.MAP -> { // map
                 TarsDecoder.structureHierarchy++
-                var count = 0
-                nextHead() // avoid shadowing, don't remove
-                repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping map" }) { head ->
-                    readTarsIntValue(head).also { count = it * 2 }
-                } * 2) {
-                    skipField(currentHead.type)
-                    if (it != count - 1) { // don't read last head
-                        nextHead()
-                    }
+                val sizeHead = nextHead()
+                repeat(readTarsIntValue(sizeHead)) {
+                    skipField(nextHead().type)
                 }
                 TarsDecoder.structureHierarchy--
             }
             Tars.LIST -> { // list
                 TarsDecoder.structureHierarchy++
-                var count = 0
-                nextHead() // avoid shadowing, don't remove
-                repeat(skipToHeadAndUseIfPossibleOrFail(0, message = { "tag 0 not found when skipping list" }) { head ->
-                    readTarsIntValue(head).also { count = it }
-                }) {
-                    skipField(currentHead.type)
-                    if (it != count - 1) { // don't read last head
-                        nextHead()
-                    }
-                }
-                if (count == 0) {
-
+                val sizeHead = nextHead()
+                repeat(readTarsIntValue(sizeHead) * 2) {
+                    skipField(nextHead().type)
                 }
                 TarsDecoder.structureHierarchy--
             }
@@ -162,9 +148,13 @@ internal class TarsInput(
                 var head: TarsHead
                 do {
                     head = nextHead()
+                    if (head.type == Tars.STRUCT_END) {
+                        TarsDecoder.structureHierarchy--
+                        skipField(head.type)
+                        break
+                    }
                     skipField(head.type)
                 } while (head.type != Tars.STRUCT_END)
-                TarsDecoder.structureHierarchy--
             }
             Tars.STRUCT_END, Tars.ZERO_TYPE -> {
             }
