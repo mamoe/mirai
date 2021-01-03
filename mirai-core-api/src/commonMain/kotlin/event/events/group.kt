@@ -255,9 +255,9 @@ public sealed class MemberJoinEvent(
         /**
          * 邀请者
          */
-        public val invitor: Member
+        public val invitor: NormalMember
     ) : MemberJoinEvent(member) {
-        public override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id})"
+        public override fun toString(): String = "MemberJoinEvent.Invite(member=${member.id}, invitor=${invitor.id})"
     }
 
     /**
