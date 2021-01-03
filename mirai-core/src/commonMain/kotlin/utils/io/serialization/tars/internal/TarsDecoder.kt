@@ -58,7 +58,7 @@ internal class TarsDecoder(
         }
 
         override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-            this@TarsDecoder.pushTag(TarsTagListElement)
+            this@TarsDecoder.pushTag(TarsTagListElement())
             return this@TarsDecoder.beginStructure(descriptor)
         }
 
@@ -79,7 +79,9 @@ internal class TarsDecoder(
 
         override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
             // 不要读下一个 head
-            return input.currentHead.let { input.readTarsIntValue(it) }
+            return input.currentHead.let { input.readTarsIntValue(it) }.also {
+                println { "SimpleByteArrayReader.decodeCollectionSize: $it" }
+            }
         }
     }
 
@@ -96,7 +98,7 @@ internal class TarsDecoder(
         }
 
         override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-            this@TarsDecoder.pushTag(TarsTagListElement)
+            this@TarsDecoder.pushTag(TarsTagListElement())
 
             return this@TarsDecoder.beginStructure(descriptor)
         }
@@ -130,6 +132,7 @@ internal class TarsDecoder(
         override fun decodeElementIndex(descriptor: SerialDescriptor): Int = error("stub")
 
         override fun endStructure(descriptor: SerialDescriptor) {
+            println { "MapReader.endStructure: ${input.currentHeadOrNull}" }
             this@TarsDecoder.endStructure(descriptor)
         }
 
@@ -137,9 +140,11 @@ internal class TarsDecoder(
             println { "MapReader.beginStructure: ${input.currentHead}" }
             this@TarsDecoder.pushTag(
                 when (input.currentHead.tag) {
-                    0 -> TarsTagMapEntryKey
-                    1 -> TarsTagMapEntryValue
+                    0 -> TarsTagMapEntryKey()
+                    1 -> TarsTagMapEntryValue()
                     else -> error("illegal map entry head: ${input.currentHead.tag}")
+                }.also {
+                    println("MapReader.pushTag $it")
                 }
             )
             return this@TarsDecoder.beginStructure(descriptor)
@@ -155,20 +160,30 @@ internal class TarsDecoder(
         override fun decodeBoolean(): Boolean = input.useHead { input.readTarsBooleanValue(it) }
         override fun decodeChar(): Char = decodeByte().toChar()
         override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = decodeInt()
-        override fun decodeString(): String = input.useHead { input.readTarsStringValue(it) }
+        override fun decodeString(): String = input.useHead { head ->
+            input.readTarsStringValue(head).also {
+                println { "MapReader.decodeString: $it" }
+            }
+        }
 
         override fun decodeCollectionSize(descriptor: SerialDescriptor): Int {
             println { "decodeCollectionSize in MapReader: ${descriptor.serialName}" }
             // 不读下一个 head
-            return input.useHead { input.readTarsIntValue(it) }
+            return input.useHead { head ->
+                input.readTarsIntValue(head).also {
+                    println { "decodeCollectionSize = $it" }
+                }
+            }
         }
     }
 
 
     override fun endStructure(descriptor: SerialDescriptor) {
         structureHierarchy--
-        println { "endStructure: ${descriptor.serialName}" }
+        println { "endStructure: ${descriptor.serialName}, $currentTagOrNull, ${input.currentHeadOrNull}" }
         if (currentTagOrNull?.isSimpleByteArray == true) {
+            println { "endStructure: prepareNextHead() called" }
+            currentTag.isSimpleByteArray = false
             input.prepareNextHead() // read to next head
         }
         if (descriptor.kind == StructureKind.CLASS) {
@@ -215,14 +230,14 @@ internal class TarsDecoder(
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         println()
-        println { "beginStructure: ${descriptor.serialName}" }
+        println { "beginStructure: ${descriptor.serialName}, ${descriptor.kind}" }
         structureHierarchy++
         return when (descriptor.kind) {
             is PrimitiveKind -> this@TarsDecoder
 
             StructureKind.MAP -> {
-                //println("!! MAP")
                 val tag = popTag()
+                // println("!! MAP, tag=$tag")
                 return input.skipToHeadAndUseIfPossibleOrFail(tag.id) {
                     it.checkType(Tars.MAP, "beginStructure", tag, descriptor)
                     MapReader
@@ -315,7 +330,9 @@ internal class TarsDecoder(
         }
 
     override fun decodeTaggedByte(tag: TarsTag): Byte =
-        kotlin.runCatching { input.skipToHeadAndUseIfPossibleOrFail(tag.id) { input.readTarsByteValue(it) } }.getOrElse {
+        kotlin.runCatching {
+            input.skipToHeadAndUseIfPossibleOrFail(tag.id) { input.readTarsByteValue(it) }
+        }.getOrElse {
             throw IllegalStateException("$tag", it)
         }
 

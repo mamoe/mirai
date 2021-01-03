@@ -20,21 +20,24 @@ internal abstract class TarsTag {
     internal var isSimpleByteArray: Boolean = false
 }
 
-internal object TarsTagListElement : TarsTag() {
+// For thread-safely, Don't use object
+internal class TarsTagListElement : TarsTag() {
     override val id: Int get() = 0
     override fun toString(): String {
         return "TarsTagListElement"
     }
 }
 
-internal object TarsTagMapEntryKey : TarsTag() {
+// For thread-safely, Don't use object
+internal class TarsTagMapEntryKey : TarsTag() {
     override val id: Int get() = 0
     override fun toString(): String {
         return "TarsTagMapEntryKey"
     }
 }
 
-internal object TarsTagMapEntryValue : TarsTag() {
+// For thread-safely, Don't use object
+internal class TarsTagMapEntryValue : TarsTag() {
     override val id: Int get() = 1
     override fun toString(): String {
         return "TarsTagMapEntryValue"
