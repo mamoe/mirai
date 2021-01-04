@@ -147,7 +147,7 @@ internal class TroopManagement {
         }
     }
 
-    internal object GetTroopConfig : OutgoingPacketFactory<GetTroopConfig.Response>("OidbSvc.0x899_9") {
+    internal object GetTroopConfig : OutgoingPacketFactory<GetTroopConfig.Response>("OidbSvc.0x496") {
         class Response(
             val success: Boolean
         ) : Packet {
@@ -162,6 +162,7 @@ internal class TroopManagement {
                     command = 1174,
                     result = 0,
                     serviceType = 0,
+                    clientVersion = "android 8.4.18",
                     bodybuffer = Oidb0x496.ReqBody(
                         updateTime = 0,
                         firstUnreadManagerMsgSeq = 1,
