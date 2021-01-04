@@ -13,7 +13,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
