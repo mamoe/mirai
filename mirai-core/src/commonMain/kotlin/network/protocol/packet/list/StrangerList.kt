@@ -47,9 +47,7 @@ internal class StrangerList {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             readProtoBuf(OidbSso.OIDBSSOPkg.serializer()).let { pkg ->
                 if (pkg.result == 0) {
-                    pkg.bodybuffer.loadAs(Oidb0x5d2.RspBody.serializer()).also {
-                        pkg._miraiContentToString()
-                    }.rspGetList!!.let {
+                    pkg.bodybuffer.loadAs(Oidb0x5d2.RspBody.serializer()).rspGetList!!.let {
                         bot.client.strangerSeq = it.seq
                         return Response(pkg.result, it.list)
                     }
@@ -88,9 +86,7 @@ internal class StrangerList {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             readProtoBuf(OidbSso.OIDBSSOPkg.serializer()).let { pkg ->
                 if (pkg.result == 0) {
-                    pkg.bodybuffer.loadAs(Oidb0x5d4.RspBody.serializer()).also {
-                        pkg._miraiContentToString()
-                    }.result.forEach { delResult ->
+                    pkg.bodybuffer.loadAs(Oidb0x5d4.RspBody.serializer()).result.forEach { delResult ->
                         bot.getStranger(delResult.uin)?.let {
                             bot.strangers.remove(delResult.uin)
                             StrangerRelationChangeEvent.Deleted(it).broadcast()
