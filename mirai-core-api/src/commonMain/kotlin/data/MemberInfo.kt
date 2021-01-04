@@ -23,4 +23,5 @@ public interface MemberInfo : UserInfo {
     public val muteTimestamp: Int
 
     public val anonymousId: String? get() = null
+    public val isOfficialBot: Boolean
 }

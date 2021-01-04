@@ -11,6 +11,7 @@ package net.mamoe.mirai.internal.contact
 
 import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.data.MemberInfo
+import net.mamoe.mirai.internal.network.QQAndroidClient
 import net.mamoe.mirai.internal.network.protocol.data.jce.StTroopMemberInfo
 
 internal class MemberInfoImpl(
@@ -22,8 +23,10 @@ internal class MemberInfoImpl(
     override val specialTitle: String,
     override val muteTimestamp: Int,
     override val anonymousId: String?,
+    override val isOfficialBot: Boolean = false
 ) : MemberInfo, UserInfoImpl(uin, nick, remark) {
     constructor(
+        client: QQAndroidClient,
         jceInfo: StTroopMemberInfo,
         groupOwnerId: Long
     ) : this(
@@ -39,5 +42,6 @@ internal class MemberInfoImpl(
         specialTitle = jceInfo.sSpecialTitle.orEmpty(),
         muteTimestamp = jceInfo.dwShutupTimestap?.toInt() ?: 0,
         anonymousId = null,
+        isOfficialBot = client.groupConfig.isOfficialRobot(jceInfo.memberUin)
     )
 }

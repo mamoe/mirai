@@ -273,7 +273,7 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
                     nextUin = nextUin
                 ).sendAndExpect<FriendList.GetTroopMemberList.Response>(retry = 3)
                 sequence += data.members.asSequence().map { troopMemberInfo ->
-                    MemberInfoImpl(troopMemberInfo, ownerId)
+                    MemberInfoImpl(bot.client, troopMemberInfo, ownerId)
                 }
                 nextUin = data.nextUin
                 if (nextUin == 0L) {
