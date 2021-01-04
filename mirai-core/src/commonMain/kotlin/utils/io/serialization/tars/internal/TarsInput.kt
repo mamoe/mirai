@@ -22,12 +22,26 @@ internal class TarsInput(
     val input: Input, private val charset: Charset
 ) {
     private var _head: TarsHead? = null
+    private var _nextHead: TarsHead? = null
 
     val currentHead: TarsHead get() = _head ?: throw EOFException("No current TarsHead available")
     val currentHeadOrNull: TarsHead? get() = _head
 
     init {
         prepareNextHead()
+    }
+
+    /**
+     * 预读取下个 [TarsHead]
+     *
+     * 注意: 应该读完 [currentHead] 的值再调用
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun peekNextHead(): TarsHead? {
+        _nextHead?.let { return it }
+        return readNextHeadButDoNotAssignTo_Head(true).also { _nextHead = it; }.also {
+            println("Peek next head: $it")
+        }
     }
 
     /**
@@ -52,7 +66,16 @@ internal class TarsInput(
      */
     @Suppress("FunctionName")
     @OptIn(ExperimentalUnsignedTypes::class)
-    private fun readNextHeadButDoNotAssignTo_Head(): TarsHead? {
+    private fun readNextHeadButDoNotAssignTo_Head(
+        ignoreNextHead: Boolean = false
+    ): TarsHead? {
+        if (!ignoreNextHead) {
+            val n = _nextHead
+            if (n != null) {
+                _nextHead = null
+                return n
+            }
+        }
         if (input.endOfInput) {
             return null
         }
@@ -94,6 +117,25 @@ internal class TarsInput(
         return checkNotNull<R>(skipToHeadAndUseIfPossibleOrNull(tag, block), message)
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun skipToTag(tag: Int): Boolean {
+        while (true) {
+            val hd = peekNextHead() ?: return false
+            if (tag <= hd.tag || hd.type == 11.toByte()) {
+                return tag == hd.tag
+            }
+            println("Discard $tag, $hd, ${hd.size}")
+            input.discardExact(hd.size)
+            skipField(hd.type)
+        }
+    }
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun readInt32(tag: Int): Int {
+        if (!skipToTag(tag)) return 0
+        return readTarsIntValue(nextHead())
+    }
+
     tailrec fun skipToHeadOrNull(tag: Int): TarsHead? {
         val current: TarsHead = currentHeadOrNull ?: return null // no backing field
 
@@ -129,16 +171,18 @@ internal class TarsInput(
             Tars.STRING4 -> this.input.discardExact(this.input.readInt())
             Tars.MAP -> { // map
                 TarsDecoder.structureHierarchy++
-                val sizeHead = nextHead()
-                repeat(readTarsIntValue(sizeHead)) {
+                repeat(readInt32(0).also {
+                    println("SIZE = $it")
+                } * 2) {
                     skipField(nextHead().type)
                 }
                 TarsDecoder.structureHierarchy--
             }
             Tars.LIST -> { // list
                 TarsDecoder.structureHierarchy++
-                val sizeHead = nextHead()
-                repeat(readTarsIntValue(sizeHead) * 2) {
+                repeat(readInt32(0).also {
+                    println("SIZE = $it")
+                }) {
                     skipField(nextHead().type)
                 }
                 TarsDecoder.structureHierarchy--
@@ -161,7 +205,7 @@ internal class TarsInput(
             Tars.SIMPLE_LIST -> {
                 TarsDecoder.structureHierarchy++
                 var head = nextHead()
-                check(head.type == Tars.BYTE) { "bad simple list element type: " + head.type }
+                check(head.type == Tars.BYTE) { "bad simple list element type: " + head.type + ", $head" }
                 check(head.tag == 0) { "simple list element tag must be 0, but was ${head.tag}" }
 
                 head = nextHead()
@@ -176,7 +220,12 @@ internal class TarsInput(
     // region readers
     fun readTarsIntValue(head: TarsHead): Int {
         //println("readTarsIntValue: $head")
-        return when (head.type) {
+        return readTarsIntValue(head.type, head)
+    }
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun readTarsIntValue(type: Byte, head: Any = type): Int {
+        return when (type) {
             Tars.ZERO_TYPE -> 0
             Tars.BYTE -> input.readByte().toInt()
             Tars.SHORT -> input.readShort().toInt()
