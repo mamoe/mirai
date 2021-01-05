@@ -14,13 +14,9 @@
 
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
-import kotlinx.io.core.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
-import kotlinx.io.core.ByteReadPacket
-import kotlinx.io.core.discardExact
-import kotlinx.io.core.readBytes
-import kotlinx.io.core.readUInt
+import kotlinx.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.JavaFriendlyAPI
@@ -324,6 +320,9 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                             //添加
                             1 -> {
                                 val dataList = message.parseToMessageDataList()
+                                val invitor = dataList.first().let { messageData ->
+                                    group.getOrFail(messageData.data.toLong())
+                                }
                                 val member = dataList.last().let { messageData ->
                                     group.newMember(
                                         MemberInfoImpl(
@@ -341,7 +340,7 @@ private object Transformers732 : Map<Int, Lambda732> by mapOf(
                                         group.members.delegate.add(it)
                                     }
                                 }
-                                return@lambda732 sequenceOf(MemberJoinEvent.Invite(member))
+                                return@lambda732 sequenceOf(MemberJoinEvent.Invite(member, invitor))
                             }
                             //移除
                             2 -> {
