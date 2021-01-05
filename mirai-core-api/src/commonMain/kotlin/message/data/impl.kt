@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -14,9 +14,9 @@
 package net.mamoe.mirai.message.data
 
 import kotlinx.serialization.Serializable
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
-import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.MiraiExperimentalApi
 import kotlin.native.concurrent.SharedImmutable
 
@@ -240,9 +240,9 @@ internal fun String.imageIdToMd5(offset: Int): ByteArray {
 internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
     @Suppress("DEPRECATION")
     return when {
-        imageId matches FRIEND_IMAGE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
-        imageId matches FRIEND_IMAGE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
-        imageId matches GROUP_IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
+        imageId matches IMAGE_ID_REGEX -> imageId.imageIdToMd5(1)
+        imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> imageId.imageIdToMd5(imageId.skipToSecondHyphen() + 1)
+        imageId matches IMAGE_RESOURCE_ID_REGEX_1 -> imageId.imageIdToMd5(1)
 
         else -> error(
             "illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE"
@@ -251,8 +251,8 @@ internal fun calculateImageMd5ByImageId(imageId: String): ByteArray {
 }
 
 internal val ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE: String =
-    "ImageId must match Regex `${FRIEND_IMAGE_ID_REGEX_1.pattern}`, " +
-            "`${FRIEND_IMAGE_ID_REGEX_2.pattern}` or " +
-            "`${GROUP_IMAGE_ID_REGEX.pattern}`"
+    "ImageId must match Regex `${IMAGE_RESOURCE_ID_REGEX_1.pattern}`, " +
+            "`${IMAGE_RESOURCE_ID_REGEX_2.pattern}` or " +
+            "`${IMAGE_ID_REGEX.pattern}`"
 
 // endregion

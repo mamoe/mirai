@@ -177,8 +177,10 @@ internal fun MessageChain.toRichTextElems(
             }
 
 
-            is FlashImage -> elements.add(currentMessage.toJceData())
+            is FlashImage -> elements.add(currentMessage.toJceData(messageTarget))
                 .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
+
+
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(
                 if (currentMessage.id >= 260) {

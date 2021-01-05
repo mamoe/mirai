@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -25,8 +25,25 @@ public fun generateImageId(md5: ByteArray, format: String = "mirai"): String {
     return """{${generateUUID(md5)}}.$format"""
 }
 
+@JvmOverloads
+public fun generateImageIdFromResourceId(resourceId: String, format: String = "mirai"): String? {
+    //  friend image id:  /1040400290-3666252994-EFF4427CE3D27DB6B1D9A8AB72E7A29C
+    //  friend image id:  /1040400290-3666252994-EFF4427C E3D2 7DB6 B1D9 A8AB72E7A29C
+    //   group image id:                        {EF42A82D-8DB6-5D0F-4F11-68961D8DA5CB}.png
+
+    val md5String = resourceId.substringAfterLast("-").substringAfter("/").takeIf { it.length == 32 } ?: return null
+    return "{${generateUUID(md5String)}}.$format"
+}
+
 public fun generateUUID(md5: ByteArray): String {
     return "${md5[0, 3]}-${md5[4, 5]}-${md5[6, 7]}-${md5[8, 9]}-${md5[10, 15]}"
+}
+
+public fun generateUUID(md5String: String): String {
+    with(md5String) {
+        check(length == 32) { "it should md5String.length == 32" }
+        return "${substring(0, 8)}-${substring(8, 12)}-${substring(12, 16)}-${substring(16, 20)}-${substring(20, 32)}"
+    }
 }
 
 @JvmSynthetic

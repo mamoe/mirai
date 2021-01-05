@@ -36,9 +36,9 @@ import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
 import net.mamoe.mirai.message.MessageReceipt
 import net.mamoe.mirai.message.action.Nudge
 import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
-import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
-import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_ID_REGEX
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_1
+import net.mamoe.mirai.message.data.Image.Key.IMAGE_RESOURCE_ID_REGEX_2
 import net.mamoe.mirai.utils.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import kotlin.math.absoluteValue
@@ -815,9 +815,9 @@ internal open class MiraiImpl : IMirai, LowLevelApiAccessor {
 
     override fun createImage(imageId: String): Image {
         return when {
-            imageId matches FRIEND_IMAGE_ID_REGEX_1 -> OfflineFriendImage(imageId)
-            imageId matches FRIEND_IMAGE_ID_REGEX_2 -> OfflineFriendImage(imageId)
-            imageId matches GROUP_IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
+            imageId matches IMAGE_ID_REGEX -> OfflineGroupImage(imageId)
+            imageId matches IMAGE_RESOURCE_ID_REGEX_1 -> OfflineFriendImage(imageId)
+            imageId matches IMAGE_RESOURCE_ID_REGEX_2 -> OfflineFriendImage(imageId)
             else ->
                 @Suppress("INVISIBLE_MEMBER")
                 throw IllegalArgumentException("Illegal imageId: $imageId. $ILLEGAL_IMAGE_ID_EXCEPTION_MESSAGE")

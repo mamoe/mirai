@@ -21,12 +21,14 @@ import net.mamoe.mirai.event.events.BeforeImageUploadEvent
 import net.mamoe.mirai.event.events.EventCancelledException
 import net.mamoe.mirai.event.events.ImageUploadEvent
 import net.mamoe.mirai.internal.message.OfflineFriendImage
+import net.mamoe.mirai.internal.message.getImageType
 import net.mamoe.mirai.internal.network.highway.postImage
 import net.mamoe.mirai.internal.network.highway.sizeToString
 import net.mamoe.mirai.internal.network.protocol.data.proto.Cmd0x352
 import net.mamoe.mirai.internal.network.protocol.packet.chat.image.LongConn
 import net.mamoe.mirai.message.data.Image
 import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.generateImageIdFromResourceId
 import net.mamoe.mirai.utils.toUHexString
 import net.mamoe.mirai.utils.verbose
 import kotlin.coroutines.CoroutineContext
@@ -71,10 +73,16 @@ internal abstract class AbstractUser(
             else -> "unknown"
         }
         return when (response) {
-            is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(response.resourceId)
-                .also {
-                    ImageUploadEvent.Succeed(this, resource, it).broadcast()
-                }
+            is LongConn.OffPicUp.Response.FileExists -> OfflineFriendImage(
+                imageId = generateImageIdFromResourceId(
+                    resourceId = response.resourceId,
+                    format = getImageType(response.imageInfo.fileType).takeIf { it != ExternalResource.DEFAULT_FORMAT_NAME }
+                        ?: resource.formatName
+                ) ?: response.resourceId
+            ).also {
+                ImageUploadEvent.Succeed(this, resource, it).broadcast()
+            }
+
             is LongConn.OffPicUp.Response.RequireUpload -> {
                 bot.network.logger.verbose {
                     "[Http] Uploading $kind image, size=${resource.size.sizeToString()}"
@@ -105,7 +113,9 @@ internal abstract class AbstractUser(
                 )*/
                 // 为什么不能 ??
 
-                OfflineFriendImage(response.resourceId).also {
+                OfflineFriendImage(
+                    generateImageIdFromResourceId(response.resourceId, resource.formatName) ?: response.resourceId
+                ).also {
                     ImageUploadEvent.Succeed(this, resource, it).broadcast()
                 }
             }
