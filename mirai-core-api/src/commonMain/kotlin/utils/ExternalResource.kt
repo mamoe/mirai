@@ -126,7 +126,7 @@ public interface ExternalResource : Closeable {
             ExternalResourceImplByFile(this, formatName, closeOriginalFileOnClose)
 
         /**
-         * 创建 [ExternalResource]
+         * 创建 [ExternalResource].
          *
          * @param formatName 查看 [ExternalResource.formatName]
          */
@@ -140,7 +140,7 @@ public interface ExternalResource : Closeable {
         /**
          * 立即使用 [FileCacheStrategy] 缓存 [InputStream] 并创建 [ExternalResource].
          *
-         * **注意**：本函数不会关闭流
+         * **注意**：本函数不会关闭流.
          *
          * @param formatName 查看 [ExternalResource.formatName]
          */
@@ -155,7 +155,7 @@ public interface ExternalResource : Closeable {
         /**
          * 将图片作为单独的消息发送给指定联系人.
          *
-         * **注意**：本函数不会关闭 [ExternalResource]
+         * **注意**：本函数不会关闭 [ExternalResource].
          *
          * @see Contact.uploadImage 上传图片
          * @see Contact.sendMessage 最终调用, 发送消息.
@@ -169,9 +169,9 @@ public interface ExternalResource : Closeable {
             contact.uploadImage(this).sendTo(contact)
 
         /**
-         * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人
+         * 读取 [InputStream] 到临时文件并将其作为图片发送到指定联系人.
          *
-         * 注意：本函数不会关闭流
+         * 注意：本函数不会关闭流.
          *
          * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
@@ -191,7 +191,7 @@ public interface ExternalResource : Closeable {
             }.withUse { sendAsImageTo(contact) }
 
         /**
-         * 将文件作为图片发送到指定联系人
+         * 将文件作为图片发送到指定联系人.
          * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
          */
@@ -207,9 +207,9 @@ public interface ExternalResource : Closeable {
         /**
          * 上传图片并构造 [Image]. 这个函数可能需消耗一段时间.
          *
-         * **注意**：本函数不会关闭 [ExternalResource]
+         * **注意**：本函数不会关闭 [ExternalResource].
          *
-         * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人
+         * @param contact 图片上传对象. 由于好友图片与群图片不通用, 上传时必须提供目标联系人.
          *
          * @see Contact.uploadImage 最终调用, 上传图片.
          */
@@ -218,9 +218,9 @@ public interface ExternalResource : Closeable {
         public suspend fun ExternalResource.uploadAsImage(contact: Contact): Image = contact.uploadImage(this)
 
         /**
-         * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image]
+         * 读取 [InputStream] 到临时文件并将其作为图片上传后构造 [Image].
          *
-         * 注意：本函数不会关闭流
+         * 注意：本函数不会关闭流.
          *
          * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
@@ -234,7 +234,7 @@ public interface ExternalResource : Closeable {
             runBIO { toExternalResource(formatName) }.withUse { uploadAsImage(contact) }
 
         /**
-         * 将文件作为图片上传后构造 [Image]
+         * 将文件作为图片上传后构造 [Image].
          *
          * @param formatName 查看 [ExternalResource.formatName]
          * @throws OverFileSizeMaxException
@@ -247,7 +247,7 @@ public interface ExternalResource : Closeable {
 
 
         /**
-         * 将文件作为语音上传后构造 [Voice]
+         * 将文件作为语音上传后构造 [Voice].
          *
          * - 请手动关闭输入流
          * - 请使用 amr 或 silk 格式
