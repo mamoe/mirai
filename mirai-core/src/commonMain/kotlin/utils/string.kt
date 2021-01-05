@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import net.mamoe.mirai.utils.MiraiInternalApi
 
 @Serializable
-data class MessageData(
+internal data class MessageData(
     val data: String,
     val cmd: Int,
     val text: String
