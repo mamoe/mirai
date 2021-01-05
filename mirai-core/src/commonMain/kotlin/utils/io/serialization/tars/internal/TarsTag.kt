@@ -81,6 +81,16 @@ internal class TarsHead(private val value: Long) {
 
     val tag: Int get() = (value ushr 32).toInt()
     val type: Byte get() = value.toUInt().toByte()
+    val size: Int
+        get() {
+            if (tag < 15) {
+                return 1
+            }
+            if (tag < 256) {
+                return 2
+            }
+            error("tag is too large: $tag")
+        }
 
     override fun toString(): String {
         return "TarsHead(tag=$tag, type=$type(${findTarsTypeName(type)}))"

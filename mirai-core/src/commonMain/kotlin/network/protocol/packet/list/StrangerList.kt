@@ -13,7 +13,6 @@ import net.mamoe.mirai.internal.network.protocol.data.proto.OidbSso
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacket
 import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
-import net.mamoe.mirai.internal.utils._miraiContentToString
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
 import net.mamoe.mirai.internal.utils.io.serialization.readProtoBuf
 import net.mamoe.mirai.internal.utils.io.serialization.toByteArray
@@ -47,9 +46,7 @@ internal class StrangerList {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             readProtoBuf(OidbSso.OIDBSSOPkg.serializer()).let { pkg ->
                 if (pkg.result == 0) {
-                    pkg.bodybuffer.loadAs(Oidb0x5d2.RspBody.serializer()).also {
-                        pkg._miraiContentToString()
-                    }.rspGetList!!.let {
+                    pkg.bodybuffer.loadAs(Oidb0x5d2.RspBody.serializer()).rspGetList!!.let {
                         bot.client.strangerSeq = it.seq
                         return Response(pkg.result, it.list)
                     }
@@ -88,9 +85,7 @@ internal class StrangerList {
         override suspend fun ByteReadPacket.decode(bot: QQAndroidBot): Response {
             readProtoBuf(OidbSso.OIDBSSOPkg.serializer()).let { pkg ->
                 if (pkg.result == 0) {
-                    pkg.bodybuffer.loadAs(Oidb0x5d4.RspBody.serializer()).also {
-                        pkg._miraiContentToString()
-                    }.result.forEach { delResult ->
+                    pkg.bodybuffer.loadAs(Oidb0x5d4.RspBody.serializer()).result.forEach { delResult ->
                         bot.getStranger(delResult.uin)?.let {
                             bot.strangers.remove(delResult.uin)
                             StrangerRelationChangeEvent.Deleted(it).broadcast()
