@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.IMirai
 import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Contact.Companion.uploadImage
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.message.data.FriendImage
@@ -24,32 +25,19 @@ import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_1
 import net.mamoe.mirai.message.data.Image.Key.FRIEND_IMAGE_ID_REGEX_2
 import net.mamoe.mirai.message.data.Image.Key.GROUP_IMAGE_ID_REGEX
 import net.mamoe.mirai.message.data.md5
-import net.mamoe.mirai.utils.ExternalResource
-import net.mamoe.mirai.utils.MiraiExperimentalApi
-import net.mamoe.mirai.utils.generateImageId
-import net.mamoe.mirai.utils.hexToBytes
-
-/*
- * ImgType:
- *  JPG:    1000
- *  PNG:    1001
- *  WEBP:   1002
- *  BMP:    1005
- *  GIG:    2000 // gig? gif?
- *  APNG:   2001
- *  SHARPP: 1004
- */
+import net.mamoe.mirai.utils.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.DEFAULT_FORMAT_NAME
 
 internal class OnlineGroupImageImpl(
     internal val delegate: ImMsgBody.CustomFace
 ) : @Suppress("DEPRECATION")
 OnlineGroupImage() {
     override val imageId: String = generateImageId(
-        delegate.md5,
+        delegate.picMd5,
         delegate.filePath.substringAfterLast('.')
     ).takeIf {
         GROUP_IMAGE_ID_REGEX.matches(it)
-    } ?: generateImageId(delegate.md5)
+    } ?: generateImageId(delegate.picMd5)
 
     override val originUrl: String
         get() = if (delegate.origUrl.isBlank()) {
@@ -90,11 +78,79 @@ OnlineFriendImage() {
     }
 }
 
+/*
+ * ImgType:
+ *  JPG:    1000
+ *  PNG:    1001
+ *  WEBP:   1002
+ *  BMP:    1005
+ *  GIG:    2000 // gig? gif?
+ *  APNG:   2001
+ *  SHARPP: 1004
+ */
+
+internal fun getImageType(id: Int): String {
+    return when (id) {
+        1000 -> "jpg"
+        1001 -> "png"
+        1002 -> "webp"
+        1005 -> "bmp"
+        2000 -> "gif"
+        2001 -> "png"
+        else -> DEFAULT_FORMAT_NAME
+    }
+}
+
+internal fun ImMsgBody.NotOnlineImage.toCustomFace(): ImMsgBody.CustomFace {
+
+    return ImMsgBody.CustomFace(
+        filePath = generateImageId(picMd5, getImageType(imgType)),
+        picMd5 = picMd5,
+        flag = ByteArray(4),
+        bigUrl = bigUrl,
+        origUrl = origUrl,
+        //_400Height = 235,
+        //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",
+        //_400Width = 351,
+        oldData = this.oldVerSendFile
+    )
+}
+
+internal fun ImMsgBody.NotOnlineImageOrCustomFace.calculateResId(): String {
+    val url = origUrl.takeIf { it.isNotBlank() }
+        ?: thumbUrl.takeIf { it.isNotBlank() }
+        ?: _400Url.takeIf { it.isNotBlank() }
+        ?: ""
+
+    // gchatpic_new
+    // offpic_new
+    val picSenderId = url.substringAfter("pic_new/").substringBefore("/")
+        .takeIf { it.isNotBlank() } ?: "000000000"
+    val unknownInt = url.substringAfter("-").substringBefore("-")
+        .takeIf { it.isNotBlank() } ?: "000000000"
+
+    return "/$picSenderId-$unknownInt-${picMd5.toUHexString("")}"
+}
+
+internal fun ImMsgBody.CustomFace.toNotOnlineImage(): ImMsgBody.NotOnlineImage {
+    val resId = calculateResId()
+
+    return ImMsgBody.NotOnlineImage(
+        filePath = filePath,
+        resId = resId,
+        oldPicMd5 = false,
+        picMd5 = picMd5,
+        downloadPath = resId,
+        original = 1,
+        pbReserve = byteArrayOf(0x78, 0x02),
+    )
+}
+
 @Suppress("DEPRECATION")
 internal fun OfflineGroupImage.toJceData(): ImMsgBody.CustomFace {
     return ImMsgBody.CustomFace(
         filePath = this.imageId,
-        md5 = this.md5,
+        picMd5 = this.md5,
         flag = ByteArray(4),
         //_400Height = 235,
         //_400Url = "/gchatpic_new/1040400290/1041235568-2195821338-01E9451B70EDEAE3B37C101F1EEBF5B5/400?term=2",

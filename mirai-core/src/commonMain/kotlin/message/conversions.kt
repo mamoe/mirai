@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Mamoe Technologies and contributors.
+ * Copyright 2019-2021 Mamoe Technologies and contributors.
  *
  *  此源代码的使用受 GNU AFFERO GENERAL PUBLIC LICENSE version 3 许可证的约束, 可以在以下链接找到该许可证.
  *  Use of this source code is governed by the GNU AGPLv3 license that can be found through the following link.
@@ -21,6 +21,7 @@ import net.mamoe.mirai.LowLevelApi
 import net.mamoe.mirai.contact.AnonymousMember
 import net.mamoe.mirai.contact.ContactOrBot
 import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.contact.User
 import net.mamoe.mirai.internal.network.protocol.data.proto.*
 import net.mamoe.mirai.internal.network.protocol.data.proto.ImMsgBody
 import net.mamoe.mirai.internal.utils.*
@@ -56,15 +57,15 @@ internal fun MessageChain.toRichTextElems(
 
     var longTextResId: String? = null
 
-    fun transformOneMessage(it: Message) {
-        if (it is RichMessage) {
-            val content = it.content.toByteArray().zip()
-            when (it) {
+    fun transformOneMessage(currentMessage: Message) {
+        if (currentMessage is RichMessage) {
+            val content = currentMessage.content.toByteArray().zip()
+            when (currentMessage) {
                 is ForwardMessageInternal -> {
                     elements.add(
                         ImMsgBody.Elem(
                             richMsg = ImMsgBody.RichMsg(
-                                serviceId = it.serviceId, // ok
+                                serviceId = currentMessage.serviceId, // ok
                                 template1 = byteArrayOf(1) + content
                             )
                         )
@@ -76,13 +77,13 @@ internal fun MessageChain.toRichTextElems(
                     elements.add(
                         ImMsgBody.Elem(
                             richMsg = ImMsgBody.RichMsg(
-                                serviceId = it.serviceId, // ok
+                                serviceId = currentMessage.serviceId, // ok
                                 template1 = byteArrayOf(1) + content
                             )
                         )
                     )
                     transformOneMessage(UNSUPPORTED_MERGED_MESSAGE_PLAIN)
-                    longTextResId = it.resId
+                    longTextResId = currentMessage.resId
                 }
                 is LightApp -> elements.add(
                     ImMsgBody.Elem(
@@ -94,9 +95,9 @@ internal fun MessageChain.toRichTextElems(
                 else -> elements.add(
                     ImMsgBody.Elem(
                         richMsg = ImMsgBody.RichMsg(
-                            serviceId = when (it) {
-                                is ServiceMessage -> it.serviceId
-                                else -> error("unsupported RichMessage: ${it::class.simpleName}")
+                            serviceId = when (currentMessage) {
+                                is ServiceMessage -> currentMessage.serviceId
+                                else -> error("unsupported RichMessage: ${currentMessage::class.simpleName}")
                             },
                             template1 = byteArrayOf(1) + content
                         )
@@ -105,21 +106,24 @@ internal fun MessageChain.toRichTextElems(
             }
         }
 
-        when (it) {
-            is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = it.content)))
+        when (currentMessage) {
+            is PlainText -> elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = currentMessage.content)))
             is CustomMessage -> {
                 @Suppress("UNCHECKED_CAST")
                 elements.add(
                     ImMsgBody.Elem(
                         customElem = ImMsgBody.CustomElem(
                             enumType = MIRAI_CUSTOM_ELEM_TYPE,
-                            data = CustomMessage.dump(it.getFactory() as CustomMessage.Factory<CustomMessage>, it)
+                            data = CustomMessage.dump(
+                                currentMessage.getFactory() as CustomMessage.Factory<CustomMessage>,
+                                currentMessage
+                            )
                         )
                     )
                 )
             }
             is At -> {
-                elements.add(ImMsgBody.Elem(text = it.toJceData(messageTarget.safeCast())))
+                elements.add(ImMsgBody.Elem(text = currentMessage.toJceData(messageTarget.safeCast())))
                 // elements.add(ImMsgBody.Elem(text = ImMsgBody.Text(str = " ")))
                 // removed by https://github.com/mamoe/mirai/issues/524
                 // 发送 QuoteReply 消息时无可避免的产生多余空格 #524
@@ -129,34 +133,63 @@ internal fun MessageChain.toRichTextElems(
                     ImMsgBody.Elem(
                         commonElem = ImMsgBody.CommonElem(
                             serviceType = 2,
-                            businessType = it.pokeType,
+                            businessType = currentMessage.pokeType,
                             pbElem = HummerCommelem.MsgElemInfoServtype2(
-                                pokeType = it.pokeType,
-                                vaspokeId = it.id,
+                                pokeType = currentMessage.pokeType,
+                                vaspokeId = currentMessage.id,
                                 vaspokeMinver = "7.2.0",
-                                vaspokeName = it.name
+                                vaspokeName = currentMessage.name
                             ).toByteArray(HummerCommelem.MsgElemInfoServtype2.serializer())
                         )
                     )
                 )
                 transformOneMessage(UNSUPPORTED_POKE_MESSAGE_PLAIN)
             }
-            is OfflineGroupImage -> elements.add(ImMsgBody.Elem(customFace = it.toJceData()))
-            is OnlineGroupImageImpl -> elements.add(ImMsgBody.Elem(customFace = it.delegate))
-            is OnlineFriendImageImpl -> elements.add(ImMsgBody.Elem(notOnlineImage = it.delegate))
-            is OfflineFriendImage -> elements.add(ImMsgBody.Elem(notOnlineImage = it.toJceData()))
-            is FlashImage -> elements.add(it.toJceData()).also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
+
+
+            is OfflineGroupImage -> {
+                if (messageTarget is User) {
+                    elements.add(ImMsgBody.Elem(notOnlineImage = currentMessage.toJceData().toNotOnlineImage()))
+                } else {
+                    elements.add(ImMsgBody.Elem(customFace = currentMessage.toJceData()))
+                }
+            }
+            is OnlineGroupImageImpl -> {
+                if (messageTarget is User) {
+                    elements.add(ImMsgBody.Elem(notOnlineImage = currentMessage.delegate.toNotOnlineImage()))
+                } else {
+                    elements.add(ImMsgBody.Elem(customFace = currentMessage.delegate))
+                }
+            }
+            is OnlineFriendImageImpl -> {
+                if (messageTarget is User) {
+                    elements.add(ImMsgBody.Elem(notOnlineImage = currentMessage.delegate))
+                } else {
+                    elements.add(ImMsgBody.Elem(customFace = currentMessage.delegate.toCustomFace()))
+                }
+            }
+            is OfflineFriendImage -> {
+                if (messageTarget is User) {
+                    elements.add(ImMsgBody.Elem(notOnlineImage = currentMessage.toJceData()))
+                } else {
+                    elements.add(ImMsgBody.Elem(customFace = currentMessage.toJceData().toCustomFace()))
+                }
+            }
+
+
+            is FlashImage -> elements.add(currentMessage.toJceData())
+                .also { transformOneMessage(UNSUPPORTED_FLASH_MESSAGE_PLAIN) }
             is AtAll -> elements.add(atAllData)
             is Face -> elements.add(
-                if (it.id >= 260) {
-                    ImMsgBody.Elem(commonElem = it.toCommData())
+                if (currentMessage.id >= 260) {
+                    ImMsgBody.Elem(commonElem = currentMessage.toCommData())
                 } else {
-                    ImMsgBody.Elem(face = it.toJceData())
+                    ImMsgBody.Elem(face = currentMessage.toJceData())
                 }
             )
             is QuoteReply -> {
                 if (forGroup) {
-                    when (val source = it.source) {
+                    when (val source = currentMessage.source) {
                         is OnlineMessageSource.Incoming.FromGroup -> {
                             val sender0 = source.sender
                             if (sender0 !is AnonymousMember)
@@ -170,9 +203,9 @@ internal fun MessageChain.toRichTextElems(
             }
             //MarketFaceImpl继承于MarketFace 会自动添加兼容信息
             //如果有用户不慎/强行使用也会转换为文本信息
-            is MarketFaceImpl -> elements.add(ImMsgBody.Elem(marketFace = it.delegate))
-            is MarketFace -> transformOneMessage(PlainText(it.contentToString()))
-            is VipFace -> transformOneMessage(PlainText(it.contentToString()))
+            is MarketFaceImpl -> elements.add(ImMsgBody.Elem(marketFace = currentMessage.delegate))
+            is MarketFace -> transformOneMessage(PlainText(currentMessage.contentToString()))
+            is VipFace -> transformOneMessage(PlainText(currentMessage.contentToString()))
             is PttMessage -> {
                 elements.add(
                     ImMsgBody.Elem(
@@ -193,7 +226,7 @@ internal fun MessageChain.toRichTextElems(
             -> {
 
             }
-            else -> error("unsupported message type: ${it::class.simpleName}")
+            else -> error("unsupported message type: ${currentMessage::class.simpleName}")
         }
     }
     this.forEach(::transformOneMessage)
