@@ -64,6 +64,7 @@ public interface ExternalResource : Closeable {
      * png, jpg, gif, tif, bmp, wav, amr, silk
      *
      * @see net.mamoe.mirai.utils.getFileType
+     * @see DEFAULT_FORMAT_NAME
      */
     public val formatName: String
 
@@ -98,7 +99,7 @@ public interface ExternalResource : Closeable {
          *
          * 将以只读模式打开这个文件 (因此文件会处于被占用状态), 直到 [ExternalResource.close].
          *
-         * @see ExternalResource.formatName
+         * @param formatName 查看 [ExternalResource.formatName]
          */
         @JvmStatic
         @JvmOverloads
@@ -112,7 +113,7 @@ public interface ExternalResource : Closeable {
          *
          * @see closeOriginalFileOnClose 若为 `true`, 在 [ExternalResource.close] 时将会同步关闭 [RandomAccessFile]. 否则不会.
          *
-         * @see ExternalResource.formatName
+         * @param formatName 查看 [ExternalResource.formatName]
          */
         @JvmStatic
         @JvmOverloads
@@ -126,7 +127,7 @@ public interface ExternalResource : Closeable {
         /**
          * 创建 [ExternalResource]
          *
-         * @see ExternalResource.formatName
+         * @param formatName 查看 [ExternalResource.formatName]
          */
         @JvmStatic
         @JvmOverloads
@@ -140,7 +141,7 @@ public interface ExternalResource : Closeable {
          *
          * **注意**：本函数不会关闭流
          *
-         * @see ExternalResource.formatName
+         * @param formatName 查看 [ExternalResource.formatName]
          */
         @JvmStatic
         @JvmOverloads
