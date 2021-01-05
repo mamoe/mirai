@@ -21,6 +21,7 @@ import kotlinx.io.core.ByteReadPacket
 import kotlinx.io.core.discardExact
 import kotlinx.io.core.readUByte
 import kotlinx.io.core.readUShort
+import kotlinx.io.core.*
 import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.MemberPermission
@@ -47,7 +48,6 @@ import net.mamoe.mirai.internal.network.protocol.packet.OutgoingPacketFactory
 import net.mamoe.mirai.internal.network.protocol.packet.buildOutgoingUniPacket
 import net.mamoe.mirai.internal.network.protocol.packet.chat.GroupInfoImpl
 import net.mamoe.mirai.internal.network.protocol.packet.chat.NewContact
-import net.mamoe.mirai.internal.network.protocol.packet.chat.toLongUnsigned
 import net.mamoe.mirai.internal.network.protocol.packet.list.FriendList
 import net.mamoe.mirai.internal.utils.*
 import net.mamoe.mirai.internal.utils.io.serialization.loadAs
@@ -248,48 +248,57 @@ private fun MsgComm.Msg.getNewMemberInfo(): MemberInfo {
 internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
     when (msgHead.msgType) {
         33 -> bot.groupListModifyLock.withLock {
-
-            if (msgHead.authUin == bot.id) {
-                // 邀请入群
-                return bot.createGroupForBot(msgHead.fromUin)?.let { group ->
-                    // package: 27 0B 60 E7 01 CA CC 69 8B 83 44 71 47 90 06 B9 DC C0 ED D4 B1 00 30 33 44 30 42 38 46 30 39 37 32 38 35 43 34 31 38 30 33 36 41 34 36 31 36 31 35 32 37 38 46 46 43 30 41 38 30 36 30 36 45 38 31 43 39 41 34 38 37
-                    // package: groupUin + 01 CA CC 69 8B 83 + invitorUin + length(06) + string + magicKey
-                    val invitorUin = msgBody.msgContent.sliceArray(10..13).toInt().toLongUnsigned()
-                    val invitor = group[invitorUin] ?: return@let null
-                    BotJoinGroupEvent.Invite(invitor)
+            msgBody.msgContent.read {
+                val groupUin = readUInt().toLong()
+                val group = bot.getGroupByUinOrNull(groupUin) ?: bot.createGroupForBot(groupUin) ?: return null
+                discardExact(1)
+                val joinedMemberUin = readUInt().toLong()
+                val joinType = readByte().toInt()
+                val invitorUin = readUInt().toLong()
+                return when (joinType) {
+                    //邀请加入
+                    -125, 3 -> {
+                        val invitor = if (invitorUin == bot.id) {
+                            group.botAsMember
+                        } else {
+                            group[invitorUin]
+                        } ?: return null
+                        if (joinedMemberUin == bot.id) {
+                            BotJoinGroupEvent.Invite(invitor)
+                        } else {
+                            MemberJoinEvent.Invite(
+                                group.newMember(getNewMemberInfo()).cast<NormalMember>()
+                                    .also { group.members.delegate.add(it) }, invitor
+                            )
+                        }
+                    }
+                    //通过群员分享的二维码/直接加入
+                    -126, 2 -> {
+                        if (joinedMemberUin == bot.id) {
+                            BotJoinGroupEvent.Active(group)
+                        } else {
+                            MemberJoinEvent.Active(
+                                group.newMember(getNewMemberInfo()).cast<NormalMember>()
+                                    .also { group.members.delegate.add(it) })
+                        }
+                    }
+                    //忽略
+                    else -> {
+                        null
+                    }
                 }
-            } else {
-
-                // 成员申请入群
-                val group = bot.getGroupByUinOrNull(msgHead.fromUin)
-                    ?: return null
-
-                // 主动入群, 直接加入: msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 42 39 41 30 33 45 38 34 30 39 34 42 46 30 45 32 45 38 42 31 43 43 41 34 32 42 38 42 44 42 35 34 44 42 31 44 32 32 30 46 30 38 39 46 46 35 41 38
-                // 主动直接加入                  27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 33 30 45 38 42 31 33 46 41 41 31 33 46 38 31 35 34 41 38 33 32 37 31 43 34 34 38 35 33 35 46 45 31 38 32 43 39 42 43 46 46 32 44 39 39 46 41 37
-
-                // 有人被邀请(经过同意后)加入      27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 34 30 34 38 32 33 38 35 37 41 37 38 46 33 45 37 35 38 42 39 38 46 43 45 44 43 32 41 30 31 36 36 30 34 31 36 39 35 39 30 38 39 30 39 45 31 34 34
-                // 搜索到群, 直接加入             27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
-
-                // msgBody.msgContent.soutv("33类型的content")
-
-                if (group.members.contains(msgHead.authUin)) {
-                    return null
-                }
-
-                if (msgBody.msgContent.read {
-                        discardExact(9)
-                        readByte().toInt().and(0xff)
-                    } == 0x83) {
-                    return MemberJoinEvent.Invite(group.newMember(getNewMemberInfo())
-                        .cast<NormalMember>()
-                        .also { group.members.delegate.add(it) })
-                }
-
-                return MemberJoinEvent.Active(group.newMember(getNewMemberInfo())
-                    .cast<NormalMember>()
-                    .also { group.members.delegate.add(it) })
             }
-        }
+            // 邀请入群
+            // package: 27 0B 60 E7 01 CA CC 69 8B 83 44 71 47 90 06 B9 DC C0 ED D4 B1 00 30 33 44 30 42 38 46 30 39 37 32 38 35 43 34 31 38 30 33 36 41 34 36 31 36 31 35 32 37 38 46 46 43 30 41 38 30 36 30 36 45 38 31 43 39 41 34 38 37
+            // package: groupUin + 01 CA CC 69 8B 83 + invitorUin + length(06) + string + magicKey
+
+
+            // 主动入群, 直接加入: msgContent=27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 42 39 41 30 33 45 38 34 30 39 34 42 46 30 45 32 45 38 42 31 43 43 41 34 32 42 38 42 44 42 35 34 44 42 31 44 32 32 30 46 30 38 39 46 46 35 41 38
+            // 主动直接加入                  27 0B 60 E7 01 76 E4 B8 DD 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 33 30 45 38 42 31 33 46 41 41 31 33 46 38 31 35 34 41 38 33 32 37 31 43 34 34 38 35 33 35 46 45 31 38 32 43 39 42 43 46 46 32 44 39 39 46 41 37
+
+            // 有人被邀请(经过同意后)加入      27 0B 60 E7 01 76 E4 B8 DD 83 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 34 30 34 38 32 33 38 35 37 41 37 38 46 33 45 37 35 38 42 39 38 46 43 45 44 43 32 41 30 31 36 36 30 34 31 36 39 35 39 30 38 39 30 39 45 31 34 34
+            // 搜索到群, 直接加入             27 0B 60 E7 01 07 6E 47 BA 82 3E 03 3F A2 06 B4 B4 BD A8 D5 DF 00 30 32 30 39 39 42 39 41 46 32 39 41 35 42 33 46 34 32 30 44 36 44 36 39 35 44 38 45 34 35 30 46 30 45 30 38 45 31 41 39 42 46 46 45 32 30 32 34 35
+            }
 
         34 -> { // 与 33 重复
             return null
@@ -301,7 +310,6 @@ internal suspend fun MsgComm.Msg.transform(bot: QQAndroidBot): Packet? {
         }
 
         85 -> bot.groupListModifyLock.withLock { // 其他客户端入群
-
             // msgHead.authUin: 处理人
 
             return if (msgHead.toUin == bot.id) {

@@ -15,6 +15,12 @@
 package net.mamoe.mirai.internal.network.protocol.packet.chat.receive
 
 import kotlinx.io.core.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
+import kotlinx.io.core.ByteReadPacket
+import kotlinx.io.core.discardExact
+import kotlinx.io.core.readBytes
+import kotlinx.io.core.readUInt
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoNumber
 import net.mamoe.mirai.JavaFriendlyAPI
@@ -22,6 +28,7 @@ import net.mamoe.mirai.Mirai
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.FriendInfoImpl
 import net.mamoe.mirai.data.GroupHonorType
+import net.mamoe.mirai.event.broadcast
 import net.mamoe.mirai.event.events.*
 import net.mamoe.mirai.internal.QQAndroidBot
 import net.mamoe.mirai.internal.contact.*
@@ -515,6 +522,17 @@ internal object Transformers528 : Map<Long, Lambda528> by mapOf(
             }
             msg.msgFriendMsgSync != null -> {
 
+            }
+            msg.msgGroupMsgSync != null -> {
+                when (msg.msgGroupMsgSync.processflag) {
+                    1, 2 -> bot.network.launch {
+                        bot.groupListModifyLock.withLock {
+                            bot.createGroupForBot(msg.msgGroupMsgSync.grpCode)?.let {
+                                BotJoinGroupEvent.Active(it).broadcast()
+                            }
+                        }
+                    }
+                }
             }
             else -> {
                 bot.network.logger.debug { "OnlinePush528 0x44L: " + msg._miraiContentToString() }
