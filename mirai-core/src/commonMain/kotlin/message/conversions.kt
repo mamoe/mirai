@@ -203,10 +203,20 @@ internal fun MessageChain.toRichTextElems(
                     }
                 }
             }
-            //MarketFaceImpl继承于MarketFace 会自动添加兼容信息
-            //如果有用户不慎/强行使用也会转换为文本信息
-            is MarketFaceImpl -> elements.add(ImMsgBody.Elem(marketFace = currentMessage.delegate))
-            is MarketFace -> transformOneMessage(PlainText(currentMessage.contentToString()))
+            is MarketFace -> {
+                if (currentMessage is MarketFaceImpl) {
+                    elements.add(ImMsgBody.Elem(marketFace = currentMessage.delegate))
+                }
+                //兼容信息
+                transformOneMessage(PlainText(currentMessage.name))
+                if (currentMessage is MarketFaceImpl) {
+                    elements.add(
+                        ImMsgBody.Elem(
+                            extraInfo = ImMsgBody.ExtraInfo(flags = 8, groupMask = 1)
+                        )
+                    )
+                }
+            }
             is VipFace -> transformOneMessage(PlainText(currentMessage.contentToString()))
             is PttMessage -> {
                 elements.add(
@@ -246,6 +256,9 @@ internal fun MessageChain.toRichTextElems(
                     )
                 )
             }
+            this.anyIsInstance<MarketFaceImpl>() -> {
+                elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_MARKET_FACE)))
+            }
             this.anyIsInstance<RichMessage>() -> {
                 // 08 09 78 00 A0 01 81 DC 01 C8 01 00 F0 01 00 F8 01 00 90 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00
                 elements.add(ImMsgBody.Elem(generalFlags = ImMsgBody.GeneralFlags(pbReserve = PB_RESERVE_FOR_RICH_MESSAGE)))
@@ -271,6 +284,8 @@ private val PB_RESERVE_FOR_PTT =
 
 @Suppress("SpellCheckingInspection")
 private val PB_RESERVE_FOR_DOUTU = "78 00 90 01 01 F8 01 00 A0 02 00 C8 02 00".hexToBytes()
+private val PB_RESERVE_FOR_MARKET_FACE =
+    "02 78 80 80 04 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 00 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 04 08 02 10 3B 90 04 80 C0 80 80 04 B8 04 00 C0 04 00 CA 04 00 F8 04 80 80 04 88 05 00".hexToBytes()
 private val PB_RESERVE_FOR_ELSE = "78 00 F8 01 00 C8 02 00".hexToBytes()
 
 internal fun MsgComm.Msg.toMessageChain(
@@ -353,12 +368,6 @@ private fun MessageChain.cleanupRubbishMessageElements(): MessageChain {
                     return@forEach
                 }
             }
-            if (last is MarketFaceImpl && element is PlainText) {
-                if (element.content == (last as MarketFaceImpl).name) {
-                    last = element
-                    return@forEach
-                }
-            }
             if (last is PokeMessage && element is PlainText) {
                 if (element == UNSUPPORTED_POKE_MESSAGE_PLAIN) {
                     last = element
@@ -409,6 +418,7 @@ internal val MIRAI_CUSTOM_ELEM_TYPE = "mirai".hashCode() // 103904510
 
 internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId: Long, list: MessageChainBuilder) {
     // (this._miraiContentToString().soutv())
+    var marketFace: MarketFaceImpl? = null
     this.forEach { element ->
         when {
             element.srcMsg != null -> {
@@ -419,7 +429,11 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
             element.face != null -> list.add(Face(element.face.index))
             element.text != null -> {
                 if (element.text.attr6Buf.isEmpty()) {
-                    list.add(PlainText(element.text.str))
+                    if (marketFace != null && marketFace!!.name.isEmpty()) {
+                        marketFace!!.delegate.faceName = element.text.str.toByteArray()
+                    } else {
+                        list.add(PlainText(element.text.str))
+                    }
                 } else {
                     val id: Long
                     element.text.attr6Buf.read {
@@ -434,7 +448,9 @@ internal fun List<ImMsgBody.Elem>.joinToMessageChain(groupIdOrZero: Long, botId:
                 }
             }
             element.marketFace != null -> {
-                list.add(MarketFaceImpl(element.marketFace))
+                list.add(MarketFaceImpl(element.marketFace).also {
+                    marketFace = it
+                })
             }
             element.lightApp != null -> {
                 val content = runWithBugReport("解析 lightApp",
